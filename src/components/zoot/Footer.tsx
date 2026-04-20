@@ -1,7 +1,7 @@
 const cols = [
   { title: "Services", links: ["House cleaning", "Gardening", "Childcare", "Handyman", "Pet care"] },
   { title: "Company", links: ["About", "Careers", "Press", "Blog", "Contact"] },
-  { title: "For pros", links: ["Become a pro", "Pro app", "Help center", "Insurance"] },
+  { title: "For Zooters", links: ["Become a Zooter", "Zooter app", "Help center", "Insurance"] },
   { title: "Legal", links: ["Terms", "Privacy", "Trust & safety", "Cookies"] },
 ];
 

@@ -4,9 +4,9 @@ import { useState } from "react";
 
 const links = [
   { label: "Services", href: "#services" },
-  { label: "Workers", href: "#workers" },
+  { label: "Zooters", href: "#workers" },
   { label: "How it works", href: "#how" },
-  { label: "Become a Pro", href: "#pro" },
+  { label: "Become a Zooter", href: "#pro" },
 ];
 
 export const Navbar = () => {

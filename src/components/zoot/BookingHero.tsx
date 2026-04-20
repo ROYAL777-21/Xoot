@@ -144,7 +144,7 @@ export const BookingHero = () => {
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Pros nearby</p>
+                  <p className="text-xs text-muted-foreground">Zooters nearby</p>
                   <p className="text-sm font-semibold">Available now</p>
                 </div>
               </div>
