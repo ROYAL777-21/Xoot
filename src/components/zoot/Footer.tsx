@@ -1,0 +1,48 @@
+const cols = [
+  { title: "Services", links: ["House cleaning", "Gardening", "Childcare", "Handyman", "Pet care"] },
+  { title: "Company", links: ["About", "Careers", "Press", "Blog", "Contact"] },
+  { title: "For pros", links: ["Become a pro", "Pro app", "Help center", "Insurance"] },
+  { title: "Legal", links: ["Terms", "Privacy", "Trust & safety", "Cookies"] },
+];
+
+export const Footer = () => {
+  return (
+    <footer className="border-t border-border bg-background">
+      <div className="container py-16">
+        <div className="grid lg:grid-cols-5 gap-10 mb-12">
+          <div className="lg:col-span-1">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm">
+                <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
+              </span>
+              <span className="font-display text-2xl font-bold">zoot</span>
+            </div>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              Trusted help for every home. Cleaners, gardeners and more — on demand.
+            </p>
+          </div>
+
+          {cols.map((c) => (
+            <div key={c.title}>
+              <h4 className="font-display font-semibold mb-4">{c.title}</h4>
+              <ul className="space-y-2.5">
+                {c.links.map((l) => (
+                  <li key={l}>
+                    <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {l}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between gap-4 text-xs text-muted-foreground">
+          <p>© {new Date().getFullYear()} Zoot, Inc. All rights reserved.</p>
+          <p>Made with care for every home.</p>
+        </div>
+      </div>
+    </footer>
+  );
+};
