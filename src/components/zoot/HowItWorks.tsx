@@ -11,7 +11,7 @@ const steps = [
     n: "02",
     icon: UserCheck,
     title: "Get matched instantly",
-    desc: "We connect you with vetted pros nearby — see profiles, ratings and prices upfront.",
+    desc: "We connect you with vetted Zooters nearby — see profiles, ratings and prices upfront.",
   },
   {
     n: "03",
