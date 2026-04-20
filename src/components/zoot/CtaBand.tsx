@@ -17,17 +17,17 @@ export const CtaBand = () => {
           <div className="relative grid md:grid-cols-2 gap-10 items-center">
             <div className="text-primary-foreground">
               <span className="inline-block text-xs font-bold tracking-widest uppercase bg-primary-foreground/20 backdrop-blur rounded-full px-3 py-1 mb-5">
-                For pros
+                For Zooters
               </span>
               <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-4">
                 Earn on your terms with Zoot.
               </h2>
               <p className="text-primary-foreground/85 text-lg max-w-md">
-                Set your rates, choose your hours, build your client base. Average pros earn $1,200/week.
+                Set your rates, choose your hours, build your client base. Average Zooters earn $1,200/week.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Button size="lg" variant="secondary" className="rounded-full font-semibold">
-                  Apply to be a pro
+                  Become a Zooter
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
                 <Button size="lg" variant="ghost" className="rounded-full text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground">
@@ -40,7 +40,7 @@ export const CtaBand = () => {
             <div className="grid grid-cols-2 gap-4 text-primary-foreground">
               {[
                 { stat: "$1,200", label: "Avg weekly earnings" },
-                { stat: "12K+", label: "Active pros" },
+                { stat: "12K+", label: "Active Zooters" },
                 { stat: "4.9★", label: "Average rating" },
                 { stat: "0%", label: "Sign-up fee" },
               ].map((s) => (
