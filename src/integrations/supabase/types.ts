@@ -14,16 +14,476 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          address: string | null
+          created_at: string
+          duration_hours: number
+          id: string
+          notes: string | null
+          original_zooter_id: string | null
+          price: number
+          reassignment_acknowledged: boolean
+          scheduled_at: string
+          service: Database["public"]["Enums"]["service_category"]
+          status: Database["public"]["Enums"]["booking_status"]
+          updated_at: string
+          user_id: string
+          was_reassigned: boolean
+          zooter_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          duration_hours?: number
+          id?: string
+          notes?: string | null
+          original_zooter_id?: string | null
+          price: number
+          reassignment_acknowledged?: boolean
+          scheduled_at: string
+          service: Database["public"]["Enums"]["service_category"]
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+          user_id: string
+          was_reassigned?: boolean
+          zooter_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          duration_hours?: number
+          id?: string
+          notes?: string | null
+          original_zooter_id?: string | null
+          price?: number
+          reassignment_acknowledged?: boolean
+          scheduled_at?: string
+          service?: Database["public"]["Enums"]["service_category"]
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+          user_id?: string
+          was_reassigned?: boolean
+          zooter_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_original_zooter_id_fkey"
+            columns: ["original_zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          user_id: string
+          zooter_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+          zooter_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+          zooter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_points: {
+        Row: {
+          free_credits: number
+          points: number
+          total_bookings: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          free_credits?: number
+          points?: number
+          total_bookings?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          free_credits?: number
+          points?: number
+          total_bookings?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          booking_id: string
+          created_at: string
+          id: string
+          sender_type: string
+        }
+        Insert: {
+          body: string
+          booking_id: string
+          created_at?: string
+          id?: string
+          sender_type: string
+        }
+        Update: {
+          body?: string
+          booking_id?: string
+          created_at?: string
+          id?: string
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          cadence: string
+          hours_per_visit: number
+          id: string
+          monthly_price: number
+          name: string
+          perks: string[]
+          popular: boolean
+          savings_pct: number
+        }
+        Insert: {
+          cadence: string
+          hours_per_visit: number
+          id?: string
+          monthly_price: number
+          name: string
+          perks?: string[]
+          popular?: boolean
+          savings_pct?: number
+        }
+        Update: {
+          cadence?: string
+          hours_per_visit?: number
+          id?: string
+          monthly_price?: number
+          name?: string
+          perks?: string[]
+          popular?: boolean
+          savings_pct?: number
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          ai_response: string | null
+          body: string
+          created_at: string
+          id: string
+          status: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          ai_response?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          status?: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          ai_response?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          status?: string
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      training_modules: {
+        Row: {
+          badge_color: string
+          category: string
+          description: string
+          duration_min: number
+          id: string
+          title: string
+        }
+        Insert: {
+          badge_color?: string
+          category: string
+          description: string
+          duration_min: number
+          id?: string
+          title: string
+        }
+        Update: {
+          badge_color?: string
+          category?: string
+          description?: string
+          duration_min?: number
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      user_reassignment_state: {
+        Row: {
+          show_modal: boolean
+          successful_bookings_since_last: number
+          total_reassignments: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          show_modal?: boolean
+          successful_bookings_since_last?: number
+          total_reassignments?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          show_modal?: boolean
+          successful_bookings_since_last?: number
+          total_reassignments?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          id: string
+          next_billing_at: string
+          plan_id: string
+          started_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          next_billing_at?: string
+          plan_id: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          next_billing_at?: string
+          plan_id?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zooter_training_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          id: string
+          module_id: string
+          zooter_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          module_id: string
+          zooter_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          module_id?: string
+          zooter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zooter_training_progress_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zooter_training_progress_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zooters: {
+        Row: {
+          active: boolean
+          bio: string | null
+          created_at: string
+          distance_mi: number
+          hourly_rate: number
+          id: string
+          is_zotm: boolean
+          jobs_completed: number
+          name: string
+          photo_url: string | null
+          rating: number
+          role: Database["public"]["Enums"]["service_category"]
+          tags: string[]
+        }
+        Insert: {
+          active?: boolean
+          bio?: string | null
+          created_at?: string
+          distance_mi?: number
+          hourly_rate: number
+          id?: string
+          is_zotm?: boolean
+          jobs_completed?: number
+          name: string
+          photo_url?: string | null
+          rating?: number
+          role: Database["public"]["Enums"]["service_category"]
+          tags?: string[]
+        }
+        Update: {
+          active?: boolean
+          bio?: string | null
+          created_at?: string
+          distance_mi?: number
+          hourly_rate?: number
+          id?: string
+          is_zotm?: boolean
+          jobs_completed?: number
+          name?: string
+          photo_url?: string | null
+          rating?: number
+          role?: Database["public"]["Enums"]["service_category"]
+          tags?: string[]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user" | "zooter"
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "enroute"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+        | "reassigned"
+      service_category:
+        | "cleaning"
+        | "gardening"
+        | "childcare"
+        | "handyman"
+        | "babysitting"
+        | "petcare"
+        | "maintenance"
+      subscription_status: "active" | "paused" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +610,27 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user", "zooter"],
+      booking_status: [
+        "pending",
+        "confirmed",
+        "enroute",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "reassigned",
+      ],
+      service_category: [
+        "cleaning",
+        "gardening",
+        "childcare",
+        "handyman",
+        "babysitting",
+        "petcare",
+        "maintenance",
+      ],
+      subscription_status: ["active", "paused", "cancelled"],
+    },
   },
 } as const
