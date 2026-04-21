@@ -1,12 +1,13 @@
-import { Home, Sprout, Baby, Wrench, Shirt, Dog } from "lucide-react";
+import { Home, Sprout, Baby, Wrench, Heart, Dog, Hammer } from "lucide-react";
 
 const services = [
   { icon: Home, title: "House cleaning", desc: "Deep cleans, weekly tidying", from: "$28/hr", tone: "primary" },
   { icon: Sprout, title: "Gardening", desc: "Lawn, hedges, planting", from: "$32/hr", tone: "sage" },
   { icon: Baby, title: "Childcare", desc: "Vetted nannies & sitters", from: "$22/hr", tone: "primary" },
   { icon: Wrench, title: "Handyman", desc: "Repairs, assembly, fixes", from: "$45/hr", tone: "sage" },
-  { icon: Shirt, title: "Laundry & ironing", desc: "Pickup & delivery", from: "$24/hr", tone: "primary" },
+  { icon: Heart, title: "Babysitting", desc: "Evenings & weekends", from: "$25/hr", tone: "primary" },
   { icon: Dog, title: "Pet care", desc: "Walks, sitting, grooming", from: "$20/hr", tone: "sage" },
+  { icon: Hammer, title: "Home maintenance", desc: "HVAC, appliances, mounts", from: "$48/hr", tone: "primary" },
 ];
 
 export const Services = () => {
