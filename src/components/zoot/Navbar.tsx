@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const links = [
   { label: "Services", href: "#services" },
@@ -11,6 +13,9 @@ const links = [
 
 export const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+  const ctaTo = user ? "/app" : "/auth";
+  const ctaLabel = user ? "Open app" : "Get started";
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
@@ -36,8 +41,8 @@ export const Navbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm">Sign in</Button>
-          <Button size="sm" className="rounded-full px-5">Get started</Button>
+          {!user && <Button asChild variant="ghost" size="sm"><Link to="/auth">Sign in</Link></Button>}
+          <Button asChild size="sm" className="rounded-full px-5"><Link to={ctaTo}>{ctaLabel}</Link></Button>
         </div>
 
         <button
@@ -63,8 +68,8 @@ export const Navbar = () => {
               </a>
             ))}
             <div className="flex gap-2 pt-2">
-              <Button variant="ghost" className="flex-1">Sign in</Button>
-              <Button className="flex-1 rounded-full">Get started</Button>
+              {!user && <Button asChild variant="ghost" className="flex-1"><Link to="/auth">Sign in</Link></Button>}
+              <Button asChild className="flex-1 rounded-full"><Link to={ctaTo}>{ctaLabel}</Link></Button>
             </div>
           </div>
         </div>
