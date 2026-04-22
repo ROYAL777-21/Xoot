@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Sprout, Home as HomeIcon, Baby, Wrench, Heart, PawPrint, Hammer, MapPin, Calendar, Clock, Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { Sprout, Home as HomeIcon, Baby, Wrench, Heart, PawPrint, Hammer, MapPin, Calendar, Clock, Sparkles, ArrowRight, Loader2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 const services = [
@@ -22,32 +22,46 @@ const services = [
 const Book = () => {
   const { user } = useAuth();
   const [active, setActive] = useState<typeof services[number]["id"]>("cleaning");
-  const [zooters, setZooters] = useState<Zooter[]>([]);
+  const [zooters, setZooters] = useState<(Zooter & { match_score?: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const [address, setAddress] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [time, setTime] = useState("14:00");
   const [picked, setPicked] = useState<Zooter | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [aiMatched, setAiMatched] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    supabase.from("zooters").select("*").eq("role", active).eq("active", true).order("rating", { ascending: false })
-      .then(({ data }) => { setZooters((data ?? []) as Zooter[]); setLoading(false); });
-  }, [active]);
+    setLoading(true); setAiMatched(false);
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("ai-match", {
+          body: { service: active, user_id: user?.id ?? null },
+        });
+        if (!error && data?.ranked?.length) {
+          setZooters(data.ranked); setAiMatched(true); setLoading(false); return;
+        }
+      } catch { /* fall through */ }
+      const { data } = await supabase.from("zooters").select("*").eq("role", active).eq("active", true).order("rating", { ascending: false });
+      setZooters((data ?? []) as Zooter[]); setLoading(false);
+    })();
+  }, [active, user?.id]);
 
   const handleBook = async () => {
     if (!picked || !user) return;
     setSubmitting(true);
     const scheduled = new Date(`${date}T${time}`).toISOString();
     const price = Number(picked.hourly_rate) * 2;
-    const { error } = await supabase.from("bookings").insert({
+    const { data: booking, error } = await supabase.from("bookings").insert({
       user_id: user.id, zooter_id: picked.id, original_zooter_id: picked.id,
-      service: active, scheduled_at: scheduled, price, address, status: "confirmed",
-    });
+      service: active, scheduled_at: scheduled, price, address, status: "pending",
+    }).select("id").single();
+    if (!error && booking) {
+      await supabase.from("zooter_jobs").insert({ booking_id: booking.id, zooter_id: picked.id, state: "offered" });
+    }
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success(`${picked.name} is booked!`);
+    toast.success(`${picked.name} has been notified — they'll confirm shortly.`);
     setPicked(null);
   };
 
@@ -102,7 +116,14 @@ const Book = () => {
         </div>
       </div>
 
-      <h2 className="font-display text-2xl font-bold mb-4">Nearby Zooters</h2>
+      <div className="flex items-end justify-between mb-4">
+        <h2 className="font-display text-2xl font-bold">Nearby Zooters</h2>
+        {aiMatched && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 text-sage-deep px-3 py-1 text-xs font-bold">
+            <Wand2 className="h-3 w-3" /> AI-ranked for you
+          </span>
+        )}
+      </div>
       {loading ? (
         <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : (
