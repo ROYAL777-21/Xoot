@@ -1,0 +1,105 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Briefcase, GraduationCap, ShieldCheck, Wallet, Star, Loader2, ArrowRight, Sparkles } from "lucide-react";
+
+const Dashboard = () => {
+  const { user } = useAuth();
+  const [zooter, setZooter] = useState<any>(null);
+  const [app, setApp] = useState<any>(null);
+  const [stats, setStats] = useState({ open_jobs: 0, week_earnings: 0, completion_rate: 100 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const [{ data: z }, { data: a }] = await Promise.all([
+        supabase.from("zooters").select("*").eq("user_id", user.id).maybeSingle(),
+        supabase.from("zooter_applications").select("*").eq("user_id", user.id).maybeSingle(),
+      ]);
+      setZooter(z); setApp(a);
+      if (z) {
+        const [{ count: openJobs }, { data: earn }] = await Promise.all([
+          supabase.from("zooter_jobs").select("id", { count: "exact", head: true }).eq("zooter_id", z.id).eq("state", "offered"),
+          supabase.from("zooter_earnings").select("net_amount").eq("zooter_id", z.id).gte("created_at", new Date(Date.now() - 7 * 864e5).toISOString()),
+        ]);
+        const week = (earn ?? []).reduce((s: number, e: any) => s + Number(e.net_amount), 0);
+        setStats({ open_jobs: openJobs ?? 0, week_earnings: week, completion_rate: 100 });
+      }
+      setLoading(false);
+    })();
+  }, [user]);
+
+  if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+
+  const status = app?.status ?? "draft";
+  const statusBadge: Record<string, { text: string; cls: string }> = {
+    draft: { text: "Application incomplete", cls: "bg-muted text-muted-foreground" },
+    submitted: { text: "Under review", cls: "bg-primary/15 text-primary" },
+    approved: { text: "Verified Zooter", cls: "bg-accent/15 text-sage-deep" },
+    rejected: { text: "Application rejected", cls: "bg-destructive/15 text-destructive" },
+  };
+
+  return (
+    <div className="container py-8 lg:py-12 max-w-6xl">
+      <div className="mb-8">
+        <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-3 border border-accent/20">
+          <Sparkles className="h-3 w-3 text-sage-deep" />
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusBadge[status].cls}`}>{statusBadge[status].text}</span>
+        </div>
+        <h1 className="font-display text-4xl md:text-5xl font-bold">Hi {app?.full_name?.split(" ")[0] ?? "there"}</h1>
+        <p className="text-muted-foreground mt-2">{zooter ? "Here's your day at a glance." : "Complete your application to start receiving jobs."}</p>
+      </div>
+
+      {!zooter && status !== "approved" && (
+        <Card className="p-6 rounded-3xl gradient-warm text-primary-foreground border-0 mb-8 shadow-warm">
+          <p className="font-display text-2xl font-bold mb-1">Finish verification</p>
+          <p className="text-sm opacity-90 mb-4">{status === "submitted" ? "Your application is being reviewed. We'll notify you within 48 hours." : "Upload your ID, proof of address, banking and consent to a background check."}</p>
+          <Button asChild variant="secondary" className="rounded-full">
+            <Link to="/zooter/kyc">{status === "submitted" ? "View status" : "Continue application"} <ArrowRight className="h-4 w-4 ml-1" /></Link>
+          </Button>
+        </Card>
+      )}
+
+      <div className="grid sm:grid-cols-3 gap-4 mb-8">
+        <Stat icon={Briefcase} label="Open job offers" value={stats.open_jobs.toString()} accent="primary" />
+        <Stat icon={Wallet} label="This week net" value={`$${stats.week_earnings.toFixed(0)}`} accent="sage" />
+        <Stat icon={Star} label="Rating" value={zooter ? Number(zooter.rating).toFixed(2) : "—"} accent="primary" />
+      </div>
+
+      <h2 className="font-display text-2xl font-bold mb-4">Get the most out of Zoot</h2>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Tile to="/zooter/jobs" icon={Briefcase} title="Browse jobs" body="Accept the matches that fit your schedule." />
+        <Tile to="/zooter/training" icon={GraduationCap} title="Training" body="Pass quizzes to unlock higher tiers and a smaller commission." />
+        <Tile to="/zooter/earnings" icon={Wallet} title="Earnings" body="See gross, commission and net for every booking." />
+        <Tile to="/zooter/kyc" icon={ShieldCheck} title="Verification" body="Re-upload documents or check review status." />
+        <Tile to="/zooter/profile" icon={Star} title="Profile" body="Update your bio, photo and service tags." />
+      </div>
+    </div>
+  );
+};
+
+const Stat = ({ icon: Icon, label, value, accent }: any) => (
+  <Card className="p-5 rounded-2xl">
+    <div className={`grid h-10 w-10 place-items-center rounded-xl mb-3 ${accent === "primary" ? "bg-primary/10 text-primary" : "bg-accent/15 text-sage-deep"}`}>
+      <Icon className="h-5 w-5" />
+    </div>
+    <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+    <p className="font-display text-3xl font-bold mt-1">{value}</p>
+  </Card>
+);
+
+const Tile = ({ to, icon: Icon, title, body }: any) => (
+  <Link to={to} className="block">
+    <Card className="p-5 rounded-2xl hover:shadow-warm transition-shadow h-full">
+      <Icon className="h-5 w-5 text-primary mb-3" />
+      <p className="font-display text-lg font-bold">{title}</p>
+      <p className="text-sm text-muted-foreground mt-1">{body}</p>
+    </Card>
+  </Link>
+);
+
+export default Dashboard;
