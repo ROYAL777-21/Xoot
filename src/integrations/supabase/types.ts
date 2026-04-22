@@ -265,6 +265,9 @@ export type Database = {
           description: string
           duration_min: number
           id: string
+          pass_score: number
+          quiz_questions: Json
+          required: boolean
           title: string
         }
         Insert: {
@@ -273,6 +276,9 @@ export type Database = {
           description: string
           duration_min: number
           id?: string
+          pass_score?: number
+          quiz_questions?: Json
+          required?: boolean
           title: string
         }
         Update: {
@@ -281,6 +287,9 @@ export type Database = {
           description?: string
           duration_min?: number
           id?: string
+          pass_score?: number
+          quiz_questions?: Json
+          required?: boolean
           title?: string
         }
         Relationships: []
@@ -365,6 +374,229 @@ export type Database = {
           },
         ]
       }
+      zooter_applications: {
+        Row: {
+          address: string | null
+          background_check_consent: boolean
+          background_check_status: string
+          bank_account_number: string | null
+          bank_branch_code: string | null
+          bank_name: string | null
+          bio: string | null
+          city: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          full_name: string
+          id: string
+          id_number: string | null
+          phone: string | null
+          postal_code: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          service_category:
+            | Database["public"]["Enums"]["service_category"]
+            | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          background_check_consent?: boolean
+          background_check_status?: string
+          bank_account_number?: string | null
+          bank_branch_code?: string | null
+          bank_name?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          id_number?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          service_category?:
+            | Database["public"]["Enums"]["service_category"]
+            | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          background_check_consent?: boolean
+          background_check_status?: string
+          bank_account_number?: string | null
+          bank_branch_code?: string | null
+          bank_name?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          id_number?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          service_category?:
+            | Database["public"]["Enums"]["service_category"]
+            | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      zooter_documents: {
+        Row: {
+          application_id: string | null
+          created_at: string
+          doc_type: string
+          id: string
+          rejected_reason: string | null
+          status: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          created_at?: string
+          doc_type: string
+          id?: string
+          rejected_reason?: string | null
+          status?: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          created_at?: string
+          doc_type?: string
+          id?: string
+          rejected_reason?: string | null
+          status?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zooter_documents_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "zooter_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zooter_earnings: {
+        Row: {
+          booking_id: string
+          commission_rate: number
+          created_at: string
+          gross_amount: number
+          id: string
+          net_amount: number
+          status: string
+          zooter_id: string
+        }
+        Insert: {
+          booking_id: string
+          commission_rate: number
+          created_at?: string
+          gross_amount: number
+          id?: string
+          net_amount: number
+          status?: string
+          zooter_id: string
+        }
+        Update: {
+          booking_id?: string
+          commission_rate?: number
+          created_at?: string
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          status?: string
+          zooter_id?: string
+        }
+        Relationships: []
+      }
+      zooter_jobs: {
+        Row: {
+          booking_id: string
+          decline_reason: string | null
+          id: string
+          offered_at: string
+          responded_at: string | null
+          state: string
+          zooter_id: string
+        }
+        Insert: {
+          booking_id: string
+          decline_reason?: string | null
+          id?: string
+          offered_at?: string
+          responded_at?: string | null
+          state?: string
+          zooter_id: string
+        }
+        Update: {
+          booking_id?: string
+          decline_reason?: string | null
+          id?: string
+          offered_at?: string
+          responded_at?: string | null
+          state?: string
+          zooter_id?: string
+        }
+        Relationships: []
+      }
+      zooter_training_completions: {
+        Row: {
+          completed_at: string
+          id: string
+          module_id: string
+          passed: boolean
+          score: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          module_id: string
+          passed?: boolean
+          score?: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          module_id?: string
+          passed?: boolean
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zooter_training_completions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zooter_training_progress: {
         Row: {
           completed: boolean
@@ -408,6 +640,7 @@ export type Database = {
         Row: {
           active: boolean
           bio: string | null
+          commission_rate: number
           created_at: string
           distance_mi: number
           hourly_rate: number
@@ -419,10 +652,14 @@ export type Database = {
           rating: number
           role: Database["public"]["Enums"]["service_category"]
           tags: string[]
+          tier: string
+          user_id: string | null
+          verified: boolean
         }
         Insert: {
           active?: boolean
           bio?: string | null
+          commission_rate?: number
           created_at?: string
           distance_mi?: number
           hourly_rate: number
@@ -434,10 +671,14 @@ export type Database = {
           rating?: number
           role: Database["public"]["Enums"]["service_category"]
           tags?: string[]
+          tier?: string
+          user_id?: string | null
+          verified?: boolean
         }
         Update: {
           active?: boolean
           bio?: string | null
+          commission_rate?: number
           created_at?: string
           distance_mi?: number
           hourly_rate?: number
@@ -449,6 +690,9 @@ export type Database = {
           rating?: number
           role?: Database["public"]["Enums"]["service_category"]
           tags?: string[]
+          tier?: string
+          user_id?: string | null
+          verified?: boolean
         }
         Relationships: []
       }
