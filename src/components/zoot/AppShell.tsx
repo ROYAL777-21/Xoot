@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Heart, Calendar, Gift, Repeat, GraduationCap, LifeBuoy, ShieldCheck, LogOut, MessageSquare } from "lucide-react";
+import { Home, Heart, Calendar, Gift, Repeat, GraduationCap, LifeBuoy, ShieldCheck, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 
@@ -10,7 +10,7 @@ const nav = [
   { to: "/app/favorites", label: "My Zooters", icon: Heart },
   { to: "/app/loyalty", label: "Rewards", icon: Gift },
   { to: "/app/plans", label: "Plans", icon: Repeat },
-  { to: "/app/training", label: "Training", icon: GraduationCap },
+  { to: "/app/profile", label: "Profile", icon: User },
   { to: "/app/support", label: "Support", icon: LifeBuoy },
   { to: "/app/insurance", label: "Insurance", icon: ShieldCheck },
 ];

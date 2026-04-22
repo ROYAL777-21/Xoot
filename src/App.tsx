@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RequireAuth } from "@/components/RequireAuth";
 import { AppShell } from "@/components/zoot/AppShell";
+import { ZooterShell } from "@/components/zooter/ZooterShell";
+import { RequireRole } from "@/components/RequireRole";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Auth from "./pages/Auth";
@@ -18,6 +20,15 @@ import BookingDetail from "./pages/app/BookingDetail";
 import Training from "./pages/app/Training";
 import Support from "./pages/app/Support";
 import Insurance from "./pages/app/Insurance";
+import CustomerProfile from "./pages/app/Profile";
+import ZooterApply from "./pages/zooter/Apply";
+import ZooterDashboard from "./pages/zooter/Dashboard";
+import ZooterJobs from "./pages/zooter/Jobs";
+import ZooterTraining from "./pages/zooter/Training";
+import ZooterEarnings from "./pages/zooter/Earnings";
+import ZooterKyc from "./pages/zooter/Kyc";
+import ZooterProfile from "./pages/zooter/Profile";
+import AdminKyc from "./pages/admin/Kyc";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +51,20 @@ const App = () => (
             <Route path="/app/training" element={<RequireAuth><AppShell><Training /></AppShell></RequireAuth>} />
             <Route path="/app/support" element={<RequireAuth><AppShell><Support /></AppShell></RequireAuth>} />
             <Route path="/app/insurance" element={<RequireAuth><AppShell><Insurance /></AppShell></RequireAuth>} />
+            <Route path="/app/profile" element={<RequireAuth><AppShell><CustomerProfile /></AppShell></RequireAuth>} />
+
+            {/* Zooter portal */}
+            <Route path="/zooter/apply" element={<RequireAuth><ZooterApply /></RequireAuth>} />
+            <Route path="/zooter" element={<RequireRole role="zooter"><ZooterShell><ZooterDashboard /></ZooterShell></RequireRole>} />
+            <Route path="/zooter/jobs" element={<RequireRole role="zooter"><ZooterShell><ZooterJobs /></ZooterShell></RequireRole>} />
+            <Route path="/zooter/training" element={<RequireAuth><ZooterShell><ZooterTraining /></ZooterShell></RequireAuth>} />
+            <Route path="/zooter/earnings" element={<RequireRole role="zooter"><ZooterShell><ZooterEarnings /></ZooterShell></RequireRole>} />
+            <Route path="/zooter/kyc" element={<RequireAuth><ZooterShell><ZooterKyc /></ZooterShell></RequireAuth>} />
+            <Route path="/zooter/profile" element={<RequireRole role="zooter"><ZooterShell><ZooterProfile /></ZooterShell></RequireRole>} />
+
+            {/* Admin */}
+            <Route path="/admin/kyc" element={<RequireRole role="admin"><AdminKyc /></RequireRole>} />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
