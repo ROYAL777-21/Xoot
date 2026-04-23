@@ -1,8 +1,28 @@
-const cols = [
-  { title: "Services", links: ["House cleaning", "Gardening", "Childcare", "Handyman", "Pet care"] },
-  { title: "Company", links: ["About", "Careers", "Press", "Blog", "Contact"] },
-  { title: "For Zooters", links: ["Become a Zooter", "Zooter app", "Help center", "Insurance"] },
-  { title: "Legal", links: ["Terms", "Privacy", "Trust & safety", "Cookies"] },
+const cols: { title: string; links: { label: string; href: string }[] }[] = [
+  { title: "Services", links: [
+    { label: "House cleaning", href: "/app" },
+    { label: "Office cleaning", href: "/app" },
+    { label: "Move-out cleaning", href: "/app" },
+    { label: "Care+ subscription", href: "/care-plus" },
+    { label: "Find full-time help", href: "/care-plus" },
+  ]},
+  { title: "Company", links: [
+    { label: "How it works", href: "/#how" },
+    { label: "Safety & trust", href: "/legal/trust-safety" },
+    { label: "MyHome Hub", href: "/#myhome-hub" },
+    { label: "Contact", href: "/app/support" },
+  ]},
+  { title: "For Zooters", links: [
+    { label: "Become a Zooter", href: "/zooter/apply" },
+    { label: "Zooter app", href: "/zooter" },
+    { label: "Training", href: "/zooter/training" },
+    { label: "Insurance", href: "/app/insurance" },
+  ]},
+  { title: "Legal", links: [
+    { label: "Terms & Conditions", href: "/legal/terms" },
+    { label: "Privacy", href: "/legal/privacy" },
+    { label: "Trust & safety", href: "/legal/trust-safety" },
+  ]},
 ];
 
 export const Footer = () => {
@@ -27,9 +47,9 @@ export const Footer = () => {
               <h4 className="font-display font-semibold mb-4">{c.title}</h4>
               <ul className="space-y-2.5">
                 {c.links.map((l) => (
-                  <li key={l}>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      {l}
+                  <li key={l.label}>
+                    <a href={l.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {l.label}
                     </a>
                   </li>
                 ))}

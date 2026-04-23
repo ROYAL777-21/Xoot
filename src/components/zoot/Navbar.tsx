@@ -3,12 +3,14 @@ import { Menu } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const links = [
-  { label: "Services", href: "#services" },
-  { label: "Zooters", href: "#workers" },
-  { label: "How it works", href: "#how" },
-  { label: "Become a Zooter", href: "#pro" },
+  { label: "Services", href: "/#services" },
+  { label: "Care+", href: "/care-plus" },
+  { label: "Find full-time help", href: "/care-plus" },
+  { label: "How it works", href: "/#how" },
+  { label: "Become a Zooter", href: "/zooter/apply" },
 ];
 
 export const Navbar = () => {
@@ -41,6 +43,7 @@ export const Navbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          {user && <NotificationBell />}
           {!user && <Button asChild variant="ghost" size="sm"><Link to="/auth">Sign in</Link></Button>}
           <Button asChild size="sm" className="rounded-full px-5"><Link to={ctaTo}>{ctaLabel}</Link></Button>
         </div>
