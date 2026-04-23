@@ -17,13 +17,18 @@ export type Database = {
       bookings: {
         Row: {
           address: string | null
+          cancellation_fee: number
+          cancelled_at: string | null
+          cancelled_by: string | null
           created_at: string
           duration_hours: number
+          frequency: string
           id: string
           notes: string | null
           original_zooter_id: string | null
           price: number
           reassignment_acknowledged: boolean
+          replacement_offered: boolean
           scheduled_at: string
           service: Database["public"]["Enums"]["service_category"]
           status: Database["public"]["Enums"]["booking_status"]
@@ -34,13 +39,18 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          cancellation_fee?: number
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           duration_hours?: number
+          frequency?: string
           id?: string
           notes?: string | null
           original_zooter_id?: string | null
           price: number
           reassignment_acknowledged?: boolean
+          replacement_offered?: boolean
           scheduled_at: string
           service: Database["public"]["Enums"]["service_category"]
           status?: Database["public"]["Enums"]["booking_status"]
@@ -51,13 +61,18 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          cancellation_fee?: number
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           duration_hours?: number
+          frequency?: string
           id?: string
           notes?: string | null
           original_zooter_id?: string | null
           price?: number
           reassignment_acknowledged?: boolean
+          replacement_offered?: boolean
           scheduled_at?: string
           service?: Database["public"]["Enums"]["service_category"]
           status?: Database["public"]["Enums"]["booking_status"]
@@ -82,6 +97,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      care_plus_applications: {
+        Row: {
+          address: string
+          admin_fee_paid: boolean
+          created_at: string
+          daily_end_time: string | null
+          daily_pay_rate: number | null
+          daily_start_time: string | null
+          days_of_week: string[] | null
+          email: string
+          first_name: string
+          id: string
+          ideal_personality: string | null
+          job_description: string | null
+          last_name: string
+          other_qualities: string | null
+          overtime: string | null
+          pets: string[] | null
+          phone: string
+          preferred_language: string | null
+          preferred_start_date: string | null
+          required_skills: string[] | null
+          reviewed_at: string | null
+          reviewer_notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          admin_fee_paid?: boolean
+          created_at?: string
+          daily_end_time?: string | null
+          daily_pay_rate?: number | null
+          daily_start_time?: string | null
+          days_of_week?: string[] | null
+          email: string
+          first_name: string
+          id?: string
+          ideal_personality?: string | null
+          job_description?: string | null
+          last_name: string
+          other_qualities?: string | null
+          overtime?: string | null
+          pets?: string[] | null
+          phone: string
+          preferred_language?: string | null
+          preferred_start_date?: string | null
+          required_skills?: string[] | null
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          admin_fee_paid?: boolean
+          created_at?: string
+          daily_end_time?: string | null
+          daily_pay_rate?: number | null
+          daily_start_time?: string | null
+          days_of_week?: string[] | null
+          email?: string
+          first_name?: string
+          id?: string
+          ideal_personality?: string | null
+          job_description?: string | null
+          last_name?: string
+          other_qualities?: string | null
+          overtime?: string | null
+          pets?: string[] | null
+          phone?: string
+          preferred_language?: string | null
+          preferred_start_date?: string | null
+          required_skills?: string[] | null
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       favorites: {
         Row: {
@@ -165,6 +264,39 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -192,6 +324,90 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          referred_user_id: string
+          referrer_user_id: string
+          rewarded: boolean
+          rewarded_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_user_id: string
+          referrer_user_id: string
+          rewarded?: boolean
+          rewarded_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+          referrer_user_id?: string
+          rewarded?: boolean
+          rewarded_at?: string | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          total_invited: number
+          total_rewarded: number
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          total_invited?: number
+          total_rewarded?: number
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          total_invited?: number
+          total_rewarded?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_addresses: {
+        Row: {
+          address: string
+          city: string | null
+          created_at: string
+          id: string
+          is_default: boolean
+          label: string
+          postal_code: string | null
+          user_id: string
+        }
+        Insert: {
+          address: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label: string
+          postal_code?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          postal_code?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -373,6 +589,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      zootcred_ledger: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          meta: Json | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          reason: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      zootcred_wallets: {
+        Row: {
+          balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       zooter_applications: {
         Row: {
@@ -701,6 +962,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      gen_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

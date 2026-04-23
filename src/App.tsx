@@ -21,6 +21,11 @@ import Training from "./pages/app/Training";
 import Support from "./pages/app/Support";
 import Insurance from "./pages/app/Insurance";
 import CustomerProfile from "./pages/app/Profile";
+import CarePlus from "./pages/care/CarePlus";
+import CarePlusApply from "./pages/care/CarePlusApply";
+import Terms from "./pages/legal/Terms";
+import Privacy from "./pages/legal/Privacy";
+import TrustSafety from "./pages/legal/TrustSafety";
 import ZooterApply from "./pages/zooter/Apply";
 import ZooterDashboard from "./pages/zooter/Dashboard";
 import ZooterJobs from "./pages/zooter/Jobs";
@@ -42,6 +47,11 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/care-plus" element={<CarePlus />} />
+            <Route path="/care-plus/apply" element={<RequireAuth><CarePlusApply /></RequireAuth>} />
+            <Route path="/legal/terms" element={<Terms />} />
+            <Route path="/legal/privacy" element={<Privacy />} />
+            <Route path="/legal/trust-safety" element={<TrustSafety />} />
             <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
             <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
             <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
