@@ -1,24 +1,45 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ShieldCheck, Loader2, ArrowRight, ArrowLeft, Upload, FileCheck2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
 const docMeta: { key: DocType; label: string; hint: string }[] = [
-  { key: "id", label: "Government ID / Passport", hint: "Clear photo of both sides. Name & DOB visible." },
+  { key: "id", label: "South African ID / Passport", hint: "Clear photo of both sides. Name & DOB visible." },
   { key: "proof_of_residence", label: "Proof of residence", hint: "Utility bill or lease, dated within 3 months." },
   { key: "bank_statement", label: "Bank statement", hint: "Most recent statement showing account holder name." },
-  { key: "selfie", label: "Selfie holding your ID", hint: "Used to confirm the ID belongs to you." },
+  { key: "selfie", label: "Selfie holding your ID", hint: "Confirms the ID belongs to you." },
+];
+
+const stepSchemas = [
+  z.object({
+    full_name: z.string().trim().min(2, "Full name required").max(100),
+    phone: z.string().trim().min(7, "Phone required").max(20),
+    email: z.string().trim().email("Valid email required").max(255),
+    date_of_birth: z.string().min(1, "Date of birth required"),
+    id_number: z.string().trim().min(6, "ID / passport number required").max(20),
+    bio: z.string().trim().min(20, "Tell us a bit about yourself (20+ chars)").max(500),
+  }),
+  z.object({
+    address: z.string().trim().min(5, "Street address required").max(200),
+    city: z.string().trim().min(2, "City required").max(80),
+    postal_code: z.string().trim().min(4, "Postal code required").max(10),
+  }),
+  z.object({
+    bank_name: z.string().trim().min(2, "Bank name required").max(50),
+    bank_account_number: z.string().trim().min(6, "Account number required").max(20),
+    bank_branch_code: z.string().trim().min(4, "Branch code required").max(10),
+  }),
 ];
 
 const Apply = () => {
@@ -32,11 +53,11 @@ const Apply = () => {
   const [form, setForm] = useState({
     full_name: "", phone: "", email: "", date_of_birth: "",
     id_number: "", address: "", city: "", postal_code: "",
-    service_category: "cleaning",
-    bio: "",
+    service_category: "cleaning", bio: "",
     bank_name: "", bank_account_number: "", bank_branch_code: "",
     background_check_consent: false,
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -49,15 +70,12 @@ const Apply = () => {
           full_name: app.full_name ?? "", phone: app.phone ?? "", email: app.email ?? user.email ?? "",
           date_of_birth: app.date_of_birth ?? "", id_number: app.id_number ?? "",
           address: app.address ?? "", city: app.city ?? "", postal_code: app.postal_code ?? "",
-          service_category: app.service_category ?? "cleaning", bio: app.bio ?? "",
+          service_category: "cleaning", bio: app.bio ?? "",
           bank_name: app.bank_name ?? "", bank_account_number: app.bank_account_number ?? "",
           bank_branch_code: app.bank_branch_code ?? "",
           background_check_consent: app.background_check_consent ?? false,
         }));
-        if (app.status === "submitted" || app.status === "approved") {
-          navigate("/zooter");
-          return;
-        }
+        if (app.status === "submitted" || app.status === "approved") { navigate("/zooter"); return; }
         const { data: dlist } = await supabase.from("zooter_documents").select("doc_type, storage_path").eq("user_id", user.id);
         const m: Record<string, string> = {};
         (dlist ?? []).forEach((d: any) => { m[d.doc_type] = d.storage_path; });
@@ -71,7 +89,7 @@ const Apply = () => {
 
   const saveDraft = async () => {
     if (!user) return null;
-    const payload: any = { ...form, user_id: user.id, status: "draft" };
+    const payload: any = { ...form, user_id: user.id, status: "draft", service_category: "cleaning" };
     if (!payload.date_of_birth) delete payload.date_of_birth;
     if (appId) {
       const { error } = await supabase.from("zooter_applications").update(payload).eq("id", appId);
@@ -98,12 +116,46 @@ const Apply = () => {
     toast.success(`${key.replace(/_/g, " ")} uploaded`);
   };
 
+  const validateStep = (): boolean => {
+    if (step >= stepSchemas.length) return true;
+    const result = stepSchemas[step].safeParse(form);
+    if (!result.success) {
+      const e: Record<string, string> = {};
+      Object.entries(result.error.flatten().fieldErrors).forEach(([k, v]) => { if (v?.[0]) e[k] = v[0]; });
+      setErrors(e);
+      toast.error(Object.values(e)[0] ?? "Please complete all required fields");
+      return false;
+    }
+    setErrors({});
+    return true;
+  };
+
+  const next = async () => {
+    if (!validateStep()) return;
+    if (step === 3) {
+      // Document step — require all 4
+      const missing = docMeta.filter((d) => !docs[d.key]);
+      if (missing.length) { toast.error(`Upload required: ${missing.map((m) => m.label).join(", ")}`); return; }
+    }
+    await saveDraft();
+    setStep(Math.min(step + 1, steps.length - 1));
+  };
+  const back = () => setStep(Math.max(step - 1, 0));
+
   const submit = async () => {
     if (!user) return;
+    if (!form.background_check_consent) { toast.error("Background check consent is required"); return; }
     setSubmitting(true);
     const id = appId ?? (await saveDraft());
     if (!id) { setSubmitting(false); return; }
     const { error } = await supabase.from("zooter_applications").update({ status: "submitted" }).eq("id", id);
+    if (!error) {
+      await supabase.from("notifications").insert({
+        user_id: user.id, kind: "zooter_application_submitted",
+        title: "Application received 🎉",
+        body: "Our trust team reviews within 48 hours. We'll notify you by email and in-app.",
+      });
+    }
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Application submitted! We'll review within 48 hours.");
@@ -115,8 +167,13 @@ const Apply = () => {
 
   if (loading) return <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
-  const next = async () => { await saveDraft(); setStep(Math.min(step + 1, steps.length - 1)); };
-  const back = () => setStep(Math.max(step - 1, 0));
+  const F = ({ label, name, children }: { label: string; name?: string; children: React.ReactNode }) => (
+    <div className="space-y-1.5">
+      <Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>
+      {children}
+      {name && errors[name] && <p className="text-xs text-destructive">{errors[name]}</p>}
+    </div>
+  );
 
   return (
     <div className="min-h-screen gradient-hero py-10 px-6">
@@ -126,7 +183,7 @@ const Apply = () => {
           <span className="text-xs font-medium text-sage-deep">Become a Zooter</span>
         </div>
         <h1 className="font-display text-4xl font-bold mb-2">Join Zoot</h1>
-        <p className="text-muted-foreground mb-6">Vetted Zooters earn 65–96% per booking. Verification keeps the bar high.</p>
+        <p className="text-muted-foreground mb-6">Vetted cleaners earn 65–96% per booking. Verification keeps the bar high.</p>
 
         <div className="mb-4">
           <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
@@ -139,53 +196,45 @@ const Apply = () => {
           {step === 0 && (
             <div className="space-y-4">
               <h2 className="font-display text-2xl font-bold">About you</h2>
+              <p className="text-sm text-muted-foreground">All fields are required. We use this to verify your identity.</p>
               <div className="grid sm:grid-cols-2 gap-3">
-                <Field label="Full name"><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></Field>
-                <Field label="Phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
-                <Field label="Email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
-                <Field label="Date of birth"><Input type="date" value={form.date_of_birth} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} /></Field>
-                <Field label="ID / Passport number"><Input value={form.id_number} onChange={(e) => setForm({ ...form, id_number: e.target.value })} /></Field>
-                <Field label="Primary service">
-                  <Select value={form.service_category} onValueChange={(v) => setForm({ ...form, service_category: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {["cleaning","gardening","childcare","handyman","babysitting","petcare","maintenance"].map((s) => (
-                        <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
+                <F label="Full name" name="full_name"><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></F>
+                <F label="Phone" name="phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+27…" /></F>
+                <F label="Email" name="email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></F>
+                <F label="Date of birth" name="date_of_birth"><Input type="date" value={form.date_of_birth} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} /></F>
+                <F label="ID / Passport number" name="id_number"><Input value={form.id_number} onChange={(e) => setForm({ ...form, id_number: e.target.value })} /></F>
+                <F label="Primary service"><Input value="House cleaning" disabled /></F>
               </div>
-              <Field label="Short bio (shown on your card)">
-                <Textarea rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="5+ years experience, gentle with pets, eco-friendly products…" />
-              </Field>
+              <F label="Short bio (shown on your card)" name="bio">
+                <Textarea rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="5+ years experience, Airbnb turnover specialist, gentle with pets, eco-friendly products…" />
+              </F>
             </div>
           )}
           {step === 1 && (
             <div className="space-y-4">
               <h2 className="font-display text-2xl font-bold">Where you live</h2>
-              <Field label="Street address"><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></Field>
+              <F label="Street address" name="address"><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></F>
               <div className="grid sm:grid-cols-2 gap-3">
-                <Field label="City"><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></Field>
-                <Field label="Postal code"><Input value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></Field>
+                <F label="City" name="city"><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></F>
+                <F label="Postal code" name="postal_code"><Input value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></F>
               </div>
             </div>
           )}
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="font-display text-2xl font-bold">Banking for payouts</h2>
-              <p className="text-sm text-muted-foreground">Net earnings (after platform commission) are paid out weekly.</p>
-              <Field label="Bank name"><Input value={form.bank_name} onChange={(e) => setForm({ ...form, bank_name: e.target.value })} /></Field>
+              <p className="text-sm text-muted-foreground">Net earnings (after platform commission) are paid out every Friday in Rand.</p>
+              <F label="Bank name" name="bank_name"><Input value={form.bank_name} onChange={(e) => setForm({ ...form, bank_name: e.target.value })} placeholder="Standard Bank, FNB, ABSA…" /></F>
               <div className="grid sm:grid-cols-2 gap-3">
-                <Field label="Account number"><Input value={form.bank_account_number} onChange={(e) => setForm({ ...form, bank_account_number: e.target.value })} /></Field>
-                <Field label="Branch code"><Input value={form.bank_branch_code} onChange={(e) => setForm({ ...form, bank_branch_code: e.target.value })} /></Field>
+                <F label="Account number" name="bank_account_number"><Input value={form.bank_account_number} onChange={(e) => setForm({ ...form, bank_account_number: e.target.value })} /></F>
+                <F label="Branch code" name="bank_branch_code"><Input value={form.bank_branch_code} onChange={(e) => setForm({ ...form, bank_branch_code: e.target.value })} /></F>
               </div>
             </div>
           )}
           {step === 3 && (
             <div className="space-y-3">
               <h2 className="font-display text-2xl font-bold">Upload documents</h2>
-              <p className="text-sm text-muted-foreground">All documents are stored privately and reviewed by our trust team.</p>
+              <p className="text-sm text-muted-foreground">All four documents are required. Stored privately, reviewed by our trust team.</p>
               {docMeta.map((d) => (
                 <div key={d.key} className="rounded-2xl border border-border p-4 flex items-center gap-3">
                   <div className={`grid h-10 w-10 place-items-center rounded-xl ${docs[d.key] ? "bg-accent/15 text-sage-deep" : "bg-muted text-muted-foreground"}`}>
@@ -232,12 +281,5 @@ const Apply = () => {
     </div>
   );
 };
-
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="space-y-1.5">
-    <Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>
-    {children}
-  </div>
-);
 
 export default Apply;
