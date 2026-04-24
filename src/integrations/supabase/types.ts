@@ -208,6 +208,33 @@ export type Database = {
           },
         ]
       }
+      gamification_progress: {
+        Row: {
+          free_bookings_earned: number
+          free_bookings_redeemed: number
+          positive_reviews_count: number
+          successful_referrals_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          free_bookings_earned?: number
+          free_bookings_redeemed?: number
+          positive_reviews_count?: number
+          successful_referrals_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          free_bookings_earned?: number
+          free_bookings_redeemed?: number
+          positive_reviews_count?: number
+          successful_referrals_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       loyalty_points: {
         Row: {
           free_credits: number
@@ -411,9 +438,46 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_cancellation_requests: {
+        Row: {
+          confirmed: boolean
+          confirmed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          reason: string | null
+          subscription_id: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          confirmed?: boolean
+          confirmed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          reason?: string | null
+          subscription_id: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          confirmed?: boolean
+          confirmed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          reason?: string | null
+          subscription_id?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           cadence: string
+          discount_pct: number
           hours_per_visit: number
           id: string
           monthly_price: number
@@ -424,6 +488,7 @@ export type Database = {
         }
         Insert: {
           cadence: string
+          discount_pct?: number
           hours_per_visit: number
           id?: string
           monthly_price: number
@@ -434,6 +499,7 @@ export type Database = {
         }
         Update: {
           cadence?: string
+          discount_pct?: number
           hours_per_visit?: number
           id?: string
           monthly_price?: number
