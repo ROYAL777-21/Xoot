@@ -6,7 +6,7 @@ const services = [
   { icon: Home, title: "Residential cleaning", desc: "Weekly tidies, fortnightly deep cleans, one-off resets.", tone: "primary" },
   { icon: Building2, title: "Office & commercial", desc: "After-hours office, retail and small commercial cleans.", tone: "sage" },
   { icon: BedDouble, title: "Airbnb turnovers", desc: "Same-day turnovers with linen, restock and photo proof.", tone: "primary" },
-  { icon: Sparkles, title: "Move-in / move-out", desc: "Inside-of-oven, behind appliances, baseboards — the works.", tone: "sage" },
+  { icon: Sparkles, title: "Deep clean", desc: "Inside-of-oven, behind appliances, baseboards — the works.", tone: "sage" },
 ];
 
 export const Services = () => (

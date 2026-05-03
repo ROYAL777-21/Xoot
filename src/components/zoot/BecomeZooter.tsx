@@ -12,13 +12,13 @@ export const BecomeZooter = () => {
           <div className="relative max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 px-3 py-1 mb-5 backdrop-blur">
               <Sparkles className="h-3 w-3" />
-              <span className="text-xs font-semibold">For professional cleaners</span>
+              <span className="text-xs font-semibold">Join the Zoot team</span>
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-5">
               Want to work with Zoot?
             </h2>
             <p className="text-lg opacity-95 max-w-xl mb-8">
-              Become your own boss, choose your own schedule, and work in your preferred areas — get a stable supply of clients.
+              Become your own boss, choose your own schedule, and work in your preferred areas. Anyone can become a Zooter provided they meet all legal requirements. Get a stable supply of clients.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" variant="secondary" className="rounded-full font-semibold">

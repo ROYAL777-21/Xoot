@@ -11,7 +11,7 @@ const services = [
   { id: "residential", label: "Residential", icon: Home },
   { id: "office", label: "Office / commercial", icon: Building2 },
   { id: "airbnb", label: "Airbnb turnover", icon: BedDouble },
-  { id: "deep", label: "Move-in / out", icon: Wand2 },
+  { id: "deep", label: "Deep clean", icon: Wand2 },
 ];
 
 export const BookingHero = () => {
