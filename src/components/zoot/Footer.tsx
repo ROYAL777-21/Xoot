@@ -1,13 +1,13 @@
 const cols: { title: string; links: { label: string; href: string }[] }[] = [
   { title: "Cleaning services", links: [
     { label: "Residential cleaning", href: "/app" }, { label: "Airbnb turnovers", href: "/app" },
-    { label: "Office cleaning", href: "/app" }, { label: "Move-in / move-out", href: "/app" },
+    { label: "Office cleaning", href: "/app" }, { label: "Deep clean", href: "/app" },
   ]},
   { title: "Subscriptions & placements", links: [
     { label: "Care+ subscription", href: "/care-plus" },
     { label: "Find full-time help", href: "/care-plus" }, { label: "Pricing", href: "/care-plus" },
   ]},
-  { title: "For Zooters", links: [
+  { title: "Join Zoot", links: [
     { label: "Become a Zooter", href: "/zooter/apply" }, { label: "Zooter dashboard", href: "/zooter" },
     { label: "Training", href: "/zooter/training" }, { label: "Insurance", href: "/app/insurance" },
   ]},
@@ -41,7 +41,7 @@ export const Footer = () => (
       </div>
       <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between gap-4 text-xs text-muted-foreground">
         <p>© {new Date().getFullYear()} Zoot. All rights reserved.</p>
-        <p>Made in South Africa, for every home.</p>
+        <p>Made with care, for every home.</p>
       </div>
     </div>
   </footer>
