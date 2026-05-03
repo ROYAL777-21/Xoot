@@ -10,7 +10,7 @@ const workers = [
   { name: "Maria S.", rating: 4.95, jobs: 312, distance: "0.8 km", img: w1, tags: ["Eco-friendly", "Pet-safe"] },
   { name: "Thandi R.", rating: 4.98, jobs: 248, distance: "1.2 km", img: w2, tags: ["Airbnb turnover", "Deep clean"] },
   { name: "Aisha K.", rating: 4.92, jobs: 186, distance: "0.5 km", img: w3, tags: ["Office cleaning", "Bilingual"] },
-  { name: "Zinhle W.", rating: 4.89, jobs: 421, distance: "1.7 km", img: w4, tags: ["Move-out", "Hospitality trained"] },
+  { name: "Zinhle W.", rating: 4.89, jobs: 421, distance: "1.7 km", img: w4, tags: ["Deep clean", "Hospitality trained"] },
 ];
 
 export const NearbyWorkers = () => (
