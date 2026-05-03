@@ -16,10 +16,10 @@ const Insurance = () => {
       <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-sage-deep" /> What's covered</h2>
       <div className="grid sm:grid-cols-2 gap-4 mb-10">
         {[
-          { i: Heart, t: "Indoor cleaning", d: "Up to $5,000 per visit for accidental damage to floors, walls, furniture, and personal items." },
-          { i: Sprout, t: "Outdoor & gardening", d: "Up to $5,000 for damage during hedging, mowing, pruning, and irrigation work — including shattered glass from debris." },
-          { i: Wrench, t: "Handyman & maintenance", d: "Up to $10,000 for small repair jobs. Major plumbing/electrical require a licensed inspection (we'll route you)." },
-          { i: AlertTriangle, t: "What's not covered", d: "Pre-existing damage, items above $2,000 not declared at booking, jobs requiring permits we haven't issued." },
+          { i: Heart, t: "Indoor cleaning", d: "Up to R50 000 per visit for accidental damage to floors, walls, furniture, and personal items." },
+          { i: Sprout, t: "Deep cleaning", d: "Up to R50 000 for damage during deep cleans, move-in/out and Airbnb turnovers." },
+          { i: Wrench, t: "Office & commercial", d: "Up to R100 000 for commercial cleaning jobs. Major incidents require a licensed inspection (we'll route you)." },
+          { i: AlertTriangle, t: "What's not covered", d: "Pre-existing damage, items above R20 000 not declared at booking, jobs requiring permits we haven't issued." },
         ].map(({ i: I, t, d }) => (
           <Card key={t} className="p-5 rounded-2xl">
             <I className="h-5 w-5 text-primary mb-2" />
@@ -49,7 +49,7 @@ const Insurance = () => {
           ))}
         </div>
         <p className="text-xs text-muted-foreground mt-4">
-          On an average 7-hour booking (~$210), an established Zooter earns ~$168 per visit and ~$3,500–4,200/month working 3–5 days/week.
+          On an average 7-hour booking (~R980), an established Zooter earns ~R784 per visit and ~R15 000–R20 000/month working 3–5 days/week.
         </p>
       </Card>
 

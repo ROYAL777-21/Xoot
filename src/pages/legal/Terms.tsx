@@ -26,7 +26,7 @@ const Terms = () => (
 
       <Section n="1" title="Definitions">
         <p><strong>"Client"</strong> means the individual or household engaging a Candidate through Zoot.</p>
-        <p><strong>"Candidate"</strong> means any cleaner, nanny (Mom's Helper), or carer introduced through Zoot.</p>
+        <p><strong>"Candidate"</strong> means any cleaner or housekeeper introduced through Zoot.</p>
         <p><strong>"Placement"</strong> means the introduction and matching of a Candidate to a Client.</p>
         <p><strong>"Private Placement"</strong> means engagement of a Candidate off the Zoot platform following payment of a Placement Fee.</p>
         <p><strong>"Subscription"</strong> (Care+) means the ongoing on-platform engagement model where the Client pays a recurring monthly fee to retain a Candidate through Zoot at a self-determined rate.</p>
@@ -64,8 +64,6 @@ const Terms = () => (
         <h3 className="font-display font-bold text-foreground mt-4">5.2 Placement Fee (Private Placement only)</h3>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>R1 249 (incl. VAT)</strong> — Housekeeper</li>
-          <li><strong>R2 249 (incl. VAT)</strong> — Nanny</li>
-          <li><strong>R2 249 (incl. VAT)</strong> — Elder Carer</li>
         </ul>
         <p>Payment of the Placement Fee constitutes formal release of the Candidate from the Zoot platform for purposes of Client engagement.</p>
         <h3 className="font-display font-bold text-foreground mt-4">5.3 Care+ Subscription Fee</h3>
@@ -76,7 +74,6 @@ const Terms = () => (
         <p>Clients may set their own daily rate for Care+ Bookings. However, the minimum daily rate is:</p>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>R300</strong> for Housekeeping (indoor cleaning)</li>
-          <li><strong>R400</strong> for Nanny (Mom's Helper)</li>
         </ul>
         <p>Zoot reserves the right to update minimum rates at any time. Rates may not be set below the applicable minimum. Zoot does not deduct any percentage or commission from Care+ Booking payments. All Care+ earnings are paid 100% to the Candidate via standard weekly payout processes.</p>
       </Section>

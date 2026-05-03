@@ -25,7 +25,7 @@ export const ZooterShell = ({ children }: { children: ReactNode }) => {
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-sage shadow-warm">
             <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
           </span>
-          <span className="font-display text-2xl font-bold tracking-tight">zoot</span>
+          <span className="font-display text-2xl font-bold tracking-tight">zooter</span>
         </NavLink>
         <div className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1 mb-7 self-start border border-accent/20">
           <Sparkles className="h-3 w-3 text-sage-deep" />
