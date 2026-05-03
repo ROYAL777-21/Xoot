@@ -11,9 +11,9 @@ export const CtaBand = () => (
         <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-accent/40 blur-3xl" />
         <div className="relative grid md:grid-cols-2 gap-10 items-center">
           <div className="text-primary-foreground">
-            <span className="inline-block text-xs font-bold tracking-widest uppercase bg-primary-foreground/20 backdrop-blur rounded-full px-3 py-1 mb-5">For Cleaners</span>
+            <span className="inline-block text-xs font-bold tracking-widest uppercase bg-primary-foreground/20 backdrop-blur rounded-full px-3 py-1 mb-5">Become a Zooter</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-4">Earn on your terms with Zoot.</h2>
-            <p className="text-primary-foreground/85 text-lg max-w-md">Set your rates, choose your hours, build your client base. Established Zooters earn up to R7 500/week.</p>
+            <p className="text-primary-foreground/85 text-lg max-w-md">Set your rates, choose your hours, build your client base. Anyone who meets the requirements can join. Established Zooters earn up to R7 500/week.</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild size="lg" variant="secondary" className="rounded-full font-semibold"><Link to="/zooter/apply">Become a Zooter <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
               <Button asChild size="lg" variant="ghost" className="rounded-full text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground"><Link to="/zooter/training"><Smartphone className="mr-1 h-4 w-4" /> See training</Link></Button>

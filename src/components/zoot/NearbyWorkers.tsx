@@ -10,7 +10,7 @@ const workers = [
   { name: "Maria S.", rating: 4.95, jobs: 312, distance: "0.8 km", img: w1, tags: ["Eco-friendly", "Pet-safe"] },
   { name: "Thandi R.", rating: 4.98, jobs: 248, distance: "1.2 km", img: w2, tags: ["Airbnb turnover", "Deep clean"] },
   { name: "Aisha K.", rating: 4.92, jobs: 186, distance: "0.5 km", img: w3, tags: ["Office cleaning", "Bilingual"] },
-  { name: "Zinhle W.", rating: 4.89, jobs: 421, distance: "1.7 km", img: w4, tags: ["Move-out", "Hospitality trained"] },
+  { name: "Zinhle W.", rating: 4.89, jobs: 421, distance: "1.7 km", img: w4, tags: ["Deep clean", "Hospitality trained"] },
 ];
 
 export const NearbyWorkers = () => (
@@ -25,7 +25,7 @@ export const NearbyWorkers = () => (
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {workers.map((w) => (
-          <article key={w.name} className="group rounded-3xl bg-card border border-border overflow-hidden shadow-card hover:shadow-warm transition-all duration-500 hover:-translate-y-1">
+          <article key={w.name} className="group rounded-3xl bg-card border border-border overflow-hidden shadow-card hover:shadow-warm transition-all duration-500 hover:-translate-y-1 flex flex-col">
             <div className="relative aspect-[4/5] overflow-hidden">
               <img src={w.img} alt={`${w.name}, professional cleaner`} loading="lazy" width={640} height={640} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent" />
@@ -38,12 +38,12 @@ export const NearbyWorkers = () => (
                 <p className="text-xs opacity-90">Cleaning · {w.jobs} jobs</p>
               </div>
             </div>
-            <div className="p-4">
+            <div className="p-4 flex flex-col flex-1">
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {w.tags.map((t) => (<span key={t} className="text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">{t}</span>))}
               </div>
               <span className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" />{w.distance}</span>
-              <Button asChild className="w-full mt-3 rounded-xl" size="sm"><Link to="/app">Book {w.name.split(" ")[0]}</Link></Button>
+              <Button asChild className="w-full mt-auto rounded-xl" size="sm"><Link to="/app">Book {w.name.split(" ")[0]}</Link></Button>
             </div>
           </article>
         ))}

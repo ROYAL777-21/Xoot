@@ -198,7 +198,7 @@ const Plans = () => {
               </ul>
               <DialogFooter className="gap-2">
                 <Button variant="outline" onClick={() => setCancelStep(0)} className="rounded-full">Keep my Care+</Button>
-                <Button variant="ghost" onClick={() => setCancelStep(2)} className="text-muted-foreground">Continue cancelling</Button>
+                <Button variant="ghost" onClick={() => setCancelStep(2)} className="text-destructive hover:text-destructive hover:bg-destructive/10">Continue cancelling</Button>
               </DialogFooter>
             </>
           )}

@@ -3,6 +3,9 @@ import { BookingHero } from "@/components/zoot/BookingHero";
 import { Services } from "@/components/zoot/Services";
 import { NearbyWorkers } from "@/components/zoot/NearbyWorkers";
 import { HowItWorks } from "@/components/zoot/HowItWorks";
+import { SafetyTrust } from "@/components/zoot/SafetyTrust";
+import { BecomeZooter } from "@/components/zoot/BecomeZooter";
+import { TrustedBy } from "@/components/zoot/TrustedBy";
 import { CtaBand } from "@/components/zoot/CtaBand";
 import { Footer } from "@/components/zoot/Footer";
 
@@ -11,11 +14,14 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
-        <h1 className="sr-only">Zoot — Book trusted domestic workers and gardeners nearby</h1>
+        <h1 className="sr-only">Zoot — Premium on-demand cleaning with guaranteed reliability</h1>
         <BookingHero />
+        <TrustedBy />
         <Services />
+        <SafetyTrust />
         <NearbyWorkers />
         <HowItWorks />
+        <BecomeZooter />
         <CtaBand />
       </main>
       <Footer />

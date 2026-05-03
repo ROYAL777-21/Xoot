@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Heart, Calendar, Gift, Repeat, GraduationCap, LifeBuoy, ShieldCheck, LogOut, User } from "lucide-react";
+import { Home, Heart, Calendar, Gift, Repeat, LifeBuoy, ShieldCheck, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const nav = [
   { to: "/app", label: "Book", icon: Home, end: true },
@@ -23,12 +24,15 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen flex bg-background">
       <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card/50 p-5 sticky top-0 h-screen">
-        <NavLink to="/" className="flex items-center gap-2 mb-8">
+        <div className="flex items-center justify-between mb-8">
+          <NavLink to="/" className="flex items-center gap-2">
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm shadow-warm">
             <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
           </span>
-          <span className="font-display text-2xl font-bold tracking-tight">zoot</span>
-        </NavLink>
+            <span className="font-display text-2xl font-bold tracking-tight">zoot</span>
+          </NavLink>
+          <NotificationBell />
+        </div>
 
         <nav className="flex-1 space-y-1">
           {nav.map((n) => {

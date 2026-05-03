@@ -3,7 +3,6 @@ import { Menu } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const links = [
   { label: "Services", href: "/#services" },
@@ -43,7 +42,6 @@ export const Navbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          {user && <NotificationBell />}
           {!user && <Button asChild variant="ghost" size="sm"><Link to="/auth">Sign in</Link></Button>}
           <Button asChild size="sm" className="rounded-full px-5"><Link to={ctaTo}>{ctaLabel}</Link></Button>
         </div>

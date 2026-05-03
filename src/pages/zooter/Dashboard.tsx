@@ -66,7 +66,7 @@ const Dashboard = () => {
 
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         <Stat icon={Briefcase} label="Open job offers" value={stats.open_jobs.toString()} accent="primary" />
-        <Stat icon={Wallet} label="This week net" value={`$${stats.week_earnings.toFixed(0)}`} accent="sage" />
+        <Stat icon={Wallet} label="This week net" value={`R${stats.week_earnings.toFixed(0)}`} accent="sage" />
         <Stat icon={Star} label="Rating" value={zooter ? Number(zooter.rating).toFixed(2) : "—"} accent="primary" />
       </div>
 
