@@ -265,7 +265,17 @@ const CarePlusApply = () => {
           <div className="flex justify-between pt-4 border-t border-border">
             <Button variant="ghost" onClick={() => setStep(Math.max(1, step - 1))} disabled={step === 1}>Back</Button>
             {step < totalSteps ? (
-              <Button onClick={() => setStep(step + 1)} className="gradient-warm rounded-full">
+              <Button onClick={() => {
+                if (step === 1) {
+                  const v = schema.safeParse(form);
+                  if (!v.success) { toast.error(Object.values(v.error.flatten().fieldErrors)[0]?.[0] ?? "Please fill in all required fields"); return; }
+                }
+                if (step === 2) {
+                  if (form.days_of_week.length === 0) { toast.error("Please select at least one day"); return; }
+                  if (form.daily_pay_rate < 220) { toast.error("Minimum daily pay is R220"); return; }
+                }
+                setStep(step + 1);
+              }} className="gradient-warm rounded-full">
                 Next <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
