@@ -4,21 +4,56 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, Bell, CreditCard, Sparkles } from "lucide-react";
+import { Loader2, User, Bell, CreditCard, Sparkles, Home, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+
+type HouseholdProfile = {
+  id?: string;
+  label: string;
+  address: string;
+  pet_notes: string;
+  parking_instructions: string;
+  gate_code: string;
+  cleaning_preferences: string;
+  fragile_areas: string;
+  favourite_products: string;
+  access_notes: string;
+  is_default: boolean;
+};
+
+const defaultHousehold: HouseholdProfile = {
+  label: "Home",
+  address: "",
+  pet_notes: "",
+  parking_instructions: "",
+  gate_code: "",
+  cleaning_preferences: "",
+  fragile_areas: "",
+  favourite_products: "",
+  access_notes: "",
+  is_default: true,
+};
 
 const Profile = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>({ full_name: "", phone: "", address: "" });
+  const [household, setHousehold] = useState<HouseholdProfile>(defaultHousehold);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingHousehold, setSavingHousehold] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle().then(({ data }) => {
-      if (data) setProfile(data); setLoading(false);
+    Promise.all([
+      supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+      (supabase as any).from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
+    ]).then(([profileResult, householdResult]) => {
+      if (profileResult.data) setProfile(profileResult.data);
+      if (householdResult.data) setHousehold({ ...defaultHousehold, ...householdResult.data });
+      setLoading(false);
     });
   }, [user]);
 
@@ -30,6 +65,35 @@ const Profile = () => {
     }).eq("id", user.id);
     setSaving(false);
     if (error) toast.error(error.message); else toast.success("Profile saved");
+  };
+
+  const saveHousehold = async () => {
+    if (!user) return;
+    setSavingHousehold(true);
+    const payload = {
+      user_id: user.id,
+      label: household.label || "Home",
+      address: household.address || profile.address || null,
+      pet_notes: household.pet_notes || null,
+      parking_instructions: household.parking_instructions || null,
+      gate_code: household.gate_code || null,
+      cleaning_preferences: household.cleaning_preferences || null,
+      fragile_areas: household.fragile_areas || null,
+      favourite_products: household.favourite_products || null,
+      access_notes: household.access_notes || null,
+      is_default: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    const query = (supabase as any).from("household_profiles");
+    const { data, error } = household.id
+      ? await query.update(payload).eq("id", household.id).select("*").single()
+      : await query.insert(payload).select("*").single();
+
+    setSavingHousehold(false);
+    if (error) return toast.error(error.message);
+    setHousehold({ ...defaultHousehold, ...data });
+    toast.success("Household profile saved");
   };
 
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -53,6 +117,28 @@ const Profile = () => {
       </Card>
 
       <Card className="p-6 rounded-3xl mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Home className="h-5 w-5 text-sage-deep" />
+          <h2 className="font-display text-xl font-bold">Household profile</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-5">Save the details that make each visit smoother: pets, parking, gate access, product preferences, and fragile areas.</p>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div><Label>Profile label</Label><Input value={household.label} onChange={(e) => setHousehold({ ...household, label: e.target.value })} /></div>
+          <div><Label>Address</Label><Input value={household.address ?? ""} onChange={(e) => setHousehold({ ...household, address: e.target.value })} placeholder={profile.address || "Full address"} /></div>
+          <div><Label>Parking instructions</Label><Input value={household.parking_instructions ?? ""} onChange={(e) => setHousehold({ ...household, parking_instructions: e.target.value })} placeholder="Visitor bay, street parking, garage code" /></div>
+          <div><Label>Gate code</Label><Input value={household.gate_code ?? ""} onChange={(e) => setHousehold({ ...household, gate_code: e.target.value })} placeholder="Optional" /></div>
+          <div className="sm:col-span-2"><Label>Pet notes</Label><Textarea rows={2} value={household.pet_notes ?? ""} onChange={(e) => setHousehold({ ...household, pet_notes: e.target.value })} placeholder="Names, temperament, rooms to avoid, feeding notes" /></div>
+          <div className="sm:col-span-2"><Label>Cleaning preferences</Label><Textarea rows={2} value={household.cleaning_preferences ?? ""} onChange={(e) => setHousehold({ ...household, cleaning_preferences: e.target.value })} placeholder="Preferred order, rooms to prioritise, laundry preferences" /></div>
+          <div><Label>Fragile areas</Label><Textarea rows={2} value={household.fragile_areas ?? ""} onChange={(e) => setHousehold({ ...household, fragile_areas: e.target.value })} placeholder="Art wall, glass table, antiques" /></div>
+          <div><Label>Favourite products</Label><Textarea rows={2} value={household.favourite_products ?? ""} onChange={(e) => setHousehold({ ...household, favourite_products: e.target.value })} placeholder="Eco products, floor cleaner, no bleach" /></div>
+          <div className="sm:col-span-2"><Label>Access notes</Label><Textarea rows={2} value={household.access_notes ?? ""} onChange={(e) => setHousehold({ ...household, access_notes: e.target.value })} placeholder="Keys, concierge, alarm notes" /></div>
+        </div>
+        <Button onClick={saveHousehold} disabled={savingHousehold} className="mt-5 gradient-warm">
+          {savingHousehold ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save household"}
+        </Button>
+      </Card>
+
+      <Card className="p-6 rounded-3xl mb-6">
         <div className="flex items-center gap-2 mb-3">
           <CreditCard className="h-5 w-5 text-primary" />
           <h2 className="font-display text-xl font-bold">Payment methods</h2>
@@ -66,7 +152,7 @@ const Profile = () => {
           <Sparkles className="h-5 w-5 text-sage-deep" />
           <h2 className="font-display text-xl font-bold">Become a Zooter</h2>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">Earn 65–96% per booking. Apply, complete verification, take training.</p>
+        <p className="text-sm text-muted-foreground mb-4">Earn predictable income from recurring clients, premium homes, fair pay rules, fast support, and stronger vetting.</p>
         <Button asChild variant="outline"><Link to="/zooter/apply">Apply now</Link></Button>
       </Card>
 
@@ -75,7 +161,7 @@ const Profile = () => {
           <Bell className="h-5 w-5 text-primary" />
           <h2 className="font-display text-xl font-bold">Notifications</h2>
         </div>
-        <p className="text-sm text-muted-foreground">In-app notifications are on by default. Email and SMS settings coming soon.</p>
+        <p className="text-sm text-muted-foreground flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> In-app notifications are on by default for arrivals, changes, trust incidents, and HomeCare+ updates.</p>
       </Card>
     </div>
   );
