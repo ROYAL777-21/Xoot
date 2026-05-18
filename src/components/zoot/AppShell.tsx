@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Heart, Calendar, Gift, Repeat, LifeBuoy, ShieldCheck, LogOut, User } from "lucide-react";
+import { Home, Heart, Calendar, Gift, Repeat, LifeBuoy, ShieldCheck, LogOut, User, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -10,10 +10,12 @@ const nav = [
   { to: "/app/bookings", label: "Bookings", icon: Calendar },
   { to: "/app/favorites", label: "My Zooters", icon: Heart },
   { to: "/app/loyalty", label: "Rewards", icon: Gift },
+  { to: "/app/gifts", label: "Gift Clean", icon: Gift },
+  { to: "/app/properties", label: "Properties", icon: Building2 },
   { to: "/app/plans", label: "Plans", icon: Repeat },
   { to: "/app/profile", label: "Profile", icon: User },
   { to: "/app/support", label: "Support", icon: LifeBuoy },
-  { to: "/app/insurance", label: "Insurance", icon: ShieldCheck },
+  { to: "/app/insurance", label: "Trust Policy", icon: ShieldCheck },
 ];
 
 export const AppShell = ({ children }: { children: ReactNode }) => {

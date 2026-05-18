@@ -32,7 +32,7 @@ export const Navbar = () => {
         <nav className="hidden md:flex items-center gap-8">
           {links.map((l) => (
             <a
-              key={l.href}
+              key={`${l.href}-${l.label}`}
               href={l.href}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -60,7 +60,7 @@ export const Navbar = () => {
           <div className="container py-4 flex flex-col gap-2">
             {links.map((l) => (
               <a
-                key={l.href}
+                key={`${l.href}-${l.label}`}
                 href={l.href}
                 onClick={() => setOpen(false)}
                 className="py-2 text-sm font-medium text-muted-foreground"

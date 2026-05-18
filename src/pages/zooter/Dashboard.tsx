@@ -57,7 +57,7 @@ const Dashboard = () => {
       {!zooter && status !== "approved" && (
         <Card className="p-6 rounded-3xl gradient-warm text-primary-foreground border-0 mb-8 shadow-warm">
           <p className="font-display text-2xl font-bold mb-1">Finish verification</p>
-          <p className="text-sm opacity-90 mb-4">{status === "submitted" ? "Your application is being reviewed. We'll notify you within 48 hours." : "Upload your ID, proof of address, banking and consent to a background check."}</p>
+          <p className="text-sm opacity-90 mb-4">{status === "submitted" ? "Your application is in the trust review queue. We'll notify you when each verification area is reviewed." : "Upload your ID, proof of address, banking and consent to a background check."}</p>
           <Button asChild variant="secondary" className="rounded-full">
             <Link to="/zooter/kyc">{status === "submitted" ? "View status" : "Continue application"} <ArrowRight className="h-4 w-4 ml-1" /></Link>
           </Button>

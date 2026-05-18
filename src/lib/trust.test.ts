@@ -40,6 +40,7 @@ describe("trust helpers", () => {
     expect(requiresCompletionPhotos("airbnb")).toBe(true);
     expect(requiresCompletionPhotos("deep")).toBe(true);
     expect(requiresCompletionPhotos("premium")).toBe(true);
+    expect(requiresCompletionPhotos("moving")).toBe(true);
     expect(requiresCompletionPhotos("residential")).toBe(false);
   });
 

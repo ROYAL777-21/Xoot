@@ -14,6 +14,8 @@ import Auth from "./pages/Auth";
 import Book from "./pages/app/Book";
 import Favorites from "./pages/app/Favorites";
 import Loyalty from "./pages/app/Loyalty";
+import GiftClean from "./pages/app/GiftClean";
+import Properties from "./pages/app/Properties";
 import Plans from "./pages/app/Plans";
 import Bookings from "./pages/app/Bookings";
 import BookingDetail from "./pages/app/BookingDetail";
@@ -34,6 +36,7 @@ import ZooterEarnings from "./pages/zooter/Earnings";
 import ZooterKyc from "./pages/zooter/Kyc";
 import ZooterProfile from "./pages/zooter/Profile";
 import AdminKyc from "./pages/admin/Kyc";
+import AdminOps from "./pages/admin/Ops";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +60,8 @@ const App = () => (
             <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
             <Route path="/app/favorites" element={<RequireAuth><AppShell><Favorites /></AppShell></RequireAuth>} />
             <Route path="/app/loyalty" element={<RequireAuth><AppShell><Loyalty /></AppShell></RequireAuth>} />
+            <Route path="/app/gifts" element={<RequireAuth><AppShell><GiftClean /></AppShell></RequireAuth>} />
+            <Route path="/app/properties" element={<RequireAuth><AppShell><Properties /></AppShell></RequireAuth>} />
             <Route path="/app/plans" element={<RequireAuth><AppShell><Plans /></AppShell></RequireAuth>} />
             <Route path="/app/training" element={<RequireAuth><AppShell><Training /></AppShell></RequireAuth>} />
             <Route path="/app/support" element={<RequireAuth><AppShell><Support /></AppShell></RequireAuth>} />
@@ -74,6 +79,7 @@ const App = () => (
 
             {/* Admin */}
             <Route path="/admin/kyc" element={<RequireRole role="admin"><AdminKyc /></RequireRole>} />
+            <Route path="/admin/ops" element={<RequireRole role="admin"><AdminOps /></RequireRole>} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

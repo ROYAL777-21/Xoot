@@ -26,7 +26,7 @@ const Kyc = () => {
   const status = app?.status ?? "draft";
   const statusInfo: Record<string, { icon: any; cls: string; title: string; body: string }> = {
     draft: { icon: AlertCircle, cls: "bg-muted text-muted-foreground", title: "Application incomplete", body: "Finish all steps and submit." },
-    submitted: { icon: Clock, cls: "bg-primary/15 text-primary", title: "Under review", body: "Our trust team reviews within 48 hours." },
+    submitted: { icon: Clock, cls: "bg-primary/15 text-primary", title: "Under review", body: "Your application is in the trust review queue. Each verification area is reviewed before activation." },
     approved: { icon: ShieldCheck, cls: "bg-accent/15 text-sage-deep", title: "Verified", body: "You're cleared to take jobs." },
     rejected: { icon: AlertCircle, cls: "bg-destructive/15 text-destructive", title: "Rejected", body: app?.reviewer_notes || "Re-upload documents and resubmit." },
   };

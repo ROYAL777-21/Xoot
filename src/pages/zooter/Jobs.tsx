@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Briefcase, Calendar, MapPin, Loader2, Check, X, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
+import { canAccessSensitiveBookingData, routeNotificationChannel } from "@/lib/operations";
 
 const Jobs = () => {
   const { user } = useAuth();
@@ -16,7 +17,7 @@ const Jobs = () => {
   const load = async (zid: string) => {
     const { data } = await supabase
       .from("zooter_jobs")
-      .select("*, bookings:booking_id(id, service, scheduled_at, address, price, duration_hours, status)")
+      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, address, price, duration_hours, status, job_completed_at, cancelled_at, user_id)")
       .eq("zooter_id", zid)
       .order("offered_at", { ascending: false });
     setJobs(data ?? []);
@@ -37,6 +38,28 @@ const Jobs = () => {
     }).eq("id", jobId);
     if (!error && accept) {
       await supabase.from("bookings").update({ status: "confirmed" }).eq("id", bookingId);
+      await (supabase as any).from("booking_status_events").insert({ booking_id: bookingId, actor_id: user?.id, status: "confirmed", label: "Confirmed" });
+      await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("contractor_assigned").map((channel) => ({
+        source_table: "bookings",
+        source_id: bookingId,
+        event_type: "contractor_assigned",
+        channel,
+        owner: "Scheduling & Allocation Agent",
+        stack_tool: "Zoot in-app notification",
+        payload: { booking_id: bookingId, zooter_id: zooterId },
+        created_by: user?.id,
+      })));
+    }
+    if (!error && !accept) {
+      await (supabase as any).from("admin_review_queue").insert({
+        queue_type: "replacement",
+        subject_table: "bookings",
+        subject_id: bookingId,
+        zooter_id: zooterId,
+        booking_id: bookingId,
+        priority: "normal",
+        summary: "Contractor declined job offer; review replacement availability",
+      });
     }
     if (error) toast.error(error.message); else toast.success(accept ? "Job accepted" : "Job declined");
     if (zooterId) load(zooterId);
@@ -88,10 +111,10 @@ const Section = ({ title, jobs, respond, actions = false }: any) => (
             <Card key={j.id} className="p-5 rounded-2xl">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="min-w-0">
-                  <p className="font-display text-lg font-bold capitalize mb-1">{b.service}</p>
+                  <p className="font-display text-lg font-bold capitalize mb-1">{b.service_type ?? b.service}</p>
                   <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(b.scheduled_at).toLocaleString()}</span>
-                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {b.address || "—"}</span>
+                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {canAccessSensitiveBookingData({ scheduledAt: b.scheduled_at, status: b.status, completedAt: b.job_completed_at, cancelledAt: b.cancelled_at }) ? (b.address || "-") : "Address unlocks near the booking window"}</span>
                     <span className="inline-flex items-center gap-1"><DollarSign className="h-3 w-3" /> {formatZAR(Number(b.price))} · {b.duration_hours}h</span>
                   </div>
                 </div>

@@ -31,7 +31,7 @@ export type BookingHistoryItem = {
   scheduled_at: string;
 };
 
-export const photoRequiredServiceTypes = ["airbnb", "deep", "premium"] as const;
+export const photoRequiredServiceTypes = ["airbnb", "deep", "premium", "moving"] as const;
 
 export const trustBadgeLabels: Record<TrustBadgeKind, string> = {
   verified: "Verified",

@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Check, Loader2, Sparkles, Crown, Gift, Star, Users, AlertTriangle, ShieldCheck, CalendarClock, HeartHandshake } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
+import { buildPendingPaymentRecord, routeNotificationChannel } from "@/lib/operations";
 
 type Plan = {
   id: string;
@@ -42,7 +43,7 @@ const contractorValue = [
 const customerValue = [
   "Booking protection",
   "Support and replacement cover",
-  "Reliability guarantees",
+  "Reliability signals and arrival tracking",
   "Easy scheduling and saved home preferences",
   "HomeCare+ benefits and loyalty rewards",
 ];
@@ -51,6 +52,7 @@ const Plans = () => {
   const { user } = useAuth();
   const [plan, setPlan] = useState<Plan | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [gam, setGam] = useState<{ positive_reviews_count: number; successful_referrals_count: number; free_bookings_earned: number; free_bookings_redeemed: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -59,8 +61,9 @@ const Plans = () => {
     const { data: p } = await supabase.from("subscription_plans").select("*").order("monthly_price").limit(1).maybeSingle();
     setPlan(p as Plan | null);
     if (user) {
-      const { data: s } = await supabase.from("user_subscriptions").select("id, plan_id").eq("user_id", user.id).eq("status", "active").maybeSingle();
+      const { data: s } = await (supabase as any).from("user_subscriptions").select("id, plan_id, status").eq("user_id", user.id).in("status", ["active", "pending_payment"]).maybeSingle();
       setActiveId(s?.plan_id ?? null);
+      setSubscriptionStatus(s?.status ?? null);
       const { data: g } = await supabase.from("gamification_progress").select("*").eq("user_id", user.id).maybeSingle();
       if (g) setGam(g);
       else {
@@ -75,16 +78,55 @@ const Plans = () => {
 
   const subscribe = async () => {
     if (!user || !plan) return;
-    const { error } = await supabase.from("user_subscriptions").insert({ user_id: user.id, plan_id: plan.id, status: "active" });
+    const { data: payment, error: paymentError } = await (supabase as any).from("payment_records").insert({
+      ...buildPendingPaymentRecord({ userId: user.id, amount: Number(plan.monthly_price), kind: "homecare_membership" }),
+      meta: { plan_id: plan.id, membership_name: "HomeCare+" },
+    }).select("id").single();
+    if (paymentError) return toast.error(paymentError.message);
+
+    const { error } = await (supabase as any).from("user_subscriptions").insert({ user_id: user.id, plan_id: plan.id, status: "pending_payment" });
     if (error) return toast.error(error.message);
+    await (supabase as any).from("admin_review_queue").insert({
+      queue_type: "payment",
+      subject_table: "payment_records",
+      subject_id: payment?.id,
+      user_id: user.id,
+      priority: "normal",
+      summary: "HomeCare+ membership payment pending confirmation",
+    });
+    await (supabase as any).from("integration_outbox").insert([
+      ...routeNotificationChannel("homecare_summary").map((channel) => ({
+        source_table: "user_subscriptions",
+        source_id: payment?.id,
+        event_type: "homecare_membership_requested",
+        channel,
+        owner: channel === "brevo_email" ? "Retention & Loyalty Agent" : "Customer Support Agent",
+        stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
+        payload: { plan_id: plan.id, payment_record_id: payment?.id },
+        created_by: user.id,
+      })),
+      {
+        source_table: "payment_records",
+        source_id: payment?.id,
+        event_type: "homecare_payment_authorisation_requested",
+        channel: "payment_provider",
+        owner: "Finance Operations",
+        stack_tool: "Payment provider queue",
+        payload: { payment_record_id: payment?.id, amount: Number(plan.monthly_price), currency: "ZAR" },
+        status: "needs_approval",
+        approval_required: true,
+        failure_mode: "Keep membership pending until provider callback or admin confirmation exists.",
+        created_by: user.id,
+      },
+    ]);
     await supabase.from("notifications").insert({
       user_id: user.id,
       kind: "homecare_plus_active",
-      title: "Welcome to HomeCare+",
-      body: "Priority support, favourite contractors, schedule lock, and loyalty rewards are live.",
+      title: "HomeCare+ request received",
+      body: "Your membership is pending payment confirmation. Priority support and schedule lock activate after confirmation.",
       link: "/app",
     });
-    toast.success("HomeCare+ activated");
+    toast.success("HomeCare+ request recorded");
     refresh();
   };
 
@@ -103,7 +145,8 @@ const Plans = () => {
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (!plan) return <div className="grid place-items-center py-20 text-muted-foreground">No subscription plan available.</div>;
 
-  const isActive = activeId === plan.id;
+  const isActive = activeId === plan.id && subscriptionStatus === "active";
+  const isPending = activeId === plan.id && subscriptionStatus === "pending_payment";
   const reviewsToFreeClean = Math.max(0, 10 - (gam?.positive_reviews_count ?? 0));
   const referralsToFreeClean = Math.max(0, 5 - (gam?.successful_referrals_count ?? 0));
   const freeCleans = (gam?.free_bookings_earned ?? 0) - (gam?.free_bookings_redeemed ?? 0);
@@ -131,7 +174,7 @@ const Plans = () => {
           <ul className="space-y-3 mb-7">
             {homeCareBenefits.map((perk) => <li key={perk} className="flex items-start gap-3 text-sm"><span className="grid place-items-center h-5 w-5 rounded-full bg-sage/15 shrink-0 mt-0.5"><Check className="h-3 w-3 text-sage-deep" /></span>{perk}</li>)}
           </ul>
-          {isActive ? <Button onClick={() => setCancelOpen(true)} variant="outline" className="w-full rounded-2xl h-12">Cancel HomeCare+</Button> : <Button onClick={subscribe} className="w-full rounded-2xl h-14 gradient-warm shadow-warm font-semibold text-base"><Crown className="h-4 w-4 mr-2" /> Activate HomeCare+</Button>}
+          {isActive ? <Button onClick={() => setCancelOpen(true)} variant="outline" className="w-full rounded-2xl h-12">Cancel HomeCare+</Button> : isPending ? <Button disabled className="w-full rounded-2xl h-14">Pending payment confirmation</Button> : <Button onClick={subscribe} className="w-full rounded-2xl h-14 gradient-warm shadow-warm font-semibold text-base"><Crown className="h-4 w-4 mr-2" /> Request HomeCare+</Button>}
           <p className="text-xs text-muted-foreground mt-4 flex items-center gap-1.5"><ShieldCheck className="h-3 w-3" /> Leaving means losing protection, easy scheduling, and favourite-contractor continuity.</p>
         </Card>
 

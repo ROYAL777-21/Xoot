@@ -4,12 +4,12 @@ const cols: { title: string; links: { label: string; href: string }[] }[] = [
     { label: "Office cleaning", href: "/app" }, { label: "Deep clean", href: "/app" },
   ]},
   { title: "Subscriptions & placements", links: [
-    { label: "Care+ subscription", href: "/care-plus" },
+    { label: "HomeCare+ membership", href: "/care-plus" },
     { label: "Find full-time help", href: "/care-plus" }, { label: "Pricing", href: "/care-plus" },
   ]},
   { title: "Join Zoot", links: [
     { label: "Become a Zooter", href: "/zooter/apply" }, { label: "Zooter dashboard", href: "/zooter" },
-    { label: "Training", href: "/zooter/training" }, { label: "Insurance", href: "/app/insurance" },
+    { label: "Training", href: "/zooter/training" }, { label: "Trust policy", href: "/app/insurance" },
   ]},
   { title: "Legal & support", links: [
     { label: "Terms & Conditions", href: "/legal/terms" }, { label: "Privacy", href: "/legal/privacy" },
@@ -28,7 +28,7 @@ export const Footer = () => (
             </span>
             <span className="font-display text-2xl font-bold">zoot</span>
           </div>
-          <p className="text-sm text-muted-foreground max-w-xs">Trusted house, office and Airbnb cleaning in South Africa. Vetted, rated and insured.</p>
+          <p className="text-sm text-muted-foreground max-w-xs">Premium home, office and Airbnb cleaning in Zoot launch suburbs with vetting, training and trust workflows.</p>
         </div>
         {cols.map((c) => (
           <div key={c.title}>
