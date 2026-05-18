@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ZooterCard, Zooter } from "@/components/zoot/ZooterCard";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +36,8 @@ const allowsMultipleWorkers = (s: string) => ["airbnb", "office", "deep", "premi
 
 const Book = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const preferredZooterId = searchParams.get("zooter");
   const [step, setStep] = useState(0);
   const [active, setActive] = useState<string>("residential");
   const [frequency, setFrequency] = useState<"one_time" | "repeat">("one_time");
@@ -97,10 +101,12 @@ const Book = () => {
     setLoadingZooters(true);
     supabase.from("zooters").select("*").eq("active", true).limit(30).then(({ data }) => {
       const ranked = sortZootersForMarketplace((data ?? []) as Zooter[]);
+      const preferred = preferredZooterId ? ranked.find((z) => z.id === preferredZooterId) : null;
       setZooters(ranked);
+      if (preferred) setPicked((current) => current.some((z) => z.id === preferred.id) ? current : [preferred]);
       setLoadingZooters(false);
     });
-  }, [step]);
+  }, [step, preferredZooterId]);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -227,7 +233,19 @@ const Book = () => {
       {step === 2 && (
         <div className="space-y-5">
           <div><h2 className="font-display text-2xl font-bold">Choose your Zooter{maxPick > 1 ? "s" : ""}</h2><p className="text-sm text-muted-foreground">{picked.length}/{maxPick} selected - low reliability contractors are automatically ranked lower</p></div>
-          {loadingZooters ? <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div> : <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{zooters.map((z) => <div key={z.id} className={picked.some((p) => p.id === z.id) ? "ring-2 ring-primary rounded-3xl" : ""}><ZooterCard z={z} onBook={() => selectWorker(z)} /></div>)}</div>}
+          {loadingZooters ? (
+            <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+          ) : zooters.length === 0 ? (
+            <Card className="rounded-3xl p-8 text-center">
+              <ShieldCheck className="h-8 w-8 text-sage-deep mx-auto mb-3" />
+              <h3 className="font-display text-xl font-bold mb-2">No approved Zooters available yet</h3>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                Zooters appear here only after verification, training, and activation. Please try another time or contact support for launch-area availability.
+              </p>
+            </Card>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{zooters.map((z) => <div key={z.id} className={picked.some((p) => p.id === z.id) ? "ring-2 ring-primary rounded-3xl" : ""}><ZooterCard z={z} onBook={() => selectWorker(z)} /></div>)}</div>
+          )}
           <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(1)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={() => validateStep() && setStep(3)} disabled={picked.length === 0} className="flex-1 rounded-2xl h-12 gradient-warm font-semibold">Review & Pay <ArrowRight className="h-4 w-4 ml-1" /></Button></div>
         </div>
       )}

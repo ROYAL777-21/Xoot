@@ -253,7 +253,7 @@ const CarePlusApply = () => {
                 <p className="text-sm font-semibold mb-1">Non-refundable admin fee: R399</p>
                 <p className="text-xs text-muted-foreground">
                   This covers expert sourcing, vetting, and coordination of interviews and trials.
-                  Payment collection is mocked for now — submit and a placement agent will follow up.
+                  Online payment collection is not connected in this build; submit and a placement agent will follow up before any fee is collected.
                 </p>
               </div>
               <p className="text-xs text-muted-foreground">

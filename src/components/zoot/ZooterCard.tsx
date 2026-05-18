@@ -42,11 +42,11 @@ const imgMap: Record<string, string> = {
   "/src/assets/worker-3.jpg": w3,
   "/src/assets/worker-4.jpg": w4,
 };
-export const resolvePhoto = (p?: string | null) => (p && imgMap[p]) || w1;
+export const resolvePhoto = (p?: string | null) => (p && (imgMap[p] || p)) || w1;
 
 const fmtPct = (value?: number | null) => `${Math.round(Number(value ?? 0))}%`;
 
-export const ZooterCard = ({ z, onBook }: { z: Zooter; onBook?: (z: Zooter) => void }) => {
+export const ZooterCard = ({ z, onBook, actionLabel }: { z: Zooter; onBook?: (z: Zooter) => void; actionLabel?: string }) => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const fav = isFavorite(z.id);
   const badges = deriveZooterBadges(z);
@@ -106,7 +106,7 @@ export const ZooterCard = ({ z, onBook }: { z: Zooter; onBook?: (z: Zooter) => v
           <span className="font-display font-bold">{formatZAR(z.hourly_rate)}<span className="text-xs font-medium text-muted-foreground">/hr</span></span>
           {(z.repeat_client_count ?? 0) > 0 && <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary"><RotateCcw className="h-3 w-3" /> Repeat favourite</span>}
         </div>
-        <Button onClick={() => onBook?.(z)} className="w-full rounded-xl" size="sm">Book {firstName} Again</Button>
+        <Button onClick={() => onBook?.(z)} className="w-full rounded-xl" size="sm">{actionLabel ?? `Book ${firstName}`}</Button>
       </div>
     </article>
   );

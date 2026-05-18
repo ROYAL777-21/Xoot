@@ -96,7 +96,7 @@ const Favorites = () => {
             const firstName = z.name.split(" ")[0];
             return (
               <div key={z.id} className="space-y-2">
-                <ZooterCard z={{ ...z, repeat_client_count: z.repeat_client_count ?? row.repeat_bookings_count }} onBook={() => bookAgain(z)} />
+                <ZooterCard z={{ ...z, repeat_client_count: z.repeat_client_count ?? row.repeat_bookings_count }} onBook={() => bookAgain(z)} actionLabel={`Book ${firstName} Again`} />
                 <div className="grid grid-cols-2 gap-2">
                   <Button variant="outline" size="sm" className="rounded-xl" onClick={() => bookAgain(z)}>Book {firstName} Again</Button>
                   <Button variant="outline" size="sm" className="rounded-xl" onClick={() => markKind(z.id, "preferred_team")}>Preferred Team</Button>

@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Calendar, MapPin, Loader2, Check, X, DollarSign } from "lucide-react";
 import { toast } from "sonner";
+import { formatZAR } from "@/lib/format";
 
 const Jobs = () => {
   const { user } = useAuth();
@@ -91,7 +92,7 @@ const Section = ({ title, jobs, respond, actions = false }: any) => (
                   <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(b.scheduled_at).toLocaleString()}</span>
                     <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {b.address || "—"}</span>
-                    <span className="inline-flex items-center gap-1"><DollarSign className="h-3 w-3" /> ${Number(b.price).toFixed(0)} · {b.duration_hours}h</span>
+                    <span className="inline-flex items-center gap-1"><DollarSign className="h-3 w-3" /> {formatZAR(Number(b.price))} · {b.duration_hours}h</span>
                   </div>
                 </div>
                 {actions && (

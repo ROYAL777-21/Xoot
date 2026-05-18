@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Upload, ShieldCheck, Star, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
+import { resolvePhoto } from "@/components/zoot/ZooterCard";
 import { deriveZooterBadges } from "@/lib/trust";
 
 const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
@@ -80,7 +81,7 @@ const Profile = () => {
 
       <div className="grid lg:grid-cols-[280px_1fr] gap-6">
         <Card className="p-6 rounded-3xl h-fit">
-          <img src={zooter.photo_url || "/placeholder.svg"} alt="" className="h-32 w-32 rounded-3xl object-cover bg-muted mb-4" />
+          <img src={resolvePhoto(zooter.photo_url)} alt="" className="h-32 w-32 rounded-3xl object-cover bg-muted mb-4" />
           <label className="cursor-pointer inline-flex mb-5"><input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} /><span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-sm font-medium"><Upload className="h-4 w-4" /> Change photo</span></label>
           <TrustBadges badges={badges} limit={6} />
           <div className="grid grid-cols-2 gap-2 mt-5 text-center">
