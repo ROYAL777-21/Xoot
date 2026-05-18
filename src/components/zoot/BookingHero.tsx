@@ -21,7 +21,7 @@ export const BookingHero = () => {
   const { user } = useAuth();
 
   const startBooking = () => {
-    if (!user) { navigate("/auth", { state: { from: { pathname: "/app" } } }); return; }
+    if (!user) { navigate("/preview"); return; }
     navigate("/app");
   };
 
@@ -71,7 +71,7 @@ export const BookingHero = () => {
                 </div>
               </div>
               <Button size="lg" onClick={startBooking} className="rounded-2xl h-14 text-base font-semibold gradient-warm hover:opacity-95 shadow-warm group">
-                {user ? "Find a cleaner nearby" : "Sign up to book"}
+                {user ? "Find a cleaner nearby" : "Preview booking flow"}
                 <ArrowRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
               <p className="text-xs text-muted-foreground text-center">See live pricing once you choose a Zooter — no surprises.</p>

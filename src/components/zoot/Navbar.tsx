@@ -6,7 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const links = [
   { label: "Services", href: "/#services" },
-  { label: "Care+", href: "/care-plus" },
+  { label: "Preview app", href: "/preview" },
+  { label: "HomeCare+", href: "/care-plus" },
   { label: "Find full-time help", href: "/care-plus" },
   { label: "How it works", href: "/#how" },
   { label: "Become a Zooter", href: "/zooter/apply" },
@@ -15,8 +16,8 @@ const links = [
 export const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
-  const ctaTo = user ? "/app" : "/auth";
-  const ctaLabel = user ? "Open app" : "Get started";
+  const ctaTo = user ? "/app" : "/preview";
+  const ctaLabel = user ? "Open app" : "Preview app";
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">

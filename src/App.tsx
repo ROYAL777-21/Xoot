@@ -10,6 +10,7 @@ import { ZooterShell } from "@/components/zooter/ZooterShell";
 import { RequireRole } from "@/components/RequireRole";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Preview from "./pages/Preview";
 import Auth from "./pages/Auth";
 import Book from "./pages/app/Book";
 import Favorites from "./pages/app/Favorites";
@@ -46,6 +47,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/preview" element={<Preview />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/care-plus" element={<CarePlus />} />
             <Route path="/care-plus/apply" element={<RequireAuth><CarePlusApply /></RequireAuth>} />
