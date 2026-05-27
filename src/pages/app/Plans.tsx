@@ -4,48 +4,52 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Check, Loader2, Sparkles, Crown, Gift, Star, Users, AlertTriangle, ShieldCheck, CalendarClock, HeartHandshake } from "lucide-react";
+import { CalendarClock, Check, Crown, Heart, Home, Loader2, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { buildPendingPaymentRecord, routeNotificationChannel } from "@/lib/operations";
+import { haptic } from "@/lib/haptics";
+import { carePlusPlan, mockFavouriteZooter, mockHomeMemoryProfile, mockZootCredBalance } from "@/data/care-plus";
 
 type Plan = {
   id: string;
   name: string;
   cadence: string;
-  hours_per_visit: number;
   monthly_price: number;
-  savings_pct: number;
-  discount_pct: number;
-  perks: string[];
-  popular: boolean;
 };
 
-const homeCareBenefits = [
-  "Priority support",
-  "Favourite contractors and preferred team booking",
-  "Lower service fees on on-demand bookings",
-  "Recurring schedule lock",
-  "Emergency booking priority",
-  "Free cancellation windows",
-  "Loyalty rewards and birthday perks",
-  "Seasonal home-care tips",
+const carePlusHighlights = [
+  "Home Memory for pets, access, parking, fragile areas, allergies and product preferences",
+  `Favourite Zooter rebooking with Book ${mockFavouriteZooter.name} again`,
+  "Earlier access to high-demand slots and recurring schedules",
+  "Priority replacement support when a Zooter becomes unavailable",
+  "R30 monthly add-on credit for completed bookings",
+  "1.5x ZootCred on completed bookings",
+  "Smart home reminders and property profiles",
+  "Priority support for booking issues, cancellations and service concerns",
 ];
 
-const contractorValue = [
-  "Guaranteed client flow",
-  "Verified badge and public trust signals",
-  "Ratings, reliability score, and repeat-client count",
-  "Priority algorithm ranking for strong performance",
-  "Recurring schedules and performance bonuses",
-];
-
-const customerValue = [
-  "Booking protection",
-  "Support and replacement cover",
-  "Reliability signals and arrival tracking",
-  "Easy scheduling and saved home preferences",
-  "HomeCare+ benefits and loyalty rewards",
+const valueCards = [
+  {
+    title: "Memory",
+    body: "Your home notes travel with the booking, from pets and parking to room priorities and product preferences.",
+    icon: Home,
+  },
+  {
+    title: "Continuity",
+    body: `Save a trusted Zooter and rebook with a personal action like Book ${mockFavouriteZooter.name} again.`,
+    icon: Heart,
+  },
+  {
+    title: "Priority",
+    body: "Earlier slot access, priority support handling and prioritised replacement matching without unsupported guarantees.",
+    icon: CalendarClock,
+  },
+  {
+    title: "Loyalty",
+    body: `Earn ${mockZootCredBalance.multiplier}x ZootCred and use a R${mockZootCredBalance.monthlyAddOnCreditZar} monthly add-on credit with completed bookings.`,
+    icon: WalletCards,
+  },
 ];
 
 const Plans = () => {
@@ -53,7 +57,6 @@ const Plans = () => {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
-  const [gam, setGam] = useState<{ positive_reviews_count: number; successful_referrals_count: number; free_bookings_earned: number; free_bookings_redeemed: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelOpen, setCancelOpen] = useState(false);
 
@@ -64,12 +67,6 @@ const Plans = () => {
       const { data: s } = await (supabase as any).from("user_subscriptions").select("id, plan_id, status").eq("user_id", user.id).in("status", ["active", "pending_payment"]).maybeSingle();
       setActiveId(s?.plan_id ?? null);
       setSubscriptionStatus(s?.status ?? null);
-      const { data: g } = await supabase.from("gamification_progress").select("*").eq("user_id", user.id).maybeSingle();
-      if (g) setGam(g);
-      else {
-        await supabase.from("gamification_progress").insert({ user_id: user.id });
-        setGam({ positive_reviews_count: 0, successful_referrals_count: 0, free_bookings_earned: 0, free_bookings_redeemed: 0 });
-      }
     }
     setLoading(false);
   };
@@ -78,27 +75,28 @@ const Plans = () => {
 
   const subscribe = async () => {
     if (!user || !plan) return;
+    haptic("impact");
     const { data: payment, error: paymentError } = await (supabase as any).from("payment_records").insert({
       ...buildPendingPaymentRecord({ userId: user.id, amount: Number(plan.monthly_price), kind: "homecare_membership" }),
-      meta: { plan_id: plan.id, membership_name: "HomeCare+" },
+      meta: { plan_id: plan.id, membership_name: "Care+" },
     }).select("id").single();
-    if (paymentError) return toast.error(paymentError.message);
+    if (paymentError) { haptic("warning"); return toast.error(paymentError.message); }
 
     const { error } = await (supabase as any).from("user_subscriptions").insert({ user_id: user.id, plan_id: plan.id, status: "pending_payment" });
-    if (error) return toast.error(error.message);
+    if (error) { haptic("warning"); return toast.error(error.message); }
     await (supabase as any).from("admin_review_queue").insert({
       queue_type: "payment",
       subject_table: "payment_records",
       subject_id: payment?.id,
       user_id: user.id,
       priority: "normal",
-      summary: "HomeCare+ membership payment pending confirmation",
+      summary: "Care+ membership payment pending confirmation",
     });
     await (supabase as any).from("integration_outbox").insert([
       ...routeNotificationChannel("homecare_summary").map((channel) => ({
         source_table: "user_subscriptions",
         source_id: payment?.id,
-        event_type: "homecare_membership_requested",
+        event_type: "care_plus_membership_requested",
         channel,
         owner: channel === "brevo_email" ? "Retention & Loyalty Agent" : "Customer Support Agent",
         stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
@@ -108,7 +106,7 @@ const Plans = () => {
       {
         source_table: "payment_records",
         source_id: payment?.id,
-        event_type: "homecare_payment_authorisation_requested",
+        event_type: "care_plus_payment_authorisation_requested",
         channel: "payment_provider",
         owner: "Finance Operations",
         stack_tool: "Payment provider queue",
@@ -122,11 +120,12 @@ const Plans = () => {
     await supabase.from("notifications").insert({
       user_id: user.id,
       kind: "homecare_plus_active",
-      title: "HomeCare+ request received",
-      body: "Your membership is pending payment confirmation. Priority support and schedule lock activate after confirmation.",
+      title: "Care+ request received",
+      body: "Your membership is pending payment confirmation. Home Memory, priority support and ZootCred boost activate after confirmation.",
       link: "/app",
     });
-    toast.success("HomeCare+ request recorded");
+    haptic("success");
+    toast.success("Care+ request recorded");
     refresh();
   };
 
@@ -135,88 +134,101 @@ const Plans = () => {
     const { data: sub } = await supabase.from("user_subscriptions").select("id").eq("user_id", user.id).eq("plan_id", activeId).eq("status", "active").maybeSingle();
     if (!sub) return;
     const { error } = await supabase.from("user_subscriptions").update({ status: "cancelled" }).eq("id", sub.id);
-    if (error) return toast.error(error.message);
-    await supabase.from("notifications").insert({ user_id: user.id, kind: "homecare_plus_cancelled", title: "HomeCare+ cancelled", body: "Your membership has ended. Your saved home profile remains available." });
+    if (error) { haptic("warning"); return toast.error(error.message); }
+    await supabase.from("notifications").insert({ user_id: user.id, kind: "homecare_plus_cancelled", title: "Care+ cancelled", body: "Your membership has ended. Your saved home profile remains available." });
     setCancelOpen(false);
-    toast("HomeCare+ cancelled");
+    haptic("success");
+    toast("Care+ cancelled");
     refresh();
   };
 
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-  if (!plan) return <div className="grid place-items-center py-20 text-muted-foreground">No subscription plan available.</div>;
+  if (!plan) return <div className="grid place-items-center py-20 text-muted-foreground">No Care+ plan available.</div>;
 
   const isActive = activeId === plan.id && subscriptionStatus === "active";
   const isPending = activeId === plan.id && subscriptionStatus === "pending_payment";
-  const reviewsToFreeClean = Math.max(0, 10 - (gam?.positive_reviews_count ?? 0));
-  const referralsToFreeClean = Math.max(0, 5 - (gam?.successful_referrals_count ?? 0));
-  const freeCleans = (gam?.free_bookings_earned ?? 0) - (gam?.free_bookings_redeemed ?? 0);
 
   return (
-    <div className="container py-8 lg:py-12 max-w-6xl">
-      <div className="relative mb-10 rounded-[2.5rem] overflow-hidden gradient-warm p-10 md:p-16 shadow-warm text-primary-foreground">
-        <div className="relative max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/20 backdrop-blur px-4 py-1.5 mb-5">
-            <Crown className="h-3.5 w-3.5" />
-            <span className="text-xs font-bold uppercase tracking-wider">HomeCare+ membership</span>
+    <div className="container max-w-6xl py-8 lg:py-12">
+      <div className="relative mb-10 overflow-hidden rounded-[2.5rem] bg-[#faf4e8] p-8 shadow-warm dark:bg-card md:p-14">
+        <div className="relative grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-center">
+          <div>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-primary">
+              <Crown className="h-3.5 w-3.5" />
+              <span className="text-xs font-bold uppercase tracking-wider">Care+ membership</span>
+            </div>
+            <h1 className="font-display text-5xl font-bold tracking-tight md:text-6xl">Care+ keeps your home ready.</h1>
+            <p className="mt-4 max-w-2xl text-lg text-muted-foreground">Save your home preferences, rebook your favourite Zooter, earn boosted ZootCred, and get priority support when your home-care plans need attention.</p>
           </div>
-          <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tight mb-4">Convenience continuity for your home.</h1>
-          <p className="text-lg opacity-95 max-w-2xl">HomeCare+ turns Zoot into your saved home-care ecosystem: trusted people, protected bookings, recurring rhythms, and lower-friction support.</p>
+          <Card className="rounded-3xl border-border/70 bg-card/95 p-6 shadow-card">
+            <p className="text-sm font-semibold text-sage-deep">Zoot Care+</p>
+            <div className="mt-2"><span className="font-display text-6xl font-bold">{formatZAR(plan.monthly_price)}</span><span className="text-muted-foreground">/month</span></div>
+            <p className="mt-3 text-sm text-muted-foreground">A household reliability, memory, priority and loyalty layer.</p>
+            {isActive ? (
+              <Button onClick={() => { haptic("selection"); setCancelOpen(true); }} variant="outline" className="mt-6 h-12 w-full rounded-2xl">Cancel Care+</Button>
+            ) : isPending ? (
+              <Button disabled className="mt-6 h-12 w-full rounded-2xl">Pending payment confirmation</Button>
+            ) : (
+              <Button onClick={subscribe} className="mt-6 h-12 w-full rounded-2xl gradient-warm font-semibold shadow-warm"><Crown className="mr-2 h-4 w-4" /> Join Care+ for R99/month</Button>
+            )}
+          </Card>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_0.9fr] gap-6 mb-10">
-        <Card className={`relative p-8 rounded-3xl border-2 ${isActive ? "border-sage-deep" : "border-primary"} shadow-warm`}>
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><Sparkles className="h-3 w-3" /> Membership ecosystem</span>
-          <h2 className="font-display text-3xl font-bold">HomeCare+</h2>
-          <p className="text-sm text-muted-foreground capitalize mb-5">{plan.cadence} home-care continuity</p>
-          <div className="mb-1"><span className="font-display text-6xl font-bold">{formatZAR(plan.monthly_price)}</span><span className="text-muted-foreground">/month</span></div>
-          <p className="text-sm text-sage-deep font-semibold mb-6">{plan.discount_pct}% off every on-demand booking plus priority care</p>
-          <ul className="space-y-3 mb-7">
-            {homeCareBenefits.map((perk) => <li key={perk} className="flex items-start gap-3 text-sm"><span className="grid place-items-center h-5 w-5 rounded-full bg-sage/15 shrink-0 mt-0.5"><Check className="h-3 w-3 text-sage-deep" /></span>{perk}</li>)}
-          </ul>
-          {isActive ? <Button onClick={() => setCancelOpen(true)} variant="outline" className="w-full rounded-2xl h-12">Cancel HomeCare+</Button> : isPending ? <Button disabled className="w-full rounded-2xl h-14">Pending payment confirmation</Button> : <Button onClick={subscribe} className="w-full rounded-2xl h-14 gradient-warm shadow-warm font-semibold text-base"><Crown className="h-4 w-4 mr-2" /> Request HomeCare+</Button>}
-          <p className="text-xs text-muted-foreground mt-4 flex items-center gap-1.5"><ShieldCheck className="h-3 w-3" /> Leaving means losing protection, easy scheduling, and favourite-contractor continuity.</p>
-        </Card>
-
-        <Card className="p-8 rounded-3xl bg-gradient-to-br from-accent-soft via-card to-card border-accent/30">
-          <div className="flex items-center gap-2 mb-1"><Gift className="h-5 w-5 text-sage-deep" /><h3 className="font-display text-2xl font-bold">Earn free cleans</h3></div>
-          <p className="text-sm text-muted-foreground mb-6">HomeCare+ rewards good habits and referrals.</p>
-          <div className="space-y-4">
-            <ProgressLine icon={Star} label="10 reviews above 4/5 stars" value={gam?.positive_reviews_count ?? 0} max={10} suffix={`${reviewsToFreeClean} more`} />
-            <ProgressLine icon={Users} label="5 successful referrals" value={gam?.successful_referrals_count ?? 0} max={5} suffix={`${referralsToFreeClean} more`} />
-          </div>
-          <div className="mt-6 rounded-2xl bg-card border border-border p-4 flex items-center justify-between"><div><p className="text-xs text-muted-foreground">Free cleans available</p><p className="font-display text-3xl font-bold">{freeCleans}</p></div><Crown className="h-8 w-8 text-primary" /></div>
-        </Card>
+      <div className="mb-8 grid gap-4 md:grid-cols-4">
+        {valueCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <Card key={card.title} className="rounded-3xl p-5 shadow-card">
+              <div className="mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary"><Icon className="h-5 w-5" /></div>
+              <h2 className="font-display text-2xl font-bold">{card.title}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{card.body}</p>
+            </Card>
+          );
+        })}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-5">
-        <ValueCard icon={CalendarClock} title="What customers keep on-platform" items={customerValue} />
-        <ValueCard icon={HeartHandshake} title="What contractors build on-platform" items={contractorValue} />
+      <div className="grid gap-6 lg:grid-cols-[1fr_0.85fr]">
+        <Card className="rounded-3xl p-6 shadow-card">
+          <div className="mb-5 flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><h2 className="font-display text-2xl font-bold">What Care+ includes</h2></div>
+          <ul className="space-y-3">
+            {carePlusHighlights.map((perk) => <li key={perk} className="flex items-start gap-3 text-sm"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-sage/15"><Check className="h-3 w-3 text-sage-deep" /></span>{perk}</li>)}
+          </ul>
+        </Card>
+
+        <Card className="rounded-3xl border-accent/30 bg-gradient-to-br from-accent-soft via-card to-card p-6">
+          <div className="mb-5 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-sage-deep" /><h2 className="font-display text-2xl font-bold">Home Memory preview</h2></div>
+          <div className="space-y-3 text-sm">
+            <MemoryRow label="Pets" value={mockHomeMemoryProfile.petNotes.join(", ")} />
+            <MemoryRow label="Room priorities" value={mockHomeMemoryProfile.roomPriorities.join(", ")} />
+            <MemoryRow label="Fragile areas" value={mockHomeMemoryProfile.fragileAreas.join(", ")} />
+            <MemoryRow label="Add-ons" value={mockHomeMemoryProfile.favouriteAddOns.join(", ")} />
+          </div>
+          <p className="mt-5 text-xs text-muted-foreground">Sensitive access notes stay inside the authenticated app and should not be exposed in push notifications, SMS or email.</p>
+        </Card>
       </div>
 
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
-        <DialogContent className="rounded-3xl max-w-md">
-          <DialogHeader><DialogTitle className="font-display text-2xl flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-primary" /> Cancel HomeCare+?</DialogTitle><DialogDescription>You will lose priority support, favourite-contractor continuity, schedule lock, lower service fees, and loyalty boosts.</DialogDescription></DialogHeader>
-          <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setCancelOpen(false)} className="rounded-full">Keep HomeCare+</Button><Button variant="destructive" onClick={cancel} className="rounded-full">Cancel membership</Button></DialogFooter>
+        <DialogContent className="max-w-md rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display text-2xl"><Crown className="h-5 w-5 text-primary" /> Cancel Care+?</DialogTitle>
+            <DialogDescription>You will lose Care+ priority handling, boosted ZootCred, monthly add-on credit and saved membership prompts. Your saved home profile remains available.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { haptic("selection"); setCancelOpen(false); }} className="rounded-full">Keep Care+</Button>
+            <Button variant="destructive" onClick={cancel} className="rounded-full">Cancel membership</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 };
 
-const ProgressLine = ({ icon: Icon, label, value, max, suffix }: any) => (
-  <div>
-    <div className="flex items-center gap-2 mb-1"><Icon className="h-4 w-4 text-primary" /><span className="text-sm font-semibold">{label}</span></div>
-    <div className="h-2 rounded-full bg-muted overflow-hidden"><div className="h-full gradient-warm transition-all duration-500" style={{ width: `${Math.min(100, (value / max) * 100)}%` }} /></div>
-    <p className="text-xs text-muted-foreground mt-1">{value} / {max} - {suffix}</p>
+const MemoryRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="rounded-2xl bg-background/75 p-3">
+    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+    <p className="mt-1 font-medium">{value}</p>
   </div>
-);
-
-const ValueCard = ({ icon: Icon, title, items }: any) => (
-  <Card className="p-6 rounded-3xl">
-    <div className="flex items-center gap-2 mb-4"><Icon className="h-5 w-5 text-primary" /><h3 className="font-display text-xl font-bold">{title}</h3></div>
-    <ul className="space-y-2">{items.map((item: string) => <li key={item} className="flex items-start gap-2 text-sm"><Check className="h-4 w-4 text-sage-deep mt-0.5" />{item}</li>)}</ul>
-  </Card>
 );
 
 export default Plans;
