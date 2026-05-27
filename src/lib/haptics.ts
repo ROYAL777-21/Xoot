@@ -1,3 +1,5 @@
+import type { MouseEventHandler } from "react";
+
 export type HapticIntent = "selection" | "impact" | "success" | "warning";
 
 const patterns: Record<HapticIntent, number | number[]> = {
@@ -25,8 +27,8 @@ export const haptic = (intent: HapticIntent = "selection") => {
 
 export const hapticOnClick = <T extends HTMLElement>(
   intent: HapticIntent,
-  handler?: React.MouseEventHandler<T>,
-): React.MouseEventHandler<T> => {
+  handler?: MouseEventHandler<T>,
+): MouseEventHandler<T> => {
   return (event) => {
     haptic(intent);
     handler?.(event);
