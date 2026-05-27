@@ -16,6 +16,8 @@ import Favorites from "./pages/app/Favorites";
 import Loyalty from "./pages/app/Loyalty";
 import GiftClean from "./pages/app/GiftClean";
 import Properties from "./pages/app/Properties";
+import AirbnbHostDashboard from "./pages/app/AirbnbHostDashboard";
+import OfficeDashboard from "./pages/app/OfficeDashboard";
 import Plans from "./pages/app/Plans";
 import Bookings from "./pages/app/Bookings";
 import BookingDetail from "./pages/app/BookingDetail";
@@ -62,6 +64,8 @@ const App = () => (
             <Route path="/app/loyalty" element={<RequireAuth><AppShell><Loyalty /></AppShell></RequireAuth>} />
             <Route path="/app/gifts" element={<RequireAuth><AppShell><GiftClean /></AppShell></RequireAuth>} />
             <Route path="/app/properties" element={<RequireAuth><AppShell><Properties /></AppShell></RequireAuth>} />
+            <Route path="/app/properties/airbnb" element={<RequireAuth><AppShell><AirbnbHostDashboard /></AppShell></RequireAuth>} />
+            <Route path="/app/properties/office" element={<RequireAuth><AppShell><OfficeDashboard /></AppShell></RequireAuth>} />
             <Route path="/app/plans" element={<RequireAuth><AppShell><Plans /></AppShell></RequireAuth>} />
             <Route path="/app/training" element={<RequireAuth><AppShell><Training /></AppShell></RequireAuth>} />
             <Route path="/app/support" element={<RequireAuth><AppShell><Support /></AppShell></RequireAuth>} />
