@@ -12,8 +12,13 @@ import { Progress } from "@/components/ui/progress";
 import { ShieldCheck, Loader2, ArrowRight, ArrowLeft, Upload, FileCheck2, Sparkles, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
 import { routeNotificationChannel } from "@/lib/operations";
+import { haptic } from "@/lib/haptics";
 
 type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
+
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+const ALLOWED_UPLOAD_TYPES = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
+
 const docMeta: { key: DocType; label: string; hint: string }[] = [
   { key: "id", label: "Government ID / passport", hint: "Clear photo of both sides. Name and DOB visible." },
   { key: "proof_of_residence", label: "Proof of address", hint: "Utility bill or lease, dated within 3 months." },
@@ -56,6 +61,17 @@ const emptyForm = {
 
 const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
 const joinList = (value?: string[] | null) => (value ?? []).join(", ");
+const safeFileName = (name: string) => name.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/-+/g, "-").slice(0, 90);
+
+const validateUpload = (file: File) => {
+  if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
+    return "Upload a PDF, JPG, PNG or WebP file.";
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return "Upload files smaller than 8MB.";
+  }
+  return null;
+};
 
 const Apply = () => {
   const { user } = useAuth();
@@ -152,13 +168,24 @@ const Apply = () => {
 
   const handleUpload = async (key: DocType, file: File) => {
     if (!user) return;
+    const validationError = validateUpload(file);
+    if (validationError) {
+      haptic("warning");
+      toast.error(validationError);
+      return;
+    }
     const id = appId ?? (await saveDraft());
     if (!id) return;
-    const path = `${user.id}/${key}-${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("kyc-docs").upload(path, file, { upsert: true });
-    if (error) { toast.error(error.message); return; }
+    const path = `${user.id}/${key}-${Date.now()}-${safeFileName(file.name)}`;
+    const { error } = await supabase.storage.from("kyc-docs").upload(path, file, {
+      cacheControl: "0",
+      contentType: file.type,
+      upsert: true,
+    });
+    if (error) { haptic("warning"); toast.error(error.message); return; }
     await supabase.from("zooter_documents").insert({ user_id: user.id, application_id: id, doc_type: key, storage_path: path, status: "pending" });
     setDocs((d) => ({ ...d, [key]: path }));
+    haptic("success");
     toast.success(`${key.replace(/_/g, " ")} uploaded`);
   };
 
@@ -173,10 +200,10 @@ const Apply = () => {
 
   const validateStep = () => {
     const missing = requiredForStep().filter((key) => !String((form as any)[key] ?? "").trim());
-    if (missing.length) { toast.error("Please complete all required fields"); return false; }
+    if (missing.length) { haptic("warning"); toast.error("Please complete all required fields"); return false; }
     if (step === 5) {
       const missingDocs = docMeta.filter((d) => !docs[d.key]);
-      if (missingDocs.length) { toast.error(`Upload required: ${missingDocs.map((d) => d.label).join(", ")}`); return false; }
+      if (missingDocs.length) { haptic("warning"); toast.error(`Upload required: ${missingDocs.map((d) => d.label).join(", ")}`); return false; }
     }
     return true;
   };
@@ -184,12 +211,13 @@ const Apply = () => {
   const next = async () => {
     if (!validateStep()) return;
     await saveDraft();
+    haptic("selection");
     setStep(Math.min(step + 1, steps.length - 1));
   };
 
   const submit = async () => {
     if (!user) return;
-    if (!form.background_check_consent) { toast.error("Background check consent is required"); return; }
+    if (!form.background_check_consent) { haptic("warning"); toast.error("Background check consent is required"); return; }
     setSubmitting(true);
     const id = appId ?? (await saveDraft());
     if (!id) { setSubmitting(false); return; }
@@ -241,7 +269,8 @@ const Apply = () => {
       ]);
     }
     setSubmitting(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { haptic("warning"); toast.error(error.message); return; }
+    haptic("success");
     toast.success("Application submitted. Trust review is now queued.");
     navigate("/zooter");
   };
@@ -272,11 +301,11 @@ const Apply = () => {
 
           {step === 4 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> References & emergency contact</h2><p className="text-sm text-muted-foreground">References help us keep marketplace quality high before a Zooter goes live.</p><div className="grid sm:grid-cols-2 gap-3"><F label="Emergency contact name" name="emergency_contact_name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} /></F><F label="Emergency contact phone" name="emergency_contact_phone"><Input value={form.emergency_contact_phone ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} /></F><F label="Reference 1 name" name="reference_1_name"><Input value={form.reference_1_name ?? ""} onChange={(e) => setForm({ ...form, reference_1_name: e.target.value })} /></F><F label="Reference 1 phone" name="reference_1_phone"><Input value={form.reference_1_phone ?? ""} onChange={(e) => setForm({ ...form, reference_1_phone: e.target.value })} /></F><F label="Reference 2 name" name="reference_2_name"><Input value={form.reference_2_name ?? ""} onChange={(e) => setForm({ ...form, reference_2_name: e.target.value })} /></F><F label="Reference 2 phone" name="reference_2_phone"><Input value={form.reference_2_phone ?? ""} onChange={(e) => setForm({ ...form, reference_2_phone: e.target.value })} /></F></div></div>}
 
-          {step === 5 && <div className="space-y-3"><h2 className="font-display text-2xl font-bold">Upload documents</h2><p className="text-sm text-muted-foreground">All four documents are required and reviewed by the trust team.</p>{docMeta.map((d) => <div key={d.key} className="rounded-2xl border border-border p-4 flex items-center gap-3"><div className={`grid h-10 w-10 place-items-center rounded-xl ${docs[d.key] ? "bg-accent/15 text-sage-deep" : "bg-muted text-muted-foreground"}`}>{docs[d.key] ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}</div><div className="flex-1 min-w-0"><p className="font-medium text-sm">{d.label}</p><p className="text-xs text-muted-foreground">{d.hint}</p></div><label className="cursor-pointer"><input type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => e.target.files?.[0] && handleUpload(d.key, e.target.files[0])} /><span className="inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-semibold px-3 py-1.5">{docs[d.key] ? "Replace" : "Upload"}</span></label></div>)}</div>}
+          {step === 5 && <div className="space-y-3"><h2 className="font-display text-2xl font-bold">Upload documents</h2><p className="text-sm text-muted-foreground">All four documents are required and reviewed by the trust team. PDFs, JPGs, PNGs and WebP images under 8MB are accepted.</p>{docMeta.map((d) => <div key={d.key} className="rounded-2xl border border-border p-4 flex items-center gap-3"><div className={`grid h-10 w-10 place-items-center rounded-xl ${docs[d.key] ? "bg-accent/15 text-sage-deep" : "bg-muted text-muted-foreground"}`}>{docs[d.key] ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}</div><div className="flex-1 min-w-0"><p className="font-medium text-sm">{d.label}</p><p className="text-xs text-muted-foreground">{d.hint}</p></div><label className="cursor-pointer"><input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => e.target.files?.[0] && handleUpload(d.key, e.target.files[0])} /><span className="inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-semibold px-3 py-1.5">{docs[d.key] ? "Replace" : "Upload"}</span></label></div>)}</div>}
 
           {step === 6 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Trust review consent</h2><div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2"><p className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> By submitting you authorise Zoot to verify identity, selfie, address, banking details, references, and criminal background status.</p><p>No live third-party check is run in this version. Admin reviewers classify each verification area before activation.</p></div><label className="flex items-start gap-3 cursor-pointer"><Checkbox checked={form.background_check_consent} onCheckedChange={(v) => setForm({ ...form, background_check_consent: !!v })} /><span className="text-sm">I consent to the Zoot trust review and background-check process.</span></label></div>}
 
-          <div className="flex justify-between mt-8 pt-4 border-t border-border"><Button variant="ghost" onClick={() => setStep(Math.max(step - 1, 0))} disabled={step === 0}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>{step < steps.length - 1 ? <Button onClick={next} className="gradient-warm">Save & continue <ArrowRight className="h-4 w-4 ml-1" /></Button> : <Button onClick={submit} disabled={submitting || !form.background_check_consent} className="gradient-warm">{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Submit application <ArrowRight className="h-4 w-4 ml-1" /></>}</Button>}</div>
+          <div className="flex justify-between mt-8 pt-4 border-t border-border"><Button variant="ghost" onClick={() => { haptic("selection"); setStep(Math.max(step - 1, 0)); }} disabled={step === 0}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>{step < steps.length - 1 ? <Button onClick={next} className="gradient-warm">Save & continue <ArrowRight className="h-4 w-4 ml-1" /></Button> : <Button onClick={submit} disabled={submitting || !form.background_check_consent} className="gradient-warm">{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Submit application <ArrowRight className="h-4 w-4 ml-1" /></>}</Button>}</div>
         </Card>
       </div>
     </div>
