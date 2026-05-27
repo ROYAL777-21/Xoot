@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { buildPendingPaymentRecord, routeNotificationChannel } from "@/lib/operations";
 import { haptic } from "@/lib/haptics";
-import { carePlusPlan, mockFavouriteZooter, mockHomeMemoryProfile, mockZootCredBalance } from "@/data/care-plus";
+import { mockFavouriteZooter, mockHomeMemoryProfile, mockZootCredBalance } from "@/data/care-plus";
 
 type Plan = {
   id: string;
