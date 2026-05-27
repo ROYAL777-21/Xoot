@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { LifeBuoy, Loader2, Sparkles, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { routeNotificationChannel } from "@/lib/operations";
+import { haptic } from "@/lib/haptics";
 
 const getPriority = (text: string) => {
   const normalized = text.toLowerCase();
@@ -32,7 +33,7 @@ const Support = () => {
 
   useEffect(() => { refresh(); }, [user]);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setSubmitting(true);
@@ -43,6 +44,7 @@ const Support = () => {
       .single();
 
     if (error) {
+      haptic("warning");
       toast.error(error.message);
       setSubmitting(false);
       return;
@@ -75,6 +77,7 @@ const Support = () => {
       created_by: user.id,
     })));
 
+    haptic("success");
     toast.success("We've got your message. Support will review it in the app.");
     setSubject("");
     setBody("");
@@ -90,7 +93,7 @@ const Support = () => {
           <span className="text-xs font-medium text-sage-deep">Support queue</span>
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-bold">How can we help?</h1>
-        <p className="text-muted-foreground mt-2">Booking issues, refund reviews, replacements, and trust concerns are routed to the right internal queue.</p>
+        <p className="text-muted-foreground mt-2">Booking issues, refund reviews, replacements, and trust concerns are routed to the right internal queue. Care+ members receive priority handling for booking issues, cancellations, and service concerns.</p>
       </div>
 
       <Card className="p-6 rounded-3xl mb-8">
