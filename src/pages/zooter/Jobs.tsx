@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Briefcase, Calendar, MapPin, Loader2, Check, X, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
-import { canAccessSensitiveBookingData, routeNotificationChannel } from "@/lib/operations";
+import { routeNotificationChannel } from "@/lib/operations";
+import { haptic } from "@/lib/haptics";
 
 const Jobs = () => {
   const { user } = useAuth();
@@ -17,7 +18,7 @@ const Jobs = () => {
   const load = async (zid: string) => {
     const { data } = await supabase
       .from("zooter_jobs")
-      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, address, price, duration_hours, status, job_completed_at, cancelled_at, user_id)")
+      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, price, duration_hours, status, job_completed_at, cancelled_at, user_id)")
       .eq("zooter_id", zid)
       .order("offered_at", { ascending: false });
     setJobs(data ?? []);
@@ -33,6 +34,7 @@ const Jobs = () => {
   }, [user]);
 
   const respond = async (jobId: string, bookingId: string, accept: boolean) => {
+    haptic(accept ? "success" : "warning");
     const { error } = await supabase.from("zooter_jobs").update({
       state: accept ? "accepted" : "declined", responded_at: new Date().toISOString(),
     }).eq("id", jobId);
@@ -88,7 +90,7 @@ const Jobs = () => {
   return (
     <div className="container py-8 lg:py-12 max-w-5xl">
       <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">Jobs</h1>
-      <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. Acceptance rate impacts your tier.</p>
+      <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. Client address details stay protected and are not exposed in this offer list.</p>
 
       <Section title="New offers" jobs={grouped.offered} respond={respond} actions />
       <Section title="Upcoming" jobs={grouped.accepted} respond={respond} />
@@ -114,8 +116,8 @@ const Section = ({ title, jobs, respond, actions = false }: any) => (
                   <p className="font-display text-lg font-bold capitalize mb-1">{b.service_type ?? b.service}</p>
                   <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(b.scheduled_at).toLocaleString()}</span>
-                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {canAccessSensitiveBookingData({ scheduledAt: b.scheduled_at, status: b.status, completedAt: b.job_completed_at, cancelledAt: b.cancelled_at }) ? (b.address || "-") : "Address unlocks near the booking window"}</span>
-                    <span className="inline-flex items-center gap-1"><DollarSign className="h-3 w-3" /> {formatZAR(Number(b.price))} · {b.duration_hours}h</span>
+                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> Address unlocks through secure booking details near the appointment window</span>
+                    <span className="inline-flex items-center gap-1"><DollarSign className="h-3 w-3" /> {formatZAR(Number(b.price))} - {b.duration_hours}h</span>
                   </div>
                 </div>
                 {actions && (
