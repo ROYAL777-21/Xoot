@@ -10,6 +10,7 @@ import { resolvePhoto } from "@/components/zoot/ZooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { deriveZooterBadges, requiresCompletionPhotos } from "@/lib/trust";
 import { canAccessSensitiveBookingData, routeNotificationChannel } from "@/lib/operations";
+import { notifyBookingLiveActivity, type ZootBookingLiveActivityStatus } from "@/lib/native-live-activity";
 import { toast } from "sonner";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
@@ -34,6 +35,33 @@ const statusLabel: Record<string, string> = {
   cancelled: "Cancelled",
   reassigned: "Reassigned",
   pending: "Pending confirmation",
+};
+
+const liveActivityStatuses: ZootBookingLiveActivityStatus[] = [
+  "confirmed",
+  "enroute",
+  "arrived",
+  "in_progress",
+  "completed",
+  "cancelled",
+  "reassigned",
+  "pending",
+];
+
+const toLiveActivityStatus = (status: string): ZootBookingLiveActivityStatus =>
+  liveActivityStatuses.includes(status as ZootBookingLiveActivityStatus)
+    ? (status as ZootBookingLiveActivityStatus)
+    : "pending";
+
+const liveActivityNextStep: Record<ZootBookingLiveActivityStatus, string> = {
+  confirmed: "We will keep your booking ready and protected.",
+  enroute: "Your Zooter is on the way. Access notes stay inside the app.",
+  arrived: "Your Zooter has arrived and is preparing to begin.",
+  in_progress: "Your home-care visit is in progress.",
+  completed: "Your booking is complete. Review and photo proof are available in-app.",
+  cancelled: "Support can help review the next available option.",
+  reassigned: "Priority replacement matching is being reviewed.",
+  pending: "We are confirming your booking details.",
 };
 
 const BookingDetail = () => {
@@ -128,6 +156,22 @@ const BookingDetail = () => {
         created_by: user?.id,
       })));
     }
+
+    const liveStatus = toLiveActivityStatus(status);
+    notifyBookingLiveActivity({
+      bookingId: id,
+      status: liveStatus,
+      statusLabel: statusLabel[status] ?? status,
+      serviceName: booking.service_type ?? booking.service ?? "Home care",
+      zooterName: booking.zooter?.name,
+      propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Zoot home",
+      suburb: booking.suburb,
+      scheduledAt: booking.scheduled_at,
+      etaMinutes: liveStatus === "enroute" ? eta : undefined,
+      nextStep: liveActivityNextStep[liveStatus],
+      supportState: booking.care_plus ? "priority" : "standard",
+      updatedAt: new Date().toISOString(),
+    });
 
     if (status === "completed") {
       const { data: lp } = await supabase.from("loyalty_points").select("*").eq("user_id", user!.id).single();
