@@ -16,6 +16,11 @@ const config: CapacitorConfig = {
       androidScaleType: "CENTER_CROP",
       showSpinner: false,
     },
+    StatusBar: {
+      style: "LIGHT",
+      backgroundColor: "#F7F0E7",
+      overlaysWebView: false,
+    },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],
     },
