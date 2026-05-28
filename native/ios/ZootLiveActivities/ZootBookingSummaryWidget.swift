@@ -1,0 +1,116 @@
+import AppIntents
+import SwiftUI
+import WidgetKit
+
+@available(iOSApplicationExtension 17.0, *)
+enum ZootWidgetKind: String, AppEnum {
+    case nextBooking
+    case carePlusReadiness
+    case zootCred
+    case favouriteZooter
+
+    static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Zoot Widget")
+    static var caseDisplayRepresentations: [ZootWidgetKind: DisplayRepresentation] = [
+        .nextBooking: "Next Booking",
+        .carePlusReadiness: "Care+ Readiness",
+        .zootCred: "ZootCred",
+        .favouriteZooter: "Favourite Zooter",
+    ]
+}
+
+@available(iOSApplicationExtension 17.0, *)
+struct ZootWidgetConfigurationIntent: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource = "Choose Zoot Widget"
+    static var description = IntentDescription("Choose the Zoot summary you want on your Home Screen.")
+
+    @Parameter(title: "Widget")
+    var widgetKind: ZootWidgetKind
+
+    init(widgetKind: ZootWidgetKind = .nextBooking) {
+        self.widgetKind = widgetKind
+    }
+
+    init() {
+        self.widgetKind = .nextBooking
+    }
+}
+
+struct ZootWidgetEntry: TimelineEntry {
+    let date: Date
+    let kind: String
+    let title: String
+    let value: String
+    let detail: String
+    let deeplink: URL
+}
+
+@available(iOSApplicationExtension 17.0, *)
+struct ZootWidgetProvider: AppIntentTimelineProvider {
+    func placeholder(in context: Context) -> ZootWidgetEntry {
+        ZootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "86%", detail: "Thursday slot available", deeplink: URL(string: "zoot://app")!)
+    }
+
+    func snapshot(for configuration: ZootWidgetConfigurationIntent, in context: Context) async -> ZootWidgetEntry {
+        entry(for: configuration.widgetKind)
+    }
+
+    func timeline(for configuration: ZootWidgetConfigurationIntent, in context: Context) async -> Timeline<ZootWidgetEntry> {
+        Timeline(entries: [entry(for: configuration.widgetKind)], policy: .after(Date.now.addingTimeInterval(15 * 60)))
+    }
+
+    private func entry(for kind: ZootWidgetKind) -> ZootWidgetEntry {
+        switch kind {
+        case .nextBooking:
+            return ZootWidgetEntry(date: .now, kind: "Booking", title: "Next clean", value: "Thu 08:30", detail: "Nomsa · Hyde Park", deeplink: URL(string: "zoot://bookings")!)
+        case .carePlusReadiness:
+            return ZootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "86%", detail: "Home Memory almost complete", deeplink: URL(string: "zoot://care-plus")!)
+        case .zootCred:
+            return ZootWidgetEntry(date: .now, kind: "ZootCred", title: "Available", value: "R185", detail: "R30 add-on credit active", deeplink: URL(string: "zoot://loyalty")!)
+        case .favouriteZooter:
+            return ZootWidgetEntry(date: .now, kind: "Favourite", title: "Book Nomsa again", value: "4.96", detail: "Next slot Friday", deeplink: URL(string: "zoot://favorites")!)
+        }
+    }
+}
+
+@available(iOSApplicationExtension 17.0, *)
+struct ZootBookingSummaryWidget: Widget {
+    let kind = "ZootBookingSummaryWidget"
+
+    var body: some WidgetConfiguration {
+        AppIntentConfiguration(kind: kind, intent: ZootWidgetConfigurationIntent.self, provider: ZootWidgetProvider()) { entry in
+            ZootWidgetEntryView(entry: entry)
+                .containerBackground(Color(red: 0.98, green: 0.96, blue: 0.91), for: .widget)
+        }
+        .configurationDisplayName("Zoot")
+        .description("Create a Zoot widget for bookings, Care+, ZootCred, or your favourite Zooter.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+struct ZootWidgetEntryView: View {
+    let entry: ZootWidgetEntry
+
+    var body: some View {
+        Link(destination: entry.deeplink) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(entry.kind)
+                    .font(.caption.bold())
+                    .foregroundStyle(Color(red: 0.76, green: 0.40, blue: 0.29))
+                Spacer(minLength: 4)
+                Text(entry.title)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                Text(entry.value)
+                    .font(.title.bold())
+                    .foregroundStyle(.primary)
+                    .minimumScaleFactor(0.75)
+                Text(entry.detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            .padding()
+        }
+    }
+}
