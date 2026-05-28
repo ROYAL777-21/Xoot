@@ -1,0 +1,14 @@
+[build]
+  command = "npm install && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  VITE_SUPABASE_PROJECT_ID = "preview-project"
+  VITE_SUPABASE_PUBLISHABLE_KEY = "preview-anon-key"
+  VITE_SUPABASE_URL = "https://preview.supabase.co"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
