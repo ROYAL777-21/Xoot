@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dict>
+  <key>NSSupportsLiveActivities</key>
+  <true/>
+  <!-- Enable only if backend APNs updates are reliable, rate-limited, and privacy-reviewed. -->
+  <key>NSSupportsLiveActivitiesFrequentUpdates</key>
+  <false/>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>co.za.zoot.app</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>zoot</string>
+      </array>
+    </dict>
+  </array>
+</dict>

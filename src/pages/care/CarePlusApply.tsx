@@ -79,8 +79,8 @@ const CarePlusApply = () => {
     await supabase.from("notifications").insert({
       user_id: user.id,
       kind: "care_plus_submitted",
-      title: "Care+ application received",
-      body: "We'll match you with up to 5 candidates within 48 hours. A placement agent will be in touch.",
+      title: "HomeCare+ application received",
+      body: "Your placement request is in the support queue. A placement agent will be in touch after review.",
       link: "/app/profile",
     });
     setDone(true);
@@ -97,7 +97,7 @@ const CarePlusApply = () => {
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">Application received!</h1>
           <p className="text-lg text-muted-foreground mb-8">
-            One of our placement agents will be in touch within 48 hours. We'll start sourcing carefully selected matches for your home.
+            Your placement request is in the support queue. We'll start review from the information you provided.
           </p>
           <Button asChild size="lg" className="rounded-full gradient-warm">
             <Link to="/app">Go to dashboard</Link>
@@ -116,7 +116,7 @@ const CarePlusApply = () => {
       <Navbar />
       <main className="container max-w-3xl py-12">
         <div className="mb-8">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Care+ placement</p>
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">HomeCare+ placement</p>
           <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">Let's find your permanent housekeeper.</h1>
           <div className="mt-6 h-2 rounded-full bg-muted overflow-hidden">
             <div className="h-full gradient-warm transition-all duration-500" style={{ width: `${progress}%` }} />
@@ -253,7 +253,7 @@ const CarePlusApply = () => {
                 <p className="text-sm font-semibold mb-1">Non-refundable admin fee: R399</p>
                 <p className="text-xs text-muted-foreground">
                   This covers expert sourcing, vetting, and coordination of interviews and trials.
-                  Payment collection is mocked for now — submit and a placement agent will follow up.
+                  Online payment collection is not connected in this build; submit and a placement agent will follow up before any fee is collected.
                 </p>
               </div>
               <p className="text-xs text-muted-foreground">

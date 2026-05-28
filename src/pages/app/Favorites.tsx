@@ -2,24 +2,57 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ZooterCard, Zooter } from "@/components/zoot/ZooterCard";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart, Loader2, Repeat, Star, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
+
+type FavoriteRow = {
+  zooter_id: string;
+  favorite_kind?: "favorite" | "preferred_team" | "recurring_favorite";
+  repeat_bookings_count?: number;
+  last_booked_at?: string | null;
+  zooters: Zooter | null;
+};
 
 const Favorites = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [list, setList] = useState<Zooter[]>([]);
+  const [list, setList] = useState<FavoriteRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const load = async () => {
     if (!user) return;
-    supabase.from("favorites").select("zooter_id, zooters(*)").eq("user_id", user.id)
-      .then(({ data }) => {
-        setList(((data ?? []).map((r: any) => r.zooters).filter(Boolean)) as Zooter[]);
-        setLoading(false);
-      });
-  }, [user]);
+    const { data } = await supabase
+      .from("favorites")
+      .select("zooter_id, favorite_kind, repeat_bookings_count, last_booked_at, zooters(*)")
+      .eq("user_id", user.id);
+    setList(((data ?? []) as any[]).filter((row) => row.zooters) as FavoriteRow[]);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [user]);
+
+  const markKind = async (zooterId: string, favoriteKind: FavoriteRow["favorite_kind"]) => {
+    if (!user) return;
+    const { error } = await (supabase as any)
+      .from("favorites")
+      .update({ favorite_kind: favoriteKind })
+      .eq("user_id", user.id)
+      .eq("zooter_id", zooterId);
+    if (error) return toast.error(error.message);
+    toast.success(favoriteKind === "preferred_team" ? "Added to your preferred team" : "Marked as recurring favourite");
+    load();
+  };
+
+  const bookAgain = (zooter: Zooter) => {
+    navigate(`/app?zooter=${zooter.id}`);
+  };
+
+  const preferredCount = list.filter((row) => row.favorite_kind === "preferred_team").length;
+  const recurringCount = list.filter((row) => row.favorite_kind === "recurring_favorite").length;
+  const repeatCount = list.reduce((sum, row) => sum + (row.repeat_bookings_count ?? row.zooters?.repeat_client_count ?? 0), 0);
 
   return (
     <div className="container py-8 lg:py-12 max-w-7xl">
@@ -29,7 +62,22 @@ const Favorites = () => {
           <span className="text-xs font-medium text-primary">Your trusted team</span>
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-bold">My Zooters</h1>
-        <p className="text-muted-foreground mt-2">Re-book the people you trust. Same Zooter, every time.</p>
+        <p className="text-muted-foreground mt-2">Re-book the people you trust. Same Zooter, preferred team, and recurring favourites in one place.</p>
+      </div>
+
+      <div className="grid sm:grid-cols-3 gap-3 mb-8">
+        <Card className="rounded-2xl p-4 flex items-center gap-3">
+          <Users className="h-5 w-5 text-primary" />
+          <div><p className="text-xs text-muted-foreground">Preferred team</p><p className="font-display text-2xl font-bold">{preferredCount}</p></div>
+        </Card>
+        <Card className="rounded-2xl p-4 flex items-center gap-3">
+          <Repeat className="h-5 w-5 text-sage-deep" />
+          <div><p className="text-xs text-muted-foreground">Recurring favourites</p><p className="font-display text-2xl font-bold">{recurringCount}</p></div>
+        </Card>
+        <Card className="rounded-2xl p-4 flex items-center gap-3">
+          <Star className="h-5 w-5 text-primary" />
+          <div><p className="text-xs text-muted-foreground">Repeat bookings</p><p className="font-display text-2xl font-bold">{repeatCount}</p></div>
+        </Card>
       </div>
 
       {loading ? (
@@ -43,7 +91,20 @@ const Favorites = () => {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {list.map((z) => <ZooterCard key={z.id} z={z} onBook={() => navigate("/app")} />)}
+          {list.map((row) => {
+            const z = row.zooters!;
+            const firstName = z.name.split(" ")[0];
+            return (
+              <div key={z.id} className="space-y-2">
+                <ZooterCard z={{ ...z, repeat_client_count: z.repeat_client_count ?? row.repeat_bookings_count }} onBook={() => bookAgain(z)} actionLabel={`Book ${firstName} Again`} />
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => bookAgain(z)}>Book {firstName} Again</Button>
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => markKind(z.id, "preferred_team")}>Preferred Team</Button>
+                  <Button variant="ghost" size="sm" className="rounded-xl col-span-2" onClick={() => markKind(z.id, "recurring_favorite")}>Recurring Favourite</Button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

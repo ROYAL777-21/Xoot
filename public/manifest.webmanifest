@@ -1,0 +1,50 @@
+{
+  "name": "Zoot",
+  "short_name": "Zoot",
+  "description": "Premium South African home-care booking, Care+, Home Memory, ZootCred, and priority support.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf4e8",
+  "theme_color": "#c2654a",
+  "categories": ["lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/zoot-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Book a Zooter",
+      "short_name": "Book",
+      "description": "Start a home-care booking.",
+      "url": "/app",
+      "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Care+",
+      "short_name": "Care+",
+      "description": "Open Care+ membership.",
+      "url": "/care-plus",
+      "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Properties",
+      "short_name": "Homes",
+      "description": "Open Airbnb, landlord and office profiles.",
+      "url": "/app/properties",
+      "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Support",
+      "short_name": "Help",
+      "description": "Open priority support.",
+      "url": "/app/support",
+      "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}

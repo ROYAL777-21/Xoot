@@ -14,7 +14,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
-        <h1 className="sr-only">Zoot — Premium on-demand cleaning with guaranteed reliability</h1>
+        <h1 className="sr-only">Zoot - Premium home services with trust, safety, and retention workflows</h1>
         <BookingHero />
         <TrustedBy />
         <Services />

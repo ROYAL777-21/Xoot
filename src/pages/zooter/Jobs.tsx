@@ -5,6 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Calendar, MapPin, Loader2, Check, X, DollarSign } from "lucide-react";
 import { toast } from "sonner";
+import { formatZAR } from "@/lib/format";
+import { routeNotificationChannel } from "@/lib/operations";
+import { haptic } from "@/lib/haptics";
 
 const Jobs = () => {
   const { user } = useAuth();
@@ -15,7 +18,7 @@ const Jobs = () => {
   const load = async (zid: string) => {
     const { data } = await supabase
       .from("zooter_jobs")
-      .select("*, bookings:booking_id(id, service, scheduled_at, address, price, duration_hours, status)")
+      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, price, duration_hours, status, job_completed_at, cancelled_at, user_id)")
       .eq("zooter_id", zid)
       .order("offered_at", { ascending: false });
     setJobs(data ?? []);
@@ -31,11 +34,34 @@ const Jobs = () => {
   }, [user]);
 
   const respond = async (jobId: string, bookingId: string, accept: boolean) => {
+    haptic(accept ? "success" : "warning");
     const { error } = await supabase.from("zooter_jobs").update({
       state: accept ? "accepted" : "declined", responded_at: new Date().toISOString(),
     }).eq("id", jobId);
     if (!error && accept) {
       await supabase.from("bookings").update({ status: "confirmed" }).eq("id", bookingId);
+      await (supabase as any).from("booking_status_events").insert({ booking_id: bookingId, actor_id: user?.id, status: "confirmed", label: "Confirmed" });
+      await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("contractor_assigned").map((channel) => ({
+        source_table: "bookings",
+        source_id: bookingId,
+        event_type: "contractor_assigned",
+        channel,
+        owner: "Scheduling & Allocation Agent",
+        stack_tool: "Zoot in-app notification",
+        payload: { booking_id: bookingId, zooter_id: zooterId },
+        created_by: user?.id,
+      })));
+    }
+    if (!error && !accept) {
+      await (supabase as any).from("admin_review_queue").insert({
+        queue_type: "replacement",
+        subject_table: "bookings",
+        subject_id: bookingId,
+        zooter_id: zooterId,
+        booking_id: bookingId,
+        priority: "normal",
+        summary: "Contractor declined job offer; review replacement availability",
+      });
     }
     if (error) toast.error(error.message); else toast.success(accept ? "Job accepted" : "Job declined");
     if (zooterId) load(zooterId);
@@ -64,7 +90,7 @@ const Jobs = () => {
   return (
     <div className="container py-8 lg:py-12 max-w-5xl">
       <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">Jobs</h1>
-      <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. Acceptance rate impacts your tier.</p>
+      <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. Client address details stay protected and are not exposed in this offer list.</p>
 
       <Section title="New offers" jobs={grouped.offered} respond={respond} actions />
       <Section title="Upcoming" jobs={grouped.accepted} respond={respond} />
@@ -87,11 +113,11 @@ const Section = ({ title, jobs, respond, actions = false }: any) => (
             <Card key={j.id} className="p-5 rounded-2xl">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="min-w-0">
-                  <p className="font-display text-lg font-bold capitalize mb-1">{b.service}</p>
+                  <p className="font-display text-lg font-bold capitalize mb-1">{b.service_type ?? b.service}</p>
                   <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(b.scheduled_at).toLocaleString()}</span>
-                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {b.address || "—"}</span>
-                    <span className="inline-flex items-center gap-1"><DollarSign className="h-3 w-3" /> ${Number(b.price).toFixed(0)} · {b.duration_hours}h</span>
+                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> Address unlocks through secure booking details near the appointment window</span>
+                    <span className="inline-flex items-center gap-1"><DollarSign className="h-3 w-3" /> {formatZAR(Number(b.price))} - {b.duration_hours}h</span>
                   </div>
                 </div>
                 {actions && (

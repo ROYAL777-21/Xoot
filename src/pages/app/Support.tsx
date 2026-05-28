@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { LifeBuoy, Loader2, Sparkles, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { routeNotificationChannel } from "@/lib/operations";
+import { haptic } from "@/lib/haptics";
+
+const getPriority = (text: string) => {
+  const normalized = text.toLowerCase();
+  if (normalized.includes("no-show") || normalized.includes("unsafe") || normalized.includes("damage")) return "urgent";
+  if (normalized.includes("refund") || normalized.includes("replacement") || normalized.includes("complaint")) return "high";
+  return "normal";
+};
 
 const Support = () => {
   const { user } = useAuth();
@@ -21,26 +30,59 @@ const Support = () => {
     const { data } = await supabase.from("support_tickets").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     setTickets(data ?? []);
   };
+
   useEffect(() => { refresh(); }, [user]);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setSubmitting(true);
+
     const { data: ticket, error } = await supabase.from("support_tickets")
-      .insert({ user_id: user.id, subject, body }).select().single();
-    if (error) { toast.error(error.message); setSubmitting(false); return; }
+      .insert({ user_id: user.id, subject, body })
+      .select()
+      .single();
 
-    // Call AI for first response
-    try {
-      const { data: ai } = await supabase.functions.invoke("support-respond", { body: { subject, body } });
-      if (ai?.response) {
-        await supabase.from("support_tickets").update({ ai_response: ai.response }).eq("id", ticket.id);
-      }
-    } catch (err) { console.error(err); }
+    if (error) {
+      haptic("warning");
+      toast.error(error.message);
+      setSubmitting(false);
+      return;
+    }
 
-    toast.success("We've got your message — typical response under 1 minute.");
-    setSubject(""); setBody(""); setSubmitting(false); refresh();
+    const priority = getPriority(`${subject} ${body}`);
+    await (supabase as any).from("support_followups").insert({
+      ticket_id: ticket.id,
+      user_id: user.id,
+      trigger_type: "manual",
+      priority,
+      notes: subject,
+    });
+    await (supabase as any).from("admin_review_queue").insert({
+      queue_type: "support",
+      subject_table: "support_tickets",
+      subject_id: ticket.id,
+      user_id: user.id,
+      priority,
+      summary: subject,
+    });
+    await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("support_opened").map((channel) => ({
+      source_table: "support_tickets",
+      source_id: ticket.id,
+      event_type: "support_opened",
+      channel,
+      owner: "Customer Support Agent",
+      stack_tool: "Zoot in-app notification",
+      payload: { ticket_id: ticket.id, subject, priority },
+      created_by: user.id,
+    })));
+
+    haptic("success");
+    toast.success("We've got your message. Support will review it in the app.");
+    setSubject("");
+    setBody("");
+    setSubmitting(false);
+    refresh();
   };
 
   return (
@@ -48,10 +90,10 @@ const Support = () => {
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 rounded-full bg-sage/15 px-3 py-1 mb-3">
           <Clock className="h-3 w-3 text-sage-deep" />
-          <span className="text-xs font-medium text-sage-deep">Average response · under 1 min</span>
+          <span className="text-xs font-medium text-sage-deep">Support queue</span>
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-bold">How can we help?</h1>
-        <p className="text-muted-foreground mt-2">Real humans, fast. AI gives you an instant first answer.</p>
+        <p className="text-muted-foreground mt-2">Booking issues, refund reviews, replacements, and trust concerns are routed to the right internal queue. Care+ members receive priority handling for booking issues, cancellations, and service concerns.</p>
       </div>
 
       <Card className="p-6 rounded-3xl mb-8">

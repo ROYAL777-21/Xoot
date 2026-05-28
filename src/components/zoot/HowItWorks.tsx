@@ -5,19 +5,19 @@ const steps = [
     n: "01",
     icon: Search,
     title: "Tell us what you need",
-    desc: "Pick a service, share your address and choose a time that works.",
+    desc: "Pick a service, share your address, choose a time and add household preferences.",
   },
   {
     n: "02",
     icon: UserCheck,
-    title: "Get matched instantly",
-    desc: "We connect you with vetted Zooters nearby — see profiles, ratings and prices upfront.",
+    title: "Choose a vetted Zooter",
+    desc: "Review profiles, trust badges, reliability score, ratings and prices before sending a request.",
   },
   {
     n: "03",
     icon: Sparkles,
-    title: "Sit back, it's done",
-    desc: "Track arrival in real-time, pay in-app, and rate your experience.",
+    title: "Track and review",
+    desc: "Follow the arrival timeline, keep messages on-platform, upload proof where required, and rate the job.",
   },
 ];
 
@@ -31,10 +31,10 @@ export const HowItWorks = () => {
               How Zoot works
             </p>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-5">
-              Three taps. Help on the way.
+              Book with the details that protect quality.
             </h2>
             <p className="text-lg text-muted-foreground max-w-md">
-              No phone tag, no awkward quotes. Zoot makes booking domestic help feel as easy as ordering a ride.
+              Zoot keeps service details, household preferences, payment status, contractor updates and support follow-ups in one place.
             </p>
           </div>
 

@@ -1,0 +1,207 @@
+export const approvedLaunchRegions = [
+  "midrand",
+  "sandton",
+  "bryanston",
+  "bedfordview",
+  "rosebank",
+  "parkhurst",
+  "melville",
+  "fourways",
+  "waterfall",
+  "dainfern",
+  "hyde park",
+  "braamfontein",
+];
+
+export type BookingFrequency = "one_time" | "repeat";
+
+export type BookingQuoteInput = {
+  basePrice: number;
+  addOnCount: number;
+  frequency: BookingFrequency;
+  time: string;
+  bookingCoverOptIn: boolean;
+};
+
+export type BookingQuote = {
+  basePrice: number;
+  addOnsTotal: number;
+  highDemandPremium: number;
+  serviceFee: number;
+  bookingCover: number;
+  total: number;
+  estimatedAddOnHours: number;
+};
+
+export type IntegrationChannel =
+  | "in_app"
+  | "brevo_email"
+  | "whatsapp_urgent"
+  | "twilio_voice"
+  | "payment_provider"
+  | "mie_screening"
+  | "airtable_ops";
+
+export type VerificationStatus = "pending" | "approved" | "rejected";
+
+export type ActivationInput = {
+  verification: {
+    id: VerificationStatus;
+    selfie: VerificationStatus;
+    address: VerificationStatus;
+    banking: VerificationStatus;
+    reference: VerificationStatus;
+    background: VerificationStatus;
+    thirdParty: VerificationStatus;
+  };
+  requiredTrainingPassed: boolean;
+  backgroundCheckConsent: boolean;
+};
+
+export type LedgerEntry = {
+  amount: number;
+  direction: "credit" | "debit";
+};
+
+const ADD_ON_PRICE = 30;
+const BOOKING_COVER = 21;
+const ONE_TIME_SERVICE_FEE = 39;
+const HIGH_DEMAND_RATE = 0.15;
+
+export const isApprovedLaunchRegion = (input: string) => {
+  const value = input.toLowerCase();
+  return approvedLaunchRegions.some((region) => value.includes(region));
+};
+
+export const calculateBookingQuote = ({
+  basePrice,
+  addOnCount,
+  frequency,
+  time,
+  bookingCoverOptIn,
+}: BookingQuoteInput): BookingQuote => {
+  const addOnsTotal = addOnCount * ADD_ON_PRICE;
+  const subtotal = basePrice + addOnsTotal;
+  const hour = Number(time.split(":")[0] ?? 0);
+  const highDemandPremium = hour >= 16 ? Math.round(subtotal * HIGH_DEMAND_RATE) : 0;
+  const serviceFee = frequency === "one_time" ? ONE_TIME_SERVICE_FEE : 0;
+  const bookingCover = bookingCoverOptIn ? BOOKING_COVER : 0;
+
+  return {
+    basePrice,
+    addOnsTotal,
+    highDemandPremium,
+    serviceFee,
+    bookingCover,
+    total: subtotal + highDemandPremium + serviceFee + bookingCover,
+    estimatedAddOnHours: addOnCount,
+  };
+};
+
+export const routeNotificationChannel = (event: string): IntegrationChannel[] => {
+  const urgentWhatsApp = new Set([
+    "contractor_on_the_way",
+    "contractor_arrived",
+    "same_day_cancellation_replacement",
+    "contractor_no_show",
+    "critical_trust_safety_alert",
+    "urgent_replacement_confirmation",
+  ]);
+  const emailEvents = new Set([
+    "booking_confirmed",
+    "invoice_created",
+    "payment_receipt",
+    "support_resolved",
+    "homecare_summary",
+    "onboarding_completed",
+    "reactivation_campaign",
+    "trust_verification_update",
+  ]);
+  const inAppOnly = new Set([
+    "contractor_assigned",
+    "job_completed",
+    "support_opened",
+    "onboarding_progress",
+    "rebooking_prompt",
+    "zootcred_update",
+    "badge_unlocked",
+  ]);
+
+  if (urgentWhatsApp.has(event)) return ["in_app", "whatsapp_urgent"];
+  if (event === "payment_receipt" || event === "invoice_created") return ["brevo_email"];
+  if (emailEvents.has(event)) return ["in_app", "brevo_email"];
+  if (inAppOnly.has(event)) return ["in_app"];
+  return ["in_app"];
+};
+
+export const canAccessSensitiveBookingData = ({
+  scheduledAt,
+  status,
+  completedAt,
+  cancelledAt,
+  now,
+}: {
+  scheduledAt: string;
+  status: string;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  now?: string;
+}) => {
+  if (status === "cancelled" || cancelledAt) return false;
+
+  const current = now ? new Date(now).getTime() : Date.now();
+  const start = new Date(scheduledAt).getTime();
+  const accessOpens = start - 45 * 60 * 1000;
+  if (current < accessOpens) return false;
+
+  if (status === "completed") {
+    const complete = completedAt ? new Date(completedAt).getTime() : current;
+    return current <= complete + 30 * 60 * 1000;
+  }
+
+  return ["confirmed", "enroute", "arrived", "in_progress", "pending"].includes(status);
+};
+
+export const buildPendingPaymentRecord = ({
+  bookingId,
+  userId,
+  amount,
+  kind,
+}: {
+  bookingId?: string | null;
+  userId: string;
+  amount: number;
+  kind: string;
+}) => ({
+  booking_id: bookingId ?? null,
+  user_id: userId,
+  amount,
+  currency: "ZAR",
+  status: "pending",
+  provider: "manual_pending",
+  payment_kind: kind,
+});
+
+export const applyZootCredLedger = (entries: LedgerEntry[]) => {
+  return entries.reduce((balance, entry) => {
+    return entry.direction === "credit" ? balance + entry.amount : balance - entry.amount;
+  }, 0);
+};
+
+export const getActivationReadiness = ({
+  verification,
+  requiredTrainingPassed,
+  backgroundCheckConsent,
+}: ActivationInput) => {
+  const missing = Object.entries(verification)
+    .filter(([, status]) => status !== "approved")
+    .map(([key]) => key);
+
+  if (!requiredTrainingPassed) missing.push("required_training");
+  if (!backgroundCheckConsent) missing.push("background_check_consent");
+
+  return {
+    activationReady: missing.length === 0,
+    missing,
+  };
+};

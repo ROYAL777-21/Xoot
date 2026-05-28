@@ -1,10 +1,10 @@
 import { Star, FileSearch, Briefcase, Shield } from "lucide-react";
 
 const items = [
-  { icon: Star, title: "Ratings and reviews", desc: "Every Zooter is rated by real customers after every visit." },
-  { icon: FileSearch, title: "Reference & background checks", desc: "ID verification, criminal background and reference checks completed before joining." },
-  { icon: Briefcase, title: "2+ years experience", desc: "Every Zooter brings at least 2 years of professional cleaning experience to your home." },
-  { icon: Shield, title: "Insurance included", desc: "Every booking is covered by our insurance policy for peace of mind." },
+  { icon: Star, title: "Visible quality signals", desc: "Profiles show ratings, reliability score, completion rate, repeat-client count and trust badges." },
+  { icon: FileSearch, title: "Admin-reviewed vetting", desc: "ID, selfie, proof of address, bank, references and MIE screening status are reviewed before activation." },
+  { icon: Briefcase, title: "Training gate", desc: "Required onboarding covers etiquette, client interaction, luxury-home expectations, pets, fragile items and punctuality." },
+  { icon: Shield, title: "Incident system", desc: "Lateness, poor quality, damages, suspicious behaviour and escalations are routed into trust review queues." },
 ];
 
 export const SafetyTrust = () => {
@@ -16,10 +16,10 @@ export const SafetyTrust = () => {
             Safety & Security
           </p>
           <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-4">
-            Safety and security is our top priority.
+            Trust is built into the workflow, not added as decoration.
           </h2>
           <p className="text-lg text-muted-foreground">
-            We connect you to hardworking, trusted individuals who are experienced, vetted, rated and dependable.
+            Zoot combines vetting, training, reliability scoring, arrival tracking and admin review queues to protect marketplace quality.
           </p>
         </div>
 

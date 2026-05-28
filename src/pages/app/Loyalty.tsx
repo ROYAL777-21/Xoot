@@ -6,18 +6,25 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Gift, Sparkles, Trophy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { applyZootCredLedger, routeNotificationChannel } from "@/lib/operations";
+import { formatZAR } from "@/lib/format";
 
 const TARGET = 10;
 
 const Loyalty = () => {
   const { user } = useAuth();
   const [loyalty, setLoyalty] = useState<{ points: number; free_credits: number; total_bookings: number } | null>(null);
+  const [zootCred, setZootCred] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
     if (!user) return;
-    const { data } = await supabase.from("loyalty_points").select("*").eq("user_id", user.id).single();
+    const [{ data }, { data: ledger }] = await Promise.all([
+      supabase.from("loyalty_points").select("*").eq("user_id", user.id).single(),
+      (supabase as any).from("zootcred_ledger").select("amount, direction, status").eq("user_id", user.id).in("status", ["available", "redeemed"]),
+    ]);
     if (data) setLoyalty(data);
+    setZootCred(applyZootCredLedger((ledger ?? []).map((row: any) => ({ amount: Number(row.amount), direction: row.direction }))));
     setLoading(false);
   };
 
@@ -26,6 +33,23 @@ const Loyalty = () => {
   const redeem = async () => {
     if (!user || !loyalty || loyalty.free_credits < 1) return;
     await supabase.from("loyalty_points").update({ free_credits: loyalty.free_credits - 1 }).eq("user_id", user.id);
+    await (supabase as any).from("zootcred_ledger").insert({
+      user_id: user.id,
+      amount: 1,
+      direction: "debit",
+      reason: "redemption",
+      status: "redeemed",
+      meta: { redemption_type: "free_clean_credit" },
+    });
+    await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("zootcred_update").map((channel) => ({
+      source_table: "zootcred_ledger",
+      event_type: "zootcred_update",
+      channel,
+      owner: "Retention & Loyalty Agent",
+      stack_tool: "Zoot in-app notification",
+      payload: { redemption_type: "free_clean_credit" },
+      created_by: user.id,
+    })));
     toast.success("Free credit applied to your next booking!");
     refresh();
   };
@@ -45,7 +69,7 @@ const Loyalty = () => {
           <span className="text-xs font-medium text-primary">Zoot Rewards</span>
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-bold">Earn while you book</h1>
-        <p className="text-muted-foreground mt-2">Book 10 cleans, get 1 free. Tier perks at 15 and 30.</p>
+        <p className="text-muted-foreground mt-2">Rewards, ZootCred, referral credits, and free-clean milestones stay on-platform.</p>
       </div>
 
       <Card className="p-8 rounded-3xl gradient-warm text-primary-foreground shadow-warm border-0 mb-6">
@@ -72,7 +96,11 @@ const Loyalty = () => {
         <p className="text-sm text-muted-foreground mt-3">{TARGET - progress} more booking{TARGET - progress === 1 ? "" : "s"} to earn another free clean.</p>
       </Card>
 
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-5 rounded-2xl">
+          <p className="text-3xl font-display font-bold">{formatZAR(zootCred)}</p>
+          <p className="text-sm text-muted-foreground">ZootCred ledger</p>
+        </Card>
         <Card className="p-5 rounded-2xl">
           <p className="text-3xl font-display font-bold">{loyalty?.points ?? 0}</p>
           <p className="text-sm text-muted-foreground">Points balance</p>
