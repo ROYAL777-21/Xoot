@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RequireAuth } from "@/components/RequireAuth";
 import { AppShell } from "@/components/zoot/AppShell";
+import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
 import { ZooterShell } from "@/components/zooter/ZooterShell";
 import { RequireRole } from "@/components/RequireRole";
 import Index from "./pages/Index.tsx";
@@ -45,6 +46,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <NativeInteractionLayer />
       <Toaster />
       <Sonner />
       <BrowserRouter>
