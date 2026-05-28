@@ -7,7 +7,7 @@ Required checks before calling a preview fully functional:
 - The public preview URL renders meaningful Zoot content and is not a blank shell.
 - The full React build loads without framework overlays or console runtime errors.
 - Core public routes such as `/`, `/care-plus`, and `/auth` render through SPA fallback.
-- Core app routes such as `/app`, `/app/plans`, `/app/airbnb-host`, and `/app/office` either render for authenticated users or redirect safely to auth without blank-page failure.
+- Protected app routes such as `/app`, `/app/plans`, `/app/properties/airbnb`, and `/app/properties/office` either render for authenticated users or redirect safely to auth without blank-page failure.
 - Premium actions with haptic hooks degrade safely on browsers without native haptics.
 - Supabase configuration uses the intended project values for the target environment.
 - Store-review, AI-use, security, Care+, host, office, and native-readiness documentation remains discoverable from repo docs.
