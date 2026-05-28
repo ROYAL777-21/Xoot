@@ -42,6 +42,7 @@ Sources reviewed on 2026-05-28:
 - Respect safe areas, notches, Dynamic Island spacing, reduced motion, dark mode, large text, VoiceOver, and one-handed mobile ergonomics.
 - Keep the web app/PWA as an installable fallback, but use native iOS affordances for booking status, support, push, widgets, Live Activities, and account/session management in the submitted app.
 - Verify every native screen has a useful offline/loading/error state, especially bookings, support, Care+, host/office dashboards, and payments.
+- Verify press states, scroll-cancel reversion, keyboard avoidance, outside-tap keyboard dismissal, auto-growing inputs, shimmer loading, empty states, and permission primers on a physical iPhone before review.
 
 ## Live Activities And Dynamic Island
 
@@ -81,6 +82,7 @@ Sources reviewed on 2026-05-28:
 - If Android home-screen widgets are added, keep them non-sensitive and equivalent to the iOS widget policy: Next Booking, Care+ Readiness, ZootCred, and Favourite Zooter summaries only.
 - Test on at least one current Android emulator and one lower-memory profile before Play submission.
 - Validate Play Data Safety declarations against actual app code, third-party SDKs, analytics, crash reporting, payments, maps, messaging, and AI providers.
+- Verify native-feel motion on Android: ripple/press feedback, scroll-cancel reversion, keyboard controller behavior, shimmer states, empty states, and permission primer timing.
 
 ## Zoot-Specific Release Gates
 
