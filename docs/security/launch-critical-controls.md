@@ -7,7 +7,7 @@ This document turns the security programme into launch work. The goal is to prev
 | Risk | Branch control |
 |---|---|
 | Data leakage through committed environment files | Removed the tracked `.env`, added `.env.example`, and updated `.gitignore` to keep local environment files out of Git. |
-| Lovable gateway dependency and branding exposure | Removed the Vite tagger dependency, tagger usage, gateway environment reference, and stale lockfiles that still contained removed dependency metadata. |
+| External builder metadata and gateway exposure | Removed the Vite tagger dependency, tagger usage, gateway environment reference, and stale lockfiles that still contained removed dependency metadata. |
 | Unsupported AI support behavior | Replaced the external AI support call with a conservative local support responder that escalates account, payment, cancellation, access-code, safety, damage, no-show, and complaint topics. |
 | Unsafe contractor document uploads | Added client-side file-type, MIME, filename, and 8MB size validation for contractor verification uploads. Server and storage policies must still enforce this. |
 | Overexposed booking access notes | Updated the Zooter jobs UI to avoid showing client addresses directly in the list and direct Zooters to secure booking details near appointment time. Backend timing/RLS controls are still required. |
