@@ -4,7 +4,6 @@ const config: CapacitorConfig = {
   appId: "za.co.zoot.app",
   appName: "Zoot",
   webDir: "dist",
-  bundledWebRuntime: false,
   server: {
     androidScheme: "https",
     iosScheme: "zoot",
