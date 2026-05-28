@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Zoot Design System — Warm Home palette: terracotta + sage + cream */
+/* Zoot Design System - Warm Home palette: terracotta + sage + cream */
 
 @layer base {
   :root {
@@ -58,6 +58,11 @@
     --shadow-card: 0 4px 16px -4px hsl(20 30% 12% / 0.06);
 
     --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring: cubic-bezier(0.2, 0.85, 0.25, 1.15);
+    --ease-native: cubic-bezier(0.16, 1, 0.3, 1);
+    --press-scale: 0.975;
+    --keyboard-offset: 0px;
+    --visual-viewport-height: 100vh;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -97,9 +102,37 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    min-height: var(--visual-viewport-height);
+    overscroll-behavior-y: none;
+    text-rendering: optimizeLegibility;
     font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body[data-keyboard-open="true"] {
+    scroll-padding-bottom: calc(var(--keyboard-offset) + env(safe-area-inset-bottom) + 96px);
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
+    color: hsl(var(--foreground));
+  }
+
+  button,
+  a,
+  input,
+  textarea,
+  select,
+  [role="button"] {
+    touch-action: manipulation;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -128,5 +161,179 @@
   }
   .text-balance {
     text-wrap: balance;
+  }
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .keyboard-safe {
+    padding-bottom: calc(var(--keyboard-offset) + env(safe-area-inset-bottom));
+  }
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  }
+  .native-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-padding-bottom: calc(var(--keyboard-offset) + 96px);
+  }
+}
+
+@layer components {
+  .interactive-press {
+    transform: translateZ(0) scale(1);
+    transform-origin: center;
+    will-change: transform, box-shadow, filter;
+    transition:
+      transform 180ms var(--ease-spring),
+      box-shadow 220ms var(--ease-native),
+      filter 220ms var(--ease-native),
+      background-color 180ms var(--ease-native),
+      border-color 180ms var(--ease-native),
+      color 180ms var(--ease-native),
+      opacity 180ms var(--ease-native);
+  }
+
+  .interactive-press:hover:not(:disabled):not([aria-disabled="true"]) {
+    filter: saturate(1.03);
+  }
+
+  .interactive-press:active:not(:disabled):not([aria-disabled="true"]),
+  .interactive-press[data-pressed="true"] {
+    transform: translateZ(0) scale(var(--press-scale));
+    filter: saturate(0.98);
+  }
+
+  .interactive-lift {
+    transition:
+      transform 220ms var(--ease-native),
+      box-shadow 220ms var(--ease-native),
+      border-color 180ms var(--ease-native),
+      background-color 180ms var(--ease-native);
+  }
+
+  .interactive-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+  }
+
+  .interactive-toggle {
+    transition:
+      background-color 180ms var(--ease-native),
+      box-shadow 220ms var(--ease-native),
+      transform 180ms var(--ease-spring);
+  }
+
+  .interactive-toggle:active {
+    transform: scale(0.97);
+  }
+
+  .native-input {
+    min-height: 44px;
+    font-size: 16px;
+    transition:
+      border-color 180ms var(--ease-native),
+      box-shadow 180ms var(--ease-native),
+      background-color 180ms var(--ease-native),
+      transform 180ms var(--ease-spring);
+  }
+
+  .native-input:focus {
+    transform: translateY(-1px);
+  }
+
+  .native-textarea {
+    transition:
+      height 180ms var(--ease-native),
+      border-color 180ms var(--ease-native),
+      box-shadow 180ms var(--ease-native),
+      background-color 180ms var(--ease-native);
+  }
+
+  .fade-in-soft {
+    animation: zoot-fade-in 220ms var(--ease-native) both;
+  }
+
+  .slide-up-soft {
+    animation: zoot-slide-up 260ms var(--ease-native) both;
+  }
+
+  .scale-in-soft {
+    animation: zoot-scale-in 220ms var(--ease-spring) both;
+  }
+
+  .cross-fade {
+    animation: zoot-cross-fade 180ms var(--ease-native) both;
+  }
+
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+    background: hsl(var(--muted));
+  }
+
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, hsl(var(--background) / 0.58), transparent);
+    animation: zoot-shimmer 1.5s var(--ease-native) infinite;
+  }
+
+  .permission-primer {
+    border: 1px solid hsl(var(--border));
+    background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--secondary) / 0.46) 100%);
+    box-shadow: var(--shadow-soft);
+  }
+
+  [aria-busy="true"] {
+    cursor: progress;
+  }
+}
+
+@keyframes zoot-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoot-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zoot-scale-in {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes zoot-cross-fade {
+  from { opacity: 0.72; }
+  to { opacity: 1; }
+}
+
+@keyframes zoot-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .interactive-press,
+  .interactive-press:active,
+  .interactive-lift:hover,
+  .native-input:focus {
+    transform: none !important;
   }
 }
