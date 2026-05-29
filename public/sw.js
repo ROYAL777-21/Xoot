@@ -1,5 +1,5 @@
-const CACHE_NAME = "zoot-app-shell-v1";
-const APP_SHELL = ["/", "/care-plus", "/manifest.webmanifest", "/zoot-icon.svg"];
+const CACHE_NAME = "zoot-app-shell-v2";
+const APP_SHELL = ["/", "/auth", "/install", "/care-plus", "/trust-centre", "/manifest.webmanifest", "/zoot-icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
@@ -19,7 +19,7 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (event.request.mode === "navigate") {
-    event.respondWith(fetch(event.request).catch(() => caches.match("/")));
+    event.respondWith(fetch(event.request).catch(() => caches.match("/") || caches.match("/auth")));
     return;
   }
 
