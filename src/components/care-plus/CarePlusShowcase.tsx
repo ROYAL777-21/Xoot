@@ -55,12 +55,12 @@ export const CarePlusBenefitCard = ({ benefit }: { benefit: CarePlusBenefit }) =
   const Icon = benefitIcons[benefit.id as keyof typeof benefitIcons] ?? Sparkles;
 
   return (
-    <Card className="group p-5 rounded-3xl border-border/70 bg-card/85 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-warm">
+    <Card className="group rounded-3xl border-border/70 bg-card/85 p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-warm">
       <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
         <Icon className="h-5 w-5" />
       </div>
-      <h3 className="font-display text-xl font-bold mb-2">{benefit.title}</h3>
-      <p className="text-sm leading-relaxed text-muted-foreground mb-4">{benefit.summary}</p>
+      <h3 className="mb-2 font-display text-xl font-bold">{benefit.title}</h3>
+      <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{benefit.summary}</p>
       <p className="text-xs font-semibold text-sage-deep">{benefit.memberProof}</p>
     </Card>
   );
@@ -86,17 +86,17 @@ export const CarePlusComparisonTable = () => (
 );
 
 export const ZootCredPreview = () => (
-  <Card className="p-6 rounded-3xl bg-card shadow-card border-border/70">
-    <div className="flex items-start justify-between gap-4 mb-5">
+  <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
+    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <p className="text-sm font-semibold text-sage-deep">ZootCred preview</p>
-        <h3 className="font-display text-3xl font-bold mt-1">1.5x loyalty value</h3>
+        <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">1.5x loyalty value</h3>
       </div>
       <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
         <WalletCards className="h-6 w-6" />
       </div>
     </div>
-    <div className="grid grid-cols-3 gap-3 text-center">
+    <div className="grid gap-3 text-center sm:grid-cols-3">
       <div className="rounded-2xl bg-muted/50 p-3">
         <p className="font-display text-2xl font-bold">R{mockZootCredBalance.availableZar}</p>
         <p className="text-xs text-muted-foreground">Available</p>
@@ -115,17 +115,17 @@ export const ZootCredPreview = () => (
 );
 
 export const HomeMemoryPreview = () => (
-  <Card className="p-6 rounded-3xl bg-card shadow-card border-border/70">
-    <div className="flex items-start justify-between gap-4 mb-5">
+  <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
+    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <p className="text-sm font-semibold text-sage-deep">Home Memory</p>
-        <h3 className="font-display text-3xl font-bold mt-1">Your home remembered</h3>
+        <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">Your home remembered</h3>
       </div>
       <div className="grid h-12 w-12 place-items-center rounded-2xl bg-sage/15 text-sage-deep">
         <Home className="h-6 w-6" />
       </div>
     </div>
-    <div className="grid sm:grid-cols-2 gap-3">
+    <div className="grid gap-3 sm:grid-cols-2">
       {[
         ["Pet notes", mockHomeMemoryProfile.petNotes.join(", ")],
         ["Room priorities", mockHomeMemoryProfile.roomPriorities.join(", ")],
@@ -143,30 +143,30 @@ export const HomeMemoryPreview = () => (
 );
 
 export const FavouriteZooterPreview = () => (
-  <Card className="p-6 rounded-3xl bg-card shadow-card border-border/70">
-    <div className="flex items-start justify-between gap-4 mb-5">
+  <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
+    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <p className="text-sm font-semibold text-sage-deep">Favourite Zooter</p>
-        <h3 className="font-display text-3xl font-bold mt-1">{mockFavouriteZooter.name} knows the rhythm</h3>
+        <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">{mockFavouriteZooter.name} knows the rhythm</h3>
       </div>
       <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
         <Heart className="h-6 w-6" />
       </div>
     </div>
-    <div className="rounded-3xl bg-gradient-to-br from-accent-soft to-background p-5 border border-accent/20">
-      <div className="flex items-center justify-between gap-3 mb-3">
+    <div className="rounded-3xl border border-accent/20 bg-gradient-to-br from-accent-soft to-background p-4 sm:p-5">
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="font-display text-2xl font-bold">{mockFavouriteZooter.name}</p>
           <p className="text-sm text-muted-foreground">Rating {mockFavouriteZooter.rating} - {mockFavouriteZooter.preferredFor}</p>
         </div>
-        <span className="rounded-full bg-background px-3 py-1 text-xs font-bold text-sage-deep">Preferred</span>
+        <span className="w-fit rounded-full bg-background px-3 py-1 text-xs font-bold text-sage-deep">Preferred</span>
       </div>
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="mb-4 flex flex-wrap gap-2">
         {mockFavouriteZooter.specialties.map((specialty) => (
           <span key={specialty} className="rounded-full bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground">{specialty}</span>
         ))}
       </div>
-      <Button asChild className="rounded-full gradient-warm" onClick={() => haptic("impact")}>
+      <Button asChild className="w-full rounded-full gradient-warm sm:w-auto" onClick={() => haptic("impact")}>
         <Link to="/app">Book {mockFavouriteZooter.name} again</Link>
       </Button>
     </div>
@@ -177,12 +177,12 @@ export const SmartReminderList = ({ reminders = smartReminders }: { reminders?: 
   <div className="space-y-3">
     {reminders.map((reminder) => (
       <div key={reminder.id} className="rounded-3xl border border-border bg-card p-4 shadow-card transition-colors hover:border-primary/30">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-foreground">{reminder.message}</p>
             <p className="mt-1 text-xs font-medium text-muted-foreground">{priorityLabel(reminder.priority)} prompt</p>
           </div>
-          <Button variant="ghost" size="sm" className="rounded-full" onClick={() => haptic("selection")}>
+          <Button variant="ghost" size="sm" className="w-full justify-center rounded-full sm:w-auto" onClick={() => haptic("selection")}>
             {reminder.cta}
             <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
@@ -193,13 +193,13 @@ export const SmartReminderList = ({ reminders = smartReminders }: { reminders?: 
 );
 
 export const PropertyProfilePreview = ({ profile }: { profile: PropertyProfile }) => (
-  <Card className="p-5 rounded-3xl bg-card border-border/70 shadow-card">
-    <div className="flex items-start justify-between gap-3">
+  <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <p className="font-display text-xl font-bold">{profile.name}</p>
         <p className="text-sm text-muted-foreground capitalize">{profile.type.replace(/_/g, " ")} - {profile.suburb}</p>
       </div>
-      <span className="rounded-full bg-sage/15 px-3 py-1 text-xs font-bold text-sage-deep">{profile.readinessScore}% ready</span>
+      <span className="w-fit rounded-full bg-sage/15 px-3 py-1 text-xs font-bold text-sage-deep">{profile.readinessScore}% ready</span>
     </div>
     <Progress value={profile.readinessScore} className="my-4" />
     <p className="text-sm text-muted-foreground">{profile.turnoverInstructions ?? profile.nextRecommendedBooking}</p>
@@ -207,15 +207,15 @@ export const PropertyProfilePreview = ({ profile }: { profile: PropertyProfile }
 );
 
 export const CarePlusStatusPanel = () => (
-  <Card className="p-6 rounded-3xl bg-foreground text-background shadow-warm border-0">
-    <div className="flex items-center justify-between gap-4 mb-6">
+  <Card className="rounded-3xl border-0 bg-foreground p-5 text-background shadow-warm sm:p-6">
+    <div className="mb-6 flex items-start justify-between gap-4">
       <div>
         <p className="text-sm text-background/70">Care+ active</p>
-        <h3 className="font-display text-4xl font-bold">R{mockCarePlusMembership.priceZar}/month</h3>
+        <h3 className="font-display text-3xl font-bold sm:text-4xl">R{mockCarePlusMembership.priceZar}/month</h3>
       </div>
-      <Crown className="h-10 w-10 text-accent" />
+      <Crown className="h-9 w-9 shrink-0 text-accent sm:h-10 sm:w-10" />
     </div>
-    <div className="grid grid-cols-3 gap-3 text-center">
+    <div className="grid gap-3 text-center sm:grid-cols-3">
       <div className="rounded-2xl bg-background/10 p-3">
         <p className="font-display text-2xl font-bold">{mockCarePlusMembership.homeReadinessScore}%</p>
         <p className="text-xs text-background/70">Readiness</p>
@@ -233,11 +233,11 @@ export const CarePlusStatusPanel = () => (
 );
 
 export const CarePlusSupportPromise = () => (
-  <Card className="p-6 rounded-3xl bg-card border-border/70 shadow-card">
-    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary mb-4">
+  <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
+    <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
       <LifeBuoy className="h-6 w-6" />
     </div>
-    <h3 className="font-display text-3xl font-bold mb-3">Priority support when plans need attention</h3>
+    <h3 className="mb-3 font-display text-2xl font-bold sm:text-3xl">Priority support when plans need attention</h3>
     <p className="text-sm leading-relaxed text-muted-foreground">Care+ members receive faster support handling for booking issues, cancellations, service concerns and replacement matching. Replacement is prioritised, not guaranteed.</p>
   </Card>
 );
