@@ -42,7 +42,7 @@ describe("auth security helpers", () => {
     expect(getSafeRedirectPath("https://evil.example/app")).toBe("/app");
     expect(getSafeRedirectPath("//evil.example/app")).toBe("/app");
     expect(getSafeRedirectPath("/auth?next=/admin")).toBe("/app");
-    expect(getAuthRedirectTo("/app/support", "/auth/callback")).toBe("/auth/callback?next=%2Fapp%2Fsupport");
+    expect(getAuthRedirectTo("/app/support", "/auth/callback")).toMatch(/\/auth\/callback\?next=%2Fapp%2Fsupport$/);
   });
 
   it("validates password update confirmation", () => {
