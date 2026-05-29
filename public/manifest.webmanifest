@@ -1,10 +1,12 @@
 {
+  "id": "/app",
   "name": "Zoot",
   "short_name": "Zoot",
   "description": "Premium South African home-care booking, Care+, Home Memory, ZootCred, and priority support.",
-  "start_url": "/app",
+  "start_url": "/app?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
   "background_color": "#faf4e8",
   "theme_color": "#c2654a",
@@ -33,10 +35,10 @@
       "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
     },
     {
-      "name": "Properties",
-      "short_name": "Homes",
-      "description": "Open Airbnb, landlord and office profiles.",
-      "url": "/app/properties",
+      "name": "Install Zoot",
+      "short_name": "Install",
+      "description": "Add Zoot to an iPhone Home Screen.",
+      "url": "/install",
       "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
     },
     {
