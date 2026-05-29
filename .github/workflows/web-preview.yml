@@ -21,7 +21,7 @@ env:
 
 jobs:
   build:
-    name: Install, lint, test, and build
+    name: Install, lint, test, scan, and build
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -40,6 +40,9 @@ jobs:
 
       - name: Run tests
         run: npm run test
+
+      - name: Run lightweight secret scan
+        run: npm run security:scan
 
       - name: Build website
         run: npm run build
