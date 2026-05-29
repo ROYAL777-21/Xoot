@@ -1,6 +1,8 @@
 export type AuthMode = "signin" | "signup";
+export type SocialAuthProvider = "google" | "apple";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DEFAULT_AUTH_REDIRECT = "/app";
 
 export const normaliseEmail = (email: string) => email.trim().toLowerCase();
 
@@ -67,10 +69,56 @@ export const getAuthFormIssue = ({
   return null;
 };
 
+export const getSafeRedirectPath = (value: string | null | undefined, fallback = DEFAULT_AUTH_REDIRECT) => {
+  if (!value) return fallback;
+
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.includes("\\") || trimmed.startsWith("//")) return fallback;
+
+  try {
+    const parsed = new URL(trimmed, "https://zoot.local");
+    if (parsed.origin !== "https://zoot.local") return fallback;
+    const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    if (!path.startsWith("/") || path.startsWith("/auth")) return fallback;
+    return path;
+  } catch {
+    return fallback;
+  }
+};
+
+export const getAuthRedirectTo = (nextPath: string | null | undefined, callbackPath = "/auth/callback") => {
+  const safePath = getSafeRedirectPath(nextPath);
+  if (typeof window === "undefined") return `${callbackPath}?next=${encodeURIComponent(safePath)}`;
+  return `${window.location.origin}${callbackPath}?next=${encodeURIComponent(safePath)}`;
+};
+
+export const getPasswordResetRedirectTo = () => {
+  if (typeof window === "undefined") return "/auth/reset";
+  return `${window.location.origin}/auth/reset`;
+};
+
+export const getPasswordUpdateIssue = (password: string, confirmation: string) => {
+  const passwordIssue = getPasswordIssues(password, "signup")[0];
+  if (passwordIssue) return passwordIssue;
+  if (password !== confirmation) return "Passwords need to match.";
+  return null;
+};
+
 export const getSafeAuthErrorMessage = (mode: AuthMode) => {
   if (mode === "signin") {
     return "We could not sign you in. Check your details or reset your password.";
   }
 
   return "We could not create that account. Check your details or sign in if you already have access.";
+};
+
+export const getSafePasswordResetMessage = () =>
+  "If that email can access Zoot, we will send password reset instructions.";
+
+export const getSafePasswordUpdateErrorMessage = () =>
+  "We could not update your password. Request a new reset link and try again.";
+
+export const getSafeOAuthErrorMessage = (provider: SocialAuthProvider) => {
+  const label = provider === "google" ? "Google" : "Apple";
+  return `We could not start ${label} sign-in. Check that this provider is enabled for Zoot and try again.`;
 };
