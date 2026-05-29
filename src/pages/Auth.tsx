@@ -19,6 +19,7 @@ import {
   getSafeAuthErrorMessage,
   getSafeOAuthErrorMessage,
   getSafePasswordResetMessage,
+  getSafeRedirectPath,
   normaliseEmail,
   type SocialAuthProvider,
 } from "@/lib/auth-security";
@@ -34,8 +35,7 @@ type AuthLocationState = {
 
 const getRedirectPath = (state: unknown) => {
   const from = (state as AuthLocationState | null)?.from;
-  const path = `${from?.pathname ?? "/app"}${from?.search ?? ""}`;
-  return path.startsWith("/auth") ? "/app" : path;
+  return getSafeRedirectPath(`${from?.pathname ?? "/app"}${from?.search ?? ""}`);
 };
 
 const providerLabels: Record<SocialAuthProvider, string> = {
