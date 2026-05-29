@@ -1,29 +1,63 @@
 import { Navbar } from "@/components/zoot/Navbar";
 import { Footer } from "@/components/zoot/Footer";
-import { ShieldCheck, FileSearch, Star, HeartHandshake } from "lucide-react";
+import { ShieldCheck, FileSearch, Star, HeartHandshake, LockKeyhole, Clock3 } from "lucide-react";
 
 const items = [
-  { icon: FileSearch, title: "Verified identities", desc: "Government ID, address proof, and references checked before any Zooter is approved." },
-  { icon: ShieldCheck, title: "Background screening", desc: "Criminal background checks performed via licensed third-party providers." },
-  { icon: Star, title: "Continuous quality", desc: "Every booking is rated. Zooters falling below our standards are removed." },
-  { icon: HeartHandshake, title: "Insurance & disputes", desc: "Booking-level insurance plus a dedicated support team to resolve issues fast." },
+  {
+    icon: FileSearch,
+    title: "Visible verification steps",
+    desc: "Zoot shows identity, selfie, address, reference, training, and third-party screening status so trust is explained, not hidden behind a vague badge.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Activation gates",
+    desc: "A Zooter cannot be activated until the required review areas are marked complete by the trust workflow and admin review.",
+  },
+  {
+    icon: LockKeyhole,
+    title: "Protected home details",
+    desc: "Access notes, gate codes, parking, pets, and entry instructions are treated as sensitive and should only be shown inside authenticated booking windows.",
+  },
+  {
+    icon: Clock3,
+    title: "Cancellation response",
+    desc: "When a booking is disrupted, Zoot routes the issue into support and replacement matching. We do not promise availability before it is confirmed.",
+  },
+  {
+    icon: Star,
+    title: "Reliability over time",
+    desc: "Punctuality, completion, complaints, repeat bookings, and customer feedback feed the reliability model so quality is monitored after approval.",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Human escalation",
+    desc: "Low ratings, safety concerns, payment issues, and trust incidents are escalated for human review instead of being left to automation alone.",
+  },
 ];
 
 const TrustSafety = () => (
   <div className="min-h-screen bg-background">
     <Navbar />
-    <main className="container max-w-4xl py-12 md:py-20">
-      <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Trust & Safety</p>
-      <h1 className="font-display text-4xl md:text-6xl font-bold mb-4">Built on trust.</h1>
-      <p className="text-lg text-muted-foreground mb-12">Every Zooter on the platform has cleared identity, reference and background checks. Here's how we keep your home safe.</p>
-      <div className="grid sm:grid-cols-2 gap-5">
+    <main className="container max-w-5xl py-12 md:py-20">
+      <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">Trust & Safety</p>
+      <h1 className="mb-4 font-display text-4xl font-bold md:text-6xl">Trust that can be inspected.</h1>
+      <p className="mb-10 max-w-3xl text-lg leading-relaxed text-muted-foreground">
+        Zoot is designed around visible verification, protected household information, on-platform communication, and fast human escalation when something needs attention.
+      </p>
+      <div className="mb-10 rounded-3xl border border-border bg-card p-6 shadow-card">
+        <p className="text-sm font-semibold text-sage-deep">No unsupported promises</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Zoot only shows guarantees, insurance, replacement timing, and background-check claims when the relevant operational support and verification evidence exist. If a backend workflow is still pending, the product presents it as a review or support process, not as a guarantee.
+        </p>
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((it) => {
           const Icon = it.icon;
           return (
-            <div key={it.title} className="rounded-3xl border border-border bg-card p-6 shadow-card">
-              <div className="grid place-items-center h-12 w-12 rounded-2xl bg-primary/10 text-primary mb-4"><Icon className="h-6 w-6" /></div>
-              <h3 className="font-display font-semibold text-lg mb-1">{it.title}</h3>
-              <p className="text-sm text-muted-foreground">{it.desc}</p>
+            <div key={it.title} className="rounded-3xl border border-border bg-card p-6 shadow-card transition-smooth hover:-translate-y-1 hover:shadow-warm">
+              <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary"><Icon className="h-6 w-6" /></div>
+              <h3 className="mb-1 font-display text-lg font-semibold">{it.title}</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">{it.desc}</p>
             </div>
           );
         })}
@@ -32,4 +66,5 @@ const TrustSafety = () => (
     <Footer />
   </div>
 );
+
 export default TrustSafety;
