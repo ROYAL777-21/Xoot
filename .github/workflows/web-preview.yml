@@ -53,6 +53,7 @@ jobs:
           name: zoot-web-dist
           path: dist
           if-no-files-found: error
+          include-hidden-files: true
 
       - name: Upload GitHub Pages artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
