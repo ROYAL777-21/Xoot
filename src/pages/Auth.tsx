@@ -207,21 +207,21 @@ const Auth = () => {
       : "Enter your email and we will send a secure reset link if the account can access Zoot.";
 
   return (
-    <div className="min-h-screen gradient-hero grid place-items-center p-6">
-      <Card className="w-full max-w-md rounded-3xl border-border p-8 shadow-warm">
-        <Link to="/" className="mb-6 flex items-center gap-2" aria-label="Back to Zoot home">
-          <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm shadow-warm">
+    <div className="grid min-h-screen place-items-center overflow-hidden gradient-hero px-4 py-6 sm:p-6">
+      <Card className="w-full max-w-[23rem] rounded-3xl border-border p-5 shadow-warm sm:max-w-md sm:p-8">
+        <Link to="/" className="mb-5 flex items-center gap-2 sm:mb-6" aria-label="Back to Zoot home">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-warm shadow-warm">
             <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
           </span>
           <span className="font-display text-2xl font-bold tracking-tight">zoot</span>
         </Link>
 
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
-          {mode === "signin" ? <LockKeyhole className="h-3 w-3 text-sage-deep" /> : mode === "forgot" ? <Mail className="h-3 w-3 text-sage-deep" /> : <Sparkles className="h-3 w-3 text-sage-deep" />}
+        <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
+          {mode === "signin" ? <LockKeyhole className="h-3 w-3 shrink-0 text-sage-deep" /> : mode === "forgot" ? <Mail className="h-3 w-3 shrink-0 text-sage-deep" /> : <Sparkles className="h-3 w-3 shrink-0 text-sage-deep" />}
           <span className="text-xs font-medium text-sage-deep">{mode === "signin" ? "Secure sign-in" : mode === "forgot" ? "Password recovery" : "Join Zoot"}</span>
         </div>
 
-        <h1 className="mb-1 font-display text-3xl font-bold">{heading}</h1>
+        <h1 className="mb-1 font-display text-2xl font-bold sm:text-3xl">{heading}</h1>
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{subheading}</p>
 
         {!isForgotPassword && (
@@ -285,9 +285,9 @@ const Auth = () => {
 
           {!isForgotPassword && (
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <Label htmlFor="password">Password</Label>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   {mode === "signin" && (
                     <button
                       type="button"
@@ -348,14 +348,14 @@ const Auth = () => {
 
           {isLocked && (
             <div className="flex items-start gap-2 rounded-2xl border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
-              <AlertCircle className="mt-0.5 h-4 w-4" />
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <p>Too many unsuccessful attempts. Please wait 30 seconds before trying again.</p>
             </div>
           )}
 
           <div className="rounded-2xl border border-border bg-muted/35 p-3 text-xs leading-relaxed text-muted-foreground">
             <p className="flex items-start gap-2">
-              <ShieldCheck className="mt-0.5 h-4 w-4 text-sage-deep" />
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sage-deep" />
               Zoot will never ask for your password, OTP, card PIN or bank login details in chat, WhatsApp, phone calls or email.
             </p>
           </div>
