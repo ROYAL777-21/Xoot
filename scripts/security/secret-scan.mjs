@@ -42,6 +42,8 @@ const walk = (dir, files = []) => {
 const findings = [];
 for (const file of walk(ROOT)) {
   const rel = relative(ROOT, file).replaceAll("\\", "/");
+  if (rel === "scripts/security/secret-scan.mjs") continue;
+
   const content = readFileSync(file, "utf8");
   const lines = content.split(/\r?\n/);
   lines.forEach((line, index) => {
