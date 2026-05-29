@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   getAuthFormIssue,
+  getAuthRedirectTo,
   getPasswordIssues,
   getPasswordStrength,
+  getPasswordUpdateIssue,
   getSafeAuthErrorMessage,
+  getSafeOAuthErrorMessage,
+  getSafePasswordResetMessage,
+  getSafeRedirectPath,
   normaliseEmail,
 } from "./auth-security";
 
@@ -32,8 +37,25 @@ describe("auth security helpers", () => {
     expect(getPasswordStrength("StrongPass8!")).toBe(4);
   });
 
-  it("uses generic auth errors to avoid account enumeration", () => {
+  it("keeps post-auth redirects relative and outside auth routes", () => {
+    expect(getSafeRedirectPath("/app/bookings?status=open")).toBe("/app/bookings?status=open");
+    expect(getSafeRedirectPath("https://evil.example/app")).toBe("/app");
+    expect(getSafeRedirectPath("//evil.example/app")).toBe("/app");
+    expect(getSafeRedirectPath("/auth?next=/admin")).toBe("/app");
+    expect(getAuthRedirectTo("/app/support", "/auth/callback")).toBe("/auth/callback?next=%2Fapp%2Fsupport");
+  });
+
+  it("validates password update confirmation", () => {
+    expect(getPasswordUpdateIssue("Short1", "Short1")).toBe("Use at least 8 characters.");
+    expect(getPasswordUpdateIssue("StrongPass8", "DifferentPass8")).toBe("Passwords need to match.");
+    expect(getPasswordUpdateIssue("StrongPass8", "StrongPass8")).toBeNull();
+  });
+
+  it("uses generic auth and recovery errors to avoid account enumeration", () => {
     expect(getSafeAuthErrorMessage("signin")).not.toContain("email exists");
     expect(getSafeAuthErrorMessage("signup")).not.toContain("registered");
+    expect(getSafePasswordResetMessage()).not.toContain("account exists");
+    expect(getSafeOAuthErrorMessage("google")).toContain("Google");
+    expect(getSafeOAuthErrorMessage("apple")).toContain("Apple");
   });
 });
