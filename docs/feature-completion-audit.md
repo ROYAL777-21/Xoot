@@ -70,4 +70,4 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | 10,000-request readiness | Partial | k6 smoke/load script exists. Do not claim capacity until it is run against staging/production and database metrics are reviewed. |
 | Hostinger deployment | Partial | Static build, SPA fallback, and Apache headers are prepared. Final deployment needs Hostinger domain/environment configuration. |
 | Vercel/Netlify/GitHub Pages preview | Partial | GitHub Actions build artifact is available for preview; production target remains Hostinger unless changed. |
-| Figma dashboard | Not started in repo | Figma files are not stored in this code repository. A connector-created Figma file should be verified separately if still required. |
+| Figma dashboard | Partial | Blank file created at https://www.figma.com/design/vsT7yHn1OPxKgKpVzLryo3 as `Zoot Care+ Host & Office Dashboards`. Populating the dashboard frames is blocked by the Figma Starter-plan MCP tool-call limit. |
