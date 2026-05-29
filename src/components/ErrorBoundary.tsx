@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { reportClientError } from "@/lib/monitoring";
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -19,9 +20,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    if (import.meta.env.DEV) {
-      console.error("Zoot app boundary caught an error", error, info);
-    }
+    reportClientError(error, {
+      source: "app-boundary",
+      componentStack: info.componentStack,
+    });
   }
 
   render() {
