@@ -37,12 +37,17 @@ export const isAllowedOutboundUrl = (url: string, allowedHosts = DEFAULT_ALLOWED
   }
 };
 
+const replaceControlCharacters = (value: string) =>
+  Array.from(value, (character) => {
+    const code = character.charCodeAt(0);
+    return code <= 31 || code === 127 ? " " : character;
+  }).join("");
+
 export const sanitisePlainText = (value: string | null | undefined, maxLength = 500) => {
   if (!value) return "";
 
-  return value
+  return replaceControlCharacters(value)
     .replace(/[<>"'`\\]/g, "")
-    .replace(/[\u0000-\u001f\u007f]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, maxLength);
