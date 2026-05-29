@@ -9,6 +9,7 @@ import "@fontsource/dm-sans/600.css";
 import "@fontsource/dm-sans/700.css";
 import App from "./App.tsx";
 import "./index.css";
+import "./mobile-safety.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
 
