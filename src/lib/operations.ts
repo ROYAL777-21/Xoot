@@ -63,14 +63,67 @@ export type LedgerEntry = {
   direction: "credit" | "debit";
 };
 
-const ADD_ON_PRICE = 30;
-const BOOKING_COVER = 21;
-const ONE_TIME_SERVICE_FEE = 39;
-const HIGH_DEMAND_RATE = 0.15;
+export type HomeCleaningSize = "small" | "medium" | "large";
+export type MovingCleanSize = "tiny" | "small" | "medium" | "large" | "extra_large";
+export type LinenOption = "do_not_replace" | "replace_only" | "replace_and_wash";
+
+export type PriceRule = {
+  id: string;
+  label: string;
+  estimatedHours: number;
+  priceZar: number;
+  note?: string;
+};
+
+export const HOME_CLEANING_PRICES: Record<HomeCleaningSize, PriceRule> = {
+  small: { id: "small", label: "Small home", estimatedHours: 4, priceZar: 280, note: "1-2 bedrooms" },
+  medium: { id: "medium", label: "Medium home", estimatedHours: 5.5, priceZar: 325, note: "3-4 bedrooms" },
+  large: { id: "large", label: "Large home", estimatedHours: 8, priceZar: 400, note: "5+ bedrooms" },
+};
+
+export const OFFICE_CLEANING_PRICES: PriceRule[] = [
+  { id: "office-2-3h", label: "Office clean", estimatedHours: 3, priceZar: 411, note: "R39 service fee applies" },
+  { id: "office-3-5h", label: "Office clean", estimatedHours: 3.5, priceZar: 480, note: "R39 service fee applies" },
+  { id: "office-4h", label: "Office clean", estimatedHours: 4, priceZar: 500, note: "R39 service fee applies" },
+];
+
+export const MOVING_CLEANING_PRICES: Record<MovingCleanSize, PriceRule> = {
+  tiny: { id: "tiny", label: "Tiny home under 50m2", estimatedHours: 4.5, priceZar: 350, note: "Moving add-ons included" },
+  small: { id: "small", label: "Small home", estimatedHours: 6, priceZar: 350, note: "Moving add-ons included" },
+  medium: { id: "medium", label: "Medium home", estimatedHours: 8, priceZar: 350, note: "Moving add-ons included" },
+  large: { id: "large", label: "Large home", estimatedHours: 10, priceZar: 350, note: "Moving add-ons included" },
+  extra_large: { id: "extra_large", label: "Extra-large home", estimatedHours: 10, priceZar: 350, note: "Moving add-ons included" },
+};
+
+export const AIRBNB_CLEANING_STARTING_PRICE = 260;
+export const AIRBNB_CLEANING_HOUR_RANGE = { min: 3, max: 8 } as const;
+export const EXPRESS_CLEANING_PRICE = 250;
+export const EXPRESS_CLEANING_HOUR_RANGE = { min: 1, max: 3 } as const;
+export const LAUNDRY_IRONING_PRICES: PriceRule[] = [
+  { id: "wash-0-6", label: "Machine washing, 0-6 loads", estimatedHours: 3.5, priceZar: 296 },
+  { id: "wash-7-8", label: "Machine washing, 7-8 loads", estimatedHours: 4.5, priceZar: 348 },
+  { id: "ironing-1", label: "Ironing, 1 load", estimatedHours: 3.5, priceZar: 296 },
+];
+
+export const BOOKING_COVER_PRICE_ZAR = 21;
+export const ONE_TIME_SERVICE_FEE_ZAR = 39;
+export const ADD_ON_PRICE_ZAR = 30;
+export const HIGH_DEMAND_SLOT_RATE = 0.15;
+export const SURGE_SLOT_RATE_RANGE = { min: 0.1, max: 0.15 } as const;
+
+const ADD_ON_PRICE = ADD_ON_PRICE_ZAR;
+const BOOKING_COVER = BOOKING_COVER_PRICE_ZAR;
+const ONE_TIME_SERVICE_FEE = ONE_TIME_SERVICE_FEE_ZAR;
+const HIGH_DEMAND_RATE = HIGH_DEMAND_SLOT_RATE;
 
 export const isApprovedLaunchRegion = (input: string) => {
   const value = input.toLowerCase();
   return approvedLaunchRegions.some((region) => value.includes(region));
+};
+
+export const isHighDemandSlot = (time: string) => {
+  const hour = Number(time.split(":")[0] ?? 0);
+  return hour >= 16;
 };
 
 export const calculateBookingQuote = ({
@@ -82,8 +135,7 @@ export const calculateBookingQuote = ({
 }: BookingQuoteInput): BookingQuote => {
   const addOnsTotal = addOnCount * ADD_ON_PRICE;
   const subtotal = basePrice + addOnsTotal;
-  const hour = Number(time.split(":")[0] ?? 0);
-  const highDemandPremium = hour >= 16 ? Math.round(subtotal * HIGH_DEMAND_RATE) : 0;
+  const highDemandPremium = isHighDemandSlot(time) ? Math.round(subtotal * HIGH_DEMAND_RATE) : 0;
   const serviceFee = frequency === "one_time" ? ONE_TIME_SERVICE_FEE : 0;
   const bookingCover = bookingCoverOptIn ? BOOKING_COVER : 0;
 
