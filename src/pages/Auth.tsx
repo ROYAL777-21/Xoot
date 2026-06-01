@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,7 +115,7 @@ const Auth = () => {
 
       haptic("success");
       if (data.session) {
-        toast.success("Welcome to Zoot. Your account is ready.");
+        toast.success(isSupabaseConfigured ? "Welcome to Zoot. Your account is ready." : "Preview account ready.");
         navigate(redirectPath, { replace: true });
       } else {
         toast.success("Check your email to finish setting up Zoot.");
@@ -130,8 +130,25 @@ const Auth = () => {
     setFailedAttempts(0);
     setLockoutUntil(null);
     haptic("success");
-    toast.success("Welcome back.");
+    toast.success(isSupabaseConfigured ? "Welcome back." : "Preview app opened.");
     navigate(redirectPath, { replace: true });
+  };
+
+  const handlePreviewSignIn = async () => {
+    haptic("selection");
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: "demo@zoot.local", password: "Preview123!" });
+      if (error) throw error;
+      haptic("success");
+      toast.success("Preview app opened with demo data.");
+      navigate(redirectPath, { replace: true });
+    } catch {
+      haptic("warning");
+      toast.error("Preview sign-in could not start. Please refresh and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -224,6 +241,16 @@ const Auth = () => {
         <h1 className="mb-1 font-display text-2xl font-bold sm:text-3xl">{heading}</h1>
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{subheading}</p>
 
+        {!isSupabaseConfigured && !isForgotPassword && (
+          <div className="mb-5 rounded-2xl border border-accent/25 bg-accent-soft p-3 text-sm leading-relaxed text-sage-deep">
+            <p className="font-semibold">Preview mode</p>
+            <p className="mt-1 text-xs text-muted-foreground">Live Supabase credentials are not configured in this build, so use the demo account to explore the app with safe mock data.</p>
+            <Button type="button" variant="secondary" className="mt-3 h-10 w-full rounded-xl" onClick={() => void handlePreviewSignIn()} disabled={loading || !!providerLoading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue with preview account"}
+            </Button>
+          </div>
+        )}
+
         {!isForgotPassword && (
           <div className="mb-5 grid gap-3 sm:grid-cols-2">
             {(["google", "apple"] as SocialAuthProvider[]).map((provider) => {
@@ -237,6 +264,7 @@ const Auth = () => {
                   className="h-11 rounded-xl"
                   disabled={loading || !!providerLoading}
                   onClick={() => void handleOAuth(provider)}
+                  title={!isSupabaseConfigured ? `${providerLabels[provider]} OAuth needs Supabase provider credentials` : undefined}
                 >
                   {isProviderLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Icon className="mr-2 h-4 w-4" />}
                   {providerLabels[provider]}
