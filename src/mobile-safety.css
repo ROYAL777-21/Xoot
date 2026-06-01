@@ -3,6 +3,7 @@ body,
 #root {
   width: 100%;
   max-width: 100%;
+  height: 100%;
 }
 
 html {
@@ -10,10 +11,14 @@ html {
   overflow-y: auto;
 }
 
-body,
+body {
+  overflow: hidden;
+}
+
 #root {
   overflow-x: hidden;
-  overflow-y: visible;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .min-h-screen.place-items-center.overflow-hidden.gradient-hero {
