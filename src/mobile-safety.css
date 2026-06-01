@@ -6,13 +6,13 @@ body,
 }
 
 html {
-  overflow-x: clip;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
 body,
 #root {
-  overflow-x: clip;
+  overflow-x: hidden;
   overflow-y: visible;
 }
 
