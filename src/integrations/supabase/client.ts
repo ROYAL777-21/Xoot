@@ -5,11 +5,26 @@ import type { Database } from './types';
 const configuredUrl = import.meta.env.VITE_SUPABASE_URL;
 const configuredKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-export const isSupabaseConfigured = Boolean(configuredUrl && configuredKey);
+const previewSupabaseHosts = new Set(['preview.supabase.co', 'preview.zoot.local']);
+
+const isPlaceholderSupabaseUrl = (value?: string) => {
+  if (!value) return false;
+  try {
+    return previewSupabaseHosts.has(new URL(value).hostname);
+  } catch {
+    return true;
+  }
+};
+
+const isPlaceholderSupabaseKey = (value?: string) => !value || value === 'preview-anon-key' || value === 'preview-local-anon-key';
+
+export const isSupabaseConfigured = Boolean(
+  configuredUrl && configuredKey && !isPlaceholderSupabaseUrl(configuredUrl) && !isPlaceholderSupabaseKey(configuredKey),
+);
 export const isPreviewSupabase = !isSupabaseConfigured;
 
-const SUPABASE_URL = configuredUrl || 'https://preview.zoot.local';
-const SUPABASE_PUBLISHABLE_KEY = configuredKey || 'preview-local-anon-key';
+const SUPABASE_URL = isSupabaseConfigured ? configuredUrl : 'https://preview.zoot.local';
+const SUPABASE_PUBLISHABLE_KEY = isSupabaseConfigured ? configuredKey : 'preview-local-anon-key';
 const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined;
 const PREVIEW_SESSION_KEY = 'zoot.preview.session';
 
