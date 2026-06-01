@@ -110,7 +110,8 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     min-height: var(--visual-viewport-height);
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: auto;
+    overflow-y: auto;
     text-rendering: optimizeLegibility;
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
