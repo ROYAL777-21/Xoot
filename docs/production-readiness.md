@@ -127,7 +127,7 @@ Run a larger public-route check by overriding options in k6 or splitting route g
 
 - Static frontend responses meet target latency under CDN/Hostinger conditions.
 - Supabase database-facing reads have measured latency and no failing RLS/policy paths.
-- Booking requests run through `create-booking-request`; remaining payment, refund, ZootCred redemption, subscription cancellation, and support mutations should move behind Edge Functions before real value is issued.
+- `create-booking-request` is deployed and live frontend booking calls are verified against it; remaining payment, refund, ZootCred redemption, subscription cancellation, and support mutations should move behind Edge Functions before real value is issued.
 - Provider webhooks are idempotent and rate-limited.
 - Error budgets, Sentry alerts, and rollback procedures are active.
 
