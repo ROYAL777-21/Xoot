@@ -1,3 +1,3 @@
-# Welcome to the project
+# Welcome to Zoot!
 
 
