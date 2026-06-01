@@ -17,6 +17,7 @@ Do not expose service-role keys, webhook secrets, Stitch/Ozow secrets, Twilio au
 Server/edge-only secrets belong in Supabase Edge Function secrets or the relevant provider dashboard:
 
 ```bash
+ALLOWED_ORIGINS=
 STITCH_CLIENT_ID=
 STITCH_CLIENT_SECRET=
 OZOW_SITE_CODE=
@@ -28,6 +29,12 @@ TWILIO_API_KEY_SECRET=
 BREVO_API_KEY=
 WEBHOOK_SIGNING_SECRET=
 SENTRY_DSN=
+```
+
+`ALLOWED_ORIGINS` should be a comma-separated allowlist such as:
+
+```bash
+ALLOWED_ORIGINS=https://zoothome.co.za,https://www.zoothome.co.za,https://staging.zoothome.co.za
 ```
 
 ## Supabase Auth Setup
@@ -91,7 +98,7 @@ Supabase checks:
 - Performance advisor.
 - RLS enabled on all public tables.
 - Policy smoke tests for client, contractor, support, finance, and admin roles.
-- Edge function smoke tests for sensitive access read/save.
+- Edge function smoke tests for `create-booking-request`, `ai-match`, `support-respond`, and sensitive access read/save.
 - Webhook signature validation for payment and communications endpoints before live traffic.
 
 Browser checks:
@@ -120,7 +127,7 @@ Run a larger public-route check by overriding options in k6 or splitting route g
 
 - Static frontend responses meet target latency under CDN/Hostinger conditions.
 - Supabase database-facing reads have measured latency and no failing RLS/policy paths.
-- Booking/payment mutations run through edge functions and queues rather than blocking browser requests.
+- Booking requests run through `create-booking-request`; remaining payment, refund, ZootCred redemption, subscription cancellation, and support mutations should move behind Edge Functions before real value is issued.
 - Provider webhooks are idempotent and rate-limited.
 - Error budgets, Sentry alerts, and rollback procedures are active.
 
@@ -141,6 +148,7 @@ These are intentionally not hardcoded into the repo:
 ## Production Guardrails
 
 - Real booking prices, cover, ZootCred, refunds, and Care+ membership state must be calculated server-side.
+- Browser clients must not be the authority for contractor assignment, payment confirmation, ZootCred balance changes, subscription state, cancellation penalties, refunds, or sensitive access decisions.
 - Gate codes and sensitive access notes must be encrypted and fetched only inside the allowed booking window.
 - Notifications must follow the app-first hierarchy: in-app first, email for records, WhatsApp only for urgent operational events, Twilio voice only during active bookings.
 - Avoid unsupported guarantees in public copy unless backed by policy, insurance, and operational capacity.
