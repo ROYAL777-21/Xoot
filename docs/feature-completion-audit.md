@@ -1,7 +1,7 @@
 # Zoot Feature Completion Audit
 
 Branch: `codex/full-zoot-iphone-pwa-auth-security`
-Date: 2026-05-29
+Date: 2026-06-01
 
 Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not started`.
 
@@ -13,7 +13,7 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Care+ membership page | Done | `/care-plus` includes hero, problem, benefits, value pillars, comparison, Airbnb/landlord use case, ZootCred, Home Memory, Favourite Zooter, and final CTA. |
 | Care+ backend billing | Mock/UI only | Membership purchase paths are safe UI routes until payment/subscription backend is approved and connected. |
 | Trust Centre and legal routes | Done | `/trust-centre`, `/legal/privacy`, `/legal/terms`, and `/legal/trust-safety` are routed. |
-| Guided booking app | Partial | Protected `/app` booking experience exists with pricing and trust signals; live payment confirmation and dispatch automation remain backend/provider work. |
+| Guided booking app | Partial | Protected `/app` booking experience exists with pricing and trust signals; live payment confirmation and dispatch automation remain backend/provider work. Local preview was verified through Step 2. |
 | Airbnb host dashboard | Done | `/app/properties/airbnb` is routed and uses typed UI data for portfolio/turnover operations. |
 | Small office dashboard | Done | `/app/properties/office` is routed and uses typed UI data for office operations. |
 | Protected client app routes | Done | Booking, bookings, profile, loyalty, gifts, support, insurance, plans, favourites, and property routes are protected by auth. |
@@ -37,14 +37,15 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Email/password auth | Done | Login/sign-up stays Supabase-backed with safer error handling. |
+| Email/password auth | Done | Login/sign-up stays Supabase-backed with safer error handling when real credentials are configured. |
+| Preview auth and mock data | Done | CI/local placeholder Supabase values now activate safe mock mode, including `Continue with preview account`, so the app can be explored without live Supabase credentials. Verified with zero `preview.supabase.co` failures. |
 | Password visibility | Done | Login page supports viewing/hiding password. |
 | Forgot password | Done | `/auth` supports generic forgot-password requests. |
 | Reset password | Done | `/auth/reset` handles recovery links and updates passwords with policy checks. |
 | Google OAuth | Blocked by credentials | Code path and button are present; Supabase Google provider credentials and redirect allow-list must be configured. |
 | Apple OAuth | Blocked by credentials | Code path and button are present; Apple Services ID/private key/team config and Supabase redirect allow-list are required. |
 | OAuth callback | Done | `/auth/callback` exchanges PKCE codes and uses safe redirect handling. |
-| iPhone PWA | Done | Manifest, iOS meta tags, service worker fallback, and `/install` guidance are present. |
+| iPhone PWA | Done | Manifest, iOS meta tags, service worker fallback, and `/install` guidance are present. iPhone-sized viewport was verified for homepage and protected app layout. |
 | Native iOS/TestFlight | Blocked by credentials | Capacitor scripts exist; Apple Developer access, final bundle ID, signing, and native review assets are required. |
 
 ## Security and Compliance
