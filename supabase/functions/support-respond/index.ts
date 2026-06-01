@@ -1,7 +1,41 @@
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const defaultAllowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://zoothome.co.za",
+  "https://www.zoothome.co.za",
+];
+
+const getAllowedOrigins = () =>
+  (Deno.env.get("ALLOWED_ORIGINS")?.split(",") ?? defaultAllowedOrigins)
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+const getCorsHeaders = (origin: string | null) => {
+  const allowedOrigins = getAllowedOrigins();
+  const allowedOrigin = origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
 };
+
+const isAllowedOrigin = (origin: string | null) => !origin || getAllowedOrigins().includes(origin);
+
+const json = (body: Record<string, unknown>, status: number, origin: string | null) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...getCorsHeaders(origin), "Content-Type": "application/json" },
+  });
+
+const sanitiseSupportText = (value: unknown, maxLength = 1500) =>
+  typeof value === "string"
+    ? value.replace(/[\u0000-\u001f\u007f<>`\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength)
+    : "";
 
 type UserRole = "user" | "zooter";
 
@@ -56,31 +90,37 @@ const buildResponse = (text: string, role: UserRole) => {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const origin = req.headers.get("Origin");
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: getCorsHeaders(origin) });
+  if (req.method !== "POST") return json({ error: "method not allowed" }, 405, origin);
+  if (!isAllowedOrigin(origin)) return json({ error: "origin not allowed" }, 403, origin);
 
   try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) return json({ error: "authentication required" }, 401, origin);
+
+    const supa = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: authData, error: authError } = await supa.auth.getUser();
+    if (authError || !authData.user) return json({ error: "authentication required" }, 401, origin);
+
     const { subject, body, role } = await req.json();
-    if (!subject || !body) {
-      return new Response(JSON.stringify({ error: "subject and body required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const safeSubject = sanitiseSupportText(subject, 180);
+    const safeBody = sanitiseSupportText(body);
+    if (!safeSubject || !safeBody) return json({ error: "subject and body required" }, 400, origin);
 
     const userRole: UserRole = role === "zooter" ? "zooter" : "user";
-    const text = `${subject} ${body}`.toLowerCase();
+    const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
     const response = escalated
       ? "I've flagged this to our human support team. They'll review it in the app and follow up through the right support queue."
       : buildResponse(text, userRole);
 
-    return new Response(JSON.stringify({ response, escalated, source: "zoot_support_rules" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ response, escalated, source: "zoot_support_rules" }, 200, origin);
+  } catch {
+    return json({ error: "support response failed" }, 500, origin);
   }
 });
