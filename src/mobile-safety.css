@@ -16,6 +16,11 @@ body,
   overflow-y: visible;
 }
 
+.min-h-screen.place-items-center.overflow-hidden.gradient-hero {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 *,
 *::before,
 *::after {
