@@ -13,7 +13,7 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Care+ membership page | Done | `/care-plus` includes hero, problem, benefits, value pillars, comparison, Airbnb/landlord use case, ZootCred, Home Memory, Favourite Zooter, and final CTA. |
 | Care+ backend billing | Mock/UI only | Membership purchase paths are safe UI routes until payment/subscription backend is approved and connected. |
 | Trust Centre and legal routes | Done | `/trust-centre`, `/legal/privacy`, `/legal/terms`, and `/legal/trust-safety` are routed. |
-| Guided booking app | Partial | Protected `/app` booking experience exists with pricing and trust signals; live payment confirmation and dispatch automation remain backend/provider work. Local preview was verified through Step 2. |
+| Guided booking app | Partial | Protected `/app` booking experience exists with pricing and trust signals. Live booking request creation is prepared through the `create-booking-request` Edge Function; payment confirmation and dispatch automation remain provider/backend work. Local preview uses safe mock data. |
 | Airbnb host dashboard | Done | `/app/properties/airbnb` is routed and uses typed UI data for portfolio/turnover operations. |
 | Small office dashboard | Done | `/app/properties/office` is routed and uses typed UI data for office operations. |
 | Protected client app routes | Done | Booking, bookings, profile, loyalty, gifts, support, insurance, plans, favourites, and property routes are protected by auth. |
@@ -57,7 +57,7 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Route code splitting | Done | Public/protected routes are lazy-loaded behind a loading fallback. |
 | Secret scan | Done | `npm run security:scan` added and wired into the preview workflow. |
 | Dependency audit | Partial | CI installs and builds; full `npm audit` triage still needs routine operational review because advisories change. |
-| Supabase RLS | Partial | RLS checks/advisors are required before merge. Public table RLS was previously verified; run advisors again before release. |
+| Supabase RLS | Partial | A production hardening migration removes old self-delete/self-mutation paths for bookings, loyalty, subscriptions, referral codes, and job offers. Supabase advisors and role smoke tests are still required before release. |
 | Supabase leaked-password protection | Blocked by credentials | Must be enabled in Supabase Auth settings; current connector exposes advisor visibility, not the dashboard toggle. |
 | Sensitive access window | Partial | Existing edge functions support sensitive access flows; final production verification requires Supabase policy smoke tests. |
 | Payments | Blocked by credentials | Stitch/Ozow credentials and verified webhook secrets are needed before real payment confirmation can be production-ready. |
