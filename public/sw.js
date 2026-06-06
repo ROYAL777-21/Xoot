@@ -1,5 +1,26 @@
-const CACHE_NAME = "zoot-static-v4";
-const STATIC_ASSETS = ["/manifest.webmanifest", "/zoot-icon.svg", "/favicon.ico"];
+const CACHE_NAME = "zoot-static-v5";
+const OFFLINE_URL = "/offline.html";
+const STATIC_ASSETS = ["/manifest.webmanifest", "/zoot-icon.svg", "/favicon.ico", OFFLINE_URL];
+const SENSITIVE_NOTIFICATION_PATTERNS = [
+  /\b(gate|alarm|lockbox|pin|code|access note|access notes|id number|passport|bank|card|payment ref|complaint)\b/i,
+  /\b\d{4,}\b/,
+];
+
+const safeNotificationText = (value, fallback) => {
+  const text = typeof value === "string" ? value.trim().slice(0, 140) : "";
+  if (!text || SENSITIVE_NOTIFICATION_PATTERNS.some((pattern) => pattern.test(text))) return fallback;
+  return text;
+};
+
+const safeNotificationUrl = (value) => {
+  try {
+    const url = new URL(typeof value === "string" ? value : "/app", self.location.origin);
+    if (url.origin !== self.location.origin) return "/app";
+    return url.pathname.startsWith("/app") ? `${url.pathname}${url.search}` : "/app";
+  } catch {
+    return "/app";
+  }
+};
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -29,6 +50,35 @@ self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data?.json() ?? {};
+  } catch {
+    payload = { title: "Zoot update", body: event.data?.text() };
+  }
+  const title = safeNotificationText(payload.title, "Zoot booking update");
+  const options = {
+    body: safeNotificationText(payload.body, "Open Zoot for the latest booking update."),
+    icon: "/zoot-icon.svg",
+    badge: "/zoot-icon.svg",
+    data: { url: safeNotificationUrl(payload.url) },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = new URL(event.notification.data?.url || "/app", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((client) => client.url === targetUrl || client.url.endsWith(new URL(targetUrl).pathname));
+      if (existing) return existing.focus();
+      return self.clients.openWindow(targetUrl);
+    }),
+  );
+});
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
@@ -36,12 +86,7 @@ self.addEventListener("fetch", (event) => {
 
   if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request).catch(() =>
-        new Response("Zoot is offline. Reconnect to continue.", {
-          status: 503,
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
-        }),
-      ),
+      fetch(event.request).catch(() => caches.match(OFFLINE_URL)),
     );
     return;
   }
