@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 import {
   comparisonRows,
   mockCarePlusMembership,
@@ -71,7 +72,7 @@ export const CarePlusComparisonTable = () => (
     <div className="grid grid-cols-[1fr_1fr_1fr] gap-0 bg-muted/60 px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground max-md:hidden">
       <span>Feature</span>
       <span>Standard Zoot</span>
-      <span>Care+</span>
+      <span><CarePlusMark /></span>
     </div>
     <div className="divide-y divide-border">
       {comparisonRows.map((row) => (
@@ -110,7 +111,7 @@ export const ZootCredPreview = () => (
         <p className="text-xs">Next booking</p>
       </div>
     </div>
-    <p className="mt-4 text-sm text-muted-foreground">Care+ members also receive a R{mockZootCredBalance.monthlyAddOnCreditZar} monthly add-on credit that expires monthly and can only be used with a completed booking.</p>
+    <p className="mt-4 text-sm text-muted-foreground"><CarePlusMark /> members also receive a R{mockZootCredBalance.monthlyAddOnCreditZar} monthly add-on credit that expires monthly and can only be used with a completed booking.</p>
   </Card>
 );
 
@@ -210,7 +211,7 @@ export const CarePlusStatusPanel = () => (
   <Card className="rounded-3xl border-0 bg-foreground p-5 text-background shadow-warm sm:p-6">
     <div className="mb-6 flex items-start justify-between gap-4">
       <div>
-        <p className="text-sm text-background/70">Care+ active</p>
+        <p className="text-sm text-background/70">Care<span className="text-primary-glow">+</span> active</p>
         <h3 className="font-display text-3xl font-bold sm:text-4xl">R{mockCarePlusMembership.priceZar}/month</h3>
       </div>
       <Crown className="h-9 w-9 shrink-0 text-accent sm:h-10 sm:w-10" />
@@ -238,7 +239,7 @@ export const CarePlusSupportPromise = () => (
       <LifeBuoy className="h-6 w-6" />
     </div>
     <h3 className="mb-3 font-display text-2xl font-bold sm:text-3xl">Priority support when plans need attention</h3>
-    <p className="text-sm leading-relaxed text-muted-foreground">Care+ members receive faster support handling for booking issues, cancellations, service concerns and replacement matching. Replacement is prioritised, not guaranteed.</p>
+    <p className="text-sm leading-relaxed text-muted-foreground"><CarePlusMark /> members receive faster support handling for booking issues, cancellations, service concerns and replacement matching. Replacement is prioritised, not guaranteed.</p>
   </Card>
 );
 
