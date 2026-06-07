@@ -37,6 +37,11 @@ const sanitiseSupportText = (value: unknown, maxLength = 1500) =>
     ? value.replace(/[\u0000-\u001f\u007f<>`\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength)
     : "";
 
+const sanitiseUuid = (value: unknown) =>
+  typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+    ? value
+    : "";
+
 const redactSupportText = (value: string) =>
   value
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email redacted]")
@@ -191,18 +196,29 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) return json({ error: "authentication required" }, 401, origin);
 
-    const supa = createClient(
+    const authClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } },
     );
-    const { data: authData, error: authError } = await supa.auth.getUser();
+    const { data: authData, error: authError } = await authClient.auth.getUser();
     if (authError || !authData.user) return json({ error: "authentication required" }, 401, origin);
 
-    const { subject, body, role } = await req.json();
+    const { subject, body, role, ticket_id } = await req.json();
     const safeSubject = sanitiseSupportText(subject, 180);
     const safeBody = sanitiseSupportText(body);
+    const safeTicketId = sanitiseUuid(ticket_id);
     if (!safeSubject || !safeBody) return json({ error: "subject and body required" }, 400, origin);
+
+    if (safeTicketId) {
+      const { data: ticket, error: ticketError } = await authClient
+        .from("support_tickets")
+        .select("id")
+        .eq("id", safeTicketId)
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+      if (ticketError || !ticket) return json({ error: "ticket not found" }, 404, origin);
+    }
 
     const userRole: UserRole = role === "zooter" ? "zooter" : "user";
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
@@ -218,6 +234,21 @@ Deno.serve(async (req) => {
           source: "zoot_support_rules" as const,
           requestId: null,
         };
+
+    if (safeTicketId && assistant.response) {
+      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (serviceRoleKey) {
+        const adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
+        const { error: updateError } = await adminClient
+          .from("support_tickets")
+          .update({ ai_response: assistant.response, status: escalated ? "escalated" : "open" })
+          .eq("id", safeTicketId)
+          .eq("user_id", authData.user.id);
+        if (updateError) console.warn("Support assistant ticket update failed", { ticketId: safeTicketId });
+      } else {
+        console.warn("SUPABASE_SERVICE_ROLE_KEY missing; support assistant reply was not persisted", { ticketId: safeTicketId });
+      }
+    }
 
     return json(
       {
