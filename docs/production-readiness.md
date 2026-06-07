@@ -18,6 +18,7 @@ Server/edge-only secrets belong in Supabase Edge Function secrets or the relevan
 
 ```bash
 ALLOWED_ORIGINS=
+SUPABASE_SERVICE_ROLE_KEY=
 OPENAI_API_KEY=
 OPENAI_SUPPORT_MODEL=gpt-4.1-mini
 STITCH_CLIENT_ID=
@@ -117,11 +118,11 @@ Browser checks:
 
 ## ChatGPT Support Assistant
 
-`support-respond` is the only support path that may call the OpenAI API. The browser creates an authenticated support ticket, invokes the Supabase Edge Function, and stores the returned assistant text on that ticket.
+`support-respond` is the only support path that may call the OpenAI API. The browser creates an authenticated support ticket, invokes the Supabase Edge Function with the `ticket_id`, and the Edge Function persists the returned assistant text using the server-only service-role key after verifying the ticket belongs to the caller.
 
 Production requirements:
 
-- Set `OPENAI_API_KEY` and `OPENAI_SUPPORT_MODEL` as Supabase Edge Function secrets only.
+- Set `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, and `OPENAI_SUPPORT_MODEL` as Supabase Edge Function secrets only.
 - Keep the deterministic Zoot support-rule fallback enabled for API outages or missing credentials.
 - Do not send refund, payment, trust, safety, cancellation, access-code, lockbox, or bug escalations to the model; those must route to human review.
 - Review OpenAI request IDs from Edge Function logs when debugging provider failures.
