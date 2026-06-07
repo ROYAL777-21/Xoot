@@ -7,24 +7,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { AlertCircle, Apple, Chrome, Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertCircle, Apple, Chrome, Eye, EyeOff, KeyRound, Loader2, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import {
   getAuthFormIssue,
   getAuthRedirectTo,
   getEmailIssue,
+  getOtpCodeIssue,
   getPasswordIssues,
   getPasswordResetRedirectTo,
   getPasswordStrength,
   getSafeAuthErrorMessage,
   getSafeOAuthErrorMessage,
+  getSafeOtpErrorMessage,
+  getSafeOtpSentMessage,
   getSafePasswordResetMessage,
   getSafeRedirectPath,
   normaliseEmail,
+  normaliseOtpCode,
   type SocialAuthProvider,
 } from "@/lib/auth-security";
 
-type AuthView = "signin" | "signup" | "forgot";
+type AuthView = "signin" | "signup" | "forgot" | "otp";
 
 type AuthLocationState = {
   from?: {
@@ -51,6 +55,8 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [providerLoading, setProviderLoading] = useState<SocialAuthProvider | null>(null);
@@ -60,10 +66,15 @@ const Auth = () => {
   const redirectPath = useMemo(() => getRedirectPath(location.state), [location.state]);
   const authMode = mode === "signup" ? "signup" : "signin";
   const isForgotPassword = mode === "forgot";
+  const isOtpMode = mode === "otp";
   const isLocked = lockoutUntil !== null && Date.now() < lockoutUntil;
   const passwordIssues = useMemo(() => getPasswordIssues(password, authMode), [authMode, password]);
   const passwordStrength = getPasswordStrength(password);
-  const formIssue = isForgotPassword ? getEmailIssue(email) : getAuthFormIssue({ mode: authMode, email, password, fullName });
+  const formIssue = isForgotPassword
+    ? getEmailIssue(email)
+    : isOtpMode
+      ? otpSent ? getOtpCodeIssue(otpCode) : getEmailIssue(email)
+      : getAuthFormIssue({ mode: authMode, email, password, fullName });
   const canSubmit = !loading && !providerLoading && !isLocked && !formIssue;
 
   useEffect(() => {
@@ -100,6 +111,55 @@ const Auth = () => {
     toast.success(getSafePasswordResetMessage());
     setPassword("");
     setMode("signin");
+  };
+
+  const handleOtpRequest = async () => {
+    const emailIssue = getEmailIssue(email);
+    if (emailIssue) {
+      haptic("warning");
+      toast.error(emailIssue);
+      return;
+    }
+
+    const safeEmail = normaliseEmail(email);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: safeEmail,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: getAuthRedirectTo(redirectPath),
+      },
+    });
+
+    if (error) throw error;
+
+    haptic("success");
+    toast.success(getSafeOtpSentMessage());
+    setOtpSent(true);
+    setOtpCode("");
+  };
+
+  const handleOtpVerify = async () => {
+    const emailIssue = getEmailIssue(email);
+    const codeIssue = getOtpCodeIssue(otpCode);
+    if (emailIssue || codeIssue) {
+      haptic("warning");
+      toast.error(emailIssue ?? codeIssue ?? getSafeOtpErrorMessage());
+      return;
+    }
+
+    const { error } = await supabase.auth.verifyOtp({
+      email: normaliseEmail(email),
+      token: normaliseOtpCode(otpCode),
+      type: "email",
+    });
+
+    if (error) throw error;
+
+    setFailedAttempts(0);
+    setLockoutUntil(null);
+    haptic("success");
+    toast.success("One-time code verified. Welcome to Zoot.");
+    navigate(redirectPath, { replace: true });
   };
 
   const handlePasswordAuth = async () => {
@@ -169,16 +229,19 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isForgotPassword) await handlePasswordResetRequest();
+      if (isOtpMode) {
+        if (otpSent) await handleOtpVerify();
+        else await handleOtpRequest();
+      } else if (isForgotPassword) await handlePasswordResetRequest();
       else await handlePasswordAuth();
     } catch {
       haptic("warning");
-      if (mode === "signin") {
+      if (mode === "signin" || (isOtpMode && otpSent)) {
         const nextFailedAttempts = failedAttempts + 1;
         setFailedAttempts(nextFailedAttempts);
         if (nextFailedAttempts >= 4) setLockoutUntil(Date.now() + 30_000);
       }
-      toast.error(isForgotPassword ? getSafePasswordResetMessage() : getSafeAuthErrorMessage(authMode));
+      toast.error(isOtpMode ? getSafeOtpErrorMessage() : isForgotPassword ? getSafePasswordResetMessage() : getSafeAuthErrorMessage(authMode));
     } finally {
       setLoading(false);
     }
@@ -209,6 +272,8 @@ const Auth = () => {
     haptic("selection");
     setMode(nextMode);
     setPassword("");
+    setOtpCode("");
+    setOtpSent(false);
     setShowPassword(false);
     setFailedAttempts(0);
     setLockoutUntil(null);
@@ -216,12 +281,27 @@ const Auth = () => {
 
   const passwordStrengthLabel = ["Very weak", "Weak", "Good", "Strong", "Very strong"][passwordStrength];
   const strengthColour = passwordStrength >= 3 ? "bg-sage-deep" : passwordStrength >= 2 ? "bg-primary" : "bg-destructive";
-  const heading = mode === "signin" ? "Sign in to Zoot" : mode === "signup" ? "Create your account" : "Reset your password";
+  const heading = mode === "signin"
+    ? "Sign in to Zoot"
+    : mode === "signup"
+      ? "Create your account"
+      : mode === "otp"
+        ? "Use an email code"
+        : "Reset your password";
   const subheading = mode === "signin"
     ? "Access your bookings, ZootCred, Care+ status and saved home profile."
     : mode === "signup"
       ? "Start booking trusted Zooters with a protected home profile."
-      : "Enter your email and we will send a secure reset link if the account can access Zoot.";
+      : mode === "otp"
+        ? "Get a one-time email code or secure sign-in link for passwordless access."
+        : "Enter your email and we will send a secure reset link if the account can access Zoot.";
+  const submitLabel = isForgotPassword
+    ? "Send reset link"
+    : isOtpMode
+      ? otpSent ? "Verify code" : "Send one-time code"
+      : mode === "signin"
+        ? "Sign in securely"
+        : "Create secure account";
 
   return (
     <div className="grid min-h-screen place-items-center overflow-hidden gradient-hero px-4 py-6 sm:p-6">
@@ -234,14 +314,14 @@ const Auth = () => {
         </Link>
 
         <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
-          {mode === "signin" ? <LockKeyhole className="h-3 w-3 shrink-0 text-sage-deep" /> : mode === "forgot" ? <Mail className="h-3 w-3 shrink-0 text-sage-deep" /> : <Sparkles className="h-3 w-3 shrink-0 text-sage-deep" />}
-          <span className="text-xs font-medium text-sage-deep">{mode === "signin" ? "Secure sign-in" : mode === "forgot" ? "Password recovery" : "Join Zoot"}</span>
+          {mode === "signin" ? <LockKeyhole className="h-3 w-3 shrink-0 text-sage-deep" /> : mode === "forgot" ? <Mail className="h-3 w-3 shrink-0 text-sage-deep" /> : mode === "otp" ? <KeyRound className="h-3 w-3 shrink-0 text-sage-deep" /> : <Sparkles className="h-3 w-3 shrink-0 text-sage-deep" />}
+          <span className="text-xs font-medium text-sage-deep">{mode === "signin" ? "Secure sign-in" : mode === "forgot" ? "Password recovery" : mode === "otp" ? "Email one-time code" : "Join Zoot"}</span>
         </div>
 
         <h1 className="mb-1 font-display text-2xl font-bold sm:text-3xl">{heading}</h1>
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{subheading}</p>
 
-        {!isSupabaseConfigured && !isForgotPassword && (
+        {!isSupabaseConfigured && !isForgotPassword && !isOtpMode && (
           <div className="mb-5 rounded-2xl border border-accent/25 bg-accent-soft p-3 text-sm leading-relaxed text-sage-deep">
             <p className="font-semibold">Preview mode</p>
             <p className="mt-1 text-xs text-muted-foreground">Live Supabase credentials are not configured in this build, so use the demo account to explore the app with safe mock data.</p>
@@ -251,7 +331,7 @@ const Auth = () => {
           </div>
         )}
 
-        {!isForgotPassword && (
+        {!isForgotPassword && !isOtpMode && (
           <div className="mb-5 grid gap-3 sm:grid-cols-2">
             {(["google", "apple"] as SocialAuthProvider[]).map((provider) => {
               const Icon = provider === "google" ? Chrome : Apple;
@@ -274,11 +354,20 @@ const Auth = () => {
           </div>
         )}
 
-        {!isForgotPassword && (
+        {!isForgotPassword && !isOtpMode && (
           <div className="mb-5 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="h-px flex-1 bg-border" />
             <span>Email and password</span>
             <span className="h-px flex-1 bg-border" />
+          </div>
+        )}
+
+        {isOtpMode && (
+          <div className="mb-5 rounded-2xl border border-accent/25 bg-accent-soft p-3 text-sm leading-relaxed text-sage-deep">
+            <p className="font-semibold">Passwordless sign-in</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Zoot sends the code through Supabase Auth. The code is one-time use and should only be entered inside this app.
+            </p>
           </div>
         )}
 
@@ -303,7 +392,13 @@ const Auth = () => {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (otpSent) {
+                  setOtpSent(false);
+                  setOtpCode("");
+                }
+              }}
               autoComplete="email"
               inputMode="email"
               required
@@ -311,7 +406,33 @@ const Auth = () => {
             />
           </div>
 
-          {!isForgotPassword && (
+          {isOtpMode && otpSent && (
+            <div className="space-y-1.5">
+              <Label htmlFor="otp-code">Email code</Label>
+              <Input
+                id="otp-code"
+                value={otpCode}
+                onChange={(e) => setOtpCode(normaliseOtpCode(e.target.value))}
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                placeholder="123456"
+                required
+                className="rounded-xl text-center font-display text-2xl tracking-[0.3em]"
+              />
+              <button
+                type="button"
+                onClick={() => void handleOtpRequest()}
+                className="text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
+                disabled={loading}
+              >
+                Send a new code
+              </button>
+            </div>
+          )}
+
+          {!isForgotPassword && !isOtpMode && (
             <div className="space-y-1.5">
               <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <Label htmlFor="password">Password</Label>
@@ -389,22 +510,27 @@ const Auth = () => {
           </div>
 
           <Button type="submit" disabled={!canSubmit} className="h-12 w-full rounded-xl gradient-warm font-semibold shadow-warm">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isForgotPassword ? "Send reset link" : mode === "signin" ? "Sign in securely" : "Create secure account"}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : submitLabel}
           </Button>
         </form>
 
         <div className="mt-5 grid gap-2 text-center text-sm text-muted-foreground">
           {mode === "signin" && (
-            <button type="button" onClick={() => setAuthMode("signup")} className="transition-smooth hover:text-foreground">
-              New to Zoot? Create an account
-            </button>
+            <>
+              <button type="button" onClick={() => setAuthMode("otp")} className="transition-smooth hover:text-foreground">
+                Use a one-time email code
+              </button>
+              <button type="button" onClick={() => setAuthMode("signup")} className="transition-smooth hover:text-foreground">
+                New to Zoot? Create an account
+              </button>
+            </>
           )}
           {mode === "signup" && (
             <button type="button" onClick={() => setAuthMode("signin")} className="transition-smooth hover:text-foreground">
               Already have an account? Sign in
             </button>
           )}
-          {mode === "forgot" && (
+          {(mode === "forgot" || mode === "otp") && (
             <button type="button" onClick={() => setAuthMode("signin")} className="transition-smooth hover:text-foreground">
               Back to secure sign-in
             </button>
