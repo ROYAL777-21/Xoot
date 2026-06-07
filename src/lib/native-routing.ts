@@ -34,6 +34,7 @@ const screenRoutes = new Map<string, string>([
   ["bookings", "/app/bookings"],
   ["care", "/app/plans"],
   ["care_plus", "/app/plans"],
+  ["care_plus_apply", "/care-plus/apply"],
   ["favorite_zooter", "/app/favorites"],
   ["favourite_zooter", "/app/favorites"],
   ["favorites", "/app/favorites"],
@@ -165,6 +166,12 @@ const routeFromUrl = (candidate: string) => {
   return null;
 };
 
+const sourceBookingRoute = (record: NativeRouteRecord) => {
+  const sourceTable = normalizeKey(record.source_table ?? record.sourceTable);
+  if (sourceTable !== "bookings") return null;
+  return bookingRoute(firstString(record, ["source_id", "sourceId"]));
+};
+
 const routeFromRecord = (record: NativeRouteRecord, depth: number): string | null => {
   const explicitRoute = firstString(record, ["url", "deepLink", "deeplink", "path", "route"]);
   if (explicitRoute) {
@@ -172,11 +179,14 @@ const routeFromRecord = (record: NativeRouteRecord, depth: number): string | nul
     if (resolved) return resolved;
   }
 
-  const bookingId = firstString(record, ["bookingId", "booking_id", "source_id"]);
+  const bookingId = firstString(record, ["bookingId", "booking_id"]);
   if (bookingId) {
     const resolved = bookingRoute(bookingId);
     if (resolved) return resolved;
   }
+
+  const sourceRoute = sourceBookingRoute(record);
+  if (sourceRoute) return sourceRoute;
 
   const routeKey = normalizeKey(firstString(record, ["screen", "type", "eventType", "event_type", "category"]));
   const mapped = screenRoutes.get(routeKey);
