@@ -1,7 +1,7 @@
 # Zoot Feature Completion Audit
 
 Branch: `codex/full-zoot-iphone-pwa-auth-security`
-Date: 2026-06-01
+Date: 2026-06-07
 
 Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not started`.
 
@@ -60,9 +60,10 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Supabase RLS | Partial | A production hardening migration removes old self-delete/self-mutation paths for bookings, loyalty, subscriptions, referral codes, and job offers. Supabase advisors and role smoke tests are still required before release. |
 | Supabase leaked-password protection | Blocked by credentials | Must be enabled in Supabase Auth settings; current connector exposes advisor visibility, not the dashboard toggle. |
 | Sensitive access window | Partial | Existing edge functions support sensitive access flows; final production verification requires Supabase policy smoke tests. |
+| E2EE booking chat | Partial | Booking chat now uses device-generated ECDH keys, a Supabase public-key registry, and encrypted message envelopes in `messages.body`. Native Keychain/Keystore storage and migrated legacy-message handling still need release hardening. |
 | Payments | Blocked by credentials | Stitch/Ozow credentials and verified webhook secrets are needed before real payment confirmation can be production-ready. |
 | Notifications | Partial | App hierarchy and Twilio voice-only constraints are represented; Brevo/Twilio production credentials and webhook validation are still required. |
-| AI usage compliance | Partial | Checklist docs cover disclosure, moderation, privacy, and unsupported claims; live AI agent permissioning needs production tool scoping. |
+| AI usage compliance | Partial | New support tickets call the `support-respond` Edge Function, which can use OpenAI Responses API with server-only secrets, redaction, human escalation, and deterministic fallback. Final production verification requires deployed Edge Function smoke tests, provider key setup, and support-agent policy review. |
 
 ## Scale and Deployment
 
