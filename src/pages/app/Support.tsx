@@ -11,11 +11,31 @@ import { toast } from "sonner";
 import { routeNotificationChannel } from "@/lib/operations";
 import { haptic } from "@/lib/haptics";
 
+type SupportAssistantReply = {
+  response?: string;
+  escalated?: boolean;
+  source?: "openai_responses" | "zoot_support_rules" | "human_escalation";
+  openai_request_id?: string | null;
+};
+
 const getPriority = (text: string) => {
   const normalized = text.toLowerCase();
   if (normalized.includes("no-show") || normalized.includes("unsafe") || normalized.includes("damage")) return "urgent";
   if (normalized.includes("refund") || normalized.includes("replacement") || normalized.includes("complaint")) return "high";
   return "normal";
+};
+
+const requestSupportAssistantReply = async (subject: string, body: string): Promise<SupportAssistantReply | null> => {
+  const functionsClient = (supabase as any).functions;
+  if (!functionsClient?.invoke) return null;
+
+  const { data, error } = await functionsClient.invoke("support-respond", {
+    body: { subject, body, role: "user" },
+  });
+
+  if (error) throw error;
+  if (!data || typeof data.response !== "string") return null;
+  return data as SupportAssistantReply;
 };
 
 const Support = () => {
@@ -50,6 +70,22 @@ const Support = () => {
       return;
     }
 
+    let assistantReply: SupportAssistantReply | null = null;
+    try {
+      assistantReply = await requestSupportAssistantReply(subject, body);
+      if (assistantReply?.response) {
+        await supabase
+          .from("support_tickets")
+          .update({
+            ai_response: assistantReply.response,
+            status: assistantReply.escalated ? "escalated" : ticket.status,
+          })
+          .eq("id", ticket.id);
+      }
+    } catch {
+      assistantReply = null;
+    }
+
     const priority = getPriority(`${subject} ${body}`);
     await (supabase as any).from("support_followups").insert({
       ticket_id: ticket.id,
@@ -73,12 +109,24 @@ const Support = () => {
       channel,
       owner: "Customer Support Agent",
       stack_tool: "Zoot in-app notification",
-      payload: { ticket_id: ticket.id, subject, priority },
+      payload: {
+        ticket_id: ticket.id,
+        subject,
+        priority,
+        assistant_source: assistantReply?.source ?? "queued",
+        openai_request_id: assistantReply?.openai_request_id ?? null,
+      },
       created_by: user.id,
     })));
 
     haptic("success");
-    toast.success("We've got your message. Support will review it in the app.");
+    if (assistantReply?.escalated) {
+      toast.success("We've flagged this for human support review in the app.");
+    } else if (assistantReply?.response) {
+      toast.success("Zoot Assistant replied and support has your ticket.");
+    } else {
+      toast.success("We've got your message. Support will review it in the app.");
+    }
     setSubject("");
     setBody("");
     setSubmitting(false);
