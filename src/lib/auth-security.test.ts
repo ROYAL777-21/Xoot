@@ -2,19 +2,33 @@ import { describe, expect, it } from "vitest";
 import {
   getAuthFormIssue,
   getAuthRedirectTo,
+  getOtpCodeIssue,
   getPasswordIssues,
   getPasswordStrength,
   getPasswordUpdateIssue,
   getSafeAuthErrorMessage,
   getSafeOAuthErrorMessage,
+  getSafeOtpErrorMessage,
+  getSafeOtpSentMessage,
   getSafePasswordResetMessage,
   getSafeRedirectPath,
   normaliseEmail,
+  normaliseOtpCode,
 } from "./auth-security";
 
 describe("auth security helpers", () => {
   it("normalises email before auth calls", () => {
     expect(normaliseEmail("  Test@Example.COM ")).toBe("test@example.com");
+  });
+
+  it("normalises pasted email OTP input", () => {
+    expect(normaliseOtpCode(" 12 3-4a5b678 ")).toBe("123456");
+  });
+
+  it("validates six-digit email OTP codes", () => {
+    expect(getOtpCodeIssue("")).toBe("Enter the 6-digit email code.");
+    expect(getOtpCodeIssue("12345")).toBe("Enter all 6 digits from your email.");
+    expect(getOtpCodeIssue("123456")).toBeNull();
   });
 
   it("requires stronger passwords for signup", () => {
@@ -42,6 +56,7 @@ describe("auth security helpers", () => {
     expect(getSafeRedirectPath("https://evil.example/app")).toBe("/app");
     expect(getSafeRedirectPath("//evil.example/app")).toBe("/app");
     expect(getSafeRedirectPath("/auth?next=/admin")).toBe("/app");
+    expect(getSafeRedirectPath("/auth/reset?next=/app")).toBe("/app");
     expect(getAuthRedirectTo("/app/support", "/auth/callback")).toMatch(/\/auth\/callback\?next=%2Fapp%2Fsupport$/);
   });
 
@@ -51,9 +66,11 @@ describe("auth security helpers", () => {
     expect(getPasswordUpdateIssue("StrongPass8", "StrongPass8")).toBeNull();
   });
 
-  it("uses generic auth and recovery errors to avoid account enumeration", () => {
+  it("uses generic auth, OTP, and recovery errors to avoid account enumeration", () => {
     expect(getSafeAuthErrorMessage("signin")).not.toContain("email exists");
     expect(getSafeAuthErrorMessage("signup")).not.toContain("registered");
+    expect(getSafeOtpSentMessage()).not.toContain("account exists");
+    expect(getSafeOtpErrorMessage()).not.toContain("email exists");
     expect(getSafePasswordResetMessage()).not.toContain("account exists");
     expect(getSafeOAuthErrorMessage("google")).toContain("Google");
     expect(getSafeOAuthErrorMessage("apple")).toContain("Apple");
