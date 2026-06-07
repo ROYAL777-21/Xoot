@@ -46,10 +46,10 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <NativeInteractionLayer />
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <NativeInteractionLayer />
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
