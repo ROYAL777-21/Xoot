@@ -82,6 +82,8 @@ const firstString = (record: NativeRouteRecord, keys: string[]) => {
   return null;
 };
 
+const hasPathTraversal = (value: string) => /(^|\/)(\.\.|%2e%2e)(\/|$)/i.test(value);
+
 const safeSegment = (value: unknown) => {
   const segment = String(value ?? "").trim();
   return /^[A-Za-z0-9_-]{1,80}$/.test(segment) ? segment : null;
@@ -94,7 +96,7 @@ const bookingRoute = (bookingId: unknown) => {
 
 const cleanPath = (candidate: string) => {
   let path = candidate.trim();
-  if (!path) return null;
+  if (!path || hasPathTraversal(path)) return null;
   if (!path.startsWith("/")) path = `/${path}`;
 
   try {
@@ -149,7 +151,7 @@ const routeFromZootUrl = (url: URL) => {
 
 const routeFromUrl = (candidate: string) => {
   const value = candidate.trim();
-  if (!value) return null;
+  if (!value || hasPathTraversal(value)) return null;
 
   if (value.startsWith("/") || !/^[a-z][a-z0-9+.-]*:/i.test(value)) {
     return toSafeRoute(value);
