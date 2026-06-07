@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, MapPin, Send, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle } from "lucide-react";
+import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle } from "lucide-react";
 import { resolvePhoto } from "@/components/zoot/ZooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
+import { BookingChat } from "@/components/zoot/BookingChat";
 import { deriveZooterBadges, requiresCompletionPhotos } from "@/lib/trust";
 import { canAccessSensitiveBookingData, routeNotificationChannel } from "@/lib/operations";
 import { notifyBookingLiveActivity, type ZootBookingLiveActivityStatus } from "@/lib/native-live-activity";
@@ -73,7 +74,6 @@ const BookingDetail = () => {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [photos, setPhotos] = useState<CompletionPhoto[]>([]);
   const [review, setReview] = useState<Review | null>(null);
-  const [body, setBody] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewNotes, setReviewNotes] = useState("");
   const [incidentType, setIncidentType] = useState("poor_quality");
@@ -82,7 +82,6 @@ const BookingDetail = () => {
   const [uploading, setUploading] = useState<string | null>(null);
   const [requestingCall, setRequestingCall] = useState(false);
   const [eta, setEta] = useState(12);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const load = async () => {
     if (!user || !id) return;
@@ -112,22 +111,11 @@ const BookingDetail = () => {
     return () => { supabase.removeChannel(ch); };
   }, [id]);
 
-  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }); }, [messages]);
-
   useEffect(() => {
     if (booking?.status !== "enroute") return;
     const t = setInterval(() => setEta((e) => Math.max(1, e - 1)), 5000);
     return () => clearInterval(t);
   }, [booking?.status]);
-
-  const send = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!body.trim() || !id) return;
-    const text = body;
-    setBody("");
-    const sender = booking?.zooter?.user_id === user?.id ? "zooter" : "user";
-    await supabase.from("messages").insert({ booking_id: id, sender_type: sender, body: text });
-  };
 
   const setStatus = async (status: string) => {
     if (!id || !booking) return;
@@ -426,11 +414,7 @@ const BookingDetail = () => {
           </Card>
         </div>
 
-        <Card className="rounded-3xl flex flex-col h-[500px] overflow-hidden">
-          <div className="px-5 py-4 border-b border-border"><p className="font-display font-bold">Chat with {z?.name?.split(" ")[0] ?? "Zooter"}</p><p className="text-xs text-muted-foreground">Messages stay on-platform for booking protection</p></div>
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2">{messages.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">Say hi</p>}{messages.map((m) => <div key={m.id} className={`flex ${m.sender_type === "user" ? "justify-end" : "justify-start"}`}><div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${m.sender_type === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>{m.body}</div></div>)}</div>
-          <form onSubmit={send} className="p-3 border-t border-border flex gap-2"><Input value={body} onChange={(e) => setBody(e.target.value)} placeholder="Type a message..." className="rounded-full" /><Button type="submit" size="icon" className="rounded-full"><Send className="h-4 w-4" /></Button></form>
-        </Card>
+        <BookingChat bookingId={id} booking={booking} zooter={z} messages={messages} currentUserId={user?.id} />
       </div>
     </div>
   );
