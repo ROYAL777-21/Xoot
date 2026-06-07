@@ -147,7 +147,7 @@ const buildOpenAiSupportResponse = async ({
       model,
       store: false,
       max_output_tokens: 180,
-      text: { format: { type: "text" }, verbosity: "low" },
+      text: { format: { type: "text" } },
       instructions: [
         "You are Zoot Assistant, the in-app support concierge for Zoot home-care bookings in South Africa.",
         "Give short, calm, practical help in 2-4 sentences.",
