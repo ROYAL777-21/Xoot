@@ -1,6 +1,6 @@
 # Zoot Mobile App Build Path
 
-Reviewed on 2026-05-28.
+Reviewed on 2026-05-28. Updated on 2026-06-07.
 
 Zoot now has a concrete Capacitor app path for turning the React/Vite web app into iOS and Android app projects while keeping the premium web experience, Care+, haptics, dashboards, and security constraints in one codebase.
 
@@ -10,6 +10,7 @@ Zoot now has a concrete Capacitor app path for turning the React/Vite web app in
 - `package.json` scripts for adding, syncing, building, and opening iOS/Android app projects.
 - Capacitor dependencies for native app shell, app lifecycle, haptics, preferences, and push notifications.
 - Native haptics bridge in `src/lib/haptics.ts` with browser vibration fallback and reduced-motion respect.
+- Native route bridge in `src/lib/native-routing.ts` and `NativeInteractionLayer` for launch URLs, app URL opens, push-notification taps, and native-shell route events.
 - Existing iOS Live Activities, Dynamic Island, and WidgetKit source under `native/ios/ZootLiveActivities` for integration into the generated iOS project.
 
 ## First-Time iOS Project Creation
@@ -68,6 +69,7 @@ Before any store submission:
 
 - Use native haptics for important confirmations and warnings, but keep them subtle.
 - Use native push/Live Activities/widgets for status visibility, but never expose sensitive home access details outside the authenticated app.
+- Route native links and push tap payloads through `resolveNativeRoute`; include only safe screen names and booking IDs, never addresses, access notes, gate codes, payment references, or private support details.
 - Use Keychain/Android Keystore-backed storage for tokens in the native shell.
 - Keep booking, support, payment, cancellation, Care+, and ZootCred changes inside authenticated in-app flows.
 - Treat the PWA as a useful fallback; App Store and Play Store submission still requires real native project builds and native QA.
