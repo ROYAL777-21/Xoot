@@ -37,7 +37,21 @@ const sanitiseSupportText = (value: unknown, maxLength = 1500) =>
     ? value.replace(/[\u0000-\u001f\u007f<>`\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength)
     : "";
 
+const redactSupportText = (value: string) =>
+  value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email redacted]")
+    .replace(/\b(?:\+?\d[\d\s().-]{6,}\d)\b/g, "[phone redacted]")
+    .replace(/\b(gate|access|lockbox|alarm|door|garage)\s*(code|pin|password)?\s*[:#-]?\s*[A-Z0-9-]{3,}\b/gi, "$1 code [redacted]")
+    .replace(/\b(password|passcode|otp|one-time code)\s*[:#-]?\s*\S+/gi, "$1 [redacted]")
+    .slice(0, 1200);
+
 type UserRole = "user" | "zooter";
+
+type AssistantResult = {
+  response: string;
+  source: "openai_responses" | "zoot_support_rules" | "human_escalation";
+  requestId?: string | null;
+};
 
 const escalationKeywords = [
   "refund",
@@ -89,6 +103,84 @@ const buildResponse = (text: string, role: UserRole) => {
   return "Thanks for contacting Zoot Support. We have noted your message and will route it to the right support queue for booking, Care+, trust, or account help.";
 };
 
+const extractOpenAiText = (payload: any) => {
+  if (typeof payload?.output_text === "string" && payload.output_text.trim()) return payload.output_text.trim();
+
+  for (const item of payload?.output ?? []) {
+    for (const content of item?.content ?? []) {
+      if (content?.type === "output_text" && typeof content.text === "string" && content.text.trim()) {
+        return content.text.trim();
+      }
+    }
+  }
+
+  return "";
+};
+
+const buildOpenAiSupportResponse = async ({
+  subject,
+  body,
+  role,
+}: {
+  subject: string;
+  body: string;
+  role: UserRole;
+}): Promise<AssistantResult | null> => {
+  const apiKey = Deno.env.get("OPENAI_API_KEY");
+  if (!apiKey) return null;
+
+  const model = Deno.env.get("OPENAI_SUPPORT_MODEL") ?? "gpt-4.1-mini";
+  const clientRequestId = crypto.randomUUID();
+  const openAIResponse = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "X-Client-Request-Id": clientRequestId,
+    },
+    body: JSON.stringify({
+      model,
+      store: false,
+      max_output_tokens: 180,
+      text: { format: { type: "text" }, verbosity: "low" },
+      instructions: [
+        "You are Zoot Assistant, the in-app support concierge for Zoot home-care bookings in South Africa.",
+        "Give short, calm, practical help in 2-4 sentences.",
+        "Never claim a refund, payment, insurance, safety, or contractor replacement is approved.",
+        "Never ask for passwords, OTPs, full card numbers, gate codes, access codes, lockbox codes, or private keys.",
+        "For anything risky, tell the user a human support reviewer will handle it in the app.",
+      ].join(" "),
+      input: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_text",
+              text: [
+                `Role: ${role}`,
+                `Subject: ${redactSupportText(subject)}`,
+                `Message: ${redactSupportText(body)}`,
+              ].join("\n"),
+            },
+          ],
+        },
+      ],
+    }),
+  });
+
+  const requestId = openAIResponse.headers.get("x-request-id") ?? clientRequestId;
+  if (!openAIResponse.ok) {
+    console.warn("OpenAI support response failed", { status: openAIResponse.status, requestId });
+    return null;
+  }
+
+  const payload = await openAIResponse.json();
+  const response = extractOpenAiText(payload).slice(0, 900);
+  if (!response) return null;
+
+  return { response, source: "openai_responses", requestId };
+};
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: getCorsHeaders(origin) });
@@ -115,11 +207,28 @@ Deno.serve(async (req) => {
     const userRole: UserRole = role === "zooter" ? "zooter" : "user";
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
-    const response = escalated
-      ? "I've flagged this to our human support team. They'll review it in the app and follow up through the right support queue."
-      : buildResponse(text, userRole);
+    const assistant = escalated
+      ? {
+          response: "I've flagged this to our human support team. They'll review it in the app and follow up through the right support queue.",
+          source: "human_escalation" as const,
+          requestId: null,
+        }
+      : (await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole })) ?? {
+          response: buildResponse(text, userRole),
+          source: "zoot_support_rules" as const,
+          requestId: null,
+        };
 
-    return json({ response, escalated, source: "zoot_support_rules" }, 200, origin);
+    return json(
+      {
+        response: assistant.response,
+        escalated,
+        source: assistant.source,
+        openai_request_id: assistant.requestId,
+      },
+      200,
+      origin,
+    );
   } catch {
     return json({ error: "support response failed" }, 500, origin);
   }
