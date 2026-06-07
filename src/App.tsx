@@ -75,10 +75,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ErrorBoundary>
-        <NativeInteractionLayer />
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <NativeInteractionLayer />
           <AuthProvider>
             <Suspense fallback={<PageFallback />}>
               <Routes>
