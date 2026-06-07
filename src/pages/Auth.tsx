@@ -162,6 +162,18 @@ const Auth = () => {
     navigate(redirectPath, { replace: true });
   };
 
+  const handleOtpResend = async () => {
+    setLoading(true);
+    try {
+      await handleOtpRequest();
+    } catch {
+      haptic("warning");
+      toast.error(getSafeOtpErrorMessage());
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePasswordAuth = async () => {
     const safeEmail = normaliseEmail(email);
 
@@ -423,7 +435,7 @@ const Auth = () => {
               />
               <button
                 type="button"
-                onClick={() => void handleOtpRequest()}
+                onClick={() => void handleOtpResend()}
                 className="text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
                 disabled={loading}
               >
