@@ -45,7 +45,7 @@ const sanitiseUuid = (value: unknown) =>
 const redactSupportText = (value: string) =>
   value
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email redacted]")
-    .replace(/\b(?:\+?\d[\d\s().-]{6,}\d)\b/g, "[phone redacted]")
+    .replace(/(?:\+?\d[\d\s().-]{6,}\d)\b/g, "[phone redacted]")
     .replace(/\b(gate|access|lockbox|alarm|door|garage)\s*(code|pin|password)?\s*[:#-]?\s*[A-Z0-9-]{3,}\b/gi, "$1 code [redacted]")
     .replace(/\b(password|passcode|otp|one-time code)\s*[:#-]?\s*\S+/gi, "$1 [redacted]")
     .slice(0, 1200);
