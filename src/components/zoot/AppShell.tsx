@@ -60,8 +60,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 className={({ isActive }) =>
                   `interactive-press flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                     isActive
-                      ? "bg-primary/14 text-primary shadow-card"
-                      : "text-muted-foreground hover:bg-background/56 hover:text-foreground"
+                      ? "bg-primary/15 text-primary shadow-card"
+                      : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
                   }`
                 }
               >
@@ -96,7 +96,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 className={({ isActive }) =>
                   `interactive-press tap-target flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1.5 py-1 text-[10px] leading-tight font-semibold transition-colors ${
                     isActive
-                      ? "bg-primary/14 text-primary shadow-card"
+                      ? "bg-primary/15 text-primary shadow-card"
                       : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
                   }`
                 }
