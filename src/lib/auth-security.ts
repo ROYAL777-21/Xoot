@@ -5,11 +5,19 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEFAULT_AUTH_REDIRECT = "/app";
 
 export const normaliseEmail = (email: string) => email.trim().toLowerCase();
+export const normaliseOtpCode = (code: string) => code.replace(/\D/g, "").slice(0, 6);
 
 export const getEmailIssue = (email: string) => {
   const normalised = normaliseEmail(email);
   if (!normalised) return "Email is required.";
   if (!EMAIL_PATTERN.test(normalised)) return "Enter a valid email address.";
+  return null;
+};
+
+export const getOtpCodeIssue = (code: string) => {
+  const normalised = normaliseOtpCode(code);
+  if (!normalised) return "Enter the 6-digit email code.";
+  if (normalised.length !== 6) return "Enter all 6 digits from your email.";
   return null;
 };
 
@@ -111,6 +119,12 @@ export const getSafeAuthErrorMessage = (mode: AuthMode) => {
 
   return "We could not create that account. Check your details or sign in if you already have access.";
 };
+
+export const getSafeOtpSentMessage = () =>
+  "If that email can access Zoot, we sent a one-time code or sign-in link.";
+
+export const getSafeOtpErrorMessage = () =>
+  "We could not verify that one-time code. Request a new code and try again.";
 
 export const getSafePasswordResetMessage = () =>
   "If that email can access Zoot, we will send password reset instructions.";
