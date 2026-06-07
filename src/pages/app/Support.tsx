@@ -25,12 +25,16 @@ const getPriority = (text: string) => {
   return "normal";
 };
 
-const requestSupportAssistantReply = async (subject: string, body: string): Promise<SupportAssistantReply | null> => {
+const requestSupportAssistantReply = async (
+  ticketId: string,
+  subject: string,
+  body: string,
+): Promise<SupportAssistantReply | null> => {
   const functionsClient = (supabase as any).functions;
   if (!functionsClient?.invoke) return null;
 
   const { data, error } = await functionsClient.invoke("support-respond", {
-    body: { subject, body, role: "user" },
+    body: { ticket_id: ticketId, subject, body, role: "user" },
   });
 
   if (error) throw error;
@@ -72,16 +76,7 @@ const Support = () => {
 
     let assistantReply: SupportAssistantReply | null = null;
     try {
-      assistantReply = await requestSupportAssistantReply(subject, body);
-      if (assistantReply?.response) {
-        await supabase
-          .from("support_tickets")
-          .update({
-            ai_response: assistantReply.response,
-            status: assistantReply.escalated ? "escalated" : ticket.status,
-          })
-          .eq("id", ticket.id);
-      }
+      assistantReply = await requestSupportAssistantReply(ticket.id, subject, body);
     } catch {
       assistantReply = null;
     }
