@@ -18,6 +18,8 @@ Server/edge-only secrets belong in Supabase Edge Function secrets or the relevan
 
 ```bash
 ALLOWED_ORIGINS=
+OPENAI_API_KEY=
+OPENAI_SUPPORT_MODEL=gpt-4.1-mini
 STITCH_CLIENT_ID=
 STITCH_CLIENT_SECRET=
 OZOW_SITE_CODE=
@@ -113,6 +115,17 @@ Browser checks:
 - `/app/properties/airbnb`
 - `/app/properties/office`
 
+## ChatGPT Support Assistant
+
+`support-respond` is the only support path that may call the OpenAI API. The browser creates an authenticated support ticket, invokes the Supabase Edge Function, and stores the returned assistant text on that ticket.
+
+Production requirements:
+
+- Set `OPENAI_API_KEY` and `OPENAI_SUPPORT_MODEL` as Supabase Edge Function secrets only.
+- Keep the deterministic Zoot support-rule fallback enabled for API outages or missing credentials.
+- Do not send refund, payment, trust, safety, cancellation, access-code, lockbox, or bug escalations to the model; those must route to human review.
+- Review OpenAI request IDs from Edge Function logs when debugging provider failures.
+
 ## 10,000-Request Readiness
 
 The repository includes a k6 script at `scripts/load/zoot-smoke.js`.
@@ -140,6 +153,7 @@ These are intentionally not hardcoded into the repo:
 - Production/staging domains.
 - Hostinger deployment credentials.
 - Supabase service-role key and edge function secrets.
+- OpenAI API key for ChatGPT support responses.
 - Stitch/Ozow payment credentials and webhook secrets.
 - Twilio voice credentials and phone numbers.
 - Brevo API key and sender domain verification.
