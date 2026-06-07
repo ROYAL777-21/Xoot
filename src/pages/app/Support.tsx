@@ -125,11 +125,13 @@ const Support = () => {
               </div>
               <p className="text-sm text-muted-foreground mb-3">{t.body}</p>
               {t.ai_response && (
-                <div className="rounded-2xl bg-accent-soft border border-accent/20 p-3 text-sm">
-                  <p className="flex items-center gap-1 text-xs font-bold text-sage-deep uppercase mb-1">
-                    <Sparkles className="h-3 w-3" /> Zoot Assistant
-                  </p>
-                  {t.ai_response}
+                <div className="liquid-glass-shell rounded-2xl p-3 text-sm">
+                  <div className="liquid-glass-readable">
+                    <p className="flex items-center gap-1 text-xs font-bold text-sage-deep uppercase mb-1">
+                      <Sparkles className="h-3 w-3" /> Zoot Assistant
+                    </p>
+                    <p className="text-sm leading-6 text-foreground">{t.ai_response}</p>
+                  </div>
                 </div>
               )}
             </Card>
