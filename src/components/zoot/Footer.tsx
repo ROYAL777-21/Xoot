@@ -11,16 +11,20 @@ const cols: { title: string; links: { label: string; href: string }[] }[] = [
     { label: "Become a Zooter", href: "/zooter/apply" }, { label: "Zooter dashboard", href: "/zooter" },
     { label: "Training", href: "/zooter/training" }, { label: "Trust policy", href: "/app/insurance" },
   ]},
-  { title: "Legal & support", links: [
+  { title: "Guides & support", links: [
+    { label: "Zoot Blog", href: "/blog" }, { label: "Launch guide", href: "/blog/zoot-launch-first-100-homes-johannesburg" },
+    { label: "Cleaning in Bryanston", href: "/blog/cleaning-in-bryanston-rosebank-sandton-guide" }, { label: "Contact support", href: "/app/support" },
+  ]},
+  { title: "Legal", links: [
     { label: "Terms & Conditions", href: "/legal/terms" }, { label: "Privacy", href: "/legal/privacy" },
-    { label: "Trust & safety", href: "/legal/trust-safety" }, { label: "Contact support", href: "/app/support" },
+    { label: "Trust & safety", href: "/legal/trust-safety" }, { label: "Install app", href: "/install" },
   ]},
 ];
 
 export const Footer = () => (
   <footer className="border-t border-border bg-background">
     <div className="container py-16">
-      <div className="grid lg:grid-cols-5 gap-10 mb-12">
+      <div className="grid lg:grid-cols-6 gap-10 mb-12">
         <div className="lg:col-span-1">
           <div className="flex items-center gap-2 mb-4">
             <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm">
