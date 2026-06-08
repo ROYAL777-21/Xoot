@@ -41,9 +41,20 @@ type BookingActionWindow = Window & {
   ZootNative?: { performBookingAction?: (payload: ZootNativeBookingActionPayload) => void };
 };
 
+const stripUnsafeText = (value: string) =>
+  value
+    .split("")
+    .map((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 31 || code === 127 || character === "<" || character === ">" || character === "`" || character === "\\"
+        ? " "
+        : character;
+    })
+    .join("");
+
 const textValue = (value: unknown, maxLength = 120) => {
   if (typeof value !== "string" && typeof value !== "number") return undefined;
-  const text = String(value).replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim();
+  const text = stripUnsafeText(String(value)).replace(/\s+/g, " ").trim();
   return text ? text.slice(0, maxLength) : undefined;
 };
 
