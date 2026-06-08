@@ -139,16 +139,20 @@ const toSafeRoute = (candidate: string) => {
   }
 };
 
+const bookingQueryParam = (url: URL) =>
+  url.searchParams.get("bookingId") ?? url.searchParams.get("booking_id") ?? url.searchParams.get("id");
+
 const routeFromZootUrl = (url: URL) => {
   const host = normalizeKey(url.hostname);
   const pathname = url.pathname === "/" ? "" : url.pathname;
+  const bookingIdParam = bookingQueryParam(url);
 
   if ((host === "booking" || host === "bookings") && pathname) {
     return bookingRoute(pathname.replace(/^\//, ""));
   }
 
-  if ((host === "booking" || host === "bookings") && url.searchParams.size > 0) {
-    return bookingRoute(url.searchParams.get("bookingId") ?? url.searchParams.get("booking_id") ?? url.searchParams.get("id"));
+  if ((host === "booking" || host === "bookings") && bookingIdParam) {
+    return bookingRoute(bookingIdParam);
   }
 
   const mapped = screenRoutes.get(host);
