@@ -5,13 +5,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle } from "lucide-react";
+import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle, Navigation, Share2 } from "lucide-react";
 import { resolvePhoto } from "@/components/zoot/ZooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { BookingChat } from "@/components/zoot/BookingChat";
 import { deriveZooterBadges, requiresCompletionPhotos } from "@/lib/trust";
 import { canAccessSensitiveBookingData, routeNotificationChannel } from "@/lib/operations";
 import { notifyBookingLiveActivity, type ZootBookingLiveActivityStatus } from "@/lib/native-live-activity";
+import {
+  buildBookingEtaShareText,
+  createNativeBookingActionPayload,
+  openBookingDirections,
+  sendNativeBookingAction,
+  type NativeBookingActionInput,
+} from "@/lib/native-booking-actions";
+import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
@@ -65,6 +73,8 @@ const liveActivityNextStep: Record<ZootBookingLiveActivityStatus, string> = {
   pending: "We are confirming your booking details.",
 };
 
+const serviceNameForBooking = (booking: any) => booking?.service_type ?? booking?.service ?? "Home care";
+
 const BookingDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -117,6 +127,73 @@ const BookingDetail = () => {
     return () => clearInterval(t);
   }, [booking?.status]);
 
+  const getNativeBookingActionInput = (): NativeBookingActionInput | null => {
+    if (!id || !booking) return null;
+    const liveStatus = toLiveActivityStatus(booking.status ?? "pending");
+
+    return {
+      bookingId: id,
+      status: liveStatus,
+      statusLabel: statusLabel[booking.status] ?? booking.status ?? "Pending confirmation",
+      serviceName: serviceNameForBooking(booking),
+      zooterName: booking.zooter?.name,
+      propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name,
+      suburb: booking.suburb,
+      address: booking.address,
+      etaMinutes: liveStatus === "enroute" ? eta : undefined,
+    };
+  };
+
+  const handleOpenDirections = () => {
+    const input = getNativeBookingActionInput();
+    if (!input) return;
+    haptic("selection");
+    const result = openBookingDirections(input);
+    if (!result.fallbackUrl) {
+      toast.error("No destination is saved for this booking.");
+      return;
+    }
+    toast.success(result.delivered ? "Directions sent to native app" : "Directions opened");
+  };
+
+  const shareEta = async () => {
+    const input = getNativeBookingActionInput();
+    if (!input || typeof window === "undefined") return;
+    haptic("selection");
+
+    const payload = createNativeBookingActionPayload("share_eta", input);
+    const delivered = sendNativeBookingAction(payload);
+    const shareText = buildBookingEtaShareText(payload);
+    const shareUrl = `${window.location.origin}${payload.route}`;
+    const navigatorWithShare = window.navigator as Navigator & {
+      share?: (data: ShareData) => Promise<void>;
+    };
+
+    try {
+      if (typeof navigatorWithShare.share === "function") {
+        await navigatorWithShare.share({ title: "Zoot booking update", text: shareText, url: shareUrl });
+        toast.success("ETA shared");
+        return;
+      }
+
+      if (navigatorWithShare.clipboard?.writeText) {
+        await navigatorWithShare.clipboard.writeText(`${shareText} ${shareUrl}`);
+        toast.success("ETA copied");
+        return;
+      }
+
+      if (delivered) {
+        toast.success("ETA sent to native app");
+        return;
+      }
+
+      toast.error("Sharing is unavailable on this device.");
+    } catch {
+      if (delivered) toast.success("ETA sent to native app");
+      else toast.error("Sharing was cancelled or unavailable.");
+    }
+  };
+
   const setStatus = async (status: string) => {
     if (!id || !booking) return;
     const timestampField = status === "arrived" ? "arrived_at" : status === "in_progress" ? "job_started_at" : status === "completed" ? "job_completed_at" : null;
@@ -150,7 +227,7 @@ const BookingDetail = () => {
       bookingId: id,
       status: liveStatus,
       statusLabel: statusLabel[status] ?? status,
-      serviceName: booking.service_type ?? booking.service ?? "Home care",
+      serviceName: serviceNameForBooking(booking),
       zooterName: booking.zooter?.name,
       propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Zoot home",
       suburb: booking.suburb,
@@ -207,9 +284,19 @@ const BookingDetail = () => {
         failure_mode: "Keep communication in chat if masked call setup fails.",
         created_by: user.id,
       });
+
+      const nativeInput = getNativeBookingActionInput();
+      if (nativeInput) {
+        sendNativeBookingAction(createNativeBookingActionPayload("masked_call", {
+          ...nativeInput,
+          callSessionId: call?.id,
+          updatedAt: new Date().toISOString(),
+        }));
+      }
     }
     setRequestingCall(false);
     if (error) return toast.error(error.message);
+    haptic("success");
     toast.success("Masked call request queued");
   };
 
@@ -301,7 +388,7 @@ const BookingDetail = () => {
   if (!booking) return null;
 
   const z = booking.zooter;
-  const serviceType = booking.service_type ?? booking.service;
+  const serviceType = serviceNameForBooking(booking);
   const photoProofRequired = booking.completion_photo_required || requiresCompletionPhotos(serviceType);
   const beforeDone = photos.some((p) => p.photo_type === "before");
   const afterDone = photos.some((p) => p.photo_type === "after");
@@ -354,6 +441,10 @@ const BookingDetail = () => {
 
           <Card className="rounded-3xl p-5">
             <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Arrival tracking</h2>
+            <div className="mb-4 grid grid-cols-2 gap-2">
+              <Button onClick={handleOpenDirections} variant="outline" className="rounded-xl justify-center"><Navigation className="h-4 w-4 mr-1" /> Directions</Button>
+              <Button onClick={shareEta} variant="outline" className="rounded-xl justify-center"><Share2 className="h-4 w-4 mr-1" /> Share ETA</Button>
+            </div>
             <div className="space-y-3">
               {statusSteps.map((step) => {
                 const hit = timeline.find((e) => e.status === step.key || e.label === step.label);
