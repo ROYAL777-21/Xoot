@@ -12,7 +12,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_SUPABASE_URL=
 ```
 
-Do not expose service-role keys, webhook secrets, Stitch/Ozow secrets, Twilio auth tokens, Brevo API keys, Apple private keys, or AI provider keys through `VITE_` variables.
+Do not expose service-role keys, webhook secrets, Stitch/Ozow secrets, Twilio auth tokens, Brevo API keys, Apple private keys, AI provider keys, signing certificates, or release fingerprints through `VITE_` variables.
 
 Server/edge-only secrets belong in Supabase Edge Function secrets or the relevant provider dashboard:
 
@@ -32,6 +32,17 @@ TWILIO_API_KEY_SECRET=
 BREVO_API_KEY=
 WEBHOOK_SIGNING_SECRET=
 SENTRY_DSN=
+```
+
+Native release build variables belong in CI or the release shell only:
+
+```bash
+ZOOT_APPLE_TEAM_ID=
+ZOOT_IOS_BUNDLE_ID=za.co.zoot.app
+ZOOT_IOS_APP_ID=
+ZOOT_ANDROID_PACKAGE_NAME=za.co.zoot.app
+ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS=
+ZOOT_APP_LINK_PATHS=/app/*,/auth/callback*,/auth/reset*,/care-plus/*,/install,/trust-centre,/zooter/*
 ```
 
 `ALLOWED_ORIGINS` should be a comma-separated allowlist such as:
@@ -70,9 +81,25 @@ Upload the `dist/` contents to Hostinger public web root. The branch includes `p
 - SPA fallback to `/index.html`.
 - CSP, HSTS, frame denial, referrer, permissions, COOP, and CORP headers.
 - Long cache windows for built JS/CSS assets.
+- Short-cache JSON responses for `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` when native association files are generated.
 - No-cache handling for `sw.js`.
 
 Confirm Hostinger allows `.htaccess` override directives for `mod_rewrite`, `mod_headers`, and `mod_expires`.
+
+## Native Universal Links and App Links
+
+The build runs `scripts/build/write-native-association-files.mjs` before and after Vite. It generates:
+
+- `/.well-known/apple-app-site-association` when `ZOOT_APPLE_TEAM_ID` or `ZOOT_IOS_APP_ID` is set.
+- `/.well-known/assetlinks.json` when `ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS` is set.
+
+Release checks:
+
+1. Use the final Apple Team ID and bundle ID before TestFlight submission.
+2. Use the Android release signing certificate SHA-256 fingerprint, not a debug fingerprint, before Play submission.
+3. Deploy the generated `.well-known` files at the production domain over HTTPS with `application/json` content type.
+4. Confirm universal links route into `/app`, booking links, auth callback/reset, Care+, install, trust centre, and Zooter routes through `resolveNativeRoute`.
+5. Keep the `zoot://` custom scheme as a fallback, but do not rely on it as the only production linking path.
 
 ## iPhone PWA Verification
 
@@ -155,6 +182,7 @@ These are intentionally not hardcoded into the repo:
 - Hostinger deployment credentials.
 - Supabase service-role key and edge function secrets.
 - OpenAI API key for ChatGPT support responses.
+- Apple Team ID, final bundle ID, and Android release certificate fingerprint for native association files.
 - Stitch/Ozow payment credentials and webhook secrets.
 - Twilio voice credentials and phone numbers.
 - Brevo API key and sender domain verification.
