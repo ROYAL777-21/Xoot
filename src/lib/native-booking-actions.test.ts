@@ -45,6 +45,17 @@ describe("native booking action helpers", () => {
     expect(JSON.stringify(payload)).not.toContain("1234");
   });
 
+  it("falls back to the bookings list for unsafe booking ids", () => {
+    const payload = createNativeBookingActionPayload("share_eta", {
+      bookingId: "../../support",
+      statusLabel: "On the way",
+      updatedAt: "2026-06-08T12:00:00.000Z",
+    });
+
+    expect(payload.bookingId).toBe("booking");
+    expect(payload.route).toBe("/app/bookings");
+  });
+
   it("dispatches browser events and forwards safe payloads to native bridges", () => {
     const events: Array<{ type: string; detail: unknown }> = [];
     const messages: string[] = [];
