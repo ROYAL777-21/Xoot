@@ -6,6 +6,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
+import { NativePushPrompt } from "@/components/notifications/NativePushPrompt";
 
 type N = { id: string; kind: string; title: string; body: string | null; link: string | null; read: boolean; created_at: string };
 
@@ -65,6 +66,7 @@ export const NotificationBell = () => {
             </button>
           )}
         </div>
+        <NativePushPrompt />
         <div className="max-h-96 overflow-y-auto">
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8 px-4">No notifications yet.</p>
