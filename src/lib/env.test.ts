@@ -1,0 +1,62 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  getPublicConfigIssueForEnv,
+  getPublicSecretLeaks,
+  isSupabasePublicConfigComplete,
+} from "./env";
+
+const realSupabaseEnv = {
+  VITE_APP_ENV: "production",
+  VITE_SUPABASE_URL: "https://project.supabase.co",
+  VITE_SUPABASE_PUBLISHABLE_KEY: "publishable-key-for-browser",
+};
+
+describe("public environment validation", () => {
+  it("accepts real production Supabase public config", () => {
+    expect(getPublicConfigIssueForEnv(realSupabaseEnv, { prod: true })).toBeNull();
+    expect(isSupabasePublicConfigComplete(realSupabaseEnv)).toBe(true);
+  });
+
+  it("blocks preview Supabase in production", () => {
+    expect(
+      getPublicConfigIssueForEnv(
+        {
+          VITE_APP_ENV: "production",
+          VITE_SUPABASE_URL: "https://preview.supabase.co",
+          VITE_SUPABASE_PUBLISHABLE_KEY: "preview-anon-key",
+        },
+        { prod: true },
+      ),
+    ).toMatch(/Staging and production require real/);
+  });
+
+  it("requires explicit app environment for production-mode builds", () => {
+    expect(
+      getPublicConfigIssueForEnv(
+        {
+          VITE_SUPABASE_URL: "https://project.supabase.co",
+          VITE_SUPABASE_PUBLISHABLE_KEY: "publishable-key-for-browser",
+        },
+        { prod: true },
+      ),
+    ).toMatch(/VITE_APP_ENV is required/);
+  });
+
+  it("allows preview mode for CI and demos", () => {
+    expect(
+      getPublicConfigIssueForEnv(
+        {
+          VITE_APP_ENV: "preview",
+          VITE_SUPABASE_URL: "https://preview.supabase.co",
+          VITE_SUPABASE_PUBLISHABLE_KEY: "preview-anon-key",
+        },
+        { prod: true },
+      ),
+    ).toBeNull();
+  });
+
+  it("detects secret-like VITE variable names", () => {
+    expect(getPublicSecretLeaks({ VITE_TWILIO_AUTH_TOKEN: "never-public" })).toEqual(["VITE_TWILIO_AUTH_TOKEN"]);
+  });
+});
