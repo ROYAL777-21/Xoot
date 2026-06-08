@@ -13,7 +13,7 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Care+ membership page | Done | `/care-plus` includes hero, problem, benefits, value pillars, comparison, Airbnb/landlord use case, ZootCred, Home Memory, Favourite Zooter, and final CTA. |
 | Care+ backend billing | Mock/UI only | Membership purchase paths are safe UI routes until payment/subscription backend is approved and connected. |
 | Trust Centre and legal routes | Done | `/trust-centre`, `/legal/privacy`, `/legal/terms`, and `/legal/trust-safety` are routed. |
-| Guided booking app | Partial | Protected `/app` booking experience exists with pricing and trust signals. Live booking request creation is prepared through the `create-booking-request` Edge Function; payment confirmation and dispatch automation remain provider/backend work. Local preview uses safe mock data. |
+| Guided booking app | Partial | Protected `/app` booking experience exists with pricing, trust signals, arrival tracking, Live Activity updates, native directions/ETA share actions, and masked-call request handoff. Live booking request creation is prepared through the `create-booking-request` Edge Function; payment confirmation and dispatch automation remain provider/backend work. Local preview uses safe mock data. |
 | Airbnb host dashboard | Done | `/app/properties/airbnb` is routed and uses typed UI data for portfolio/turnover operations. |
 | Small office dashboard | Done | `/app/properties/office` is routed and uses typed UI data for office operations. |
 | Protected client app routes | Done | Booking, bookings, profile, loyalty, gifts, support, insurance, plans, favourites, and property routes are protected by auth. |
@@ -46,8 +46,8 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Apple OAuth | Blocked by credentials | Code path and button are present; Apple Services ID/private key/team config and Supabase redirect allow-list are required. |
 | OAuth callback | Done | `/auth/callback` exchanges PKCE codes and uses safe redirect handling. |
 | iPhone PWA | Done | Manifest, iOS meta tags, service worker fallback, and `/install` guidance are present. iPhone-sized viewport was verified for homepage and protected app layout. |
-| Native iOS/TestFlight | Partial | Capacitor config/scripts, safe native route handling, Live Activity bridge payloads, and build-time AASA/app-links generation are present. Apple Developer access, final Team ID/bundle ID/signing, native target generation, and review assets remain required. |
-| Android native shell | Partial | Capacitor Android scripts and build-time `assetlinks.json` generation are present. Final package signing, release certificate fingerprint, Play Integrity/App Check strategy, and Play review assets remain required. |
+| Native iOS/TestFlight | Partial | Capacitor config/scripts, safe native route handling, Live Activity bridge payloads, native booking action bridge, and build-time AASA/app-links generation are present. Apple Developer access, final Team ID/bundle ID/signing, native target generation, native bridge wiring, and review assets remain required. |
+| Android native shell | Partial | Capacitor Android scripts, native booking action bridge, and build-time `assetlinks.json` generation are present. Final package signing, release certificate fingerprint, native bridge wiring, Play Integrity/App Check strategy, and Play review assets remain required. |
 
 ## Security and Compliance
 
@@ -63,7 +63,7 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Sensitive access window | Partial | Existing edge functions support sensitive access flows; final production verification requires Supabase policy smoke tests. |
 | E2EE booking chat | Partial | Booking chat now uses device-generated ECDH keys, a Supabase public-key registry, and encrypted message envelopes in `messages.body`. Native Keychain/Keystore storage and migrated legacy-message handling still need release hardening. |
 | Payments | Blocked by credentials | Stitch/Ozow credentials and verified webhook secrets are needed before real payment confirmation can be production-ready. |
-| Notifications | Partial | App hierarchy and Twilio voice-only constraints are represented; Brevo/Twilio production credentials and webhook validation are still required. |
+| Notifications and voice | Partial | In-app notification routing, Live Activity events, native booking action events, and Twilio masked-call queue handoff are represented without exposing phone numbers. Brevo/Twilio production credentials, native bridge wiring, webhook validation, and provider smoke tests are still required. |
 | AI usage compliance | Partial | New support tickets call the `support-respond` Edge Function, which can use OpenAI Responses API with server-only secrets, redaction, human escalation, and deterministic fallback. Final production verification requires deployed Edge Function smoke tests, provider key setup, and support-agent policy review. |
 
 ## Scale and Deployment
