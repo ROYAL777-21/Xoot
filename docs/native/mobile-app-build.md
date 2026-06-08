@@ -2,7 +2,7 @@
 
 Reviewed on 2026-06-08.
 
-Zoot now has a concrete Capacitor app path for turning the React/Vite web app into iOS and Android app projects while keeping the premium web experience, Care+, haptics, dashboards, and security constraints in one codebase.
+Zoot now has a concrete Capacitor app path for turning the React/Vite web app into iOS and Android app projects while keeping the premium web experience, Care+, haptics, dashboards, notifications, and security constraints in one codebase.
 
 ## What This Adds
 
@@ -12,6 +12,7 @@ Zoot now has a concrete Capacitor app path for turning the React/Vite web app in
 - Native haptics bridge in `src/lib/haptics.ts` with browser vibration fallback and reduced-motion respect.
 - Existing iOS Live Activities, Dynamic Island, and WidgetKit source under `native/ios/ZootLiveActivities` for integration into the generated iOS project.
 - Native booking action bridge in `src/lib/native-booking-actions.ts` for directions, ETA sharing, and masked-call handoff without exposing phone numbers or access notes.
+- Native push subscription helpers in `src/lib/native-notifications.ts`, a contextual notification dropdown prompt, and the RLS-protected `native_push_subscriptions` table for device-token storage.
 
 ## First-Time iOS Project Creation
 
@@ -72,10 +73,27 @@ Supported actions:
 
 Native shells should treat these messages as user-initiated intents, not as trusted proof that a booking mutation is approved. Booking state must still come from authenticated backend state.
 
+## Native Push Subscriptions
+
+The app now has a credential-free native push readiness layer:
+
+- `src/lib/native-notifications.ts` checks iOS/Android Capacitor capability, requests push permission, registers with the Capacitor Push Notifications plugin, and builds safe subscription records.
+- `src/components/notifications/NativePushPrompt.tsx` appears inside the notification dropdown only on native iOS/Android shells.
+- `supabase/migrations/20260608124500_native_push_subscriptions.sql` creates `native_push_subscriptions` with RLS so users can manage only their own device records.
+
+Provider credentials are still required before sending production pushes:
+
+- APNs key/certificate and iOS Push Notifications entitlement.
+- Firebase/FCM project and Android notification channel setup.
+- Server-side send function with event verification, payload minimization, and token revocation handling.
+
+Push payloads must not include addresses, access codes, lockbox codes, ID data, payment references, private phone numbers, or sensitive support details.
+
 ## Release Verification
 
 Before any store submission:
 
+- `npm run config:check`
 - `npm run lint`
 - `npm run test`
 - `npm run build`
