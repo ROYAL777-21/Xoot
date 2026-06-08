@@ -91,7 +91,7 @@ export const createNativeBookingActionPayload = (
   action: ZootNativeBookingAction,
   input: NativeBookingActionInput,
 ): ZootNativeBookingActionPayload => {
-  const bookingId = textValue(input.bookingId, 80) ?? "booking";
+  const bookingId = safeBookingSegment(input.bookingId) ?? "booking";
   const status = textValue(input.status, 40);
   const statusLabel = textValue(input.statusLabel, 80);
   const propertyOrSuburb = textValue(input.propertyName) ?? textValue(input.suburb);
