@@ -18,6 +18,8 @@ const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Auth = lazy(() => import("./pages/Auth"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const AuthReset = lazy(() => import("./pages/AuthReset"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
 const PwaInstall = lazy(() => import("./pages/PwaInstall"));
 const Book = lazy(() => import("./pages/app/Book"));
 const Favorites = lazy(() => import("./pages/app/Favorites"));
@@ -86,6 +88,8 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset" element={<AuthReset />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/install" element={<PwaInstall />} />
                 <Route path="/care-plus" element={<CarePlus />} />
                 <Route path="/care-plus/apply" element={<RequireAuth><CarePlusApply /></RequireAuth>} />
