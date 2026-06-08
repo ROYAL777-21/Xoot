@@ -17,5 +17,13 @@
 /manifest.webmanifest
   Cache-Control: public, max-age=3600
 
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+  Cache-Control: public, max-age=300
+
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: public, max-age=300
+
 /sw.js
   Cache-Control: no-cache
