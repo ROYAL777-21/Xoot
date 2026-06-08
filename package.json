@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/build/write-native-association-files.mjs --target public",
+    "config:check": "node scripts/config/validate-public-env.mjs",
+    "prebuild": "npm run config:check && node scripts/build/write-native-association-files.mjs --target public",
     "build": "vite build",
     "postbuild": "node scripts/build/copy-hostinger-files.mjs && node scripts/build/write-native-association-files.mjs --target dist",
     "build:dev": "vite build --mode development",
@@ -43,7 +44,6 @@
     "@radix-ui/react-collapsible": "^1.1.11",
     "@radix-ui/react-context-menu": "^2.2.15",
     "@radix-ui/react-dialog": "^1.1.14",
-    "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-hover-card": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-menubar": "^1.1.15",
