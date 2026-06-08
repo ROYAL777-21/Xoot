@@ -10,7 +10,7 @@ const links = [
   { label: "Care+", href: "/care-plus" },
   { label: "Airbnb and Office", href: "/airbnb-office" },
   { label: "About", href: "/about" },
-  { label: "Articles", href: "/articles" },
+  { label: "Blog", href: "/blog" },
   { label: "How it works", href: "/#how" },
   { label: "Become a Zooter", href: "/zooter/apply" },
 ];
