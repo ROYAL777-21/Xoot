@@ -10,6 +10,8 @@ These checklists are for the Zoot PWA/native path and should be completed before
 - Do not claim employment, insurance, background checks, or replacement guarantees beyond approved policy support.
 - Ensure login, forgot password, Google auth, Apple auth, and account deletion/correction paths work.
 - Use Apple Sign In if Google/social sign-in is available in the native iOS app.
+- Generate and deploy `/.well-known/apple-app-site-association` with the final Apple Team ID and bundle ID.
+- Confirm iOS associated domains include the production domain and open booking/auth/support routes in the native shell.
 - Do not show broken payment, booking, or subscription flows. Use safe unavailable states until providers are live.
 - Explain data collection: names, contact details, addresses, booking notes, contractor documents, payments, support records, and device/session data.
 - Avoid collecting gate codes or ID documents before the user understands why the data is needed.
@@ -25,6 +27,8 @@ These checklists are for the Zoot PWA/native path and should be completed before
 - Declare account creation, account deletion, and data correction methods.
 - Declare location/address usage only for booking and contractor matching, not unrelated tracking.
 - Declare photos/uploads for contractor verification or before/after proof only where implemented.
+- Generate and deploy `/.well-known/assetlinks.json` with the final package name and release signing certificate SHA-256 fingerprint.
+- Confirm Android app links open booking/auth/support routes in the native shell.
 - Do not request SMS permissions for routine Zoot messaging; Twilio SMS is not part of the approved Zoot scope.
 - Use secure storage for auth tokens in native builds.
 - Avoid logging sensitive data, gate codes, payment references, ID numbers, or support allegations.
@@ -48,6 +52,8 @@ These checklists are for the Zoot PWA/native path and should be completed before
 ## Sources to Review Before Submission
 
 - Apple App Review Guidelines: https://developer.apple.com/app-store/review/guidelines/
+- Apple Universal Links: https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app
+- Android App Links: https://developer.android.com/training/app-links
 - Google Play AI-generated content policy: https://support.google.com/googleplay/android-developer/answer/14094294
 - Android Data Safety: https://developer.android.com/privacy-and-security/declare-data-use
 - OWASP Mobile Top 10: https://owasp.org/www-project-mobile-top-10/
