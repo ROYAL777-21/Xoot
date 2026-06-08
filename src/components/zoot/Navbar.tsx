@@ -8,8 +8,7 @@ import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 const links = [
   { label: "Services", href: "/#services" },
   { label: "Care+", href: "/care-plus" },
-  { label: "Airbnb and Office", href: "/airbnb-office" },
-  { label: "About", href: "/about" },
+  { label: "Trust", href: "/trust-centre" },
   { label: "Blog", href: "/blog" },
   { label: "How it works", href: "/#how" },
   { label: "Become a Zooter", href: "/zooter/apply" },
