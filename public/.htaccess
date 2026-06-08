@@ -26,6 +26,20 @@
   ExpiresByType application/manifest+json "access plus 1 hour"
 </IfModule>
 
+<Files "apple-app-site-association">
+  ForceType application/json
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=300"
+  </IfModule>
+</Files>
+
+<Files "assetlinks.json">
+  ForceType application/json
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=300"
+  </IfModule>
+</Files>
+
 <Files "sw.js">
   <IfModule mod_headers.c>
     Header set Cache-Control "no-cache"
