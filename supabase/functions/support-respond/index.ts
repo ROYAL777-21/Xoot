@@ -32,9 +32,20 @@ const json = (body: Record<string, unknown>, status: number, origin: string | nu
     headers: { ...getCorsHeaders(origin), "Content-Type": "application/json" },
   });
 
+const stripUnsafeText = (value: string) =>
+  value
+    .split("")
+    .map((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 31 || code === 127 || character === "<" || character === ">" || character === "`" || character === "\\"
+        ? " "
+        : character;
+    })
+    .join("");
+
 const sanitiseSupportText = (value: unknown, maxLength = 1500) =>
   typeof value === "string"
-    ? value.replace(/[\u0000-\u001f\u007f<>`\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength)
+    ? stripUnsafeText(value).replace(/\s+/g, " ").trim().slice(0, maxLength)
     : "";
 
 const sanitiseUuid = (value: unknown) =>
