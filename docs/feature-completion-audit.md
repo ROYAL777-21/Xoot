@@ -1,7 +1,7 @@
 # Zoot Feature Completion Audit
 
 Branch: `codex/full-zoot-iphone-pwa-auth-security`
-Date: 2026-06-07
+Date: 2026-06-08
 
 Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not started`.
 
@@ -46,13 +46,14 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Apple OAuth | Blocked by credentials | Code path and button are present; Apple Services ID/private key/team config and Supabase redirect allow-list are required. |
 | OAuth callback | Done | `/auth/callback` exchanges PKCE codes and uses safe redirect handling. |
 | iPhone PWA | Done | Manifest, iOS meta tags, service worker fallback, and `/install` guidance are present. iPhone-sized viewport was verified for homepage and protected app layout. |
-| Native iOS/TestFlight | Blocked by credentials | Capacitor scripts exist; Apple Developer access, final bundle ID, signing, and native review assets are required. |
+| Native iOS/TestFlight | Partial | Capacitor config/scripts, safe native route handling, Live Activity bridge payloads, and build-time AASA/app-links generation are present. Apple Developer access, final Team ID/bundle ID/signing, native target generation, and review assets remain required. |
+| Android native shell | Partial | Capacitor Android scripts and build-time `assetlinks.json` generation are present. Final package signing, release certificate fingerprint, Play Integrity/App Check strategy, and Play review assets remain required. |
 
 ## Security and Compliance
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Static security headers | Done | `_headers` and Hostinger-compatible `.htaccess` set CSP, HSTS, frame denial, referrer, permissions, and COOP/CORP headers. |
+| Static security headers | Done | `_headers` and Hostinger-compatible `.htaccess` set CSP, HSTS, frame denial, referrer, permissions, COOP/CORP, and native association-file JSON headers. |
 | Crash boundary | Done | App-level error boundary prevents blank-screen crashes and shows a recovery action. |
 | Route code splitting | Done | Public/protected routes are lazy-loaded behind a loading fallback. |
 | Secret scan | Done | `npm run security:scan` added and wired into the preview workflow. |
@@ -70,6 +71,6 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Area | Status | Notes |
 | --- | --- | --- |
 | 10,000-request readiness | Partial | k6 smoke/load script exists. Do not claim capacity until it is run against staging/production and database metrics are reviewed. |
-| Hostinger deployment | Partial | Static build, SPA fallback, and Apache headers are prepared. Final deployment needs Hostinger domain/environment configuration. |
+| Hostinger deployment | Partial | Static build, SPA fallback, Apache headers, and native association-file content types are prepared. Final deployment needs Hostinger domain/environment configuration and release signing values. |
 | Vercel/Netlify/GitHub Pages preview | Partial | GitHub Actions build artifact is available for preview; production target remains Hostinger unless changed. |
 | Figma dashboard | Partial | Blank file created at https://www.figma.com/design/vsT7yHn1OPxKgKpVzLryo3 as `Zoot Care+ Host & Office Dashboards`. Populating the dashboard frames is blocked by the Figma Starter-plan MCP tool-call limit. |
