@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/build/write-native-association-files.mjs --target public",
     "build": "vite build",
-    "postbuild": "node scripts/build/copy-hostinger-files.mjs",
+    "postbuild": "node scripts/build/copy-hostinger-files.mjs && node scripts/build/write-native-association-files.mjs --target dist",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
