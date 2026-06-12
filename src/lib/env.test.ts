@@ -31,6 +31,19 @@ describe("public environment validation", () => {
     ).toMatch(/Staging and production require real/);
   });
 
+  it("blocks copied example placeholders in production", () => {
+    expect(
+      getPublicConfigIssueForEnv(
+        {
+          VITE_APP_ENV: "production",
+          VITE_SUPABASE_URL: "https://your-project-ref.supabase.co",
+          VITE_SUPABASE_PUBLISHABLE_KEY: "your-anon-key",
+        },
+        { prod: true },
+      ),
+    ).toMatch(/Staging and production require real/);
+  });
+
   it("requires explicit app environment for production-mode builds", () => {
     expect(
       getPublicConfigIssueForEnv(

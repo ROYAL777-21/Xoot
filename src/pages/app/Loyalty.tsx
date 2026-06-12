@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Gift, Sparkles, Trophy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { applyZootCredLedger, routeNotificationChannel } from "@/lib/operations";
+import { applyZootCredLedger } from "@/lib/operations";
 import { formatZAR } from "@/lib/format";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 const TARGET = 10;
 
@@ -32,26 +33,13 @@ const Loyalty = () => {
 
   const redeem = async () => {
     if (!user || !loyalty || loyalty.free_credits < 1) return;
-    await supabase.from("loyalty_points").update({ free_credits: loyalty.free_credits - 1 }).eq("user_id", user.id);
-    await (supabase as any).from("zootcred_ledger").insert({
-      user_id: user.id,
-      amount: 1,
-      direction: "debit",
-      reason: "redemption",
-      status: "redeemed",
-      meta: { redemption_type: "free_clean_credit" },
-    });
-    await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("zootcred_update").map((channel) => ({
-      source_table: "zootcred_ledger",
-      event_type: "zootcred_update",
-      channel,
-      owner: "Retention & Loyalty Agent",
-      stack_tool: "Zoot in-app notification",
-      payload: { redemption_type: "free_clean_credit" },
-      created_by: user.id,
-    })));
-    toast.success("Free credit applied to your next booking!");
-    refresh();
+    try {
+      await invokeOpsWorkflow({ action: "redeem_loyalty_credit" });
+      toast.success("Free credit applied to your next booking!");
+      refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Reward redemption failed");
+    }
   };
 
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;

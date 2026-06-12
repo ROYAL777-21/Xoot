@@ -1,13 +1,27 @@
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BedDouble, Camera, CheckCircle2, Clock, Home, LifeBuoy, ListChecks, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { PropertyProfilePreview, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
-import { mockPropertyProfiles, smartReminders } from "@/data/care-plus";
+import { smartReminders } from "@/data/care-plus";
 import { haptic } from "@/lib/haptics";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import type { PropertyProfile } from "@/types/care-plus";
 
-const hostProperties = mockPropertyProfiles.filter((profile) => profile.type === "airbnb" || profile.type === "landlord");
+const mapPropertyAccount = (row: Record<string, unknown>): PropertyProfile => ({
+  id: String(row.id ?? crypto.randomUUID()),
+  name: String(row.name ?? row.property_name ?? "Saved property"),
+  type: (row.type === "landlord" ? "landlord" : "airbnb"),
+  suburb: String(row.suburb ?? row.location ?? "Saved suburb"),
+  defaultService: String(row.default_service ?? "Airbnb turnover clean"),
+  readinessScore: Number(row.readiness_score ?? 0),
+  turnoverInstructions: typeof row.turnover_instructions === "string" ? row.turnover_instructions : undefined,
+  cleaningHistoryCount: Number(row.cleaning_history_count ?? 0),
+  nextRecommendedBooking: typeof row.next_recommended_booking === "string" ? row.next_recommended_booking : undefined,
+});
 
 const turnoverTasks = [
   "Lockbox code checked inside the app",
@@ -23,6 +37,29 @@ const recentHistory = [
 ];
 
 const AirbnbHostDashboard = () => {
+  const { user } = useAuth();
+  const [hostProperties, setHostProperties] = useState<PropertyProfile[]>([]);
+  const [loadingProfiles, setLoadingProfiles] = useState(true);
+
+  const refreshProperties = useCallback(async () => {
+    if (!user) {
+      setHostProperties([]);
+      setLoadingProfiles(false);
+      return;
+    }
+
+    // TODO: replace with real query - supabase.from('property_accounts') should become a typed property profile hook once schema generation catches up.
+    const { data } = await (supabase as any)
+      .from("property_accounts")
+      .select("id,name,property_name,type,suburb,location,default_service,readiness_score,turnover_instructions,cleaning_history_count,next_recommended_booking")
+      .eq("user_id", user.id)
+      .in("type", ["airbnb", "landlord"]);
+    setHostProperties(Array.isArray(data) ? data.map(mapPropertyAccount) : []);
+    setLoadingProfiles(false);
+  }, [user]);
+
+  useEffect(() => { refreshProperties(); }, [refreshProperties]);
+
   return (
     <div className="container max-w-6xl py-8 lg:py-12">
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -110,7 +147,13 @@ const AirbnbHostDashboard = () => {
       <div className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="space-y-4">
           <h2 className="font-display text-2xl font-bold">Property profiles</h2>
-          {hostProperties.map((profile) => <PropertyProfilePreview key={profile.id} profile={profile} />)}
+          {loadingProfiles ? (
+            <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">Loading saved host properties...</Card>
+          ) : hostProperties.length > 0 ? (
+            hostProperties.map((profile) => <PropertyProfilePreview key={profile.id} profile={profile} />)
+          ) : (
+            <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">No Airbnb or landlord property profiles saved yet.</Card>
+          )}
         </div>
         <div className="space-y-4">
           <h2 className="font-display text-2xl font-bold">Host reminders</h2>

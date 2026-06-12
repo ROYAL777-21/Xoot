@@ -31,6 +31,7 @@ import {
 import type { CarePlusBenefit, PropertyProfile, SmartReminder } from "@/types/care-plus";
 import { haptic } from "@/lib/haptics";
 
+// TODO: replace with real query - supabase.from('zootcred_ledger') when this component is reused in authenticated member dashboards.
 const benefitIcons = {
   "home-memory": Home,
   "favourite-zooter": Heart,
@@ -115,6 +116,7 @@ export const ZootCredPreview = () => (
   </Card>
 );
 
+// TODO: replace with real query - supabase.from('household_profiles') when this component is reused in authenticated member dashboards.
 export const HomeMemoryPreview = () => (
   <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
     <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -143,6 +145,7 @@ export const HomeMemoryPreview = () => (
   </Card>
 );
 
+// TODO: replace with real query - supabase.from('zooters') joined through booking/favourite history when this component is reused in authenticated member dashboards.
 export const FavouriteZooterPreview = () => (
   <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
     <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -193,6 +196,7 @@ export const SmartReminderList = ({ reminders = smartReminders }: { reminders?: 
   </div>
 );
 
+// TODO: replace with real query - supabase.from('property_accounts') for authenticated property dashboards.
 export const PropertyProfilePreview = ({ profile }: { profile: PropertyProfile }) => (
   <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -207,6 +211,7 @@ export const PropertyProfilePreview = ({ profile }: { profile: PropertyProfile }
   </Card>
 );
 
+// TODO: replace with real query - supabase.from('user_subscriptions') when this component is reused in authenticated member dashboards.
 export const CarePlusStatusPanel = () => (
   <Card className="rounded-3xl border-0 bg-foreground p-5 text-background shadow-warm sm:p-6">
     <div className="mb-6 flex items-start justify-between gap-4">
@@ -243,4 +248,5 @@ export const CarePlusSupportPromise = () => (
   </Card>
 );
 
+// Public marketing previews only. Authenticated dashboards must pass rows from supabase.from('property_accounts').
 export const defaultPropertyPreviews = mockPropertyProfiles;

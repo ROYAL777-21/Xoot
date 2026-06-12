@@ -1,13 +1,27 @@
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Building2, CheckCircle2, Clock3, Coffee, DoorOpen, LifeBuoy, Plus, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { PropertyProfilePreview, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
-import { mockPropertyProfiles, smartReminders } from "@/data/care-plus";
+import { smartReminders } from "@/data/care-plus";
 import { haptic } from "@/lib/haptics";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import type { PropertyProfile } from "@/types/care-plus";
 
-const officeProfiles = mockPropertyProfiles.filter((profile) => profile.type === "small_office");
+const mapOfficeAccount = (row: Record<string, unknown>): PropertyProfile => ({
+  id: String(row.id ?? crypto.randomUUID()),
+  name: String(row.name ?? row.property_name ?? "Saved office"),
+  type: "small_office",
+  suburb: String(row.suburb ?? row.location ?? "Saved suburb"),
+  defaultService: String(row.default_service ?? "Small office clean"),
+  readinessScore: Number(row.readiness_score ?? 0),
+  turnoverInstructions: typeof row.turnover_instructions === "string" ? row.turnover_instructions : undefined,
+  cleaningHistoryCount: Number(row.cleaning_history_count ?? 0),
+  nextRecommendedBooking: typeof row.next_recommended_booking === "string" ? row.next_recommended_booking : undefined,
+});
 
 const roomPriorities = [
   { room: "Reception", detail: "Floors, bins, visitor surface wipe", score: 90 },
@@ -22,6 +36,29 @@ const accessNotes = [
 ];
 
 const OfficeDashboard = () => {
+  const { user } = useAuth();
+  const [officeProfiles, setOfficeProfiles] = useState<PropertyProfile[]>([]);
+  const [loadingProfiles, setLoadingProfiles] = useState(true);
+
+  const refreshProfiles = useCallback(async () => {
+    if (!user) {
+      setOfficeProfiles([]);
+      setLoadingProfiles(false);
+      return;
+    }
+
+    // TODO: replace with real query - supabase.from('property_accounts') should become a typed property profile hook once schema generation catches up.
+    const { data } = await (supabase as any)
+      .from("property_accounts")
+      .select("id,name,property_name,type,suburb,location,default_service,readiness_score,turnover_instructions,cleaning_history_count,next_recommended_booking")
+      .eq("user_id", user.id)
+      .eq("type", "small_office");
+    setOfficeProfiles(Array.isArray(data) ? data.map(mapOfficeAccount) : []);
+    setLoadingProfiles(false);
+  }, [user]);
+
+  useEffect(() => { refreshProfiles(); }, [refreshProfiles]);
+
   return (
     <div className="container max-w-6xl py-8 lg:py-12">
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -109,7 +146,13 @@ const OfficeDashboard = () => {
       <div className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="space-y-4">
           <h2 className="font-display text-2xl font-bold">Office profiles</h2>
-          {officeProfiles.map((profile) => <PropertyProfilePreview key={profile.id} profile={profile} />)}
+          {loadingProfiles ? (
+            <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">Loading saved office profiles...</Card>
+          ) : officeProfiles.length > 0 ? (
+            officeProfiles.map((profile) => <PropertyProfilePreview key={profile.id} profile={profile} />)
+          ) : (
+            <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">No office profiles saved yet.</Card>
+          )}
           <Card className="rounded-3xl p-5 shadow-card">
             <div className="flex items-center justify-between gap-3">
               <div>

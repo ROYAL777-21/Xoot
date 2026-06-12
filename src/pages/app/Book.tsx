@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortZootersForMarketplace } from "@/lib/trust";
-import { buildPendingPaymentRecord, calculateBookingQuote, isApprovedLaunchRegion, routeNotificationChannel } from "@/lib/operations";
+import { calculateBookingQuote, isApprovedLaunchRegion } from "@/lib/operations";
 
 const services = [
   { id: "residential", label: "Residential", icon: HomeIcon },
@@ -159,101 +159,35 @@ const Book = () => {
   const handleBook = async () => {
     if (!user || picked.length === 0) return;
     setSubmitting(true);
-    const scheduled = new Date(`${date}T${time}`).toISOString();
-    const firstBookingDate = new Date(scheduled);
-    const launchRegion = address.split(",").map((part) => part.trim()).find((part) => isApprovedLaunchRegion(part)) ?? address;
-    const perBookingTotal = Math.max(1, Math.round(bookingTotal / picked.length));
-    const perBookingServiceFee = Math.round(serviceFee / picked.length);
-    const perBookingCover = Math.round(bookingCover / picked.length);
-    const perBookingHighDemand = Math.round(highDemandPremium / picked.length);
-
-    for (let i = 0; i < picked.length; i++) {
-      const z = picked[i];
-      const payload: any = {
-        user_id: user.id,
-        zooter_id: z.id,
-        original_zooter_id: z.id,
-        service: "cleaning",
-        service_type: active,
-        scheduled_at: scheduled,
-        price: perWorkerPrice,
-        address,
-        status: "pending",
-        payment_status: "pending",
+    const { data, error } = await supabase.functions.invoke("create-booking-request", {
+      body: {
+        serviceType: active,
         frequency,
-        launch_region: launchRegion,
-        duration_hours: estHours,
-        notes: instructions || null,
-        completion_photo_required: photoRequired,
-        service_fee: perBookingServiceFee,
-        booking_cover_amount: perBookingCover,
-        high_demand_premium: perBookingHighDemand,
-      };
-      const { data: booking, error } = await (supabase as any).from("bookings").insert(payload).select("id").single();
-      if (error) { toast.error(error.message); setSubmitting(false); return; }
-      if (i === 0) { setBookingId(booking.id); setBookingStatus("pending"); }
-      await supabase.from("zooter_jobs").insert({ booking_id: booking.id, zooter_id: z.id, state: "offered" });
-      await (supabase as any).from("booking_status_events").insert({ booking_id: booking.id, actor_id: user.id, status: "pending", label: "Booking sent" });
-      const { data: payment } = await (supabase as any).from("payment_records").insert({
-        ...buildPendingPaymentRecord({ bookingId: booking.id, userId: user.id, amount: perBookingTotal, kind: "booking" }),
-        meta: { service_type: active, zooter_id: z.id, frequency, provider_required: "Ozow/Stitch credentials not connected" },
-      }).select("id").single();
-      await (supabase as any).from("admin_review_queue").insert({
-        queue_type: "payment",
-        subject_table: "payment_records",
-        subject_id: payment?.id ?? booking.id,
-        user_id: user.id,
-        zooter_id: z.id,
-        booking_id: booking.id,
-        priority: "normal",
-        summary: `Pending payment confirmation for ${active} booking`,
-      });
-      await (supabase as any).from("integration_outbox").insert([
-        ...routeNotificationChannel("booking_confirmed").map((channel) => ({
-          source_table: "bookings",
-          source_id: booking.id,
-          event_type: "booking_confirmed",
-          channel,
-          owner: channel === "brevo_email" ? "Retention & Loyalty Agent" : "Customer Support Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
-          payload: { booking_id: booking.id, service_type: active, scheduled_at: scheduled },
-          created_by: user.id,
-        })),
-        {
-          source_table: "bookings",
-          source_id: booking.id,
-          event_type: "payment_authorisation_requested",
-          channel: "payment_provider",
-          owner: "Finance Operations",
-          stack_tool: "Payment provider queue",
-          payload: { booking_id: booking.id, amount: perBookingTotal, currency: "ZAR" },
-          status: "needs_approval",
-          approval_required: true,
-          failure_mode: "Keep booking pending payment until provider callback or admin confirmation exists.",
-          created_by: user.id,
-        },
-      ]);
-      await supabase.from("notifications").insert({
-        user_id: user.id,
-        kind: "booking_confirmed",
-        title: `Booking request sent to ${z.name}`,
-        body: `Your ${active} booking is pending contractor acceptance and payment confirmation.`,
-        link: `/app/bookings/${booking.id}`,
-      });
+        homeSize,
+        time,
+        date,
+        address,
+        instructions,
+        householdProfileId: householdId,
+        workerCount: totalWorkers,
+        zooterIds: picked.map((z) => z.id),
+        addOns: Array.from(extras),
+        bookingCoverOptIn,
+      },
+    });
+
+    if (error) {
+      toast.error(error.message);
+      setSubmitting(false);
+      return;
     }
 
-    if (frequency === "repeat") {
-      await (supabase as any).from("recurring_schedules").insert({
-        user_id: user.id,
-        zooter_id: picked[0].id,
-        household_profile_id: householdId,
-        cadence_days: 14,
-        preferred_day: firstBookingDate.toLocaleDateString("en-ZA", { weekday: "long" }),
-        preferred_time: time,
-        next_suggested_at: new Date(firstBookingDate.getTime() + 14 * 864e5).toISOString(),
-      });
+    const result = data as { booking_ids?: string[]; status?: string } | null;
+    const firstBookingId = result?.booking_ids?.[0] ?? null;
+    if (firstBookingId) {
+      setBookingId(firstBookingId);
+      setBookingStatus(result?.status ?? "pending");
     }
-
     setSubmitting(false);
     setStep(4);
   };

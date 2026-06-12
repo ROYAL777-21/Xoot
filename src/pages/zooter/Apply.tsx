@@ -11,8 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ShieldCheck, Loader2, ArrowRight, ArrowLeft, Upload, FileCheck2, Sparkles, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
-import { routeNotificationChannel } from "@/lib/operations";
 import { haptic } from "@/lib/haptics";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
 
@@ -221,52 +221,14 @@ const Apply = () => {
     setSubmitting(true);
     const id = appId ?? (await saveDraft());
     if (!id) { setSubmitting(false); return; }
-    const { error } = await (supabase as any).from("zooter_applications").update({
-      status: "submitted",
-      id_verification_status: "pending",
-      selfie_verification_status: "pending",
-      address_verification_status: "pending",
-      banking_verification_status: "pending",
-      reference_verification_status: "pending",
-      background_check_status: "pending",
-      third_party_verification_status: "pending",
-      activation_locked_reason: "Verification, MIE screening, and required training must be complete before activation.",
-    }).eq("id", id);
-    if (!error) {
-      await supabase.from("notifications").insert({ user_id: user.id, kind: "zooter_application_submitted", title: "Application received", body: "Our trust team reviews ID, selfie, address, bank, references and background checks before activation." });
-      await (supabase as any).from("admin_review_queue").insert({
-        queue_type: "kyc",
-        subject_table: "zooter_applications",
-        subject_id: id,
-        user_id: user.id,
-        priority: "normal",
-        summary: `KYC review for ${form.full_name}`,
+    let error: Error | null = null;
+    try {
+      await invokeOpsWorkflow({
+        action: "zooter_application_submitted",
+        applicationId: id,
       });
-      await (supabase as any).from("integration_outbox").insert([
-        {
-          source_table: "zooter_applications",
-          source_id: id,
-          event_type: "mie_screening_requested",
-          channel: "mie_screening",
-          owner: "Trust & Safety Agent",
-          stack_tool: "MIE screening queue",
-          payload: { application_id: id, suburb: form.suburb, years_experience: form.years_experience },
-          status: "needs_approval",
-          approval_required: true,
-          failure_mode: "Keep application pending until manual review is complete.",
-          created_by: user.id,
-        },
-        ...routeNotificationChannel("trust_verification_update").map((channel) => ({
-          source_table: "zooter_applications",
-          source_id: id,
-          event_type: "trust_verification_update",
-          channel,
-          owner: channel === "brevo_email" ? "Contractor Success Agent" : "Trust & Safety Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
-          payload: { application_id: id, status: "submitted" },
-          created_by: user.id,
-        })),
-      ]);
+    } catch (caught) {
+      error = caught instanceof Error ? caught : new Error("Application submission failed");
     }
     setSubmitting(false);
     if (error) { haptic("warning"); toast.error(error.message); return; }

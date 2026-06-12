@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ShieldCheck, FileText, Check, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
 import { getActivationReadiness } from "@/lib/operations";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 const verificationFields = [
   ["id_verification_status", "Government ID"],
@@ -19,7 +19,6 @@ const verificationFields = [
 ] as const;
 
 const AdminKyc = () => {
-  const { user } = useAuth();
   const [apps, setApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<any>(null);
@@ -60,8 +59,18 @@ const AdminKyc = () => {
 
   const setVerification = async (field: string, status: "approved" | "rejected" | "pending") => {
     if (!active) return;
-    const { data, error } = await (supabase as any).from("zooter_applications").update({ [field]: status }).eq("id", active.id).select("*").single();
-    if (error) return toast.error(error.message);
+    let data: any;
+    try {
+      const result = await invokeOpsWorkflow<{ application?: any }>({
+        action: "admin_set_kyc_verification",
+        applicationId: active.id,
+        field,
+        status,
+      });
+      data = result.application ?? { ...active, [field]: status };
+    } catch (error) {
+      return toast.error(error instanceof Error ? error.message : "Verification update failed");
+    }
     setActive(data);
     setApps((items) => items.map((item) => item.id === data.id ? data : item));
   };
@@ -82,47 +91,22 @@ const AdminKyc = () => {
   const allVerified = active && readiness.activationReady;
 
   const decide = async (status: "approved" | "rejected") => {
-    if (!active || !user) return;
+    if (!active) return;
     if (status === "approved" && !readiness.activationReady) {
       toast.error(`Activation locked: ${readiness.missing.join(", ")}`);
       return;
     }
 
-    const { error } = await (supabase as any).from("zooter_applications").update({
-      status,
-      reviewer_notes: notes,
-      reviewed_by: user.id,
-      reviewed_at: new Date().toISOString(),
-    }).eq("id", active.id);
-    if (error) { toast.error(error.message); return; }
-
-    if (status === "approved") {
-      const { data: existing } = await supabase.from("zooters").select("id").eq("user_id", active.user_id).maybeSingle();
-      const zooterPayload: any = {
-        user_id: active.user_id,
-        name: active.full_name,
-        role: active.service_category ?? "cleaning",
-        hourly_rate: 35,
-        bio: active.bio,
-        tags: ["Verified", "Background checked"],
-        distance_mi: 1,
-        active: true,
-        verified: true,
-        background_checked: true,
-        background_check_status: "approved",
-        reliability_score: 100,
-        job_completion_rate: 100,
-        tier: "verified",
-        years_experience: Number(active.years_experience ?? 2),
-        suburb_coverage: [active.suburb, active.city].filter(Boolean),
-        transport: active.transport || "Transport confirmed",
-        supplies_owned: active.supplies_owned ?? [],
-        pet_comfort: active.pet_comfort || "Pet comfort reviewed",
-      };
-      if (!existing) await (supabase as any).from("zooters").insert(zooterPayload);
-      else await (supabase as any).from("zooters").update(zooterPayload).eq("id", existing.id);
-      await supabase.from("user_roles").insert({ user_id: active.user_id, role: "zooter" }).select();
-      await (supabase as any).from("admin_review_queue").update({ status: "resolved", resolution_notes: "Application approved and activated", resolved_at: new Date().toISOString() }).eq("subject_id", active.id).eq("queue_type", "kyc");
+    try {
+      await invokeOpsWorkflow({
+        action: "admin_decide_zooter_application",
+        applicationId: active.id,
+        status,
+        reviewerNotes: notes,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Application decision failed");
+      return;
     }
 
     toast.success(`Application ${status}`);

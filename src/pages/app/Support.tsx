@@ -8,21 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { LifeBuoy, Loader2, Sparkles, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { routeNotificationChannel } from "@/lib/operations";
 import { haptic } from "@/lib/haptics";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 type SupportAssistantReply = {
   response?: string;
   escalated?: boolean;
   source?: "openai_responses" | "zoot_support_rules" | "human_escalation";
   openai_request_id?: string | null;
-};
-
-const getPriority = (text: string) => {
-  const normalized = text.toLowerCase();
-  if (normalized.includes("no-show") || normalized.includes("unsafe") || normalized.includes("damage")) return "urgent";
-  if (normalized.includes("refund") || normalized.includes("replacement") || normalized.includes("complaint")) return "high";
-  return "normal";
 };
 
 const requestSupportAssistantReply = async (
@@ -81,38 +74,20 @@ const Support = () => {
       assistantReply = null;
     }
 
-    const priority = getPriority(`${subject} ${body}`);
-    await (supabase as any).from("support_followups").insert({
-      ticket_id: ticket.id,
-      user_id: user.id,
-      trigger_type: "manual",
-      priority,
-      notes: subject,
-    });
-    await (supabase as any).from("admin_review_queue").insert({
-      queue_type: "support",
-      subject_table: "support_tickets",
-      subject_id: ticket.id,
-      user_id: user.id,
-      priority,
-      summary: subject,
-    });
-    await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("support_opened").map((channel) => ({
-      source_table: "support_tickets",
-      source_id: ticket.id,
-      event_type: "support_opened",
-      channel,
-      owner: "Customer Support Agent",
-      stack_tool: "Zoot in-app notification",
-      payload: {
-        ticket_id: ticket.id,
-        subject,
-        priority,
-        assistant_source: assistantReply?.source ?? "queued",
-        openai_request_id: assistantReply?.openai_request_id ?? null,
-      },
-      created_by: user.id,
-    })));
+    try {
+      await invokeOpsWorkflow({
+        action: "support_opened",
+        ticketId: ticket.id,
+        assistantSource: assistantReply?.source ?? "queued",
+        openaiRequestId: assistantReply?.openai_request_id ?? null,
+      });
+    } catch {
+      haptic("warning");
+      toast.error("Support ticket saved, but routing is unavailable. Please try again shortly.");
+      setSubmitting(false);
+      refresh();
+      return;
+    }
 
     haptic("success");
     if (assistantReply?.escalated) {

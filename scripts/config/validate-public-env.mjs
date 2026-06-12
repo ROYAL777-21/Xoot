@@ -41,6 +41,7 @@ const fail = (message) => {
 
 const isPlaceholderSupabaseUrl = (value) => {
   if (!value) return true;
+  if (value.includes("preview") || value.includes("placeholder") || value.includes("your-project-ref")) return true;
   try {
     return previewSupabaseHosts.has(new URL(value).hostname);
   } catch {
@@ -49,7 +50,12 @@ const isPlaceholderSupabaseUrl = (value) => {
 };
 
 const isPlaceholderSupabaseKey = (value) =>
-  !value || value === "preview-anon-key" || value === "preview-local-anon-key" || value.includes("your-supabase");
+  !value ||
+  value === "preview-anon-key" ||
+  value === "preview-local-anon-key" ||
+  value.includes("your-supabase") ||
+  value.includes("your-anon-key") ||
+  value.includes("placeholder");
 
 const appEnv = text("VITE_APP_ENV").toLowerCase();
 const leaks = Object.keys(env)

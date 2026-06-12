@@ -30,6 +30,9 @@ export const carePlusPlan: CarePlusPlan = {
   ],
 };
 
+export const isCarePlusPreviewDataAllowed = () => import.meta.env.VITE_APP_ENV !== "production";
+
+// Public marketing preview data only. Authenticated production pages must query Supabase instead of importing these mock objects.
 export const mockCarePlusMembership: CarePlusMembership = {
   id: "care-plus-demo",
   userId: "demo-user",

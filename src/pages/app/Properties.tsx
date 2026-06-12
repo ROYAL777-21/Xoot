@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { BedDouble, Briefcase, Building2, ChevronRight, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 const emptyForm = {
   account_type: "airbnb_host",
@@ -70,24 +71,13 @@ const Properties = () => {
     }).select("id").single();
 
     if (!error) {
-      await (supabase as any).from("admin_review_queue").insert({
-        queue_type: "b2b_invoice",
-        subject_table: "property_accounts",
-        subject_id: account.id,
-        user_id: user.id,
-        priority: "normal",
-        summary: `B2B monthly invoice setup for ${form.name}`,
-      });
-      await (supabase as any).from("integration_outbox").insert({
-        source_table: "property_accounts",
-        source_id: account.id,
-        event_type: "property_account_created",
-        channel: "airtable_ops",
-        owner: "Strategy & Operations Agent",
-        stack_tool: "Airtable ops queue",
-        payload: { property_account_id: account.id, account_type: form.account_type },
-        created_by: user.id,
-      });
+      try {
+        await invokeOpsWorkflow({ action: "property_account_created", propertyAccountId: account.id });
+      } catch {
+        haptic("warning");
+        setSubmitting(false);
+        return toast.error("Property account saved, but operations routing is unavailable. Please try again shortly.");
+      }
     }
 
     setSubmitting(false);

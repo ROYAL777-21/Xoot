@@ -18,6 +18,8 @@ This document maps every callback class needed for staging and production. Value
 | --- | --- | --- | --- | --- |
 | `ai-match` | `https://<project-ref>.functions.supabase.co/ai-match` | Authenticated Zooter matching/ranking | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `create-booking-request` | `https://<project-ref>.functions.supabase.co/create-booking-request` | Backend-priced booking request creation, payment record creation, notification queue | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
+| `care-plus-membership` | `https://<project-ref>.functions.supabase.co/care-plus-membership` | Care+ membership request/cancellation action layer, payment record creation, admin queue, notification queue | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
+| `ops-workflow` | `https://<project-ref>.functions.supabase.co/ops-workflow` | Authenticated action layer for support routing, property account ops routing, Gift Clean payment requests, ZootCred redemption, booking status changes, masked call requests, trust incidents, low-rating follow-up, Zooter application submission, Zooter job response, and typed admin queue/KYC actions | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `support-respond` | `https://<project-ref>.functions.supabase.co/support-respond` | Support bot response and escalation | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, `OPENAI_SUPPORT_MODEL`, `ALLOWED_ORIGINS` | Implemented |
 
 ## Supabase Auth Callbacks

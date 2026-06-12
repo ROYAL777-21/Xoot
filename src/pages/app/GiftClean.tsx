@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Gift, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { buildPendingPaymentRecord, routeNotificationChannel } from "@/lib/operations";
 import { formatZAR } from "@/lib/format";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 const servicePrices: Record<string, number> = {
   residential: 270,
@@ -37,63 +36,21 @@ const GiftClean = () => {
     if (!user) return;
     setSubmitting(true);
 
-    const { data: order, error } = await (supabase as any).from("gift_clean_orders").insert({
-      purchaser_user_id: user.id,
-      recipient_name: form.recipient_name,
-      recipient_email: form.recipient_email || null,
-      recipient_phone: form.recipient_phone || null,
-      occasion: form.occasion || null,
-      message: form.message || null,
-      service_type: form.service_type,
-      amount,
-      status: "pending_payment",
-    }).select("id").single();
-
-    if (error) {
+    try {
+      await invokeOpsWorkflow({
+        action: "gift_clean_order_requested",
+        recipientName: form.recipient_name,
+        recipientEmail: form.recipient_email || null,
+        recipientPhone: form.recipient_phone || null,
+        occasion: form.occasion || null,
+        message: form.message || null,
+        serviceType: form.service_type,
+      });
+    } catch (error) {
       setSubmitting(false);
-      toast.error(error.message);
+      toast.error(error instanceof Error ? error.message : "Gift clean request failed");
       return;
     }
-
-    const { data: payment } = await (supabase as any).from("payment_records").insert({
-      ...buildPendingPaymentRecord({ userId: user.id, amount, kind: "gift_clean" }),
-      meta: { gift_clean_order_id: order.id, service_type: form.service_type },
-    }).select("id").single();
-
-    await (supabase as any).from("gift_clean_orders").update({ payment_record_id: payment?.id }).eq("id", order.id);
-    await (supabase as any).from("admin_review_queue").insert({
-      queue_type: "payment",
-      subject_table: "gift_clean_orders",
-      subject_id: order.id,
-      user_id: user.id,
-      priority: "normal",
-      summary: `Gift clean pending payment for ${form.recipient_name}`,
-    });
-    await (supabase as any).from("integration_outbox").insert([
-      ...routeNotificationChannel("invoice_created").map((channel) => ({
-        source_table: "gift_clean_orders",
-        source_id: order.id,
-        event_type: "gift_clean_invoice_created",
-        channel,
-        owner: "Retention & Loyalty Agent",
-        stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
-        payload: { gift_clean_order_id: order.id, amount },
-        created_by: user.id,
-      })),
-      {
-        source_table: "payment_records",
-        source_id: payment?.id,
-        event_type: "gift_clean_payment_authorisation_requested",
-        channel: "payment_provider",
-        owner: "Finance Operations",
-        stack_tool: "Payment provider queue",
-        payload: { payment_record_id: payment?.id, amount },
-        status: "needs_approval",
-        approval_required: true,
-        failure_mode: "Gift order remains pending until provider callback or admin confirmation exists.",
-        created_by: user.id,
-      },
-    ]);
 
     setSubmitting(false);
     toast.success("Gift clean recorded with pending payment");

@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Briefcase, Calendar, MapPin, Loader2, Check, X, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
-import { routeNotificationChannel } from "@/lib/operations";
 import { haptic } from "@/lib/haptics";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 const Jobs = () => {
   const { user } = useAuth();
@@ -35,35 +35,17 @@ const Jobs = () => {
 
   const respond = async (jobId: string, bookingId: string, accept: boolean) => {
     haptic(accept ? "success" : "warning");
-    const { error } = await supabase.from("zooter_jobs").update({
-      state: accept ? "accepted" : "declined", responded_at: new Date().toISOString(),
-    }).eq("id", jobId);
-    if (!error && accept) {
-      await supabase.from("bookings").update({ status: "confirmed" }).eq("id", bookingId);
-      await (supabase as any).from("booking_status_events").insert({ booking_id: bookingId, actor_id: user?.id, status: "confirmed", label: "Confirmed" });
-      await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("contractor_assigned").map((channel) => ({
-        source_table: "bookings",
-        source_id: bookingId,
-        event_type: "contractor_assigned",
-        channel,
-        owner: "Scheduling & Allocation Agent",
-        stack_tool: "Zoot in-app notification",
-        payload: { booking_id: bookingId, zooter_id: zooterId },
-        created_by: user?.id,
-      })));
-    }
-    if (!error && !accept) {
-      await (supabase as any).from("admin_review_queue").insert({
-        queue_type: "replacement",
-        subject_table: "bookings",
-        subject_id: bookingId,
-        zooter_id: zooterId,
-        booking_id: bookingId,
-        priority: "normal",
-        summary: "Contractor declined job offer; review replacement availability",
+    try {
+      await invokeOpsWorkflow({
+        action: "zooter_job_response",
+        jobId,
+        bookingId,
+        accept,
       });
+      toast.success(accept ? "Job accepted" : "Job declined");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Job response failed");
     }
-    if (error) toast.error(error.message); else toast.success(accept ? "Job accepted" : "Job declined");
     if (zooterId) load(zooterId);
   };
 

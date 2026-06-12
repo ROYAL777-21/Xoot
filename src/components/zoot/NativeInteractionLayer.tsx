@@ -16,6 +16,18 @@ const isListenerHandle = (value: unknown): value is NativeListenerHandle => {
   return typeof handle?.remove === "function";
 };
 
+const isAppleRuntime = () => {
+  const platform = window.navigator.platform ?? "";
+  const userAgent = window.navigator.userAgent ?? "";
+  const hasTouchMac = platform === "MacIntel" && window.navigator.maxTouchPoints > 1;
+  return hasTouchMac || /iPad|iPhone|iPod|Macintosh/.test(userAgent);
+};
+
+const isStandaloneRuntime = () => {
+  const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean };
+  return window.matchMedia("(display-mode: standalone)").matches || navigatorWithStandalone.standalone === true;
+};
+
 const blurActiveField = () => {
   if (!(document.activeElement instanceof HTMLElement)) return;
   if (!isEditable(document.activeElement)) return;
@@ -29,6 +41,12 @@ export const NativeInteractionLayer = () => {
     if (typeof window === "undefined") return;
 
     const viewport = window.visualViewport;
+    const root = document.documentElement;
+    const standaloneQuery = window.matchMedia("(display-mode: standalone)");
+    const syncRuntimeMode = () => {
+      root.dataset.nativePlatform = isAppleRuntime() ? "apple" : "web";
+      root.dataset.installableMode = isStandaloneRuntime() ? "standalone" : "browser";
+    };
 
     const syncViewport = () => {
       const height = viewport?.height ?? window.innerHeight;
@@ -45,7 +63,17 @@ export const NativeInteractionLayer = () => {
       }
     };
 
+    syncRuntimeMode();
     syncViewport();
+    const removeStandaloneListener = (() => {
+      if (typeof standaloneQuery.addEventListener === "function") {
+        standaloneQuery.addEventListener("change", syncRuntimeMode);
+        return () => standaloneQuery.removeEventListener("change", syncRuntimeMode);
+      }
+
+      standaloneQuery.addListener(syncRuntimeMode);
+      return () => standaloneQuery.removeListener(syncRuntimeMode);
+    })();
     viewport?.addEventListener("resize", syncViewport);
     viewport?.addEventListener("scroll", syncViewport);
     window.addEventListener("resize", syncViewport);
@@ -53,12 +81,15 @@ export const NativeInteractionLayer = () => {
     document.addEventListener("pointerdown", handlePointerDown, { capture: true });
 
     return () => {
+      removeStandaloneListener();
       viewport?.removeEventListener("resize", syncViewport);
       viewport?.removeEventListener("scroll", syncViewport);
       window.removeEventListener("resize", syncViewport);
       window.removeEventListener("scroll", blurActiveField);
       document.removeEventListener("pointerdown", handlePointerDown, { capture: true });
       document.body.dataset.keyboardOpen = "false";
+      delete root.dataset.nativePlatform;
+      delete root.dataset.installableMode;
     };
   }, []);
 

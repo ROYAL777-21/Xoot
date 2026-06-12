@@ -9,6 +9,7 @@ const previewSupabaseHosts = new Set(['preview.supabase.co', 'preview.zoot.local
 
 const isPlaceholderSupabaseUrl = (value?: string) => {
   if (!value) return false;
+  if (value.includes('preview') || value.includes('placeholder') || value.includes('your-project-ref')) return true;
   try {
     return previewSupabaseHosts.has(new URL(value).hostname);
   } catch {
@@ -16,7 +17,40 @@ const isPlaceholderSupabaseUrl = (value?: string) => {
   }
 };
 
-const isPlaceholderSupabaseKey = (value?: string) => !value || value === 'preview-anon-key' || value === 'preview-local-anon-key';
+const isPlaceholderSupabaseKey = (value?: string) =>
+  !value ||
+  value === 'preview-anon-key' ||
+  value === 'preview-local-anon-key' ||
+  value.includes('your-supabase') ||
+  value.includes('your-anon-key') ||
+  value.includes('placeholder');
+
+const renderProductionConfigError = () => {
+  if (typeof document === 'undefined' || !document.body) return;
+
+  document.body.innerHTML = [
+    '<div style="font-family:sans-serif;padding:2rem;text-align:center">',
+    '<h1>Configuration Error</h1>',
+    '<p>VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY must be set for production. Contact support.</p>',
+    '</div>',
+  ].join('');
+};
+
+if (
+  import.meta.env.VITE_APP_ENV === 'production' &&
+  (
+    !configuredUrl ||
+    !configuredKey ||
+    configuredUrl.includes('preview') ||
+    configuredKey === 'preview-local-anon-key' ||
+    configuredKey === 'preview-anon-key' ||
+    isPlaceholderSupabaseUrl(configuredUrl) ||
+    isPlaceholderSupabaseKey(configuredKey)
+  )
+) {
+  renderProductionConfigError();
+  throw new Error('[Zoot] FATAL: Production Supabase credentials are missing or contain placeholder values. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your production environment.');
+}
 
 export const isSupabaseConfigured = Boolean(
   configuredUrl && configuredKey && !isPlaceholderSupabaseUrl(configuredUrl) && !isPlaceholderSupabaseKey(configuredKey),
@@ -311,6 +345,19 @@ class PreviewQueryBuilder {
         return clone(previewZooters);
       case 'household_profiles':
         return [clone(previewHousehold)];
+      case 'subscription_plans':
+        return [
+          {
+            id: 'preview-care-plus-plan',
+            name: 'Care+',
+            cadence: 'monthly',
+            hours_per_visit: 0,
+            monthly_price: 99,
+            savings_pct: 0,
+            perks: ['Home Memory', 'Favourite Zooter', 'Priority support', '1.5x ZootCred'],
+            popular: true,
+          },
+        ];
       case 'bookings':
         return [
           { id: 'preview-booking-last', user_id: 'preview-user', scheduled_at: new Date(Date.now() - 12 * 864e5).toISOString(), status: 'completed', service_type: 'residential' },
@@ -325,6 +372,7 @@ class PreviewQueryBuilder {
       case 'recurring_schedules':
       case 'support_tickets':
       case 'payment_records':
+      case 'user_subscriptions':
       case 'admin_review_queue':
       case 'integration_outbox':
       case 'booking_status_events':
@@ -401,6 +449,57 @@ const createPreviewSupabaseClient = () => {
     },
     rpc() {
       return Promise.resolve({ data: null, error: null });
+    },
+    functions: {
+      async invoke(name: string, options?: { body?: Record<string, unknown> }) {
+        const session = readPreviewSession() ?? createPreviewSession();
+        writePreviewSession(session);
+
+        if (name === 'create-booking-request') {
+          return {
+            data: {
+              booking_ids: [previewId()],
+              status: 'pending',
+              preview: true,
+              requested_service: options?.body?.serviceType ?? null,
+            },
+            error: null,
+          };
+        }
+
+        if (name === 'care-plus-membership') {
+          const action = options?.body?.action;
+          return {
+            data: {
+              subscription_id: previewId(),
+              subscription_status: action === 'cancel_membership' ? 'cancelled' : 'pending_payment',
+              payment_record_id: action === 'cancel_membership' ? null : previewId(),
+              preview: true,
+            },
+            error: null,
+          };
+        }
+
+        if (name === 'ops-workflow') {
+          return {
+            data: {
+              preview: true,
+              queued: true,
+              action: options?.body?.action ?? null,
+              order_id: previewId(),
+              payment_record_id: previewId(),
+              call_session_id: previewId(),
+              incident_id: previewId(),
+              application_id: previewId(),
+              job_id: previewId(),
+              status: 'queued',
+            },
+            error: null,
+          };
+        }
+
+        return { data: null, error: new Error(`Preview function ${name} is not implemented.`) };
+      },
     },
   };
 };

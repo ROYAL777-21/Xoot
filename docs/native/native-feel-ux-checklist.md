@@ -29,6 +29,7 @@ Zoot should feel calm, premium, and native rather than web-wrapped. These detail
 23. Live Activity payloads avoid leaking full address or access-note details.
 24. PWA manifest and service worker support app-like install paths.
 25. Native iOS documentation covers Live Activities, Dynamic Island, and WidgetKit.
+26. Apple/Safari standalone sessions receive the enhanced liquid-glass background treatment on navigation/support surfaces while foreground text stays on a non-blurred layer.
 
 ## Future React Native Or Expo Guidance
 

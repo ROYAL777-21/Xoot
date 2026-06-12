@@ -17,6 +17,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# Local Codex helper binaries and downloads
+.codex/tools/
+
 # Generated native app association files
 public/.well-known/apple-app-site-association
 public/.well-known/assetlinks.json

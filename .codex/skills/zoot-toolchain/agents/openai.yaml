@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zoot Toolchain"
+  short_description: "Coordinate Zoot connector use safely."
+  default_prompt: "Use the Zoot toolchain skill to pick the right connector or local fallback, preserve approval gates, and verify Zoot implementation work."

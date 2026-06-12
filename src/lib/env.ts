@@ -19,6 +19,7 @@ export const normaliseAppEnvironment = (value: string | undefined) => value?.tri
 
 export const isPlaceholderSupabaseUrl = (value?: string) => {
   if (!value) return true;
+  if (value.includes("preview") || value.includes("placeholder") || value.includes("your-project-ref")) return true;
 
   try {
     return previewSupabaseHosts.has(new URL(value).hostname);
@@ -28,7 +29,12 @@ export const isPlaceholderSupabaseUrl = (value?: string) => {
 };
 
 export const isPlaceholderSupabaseKey = (value?: string) =>
-  !value || value === "preview-anon-key" || value === "preview-local-anon-key" || value.includes("your-supabase");
+  !value ||
+  value === "preview-anon-key" ||
+  value === "preview-local-anon-key" ||
+  value.includes("your-supabase") ||
+  value.includes("your-anon-key") ||
+  value.includes("placeholder");
 
 export const isSupabasePublicConfigComplete = (env: PublicEnvironment) => {
   const supabaseUrl = envText(env, "VITE_SUPABASE_URL");
@@ -88,5 +94,3 @@ export const assertValidPublicConfig = () => {
 
   if (issue) throw new Error(`Zoot environment configuration error: ${issue}`);
 };
-
-assertValidPublicConfig();

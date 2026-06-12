@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BarChart3, CheckCircle2, Loader2, ShieldAlert, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 const Ops = () => {
   const [loading, setLoading] = useState(true);
@@ -35,11 +36,14 @@ const Ops = () => {
 
   useEffect(() => { refresh(); }, []);
 
-  const updateRow = async (table: string, id: string, values: Record<string, unknown>) => {
-    const { error } = await (supabase as any).from(table).update(values).eq("id", id);
-    if (error) return toast.error(error.message);
-    toast.success("Queue updated");
-    refresh();
+  const runAdminAction = async (body: Record<string, unknown>) => {
+    try {
+      await invokeOpsWorkflow(body);
+      toast.success("Queue updated");
+      refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Queue update failed");
+    }
   };
 
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -67,7 +71,7 @@ const Ops = () => {
           {(row) => (
             <div className="flex items-center justify-between gap-3">
               <div><p className="font-semibold">{row.payment_kind} - {formatZAR(Number(row.amount))}</p><p className="text-xs text-muted-foreground">{row.status} via {row.provider}</p></div>
-              {row.status === "pending" && <Button size="sm" variant="outline" onClick={() => updateRow("payment_records", row.id, { status: "admin_confirmed", updated_at: new Date().toISOString() })}>Admin confirm</Button>}
+              {row.status === "pending" && <Button size="sm" variant="outline" onClick={() => runAdminAction({ action: "admin_confirm_payment_record", paymentRecordId: row.id })}>Admin confirm</Button>}
             </div>
           )}
         </Queue>
@@ -76,7 +80,7 @@ const Ops = () => {
           {(row) => (
             <div className="flex items-center justify-between gap-3">
               <div><p className="font-semibold">{row.event_type}</p><p className="text-xs text-muted-foreground">{row.channel} - {row.status}</p></div>
-              {["queued", "needs_approval"].includes(row.status) && <Button size="sm" variant="outline" onClick={() => updateRow("integration_outbox", row.id, { status: "completed", processed_at: new Date().toISOString() })}>Mark done</Button>}
+              {["queued", "needs_approval"].includes(row.status) && <Button size="sm" variant="outline" onClick={() => runAdminAction({ action: "admin_complete_outbox_event", outboxId: row.id })}>Mark done</Button>}
             </div>
           )}
         </Queue>
@@ -85,7 +89,7 @@ const Ops = () => {
           {(row) => (
             <div className="flex items-center justify-between gap-3">
               <div><p className="font-semibold">{row.summary}</p><p className="text-xs text-muted-foreground">{row.queue_type} - {row.priority} - {row.status}</p></div>
-              {row.status === "open" && <Button size="sm" variant="outline" onClick={() => updateRow("admin_review_queue", row.id, { status: "resolved", resolved_at: new Date().toISOString(), resolution_notes: "Resolved from admin ops" })}>Resolve</Button>}
+              {row.status === "open" && <Button size="sm" variant="outline" onClick={() => runAdminAction({ action: "admin_resolve_review_item", reviewId: row.id, resolutionNotes: "Resolved from admin ops" })}>Resolve</Button>}
             </div>
           )}
         </Queue>
@@ -94,7 +98,7 @@ const Ops = () => {
           {(row) => (
             <div className="flex items-center justify-between gap-3">
               <div><p className="font-semibold">{row.trigger_type}</p><p className="text-xs text-muted-foreground">{row.priority} - {row.status}</p></div>
-              {row.status === "open" && <Button size="sm" variant="outline" onClick={() => updateRow("support_followups", row.id, { status: "resolved", resolved_at: new Date().toISOString() })}>Close</Button>}
+              {row.status === "open" && <Button size="sm" variant="outline" onClick={() => runAdminAction({ action: "admin_close_support_followup", followupId: row.id })}>Close</Button>}
             </div>
           )}
         </Queue>

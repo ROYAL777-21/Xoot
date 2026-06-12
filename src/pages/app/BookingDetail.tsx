@@ -10,7 +10,7 @@ import { resolvePhoto } from "@/components/zoot/ZooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { BookingChat } from "@/components/zoot/BookingChat";
 import { deriveZooterBadges, requiresCompletionPhotos } from "@/lib/trust";
-import { canAccessSensitiveBookingData, routeNotificationChannel } from "@/lib/operations";
+import { canAccessSensitiveBookingData } from "@/lib/operations";
 import { notifyBookingLiveActivity, type ZootBookingLiveActivityStatus } from "@/lib/native-live-activity";
 import {
   buildBookingEtaShareText,
@@ -20,6 +20,7 @@ import {
   type NativeBookingActionInput,
 } from "@/lib/native-booking-actions";
 import { haptic } from "@/lib/haptics";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 import { toast } from "sonner";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
@@ -196,30 +197,15 @@ const BookingDetail = () => {
 
   const setStatus = async (status: string) => {
     if (!id || !booking) return;
-    const timestampField = status === "arrived" ? "arrived_at" : status === "in_progress" ? "job_started_at" : status === "completed" ? "job_completed_at" : null;
-    const bookingStatus = status === "arrived" ? "in_progress" : status;
-    const payload: any = { status: bookingStatus };
-    if (timestampField) payload[timestampField] = new Date().toISOString();
-
-    await (supabase as any).from("bookings").update(payload).eq("id", id);
-    await (supabase as any).from("booking_status_events").insert({
-      booking_id: id,
-      actor_id: user?.id,
-      status,
-      label: statusLabel[status] ?? status,
-    });
-    const eventType = status === "enroute" ? "contractor_on_the_way" : status === "arrived" ? "contractor_arrived" : status === "completed" ? "job_completed" : null;
-    if (eventType) {
-      await (supabase as any).from("integration_outbox").insert(routeNotificationChannel(eventType).map((channel) => ({
-        source_table: "bookings",
-        source_id: id,
-        event_type: eventType,
-        channel,
-        owner: channel === "whatsapp_urgent" ? "Scheduling & Allocation Agent" : "Customer Support Agent",
-        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
-        payload: { booking_id: id, status, scheduled_at: booking.scheduled_at },
-        created_by: user?.id,
-      })));
+    try {
+      await invokeOpsWorkflow({
+        action: "booking_status_changed",
+        bookingId: id,
+        status,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Booking status update failed");
+      return;
     }
 
     const liveStatus = toLiveActivityStatus(status);
@@ -238,15 +224,6 @@ const BookingDetail = () => {
       updatedAt: new Date().toISOString(),
     });
 
-    if (status === "completed") {
-      const { data: lp } = await supabase.from("loyalty_points").select("*").eq("user_id", user!.id).single();
-      if (lp) {
-        const total = lp.total_bookings + 1;
-        await supabase.from("loyalty_points").update({ total_bookings: total, points: lp.points + 10, free_credits: lp.free_credits + (total % 10 === 0 ? 1 : 0) }).eq("user_id", user!.id);
-      }
-      await supabase.from("zooter_jobs").update({ state: "completed" }).eq("booking_id", id);
-    }
-
     toast.success(statusLabel[status] ?? `Booking marked ${status}`);
     load();
   };
@@ -263,74 +240,45 @@ const BookingDetail = () => {
       return;
     }
     setRequestingCall(true);
-    const calleeRole = booking.zooter?.user_id === user.id ? "client" : "contractor";
-    const { data: call, error } = await (supabase as any).from("masked_call_sessions").insert({
-      booking_id: id,
-      caller_id: user.id,
-      callee_role: calleeRole,
-      status: "queued",
-    }).select("id").single();
-    if (!error) {
-      await (supabase as any).from("integration_outbox").insert({
-        source_table: "masked_call_sessions",
-        source_id: call?.id,
-        event_type: "masked_voice_call_requested",
-        channel: "twilio_voice",
-        owner: "Customer Support Agent",
-        stack_tool: "Twilio masked voice queue",
-        payload: { booking_id: id, callee_role: calleeRole },
-        status: "needs_approval",
-        approval_required: true,
-        failure_mode: "Keep communication in chat if masked call setup fails.",
-        created_by: user.id,
+    let callSessionId: string | undefined;
+    try {
+      const call = await invokeOpsWorkflow<{ call_session_id?: string }>({
+        action: "masked_call_requested",
+        bookingId: id,
       });
+      callSessionId = call.call_session_id;
 
       const nativeInput = getNativeBookingActionInput();
       if (nativeInput) {
         sendNativeBookingAction(createNativeBookingActionPayload("masked_call", {
           ...nativeInput,
-          callSessionId: call?.id,
+          callSessionId,
           updatedAt: new Date().toISOString(),
         }));
       }
+    } catch (error) {
+      setRequestingCall(false);
+      toast.error(error instanceof Error ? error.message : "Masked call request failed");
+      return;
     }
     setRequestingCall(false);
-    if (error) return toast.error(error.message);
     haptic("success");
     toast.success("Masked call request queued");
   };
 
   const submitIncident = async () => {
     if (!user || !id || !booking?.zooter_id || !incidentNotes.trim()) return;
-    const { data: incident, error } = await (supabase as any).from("trust_incidents").insert({
-      booking_id: id,
-      zooter_id: booking.zooter_id,
-      user_id: user.id,
-      incident_type: incidentType,
-      severity: incidentType === "suspicious_behaviour" || incidentType === "damages" ? 4 : 3,
-      notes: incidentNotes,
-    }).select("id").single();
-    if (error) return toast.error(error.message);
-    await (supabase as any).from("admin_review_queue").insert({
-      queue_type: "trust_incident",
-      subject_table: "trust_incidents",
-      subject_id: incident?.id,
-      user_id: user.id,
-      zooter_id: booking.zooter_id,
-      booking_id: id,
-      priority: incidentType === "suspicious_behaviour" || incidentType === "damages" ? "urgent" : "high",
-      summary: `Trust incident: ${incidentType.replace(/_/g, " ")}`,
-    });
-    await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("critical_trust_safety_alert").map((channel) => ({
-      source_table: "trust_incidents",
-      source_id: incident?.id,
-      event_type: "critical_trust_safety_alert",
-      channel,
-      owner: "Trust & Safety Agent",
-      stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
-      payload: { booking_id: id, incident_type: incidentType },
-      created_by: user.id,
-    })));
+    try {
+      await invokeOpsWorkflow({
+        action: "trust_incident_submitted",
+        bookingId: id,
+        incidentType,
+        notes: incidentNotes,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Trust incident submission failed");
+      return;
+    }
     setIncidentNotes("");
     toast.success("Incident sent to Trust & Safety");
   };
@@ -350,23 +298,14 @@ const BookingDetail = () => {
     if (error) return toast.error(error.message);
     setReview(savedReview as Review);
     if (reviewRating <= 2) {
-      await (supabase as any).from("support_followups").insert({
-        booking_id: id,
-        user_id: user.id,
-        trigger_type: "low_rating",
-        priority: "high",
-        notes: reviewNotes || "Low post-job rating",
-      });
-      await (supabase as any).from("admin_review_queue").insert({
-        queue_type: "support",
-        subject_table: "post_job_reviews",
-        subject_id: savedReview?.id,
-        user_id: user.id,
-        zooter_id: booking.zooter_id,
-        booking_id: id,
-        priority: "high",
-        summary: "Low post-job rating needs follow-up",
-      });
+      try {
+        await invokeOpsWorkflow({
+          action: "review_followup_requested",
+          reviewId: savedReview?.id,
+        });
+      } catch {
+        toast.warning("Review saved, but support follow-up routing is unavailable.");
+      }
     }
     toast.success("Review submitted");
   };
@@ -395,6 +334,7 @@ const BookingDetail = () => {
   const timeline = events.length ? events : [{ id: "current", status: booking.status, label: statusLabel[booking.status] ?? booking.status, created_at: booking.updated_at }];
   const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
   const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
+  const isAssignedZooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
 
   return (
     <div className="container py-6 lg:py-10 max-w-5xl">
@@ -431,10 +371,10 @@ const BookingDetail = () => {
             )}
 
             <div className="px-5 pb-5 grid grid-cols-2 gap-2">
-              {booking.status === "confirmed" && <Button onClick={() => setStatus("enroute")} variant="outline" className="rounded-xl">On the way</Button>}
-              {booking.status === "enroute" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
-              {booking.status === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
-              {booking.status === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
+              {isAssignedZooter && booking.status === "confirmed" && <Button onClick={() => setStatus("enroute")} variant="outline" className="rounded-xl">On the way</Button>}
+              {isAssignedZooter && booking.status === "enroute" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
+              {isAssignedZooter && booking.status === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
+              {isAssignedZooter && booking.status === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
               <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2"><Phone className="h-4 w-4 mr-1" /> Request masked call</Button>
             </div>
           </Card>
