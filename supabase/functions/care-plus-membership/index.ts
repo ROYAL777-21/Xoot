@@ -53,6 +53,10 @@ const routeNotificationChannel = (event: string) => {
   return ["in_app"];
 };
 
+const assertNoDbError = (error: { message?: string } | null | undefined, operation: string) => {
+  if (error) throw new Error(`${operation} failed: ${error.message ?? "unknown database error"}`);
+};
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: getCorsHeaders(origin) });
@@ -123,7 +127,7 @@ Deno.serve(async (req) => {
       }).select("id,status").single();
       if (subscriptionError || !subscription?.id) throw new Error("subscription insert failed");
 
-      await supa.from("admin_review_queue").insert({
+      const { error: reviewError } = await supa.from("admin_review_queue").insert({
         queue_type: "payment",
         subject_table: "payment_records",
         subject_id: payment.id,
@@ -131,8 +135,9 @@ Deno.serve(async (req) => {
         priority: "normal",
         summary: "Care+ membership payment pending confirmation",
       });
+      assertNoDbError(reviewError, "review queue insert");
 
-      await supa.from("integration_outbox").insert([
+      const { error: outboxError } = await supa.from("integration_outbox").insert([
         ...routeNotificationChannel("homecare_summary").map((channel) => ({
           source_table: "user_subscriptions",
           source_id: subscription.id,
@@ -141,6 +146,9 @@ Deno.serve(async (req) => {
           owner: channel === "brevo_email" ? "Retention & Loyalty Agent" : "Customer Support Agent",
           stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
           payload: { plan_id: plan.id, subscription_id: subscription.id, payment_record_id: payment.id },
+          status: "queued",
+          approval_required: false,
+          failure_mode: null,
           created_by: authData.user.id,
         })),
         {
@@ -157,14 +165,16 @@ Deno.serve(async (req) => {
           created_by: authData.user.id,
         },
       ]);
+      assertNoDbError(outboxError, "outbox insert");
 
-      await supa.from("notifications").insert({
+      const { error: notificationError } = await supa.from("notifications").insert({
         user_id: authData.user.id,
         kind: "homecare_plus_active",
         title: "Care+ request received",
         body: "Your membership is pending payment confirmation. Home Memory, priority support and ZootCred boost activate after confirmation.",
         link: "/app",
       });
+      assertNoDbError(notificationError, "notification insert");
 
       return json(
         { subscription_id: subscription.id, subscription_status: subscription.status, payment_record_id: payment.id },
@@ -190,7 +200,7 @@ Deno.serve(async (req) => {
         .eq("user_id", authData.user.id);
       if (updateError) throw new Error("subscription cancellation failed");
 
-      await supa.from("integration_outbox").insert({
+      const { error: outboxError } = await supa.from("integration_outbox").insert({
         source_table: "user_subscriptions",
         source_id: subscription.id,
         event_type: "care_plus_membership_cancelled",
@@ -200,20 +210,23 @@ Deno.serve(async (req) => {
         payload: { plan_id: plan.id, previous_status: subscription.status },
         created_by: authData.user.id,
       });
+      assertNoDbError(outboxError, "outbox insert");
 
-      await supa.from("notifications").insert({
+      const { error: notificationError } = await supa.from("notifications").insert({
         user_id: authData.user.id,
         kind: "homecare_plus_cancelled",
         title: "Care+ cancelled",
         body: "Your membership has ended. Your saved home profile remains available.",
         link: "/app/plans",
       });
+      assertNoDbError(notificationError, "notification insert");
 
       return json({ subscription_id: subscription.id, subscription_status: "cancelled" }, 200, origin);
     }
 
     return json({ error: "unsupported action" }, 400, origin);
-  } catch {
+  } catch (error) {
+    console.error("care-plus-membership failed", error instanceof Error ? error.message : error);
     return json({ error: "care plus membership action failed" }, 500, origin);
   }
 });

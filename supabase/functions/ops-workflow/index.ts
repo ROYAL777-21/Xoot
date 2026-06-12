@@ -177,8 +177,13 @@ const isBookingParticipant = async (supa: ReturnType<typeof createClient>, booki
   return { participant: false, role: null };
 };
 
-const insertOutbox = (supa: ReturnType<typeof createClient>, rows: Record<string, unknown> | Record<string, unknown>[]) =>
-  supa.from("integration_outbox").insert(rows);
+const insertOutbox = async (
+  supa: ReturnType<typeof createClient>,
+  rows: Record<string, unknown> | Record<string, unknown>[],
+) => {
+  const { error } = await supa.from("integration_outbox").insert(rows);
+  if (error) throw new Error(`outbox insert failed: ${error.message}`);
+};
 
 const isAdminUser = async (supa: ReturnType<typeof createClient>, userId: string) => {
   const { data } = await supa
@@ -510,6 +515,9 @@ Deno.serve(async (req) => {
           owner: "Retention & Loyalty Agent",
           stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
           payload: { gift_clean_order_id: order.id, amount },
+          status: "queued",
+          approval_required: false,
+          failure_mode: null,
           created_by: userId,
         })),
         {
@@ -815,6 +823,9 @@ Deno.serve(async (req) => {
           owner: channel === "brevo_email" ? "Contractor Success Agent" : "Trust & Safety Agent",
           stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
           payload: { application_id: application.id, status: "submitted" },
+          status: "queued",
+          approval_required: false,
+          failure_mode: null,
           created_by: userId,
         })),
       ]);
