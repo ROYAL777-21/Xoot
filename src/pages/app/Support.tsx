@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Bot, CheckCircle2, Clock, LifeBuoy, Loader2, MessageCircle, ShieldAlert, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { SupportCaseInput } from "@/lib/validators";
 
 type SupportAssistantReply = {
   response?: string;
@@ -71,11 +73,24 @@ const Support = () => {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    const supportInput = SupportCaseInput.safeParse({ category: subject, description: body, booking_id: "" });
+    if (!supportInput.success) {
+      haptic("warning");
+      toast.error(supportInput.error.issues[0]?.message ?? "Please check your support message.");
+      return;
+    }
+    const safeSupport = supportInput.data;
+    if (!checkRateLimit("support", 5, 3_600_000)) {
+      haptic("warning");
+      toast.error("Too many support requests. Please wait before creating another ticket.");
+      return;
+    }
+
     setSubmitting(true);
     setAssistantReply(null);
 
     const { data, error } = await supabase.functions.invoke("create-support-case", {
-      body: { subject, description: body, category: subject },
+      body: { subject: safeSupport.category, description: safeSupport.description, category: safeSupport.category },
     });
 
     if (error) {
@@ -94,7 +109,7 @@ const Support = () => {
 
     let assistantReply: SupportAssistantReply | null = null;
     try {
-      assistantReply = await requestSupportAssistantReply(result.data.case_id, subject, body);
+      assistantReply = await requestSupportAssistantReply(result.data.case_id, safeSupport.category, safeSupport.description);
     } catch {
       assistantReply = null;
     }

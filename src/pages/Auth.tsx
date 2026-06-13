@@ -27,6 +27,7 @@ import {
   normaliseOtpCode,
   type SocialAuthProvider,
 } from "@/lib/auth-security";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 type AuthView = "signin" | "signup" | "forgot" | "otp";
 
@@ -208,6 +209,11 @@ const Auth = () => {
 
   const handlePreviewSignIn = async () => {
     haptic("selection");
+    if (!checkRateLimit("auth", 5, 60_000)) {
+      haptic("warning");
+      toast.error("Too many sign-in attempts. Please wait a minute before trying again.");
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email: "demo@zoot.local", password: "Preview123!" });
@@ -238,6 +244,12 @@ const Auth = () => {
       return;
     }
 
+    if (!checkRateLimit("auth", 5, 60_000)) {
+      haptic("warning");
+      toast.error("Too many auth attempts. Please wait a minute before trying again.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -261,6 +273,11 @@ const Auth = () => {
 
   const handleOAuth = async (provider: SocialAuthProvider) => {
     haptic("selection");
+    if (!checkRateLimit("auth", 5, 60_000)) {
+      haptic("warning");
+      toast.error("Too many auth attempts. Please wait a minute before trying again.");
+      return;
+    }
     setProviderLoading(provider);
 
     try {

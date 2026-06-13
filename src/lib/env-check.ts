@@ -3,12 +3,17 @@ import { getPublicConfigIssueForEnv } from "@/lib/env";
 const renderFatalConfigError = () => {
   if (typeof document === "undefined" || !document.body) return;
 
-  document.body.innerHTML = [
-    '<div style="font-family:sans-serif;padding:2rem;text-align:center">',
-    "<h1>Configuration Error</h1>",
-    "<p>VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY must be set for production. Contact support.</p>",
-    "</div>",
-  ].join("");
+  document.body.replaceChildren();
+  const shell = document.createElement("div");
+  shell.style.fontFamily = "sans-serif";
+  shell.style.padding = "2rem";
+  shell.style.textAlign = "center";
+  const heading = document.createElement("h1");
+  heading.textContent = "Configuration Error";
+  const message = document.createElement("p");
+  message.textContent = "VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY must be set for production. Contact support.";
+  shell.append(heading, message);
+  document.body.append(shell);
 };
 
 export function assertProductionEnv() {

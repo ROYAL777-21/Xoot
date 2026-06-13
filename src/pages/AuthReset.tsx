@@ -13,6 +13,7 @@ import {
   getSafePasswordUpdateErrorMessage,
 } from "@/lib/auth-security";
 import { haptic } from "@/lib/haptics";
+import { sanitiseSearchParam } from "@/lib/sanitise";
 
 const AuthReset = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const AuthReset = () => {
 
     const prepareResetSession = async () => {
       try {
-        const code = searchParams.get("code");
+        const code = sanitiseSearchParam(searchParams.get("code"));
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;

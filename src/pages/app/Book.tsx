@@ -14,6 +14,9 @@ import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortZootersForMarketplace } from "@/lib/trust";
 import { calculateBookingQuote, isApprovedLaunchRegion } from "@/lib/operations";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { sanitiseSearchParam } from "@/lib/sanitise";
+import { BookingInput } from "@/lib/validators";
 
 const services = [
   { id: "residential", label: "Residential", icon: HomeIcon },
@@ -48,11 +51,11 @@ const serviceMultiplier: Record<string, number> = {
 const Book = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const preferredZooterId = searchParams.get("zooter");
-  const requestedService = searchParams.get("service");
-  const requestedAddress = searchParams.get("address");
+  const preferredZooterId = sanitiseSearchParam(searchParams.get("zooter"));
+  const requestedService = sanitiseSearchParam(searchParams.get("service"));
+  const requestedAddress = sanitiseSearchParam(searchParams.get("address"));
   const [step, setStep] = useState(0);
-  const [active, setActive] = useState<string>(services.some((s) => s.id === requestedService) ? requestedService! : "residential");
+  const [active, setActive] = useState<string>(services.some((s) => s.id === requestedService) ? requestedService : "residential");
   const [frequency, setFrequency] = useState<"one_time" | "repeat">("one_time");
   const [homeSize, setHomeSize] = useState<string>("small");
   const [extras, setExtras] = useState<Set<string>>(new Set());
@@ -158,20 +161,38 @@ const Book = () => {
 
   const handleBook = async () => {
     if (!user || picked.length === 0) return;
+    const bookingInput = BookingInput.safeParse({
+      service_type: active,
+      home_size: homeSize,
+      address,
+      date,
+      time,
+      extras: Array.from(extras),
+    });
+    if (!bookingInput.success) {
+      toast.error(bookingInput.error.issues[0]?.message ?? "Please check your booking details.");
+      return;
+    }
+    const safeBooking = bookingInput.data;
+    if (!checkRateLimit("booking", 3, 300_000)) {
+      toast.error("Too many booking attempts. Please wait a few minutes before trying again.");
+      return;
+    }
+
     setSubmitting(true);
     const { data, error } = await supabase.functions.invoke("create-booking", {
       body: {
-        serviceType: active,
+        serviceType: safeBooking.service_type,
         frequency,
-        homeSize,
-        time,
-        date,
-        address,
+        homeSize: safeBooking.home_size,
+        time: safeBooking.time,
+        date: safeBooking.date,
+        address: safeBooking.address,
         instructions,
         householdProfileId: householdId,
         workerCount: totalWorkers,
         zooterIds: picked.map((z) => z.id),
-        addOns: Array.from(extras),
+        addOns: safeBooking.extras,
         bookingCoverOptIn,
       },
     });

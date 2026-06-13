@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getSafeRedirectPath } from "@/lib/auth-security";
+import { sanitiseSearchParam } from "@/lib/sanitise";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const AuthCallback = () => {
 
     const completeAuth = async () => {
       try {
-        const code = searchParams.get("code");
+        const code = sanitiseSearchParam(searchParams.get("code"));
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;

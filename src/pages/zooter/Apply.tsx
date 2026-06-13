@@ -12,6 +12,8 @@ import { Progress } from "@/components/ui/progress";
 import { ShieldCheck, Loader2, ArrowRight, ArrowLeft, Upload, FileCheck2, Sparkles, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { ZooterApplicationInput } from "@/lib/validators";
 
 type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
 
@@ -118,46 +120,46 @@ const Apply = () => {
     })();
   }, [user, navigate]);
 
-  const buildApplicationPayload = () => ({
-    full_name: form.full_name,
-    phone: form.phone,
-    email: form.email,
-    date_of_birth: form.date_of_birth,
-    id_number: form.id_number,
-    suburb: form.suburb,
-    years_experience: Number(form.years_experience || 0),
-    transport: form.transport,
-    supplies_owned: splitList(form.supplies_owned),
-    pet_comfort: form.pet_comfort,
-    availability: { notes: form.availability_notes },
+  const buildApplicationPayload = (sourceForm = form) => ({
+    full_name: sourceForm.full_name,
+    phone: sourceForm.phone,
+    email: sourceForm.email,
+    date_of_birth: sourceForm.date_of_birth,
+    id_number: sourceForm.id_number,
+    suburb: sourceForm.suburb,
+    years_experience: Number(sourceForm.years_experience || 0),
+    transport: sourceForm.transport,
+    supplies_owned: splitList(sourceForm.supplies_owned),
+    pet_comfort: sourceForm.pet_comfort,
+    availability: { notes: sourceForm.availability_notes },
     behavioural_screening: {
-      luxury_home: form.luxury_home_answer,
-      fragile_items: form.fragile_items_answer,
-      punctuality: form.punctuality_answer,
-      off_platform: form.off_platform_answer,
+      luxury_home: sourceForm.luxury_home_answer,
+      fragile_items: sourceForm.fragile_items_answer,
+      punctuality: sourceForm.punctuality_answer,
+      off_platform: sourceForm.off_platform_answer,
     },
-    address: form.address,
-    city: form.city,
-    postal_code: form.postal_code,
+    address: sourceForm.address,
+    city: sourceForm.city,
+    postal_code: sourceForm.postal_code,
     service_category: "cleaning",
-    bio: form.bio,
-    bank_name: form.bank_name,
-    bank_account_number: form.bank_account_number,
-    bank_branch_code: form.bank_branch_code,
-    emergency_contact_name: form.emergency_contact_name,
-    emergency_contact_phone: form.emergency_contact_phone,
-    reference_1_name: form.reference_1_name,
-    reference_1_phone: form.reference_1_phone,
-    reference_2_name: form.reference_2_name,
-    reference_2_phone: form.reference_2_phone,
-    background_check_consent: form.background_check_consent,
+    bio: sourceForm.bio,
+    bank_name: sourceForm.bank_name,
+    bank_account_number: sourceForm.bank_account_number,
+    bank_branch_code: sourceForm.bank_branch_code,
+    emergency_contact_name: sourceForm.emergency_contact_name,
+    emergency_contact_phone: sourceForm.emergency_contact_phone,
+    reference_1_name: sourceForm.reference_1_name,
+    reference_1_phone: sourceForm.reference_1_phone,
+    reference_2_name: sourceForm.reference_2_name,
+    reference_2_phone: sourceForm.reference_2_phone,
+    background_check_consent: sourceForm.background_check_consent,
     selfie_storage_path: docs.selfie ?? null,
     docs,
   });
 
-  const saveDraft = async (mode: "draft" | "submitted" = "draft") => {
+  const saveDraft = async (mode: "draft" | "submitted" = "draft", sourceForm = form) => {
     if (!user) return null;
-    const payload = buildApplicationPayload();
+    const payload = buildApplicationPayload(sourceForm);
     if (!payload.date_of_birth) delete (payload as any).date_of_birth;
     const { data, error } = await supabase.functions.invoke("submit-zooter-application", {
       body: { mode, application: payload, applicationId: appId },
@@ -247,8 +249,31 @@ const Apply = () => {
   const submit = async () => {
     if (!user) return;
     if (!form.background_check_consent) { haptic("warning"); toast.error("Background check consent is required"); return; }
+    const applicationInput = ZooterApplicationInput.safeParse({
+      full_name: form.full_name,
+      phone: form.phone,
+      suburb: form.suburb,
+      years_experience: form.years_experience,
+    });
+    if (!applicationInput.success) {
+      haptic("warning");
+      toast.error(applicationInput.error.issues[0]?.message ?? "Please check your application details.");
+      return;
+    }
+    if (!checkRateLimit("application", 3, 3_600_000)) {
+      haptic("warning");
+      toast.error("Too many application submissions. Please wait before trying again.");
+      return;
+    }
+    const safeForm = {
+      ...form,
+      full_name: applicationInput.data.full_name,
+      phone: applicationInput.data.phone,
+      suburb: applicationInput.data.suburb,
+      years_experience: String(applicationInput.data.years_experience),
+    };
     setSubmitting(true);
-    const id = await saveDraft("submitted");
+    const id = await saveDraft("submitted", safeForm);
     if (!id) { setSubmitting(false); return; }
     setSubmitting(false);
     haptic("success");
