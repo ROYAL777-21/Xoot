@@ -5,7 +5,7 @@ Drop these Swift files into the future Zoot iOS app target and widget extension.
 ## Targets
 
 - App target: add `ZootLiveActivityController.swift` and `ZootBookingActivityAttributes.swift`.
-- Widget extension target: add `ZootBookingLiveActivityWidget.swift`, `ZootBookingSummaryWidget.swift`, and `ZootWidgetBundle.swift`.
+- Widget extension target: add `ZootBookingLiveActivityWidget.swift`, `ZootBookingSummaryWidget.swift`, `ZootLiquidGlass.swift`, and `ZootWidgetBundle.swift`.
 - Both targets must share `ZootBookingActivityAttributes.swift`.
 
 ## Minimum OS
@@ -13,6 +13,7 @@ Drop these Swift files into the future Zoot iOS app target and widget extension.
 - Live Activities: iOS 16.1+
 - Dynamic Island presentations: available on supported iPhone hardware
 - AppIntent-configured widgets: iOS 17+
+- Liquid Glass: iOS 26+ with Xcode 26 SDK; older SDKs and OS versions use the built-in material fallback.
 
 ## Setup
 

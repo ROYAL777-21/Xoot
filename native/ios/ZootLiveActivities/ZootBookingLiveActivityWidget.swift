@@ -76,40 +76,47 @@ private struct ZootLockScreenLiveActivityView: View {
     let context: ActivityViewContext<ZootBookingActivityAttributes>
 
     var body: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle().fill(Color(red: 0.76, green: 0.40, blue: 0.29).opacity(0.14))
-                Image(systemName: context.state.status.systemImage)
-                    .foregroundStyle(Color(red: 0.76, green: 0.40, blue: 0.29))
-                    .font(.title3.bold())
-            }
-            .frame(width: 48, height: 48)
+        ZootLiquidGlassGroup(spacing: 14) {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().fill(Color.zootTerracotta.opacity(0.14))
+                    Image(systemName: context.state.status.systemImage)
+                        .foregroundStyle(Color.zootTerracotta)
+                        .font(.title3.bold())
+                }
+                .frame(width: 48, height: 48)
+                .zootLiquidGlassCard(cornerRadius: 24, tint: .zootTerracotta)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(context.state.statusLabel)
-                    .font(.headline)
-                Text("\(context.state.zooterName) · \(context.state.serviceName)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Text(context.state.nextStep)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-
-            Spacer()
-
-            if let eta = context.state.etaMinutes {
-                VStack(spacing: 0) {
-                    Text("\(eta)")
-                        .font(.title2.bold())
-                        .monospacedDigit()
-                    Text("min")
-                        .font(.caption2)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(context.state.statusLabel)
+                        .font(.headline)
+                    Text("\(context.state.zooterName) - \(context.state.serviceName)")
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
+                    Text(context.state.nextStep)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                if let eta = context.state.etaMinutes {
+                    VStack(spacing: 0) {
+                        Text("\(eta)")
+                            .font(.title2.bold())
+                            .monospacedDigit()
+                        Text("min")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .zootLiquidGlassCard(cornerRadius: 18, tint: .zootSage)
                 }
             }
+            .padding()
+            .zootLiquidGlassCard(cornerRadius: 30, tint: .zootCream)
         }
-        .padding()
     }
 }

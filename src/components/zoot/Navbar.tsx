@@ -20,7 +20,7 @@ export const Navbar = () => {
   const { user } = useAuth();
   const ctaTo = user ? "/app" : "/auth";
   const ctaLabel = user ? "Open app" : "Get started";
-  const renderLabel = (label: string) => (label === "Care+" ? <CarePlusMark /> : label);
+  const renderLabel = (label: string) => (label === "Care+" ? <CarePlusMark /> : <span>{label}</span>);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8);
@@ -50,7 +50,7 @@ export const Navbar = () => {
             <a
               key={`${l.href}-${l.label}`}
               href={l.href}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="liquid-glass-interactive rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {renderLabel(l.label)}
             </a>
@@ -63,7 +63,7 @@ export const Navbar = () => {
         </div>
 
         <button
-          className="xl:hidden tap-target rounded-2xl p-2 transition-smooth hover:bg-background/70"
+          className="liquid-glass-interactive xl:hidden tap-target rounded-2xl p-2 transition-smooth hover:bg-background/70"
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
           aria-expanded={open}
@@ -80,7 +80,7 @@ export const Navbar = () => {
                 key={`${l.href}-${l.label}`}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-2xl border border-transparent bg-background/30 px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-border hover:bg-background/72 hover:text-foreground"
+                className="liquid-glass-interactive rounded-2xl bg-background/30 px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-border hover:bg-background/72 hover:text-foreground"
               >
                 {renderLabel(l.label)}
               </a>

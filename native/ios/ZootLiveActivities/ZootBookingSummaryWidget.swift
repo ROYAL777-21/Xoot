@@ -61,7 +61,7 @@ struct ZootWidgetProvider: AppIntentTimelineProvider {
     private func entry(for kind: ZootWidgetKind) -> ZootWidgetEntry {
         switch kind {
         case .nextBooking:
-            return ZootWidgetEntry(date: .now, kind: "Booking", title: "Next clean", value: "Thu 08:30", detail: "Nomsa · Hyde Park", deeplink: URL(string: "zoot://bookings")!)
+            return ZootWidgetEntry(date: .now, kind: "Booking", title: "Next clean", value: "Thu 08:30", detail: "Nomsa - Hyde Park", deeplink: URL(string: "zoot://bookings")!)
         case .carePlusReadiness:
             return ZootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "86%", detail: "Home Memory almost complete", deeplink: URL(string: "zoot://care-plus")!)
         case .zootCred:
@@ -92,25 +92,33 @@ struct ZootWidgetEntryView: View {
 
     var body: some View {
         Link(destination: entry.deeplink) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(entry.kind)
-                    .font(.caption.bold())
-                    .foregroundStyle(Color(red: 0.76, green: 0.40, blue: 0.29))
-                Spacer(minLength: 4)
-                Text(entry.title)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                    .lineLimit(2)
-                Text(entry.value)
-                    .font(.title.bold())
-                    .foregroundStyle(.primary)
-                    .minimumScaleFactor(0.75)
-                Text(entry.detail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+            ZootLiquidGlassGroup(spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.zootTerracotta.opacity(0.18))
+                            .frame(width: 8, height: 8)
+                        Text(entry.kind)
+                            .font(.caption.bold())
+                            .foregroundStyle(Color.zootTerracotta)
+                    }
+                    Spacer(minLength: 4)
+                    Text(entry.title)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                    Text(entry.value)
+                        .font(.title.bold())
+                        .foregroundStyle(.primary)
+                        .minimumScaleFactor(0.75)
+                    Text(entry.detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                .padding()
+                .zootLiquidGlassCard(cornerRadius: 22, tint: .zootCream, interactive: true)
             }
-            .padding()
         }
     }
 }
