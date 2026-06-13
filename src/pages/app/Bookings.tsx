@@ -11,11 +11,13 @@ import { Calendar, Loader2, MapPin, MessageSquare, Repeat, AlertCircle, CheckCir
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { resolvePhoto } from "@/components/zoot/ZooterCard";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 type Booking = {
   id: string; service: string; scheduled_at: string; status: string;
   price: number; address: string | null; was_reassigned: boolean;
   reassignment_acknowledged: boolean;
+  zooter_id: string | null;
   zooter: { id: string; name: string; photo_url: string | null; rating: number; role: string } | null;
 };
 
@@ -40,9 +42,21 @@ const Bookings = () => {
   const refresh = async () => {
     if (!user) return;
     const { data } = await supabase.from("bookings")
-      .select("id, service, scheduled_at, status, price, address, was_reassigned, reassignment_acknowledged, zooter:zooters(id,name,photo_url,rating,role)")
+      .select("id, zooter_id, service, scheduled_at, status, price, address, was_reassigned, reassignment_acknowledged")
       .eq("user_id", user.id).order("scheduled_at", { ascending: false });
-    setList((data ?? []) as any);
+    const bookings = (data ?? []) as Array<Omit<Booking, "zooter">>;
+    const bookingIds = bookings.map((booking) => booking.id);
+    const { data: zooters } = bookingIds.length
+      ? await (supabase as any)
+        .from("booking_zooter_profiles")
+        .select("booking_id,id,name,photo_url,rating,role")
+        .in("booking_id", bookingIds)
+      : { data: [] };
+    const zootersByBookingId = new Map(
+      ((zooters ?? []) as Array<NonNullable<Booking["zooter"]> & { booking_id: string }>)
+        .map((zooter) => [zooter.booking_id, zooter]),
+    );
+    setList(bookings.map((booking) => ({ ...booking, zooter: zootersByBookingId.get(booking.id) ?? null })) as Booking[]);
     setLoading(false);
   };
 
@@ -54,9 +68,21 @@ const Bookings = () => {
 
   const bulkReschedule = async () => {
     if (!bulkDate || selected.size === 0) return;
-    await supabase.from("bookings").update({ scheduled_at: new Date(bulkDate).toISOString() }).in("id", Array.from(selected));
-    toast.success(`Rescheduled ${selected.size} booking${selected.size === 1 ? "" : "s"}`);
-    setBulkOpen(false); setSelected(new Set()); refresh();
+    try {
+      await Promise.all(
+        Array.from(selected).map((bookingId) =>
+          invokeOpsWorkflow({
+            action: "booking_reschedule_requested",
+            bookingId,
+            scheduledAt: new Date(bulkDate).toISOString(),
+          }),
+        ),
+      );
+      toast.success(`Rescheduled ${selected.size} booking${selected.size === 1 ? "" : "s"}`);
+      setBulkOpen(false); setSelected(new Set()); refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Reschedule failed");
+    }
   };
 
   const upcoming = list.filter((b) => ["pending", "confirmed", "enroute", "in_progress", "reassigned"].includes(b.status));

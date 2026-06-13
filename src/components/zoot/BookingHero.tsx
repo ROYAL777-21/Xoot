@@ -26,7 +26,7 @@ export const BookingHero = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    supabase.from("zooters").select("id", { count: "exact", head: true }).eq("active", true).then(({ count }) => {
+    (supabase as any).from("zooters_public").select("id", { count: "exact", head: true }).eq("active", true).then(({ count }) => {
       setActiveZooters(count ?? 0);
     });
   }, []);

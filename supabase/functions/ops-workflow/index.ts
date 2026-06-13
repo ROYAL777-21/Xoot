@@ -634,6 +634,58 @@ Deno.serve(async (req) => {
       return json({ status: bookingStatus, timeline_status: status }, 200, origin);
     }
 
+    if (action === "booking_reschedule_requested") {
+      const bookingId = cleanId(body.bookingId);
+      const scheduledAtRaw = cleanText(body.scheduledAt, 80);
+      const scheduledAt = new Date(scheduledAtRaw);
+      if (!scheduledAtRaw || Number.isNaN(scheduledAt.getTime())) return json({ error: "invalid scheduled time" }, 400, origin);
+      if (scheduledAt.getTime() <= Date.now()) return json({ error: "scheduled time must be in the future" }, 400, origin);
+
+      const { data: booking, error } = await supa
+        .from("bookings")
+        .select("id,user_id,zooter_id,scheduled_at,status")
+        .eq("id", bookingId)
+        .maybeSingle();
+      if (error || !booking) return json({ error: "booking not found" }, 404, origin);
+
+      const participant = await isBookingParticipant(supa, booking, userId);
+      const admin = await isAdminUser(supa, userId);
+      if (!admin && participant.role !== "client") return json({ error: "booking access denied" }, 403, origin);
+      if (!["pending", "confirmed", "reassigned"].includes(booking.status)) {
+        return json({ error: "booking cannot be rescheduled in its current state" }, 409, origin);
+      }
+
+      const nextScheduledAt = scheduledAt.toISOString();
+      const { data: updated, error: updateError } = await supa
+        .from("bookings")
+        .update({ scheduled_at: nextScheduledAt, status: "pending", updated_at: new Date().toISOString() })
+        .eq("id", booking.id)
+        .select("id,scheduled_at,status")
+        .single();
+      if (updateError || !updated?.id) return json({ error: "booking reschedule failed" }, 400, origin);
+
+      await supa.from("booking_status_events").insert({
+        booking_id: booking.id,
+        actor_id: userId,
+        status: "rescheduled",
+        label: "Reschedule requested",
+        meta: { previous_scheduled_at: booking.scheduled_at, scheduled_at: nextScheduledAt },
+      });
+
+      await insertOutbox(supa, routeNotificationChannel("booking_reschedule_requested").map((channel) => ({
+        source_table: "bookings",
+        source_id: booking.id,
+        event_type: "booking_reschedule_requested",
+        channel,
+        owner: "Scheduling & Allocation Agent",
+        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
+        payload: { booking_id: booking.id, previous_scheduled_at: booking.scheduled_at, scheduled_at: nextScheduledAt },
+        created_by: userId,
+      })));
+
+      return json({ booking_id: updated.id, scheduled_at: updated.scheduled_at, status: updated.status }, 200, origin);
+    }
+
     if (action === "masked_call_requested") {
       const bookingId = cleanId(body.bookingId);
       const { data: booking, error } = await supa

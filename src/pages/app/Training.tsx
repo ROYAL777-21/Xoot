@@ -13,7 +13,7 @@ const Training = () => {
   useEffect(() => {
     Promise.all([
       supabase.from("training_modules").select("*").order("category"),
-      supabase.from("zooters").select("*").eq("is_zotm", true).maybeSingle(),
+      (supabase as any).from("zooters_public").select("*").eq("is_zotm", true).maybeSingle(),
     ]).then(([m, z]) => {
       setModules(m.data ?? []); setZotm(z.data); setLoading(false);
     });

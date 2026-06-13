@@ -26,9 +26,21 @@ const Favorites = () => {
     if (!user) return;
     const { data } = await supabase
       .from("favorites")
-      .select("zooter_id, favorite_kind, repeat_bookings_count, last_booked_at, zooters(*)")
+      .select("zooter_id, favorite_kind, repeat_bookings_count, last_booked_at")
       .eq("user_id", user.id);
-    setList(((data ?? []) as any[]).filter((row) => row.zooters) as FavoriteRow[]);
+
+    const favorites = (data ?? []) as Array<Omit<FavoriteRow, "zooters">>;
+    const zooterIds = favorites.map((row) => row.zooter_id).filter(Boolean);
+    const { data: zooters } = zooterIds.length
+      ? await (supabase as any).from("zooters_public").select("*").in("id", zooterIds)
+      : { data: [] };
+    const zootersById = new Map(((zooters ?? []) as Zooter[]).map((zooter) => [zooter.id, zooter]));
+
+    setList(
+      favorites
+        .map((row) => ({ ...row, zooters: zootersById.get(row.zooter_id) ?? null }))
+        .filter((row) => row.zooters) as FavoriteRow[],
+    );
     setLoading(false);
   };
 

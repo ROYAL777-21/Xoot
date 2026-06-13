@@ -76,13 +76,6 @@ const CarePlusApply = () => {
     setSubmitting(false);
     if (error) return toast.error(error.message);
 
-    await supabase.from("notifications").insert({
-      user_id: user.id,
-      kind: "care_plus_submitted",
-      title: "HomeCare+ application received",
-      body: "Your placement request is in the support queue. A placement agent will be in touch after review.",
-      link: "/app/profile",
-    });
     setDone(true);
     setSubmitting(false);
   };

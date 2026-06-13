@@ -96,15 +96,16 @@ const BookingDetail = () => {
 
   const load = async () => {
     if (!user || !id) return;
-    const [{ data }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
-      supabase.from("bookings").select("*, zooter:zooters!bookings_zooter_id_fkey(*)").eq("id", id).maybeSingle(),
+    const [{ data }, { data: zooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
+      supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
+      (supabase as any).from("booking_zooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
       supabase.from("messages").select("*").eq("booking_id", id).order("created_at"),
       (supabase as any).from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
       (supabase as any).from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
       (supabase as any).from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
     ]);
     if (!data) { navigate("/app/bookings"); return; }
-    setBooking(data);
+    setBooking({ ...data, zooter: zooter ?? null });
     setMessages((m ?? []) as Msg[]);
     setEvents((ev ?? []) as TimelineEvent[]);
     setPhotos((ph ?? []) as CompletionPhoto[]);

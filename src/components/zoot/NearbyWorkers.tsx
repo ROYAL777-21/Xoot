@@ -14,8 +14,8 @@ export const NearbyWorkers = () => {
 
   useEffect(() => {
     let mounted = true;
-    supabase
-      .from("zooters")
+    (supabase as any)
+      .from("zooters_public")
       .select("*")
       .eq("active", true)
       .order("rating", { ascending: false })

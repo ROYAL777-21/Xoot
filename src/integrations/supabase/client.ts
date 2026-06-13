@@ -342,7 +342,14 @@ class PreviewQueryBuilder {
   private resolveRows(): Record<string, unknown>[] {
     switch (this.table) {
       case 'zooters':
+      case 'zooters_public':
         return clone(previewZooters);
+      case 'booking_zooter_profiles':
+        return clone(previewZooters).map((zooter) => ({
+          ...zooter,
+          booking_id: 'preview-booking-last',
+          user_id: 'preview-zooter-user',
+        }));
       case 'household_profiles':
         return [clone(previewHousehold)];
       case 'subscription_plans':
