@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { LifeBuoy, Loader2, Sparkles, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
-import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 type SupportAssistantReply = {
   response?: string;
@@ -55,10 +54,9 @@ const Support = () => {
     if (!user) return;
     setSubmitting(true);
 
-    const { data: ticket, error } = await supabase.from("support_tickets")
-      .insert({ user_id: user.id, subject, body })
-      .select()
-      .single();
+    const { data, error } = await supabase.functions.invoke("create-support-case", {
+      body: { subject, description: body, category: subject },
+    });
 
     if (error) {
       haptic("warning");
@@ -66,27 +64,19 @@ const Support = () => {
       setSubmitting(false);
       return;
     }
+    const result = data as { success?: boolean; error?: string; data?: { case_id?: string } } | null;
+    if (result?.success === false || !result?.data?.case_id) {
+      haptic("warning");
+      toast.error(result?.error ?? "Support ticket could not be created");
+      setSubmitting(false);
+      return;
+    }
 
     let assistantReply: SupportAssistantReply | null = null;
     try {
-      assistantReply = await requestSupportAssistantReply(ticket.id, subject, body);
+      assistantReply = await requestSupportAssistantReply(result.data.case_id, subject, body);
     } catch {
       assistantReply = null;
-    }
-
-    try {
-      await invokeOpsWorkflow({
-        action: "support_opened",
-        ticketId: ticket.id,
-        assistantSource: assistantReply?.source ?? "queued",
-        openaiRequestId: assistantReply?.openai_request_id ?? null,
-      });
-    } catch {
-      haptic("warning");
-      toast.error("Support ticket saved, but routing is unavailable. Please try again shortly.");
-      setSubmitting(false);
-      refresh();
-      return;
     }
 
     haptic("success");

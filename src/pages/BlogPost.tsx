@@ -16,6 +16,9 @@ const BlogPost = () => {
   const post = getBlogPost(slug);
 
   useEffect(() => {
+    const structuredDataId = "zoot-blog-structured-data";
+    document.getElementById(structuredDataId)?.remove();
+
     if (!post) {
       document.title = "Zoot Blog - Post not found";
       setMetaDescription("The requested Zoot blog post could not be found.");
@@ -24,6 +27,35 @@ const BlogPost = () => {
 
     document.title = post.seoTitle;
     setMetaDescription(post.description);
+
+    const script = document.createElement("script");
+    script.id = structuredDataId;
+    script.type = "application/ld+json";
+    script.text = JSON.stringify([
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.description,
+        datePublished: post.publishedAt,
+        author: { "@type": "Organization", name: post.author },
+        publisher: { "@type": "Organization", name: "Zoot", url: "https://zoothome.co.za" },
+        mainEntityOfPage: `https://zoothome.co.za/blog/${post.slug}`,
+        keywords: [post.primaryKeyword, ...post.secondaryKeywords].join(", "),
+        areaServed: post.areas,
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: post.faqs.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: { "@type": "Answer", text: faq.answer },
+        })),
+      },
+    ]);
+    document.head.appendChild(script);
+    return () => script.remove();
   }, [post]);
 
   if (!post) {

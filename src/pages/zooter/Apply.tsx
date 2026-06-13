@@ -12,7 +12,6 @@ import { Progress } from "@/components/ui/progress";
 import { ShieldCheck, Loader2, ArrowRight, ArrowLeft, Upload, FileCheck2, Sparkles, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
-import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
 
@@ -115,55 +114,59 @@ const Apply = () => {
     })();
   }, [user, navigate]);
 
-  const saveDraft = async () => {
+  const buildApplicationPayload = () => ({
+    full_name: form.full_name,
+    phone: form.phone,
+    email: form.email,
+    date_of_birth: form.date_of_birth,
+    id_number: form.id_number,
+    suburb: form.suburb,
+    years_experience: Number(form.years_experience || 0),
+    transport: form.transport,
+    supplies_owned: splitList(form.supplies_owned),
+    pet_comfort: form.pet_comfort,
+    availability: { notes: form.availability_notes },
+    behavioural_screening: {
+      luxury_home: form.luxury_home_answer,
+      fragile_items: form.fragile_items_answer,
+      punctuality: form.punctuality_answer,
+      off_platform: form.off_platform_answer,
+    },
+    address: form.address,
+    city: form.city,
+    postal_code: form.postal_code,
+    service_category: "cleaning",
+    bio: form.bio,
+    bank_name: form.bank_name,
+    bank_account_number: form.bank_account_number,
+    bank_branch_code: form.bank_branch_code,
+    emergency_contact_name: form.emergency_contact_name,
+    emergency_contact_phone: form.emergency_contact_phone,
+    reference_1_name: form.reference_1_name,
+    reference_1_phone: form.reference_1_phone,
+    reference_2_name: form.reference_2_name,
+    reference_2_phone: form.reference_2_phone,
+    background_check_consent: form.background_check_consent,
+    selfie_storage_path: docs.selfie ?? null,
+    docs,
+  });
+
+  const saveDraft = async (mode: "draft" | "submitted" = "draft") => {
     if (!user) return null;
-    const payload: any = {
-      full_name: form.full_name,
-      phone: form.phone,
-      email: form.email,
-      date_of_birth: form.date_of_birth,
-      id_number: form.id_number,
-      suburb: form.suburb,
-      years_experience: Number(form.years_experience || 0),
-      transport: form.transport,
-      supplies_owned: splitList(form.supplies_owned),
-      pet_comfort: form.pet_comfort,
-      availability: { notes: form.availability_notes },
-      behavioural_screening: {
-        luxury_home: form.luxury_home_answer,
-        fragile_items: form.fragile_items_answer,
-        punctuality: form.punctuality_answer,
-        off_platform: form.off_platform_answer,
-      },
-      address: form.address,
-      city: form.city,
-      postal_code: form.postal_code,
-      service_category: "cleaning",
-      bio: form.bio,
-      bank_name: form.bank_name,
-      bank_account_number: form.bank_account_number,
-      bank_branch_code: form.bank_branch_code,
-      emergency_contact_name: form.emergency_contact_name,
-      emergency_contact_phone: form.emergency_contact_phone,
-      reference_1_name: form.reference_1_name,
-      reference_1_phone: form.reference_1_phone,
-      reference_2_name: form.reference_2_name,
-      reference_2_phone: form.reference_2_phone,
-      background_check_consent: form.background_check_consent,
-      user_id: user.id,
-      status: "draft",
-    };
-    if (!payload.date_of_birth) delete payload.date_of_birth;
-    const query = (supabase as any).from("zooter_applications");
-    if (appId) {
-      const { error } = await query.update(payload).eq("id", appId);
-      if (error) { toast.error(error.message); return null; }
-      return appId;
-    }
-    const { data, error } = await query.insert(payload).select("id").single();
+    const payload = buildApplicationPayload();
+    if (!payload.date_of_birth) delete (payload as any).date_of_birth;
+    const { data, error } = await supabase.functions.invoke("submit-zooter-application", {
+      body: { mode, application: payload, applicationId: appId },
+    });
     if (error) { toast.error(error.message); return null; }
-    setAppId(data.id);
-    return data.id;
+    const result = data as { success?: boolean; error?: string; data?: { application_id?: string } } | null;
+    if (result?.success === false || !result?.data?.application_id) {
+      const missing = Array.isArray((result as any)?.missing) ? ` Missing: ${(result as any).missing.join(", ")}` : "";
+      toast.error(`${result?.error ?? "Application save failed"}${missing}`);
+      return null;
+    }
+    setAppId(result.data.application_id);
+    return result.data.application_id;
   };
 
   const handleUpload = async (key: DocType, file: File) => {
@@ -183,7 +186,19 @@ const Apply = () => {
       upsert: true,
     });
     if (error) { haptic("warning"); toast.error(error.message); return; }
-    await supabase.from("zooter_documents").insert({ user_id: user.id, application_id: id, doc_type: key, storage_path: path, status: "pending" });
+    const { data, error: docError } = await supabase.functions.invoke("submit-zooter-application", {
+      body: {
+        mode: "document",
+        applicationId: id,
+        document: { doc_type: key, storage_path: path },
+      },
+    });
+    const docResult = data as { success?: boolean; error?: string } | null;
+    if (docError || docResult?.success === false) {
+      haptic("warning");
+      toast.error(docError?.message ?? docResult?.error ?? "Document metadata could not be saved");
+      return;
+    }
     setDocs((d) => ({ ...d, [key]: path }));
     haptic("success");
     toast.success(`${key.replace(/_/g, " ")} uploaded`);
@@ -219,19 +234,9 @@ const Apply = () => {
     if (!user) return;
     if (!form.background_check_consent) { haptic("warning"); toast.error("Background check consent is required"); return; }
     setSubmitting(true);
-    const id = appId ?? (await saveDraft());
+    const id = await saveDraft("submitted");
     if (!id) { setSubmitting(false); return; }
-    let error: Error | null = null;
-    try {
-      await invokeOpsWorkflow({
-        action: "zooter_application_submitted",
-        applicationId: id,
-      });
-    } catch (caught) {
-      error = caught instanceof Error ? caught : new Error("Application submission failed");
-    }
     setSubmitting(false);
-    if (error) { haptic("warning"); toast.error(error.message); return; }
     haptic("success");
     toast.success("Application submitted. Trust review is now queued.");
     navigate("/zooter");

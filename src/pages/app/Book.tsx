@@ -159,7 +159,7 @@ const Book = () => {
   const handleBook = async () => {
     if (!user || picked.length === 0) return;
     setSubmitting(true);
-    const { data, error } = await supabase.functions.invoke("create-booking-request", {
+    const { data, error } = await supabase.functions.invoke("create-booking", {
       body: {
         serviceType: active,
         frequency,
@@ -182,11 +182,17 @@ const Book = () => {
       return;
     }
 
-    const result = data as { booking_ids?: string[]; status?: string } | null;
-    const firstBookingId = result?.booking_ids?.[0] ?? null;
+    const actionResult = data as { success?: boolean; error?: string; data?: { booking_ids?: string[]; booking_id?: string; status?: string } } | null;
+    if (actionResult?.success === false) {
+      toast.error(actionResult.error ?? "Booking request failed");
+      setSubmitting(false);
+      return;
+    }
+    const result = actionResult?.data ?? (data as { booking_ids?: string[]; booking_id?: string; status?: string } | null);
+    const firstBookingId = result?.booking_id ?? result?.booking_ids?.[0] ?? null;
     if (firstBookingId) {
       setBookingId(firstBookingId);
-      setBookingStatus(result?.status ?? "pending");
+      setBookingStatus(result?.status ?? "draft");
     }
     setSubmitting(false);
     setStep(4);
@@ -290,7 +296,7 @@ const Book = () => {
       )}
 
       {step === 4 && (
-        <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5"><div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div><h2 className="font-display text-3xl font-bold">Booking request sent</h2><p className="text-muted-foreground max-w-md mx-auto">{picked.map((z) => z.name).join(" & ")} {picked.length === 1 ? "has" : "have"} been notified. Payment is recorded as pending until provider confirmation or admin review.</p>{bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus}</span></div>}<div className="flex flex-col sm:flex-row gap-2 justify-center"><Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); }} variant="outline" className="rounded-full">Book another</Button><Button asChild className="rounded-full gradient-warm"><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button></div></div>
+        <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5"><div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div><h2 className="font-display text-3xl font-bold">Booking draft created</h2><p className="text-muted-foreground max-w-md mx-auto">Your server-priced booking draft is ready. Zoot confirms payment from the provider webhook before assignment is finalised.</p>{bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus}</span></div>}<div className="flex flex-col sm:flex-row gap-2 justify-center"><Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); }} variant="outline" className="rounded-full">Book another</Button><Button asChild className="rounded-full gradient-warm"><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button></div></div>
       )}
     </div>
   );

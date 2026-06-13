@@ -1,0 +1,84 @@
+{
+  "generatedAt": "2026-06-13T14:32:26.171Z",
+  "briefs": [
+    {
+      "date": "2026-06-13",
+      "slot": 1,
+      "slug": "quick-office-cleaning-sandton",
+      "title": "Quick Office Cleaning Sandton",
+      "primaryKeyword": "quick office cleaning Sandton",
+      "secondaryKeywords": [
+        "quick cleaning for my office",
+        "office cleaning Sandton",
+        "on demand cleaning services for business"
+      ],
+      "searchIntent": "urgent business reset",
+      "cluster": "Sandton office cleaning",
+      "serviceAreas": [
+        "Sandton",
+        "Rosebank",
+        "Hyde Park"
+      ],
+      "evidenceSource": "Seeded from Zoot launch SEO plan; validate volume and difficulty with Semrush/Search Console export.",
+      "humanHook": "A client meeting is in two hours and the boardroom still looks like yesterday.",
+      "readerPsychology": "Time pressure, reputation protection, relief through a clear checklist.",
+      "practicalPromise": "Decision checklist for offices, studios, salons, clinics, and small teams.",
+      "outline": [
+        "Open with the real-life pressure behind the search.",
+        "Name the local service and area naturally in the first section.",
+        "Give a practical checklist or decision framework.",
+        "Explain how Zoot handles trust, saved notes, support, and repeatability.",
+        "Answer two to four long-tail questions a customer would actually ask.",
+        "Close with a clear booking or Care+ call to action."
+      ],
+      "qualityGate": [
+        "No fake testimonials, guarantees, or unsupported availability claims.",
+        "One primary keyword; secondary keywords only where natural.",
+        "Specific local examples; no generic filler.",
+        "Human review required before publishing.",
+        "Update title, meta description, FAQ, and JSON-LD before release."
+      ],
+      "callToAction": "Book an office reset or create a recurring business cleaning rhythm."
+    },
+    {
+      "date": "2026-06-13",
+      "slot": 2,
+      "slug": "airbnb-turnover-cleaning-johannesburg",
+      "title": "Airbnb Turnover Cleaning Johannesburg",
+      "primaryKeyword": "Airbnb turnover cleaning Johannesburg",
+      "secondaryKeywords": [
+        "Airbnb cleaning Johannesburg",
+        "guest-ready cleaning",
+        "same day Airbnb turnover cleaning"
+      ],
+      "searchIntent": "host handover reliability",
+      "cluster": "Airbnb turnover Johannesburg",
+      "serviceAreas": [
+        "Rosebank",
+        "Sandton",
+        "Parkhurst",
+        "Melville"
+      ],
+      "evidenceSource": "Seeded from Zoot launch SEO plan; validate volume and difficulty with Semrush/Search Console export.",
+      "humanHook": "Checkout was at 10, check-in is at 3, and one missed detail becomes a public review.",
+      "readerPsychology": "Review anxiety, control, visible readiness.",
+      "practicalPromise": "Turnover checklist, access notes, linen, photos, and repeat instructions.",
+      "outline": [
+        "Open with the real-life pressure behind the search.",
+        "Name the local service and area naturally in the first section.",
+        "Give a practical checklist or decision framework.",
+        "Explain how Zoot handles trust, saved notes, support, and repeatability.",
+        "Answer two to four long-tail questions a customer would actually ask.",
+        "Close with a clear booking or Care+ call to action."
+      ],
+      "qualityGate": [
+        "No fake testimonials, guarantees, or unsupported availability claims.",
+        "One primary keyword; secondary keywords only where natural.",
+        "Specific local examples; no generic filler.",
+        "Human review required before publishing.",
+        "Update title, meta description, FAQ, and JSON-LD before release."
+      ],
+      "callToAction": "Book an Airbnb turnover clean and save host instructions in Zoot."
+    }
+  ]
+}

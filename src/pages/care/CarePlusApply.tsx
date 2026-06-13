@@ -66,18 +66,23 @@ const CarePlusApply = () => {
     if (form.daily_pay_rate < 220) { toast.error("Minimum pay is R220 for half-day"); return; }
 
     setSubmitting(true);
-    const { error } = await supabase.from("care_plus_applications").insert({
-      user_id: user.id,
-      ...form,
-      preferred_start_date: form.preferred_start_date || null,
-      daily_start_time: form.daily_start_time || null,
-      daily_end_time: form.daily_end_time || null,
+    const { data, error } = await supabase.functions.invoke("activate-care-plus", {
+      body: {
+        action: "placement_application",
+        application: {
+          ...form,
+          preferred_start_date: form.preferred_start_date || null,
+          daily_start_time: form.daily_start_time || null,
+          daily_end_time: form.daily_end_time || null,
+        },
+      },
     });
     setSubmitting(false);
     if (error) return toast.error(error.message);
+    const result = data as { success?: boolean; error?: string } | null;
+    if (result?.success === false) return toast.error(result.error ?? "Application submission failed");
 
     setDone(true);
-    setSubmitting(false);
   };
 
   if (done) {

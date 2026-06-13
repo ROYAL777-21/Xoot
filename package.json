@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "preview:host": "vite preview --host 0.0.0.0",
+    "seo:daily": "node scripts/seo/generate-daily-blog-queue.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "security:scan": "node scripts/security/secret-scan.mjs",

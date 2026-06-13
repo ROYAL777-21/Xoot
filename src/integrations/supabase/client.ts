@@ -462,13 +462,92 @@ const createPreviewSupabaseClient = () => {
         const session = readPreviewSession() ?? createPreviewSession();
         writePreviewSession(session);
 
-        if (name === 'create-booking-request') {
+        if (name === 'create-booking' || name === 'create-booking-request') {
+          const bookingId = previewId();
           return {
             data: {
-              booking_ids: [previewId()],
-              status: 'pending',
+              success: true,
+              data: {
+                booking_id: bookingId,
+                booking_ids: [bookingId],
+                status: name === 'create-booking' ? 'draft' : 'pending',
+                payment_session_url: `/app/bookings/${bookingId}?payment=pending`,
+                amount_due: 330,
+              },
+              booking_ids: [bookingId],
+              status: name === 'create-booking' ? 'draft' : 'pending',
               preview: true,
               requested_service: options?.body?.serviceType ?? null,
+            },
+            error: null,
+          };
+        }
+
+        if (name === 'activate-care-plus') {
+          const action = options?.body?.action;
+          const id = previewId();
+          return {
+            data: {
+              success: true,
+              data: action === 'placement_application'
+                ? { application_id: id, status: 'submitted' }
+                : { subscription_id: id, status: 'active', zootcred_multiplier: 1.5 },
+              preview: true,
+            },
+            error: null,
+          };
+        }
+
+        if (name === 'create-support-case') {
+          return {
+            data: {
+              success: true,
+              data: {
+                case_id: previewId(),
+                status: 'open',
+                priority: 'normal',
+                expected_response_time: 'Within 1 business day',
+              },
+              preview: true,
+            },
+            error: null,
+          };
+        }
+
+        if (name === 'submit-zooter-application') {
+          const mode = options?.body?.mode;
+          return {
+            data: {
+              success: true,
+              data: {
+                application_id: previewId(),
+                doc_type: mode === 'document' ? (options?.body as any)?.document?.doc_type ?? null : null,
+                status: mode === 'document' ? 'pending' : mode === 'submitted' ? 'submitted' : 'draft',
+              },
+              preview: true,
+            },
+            error: null,
+          };
+        }
+
+        if ([
+          'cancel-booking',
+          'approve-zooter',
+          'confirm-payment',
+          'redeem-zootcred',
+          'request-replacement',
+          'create-masked-call',
+          'revoke-sensitive-access',
+        ].includes(name)) {
+          return {
+            data: {
+              success: true,
+              data: {
+                booking_id: (options?.body as any)?.bookingId ?? (options?.body as any)?.booking_id ?? previewId(),
+                status: 'queued',
+                preview: true,
+              },
+              preview: true,
             },
             error: null,
           };
