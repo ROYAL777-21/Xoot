@@ -17,7 +17,7 @@ COMMON_FLAGS=(
 )
 
 "$SWIFTC" "${COMMON_FLAGS[@]}" \
-  -target arm64-apple-ios16.1 \
+  -target arm64-apple-ios16.2 \
   "$IOS_DIR/ZootBookingActivityAttributes.swift" \
   "$IOS_DIR/ZootLiveActivityController.swift"
 

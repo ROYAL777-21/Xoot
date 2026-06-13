@@ -10,7 +10,8 @@ Drop these Swift files into the future Zoot iOS app target and widget extension.
 
 ## Minimum OS
 
-- Live Activities: iOS 16.1+
+- Live Activity controller updates: iOS 16.2+ (`ActivityContent` API)
+- Live Activity widget presentation: iOS 16.1+
 - Dynamic Island presentations: available on supported iPhone hardware
 - AppIntent-configured widgets: iOS 17+
 - Liquid Glass: iOS 26+ with Xcode 26 SDK; older SDKs and OS versions use the built-in material fallback.
