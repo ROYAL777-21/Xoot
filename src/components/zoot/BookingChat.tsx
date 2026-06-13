@@ -181,7 +181,7 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
     return () => {
       cancelled = true;
     };
-  }, [bookingId, currentUserId, participantIds.join(":")]);
+  }, [bookingId, currentUserId, participantIds]);
 
   useEffect(() => {
     let cancelled = false;
@@ -193,7 +193,8 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
         return;
       }
 
-      if (!currentUserId || !security.deviceKey) return;
+      const deviceKey = security.deviceKey;
+      if (!currentUserId || !deviceKey) return;
 
       setDecrypting(true);
       const next: Record<string, string> = {};
@@ -203,8 +204,8 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
             next[message.id] = await decryptChatMessage({
               body: message.body,
               currentUserId,
-              currentDeviceId: security.deviceKey?.deviceId,
-              privateJwk: security.deviceKey.privateJwk,
+              currentDeviceId: deviceKey.deviceId,
+              privateJwk: deviceKey.privateJwk,
             });
           } catch {
             next[message.id] = "This secure message cannot be decrypted on this device.";
@@ -222,7 +223,7 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
     return () => {
       cancelled = true;
     };
-  }, [messages, currentUserId, security.deviceKey?.deviceId]);
+  }, [messages, currentUserId, security.deviceKey]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });

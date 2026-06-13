@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
     const householdProfileId = cleanText(body.householdProfileId, 60) || null;
     const requestedWorkerCount = Number(body.workerCount);
     const zooterIds = Array.isArray(body.zooterIds)
-      ? body.zooterIds.map((id) => cleanText(id, 80)).filter(Boolean).slice(0, 5)
+      ? body.zooterIds.map((id: unknown) => cleanText(id, 80)).filter(Boolean).slice(0, 5)
       : [];
     const addOns = Array.isArray(body.addOns) ? body.addOns.slice(0, 12) : [];
 

@@ -11,8 +11,7 @@ import {
   requireAuth,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
-
-const validReplacementStates = new Set(["assigned", "contractor_accepted", "en_route", "enroute", "confirmed", "arrived", "in_progress"]);
+import { canTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 
 const findReplacement = async (supa: any, booking: any) => {
   const address = String(booking.address ?? booking.launch_region ?? "").toLowerCase();
@@ -52,14 +51,15 @@ Deno.serve(async (req) => {
 
     const { data: booking } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id,status,address,launch_region,service_type,scheduled_at")
+      .select("id,user_id,zooter_id,status,address,launch_region,service_type,scheduled_at,replacement_count")
       .eq("id", bookingId)
       .maybeSingle();
     if (!booking?.id) return fail("booking not found", origin, 404);
 
     const participant = await assertBookingParticipant(supa, booking, user.id);
     if (participant.role !== "client" && participant.role !== "admin") return fail("booking access denied", origin, 403);
-    if (!validReplacementStates.has(String(booking.status))) {
+    const currentStatus = normaliseBookingStatus(booking.status);
+    if (!currentStatus || !canTransition(currentStatus, "replacement_required")) {
       return fail("booking is not in a valid replacement state", origin, 409);
     }
 
@@ -67,8 +67,17 @@ Deno.serve(async (req) => {
       status: "replacement_required",
       replacement_status: "searching",
       at_risk: true,
+      replacement_count: Number(booking.replacement_count ?? 0) + 1,
       updated_at: new Date().toISOString(),
     }).eq("id", booking.id);
+
+    await supa.from("booking_status_events").insert({
+      booking_id: booking.id,
+      actor_id: user.id,
+      status: "replacement_required",
+      label: "Finding a replacement Zooter",
+      meta: { reason, previous_status: currentStatus },
+    });
 
     const replacement = await findReplacement(supa, booking);
     if (replacement?.id) {
@@ -80,6 +89,13 @@ Deno.serve(async (req) => {
         was_reassigned: true,
         updated_at: new Date().toISOString(),
       }).eq("id", booking.id);
+      await supa.from("booking_status_events").insert({
+        booking_id: booking.id,
+        actor_id: user.id,
+        status: "replacement_offered",
+        label: "Replacement Zooter found",
+        meta: { replacement_zooter_id: replacement.id },
+      });
       await supa.from("zooter_jobs").insert({ booking_id: booking.id, zooter_id: replacement.id, state: "offered" });
       await insertNotification(supa, {
         userId: booking.user_id,

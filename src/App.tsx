@@ -1,6 +1,6 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,6 +10,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RequireAuth } from "@/components/RequireAuth";
 import { AppShell } from "@/components/zoot/AppShell";
 import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
+import { BotanicalEdges } from "@/components/zoot/BotanicalEdges";
 import { ZooterShell } from "@/components/zooter/ZooterShell";
 import { RequireRole } from "@/components/RequireRole";
 
@@ -73,6 +74,16 @@ const PageFallback = () => (
   </div>
 );
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
+
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -81,6 +92,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <NativeInteractionLayer />
+          <BotanicalEdges />
+          <ScrollToTop />
           <AuthProvider>
             <Suspense fallback={<PageFallback />}>
               <Routes>
@@ -88,6 +101,8 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset" element={<AuthReset />} />
+                <Route path="/articles" element={<Blog />} />
+                <Route path="/articles/:slug" element={<BlogPost />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/install" element={<PwaInstall />} />

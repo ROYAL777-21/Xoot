@@ -9,7 +9,7 @@ const links = [
   { label: "Services", href: "/#services" },
   { label: "Care+", href: "/care-plus" },
   { label: "Trust", href: "/trust-centre" },
-  { label: "Blog", href: "/blog" },
+  { label: "Blog", href: "/articles" },
   { label: "How it works", href: "/#how" },
   { label: "Become a Zooter", href: "/zooter/apply" },
 ];

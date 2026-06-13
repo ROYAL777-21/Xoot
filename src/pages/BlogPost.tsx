@@ -20,8 +20,8 @@ const BlogPost = () => {
     document.getElementById(structuredDataId)?.remove();
 
     if (!post) {
-      document.title = "Zoot Blog - Post not found";
-      setMetaDescription("The requested Zoot blog post could not be found.");
+      document.title = "Zoot Articles - Post not found";
+      setMetaDescription("The requested Zoot article could not be found.");
       return;
     }
 
@@ -40,7 +40,7 @@ const BlogPost = () => {
         datePublished: post.publishedAt,
         author: { "@type": "Organization", name: post.author },
         publisher: { "@type": "Organization", name: "Zoot", url: "https://zoothome.co.za" },
-        mainEntityOfPage: `https://zoothome.co.za/blog/${post.slug}`,
+        mainEntityOfPage: `https://zoothome.co.za/articles/${post.slug}`,
         keywords: [post.primaryKeyword, ...post.secondaryKeywords].join(", "),
         areaServed: post.areas,
       },
@@ -63,12 +63,12 @@ const BlogPost = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <main className="mx-auto max-w-3xl px-4 py-32 text-center sm:px-6 lg:px-8">
-          <p className="text-sm font-semibold text-primary">Zoot Blog</p>
+          <p className="text-sm font-semibold text-primary">Zoot Articles</p>
           <h1 className="mt-3 font-display text-3xl font-bold">Post not found</h1>
           <p className="mt-3 text-muted-foreground">This guide may have moved or is not published yet.</p>
-          <Link to="/blog" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+          <Link to="/articles" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary">
             <ArrowLeft className="h-4 w-4" />
-            Back to blog
+            Back to articles
           </Link>
         </main>
         <Footer />
@@ -81,9 +81,9 @@ const BlogPost = () => {
       <Navbar />
       <main className="pt-28">
         <article className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:px-8">
-          <Link to="/blog" className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-smooth hover:gap-3">
+          <Link to="/articles" className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-smooth hover:gap-3">
             <ArrowLeft className="h-4 w-4" />
-            Back to Zoot Blog
+            Back to Zoot Articles
           </Link>
 
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent-soft px-3 py-1 text-xs font-semibold text-sage-deep">

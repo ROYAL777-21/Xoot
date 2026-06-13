@@ -13,8 +13,8 @@ const setMetaDescription = (description: string) => {
 
 const Blog = () => {
   useEffect(() => {
-    document.title = "Zoot Blog - Cleaning, Care+ and Johannesburg home-care guides";
-    setMetaDescription("Read Zoot guides for trusted cleaning, Care+, Airbnb turnovers, office cleaning and premium home-care services in Johannesburg launch areas.");
+    document.title = "Zoot Articles - Cleaning, Care+ and Johannesburg home-care guides";
+    setMetaDescription("Read Zoot articles for trusted cleaning, Care+, Airbnb turnovers, office cleaning and premium home-care services in Johannesburg launch areas.");
   }, []);
 
   return (
@@ -28,7 +28,7 @@ const Blog = () => {
               Local cleaning guides
             </div>
             <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Zoot Blog
+              Zoot Articles
             </h1>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
               Practical, human guides for premium cleaning, trusted Zooters, Care+, Airbnb turnovers, office resets, and launch-area home care across Johannesburg.
@@ -47,7 +47,7 @@ const Blog = () => {
                 <span>{post.readingTime}</span>
               </div>
               <h2 className="font-display text-2xl font-bold leading-tight text-foreground">
-                <Link to={`/blog/${post.slug}`} className="hover:text-primary">
+                <Link to={`/articles/${post.slug}`} className="hover:text-primary">
                   {post.title}
                 </Link>
               </h2>
@@ -60,7 +60,7 @@ const Blog = () => {
                   </span>
                 ))}
               </div>
-              <Link to={`/blog/${post.slug}`} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-smooth hover:gap-3">
+              <Link to={`/articles/${post.slug}`} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-smooth hover:gap-3">
                 Read guide
                 <ArrowRight className="h-4 w-4" />
               </Link>

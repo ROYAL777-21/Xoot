@@ -2,37 +2,73 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://zoothome.co.za/</loc>
-    <lastmod>2026-06-08</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://zoothome.co.za/care-plus</loc>
-    <lastmod>2026-06-08</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://zoothome.co.za/trust-centre</loc>
-    <lastmod>2026-06-08</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://zoothome.co.za/blog</loc>
-    <lastmod>2026-06-08</lastmod>
+    <loc>https://zoothome.co.za/articles</loc>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://zoothome.co.za/blog/zoot-launch-first-100-homes-johannesburg</loc>
+    <loc>https://zoothome.co.za/articles/zoot-launch-first-100-homes-johannesburg</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://zoothome.co.za/blog/cleaning-in-bryanston-rosebank-sandton-guide</loc>
+    <loc>https://zoothome.co.za/articles/cleaning-in-bryanston-rosebank-sandton-guide</loc>
     <lastmod>2026-06-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://zoothome.co.za/articles/quick-office-cleaning-sandton-client-ready-reset</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://zoothome.co.za/articles/airbnb-turnover-cleaning-johannesburg-host-checklist</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://zoothome.co.za/articles/move-out-cleaning-johannesburg-landlords-inspection-ready</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://zoothome.co.za/articles/deep-cleaning-vs-regular-cleaning-johannesburg</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://zoothome.co.za/articles/recurring-cleaner-bryanston-quality-consistency</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://zoothome.co.za/articles/cleaner-in-rosebank-apartment-busy-professionals</loc>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

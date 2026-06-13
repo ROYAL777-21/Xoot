@@ -1,3 +1,5 @@
+import { normaliseBookingStatus } from "./booking-state-machine";
+
 export const approvedLaunchRegions = [
   "midrand",
   "sandton",
@@ -211,7 +213,15 @@ export const canAccessSensitiveBookingData = ({
     return current <= complete + 30 * 60 * 1000;
   }
 
-  return ["confirmed", "enroute", "arrived", "in_progress", "pending"].includes(status);
+  const normalizedStatus = normaliseBookingStatus(status);
+  return Boolean(normalizedStatus && [
+    "assigned",
+    "contractor_accepted",
+    "en_route",
+    "in_progress",
+    "replacement_offered",
+    "reassigned",
+  ].includes(normalizedStatus));
 };
 
 export const buildPendingPaymentRecord = ({

@@ -8,6 +8,7 @@ import {
   toNumber,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import { normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 
 const getAvailableBalance = async (supa: any, userId: string) => {
   const { data } = await supa
@@ -49,7 +50,8 @@ Deno.serve(async (req) => {
 
     const participant = await assertBookingParticipant(supa, booking, user.id);
     if (participant.role !== "client" && participant.role !== "admin") return fail("booking access denied", origin, 403);
-    if (!["draft", "pending", "pending_payment"].includes(String(booking.status))) {
+    const currentStatus = normaliseBookingStatus(booking.status);
+    if (!currentStatus || !["draft", "pending_payment"].includes(currentStatus)) {
       return fail("ZootCred can only be redeemed before payment confirmation", origin, 409);
     }
 

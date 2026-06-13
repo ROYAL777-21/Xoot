@@ -9,14 +9,12 @@ import { TrustedBy } from "@/components/zoot/TrustedBy";
 import { HomeExpansion } from "@/components/zoot/HomeExpansion";
 import { CtaBand } from "@/components/zoot/CtaBand";
 import { Footer } from "@/components/zoot/Footer";
-import { BotanicalEdges } from "@/components/zoot/BotanicalEdges";
 import { FeedbackSection } from "@/components/zoot/FeedbackSection";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <BotanicalEdges />
       <main className="relative z-20">
         <h1 className="sr-only">Zoot - Premium home services with trust, safety, and retention workflows</h1>
         <BookingHero />

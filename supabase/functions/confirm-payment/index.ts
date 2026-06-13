@@ -7,6 +7,7 @@ import {
   ok,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import { assertTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 
 const encoder = new TextEncoder();
 
@@ -75,6 +76,24 @@ Deno.serve(async (req) => {
       return ok({ payment_record_id: payment.id, booking_id: payment.booking_id, idempotent: true }, origin);
     }
 
+    let bookingForPayment: Record<string, any> | null = null;
+    if (payment.booking_id) {
+      const { data: booking } = await supa
+        .from("bookings")
+        .select("id,user_id,zooter_id,scheduled_at,service_type,status")
+        .eq("id", payment.booking_id)
+        .maybeSingle();
+
+      const currentStatus = normaliseBookingStatus(booking?.status);
+      if (!booking?.id || !currentStatus) return fail("booking status is unsupported", origin, 409);
+      try {
+        assertTransition(currentStatus, "payment_confirmed");
+      } catch (error) {
+        return fail(error instanceof Error ? error.message : "invalid booking transition", origin, 409);
+      }
+      bookingForPayment = booking;
+    }
+
     await supa
       .from("payment_records")
       .update({
@@ -89,29 +108,36 @@ Deno.serve(async (req) => {
       })
       .eq("id", payment.id);
 
-    if (payment.booking_id) {
-      const { data: booking } = await supa
-        .from("bookings")
-        .select("id,user_id,zooter_id,scheduled_at,service_type,status")
-        .eq("id", payment.booking_id)
-        .maybeSingle();
-
+    if (payment.booking_id && bookingForPayment) {
       await supa
         .from("bookings")
-        .update({ status: "payment_confirmed", payment_status: "paid", updated_at: new Date().toISOString() })
+        .update({
+          status: "payment_confirmed",
+          payment_status: "paid",
+          payment_confirmed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", payment.booking_id);
 
-      if (booking?.zooter_id) {
+      await supa.from("booking_status_events").insert({
+        booking_id: bookingForPayment.id,
+        actor_id: payment.user_id,
+        status: "payment_confirmed",
+        label: "Payment received",
+        meta: { payment_record_id: payment.id },
+      });
+
+      if (bookingForPayment.zooter_id) {
         const { data: existingJob } = await supa
           .from("zooter_jobs")
           .select("id")
-          .eq("booking_id", booking.id)
-          .eq("zooter_id", booking.zooter_id)
+          .eq("booking_id", bookingForPayment.id)
+          .eq("zooter_id", bookingForPayment.zooter_id)
           .maybeSingle();
         if (existingJob?.id) {
           await supa.from("zooter_jobs").update({ state: "offered" }).eq("id", existingJob.id);
         } else {
-          await supa.from("zooter_jobs").insert({ booking_id: booking.id, zooter_id: booking.zooter_id, state: "offered" });
+          await supa.from("zooter_jobs").insert({ booking_id: bookingForPayment.id, zooter_id: bookingForPayment.zooter_id, state: "offered" });
         }
       }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ZooterCard, Zooter } from "@/components/zoot/ZooterCard";
@@ -22,7 +22,7 @@ const Favorites = () => {
   const [list, setList] = useState<FavoriteRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from("favorites")
@@ -42,9 +42,9 @@ const Favorites = () => {
         .filter((row) => row.zooters) as FavoriteRow[],
     );
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { load(); }, [user]);
+  useEffect(() => { load(); }, [load]);
 
   const markKind = async (zooterId: string, favoriteKind: FavoriteRow["favorite_kind"]) => {
     if (!user) return;

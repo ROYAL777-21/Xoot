@@ -8,8 +8,9 @@ import {
   requireAuth,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import { normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 
-const activeCallStates = new Set(["enroute", "en_route", "arrived", "in_progress"]);
+const activeCallStates = new Set(["en_route", "in_progress"]);
 
 const basicAuth = (username: string, password: string) => `Basic ${btoa(`${username}:${password}`)}`;
 
@@ -87,7 +88,8 @@ Deno.serve(async (req) => {
 
     const participant = await assertBookingParticipant(supa, booking, user.id);
     if (!participant.participant) return fail("booking access denied", origin, 403);
-    if (!activeCallStates.has(String(booking.status)) || booking.cancelled_at) {
+    const currentStatus = normaliseBookingStatus(booking.status);
+    if (!currentStatus || !activeCallStates.has(currentStatus) || booking.cancelled_at) {
       return fail("masked calls are available during the active booking window", origin, 403);
     }
     if (!booking.zooter_id) return fail("booking has no assigned Zooter", origin, 409);

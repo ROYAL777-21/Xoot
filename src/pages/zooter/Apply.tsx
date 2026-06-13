@@ -61,6 +61,9 @@ const emptyForm = {
 const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
 const joinList = (value?: string[] | null) => (value ?? []).join(", ");
 const safeFileName = (name: string) => name.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/-+/g, "-").slice(0, 90);
+const looksLikeEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+const looksLikePhone = (value: string) => /^\+?[0-9\s().-]{7,20}$/.test(value.trim());
+const looksLikeBankAccount = (value: string) => /^[0-9]{6,20}$/.test(value.trim());
 
 const validateUpload = (file: File) => {
   if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
@@ -80,6 +83,7 @@ const Apply = () => {
   const [submitting, setSubmitting] = useState(false);
   const [appId, setAppId] = useState<string | null>(null);
   const [docs, setDocs] = useState<Record<string, string>>({});
+  const [uploadingDoc, setUploadingDoc] = useState<DocType | null>(null);
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
@@ -177,31 +181,36 @@ const Apply = () => {
       toast.error(validationError);
       return;
     }
-    const id = appId ?? (await saveDraft());
-    if (!id) return;
-    const path = `${user.id}/${key}-${Date.now()}-${safeFileName(file.name)}`;
-    const { error } = await supabase.storage.from("kyc-docs").upload(path, file, {
-      cacheControl: "0",
-      contentType: file.type,
-      upsert: true,
-    });
-    if (error) { haptic("warning"); toast.error(error.message); return; }
-    const { data, error: docError } = await supabase.functions.invoke("submit-zooter-application", {
-      body: {
-        mode: "document",
-        applicationId: id,
-        document: { doc_type: key, storage_path: path },
-      },
-    });
-    const docResult = data as { success?: boolean; error?: string } | null;
-    if (docError || docResult?.success === false) {
-      haptic("warning");
-      toast.error(docError?.message ?? docResult?.error ?? "Document metadata could not be saved");
-      return;
+    setUploadingDoc(key);
+    try {
+      const id = appId ?? (await saveDraft());
+      if (!id) return;
+      const path = `${user.id}/${key}-${Date.now()}-${safeFileName(file.name)}`;
+      const { error } = await supabase.storage.from("kyc-docs").upload(path, file, {
+        cacheControl: "0",
+        contentType: file.type,
+        upsert: true,
+      });
+      if (error) { haptic("warning"); toast.error(error.message); return; }
+      const { data, error: docError } = await supabase.functions.invoke("submit-zooter-application", {
+        body: {
+          mode: "document",
+          applicationId: id,
+          document: { doc_type: key, storage_path: path },
+        },
+      });
+      const docResult = data as { success?: boolean; error?: string } | null;
+      if (docError || docResult?.success === false) {
+        haptic("warning");
+        toast.error(docError?.message ?? docResult?.error ?? "Document metadata could not be saved");
+        return;
+      }
+      setDocs((d) => ({ ...d, [key]: path }));
+      haptic("success");
+      toast.success(`${key.replace(/_/g, " ")} uploaded`);
+    } finally {
+      setUploadingDoc(null);
     }
-    setDocs((d) => ({ ...d, [key]: path }));
-    haptic("success");
-    toast.success(`${key.replace(/_/g, " ")} uploaded`);
   };
 
   const requiredForStep = () => {
@@ -216,6 +225,11 @@ const Apply = () => {
   const validateStep = () => {
     const missing = requiredForStep().filter((key) => !String((form as any)[key] ?? "").trim());
     if (missing.length) { haptic("warning"); toast.error("Please complete all required fields"); return false; }
+    if (step === 0 && !looksLikeEmail(form.email)) { haptic("warning"); toast.error("Enter a valid email address"); return false; }
+    if (step === 0 && !looksLikePhone(form.phone)) { haptic("warning"); toast.error("Enter a valid phone number"); return false; }
+    if (step === 0 && Number(form.years_experience) < 0) { haptic("warning"); toast.error("Years of experience cannot be negative"); return false; }
+    if (step === 3 && !looksLikeBankAccount(form.bank_account_number)) { haptic("warning"); toast.error("Enter a valid bank account number"); return false; }
+    if (step === 3 && !/^[0-9]{4,8}$/.test(form.bank_branch_code.trim())) { haptic("warning"); toast.error("Enter a valid branch code"); return false; }
     if (step === 5) {
       const missingDocs = docMeta.filter((d) => !docs[d.key]);
       if (missingDocs.length) { haptic("warning"); toast.error(`Upload required: ${missingDocs.map((d) => d.label).join(", ")}`); return false; }
@@ -268,7 +282,39 @@ const Apply = () => {
 
           {step === 4 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> References & emergency contact</h2><p className="text-sm text-muted-foreground">References help us keep marketplace quality high before a Zooter goes live.</p><div className="grid sm:grid-cols-2 gap-3"><F label="Emergency contact name" name="emergency_contact_name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} /></F><F label="Emergency contact phone" name="emergency_contact_phone"><Input value={form.emergency_contact_phone ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} /></F><F label="Reference 1 name" name="reference_1_name"><Input value={form.reference_1_name ?? ""} onChange={(e) => setForm({ ...form, reference_1_name: e.target.value })} /></F><F label="Reference 1 phone" name="reference_1_phone"><Input value={form.reference_1_phone ?? ""} onChange={(e) => setForm({ ...form, reference_1_phone: e.target.value })} /></F><F label="Reference 2 name" name="reference_2_name"><Input value={form.reference_2_name ?? ""} onChange={(e) => setForm({ ...form, reference_2_name: e.target.value })} /></F><F label="Reference 2 phone" name="reference_2_phone"><Input value={form.reference_2_phone ?? ""} onChange={(e) => setForm({ ...form, reference_2_phone: e.target.value })} /></F></div></div>}
 
-          {step === 5 && <div className="space-y-3"><h2 className="font-display text-2xl font-bold">Upload documents</h2><p className="text-sm text-muted-foreground">All four documents are required and reviewed by the trust team. PDFs, JPGs, PNGs and WebP images under 8MB are accepted.</p>{docMeta.map((d) => <div key={d.key} className="rounded-2xl border border-border p-4 flex items-center gap-3"><div className={`grid h-10 w-10 place-items-center rounded-xl ${docs[d.key] ? "bg-accent/15 text-sage-deep" : "bg-muted text-muted-foreground"}`}>{docs[d.key] ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}</div><div className="flex-1 min-w-0"><p className="font-medium text-sm">{d.label}</p><p className="text-xs text-muted-foreground">{d.hint}</p></div><label className="cursor-pointer"><input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => e.target.files?.[0] && handleUpload(d.key, e.target.files[0])} /><span className="inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-semibold px-3 py-1.5">{docs[d.key] ? "Replace" : "Upload"}</span></label></div>)}</div>}
+          {step === 5 && (
+            <div className="space-y-3">
+              <h2 className="font-display text-2xl font-bold">Upload documents</h2>
+              <p className="text-sm text-muted-foreground">All four documents are required and reviewed by the trust team. PDFs, JPGs, PNGs and WebP images under 8MB are accepted.</p>
+              {docMeta.map((d) => {
+                const isUploading = uploadingDoc === d.key;
+                const hasDoc = Boolean(docs[d.key]);
+                return (
+                  <div key={d.key} className="rounded-2xl border border-border p-4 flex items-center gap-3">
+                    <div className={`grid h-10 w-10 place-items-center rounded-xl ${hasDoc ? "bg-accent/15 text-sage-deep" : "bg-muted text-muted-foreground"}`}>
+                      {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : hasDoc ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{d.label}</p>
+                      <p className="text-xs text-muted-foreground">{isUploading ? "Uploading securely..." : d.hint}</p>
+                    </div>
+                    <label className={isUploading ? "cursor-not-allowed opacity-60" : "cursor-pointer"}>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/jpeg,image/png,image/webp,application/pdf"
+                        disabled={isUploading}
+                        onChange={(e) => e.target.files?.[0] && handleUpload(d.key, e.target.files[0])}
+                      />
+                      <span className="inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-semibold px-3 py-1.5">
+                        {isUploading ? "Uploading" : hasDoc ? "Replace" : "Upload"}
+                      </span>
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {step === 6 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Trust review consent</h2><div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2"><p className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> By submitting you authorise Zoot to verify identity, selfie, address, banking details, references, and criminal background status.</p><p>No live third-party check is run in this version. Admin reviewers classify each verification area before activation.</p></div><label className="flex items-start gap-3 cursor-pointer"><Checkbox checked={form.background_check_consent} onCheckedChange={(v) => setForm({ ...form, background_check_consent: !!v })} /><span className="text-sm">I consent to the Zoot trust review and background-check process.</span></label></div>}
 

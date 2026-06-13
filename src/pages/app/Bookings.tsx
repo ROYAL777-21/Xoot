@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { resolvePhoto } from "@/components/zoot/ZooterCard";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import { getClientVisibleStatus, normaliseBookingStatus } from "@/lib/booking-state-machine";
 
 type Booking = {
   id: string; service: string; scheduled_at: string; status: string;
@@ -22,14 +23,45 @@ type Booking = {
 };
 
 const statusBadge: Record<string, string> = {
+  draft: "bg-muted text-muted-foreground",
+  pending_payment: "bg-muted text-muted-foreground",
+  payment_confirmed: "bg-primary/15 text-primary",
+  awaiting_assignment: "bg-primary/15 text-primary",
+  assigned: "bg-primary/15 text-primary",
+  contractor_accepted: "bg-sage/15 text-sage-deep",
   confirmed: "bg-sage/15 text-sage-deep",
   pending: "bg-muted text-muted-foreground",
   enroute: "bg-primary/15 text-primary",
+  en_route: "bg-primary/15 text-primary",
   in_progress: "bg-primary/15 text-primary",
   completed: "bg-sage/15 text-sage-deep",
+  rated: "bg-sage/15 text-sage-deep",
   cancelled: "bg-destructive/15 text-destructive",
+  replacement_required: "bg-primary/15 text-primary",
+  replacement_offered: "bg-primary/15 text-primary",
   reassigned: "bg-primary/15 text-primary",
 };
+
+const getVisibleStatus = (status: string) => {
+  const canonical = normaliseBookingStatus(status);
+  return canonical ? getClientVisibleStatus(canonical) : status.replace(/_/g, " ");
+};
+
+const activeStatuses = new Set([
+  "draft",
+  "pending_payment",
+  "payment_confirmed",
+  "awaiting_assignment",
+  "assigned",
+  "contractor_accepted",
+  "en_route",
+  "in_progress",
+  "replacement_required",
+  "replacement_offered",
+  "reassigned",
+]);
+
+const pastStatuses = new Set(["completed", "rated", "cancelled"]);
 
 const Bookings = () => {
   const { user } = useAuth();
@@ -39,7 +71,7 @@ const Bookings = () => {
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkDate, setBulkDate] = useState("");
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from("bookings")
       .select("id, zooter_id, service, scheduled_at, status, price, address, was_reassigned, reassignment_acknowledged")
@@ -58,9 +90,9 @@ const Bookings = () => {
     );
     setList(bookings.map((booking) => ({ ...booking, zooter: zootersByBookingId.get(booking.id) ?? null })) as Booking[]);
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { refresh(); }, [user]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const toggle = (id: string) => {
     const n = new Set(selected); n.has(id) ? n.delete(id) : n.add(id); setSelected(n);
@@ -85,8 +117,14 @@ const Bookings = () => {
     }
   };
 
-  const upcoming = list.filter((b) => ["pending", "confirmed", "enroute", "in_progress", "reassigned"].includes(b.status));
-  const past = list.filter((b) => ["completed", "cancelled"].includes(b.status));
+  const upcoming = list.filter((b) => {
+    const canonical = normaliseBookingStatus(b.status);
+    return canonical ? activeStatuses.has(canonical) : false;
+  });
+  const past = list.filter((b) => {
+    const canonical = normaliseBookingStatus(b.status);
+    return canonical ? pastStatuses.has(canonical) : false;
+  });
 
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
@@ -116,7 +154,7 @@ const Bookings = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold truncate">{b.zooter?.name ?? "Reassigning…"}</p>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${statusBadge[b.status]}`}>{b.status}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${statusBadge[normaliseBookingStatus(b.status) ?? b.status] ?? "bg-muted text-muted-foreground"}`}>{getVisibleStatus(b.status)}</span>
                   {b.was_reassigned && !b.reassignment_acknowledged && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary text-primary-foreground flex items-center gap-1">
                       <AlertCircle className="h-3 w-3" /> NEW ZOOTER

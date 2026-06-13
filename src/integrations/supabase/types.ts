@@ -20,6 +20,8 @@ export type Database = {
           cancellation_fee: number
           cancelled_at: string | null
           cancelled_by: string | null
+          assigned_at: string | null
+          completed_at: string | null
           created_at: string
           duration_hours: number
           frequency: string
@@ -29,9 +31,12 @@ export type Database = {
           price: number
           reassignment_acknowledged: boolean
           replacement_offered: boolean
+          replacement_count: number
           scheduled_at: string
           service: Database["public"]["Enums"]["service_category"]
           status: Database["public"]["Enums"]["booking_status"]
+          payment_confirmed_at: string | null
+          sensitive_data_revoked_at: string | null
           updated_at: string
           user_id: string
           was_reassigned: boolean
@@ -42,6 +47,8 @@ export type Database = {
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
+          assigned_at?: string | null
+          completed_at?: string | null
           created_at?: string
           duration_hours?: number
           frequency?: string
@@ -51,9 +58,12 @@ export type Database = {
           price: number
           reassignment_acknowledged?: boolean
           replacement_offered?: boolean
+          replacement_count?: number
           scheduled_at: string
           service: Database["public"]["Enums"]["service_category"]
           status?: Database["public"]["Enums"]["booking_status"]
+          payment_confirmed_at?: string | null
+          sensitive_data_revoked_at?: string | null
           updated_at?: string
           user_id: string
           was_reassigned?: boolean
@@ -64,6 +74,8 @@ export type Database = {
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
+          assigned_at?: string | null
+          completed_at?: string | null
           created_at?: string
           duration_hours?: number
           frequency?: string
@@ -73,9 +85,12 @@ export type Database = {
           price?: number
           reassignment_acknowledged?: boolean
           replacement_offered?: boolean
+          replacement_count?: number
           scheduled_at?: string
           service?: Database["public"]["Enums"]["service_category"]
           status?: Database["public"]["Enums"]["booking_status"]
+          payment_confirmed_at?: string | null
+          sensitive_data_revoked_at?: string | null
           updated_at?: string
           user_id?: string
           was_reassigned?: boolean
@@ -542,6 +557,7 @@ export type Database = {
       }
       training_modules: {
         Row: {
+          badge_label: string | null
           badge_color: string
           category: string
           description: string
@@ -549,10 +565,12 @@ export type Database = {
           id: string
           pass_score: number
           quiz_questions: Json
+          rank_points: number
           required: boolean
           title: string
         }
         Insert: {
+          badge_label?: string | null
           badge_color?: string
           category: string
           description: string
@@ -560,10 +578,12 @@ export type Database = {
           id?: string
           pass_score?: number
           quiz_questions?: Json
+          rank_points?: number
           required?: boolean
           title: string
         }
         Update: {
+          badge_label?: string | null
           badge_color?: string
           category?: string
           description?: string
@@ -571,6 +591,7 @@ export type Database = {
           id?: string
           pass_score?: number
           quiz_questions?: Json
+          rank_points?: number
           required?: boolean
           title?: string
         }
@@ -1040,6 +1061,16 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user" | "zooter"
       booking_status:
+        | "draft"
+        | "pending_payment"
+        | "payment_confirmed"
+        | "awaiting_assignment"
+        | "assigned"
+        | "contractor_accepted"
+        | "en_route"
+        | "rated"
+        | "replacement_required"
+        | "replacement_offered"
         | "pending"
         | "confirmed"
         | "enroute"
@@ -1185,6 +1216,16 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user", "zooter"],
       booking_status: [
+        "draft",
+        "pending_payment",
+        "payment_confirmed",
+        "awaiting_assignment",
+        "assigned",
+        "contractor_accepted",
+        "en_route",
+        "rated",
+        "replacement_required",
+        "replacement_offered",
         "pending",
         "confirmed",
         "enroute",

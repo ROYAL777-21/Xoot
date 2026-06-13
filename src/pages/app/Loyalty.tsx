@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -18,7 +18,7 @@ const Loyalty = () => {
   const [zootCred, setZootCred] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!user) return;
     const [{ data }, { data: ledger }] = await Promise.all([
       supabase.from("loyalty_points").select("*").eq("user_id", user.id).single(),
@@ -27,9 +27,9 @@ const Loyalty = () => {
     if (data) setLoyalty(data);
     setZootCred(applyZootCredLedger((ledger ?? []).map((row: any) => ({ amount: Number(row.amount), direction: row.direction }))));
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { refresh(); }, [user]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const redeem = async () => {
     if (!user || !loyalty || loyalty.free_credits < 1) return;

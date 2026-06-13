@@ -325,6 +325,306 @@ export const blogPosts: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "move-out-cleaning-johannesburg-landlords-inspection-ready",
+    title: "Move-out cleaning for Johannesburg landlords: get the property inspection-ready",
+    seoTitle: "Move-Out Cleaning Johannesburg Landlords | Zoot Handover Guide",
+    description:
+      "A practical move-out cleaning guide for Johannesburg landlords and property managers who need tenant handovers, inspection-ready rooms and cleaner booking notes.",
+    excerpt:
+      "The keys are due back, the next viewing is close, and the property still has dust in places nobody noticed during the lease. Here is the calmer way to handle the handover.",
+    publishedAt: "2026-06-13",
+    readingTime: "6 min read",
+    author: "Zoot Team",
+    primaryKeyword: "move out cleaning Johannesburg landlords",
+    secondaryKeywords: [
+      "landlord move out cleaning",
+      "inspection ready cleaning",
+      "tenant handover cleaning",
+      "move-out cleaning Sandton",
+      "property manager cleaning Johannesburg",
+    ],
+    areas: ["Sandton", "Bryanston", "Midrand", "Bedfordview", "Rosebank"],
+    sections: [
+      {
+        heading: "The handover is where small cleaning misses become expensive",
+        body: [
+          "Move-out cleaning in Johannesburg is not just about making a property look nice. It protects the inspection, the next viewing, the deposit conversation and the first impression for the next tenant.",
+          "Landlords and property managers usually feel the pressure in the final 48 hours. The tenant is leaving, maintenance may still be happening, agents need access, and every small mark, dusty corner or tired bathroom can slow the next step down.",
+        ],
+      },
+      {
+        heading: "What inspection-ready actually means",
+        body: [
+          "An inspection-ready clean focuses on the areas that create doubt: bathrooms, kitchens, cupboards, skirting, floors, windowsills, built-in appliances, light switches, door handles, wardrobes and balcony edges. These are the details people touch, photograph and remember.",
+          "The smartest approach is to separate cleaning from maintenance. A cleaner can reset grime, dust, surfaces and visible use. A landlord should still note paint chips, broken fittings, blocked drains, damp, cracks and appliance faults as maintenance items instead of hiding them inside the cleaning brief.",
+        ],
+      },
+      {
+        heading: "A room-by-room handover checklist",
+        body: [
+          "For kitchens, check cupboards, counters, splashbacks, sink, taps, oven, hob, extractor, fridge space and floor corners. For bathrooms, check shower glass, grout, basin, toilet, drains, mirrors and cabinet shelves. For bedrooms and lounges, check wardrobes, skirting, window tracks, dust lines and marks near doors.",
+          "If the property is furnished or used as a short-term rental, add linen storage, under-bed dust, upholstery, lamps, remote controls, outdoor furniture and guest-facing photos. A move-out clean works best when the cleaner knows whether the property is being inspected, photographed, viewed or handed directly to a new tenant.",
+        ],
+      },
+      {
+        heading: "How Zoot reduces the back-and-forth",
+        body: [
+          "A property handover gets messy when instructions live across phone calls, old photos and rushed messages. Zoot is being built around property profiles, saved notes, in-app support, photo-proof workflows for higher-risk services and cleaner booking records.",
+          "That matters for landlords in Sandton, Bryanston, Midrand, Bedfordview and Rosebank because repeat properties should not need to be explained from the beginning every time. The more repeatable the clean, the easier it is to spot what is a cleaning issue and what is a maintenance issue.",
+        ],
+      },
+      {
+        heading: "When to book",
+        body: [
+          "Book after the tenant has removed personal items and before the final inspection or viewing. If painting, repairs or pest control are happening, do the clean after the messiest work is complete. If the unit has heavy build-up, book a deeper service rather than forcing a quick clean into a handover deadline.",
+          "The call to action is simple: if a property needs to look ready for inspection, do not leave the reset to the last WhatsApp. Book a move-out clean, save the property notes and make the next handover easier than this one.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "What should landlords include in a move-out cleaning request?",
+        answer:
+          "Include access details, inspection date, priority rooms, appliance focus, cupboards, balcony or outdoor areas, parking notes and whether photo proof is needed.",
+      },
+      {
+        question: "Is move-out cleaning the same as regular cleaning?",
+        answer:
+          "No. Move-out cleaning is more detailed and inspection-focused. It usually includes cupboards, appliance areas, corners, bathroom build-up and visible handover details.",
+      },
+      {
+        question: "Can Zoot support property managers with repeat properties?",
+        answer:
+          "Zoot is designed around property profiles, saved instructions and repeatable workflows for landlords, Airbnb hosts and property managers in approved launch areas.",
+      },
+    ],
+  },
+  {
+    slug: "deep-cleaning-vs-regular-cleaning-johannesburg",
+    title: "Deep cleaning vs regular cleaning in Johannesburg: which one does your home need?",
+    seoTitle: "Deep Cleaning Vs Regular Cleaning Johannesburg | Zoot Guide",
+    description:
+      "A clear guide to choosing between deep cleaning and regular home cleaning in Johannesburg, with practical signs, use cases and Zoot booking guidance.",
+    excerpt:
+      "If the house feels clean but still heavy, booking more hours may not solve it. You may need the right kind of clean, not just a longer one.",
+    publishedAt: "2026-06-13",
+    readingTime: "6 min read",
+    author: "Zoot Team",
+    primaryKeyword: "deep cleaning vs regular cleaning Johannesburg",
+    secondaryKeywords: [
+      "deep cleaning Johannesburg",
+      "regular home cleaning",
+      "when to book deep clean",
+      "home cleaning Bryanston",
+      "cleaning services Sandton",
+    ],
+    areas: ["Bryanston", "Sandton", "Fourways", "Midrand", "Rosebank"],
+    sections: [
+      {
+        heading: "The difference is not only time",
+        body: [
+          "Regular cleaning keeps a home liveable week after week. Deep cleaning resets the details that slowly build up while life is happening. Both matter, but they solve different problems.",
+          "A regular clean usually handles floors, bathrooms, kitchen surfaces, dusting, bins, beds and the visible reset. A deep clean goes into corners, build-up, appliances, skirting, grout, cupboards, window tracks and the parts of the home that do not need attention every week.",
+        ],
+      },
+      {
+        heading: "When regular cleaning is the right choice",
+        body: [
+          "Choose regular home cleaning when the home is already in a reasonable rhythm. Maybe you need a weekly reset after work, help before visitors arrive, laundry and surfaces handled, or recurring support so the home does not become another weekend project.",
+          "This is where continuity matters. If the same preferences keep repeating, Care+ can make the home easier to manage with saved notes, favourite Zooter rebooking, smart reminders and a calmer repeat booking flow.",
+        ],
+      },
+      {
+        heading: "When a deep clean is the honest answer",
+        body: [
+          "Choose a deep clean when the home feels stale after ordinary cleaning, when cupboards or appliance areas need attention, when bathrooms have build-up, when floors and skirting need more detail, or when you are preparing after renovations, hosting, travel or a long busy season.",
+          "A deep clean is also useful before starting a recurring plan. It gives the home a better baseline, so future regular cleans protect the standard instead of constantly trying to catch up.",
+        ],
+      },
+      {
+        heading: "The decision rule",
+        body: [
+          "If the mess is mostly weekly living, book regular cleaning. If the issue is build-up, corners, grease, grout, dust lines or spaces that have not been touched in weeks, book deep cleaning. If the home is changing hands, book moving or handover cleaning.",
+          "For Airbnb hosts, same-day turnover cleaning is a separate rhythm because the goal is guest-readiness under time pressure. For offices, the clean should follow client-facing priorities, business hours and access rules.",
+        ],
+      },
+      {
+        heading: "How to brief your Zooter",
+        body: [
+          "Good cleaning starts with a clear brief. Share room priorities, product restrictions, pet notes, access instructions and anything fragile or private. The more specific the request, the easier it is to match the job to the right service.",
+          "Zoot is built to turn those details into a repeatable system, not a one-off scramble. Book the right clean once, save what matters, and let the next booking start with better context.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "How often should I book a deep clean?",
+        answer:
+          "Many homes benefit from a deep clean every few months, before a recurring plan, after hosting, after travel, or whenever build-up is visible in bathrooms, kitchens and corners.",
+      },
+      {
+        question: "Can I book a regular clean after a deep clean?",
+        answer:
+          "Yes. That is often the best rhythm: use a deep clean to reset the home, then regular cleaning to maintain the standard.",
+      },
+      {
+        question: "Does Zoot offer deep cleaning in Johannesburg?",
+        answer:
+          "Deep cleaning is part of Zoot's service set in approved launch areas, subject to live availability and final booking coverage.",
+      },
+    ],
+  },
+  {
+    slug: "recurring-cleaner-bryanston-quality-consistency",
+    title: "Recurring cleaner in Bryanston: how to keep quality consistent after the first clean",
+    seoTitle: "Recurring Cleaner Bryanston | Zoot Quality Consistency Guide",
+    description:
+      "A Bryanston-focused guide for families and professionals choosing recurring home cleaning, favourite Zooters and Care+ home memory workflows.",
+    excerpt:
+      "The first clean shows promise. The fifth clean shows whether the system works. Here is how Bryanston homes can keep quality from drifting.",
+    publishedAt: "2026-06-13",
+    readingTime: "5 min read",
+    author: "Zoot Team",
+    primaryKeyword: "recurring cleaner Bryanston",
+    secondaryKeywords: [
+      "recurring home cleaning Bryanston",
+      "trusted cleaner Bryanston",
+      "book same cleaner again",
+      "Care+ home cleaning",
+      "premium home cleaning Johannesburg",
+    ],
+    areas: ["Bryanston", "Dainfern", "Fourways", "Hyde Park", "Sandton"],
+    sections: [
+      {
+        heading: "Recurring cleaning is a relationship with a system around it",
+        body: [
+          "A recurring cleaner in Bryanston is not only about getting someone through the door every week. It is about trust, rhythm, remembered preferences and a home that feels easier to manage because the basics are handled.",
+          "The first clean matters, but the real value appears over time. Quality stays consistent when the home has clear notes, the Zooter knows what matters, and the platform makes it easy to repeat what worked instead of starting from zero.",
+        ],
+      },
+      {
+        heading: "What quality drift looks like",
+        body: [
+          "Quality drift is subtle. The first visit feels detailed, then cupboard fronts get skipped, pet areas are forgotten, linen preferences change, or the same small instruction needs to be repeated every booking.",
+          "That is usually not a motivation problem. It is an information problem. Homes have patterns, and those patterns should be captured somewhere better than scattered messages.",
+        ],
+      },
+      {
+        heading: "The Bryanston recurring-clean checklist",
+        body: [
+          "Write down the non-negotiables: bathroom standard, kitchen surfaces, floors, bins, bedrooms, pet comfort, product restrictions, rooms that are private, and anything that must be done only when someone is home.",
+          "Then add the rhythm: weekly visible reset, fortnightly deeper bathroom focus, monthly cupboard or appliance focus, and seasonal deep-clean tasks. A recurring clean works best when every visit is not asked to do every possible thing.",
+        ],
+      },
+      {
+        heading: "Where Care+ helps",
+        body: [
+          "Care+ is Zoot's household memory layer. It is designed for homes that should not need constant managing: saved preferences, favourite Zooter workflows, smart reminders, priority support and a clearer repeat booking path.",
+          "For Bryanston families and professionals, that means less explaining, fewer repeated instructions and a better chance of keeping the same trusted rhythm as the home gets busier.",
+        ],
+      },
+      {
+        heading: "A better way to book the same cleaner again",
+        body: [
+          "If a Zooter understands your home and delivers well, rebooking should be simple. Save them, keep notes current, review honestly and use support if anything changes.",
+          "Zoot's goal is to make recurring home care feel premium because it is consistent, not because it is complicated. Book the clean, save the home memory, and let the next week start with context already in place.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Can I book the same cleaner again with Zoot?",
+        answer:
+          "Zoot supports favourite Zooter and preferred-team workflows where availability and service coverage allow it.",
+      },
+      {
+        question: "Is recurring cleaning better than booking once-off each time?",
+        answer:
+          "Recurring cleaning is usually better for homes that need consistency, saved preferences and less repeated planning.",
+      },
+      {
+        question: "What should I save in my home preferences?",
+        answer:
+          "Save room priorities, pet notes, access rules, product restrictions, fragile items, private spaces and the cleaning rhythm that keeps your home feeling ready.",
+      },
+    ],
+  },
+  {
+    slug: "cleaner-in-rosebank-apartment-busy-professionals",
+    title: "Cleaner in Rosebank apartment: the quick flat reset for busy professionals",
+    seoTitle: "Cleaner In Rosebank Apartment | Zoot Flat Reset Guide",
+    description:
+      "A Rosebank apartment cleaning guide for busy professionals looking for a trusted cleaner, quick flat reset and practical booking checklist.",
+    excerpt:
+      "Small apartments get messy fast because every surface has a job. A good reset should make the space feel calm without taking over your week.",
+    publishedAt: "2026-06-13",
+    readingTime: "5 min read",
+    author: "Zoot Team",
+    primaryKeyword: "cleaner in Rosebank apartment",
+    secondaryKeywords: [
+      "Rosebank apartment cleaning",
+      "where can I find a cleaner in Rosebank",
+      "quick flat reset Rosebank",
+      "apartment cleaning Johannesburg",
+      "trusted cleaner Rosebank",
+    ],
+    areas: ["Rosebank", "Parkhurst", "Melville", "Braamfontein", "Sandton"],
+    sections: [
+      {
+        heading: "Apartment mess is different",
+        body: [
+          "When someone searches for a cleaner in a Rosebank apartment, the problem is usually immediate. The kitchen counter is also the landing zone. The couch is also the office. The bathroom shows every rushed morning. The home is not large, but it works hard.",
+          "A good apartment clean should restore breathing room. It should make the space feel calm enough to cook, sleep, work and host without spending your limited free time managing the reset.",
+        ],
+      },
+      {
+        heading: "What to prioritise in a flat reset",
+        body: [
+          "Prioritise the bathroom, kitchen, floors, visible surfaces, bins, mirrors and the entrance area. In a compact apartment, these areas shape how the whole space feels.",
+          "Then add the details that make a flat feel properly finished: fingerprints on cupboards, dust on shelves, hair in bathroom corners, sink marks, stovetop splatter, balcony dust and the pile of small items that needs a place.",
+        ],
+      },
+      {
+        heading: "How to book without over-explaining",
+        body: [
+          "Before booking, decide what matters most: a quick visible reset, a deeper kitchen and bathroom clean, help before guests arrive, or a recurring rhythm that keeps the flat from sliding back every week.",
+          "The best request is clear but not overwhelming. Share access notes, parking or concierge rules, priority rooms, product restrictions and whether pets or building rules matter. Keep private details inside the app instead of loose chats.",
+        ],
+      },
+      {
+        heading: "For professionals, timing matters",
+        body: [
+          "Many Rosebank residents need cleaning around office hours, hybrid work, gym schedules, travel and last-minute plans. That means the service should fit the day, not create more admin inside it.",
+          "If your flat needs regular support, a recurring cleaner or Care+ home memory can be more useful than repeated once-off bookings. The point is not to keep finding a cleaner. The point is to stop having to think about the clean so often.",
+        ],
+      },
+      {
+        heading: "Where Zoot fits in Rosebank",
+        body: [
+          "Rosebank is one of Zoot's priority Johannesburg launch areas because apartments, short-term rentals, offices and busy homes overlap there. Availability still depends on approved Zooters and live coverage.",
+          "If you are searching where can I find a cleaner in Rosebank, Zoot is being shaped around that exact question: trusted booking, clearer notes, safer in-app communication, support routing and a clean that feels handled.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Can I book apartment cleaning in Rosebank with Zoot?",
+        answer:
+          "Rosebank is part of Zoot's priority launch focus. Availability depends on approved Zooters and live service coverage at the time of booking.",
+      },
+      {
+        question: "What should I ask for in a quick flat reset?",
+        answer:
+          "Ask for bathroom, kitchen, floors, visible surfaces, bins, entrance area and any specific details such as mirrors, balcony dust or stovetop build-up.",
+      },
+      {
+        question: "Is recurring apartment cleaning worth it?",
+        answer:
+          "Recurring cleaning is useful when the same apartment needs a weekly or fortnightly rhythm, saved preferences and less repeated planning.",
+      },
+    ],
+  },
 ];
 
 export const getBlogPost = (slug: string | undefined) => blogPosts.find((post) => post.slug === slug) ?? null;

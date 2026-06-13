@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ export const AddressPicker = ({ value, onChange }: Props) => {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState({ label: "Home", address: "", city: "", postal_code: "" });
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from("saved_addresses")
@@ -38,9 +38,9 @@ export const AddressPicker = ({ value, onChange }: Props) => {
     setList(items);
     if (!value && items[0]) onChange(items[0].address);
     setLoading(false);
-  };
+  }, [onChange, user, value]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user]);
+  useEffect(() => { load(); }, [load]);
 
   const save = async () => {
     if (!user || !draft.address.trim()) return toast.error("Please enter an address");

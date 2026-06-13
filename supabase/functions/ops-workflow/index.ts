@@ -1,4 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  assertTransition,
+  normaliseBookingStatus,
+  type BookingStatus,
+} from "../_shared/booking-state-machine.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -16,15 +21,25 @@ const servicePrices: Record<string, number> = {
 };
 
 const bookingStatusLabels: Record<string, string> = {
-  confirmed: "Confirmed",
-  enroute: "On the way",
+  draft: "Setting up your booking",
+  pending_payment: "Payment required",
+  payment_confirmed: "Payment received",
+  awaiting_assignment: "Finding your Zooter",
+  assigned: "Zooter assigned",
+  contractor_accepted: "Zooter confirmed",
+  en_route: "On the way",
   arrived: "Arrived",
   in_progress: "Job started",
   completed: "Job completed",
+  rated: "Thank you for your review",
+  cancelled: "Cancelled",
+  replacement_required: "Finding a replacement Zooter",
+  replacement_offered: "Replacement Zooter found",
+  reassigned: "New Zooter assigned",
 };
 
 const bookingEventTypes: Record<string, string> = {
-  enroute: "contractor_on_the_way",
+  en_route: "contractor_on_the_way",
   arrived: "contractor_arrived",
   completed: "job_completed",
 };
@@ -160,10 +175,18 @@ const canAccessSensitiveBookingData = ({
     return current <= complete + 30 * 60 * 1000;
   }
 
-  return ["confirmed", "enroute", "arrived", "in_progress", "pending"].includes(status);
+  const normalizedStatus = normaliseBookingStatus(status);
+  return Boolean(normalizedStatus && [
+    "assigned",
+    "contractor_accepted",
+    "en_route",
+    "in_progress",
+    "replacement_offered",
+    "reassigned",
+  ].includes(normalizedStatus));
 };
 
-const isBookingParticipant = async (supa: ReturnType<typeof createClient>, booking: Record<string, any>, userId: string) => {
+const isBookingParticipant = async (supa: any, booking: Record<string, any>, userId: string) => {
   if (booking.user_id === userId) return { participant: true, role: "client" };
   if (!booking.zooter_id) return { participant: false, role: null };
 
@@ -178,14 +201,14 @@ const isBookingParticipant = async (supa: ReturnType<typeof createClient>, booki
 };
 
 const insertOutbox = async (
-  supa: ReturnType<typeof createClient>,
+  supa: any,
   rows: Record<string, unknown> | Record<string, unknown>[],
 ) => {
   const { error } = await supa.from("integration_outbox").insert(rows);
   if (error) throw new Error(`outbox insert failed: ${error.message}`);
 };
 
-const isAdminUser = async (supa: ReturnType<typeof createClient>, userId: string) => {
+const isAdminUser = async (supa: any, userId: string) => {
   const { data } = await supa
     .from("user_roles")
     .select("id")
@@ -196,7 +219,7 @@ const isAdminUser = async (supa: ReturnType<typeof createClient>, userId: string
   return Boolean(data?.id);
 };
 
-const getApplicationReadiness = async (supa: ReturnType<typeof createClient>, application: Record<string, any>) => {
+const getApplicationReadiness = async (supa: any, application: Record<string, any>) => {
   const missing: string[] = [];
   for (const field of verificationFields) {
     if (application[field] !== "approved") missing.push(field);
@@ -576,7 +599,9 @@ Deno.serve(async (req) => {
     if (action === "booking_status_changed") {
       const bookingId = cleanId(body.bookingId);
       const status = cleanText(body.status, 40);
-      if (!bookingStatusLabels[status]) return json({ error: "unsupported booking status" }, 400, origin);
+      const requestedStatus = (status === "enroute" ? "en_route" : status === "arrived" ? "in_progress" : status) as BookingStatus;
+      const label = bookingStatusLabels[status] ?? bookingStatusLabels[requestedStatus];
+      if (!label) return json({ error: "unsupported booking status" }, 400, origin);
 
       const { data: booking, error } = await supa
         .from("bookings")
@@ -587,24 +612,36 @@ Deno.serve(async (req) => {
 
       const participant = await isBookingParticipant(supa, booking, userId);
       if (!participant.participant) return json({ error: "booking access denied" }, 403, origin);
-      if (["enroute", "arrived", "in_progress"].includes(status) && participant.role !== "contractor") {
+      if (["enroute", "en_route", "arrived", "in_progress", "completed"].includes(status) && participant.role !== "contractor") {
         return json({ error: "contractor status action required" }, 403, origin);
+      }
+      const currentStatus = normaliseBookingStatus(booking.status);
+      if (!currentStatus) return json({ error: "booking status is unsupported" }, 409, origin);
+      const timelineOnlyJobStart = status === "in_progress" && currentStatus === "in_progress";
+      if (!timelineOnlyJobStart) {
+        try {
+          assertTransition(currentStatus, requestedStatus);
+        } catch (error) {
+          return json({ error: error instanceof Error ? error.message : "invalid booking transition" }, 409, origin);
+        }
       }
 
       const timestampField = status === "arrived" ? "arrived_at" : status === "in_progress" ? "job_started_at" : status === "completed" ? "job_completed_at" : null;
-      const bookingStatus = status === "arrived" ? "in_progress" : status;
-      const updatePayload: Record<string, unknown> = { status: bookingStatus };
+      const bookingStatus = requestedStatus;
+      const updatePayload: Record<string, unknown> = { status: bookingStatus, updated_at: new Date().toISOString() };
       if (timestampField) updatePayload[timestampField] = new Date().toISOString();
+      if (status === "completed") updatePayload.completed_at = new Date().toISOString();
 
       await supa.from("bookings").update(updatePayload).eq("id", booking.id);
       await supa.from("booking_status_events").insert({
         booking_id: booking.id,
         actor_id: userId,
         status,
-        label: bookingStatusLabels[status],
+        label,
+        meta: { previous_status: currentStatus, canonical_status: bookingStatus },
       });
 
-      const eventType = bookingEventTypes[status];
+      const eventType = bookingEventTypes[status] ?? bookingEventTypes[requestedStatus];
       if (eventType) {
         await insertOutbox(supa, routeNotificationChannel(eventType).map((channel) => ({
           source_table: "bookings",
@@ -903,19 +940,50 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (!zooter?.id) return json({ error: "job access denied" }, 403, origin);
 
+      const { data: booking } = await supa
+        .from("bookings")
+        .select("id,status")
+        .eq("id", job.booking_id)
+        .maybeSingle();
+      if (!booking?.id) return json({ error: "booking not found" }, 404, origin);
+
       await supa.from("zooter_jobs").update({
         state: accept ? "accepted" : "declined",
         responded_at: new Date().toISOString(),
       }).eq("id", job.id).eq("zooter_id", zooter.id);
 
       if (accept) {
-        await supa.from("bookings").update({ status: "confirmed" }).eq("id", job.booking_id);
-        await supa.from("booking_status_events").insert({
-          booking_id: job.booking_id,
-          actor_id: userId,
-          status: "confirmed",
-          label: "Confirmed",
-        });
+        let currentStatus = normaliseBookingStatus(booking.status);
+        if (!currentStatus) return json({ error: "booking status is unsupported" }, 409, origin);
+
+        const transitionEvents: Array<{ status: BookingStatus; label: string }> = [];
+        const advance = (targetStatus: BookingStatus) => {
+          assertTransition(currentStatus!, targetStatus);
+          currentStatus = targetStatus;
+          transitionEvents.push({ status: targetStatus, label: bookingStatusLabels[targetStatus] });
+        };
+
+        try {
+          if (currentStatus === "payment_confirmed") advance("awaiting_assignment");
+          if (currentStatus === "awaiting_assignment" || currentStatus === "replacement_offered") advance("assigned");
+          if (currentStatus !== "contractor_accepted") advance("contractor_accepted");
+        } catch (error) {
+          return json({ error: error instanceof Error ? error.message : "invalid booking transition" }, 409, origin);
+        }
+
+        await supa.from("bookings").update({
+          status: "contractor_accepted",
+          assigned_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq("id", job.booking_id);
+        if (transitionEvents.length) {
+          await supa.from("booking_status_events").insert(transitionEvents.map((event) => ({
+            booking_id: job.booking_id,
+            actor_id: userId,
+            status: event.status,
+            label: event.label,
+          })));
+        }
         await insertOutbox(supa, routeNotificationChannel("contractor_assigned").map((channel) => ({
           source_table: "bookings",
           source_id: job.booking_id,

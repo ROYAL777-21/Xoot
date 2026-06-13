@@ -10,17 +10,7 @@ import {
   requireAuth,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
-
-const cancellableStatuses = new Set([
-  "draft",
-  "pending",
-  "pending_payment",
-  "payment_confirmed",
-  "awaiting_assignment",
-  "assigned",
-  "confirmed",
-  "reassigned",
-]);
+import { canTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 
 const calculateRefund = (booking: any, payment: any) => {
   if (!payment || payment.status !== "paid") return { eligible: false, amount: 0, reason: "not_paid" };
@@ -56,14 +46,15 @@ Deno.serve(async (req) => {
 
     const participant = await assertBookingParticipant(supa, booking, user.id);
     if (!participant.participant) return fail("booking access denied", origin, 403);
-    if (booking.status === "completed" || booking.status === "cancelled" || booking.cancelled_at) {
+    const currentStatus = normaliseBookingStatus(booking.status);
+    if (!currentStatus) return fail("booking status is unsupported", origin, 409);
+    if (currentStatus === "cancelled" || booking.cancelled_at) {
       return fail("booking cannot be cancelled in its current state", origin, 409);
     }
-    if (booking.status === "in_progress" && participant.role !== "admin") {
-      return fail("in-progress bookings require admin cancellation", origin, 403);
-    }
-    if (!cancellableStatuses.has(String(booking.status)) && participant.role !== "admin") {
-      return fail("booking cannot be cancelled in its current state", origin, 409);
+    const adminCancellationOverride =
+      participant.role === "admin" && (currentStatus === "completed" || currentStatus === "in_progress");
+    if (!canTransition(currentStatus, "cancelled") && !adminCancellationOverride) {
+      return fail("booking cannot be cancelled in its current state", origin, participant.role === "admin" ? 409 : 403);
     }
 
     const { data: payment } = await supa
@@ -86,6 +77,14 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString(),
       })
       .eq("id", booking.id);
+
+    await supa.from("booking_status_events").insert({
+      booking_id: booking.id,
+      actor_id: user.id,
+      status: "cancelled",
+      label: "Booking cancelled",
+      meta: { previous_status: currentStatus, refund },
+    });
 
     await supa.from("zooter_jobs").update({ state: "expired" }).eq("booking_id", booking.id).in("state", ["offered", "accepted"]);
 

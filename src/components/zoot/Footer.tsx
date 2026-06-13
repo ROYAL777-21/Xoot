@@ -12,8 +12,7 @@ const cols: { title: string; links: { label: string; href: string }[] }[] = [
     { label: "Training", href: "/zooter/training" }, { label: "Trust policy", href: "/app/insurance" },
   ]},
   { title: "Guides & support", links: [
-    { label: "Zoot Blog", href: "/blog" }, { label: "Launch guide", href: "/blog/zoot-launch-first-100-homes-johannesburg" },
-    { label: "Cleaning in Bryanston", href: "/blog/cleaning-in-bryanston-rosebank-sandton-guide" }, { label: "Contact support", href: "/app/support" },
+    { label: "Blogs", href: "/articles" }, { label: "Contact support", href: "/app/support" },
   ]},
   { title: "Legal", links: [
     { label: "Terms & Conditions", href: "/legal/terms" }, { label: "Privacy", href: "/legal/privacy" },

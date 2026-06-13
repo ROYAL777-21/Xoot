@@ -96,6 +96,14 @@ const includesAny = (text: string, terms: string[]) => terms.some((term) => text
 const shouldEscalate = (text: string) => includesAny(text, escalationKeywords);
 
 const buildResponse = (text: string, role: UserRole) => {
+  if (text.includes("cleaner") || text.includes("cleaning") || text.includes("book") || text.includes("bryanston") || text.includes("rosebank")) {
+    return "Zoot helps you book vetted home and business cleaning support in launch areas like Bryanston and Rosebank. Tell us the suburb, property type, timing, and any special notes, then create or view your booking in the app so Zoot can keep payment, assignment, and support history protected.";
+  }
+
+  if (text.includes("office") || text.includes("business") || text.includes("commercial")) {
+    return "For office cleaning, Zoot is best when you share the office size, preferred arrival window, bathroom or kitchen needs, and whether this is a once-off reset or recurring clean. A human support reviewer can help if the job needs custom scheduling or priority handling.";
+  }
+
   if (text.includes("care+") || text.includes("care plus") || text.includes("membership")) {
     return "Care+ is R99/month and keeps your home remembered, protected, and ready. It includes Home Memory, Favourite Zooter rebooking, priority booking windows, priority replacement support, 1.5x ZootCred, a R30 monthly add-on credit, smart reminders, property profiles, and priority support.";
   }
@@ -113,10 +121,10 @@ const buildResponse = (text: string, role: UserRole) => {
   }
 
   if (role === "zooter") {
-    return "Thanks for contacting Zoot Support. We have noted your message and will route it to the right internal queue so a human reviewer can follow up in the app if needed.";
+    return "Thanks for contacting Zoot Support. We have noted your message and will route it to the right internal queue for jobs, onboarding, verification, training, earnings, or trust review so a human reviewer can follow up in the app if needed.";
   }
 
-  return "Thanks for contacting Zoot Support. We have noted your message and will route it to the right support queue for booking, Care+, trust, or account help.";
+  return "Thanks for contacting Zoot Support. We have noted your message and will route it to the right support queue for bookings, Care+, property profiles, trust, account, or service-quality help.";
 };
 
 const extractOpenAiText = (payload: any) => {
@@ -161,7 +169,10 @@ const buildOpenAiSupportResponse = async ({
       text: { format: { type: "text" } },
       instructions: [
         "You are Zoot Assistant, the in-app support concierge for Zoot home-care bookings in South Africa.",
-        "Give short, calm, practical help in 2-4 sentences.",
+        "You can answer a wide range of practical Zoot questions about booking cleaners, launch areas, Care+, ZootCred, property profiles, office cleaning, Airbnb turnovers, onboarding, training, support routing, and how to prepare for a clean.",
+        "Give short, calm, practical help in 2-4 sentences with one clear next step.",
+        "Write in a human, warm, premium service tone; never sound like a generic AI policy bot.",
+        "Prefer app-safe guidance: tell people to use the authenticated app for bookings, ticket details, private property notes, and support follow-up.",
         "Never claim a refund, payment, insurance, safety, or contractor replacement is approved.",
         "Never ask for passwords, OTPs, full card numbers, gate codes, access codes, lockbox codes, or private keys.",
         "For anything risky, tell the user a human support reviewer will handle it in the app.",

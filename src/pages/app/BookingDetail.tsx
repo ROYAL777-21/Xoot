@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +21,7 @@ import {
 } from "@/lib/native-booking-actions";
 import { haptic } from "@/lib/haptics";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import { getClientVisibleStatus, normaliseBookingStatus, type BookingStatus } from "@/lib/booking-state-machine";
 import { toast } from "sonner";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
@@ -29,16 +30,18 @@ type CompletionPhoto = { id: string; photo_type: "before" | "after"; storage_pat
 type Review = { id: string; rating: number; notes: string | null };
 
 const statusSteps = [
-  { key: "confirmed", label: "Confirmed" },
-  { key: "enroute", label: "On the way" },
-  { key: "arrived", label: "Arrived" },
-  { key: "in_progress", label: "Job started" },
-  { key: "completed", label: "Job completed" },
+  { keys: ["contractor_accepted", "confirmed"], label: "Zooter confirmed" },
+  { keys: ["en_route", "enroute"], label: "On the way" },
+  { keys: ["arrived"], label: "Arrived" },
+  { keys: ["in_progress"], label: "Job started" },
+  { keys: ["completed"], label: "Job completed" },
 ];
 
 const statusLabel: Record<string, string> = {
-  confirmed: "Confirmed",
+  confirmed: "Zooter confirmed",
+  contractor_accepted: "Zooter confirmed",
   enroute: "On the way",
+  en_route: "On the way",
   arrived: "Arrived",
   in_progress: "Job started",
   completed: "Job completed",
@@ -59,9 +62,20 @@ const liveActivityStatuses: ZootBookingLiveActivityStatus[] = [
 ];
 
 const toLiveActivityStatus = (status: string): ZootBookingLiveActivityStatus =>
-  liveActivityStatuses.includes(status as ZootBookingLiveActivityStatus)
-    ? (status as ZootBookingLiveActivityStatus)
-    : "pending";
+  status === "en_route"
+    ? "enroute"
+    : status === "contractor_accepted" || status === "assigned"
+      ? "confirmed"
+      : liveActivityStatuses.includes(status as ZootBookingLiveActivityStatus)
+        ? (status as ZootBookingLiveActivityStatus)
+        : "pending";
+
+const getCanonicalStatus = (status: unknown): BookingStatus | null => normaliseBookingStatus(status);
+
+const getVisibleStatusLabel = (status: unknown) => {
+  const canonical = getCanonicalStatus(status);
+  return canonical ? getClientVisibleStatus(canonical) : statusLabel[String(status)] ?? "Pending confirmation";
+};
 
 const liveActivityNextStep: Record<ZootBookingLiveActivityStatus, string> = {
   confirmed: "We will keep your booking ready and protected.",
@@ -94,7 +108,7 @@ const BookingDetail = () => {
   const [requestingCall, setRequestingCall] = useState(false);
   const [eta, setEta] = useState(12);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user || !id) return;
     const [{ data }, { data: zooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
       supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
@@ -111,9 +125,9 @@ const BookingDetail = () => {
     setPhotos((ph ?? []) as CompletionPhoto[]);
     setReview(rv as Review | null);
     setLoading(false);
-  };
+  }, [id, navigate, user]);
 
-  useEffect(() => { load(); }, [id, user]);
+  useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
     if (!id) return;
@@ -124,19 +138,20 @@ const BookingDetail = () => {
   }, [id]);
 
   useEffect(() => {
-    if (booking?.status !== "enroute") return;
+    if (getCanonicalStatus(booking?.status) !== "en_route") return;
     const t = setInterval(() => setEta((e) => Math.max(1, e - 1)), 5000);
     return () => clearInterval(t);
   }, [booking?.status]);
 
   const getNativeBookingActionInput = (): NativeBookingActionInput | null => {
     if (!id || !booking) return null;
-    const liveStatus = toLiveActivityStatus(booking.status ?? "pending");
+    const canonicalStatus = getCanonicalStatus(booking.status);
+    const liveStatus = toLiveActivityStatus(canonicalStatus ?? booking.status ?? "pending");
 
     return {
       bookingId: id,
       status: liveStatus,
-      statusLabel: statusLabel[booking.status] ?? booking.status ?? "Pending confirmation",
+      statusLabel: getVisibleStatusLabel(booking.status),
       serviceName: serviceNameForBooking(booking),
       zooterName: booking.zooter?.name,
       propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name,
@@ -332,7 +347,9 @@ const BookingDetail = () => {
   const photoProofRequired = booking.completion_photo_required || requiresCompletionPhotos(serviceType);
   const beforeDone = photos.some((p) => p.photo_type === "before");
   const afterDone = photos.some((p) => p.photo_type === "after");
-  const timeline = events.length ? events : [{ id: "current", status: booking.status, label: statusLabel[booking.status] ?? booking.status, created_at: booking.updated_at }];
+  const canonicalStatus = getCanonicalStatus(booking.status);
+  const visibleStatus = getVisibleStatusLabel(booking.status);
+  const timeline = events.length ? events : [{ id: "current", status: canonicalStatus ?? booking.status, label: visibleStatus, created_at: booking.updated_at }];
   const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
   const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
   const isAssignedZooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
@@ -354,7 +371,7 @@ const BookingDetail = () => {
               <div className="absolute bottom-1/4 right-1/3 grid place-items-center h-10 w-10 rounded-full bg-foreground text-background shadow-warm"><span className="text-xs font-bold">YOU</span></div>
               <div className="absolute top-3 left-3 right-3 flex justify-between">
                 <div className="rounded-full bg-background/95 backdrop-blur px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-card">
-                  <span className="h-2 w-2 rounded-full bg-sage animate-pulse" />{booking.status === "enroute" ? `Arriving in ${eta} min` : (statusLabel[booking.status] ?? booking.status)}
+                  <span className="h-2 w-2 rounded-full bg-sage animate-pulse" />{canonicalStatus === "en_route" ? `Arriving in ${eta} min` : visibleStatus}
                 </div>
                 <div className="rounded-full bg-background/95 backdrop-blur px-3 py-1.5 text-xs font-bold shadow-card">R{Number(booking.price).toFixed(0)}</div>
               </div>
@@ -372,10 +389,10 @@ const BookingDetail = () => {
             )}
 
             <div className="px-5 pb-5 grid grid-cols-2 gap-2">
-              {isAssignedZooter && booking.status === "confirmed" && <Button onClick={() => setStatus("enroute")} variant="outline" className="rounded-xl">On the way</Button>}
-              {isAssignedZooter && booking.status === "enroute" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
-              {isAssignedZooter && booking.status === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
-              {isAssignedZooter && booking.status === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
+              {isAssignedZooter && canonicalStatus === "contractor_accepted" && <Button onClick={() => setStatus("en_route")} variant="outline" className="rounded-xl">On the way</Button>}
+              {isAssignedZooter && canonicalStatus === "en_route" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
+              {isAssignedZooter && canonicalStatus === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
+              {isAssignedZooter && canonicalStatus === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
               <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2"><Phone className="h-4 w-4 mr-1" /> Request masked call</Button>
             </div>
           </Card>
@@ -388,8 +405,8 @@ const BookingDetail = () => {
             </div>
             <div className="space-y-3">
               {statusSteps.map((step) => {
-                const hit = timeline.find((e) => e.status === step.key || e.label === step.label);
-                return <div key={step.key} className="flex items-center gap-3"><span className={`h-3 w-3 rounded-full ${hit ? "bg-primary" : "bg-muted"}`} /><div><p className="text-sm font-medium">{step.label}</p>{hit && <p className="text-xs text-muted-foreground">{new Date(hit.created_at).toLocaleString("en-ZA")}</p>}</div></div>;
+                const hit = timeline.find((e) => step.keys.includes(e.status) || e.label === step.label);
+                return <div key={step.keys[0]} className="flex items-center gap-3"><span className={`h-3 w-3 rounded-full ${hit ? "bg-primary" : "bg-muted"}`} /><div><p className="text-sm font-medium">{step.label}</p>{hit && <p className="text-xs text-muted-foreground">{new Date(hit.created_at).toLocaleString("en-ZA")}</p>}</div></div>;
               })}
             </div>
           </Card>
@@ -407,7 +424,7 @@ const BookingDetail = () => {
             </Card>
           )}
 
-          {booking.status === "completed" && (
+          {canonicalStatus === "completed" && (
             <Card className="rounded-3xl p-5">
               <h2 className="font-display text-xl font-bold mb-2 flex items-center gap-2"><Star className="h-5 w-5 text-primary" /> Post-clean satisfaction</h2>
               {review ? (
