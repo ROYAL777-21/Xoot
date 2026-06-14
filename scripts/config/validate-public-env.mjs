@@ -2,8 +2,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
-const allowedAppEnvironments = new Set(["development", "preview", "staging", "production"]);
-const previewSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local"]);
+const allowedAppEnvironments = new Set(["development", "staging", "production"]);
+const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local"]);
 const publicSecretNamePattern = /(?:SERVICE_ROLE|CLIENT_SECRET|AUTH_TOKEN|PRIVATE_KEY|WEBHOOK_SECRET|SIGNING_SECRET|SECRET_KEY|API_SECRET)/i;
 const allowedPublicSecretLikeNames = new Set(["VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SENTRY_DSN"]);
 
@@ -43,7 +43,7 @@ const isPlaceholderSupabaseUrl = (value) => {
   if (!value) return true;
   if (value.includes("preview") || value.includes("placeholder") || value.includes("your-project-ref")) return true;
   try {
-    return previewSupabaseHosts.has(new URL(value).hostname);
+    return blockedSupabaseHosts.has(new URL(value).hostname);
   } catch {
     return true;
   }
@@ -67,15 +67,15 @@ if (leaks.length > 0) {
 }
 
 if (appEnv && !allowedAppEnvironments.has(appEnv)) {
-  fail("VITE_APP_ENV must be one of development, preview, staging, or production.");
+  fail("VITE_APP_ENV must be one of development, staging, or production.");
 }
 
 if (process.env.CI && !appEnv) {
   fail("CI builds must set VITE_APP_ENV explicitly.");
 }
 
-if (appEnv === "production" && text("VITE_ENABLE_DEMO_MODE") === "true") {
-  fail("VITE_ENABLE_DEMO_MODE must not be true when VITE_APP_ENV=production.");
+if (text("VITE_ENABLE_DEMO_MODE") === "true") {
+  fail("VITE_ENABLE_DEMO_MODE is no longer supported. Configure real Supabase credentials instead.");
 }
 
 const hasRealSupabase = Boolean(
@@ -85,8 +85,8 @@ const hasRealSupabase = Boolean(
     !isPlaceholderSupabaseKey(text("VITE_SUPABASE_PUBLISHABLE_KEY")),
 );
 
-if ((appEnv === "staging" || appEnv === "production") && !hasRealSupabase) {
-  fail("staging and production builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values.");
+if ((process.env.CI || appEnv === "staging" || appEnv === "production") && !hasRealSupabase) {
+  fail("builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values.");
 }
 
 console.log(`Zoot public environment check passed for ${appEnv || "local"}.`);

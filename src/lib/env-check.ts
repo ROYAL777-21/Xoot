@@ -11,7 +11,7 @@ const renderFatalConfigError = () => {
   const heading = document.createElement("h1");
   heading.textContent = "Configuration Error";
   const message = document.createElement("p");
-  message.textContent = "VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY must be set for production. Contact support.";
+  message.textContent = "VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY must be set for this environment. Contact support.";
   shell.append(heading, message);
   document.body.append(shell);
 };

@@ -24,7 +24,7 @@ const Favorites = () => {
 
   const load = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("favorites")
       .select("zooter_id, favorite_kind, repeat_bookings_count, last_booked_at")
       .eq("user_id", user.id);

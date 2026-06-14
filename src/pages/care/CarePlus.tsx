@@ -10,12 +10,12 @@ import {
   CarePlusComparisonTable,
   CarePlusStatusPanel,
   CarePlusSupportPromise,
-  FavouriteZooterPreview,
-  HomeMemoryPreview,
-  PropertyProfilePreview,
+  FavouriteZooterShowcase,
+  HomeMemoryShowcase,
+  PropertyProfileCard,
   SmartReminderList,
-  ZootCredPreview,
-  defaultPropertyPreviews,
+  ZootCredShowcase,
+  defaultPropertyExamples,
 } from "@/components/care-plus/CarePlusShowcase";
 import { carePlusBenefits, carePlusMoatBenefits } from "@/data/care-plus";
 import { haptic } from "@/lib/haptics";
@@ -167,16 +167,16 @@ const CarePlus = () => {
               </div>
             </div>
             <div className="grid gap-4">
-              {defaultPropertyPreviews.map((profile) => <PropertyProfilePreview key={profile.id} profile={profile} />)}
+              {defaultPropertyExamples.map((profile) => <PropertyProfileCard key={profile.id} profile={profile} />)}
             </div>
           </div>
         </section>
 
         <section className="border-y border-border bg-secondary/35 py-20 md:py-28">
           <div className="container grid gap-6 lg:grid-cols-3">
-            <ZootCredPreview />
-            <HomeMemoryPreview />
-            <FavouriteZooterPreview />
+            <ZootCredShowcase />
+            <HomeMemoryShowcase />
+            <FavouriteZooterShowcase />
           </div>
         </section>
 

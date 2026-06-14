@@ -1,35 +1,54 @@
+const FlowerCluster = ({ className = "", mirror = false }: { className?: string; mirror?: boolean }) => (
+  <svg
+    className={`absolute h-52 w-36 ${className}`}
+    viewBox="0 0 140 208"
+    fill="none"
+    aria-hidden="true"
+  >
+    <g transform={mirror ? "translate(140 0) scale(-1 1)" : undefined}>
+      <path d="M68 198C62 158 66 123 82 84" stroke="hsl(var(--sage-deep) / 0.38)" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M64 148C38 137 28 119 28 99C52 102 66 115 70 139" fill="hsl(var(--sage) / 0.18)" stroke="hsl(var(--sage-deep) / 0.28)" strokeWidth="2" />
+      <path d="M74 127C103 118 117 98 116 78C91 81 75 98 70 121" fill="hsl(var(--sage) / 0.2)" stroke="hsl(var(--sage-deep) / 0.3)" strokeWidth="2" />
+      <path d="M56 184C34 178 20 163 16 143C40 142 56 153 64 174" fill="hsl(var(--sage) / 0.16)" stroke="hsl(var(--sage-deep) / 0.24)" strokeWidth="2" />
+
+      <g transform="translate(82 72)">
+        <ellipse cx="0" cy="-24" rx="11" ry="25" fill="hsl(var(--terracotta-light) / 0.56)" transform="rotate(0)" />
+        <ellipse cx="0" cy="-24" rx="11" ry="25" fill="hsl(var(--terracotta-light) / 0.5)" transform="rotate(72)" />
+        <ellipse cx="0" cy="-24" rx="11" ry="25" fill="hsl(var(--terracotta-light) / 0.5)" transform="rotate(144)" />
+        <ellipse cx="0" cy="-24" rx="11" ry="25" fill="hsl(var(--terracotta-light) / 0.48)" transform="rotate(216)" />
+        <ellipse cx="0" cy="-24" rx="11" ry="25" fill="hsl(var(--terracotta-light) / 0.52)" transform="rotate(288)" />
+        <circle cx="0" cy="0" r="9" fill="hsl(var(--primary-glow) / 0.72)" />
+        <circle cx="0" cy="0" r="4" fill="hsl(var(--primary) / 0.62)" />
+      </g>
+
+      <g transform="translate(43 105) scale(0.72)">
+        <ellipse cx="0" cy="-22" rx="10" ry="22" fill="hsl(var(--accent-soft) / 0.74)" transform="rotate(0)" />
+        <ellipse cx="0" cy="-22" rx="10" ry="22" fill="hsl(var(--accent-soft) / 0.65)" transform="rotate(72)" />
+        <ellipse cx="0" cy="-22" rx="10" ry="22" fill="hsl(var(--accent-soft) / 0.7)" transform="rotate(144)" />
+        <ellipse cx="0" cy="-22" rx="10" ry="22" fill="hsl(var(--accent-soft) / 0.62)" transform="rotate(216)" />
+        <ellipse cx="0" cy="-22" rx="10" ry="22" fill="hsl(var(--accent-soft) / 0.7)" transform="rotate(288)" />
+        <circle cx="0" cy="0" r="8" fill="hsl(var(--primary-glow) / 0.66)" />
+      </g>
+
+      <g transform="translate(96 128) scale(0.52)">
+        <ellipse cx="0" cy="-18" rx="9" ry="19" fill="hsl(var(--terracotta-light) / 0.5)" transform="rotate(0)" />
+        <ellipse cx="0" cy="-18" rx="9" ry="19" fill="hsl(var(--terracotta-light) / 0.48)" transform="rotate(90)" />
+        <ellipse cx="0" cy="-18" rx="9" ry="19" fill="hsl(var(--terracotta-light) / 0.48)" transform="rotate(180)" />
+        <ellipse cx="0" cy="-18" rx="9" ry="19" fill="hsl(var(--terracotta-light) / 0.5)" transform="rotate(270)" />
+        <circle cx="0" cy="0" r="7" fill="hsl(var(--primary-glow) / 0.7)" />
+      </g>
+
+      <path d="M70 121C61 113 53 109 43 105" stroke="hsl(var(--sage-deep) / 0.24)" strokeWidth="2" strokeLinecap="round" />
+      <path d="M73 135C83 129 89 128 96 128" stroke="hsl(var(--sage-deep) / 0.22)" strokeWidth="2" strokeLinecap="round" />
+    </g>
+  </svg>
+);
+
 export const BotanicalEdges = () => (
-  <div className="pointer-events-none fixed inset-y-0 left-0 right-0 z-10 overflow-hidden opacity-70 dark:opacity-55" aria-hidden="true">
-    <div className="zoot-botanical-accent absolute -left-10 top-[16vh] scale-[0.52] opacity-60 sm:-left-8 sm:scale-75 lg:-left-7 lg:top-[18vh] lg:opacity-75">
-      <span className="zoot-botanical-leaf left-10 top-0 rotate-[18deg]" />
-      <span className="zoot-botanical-petal left-6 top-8 rotate-[-28deg]" />
-      <span className="zoot-botanical-petal left-12 top-8 rotate-[54deg]" />
-      <span className="zoot-botanical-center left-[2.2rem] top-[2.75rem]" />
-      <span className="zoot-botanical-leaf left-3 top-16 rotate-[-18deg]" />
-    </div>
-    <div className="zoot-botanical-accent absolute -left-12 top-[68vh] hidden scale-75 opacity-70 sm:block lg:-left-6 lg:scale-100 lg:opacity-80">
-      <span className="zoot-botanical-petal left-8 top-2 rotate-[-18deg]" />
-      <span className="zoot-botanical-petal left-12 top-8 rotate-[62deg]" />
-      <span className="zoot-botanical-petal left-4 top-9 rotate-[154deg]" />
-      <span className="zoot-botanical-center left-[2.05rem] top-[2.15rem]" />
-      <span className="zoot-botanical-leaf left-16 top-14 rotate-[34deg]" />
-      <span className="zoot-botanical-leaf left-7 top-16 rotate-[-28deg]" />
-    </div>
-    <div className="zoot-botanical-accent absolute -right-12 top-[42vh] scale-[0.58] opacity-[0.65] sm:-right-10 sm:scale-[0.8] lg:-right-8 lg:top-[38vh] lg:scale-100 lg:opacity-80">
-      <span className="zoot-botanical-leaf right-16 top-0 rotate-[-34deg]" />
-      <span className="zoot-botanical-petal right-8 top-8 rotate-[18deg]" />
-      <span className="zoot-botanical-petal right-3 top-12 rotate-[98deg]" />
-      <span className="zoot-botanical-petal right-10 top-[4.25rem] rotate-[190deg]" />
-      <span className="zoot-botanical-center right-[2.3rem] top-[2.8rem]" />
-      <span className="zoot-botanical-leaf right-2 top-20 rotate-[24deg]" />
-    </div>
-    <div className="zoot-botanical-accent absolute -right-12 top-[82vh] hidden scale-75 opacity-70 sm:block lg:-right-10 lg:scale-90">
-      <span className="zoot-botanical-petal right-12 top-2 rotate-[12deg]" />
-      <span className="zoot-botanical-petal right-6 top-8 rotate-[88deg]" />
-      <span className="zoot-botanical-petal right-14 top-13 rotate-[178deg]" />
-      <span className="zoot-botanical-center right-[2.55rem] top-[2.35rem]" />
-      <span className="zoot-botanical-leaf right-2 top-16 rotate-[30deg]" />
-      <span className="zoot-botanical-leaf right-16 top-18 rotate-[-30deg]" />
-    </div>
+  <div className="pointer-events-none fixed inset-y-0 left-0 right-0 z-10 overflow-hidden opacity-75 dark:opacity-55" aria-hidden="true">
+    <FlowerCluster className="-left-16 top-[8vh] scale-[0.72] sm:-left-12 sm:scale-90 lg:-left-9 lg:top-[12vh]" />
+    <FlowerCluster className="-left-20 top-[62vh] hidden scale-[0.82] rotate-[-8deg] sm:block lg:-left-10 lg:scale-105" />
+    <FlowerCluster className="-right-20 top-[31vh] scale-[0.76] rotate-[5deg] sm:-right-14 sm:scale-95 lg:-right-10 lg:scale-110" mirror />
+    <FlowerCluster className="-right-20 top-[76vh] hidden scale-[0.78] rotate-[11deg] sm:block lg:-right-12 lg:scale-95" mirror />
   </div>
 );

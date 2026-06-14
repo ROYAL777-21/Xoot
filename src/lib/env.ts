@@ -5,8 +5,8 @@ type RuntimeFlags = {
   dev?: boolean;
 };
 
-const allowedAppEnvironments = new Set(["development", "preview", "staging", "production"]);
-const previewSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local"]);
+const allowedAppEnvironments = new Set(["development", "staging", "production"]);
+const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local"]);
 const publicSecretNamePattern = /(?:SERVICE_ROLE|CLIENT_SECRET|AUTH_TOKEN|PRIVATE_KEY|WEBHOOK_SECRET|SIGNING_SECRET|SECRET_KEY|API_SECRET)/i;
 const allowedPublicSecretLikeNames = new Set(["VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SENTRY_DSN"]);
 
@@ -22,7 +22,7 @@ export const isPlaceholderSupabaseUrl = (value?: string) => {
   if (value.includes("preview") || value.includes("placeholder") || value.includes("your-project-ref")) return true;
 
   try {
-    return previewSupabaseHosts.has(new URL(value).hostname);
+    return blockedSupabaseHosts.has(new URL(value).hostname);
   } catch {
     return true;
   }
@@ -42,11 +42,7 @@ export const isSupabasePublicConfigComplete = (env: PublicEnvironment) => {
   return Boolean(supabaseUrl && publishableKey && !isPlaceholderSupabaseUrl(supabaseUrl) && !isPlaceholderSupabaseKey(publishableKey));
 };
 
-export const isDemoModeAllowedForEnv = (env: PublicEnvironment, flags: RuntimeFlags = {}) => {
-  const appEnv = normaliseAppEnvironment(envText(env, "VITE_APP_ENV"));
-  const explicitDemo = envText(env, "VITE_ENABLE_DEMO_MODE") === "true";
-  return Boolean(flags.dev || appEnv === "development" || appEnv === "preview" || explicitDemo);
-};
+export const isDemoModeAllowedForEnv = (_env: PublicEnvironment, _flags: RuntimeFlags = {}) => false;
 
 export const getPublicSecretLeaks = (env: PublicEnvironment) =>
   Object.keys(env)
@@ -63,24 +59,24 @@ export const getPublicConfigIssueForEnv = (env: PublicEnvironment, flags: Runtim
   }
 
   if (appEnv && !allowedAppEnvironments.has(appEnv)) {
-    return "VITE_APP_ENV must be one of development, preview, staging, or production.";
+    return "VITE_APP_ENV must be one of development, staging, or production.";
   }
 
   if (isProdBuild && !appEnv) {
-    return "VITE_APP_ENV is required for production-mode builds so preview/demo mode cannot ship silently.";
+    return "VITE_APP_ENV is required for production-mode builds so mock or preview mode cannot ship silently.";
   }
 
-  if (appEnv === "production" && envText(env, "VITE_ENABLE_DEMO_MODE") === "true") {
-    return "VITE_ENABLE_DEMO_MODE must not be true when VITE_APP_ENV=production.";
+  if (envText(env, "VITE_ENABLE_DEMO_MODE") === "true") {
+    return "VITE_ENABLE_DEMO_MODE is no longer supported. Configure real Supabase credentials instead.";
   }
 
   const hasSupabase = isSupabasePublicConfigComplete(env);
-  if ((appEnv === "staging" || appEnv === "production") && !hasSupabase) {
-    return "Staging and production require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values.";
+  if (!hasSupabase && (flags.prod || appEnv === "staging" || appEnv === "production")) {
+    return "Builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values.";
   }
 
-  if (!hasSupabase && !isDemoModeAllowedForEnv(env, flags)) {
-    return "Preview Supabase mode is only allowed in development, preview, or explicitly enabled demo mode.";
+  if (!hasSupabase && !flags.dev) {
+    return "Runtime requires real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values; mock/preview Supabase mode is disabled.";
   }
 
   return null;

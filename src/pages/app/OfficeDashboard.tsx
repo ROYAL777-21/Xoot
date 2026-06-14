@@ -4,7 +4,7 @@ import { Building2, CheckCircle2, Clock3, Coffee, DoorOpen, LifeBuoy, Plus, Shie
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { PropertyProfilePreview, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
+import { PropertyProfileCard, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
 import { smartReminders } from "@/data/care-plus";
 import { haptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
@@ -149,7 +149,7 @@ const OfficeDashboard = () => {
           {loadingProfiles ? (
             <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">Loading saved office profiles...</Card>
           ) : officeProfiles.length > 0 ? (
-            officeProfiles.map((profile) => <PropertyProfilePreview key={profile.id} profile={profile} />)
+            officeProfiles.map((profile) => <PropertyProfileCard key={profile.id} profile={profile} />)
           ) : (
             <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">No office profiles saved yet.</Card>
           )}

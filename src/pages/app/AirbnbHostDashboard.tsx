@@ -4,7 +4,7 @@ import { BedDouble, Camera, CheckCircle2, Clock, Home, LifeBuoy, ListChecks, Plu
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { PropertyProfilePreview, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
+import { PropertyProfileCard, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
 import { smartReminders } from "@/data/care-plus";
 import { haptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
@@ -150,7 +150,7 @@ const AirbnbHostDashboard = () => {
           {loadingProfiles ? (
             <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">Loading saved host properties...</Card>
           ) : hostProperties.length > 0 ? (
-            hostProperties.map((profile) => <PropertyProfilePreview key={profile.id} profile={profile} />)
+            hostProperties.map((profile) => <PropertyProfileCard key={profile.id} profile={profile} />)
           ) : (
             <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">No Airbnb or landlord property profiles saved yet.</Card>
           )}

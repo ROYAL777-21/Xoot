@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
-import { isPreviewSupabase, supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
 
 const workflows = [
@@ -35,7 +35,7 @@ export const FeedbackSection = () => {
       return;
     }
 
-    if (!user && !isPreviewSupabase) {
+    if (!user) {
       haptic("warning");
       toast.error("Please sign in before sending product feedback so Zoot can follow up safely.");
       return;
@@ -43,19 +43,17 @@ export const FeedbackSection = () => {
 
     setSubmitting(true);
     try {
-      if (!isPreviewSupabase) {
-        const { error } = await supabase.functions.invoke("create-support-ticket", {
-          body: {
-            subject: `Product feedback: ${workflow}`,
-            body,
-            category: "product_feedback",
-          },
-        });
-        if (error) throw error;
-      }
+      const { error } = await supabase.functions.invoke("create-support-ticket", {
+        body: {
+          subject: `Product feedback: ${workflow}`,
+          body,
+          category: "product_feedback",
+        },
+      });
+      if (error) throw error;
 
       haptic("success");
-      toast.success(isPreviewSupabase ? "Preview feedback captured for this session." : "Thanks. Your feedback has been routed to Zoot support.");
+      toast.success("Thanks. Your feedback has been routed to Zoot support.");
       setFeedback("");
     } catch {
       haptic("warning");

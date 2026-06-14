@@ -7,6 +7,7 @@ import { Loader2, ShieldCheck, FileText, Check, X, AlertTriangle } from "lucide-
 import { toast } from "sonner";
 import { getActivationReadiness } from "@/lib/operations";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import { approveZooterAdmin, rejectZooterAdmin } from "@/lib/admin-actions";
 
 const verificationFields = [
   ["id_verification_status", "Government ID"],
@@ -92,18 +93,22 @@ const AdminKyc = () => {
 
   const decide = async (status: "approved" | "rejected") => {
     if (!active) return;
+    const reason = notes.trim();
+    if (reason.length < 10) {
+      toast.error("Reviewer notes must be at least 10 characters for the audit trail.");
+      return;
+    }
     if (status === "approved" && !readiness.activationReady) {
       toast.error(`Activation locked: ${readiness.missing.join(", ")}`);
       return;
     }
 
     try {
-      await invokeOpsWorkflow({
-        action: "admin_decide_zooter_application",
-        applicationId: active.id,
-        status,
-        reviewerNotes: notes,
-      });
+      const { data, error } = status === "approved"
+        ? await approveZooterAdmin(active.id, reason)
+        : await rejectZooterAdmin(active.id, reason);
+      if (error) throw error;
+      if ((data as any)?.success === false) throw new Error((data as any).error ?? "Application decision failed");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Application decision failed");
       return;

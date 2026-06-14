@@ -30,12 +30,10 @@ export const carePlusPlan: CarePlusPlan = {
   ],
 };
 
-export const isCarePlusPreviewDataAllowed = () => import.meta.env.VITE_APP_ENV !== "production";
-
-// Public marketing preview data only. Authenticated production pages must query Supabase instead of importing these mock objects.
-export const mockCarePlusMembership: CarePlusMembership = {
-  id: "care-plus-demo",
-  userId: "demo-user",
+// Public marketing showcase content only. Authenticated production pages must query Supabase for member-specific rows.
+export const carePlusShowcaseMembership: CarePlusMembership = {
+  id: "care-plus-showcase",
+  userId: "care-plus-showcase-user",
   planId: carePlusPlan.id,
   status: "active",
   priceZar: 99,
@@ -46,11 +44,11 @@ export const mockCarePlusMembership: CarePlusMembership = {
   addOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
   zootCredMultiplier: 1.5,
   homeReadinessScore: 86,
-  favouriteZooterId: "nomsa-demo",
+  favouriteZooterId: "nomsa-showcase",
 };
 
-export const mockFavouriteZooter: FavouriteZooter = {
-  id: "nomsa-demo",
+export const carePlusShowcaseFavouriteZooter: FavouriteZooter = {
+  id: "nomsa-showcase",
   name: "Nomsa",
   rating: 4.96,
   specialties: ["Airbnb turnovers", "Premium home reset", "Ironing"],
@@ -59,8 +57,8 @@ export const mockFavouriteZooter: FavouriteZooter = {
   preferredFor: "Kitchen detail, pet notes, linen reset",
 };
 
-export const mockZootCredBalance: ZootCredBalance = {
-  userId: "demo-user",
+export const carePlusShowcaseZootCredBalance: ZootCredBalance = {
+  userId: "care-plus-showcase-user",
   availableZar: 185,
   pendingZar: 45,
   multiplier: 1.5,
@@ -69,7 +67,7 @@ export const mockZootCredBalance: ZootCredBalance = {
   monthlyAddOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
 };
 
-export const mockPropertyProfiles: PropertyProfile[] = [
+export const carePlusShowcasePropertyProfiles: PropertyProfile[] = [
   {
     id: "hyde-park-home",
     name: "Hyde Park family home",
@@ -104,8 +102,8 @@ export const mockPropertyProfiles: PropertyProfile[] = [
   },
 ];
 
-export const mockHomeMemoryProfile: HomeMemoryProfile = {
-  id: "home-memory-demo",
+export const carePlusShowcaseHomeMemoryProfile: HomeMemoryProfile = {
+  id: "home-memory-showcase",
   propertyProfileId: "hyde-park-home",
   petNotes: ["Two calm dogs", "Keep back gate closed"],
   accessInstructions: "Use the intercom, access notes stay inside the authenticated app.",

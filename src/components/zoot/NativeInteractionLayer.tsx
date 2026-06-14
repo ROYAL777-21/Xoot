@@ -6,7 +6,7 @@ const editableSelector = 'input, textarea, select, [contenteditable="true"]';
 
 type NativeListenerHandle = { remove: () => Promise<void> | void };
 type CapacitorAppUrlOpen = { url?: string };
-type CapacitorPushAction = { notification?: { data?: unknown } & Record<string, unknown> };
+type CapacitorPushNotification = { data?: unknown } & Record<string, unknown>;
 
 const isEditable = (target: EventTarget | null) =>
   target instanceof HTMLElement && Boolean(target.closest(editableSelector));
@@ -141,8 +141,9 @@ export const NativeInteractionLayer = () => {
         const { PushNotifications } = await import("@capacitor/push-notifications");
         const handle = await PushNotifications.addListener(
           "pushNotificationActionPerformed",
-          (event: CapacitorPushAction) => {
-            routeNativePayload(event?.notification?.data ?? event?.notification);
+          (event) => {
+            const notification = event?.notification as unknown as CapacitorPushNotification | undefined;
+            routeNativePayload(notification?.data ?? notification);
           },
         );
         addRemover(handle);

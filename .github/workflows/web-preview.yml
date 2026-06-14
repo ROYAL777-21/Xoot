@@ -1,4 +1,4 @@
-name: Web preview build
+name: Web build
 
 on:
   push:
@@ -15,12 +15,11 @@ permissions:
   id-token: write
 
 env:
-  VITE_APP_ENV: preview
-  VITE_PUBLIC_SITE_URL: https://zoothome.co.za
-  VITE_ENABLE_DEMO_MODE: "true"
-  VITE_SUPABASE_PROJECT_ID: preview-project
-  VITE_SUPABASE_PUBLISHABLE_KEY: preview-anon-key
-  VITE_SUPABASE_URL: https://preview.supabase.co
+  VITE_APP_ENV: staging
+  VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://zoothome.co.za' }}
+  VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
+  VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+  VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
 
 jobs:
   build:
@@ -68,7 +67,7 @@ jobs:
           path: dist
 
   deploy-pages:
-    name: Deploy GitHub Pages preview
+    name: Deploy GitHub Pages
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest

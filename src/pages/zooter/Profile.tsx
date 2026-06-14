@@ -27,7 +27,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("zooters").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => {
+    (supabase as any).from("zooters").select("*").eq("user_id", user.id).maybeSingle().then(({ data }: { data: any }) => {
       setZooter(data);
       setTagsInput((data?.tags ?? []).join(", "));
       setSuburbsInput(joinList(data?.suburb_coverage));

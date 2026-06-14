@@ -20,12 +20,12 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 import {
+  carePlusShowcaseFavouriteZooter,
+  carePlusShowcaseHomeMemoryProfile,
+  carePlusShowcaseMembership,
+  carePlusShowcasePropertyProfiles,
+  carePlusShowcaseZootCredBalance,
   comparisonRows,
-  mockCarePlusMembership,
-  mockFavouriteZooter,
-  mockHomeMemoryProfile,
-  mockPropertyProfiles,
-  mockZootCredBalance,
   smartReminders,
 } from "@/data/care-plus";
 import type { CarePlusBenefit, PropertyProfile, SmartReminder } from "@/types/care-plus";
@@ -87,11 +87,11 @@ export const CarePlusComparisonTable = () => (
   </div>
 );
 
-export const ZootCredPreview = () => (
+export const ZootCredShowcase = () => (
   <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
     <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <p className="text-sm font-semibold text-sage-deep">ZootCred preview</p>
+        <p className="text-sm font-semibold text-sage-deep">ZootCred example</p>
         <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">1.5x loyalty value</h3>
       </div>
       <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -100,24 +100,24 @@ export const ZootCredPreview = () => (
     </div>
     <div className="grid gap-3 text-center sm:grid-cols-3">
       <div className="rounded-2xl bg-muted/50 p-3">
-        <p className="font-display text-2xl font-bold">R{mockZootCredBalance.availableZar}</p>
+        <p className="font-display text-2xl font-bold">R{carePlusShowcaseZootCredBalance.availableZar}</p>
         <p className="text-xs text-muted-foreground">Available</p>
       </div>
       <div className="rounded-2xl bg-muted/50 p-3">
-        <p className="font-display text-2xl font-bold">R{mockZootCredBalance.pendingZar}</p>
+        <p className="font-display text-2xl font-bold">R{carePlusShowcaseZootCredBalance.pendingZar}</p>
         <p className="text-xs text-muted-foreground">Pending</p>
       </div>
       <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-        <p className="font-display text-2xl font-bold">R{mockZootCredBalance.projectedNextBookingZar}</p>
+        <p className="font-display text-2xl font-bold">R{carePlusShowcaseZootCredBalance.projectedNextBookingZar}</p>
         <p className="text-xs">Next booking</p>
       </div>
     </div>
-    <p className="mt-4 text-sm text-muted-foreground"><CarePlusMark /> members also receive a R{mockZootCredBalance.monthlyAddOnCreditZar} monthly add-on credit that expires monthly and can only be used with a completed booking.</p>
+    <p className="mt-4 text-sm text-muted-foreground"><CarePlusMark /> members also receive a R{carePlusShowcaseZootCredBalance.monthlyAddOnCreditZar} monthly add-on credit that expires monthly and can only be used with a completed booking.</p>
   </Card>
 );
 
 // TODO: replace with real query - supabase.from('household_profiles') when this component is reused in authenticated member dashboards.
-export const HomeMemoryPreview = () => (
+export const HomeMemoryShowcase = () => (
   <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
     <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
@@ -130,10 +130,10 @@ export const HomeMemoryPreview = () => (
     </div>
     <div className="grid gap-3 sm:grid-cols-2">
       {[
-        ["Pet notes", mockHomeMemoryProfile.petNotes.join(", ")],
-        ["Room priorities", mockHomeMemoryProfile.roomPriorities.join(", ")],
-        ["Fragile areas", mockHomeMemoryProfile.fragileAreas.join(", ")],
-        ["Favourite add-ons", mockHomeMemoryProfile.favouriteAddOns.join(", ")],
+        ["Pet notes", carePlusShowcaseHomeMemoryProfile.petNotes.join(", ")],
+        ["Room priorities", carePlusShowcaseHomeMemoryProfile.roomPriorities.join(", ")],
+        ["Fragile areas", carePlusShowcaseHomeMemoryProfile.fragileAreas.join(", ")],
+        ["Favourite add-ons", carePlusShowcaseHomeMemoryProfile.favouriteAddOns.join(", ")],
       ].map(([label, value]) => (
         <div key={label} className="rounded-2xl bg-muted/50 p-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
@@ -146,12 +146,12 @@ export const HomeMemoryPreview = () => (
 );
 
 // TODO: replace with real query - supabase.from('zooters') joined through booking/favourite history when this component is reused in authenticated member dashboards.
-export const FavouriteZooterPreview = () => (
+export const FavouriteZooterShowcase = () => (
   <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
     <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <p className="text-sm font-semibold text-sage-deep">Favourite Zooter</p>
-        <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">{mockFavouriteZooter.name} knows the rhythm</h3>
+        <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">{carePlusShowcaseFavouriteZooter.name} knows the rhythm</h3>
       </div>
       <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
         <Heart className="h-6 w-6" />
@@ -160,18 +160,18 @@ export const FavouriteZooterPreview = () => (
     <div className="rounded-3xl border border-accent/20 bg-gradient-to-br from-accent-soft to-background p-4 sm:p-5">
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-display text-2xl font-bold">{mockFavouriteZooter.name}</p>
-          <p className="text-sm text-muted-foreground">Rating {mockFavouriteZooter.rating} - {mockFavouriteZooter.preferredFor}</p>
+          <p className="font-display text-2xl font-bold">{carePlusShowcaseFavouriteZooter.name}</p>
+          <p className="text-sm text-muted-foreground">Rating {carePlusShowcaseFavouriteZooter.rating} - {carePlusShowcaseFavouriteZooter.preferredFor}</p>
         </div>
         <span className="w-fit rounded-full bg-background px-3 py-1 text-xs font-bold text-sage-deep">Preferred</span>
       </div>
       <div className="mb-4 flex flex-wrap gap-2">
-        {mockFavouriteZooter.specialties.map((specialty) => (
+        {carePlusShowcaseFavouriteZooter.specialties.map((specialty) => (
           <span key={specialty} className="rounded-full bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground">{specialty}</span>
         ))}
       </div>
       <Button asChild className="w-full rounded-full gradient-warm sm:w-auto" onClick={() => haptic("impact")}>
-        <Link to="/app">Book {mockFavouriteZooter.name} again</Link>
+        <Link to="/app">Book {carePlusShowcaseFavouriteZooter.name} again</Link>
       </Button>
     </div>
   </Card>
@@ -197,7 +197,7 @@ export const SmartReminderList = ({ reminders = smartReminders }: { reminders?: 
 );
 
 // TODO: replace with real query - supabase.from('property_accounts') for authenticated property dashboards.
-export const PropertyProfilePreview = ({ profile }: { profile: PropertyProfile }) => (
+export const PropertyProfileCard = ({ profile }: { profile: PropertyProfile }) => (
   <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
@@ -217,21 +217,21 @@ export const CarePlusStatusPanel = () => (
     <div className="mb-6 flex items-start justify-between gap-4">
       <div>
         <p className="text-sm text-background/70">Care<span className="text-primary-glow">+</span> active</p>
-        <h3 className="font-display text-3xl font-bold sm:text-4xl">R{mockCarePlusMembership.priceZar}/month</h3>
+        <h3 className="font-display text-3xl font-bold sm:text-4xl">R{carePlusShowcaseMembership.priceZar}/month</h3>
       </div>
       <Crown className="h-9 w-9 shrink-0 text-accent sm:h-10 sm:w-10" />
     </div>
     <div className="grid gap-3 text-center sm:grid-cols-3">
       <div className="rounded-2xl bg-background/10 p-3">
-        <p className="font-display text-2xl font-bold">{mockCarePlusMembership.homeReadinessScore}%</p>
+        <p className="font-display text-2xl font-bold">{carePlusShowcaseMembership.homeReadinessScore}%</p>
         <p className="text-xs text-background/70">Readiness</p>
       </div>
       <div className="rounded-2xl bg-background/10 p-3">
-        <p className="font-display text-2xl font-bold">R{mockCarePlusMembership.addOnCreditZar}</p>
+        <p className="font-display text-2xl font-bold">R{carePlusShowcaseMembership.addOnCreditZar}</p>
         <p className="text-xs text-background/70">Add-on credit</p>
       </div>
       <div className="rounded-2xl bg-background/10 p-3">
-        <p className="font-display text-2xl font-bold">{mockCarePlusMembership.zootCredMultiplier}x</p>
+        <p className="font-display text-2xl font-bold">{carePlusShowcaseMembership.zootCredMultiplier}x</p>
         <p className="text-xs text-background/70">ZootCred</p>
       </div>
     </div>
@@ -248,5 +248,5 @@ export const CarePlusSupportPromise = () => (
   </Card>
 );
 
-// Public marketing previews only. Authenticated dashboards must pass rows from supabase.from('property_accounts').
-export const defaultPropertyPreviews = mockPropertyProfiles;
+// Public marketing examples only. Authenticated dashboards must pass rows from supabase.from('property_accounts').
+export const defaultPropertyExamples = carePlusShowcasePropertyProfiles;

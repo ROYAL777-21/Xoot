@@ -66,6 +66,14 @@ const verificationFields = new Set([
 
 const verificationStatuses = new Set(["approved", "rejected", "pending"]);
 
+const retiredTypedAdminActions = new Set([
+  "admin_confirm_payment_record",
+  "admin_complete_outbox_event",
+  "admin_resolve_review_item",
+  "admin_close_support_followup",
+  "admin_decide_zooter_application",
+]);
+
 const getAllowedOrigins = () =>
   (Deno.env.get("ALLOWED_ORIGINS")?.split(",") ?? defaultAllowedOrigins)
     .map((origin) => origin.trim())
@@ -219,25 +227,6 @@ const isAdminUser = async (supa: any, userId: string) => {
   return Boolean(data?.id);
 };
 
-const getApplicationReadiness = async (supa: any, application: Record<string, any>) => {
-  const missing: string[] = [];
-  for (const field of verificationFields) {
-    if (application[field] !== "approved") missing.push(field);
-  }
-  if (!application.background_check_consent) missing.push("background_check_consent");
-
-  const [{ data: modules }, { data: completions }] = await Promise.all([
-    supa.from("training_modules").select("id").eq("required", true),
-    supa.from("zooter_training_completions").select("module_id").eq("user_id", application.user_id).eq("passed", true),
-  ]);
-  const requiredIds = new Set((modules ?? []).map((module: Record<string, string>) => module.id));
-  const completedIds = new Set((completions ?? []).map((completion: Record<string, string>) => completion.module_id));
-  const passedCount = [...requiredIds].filter((moduleId) => completedIds.has(moduleId)).length;
-  if (requiredIds.size === 0 || passedCount !== requiredIds.size) missing.push("required_training");
-
-  return { activationReady: missing.length === 0, missing };
-};
-
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: getCorsHeaders(origin) });
@@ -265,60 +254,8 @@ Deno.serve(async (req) => {
     const action = cleanText(body.action, 60);
     const userId = authData.user.id;
 
-    if (action === "admin_confirm_payment_record") {
-      if (!(await isAdminUser(supa, userId))) return json({ error: "admin role required" }, 403, origin);
-      const paymentRecordId = cleanId(body.paymentRecordId);
-      const { data, error } = await supa
-        .from("payment_records")
-        .update({ status: "admin_confirmed", updated_at: new Date().toISOString() })
-        .eq("id", paymentRecordId)
-        .select("id,status")
-        .single();
-      if (error || !data?.id) return json({ error: "payment update failed" }, 400, origin);
-      return json({ payment_record_id: data.id, status: data.status }, 200, origin);
-    }
-
-    if (action === "admin_complete_outbox_event") {
-      if (!(await isAdminUser(supa, userId))) return json({ error: "admin role required" }, 403, origin);
-      const outboxId = cleanId(body.outboxId);
-      const { data, error } = await supa
-        .from("integration_outbox")
-        .update({ status: "completed", processed_at: new Date().toISOString() })
-        .eq("id", outboxId)
-        .select("id,status")
-        .single();
-      if (error || !data?.id) return json({ error: "outbox update failed" }, 400, origin);
-      return json({ outbox_id: data.id, status: data.status }, 200, origin);
-    }
-
-    if (action === "admin_resolve_review_item") {
-      if (!(await isAdminUser(supa, userId))) return json({ error: "admin role required" }, 403, origin);
-      const reviewId = cleanId(body.reviewId);
-      const { data, error } = await supa
-        .from("admin_review_queue")
-        .update({
-          status: "resolved",
-          resolved_at: new Date().toISOString(),
-          resolution_notes: cleanText(body.resolutionNotes, 500) || "Resolved from admin ops",
-        })
-        .eq("id", reviewId)
-        .select("id,status")
-        .single();
-      if (error || !data?.id) return json({ error: "review update failed" }, 400, origin);
-      return json({ review_id: data.id, status: data.status }, 200, origin);
-    }
-
-    if (action === "admin_close_support_followup") {
-      if (!(await isAdminUser(supa, userId))) return json({ error: "admin role required" }, 403, origin);
-      const followupId = cleanId(body.followupId);
-      const { data, error } = await supa
-        .from("support_followups")
-        .update({ status: "resolved", resolved_at: new Date().toISOString() })
-        .eq("id", followupId)
-        .select("id,status")
-        .single();
-      if (error || !data?.id) return json({ error: "follow-up update failed" }, 400, origin);
-      return json({ followup_id: data.id, status: data.status }, 200, origin);
+    if (retiredTypedAdminActions.has(action)) {
+      return json({ error: "This admin action must use the typed audited admin Edge Function." }, 410, origin);
     }
 
     if (action === "admin_set_kyc_verification") {
@@ -336,77 +273,6 @@ Deno.serve(async (req) => {
         .single();
       if (error || !data?.id) return json({ error: "verification update failed" }, 400, origin);
       return json({ application: data }, 200, origin);
-    }
-
-    if (action === "admin_decide_zooter_application") {
-      if (!(await isAdminUser(supa, userId))) return json({ error: "admin role required" }, 403, origin);
-      const applicationId = cleanId(body.applicationId);
-      const status = cleanText(body.status, 20);
-      if (status !== "approved" && status !== "rejected") return json({ error: "invalid decision" }, 400, origin);
-
-      const { data: application } = await supa
-        .from("zooter_applications")
-        .select("*")
-        .eq("id", applicationId)
-        .maybeSingle();
-      if (!application?.id) return json({ error: "application not found" }, 404, origin);
-
-      const readiness = await getApplicationReadiness(supa, application);
-      if (status === "approved" && !readiness.activationReady) {
-        return json({ error: "activation locked", missing: readiness.missing }, 409, origin);
-      }
-
-      const reviewerNotes = cleanText(body.reviewerNotes, 1200);
-      await supa.from("zooter_applications").update({
-        status,
-        reviewer_notes: reviewerNotes || null,
-        reviewed_by: userId,
-        reviewed_at: new Date().toISOString(),
-      }).eq("id", application.id);
-
-      if (status === "approved") {
-        const { data: existing } = await supa.from("zooters").select("id").eq("user_id", application.user_id).maybeSingle();
-        const zooterPayload = {
-          user_id: application.user_id,
-          name: application.full_name,
-          role: application.service_category ?? "cleaning",
-          hourly_rate: 35,
-          bio: application.bio,
-          tags: ["Verified", "Background checked"],
-          distance_mi: 1,
-          active: true,
-          verified: true,
-          background_checked: true,
-          background_check_status: "approved",
-          reliability_score: 100,
-          job_completion_rate: 100,
-          tier: "verified",
-          years_experience: Number(application.years_experience ?? 2),
-          suburb_coverage: [application.suburb, application.city].filter(Boolean),
-          transport: application.transport || "Transport confirmed",
-          supplies_owned: application.supplies_owned ?? [],
-          pet_comfort: application.pet_comfort || "Pet comfort reviewed",
-        };
-
-        if (!existing?.id) await supa.from("zooters").insert(zooterPayload);
-        else await supa.from("zooters").update(zooterPayload).eq("id", existing.id);
-
-        await supa.from("user_roles").upsert(
-          { user_id: application.user_id, role: "zooter" },
-          { onConflict: "user_id,role" },
-        );
-        await supa
-          .from("admin_review_queue")
-          .update({
-            status: "resolved",
-            resolution_notes: "Application approved and activated",
-            resolved_at: new Date().toISOString(),
-          })
-          .eq("subject_id", application.id)
-          .eq("queue_type", "kyc");
-      }
-
-      return json({ application_id: application.id, status, missing: readiness.missing }, 200, origin);
     }
 
     if (action === "support_opened") {

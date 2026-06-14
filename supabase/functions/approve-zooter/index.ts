@@ -9,8 +9,8 @@ import {
   requireAdmin,
   requireAuth,
   toNumber,
-  writeAuditLog,
 } from "../_shared/action-utils.ts";
+import { requireAdminReason, writeStrictAdminAuditLog } from "../_shared/admin-action-utils.ts";
 
 const approvedValues = new Set(["approved", "verified", "cleared"]);
 
@@ -49,8 +49,10 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const applicationId = cleanId(body.applicationId ?? body.application_id);
-    const reason = cleanText(body.reason, 1200) || "Application approved by admin";
     if (!applicationId) return fail("application_id required", origin, 400);
+    const reasonResult = requireAdminReason(body.reason, origin);
+    if (reasonResult.response) return reasonResult.response;
+    const reason = reasonResult.reason!;
 
     const { data: application } = await supa
       .from("zooter_applications")
@@ -66,6 +68,21 @@ Deno.serve(async (req) => {
 
     const missing = getMissingActivationItems(application, documents?.length ?? 0);
     if (missing.length) return fail("activation locked", origin, 409, { missing });
+
+    await writeStrictAdminAuditLog(supa, {
+      adminId: user.id,
+      action: "approve_zooter",
+      targetTable: "zooter_applications",
+      targetId: application.id,
+      changes: {
+        from: { status: application.status },
+        to: { status: "approved", assigned_role: "zooter" },
+        service_category: application.service_category,
+        document_count: documents?.length ?? 0,
+      },
+      reason,
+      ipAddress: req.headers.get("x-forwarded-for"),
+    });
 
     const zooterPayload = {
       user_id: application.user_id,
@@ -141,16 +158,6 @@ Deno.serve(async (req) => {
       approval_required: false,
       created_by: user.id,
     });
-    await writeAuditLog(supa, {
-      actorId: user.id,
-      action: "approve_zooter",
-      targetTable: "zooter_applications",
-      targetId: application.id,
-      changes: { status: "approved", zooter_id: zooterId, assigned_role: "zooter" },
-      reason,
-      ipAddress: req.headers.get("x-forwarded-for"),
-    });
-
     return ok({ application_id: application.id, zooter_id: zooterId, status: "approved" }, origin);
   } catch (error) {
     console.error("approve-zooter failed", error);

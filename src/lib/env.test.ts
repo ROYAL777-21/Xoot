@@ -28,7 +28,7 @@ describe("public environment validation", () => {
         },
         { prod: true },
       ),
-    ).toMatch(/Staging and production require real/);
+    ).toMatch(/Builds require real/);
   });
 
   it("blocks copied example placeholders in production", () => {
@@ -41,7 +41,7 @@ describe("public environment validation", () => {
         },
         { prod: true },
       ),
-    ).toMatch(/Staging and production require real/);
+    ).toMatch(/Builds require real/);
   });
 
   it("requires explicit app environment for production-mode builds", () => {
@@ -56,7 +56,7 @@ describe("public environment validation", () => {
     ).toMatch(/VITE_APP_ENV is required/);
   });
 
-  it("allows preview mode for CI and demos", () => {
+  it("blocks preview mode for CI and demos", () => {
     expect(
       getPublicConfigIssueForEnv(
         {
@@ -66,7 +66,21 @@ describe("public environment validation", () => {
         },
         { prod: true },
       ),
-    ).toBeNull();
+    ).toMatch(/VITE_APP_ENV must be one of development, staging, or production/);
+  });
+
+  it("blocks explicit demo mode in every environment", () => {
+    expect(
+      getPublicConfigIssueForEnv(
+        {
+          VITE_APP_ENV: "development",
+          VITE_ENABLE_DEMO_MODE: "true",
+          VITE_SUPABASE_URL: "https://project.supabase.co",
+          VITE_SUPABASE_PUBLISHABLE_KEY: "publishable-key-for-browser",
+        },
+        { dev: true },
+      ),
+    ).toMatch(/VITE_ENABLE_DEMO_MODE is no longer supported/);
   });
 
   it("detects secret-like VITE variable names", () => {

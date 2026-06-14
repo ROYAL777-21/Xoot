@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { haptic } from "@/lib/haptics";
 
 const installSteps = [
-  { title: "Open Zoot in Safari", detail: "Use the production or preview Zoot link on your iPhone.", icon: Smartphone },
+  { title: "Open Zoot in Safari", detail: "Use the live Zoot link on your iPhone.", icon: Smartphone },
   { title: "Tap Share", detail: "The iOS share button sits at the bottom of Safari.", icon: Share },
   { title: "Add to Home Screen", detail: "Choose Add to Home Screen, then confirm the Zoot icon.", icon: Plus },
   { title: "Launch Zoot", detail: "Open Zoot from your Home Screen for the app-style experience.", icon: Home },
@@ -23,7 +23,7 @@ const PwaInstall = () => {
             <div>
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
                 <Sparkles className="h-3 w-3 text-sage-deep" />
-                <span className="text-xs font-medium text-sage-deep">iPhone app preview</span>
+                <span className="text-xs font-medium text-sage-deep">iPhone app access</span>
               </div>
               <h1 className="font-display text-5xl font-bold leading-[1.03] tracking-tight md:text-6xl">
                 Put Zoot on your iPhone Home Screen.

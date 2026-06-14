@@ -11,6 +11,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { AppShell } from "@/components/zoot/AppShell";
 import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
 import { BotanicalEdges } from "@/components/zoot/BotanicalEdges";
+import { ZootSupportBot } from "@/components/zoot/ZootSupportBot";
 import { ZooterShell } from "@/components/zooter/ZooterShell";
 import { RequireRole } from "@/components/RequireRole";
 
@@ -144,6 +145,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            <ZootSupportBot />
           </AuthProvider>
         </BrowserRouter>
       </ErrorBoundary>

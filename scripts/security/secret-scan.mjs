@@ -18,7 +18,6 @@ const patterns = [
 ];
 
 const allowlist = [
-  /preview-anon-key/,
   /VITE_SUPABASE_PUBLISHABLE_KEY/,
   /VITE_SUPABASE_URL/,
   /provider values needed in Supabase/,
