@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "http://127.0.0.1:4173",
   "https://zoothome.co.za",
   "https://www.zoothome.co.za",
 ];
@@ -106,6 +107,18 @@ const buildResponse = (text: string, role: UserRole) => {
 
   if (text.includes("care+") || text.includes("care plus") || text.includes("membership")) {
     return "Care+ is R99/month and keeps your home remembered, protected, and ready. It includes Home Memory, Favourite Zooter rebooking, priority booking windows, priority replacement support, 1.5x ZootCred, a R30 monthly add-on credit, smart reminders, property profiles, and priority support.";
+  }
+
+  if (text.includes("join zoot") || text.includes("apply") || text.includes("onboarding") || text.includes("document") || text.includes("verification")) {
+    return "To join Zoot as a Zooter, complete the in-app application, upload the required trust documents, consent to review, and finish training before activation. Keep identity, banking, and address documents inside the app only so the trust team can review them safely.";
+  }
+
+  if (text.includes("training") || text.includes("badge") || text.includes("rank") || text.includes("points")) {
+    return "Zooter training, badges, points, and ranking are designed to reward reliability, punctuality, quality, and completed learning modules. If something looks wrong on your dashboard, send the module or badge name so support can route it for review.";
+  }
+
+  if (text.includes("earn") || text.includes("payout") || text.includes("income") || text.includes("bank")) {
+    return "Zooter earnings and payout questions need account-safe handling. Check the app for job history and banking verification status, then open a support ticket if a payout, completed job, or bank detail needs human review.";
   }
 
   if (text.includes("zootcred") || text.includes("credit")) {

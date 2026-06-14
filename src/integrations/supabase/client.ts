@@ -73,6 +73,7 @@ type QueryResult = { data: unknown; error: null; count: number | null; status: n
 const previewZooters = [
   {
     id: 'preview-zooter-nomsa',
+    user_id: 'preview-user',
     name: 'Nomsa Dlamini',
     role: 'Premium Home Specialist',
     rating: 4.96,
@@ -185,6 +186,8 @@ const previewHousehold = {
   pet_notes: 'Milo the small dog is friendly. Please keep the side gate closed.',
   parking_instructions: 'Visitor bay 12, basement level P1.',
   gate_code: 'Saved securely in preview',
+  alarm_code: 'Preview alarm code',
+  access_instructions: 'Concierge can release the key after app confirmation.',
   cleaning_preferences: 'Eco products for kitchen surfaces. Fragrance-free bathroom products.',
   fragile_areas: 'Glass coffee table, brass lamps, framed hallway art.',
   favourite_products: 'Fragrance-free, pet-safe products',
@@ -261,6 +264,7 @@ class PreviewQueryBuilder {
   private singleRow = false;
   private maybeSingleRow = false;
   private maxRows: number | null = null;
+  private equalsFilters: { column: string; value: unknown }[] = [];
 
   constructor(private readonly table: string) {}
 
@@ -293,7 +297,10 @@ class PreviewQueryBuilder {
     return this;
   }
 
-  eq() { return this; }
+  eq(column: string, value: unknown) {
+    this.equalsFilters.push({ column, value });
+    return this;
+  }
   neq() { return this; }
   gt() { return this; }
   gte() { return this; }
@@ -327,7 +334,7 @@ class PreviewQueryBuilder {
   }
 
   private resolve(): QueryResult {
-    let rows = this.resolveRows();
+    let rows = this.applyFilters(this.resolveRows());
 
     if (this.operation === 'insert' || this.operation === 'upsert') {
       const incoming = Array.isArray(this.payload) ? this.payload : [this.payload ?? {}];
@@ -355,6 +362,11 @@ class PreviewQueryBuilder {
           booking_id: 'preview-booking-last',
           user_id: 'preview-zooter-user',
         }));
+      case 'user_roles':
+        return [
+          { id: 'preview-role-user', user_id: 'preview-user', role: 'user' },
+          { id: 'preview-role-zooter', user_id: 'preview-user', role: 'zooter' },
+        ];
       case 'household_profiles':
         return [clone(previewHousehold)];
       case 'subscription_plans':
@@ -388,10 +400,62 @@ class PreviewQueryBuilder {
       case 'admin_review_queue':
       case 'integration_outbox':
       case 'booking_status_events':
+        return [];
       case 'zooter_jobs':
+        return [
+          {
+            id: 'preview-zooter-job-accepted',
+            zooter_id: 'preview-zooter-nomsa',
+            booking_id: 'preview-booking-upcoming',
+            state: 'accepted',
+            offered_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            bookings: {
+              id: 'preview-booking-upcoming',
+              user_id: 'preview-user',
+              service: 'Premium home clean',
+              service_type: 'residential',
+              scheduled_at: new Date(Date.now() + 20 * 60 * 1000).toISOString(),
+              price: 380,
+              duration_hours: 3,
+              status: 'contractor_accepted',
+              job_completed_at: null,
+              completed_at: null,
+              cancelled_at: null,
+              sensitive_data_revoked_at: null,
+            },
+          },
+          {
+            id: 'preview-zooter-job-completed',
+            zooter_id: 'preview-zooter-nomsa',
+            booking_id: 'preview-booking-recent',
+            state: 'completed',
+            offered_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+            bookings: {
+              id: 'preview-booking-recent',
+              user_id: 'preview-user',
+              service: 'Airbnb turnover',
+              service_type: 'airbnb',
+              scheduled_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+              price: 420,
+              duration_hours: 3.5,
+              status: 'completed',
+              job_completed_at: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
+              completed_at: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
+              cancelled_at: null,
+              sensitive_data_revoked_at: null,
+            },
+          },
+        ];
       default:
         return [];
     }
+  }
+
+  private applyFilters(rows: Record<string, unknown>[]) {
+    if (this.equalsFilters.length === 0) return rows;
+    return rows.filter((row) =>
+      this.equalsFilters.every((filter) => row[filter.column] === filter.value),
+    );
   }
 }
 
@@ -447,6 +511,18 @@ const createPreviewSupabaseClient = () => {
     },
     from(table: string) {
       return new PreviewQueryBuilder(table);
+    },
+    storage: {
+      from(bucket: string) {
+        return {
+          async upload(path: string) {
+            return { data: { bucket, path, fullPath: `${bucket}/${path}` }, error: null };
+          },
+          async remove(paths: string[]) {
+            return { data: paths.map((path) => ({ name: path })), error: null };
+          },
+        };
+      },
     },
     channel(name: string) {
       return {
@@ -512,6 +588,40 @@ const createPreviewSupabaseClient = () => {
                 status: 'open',
                 priority: 'normal',
                 expected_response_time: 'Within 1 business day',
+              },
+              preview: true,
+            },
+            error: null,
+          };
+        }
+
+        if (name === 'support-respond') {
+          return {
+            data: {
+              response: 'Zoot bot can help with bookings, Care+, Zooter onboarding, training, and support routing. For refunds, payments, replacements, trust concerns, or private access details, a human reviewer keeps the final action inside the app.',
+              escalated: false,
+              source: 'zoot_support_rules',
+              openai_request_id: null,
+              preview: true,
+            },
+            error: null,
+          };
+        }
+
+        if (name === 'get-sensitive-access') {
+          const field = String((options?.body as any)?.field ?? '');
+          const allowedFields = new Set(['gate_code', 'alarm_code', 'access_instructions', 'parking_instructions', 'pet_notes']);
+          const previewValues = previewHousehold as Record<string, unknown>;
+          if (!allowedFields.has(field)) return { data: { success: false, error: 'unsupported sensitive field' }, error: null };
+          return {
+            data: {
+              success: true,
+              data: {
+                booking_id: (options?.body as any)?.bookingId ?? (options?.body as any)?.booking_id ?? 'preview-booking-upcoming',
+                field,
+                value: previewValues[field] ?? '',
+                expires_in_seconds: 30,
+                preview: true,
               },
               preview: true,
             },

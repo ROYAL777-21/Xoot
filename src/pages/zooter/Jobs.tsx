@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Calendar, MapPin, Loader2, Check, X, DollarSign } from "lucide-react";
+import { Briefcase, Calendar, MapPin, Loader2, Check, X, DollarSign, LockKeyhole } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import { canAccessSensitiveBookingData } from "@/lib/operations";
+import { SensitiveFieldReveal } from "@/components/zoot/SensitiveFieldReveal";
 
 const Jobs = () => {
   const { user } = useAuth();
@@ -18,7 +20,7 @@ const Jobs = () => {
   const load = async (zid: string) => {
     const { data } = await supabase
       .from("zooter_jobs")
-      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, price, duration_hours, status, job_completed_at, cancelled_at, user_id)")
+      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, price, duration_hours, status, job_completed_at, completed_at, cancelled_at, sensitive_data_revoked_at, user_id)")
       .eq("zooter_id", zid)
       .order("offered_at", { ascending: false });
     setJobs(data ?? []);
@@ -75,13 +77,24 @@ const Jobs = () => {
       <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. Client address details stay protected and are not exposed in this offer list.</p>
 
       <Section title="New offers" jobs={grouped.offered} respond={respond} actions />
-      <Section title="Upcoming" jobs={grouped.accepted} respond={respond} />
-      <Section title="History" jobs={grouped.history} respond={respond} />
+      <Section title="Upcoming" jobs={grouped.accepted} respond={respond} revealAccess />
+      <Section title="History" jobs={grouped.history} respond={respond} revealAccess />
     </div>
   );
 };
 
-const Section = ({ title, jobs, respond, actions = false }: any) => (
+const getSensitiveWindowOpen = (booking: any) => {
+  if (!booking || booking.sensitive_data_revoked_at) return false;
+  return canAccessSensitiveBookingData({
+    scheduledAt: booking.scheduled_at,
+    status: booking.status,
+    completedAt: booking.completed_at ?? booking.job_completed_at,
+    cancelledAt: booking.cancelled_at,
+    durationHours: booking.duration_hours,
+  });
+};
+
+const Section = ({ title, jobs, respond, actions = false, revealAccess = false }: any) => (
   <div className="mb-10">
     <h2 className="font-display text-2xl font-bold mb-3">{title}</h2>
     {jobs.length === 0 ? (
@@ -91,6 +104,8 @@ const Section = ({ title, jobs, respond, actions = false }: any) => (
         {jobs.map((j: any) => {
           const b = j.bookings;
           if (!b) return null;
+          const withinWindow = getSensitiveWindowOpen(b);
+          const canShowReveal = revealAccess && j.state !== "declined" && j.state !== "expired";
           return (
             <Card key={j.id} className="p-5 rounded-2xl">
               <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -109,6 +124,24 @@ const Section = ({ title, jobs, respond, actions = false }: any) => (
                   </div>
                 )}
               </div>
+              {canShowReveal && (
+                <div className="mt-5 border-t border-border/70 pt-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <p className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <LockKeyhole className={`h-4 w-4 ${withinWindow ? "text-sage-deep" : "text-muted-foreground"}`} />
+                      Access information
+                    </p>
+                    <p className="text-xs text-muted-foreground">Viewing is logged and unlocks only near the appointment window.</p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <SensitiveFieldReveal bookingId={b.id} field="gate_code" label="Gate code" withinWindow={withinWindow} />
+                    <SensitiveFieldReveal bookingId={b.id} field="alarm_code" label="Alarm code" withinWindow={withinWindow} />
+                    <SensitiveFieldReveal bookingId={b.id} field="access_instructions" label="Access instructions" withinWindow={withinWindow} />
+                    <SensitiveFieldReveal bookingId={b.id} field="parking_instructions" label="Parking instructions" withinWindow={withinWindow} />
+                    <SensitiveFieldReveal bookingId={b.id} field="pet_notes" label="Pet notes" withinWindow={withinWindow} className="md:col-span-2" />
+                  </div>
+                </div>
+              )}
             </Card>
           );
         })}

@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { isPreviewSupabase, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -12,7 +12,15 @@ export const RequireRole = ({ role, children }: { role: Role; children: ReactNod
   const [hasRole, setHasRole] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (loading) {
+      setHasRole(null);
+      return;
+    }
     if (!user) { setHasRole(false); return; }
+    if (isPreviewSupabase && role === "zooter") {
+      setHasRole(true);
+      return;
+    }
     supabase
       .from("user_roles")
       .select("role")
@@ -20,7 +28,7 @@ export const RequireRole = ({ role, children }: { role: Role; children: ReactNod
       .eq("role", role)
       .maybeSingle()
       .then(({ data }) => setHasRole(!!data));
-  }, [user, role]);
+  }, [loading, user, role]);
 
   if (loading || hasRole === null) {
     return (

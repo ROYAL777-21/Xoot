@@ -35,6 +35,16 @@ const quickSupportPrompts = [
     subject: "I need help after a clean",
     body: "I would like Zoot to review a service concern and advise what can be done next.",
   },
+  {
+    label: "Join Zoot",
+    subject: "I need help with Zooter onboarding",
+    body: "I am applying to become a Zooter and need help with onboarding, document uploads, training, or trust review.",
+  },
+  {
+    label: "Care+",
+    subject: "I have a Care+ question",
+    body: "I want to understand Care+ benefits, Home Memory, Favourite Zooter rebooking, ZootCred, or priority support.",
+  },
 ];
 
 const requestSupportAssistantReply = async (
@@ -180,7 +190,7 @@ const Support = () => {
                   <Bot className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-display text-xl font-bold">Zoot Assistant</p>
+                  <p className="font-display text-xl font-bold">Zoot bot</p>
                   <p className="text-xs text-muted-foreground">Fast triage with human backup</p>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type SVGProps } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { AlertCircle, Apple, Chrome, Eye, EyeOff, KeyRound, Loader2, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, KeyRound, Loader2, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import {
   getAuthFormIssue,
@@ -47,6 +47,24 @@ const providerLabels: Record<SocialAuthProvider, string> = {
   google: "Google",
   apple: "Apple",
 };
+
+const GoogleLogo = (props: SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+    <path fill="#4285F4" d="M21.6 12.23c0-.74-.07-1.45-.19-2.14H12v4.05h5.38a4.6 4.6 0 0 1-1.99 3.02v2.51h3.24c1.9-1.75 2.97-4.32 2.97-7.44Z" />
+    <path fill="#34A853" d="M12 22c2.7 0 4.96-.89 6.62-2.42l-3.24-2.51c-.9.6-2.05.96-3.38.96-2.59 0-4.79-1.75-5.57-4.11H3.08v2.6A10 10 0 0 0 12 22Z" />
+    <path fill="#FBBC05" d="M6.43 13.92a6.01 6.01 0 0 1 0-3.84v-2.6H3.08a10 10 0 0 0 0 9.04l3.35-2.6Z" />
+    <path fill="#EA4335" d="M12 5.97c1.47 0 2.78.51 3.82 1.5l2.87-2.87C16.95 2.98 14.69 2 12 2a10 10 0 0 0-8.92 5.48l3.35 2.6C7.21 7.72 9.41 5.97 12 5.97Z" />
+  </svg>
+);
+
+const AppleLogo = (props: SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+    <path
+      fill="currentColor"
+      d="M17.06 12.4c-.03-2.37 1.94-3.51 2.03-3.57-1.1-1.61-2.81-1.83-3.41-1.85-1.45-.15-2.83.85-3.56.85-.74 0-1.88-.83-3.09-.81-1.59.02-3.06.92-3.88 2.35-1.65 2.86-.42 7.09 1.19 9.41.79 1.14 1.73 2.42 2.96 2.37 1.19-.05 1.64-.77 3.07-.77 1.44 0 1.84.77 3.1.75 1.28-.02 2.09-1.16 2.87-2.3.9-1.32 1.28-2.6 1.3-2.66-.03-.01-2.55-.98-2.58-3.77ZM14.73 5.45c.65-.79 1.09-1.89.97-2.98-.94.04-2.07.62-2.75 1.41-.6.7-1.13 1.82-.99 2.89 1.04.08 2.11-.53 2.77-1.32Z"
+    />
+  </svg>
+);
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -363,7 +381,7 @@ const Auth = () => {
         {!isForgotPassword && !isOtpMode && (
           <div className="mb-5 grid gap-3 sm:grid-cols-2">
             {(["google", "apple"] as SocialAuthProvider[]).map((provider) => {
-              const Icon = provider === "google" ? Chrome : Apple;
+              const Icon = provider === "google" ? GoogleLogo : AppleLogo;
               const isProviderLoading = providerLoading === provider;
               return (
                 <Button

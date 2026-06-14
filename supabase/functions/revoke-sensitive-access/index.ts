@@ -43,17 +43,11 @@ Deno.serve(async (req) => {
       .update({ sensitive_data_revoked_at: revokedAt, updated_at: new Date().toISOString() })
       .eq("id", booking.id);
 
-    let zooterUserId: string | null = null;
-    if (booking.zooter_id) {
-      const { data: zooter } = await supa.from("zooters").select("user_id").eq("id", booking.zooter_id).maybeSingle();
-      zooterUserId = zooter?.user_id ?? null;
-    }
-
     let contractorStillAllowed = false;
-    if (zooterUserId) {
+    if (booking.zooter_id) {
       const { data } = await supa.rpc("can_access_sensitive_data", {
+        p_zooter_id: booking.zooter_id,
         p_booking_id: booking.id,
-        p_actor_id: zooterUserId,
       });
       contractorStillAllowed = data === true;
     }

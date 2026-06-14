@@ -55,6 +55,7 @@ describe("Zoot operating rules", () => {
     const scheduledAt = "2026-05-18T10:00:00.000Z";
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "confirmed", now: "2026-05-18T09:10:00.000Z" })).toBe(false);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "confirmed", now: "2026-05-18T09:20:00.000Z" })).toBe(true);
+    expect(canAccessSensitiveBookingData({ scheduledAt, status: "confirmed", durationHours: 2, now: "2026-05-18T12:31:00.000Z" })).toBe(false);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "completed", completedAt: "2026-05-18T12:00:00.000Z", now: "2026-05-18T12:25:00.000Z" })).toBe(true);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "completed", completedAt: "2026-05-18T12:00:00.000Z", now: "2026-05-18T12:31:00.000Z" })).toBe(false);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "cancelled", cancelledAt: "2026-05-18T09:30:00.000Z", now: "2026-05-18T09:31:00.000Z" })).toBe(false);

@@ -193,18 +193,22 @@ export const canAccessSensitiveBookingData = ({
   status,
   completedAt,
   cancelledAt,
+  durationHours,
   now,
 }: {
   scheduledAt: string;
   status: string;
   completedAt?: string | null;
   cancelledAt?: string | null;
+  durationHours?: number | string | null;
   now?: string;
 }) => {
   if (status === "cancelled" || cancelledAt) return false;
 
   const current = now ? new Date(now).getTime() : Date.now();
   const start = new Date(scheduledAt).getTime();
+  if (!Number.isFinite(start)) return false;
+
   const accessOpens = start - 45 * 60 * 1000;
   if (current < accessOpens) return false;
 
@@ -214,7 +218,7 @@ export const canAccessSensitiveBookingData = ({
   }
 
   const normalizedStatus = normaliseBookingStatus(status);
-  return Boolean(normalizedStatus && [
+  const activeStatus = Boolean(normalizedStatus && [
     "assigned",
     "contractor_accepted",
     "en_route",
@@ -222,6 +226,13 @@ export const canAccessSensitiveBookingData = ({
     "replacement_offered",
     "reassigned",
   ].includes(normalizedStatus));
+
+  if (!activeStatus) return false;
+
+  const parsedDuration = Number(durationHours ?? 0);
+  const durationMs = Number.isFinite(parsedDuration) && parsedDuration > 0 ? parsedDuration * 60 * 60 * 1000 : 0;
+  const accessCloses = start + durationMs + 30 * 60 * 1000;
+  return current <= accessCloses;
 };
 
 export const buildPendingPaymentRecord = ({

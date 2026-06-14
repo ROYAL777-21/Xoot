@@ -260,11 +260,12 @@
     pointer-events: none;
     border-radius: inherit;
     background:
-      linear-gradient(135deg, hsl(var(--card) / 0.86), hsl(var(--secondary) / 0.54)),
-      radial-gradient(circle at 18% 0%, hsl(var(--primary) / 0.18), transparent 34%),
-      radial-gradient(circle at 88% 18%, hsl(var(--accent) / 0.16), transparent 36%);
-    backdrop-filter: blur(22px) saturate(175%);
-    -webkit-backdrop-filter: blur(22px) saturate(175%);
+      linear-gradient(135deg, hsl(var(--card) / 0.92), hsl(var(--secondary) / 0.72)),
+      radial-gradient(circle at 18% 0%, hsl(var(--primary) / 0.22), transparent 34%),
+      radial-gradient(circle at 88% 18%, hsl(var(--accent) / 0.2), transparent 36%),
+      repeating-linear-gradient(135deg, hsl(0 0% 100% / 0.055) 0 1px, transparent 1px 9px);
+    backdrop-filter: blur(34px) saturate(195%) contrast(112%);
+    -webkit-backdrop-filter: blur(34px) saturate(195%) contrast(112%);
   }
 
   .liquid-glass-shell::after,
@@ -276,12 +277,13 @@
     pointer-events: none;
     border-radius: inherit;
     background:
-      linear-gradient(180deg, hsl(0 0% 100% / 0.42), transparent 38%),
-      linear-gradient(135deg, hsl(var(--primary) / 0.12), transparent 58%);
+      linear-gradient(180deg, hsl(0 0% 100% / 0.62), hsl(0 0% 100% / 0.12) 38%, transparent 72%),
+      linear-gradient(135deg, hsl(var(--primary) / 0.14), hsl(var(--card) / 0.3) 52%, transparent 72%);
     border: 1px solid hsl(var(--border) / 0.72);
     box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.44),
-      inset 0 -1px 0 hsl(var(--foreground) / 0.06),
+      inset 0 1px 0 hsl(0 0% 100% / 0.58),
+      inset 0 -1px 0 hsl(var(--foreground) / 0.08),
+      inset 0 0 0 999px hsl(var(--background) / 0.18),
       0 18px 52px -34px hsl(var(--foreground) / 0.52);
   }
 
@@ -338,11 +340,11 @@
 
   .liquid-glass-nav[data-scrolled="true"]::before {
     background:
-      linear-gradient(135deg, hsl(var(--card) / 0.78), hsl(var(--secondary) / 0.48)),
+      linear-gradient(135deg, hsl(var(--card) / 0.9), hsl(var(--secondary) / 0.66)),
       radial-gradient(circle at 18% 0%, hsl(var(--primary) / 0.2), transparent 34%),
       radial-gradient(circle at 88% 18%, hsl(var(--accent) / 0.18), transparent 36%);
-    backdrop-filter: blur(28px) saturate(190%);
-    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    backdrop-filter: blur(38px) saturate(205%) contrast(114%);
+    -webkit-backdrop-filter: blur(38px) saturate(205%) contrast(114%);
   }
 
   .liquid-glass-nav[data-scrolled="true"]::after {
@@ -362,19 +364,21 @@
     html[data-native-platform="apple"] .liquid-glass-shell::before,
     html[data-native-platform="apple"] .liquid-glass-nav::before {
       background:
-        linear-gradient(135deg, hsl(var(--card) / 0.72), hsl(var(--secondary) / 0.4)),
-        radial-gradient(circle at 16% 0%, hsl(var(--primary) / 0.18), transparent 34%),
-        radial-gradient(circle at 92% 22%, hsl(var(--accent) / 0.18), transparent 38%);
-      backdrop-filter: blur(18px) saturate(180%) contrast(106%);
-      -webkit-backdrop-filter: blur(18px) saturate(180%) contrast(106%);
+        linear-gradient(135deg, hsl(var(--card) / 0.9), hsl(var(--secondary) / 0.68)),
+        radial-gradient(circle at 16% 0%, hsl(var(--primary) / 0.22), transparent 34%),
+        radial-gradient(circle at 92% 22%, hsl(var(--accent) / 0.22), transparent 38%),
+        repeating-linear-gradient(135deg, hsl(0 0% 100% / 0.06) 0 1px, transparent 1px 8px);
+      backdrop-filter: blur(42px) saturate(210%) contrast(116%);
+      -webkit-backdrop-filter: blur(42px) saturate(210%) contrast(116%);
     }
 
     html[data-native-platform="apple"] .liquid-glass-shell::after,
     html[data-native-platform="apple"] .liquid-glass-nav::after {
       border-color: hsl(0 0% 100% / 0.38);
       box-shadow:
-        inset 0 1px 0 hsl(0 0% 100% / 0.5),
-        inset 0 -1px 0 hsl(var(--foreground) / 0.05),
+        inset 0 1px 0 hsl(0 0% 100% / 0.66),
+        inset 0 -1px 0 hsl(var(--foreground) / 0.08),
+        inset 0 0 0 999px hsl(var(--background) / 0.22),
         0 18px 42px -30px hsl(var(--foreground) / 0.42);
     }
 

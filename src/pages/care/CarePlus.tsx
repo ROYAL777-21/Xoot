@@ -75,9 +75,9 @@ const CarePlus = () => {
               <div className="grid gap-5 md:grid-cols-2">
                 <Card className="rounded-3xl border-border/70 bg-card/90 p-5 shadow-card">
                   <p className="text-sm font-semibold text-sage-deep">Smart reminder</p>
-                  <p className="mt-2 text-lg font-semibold">Your home was cleaned 12 days ago. Want to book Nomsa again?</p>
+                  <p className="mt-2 text-lg font-semibold">Your home still has that after-clean calm. Nomsa has a nearby slot before the week gets busy.</p>
                   <Button asChild className="mt-5 w-full rounded-full sm:w-auto" onClick={() => haptic("impact")}>
-                    <Link to="/app">Book Nomsa again</Link>
+                    <Link to="/app">Keep the rhythm</Link>
                   </Button>
                 </Card>
                 <Card className="rounded-3xl border-border/70 bg-card/90 p-5 shadow-card">

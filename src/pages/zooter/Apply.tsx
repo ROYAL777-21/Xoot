@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,7 @@ type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const ALLOWED_UPLOAD_TYPES = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
+const ALLOWED_UPLOAD_EXTENSIONS = new Set(["pdf", "jpg", "jpeg", "png", "webp"]);
 
 const docMeta: { key: DocType; label: string; hint: string }[] = [
   { key: "id", label: "Government ID / passport", hint: "Clear photo of both sides. Name and DOB visible." },
@@ -60,9 +61,30 @@ const emptyForm = {
   background_check_consent: false,
 };
 
+type ApplicationForm = typeof emptyForm;
+
+const RequiredFieldContext = createContext<{ form: ApplicationForm; requiredKeys: string[] }>({
+  form: emptyForm,
+  requiredKeys: [],
+});
+
+const F = ({ label, name, children }: { label: string; name?: keyof ApplicationForm; children: ReactNode }) => {
+  const { form, requiredKeys } = useContext(RequiredFieldContext);
+  const missingRequired = Boolean(name && !String(form[name] ?? "").trim() && requiredKeys.includes(String(name)));
+
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>
+      {children}
+      {missingRequired && <p className="text-[11px] text-muted-foreground">Required</p>}
+    </div>
+  );
+};
+
 const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
 const joinList = (value?: string[] | null) => (value ?? []).join(", ");
 const safeFileName = (name: string) => name.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/-+/g, "-").slice(0, 90);
+const getFileExtension = (name: string) => name.split(".").pop()?.toLowerCase() ?? "";
 const looksLikeEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 const looksLikePhone = (value: string) => /^\+?[0-9\s().-]{7,20}$/.test(value.trim());
 const looksLikeBankAccount = (value: string) => /^[0-9]{6,20}$/.test(value.trim());
@@ -70,6 +92,9 @@ const looksLikeBankAccount = (value: string) => /^[0-9]{6,20}$/.test(value.trim(
 const validateUpload = (file: File) => {
   if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
     return "Upload a PDF, JPG, PNG or WebP file.";
+  }
+  if (!ALLOWED_UPLOAD_EXTENSIONS.has(getFileExtension(file.name))) {
+    return "Upload a file with a PDF, JPG, PNG or WebP extension.";
   }
   if (file.size > MAX_UPLOAD_BYTES) {
     return "Upload files smaller than 8MB.";
@@ -87,6 +112,9 @@ const Apply = () => {
   const [docs, setDocs] = useState<Record<string, string>>({});
   const [uploadingDoc, setUploadingDoc] = useState<DocType | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const setField = <K extends keyof ApplicationForm>(key: K, value: ApplicationForm[K]) => {
+    setForm((current) => ({ ...current, [key]: value }));
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -184,16 +212,19 @@ const Apply = () => {
       return;
     }
     setUploadingDoc(key);
+    let uploadedPath: string | null = null;
     try {
       const id = appId ?? (await saveDraft());
       if (!id) return;
-      const path = `${user.id}/${key}-${Date.now()}-${safeFileName(file.name)}`;
+      const uploadId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const path = `${user.id}/${key}-${uploadId}-${safeFileName(file.name)}`;
       const { error } = await supabase.storage.from("kyc-docs").upload(path, file, {
         cacheControl: "0",
         contentType: file.type,
-        upsert: true,
+        upsert: false,
       });
       if (error) { haptic("warning"); toast.error(error.message); return; }
+      uploadedPath = path;
       const { data, error: docError } = await supabase.functions.invoke("submit-zooter-application", {
         body: {
           mode: "document",
@@ -203,6 +234,7 @@ const Apply = () => {
       });
       const docResult = data as { success?: boolean; error?: string } | null;
       if (docError || docResult?.success === false) {
+        if (uploadedPath) await supabase.storage.from("kyc-docs").remove([uploadedPath]);
         haptic("warning");
         toast.error(docError?.message ?? docResult?.error ?? "Document metadata could not be saved");
         return;
@@ -283,10 +315,9 @@ const Apply = () => {
 
   const steps = ["About you", "Address", "Experience", "Banking", "References", "Documents", "Consent"];
   const progress = ((step + 1) / steps.length) * 100;
+  const requiredKeys = requiredForStep();
 
   if (loading) return <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-
-  const F = ({ label, name, children }: { label: string; name?: string; children: React.ReactNode }) => <div className="space-y-1.5"><Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>{children}{name && !String((form as any)[name] ?? "").trim() && requiredForStep().includes(name) && <p className="text-[11px] text-muted-foreground">Required</p>}</div>;
 
   return (
     <div className="min-h-screen gradient-hero py-10 px-6">
@@ -296,6 +327,7 @@ const Apply = () => {
         <p className="text-muted-foreground mb-6">Build predictable income with recurring clients, premium homes, fast support, strong vetting and visible trust badges.</p>
         <div className="mb-4"><div className="flex justify-between text-xs text-muted-foreground mb-1.5"><span>Step {step + 1} of {steps.length} - {steps[step]}</span><span>{Math.round(progress)}%</span></div><Progress value={progress} /></div>
 
+        <RequiredFieldContext.Provider value={{ form, requiredKeys }}>
         <Card className="p-6 rounded-3xl shadow-soft">
           {step === 0 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">About you</h2><div className="grid sm:grid-cols-2 gap-3"><F label="Full name" name="full_name"><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></F><F label="Phone" name="phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+27..." /></F><F label="Email" name="email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></F><F label="Date of birth" name="date_of_birth"><Input type="date" value={form.date_of_birth ?? ""} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} /></F><F label="ID / Passport number" name="id_number"><Input value={form.id_number ?? ""} onChange={(e) => setForm({ ...form, id_number: e.target.value })} /></F><F label="Years of experience" name="years_experience"><Input type="number" min="0" value={form.years_experience ?? ""} onChange={(e) => setForm({ ...form, years_experience: e.target.value })} /></F><F label="Primary service"><Input value="House cleaning" disabled /></F></div><F label="Short bio" name="bio"><Textarea rows={3} value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Airbnb turnover specialist, gentle with pets, eco-friendly products..." /></F></div>}
 
@@ -313,6 +345,7 @@ const Apply = () => {
               <p className="text-sm text-muted-foreground">All four documents are required and reviewed by the trust team. PDFs, JPGs, PNGs and WebP images under 8MB are accepted.</p>
               {docMeta.map((d) => {
                 const isUploading = uploadingDoc === d.key;
+                const uploadLocked = Boolean(uploadingDoc) || submitting;
                 const hasDoc = Boolean(docs[d.key]);
                 return (
                   <div key={d.key} className="rounded-2xl border border-border p-4 flex items-center gap-3">
@@ -323,16 +356,20 @@ const Apply = () => {
                       <p className="font-medium text-sm">{d.label}</p>
                       <p className="text-xs text-muted-foreground">{isUploading ? "Uploading securely..." : d.hint}</p>
                     </div>
-                    <label className={isUploading ? "cursor-not-allowed opacity-60" : "cursor-pointer"}>
+                    <label className={uploadLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"}>
                       <input
                         type="file"
                         className="hidden"
                         accept="image/jpeg,image/png,image/webp,application/pdf"
-                        disabled={isUploading}
-                        onChange={(e) => e.target.files?.[0] && handleUpload(d.key, e.target.files[0])}
+                        disabled={uploadLocked}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = "";
+                          if (file) void handleUpload(d.key, file);
+                        }}
                       />
                       <span className="inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-semibold px-3 py-1.5">
-                        {isUploading ? "Uploading" : hasDoc ? "Replace" : "Upload"}
+                        {isUploading ? "Uploading" : hasDoc ? "Replace" : uploadLocked ? "Wait" : "Upload"}
                       </span>
                     </label>
                   </div>
@@ -341,10 +378,11 @@ const Apply = () => {
             </div>
           )}
 
-          {step === 6 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Trust review consent</h2><div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2"><p className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> By submitting you authorise Zoot to verify identity, selfie, address, banking details, references, and criminal background status.</p><p>No live third-party check is run in this version. Admin reviewers classify each verification area before activation.</p></div><label className="flex items-start gap-3 cursor-pointer"><Checkbox checked={form.background_check_consent} onCheckedChange={(v) => setForm({ ...form, background_check_consent: !!v })} /><span className="text-sm">I consent to the Zoot trust review and background-check process.</span></label></div>}
+          {step === 6 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Trust review consent</h2><div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2"><p className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> By submitting you authorise Zoot to verify identity, selfie, address, banking details, references, and criminal background status.</p><p>No live third-party check is run in this version. Admin reviewers classify each verification area before activation.</p></div><label className="flex items-start gap-3 cursor-pointer"><Checkbox checked={form.background_check_consent} onCheckedChange={(v) => setField("background_check_consent", !!v)} /><span className="text-sm">I consent to the Zoot trust review and background-check process.</span></label></div>}
 
           <div className="flex justify-between mt-8 pt-4 border-t border-border"><Button variant="ghost" onClick={() => { haptic("selection"); setStep(Math.max(step - 1, 0)); }} disabled={step === 0}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>{step < steps.length - 1 ? <Button onClick={next} className="gradient-warm">Save & continue <ArrowRight className="h-4 w-4 ml-1" /></Button> : <Button onClick={submit} disabled={submitting || !form.background_check_consent} className="gradient-warm">{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Submit application <ArrowRight className="h-4 w-4 ml-1" /></>}</Button>}</div>
         </Card>
+        </RequiredFieldContext.Provider>
       </div>
     </div>
   );
