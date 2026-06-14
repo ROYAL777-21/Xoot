@@ -8,6 +8,7 @@ import { CalendarClock, Check, Crown, Heart, Home, Loader2, ShieldCheck, Sparkle
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
+import { useZootCred } from "@/hooks/useZootCred";
 
 type Plan = {
   id: string;
@@ -63,10 +64,10 @@ const Plans = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [homeMemory, setHomeMemory] = useState<HomeMemorySnapshot | null>(null);
-  const [zootCredAvailable, setZootCredAvailable] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const zootCred = useZootCred();
 
   const refresh = useCallback(async () => {
     const { data: p } = await supabase.from("subscription_plans").select("*").order("monthly_price").limit(1).maybeSingle();
@@ -85,15 +86,10 @@ const Plans = () => {
         .maybeSingle();
       setHomeMemory((household as HomeMemorySnapshot | null) ?? null);
 
-      // TODO: replace with real query - supabase.from('zootcred_ledger') should move into a shared ZootCred hook with expiry/status rules.
-      const { data: ledger } = await (supabase as any).from("zootcred_ledger").select("amount").eq("user_id", user.id);
-      const available = Array.isArray(ledger) ? ledger.reduce((sum, row) => sum + Number(row.amount ?? 0), 0) : 0;
-      setZootCredAvailable(available);
     } else {
       setActiveId(null);
       setSubscriptionStatus(null);
       setHomeMemory(null);
-      setZootCredAvailable(null);
     }
     setLoading(false);
   }, [user]);
@@ -112,7 +108,7 @@ const Plans = () => {
       const result = data as { already_exists?: boolean; subscription_status?: string } | null;
       haptic("success");
       toast.success(result?.already_exists ? "Care+ request is already recorded" : "Care+ request recorded");
-      await refresh();
+      await Promise.all([refresh(), zootCred.refresh()]);
     } finally {
       setActionLoading(false);
     }
@@ -129,7 +125,7 @@ const Plans = () => {
       setCancelOpen(false);
       haptic("success");
       toast("Care+ cancelled");
-      await refresh();
+      await Promise.all([refresh(), zootCred.refresh()]);
     } finally {
       setActionLoading(false);
     }
@@ -206,8 +202,10 @@ const Plans = () => {
               Save a household profile to unlock Home Memory details for pets, access, fragile areas and product preferences.
             </div>
           )}
-          {zootCredAvailable !== null && (
-            <p className="mt-4 text-sm font-semibold text-sage-deep">Current ZootCred balance: {formatZAR(zootCredAvailable)}</p>
+          {user && (
+            <p className="mt-4 text-sm font-semibold text-sage-deep">
+              Current ZootCred balance: {zootCred.loading ? "Loading..." : formatZAR(zootCred.availableBalance)}
+            </p>
           )}
           <p className="mt-5 text-xs text-muted-foreground">Sensitive access notes stay inside the authenticated app and should not be exposed in push notifications, SMS or email.</p>
         </Card>

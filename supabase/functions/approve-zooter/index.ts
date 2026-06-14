@@ -16,6 +16,12 @@ const approvedValues = new Set(["approved", "verified", "cleared"]);
 
 const isApproved = (value: unknown) => approvedValues.has(String(value ?? "").toLowerCase());
 
+const getApplicationName = (application: any) =>
+  cleanText(application.full_name ?? application.name, 160);
+
+const getApplicationCategory = (application: any) =>
+  cleanText(application.service_category, 80) || "cleaning";
+
 const getMissingActivationItems = (application: any, documentCount: number) => {
   const missing: string[] = [];
   for (const field of [
@@ -31,7 +37,7 @@ const getMissingActivationItems = (application: any, documentCount: number) => {
   if (!isApproved(application.background_check_status)) missing.push("background_check_status");
   if (documentCount < 4) missing.push("required_documents");
   if (!application.background_check_consent) missing.push("background_check_consent");
-  if (!application.full_name || !application.phone || !application.suburb) missing.push("core_profile_fields");
+  if (!getApplicationName(application) || !application.phone || !application.suburb) missing.push("core_profile_fields");
   return missing;
 };
 
@@ -60,6 +66,7 @@ Deno.serve(async (req) => {
       .eq("id", applicationId)
       .maybeSingle();
     if (!application?.id) return fail("application not found", origin, 404);
+    if (!application.user_id) return fail("application user link required before approval", origin, 409);
 
     const { data: documents } = await supa
       .from("zooter_documents")
@@ -77,7 +84,7 @@ Deno.serve(async (req) => {
       changes: {
         from: { status: application.status },
         to: { status: "approved", assigned_role: "zooter" },
-        service_category: application.service_category,
+        service_category: getApplicationCategory(application),
         document_count: documents?.length ?? 0,
       },
       reason,
@@ -86,19 +93,16 @@ Deno.serve(async (req) => {
 
     const zooterPayload = {
       user_id: application.user_id,
-      name: cleanText(application.full_name, 160),
-      role: application.service_category ?? "cleaning",
+      name: getApplicationName(application),
+      role: getApplicationCategory(application),
       hourly_rate: 35,
       bio: cleanText(application.bio, 1000) || null,
       tags: ["Verified", "Background checked"],
       distance_mi: 1,
       active: true,
-      verified: true,
-      background_checked: true,
       background_check_status: "approved",
       reliability_score: 100,
       job_completion_rate: 100,
-      tier: "verified",
       years_experience: Math.max(0, toNumber(application.years_experience, 2)),
       suburb_coverage: [application.suburb, application.city].filter(Boolean),
       transport: cleanText(application.transport, 160) || "Transport confirmed",
@@ -119,9 +123,8 @@ Deno.serve(async (req) => {
     await supa.from("zooter_applications").update({
       status: "approved",
       reviewer_notes: reason,
-      reviewed_by: user.id,
-      reviewed_at: new Date().toISOString(),
       activation_locked_reason: null,
+      updated_at: new Date().toISOString(),
     }).eq("id", application.id);
 
     await supa.from("user_roles").upsert(

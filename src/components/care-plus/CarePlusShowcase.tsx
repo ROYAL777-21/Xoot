@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import {
   BedDouble,
   CalendarClock,
@@ -20,18 +19,12 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 import {
-  carePlusShowcaseFavouriteZooter,
-  carePlusShowcaseHomeMemoryProfile,
-  carePlusShowcaseMembership,
-  carePlusShowcasePropertyProfiles,
-  carePlusShowcaseZootCredBalance,
   comparisonRows,
   smartReminders,
 } from "@/data/care-plus";
 import type { CarePlusBenefit, PropertyProfile, SmartReminder } from "@/types/care-plus";
 import { haptic } from "@/lib/haptics";
 
-// TODO: replace with real query - supabase.from('zootcred_ledger') when this component is reused in authenticated member dashboards.
 const benefitIcons = {
   "home-memory": Home,
   "favourite-zooter": Heart,
@@ -87,96 +80,6 @@ export const CarePlusComparisonTable = () => (
   </div>
 );
 
-export const ZootCredShowcase = () => (
-  <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
-    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <p className="text-sm font-semibold text-sage-deep">ZootCred example</p>
-        <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">1.5x loyalty value</h3>
-      </div>
-      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
-        <WalletCards className="h-6 w-6" />
-      </div>
-    </div>
-    <div className="grid gap-3 text-center sm:grid-cols-3">
-      <div className="rounded-2xl bg-muted/50 p-3">
-        <p className="font-display text-2xl font-bold">R{carePlusShowcaseZootCredBalance.availableZar}</p>
-        <p className="text-xs text-muted-foreground">Available</p>
-      </div>
-      <div className="rounded-2xl bg-muted/50 p-3">
-        <p className="font-display text-2xl font-bold">R{carePlusShowcaseZootCredBalance.pendingZar}</p>
-        <p className="text-xs text-muted-foreground">Pending</p>
-      </div>
-      <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-        <p className="font-display text-2xl font-bold">R{carePlusShowcaseZootCredBalance.projectedNextBookingZar}</p>
-        <p className="text-xs">Next booking</p>
-      </div>
-    </div>
-    <p className="mt-4 text-sm text-muted-foreground"><CarePlusMark /> members also receive a R{carePlusShowcaseZootCredBalance.monthlyAddOnCreditZar} monthly add-on credit that expires monthly and can only be used with a completed booking.</p>
-  </Card>
-);
-
-// TODO: replace with real query - supabase.from('household_profiles') when this component is reused in authenticated member dashboards.
-export const HomeMemoryShowcase = () => (
-  <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
-    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <p className="text-sm font-semibold text-sage-deep">Home Memory</p>
-        <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">Your home remembered</h3>
-      </div>
-      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-sage/15 text-sage-deep">
-        <Home className="h-6 w-6" />
-      </div>
-    </div>
-    <div className="grid gap-3 sm:grid-cols-2">
-      {[
-        ["Pet notes", carePlusShowcaseHomeMemoryProfile.petNotes.join(", ")],
-        ["Room priorities", carePlusShowcaseHomeMemoryProfile.roomPriorities.join(", ")],
-        ["Fragile areas", carePlusShowcaseHomeMemoryProfile.fragileAreas.join(", ")],
-        ["Favourite add-ons", carePlusShowcaseHomeMemoryProfile.favouriteAddOns.join(", ")],
-      ].map(([label, value]) => (
-        <div key={label} className="rounded-2xl bg-muted/50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
-          <p className="mt-1 text-sm font-medium">{value}</p>
-        </div>
-      ))}
-    </div>
-    <p className="mt-4 text-sm text-muted-foreground">Access notes and sensitive instructions should stay inside the authenticated app, not in SMS or push notifications.</p>
-  </Card>
-);
-
-// TODO: replace with real query - supabase.from('zooters') joined through booking/favourite history when this component is reused in authenticated member dashboards.
-export const FavouriteZooterShowcase = () => (
-  <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
-    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <p className="text-sm font-semibold text-sage-deep">Favourite Zooter</p>
-        <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">{carePlusShowcaseFavouriteZooter.name} knows the rhythm</h3>
-      </div>
-      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
-        <Heart className="h-6 w-6" />
-      </div>
-    </div>
-    <div className="rounded-3xl border border-accent/20 bg-gradient-to-br from-accent-soft to-background p-4 sm:p-5">
-      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="font-display text-2xl font-bold">{carePlusShowcaseFavouriteZooter.name}</p>
-          <p className="text-sm text-muted-foreground">Rating {carePlusShowcaseFavouriteZooter.rating} - {carePlusShowcaseFavouriteZooter.preferredFor}</p>
-        </div>
-        <span className="w-fit rounded-full bg-background px-3 py-1 text-xs font-bold text-sage-deep">Preferred</span>
-      </div>
-      <div className="mb-4 flex flex-wrap gap-2">
-        {carePlusShowcaseFavouriteZooter.specialties.map((specialty) => (
-          <span key={specialty} className="rounded-full bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground">{specialty}</span>
-        ))}
-      </div>
-      <Button asChild className="w-full rounded-full gradient-warm sm:w-auto" onClick={() => haptic("impact")}>
-        <Link to="/app">Book {carePlusShowcaseFavouriteZooter.name} again</Link>
-      </Button>
-    </div>
-  </Card>
-);
-
 export const SmartReminderList = ({ reminders = smartReminders }: { reminders?: SmartReminder[] }) => (
   <div className="space-y-3">
     {reminders.map((reminder) => (
@@ -196,7 +99,6 @@ export const SmartReminderList = ({ reminders = smartReminders }: { reminders?: 
   </div>
 );
 
-// TODO: replace with real query - supabase.from('property_accounts') for authenticated property dashboards.
 export const PropertyProfileCard = ({ profile }: { profile: PropertyProfile }) => (
   <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -211,33 +113,6 @@ export const PropertyProfileCard = ({ profile }: { profile: PropertyProfile }) =
   </Card>
 );
 
-// TODO: replace with real query - supabase.from('user_subscriptions') when this component is reused in authenticated member dashboards.
-export const CarePlusStatusPanel = () => (
-  <Card className="rounded-3xl border-0 bg-foreground p-5 text-background shadow-warm sm:p-6">
-    <div className="mb-6 flex items-start justify-between gap-4">
-      <div>
-        <p className="text-sm text-background/70">Care<span className="text-primary-glow">+</span> active</p>
-        <h3 className="font-display text-3xl font-bold sm:text-4xl">R{carePlusShowcaseMembership.priceZar}/month</h3>
-      </div>
-      <Crown className="h-9 w-9 shrink-0 text-accent sm:h-10 sm:w-10" />
-    </div>
-    <div className="grid gap-3 text-center sm:grid-cols-3">
-      <div className="rounded-2xl bg-background/10 p-3">
-        <p className="font-display text-2xl font-bold">{carePlusShowcaseMembership.homeReadinessScore}%</p>
-        <p className="text-xs text-background/70">Readiness</p>
-      </div>
-      <div className="rounded-2xl bg-background/10 p-3">
-        <p className="font-display text-2xl font-bold">R{carePlusShowcaseMembership.addOnCreditZar}</p>
-        <p className="text-xs text-background/70">Add-on credit</p>
-      </div>
-      <div className="rounded-2xl bg-background/10 p-3">
-        <p className="font-display text-2xl font-bold">{carePlusShowcaseMembership.zootCredMultiplier}x</p>
-        <p className="text-xs text-background/70">ZootCred</p>
-      </div>
-    </div>
-  </Card>
-);
-
 export const CarePlusSupportPromise = () => (
   <Card className="rounded-3xl border-border/70 bg-card p-5 shadow-card sm:p-6">
     <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -247,6 +122,3 @@ export const CarePlusSupportPromise = () => (
     <p className="text-sm leading-relaxed text-muted-foreground"><CarePlusMark /> members receive faster support handling for booking issues, cancellations, service concerns and replacement matching. Replacement is prioritised, not guaranteed.</p>
   </Card>
 );
-
-// Public marketing examples only. Authenticated dashboards must pass rows from supabase.from('property_accounts').
-export const defaultPropertyExamples = carePlusShowcasePropertyProfiles;

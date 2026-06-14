@@ -59,7 +59,7 @@ const renderConfigError = () => {
 
   const message = document.createElement("p");
   message.textContent =
-    "Set real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values for this environment. Preview/mock Supabase data has been disabled.";
+    "Set real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values for this environment. Placeholder Supabase data is disabled.";
   message.style.margin = "0";
   message.style.lineHeight = "1.6";
 
@@ -78,7 +78,7 @@ export const isSupabaseConfigured = Boolean(
 if (!isSupabaseConfigured) {
   renderConfigError();
   throw new Error(
-    "[Zoot] Supabase public configuration is missing or contains placeholder/preview values. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.",
+    "[Zoot] Supabase public configuration is missing or contains placeholder values. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.",
   );
 }
 

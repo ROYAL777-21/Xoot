@@ -1086,7 +1086,7 @@ export type Database = {
         | "babysitting"
         | "petcare"
         | "maintenance"
-      subscription_status: "active" | "paused" | "cancelled"
+      subscription_status: "active" | "paused" | "cancelled" | "pending_payment" | "past_due"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1243,7 +1243,7 @@ export const Constants = {
         "petcare",
         "maintenance",
       ],
-      subscription_status: ["active", "paused", "cancelled"],
+      subscription_status: ["active", "paused", "cancelled", "pending_payment", "past_due"],
     },
   },
 } as const

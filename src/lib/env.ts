@@ -63,7 +63,7 @@ export const getPublicConfigIssueForEnv = (env: PublicEnvironment, flags: Runtim
   }
 
   if (isProdBuild && !appEnv) {
-    return "VITE_APP_ENV is required for production-mode builds so mock or preview mode cannot ship silently.";
+    return "VITE_APP_ENV is required for production-mode builds so placeholder mode cannot ship silently.";
   }
 
   if (envText(env, "VITE_ENABLE_DEMO_MODE") === "true") {
@@ -76,7 +76,7 @@ export const getPublicConfigIssueForEnv = (env: PublicEnvironment, flags: Runtim
   }
 
   if (!hasSupabase && !flags.dev) {
-    return "Runtime requires real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values; mock/preview Supabase mode is disabled.";
+    return "Runtime requires real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values; placeholder Supabase mode is disabled.";
   }
 
   return null;

@@ -130,14 +130,14 @@ const AdminKyc = () => {
         <Card className="rounded-3xl overflow-hidden h-fit">
           <div className="p-4 border-b border-border"><p className="font-display font-bold">Queue ({apps.filter((a) => a.status === "submitted").length})</p></div>
           <div className="divide-y divide-border max-h-[70vh] overflow-y-auto">
-            {apps.map((a) => <button key={a.id} onClick={() => openApp(a)} className={`block w-full text-left px-4 py-3 hover:bg-muted ${active?.id === a.id ? "bg-muted" : ""}`}><p className="font-medium text-sm truncate">{a.full_name}</p><p className="text-xs text-muted-foreground capitalize">{a.service_category} · <span className={a.status === "submitted" ? "text-primary" : a.status === "approved" ? "text-sage-deep" : "text-destructive"}>{a.status}</span></p></button>)}
+            {apps.map((a) => <button key={a.id} onClick={() => openApp(a)} className={`block w-full text-left px-4 py-3 hover:bg-muted ${active?.id === a.id ? "bg-muted" : ""}`}><p className="font-medium text-sm truncate">{a.full_name ?? a.name ?? "Unnamed applicant"}</p><p className="text-xs text-muted-foreground capitalize">{a.service_category ?? "cleaning"} · <span className={a.status === "submitted" ? "text-primary" : a.status === "approved" ? "text-sage-deep" : "text-destructive"}>{a.status}</span></p></button>)}
           </div>
         </Card>
 
         {active ? (
           <Card className="p-6 rounded-3xl">
-            <h2 className="font-display text-2xl font-bold mb-1">{active.full_name}</h2>
-            <p className="text-sm text-muted-foreground mb-4">{active.email} · {active.phone} · {active.city}</p>
+            <h2 className="font-display text-2xl font-bold mb-1">{active.full_name ?? active.name ?? "Unnamed applicant"}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{active.email ?? "No email"} · {active.phone ?? "No phone"} · {active.city ?? active.suburb ?? "No area"}</p>
             <div className="grid sm:grid-cols-2 gap-2 text-sm mb-4">
               <Field k="ID number" v={active.id_number} /><Field k="DOB" v={active.date_of_birth} /><Field k="Address" v={active.address} /><Field k="Bank" v={active.bank_name} /><Field k="Emergency contact" v={`${active.emergency_contact_name ?? ""} ${active.emergency_contact_phone ?? ""}`} /><Field k="Reference 1" v={`${active.reference_1_name ?? ""} ${active.reference_1_phone ?? ""}`} /><Field k="Reference 2" v={`${active.reference_2_name ?? ""} ${active.reference_2_phone ?? ""}`} /><Field k="Consent" v={active.background_check_consent ? "Yes" : "No"} />
             </div>

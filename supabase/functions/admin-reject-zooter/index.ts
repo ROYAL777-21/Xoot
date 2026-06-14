@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
   try {
     const { data: application, error: applicationError } = await supa
       .from("zooter_applications")
-      .select("id,user_id,status,full_name,email,service_category")
+      .select("*")
       .eq("id", idResult.id)
       .maybeSingle();
     if (applicationError || !application?.id) return fail("application not found", origin, 404);
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
       changes: {
         from: { status: application.status },
         to: { status: "rejected", reviewer_notes: reasonResult.reason },
-        service_category: application.service_category,
+        service_category: application.service_category ?? "cleaning",
       },
       reason: reasonResult.reason!,
       ipAddress: req.headers.get("x-forwarded-for"),
@@ -45,8 +45,7 @@ Deno.serve(async (req) => {
       .update({
         status: "rejected",
         reviewer_notes: reasonResult.reason,
-        reviewed_by: user.id,
-        reviewed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .eq("id", application.id)
       .select("id,status")
@@ -63,13 +62,15 @@ Deno.serve(async (req) => {
       .eq("subject_id", application.id)
       .eq("queue_type", "kyc");
 
-    await insertNotification(supa, {
-      userId: application.user_id,
-      kind: "zooter_application_rejected",
-      title: "Application update",
-      body: "Your Zoot contractor application needs attention. Open onboarding for the reviewer notes and next steps.",
-      link: "/zooter/apply",
-    });
+    if (application.user_id) {
+      await insertNotification(supa, {
+        userId: application.user_id,
+        kind: "zooter_application_rejected",
+        title: "Application update",
+        body: "Your Zoot contractor application needs attention. Open onboarding for the reviewer notes and next steps.",
+        link: "/zooter/apply",
+      });
+    }
 
     await insertOutbox(supa, {
       source_table: "zooter_applications",

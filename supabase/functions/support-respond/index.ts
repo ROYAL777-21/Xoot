@@ -66,7 +66,7 @@ type UserRole = "user" | "zooter";
 
 type AssistantResult = {
   response: string;
-  source: "openai_responses" | "zoot_support_rules" | "human_escalation";
+  source: "openai_responses" | "human_escalation";
   requestId?: string | null;
 };
 
@@ -95,50 +95,6 @@ const escalationKeywords = [
 const includesAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
 
 const shouldEscalate = (text: string) => includesAny(text, escalationKeywords);
-
-const buildResponse = (text: string, role: UserRole) => {
-  if (text.includes("cleaner") || text.includes("cleaning") || text.includes("book") || text.includes("bryanston") || text.includes("rosebank")) {
-    return "Zoot helps you book vetted home and business cleaning support in launch areas like Bryanston and Rosebank. Tell us the suburb, property type, timing, and any special notes, then create or view your booking in the app so Zoot can keep payment, assignment, and support history protected.";
-  }
-
-  if (text.includes("office") || text.includes("business") || text.includes("commercial")) {
-    return "For office cleaning, Zoot is best when you share the office size, preferred arrival window, bathroom or kitchen needs, and whether this is a once-off reset or recurring clean. A human support reviewer can help if the job needs custom scheduling or priority handling.";
-  }
-
-  if (text.includes("care+") || text.includes("care plus") || text.includes("membership")) {
-    return "Care+ is R99/month and keeps your home remembered, protected, and ready. It includes Home Memory, Favourite Zooter rebooking, priority booking windows, priority replacement support, 1.5x ZootCred, a R30 monthly add-on credit, smart reminders, property profiles, and priority support.";
-  }
-
-  if (text.includes("join zoot") || text.includes("apply") || text.includes("onboarding") || text.includes("document") || text.includes("verification")) {
-    return "To join Zoot as a Zooter, complete the in-app application, upload the required trust documents, consent to review, and finish training before activation. Keep identity, banking, and address documents inside the app only so the trust team can review them safely.";
-  }
-
-  if (text.includes("training") || text.includes("badge") || text.includes("rank") || text.includes("points")) {
-    return "Zooter training, badges, points, and ranking are designed to reward reliability, punctuality, quality, and completed learning modules. If something looks wrong on your dashboard, send the module or badge name so support can route it for review.";
-  }
-
-  if (text.includes("earn") || text.includes("payout") || text.includes("income") || text.includes("bank")) {
-    return "Zooter earnings and payout questions need account-safe handling. Check the app for job history and banking verification status, then open a support ticket if a payout, completed job, or bank detail needs human review.";
-  }
-
-  if (text.includes("zootcred") || text.includes("credit")) {
-    return "ZootCred rewards completed bookings and can help reduce future booking costs where eligible. Care+ members earn 1.5x ZootCred on completed bookings and receive a R30 monthly add-on credit that must be used with a completed booking.";
-  }
-
-  if (text.includes("zooter") && (text.includes("favorite") || text.includes("favourite") || text.includes("book again"))) {
-    return "You can save a preferred Zooter and rebook them from your Care+ experience using the Book Nomsa again pattern. Availability still depends on the Zooter's schedule, so support can help when plans need attention.";
-  }
-
-  if (text.includes("airbnb") || text.includes("landlord") || text.includes("property")) {
-    return "Property Profiles help hosts and landlords save access notes, room priorities, turnover instructions, cleaning history, and favourite add-ons for each home. Keep lockbox and gate details inside the authenticated app rather than email or SMS.";
-  }
-
-  if (role === "zooter") {
-    return "Thanks for contacting Zoot Support. We have noted your message and will route it to the right internal queue for jobs, onboarding, verification, training, earnings, or trust review so a human reviewer can follow up in the app if needed.";
-  }
-
-  return "Thanks for contacting Zoot Support. We have noted your message and will route it to the right support queue for bookings, Care+, property profiles, trust, account, or service-quality help.";
-};
 
 const extractOpenAiText = (payload: any) => {
   if (typeof payload?.output_text === "string" && payload.output_text.trim()) return payload.output_text.trim();
@@ -258,17 +214,19 @@ Deno.serve(async (req) => {
     const userRole: UserRole = role === "zooter" ? "zooter" : "user";
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
-    const assistant = escalated
+    const openAiAssistant = escalated ? null : await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole });
+    const assistant: AssistantResult = escalated
       ? {
           response: "I've flagged this to our human support team. They'll review it in the app and follow up through the right support queue.",
           source: "human_escalation" as const,
           requestId: null,
         }
-      : (await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole })) ?? {
-          response: buildResponse(text, userRole),
-          source: "zoot_support_rules" as const,
+      : openAiAssistant ?? {
+          response: "Zoot Support could not answer this automatically right now. A human support reviewer can handle it in the app without making unsupported claims.",
+          source: "human_escalation" as const,
           requestId: null,
         };
+    const needsHumanReview = escalated || !openAiAssistant;
 
     if (safeTicketId && assistant.response) {
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -276,7 +234,7 @@ Deno.serve(async (req) => {
         const adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
         const { error: updateError } = await adminClient
           .from("support_tickets")
-          .update({ ai_response: assistant.response, status: escalated ? "escalated" : "open" })
+          .update({ ai_response: assistant.response, status: needsHumanReview ? "escalated" : "open" })
           .eq("id", safeTicketId)
           .eq("user_id", authData.user.id);
         if (updateError) console.warn("Support assistant ticket update failed", { ticketId: safeTicketId });
@@ -288,7 +246,7 @@ Deno.serve(async (req) => {
     return json(
       {
         response: assistant.response,
-        escalated,
+        escalated: needsHumanReview,
         source: assistant.source,
         openai_request_id: assistant.requestId,
       },

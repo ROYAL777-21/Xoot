@@ -18,7 +18,7 @@ type BotMessage = {
 type SupportBotReply = {
   response?: string;
   escalated?: boolean;
-  source?: "openai_responses" | "zoot_support_rules" | "human_escalation";
+  source?: "openai_responses" | "human_escalation";
 };
 
 const secretLikePattern =
@@ -30,7 +30,7 @@ const initialMessages: BotMessage[] = [
   {
     id: "welcome",
     role: "assistant",
-    body: "Hi, I am Zoot. Ask about bookings, Care+, Zooter onboarding, office cleans, Airbnb turnovers, support routing or what to prepare before a clean.",
+    body: "Hi, I am Zoot Support. Sign in to ask protected support questions. I will not answer from fake account data or ask for secrets.",
   },
 ];
 
@@ -84,8 +84,8 @@ export const ZootSupportBot = () => {
 
     if (!user) {
       appendMessage({
-        role: "assistant",
-        body: "Please sign in before Zoot can look at your account or route a support question. Public questions are best handled after sign-in so your bookings and tickets stay protected.",
+        role: "system",
+        body: "Sign in before asking Zoot Support to answer. Booking, payment, address and account context must stay behind authenticated support.",
       });
       return;
     }
@@ -111,7 +111,7 @@ export const ZootSupportBot = () => {
         role: "assistant",
         body:
           reply?.response ??
-          "Zoot could not prepare a full answer just now. Use the support page so a human can review the request in the app.",
+          "Zoot Support could not answer automatically. Open Support so a human can review the request in the app.",
       });
       if (reply?.escalated) {
         appendMessage({
@@ -123,7 +123,7 @@ export const ZootSupportBot = () => {
     } catch {
       appendMessage({
         role: "assistant",
-        body: "I could not reach Zoot Support right now. Please try again, or open Support from the app menu for ticket handling.",
+        body: "I could not reach authenticated Zoot Support right now. Open Support from the app menu for ticket handling.",
       });
       haptic("warning");
     } finally {
@@ -195,14 +195,14 @@ export const ZootSupportBot = () => {
                 placeholder={user ? "Ask Zoot..." : "Ask after signing in..."}
                 className="native-input rounded-full bg-background/90"
               />
-              <Button type="submit" size="icon" className="interactive-press rounded-full" disabled={sending || !body.trim()}>
+              <Button type="submit" size="icon" className="interactive-press rounded-full" disabled={!user || sending || !body.trim()}>
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </form>
             <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
               <span>No secrets, OTPs or access codes.</span>
-              <Link to="/app/support" className="font-semibold text-primary underline-offset-4 hover:underline">
-                Open Support
+              <Link to={user ? "/app/support" : "/auth"} className="font-semibold text-primary underline-offset-4 hover:underline">
+                {user ? "Open Support" : "Sign in"}
               </Link>
             </div>
           </div>
@@ -227,4 +227,3 @@ export const ZootSupportBot = () => {
     </div>
   );
 };
-
