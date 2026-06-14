@@ -85,8 +85,19 @@ const hasRealSupabase = Boolean(
     !isPlaceholderSupabaseKey(text("VITE_SUPABASE_PUBLISHABLE_KEY")),
 );
 
-if ((process.env.CI || appEnv === "staging" || appEnv === "production") && !hasRealSupabase) {
-  fail("builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values.");
+const requiresRealSupabase =
+  appEnv === "staging" ||
+  appEnv === "production" ||
+  text("ZOOT_REQUIRE_REAL_PUBLIC_ENV") === "true";
+
+if (requiresRealSupabase && !hasRealSupabase) {
+  fail("staging and production builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values.");
+}
+
+if (process.env.CI && !requiresRealSupabase && !hasRealSupabase) {
+  console.warn(
+    "Zoot environment warning: CI is running code checks without deploy Supabase config. Runtime still fails loudly until real public Supabase values are set.",
+  );
 }
 
 console.log(`Zoot public environment check passed for ${appEnv || "local"}.`);
