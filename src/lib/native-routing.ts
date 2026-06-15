@@ -38,6 +38,7 @@ const screenRoutes = new Map<string, string>([
   ["booking_status", "/app/bookings"],
   ["booking_live_activity", "/app/bookings"],
   ["bookings", "/app/bookings"],
+  ["callback", "/auth/callback"],
   ["care", "/app/plans"],
   ["care_plus", "/app/plans"],
   ["care_plus_apply", "/care-plus/apply"],
@@ -155,6 +156,8 @@ const routeFromZootUrl = (url: URL) => {
     return bookingRoute(bookingIdParam);
   }
 
+  if (host === "callback") return toSafeRoute(`/auth/callback${url.search}${url.hash}`);
+
   const mapped = screenRoutes.get(host);
   if (mapped && !pathname) return mapped;
 
@@ -175,7 +178,7 @@ const routeFromUrl = (candidate: string) => {
 
   try {
     const url = new URL(value);
-    if (url.protocol === "zoot:") return routeFromZootUrl(url);
+    if (url.protocol === "zoot:" || url.protocol === "za.co.zoot.app:") return routeFromZootUrl(url);
     if (url.protocol === "https:" || url.protocol === "http:") return routeForUrl(url);
   } catch {
     return toSafeRoute(value);

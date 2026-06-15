@@ -126,7 +126,7 @@ const Book = () => {
   useEffect(() => {
     if (step !== 2) return;
     setLoadingZooters(true);
-    (supabase as any).from("zooters_public").select("*").eq("active", true).limit(30).then(({ data }) => {
+    (supabase as any).from("zooters_public").select("*").limit(30).then(({ data }) => {
       const ranked = sortZootersForMarketplace((data ?? []) as Zooter[]);
       const preferred = preferredZooterId ? ranked.find((z) => z.id === preferredZooterId) : null;
       setZooters(ranked);

@@ -114,10 +114,12 @@ const buildOpenAiSupportResponse = async ({
   subject,
   body,
   role,
+  signedIn,
 }: {
   subject: string;
   body: string;
   role: UserRole;
+  signedIn: boolean;
 }): Promise<AssistantResult | null> => {
   const apiKey = Deno.env.get("OPENAI_API_KEY");
   if (!apiKey) return null;
@@ -139,9 +141,11 @@ const buildOpenAiSupportResponse = async ({
       instructions: [
         "You are Zoot Assistant, the in-app support concierge for Zoot home-care bookings in South Africa.",
         "You can answer a wide range of practical Zoot questions about booking cleaners, launch areas, Care+, ZootCred, property profiles, office cleaning, Airbnb turnovers, onboarding, training, support routing, and how to prepare for a clean.",
+        "Guests may receive general guidance, but you have no account, booking, payment, address, ticket, or private user context unless the request is authenticated.",
         "Give short, calm, practical help in 2-4 sentences with one clear next step.",
         "Write in a human, warm, premium service tone; never sound like a generic AI policy bot.",
         "Prefer app-safe guidance: tell people to use the authenticated app for bookings, ticket details, private property notes, and support follow-up.",
+        "If the user asks about their own booking, payment, refund, address, cleaner, support ticket, or private history while unauthenticated, say you can explain the general process but they must sign in for protected account help.",
         "Never claim a refund, payment, insurance, safety, or contractor replacement is approved.",
         "Never ask for passwords, OTPs, full card numbers, gate codes, access codes, lockbox codes, or private keys.",
         "For anything risky, tell the user a human support reviewer will handle it in the app.",
@@ -154,6 +158,7 @@ const buildOpenAiSupportResponse = async ({
               type: "input_text",
               text: [
                 `Role: ${role}`,
+                `Authenticated: ${signedIn ? "yes" : "no"}`,
                 `Subject: ${redactSupportText(subject)}`,
                 `Message: ${redactSupportText(body)}`,
               ].join("\n"),
@@ -185,15 +190,16 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) return json({ error: "authentication required" }, 401, origin);
-
-    const authClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
-    const { data: authData, error: authError } = await authClient.auth.getUser();
-    if (authError || !authData.user) return json({ error: "authentication required" }, 401, origin);
+    const authClient = authHeader?.startsWith("Bearer ")
+      ? createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_ANON_KEY")!,
+          { global: { headers: { Authorization: authHeader } } },
+        )
+      : null;
+    const { data: authData } = authClient
+      ? await authClient.auth.getUser().catch(() => ({ data: { user: null } }))
+      : { data: { user: null } };
 
     const { subject, body, role, ticket_id } = await req.json();
     const safeSubject = sanitiseSupportText(subject, 180);
@@ -202,6 +208,7 @@ Deno.serve(async (req) => {
     if (!safeSubject || !safeBody) return json({ error: "subject and body required" }, 400, origin);
 
     if (safeTicketId) {
+      if (!authClient || !authData.user) return json({ error: "authentication required for ticket support" }, 401, origin);
       const { data: ticket, error: ticketError } = await authClient
         .from("support_tickets")
         .select("id")
@@ -214,10 +221,15 @@ Deno.serve(async (req) => {
     const userRole: UserRole = role === "zooter" ? "zooter" : "user";
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
-    const openAiAssistant = escalated ? null : await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole });
+    const signedIn = Boolean(authData.user);
+    const openAiAssistant = escalated
+      ? null
+      : await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole, signedIn });
     const assistant: AssistantResult = escalated
       ? {
-          response: "I've flagged this to our human support team. They'll review it in the app and follow up through the right support queue.",
+          response: signedIn
+            ? "I've flagged this to our human support team. They'll review it in the app and follow up through the right support queue."
+            : "I can explain the general process, but this needs protected support. Sign in to Zoot and open Support so a human reviewer can handle the booking, payment, safety or account detail.",
           source: "human_escalation" as const,
           requestId: null,
         }
@@ -228,7 +240,7 @@ Deno.serve(async (req) => {
         };
     const needsHumanReview = escalated || !openAiAssistant;
 
-    if (safeTicketId && assistant.response) {
+    if (safeTicketId && authData.user && assistant.response) {
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if (serviceRoleKey) {
         const adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);

@@ -91,7 +91,7 @@ const CarePlus = () => {
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 {state.status === "unauthenticated" ? (
                   <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => haptic("success")}>
-                    <Link to="/auth">Sign in to join <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                    <Link to="/auth">Join Care+ membership <ArrowRight className="ml-1 h-4 w-4" /></Link>
                   </Button>
                 ) : state.status === "not_member" || state.status === "cancelled" ? (
                   <Button size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={joinCarePlus} disabled={carePlus.actionLoading}>
@@ -209,7 +209,7 @@ const CarePlus = () => {
               <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Home care should not reset every time.</h2>
               <p className="mt-4 max-w-2xl text-base opacity-90 sm:text-lg">Care+ keeps the useful context in the app: household notes, favourite people, ZootCred, property profiles and support handoff history.</p>
               <Button asChild size="lg" variant="secondary" className="mt-8 h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => haptic("success")}>
-                <Link to={state.status === "unauthenticated" ? "/auth" : "/app/plans"}>{state.status === "active" ? "Manage Care+" : "Start Care+"}</Link>
+                <Link to={state.status === "unauthenticated" ? "/auth" : "/app/plans"}>{state.status === "active" ? "Manage Care+" : "Join Care+ membership"}</Link>
               </Button>
             </div>
             <div className="grid gap-5">
@@ -236,10 +236,10 @@ const CarePlusStatePanel = ({ carePlus, zootCred }: { carePlus: CarePlusHook; zo
     return (
       <Card className="rounded-3xl border-border/70 bg-card/90 p-6 shadow-card">
         <Crown className="mb-5 h-8 w-8 text-primary" />
-        <h2 className="font-display text-3xl font-bold">Sign in to see your Care+ status</h2>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Membership status, ZootCred and property reminders are private account data. Sign in before joining or managing Care+.</p>
+        <h2 className="font-display text-3xl font-bold">Join the calm-home layer</h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Care+ is for repeat homes that should not have to explain themselves every week: saved preferences, priority support, favourite Zooter continuity and monthly add-on credit.</p>
         <Button asChild className="mt-6 rounded-full gradient-warm">
-          <Link to="/auth">Sign in</Link>
+          <Link to="/auth">Join Care+ membership</Link>
         </Button>
       </Card>
     );

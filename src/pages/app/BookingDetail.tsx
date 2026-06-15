@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -22,12 +23,21 @@ import {
 import { haptic } from "@/lib/haptics";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 import { getClientVisibleStatus, normaliseBookingStatus, type BookingStatus } from "@/lib/booking-state-machine";
+import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { toast } from "sonner";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
 type TimelineEvent = { id: string; status: string; label: string; created_at: string };
 type CompletionPhoto = { id: string; photo_type: "before" | "after"; storage_path: string; created_at: string };
 type Review = { id: string; rating: number; notes: string | null };
+type MaskedCallDetails = {
+  call_session_id?: string;
+  status?: string;
+  proxy_numbers?: {
+    client?: string | null;
+    zooter?: string | null;
+  } | null;
+};
 
 const statusSteps = [
   { keys: ["contractor_accepted", "confirmed"], label: "Zooter confirmed" },
@@ -106,6 +116,7 @@ const BookingDetail = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
   const [requestingCall, setRequestingCall] = useState(false);
+  const [maskedCall, setMaskedCall] = useState<MaskedCallDetails | null>(null);
   const [eta, setEta] = useState(12);
 
   const load = useCallback(async () => {
@@ -251,26 +262,35 @@ const BookingDetail = () => {
       status: booking.status,
       completedAt: booking.job_completed_at,
       cancelledAt: booking.cancelled_at,
+      durationHours: booking.duration_hours,
     })) {
       toast.error("Masked calls are available during the active booking window.");
       return;
     }
     setRequestingCall(true);
-    let callSessionId: string | undefined;
     try {
-      const call = await invokeOpsWorkflow<{ call_session_id?: string }>({
-        action: "masked_call_requested",
-        bookingId: id,
+      const { data, error } = await supabase.functions.invoke("create-masked-call", {
+        body: { booking_id: id },
       });
-      callSessionId = call.call_session_id;
+      if (error) throw error;
+
+      const call = (data ?? {}) as MaskedCallDetails;
+      setMaskedCall(call);
 
       const nativeInput = getNativeBookingActionInput();
       if (nativeInput) {
         sendNativeBookingAction(createNativeBookingActionPayload("masked_call", {
           ...nativeInput,
-          callSessionId,
+          callSessionId: call.call_session_id,
           updatedAt: new Date().toISOString(),
         }));
+      }
+
+      const callerProxyNumber = user.id === booking.user_id
+        ? call.proxy_numbers?.client
+        : call.proxy_numbers?.zooter;
+      if (callerProxyNumber && Capacitor.isNativePlatform()) {
+        window.location.href = `tel:${callerProxyNumber.replace(/[^\d+]/g, "")}`;
       }
     } catch (error) {
       setRequestingCall(false);
@@ -339,6 +359,12 @@ const BookingDetail = () => {
     load();
   };
 
+  const chooseAndUploadPhoto = async (photoType: "before" | "after") => {
+    const file = await captureOrSelectImage();
+    if (!file) return;
+    await uploadPhoto(photoType, file);
+  };
+
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (!booking) return null;
 
@@ -353,6 +379,13 @@ const BookingDetail = () => {
   const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
   const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
   const isAssignedZooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
+  const maskedCallAvailable = Boolean(canonicalStatus && ["en_route", "in_progress"].includes(canonicalStatus) && canAccessSensitiveBookingData({
+    scheduledAt: booking.scheduled_at,
+    status: booking.status,
+    completedAt: booking.job_completed_at,
+    cancelledAt: booking.cancelled_at,
+    durationHours: booking.duration_hours,
+  }));
 
   return (
     <div className="container py-6 lg:py-10 max-w-5xl">
@@ -393,8 +426,28 @@ const BookingDetail = () => {
               {isAssignedZooter && canonicalStatus === "en_route" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
               {isAssignedZooter && canonicalStatus === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
               {isAssignedZooter && canonicalStatus === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
-              <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2"><Phone className="h-4 w-4 mr-1" /> Request masked call</Button>
+              {maskedCallAvailable && (
+                <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2">
+                  {requestingCall ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Phone className="h-4 w-4 mr-1" />}
+                  Request masked call
+                </Button>
+              )}
             </div>
+            {maskedCall?.proxy_numbers && (
+              <div className="mx-5 mb-5 rounded-2xl border border-border bg-muted/35 p-3 text-sm">
+                <p className="mb-2 font-semibold">Masked call proxy numbers</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-xl bg-background/75 p-2">
+                    <p className="text-xs text-muted-foreground">Client proxy</p>
+                    <p className="font-medium">{maskedCall.proxy_numbers.client ?? "Pending Twilio assignment"}</p>
+                  </div>
+                  <div className="rounded-xl bg-background/75 p-2">
+                    <p className="text-xs text-muted-foreground">Zooter proxy</p>
+                    <p className="font-medium">{maskedCall.proxy_numbers.zooter ?? "Pending Twilio assignment"}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </Card>
 
           <Card className="rounded-3xl p-5">
@@ -418,7 +471,18 @@ const BookingDetail = () => {
               <div className="grid sm:grid-cols-2 gap-3">
                 {(["before", "after"] as const).map((kind) => {
                   const done = photos.some((p) => p.photo_type === kind);
-                  return <label key={kind} className={`rounded-2xl border p-4 cursor-pointer ${done ? "border-sage bg-accent-soft" : "border-border"}`}><input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadPhoto(kind, e.target.files[0])} /><span className="flex items-center gap-2 font-semibold capitalize"><ShieldCheck className="h-4 w-4" /> {kind} photo</span><p className="text-xs text-muted-foreground mt-1">{done ? "Uploaded" : uploading === kind ? "Uploading..." : "Tap to upload"}</p></label>;
+                  return (
+                    <button
+                      key={kind}
+                      type="button"
+                      onClick={() => void chooseAndUploadPhoto(kind)}
+                      disabled={Boolean(uploading)}
+                      className={`rounded-2xl border p-4 text-left transition-smooth ${done ? "border-sage bg-accent-soft" : "border-border hover:border-primary/40"}`}
+                    >
+                      <span className="flex items-center gap-2 font-semibold capitalize"><ShieldCheck className="h-4 w-4" /> {kind} photo</span>
+                      <p className="text-xs text-muted-foreground mt-1">{done ? "Uploaded" : uploading === kind ? "Uploading..." : "Tap to capture or select"}</p>
+                    </button>
+                  );
                 })}
               </div>
             </Card>

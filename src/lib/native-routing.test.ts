@@ -14,6 +14,12 @@ describe("resolveNativeRoute", () => {
     expect(resolveNativeRoute("https://zoot.co.za/auth/callback?code=abc&type=signup")).toBe(
       "/auth/callback?code=abc&type=signup",
     );
+    expect(resolveNativeRoute("zoot://callback?code=abc&next=%2Fapp")).toBe(
+      "/auth/callback?code=abc&next=%2Fapp",
+    );
+    expect(resolveNativeRoute("za.co.zoot.app://callback?code=abc&type=oauth")).toBe(
+      "/auth/callback?code=abc&type=oauth",
+    );
     expect(resolveNativeRoute("zoot://auth/reset#access_token=token&type=recovery")).toBe(
       "/auth/reset#access_token=token&type=recovery",
     );

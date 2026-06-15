@@ -13,6 +13,7 @@ import { ShieldCheck, Loader2, ArrowRight, ArrowLeft, Upload, FileCheck2, Sparkl
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { ZooterApplicationInput } from "@/lib/validators";
 
 type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
@@ -247,6 +248,12 @@ const Apply = () => {
     }
   };
 
+  const captureSelfie = async () => {
+    const file = await captureOrSelectImage();
+    if (!file) return;
+    await handleUpload("selfie", file);
+  };
+
   const requiredForStep = () => {
     if (step === 0) return ["full_name", "phone", "email", "date_of_birth", "id_number", "bio", "years_experience"];
     if (step === 1) return ["address", "city", "suburb", "postal_code"];
@@ -372,6 +379,16 @@ const Apply = () => {
                         {isUploading ? "Uploading" : hasDoc ? "Replace" : uploadLocked ? "Wait" : "Upload"}
                       </span>
                     </label>
+                    {d.key === "selfie" && (
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                        onClick={() => void captureSelfie()}
+                        disabled={uploadLocked}
+                      >
+                        Camera
+                      </button>
+                    )}
                   </div>
                 );
               })}

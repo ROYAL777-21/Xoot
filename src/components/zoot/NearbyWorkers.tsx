@@ -17,7 +17,6 @@ export const NearbyWorkers = () => {
     (supabase as any)
       .from("zooters_public")
       .select("*")
-      .eq("active", true)
       .order("rating", { ascending: false })
       .limit(4)
       .then(({ data }) => {

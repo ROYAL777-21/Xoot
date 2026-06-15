@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2, ShieldCheck } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SEO } from "@/components/SEO";
 import { getSafeRedirectPath } from "@/lib/auth-security";
+import { enableNativeQuickUnlock } from "@/lib/native-auth";
 import { sanitiseSearchParam } from "@/lib/sanitise";
+
+type NativeListenerHandle = { remove: () => Promise<void> | void };
+type CapacitorAppUrlOpen = { url?: string };
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -16,28 +21,63 @@ const AuthCallback = () => {
 
   useEffect(() => {
     let cancelled = false;
+    let completed = false;
+    let appUrlOpenHandle: NativeListenerHandle | null = null;
 
-    const completeAuth = async () => {
+    const getCallbackParams = (rawUrl?: string) => {
+      if (!rawUrl) return searchParams;
       try {
-        const code = sanitiseSearchParam(searchParams.get("code"));
+        return new URL(rawUrl).searchParams;
+      } catch {
+        return searchParams;
+      }
+    };
+
+    const completeAuth = async (rawUrl?: string) => {
+      if (completed) return;
+      try {
+        const callbackParams = getCallbackParams(rawUrl);
+        const code = sanitiseSearchParam(callbackParams.get("code"));
+        const redirectPath = getSafeRedirectPath(callbackParams.get("next"), nextPath);
+        const isNativePendingCallback = Capacitor.isNativePlatform() && !code;
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
         }
 
         const { data: { session } } = await supabase.auth.getSession();
+        if (!session && isNativePendingCallback) return;
         if (!session) throw new Error("Missing auth session");
 
-        if (!cancelled) navigate(nextPath, { replace: true });
+        completed = true;
+        await enableNativeQuickUnlock();
+        if (!cancelled) navigate(redirectPath, { replace: true });
       } catch {
         if (!cancelled) setStatus("error");
       }
     };
 
-    void completeAuth();
+    const registerNativeCallback = async () => {
+      if (!Capacitor.isNativePlatform()) return;
+
+      try {
+        const { App: CapacitorApp } = await import("@capacitor/app");
+        const launch = await CapacitorApp.getLaunchUrl();
+        if (launch?.url) void completeAuth(launch.url);
+        appUrlOpenHandle = await CapacitorApp.addListener("appUrlOpen", (event: CapacitorAppUrlOpen) => {
+          if (event?.url) void completeAuth(event.url);
+        });
+      } catch {
+        // Browser builds and test environments do not expose Capacitor App listeners.
+      }
+    };
+
+    void completeAuth(window.location.href);
+    void registerNativeCallback();
 
     return () => {
       cancelled = true;
+      void appUrlOpenHandle?.remove();
     };
   }, [navigate, nextPath, searchParams]);
 

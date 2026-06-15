@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { SEO } from "@/components/SEO";
 import { toast } from "sonner";
-import { AlertCircle, Eye, EyeOff, KeyRound, Loader2, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Fingerprint, KeyRound, Loader2, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { haptic } from "@/lib/haptics";
+import { clearNativeQuickUnlock, enableNativeQuickUnlock, getNativeQuickUnlockEnabled, isNativeAuthPlatform } from "@/lib/native-auth";
 import {
   getAuthFormIssue,
   getAuthRedirectTo,
@@ -82,6 +83,9 @@ const Auth = () => {
   const [providerLoading, setProviderLoading] = useState<SocialAuthProvider | null>(null);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [isMobileRuntime, setIsMobileRuntime] = useState(false);
+  const [quickUnlockEnabled, setQuickUnlockEnabled] = useState(false);
+  const [quickUnlockLoading, setQuickUnlockLoading] = useState(false);
 
   const redirectPath = useMemo(() => getRedirectPath(location.state), [location.state]);
   const authMode = mode === "signup" ? "signup" : "signin";
@@ -100,6 +104,22 @@ const Auth = () => {
   useEffect(() => {
     if (user && mode !== "forgot") navigate(redirectPath, { replace: true });
   }, [user, mode, navigate, redirectPath]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const syncQuickUnlock = async () => {
+      const nativeRuntime = isNativeAuthPlatform();
+      if (!cancelled) setIsMobileRuntime(nativeRuntime);
+      const enabled = await getNativeQuickUnlockEnabled();
+      if (!cancelled) setQuickUnlockEnabled(enabled);
+    };
+
+    void syncQuickUnlock();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!lockoutUntil) return;
@@ -177,6 +197,7 @@ const Auth = () => {
 
     setFailedAttempts(0);
     setLockoutUntil(null);
+    await enableNativeQuickUnlock();
     haptic("success");
     toast.success("One-time code verified. Welcome to Zoot.");
     navigate(redirectPath, { replace: true });
@@ -207,6 +228,7 @@ const Auth = () => {
 
       haptic("success");
       if (data.session) {
+        await enableNativeQuickUnlock();
         toast.success("Welcome to Zoot. Your account is ready.");
         navigate(redirectPath, { replace: true });
       } else {
@@ -221,9 +243,31 @@ const Auth = () => {
 
     setFailedAttempts(0);
     setLockoutUntil(null);
+    await enableNativeQuickUnlock();
     haptic("success");
     toast.success("Welcome back.");
     navigate(redirectPath, { replace: true });
+  };
+
+  const handleQuickUnlock = async () => {
+    if (!isMobileRuntime || quickUnlockLoading) return;
+
+    setQuickUnlockLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        await clearNativeQuickUnlock();
+        setQuickUnlockEnabled(false);
+        haptic("warning");
+        toast.error("Your saved Zoot session expired. Sign in securely to continue.");
+        return;
+      }
+
+      haptic("success");
+      navigate(redirectPath, { replace: true });
+    } finally {
+      setQuickUnlockLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -373,6 +417,19 @@ const Auth = () => {
               );
             })}
           </div>
+        )}
+
+        {mode === "signin" && isMobileRuntime && quickUnlockEnabled && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="mb-5 h-11 w-full rounded-xl"
+            onClick={() => void handleQuickUnlock()}
+            disabled={loading || providerLoading !== null || quickUnlockLoading}
+          >
+            {quickUnlockLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Fingerprint className="mr-2 h-4 w-4" />}
+            Sign in with Face ID / Touch ID
+          </Button>
         )}
 
         {!isForgotPassword && !isOtpMode && (

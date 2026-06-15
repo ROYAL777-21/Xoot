@@ -30,7 +30,7 @@ const initialMessages: BotMessage[] = [
   {
     id: "welcome",
     role: "assistant",
-    body: "Hi, I am Zoot Support. Sign in to ask protected support questions. I will not answer from fake account data or ask for secrets.",
+    body: "Hi, I am Zoot Support. Ask general Zoot questions here; sign in only when you need protected booking, payment, address or account help. I will not invent account data or ask for secrets.",
   },
 ];
 
@@ -82,15 +82,9 @@ export const ZootSupportBot = () => {
     appendMessage({ role: "user", body: text });
     setBody("");
 
-    if (!user) {
-      appendMessage({
-        role: "system",
-        body: "Sign in before asking Zoot Support to answer. Booking, payment, address and account context must stay behind authenticated support.",
-      });
-      return;
-    }
-
-    if (!checkRateLimit("zoot-global-bot", 8, 10 * 60_000)) {
+    const rateLimitKey = user ? "zoot-global-bot" : "zoot-guest-bot";
+    const rateLimit = user ? 8 : 4;
+    if (!checkRateLimit(rateLimitKey, rateLimit, 10 * 60_000)) {
       toast.error("Zoot bot is rate-limited for a few minutes. Try again shortly.");
       return;
     }
@@ -98,11 +92,12 @@ export const ZootSupportBot = () => {
     setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke("support-respond", {
-        body: {
-          subject: "Website Zoot bot conversation",
-          body: text,
-          role,
-        },
+          body: {
+            subject: "Website Zoot bot conversation",
+            body: text,
+            role,
+            guest: !user,
+          },
       });
 
       if (error) throw error;
@@ -123,7 +118,9 @@ export const ZootSupportBot = () => {
     } catch {
       appendMessage({
         role: "assistant",
-        body: "I could not reach authenticated Zoot Support right now. Open Support from the app menu for ticket handling.",
+        body: user
+          ? "I could not reach Zoot Support right now. Open Support from the app menu for protected ticket handling."
+          : "I could not reach Zoot Support right now. Please try again shortly, or sign in if this is about a booking, payment, address or account.",
       });
       haptic("warning");
     } finally {
@@ -184,7 +181,7 @@ export const ZootSupportBot = () => {
             {!user && (
               <div className="mb-2 flex items-start gap-2 rounded-2xl border border-border/70 bg-background/70 p-2 text-xs text-muted-foreground">
                 <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sage-deep" />
-                <span>Sign in before sharing booking, payment, address or account context.</span>
+                <span>General questions are fine here. Sign in before sharing booking, payment, address or account context.</span>
               </div>
             )}
             <form onSubmit={submit} className="flex gap-2">
@@ -192,17 +189,17 @@ export const ZootSupportBot = () => {
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
                 maxLength={600}
-                placeholder={user ? "Ask Zoot..." : "Ask after signing in..."}
+                placeholder={user ? "Ask Zoot..." : "Ask about Zoot, Care+, pricing..."}
                 className="native-input rounded-full bg-background/90"
               />
-              <Button type="submit" size="icon" className="interactive-press rounded-full" disabled={!user || sending || !body.trim()}>
+              <Button type="submit" size="icon" className="interactive-press rounded-full" disabled={sending || !body.trim()}>
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </form>
             <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
               <span>No secrets, OTPs or access codes.</span>
               <Link to={user ? "/app/support" : "/auth"} className="font-semibold text-primary underline-offset-4 hover:underline">
-                {user ? "Open Support" : "Sign in"}
+                {user ? "Open Support" : "Sign in for account help"}
               </Link>
             </div>
           </div>
