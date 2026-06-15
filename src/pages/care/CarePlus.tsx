@@ -17,6 +17,7 @@ import { Navbar } from "@/components/zoot/Navbar";
 import { Footer } from "@/components/zoot/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SEO } from "@/components/SEO";
 import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 import { CarePlusBenefitCard, CarePlusComparisonTable, CarePlusSupportPromise } from "@/components/care-plus/CarePlusShowcase";
 import { carePlusBenefits, carePlusMoatBenefits } from "@/data/care-plus";
@@ -71,6 +72,11 @@ const CarePlus = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Zoot Care+ - Premium recurring home care and ZootCred"
+        description="Join Zoot Care+ for saved home memory, preferred Zooter continuity, priority support and ledger-backed ZootCred add-on credit."
+        canonical="/care-plus"
+      />
       <Navbar />
       <main>
         <section className="relative overflow-hidden bg-[#faf4e8] dark:bg-background">

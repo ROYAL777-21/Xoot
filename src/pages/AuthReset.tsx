@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SEO } from "@/components/SEO";
 import {
   getPasswordStrength,
   getPasswordUpdateIssue,
@@ -84,6 +85,12 @@ const AuthReset = () => {
 
   return (
     <div className="min-h-screen gradient-hero grid place-items-center p-6">
+      <SEO
+        title="Reset your Zoot password"
+        description="Update your Zoot password from a secure reset link."
+        canonical="/auth/reset"
+        noIndex
+      />
       <Card className="w-full max-w-md rounded-3xl border-border p-8 shadow-warm">
         <Link to="/" className="mb-6 flex items-center gap-2" aria-label="Back to Zoot home">
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm shadow-warm">

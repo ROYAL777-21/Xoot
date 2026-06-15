@@ -1,24 +1,19 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, MapPin, Search } from "lucide-react";
 
+import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/zoot/Footer";
 import { Navbar } from "@/components/zoot/Navbar";
 import { blogPosts } from "@/lib/blog-posts";
 
-const setMetaDescription = (description: string) => {
-  const existing = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-  if (existing) existing.content = description;
-};
-
 const Blog = () => {
-  useEffect(() => {
-    document.title = "Zoot Articles - Cleaning, Care+ and Johannesburg home-care guides";
-    setMetaDescription("Read Zoot articles for trusted cleaning, Care+, Airbnb turnovers, office cleaning and premium home-care services in Johannesburg launch areas.");
-  }, []);
-
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Zoot Articles - Cleaning, Care+ and Johannesburg home-care guides"
+        description="Read Zoot articles for trusted cleaning, Care+, Airbnb turnovers, office cleaning and premium home-care services in Johannesburg launch areas."
+        canonical="/articles"
+      />
       <Navbar />
       <main className="pt-28">
         <section className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 lg:px-8">

@@ -4,6 +4,7 @@ import { Navbar } from "@/components/zoot/Navbar";
 import { Footer } from "@/components/zoot/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SEO } from "@/components/SEO";
 import { haptic } from "@/lib/haptics";
 
 const installSteps = [
@@ -16,6 +17,11 @@ const installSteps = [
 const PwaInstall = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Install Zoot on iPhone - Home Screen app access"
+        description="Add Zoot to your iPhone Home Screen for app-style access to booking, Care+, support and home-care workflows."
+        canonical="/install"
+      />
       <Navbar />
       <main>
         <section className="bg-[#faf4e8] py-16 dark:bg-background md:py-24">

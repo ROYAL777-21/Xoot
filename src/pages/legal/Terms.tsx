@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/zoot/Navbar";
 import { Footer } from "@/components/zoot/Footer";
+import { SEO } from "@/components/SEO";
 
 const Section = ({ n, title, children }: { n: string; title: string; children: React.ReactNode }) => (
   <section className="mb-10">
@@ -14,6 +15,11 @@ const Section = ({ n, title, children }: { n: string; title: string; children: R
 
 const Terms = () => (
   <div className="min-h-screen bg-background">
+    <SEO
+      title="Zoot Terms and Conditions"
+      description="Read Zoot's terms for placements, Care+, bookings, subscriptions, payments, support processes, and client responsibilities."
+      canonical="/legal/terms"
+    />
     <Navbar />
     <main className="container max-w-3xl py-12 md:py-20">
       <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Legal</p>

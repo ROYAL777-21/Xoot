@@ -1,12 +1,13 @@
 import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { RequireAuth } from "@/components/RequireAuth";
 import { AppShell } from "@/components/zoot/AppShell";
 import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
@@ -55,9 +56,10 @@ const AdminOps = lazy(() => import("./pages/admin/Ops"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60_000,
+      staleTime: 5 * 60_000,
       gcTime: 5 * 60_000,
-      retry: 1,
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1_000 * 2 ** attemptIndex, 30_000),
       refetchOnWindowFocus: false,
     },
     mutations: {
@@ -65,15 +67,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-const PageFallback = () => (
-  <div className="min-h-screen grid place-items-center bg-background">
-    <div className="flex items-center gap-3 rounded-full border border-border bg-card px-5 py-3 text-sm text-muted-foreground shadow-card">
-      <Loader2 className="h-4 w-4 animate-spin text-primary" />
-      Loading Zoot
-    </div>
-  </div>
-);
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -87,69 +80,71 @@ const ScrollToTop = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ErrorBoundary>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <NativeInteractionLayer />
-          <BotanicalEdges />
-          <ScrollToTop />
-          <AuthProvider>
-            <Suspense fallback={<PageFallback />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route path="/auth/reset" element={<AuthReset />} />
-                <Route path="/articles" element={<Blog />} />
-                <Route path="/articles/:slug" element={<BlogPost />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:slug" element={<BlogPost />} />
-                <Route path="/install" element={<PwaInstall />} />
-                <Route path="/care-plus" element={<CarePlus />} />
-                <Route path="/care-plus/apply" element={<RequireAuth><CarePlusApply /></RequireAuth>} />
-                <Route path="/trust-centre" element={<TrustSafety />} />
-                <Route path="/legal/terms" element={<Terms />} />
-                <Route path="/legal/privacy" element={<Privacy />} />
-                <Route path="/legal/trust-safety" element={<TrustSafety />} />
-                <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
-                <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
-                <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
-                <Route path="/app/favorites" element={<RequireAuth><AppShell><Favorites /></AppShell></RequireAuth>} />
-                <Route path="/app/loyalty" element={<RequireAuth><AppShell><Loyalty /></AppShell></RequireAuth>} />
-                <Route path="/app/gifts" element={<RequireAuth><AppShell><GiftClean /></AppShell></RequireAuth>} />
-                <Route path="/app/properties" element={<RequireAuth><AppShell><Properties /></AppShell></RequireAuth>} />
-                <Route path="/app/properties/airbnb" element={<RequireAuth><AppShell><AirbnbHostDashboard /></AppShell></RequireAuth>} />
-                <Route path="/app/properties/office" element={<RequireAuth><AppShell><OfficeDashboard /></AppShell></RequireAuth>} />
-                <Route path="/app/plans" element={<RequireAuth><AppShell><Plans /></AppShell></RequireAuth>} />
-                <Route path="/app/training" element={<RequireAuth><AppShell><Training /></AppShell></RequireAuth>} />
-                <Route path="/app/support" element={<RequireAuth><AppShell><Support /></AppShell></RequireAuth>} />
-                <Route path="/app/insurance" element={<RequireAuth><AppShell><Insurance /></AppShell></RequireAuth>} />
-                <Route path="/app/profile" element={<RequireAuth><AppShell><CustomerProfile /></AppShell></RequireAuth>} />
+    <HelmetProvider>
+      <TooltipProvider>
+        <ErrorBoundary>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <NativeInteractionLayer />
+            <BotanicalEdges />
+            <ScrollToTop />
+            <AuthProvider>
+              <Suspense fallback={<LoadingScreen />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/auth/reset" element={<AuthReset />} />
+                  <Route path="/articles" element={<Blog />} />
+                  <Route path="/articles/:slug" element={<BlogPost />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:slug" element={<BlogPost />} />
+                  <Route path="/install" element={<PwaInstall />} />
+                  <Route path="/care-plus" element={<CarePlus />} />
+                  <Route path="/care-plus/apply" element={<RequireAuth><CarePlusApply /></RequireAuth>} />
+                  <Route path="/trust-centre" element={<TrustSafety />} />
+                  <Route path="/legal/terms" element={<Terms />} />
+                  <Route path="/legal/privacy" element={<Privacy />} />
+                  <Route path="/legal/trust-safety" element={<TrustSafety />} />
+                  <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
+                  <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
+                  <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
+                  <Route path="/app/favorites" element={<RequireAuth><AppShell><Favorites /></AppShell></RequireAuth>} />
+                  <Route path="/app/loyalty" element={<RequireAuth><AppShell><Loyalty /></AppShell></RequireAuth>} />
+                  <Route path="/app/gifts" element={<RequireAuth><AppShell><GiftClean /></AppShell></RequireAuth>} />
+                  <Route path="/app/properties" element={<RequireAuth><AppShell><Properties /></AppShell></RequireAuth>} />
+                  <Route path="/app/properties/airbnb" element={<RequireAuth><AppShell><AirbnbHostDashboard /></AppShell></RequireAuth>} />
+                  <Route path="/app/properties/office" element={<RequireAuth><AppShell><OfficeDashboard /></AppShell></RequireAuth>} />
+                  <Route path="/app/plans" element={<RequireAuth><AppShell><Plans /></AppShell></RequireAuth>} />
+                  <Route path="/app/training" element={<RequireAuth><AppShell><Training /></AppShell></RequireAuth>} />
+                  <Route path="/app/support" element={<RequireAuth><AppShell><Support /></AppShell></RequireAuth>} />
+                  <Route path="/app/insurance" element={<RequireAuth><AppShell><Insurance /></AppShell></RequireAuth>} />
+                  <Route path="/app/profile" element={<RequireAuth><AppShell><CustomerProfile /></AppShell></RequireAuth>} />
 
-                {/* Zooter portal */}
-                <Route path="/zooter/apply" element={<RequireAuth><ZooterApply /></RequireAuth>} />
-                <Route path="/zooter" element={<RequireRole role="zooter"><ZooterShell><ZooterDashboard /></ZooterShell></RequireRole>} />
-                <Route path="/zooter/jobs" element={<RequireRole role="zooter"><ZooterShell><ZooterJobs /></ZooterShell></RequireRole>} />
-                <Route path="/zooter/training" element={<RequireAuth><ZooterShell><ZooterTraining /></ZooterShell></RequireAuth>} />
-                <Route path="/zooter/earnings" element={<RequireRole role="zooter"><ZooterShell><ZooterEarnings /></ZooterShell></RequireRole>} />
-                <Route path="/zooter/kyc" element={<RequireAuth><ZooterShell><ZooterKyc /></ZooterShell></RequireAuth>} />
-                <Route path="/zooter/profile" element={<RequireRole role="zooter"><ZooterShell><ZooterProfile /></ZooterShell></RequireRole>} />
+                  {/* Zooter portal */}
+                  <Route path="/zooter/apply" element={<RequireAuth><ZooterApply /></RequireAuth>} />
+                  <Route path="/zooter" element={<RequireRole role="zooter"><ZooterShell><ZooterDashboard /></ZooterShell></RequireRole>} />
+                  <Route path="/zooter/jobs" element={<RequireRole role="zooter"><ZooterShell><ZooterJobs /></ZooterShell></RequireRole>} />
+                  <Route path="/zooter/training" element={<RequireAuth><ZooterShell><ZooterTraining /></ZooterShell></RequireAuth>} />
+                  <Route path="/zooter/earnings" element={<RequireRole role="zooter"><ZooterShell><ZooterEarnings /></ZooterShell></RequireRole>} />
+                  <Route path="/zooter/kyc" element={<RequireAuth><ZooterShell><ZooterKyc /></ZooterShell></RequireAuth>} />
+                  <Route path="/zooter/profile" element={<RequireRole role="zooter"><ZooterShell><ZooterProfile /></ZooterShell></RequireRole>} />
 
-                {/* Admin */}
-                <Route path="/admin/kyc" element={<RequireRole role="admin"><AdminKyc /></RequireRole>} />
-                <Route path="/admin/ops" element={<RequireRole role="admin"><AdminOps /></RequireRole>} />
+                  {/* Admin */}
+                  <Route path="/admin/kyc" element={<RequireRole role="admin"><AdminKyc /></RequireRole>} />
+                  <Route path="/admin/ops" element={<RequireRole role="admin"><AdminOps /></RequireRole>} />
 
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-            <ZootSupportBot />
-          </AuthProvider>
-        </BrowserRouter>
-      </ErrorBoundary>
-    </TooltipProvider>
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+              <ZootSupportBot />
+            </AuthProvider>
+          </BrowserRouter>
+        </ErrorBoundary>
+      </TooltipProvider>
+    </HelmetProvider>
   </QueryClientProvider>
 );
 

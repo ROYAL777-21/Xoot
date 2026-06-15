@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { SEO } from "@/components/SEO";
 import { toast } from "sonner";
 import { AlertCircle, Eye, EyeOff, KeyRound, Loader2, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { haptic } from "@/lib/haptics";
@@ -330,6 +331,12 @@ const Auth = () => {
 
   return (
     <div className="grid min-h-screen place-items-center overflow-hidden gradient-hero px-4 py-6 sm:p-6">
+      <SEO
+        title="Secure Zoot sign-in"
+        description="Sign in to Zoot securely to manage bookings, Care+, ZootCred, support and protected household details."
+        canonical="/auth"
+        noIndex
+      />
       <Card className="w-full max-w-[23rem] rounded-3xl border-border p-5 shadow-warm sm:max-w-md sm:p-8">
         <Link to="/" className="mb-5 flex items-center gap-2 sm:mb-6" aria-label="Back to Zoot home">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-warm shadow-warm">

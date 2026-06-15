@@ -1,4 +1,5 @@
 import { assertProductionEnv } from "@/lib/env-check";
+import { initMonitoring } from "@/lib/monitoring";
 import { createRoot } from "react-dom/client";
 import "@fontsource/space-grotesk/400.css";
 import "@fontsource/space-grotesk/500.css";
@@ -13,6 +14,7 @@ import "./index.css";
 import "./mobile-safety.css";
 
 assertProductionEnv();
+initMonitoring();
 
 createRoot(document.getElementById("root")!).render(<App />);
 

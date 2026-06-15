@@ -1,6 +1,6 @@
-const CACHE_NAME = "zoot-static-v5";
+const CACHE_NAME = "zoot-static-v6";
 const OFFLINE_URL = "/offline.html";
-const STATIC_ASSETS = ["/manifest.webmanifest", "/zoot-icon.svg", "/favicon.ico", OFFLINE_URL];
+const STATIC_ASSETS = ["/manifest.json", "/manifest.webmanifest", "/zoot-icon.svg", "/favicon.ico", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", OFFLINE_URL];
 const SENSITIVE_NOTIFICATION_PATTERNS = [
   /\b(gate|alarm|lockbox|pin|code|access note|access notes|id number|passport|bank|card|payment ref|complaint)\b/i,
   /\b\d{4,}\b/,
@@ -60,8 +60,8 @@ self.addEventListener("push", (event) => {
   const title = safeNotificationText(payload.title, "Zoot booking update");
   const options = {
     body: safeNotificationText(payload.body, "Open Zoot for the latest booking update."),
-    icon: "/zoot-icon.svg",
-    badge: "/zoot-icon.svg",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
     data: { url: safeNotificationUrl(payload.url) },
   };
   event.waitUntil(self.registration.showNotification(title, options));

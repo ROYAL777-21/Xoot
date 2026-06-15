@@ -4,6 +4,7 @@ import { Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SEO } from "@/components/SEO";
 import { getSafeRedirectPath } from "@/lib/auth-security";
 import { sanitiseSearchParam } from "@/lib/sanitise";
 
@@ -42,6 +43,12 @@ const AuthCallback = () => {
 
   return (
     <div className="min-h-screen gradient-hero grid place-items-center p-6">
+      <SEO
+        title="Finishing Zoot sign-in"
+        description="Zoot is completing a secure authentication callback."
+        canonical="/auth/callback"
+        noIndex
+      />
       <Card className="w-full max-w-md rounded-3xl border-border p-8 text-center shadow-warm">
         <div className="mx-auto mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft text-sage-deep">
           {status === "loading" ? <Loader2 className="h-6 w-6 animate-spin" /> : <ShieldCheck className="h-6 w-6" />}

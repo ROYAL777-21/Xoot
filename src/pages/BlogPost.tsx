@@ -1,66 +1,24 @@
-import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, CalendarDays, MapPin, Search } from "lucide-react";
 
+import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/zoot/Footer";
 import { Navbar } from "@/components/zoot/Navbar";
 import { getBlogPost } from "@/lib/blog-posts";
-
-const setMetaDescription = (description: string) => {
-  const existing = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-  if (existing) existing.content = description;
-};
 
 const BlogPost = () => {
   const { slug } = useParams();
   const post = getBlogPost(slug);
 
-  useEffect(() => {
-    const structuredDataId = "zoot-blog-structured-data";
-    document.getElementById(structuredDataId)?.remove();
-
-    if (!post) {
-      document.title = "Zoot Articles - Post not found";
-      setMetaDescription("The requested Zoot article could not be found.");
-      return;
-    }
-
-    document.title = post.seoTitle;
-    setMetaDescription(post.description);
-
-    const script = document.createElement("script");
-    script.id = structuredDataId;
-    script.type = "application/ld+json";
-    script.text = JSON.stringify([
-      {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        headline: post.title,
-        description: post.description,
-        datePublished: post.publishedAt,
-        author: { "@type": "Organization", name: post.author },
-        publisher: { "@type": "Organization", name: "Zoot", url: "https://zoothome.co.za" },
-        mainEntityOfPage: `https://zoothome.co.za/articles/${post.slug}`,
-        keywords: [post.primaryKeyword, ...post.secondaryKeywords].join(", "),
-        areaServed: post.areas,
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: post.faqs.map((faq) => ({
-          "@type": "Question",
-          name: faq.question,
-          acceptedAnswer: { "@type": "Answer", text: faq.answer },
-        })),
-      },
-    ]);
-    document.head.appendChild(script);
-    return () => script.remove();
-  }, [post]);
-
   if (!post) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO
+          title="Zoot Articles - Post not found"
+          description="The requested Zoot article could not be found."
+          canonical="/articles"
+          noIndex
+        />
         <Navbar />
         <main className="mx-auto max-w-3xl px-4 py-32 text-center sm:px-6 lg:px-8">
           <p className="text-sm font-semibold text-primary">Zoot Articles</p>
@@ -76,8 +34,39 @@ const BlogPost = () => {
     );
   }
 
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: post.title,
+      description: post.description,
+      datePublished: post.publishedAt,
+      author: { "@type": "Organization", name: post.author },
+      publisher: { "@type": "Organization", name: "Zoot", url: "https://zoothome.co.za" },
+      mainEntityOfPage: `https://zoothome.co.za/articles/${post.slug}`,
+      keywords: [post.primaryKeyword, ...post.secondaryKeywords].join(", "),
+      areaServed: post.areas,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: post.faqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.question,
+        acceptedAnswer: { "@type": "Answer", text: faq.answer },
+      })),
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={post.seoTitle}
+        description={post.description}
+        canonical={`/articles/${post.slug}`}
+        ogType="article"
+        jsonLd={structuredData}
+      />
       <Navbar />
       <main className="pt-28">
         <article className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:px-8">

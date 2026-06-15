@@ -1,8 +1,14 @@
 import { Navbar } from "@/components/zoot/Navbar";
 import { Footer } from "@/components/zoot/Footer";
+import { SEO } from "@/components/SEO";
 
 const Privacy = () => (
   <div className="min-h-screen bg-background">
+    <SEO
+      title="Zoot Privacy Policy"
+      description="Learn how Zoot protects account, booking, household, communication and payment metadata under POPIA-aligned privacy practices."
+      canonical="/legal/privacy"
+    />
     <Navbar />
     <main className="container max-w-3xl py-12 md:py-20">
       <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Legal</p>
