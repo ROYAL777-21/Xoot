@@ -261,16 +261,16 @@ const Book = () => {
   const maxPick = allowsMultipleWorkers(active) ? workerCount : 1;
 
   return (
-    <div className="container py-6 lg:py-10 max-w-4xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="container py-5 lg:py-10 max-w-4xl">
+      <div className="flex items-start justify-between gap-3 mb-5 lg:mb-6">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-2 border border-accent/20">
             <Sparkles className="h-3 w-3 text-sage-deep" />
             <span className="text-xs font-medium text-sage-deep">Book a clean</span>
           </div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Book a Zooter</h1>
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Book a Zooter</h1>
         </div>
-        <NotificationBell />
+        <div className="lg:block hidden"><NotificationBell /></div>
       </div>
 
       {step < 4 && (

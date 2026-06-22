@@ -28,11 +28,12 @@ const Profile = () => {
   useEffect(() => {
     if (!user) return;
     supabase.from("zooters").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => {
-      setZooter(data);
-      setTagsInput((data?.tags ?? []).join(", "));
-      setSuburbsInput(joinList(data?.suburb_coverage));
-      setSuppliesInput(joinList(data?.supplies_owned));
-      setLanguagesInput(joinList(data?.languages_spoken));
+      const d: any = data;
+      setZooter(d);
+      setTagsInput((d?.tags ?? []).join(", "));
+      setSuburbsInput(joinList(d?.suburb_coverage));
+      setSuppliesInput(joinList(d?.supplies_owned));
+      setLanguagesInput(joinList(d?.languages_spoken));
       setLoading(false);
     });
   }, [user]);
