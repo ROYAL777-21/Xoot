@@ -80,10 +80,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
         </div>
       </aside>
 
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur border-t border-border flex justify-around py-2">
-      </nav>
-      {/* spacer pushed below; we add safe-area via style */}
-      <nav aria-hidden className="hidden" />
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur border-t border-border flex justify-around pt-2" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.5rem)" }}>
         {nav.slice(0, 5).map((n) => {
           const Icon = n.icon;
