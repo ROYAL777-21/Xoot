@@ -66,6 +66,8 @@ begin
     else '''{}''::text[]'
   end;
 
+  drop view if exists public.zooters_public;
+
   execute format(
     'create or replace view public.zooters_public
       with (security_invoker = true) as
