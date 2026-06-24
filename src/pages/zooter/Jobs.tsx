@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
-import { canAccessSensitiveBookingData } from "@/lib/operations";
+import { getSensitiveAccessAvailability } from "@/lib/operations";
 import { SensitiveFieldReveal } from "@/components/zoot/SensitiveFieldReveal";
 
 const Jobs = () => {
@@ -20,7 +20,7 @@ const Jobs = () => {
   const load = async (zid: string) => {
     const { data } = await supabase
       .from("zooter_jobs")
-      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, price, duration_hours, status, job_completed_at, completed_at, cancelled_at, sensitive_data_revoked_at, user_id)")
+      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, price, duration_hours, status, job_completed_at, completed_at, cancelled_at, sensitive_data_revoked_at, sensitive_access_available_notified_at, user_id)")
       .eq("zooter_id", zid)
       .order("offered_at", { ascending: false });
     setJobs(data ?? []);
@@ -83,13 +83,14 @@ const Jobs = () => {
   );
 };
 
-const getSensitiveWindowOpen = (booking: any) => {
-  if (!booking || booking.sensitive_data_revoked_at) return false;
-  return canAccessSensitiveBookingData({
+const getSensitiveAccessState = (booking: any) => {
+  if (!booking) return { state: "closed" as const, opensAt: null, minutesUntilOpen: 0 };
+  return getSensitiveAccessAvailability({
     scheduledAt: booking.scheduled_at,
     status: booking.status,
     completedAt: booking.completed_at ?? booking.job_completed_at,
     cancelledAt: booking.cancelled_at,
+    sensitiveDataRevokedAt: booking.sensitive_data_revoked_at,
     durationHours: booking.duration_hours,
   });
 };
@@ -104,7 +105,8 @@ const Section = ({ title, jobs, respond, actions = false, revealAccess = false }
         {jobs.map((j: any) => {
           const b = j.bookings;
           if (!b) return null;
-          const withinWindow = getSensitiveWindowOpen(b);
+          const accessState = getSensitiveAccessState(b);
+          const withinWindow = accessState.state === "available";
           const canShowReveal = revealAccess && j.state !== "declined" && j.state !== "expired";
           return (
             <Card key={j.id} className="p-5 rounded-2xl">
@@ -131,7 +133,16 @@ const Section = ({ title, jobs, respond, actions = false, revealAccess = false }
                       <LockKeyhole className={`h-4 w-4 ${withinWindow ? "text-sage-deep" : "text-muted-foreground"}`} />
                       Access information
                     </p>
-                    <p className="text-xs text-muted-foreground">Viewing is logged and unlocks only near the appointment window.</p>
+                    {accessState.state === "available" ? (
+                      <p className="text-xs font-medium text-sage-deep">Available now. Viewing is logged.</p>
+                    ) : accessState.state === "locked" ? (
+                      <p className="text-xs text-muted-foreground">
+                        Unlocks {new Date(accessState.opensAt).toLocaleString()}.
+                        {" "}We will notify you when it becomes available, 45 minutes before the scheduled start.
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Access is not available for this booking.</p>
+                    )}
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
                     <SensitiveFieldReveal bookingId={b.id} field="gate_code" label="Gate code" withinWindow={withinWindow} />

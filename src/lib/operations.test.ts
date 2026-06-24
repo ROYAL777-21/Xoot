@@ -5,6 +5,7 @@ import {
   canAccessSensitiveBookingData,
   calculateBookingQuote,
   getActivationReadiness,
+  getSensitiveAccessAvailability,
   isApprovedLaunchRegion,
   routeNotificationChannel,
 } from "./operations";
@@ -59,6 +60,33 @@ describe("Zoot operating rules", () => {
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "completed", completedAt: "2026-05-18T12:00:00.000Z", now: "2026-05-18T12:25:00.000Z" })).toBe(true);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "completed", completedAt: "2026-05-18T12:00:00.000Z", now: "2026-05-18T12:31:00.000Z" })).toBe(false);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "cancelled", cancelledAt: "2026-05-18T09:30:00.000Z", now: "2026-05-18T09:31:00.000Z" })).toBe(false);
+  });
+
+  it("explains when sensitive access will become available without exposing household data", () => {
+    const scheduledAt = "2026-05-18T10:00:00.000Z";
+
+    expect(getSensitiveAccessAvailability({
+      scheduledAt,
+      status: "assigned",
+      now: "2026-05-18T09:10:00.000Z",
+    })).toEqual({
+      state: "locked",
+      opensAt: "2026-05-18T09:15:00.000Z",
+      minutesUntilOpen: 5,
+    });
+
+    expect(getSensitiveAccessAvailability({
+      scheduledAt,
+      status: "assigned",
+      now: "2026-05-18T09:15:00.000Z",
+    }).state).toBe("available");
+
+    expect(getSensitiveAccessAvailability({
+      scheduledAt,
+      status: "cancelled",
+      cancelledAt: "2026-05-18T09:12:00.000Z",
+      now: "2026-05-18T09:15:00.000Z",
+    }).state).toBe("closed");
   });
 
   it("builds pending payment records instead of claiming live provider payment", () => {

@@ -235,6 +235,70 @@ export const canAccessSensitiveBookingData = ({
   return current <= accessCloses;
 };
 
+export type SensitiveAccessAvailability =
+  | { state: "locked"; opensAt: string; minutesUntilOpen: number }
+  | { state: "available"; opensAt: string; minutesUntilOpen: 0 }
+  | { state: "closed"; opensAt: string | null; minutesUntilOpen: 0 };
+
+export const getSensitiveAccessAvailability = ({
+  scheduledAt,
+  status,
+  completedAt,
+  cancelledAt,
+  sensitiveDataRevokedAt,
+  durationHours,
+  now,
+}: {
+  scheduledAt: string;
+  status: string;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  sensitiveDataRevokedAt?: string | null;
+  durationHours?: number | string | null;
+  now?: string;
+}): SensitiveAccessAvailability => {
+  const start = new Date(scheduledAt).getTime();
+  if (!Number.isFinite(start)) return { state: "closed", opensAt: null, minutesUntilOpen: 0 };
+
+  const opensAtMs = start - 45 * 60 * 1000;
+  const opensAt = new Date(opensAtMs).toISOString();
+  const current = now ? new Date(now).getTime() : Date.now();
+  if (!Number.isFinite(current)) return { state: "closed", opensAt, minutesUntilOpen: 0 };
+
+  if (sensitiveDataRevokedAt || status === "cancelled" || status === "rated" || cancelledAt) {
+    return { state: "closed", opensAt, minutesUntilOpen: 0 };
+  }
+
+  if (canAccessSensitiveBookingData({
+    scheduledAt,
+    status,
+    completedAt,
+    cancelledAt,
+    durationHours,
+    now: new Date(current).toISOString(),
+  })) {
+    return { state: "available", opensAt, minutesUntilOpen: 0 };
+  }
+
+  const normalizedStatus = normaliseBookingStatus(status);
+  const canOpenLater = Boolean(normalizedStatus && [
+    "assigned",
+    "contractor_accepted",
+    "replacement_offered",
+    "reassigned",
+  ].includes(normalizedStatus));
+
+  if (canOpenLater && current < opensAtMs) {
+    return {
+      state: "locked",
+      opensAt,
+      minutesUntilOpen: Math.max(1, Math.ceil((opensAtMs - current) / 60000)),
+    };
+  }
+
+  return { state: "closed", opensAt, minutesUntilOpen: 0 };
+};
+
 export const buildPendingPaymentRecord = ({
   bookingId,
   userId,
