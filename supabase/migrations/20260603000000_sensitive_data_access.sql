@@ -5,10 +5,18 @@ alter table public.household_profiles
   add column if not exists alarm_code text,
   add column if not exists access_instructions text;
 
+alter table public.bookings
+  add column if not exists household_profile_id uuid references public.household_profiles(id) on delete set null;
+
+create index if not exists idx_bookings_household_profile
+  on public.bookings(household_profile_id);
+
 update public.household_profiles
 set access_instructions = access_notes
 where access_instructions is null
   and access_notes is not null;
+
+drop function if exists public.can_access_sensitive_data(uuid, uuid);
 
 create or replace function public.can_access_sensitive_data(
   p_zooter_id uuid,
@@ -138,14 +146,7 @@ grant select on table public.sensitive_data_access_log to authenticated;
 drop policy if exists "sensitive_data_access_log_admin_read" on public.sensitive_data_access_log;
 create policy "sensitive_data_access_log_admin_read"
   on public.sensitive_data_access_log for select
-  using (
-    exists (
-      select 1
-      from public.profiles
-      where id = auth.uid()
-        and role = 'admin'
-    )
-  );
+  using (public.has_role(auth.uid(), 'admin'));
 
 comment on policy "sensitive_data_access_log_admin_read" on public.sensitive_data_access_log
   is 'Admins can audit sensitive field reveal attempts; clients and contractors cannot browse reveal logs.';
