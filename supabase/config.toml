@@ -1,4 +1,21 @@
 project_id = "mvlrkelahhsyjrwgsxaf"
 
+[auth]
+site_url = "http://localhost:5173"
+additional_redirect_urls = [
+  "http://127.0.0.1:5173/auth/callback",
+  "http://127.0.0.1:5173/auth/reset",
+  "http://127.0.0.1:4173/auth/callback",
+  "http://127.0.0.1:4173/auth/reset",
+  "https://staging.zoothome.co.za/auth/callback",
+  "https://staging.zoothome.co.za/auth/reset",
+  "https://zoothome.co.za/auth/callback",
+  "https://zoothome.co.za/auth/reset",
+  "https://www.zoothome.co.za/auth/callback",
+  "https://www.zoothome.co.za/auth/reset",
+  "zoot://auth/callback",
+  "zoot://auth/reset",
+]
+
 [functions.confirm-payment]
 verify_jwt = false
