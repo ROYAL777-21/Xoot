@@ -32,7 +32,9 @@ jobs:
           $files = @(
             'scripts/ops/check-local-provider-auth.ps1',
             'scripts/ops/setup-local-provider-auth.ps1',
+            'scripts/ops/deploy-supabase-backend.ps1',
             'scripts/ops/deploy-staging-backend.ps1',
+            'scripts/ops/deploy-production-backend.ps1',
             'scripts/ops/set-github-public-vars.ps1',
             'scripts/ops/set-supabase-edge-secrets.ps1',
             'scripts/ops/verify-production-readiness.ps1',

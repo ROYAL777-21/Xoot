@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-26
+Reviewed: 2026-06-27
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits and phase reports.
 
@@ -42,6 +42,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 ## GitHub And CodeRabbit
 
 - GitHub CLI is installed but unauthenticated. Local `gh auth status` reports no logged-in GitHub hosts.
+- GitHub repository/environment variables for optional public integrations still need approved public-safe values where applicable: Expo public Supabase values, site URL, Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, and Cloudflare Turnstile site key. Private provider secrets must not be GitHub repository variables.
 - CodeRabbit CLI is installed and reports version `0.6.4`, but it is not authenticated.
 - `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable.
 - CodeRabbit review requires one of:
@@ -61,7 +62,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Run `scripts/ops/verify-supabase-live.ps1` against staging and production with a local `SUPABASE_DB_URL` to verify the live booking state constraint, sensitive-access notification scheduler artifacts, RPC grants, and accepted-job destination functions.
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
 - Deploy/redeploy Edge Functions after secrets are configured.
-- Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has the approved provider credentials in environment variables or browser sessions.
+- Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has the approved provider credentials in environment variables or browser sessions.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.
 - Run real staging smoke tests with client, admin, and Zooter users.
 - Run CodeRabbit review once authenticated.

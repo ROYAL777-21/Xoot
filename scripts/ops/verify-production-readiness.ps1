@@ -83,6 +83,8 @@ Test-RepoFile "ops" "BLOCKER_REPORT.md" | Out-Null
 Test-RepoFile "ops" "scripts/ops/check-local-provider-auth.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/setup-local-provider-auth.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/deploy-staging-backend.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/deploy-production-backend.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/deploy-supabase-backend.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-github-public-vars.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-supabase-edge-secrets.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/verify-supabase-live.ps1" | Out-Null
@@ -121,7 +123,10 @@ Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "VITE_SUPABAS
 Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "EXPO_PUBLIC_SUPABASE_URL" "GitHub public Expo Supabase URL variable"
 Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "sb_secret_\|service_role\|BEGIN \[A-Z \]\*PRIVATE KEY" "GitHub variable private-value guard"
 Test-RepoPattern "supabase" "scripts/ops/set-supabase-edge-secrets.ps1" "Refusing to read Edge secrets from inside the repository" "Edge secrets file must stay outside repo"
-Test-RepoPattern "supabase" "scripts/ops/deploy-staging-backend.ps1" "SUPABASE_ACCESS_TOKEN" "staging deploy requires Supabase auth"
+Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "SUPABASE_ACCESS_TOKEN" "shared deploy requires Supabase auth"
+Test-RepoPattern "supabase" "scripts/ops/deploy-production-backend.ps1" "production" "production deploy wrapper exists"
+Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "VerifyLive" "shared deploy supports live verification"
+Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "ZOOT_PRODUCTION_SUPABASE_DB_URL" "shared deploy supports production DB URL"
 Test-RepoPattern "supabase" "scripts/ops/verify-supabase-live.ps1" "SUPABASE_DB_URL" "live Supabase verifier requires database URL"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "booking_status_valid" "live SQL checks booking status constraint"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "get_zooter_job_cards" "live SQL checks zooter card RPC"

@@ -1,17 +1,16 @@
 # Zoot Staging Backend Deployment
 
-Reviewed: 2026-06-24
+Reviewed: 2026-06-27
 
 ## Current State
 
 - Staging project: `Zoot Staging` / `fxmxyabdjqviqbcxmvlp`.
-- Staging has the application migration chain, storage policies, helper-function hardening, training modules, and Twilio webhook audit schema applied.
-- The five Twilio webhook functions are deployed to staging and production and pass signed/unsigned boundary smoke tests.
+- The repository contains the application migration chain, storage policies, helper-function hardening, training modules, and Twilio webhook audit schema.
+- Live staging and production application must be verified with an authenticated Supabase path before these items can be treated as deployed.
 - Supabase Branching is unavailable on the current plan, so staging is a separate free project.
 - Production migration history still differs from the local migration file list and must remain reconciled before broad migration pushes.
 - The local migration chain contains legacy prototype seed data; `20260619001000_remove_demo_seed_data.sql` removes the hardcoded demo Zooters after those migrations run.
-- Production and staging have the Zooter optional training gamification prerequisite and expanded training module migration applied.
-- The Phase 1 helper hardening migration `supabase/migrations/20260621000000_helper_function_hardening.sql` is applied to staging. The staging security advisor now reports no security lints.
+- Production and staging still need authenticated live verification for the Zooter optional training gamification prerequisite, expanded training module migration, and Phase 1 helper hardening migration.
 - The accepted-job destination hardening migration `supabase/migrations/20260624224551_accepted_zooter_job_destination.sql` is versioned locally and must be applied to staging first, then production. It creates `get_zooter_job_cards()` and returns `destination_address` only after a Zooter accepts the assigned job.
 - Production's remaining security-advisor warning is leaked-password protection. Enable it when the selected Supabase plan exposes the control.
 - Any private Supabase keys pasted into chat must be rotated in the Supabase dashboard before they are used for staging or production operations.
@@ -22,8 +21,13 @@ Do not paste these into chat.
 
 Set one of these paths:
 
-- `SUPABASE_ACCESS_TOKEN` plus `SUPABASE_DB_PASSWORD`, for `supabase link` and function deployment.
-- `SUPABASE_DB_URL`, for database migration push by connection string.
+- `SUPABASE_ACCESS_TOKEN` plus the matching `ZOOT_STAGING_SUPABASE_DB_PASSWORD` or `ZOOT_PRODUCTION_SUPABASE_DB_PASSWORD`, for `supabase link` and function deployment.
+- `ZOOT_STAGING_SUPABASE_DB_URL` or `ZOOT_PRODUCTION_SUPABASE_DB_URL`, for database migration push by connection string.
+
+For one-off local use, the shared deploy wrapper also accepts generic
+`SUPABASE_DB_URL` and `SUPABASE_DB_PASSWORD` for the selected target. Prefer the
+environment-specific names when both staging and production values are present
+in the same shell.
 
 Set `SUPABASE_ACCESS_TOKEN` for Edge Function deployment and Edge secret updates.
 
@@ -40,6 +44,21 @@ powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1
 ```
+
+## Deploy Production Schema
+
+Production uses the same shared deployment script as staging, but with the
+production project reference and production database credentials. Run staging
+first, verify it, then run production.
+
+```powershell
+$env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF="mvlrkelahhsyjrwgsxaf"
+$env:ZOOT_PRODUCTION_SUPABASE_DB_URL="postgresql://..."
+powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-production-backend.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-production-backend.ps1 -VerifyLive
+```
+
+Do not paste the database URL into chat or commit it.
 
 ## Set Edge Secrets
 
@@ -96,6 +115,17 @@ Then check Supabase:
 - `get-booking-public-keys` returns active public keys only for verified booking participants
 - direct authenticated RPC execution of `can_access_sensitive_data` is denied, while `get-sensitive-access` works through service role
 - real staging client/admin/Zooter users can complete smoke flows
+
+Live metadata verification can be run after staging and production deployment:
+
+```powershell
+$env:SUPABASE_DB_URL="postgresql://..."
+powershell -ExecutionPolicy Bypass -File scripts/ops/verify-supabase-live.ps1
+```
+
+For deploy-and-verify in one step, pass `-VerifyLive` to either
+`deploy-staging-backend.ps1` or `deploy-production-backend.ps1` after setting the
+matching `ZOOT_<ENV>_SUPABASE_DB_URL` variable.
 
 ## Storage Buckets
 
