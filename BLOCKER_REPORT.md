@@ -1,86 +1,66 @@
-# Zoot Production Readiness Findings
+# Zoot Production Blockers
 
 Reviewed: 2026-06-26
 
-## Resolved
+This file now lists unresolved blockers only. Resolved implementation history lives in git commits and phase reports.
 
-- Staging and production share a forward schema-convergence checkpoint:
-  - `20260624114802_production_schema_convergence_and_sensitive_access_notifications.sql`
-  - `20260624114953_booking_policy_and_sensitive_access_notifications.sql`
-  - `20260624121516_policy_performance_hardening.sql`
-- Both environments enforce the canonical booking status check and default new bookings to `draft`.
-- Broad client writes were removed from bookings, payment records, Care+ subscriptions, ZootCred, integration outbox, and notification content.
-- Missing production support tables for native push, sensitive-access logs, E2EE public keys, and refund requests were added.
-- A one-minute database scheduler notifies an assigned Zooter when sensitive access opens 45 minutes before the scheduled start.
-- The Zooter Jobs UI shows the exact unlock time and explains that a notification will be sent.
-- The Zooter Jobs UI now loads job cards from `public.get_zooter_job_cards()`, a backend RPC that returns safe offer fields and includes `destination_address` only after the authenticated Zooter accepts a non-cancelled, non-completed job.
-- Added `20260624224551_accepted_zooter_job_destination.sql`, which creates accepted-destination RPCs and narrows direct `bookings` row reads so Zooters can read booking rows only after accepting the assigned job.
-- Local Supabase config contains the required web and `zoot://` redirect URLs.
-- GitHub CLI 2.95.0 is installed.
-- CodeRabbit Windows CLI wrapper is installed at `%LOCALAPPDATA%\Programs\CodeRabbit\bin`; `coderabbit` and `cr` both report version `0.6.4`.
-- WordPress is included in the SEO tech stack as a headless/editorial CMS for reviewed public article content. See `docs/WORDPRESS_SEO_CMS.md`.
+Canonical blocker file: `blocker.md`.
 
-Historical migration ledgers are intentionally not rewritten. These migrations are the shared forward baseline; future migrations must run on staging first and production second in the same order.
+## Supabase
 
-## Account-Level Blockers
+- Supabase MCP migration tools are currently unusable in this session. Listing migrations for staging `fxmxyabdjqviqbcxmvlp` and production `mvlrkelahhsyjrwgsxaf` both failed with `MCP startup failed: timed out handshaking with MCP server after 29.9999996s`.
+- Local Supabase CLI is available through `npx supabase` but is not authenticated. `npx supabase projects list` fails because no access token is configured.
+- `psql` and Docker are not installed on this Windows host, so direct database fallback and local Supabase reset/test fallback are unavailable.
+- The accepted-job destination migration `20260624224551_accepted_zooter_job_destination.sql` is versioned and pushed, but live staging/production application still needs verification through an authenticated Supabase path.
+- Live Supabase Auth redirect allowlists still need dashboard configuration. Local `supabase/config.toml` contains the intended redirect values, but the connector exposes no safe Auth redirect setter.
 
-### Supabase Auth
+## Twilio
 
-- Live staging and production redirect allowlists are empty.
-- The active dashboard tab/browser session is unavailable to automation, and the database connector cannot update Auth settings.
-- Sign in to Supabase and apply the exact values in `docs/OAUTH_AND_REDIRECTS.md`.
+- The Twilio account still needs production readiness work: trial status must be removed, an approved phone number or ported number must be attached, and a WhatsApp sender must be approved.
+- The existing Messaging Service classification must be corrected to transactional/operational use before customer or Zooter operational messages are sent.
+- Regulatory registrations, sender verification, webhook assignments, and approved templates remain incomplete.
+- Twilio credentials that were pasted into chat must be rotated before production.
 
-### Twilio
+## Mapbox
 
-- Account status: Trial.
-- Incoming phone numbers: none.
-- WhatsApp senders: none.
-- Existing Messaging Service classification: marketing.
-- Upgrade the account, purchase or port a South African number, create a transactional/notifications Messaging Service, complete regulatory registration, and approve a WhatsApp sender/templates.
-- Rotate all Twilio credentials previously pasted into chat before production.
-
-### Mapbox
-
-- No restricted browser, native, or build-download tokens are available.
-- Create separate least-privilege tokens:
+- Restricted Mapbox tokens are not configured.
+- Required tokens remain:
   - browser token restricted to approved Zoot HTTPS origins;
-  - native public token for Expo builds;
-  - secret downloads token stored only in EAS/CI.
+  - native Expo token for iOS and Android builds;
+  - secret downloads token stored only in EAS or CI for native SDK build access.
 
-### Cloudflare
+## Cloudflare
 
-- The account contains no zones.
-- The connected API token lacks `account.zone.create`, so it cannot create `zoothome.co.za`.
-- Confirm domain ownership, grant a narrowly scoped zone-creation token or add the zone in the dashboard, update registrar nameservers, then enable WAF, rate limits, and Turnstile.
+- The connected Cloudflare account currently has no Zoot zone.
+- The available Cloudflare app/API permissions cannot create `zoothome.co.za`; the prior create attempt failed because the token lacks `account.zone.create`.
+- WAF, bot/rate-limit rules, Turnstile, DNS, TLS, and origin protection cannot be activated until the zone exists and the token has the required scoped permissions.
 
-### Apple And Google
+## Apple, Google, Expo, And Stores
 
-- Apple Team ID, App Store Connect record, Google Play record, Android signing fingerprints, and store declarations are unavailable.
-- Completion requires active developer-console access, legal business details, privacy/data-safety declarations, and final submission approval.
+- Apple Team ID, App Store Connect app record, Google Play app record, Android signing fingerprints, store privacy declarations, and final legal/business metadata remain unavailable.
+- EAS credentials and submit profiles still need final provider-backed credentials.
+- Store submission cannot proceed until developer-console access, signing credentials, privacy/data-safety answers, account deletion URLs, support URLs, and legal review are complete.
 
-### GitHub And CodeRabbit
+## GitHub And CodeRabbit
 
-- GitHub CLI is installed but not authenticated.
-- The scoped branch `codex/phase1-convergence-sensitive-access` was pushed successfully through Git remote credentials.
-- The GitHub CLI still needs interactive OAuth authentication for local `gh` workflows.
-- CodeRabbit CLI is installed through the inspected Windows wrapper, but `coderabbit auth login --agent` is unsupported in this environment because localhost callback and stdin fallback are unavailable.
-- CodeRabbit requires API-key authentication here: run `coderabbit auth login --api-key <api-key>` locally, using a key stored in a password manager or approved vault, not chat.
-- Preferred path: authenticate GitHub CLI and authenticate CodeRabbit with an API key or install the CodeRabbit GitHub App on the repository.
+- GitHub CLI is installed but unauthenticated. Local `gh auth status` reports no logged-in GitHub hosts.
+- CodeRabbit CLI is installed and reports version `0.6.4`, but it is not authenticated.
+- `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable.
+- CodeRabbit review requires one of:
+  - `coderabbit auth login --api-key <api-key>` using a key from an approved vault; or
+  - installation of the CodeRabbit GitHub App on the repository.
 
-## Verification
+## Provider Secrets And External Dashboards
 
-- Staging migrations: applied.
-- Production migrations: applied.
-- Sensitive-access cron job: active in both environments.
-- Scheduler dry run: zero queued notifications with zero eligible bookings.
-- Test suite: 17 files and 74 tests passed.
-- Focused accepted-address test: 10 operating-rule tests passed.
-- ESLint: passed.
-- Production build: passed.
-- Secret and frontend-write security scans: passed.
-- Mobile typecheck, config validation, and lint: passed.
-- Deno 2.8.3 checked all 29 Edge Function entrypoints.
-- Staging Supabase security advisor: no findings.
-- Production Supabase security advisor: only leaked-password protection remains disabled.
-- New accepted-destination/job-card migration: versioned locally and pushed to the scoped GitHub branch; live staging/production application is still pending because the Supabase connector timed out during this run and Chrome dashboard automation is unavailable.
-- Current local deployment blockers: Supabase CLI is installed but not authenticated, `psql` and Docker are not available on this Windows host, and CodeRabbit is installed but not authenticated.
+- Real production secrets for Stitch, Ozow, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, and Mapbox still need to be set in their correct secret stores.
+- Do not paste these values into chat. Store private secrets only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
+
+## Verification Still Needed After Unblocking
+
+- Re-run staging migrations and migration history verification through an authenticated Supabase path.
+- Apply the accepted-job destination migration to staging first, then production, and verify `get_zooter_job_cards()` returns destination addresses only after the assigned Zooter accepts the job.
+- Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
+- Deploy/redeploy Edge Functions after secrets are configured.
+- Run real staging smoke tests with client, admin, and Zooter users.
+- Run CodeRabbit review once authenticated.
+- Confirm Cloudflare WAF/rate-limit/Turnstile rules after the zone is added.
