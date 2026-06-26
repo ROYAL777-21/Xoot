@@ -35,7 +35,8 @@ jobs:
             'scripts/ops/deploy-staging-backend.ps1',
             'scripts/ops/set-github-public-vars.ps1',
             'scripts/ops/set-supabase-edge-secrets.ps1',
-            'scripts/ops/verify-production-readiness.ps1'
+            'scripts/ops/verify-production-readiness.ps1',
+            'scripts/ops/verify-supabase-live.ps1'
           )
 
           foreach ($file in $files) {

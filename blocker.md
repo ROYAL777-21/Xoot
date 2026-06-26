@@ -58,6 +58,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Re-run staging migrations and migration history verification through an authenticated Supabase path.
 - Apply the accepted-job destination migration to staging first, then production, and verify `get_zooter_job_cards()` returns destination addresses only after the assigned Zooter accepts the job.
+- Run `scripts/ops/verify-supabase-live.ps1` against staging and production with a local `SUPABASE_DB_URL` to verify the live booking state constraint, sensitive-access notification scheduler artifacts, RPC grants, and accepted-job destination functions.
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
 - Deploy/redeploy Edge Functions after secrets are configured.
 - Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has the approved provider credentials in environment variables or browser sessions.

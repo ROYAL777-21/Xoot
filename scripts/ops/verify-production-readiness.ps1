@@ -85,6 +85,8 @@ Test-RepoFile "ops" "scripts/ops/setup-local-provider-auth.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/deploy-staging-backend.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-github-public-vars.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-supabase-edge-secrets.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/verify-supabase-live.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/sql/verify-production-readiness.sql" | Out-Null
 
 $blockerText = Read-RepoText "blocker.md"
 if ($null -ne $blockerText) {
@@ -120,9 +122,15 @@ Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "EXPO_PUBLIC_
 Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "sb_secret_\|service_role\|BEGIN \[A-Z \]\*PRIVATE KEY" "GitHub variable private-value guard"
 Test-RepoPattern "supabase" "scripts/ops/set-supabase-edge-secrets.ps1" "Refusing to read Edge secrets from inside the repository" "Edge secrets file must stay outside repo"
 Test-RepoPattern "supabase" "scripts/ops/deploy-staging-backend.ps1" "SUPABASE_ACCESS_TOKEN" "staging deploy requires Supabase auth"
+Test-RepoPattern "supabase" "scripts/ops/verify-supabase-live.ps1" "SUPABASE_DB_URL" "live Supabase verifier requires database URL"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "booking_status_valid" "live SQL checks booking status constraint"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "get_zooter_job_cards" "live SQL checks zooter card RPC"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "sensitive_access_available_notified_at" "live SQL checks sensitive-access notification column"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "private\.enqueue_sensitive_access_notifications" "live SQL checks sensitive-access notification function"
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
 
 Add-ManualBlocker "supabase-live" "live migration history" "Requires authenticated Supabase CLI or MCP access to compare staging and production."
+Add-ManualBlocker "supabase-live" "live database readiness SQL" "Run scripts/ops/verify-supabase-live.ps1 with SUPABASE_DB_URL for staging and production."
 Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase dashboard/API access; local config is prepared but live allowlists still need verification."
 Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, and rotated secrets."
 Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privilege browser, native, and build-download tokens from Mapbox."
