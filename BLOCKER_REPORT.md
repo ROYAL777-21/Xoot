@@ -49,6 +49,7 @@ Canonical blocker file: `blocker.md`.
 - CodeRabbit review requires one of:
   - `coderabbit auth login --api-key <api-key>` using a key from an approved vault; or
   - installation of the CodeRabbit GitHub App on the repository.
+- Local setup can now be retried with `scripts/ops/setup-local-provider-auth.ps1` once the approved local environment variables or browser logins are available.
 
 ## Provider Secrets And External Dashboards
 
@@ -61,6 +62,7 @@ Canonical blocker file: `blocker.md`.
 - Apply the accepted-job destination migration to staging first, then production, and verify `get_zooter_job_cards()` returns destination addresses only after the assigned Zooter accepts the job.
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
 - Deploy/redeploy Edge Functions after secrets are configured.
+- Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has the approved provider credentials in environment variables or browser sessions.
 - Run real staging smoke tests with client, admin, and Zooter users.
 - Run CodeRabbit review once authenticated.
 - Confirm Cloudflare WAF/rate-limit/Turnstile rules after the zone is added.
