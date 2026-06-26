@@ -13,8 +13,8 @@ Reviewed: 2026-06-26
 - Missing production support tables for native push, sensitive-access logs, E2EE public keys, and refund requests were added.
 - A one-minute database scheduler notifies an assigned Zooter when sensitive access opens 45 minutes before the scheduled start.
 - The Zooter Jobs UI shows the exact unlock time and explains that a notification will be sent.
-- The Zooter Jobs UI now requests the destination only after the authenticated Zooter has accepted the job. New offers no longer receive the booking address in the initial browser query.
-- Added `20260624224551_accepted_zooter_job_destination.sql`, which creates `public.get_accepted_zooter_job_destinations(uuid[])` for accepted, non-cancelled, non-completed jobs only.
+- The Zooter Jobs UI now loads job cards from `public.get_zooter_job_cards()`, a backend RPC that returns safe offer fields and includes `destination_address` only after the authenticated Zooter accepts a non-cancelled, non-completed job.
+- Added `20260624224551_accepted_zooter_job_destination.sql`, which creates accepted-destination RPCs and narrows direct `bookings` row reads so Zooters can read booking rows only after accepting the assigned job.
 - Local Supabase config contains the required web and `zoot://` redirect URLs.
 - GitHub CLI 2.95.0 is installed.
 
@@ -79,4 +79,4 @@ Historical migration ledgers are intentionally not rewritten. These migrations a
 - Deno 2.8.3 checked all 29 Edge Function entrypoints.
 - Staging Supabase security advisor: no findings.
 - Production Supabase security advisor: only leaked-password protection remains disabled.
-- New accepted-destination migration: versioned locally and pushed to the scoped GitHub branch; live staging/production application is still pending because the Supabase connector timed out during this run and Chrome dashboard automation is unavailable.
+- New accepted-destination/job-card migration: versioned locally and pushed to the scoped GitHub branch; live staging/production application is still pending because the Supabase connector timed out during this run and Chrome dashboard automation is unavailable.

@@ -1058,6 +1058,31 @@ export type Database = {
           address: string
         }[]
       }
+      get_zooter_job_cards: {
+        Args: never
+        Returns: {
+          job_id: string
+          booking_id: string
+          zooter_id: string
+          state: string
+          offered_at: string
+          responded_at: string | null
+          decline_reason: string | null
+          service: string | null
+          service_type: string | null
+          scheduled_at: string
+          price: number | null
+          duration_hours: number | null
+          status: string | null
+          job_completed_at: string | null
+          completed_at: string | null
+          cancelled_at: string | null
+          sensitive_data_revoked_at: string | null
+          sensitive_access_available_notified_at: string | null
+          user_id: string
+          destination_address: string | null
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

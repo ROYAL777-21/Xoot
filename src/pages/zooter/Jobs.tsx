@@ -15,48 +15,48 @@ const Jobs = () => {
   const { user } = useAuth();
   const [zooterId, setZooterId] = useState<string | null>(null);
   const [jobs, setJobs] = useState<any[]>([]);
-  const [acceptedAddresses, setAcceptedAddresses] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
-  const load = async (zid: string) => {
-    const { data } = await supabase
-      .from("zooter_jobs")
-      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, price, duration_hours, status, job_completed_at, completed_at, cancelled_at, sensitive_data_revoked_at, sensitive_access_available_notified_at, user_id)")
-      .eq("zooter_id", zid)
-      .order("offered_at", { ascending: false });
-    const nextJobs = data ?? [];
-    setJobs(nextJobs);
-
-    const acceptedJobIds = nextJobs
-      .filter((job: any) => job.state === "accepted")
-      .map((job: any) => job.id)
-      .filter(Boolean);
-
-    if (!acceptedJobIds.length) {
-      setAcceptedAddresses({});
-      return;
-    }
-
-    const { data: destinations, error } = await supabase.rpc("get_accepted_zooter_job_destinations", {
-      p_job_ids: acceptedJobIds,
-    });
-
+  const load = async () => {
+    const { data, error } = await supabase.rpc("get_zooter_job_cards");
     if (error) {
-      console.warn("Accepted job destination lookup failed", error.message);
-      setAcceptedAddresses({});
+      console.warn("Zooter jobs lookup failed", error.message);
+      setJobs([]);
       return;
     }
 
-    setAcceptedAddresses(Object.fromEntries(
-      (destinations ?? []).map((destination) => [destination.job_id, destination.address]),
-    ));
+    setJobs((data ?? []).map((job) => ({
+      id: job.job_id,
+      booking_id: job.booking_id,
+      zooter_id: job.zooter_id,
+      state: job.state,
+      offered_at: job.offered_at,
+      responded_at: job.responded_at,
+      decline_reason: job.decline_reason,
+      destination_address: job.destination_address,
+      bookings: {
+        id: job.booking_id,
+        service: job.service,
+        service_type: job.service_type,
+        scheduled_at: job.scheduled_at,
+        price: job.price,
+        duration_hours: job.duration_hours,
+        status: job.status,
+        job_completed_at: job.job_completed_at,
+        completed_at: job.completed_at,
+        cancelled_at: job.cancelled_at,
+        sensitive_data_revoked_at: job.sensitive_data_revoked_at,
+        sensitive_access_available_notified_at: job.sensitive_access_available_notified_at,
+        user_id: job.user_id,
+      },
+    })));
   };
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data: z } = await supabase.from("zooters").select("id").eq("user_id", user.id).maybeSingle();
-      if (z) { setZooterId(z.id); await load(z.id); }
+      if (z) { setZooterId(z.id); await load(); }
       setLoading(false);
     })();
   }, [user]);
@@ -74,7 +74,7 @@ const Jobs = () => {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Job response failed");
     }
-    if (zooterId) load(zooterId);
+    if (zooterId) load();
   };
 
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -102,9 +102,9 @@ const Jobs = () => {
       <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">Jobs</h1>
       <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. The destination appears after acceptance; household access details remain time-locked and logged.</p>
 
-      <Section title="New offers" jobs={grouped.offered} acceptedAddresses={acceptedAddresses} respond={respond} actions />
-      <Section title="Upcoming" jobs={grouped.accepted} acceptedAddresses={acceptedAddresses} respond={respond} revealAccess />
-      <Section title="History" jobs={grouped.history} acceptedAddresses={acceptedAddresses} respond={respond} revealAccess />
+      <Section title="New offers" jobs={grouped.offered} respond={respond} actions />
+      <Section title="Upcoming" jobs={grouped.accepted} respond={respond} revealAccess />
+      <Section title="History" jobs={grouped.history} respond={respond} revealAccess />
     </div>
   );
 };
@@ -121,7 +121,7 @@ const getSensitiveAccessState = (booking: any) => {
   });
 };
 
-const Section = ({ title, jobs, acceptedAddresses = {}, respond, actions = false, revealAccess = false }: any) => (
+const Section = ({ title, jobs, respond, actions = false, revealAccess = false }: any) => (
   <div className="mb-10">
     <h2 className="font-display text-2xl font-bold mb-3">{title}</h2>
     {jobs.length === 0 ? (
@@ -136,7 +136,7 @@ const Section = ({ title, jobs, acceptedAddresses = {}, respond, actions = false
           const canShowReveal = revealAccess && j.state !== "declined" && j.state !== "expired";
           const acceptedAddress = getAcceptedZooterJobAddress({
             jobState: j.state,
-            address: acceptedAddresses[j.id],
+            address: j.destination_address,
           });
           return (
             <Card key={j.id} className="p-5 rounded-2xl">
