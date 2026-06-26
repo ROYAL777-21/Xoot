@@ -1,8 +1,8 @@
 # SEO Content Automation
 
-Reviewed: 2026-06-13
+Reviewed: 2026-06-20
 
-This workflow creates 1 to 2 review-ready blog briefs per day for Zoot's launch-area SEO. It does not publish unreviewed AI content. The goal is to turn search intent, local service-area relevance, and human-quality editorial rules into a repeatable queue.
+This workflow creates 1 to 2 review-ready blog briefs and article drafts per day for Zoot's launch-area SEO. It does not publish unreviewed AI content. The goal is to turn search intent, local service-area relevance, and human-quality editorial rules into a repeatable queue without accidentally shipping unsupported claims.
 
 ## Sources Used
 
@@ -11,8 +11,35 @@ This workflow creates 1 to 2 review-ready blog briefs per day for Zoot's launch-
 - Google Business Profile guidelines: accurate service areas, real-world business representation, and no private/confidential content.
 - Google structured data guidance: JSON-LD for maintainable structured data.
 - Zoot internal docs: brand guide, project context, and `docs/SEO_BLOG_PLAN.md`.
+- Zoot marketing operating prompt: `docs/SEO_MARKETING_OPERATING_PROMPT.md`.
+- WordPress editorial CMS: review, authoring, scheduled publishing, canonical SEO metadata, and content governance. WordPress is not a source for application secrets or authenticated app data.
 
 Semrush MCP access is not available on the active plan. When access is enabled, export keyword rows with volume, difficulty, intent, and SERP notes into `content/seo/keyword-intent-map.json` before generating the queue.
+
+## WordPress SEO CMS Role
+
+WordPress is part of the Zoot SEO stack as a headless/editorial CMS, not as the app runtime. The React/Vite website remains the public rendering layer for speed, security headers, Liquid Glass UI, app routes, and conversion flows.
+
+Use WordPress for:
+
+- editorial review, author assignment, scheduling, draft notes, and revision history;
+- SEO fields such as title, meta description, canonical URL, excerpt, category, tags, and local-service intent;
+- publishing workflows for approved articles and launch-area content;
+- media library management for approved public blog images only.
+
+Do not use WordPress for:
+
+- booking, payment, account, Zooter, household, support, or sensitive operational data;
+- storing Supabase service-role, Twilio, payment, OpenAI, KIE, Brevo, Mapbox secret, Apple, Google, Cloudflare, Hostinger, or EAS credentials;
+- unreviewed AI auto-publishing.
+
+Recommended flow:
+
+1. Generate 1 to 2 daily briefs into `content/seo/generated/`.
+2. Human review and edit in WordPress as drafts.
+3. Publish only approved articles.
+4. Sync approved WordPress article metadata into the Vite article registry or consume via a server-side build/import step.
+5. Keep canonical URLs on `https://zoothome.co.za/articles/<slug>` unless a deliberate WordPress-hosted URL is approved.
 
 ## Daily Command
 
@@ -30,6 +57,8 @@ Outputs:
 
 - `content/seo/generated/daily-blog-queue.json`
 - `content/seo/generated/daily-blog-queue.md`
+- `content/seo/generated/daily-article-drafts.md`
+- `content/seo/generated/drafts/YYYY-MM-DD-slug.md`
 
 ## Editorial Quality Gate
 

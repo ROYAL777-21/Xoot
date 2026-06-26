@@ -17,6 +17,8 @@ Reviewed: 2026-06-26
 - Added `20260624224551_accepted_zooter_job_destination.sql`, which creates accepted-destination RPCs and narrows direct `bookings` row reads so Zooters can read booking rows only after accepting the assigned job.
 - Local Supabase config contains the required web and `zoot://` redirect URLs.
 - GitHub CLI 2.95.0 is installed.
+- CodeRabbit Windows CLI wrapper is installed at `%LOCALAPPDATA%\Programs\CodeRabbit\bin`; `coderabbit` and `cr` both report version `0.6.4`.
+- WordPress is included in the SEO tech stack as a headless/editorial CMS for reviewed public article content. See `docs/WORDPRESS_SEO_CMS.md`.
 
 Historical migration ledgers are intentionally not rewritten. These migrations are the shared forward baseline; future migrations must run on staging first and production second in the same order.
 
@@ -61,8 +63,9 @@ Historical migration ledgers are intentionally not rewritten. These migrations a
 - GitHub CLI is installed but not authenticated.
 - The scoped branch `codex/phase1-convergence-sensitive-access` was pushed successfully through Git remote credentials.
 - The GitHub CLI still needs interactive OAuth authentication for local `gh` workflows.
-- CodeRabbit CLI requires WSL on this Windows host.
-- Preferred path: authenticate GitHub CLI and run CodeRabbit through the GitHub App or WSL-supported CLI.
+- CodeRabbit CLI is installed through the inspected Windows wrapper, but `coderabbit auth login --agent` is unsupported in this environment because localhost callback and stdin fallback are unavailable.
+- CodeRabbit requires API-key authentication here: run `coderabbit auth login --api-key <api-key>` locally, using a key stored in a password manager or approved vault, not chat.
+- Preferred path: authenticate GitHub CLI and authenticate CodeRabbit with an API key or install the CodeRabbit GitHub App on the repository.
 
 ## Verification
 
@@ -80,3 +83,4 @@ Historical migration ledgers are intentionally not rewritten. These migrations a
 - Staging Supabase security advisor: no findings.
 - Production Supabase security advisor: only leaked-password protection remains disabled.
 - New accepted-destination/job-card migration: versioned locally and pushed to the scoped GitHub branch; live staging/production application is still pending because the Supabase connector timed out during this run and Chrome dashboard automation is unavailable.
+- Current local deployment blockers: Supabase CLI is installed but not authenticated, `psql` and Docker are not available on this Windows host, and CodeRabbit is installed but not authenticated.
