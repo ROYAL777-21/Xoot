@@ -1,0 +1,171 @@
+param(
+  [switch]$IncludeExternal,
+  [switch]$RequireLive,
+  [switch]$Json
+)
+
+$ErrorActionPreference = "Continue"
+
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+$checks = New-Object System.Collections.Generic.List[object]
+
+function Add-Check {
+  param(
+    [string]$Area,
+    [string]$Name,
+    [string]$Status,
+    [string]$Detail
+  )
+
+  $checks.Add([pscustomobject]@{
+    area = $Area
+    name = $Name
+    status = $Status
+    detail = $Detail
+  })
+}
+
+function Resolve-RepoPath {
+  param([string]$RelativePath)
+  return Join-Path $repoRoot $RelativePath
+}
+
+function Read-RepoText {
+  param([string]$RelativePath)
+  $path = Resolve-RepoPath $RelativePath
+  if (-not (Test-Path -LiteralPath $path)) {
+    return $null
+  }
+
+  return Get-Content -Raw -LiteralPath $path
+}
+
+function Test-RepoFile {
+  param(
+    [string]$Area,
+    [string]$RelativePath
+  )
+
+  $exists = Test-Path -LiteralPath (Resolve-RepoPath $RelativePath)
+  Add-Check $Area $RelativePath ($(if ($exists) { "pass" } else { "fail" })) ($(if ($exists) { "present" } else { "missing" }))
+  return $exists
+}
+
+function Test-RepoPattern {
+  param(
+    [string]$Area,
+    [string]$RelativePath,
+    [string]$Pattern,
+    [string]$Name
+  )
+
+  $text = Read-RepoText $RelativePath
+  $pass = $false
+  if ($null -ne $text) {
+    $pass = $text -match $Pattern
+  }
+
+  Add-Check $Area $Name ($(if ($pass) { "pass" } else { "fail" })) "$RelativePath :: $Pattern"
+}
+
+function Add-ManualBlocker {
+  param(
+    [string]$Area,
+    [string]$Name,
+    [string]$Detail
+  )
+
+  Add-Check $Area $Name "manual" $Detail
+}
+
+Test-RepoFile "ops" "blocker.md" | Out-Null
+Test-RepoFile "ops" "BLOCKER_REPORT.md" | Out-Null
+Test-RepoFile "ops" "scripts/ops/check-local-provider-auth.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/setup-local-provider-auth.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/deploy-staging-backend.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/set-github-public-vars.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/set-supabase-edge-secrets.ps1" | Out-Null
+
+$blockerText = Read-RepoText "blocker.md"
+if ($null -ne $blockerText) {
+  Add-Check "ops" "blocker.md unresolved-only ledger" ($(if ($blockerText -notmatch "(?m)^## Resolved\b") { "pass" } else { "fail" })) "should not contain a resolved-history section"
+}
+
+Test-RepoPattern "supabase" "supabase/migrations/20260624114802_production_schema_convergence_and_sensitive_access_notifications.sql" "sensitive_access_available_notified_at" "sensitive-access notification timestamp column"
+Test-RepoPattern "supabase" "supabase/migrations/20260624114802_production_schema_convergence_and_sensitive_access_notifications.sql" "native_push_subscriptions" "native push subscription table"
+Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_and_sensitive_access_notifications.sql" "booking_status_valid" "canonical booking status constraint"
+Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_and_sensitive_access_notifications.sql" "alter column status set default 'draft'" "booking default status draft"
+Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_and_sensitive_access_notifications.sql" "private\.enqueue_sensitive_access_notifications" "sensitive-access notification enqueue function"
+Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_and_sensitive_access_notifications.sql" "cron\.schedule" "sensitive-access notification scheduler"
+Test-RepoPattern "supabase" "supabase/migrations/20260624121516_policy_performance_hardening.sql" "bookings_participant_read" "optimized participant booking policy"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "get_zooter_job_cards" "safe zooter job-card RPC"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "destination_address" "accepted-job destination field"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "zj\.state = 'accepted'" "destination only after accepted job"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "not in \('cancelled', 'completed', 'rated'\)" "destination hidden after terminal booking states"
+
+$redirects = @(
+  "http://127.0.0.1:5173/auth/callback",
+  "http://127.0.0.1:4173/auth/callback",
+  "https://staging.zoothome.co.za/auth/callback",
+  "https://zoothome.co.za/auth/callback",
+  "https://www.zoothome.co.za/auth/callback",
+  "zoot://auth/callback"
+)
+foreach ($redirect in $redirects) {
+  Test-RepoPattern "supabase-auth" "supabase/config.toml" ([regex]::Escape($redirect)) "local config redirect: $redirect"
+}
+
+Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "VITE_SUPABASE_URL" "GitHub public Supabase URL variable"
+Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "EXPO_PUBLIC_SUPABASE_URL" "GitHub public Expo Supabase URL variable"
+Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "sb_secret_\|service_role\|BEGIN \[A-Z \]\*PRIVATE KEY" "GitHub variable private-value guard"
+Test-RepoPattern "supabase" "scripts/ops/set-supabase-edge-secrets.ps1" "Refusing to read Edge secrets from inside the repository" "Edge secrets file must stay outside repo"
+Test-RepoPattern "supabase" "scripts/ops/deploy-staging-backend.ps1" "SUPABASE_ACCESS_TOKEN" "staging deploy requires Supabase auth"
+Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
+
+Add-ManualBlocker "supabase-live" "live migration history" "Requires authenticated Supabase CLI or MCP access to compare staging and production."
+Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase dashboard/API access; local config is prepared but live allowlists still need verification."
+Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, and rotated secrets."
+Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privilege browser, native, and build-download tokens from Mapbox."
+Add-ManualBlocker "cloudflare-live" "Cloudflare Zoot zone" "Requires a Cloudflare zone and token with the required zone-management permissions."
+Add-ManualBlocker "stores-live" "Apple/Google/EAS release credentials" "Requires developer-console records, signing credentials, privacy declarations, and legal review."
+
+if ($IncludeExternal -or $RequireLive) {
+  $authScript = Resolve-RepoPath "scripts/ops/check-local-provider-auth.ps1"
+  try {
+    $authJson = & powershell -ExecutionPolicy Bypass -File $authScript 2>$null
+    $authReport = $authJson | ConvertFrom-Json
+    foreach ($status in $authReport.statuses) {
+      Add-Check "external-auth" $status.name ($(if ($status.ok) { "pass" } else { "fail" })) $status.output
+    }
+  } catch {
+    Add-Check "external-auth" "provider auth diagnostic" "fail" $_.Exception.Message
+  }
+} else {
+  Add-Check "external-auth" "provider auth diagnostic" "skipped" "Pass -IncludeExternal to run local provider auth checks."
+}
+
+$summary = [pscustomobject]@{
+  checkedAt = (Get-Date).ToString("o")
+  pass = @($checks | Where-Object status -eq "pass").Count
+  fail = @($checks | Where-Object status -eq "fail").Count
+  manual = @($checks | Where-Object status -eq "manual").Count
+  skipped = @($checks | Where-Object status -eq "skipped").Count
+}
+
+if ($Json) {
+  [pscustomobject]@{
+    summary = $summary
+    checks = $checks
+  } | ConvertTo-Json -Depth 6
+} else {
+  $summary | Format-List
+  $checks | Sort-Object area, name | Format-Table area, status, name, detail -AutoSize -Wrap
+}
+
+if ($summary.fail -gt 0) {
+  exit 1
+}
+
+if ($RequireLive -and ($summary.manual -gt 0 -or $summary.skipped -gt 0)) {
+  exit 1
+}
