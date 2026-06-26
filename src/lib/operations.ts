@@ -240,6 +240,18 @@ export type SensitiveAccessAvailability =
   | { state: "available"; opensAt: string; minutesUntilOpen: 0 }
   | { state: "closed"; opensAt: string | null; minutesUntilOpen: 0 };
 
+export const getAcceptedZooterJobAddress = ({
+  jobState,
+  address,
+}: {
+  jobState: string;
+  address?: string | null;
+}): string | null => {
+  if (jobState !== "accepted") return null;
+  const normalizedAddress = address?.trim();
+  return normalizedAddress || null;
+};
+
 export const getSensitiveAccessAvailability = ({
   scheduledAt,
   status,

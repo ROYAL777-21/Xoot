@@ -8,13 +8,14 @@ import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
-import { getSensitiveAccessAvailability } from "@/lib/operations";
+import { getAcceptedZooterJobAddress, getSensitiveAccessAvailability } from "@/lib/operations";
 import { SensitiveFieldReveal } from "@/components/zoot/SensitiveFieldReveal";
 
 const Jobs = () => {
   const { user } = useAuth();
   const [zooterId, setZooterId] = useState<string | null>(null);
   const [jobs, setJobs] = useState<any[]>([]);
+  const [acceptedAddresses, setAcceptedAddresses] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   const load = async (zid: string) => {
@@ -23,7 +24,32 @@ const Jobs = () => {
       .select("*, bookings:booking_id(id, service, service_type, scheduled_at, price, duration_hours, status, job_completed_at, completed_at, cancelled_at, sensitive_data_revoked_at, sensitive_access_available_notified_at, user_id)")
       .eq("zooter_id", zid)
       .order("offered_at", { ascending: false });
-    setJobs(data ?? []);
+    const nextJobs = data ?? [];
+    setJobs(nextJobs);
+
+    const acceptedJobIds = nextJobs
+      .filter((job: any) => job.state === "accepted")
+      .map((job: any) => job.id)
+      .filter(Boolean);
+
+    if (!acceptedJobIds.length) {
+      setAcceptedAddresses({});
+      return;
+    }
+
+    const { data: destinations, error } = await supabase.rpc("get_accepted_zooter_job_destinations", {
+      p_job_ids: acceptedJobIds,
+    });
+
+    if (error) {
+      console.warn("Accepted job destination lookup failed", error.message);
+      setAcceptedAddresses({});
+      return;
+    }
+
+    setAcceptedAddresses(Object.fromEntries(
+      (destinations ?? []).map((destination) => [destination.job_id, destination.address]),
+    ));
   };
 
   useEffect(() => {
@@ -74,11 +100,11 @@ const Jobs = () => {
   return (
     <div className="container py-8 lg:py-12 max-w-5xl">
       <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">Jobs</h1>
-      <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. Client address details stay protected and are not exposed in this offer list.</p>
+      <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. The destination appears after acceptance; household access details remain time-locked and logged.</p>
 
-      <Section title="New offers" jobs={grouped.offered} respond={respond} actions />
-      <Section title="Upcoming" jobs={grouped.accepted} respond={respond} revealAccess />
-      <Section title="History" jobs={grouped.history} respond={respond} revealAccess />
+      <Section title="New offers" jobs={grouped.offered} acceptedAddresses={acceptedAddresses} respond={respond} actions />
+      <Section title="Upcoming" jobs={grouped.accepted} acceptedAddresses={acceptedAddresses} respond={respond} revealAccess />
+      <Section title="History" jobs={grouped.history} acceptedAddresses={acceptedAddresses} respond={respond} revealAccess />
     </div>
   );
 };
@@ -95,7 +121,7 @@ const getSensitiveAccessState = (booking: any) => {
   });
 };
 
-const Section = ({ title, jobs, respond, actions = false, revealAccess = false }: any) => (
+const Section = ({ title, jobs, acceptedAddresses = {}, respond, actions = false, revealAccess = false }: any) => (
   <div className="mb-10">
     <h2 className="font-display text-2xl font-bold mb-3">{title}</h2>
     {jobs.length === 0 ? (
@@ -108,6 +134,10 @@ const Section = ({ title, jobs, respond, actions = false, revealAccess = false }
           const accessState = getSensitiveAccessState(b);
           const withinWindow = accessState.state === "available";
           const canShowReveal = revealAccess && j.state !== "declined" && j.state !== "expired";
+          const acceptedAddress = getAcceptedZooterJobAddress({
+            jobState: j.state,
+            address: acceptedAddresses[j.id],
+          });
           return (
             <Card key={j.id} className="p-5 rounded-2xl">
               <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -115,7 +145,10 @@ const Section = ({ title, jobs, respond, actions = false, revealAccess = false }
                   <p className="font-display text-lg font-bold capitalize mb-1">{b.service_type ?? b.service}</p>
                   <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(b.scheduled_at).toLocaleString()}</span>
-                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> Address unlocks through secure booking details near the appointment window</span>
+                    <span className="inline-flex min-w-0 items-start gap-1">
+                      <MapPin className="mt-0.5 h-3 w-3 shrink-0" />
+                      {acceptedAddress ?? "Address shown after you accept the job"}
+                    </span>
                     <span className="inline-flex items-center gap-1"><DollarSign className="h-3 w-3" /> {formatZAR(Number(b.price))} - {b.duration_hours}h</span>
                   </div>
                 </div>

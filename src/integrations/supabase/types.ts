@@ -1050,6 +1050,14 @@ export type Database = {
     }
     Functions: {
       gen_referral_code: { Args: never; Returns: string }
+      get_accepted_zooter_job_destinations: {
+        Args: { p_job_ids: string[] }
+        Returns: {
+          job_id: string
+          booking_id: string
+          address: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

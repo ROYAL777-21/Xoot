@@ -5,6 +5,7 @@ import {
   canAccessSensitiveBookingData,
   calculateBookingQuote,
   getActivationReadiness,
+  getAcceptedZooterJobAddress,
   getSensitiveAccessAvailability,
   isApprovedLaunchRegion,
   routeNotificationChannel,
@@ -87,6 +88,15 @@ describe("Zoot operating rules", () => {
       cancelledAt: "2026-05-18T09:12:00.000Z",
       now: "2026-05-18T09:15:00.000Z",
     }).state).toBe("closed");
+  });
+
+  it("reveals the destination only after a Zooter accepts the job", () => {
+    const address = "12 Alice Lane, Sandton";
+
+    expect(getAcceptedZooterJobAddress({ jobState: "offered", address })).toBeNull();
+    expect(getAcceptedZooterJobAddress({ jobState: "accepted", address })).toBe(address);
+    expect(getAcceptedZooterJobAddress({ jobState: "completed", address })).toBeNull();
+    expect(getAcceptedZooterJobAddress({ jobState: "accepted", address: "   " })).toBeNull();
   });
 
   it("builds pending payment records instead of claiming live provider payment", () => {
