@@ -1,6 +1,6 @@
 # Zoot Production Readiness Findings
 
-Reviewed: 2026-06-24
+Reviewed: 2026-06-26
 
 ## Resolved
 
@@ -13,6 +13,8 @@ Reviewed: 2026-06-24
 - Missing production support tables for native push, sensitive-access logs, E2EE public keys, and refund requests were added.
 - A one-minute database scheduler notifies an assigned Zooter when sensitive access opens 45 minutes before the scheduled start.
 - The Zooter Jobs UI shows the exact unlock time and explains that a notification will be sent.
+- The Zooter Jobs UI now requests the destination only after the authenticated Zooter has accepted the job. New offers no longer receive the booking address in the initial browser query.
+- Added `20260624224551_accepted_zooter_job_destination.sql`, which creates `public.get_accepted_zooter_job_destinations(uuid[])` for accepted, non-cancelled, non-completed jobs only.
 - Local Supabase config contains the required web and `zoot://` redirect URLs.
 - GitHub CLI 2.95.0 is installed.
 
@@ -23,7 +25,7 @@ Historical migration ledgers are intentionally not rewritten. These migrations a
 ### Supabase Auth
 
 - Live staging and production redirect allowlists are empty.
-- The active dashboard tab is signed out, and the database connector cannot update Auth settings.
+- The active dashboard tab/browser session is unavailable to automation, and the database connector cannot update Auth settings.
 - Sign in to Supabase and apply the exact values in `docs/OAUTH_AND_REDIRECTS.md`.
 
 ### Twilio
@@ -57,9 +59,10 @@ Historical migration ledgers are intentionally not rewritten. These migrations a
 ### GitHub And CodeRabbit
 
 - GitHub CLI is installed but not authenticated.
-- The GitHub connector cannot authenticate the local CLI or push this mixed local working tree.
+- The scoped branch `codex/phase1-convergence-sensitive-access` was pushed successfully through Git remote credentials.
+- The GitHub CLI still needs interactive OAuth authentication for local `gh` workflows.
 - CodeRabbit CLI requires WSL on this Windows host.
-- Preferred path: authenticate GitHub, push a scoped branch, open a PR, and run CodeRabbit through the GitHub App.
+- Preferred path: authenticate GitHub CLI and run CodeRabbit through the GitHub App or WSL-supported CLI.
 
 ## Verification
 
@@ -68,6 +71,7 @@ Historical migration ledgers are intentionally not rewritten. These migrations a
 - Sensitive-access cron job: active in both environments.
 - Scheduler dry run: zero queued notifications with zero eligible bookings.
 - Test suite: 17 files and 74 tests passed.
+- Focused accepted-address test: 10 operating-rule tests passed.
 - ESLint: passed.
 - Production build: passed.
 - Secret and frontend-write security scans: passed.
@@ -75,3 +79,4 @@ Historical migration ledgers are intentionally not rewritten. These migrations a
 - Deno 2.8.3 checked all 29 Edge Function entrypoints.
 - Staging Supabase security advisor: no findings.
 - Production Supabase security advisor: only leaked-password protection remains disabled.
+- New accepted-destination migration: versioned locally and pushed to the scoped GitHub branch; live staging/production application is still pending because the Supabase connector timed out during this run and Chrome dashboard automation is unavailable.
