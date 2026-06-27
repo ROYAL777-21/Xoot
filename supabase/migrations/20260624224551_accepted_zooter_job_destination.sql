@@ -1,5 +1,10 @@
 -- Returns booking destinations only after the authenticated Zooter accepts the job.
 -- The offer list intentionally omits addresses so a browser cannot receive them before acceptance.
+alter table public.zooter_jobs
+  add column if not exists offered_at timestamptz not null default now(),
+  add column if not exists responded_at timestamptz,
+  add column if not exists decline_reason text;
+
 create or replace function public.get_accepted_zooter_job_destinations(p_job_ids uuid[])
 returns table (
   job_id uuid,

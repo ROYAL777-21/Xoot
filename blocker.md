@@ -6,11 +6,10 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Supabase
 
-- Supabase MCP migration tools are currently unusable in this session. Listing migrations for staging `fxmxyabdjqviqbcxmvlp` and production `mvlrkelahhsyjrwgsxaf` both failed with `MCP startup failed: timed out handshaking with MCP server after 29.9999996s`.
 - Local Supabase CLI is available through `npx supabase` but is not authenticated. `npx supabase projects list` fails because no access token is configured.
 - `psql` and Docker are not installed on this Windows host, so direct database fallback and local Supabase reset/test fallback are unavailable.
-- The accepted-job destination migration `20260624224551_accepted_zooter_job_destination.sql` is versioned and pushed, but live staging/production application still needs verification through an authenticated Supabase path.
 - Live Supabase Auth redirect allowlists still need dashboard configuration. Local `supabase/config.toml` contains the intended redirect values, but the connector exposes no safe Auth redirect setter.
+- Production and staging migration histories are intentionally different because production started from launch squashed migrations while staging follows the local chain. The current convergence, booking-policy, sensitive-access notification, training, storage, Twilio, and accepted-job destination migrations are present in both live histories, but real role-based smoke tests are still required.
 
 ## Twilio
 
@@ -57,9 +56,8 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Verification Still Needed After Unblocking
 
-- Re-run staging migrations and migration history verification through an authenticated Supabase path.
-- Apply the accepted-job destination migration to staging first, then production, and verify `get_zooter_job_cards()` returns destination addresses only after the assigned Zooter accepts the job.
-- Run `scripts/ops/verify-supabase-live.ps1` against staging and production with a local `SUPABASE_DB_URL` to verify the live booking state constraint, sensitive-access notification scheduler artifacts, RPC grants, and accepted-job destination functions.
+- Verify with real staging client, admin, and Zooter users that `get_zooter_job_cards()` returns destination addresses only after the assigned Zooter accepts the job.
+- Run `scripts/ops/verify-supabase-live.ps1` against staging and production with a local `SUPABASE_DB_URL` to independently verify the live booking state constraint, sensitive-access notification scheduler artifacts, RPC grants, and accepted-job destination functions.
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
 - Deploy/redeploy Edge Functions after secrets are configured.
 - Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has the approved provider credentials in environment variables or browser sessions.
