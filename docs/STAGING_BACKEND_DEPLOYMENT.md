@@ -12,6 +12,7 @@ Reviewed: 2026-06-27
 - The local migration chain contains legacy prototype seed data; `20260619001000_remove_demo_seed_data.sql` removes the hardcoded demo Zooters after those migrations run.
 - Production and staging live histories now include the Zooter optional training gamification prerequisite, expanded training module migration, storage policies, Twilio webhook audit schema, convergence migrations, booking policy, sensitive-access notification scheduler, policy performance hardening, and accepted-job destination hardening.
 - The accepted-job destination hardening migration creates `get_zooter_job_cards()` and returns `destination_address` only after a Zooter accepts the assigned job. Real role-based smoke tests with staging client/admin/Zooter users are still required.
+- Production needed the accepted-job migration to repair drift in `public.zooter_jobs` by adding the optional response columns before creating the job-card RPC. Keep that idempotent compatibility step in the migration.
 - Production's remaining security-advisor warning is leaked-password protection. Enable it when the selected Supabase plan exposes the control.
 - Any private Supabase keys pasted into chat must be rotated in the Supabase dashboard before they are used for staging or production operations.
 

@@ -103,6 +103,7 @@ Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_a
 Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_and_sensitive_access_notifications.sql" "cron\.schedule" "sensitive-access notification scheduler"
 Test-RepoPattern "supabase" "supabase/migrations/20260624121516_policy_performance_hardening.sql" "bookings_participant_read" "optimized participant booking policy"
 Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "get_zooter_job_cards" "safe zooter job-card RPC"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "add column if not exists decline_reason" "accepted-job migration repairs zooter job drift"
 Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "destination_address" "accepted-job destination field"
 Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "zj\.state = 'accepted'" "destination only after accepted job"
 Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "not in \('cancelled', 'completed', 'rated'\)" "destination hidden after terminal booking states"
@@ -134,7 +135,7 @@ Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "s
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "private\.enqueue_sensitive_access_notifications" "live SQL checks sensitive-access notification function"
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
 
-Add-ManualBlocker "supabase-live" "live migration history" "Requires authenticated Supabase CLI or MCP access to compare staging and production."
+Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Use real staging client, admin, and Zooter users to verify accepted-job destination visibility and sensitive-access notifications."
 Add-ManualBlocker "supabase-live" "live database readiness SQL" "Run scripts/ops/verify-supabase-live.ps1 with SUPABASE_DB_URL for staging and production."
 Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase dashboard/API access; local config is prepared but live allowlists still need verification."
 Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, and rotated secrets."
