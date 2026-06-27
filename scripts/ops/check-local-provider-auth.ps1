@@ -113,7 +113,9 @@ function Invoke-ExternalStatus {
 
 $codeRabbitBin = Join-Path $env:LOCALAPPDATA "Programs\CodeRabbit\bin"
 $bunBin = Join-Path $env:USERPROFILE ".bun\bin"
-$env:Path = "$codeRabbitBin;$bunBin;$env:Path"
+$scoopShims = Join-Path $env:USERPROFILE "scoop\shims"
+$env:DO_NOT_TRACK = "1"
+$env:Path = "$codeRabbitBin;$bunBin;$scoopShims;$env:Path"
 $processPath = [Environment]::GetEnvironmentVariable("Path", "Process")
 [Environment]::SetEnvironmentVariable("PATH", $null, "Process")
 [Environment]::SetEnvironmentVariable("Path", $processPath, "Process")
@@ -133,10 +135,10 @@ $statuses = @()
 
 $supabaseCommand = Get-Command "supabase" -ErrorAction SilentlyContinue
 if ($supabaseCommand) {
-  $statuses += Invoke-ExternalStatus "supabase-cli" "supabase" @("--version")
+  $statuses += Invoke-ExternalStatus "supabase-cli" "supabase" @("--version") -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
   $statuses += Invoke-ExternalStatus "supabase-auth" "supabase" @("projects", "list")
 } elseif ($env:ZOOT_CHECK_NPX_SUPABASE -eq "1") {
-  $statuses += Invoke-ExternalStatus "supabase-cli" "npx.cmd" @("-y", "supabase@2.108.0", "--version")
+  $statuses += Invoke-ExternalStatus "supabase-cli" "npx.cmd" @("-y", "supabase@2.108.0", "--version") -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
   $statuses += Invoke-ExternalStatus "supabase-auth" "npx.cmd" @("-y", "supabase@2.108.0", "projects", "list")
 } else {
   $statuses += [pscustomobject]@{
@@ -164,6 +166,8 @@ $statuses += @(
   notes = @(
     "This report intentionally avoids printing secret values.",
     "External checks use short timeouts so readiness verification fails fast instead of hanging.",
+    "Scoop shims are added to PATH for this diagnostic so a user-level Supabase CLI install can be detected.",
+    "DO_NOT_TRACK=1 is set for this diagnostic so Supabase CLI telemetry writes do not fail in restricted shells.",
     "Supabase npx probing is opt-in with ZOOT_CHECK_NPX_SUPABASE=1 because network startup can hang in restricted shells.",
     "If supabase-auth is false, set SUPABASE_ACCESS_TOKEN locally or run supabase login.",
     "If github-auth is false, run gh auth login.",
