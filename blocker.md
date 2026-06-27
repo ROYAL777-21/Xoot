@@ -28,7 +28,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Cloudflare
 
-- The connected Cloudflare account currently has no Zoot zone.
+- The connected Cloudflare account currently has no Zoot zone. On 2026-06-27, the Cloudflare API `/zones` call returned zero zones for the connected account.
 - The available Cloudflare app/API permissions cannot create `zoothome.co.za`; the prior create attempt failed because the token lacks `account.zone.create`.
 - WAF, bot/rate-limit rules, Turnstile, DNS, TLS, and origin protection cannot be activated until the zone exists and the token has the required scoped permissions.
 
@@ -42,6 +42,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - GitHub CLI is installed but unauthenticated. Local `gh auth status` reports no logged-in GitHub hosts.
 - GitHub repository/environment variables for optional public integrations still need approved public-safe values where applicable: Expo public Supabase values, site URL, Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, and Cloudflare Turnstile site key. Private provider secrets must not be GitHub repository variables.
+- GitHub connector can read PR-triggered workflow runs but cannot write repository variables. It returned no PR-triggered runs for latest pushed SHA `c95678185826dfa5b6c1bca7eba039bb573eaf88`.
 - CodeRabbit CLI is installed and reports version `0.6.4`, but it is not authenticated.
 - `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable.
 - CodeRabbit review requires one of:
@@ -52,6 +53,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 ## Provider Secrets And External Dashboards
 
 - Real production secrets for Stitch, Ozow, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, and Mapbox still need to be set in their correct secret stores.
+- Netlify project `zoot-home-care` exists. Public-safe Netlify env var writes for Supabase URL, project ID, and site URL reported success, but Netlify env readback still returned an empty list; do not treat Netlify env as verified until the dashboard/build confirms it. `VITE_SUPABASE_PUBLISHABLE_KEY` is still not available from an approved non-chat source.
 - Do not paste these values into chat. Store private secrets only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
 
 ## Verification Still Needed After Unblocking
