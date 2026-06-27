@@ -10,11 +10,13 @@ Reviewed: 2026-06-27
 - Supabase Branching is unavailable on the current plan, so staging is a separate free project.
 - Production migration history still differs from the local migration file list and must remain reconciled before broad migration pushes.
 - The local migration chain contains legacy prototype seed data; `20260619001000_remove_demo_seed_data.sql` removes the hardcoded demo Zooters after those migrations run.
-- Production and staging live histories now include the Zooter optional training gamification prerequisite, expanded training module migration, storage policies, Twilio webhook audit schema, convergence migrations, booking policy, sensitive-access notification scheduler, policy performance hardening, and accepted-job destination hardening.
+- Production and staging live histories now include the Zooter optional training gamification prerequisite, expanded training module migration, storage policies, Twilio webhook audit schema, convergence migrations, booking policy, sensitive-access notification scheduler, policy performance hardening, accepted-job destination hardening, governance controls, zooter-job-card service-boundary, duplicate-index cleanup, and legacy RLS policy convergence.
 - The accepted-job destination hardening migration creates `get_zooter_job_cards()` and returns `destination_address` only after a Zooter accepts the assigned job. Real role-based smoke tests with staging client/admin/Zooter users are still required.
 - Production needed the accepted-job migration to repair drift in `public.zooter_jobs` by adding the optional response columns before creating the job-card RPC. Keep that idempotent compatibility step in the migration.
 - Production's remaining security-advisor warning is leaked-password protection. Enable it when the selected Supabase plan exposes the control.
 - Duplicate generated production indexes were removed with `20260627105044_drop_duplicate_production_indexes` in staging and `20260627105059_drop_duplicate_production_indexes` in production. Direct catalog checks now report zero duplicate public index groups in both projects.
+- Legacy RLS policy convergence was applied with `20260627110000_legacy_rls_policy_convergence` in both projects. Direct catalog checks now show the targeted `support_tickets`, `user_roles`, `zooter_reliability_metrics`, and `zooters` policies use explicit command-specific policies for `authenticated`, no targeted `ALL` policies remain, anonymous users cannot read the `zooters` base table, and `zooters_public` is anonymous select-only.
+- Performance advisors still need a separate follow-up pass for remaining unindexed foreign keys, auth-initplan policies, non-targeted multiple-permissive policy groups, and workload-aware unused-index review.
 - Any private Supabase keys pasted into chat must be rotated in the Supabase dashboard before they are used for staging or production operations.
 
 ## Required Local Credentials

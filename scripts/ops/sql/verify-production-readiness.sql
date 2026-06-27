@@ -143,6 +143,45 @@ checks as (
 
   union all
   select
+    'public has_role is self-scoped invoker',
+    exists (
+      select 1
+      from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public'
+        and p.proname = 'has_role'
+        and pg_get_function_identity_arguments(p.oid) = '_user_id uuid, _role app_role'
+        and p.prosecdef = false
+        and exists (
+          select 1
+          from unnest(p.proconfig) cfg
+          where cfg = 'search_path=""'
+        )
+        and pg_get_functiondef(p.oid) like '%_user_id <> auth.uid()%'
+    ),
+    'public.has_role(uuid, public.app_role)'
+
+  union all
+  select
+    'private has_role uses locked search path',
+    exists (
+      select 1
+      from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'private'
+        and p.proname = 'has_role'
+        and pg_get_function_identity_arguments(p.oid) = '_user_id uuid, _role app_role'
+        and p.prosecdef = true
+        and exists (
+          select 1
+          from unnest(p.proconfig) cfg
+          where cfg = 'search_path=""'
+        )
+    ),
+    'private.has_role(uuid, public.app_role)'
+
+  union all
+  select
     'pg_cron extension installed',
     exists (select 1 from pg_extension where extname = 'pg_cron'),
     'pg_cron'
@@ -310,6 +349,100 @@ checks as (
       having count(*) > 1
     ),
     'duplicate public btree/expression/predicate index groups'
+
+  union all
+  select
+    'legacy targeted RLS policies converged',
+    not exists (
+      select 1
+      from (
+        values
+          ('support_tickets', 'support_tickets_select_owner_or_admin'),
+          ('support_tickets', 'support_tickets_insert_owner'),
+          ('support_tickets', 'support_tickets_update_admin'),
+          ('support_tickets', 'support_tickets_delete_admin'),
+          ('user_roles', 'user_roles_select_owner_or_admin'),
+          ('user_roles', 'user_roles_insert_admin'),
+          ('user_roles', 'user_roles_update_admin'),
+          ('user_roles', 'user_roles_delete_admin'),
+          ('zooter_reliability_metrics', 'zooter_reliability_metrics_select_owner_or_admin'),
+          ('zooter_reliability_metrics', 'zooter_reliability_metrics_insert_admin'),
+          ('zooter_reliability_metrics', 'zooter_reliability_metrics_update_admin'),
+          ('zooter_reliability_metrics', 'zooter_reliability_metrics_delete_admin'),
+          ('zooters', 'zooters_select_self_or_admin'),
+          ('zooters', 'zooters_insert_admin'),
+          ('zooters', 'zooters_update_self_or_admin'),
+          ('zooters', 'zooters_delete_admin')
+      ) as expected(tablename, policyname)
+      where not exists (
+        select 1
+        from pg_policies p
+        where p.schemaname = 'public'
+          and p.tablename = expected.tablename
+          and p.policyname = expected.policyname
+      )
+    ),
+    'support_tickets/user_roles/zooter_reliability_metrics/zooters policy set'
+
+  union all
+  select
+    'legacy targeted RLS policies removed',
+    not exists (
+      select 1
+      from pg_policies p
+      where p.schemaname = 'public'
+        and (p.tablename, p.policyname) in (
+          values
+            ('support_tickets', 'support_tickets_admin'),
+            ('support_tickets', 'support_tickets_insert_own'),
+            ('support_tickets', 'support_tickets_own'),
+            ('support_tickets', 'own support tickets'),
+            ('user_roles', 'admins manage roles'),
+            ('user_roles', 'view own roles'),
+            ('user_roles', 'roles select own or admin'),
+            ('user_roles', 'roles admin insert'),
+            ('user_roles', 'roles admin update'),
+            ('user_roles', 'roles admin delete'),
+            ('zooter_reliability_metrics', 'admins manage reliability metrics'),
+            ('zooter_reliability_metrics', 'zooters and admins view reliability metrics'),
+            ('zooter_reliability_metrics', 'reliability own zooter or admin'),
+            ('zooters', 'active zooters visible'),
+            ('zooters', 'admins insert zooters'),
+            ('zooters', 'admins manage zooters'),
+            ('zooters', 'zooters update own'),
+            ('zooters', 'zooters update own profile'),
+            ('zooters', 'zooters_self_select'),
+            ('zooters', 'zooters_self_update')
+        )
+    ),
+    'old support/user-role/reliability/zooter policy names'
+
+  union all
+  select
+    'targeted RLS policies avoid ALL command',
+    not exists (
+      select 1
+      from pg_policies p
+      where p.schemaname = 'public'
+        and p.tablename in ('support_tickets', 'user_roles', 'zooter_reliability_metrics', 'zooters')
+        and p.cmd = 'ALL'
+    ),
+    'no broad ALL policies on targeted legacy tables'
+
+  union all
+  select
+    'zooters base table not readable by anon',
+    not has_table_privilege('anon', 'public.zooters', 'SELECT'),
+    'anon select revoked from public.zooters'
+
+  union all
+  select
+    'zooters public view readable only as select',
+    has_table_privilege('anon', 'public.zooters_public', 'SELECT')
+      and not has_table_privilege('anon', 'public.zooters_public', 'INSERT')
+      and not has_table_privilege('anon', 'public.zooters_public', 'UPDATE')
+      and not has_table_privilege('anon', 'public.zooters_public', 'DELETE'),
+    'anon can select public-safe view only'
 )
 select
   check_name,

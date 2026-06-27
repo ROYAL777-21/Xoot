@@ -120,6 +120,12 @@ Test-RepoPattern "supabase" "supabase/migrations/20260627103000_governance_advis
 Test-RepoPattern "supabase" "supabase/migrations/20260627103000_governance_advisor_followups.sql" "public\.has_role\(\(select auth\.uid\(\)\)" "Phase 1 governance RLS initplan cleanup"
 Test-RepoPattern "supabase" "supabase/migrations/20260627104500_drop_duplicate_production_indexes.sql" "idx_fk_bookings_710be9c8ff0ac18a769b7bbdc2139821" "production duplicate booking index cleanup"
 Test-RepoPattern "supabase" "supabase/migrations/20260627104500_drop_duplicate_production_indexes.sql" "idx_fk_integration_outbox_5366d64d19a03af936eb8e766c10b676" "production duplicate outbox index cleanup"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "support_tickets_select_owner_or_admin" "legacy support ticket RLS convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "user_roles_select_owner_or_admin" "legacy user role RLS convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "zooter_reliability_metrics_select_owner_or_admin" "legacy reliability RLS convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "zooters_select_self_or_admin" "legacy zooter RLS convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "revoke all on table public\.zooters from anon" "zooters base table anon grant removal"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "security invoker" "public has_role is self-scoped security invoker"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -147,6 +153,8 @@ Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "g
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "sensitive_access_available_notified_at" "live SQL checks sensitive-access notification column"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "private\.enqueue_sensitive_access_notifications" "live SQL checks sensitive-access notification function"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no duplicate public indexes" "live SQL checks duplicate indexes"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "legacy targeted RLS policies converged" "live SQL checks targeted legacy RLS convergence"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "zooters base table not readable by anon" "live SQL checks zooters base table anon grant"
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
 
 Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Use real staging client, admin, and Zooter users to verify accepted-job destination visibility and sensitive-access notifications."
