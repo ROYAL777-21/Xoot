@@ -11,7 +11,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Production and staging migration histories remain materially different because production started from launch squashed migrations while staging follows the local chain. Current convergence, booking, sensitive-access, training, storage, Twilio, accepted-job destination, governance, and zooter-job-card service-boundary artifacts were verified live in both projects, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
 - Real role-based smoke tests are still required with staging client, admin, and Zooter users for accepted-job destination visibility, sensitive-access reveal windows, admin-only governance reads, and notification delivery.
 - Local `psql`, Docker, and Supabase CLI are not available on this Windows host, so local database reset and direct DB fallback checks still require installation or a separate ops shell with `SUPABASE_DB_URL`.
-- Supabase performance advisors still report legacy cleanup work: unindexed foreign keys, duplicate indexes, unused indexes, and multiple permissive RLS policies outside the focused governance follow-up slice.
+- Supabase performance advisors still report legacy cleanup work: unused indexes, multiple permissive RLS policies, and any advisor-cache entries that need rechecking after the 2026-06-27 duplicate-index cleanup. Direct catalog checks now show no duplicate public index groups in staging or production.
 
 ## Provider Secrets And External Dashboards
 

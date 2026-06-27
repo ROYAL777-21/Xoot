@@ -14,6 +14,7 @@ Reviewed: 2026-06-27
 - The accepted-job destination hardening migration creates `get_zooter_job_cards()` and returns `destination_address` only after a Zooter accepts the assigned job. Real role-based smoke tests with staging client/admin/Zooter users are still required.
 - Production needed the accepted-job migration to repair drift in `public.zooter_jobs` by adding the optional response columns before creating the job-card RPC. Keep that idempotent compatibility step in the migration.
 - Production's remaining security-advisor warning is leaked-password protection. Enable it when the selected Supabase plan exposes the control.
+- Duplicate generated production indexes were removed with `20260627105044_drop_duplicate_production_indexes` in staging and `20260627105059_drop_duplicate_production_indexes` in production. Direct catalog checks now report zero duplicate public index groups in both projects.
 - Any private Supabase keys pasted into chat must be rotated in the Supabase dashboard before they are used for staging or production operations.
 
 ## Required Local Credentials

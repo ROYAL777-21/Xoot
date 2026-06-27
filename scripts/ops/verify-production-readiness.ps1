@@ -118,6 +118,8 @@ Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governanc
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "analytics_event_contracts" "Phase 1 analytics privacy contract"
 Test-RepoPattern "supabase" "supabase/migrations/20260627103000_governance_advisor_followups.sql" "operational_controls_approved_by_idx" "Phase 1 governance FK advisor indexes"
 Test-RepoPattern "supabase" "supabase/migrations/20260627103000_governance_advisor_followups.sql" "public\.has_role\(\(select auth\.uid\(\)\)" "Phase 1 governance RLS initplan cleanup"
+Test-RepoPattern "supabase" "supabase/migrations/20260627104500_drop_duplicate_production_indexes.sql" "idx_fk_bookings_710be9c8ff0ac18a769b7bbdc2139821" "production duplicate booking index cleanup"
+Test-RepoPattern "supabase" "supabase/migrations/20260627104500_drop_duplicate_production_indexes.sql" "idx_fk_integration_outbox_5366d64d19a03af936eb8e766c10b676" "production duplicate outbox index cleanup"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -144,6 +146,7 @@ Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "b
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "get_zooter_job_cards" "live SQL checks zooter card RPC"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "sensitive_access_available_notified_at" "live SQL checks sensitive-access notification column"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "private\.enqueue_sensitive_access_notifications" "live SQL checks sensitive-access notification function"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no duplicate public indexes" "live SQL checks duplicate indexes"
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
 
 Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Use real staging client, admin, and Zooter users to verify accepted-job destination visibility and sensitive-access notifications."

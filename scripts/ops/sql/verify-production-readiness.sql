@@ -284,6 +284,32 @@ checks as (
       )
     ),
     'governance admin-read RLS initplan cleanup'
+
+  union all
+  select
+    'no duplicate public indexes',
+    not exists (
+      select 1
+      from (
+        select
+          t.oid as table_oid,
+          am.amname as method,
+          ix.indisunique,
+          ix.indkey::text as indkey,
+          coalesce(pg_get_expr(ix.indpred, ix.indrelid), '') as predicate,
+          coalesce(pg_get_expr(ix.indexprs, ix.indrelid), '') as expressions
+        from pg_index ix
+        join pg_class i on i.oid = ix.indexrelid
+        join pg_class t on t.oid = ix.indrelid
+        join pg_namespace n on n.oid = t.relnamespace
+        join pg_am am on am.oid = i.relam
+        where n.nspname = 'public'
+          and not ix.indisprimary
+      ) public_indexes
+      group by table_oid, method, indisunique, indkey, predicate, expressions
+      having count(*) > 1
+    ),
+    'duplicate public btree/expression/predicate index groups'
 )
 select
   check_name,
