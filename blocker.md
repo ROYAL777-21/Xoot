@@ -19,7 +19,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Real production secrets for Stitch, Ozow, Twilio, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, Mapbox, and WordPress still need to be set in their correct secret stores.
 - Private secrets must not be committed or placed in frontend/mobile env files. Store them only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
 - Secrets pasted into chat, including Supabase, Twilio, Cloudflare, Expo, and Mapbox token values, must be rotated before production launch.
-- Edge Functions need a final deploy/redeploy after secrets are configured, followed by staging smoke tests. This includes the newly added `admin-control-management` function plus updated `confirm-payment`, `support-respond`, and Twilio webhook functions that now depend on Phase 1 provider-event/rate-limit governance helpers.
+- Edge Functions need a final redeploy after secrets are configured, followed by staging smoke tests. `admin-control-management` is active in staging and production with JWT verification enabled, but updated `confirm-payment`, `support-respond`, and Twilio webhook functions still need redeploys so their Phase 1 provider-event/rate-limit governance helper calls are live.
 
 ## Twilio
 

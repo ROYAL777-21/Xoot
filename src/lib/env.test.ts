@@ -86,4 +86,16 @@ describe("public environment validation", () => {
   it("detects secret-like VITE variable names", () => {
     expect(getPublicSecretLeaks({ VITE_TWILIO_AUTH_TOKEN: "never-public" })).toEqual(["VITE_TWILIO_AUTH_TOKEN"]);
   });
+
+  it("blocks Mapbox secret tokens in public browser config", () => {
+    expect(
+      getPublicConfigIssueForEnv(
+        {
+          ...realSupabaseEnv,
+          VITE_MAPBOX_PUBLIC_TOKEN: "sk.not-public",
+        },
+        { prod: true },
+      ),
+    ).toMatch(/Mapbox secret tokens cannot be used/);
+  });
 });

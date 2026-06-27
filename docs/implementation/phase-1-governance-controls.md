@@ -20,6 +20,7 @@ This note records the next Phase 1 implementation slice: backend-owned feature f
   - Concierge/support calls use `private.consume_rate_limit(...)` for guest and signed-in request windows;
   - OpenAI fallback is gated by `support.openai_fallback`, which remains disabled by default;
   - `admin-control-management` provides an audited admin-only control update path with required reasons and approval records.
+- `admin-control-management` deployed to staging and production through the Supabase connector on 2026-06-27 with JWT verification enabled.
 
 ## Added Artifacts
 
@@ -67,6 +68,6 @@ This migration is additive. If rollback is needed before any Edge Function depen
 
 ## Remaining Phase 1 Work
 
-- Deploy or redeploy the updated Edge Functions after live Edge secrets are set: `confirm-payment`, Twilio webhook functions, `support-respond` and `admin-control-management`.
+- Redeploy the updated existing Edge Functions after live Edge secrets are set: `confirm-payment`, Twilio webhook functions and `support-respond`. `admin-control-management` is already deployed in staging and production.
 - Connect PostHog only after event contracts and privacy settings are approved.
 - Run role-based staging and production smoke tests with real client, admin and Zooter users before considering this phase closed.

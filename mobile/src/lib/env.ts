@@ -9,6 +9,7 @@ const allowedPublicSecretLikeNames = new Set([
   'EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN',
   'EXPO_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY',
 ]);
+const publicMapboxTokenNames = ['EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN', 'EXPO_PUBLIC_MAPBOX_TOKEN'];
 
 const envText = (env: PublicEnvironment, name: string) => env[name]?.trim() ?? '';
 
@@ -36,12 +37,25 @@ export const getPublicSecretLeaks = (env: PublicEnvironment) =>
     .filter((name) => name.startsWith('EXPO_PUBLIC_'))
     .filter((name) => publicSecretNamePattern.test(name) && !allowedPublicSecretLikeNames.has(name));
 
+export const isUnsafePublicMapboxToken = (value?: string) => {
+  const token = value?.trim() ?? '';
+  return token.startsWith('sk.');
+};
+
+export const getUnsafePublicMapboxTokenNames = (env: PublicEnvironment) =>
+  publicMapboxTokenNames.filter((name) => isUnsafePublicMapboxToken(envText(env, name)));
+
 export const getMobileConfigIssue = (env: PublicEnvironment = process.env) => {
   const appEnv = envText(env, 'EXPO_PUBLIC_APP_ENV') || 'development';
   const leaks = getPublicSecretLeaks(env);
+  const unsafeMapboxTokens = getUnsafePublicMapboxTokenNames(env);
 
   if (leaks.length > 0) {
     return `Public EXPO_PUBLIC_ variables cannot contain secret-like names: ${leaks.join(', ')}`;
+  }
+
+  if (unsafeMapboxTokens.length > 0) {
+    return `Mapbox secret tokens cannot be used in public EXPO_PUBLIC_ variables: ${unsafeMapboxTokens.join(', ')}. Use restricted public pk.* tokens instead.`;
   }
 
   if (!allowedAppEnvironments.has(appEnv)) {

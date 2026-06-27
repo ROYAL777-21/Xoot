@@ -9,6 +9,7 @@ const allowedAppEnvironments = new Set(["development", "staging", "production"])
 const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local"]);
 const publicSecretNamePattern = /(?:SERVICE_ROLE|CLIENT_SECRET|AUTH_TOKEN|PRIVATE_KEY|WEBHOOK_SECRET|SIGNING_SECRET|SECRET_KEY|API_SECRET)/i;
 const allowedPublicSecretLikeNames = new Set(["VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SENTRY_DSN"]);
+const publicMapboxTokenNames = ["VITE_MAPBOX_PUBLIC_TOKEN", "VITE_MAPBOX_BROWSER_TOKEN"];
 
 const envText = (env: PublicEnvironment, name: string) => {
   const value = env[name];
@@ -49,13 +50,26 @@ export const getPublicSecretLeaks = (env: PublicEnvironment) =>
     .filter((name) => name.startsWith("VITE_"))
     .filter((name) => publicSecretNamePattern.test(name) && !allowedPublicSecretLikeNames.has(name));
 
+export const isUnsafePublicMapboxToken = (value?: string) => {
+  const token = value?.trim() ?? "";
+  return token.startsWith("sk.");
+};
+
+export const getUnsafePublicMapboxTokenNames = (env: PublicEnvironment) =>
+  publicMapboxTokenNames.filter((name) => isUnsafePublicMapboxToken(envText(env, name)));
+
 export const getPublicConfigIssueForEnv = (env: PublicEnvironment, flags: RuntimeFlags = {}) => {
   const appEnv = normaliseAppEnvironment(envText(env, "VITE_APP_ENV"));
   const isProdBuild = Boolean(flags.prod);
   const leaks = getPublicSecretLeaks(env);
+  const unsafeMapboxTokens = getUnsafePublicMapboxTokenNames(env);
 
   if (leaks.length > 0) {
     return `Public VITE_ variables cannot contain secret-like names: ${leaks.join(", ")}`;
+  }
+
+  if (unsafeMapboxTokens.length > 0) {
+    return `Mapbox secret tokens cannot be used in public VITE_ variables: ${unsafeMapboxTokens.join(", ")}. Use restricted public pk.* tokens instead.`;
   }
 
   if (appEnv && !allowedAppEnvironments.has(appEnv)) {
