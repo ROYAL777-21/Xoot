@@ -21,6 +21,8 @@ This note records the next Phase 1 implementation slice: backend-owned feature f
   - OpenAI fallback is gated by `support.openai_fallback`, which remains disabled by default;
   - `admin-control-management` provides an audited admin-only control update path with required reasons and approval records.
 - `admin-control-management` deployed to staging and production through the Supabase connector on 2026-06-27 with JWT verification enabled.
+- `support-respond` redeployed to staging and production through the Supabase connector on 2026-06-27 with the Phase 1 rate-limit and OpenAI fallback gate helpers.
+- `confirm-payment` redeployed to staging and production through the Supabase connector on 2026-06-27 with Phase 1 provider-event idempotency helpers.
 
 ## Added Artifacts
 
@@ -68,6 +70,6 @@ This migration is additive. If rollback is needed before any Edge Function depen
 
 ## Remaining Phase 1 Work
 
-- Redeploy the updated existing Edge Functions after live Edge secrets are set: `confirm-payment`, Twilio webhook functions and `support-respond`. `admin-control-management` is already deployed in staging and production.
+- Redeploy the updated Twilio webhook Edge Functions after live Twilio secrets are set so provider-event idempotency is live for SMS, WhatsApp, voice, status and Verify callbacks.
 - Connect PostHog only after event contracts and privacy settings are approved.
 - Run role-based staging and production smoke tests with real client, admin and Zooter users before considering this phase closed.

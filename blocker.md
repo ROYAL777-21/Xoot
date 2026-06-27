@@ -19,7 +19,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Real production secrets for Stitch, Ozow, Twilio, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, Mapbox, and WordPress still need to be set in their correct secret stores.
 - Private secrets must not be committed or placed in frontend/mobile env files. Store them only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
 - Secrets pasted into chat, including Supabase, Twilio, Cloudflare, Expo, and Mapbox token values, must be rotated before production launch.
-- Edge Functions need a final redeploy after secrets are configured, followed by staging smoke tests. `admin-control-management` is active in staging and production with JWT verification enabled, but updated `confirm-payment`, `support-respond`, and Twilio webhook functions still need redeploys so their Phase 1 provider-event/rate-limit governance helper calls are live.
+- Edge Functions need a final Twilio webhook redeploy after Twilio secrets are configured, followed by staging smoke tests. `admin-control-management`, `confirm-payment`, and `support-respond` are active in staging and production with the Phase 1 governance helper calls deployed; Twilio webhook functions still need redeploys so provider-event idempotency is live for SMS, WhatsApp, voice, status, and Verify callbacks.
 
 ## Twilio
 
@@ -74,7 +74,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Run real staging smoke tests with client, admin, and Zooter users.
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
-- Deploy/redeploy provider-dependent Edge Functions after secrets are configured.
+- Deploy/redeploy Twilio webhook Edge Functions after Twilio secrets are configured.
 - Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has approved provider credentials in environment variables or browser sessions.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.
 - Run CodeRabbit review once authenticated.
