@@ -59,6 +59,7 @@ Supabase Edge Functions:
 | Payment provider secrets | Supabase Edge Function secrets or backend secret manager | Frontend, docs, local committed files |
 | Twilio/Brevo/KIE/OpenAI secrets | Supabase Edge Function secrets | Frontend, screenshots, support tickets |
 | WordPress application password/webhook secrets | CI secret store or server-side sync job | Frontend, mobile app, WordPress public pages, docs |
+| Mapbox secret/download tokens | Supabase Edge Function secrets, EAS secrets, or CI secrets | `VITE_`, `EXPO_PUBLIC_`, docs, or app bundles |
 | OAuth client secrets/private keys | Supabase provider dashboard or secure backend secret store | Public repo or app bundle |
 | Mobile signing keys/profiles | Apple Developer, App Store Connect, Google Play Console, secure CI secrets | Repo or frontend env |
 | Sentry source map auth token | CI secret only | Frontend env or static files |
@@ -139,6 +140,7 @@ TWILIO_SENDGRID_SENDER_EMAIL=
 BREVO_API_KEY=
 KIE_API_KEY=
 SENTRY_DSN=
+MAPBOX_SECRET_TOKEN=
 AIRTABLE_API_TOKEN=
 CLOUDFLARE_API_TOKEN=
 CLOUDFLARE_ACCOUNT_ID=

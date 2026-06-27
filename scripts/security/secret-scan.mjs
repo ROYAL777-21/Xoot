@@ -15,6 +15,7 @@ const patterns = [
   { name: "Apple private key", regex: /-----BEGIN PRIVATE KEY-----/g },
   { name: "Supabase secret or CLI token", regex: /sb_(?:secret|service_role)_[A-Za-z0-9_-]{16,}|sbp_[A-Za-z0-9_-]{32,}/g },
   { name: "Cloudflare API token", regex: /cfat_[A-Za-z0-9_-]{20,}/g },
+  { name: "Mapbox secret token", regex: /\bsk\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{20,}\b/g },
   { name: "Twilio credential identifier", regex: /\b(?:AC|SK|VA|AP|OR)[0-9a-fA-F]{32}\b/g },
   { name: "Generic assignment secret", regex: /(?:secret|service_role|private_key|auth_token|api_key)\s*[:=]\s*["'][^"']{16,}["']/gi },
 ];

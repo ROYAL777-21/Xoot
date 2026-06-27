@@ -17,7 +17,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Real production secrets for Stitch, Ozow, Twilio, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, Mapbox, and WordPress still need to be set in their correct secret stores.
 - Private secrets must not be committed or placed in frontend/mobile env files. Store them only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
-- Secrets pasted into chat, including Supabase, Twilio, Cloudflare, and Expo token values, must be rotated before production launch.
+- Secrets pasted into chat, including Supabase, Twilio, Cloudflare, Expo, and Mapbox token values, must be rotated before production launch.
 - Edge Functions that depend on provider credentials need a final deploy/redeploy after secrets are configured, followed by staging smoke tests.
 
 ## Twilio
@@ -28,10 +28,12 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 ## Mapbox
 
 - Restricted Mapbox tokens are not configured.
+- A Mapbox secret token was supplied in chat. It must not be used as a public `VITE_` or `EXPO_PUBLIC_` token, and it must be rotated before production use because chat exposure makes it unsuitable as a long-lived production secret.
 - Required tokens remain:
   - browser token restricted to approved Zoot HTTPS origins;
   - native Expo token for iOS and Android builds;
-  - secret downloads token stored only in EAS or CI for native SDK build access.
+  - secret downloads token stored only in EAS or CI for native SDK build access;
+  - optional server-side `MAPBOX_SECRET_TOKEN` stored only in Supabase Edge Function secrets or CI/server secret storage if backend geocoding/routing is implemented.
 
 ## Cloudflare
 
