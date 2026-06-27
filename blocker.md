@@ -10,14 +10,14 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Production Supabase security advisor still reports leaked password protection disabled. This must be enabled or explicitly risk-accepted before launch.
 - Production and staging migration histories remain materially different because production started from launch squashed migrations while staging follows the local chain. Current convergence, booking, sensitive-access, training, storage, Twilio, accepted-job destination, governance, zooter-job-card service-boundary, and legacy RLS policy convergence artifacts were verified live in both projects, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
 - Real role-based smoke tests are still required with staging client, admin, and Zooter users for accepted-job destination visibility, sensitive-access reveal windows, admin-only governance reads, and notification delivery.
-- Local `psql`, Docker, and Supabase CLI are not available on this Windows host, so local database reset and direct DB fallback checks still require installation or a separate ops shell with `SUPABASE_DB_URL`.
+- Local `psql` and Docker are not available on this Windows host, so local database reset and direct DB fallback checks still require installation or a separate ops shell with `SUPABASE_DB_URL`. Supabase CLI version `2.108.0` is available through the verified `npx supabase@2.108.0` fallback, but the global `supabase` command is still not on PATH.
 - Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks now show zero missing public FK-covering indexes, zero old targeted policy residues, zero missing expected advisor-cleanup policies, zero raw `auth.uid()` predicates in public policies, zero duplicate-permissive groups for `admin_review_queue`/`favorites`/`messages`/`referrals`, and zero duplicate public index groups in staging or production.
 
 ## Provider Secrets And External Dashboards
 
 - Real production secrets for Stitch, Ozow, Twilio, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, Mapbox, and WordPress still need to be set in their correct secret stores.
 - Private secrets must not be committed or placed in frontend/mobile env files. Store them only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
-- Secrets pasted into chat, including Supabase and Twilio values, must be rotated before production launch.
+- Secrets pasted into chat, including Supabase, Twilio, Cloudflare, and Expo token values, must be rotated before production launch.
 - Edge Functions that depend on provider credentials need a final deploy/redeploy after secrets are configured, followed by staging smoke tests.
 
 ## Twilio
@@ -35,8 +35,9 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Cloudflare
 
-- The connected Cloudflare account currently has no Zoot zone. On 2026-06-27, the Cloudflare API `/zones` call returned zero zones for the connected account.
-- The available Cloudflare app/API permissions cannot create `zoothome.co.za`; the prior create attempt failed because the token lacks `account.zone.create`.
+- The connected Cloudflare account currently has no Zoot zone. On 2026-06-27, the Cloudflare API `/zones?name=zoothome.co.za` call returned zero zones for the connected account.
+- The available Cloudflare app/API permissions cannot create `zoothome.co.za`; the latest create attempt failed because the token lacks `com.cloudflare.api.account.zone.create`.
+- Cloudflare Turnstile widgets are not verified. The connector lists Turnstile widget APIs, but the account-level widget list call currently returns an authentication error, so create restricted web/mobile Turnstile widgets in the dashboard or with a rotated token that has the required Turnstile permissions.
 - WAF, bot/rate-limit rules, Turnstile, DNS, TLS, and origin protection cannot be activated until the zone exists and the token has the required scoped permissions.
 
 ## Apple, Google, Expo, And Stores

@@ -18,7 +18,7 @@ function Assert-PublicValue {
     throw "$Key looks like a placeholder. Refusing to set it on GitHub."
   }
 
-  if ($Value -match "(?i)sb_secret_|service_role|BEGIN [A-Z ]*PRIVATE KEY|sk_live_|sk_test_|api[_-]?secret|auth[_-]?token") {
+  if ($Value -match "(?i)sb_secret_|service_role|BEGIN [A-Z ]*PRIVATE KEY|sk_live_|sk_test_|api[_-]?secret|auth[_-]?token|cfat_|personal[_-]?access[_-]?token|download[_-]?token") {
     throw "$Key looks private. Refusing to set it as a public GitHub variable."
   }
 }
@@ -73,6 +73,7 @@ $optionalPublic = @(
   "EXPO_PUBLIC_SITE_URL",
   "EXPO_PUBLIC_SENTRY_DSN",
   "EXPO_PUBLIC_MAPBOX_TOKEN",
+  "EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN",
   "EXPO_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY",
   "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
   "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID",

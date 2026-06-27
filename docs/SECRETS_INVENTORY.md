@@ -168,6 +168,19 @@ Status values:
 | Native downloads token | `RNMAPBOX_MAPS_DOWNLOAD_TOKEN`, `MAPBOX_DOWNLOADS_TOKEN` | EAS/CI secret only | Template | Private build-time token; never commit or expose in app bundles. |
 | Server token | `MAPBOX_SECRET_TOKEN` | Supabase Edge Function secret if needed | Optional | Use only for server-side geocoding/routing if added later. |
 
+## Cloudflare
+
+| Item | Variable or field | Storage location | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Account ID | `CLOUDFLARE_ACCOUNT_ID` | CI/server config | Provided | Public account metadata is safe in config, but do not expose private tokens. |
+| Zone ID | `CLOUDFLARE_ZONE_ID` | CI/server config | Missing | Required after `zoothome.co.za` is added to Cloudflare. |
+| API token | `CLOUDFLARE_API_TOKEN` | CI/deployment secret only | Rotate | A token was pasted into chat and must be rotated before production use. |
+| Turnstile site key | `VITE_CLOUDFLARE_TURNSTILE_SITE_KEY`, `EXPO_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY` | Public web/EAS env | Missing | Public-safe when created in Cloudflare and restricted to approved domains/apps. |
+| Turnstile secret key | `CLOUDFLARE_TURNSTILE_SECRET_KEY` | Supabase Edge Function secret | Rotate | A secret was pasted into chat; rotate and set only as an Edge/server secret. |
+| R2 endpoint | `CLOUDFLARE_R2_ENDPOINT` | CI/server config | Provided | Endpoint is account metadata; R2 access keys remain private. |
+| R2 access keys | `CLOUDFLARE_R2_ACCESS_KEY_ID`, `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | CI/server secret only | Missing | Use only for server-side/object-storage sync jobs. |
+| Access service credential | `CLOUDFLARE_ACCESS_CLIENT_ID`, `CLOUDFLARE_ACCESS_CLIENT_SECRET` | CI/server secret only | Rotate | Any Access key pasted into chat must be rotated before production use. |
+
 ## OAuth: Google
 
 | Item | Variable or field | Storage location | Status | Notes |
@@ -198,6 +211,8 @@ Status values:
 | Final iOS Bundle ID | `ZOOT_IOS_BUNDLE_ID` | Expo/App Store Connect | Template | Final Expo mobile ID: `za.co.zoothome.app`. |
 | Final Android application ID | `ZOOT_ANDROID_PACKAGE_NAME` | Expo/Play Console | Template | Final Expo mobile ID: `za.co.zoothome.app`. |
 | Expo app scheme | `scheme` in `mobile/app.config.ts` | Code | Referenced | `zoot`; include `zoot://auth/callback` in Supabase redirects. |
+| EAS project ID | `EXPO_PUBLIC_EAS_PROJECT_ID` | EAS public env/mobile config | Found | Public-safe project metadata; current app config defaults to the Zoot EAS project ID. |
+| Expo access token | `EXPO_TOKEN`, `EAS_ACCESS_TOKEN` | EAS/CI secret only | Rotate | A personal access token was pasted into chat and must be rotated before production CI or submissions. |
 | App name | Native project/store | Manual | Zoot. |
 | App version | package/native project | Manual | Align with release notes. |
 | Build number/version code | Xcode/Gradle | Manual | Increment every release. |

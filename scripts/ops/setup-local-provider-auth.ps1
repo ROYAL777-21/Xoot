@@ -36,10 +36,10 @@ if ($Supabase) {
   if ([string]::IsNullOrWhiteSpace($env:SUPABASE_ACCESS_TOKEN)) {
     Write-Host "SUPABASE_ACCESS_TOKEN is not set. Starting browser-based Supabase login."
     Write-Host "Do not paste the token into chat. Complete login in the browser or set SUPABASE_ACCESS_TOKEN locally and rerun."
-    & npx.cmd supabase login --name $SupabaseProfileName
+    & npx.cmd -y supabase@2.108.0 login --name $SupabaseProfileName
   } else {
     Write-Host "Logging Supabase CLI in with SUPABASE_ACCESS_TOKEN from the local environment."
-    & npx.cmd supabase login --token $env:SUPABASE_ACCESS_TOKEN --name $SupabaseProfileName
+    & npx.cmd -y supabase@2.108.0 login --token $env:SUPABASE_ACCESS_TOKEN --name $SupabaseProfileName
   }
 }
 

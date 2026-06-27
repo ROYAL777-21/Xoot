@@ -1,11 +1,11 @@
+import { basename, extname, join, relative } from "node:path";
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
 
 const ROOT = process.cwd();
 const SKIP_DIRS = new Set([".git", "dist", "node_modules", "ios", "android", ".next", ".vercel", "coverage"]);
 const SKIP_FILES = new Set(["package-lock.json", "pnpm-lock.yaml", "yarn.lock"]);
 const TEXT_EXTENSIONS = new Set([
-  ".cjs", ".css", ".html", ".js", ".json", ".jsx", ".mjs", ".md", ".sql", ".svg", ".toml", ".ts", ".tsx", ".txt", ".yml", ".yaml",
+  ".cjs", ".css", ".env", ".example", ".html", ".js", ".json", ".jsx", ".mjs", ".md", ".ps1", ".sql", ".svg", ".toml", ".ts", ".tsx", ".txt", ".yml", ".yaml",
 ]);
 
 const patterns = [
@@ -13,7 +13,9 @@ const patterns = [
   { name: "OpenAI API key", regex: /sk-[A-Za-z0-9_-]{20,}/g },
   { name: "Google OAuth secret", regex: /GOCSPX-[A-Za-z0-9_-]{20,}/g },
   { name: "Apple private key", regex: /-----BEGIN PRIVATE KEY-----/g },
-  { name: "Twilio auth token", regex: /SK[0-9a-fA-F]{32}|AC[0-9a-fA-F]{32}/g },
+  { name: "Supabase secret or CLI token", regex: /sb_(?:secret|service_role)_[A-Za-z0-9_-]{16,}|sbp_[A-Za-z0-9_-]{32,}/g },
+  { name: "Cloudflare API token", regex: /cfat_[A-Za-z0-9_-]{20,}/g },
+  { name: "Twilio credential identifier", regex: /\b(?:AC|SK|VA|AP|OR)[0-9a-fA-F]{32}\b/g },
   { name: "Generic assignment secret", regex: /(?:secret|service_role|private_key|auth_token|api_key)\s*[:=]\s*["'][^"']{16,}["']/gi },
 ];
 
@@ -25,7 +27,13 @@ const allowlist = [
   /sk-\[redacted\]/i,
 ];
 
-const isTextFile = (file) => TEXT_EXTENSIONS.has(file.slice(file.lastIndexOf(".")));
+const placeholderValue = /^(|placeholder|replace-with|your-|example|development|staging|production|local|false|true|null|undefined)/i;
+const secretNamePattern = /(?:PASSWORD|SERVICE_ROLE|CLIENT_SECRET|AUTH_TOKEN|PRIVATE_KEY|WEBHOOK_SECRET|SIGNING_SECRET|SECRET_KEY|API_SECRET|API_KEY|ACCESS_TOKEN|DOWNLOADS_TOKEN|TOKEN)$/i;
+
+const isTextFile = (file) => {
+  const name = basename(file);
+  return name.startsWith(".env") || TEXT_EXTENSIONS.has(extname(file));
+};
 
 const walk = (dir, files = []) => {
   for (const entry of readdirSync(dir)) {
@@ -47,6 +55,14 @@ for (const file of walk(ROOT)) {
   const lines = content.split(/\r?\n/);
   lines.forEach((line, index) => {
     if (allowlist.some((allowed) => allowed.test(line))) return;
+    const envAssignment = line.match(/^\s*([A-Z][A-Z0-9_]*?)\s*=\s*("?)([^"#\r\n]+)\2\s*(?:#.*)?$/);
+    if (envAssignment) {
+      const [, name, , rawValue] = envAssignment;
+      const value = rawValue.trim();
+      if (secretNamePattern.test(name) && value.length >= 16 && !placeholderValue.test(value)) {
+        findings.push(`${rel}:${index + 1} dotenv secret-like assignment (${name})`);
+      }
+    }
     for (const pattern of patterns) {
       pattern.regex.lastIndex = 0;
       if (pattern.regex.test(line)) {
