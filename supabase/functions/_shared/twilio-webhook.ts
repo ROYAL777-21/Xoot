@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claimProviderEvent, markProviderEventProcessed } from "./governance-utils.ts";
 
 type TwilioChannel = "sms" | "whatsapp" | "voice" | "verify" | "status" | "unknown";
 
@@ -267,7 +268,35 @@ const logTwilioEvent = async ({ eventType, channel, params, signatureValid, stat
 
 const readTwilioParams = async (req: Request) => {
   const rawBody = await req.text();
-  return new URLSearchParams(rawBody);
+  return { rawBody, params: new URLSearchParams(rawBody) };
+};
+
+const claimTwilioProviderEvent = async (
+  supa: ReturnType<typeof getServiceClient>,
+  eventType: string,
+  channel: TwilioChannel,
+  params: URLSearchParams,
+  rawBody: string,
+) => {
+  const sid = detectSid(params);
+  const fallbackId = await crypto.subtle.digest("SHA-256", encoder.encode(`${eventType}:${rawBody}`)).then((digest) =>
+    Array.from(new Uint8Array(digest))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("")
+      .slice(0, 80)
+  );
+  const status = cleanText(params.get("MessageStatus") ?? params.get("SmsStatus") ?? params.get("CallStatus") ?? params.get("VerificationStatus"), 80);
+  return claimProviderEvent(supa, {
+    provider: "twilio",
+    eventId: `${eventType}:${sid || fallbackId}`,
+    eventType,
+    rawPayload: rawBody,
+    metadata: {
+      channel,
+      status,
+      twilio_sid_present: Boolean(sid),
+    },
+  });
 };
 
 const rejectIfInvalid = async (req: Request, params: URLSearchParams) => {
@@ -312,11 +341,15 @@ export const handleTwilioMessagingWebhook = async (
   options: { expectedChannel?: "sms" | "whatsapp" } = {},
 ) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-  const params = await readTwilioParams(req);
+  const { rawBody, params } = await readTwilioParams(req);
   const verification = await rejectIfInvalid(req, params);
   if (verification.response) return verification.response;
 
   const channel = detectMessageChannel(params);
+  const supa = getServiceClient();
+  const claim = await claimTwilioProviderEvent(supa, "inbound_message", channel, params, rawBody);
+  if (claim.alreadySeen) return options.expectedChannel && channel === options.expectedChannel ? emptyTwiml() : emptyTwiml();
+
   if (options.expectedChannel && channel !== options.expectedChannel) {
     const eventId = await logTwilioEvent({
       eventType: "unexpected_message_channel",
@@ -326,6 +359,7 @@ export const handleTwilioMessagingWebhook = async (
       status: params.get("MessageStatus") ?? params.get("SmsStatus"),
     });
     await createReviewForInboundMessage(eventId, params, channel);
+    await markProviderEventProcessed(supa, claim.providerEventId, "processed");
     return emptyTwiml();
   }
 
@@ -337,6 +371,7 @@ export const handleTwilioMessagingWebhook = async (
     status: params.get("MessageStatus") ?? params.get("SmsStatus"),
   });
   await createReviewForInboundMessage(eventId, params, channel);
+  await markProviderEventProcessed(supa, claim.providerEventId, "processed");
 
   return twimlMessage(
     "Thanks for contacting Zoot. For bookings, payments, private addresses or cleaner details, please open the Zoot app so we can protect your account.",
@@ -345,12 +380,16 @@ export const handleTwilioMessagingWebhook = async (
 
 export const handleTwilioStatusCallback = async (req: Request) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-  const params = await readTwilioParams(req);
+  const { rawBody, params } = await readTwilioParams(req);
   const verification = await rejectIfInvalid(req, params);
   if (verification.response) return verification.response;
 
   const isCall = Boolean(params.get("CallSid"));
   const channel: TwilioChannel = isCall ? "voice" : detectMessageChannel(params);
+  const supa = getServiceClient();
+  const claim = await claimTwilioProviderEvent(supa, "status_callback", channel, params, rawBody);
+  if (claim.alreadySeen) return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
+
   const eventId = await logTwilioEvent({
     eventType: "status_callback",
     channel: isCall ? "voice" : "status",
@@ -359,15 +398,24 @@ export const handleTwilioStatusCallback = async (req: Request) => {
     status: params.get("MessageStatus") ?? params.get("SmsStatus") ?? params.get("CallStatus"),
   });
   await createReviewForFailedStatus(eventId, params, channel);
+  await markProviderEventProcessed(supa, claim.providerEventId, "processed");
 
   return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
 };
 
 export const handleTwilioVoiceWebhook = async (req: Request) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-  const params = await readTwilioParams(req);
+  const { rawBody, params } = await readTwilioParams(req);
   const verification = await rejectIfInvalid(req, params);
   if (verification.response) return verification.response;
+
+  const supa = getServiceClient();
+  const claim = await claimTwilioProviderEvent(supa, "voice_webhook", "voice", params, rawBody);
+  if (claim.alreadySeen) {
+    return twimlVoice(
+      "Welcome to Zoot. For a booking, open the Zoot app and choose Book a clean. For protected support, use the Support tab so we can verify your account.",
+    );
+  }
 
   const eventId = await logTwilioEvent({
     eventType: "voice_webhook",
@@ -377,6 +425,7 @@ export const handleTwilioVoiceWebhook = async (req: Request) => {
     status: params.get("CallStatus"),
   });
   await createReviewForFailedStatus(eventId, params, "voice");
+  await markProviderEventProcessed(supa, claim.providerEventId, "processed");
 
   return twimlVoice(
     "Welcome to Zoot. For a booking, open the Zoot app and choose Book a clean. For protected support, use the Support tab so we can verify your account.",
@@ -385,9 +434,13 @@ export const handleTwilioVoiceWebhook = async (req: Request) => {
 
 export const handleTwilioVerifyWebhook = async (req: Request) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-  const params = await readTwilioParams(req);
+  const { rawBody, params } = await readTwilioParams(req);
   const verification = await rejectIfInvalid(req, params);
   if (verification.response) return verification.response;
+
+  const supa = getServiceClient();
+  const claim = await claimTwilioProviderEvent(supa, "verify_webhook", "verify", params, rawBody);
+  if (claim.alreadySeen) return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
 
   await logTwilioEvent({
     eventType: "verify_webhook",
@@ -396,6 +449,7 @@ export const handleTwilioVerifyWebhook = async (req: Request) => {
     signatureValid: true,
     status: params.get("VerificationStatus"),
   });
+  await markProviderEventProcessed(supa, claim.providerEventId, "processed");
 
   return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
 };

@@ -8,6 +8,7 @@ import {
   writeAuditLog,
 } from "../_shared/action-utils.ts";
 import { assertTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
+import { claimProviderEvent, markProviderEventProcessed } from "../_shared/governance-utils.ts";
 
 const encoder = new TextEncoder();
 
@@ -42,6 +43,26 @@ const verifyWebhookSignature = async (rawBody: string, signatureHeader: string |
 
 const isPaidStatus = (status: string) => ["paid", "success", "succeeded", "complete", "completed"].includes(status.toLowerCase());
 
+const allowedProviderEvents = new Set(["stitch", "ozow", "twilio", "brevo", "openai", "mapbox", "expo", "cloudflare", "hostinger", "airtable", "internal"]);
+
+const resolvePaymentProvider = (payload: Record<string, unknown>, headers: Headers) => {
+  const explicit = String(payload.provider ?? payload.payment_provider ?? "").trim().toLowerCase();
+  if (allowedProviderEvents.has(explicit)) return explicit;
+  if (headers.get("x-stitch-signature")) return "stitch";
+  if (headers.get("x-ozow-signature")) return "ozow";
+  return "internal";
+};
+
+const resolvePaymentEventId = (payload: Record<string, unknown>, providerReference: string, status: string) =>
+  String(
+    payload.event_id ??
+      payload.webhook_id ??
+      payload.id ??
+      payload.transaction_id ??
+      payload.payment_id ??
+      `${providerReference}:${status.toLowerCase()}`,
+  ).trim();
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
   const preflight = handlePreflight(req, origin);
@@ -51,6 +72,9 @@ Deno.serve(async (req) => {
   const rawBody = await req.text();
   const signatureResult = await verifyWebhookSignature(rawBody, signature);
   if (!signatureResult.ok) return fail(signatureResult.reason, origin, 401);
+
+  let providerEventId: string | null = null;
+  let supa: ReturnType<typeof getServiceClient> | null = null;
 
   try {
     const payload = JSON.parse(rawBody);
@@ -62,7 +86,7 @@ Deno.serve(async (req) => {
     if (!isPaidStatus(status)) return fail("payment webhook status is not paid", origin, 400);
     if (!Number.isFinite(amount) || amount < 0) return fail("payment amount required", origin, 400);
 
-    const supa = getServiceClient();
+    supa = getServiceClient();
     const { data: payment, error: paymentError } = await supa
       .from("payment_records")
       .select("id,user_id,booking_id,amount,currency,status,provider,provider_reference,meta")
@@ -92,6 +116,26 @@ Deno.serve(async (req) => {
         return fail(error instanceof Error ? error.message : "invalid booking transition", origin, 409);
       }
       bookingForPayment = booking;
+    }
+
+    const provider = resolvePaymentProvider(payload, req.headers);
+    const providerEvent = await claimProviderEvent(supa, {
+      provider,
+      eventId: resolvePaymentEventId(payload, providerReference, status),
+      eventType: "payment_confirmed",
+      rawPayload: rawBody,
+      subjectTable: "payment_records",
+      subjectId: payment.id,
+      metadata: {
+        provider_reference: providerReference,
+        booking_id: payment.booking_id,
+        currency,
+        status,
+      },
+    });
+    providerEventId = providerEvent.providerEventId;
+    if (providerEvent.alreadySeen) {
+      return ok({ payment_record_id: payment.id, booking_id: payment.booking_id, idempotent: true }, origin);
     }
 
     await supa
@@ -173,9 +217,15 @@ Deno.serve(async (req) => {
       ipAddress: req.headers.get("x-forwarded-for"),
     });
 
+    await markProviderEventProcessed(supa, providerEventId, "processed");
+
     return ok({ payment_record_id: payment.id, booking_id: payment.booking_id, status: "paid" }, origin);
   } catch (error) {
     console.error("confirm-payment failed", error);
+    if (supa && providerEventId) {
+      await markProviderEventProcessed(supa, providerEventId, "failed", error instanceof Error ? error.message : "payment confirmation failed")
+        .catch((markError) => console.error("confirm-payment provider event mark failed", markError));
+    }
     return fail("payment confirmation failed", origin, 500);
   }
 });

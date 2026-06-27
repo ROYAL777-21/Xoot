@@ -14,6 +14,12 @@ This note records the next Phase 1 implementation slice: backend-owned feature f
 - Production governance smoke tests passed on 2026-06-27 for duplicate provider-event claim handling, rate-limit exhaustion, admin-read policy presence and disabled-by-default provider gates.
 - Both live applications were additive only and did not activate provider checkout, OpenAI fallback, Twilio sends, Care+ checkout, or native voice booking.
 - Follow-up advisor cleanup applied through `supabase/migrations/20260627103000_governance_advisor_followups.sql` to add governance FK indexes and avoid per-row auth re-evaluation in governance admin-read policies.
+- Edge adoption added on 2026-06-27:
+  - payment webhooks claim and close `private.claim_provider_event(...)` records before payment side effects;
+  - Twilio webhooks claim and close `private.claim_provider_event(...)` records before review-queue side effects;
+  - Concierge/support calls use `private.consume_rate_limit(...)` for guest and signed-in request windows;
+  - OpenAI fallback is gated by `support.openai_fallback`, which remains disabled by default;
+  - `admin-control-management` provides an audited admin-only control update path with required reasons and approval records.
 
 ## Added Artifacts
 
@@ -61,8 +67,6 @@ This migration is additive. If rollback is needed before any Edge Function depen
 
 ## Remaining Phase 1 Work
 
-- Wire provider webhook functions to `private.claim_provider_event(...)`.
-- Wire anonymous Concierge and support paths to `private.consume_rate_limit(...)`.
-- Add an approved admin-only control-management Edge Function.
+- Deploy or redeploy the updated Edge Functions after live Edge secrets are set: `confirm-payment`, Twilio webhook functions, `support-respond` and `admin-control-management`.
 - Connect PostHog only after event contracts and privacy settings are approved.
 - Run role-based staging and production smoke tests with real client, admin and Zooter users before considering this phase closed.

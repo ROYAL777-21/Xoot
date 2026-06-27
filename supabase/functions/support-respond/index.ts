@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
 import { getZootKnowledgeReply, zootKnowledgeContext } from "../_shared/zoot-knowledge.ts";
 
 const defaultAllowedOrigins = [
@@ -35,6 +36,12 @@ const json = (body: Record<string, unknown>, status: number, origin: string | nu
     status,
     headers: { ...getCorsHeaders(origin), "Content-Type": "application/json" },
   });
+
+const getServiceClient = () =>
+  createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
 
 const stripUnsafeText = (value: string) =>
   value
@@ -98,6 +105,13 @@ const escalationKeywords = [
 const includesAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
 
 const shouldEscalate = (text: string) => includesAny(text, escalationKeywords);
+
+const getRequestActor = (req: Request, userId?: string | null) => {
+  if (userId) return `user:${userId}`;
+  const ip = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown-ip";
+  const userAgent = req.headers.get("user-agent") ?? "unknown-agent";
+  return `guest:${ip}:${userAgent.slice(0, 160)}`;
+};
 
 const extractOpenAiText = (payload: any) => {
   if (typeof payload?.output_text === "string" && payload.output_text.trim()) return payload.output_text.trim();
@@ -223,14 +237,46 @@ Deno.serve(async (req) => {
       if (ticketError || !ticket) return json({ error: "ticket not found" }, 404, origin);
     }
 
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const adminClient = serviceRoleKey ? getServiceClient() : null;
+    if (adminClient) {
+      const rateLimit = await consumeRateLimit(adminClient, {
+        bucket: "support",
+        actor: getRequestActor(req, authData.user?.id ?? null),
+        action: authData.user ? "concierge_signed_in" : "concierge_guest",
+        limitCount: authData.user ? 60 : 20,
+        windowSeconds: 300,
+      });
+      if (!rateLimit.allowed) {
+        return json(
+          {
+            error: "too many concierge requests",
+            response: "I need a short pause before answering more questions. Please try again in a few minutes, or sign in and open Support for protected help.",
+            escalated: true,
+            source: "human_escalation",
+          },
+          429,
+          origin,
+        );
+      }
+    } else {
+      console.warn("SUPABASE_SERVICE_ROLE_KEY missing; support rate limiting is not available");
+    }
+
     const userRole: UserRole = role === "zooter" ? "zooter" : "user";
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
     const signedIn = Boolean(authData.user);
     const knowledgeAssistant = escalated ? null : getZootKnowledgeReply(`${safeSubject} ${safeBody}`, signedIn);
+    const openAiAllowed = adminClient
+      ? await isOperationalControlEnabled(adminClient, "support.openai_fallback").catch((error) => {
+          console.warn("support OpenAI gate lookup failed", { error: error instanceof Error ? error.message : String(error) });
+          return false;
+        })
+      : false;
     const openAiAssistant = escalated
       ? null
-      : knowledgeAssistant ?? (await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole, signedIn }));
+      : knowledgeAssistant ?? (openAiAllowed ? await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole, signedIn }) : null);
     const assistant: AssistantResult = escalated
       ? {
           response: signedIn
@@ -247,9 +293,7 @@ Deno.serve(async (req) => {
     const needsHumanReview = escalated || !openAiAssistant;
 
     if (safeTicketId && authData.user && assistant.response) {
-      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-      if (serviceRoleKey) {
-        const adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
+      if (adminClient) {
         const { error: updateError } = await adminClient
           .from("support_tickets")
           .update({ ai_response: assistant.response, status: needsHumanReview ? "escalated" : "open" })
