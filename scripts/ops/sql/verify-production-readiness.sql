@@ -544,6 +544,28 @@ checks as (
 
   union all
   select
+    'no raw auth uid in public policies',
+    not exists (
+      select 1
+      from pg_policies p
+      where p.schemaname = 'public'
+        and (
+          (
+            coalesce(p.qual, '') ~ '(^|[^A-Za-z0-9_\\.])auth\\.uid\\(\\)'
+            and coalesce(p.qual, '') not like '%( SELECT auth.uid() AS uid)%'
+            and coalesce(p.qual, '') not like '%(select auth.uid())%'
+          )
+          or (
+            coalesce(p.with_check, '') ~ '(^|[^A-Za-z0-9_\\.])auth\\.uid\\(\\)'
+            and coalesce(p.with_check, '') not like '%( SELECT auth.uid() AS uid)%'
+            and coalesce(p.with_check, '') not like '%(select auth.uid())%'
+          )
+        )
+    ),
+    'all public RLS policies wrap auth.uid as initplan'
+
+  union all
+  select
     'no missing public foreign-key covering indexes',
     not exists (
       with fk as (

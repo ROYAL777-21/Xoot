@@ -131,6 +131,8 @@ Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advi
 Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "favorites_select_own" "favorites permissive policy convergence"
 Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "push_tokens_select_own" "push token auth-initplan cleanup"
 Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "create index if not exists" "FK-covering indexes created conditionally"
+Test-RepoPattern "supabase" "supabase/migrations/20260627120000_legacy_auth_initplan_cleanup.sql" "regexp_replace" "legacy auth.uid initplan cleanup"
+Test-RepoPattern "supabase" "supabase/migrations/20260627120000_legacy_auth_initplan_cleanup.sql" "obj_description" "legacy RLS policy comments preserved"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -162,6 +164,7 @@ Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "l
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "zooters base table not readable by anon" "live SQL checks zooters base table anon grant"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no missing public foreign-key covering indexes" "live SQL checks unindexed foreign keys"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "performance advisor RLS policy cleanup converged" "live SQL checks performance advisor RLS cleanup"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no raw auth uid in public policies" "live SQL checks legacy auth-initplan cleanup"
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
 
 Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Use real staging client, admin, and Zooter users to verify accepted-job destination visibility and sensitive-access notifications."
