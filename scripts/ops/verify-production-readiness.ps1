@@ -126,6 +126,11 @@ Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_polic
 Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "zooters_select_self_or_admin" "legacy zooter RLS convergence"
 Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "revoke all on table public\.zooters from anon" "zooters base table anon grant removal"
 Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "security invoker" "public has_role is self-scoped security invoker"
+Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "admin_review_queue_insert_user_or_admin" "admin review queue permissive policy convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "messages_participants_select" "messages permissive policy convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "favorites_select_own" "favorites permissive policy convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "push_tokens_select_own" "push token auth-initplan cleanup"
+Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "create index if not exists" "FK-covering indexes created conditionally"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -155,6 +160,8 @@ Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "p
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no duplicate public indexes" "live SQL checks duplicate indexes"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "legacy targeted RLS policies converged" "live SQL checks targeted legacy RLS convergence"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "zooters base table not readable by anon" "live SQL checks zooters base table anon grant"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no missing public foreign-key covering indexes" "live SQL checks unindexed foreign keys"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "performance advisor RLS policy cleanup converged" "live SQL checks performance advisor RLS cleanup"
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
 
 Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Use real staging client, admin, and Zooter users to verify accepted-job destination visibility and sensitive-access notifications."

@@ -443,6 +443,131 @@ checks as (
       and not has_table_privilege('anon', 'public.zooters_public', 'UPDATE')
       and not has_table_privilege('anon', 'public.zooters_public', 'DELETE'),
     'anon can select public-safe view only'
+
+  union all
+  select
+    'performance advisor RLS policy cleanup converged',
+    not exists (
+      select 1
+      from (
+        values
+          ('admin_audit_log', 'audit_log_admin_read'),
+          ('push_tokens', 'push_tokens_select_own'),
+          ('push_tokens', 'push_tokens_insert_own'),
+          ('push_tokens', 'push_tokens_update_own'),
+          ('push_tokens', 'push_tokens_delete_own'),
+          ('twilio_webhook_events', 'twilio_events_admin_read'),
+          ('admin_review_queue', 'admin_review_queue_select_admin'),
+          ('admin_review_queue', 'admin_review_queue_insert_user_or_admin'),
+          ('admin_review_queue', 'admin_review_queue_update_admin'),
+          ('admin_review_queue', 'admin_review_queue_delete_admin'),
+          ('favorites', 'favorites_select_own'),
+          ('favorites', 'favorites_insert_own'),
+          ('favorites', 'favorites_update_own'),
+          ('favorites', 'favorites_delete_own'),
+          ('messages', 'messages_participants_select'),
+          ('messages', 'messages_participants_insert')
+      ) as expected(tablename, policyname)
+      where to_regclass(format('public.%I', expected.tablename)) is not null
+        and not exists (
+          select 1
+          from pg_policies p
+          where p.schemaname = 'public'
+            and p.tablename = expected.tablename
+            and p.policyname = expected.policyname
+        )
+    )
+      and not exists (
+        select 1
+        from pg_policies p
+        where p.schemaname = 'public'
+          and p.tablename in (
+            'admin_audit_log',
+            'push_tokens',
+            'twilio_webhook_events',
+            'admin_review_queue',
+            'favorites',
+            'messages',
+            'referrals'
+          )
+          and p.policyname in (
+            'admins manage review queue',
+            'users create review requests',
+            'review queue admin select',
+            'review queue admin update',
+            'review queue insert own',
+            'manage own favorites',
+            'view own favorites',
+            'own favorites',
+            'send messages on own booking',
+            'view messages on own booking',
+            'zooters send messages on assigned bookings',
+            'zooters view messages on assigned bookings',
+            'messages participants insert',
+            'messages participants select',
+            'referral_codes_own',
+            'users view own referral codes'
+          )
+      ),
+    'admin_audit_log/push_tokens/twilio/admin_review_queue/favorites/messages/referrals'
+
+  union all
+  select
+    'performance advisor RLS predicates use select auth uid',
+    not exists (
+      select 1
+      from pg_policies p
+      where p.schemaname = 'public'
+        and p.tablename in (
+          'admin_audit_log',
+          'push_tokens',
+          'twilio_webhook_events',
+          'admin_review_queue',
+          'favorites',
+          'messages',
+          'referrals'
+        )
+        and (
+          (
+            coalesce(p.qual, '') ~ '(^|[^A-Za-z0-9_\\.])auth\\.uid\\(\\)'
+            and coalesce(p.qual, '') not like '%( SELECT auth.uid() AS uid)%'
+            and coalesce(p.qual, '') not like '%(select auth.uid())%'
+          )
+          or (
+            coalesce(p.with_check, '') ~ '(^|[^A-Za-z0-9_\\.])auth\\.uid\\(\\)'
+            and coalesce(p.with_check, '') not like '%( SELECT auth.uid() AS uid)%'
+            and coalesce(p.with_check, '') not like '%(select auth.uid())%'
+          )
+        )
+    ),
+    'auth.uid wrapped as initplan in advisor-targeted policies'
+
+  union all
+  select
+    'no missing public foreign-key covering indexes',
+    not exists (
+      with fk as (
+        select
+          con.conrelid,
+          con.conkey
+        from pg_constraint con
+        join pg_class rel on rel.oid = con.conrelid
+        join pg_namespace ns on ns.oid = rel.relnamespace
+        where con.contype = 'f'
+          and ns.nspname = 'public'
+      )
+      select 1
+      from fk
+      where not exists (
+        select 1
+        from pg_index i
+        where i.indrelid = fk.conrelid
+          and i.indisvalid
+          and i.indpred is null
+          and (i.indkey::int2[])[0:array_length(fk.conkey, 1) - 1] = fk.conkey::int2[]
+      )
+    ),
+    'all public foreign keys have a valid covering index prefix'
 )
 select
   check_name,
