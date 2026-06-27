@@ -6,7 +6,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Supabase
 
-- Local Supabase CLI is available through `npx supabase` but is not authenticated. `npx supabase projects list` fails because no access token is configured.
+- Local Supabase CLI is not installed on PATH. The fast provider diagnostic skips `npx` by default to avoid network startup hangs; set `ZOOT_CHECK_NPX_SUPABASE=1` to probe `npx supabase@2.108.0`. Live Supabase connector access remains available for supported project operations.
 - `psql` and Docker are not installed on this Windows host, so direct database fallback and local Supabase reset/test fallback are unavailable.
 - Live Supabase Auth redirect allowlists still need dashboard configuration. Local `supabase/config.toml` contains the intended redirect values, but the connector exposes no safe Auth redirect setter.
 - Production and staging migration histories are intentionally different because production started from launch squashed migrations while staging follows the local chain. The current convergence, booking-policy, sensitive-access notification, training, storage, Twilio, and accepted-job destination migrations are present in both live histories, but real role-based smoke tests are still required.
@@ -42,8 +42,8 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - GitHub CLI is installed but unauthenticated. Local `gh auth status` reports no logged-in GitHub hosts.
 - GitHub repository/environment variables for optional public integrations still need approved public-safe values where applicable: Expo public Supabase values, site URL, Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, and Cloudflare Turnstile site key. Private provider secrets must not be GitHub repository variables.
-- GitHub connector can read PR-triggered workflow runs but cannot write repository variables. It returned no PR-triggered runs for latest pushed SHA `c95678185826dfa5b6c1bca7eba039bb573eaf88`.
-- CodeRabbit CLI is installed and reports version `0.6.4`, but it is not authenticated.
+- GitHub connector can read PR-triggered workflow runs but cannot write repository variables. It returned no PR-triggered runs for latest pushed SHA `08ebb57e916c568a09c7f448444b6c1709b42ae2`.
+- CodeRabbit CLI is not on PATH in this shell. The provider diagnostic checks both `coderabbit` and `cr`; neither is currently available.
 - `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable.
 - CodeRabbit review requires one of:
   - `coderabbit auth login --api-key <api-key>` using a key from an approved vault; or
@@ -53,7 +53,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 ## Provider Secrets And External Dashboards
 
 - Real production secrets for Stitch, Ozow, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, and Mapbox still need to be set in their correct secret stores.
-- Netlify project `zoot-home-care` exists. Public-safe Netlify env var writes for Supabase URL, project ID, and site URL reported success, but Netlify env readback still returned an empty list; do not treat Netlify env as verified until the dashboard/build confirms it. `VITE_SUPABASE_PUBLISHABLE_KEY` is still not available from an approved non-chat source.
+- Netlify project `zoot-home-care` exists. Public-safe Netlify env var writes for Supabase URL, project ID, site URL, `VITE_APP_ENV`, and the active production Supabase publishable key from the Supabase connector reported success, but Netlify env readback still returned an empty list; do not treat Netlify env as verified until the dashboard/build confirms it.
 - Do not paste these values into chat. Store private secrets only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
 
 ## Verification Still Needed After Unblocking
