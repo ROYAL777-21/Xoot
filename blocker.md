@@ -9,7 +9,8 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Local Supabase CLI is not installed on PATH. The fast provider diagnostic skips `npx` by default to avoid network startup hangs; set `ZOOT_CHECK_NPX_SUPABASE=1` to probe `npx supabase@2.108.0`. Live Supabase connector access remains available for supported project operations.
 - `psql` and Docker are not installed on this Windows host, so direct database fallback and local Supabase reset/test fallback are unavailable.
 - Live Supabase Auth redirect allowlists still need dashboard configuration. Local `supabase/config.toml` contains the intended redirect values, but the connector exposes no safe Auth redirect setter.
-- Production and staging migration histories are intentionally different because production started from launch squashed migrations while staging follows the local chain. The current convergence, booking-policy, sensitive-access notification, training, storage, Twilio, and accepted-job destination migrations are present in both live histories, but real role-based smoke tests are still required.
+- Production and staging migration histories are intentionally different because production started from launch squashed migrations while staging follows the local chain. The current convergence, booking-policy, sensitive-access notification, training, storage, Twilio, and accepted-job destination migrations are present in both live histories. Remaining work is role-based smoke testing plus live verification of the new Phase 1 governance-control migration.
+- The Phase 1 governance-control migration `20260627090000_phase1_governance_controls.sql` has been added locally and still needs staging application, smoke testing, and then approved production rollout.
 
 ## Twilio
 
@@ -60,6 +61,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 ## Verification Still Needed After Unblocking
 
 - Verify with real staging client, admin, and Zooter users that `get_zooter_job_cards()` returns destination addresses only after the assigned Zooter accepts the job.
+- Apply and smoke-test `supabase/migrations/20260627090000_phase1_governance_controls.sql` in staging, then production after approval.
 - Run `scripts/ops/verify-supabase-live.ps1` against staging and production with a local `SUPABASE_DB_URL` to independently verify the live booking state constraint, sensitive-access notification scheduler artifacts, RPC grants, and accepted-job destination functions.
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
 - Deploy/redeploy Edge Functions after secrets are configured.
