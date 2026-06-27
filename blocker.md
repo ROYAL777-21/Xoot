@@ -43,7 +43,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - GitHub CLI is installed but unauthenticated. Local `gh auth status` reports no logged-in GitHub hosts.
 - GitHub repository/environment variables for optional public integrations still need approved public-safe values where applicable: Expo public Supabase values, site URL, Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, and Cloudflare Turnstile site key. Private provider secrets must not be GitHub repository variables.
-- GitHub connector can read PR-triggered workflow runs but cannot write repository variables. It returned no PR-triggered runs for latest pushed SHA `08ebb57e916c568a09c7f448444b6c1709b42ae2`.
+- GitHub connector can read PR-triggered workflow runs but cannot write repository variables. On 2026-06-27 it returned no combined statuses and no PR-triggered workflow runs for latest pushed SHA `32e73a2affaec9b295eecad2b91a671b532d378d`.
 - CodeRabbit CLI is not on PATH in this shell. The provider diagnostic checks both `coderabbit` and `cr`; neither is currently available.
 - `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Its installer downloads and recompiles the official Linux payload and may run an unverified Bun installer unless a pinned checksum is supplied; do not run it for production readiness without explicit checksum approval or use the official CodeRabbit GitHub App instead.
