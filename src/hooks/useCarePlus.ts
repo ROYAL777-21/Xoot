@@ -205,18 +205,8 @@ export const useCarePlus = () => {
     setLoading(true);
     setError(null);
 
-    const { data: planRow } = await supabase
-      .from("subscription_plans")
-      .select("id,name,cadence,monthly_price,perks")
-      .ilike("name", "%Care%")
-      .order("monthly_price", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    const activePlan = mapPlan((planRow as SubscriptionPlanRow | null) ?? null);
-    setPlan(activePlan);
-
     if (!user) {
+      setPlan(fallbackCarePlusPlan);
       setState({ status: "unauthenticated" });
       setProperties([]);
       setLastBookingAt(null);
@@ -224,71 +214,90 @@ export const useCarePlus = () => {
       return;
     }
 
-    const [
-      subscriptionResult,
-      propertiesResult,
-      bookingResult,
-    ] = await Promise.all([
-      (supabase as any)
-        .from("user_subscriptions")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("plan_id", activePlan.id)
-        .order("started_at", { ascending: false })
+    try {
+      const { data: planRow } = await supabase
+        .from("subscription_plans")
+        .select("id,name,cadence,monthly_price,perks")
+        .ilike("name", "%Care%")
+        .order("monthly_price", { ascending: true })
         .limit(1)
-        .maybeSingle(),
-      (supabase as any)
-        .from("property_accounts")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("bookings")
-        .select("id,scheduled_at,status")
-        .eq("user_id", user.id)
-        .in("status", ["completed", "rated"])
-        .order("scheduled_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
+        .maybeSingle();
 
-    if (subscriptionResult.error) {
-      setError(subscriptionResult.error.message);
-      setState({ status: "not_member", plan: activePlan });
-    } else {
-      const subscription = subscriptionResult.data as SubscriptionRow | null;
-      if (!subscription) {
-        setState({ status: "not_member", plan: activePlan });
-      } else if (subscription.status === "pending_payment") {
-        const { data: payment } = await (supabase as any)
-          .from("payment_records")
-          .select("id,meta")
+      const activePlan = mapPlan((planRow as SubscriptionPlanRow | null) ?? null);
+      setPlan(activePlan);
+
+      const [
+        subscriptionResult,
+        propertiesResult,
+        bookingResult,
+      ] = await Promise.all([
+        (supabase as any)
+          .from("user_subscriptions")
+          .select("*")
           .eq("user_id", user.id)
-          .eq("payment_kind", "homecare_membership")
-          .eq("status", "pending")
-          .order("created_at", { ascending: false })
+          .eq("plan_id", activePlan.id)
+          .order("started_at", { ascending: false })
           .limit(1)
-          .maybeSingle();
-        setState({ status: "pending_payment", checkout_url: getCheckoutUrl(subscription, (payment as PaymentRecordRow | null) ?? null) });
-      } else if (subscription.status === "cancelled") {
-        setState({ status: "cancelled", cancelled_at: subscription.cancelled_at ?? subscription.next_billing_at ?? subscription.started_at });
+          .maybeSingle(),
+        (supabase as any)
+          .from("property_accounts")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("bookings")
+          .select("id,scheduled_at,status")
+          .eq("user_id", user.id)
+          .in("status", ["completed", "rated"])
+          .order("scheduled_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+      if (subscriptionResult.error) {
+        setError(subscriptionResult.error.message);
+        setState({ status: "not_member", plan: activePlan });
       } else {
-        const membership = mapMembership(subscription, activePlan);
-        const renewsAt = new Date(subscription.next_billing_at).getTime();
-        const isPastDue = subscription.status === "past_due" || subscription.status === "paused" || (Number.isFinite(renewsAt) && renewsAt <= Date.now());
-        if (isPastDue) {
-          setState({ status: "past_due", membership });
+        const subscription = subscriptionResult.data as SubscriptionRow | null;
+        if (!subscription) {
+          setState({ status: "not_member", plan: activePlan });
+        } else if (subscription.status === "pending_payment") {
+          const { data: payment } = await (supabase as any)
+            .from("payment_records")
+            .select("id,meta")
+            .eq("user_id", user.id)
+            .eq("payment_kind", "homecare_membership")
+            .eq("status", "pending")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          setState({ status: "pending_payment", checkout_url: getCheckoutUrl(subscription, (payment as PaymentRecordRow | null) ?? null) });
+        } else if (subscription.status === "cancelled") {
+          setState({ status: "cancelled", cancelled_at: subscription.cancelled_at ?? subscription.next_billing_at ?? subscription.started_at });
         } else {
-          const favourite = await resolveFavouriteZooter(user.id, subscription.favourite_zooter_id ?? null);
-          setState({ status: "active", membership, favourite });
+          const membership = mapMembership(subscription, activePlan);
+          const renewsAt = new Date(subscription.next_billing_at).getTime();
+          const isPastDue = subscription.status === "past_due" || subscription.status === "paused" || (Number.isFinite(renewsAt) && renewsAt <= Date.now());
+          if (isPastDue) {
+            setState({ status: "past_due", membership });
+          } else {
+            const favourite = await resolveFavouriteZooter(user.id, subscription.favourite_zooter_id ?? null);
+            setState({ status: "active", membership, favourite });
+          }
         }
       }
-    }
 
-    setProperties(Array.isArray(propertiesResult.data) ? (propertiesResult.data as PropertyAccountRow[]).map(mapProperty) : []);
-    setLastBookingAt((bookingResult.data as BookingRow | null)?.scheduled_at ?? null);
-    setLoading(false);
+      setProperties(Array.isArray(propertiesResult.data) ? (propertiesResult.data as PropertyAccountRow[]).map(mapProperty) : []);
+      setLastBookingAt((bookingResult.data as BookingRow | null)?.scheduled_at ?? null);
+    } catch (refreshError) {
+      setError(refreshError instanceof Error ? refreshError.message : "Care+ data could not load.");
+      setState({ status: "not_member", plan: fallbackCarePlusPlan });
+      setProperties([]);
+      setLastBookingAt(null);
+    } finally {
+      setLoading(false);
+    }
   }, [authLoading, user]);
 
   useEffect(() => {

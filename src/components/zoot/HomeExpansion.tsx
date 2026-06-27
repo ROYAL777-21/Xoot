@@ -1,7 +1,16 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Building2, ShieldCheck, Sparkles } from "lucide-react";
 
-const tools = ["Supabase", "Mapbox", "Stitch", "Ozow", "Twilio", "Brevo", "Airtable", "OpenAI"];
+const operatorSegments = [
+  "Residential property managers",
+  "Estate agencies",
+  "Airbnb hosts",
+  "Landlords",
+  "Office administrators",
+  "Guesthouse teams",
+  "Facilities coordinators",
+  "Body corporate trustees",
+];
 
 const articleLinks = [
   "How Zoot verifies Zooters",
@@ -15,17 +24,18 @@ export const HomeExpansion = () => (
       <div className="container grid gap-8 md:grid-cols-[0.9fr_1.1fr] md:items-center">
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            <ShieldCheck className="h-3.5 w-3.5" /> Infrastructure signals
+            <ShieldCheck className="h-3.5 w-3.5" /> Built for high-trust operators
           </div>
-          <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Built on tools chosen for secure, operational home-care.</h2>
+          <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Designed for the people who cannot afford messy handovers.</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            These are product and infrastructure tools in the Zoot stack or planned integration path. They are not customer claims or partnership endorsements.
+            Zoot is being shaped around real cleaning operations for property managers, short-term rental hosts, landlords, offices and homes. These are target operator groups, not unsupported partnership or customer-logo claims.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {tools.map((tool) => (
-            <div key={tool} className="rounded-2xl border border-border bg-card px-4 py-3 text-center font-display text-lg font-bold shadow-card">
-              {tool}
+          {operatorSegments.map((segment) => (
+            <div key={segment} className="rounded-2xl border border-border bg-card px-4 py-3 text-center text-sm font-bold leading-5 shadow-card">
+              <Building2 className="mx-auto mb-2 h-4 w-4 text-primary" />
+              {segment}
             </div>
           ))}
         </div>

@@ -1,31 +1,57 @@
-import { Navbar } from "@/components/zoot/Navbar";
-import { Footer } from "@/components/zoot/Footer";
-import { SEO } from "@/components/SEO";
+import { LegalLayout, LegalList, LegalSection } from "./LegalLayout";
 
 const Privacy = () => (
-  <div className="min-h-screen bg-background">
-    <SEO
-      title="Zoot Privacy Policy"
-      description="Learn how Zoot protects account, booking, household, communication and payment metadata under POPIA-aligned privacy practices."
-      canonical="/legal/privacy"
-    />
-    <Navbar />
-    <main className="container max-w-3xl py-12 md:py-20">
-      <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Legal</p>
-      <h1 className="font-display text-4xl md:text-6xl font-bold mb-6">Privacy Policy</h1>
-      <div className="prose prose-sm md:prose-base max-w-none text-muted-foreground space-y-4">
-        <p>Zoot is committed to protecting your privacy and complying with the Protection of Personal Information Act, 2013 (POPIA).</p>
-        <h2 className="font-display text-foreground">What we collect</h2>
-        <p>Account details (name, email, phone), addresses, booking history, payment metadata, and communications between you and your Zooter.</p>
-        <h2 className="font-display text-foreground">How we use it</h2>
-        <p>To match you with Zooters, process bookings, send transactional notifications, prevent fraud, and improve the platform. We never sell your data to third parties.</p>
-        <h2 className="font-display text-foreground">Security</h2>
-        <p>All data is encrypted in transit (TLS 1.2+) and at rest. Sensitive identifiers (ID numbers, bank details) are stored in private buckets with strict row-level access control. Passwords are hashed with industry-standard algorithms.</p>
-        <h2 className="font-display text-foreground">Your rights</h2>
-        <p>You may request access, correction, or deletion of your personal information at any time by contacting support@zoot.co.za.</p>
-      </div>
-    </main>
-    <Footer />
-  </div>
+  <LegalLayout
+    title="Zoot Privacy Policy"
+    description="How Zoot collects, uses, protects, shares, and retains personal information for booking, Care+, support, Zooter onboarding, payments, safety, and product operations."
+    canonical="/legal/privacy"
+    eyebrow="Privacy"
+  >
+    <LegalSection title="Information we collect">
+      <LegalList>
+        <li>Account details such as name, email address, phone number, role, and authentication metadata.</li>
+        <li>Booking and property information such as service type, suburb, address, schedule, notes, add-ons, photos where uploaded, and booking status.</li>
+        <li>Sensitive household access information only where needed for a booking, such as gate, alarm, parking, pet, and access instructions.</li>
+        <li>Zooter onboarding information such as identity, verification, training, screening, document, location-coverage, and payout-readiness data.</li>
+        <li>Payment metadata, reconciliation references, ZootCred ledger entries, Care+ membership status, and provider event metadata.</li>
+        <li>Support, safety, fraud, device, diagnostics, push-token, email-delivery, and app-usage data needed to operate and secure Zoot.</li>
+      </LegalList>
+    </LegalSection>
+
+    <LegalSection title="How we use information">
+      <p>
+        Zoot uses information to create accounts, verify users and Zooters, price and manage bookings, process payments through providers, route support, protect sensitive household data, prevent fraud, send transactional notifications, improve reliability, and prepare legally required records.
+      </p>
+      <p>
+        Zoot does not sell personal information. Marketing communication should be consent-based or otherwise lawful, and users must be able to opt out where required.
+      </p>
+    </LegalSection>
+
+    <LegalSection title="Where information is stored">
+      <p>
+        Zoot uses Supabase and trusted operational providers for authentication, database, storage, Edge Functions, notifications, payment workflows, support, monitoring, and automation. Service-role keys and provider secrets must never be exposed in the website, Expo app, public JavaScript, screenshots, or support chat.
+      </p>
+    </LegalSection>
+
+    <LegalSection title="Security and access controls">
+      <LegalList>
+        <li>Row Level Security and role checks restrict access to account, booking, payment, Zooter, support, and property data.</li>
+        <li>Sensitive household access fields are intended to be time-locked and logged when revealed to assigned Zooters.</li>
+        <li>Admin actions must be typed, auditable, and protected by role checks and MFA where available.</li>
+        <li>Payment success is verified server-side and never trusted from the frontend alone.</li>
+        <li>Push notifications, Live Activities, widgets, and emails must avoid full addresses, access codes, private complaints, payment references, and identity documents.</li>
+      </LegalList>
+    </LegalSection>
+
+    <LegalSection title="Your choices and rights">
+      <p>
+        You may request access, correction, deletion, objection, or restriction of your personal information where applicable under South African law. Some records may need to be retained for safety, fraud prevention, tax, payment, dispute, or legal reasons.
+      </p>
+      <p>
+        See the POPIA Notice and Account Deletion page for the operational process.
+      </p>
+    </LegalSection>
+  </LegalLayout>
 );
+
 export default Privacy;

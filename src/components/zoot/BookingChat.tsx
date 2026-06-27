@@ -120,15 +120,15 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
           return;
         }
 
-        const { data, error } = await (supabase as any)
-          .from("user_encryption_keys")
-          .select("id,user_id,device_id,public_jwk,key_version,revoked_at")
-          .in("user_id", participantIds);
+        const { data: keyResponse, error } = await supabase.functions.invoke("get-booking-public-keys", {
+          body: { booking_id: bookingId },
+        });
 
         if (error) throw error;
 
+        const data = Array.isArray(keyResponse?.data?.keys) ? keyResponse.data.keys : [];
         const rows = ((data ?? []) as PublicKeyRow[]).filter(
-          (row) => !row.revoked_at && row.user_id && row.device_id && row.public_jwk,
+          (row) => row.user_id && row.device_id && row.public_jwk,
         );
         const hasCurrentDevice = rows.some(
           (row) => row.user_id === currentUserId && row.device_id === deviceKey.deviceId,

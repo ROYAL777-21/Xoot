@@ -6,11 +6,13 @@ const time24h = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 const clean = (max = 500) => z.string().transform((value) => sanitiseInput(value).slice(0, max));
 const cleanOptional = (max = 500) => z.string().optional().nullable().transform((value) => sanitiseInput(value ?? "").slice(0, max));
+const cleanDefault = (fallback: string, max = 500) => z.string().optional().default(fallback).transform((value) => sanitiseInput(value).slice(0, max));
 const cleanPhone = z.string().transform((value) => sanitiseInput(value).replace(/[\s().-]/g, "").slice(0, 20));
 
 export const BookingInput = z.object({
   service_type: clean(60).pipe(z.string().min(2).max(60)),
   home_size: clean(40).pipe(z.string().min(2).max(40)),
+  service_length: cleanDefault("standard", 40).pipe(z.enum(["refresh", "standard", "extended", "full_day"])),
   address: clean(500).pipe(z.string().min(10, "Enter a complete service address").max(500)),
   date: clean(20).pipe(z.string().min(8).max(20)),
   time: clean(10).pipe(z.string().regex(time24h, "Choose a valid time slot")),

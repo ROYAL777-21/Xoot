@@ -1,6 +1,6 @@
 # Zoot OAuth And Redirects
 
-Reviewed: 2026-06-08
+Reviewed: 2026-06-20
 
 This file inventories OAuth, Supabase Auth redirects, and native deep-link requirements. It contains placeholders only.
 
@@ -25,6 +25,18 @@ The React app already includes:
 | Password reset URL | `http://localhost:5173/auth/reset` | `https://staging.zoothome.co.za/auth/reset` | `https://zoothome.co.za/auth/reset` |
 | Native callback | `zoot://auth/callback` | `zoot://auth/callback` | `zoot://auth/callback` |
 
+Additional redirect allow-list entries:
+
+```text
+http://127.0.0.1:5173/auth/callback
+http://127.0.0.1:5173/auth/reset
+http://127.0.0.1:4173/auth/callback
+http://127.0.0.1:4173/auth/reset
+https://www.zoothome.co.za/auth/callback
+https://www.zoothome.co.za/auth/reset
+zoot://auth/reset
+```
+
 Required Supabase Auth dashboard setup:
 
 - Enable email confirmations for production.
@@ -33,6 +45,12 @@ Required Supabase Auth dashboard setup:
 - Enable leaked-password protection where available.
 - Add all redirect URLs per environment.
 - Keep staging and production provider credentials separate.
+
+Live status on 2026-06-24:
+
+- The local Supabase configuration now contains the complete web and `zoot://` redirect set.
+- Staging and production dashboard allowlists remain empty because the active dashboard session is signed out and the connected Supabase database tool does not expose Auth config writes.
+- Do not launch email confirmation, password reset, Google OAuth, or Apple OAuth until the dashboard values exactly match this document.
 
 ## Google OAuth
 
@@ -57,7 +75,7 @@ Implementation notes:
 | Item | Staging | Production | Storage |
 | --- | --- | --- | --- |
 | Apple Developer Team ID | Required | Required | Apple Developer, CI env as `APPLE_TEAM_ID` or `ZOOT_APPLE_TEAM_ID` |
-| iOS Bundle ID | Proposed `za.co.zoot.app` or staging variant | `za.co.zoot.app` | Apple Developer/Xcode |
+| iOS Bundle ID | Proposed staging variant of `za.co.zoothome.app` | `za.co.zoothome.app` | Apple Developer/Xcode |
 | Services ID for web | Required if web Sign in with Apple is enabled | Required if web Sign in with Apple is enabled | Apple Developer/Supabase |
 | Key ID | Required | Required | Apple Developer/Supabase |
 | Private key file | Secure file outside repo | Secure file outside repo | CI secret or Supabase provider dashboard |

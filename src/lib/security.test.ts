@@ -11,9 +11,11 @@ describe("security helpers", () => {
     expect(isPrivateHost("169.254.169.254")).toBe(true);
   });
 
-  it("allows only approved https outbound hosts", () => {
-    expect(isAllowedOutboundUrl("https://api.twilio.com/2010-04-01/Accounts")).toBe(true);
+  it("allows only approved browser-safe https outbound hosts", () => {
     expect(isAllowedOutboundUrl("https://x.supabase.co/rest/v1/bookings")).toBe(true);
+    expect(isAllowedOutboundUrl("https://api.mapbox.com/geocoding/v5/mapbox.places/Sandton.json")).toBe(true);
+    expect(isAllowedOutboundUrl("https://api.twilio.com/2010-04-01/Accounts")).toBe(false);
+    expect(isAllowedOutboundUrl("https://api.brevo.com/v3/smtp/email")).toBe(false);
     expect(isAllowedOutboundUrl("http://api.twilio.com")).toBe(false);
     expect(isAllowedOutboundUrl("https://169.254.169.254/latest/meta-data")).toBe(false);
     expect(isAllowedOutboundUrl("https://evil.example/fetch")).toBe(false);

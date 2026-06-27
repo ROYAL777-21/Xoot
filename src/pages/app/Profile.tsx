@@ -172,7 +172,7 @@ const Profile = () => {
           <Bell className="h-5 w-5 text-primary" />
           <h2 className="font-display text-xl font-bold">Notifications</h2>
         </div>
-        <p className="text-sm text-muted-foreground flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> In-app notifications are on by default for arrivals, changes, trust incidents, and HomeCare+ updates.</p>
+        <p className="text-sm text-muted-foreground flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> In-app notifications are on by default for arrivals, changes, trust incidents, and Care+ updates.</p>
       </Card>
     </div>
   );

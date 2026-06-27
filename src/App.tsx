@@ -1,17 +1,16 @@
 import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
+import { ThemeProvider } from "next-themes";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { LoadingScreen } from "@/components/LoadingScreen";
 import { RequireAuth } from "@/components/RequireAuth";
 import { AppShell } from "@/components/zoot/AppShell";
 import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
-import { BotanicalEdges } from "@/components/zoot/BotanicalEdges";
 import { ZootSupportBot } from "@/components/zoot/ZootSupportBot";
 import { ZooterShell } from "@/components/zooter/ZooterShell";
 import { RequireRole } from "@/components/RequireRole";
@@ -43,6 +42,14 @@ const CarePlusApply = lazy(() => import("./pages/care/CarePlusApply"));
 const Terms = lazy(() => import("./pages/legal/Terms"));
 const Privacy = lazy(() => import("./pages/legal/Privacy"));
 const TrustSafety = lazy(() => import("./pages/legal/TrustSafety"));
+const Popia = lazy(() => import("./pages/legal/Popia"));
+const RefundsCancellations = lazy(() => import("./pages/legal/RefundsCancellations"));
+const AccountDeletion = lazy(() => import("./pages/legal/AccountDeletion"));
+const Cookies = lazy(() => import("./pages/legal/Cookies"));
+const AcceptableUse = lazy(() => import("./pages/legal/AcceptableUse"));
+const AiConciergeNotice = lazy(() => import("./pages/legal/AiConciergeNotice"));
+const CarePlusTerms = lazy(() => import("./pages/legal/CarePlusTerms"));
+const ZooterTerms = lazy(() => import("./pages/legal/ZooterTerms"));
 const ZooterApply = lazy(() => import("./pages/zooter/Apply"));
 const ZooterDashboard = lazy(() => import("./pages/zooter/Dashboard"));
 const ZooterJobs = lazy(() => import("./pages/zooter/Jobs"));
@@ -52,6 +59,15 @@ const ZooterKyc = lazy(() => import("./pages/zooter/Kyc"));
 const ZooterProfile = lazy(() => import("./pages/zooter/Profile"));
 const AdminKyc = lazy(() => import("./pages/admin/Kyc"));
 const AdminOps = lazy(() => import("./pages/admin/Ops"));
+
+const coreRoutePreloaders = [
+  () => import("./pages/Index.tsx"),
+  () => import("./pages/care/CarePlus"),
+  () => import("./pages/app/Book"),
+  () => import("./pages/app/Bookings"),
+  () => import("./pages/app/Support"),
+  () => import("./pages/Blog"),
+];
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -78,19 +94,38 @@ const ScrollToTop = () => {
   return null;
 };
 
+const PreloadCoreRoutes = () => {
+  useEffect(() => {
+    const preload = () => coreRoutePreloaders.forEach((load) => void load());
+    const requestIdle = window.requestIdleCallback ?? ((callback: IdleRequestCallback) => window.setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 0 }), 650));
+    const cancelIdle = window.cancelIdleCallback ?? window.clearTimeout;
+    const idleId = requestIdle(preload, { timeout: 1600 });
+    return () => cancelIdle(idleId);
+  }, []);
+
+  return null;
+};
+
+const RouteLoading = () => (
+  <div className="fixed inset-x-0 top-0 z-[70] h-1 overflow-hidden bg-primary/10" aria-label="Loading Zoot route">
+    <div className="h-full w-1/3 animate-pulse rounded-r-full bg-primary/70" />
+  </div>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
-      <TooltipProvider>
-        <ErrorBoundary>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <NativeInteractionLayer />
-            <BotanicalEdges />
-            <ScrollToTop />
-            <AuthProvider>
-              <Suspense fallback={<LoadingScreen />}>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange storageKey="zoot-theme">
+        <TooltipProvider>
+          <ErrorBoundary>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <NativeInteractionLayer />
+              <PreloadCoreRoutes />
+              <ScrollToTop />
+              <AuthProvider>
+                <Suspense fallback={<RouteLoading />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
@@ -107,6 +142,14 @@ const App = () => (
                   <Route path="/legal/terms" element={<Terms />} />
                   <Route path="/legal/privacy" element={<Privacy />} />
                   <Route path="/legal/trust-safety" element={<TrustSafety />} />
+                  <Route path="/legal/popia" element={<Popia />} />
+                  <Route path="/legal/refunds-cancellations" element={<RefundsCancellations />} />
+                  <Route path="/legal/account-deletion" element={<AccountDeletion />} />
+                  <Route path="/legal/cookies" element={<Cookies />} />
+                  <Route path="/legal/acceptable-use" element={<AcceptableUse />} />
+                  <Route path="/legal/ai-concierge" element={<AiConciergeNotice />} />
+                  <Route path="/legal/care-plus-terms" element={<CarePlusTerms />} />
+                  <Route path="/legal/zooter-terms" element={<ZooterTerms />} />
                   <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
@@ -138,12 +181,13 @@ const App = () => (
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </Suspense>
-              <ZootSupportBot />
-            </AuthProvider>
-          </BrowserRouter>
-        </ErrorBoundary>
-      </TooltipProvider>
+                </Suspense>
+                <ZootSupportBot />
+              </AuthProvider>
+            </BrowserRouter>
+          </ErrorBoundary>
+        </TooltipProvider>
+      </ThemeProvider>
     </HelmetProvider>
   </QueryClientProvider>
 );

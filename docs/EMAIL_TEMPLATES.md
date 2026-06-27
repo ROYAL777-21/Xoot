@@ -1,0 +1,43 @@
+# Zoot Email Template Playbook
+
+Brevo email is for records, receipts, longer summaries, and lifecycle nudges. In-app notifications remain the primary operational channel.
+
+## Safety Rules
+
+- Never email OTPs, passwords, card details, gate codes, alarm codes, lockbox codes, full access instructions, identity documents, private household notes, or support complaint details.
+- Email should point users back to the authenticated Zoot app for live booking, payment, address, support, and sensitive access details.
+- Payment success is never trusted from email or frontend state. Payment state must come from verified provider callbacks or audited admin action.
+- Marketing claims must not include fake testimonials, fake partnerships, fake scarcity, unsupported availability, or competitor attacks.
+
+## Implemented Payload Metadata
+
+Shared helper:
+
+- `supabase/functions/_shared/email-playbook.ts`
+
+Current events:
+
+| Event | Template key | Subject | Channel |
+| --- | --- | --- | --- |
+| `signup_verification` | `signup_verification` | Confirm your Zoot account | Brevo/Supabase Auth template |
+| `otp_login` | `otp_login` | Your Zoot sign-in code | Brevo/Supabase Auth template |
+| `booking_confirmed` | `booking_request_received` | Your Zoot booking request is in motion | Brevo email + in-app |
+| `payment_pending` | `payment_pending` | Complete your Zoot payment | Brevo email + in-app |
+| `payment_confirmed` | `payment_confirmed` | Payment received by Zoot | Brevo email + in-app |
+| `payment_failed` | `payment_failed` | Your Zoot payment needs attention | Brevo email + in-app |
+| `booking_assigned` | `booking_assigned` | Your Zooter has been assigned | Brevo email + in-app |
+| `zooter_en_route` | `zooter_en_route` | Your Zooter is on the way | Brevo email + in-app |
+| `job_completed` | `job_completed` | Your Zoot clean is complete | Brevo email + in-app |
+| `care_plus_membership_requested` | `care_plus_membership_requested` | Your Care+ membership setup has started | Brevo email + in-app |
+| `care_plus_membership_cancelled` | `care_plus_membership_cancelled` | Your Care+ membership has ended | In-app currently; email template metadata is available if enabled later |
+| `care_plus_past_due` | `care_plus_past_due` | Care+ payment update needed | Brevo email + in-app |
+| `zooter_onboarding_status` | `zooter_onboarding_status` | Your Zooter onboarding status changed | Brevo email + in-app |
+| `support_escalation` | `support_escalation` | Zoot Support is reviewing your case | Brevo email + in-app |
+
+## Brevo Setup Needed
+
+1. Create transactional templates using the template keys above.
+2. Verify sender domain with SPF, DKIM, and DMARC.
+3. Store `BREVO_API_KEY`, sender email, sender domain, template IDs, and webhook key as Edge/backend secrets only.
+4. Add webhook validation before consuming bounce, complaint, or engagement webhooks.
+5. Smoke-test template rendering with staged accounts before production traffic.

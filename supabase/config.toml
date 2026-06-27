@@ -19,3 +19,27 @@ additional_redirect_urls = [
 
 [functions.confirm-payment]
 verify_jwt = false
+
+[functions.support-respond]
+verify_jwt = false
+
+[functions.get-booking-public-keys]
+verify_jwt = true
+
+[functions.get-sensitive-access]
+verify_jwt = true
+
+[functions.twilio-message-webhook]
+verify_jwt = false
+
+[functions.twilio-whatsapp-webhook]
+verify_jwt = false
+
+[functions.twilio-voice-webhook]
+verify_jwt = false
+
+[functions.twilio-status-callback]
+verify_jwt = false
+
+[functions.twilio-verify-webhook]
+verify_jwt = false

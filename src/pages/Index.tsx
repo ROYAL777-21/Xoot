@@ -11,6 +11,7 @@ import { CtaBand } from "@/components/zoot/CtaBand";
 import { Footer } from "@/components/zoot/Footer";
 import { FeedbackSection } from "@/components/zoot/FeedbackSection";
 import { SEO } from "@/components/SEO";
+import { ServiceAreaMap } from "@/components/zoot/ServiceAreaMap";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -38,6 +39,7 @@ const Index = () => {
         <h1 className="sr-only">Zoot - Premium home services with trust, safety, and retention workflows</h1>
         <BookingHero />
         <TrustedBy />
+        <ServiceAreaMap />
         <Services />
         <SafetyTrust />
         <NearbyWorkers />

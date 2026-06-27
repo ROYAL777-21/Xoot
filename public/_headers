@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.twilio.com https://api.brevo.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; child-src 'self' blob:; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
@@ -8,6 +8,8 @@
   Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), bluetooth=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
+  Origin-Agent-Cluster: ?1
+  X-Permitted-Cross-Domain-Policies: none
 
 /*.js
   Cache-Control: public, max-age=31536000, immutable
@@ -40,3 +42,27 @@
 
 /sw.js
   Cache-Control: no-cache
+
+/app/*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+
+/auth/*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+
+/admin/*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+
+/zooter/jobs*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+
+/zooter/earnings*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+
+/zooter/kyc*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+
+/zooter/profile*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+
+/zooter/training*
+  X-Robots-Tag: noindex, noarchive, nosnippet

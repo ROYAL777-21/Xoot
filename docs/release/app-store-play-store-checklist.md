@@ -1,6 +1,6 @@
 # App Store and Play Store Rejection-Prevention Checklist
 
-Sources reviewed on 2026-05-28:
+Sources reviewed on 2026-06-20:
 
 - Apple App Review Guidelines: https://developer.apple.com/app-store/review/guidelines/
 - Apple Human Interface Guidelines for Live Activities: https://developer.apple.com/design/human-interface-guidelines/live-activities
@@ -12,6 +12,7 @@ Sources reviewed on 2026-05-28:
 
 ## Shared Submission Checklist
 
+- Release targets are website, web app/PWA, and Expo-built iOS/Android apps. The existing React/Vite website stays in place; the native app is prepared in `/mobile`.
 - Test the production build for crashes, blank screens, broken routing, failed sign-in, failed booking, failed support submission, and failed payment return states.
 - Provide a complete reviewer demo account for client, Zooter, host, office, and support flows if those roles are reviewable.
 - Keep backend services live during review, including auth, booking mocks/seed data, support, payment test modes, push notification endpoints, Live Activity update endpoints, and widget/deep-link endpoints where applicable.
@@ -19,11 +20,13 @@ Sources reviewed on 2026-05-28:
 - Make app metadata accurate: screenshots, privacy labels, subscription price, billing terms, support links, account deletion flow, and contact information.
 - Remove placeholder text, staging banners, test-only credentials, unapproved third-party logos, unsupported guarantees, and internal admin/debug UI.
 - Ensure all claims are supportable: do not claim guaranteed replacement, full insurance, criminal-background coverage, or named vendor checks unless the production process supports it.
-- Make terms, privacy policy, POPIA handling, cancellation policy, refund policy, account deletion, and contact details easy to find.
+- Make terms, privacy policy, POPIA handling, cancellation policy, refund policy, account deletion, cookies, acceptable use, Care+, Zooter, AI Concierge, and contact details easy to find. Current public routes are `/legal/terms`, `/legal/privacy`, `/legal/popia`, `/legal/refunds-cancellations`, `/legal/account-deletion`, `/legal/cookies`, `/legal/acceptable-use`, `/legal/care-plus-terms`, `/legal/zooter-terms`, and `/legal/ai-concierge`.
 - Keep sensitive home access data out of screenshots, store listing previews, widgets, notifications, Live Activities, Dynamic Island, and support examples.
 
 ## Apple App Store Checklist
 
+- Create the App Store Connect app record for bundle ID `za.co.zoothome.app`.
+- Configure EAS iOS credentials, APNs, Associated Domains, Sign in with Apple, privacy nutrition labels, support URL, marketing URL, and reviewer demo accounts.
 - App must be useful, complete, and stable; do not submit a shell, broken web wrapper, or unfinished marketplace flow.
 - If the app requires login, provide App Review with active credentials or a fully-featured demo mode.
 - App information and metadata must be complete and accurate, including Care+ R99/month and any subscription details.
@@ -64,10 +67,12 @@ Sources reviewed on 2026-05-28:
 
 ## Google Play Checklist
 
+- Create the Google Play app record for package `za.co.zoothome.app`.
+- Configure Play App Signing or EAS-managed Android credentials, Google Play service account JSON, internal testing track, Data Safety, content rating, support email, and privacy policy URL.
 - Complete the Data safety form accurately for every data type collected or shared, including third-party SDK behavior.
 - Declare location, personal info, financial info, photos/videos, files/documents, app activity, device identifiers, and diagnostics where applicable.
 - Make privacy policy and data deletion details accessible from the store listing and inside the app.
-- If AI generation becomes a central app feature, comply with Google Play's AI-generated content policy and user feedback requirements.
+- If AI generation becomes a central app feature, comply with Google Play's AI-generated content policy and user feedback requirements. Zoot Concierge must expose an in-app report path and human support handoff for unsafe, inaccurate, payment, refund, safety, or account-impacting answers.
 - Ensure AI-generated or AI-assisted outputs cannot create prohibited content, scams, harassment, deepfake sexual content, deceptive election content, malicious code, or fake official documents.
 - Keep payments compliant: do not bypass required billing rules for in-app digital goods, and ensure physical service payments are clearly described.
 - Avoid deceptive behavior: no fake reviews, misleading rankings, manipulated ratings, hidden data collection, or false trust/safety claims.

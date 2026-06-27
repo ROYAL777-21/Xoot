@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+  <shortcut
+    android:shortcutId="book_clean"
+    android:enabled="true"
+    android:icon="@mipmap/ic_launcher"
+    android:shortcutShortLabel="@string/shortcut_book_clean_short"
+    android:shortcutLongLabel="@string/shortcut_book_clean_long">
+    <intent
+      android:action="android.intent.action.VIEW"
+      android:data="https://zoothome.co.za/app?intent=book_clean" />
+  </shortcut>
+
+  <shortcut
+    android:shortcutId="clean_house"
+    android:enabled="true"
+    android:icon="@mipmap/ic_launcher"
+    android:shortcutShortLabel="@string/shortcut_clean_house_short"
+    android:shortcutLongLabel="@string/shortcut_clean_house_long">
+    <intent
+      android:action="android.intent.action.VIEW"
+      android:data="https://zoothome.co.za/app?intent=book_clean&amp;service=residential" />
+  </shortcut>
+
+  <shortcut
+    android:shortcutId="office_clean"
+    android:enabled="true"
+    android:icon="@mipmap/ic_launcher"
+    android:shortcutShortLabel="@string/shortcut_office_clean_short"
+    android:shortcutLongLabel="@string/shortcut_office_clean_long">
+    <intent
+      android:action="android.intent.action.VIEW"
+      android:data="https://zoothome.co.za/app?intent=book_clean&amp;service=office" />
+  </shortcut>
+
+  <shortcut
+    android:shortcutId="clean_place"
+    android:enabled="true"
+    android:icon="@mipmap/ic_launcher"
+    android:shortcutShortLabel="@string/shortcut_clean_place_short"
+    android:shortcutLongLabel="@string/shortcut_clean_place_long">
+    <intent
+      android:action="android.intent.action.VIEW"
+      android:data="https://zoothome.co.za/app?intent=book_clean&amp;service=residential" />
+  </shortcut>
+
+  <shortcut
+    android:shortcutId="airbnb_turnover"
+    android:enabled="true"
+    android:icon="@mipmap/ic_launcher"
+    android:shortcutShortLabel="@string/shortcut_airbnb_short"
+    android:shortcutLongLabel="@string/shortcut_airbnb_long">
+    <intent
+      android:action="android.intent.action.VIEW"
+      android:data="https://zoothome.co.za/app?intent=book_clean&amp;service=airbnb" />
+  </shortcut>
+
+  <shortcut
+    android:shortcutId="zoot_concierge"
+    android:enabled="true"
+    android:icon="@mipmap/ic_launcher"
+    android:shortcutShortLabel="@string/shortcut_concierge_short"
+    android:shortcutLongLabel="@string/shortcut_concierge_long">
+    <intent
+      android:action="android.intent.action.VIEW"
+      android:data="https://zoothome.co.za/?zootBot=open&amp;intent=concierge" />
+  </shortcut>
+
+  <shortcut
+    android:shortcutId="care_plus"
+    android:enabled="true"
+    android:icon="@mipmap/ic_launcher"
+    android:shortcutShortLabel="@string/shortcut_care_plus_short"
+    android:shortcutLongLabel="@string/shortcut_care_plus_long">
+    <intent
+      android:action="android.intent.action.VIEW"
+      android:data="https://zoothome.co.za/care-plus?intent=care_plus" />
+  </shortcut>
+
+  <shortcut
+    android:shortcutId="bookings"
+    android:enabled="true"
+    android:icon="@mipmap/ic_launcher"
+    android:shortcutShortLabel="@string/shortcut_bookings_short"
+    android:shortcutLongLabel="@string/shortcut_bookings_long">
+    <intent
+      android:action="android.intent.action.VIEW"
+      android:data="https://zoothome.co.za/app/bookings?intent=bookings" />
+  </shortcut>
+</shortcuts>

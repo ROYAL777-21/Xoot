@@ -31,6 +31,13 @@ const homeSizes: Record<string, { hours: number; price: number }> = {
   large: { hours: 8, price: 390 },
 };
 
+const serviceLengths: Record<string, { hours: number; priceFactor: number }> = {
+  refresh: { hours: 3, priceFactor: 0.82 },
+  standard: { hours: 4.5, priceFactor: 1 },
+  extended: { hours: 6, priceFactor: 1.28 },
+  full_day: { hours: 8, priceFactor: 1.62 },
+};
+
 const allowedTimes = new Set(["07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "14:00", "15:00", "16:00", "17:00"]);
 const multiWorkerServices = new Set(["airbnb", "office", "deep", "moving", "premium"]);
 const photoProofServices = new Set(["airbnb", "deep", "moving"]);
@@ -78,6 +85,7 @@ Deno.serve(async (req) => {
     const serviceType = cleanText(body.serviceType ?? body.service_type, 40);
     const frequency = cleanText(body.frequency, 20) === "repeat" ? "repeat" : "one_time";
     const homeSizeId = cleanText(body.homeSize ?? body.home_size, 20) || "small";
+    const serviceLengthId = cleanText(body.serviceLength ?? body.service_length, 30) || "standard";
     const date = cleanText(body.date, 10);
     const time = cleanText(body.time, 8);
     const address = cleanText(body.address, 240);
@@ -91,6 +99,7 @@ Deno.serve(async (req) => {
 
     if (!services.has(serviceType)) return fail("unsupported service", origin, 400);
     if (!homeSizes[homeSizeId]) return fail("unsupported home size", origin, 400);
+    if (!serviceLengths[serviceLengthId]) return fail("unsupported service length", origin, 400);
     if (!allowedTimes.has(time)) return fail("unsupported time", origin, 400);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail("invalid date", origin, 400);
     if (!address || !isApprovedLaunchRegion(address)) return fail("outside launch coverage", origin, 400);
@@ -112,8 +121,9 @@ Deno.serve(async (req) => {
     }
 
     const size = homeSizes[homeSizeId];
+    const length = serviceLengths[serviceLengthId];
     const workerCount = Math.max(selectedZooterIds.length, 1);
-    const basePrice = Math.round(size.price * (serviceMultiplier[serviceType] ?? 1));
+    const basePrice = Math.round(size.price * length.priceFactor * (serviceMultiplier[serviceType] ?? 1));
     const multiWorkerDiscount = selectedZooterIds.length >= 3 ? 0.1 : 0;
     const discountedBase = Math.round(basePrice * (1 - multiWorkerDiscount)) * workerCount;
     const addOnsTotal = addOns.length * 30;
@@ -139,7 +149,7 @@ Deno.serve(async (req) => {
     const perBookingCover = Math.round(bookingCover / workerCount);
     const perBookingHighDemand = Math.round(highDemandPremium / workerCount);
     const perBookingDiscount = Math.round(carePlusDiscount / workerCount);
-    const estHours = size.hours + addOns.length;
+    const estHours = length.hours + addOns.length;
     const launchRegion = resolveLaunchRegion(address);
     const bookingTargets = selectedZooterIds.length ? selectedZooterIds : [null];
 
@@ -190,10 +200,11 @@ Deno.serve(async (req) => {
         payment_kind: "booking",
         meta: {
           service_type: serviceType,
+          service_length: serviceLengthId,
           zooter_id: zooterId,
           frequency,
           provider_required: "Ozow/Stitch credentials not connected",
-          breakdown: { subtotal, highDemandPremium, serviceFee, bookingCover, carePlusDiscount, zootcredRedemption },
+          breakdown: { subtotal, highDemandPremium, serviceFee, bookingCover, carePlusDiscount, zootcredRedemption, serviceLength: serviceLengthId },
         },
       }).select("id,provider_reference").single();
       if (paymentError || !payment?.id) throw new Error("payment record insert failed");
@@ -254,7 +265,7 @@ Deno.serve(async (req) => {
       action: "create_booking",
       targetTable: "bookings",
       targetId: bookingIds[0] ?? null,
-      changes: { booking_ids: bookingIds, payment_record_ids: paymentRecordIds, amount_due: amountDue, status: "draft" },
+      changes: { booking_ids: bookingIds, payment_record_ids: paymentRecordIds, amount_due: amountDue, status: "draft", service_length: serviceLengthId },
       reason: "Client created a server-priced booking draft",
       ipAddress: req.headers.get("x-forwarded-for"),
     });
@@ -267,7 +278,7 @@ Deno.serve(async (req) => {
       payment_session_url: bookingIds[0] ? `/app/bookings/${bookingIds[0]}?payment=pending` : null,
       amount_due: amountDue,
       status: "draft",
-      breakdown: { subtotal, high_demand_premium: highDemandPremium, service_fee: serviceFee, booking_cover: bookingCover, care_plus_discount: carePlusDiscount, zootcred_redemption: zootcredRedemption },
+      breakdown: { subtotal, high_demand_premium: highDemandPremium, service_fee: serviceFee, booking_cover: bookingCover, care_plus_discount: carePlusDiscount, zootcred_redemption: zootcredRedemption, service_length: serviceLengthId },
     }, origin);
   } catch (error) {
     console.error("create-booking failed", error);

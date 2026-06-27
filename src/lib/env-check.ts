@@ -1,4 +1,4 @@
-import { getPublicConfigIssueForEnv } from "@/lib/env";
+import { getPublicConfigIssueForEnv, getPublicSecretLeaks, isSupabasePublicConfigComplete } from "@/lib/env";
 
 const renderFatalConfigError = () => {
   if (typeof document === "undefined" || !document.body) return;
@@ -23,6 +23,18 @@ export function assertProductionEnv() {
   });
 
   if (!issue) return;
+
+  const localStaticPreview =
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname) &&
+    !isSupabasePublicConfigComplete(import.meta.env) &&
+    getPublicSecretLeaks(import.meta.env).length === 0 &&
+    import.meta.env.VITE_ENABLE_DEMO_MODE !== "true";
+
+  if (localStaticPreview) {
+    console.warn(`[Zoot] Local static preview is running without live Supabase config. Backend/auth actions remain disabled. ${issue}`);
+    return;
+  }
 
   renderFatalConfigError();
   throw new Error(`[Zoot] FATAL: ${issue}`);

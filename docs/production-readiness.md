@@ -10,6 +10,9 @@ Client-safe variables only:
 VITE_SUPABASE_PROJECT_ID=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_SUPABASE_URL=
+VITE_MAPBOX_PUBLIC_TOKEN=
+VITE_SENTRY_DSN=
+VITE_CLOUDFLARE_TURNSTILE_SITE_KEY=
 ```
 
 Do not expose service-role keys, webhook secrets, Stitch/Ozow secrets, Twilio auth tokens, Brevo API keys, Apple private keys, AI provider keys, signing certificates, or release fingerprints through `VITE_` variables.
@@ -29,18 +32,24 @@ TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_API_KEY_SID=
 TWILIO_API_KEY_SECRET=
+TWILIO_VERIFY_SERVICE_SID=
+TWILIO_MESSAGING_SERVICE_SID=
+TWILIO_SMS_SENDER=
+TWILIO_WHATSAPP_SENDER=
+TWILIO_TWIML_APP_SID=
 BREVO_API_KEY=
 WEBHOOK_SIGNING_SECRET=
 SENTRY_DSN=
+MAPBOX_SECRET_TOKEN=
 ```
 
 Native release build variables belong in CI or the release shell only:
 
 ```bash
 ZOOT_APPLE_TEAM_ID=
-ZOOT_IOS_BUNDLE_ID=za.co.zoot.app
+ZOOT_IOS_BUNDLE_ID=za.co.zoothome.app
 ZOOT_IOS_APP_ID=
-ZOOT_ANDROID_PACKAGE_NAME=za.co.zoot.app
+ZOOT_ANDROID_PACKAGE_NAME=za.co.zoothome.app
 ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS=
 ZOOT_APP_LINK_PATHS=/app/*,/auth/callback*,/auth/reset*,/care-plus/*,/install,/trust-centre,/zooter/*
 ```
@@ -72,7 +81,7 @@ ALLOWED_ORIGINS=https://zoothome.co.za,https://www.zoothome.co.za,https://stagin
 Build command:
 
 ```bash
-npm install
+npm ci
 npm run verify
 ```
 
@@ -80,6 +89,7 @@ Upload the `dist/` contents to Hostinger public web root. The branch includes `p
 
 - SPA fallback to `/index.html`.
 - CSP, HSTS, frame denial, referrer, permissions, COOP, and CORP headers.
+- Noindex response headers for protected app, admin, auth, and contractor account routes.
 - Long cache windows for built JS/CSS assets.
 - Short-cache JSON responses for `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` when native association files are generated.
 - No-cache handling for `sw.js`.
@@ -130,6 +140,8 @@ Supabase checks:
 - Policy smoke tests for client, contractor, support, finance, and admin roles.
 - Edge function smoke tests for `create-booking-request`, `ai-match`, `support-respond`, and sensitive access read/save.
 - Webhook signature validation for payment and communications endpoints before live traffic.
+- Twilio webhooks follow `docs/TWILIO_CHANNELS_SETUP.md` and validate `X-Twilio-Signature` before mutating any row.
+- Mapbox public tokens are URL/app restricted; native Mapbox downloads token is stored only as an EAS/CI secret.
 
 Browser checks:
 
@@ -142,6 +154,16 @@ Browser checks:
 - `/app`
 - `/app/properties/airbnb`
 - `/app/properties/office`
+
+## Public Scraping And Bot Controls
+
+Public SEO pages cannot be made impossible to scrape without also blocking legitimate search crawlers. The production posture is:
+
+- Public marketing and article pages remain crawlable.
+- Protected app, admin, auth, and contractor account routes send `X-Robots-Tag: noindex, noarchive, nosnippet`.
+- Browser CSP allows Supabase and Mapbox only; Twilio, Brevo, payments, OpenAI, KIE, Airtable, Hostinger, and Cloudflare provider APIs must be called only from server-side Edge Functions or CI/provider dashboards.
+- Private account, booking, payment, household, Zooter, and support data must be protected by Supabase Auth, RLS, Edge Function authorization, and rate limits.
+- Cloudflare should enforce bot/rate-limit rules on `/app/*`, `/auth/*`, `/admin/*`, Supabase-facing functions, and high-risk form submissions before public launch.
 
 ## ChatGPT Support Assistant
 

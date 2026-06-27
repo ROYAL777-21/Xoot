@@ -14,6 +14,7 @@ describe("native notification helpers", () => {
     expect(normalisePushPlatform("desktop")).toBe("unknown");
     expect(normalisePermissionStatus("prompt-with-rationale")).toBe("prompt-with-rationale");
     expect(normalisePermissionStatus("blocked")).toBe("unknown");
+    expect(normaliseTokenType("expo_push")).toBe("expo_push");
     expect(normaliseTokenType("web_push")).toBe("web_push");
     expect(normaliseTokenType("provider-secret")).toBe("unknown");
   });
@@ -34,7 +35,7 @@ describe("native notification helpers", () => {
       device_id: "device-123456",
       platform: "ios",
       push_token: "apns-token-123456789",
-      token_type: "capacitor",
+      token_type: "expo_push",
       permission_status: "granted",
       app_version: "0.1.0",
       last_seen_at: "2026-06-08T12:00:00.000Z",

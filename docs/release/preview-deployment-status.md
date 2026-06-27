@@ -26,5 +26,5 @@ Recommended next step for a full live app preview:
 
 1. Connect the GitHub repository to Netlify/Vercel through the provider dashboard, or provide local CLI authentication.
 2. Set production/preview environment variables for `VITE_SUPABASE_URL`, `VITE_SUPABASE_PROJECT_ID`, and `VITE_SUPABASE_PUBLISHABLE_KEY`.
-3. Deploy from `main` with `npm install && npm run build` and publish `dist`.
+3. Deploy from `main` with `npm ci && npm run build` and publish `dist`.
 4. Run the browser route matrix from `docs/release/full-app-preview-verification.md` against the live URL before calling it fully functional.

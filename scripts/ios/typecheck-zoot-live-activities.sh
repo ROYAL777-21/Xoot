@@ -16,6 +16,16 @@ COMMON_FLAGS=(
   -sdk "$SDK_PATH"
 )
 
+APP_FLAGS=(
+  -typecheck
+  -parse-as-library
+  -sdk "$SDK_PATH"
+)
+
+"$SWIFTC" "${APP_FLAGS[@]}" \
+  -target arm64-apple-ios16.0 \
+  "$IOS_DIR/ZootAppIntents.swift"
+
 "$SWIFTC" "${COMMON_FLAGS[@]}" \
   -target arm64-apple-ios16.2 \
   "$IOS_DIR/ZootBookingActivityAttributes.swift" \

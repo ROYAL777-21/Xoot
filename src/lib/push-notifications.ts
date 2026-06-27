@@ -1,11 +1,25 @@
-import { Capacitor } from "@capacitor/core";
-import { PushNotifications } from "@capacitor/push-notifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveNativeRoute } from "@/lib/native-routing";
+import { getOptionalNativePlatform, importOptionalNativePlugin, isOptionalNativePlatform } from "@/lib/optional-capacitor";
 
 type ListenerHandle = { remove: () => Promise<void> | void };
 type PushPlatform = "ios" | "android" | "web";
+type NativePushNotification = {
+  title?: string;
+  body?: string;
+  data?: unknown;
+};
+type NativePushNotificationsModule = {
+  PushNotifications?: {
+    requestPermissions: () => Promise<{ receive?: string }>;
+    register: () => Promise<void>;
+    addListener: (
+      event: "registration" | "registrationError" | "pushNotificationReceived" | "pushNotificationActionPerformed",
+      callback: (payload: any) => void,
+    ) => Promise<ListenerHandle>;
+  };
+};
 
 export type PushNotificationInitResult = {
   status: "unsupported" | "denied" | "registered" | "error";
@@ -27,7 +41,7 @@ const pushTokenTable = () =>
   }).from("push_tokens");
 
 const normalisePlatform = (): PushPlatform => {
-  const platform = Capacitor.getPlatform();
+  const platform = getOptionalNativePlatform();
   return platform === "ios" || platform === "android" ? platform : "web";
 };
 
@@ -53,9 +67,13 @@ export async function initialisePushNotifications(
   onRoute?: (route: string) => void,
 ): Promise<PushNotificationInitResult> {
   const platform = normalisePlatform();
-  if (!Capacitor.isNativePlatform()) return { status: "unsupported", platform };
+  if (!isOptionalNativePlatform()) return { status: "unsupported", platform };
 
   try {
+    const PushNotifications =
+      (await importOptionalNativePlugin<NativePushNotificationsModule>("@capacitor/push-notifications"))?.PushNotifications ?? null;
+    if (!PushNotifications) return { status: "unsupported", platform };
+
     const permission = await PushNotifications.requestPermissions();
     if (permission.receive !== "granted") return { status: "denied", platform };
 
@@ -89,7 +107,7 @@ export async function initialisePushNotifications(
       });
     });
 
-    await addListener(PushNotifications.addListener("pushNotificationReceived", (notification) => {
+    await addListener(PushNotifications.addListener("pushNotificationReceived", (notification: NativePushNotification) => {
       toast(notification.title ?? "Zoot", { description: notification.body });
     }));
 

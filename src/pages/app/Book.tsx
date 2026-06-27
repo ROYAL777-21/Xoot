@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Home as HomeIcon, Building2, BedDouble, Sparkles, ArrowRight, ArrowLeft, Loader2, Wand2, Plus, Minus, ShieldCheck, Repeat, Truck, TimerReset } from "lucide-react";
+import { Home as HomeIcon, Building2, BedDouble, Sparkles, ArrowRight, ArrowLeft, Loader2, Wand2, Plus, Minus, ShieldCheck, Repeat, Truck, TimerReset, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -34,10 +34,51 @@ const HOME_SIZES = [
   { id: "large", label: "Large home", desc: "5+ bedrooms", hours: 8, price: 390 },
 ] as const;
 
+const SERVICE_LENGTHS = [
+  {
+    id: "refresh",
+    label: "Essential reset",
+    desc: "Light maintenance clean for a smaller space or already-kept home.",
+    hours: 3,
+    priceFactor: 0.82,
+    badge: "Quickest",
+  },
+  {
+    id: "standard",
+    label: "Standard clean",
+    desc: "The best fit for most homes, repeat visits and balanced room-by-room care.",
+    hours: 4.5,
+    priceFactor: 1,
+    badge: "Most booked",
+  },
+  {
+    id: "extended",
+    label: "Deep attention",
+    desc: "More time for detail work, catch-up cleaning and extra high-touch areas.",
+    hours: 6,
+    priceFactor: 1.28,
+    badge: "More detail",
+  },
+  {
+    id: "full_day",
+    label: "Full-day care",
+    desc: "For moving, Airbnb turnovers, offices or homes needing a serious reset.",
+    hours: 8,
+    priceFactor: 1.62,
+    badge: "Most complete",
+  },
+] as const;
+
 const EXTRAS = ["Inside fridge", "Inside oven", "Inside cabinets", "Interior windows", "Interior walls", "Water plants", "Ironing", "Laundry", "Small flatlet"] as const;
 const EXTRA_HOURS = 1;
 const TIME_SLOTS = ["07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "14:00", "15:00", "16:00", "17:00"];
+const TIME_GROUPS = [
+  { label: "Morning", slots: TIME_SLOTS.filter((slot) => Number(slot.split(":")[0]) < 12) },
+  { label: "Midday", slots: TIME_SLOTS.filter((slot) => Number(slot.split(":")[0]) >= 12 && Number(slot.split(":")[0]) < 15) },
+  { label: "Late day", slots: TIME_SLOTS.filter((slot) => Number(slot.split(":")[0]) >= 15) },
+] as const;
 const allowsMultipleWorkers = (s: string) => ["airbnb", "office", "deep", "moving", "premium"].includes(s);
+const isSafeDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00`).getTime());
 const serviceMultiplier: Record<string, number> = {
   residential: 1,
   express: 0.85,
@@ -53,14 +94,20 @@ const Book = () => {
   const [searchParams] = useSearchParams();
   const preferredZooterId = sanitiseSearchParam(searchParams.get("zooter"));
   const requestedService = sanitiseSearchParam(searchParams.get("service"));
-  const requestedAddress = sanitiseSearchParam(searchParams.get("address"));
+  const requestedAddress = sanitiseSearchParam(searchParams.get("address")) || sanitiseSearchParam(searchParams.get("area"));
+  const requestedDate = sanitiseSearchParam(searchParams.get("date"));
+  const requestedIntent = sanitiseSearchParam(searchParams.get("intent"));
+  const safeRequestedDate = requestedDate && isSafeDate(requestedDate) ? requestedDate : null;
+  const defaultBookingDate = safeRequestedDate ?? new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+  const assistantStarted = requestedIntent === "book_clean" || Boolean(requestedService || requestedAddress || requestedDate);
   const [step, setStep] = useState(0);
   const [active, setActive] = useState<string>(services.some((s) => s.id === requestedService) ? requestedService : "residential");
   const [frequency, setFrequency] = useState<"one_time" | "repeat">("one_time");
   const [homeSize, setHomeSize] = useState<string>("small");
+  const [serviceLength, setServiceLength] = useState<string>("standard");
   const [extras, setExtras] = useState<Set<string>>(new Set());
   const [address, setAddress] = useState(requestedAddress ?? "");
-  const [date, setDate] = useState(new Date(Date.now() + 864e5).toISOString().slice(0, 10));
+  const [date, setDate] = useState(defaultBookingDate);
   const [time, setTime] = useState("08:00");
   const [instructions, setInstructions] = useState("");
   const [householdNotes, setHouseholdNotes] = useState("");
@@ -76,9 +123,10 @@ const Book = () => {
   const [bookingStatus, setBookingStatus] = useState<string | null>(null);
 
   const size = HOME_SIZES.find((s) => s.id === homeSize) ?? HOME_SIZES[0];
+  const length = SERVICE_LENGTHS.find((option) => option.id === serviceLength) ?? SERVICE_LENGTHS[1];
   const totalWorkers = Math.max(1, workerCount);
-  const serviceBasePrice = Math.round(size.price * (serviceMultiplier[active] ?? 1));
-  const estHours = size.hours + extras.size * EXTRA_HOURS;
+  const serviceBasePrice = Math.round(size.price * length.priceFactor * (serviceMultiplier[active] ?? 1));
+  const estHours = length.hours + extras.size * EXTRA_HOURS;
   const discount = totalWorkers >= 3 ? 0.1 : 0;
   const discountedBase = Math.round(serviceBasePrice * (1 - discount)) * totalWorkers;
   const quote = calculateBookingQuote({
@@ -96,6 +144,7 @@ const Book = () => {
   const perWorkerPrice = Math.max(1, Math.round(totalPrice / totalWorkers));
   const photoRequired = requiresCompletionPhotos(active);
   const inLaunchRegion = address.trim().length > 0 && isApprovedLaunchRegion(address);
+  const activeServiceLabel = services.find((service) => service.id === active)?.label ?? "cleaning";
 
   useEffect(() => {
     if (!user) return;
@@ -164,6 +213,7 @@ const Book = () => {
     const bookingInput = BookingInput.safeParse({
       service_type: active,
       home_size: homeSize,
+      service_length: serviceLength,
       address,
       date,
       time,
@@ -185,6 +235,7 @@ const Book = () => {
         serviceType: safeBooking.service_type,
         frequency,
         homeSize: safeBooking.home_size,
+        serviceLength: safeBooking.service_length,
         time: safeBooking.time,
         date: safeBooking.date,
         address: safeBooking.address,
@@ -234,6 +285,24 @@ const Book = () => {
         <NotificationBell />
       </div>
 
+      {assistantStarted && (
+        <div className="slide-up-soft mb-6 rounded-3xl border border-primary/20 bg-primary/10 p-4 text-sm shadow-card">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-display text-lg font-bold text-foreground">Voice booking started</p>
+              <p className="mt-1 text-muted-foreground">
+                Zoot heard a request for {activeServiceLabel.toLowerCase()}
+                {safeRequestedDate ? ` on ${new Date(`${safeRequestedDate}T00:00:00`).toLocaleDateString("en-ZA")}` : ""}.
+                Confirm the address, time and payment inside the app for safety.
+              </p>
+            </div>
+            <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-background px-3 py-1 text-xs font-bold text-primary">
+              Siri / Gemini safe handoff
+            </span>
+          </div>
+        </div>
+      )}
+
       {step < 4 && (
         <div className="mb-6">
           <div className="flex gap-1">{["Service", "Details", "Worker", "Payment"].map((s, i) => <div key={s} className={`flex-1 h-1.5 rounded-full ${i <= step ? "gradient-warm" : "bg-muted"}`} />)}</div>
@@ -267,10 +336,111 @@ const Book = () => {
 
       {step === 1 && (
         <div className="rounded-3xl bg-card border border-border shadow-soft p-5 md:p-7 space-y-5">
-          <h2 className="font-display text-xl font-bold">Visit details</h2>
-          <div className="grid gap-2">{HOME_SIZES.map((s) => <button key={s.id} onClick={() => setHomeSize(s.id)} className={`rounded-2xl p-4 text-left border flex justify-between items-center ${homeSize === s.id ? "bg-foreground text-background border-foreground" : "bg-muted/40 border-border hover:bg-muted"}`}><div><p className="font-semibold">{s.label}</p><p className="text-xs opacity-80">{s.desc}</p></div><div className="text-right"><p className="text-xs opacity-70">est. {s.hours}h</p><p className="font-bold">{formatZAR(s.price)}</p></div></button>)}</div>
-          <div><h3 className="font-semibold mb-2">Extra tasks</h3><div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{EXTRAS.map((e) => <button key={e} onClick={() => toggleExtra(e)} className={`rounded-xl px-3 py-2 text-sm border ${extras.has(e) ? "bg-foreground text-background border-foreground" : "bg-muted/40 border-border hover:bg-muted"}`}>{e}</button>)}</div></div>
-          <div className="grid sm:grid-cols-2 gap-3"><div><Label>Date</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div><div><Label>Time</Label><select value={time} onChange={(e) => setTime(e.target.value)} className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm">{TIME_SLOTS.map((slot) => <option key={slot}>{slot}</option>)}</select></div></div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="font-display text-xl font-bold">Visit details</h2>
+              <p className="text-sm text-muted-foreground">Choose the time you want reserved before adding extras.</p>
+            </div>
+            <div className="rounded-2xl bg-muted/45 px-4 py-3 text-sm">
+              <span className="text-muted-foreground">Estimated visit: </span>
+              <span className="font-semibold text-foreground">{estHours}h</span>
+            </div>
+          </div>
+
+          <section className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="font-semibold">How much time should we reserve?</h3>
+                <p className="text-xs text-muted-foreground">You can still add specific tasks below.</p>
+              </div>
+              <span className="hidden rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary sm:inline-flex">{length.badge}</span>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {SERVICE_LENGTHS.map((option) => {
+                const selected = serviceLength === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setServiceLength(option.id)}
+                    className={`min-h-[132px] rounded-2xl border p-4 text-left transition ${selected ? "border-foreground bg-foreground text-background shadow-warm" : "border-border bg-muted/35 hover:bg-muted"}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-display text-lg font-bold">{option.label}</p>
+                        <p className={`mt-1 text-xs ${selected ? "text-background/75" : "text-muted-foreground"}`}>{option.desc}</p>
+                      </div>
+                      {selected ? <CheckCircle2 className="h-5 w-5 shrink-0" /> : <span className="rounded-full bg-background/70 px-2.5 py-1 text-xs font-semibold text-foreground">{option.badge}</span>}
+                    </div>
+                    <p className={`mt-4 text-sm font-semibold ${selected ? "text-background" : "text-foreground"}`}>{option.hours} reserved hours</p>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <h3 className="font-semibold">Home size</h3>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {HOME_SIZES.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setHomeSize(s.id)}
+                  className={`rounded-2xl border p-4 text-left transition ${homeSize === s.id ? "border-foreground bg-foreground text-background" : "border-border bg-muted/35 hover:bg-muted"}`}
+                >
+                  <p className="font-semibold">{s.label}</p>
+                  <p className="text-xs opacity-80">{s.desc}</p>
+                  <p className="mt-3 text-xs opacity-70">Base from {formatZAR(s.price)}</p>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <div className="grid gap-4 sm:grid-cols-[0.8fr_1.2fr]">
+            <div>
+              <Label>Date</Label>
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 h-12 rounded-2xl" />
+            </div>
+            <div>
+              <Label>Arrival time</Label>
+              <div className="mt-1 space-y-2 rounded-2xl border border-border bg-muted/25 p-3">
+                {TIME_GROUPS.map((group) => (
+                  <div key={group.label} className="grid gap-2 sm:grid-cols-[76px_1fr] sm:items-center">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.label}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {group.slots.map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setTime(slot)}
+                          className={`h-9 rounded-full px-3 text-sm font-semibold transition ${time === slot ? "bg-foreground text-background shadow-card" : "bg-background text-foreground hover:bg-secondary"}`}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <section>
+            <h3 className="font-semibold mb-2">Extra tasks</h3>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {EXTRAS.map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => toggleExtra(e)}
+                  className={`rounded-xl border px-3 py-2 text-sm transition ${extras.has(e) ? "border-foreground bg-foreground text-background" : "border-border bg-muted/35 hover:bg-muted"}`}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </section>
           <div>
             <Label>Your address</Label>
             <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full street address in Sandton, Midrand, Rosebank..." />
@@ -305,13 +475,13 @@ const Book = () => {
       {step === 3 && (
         <div className="rounded-3xl bg-card border border-border shadow-soft p-5 md:p-7 space-y-5">
           <h2 className="font-display text-2xl font-bold">Price breakdown</h2>
-          <div className="space-y-2 text-sm"><div className="flex justify-between"><span>Booking cost ({size.label}{totalWorkers > 1 ? ` x ${totalWorkers}` : ""})</span><span className="font-semibold">{formatZAR(totalPrice)}</span></div>{discount > 0 && <div className="flex justify-between text-sage-deep"><span>Multi-worker discount</span><span>{Math.round(discount * 100)}%</span></div>}{highDemandPremium > 0 && <div className="flex justify-between"><span>High-demand slot premium</span><span>{formatZAR(highDemandPremium)}</span></div>}<div className="flex justify-between"><span>Booking cover</span><span>{formatZAR(bookingCover)}</span></div><div className="flex justify-between"><span>{frequency === "repeat" ? "Service fee waived for recurring" : "Service fee"}</span><span>{formatZAR(serviceFee)}</span></div><div className="h-px bg-border my-2" /><div className="flex justify-between font-display text-lg font-bold"><span>Total pending</span><span>{formatZAR(bookingTotal)}</span></div></div>
+          <div className="space-y-2 text-sm"><div className="flex justify-between"><span>Booking cost ({length.label}, {size.label}{totalWorkers > 1 ? ` x ${totalWorkers}` : ""})</span><span className="font-semibold">{formatZAR(totalPrice)}</span></div><div className="flex justify-between text-muted-foreground"><span>Reserved time</span><span>{estHours}h including add-ons</span></div>{discount > 0 && <div className="flex justify-between text-sage-deep"><span>Multi-worker discount</span><span>{Math.round(discount * 100)}%</span></div>}{highDemandPremium > 0 && <div className="flex justify-between"><span>High-demand slot premium</span><span>{formatZAR(highDemandPremium)}</span></div>}<div className="flex justify-between"><span>Booking cover</span><span>{formatZAR(bookingCover)}</span></div><div className="flex justify-between"><span>{frequency === "repeat" ? "Service fee waived for recurring" : "Service fee"}</span><span>{formatZAR(serviceFee)}</span></div><div className="h-px bg-border my-2" /><div className="flex justify-between font-display text-lg font-bold"><span>Total pending</span><span>{formatZAR(bookingTotal)}</span></div></div>
           <button type="button" onClick={() => setBookingCoverOptIn((value) => !value)} className={`w-full rounded-2xl border p-4 text-left ${bookingCoverOptIn ? "border-primary bg-primary/10" : "border-border bg-muted/40"}`}>
             <p className="font-semibold">Booking cover {bookingCoverOptIn ? "included" : "not included"}</p>
             <p className="text-xs text-muted-foreground">Keeps a support record and admin queue available for booking issues. Payment stays pending until confirmed.</p>
           </button>
           {photoRequired && <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4 flex items-start gap-3"><ShieldCheck className="h-5 w-5 text-primary mt-0.5" /><p className="text-sm">This service requires before and after completion photos to reduce disputes and verify quality.</p></div>}
-          <div className="rounded-2xl bg-muted/40 p-4 text-sm space-y-1"><p><span className="text-muted-foreground">Service:</span> <span className="capitalize font-medium">{active}</span></p><p><span className="text-muted-foreground">Date:</span> {new Date(date).toLocaleDateString("en-ZA")}</p><p><span className="text-muted-foreground">Zooter:</span> {picked.map((z) => z.name).join(", ")}</p></div>
+          <div className="rounded-2xl bg-muted/40 p-4 text-sm space-y-1"><p><span className="text-muted-foreground">Service:</span> <span className="capitalize font-medium">{active}</span></p><p><span className="text-muted-foreground">Length:</span> {length.label} - {estHours}h reserved</p><p><span className="text-muted-foreground">Date:</span> {new Date(date).toLocaleDateString("en-ZA")} at {time}</p><p><span className="text-muted-foreground">Zooter:</span> {picked.map((z) => z.name).join(", ")}</p></div>
           <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(2)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={handleBook} disabled={submitting} className="flex-1 rounded-2xl h-12 gradient-warm font-semibold">{submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Confirm booking <ArrowRight className="h-4 w-4 ml-1" /></>}</Button></div>
         </div>
       )}

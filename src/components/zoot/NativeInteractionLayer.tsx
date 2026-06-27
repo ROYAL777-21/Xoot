@@ -1,12 +1,27 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { resolveNativeRoute } from "@/lib/native-routing";
+import { importOptionalNativePlugin } from "@/lib/optional-capacitor";
 
 const editableSelector = 'input, textarea, select, [contenteditable="true"]';
 
 type NativeListenerHandle = { remove: () => Promise<void> | void };
 type CapacitorAppUrlOpen = { url?: string };
 type CapacitorPushNotification = { data?: unknown } & Record<string, unknown>;
+type CapacitorAppModule = {
+  App?: {
+    getLaunchUrl: () => Promise<{ url?: string } | null>;
+    addListener: (event: "appUrlOpen", callback: (event: CapacitorAppUrlOpen) => void) => Promise<NativeListenerHandle>;
+  };
+};
+type CapacitorPushModule = {
+  PushNotifications?: {
+    addListener: (
+      event: "pushNotificationActionPerformed",
+      callback: (event: { notification?: CapacitorPushNotification }) => void,
+    ) => Promise<NativeListenerHandle>;
+  };
+};
 
 const isEditable = (target: EventTarget | null) =>
   target instanceof HTMLElement && Boolean(target.closest(editableSelector));
@@ -123,7 +138,8 @@ export const NativeInteractionLayer = () => {
 
     const registerAppListeners = async () => {
       try {
-        const { App } = await import("@capacitor/app");
+        const App = (await importOptionalNativePlugin<CapacitorAppModule>("@capacitor/app"))?.App ?? null;
+        if (!App) return;
         const launch = await App.getLaunchUrl();
         if (!disposed) routeNativePayload(launch?.url);
 
@@ -132,13 +148,15 @@ export const NativeInteractionLayer = () => {
         });
         addRemover(handle);
       } catch {
-        // Capacitor plugins are only available in the native shell.
+        // Legacy native-shell plugins are optional; Expo is the production mobile target.
       }
     };
 
     const registerPushListeners = async () => {
       try {
-        const { PushNotifications } = await import("@capacitor/push-notifications");
+        const PushNotifications =
+          (await importOptionalNativePlugin<CapacitorPushModule>("@capacitor/push-notifications"))?.PushNotifications ?? null;
+        if (!PushNotifications) return;
         const handle = await PushNotifications.addListener(
           "pushNotificationActionPerformed",
           (event) => {

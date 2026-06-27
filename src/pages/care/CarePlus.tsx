@@ -5,6 +5,7 @@ import {
   CalendarClock,
   CheckCircle2,
   Crown,
+  Gem,
   Heart,
   Home,
   Loader2,
@@ -49,6 +50,13 @@ const pillars = [
   },
 ];
 
+const signupJourney = [
+  "Create your member profile",
+  "Confirm payment securely",
+  "Save Home Memory",
+  "Book with priority context",
+];
+
 const formatDate = (value?: string | null) =>
   value ? new Intl.DateTimeFormat("en-ZA", { dateStyle: "medium" }).format(new Date(value)) : "Not available";
 
@@ -71,7 +79,7 @@ const CarePlus = () => {
   const state = carePlus.state;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dark min-h-screen bg-background text-foreground">
       <SEO
         title="Zoot Care+ - Premium recurring home care and ZootCred"
         description="Join Zoot Care+ for saved home memory, preferred Zooter continuity, priority support and ledger-backed ZootCred add-on credit."
@@ -79,9 +87,13 @@ const CarePlus = () => {
       />
       <Navbar />
       <main>
-        <section className="relative overflow-hidden bg-[#faf4e8] dark:bg-background">
+        <section className="relative overflow-hidden bg-background">
           <div className="container grid gap-10 py-14 sm:py-16 lg:min-h-[700px] lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-12 lg:py-24">
             <div className="animate-fade-up">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                <Gem className="h-3.5 w-3.5" />
+                Premium membership
+              </div>
               <h1 className="font-display text-4xl font-bold leading-[1.04] tracking-tight text-balance sm:text-5xl md:text-6xl lg:text-7xl">
                 <CarePlusMark /> keeps your home ready.
               </h1>
@@ -121,7 +133,7 @@ const CarePlus = () => {
                 <Loader2 className="h-7 w-7 animate-spin text-primary" />
               </Card>
             ) : (
-              <CarePlusStatePanel carePlus={carePlus} zootCred={zootCred} />
+              <CarePlusStatePanel carePlus={carePlus} zootCred={zootCred} onJoin={joinCarePlus} />
             )}
           </div>
         </section>
@@ -162,7 +174,7 @@ const CarePlus = () => {
           </div>
         </section>
 
-        <section className="border-y border-border bg-[#faf4e8] py-20 dark:bg-secondary/30 md:py-28">
+        <section className="border-y border-border bg-secondary/30 py-20 md:py-28">
           <div className="container">
             <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
@@ -202,7 +214,7 @@ const CarePlus = () => {
           </section>
         )}
 
-        <section className="bg-[#faf4e8] py-20 dark:bg-background md:py-28">
+        <section className="bg-background py-20 md:py-28">
           <div className="container grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="rounded-[2rem] gradient-sage p-6 text-primary-foreground shadow-warm sm:p-8 md:p-12">
               <Sparkles className="mb-5 h-8 w-8" />
@@ -229,34 +241,18 @@ const CarePlus = () => {
 type CarePlusHook = ReturnType<typeof useCarePlus>;
 type ZootCredHook = ReturnType<typeof useZootCred>;
 
-const CarePlusStatePanel = ({ carePlus, zootCred }: { carePlus: CarePlusHook; zootCred: ZootCredHook }) => {
+const CarePlusStatePanel = ({ carePlus, zootCred, onJoin }: { carePlus: CarePlusHook; zootCred: ZootCredHook; onJoin: () => Promise<void> }) => {
   const state = carePlus.state;
 
   if (state.status === "unauthenticated") {
     return (
-      <Card className="rounded-3xl border-border/70 bg-card/90 p-6 shadow-card">
-        <Crown className="mb-5 h-8 w-8 text-primary" />
-        <h2 className="font-display text-3xl font-bold">Join the calm-home layer</h2>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Care+ is for repeat homes that should not have to explain themselves every week: saved preferences, priority support, favourite Zooter continuity and monthly add-on credit.</p>
-        <Button asChild className="mt-6 rounded-full gradient-warm">
-          <Link to="/auth">Join Care+ membership</Link>
-        </Button>
-      </Card>
+      <CarePlusSignupPass mode="guest" price={carePlus.plan.priceZar} />
     );
   }
 
   if (state.status === "not_member") {
     return (
-      <Card className="rounded-3xl border-border/70 bg-card/90 p-6 shadow-card">
-        <p className="text-sm font-semibold text-sage-deep">Not a member yet</p>
-        <h2 className="mt-2 font-display text-4xl font-bold">{formatZAR(state.plan.priceZar)}/month</h2>
-        <p className="mt-3 text-sm text-muted-foreground">Join to unlock priority support, Home Memory, favourite Zooter continuity and R30 monthly add-on credit.</p>
-        <ul className="mt-5 space-y-2 text-sm">
-          {state.plan.benefits.slice(0, 6).map((benefit) => (
-            <li key={benefit} className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 text-sage-deep" />{benefit}</li>
-          ))}
-        </ul>
-      </Card>
+      <CarePlusSignupPass mode="member" price={state.plan.priceZar} benefits={state.plan.benefits} onJoin={onJoin} loading={carePlus.actionLoading} />
     );
   }
 
@@ -289,10 +285,7 @@ const CarePlusStatePanel = ({ carePlus, zootCred }: { carePlus: CarePlusHook; zo
 
   if (state.status === "cancelled") {
     return (
-      <Card className="rounded-3xl border-border/70 bg-card/90 p-6 shadow-card">
-        <h2 className="font-display text-3xl font-bold">Care+ is cancelled</h2>
-        <p className="mt-3 text-sm text-muted-foreground">Ended on {formatDate(state.cancelled_at)}. You can rejoin without reusing old membership placeholders.</p>
-      </Card>
+      <CarePlusSignupPass mode="rejoin" price={carePlus.plan.priceZar} cancelledAt={state.cancelled_at} onJoin={onJoin} loading={carePlus.actionLoading} />
     );
   }
 
@@ -355,6 +348,100 @@ const CarePlusStatePanel = ({ carePlus, zootCred }: { carePlus: CarePlusHook; zo
           ))}
         </div>
       )}
+    </div>
+  );
+};
+
+const CarePlusSignupPass = ({
+  mode,
+  price,
+  benefits = [],
+  cancelledAt,
+  loading,
+  onJoin,
+}: {
+  mode: "guest" | "member" | "rejoin";
+  price: number;
+  benefits?: string[];
+  cancelledAt?: string;
+  loading?: boolean;
+  onJoin?: () => Promise<void>;
+}) => {
+  const title =
+    mode === "guest"
+      ? "Unlock the member home-care layer"
+      : mode === "rejoin"
+        ? "Restart your Care+ rhythm"
+        : "Your Care+ pass is ready";
+  const body =
+    mode === "guest"
+      ? "Create your account to start Care+ setup with Home Memory, priority support, favourite Zooter continuity and member ZootCred."
+      : mode === "rejoin"
+        ? `Your previous membership ended on ${formatDate(cancelledAt)}. Rejoin to restore Home Memory, priority context and member add-on credit.`
+        : "Join to make repeat cleaning feel remembered, protected and easier to rebook.";
+
+  return (
+    <div className="liquid-glass-shell zoot-concierge-panel rounded-[2rem] p-5 shadow-warm sm:p-6">
+      <div className="liquid-glass-readable">
+        <div className="rounded-[1.6rem] border border-white/20 bg-foreground p-5 text-background shadow-warm sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-background/65">Care+ member pass</p>
+              <h2 className="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">{formatZAR(price)}</h2>
+              <p className="mt-1 text-sm font-semibold text-background/70">per month</p>
+            </div>
+            <div className="grid h-14 w-14 place-items-center rounded-[1.25rem] bg-primary text-primary-foreground shadow-card">
+              <Crown className="h-7 w-7" />
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-2 sm:grid-cols-2">
+            {["Home Memory", "Priority support", "R30 monthly credit", "Favourite Zooter"].map((item) => (
+              <div key={item} className="rounded-2xl bg-background/10 px-3 py-2 text-sm font-semibold">
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <h3 className="font-display text-3xl font-bold">{title}</h3>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{body}</p>
+        </div>
+
+        <div className="mt-5 grid gap-3">
+          {signupJourney.map((step, index) => (
+            <div key={step} className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/75 px-3 py-3 shadow-card">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">{index + 1}</span>
+              <span className="text-sm font-semibold">{step}</span>
+            </div>
+          ))}
+        </div>
+
+        {benefits.length > 0 && (
+          <ul className="mt-5 grid gap-2 text-sm sm:grid-cols-2">
+            {benefits.slice(0, 6).map((benefit) => (
+              <li key={benefit} className="flex items-start gap-2 rounded-2xl bg-background/35 px-3 py-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sage-deep" />
+                {benefit}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {mode === "guest" ? (
+          <Button asChild size="lg" className="mt-6 h-14 w-full rounded-full gradient-warm text-base font-semibold shadow-warm">
+            <Link to="/auth">Join Care+ membership <ArrowRight className="ml-1 h-4 w-4" /></Link>
+          </Button>
+        ) : (
+          <Button size="lg" className="mt-6 h-14 w-full rounded-full gradient-warm text-base font-semibold shadow-warm" onClick={onJoin} disabled={loading}>
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crown className="mr-2 h-4 w-4" />}
+            {mode === "rejoin" ? "Rejoin Care+ membership" : "Activate Care+ membership"}
+          </Button>
+        )}
+
+        <p className="mt-3 text-center text-xs text-muted-foreground">Benefits activate only after backend payment confirmation. No sensitive home access details are sent by email.</p>
+      </div>
     </div>
   );
 };

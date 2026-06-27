@@ -13,7 +13,7 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Care+ membership page | Done | `/care-plus` includes hero, problem, benefits, value pillars, comparison, Airbnb/landlord use case, ZootCred, Home Memory, Favourite Zooter, and final CTA. |
 | Care+ backend billing | Partial | Membership request/cancellation now routes through the `care-plus-membership` Edge Function, which creates pending payment records, subscription rows, admin review items, outbox events, and notifications server-side. Provider checkout and verified recurring payment webhooks remain required before activation can be live. |
 | Trust Centre and legal routes | Done | `/trust-centre`, `/legal/privacy`, `/legal/terms`, and `/legal/trust-safety` are routed. |
-| Guided booking app | Partial | Protected `/app` booking experience exists with pricing, trust signals, arrival tracking, Live Activity updates, native directions/ETA share actions, and masked-call request handoff. Booking creation uses `create-booking-request`; booking status changes, masked-call requests, trust incidents, low-rating follow-ups, Gift Clean payment requests, ZootCred redemption, support routing, property ops routing, and Zooter job responses now use the `ops-workflow` Edge Function instead of browser-owned admin/outbox/payment mutations. Payment confirmation and dispatch automation remain provider/backend work. Local preview uses safe mock data. |
+| Guided booking app | Partial | Protected `/app` booking experience exists with pricing, trust signals, arrival tracking, Live Activity updates, native directions/ETA share actions, and masked-call request handoff. Booking creation uses `create-booking-request`; booking status changes, masked-call requests, trust incidents, low-rating follow-ups, Gift Clean payment requests, ZootCred redemption, support routing, property ops routing, and Zooter job responses now use the `ops-workflow` Edge Function instead of browser-owned admin/outbox/payment mutations. Payment confirmation and dispatch automation remain provider/backend work. Production and preview must use real Supabase config; placeholder/mock mode is disabled. |
 | Airbnb host dashboard | Done | `/app/properties/airbnb` is routed and uses typed UI data for portfolio/turnover operations. |
 | Small office dashboard | Done | `/app/properties/office` is routed and uses typed UI data for office operations. |
 | Protected client app routes | Done | Booking, bookings, profile, loyalty, gifts, support, insurance, plans, favourites, and property routes are protected by auth. |
@@ -31,14 +31,14 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Smart reminders | Done | Care+ and app surfaces show concierge-style reminders. |
 | Property profiles | Done | Multi-property host/office dashboards and previews exist. |
 | Moat features | Mock/UI only | Home Readiness Score, seasonal reset perks, before/after photo proof, member-only peak slots, flexible reschedule, Guest-Ready Mode, and concierge prompts are UI-ready but not all backend-enforced. |
-| Haptics | Done | Web-safe haptics utility and Capacitor dependency support premium actions with no-op fallback on unsupported browsers. |
+| Haptics | Partial | Web-safe haptics utility exists for browser surfaces. The Expo mobile app should use Expo/native feedback during React Native feature implementation. |
 
 ## Auth, PWA, and iPhone
 
 | Area | Status | Notes |
 | --- | --- | --- |
 | Email/password auth | Done | Login/sign-up stays Supabase-backed with safer error handling when real credentials are configured. |
-| Preview auth and mock data | Done | CI/local placeholder Supabase values now activate safe mock mode, including `Continue with preview account`, so the app can be explored without live Supabase credentials. Verified with zero `preview.supabase.co` failures. |
+| Preview auth and mock data | Done | Placeholder Supabase and production mock data are disabled. Preview/staging builds must use real Supabase public config and real staging users. |
 | Password visibility | Done | Login page supports viewing/hiding password. |
 | Forgot password | Done | `/auth` supports generic forgot-password requests. |
 | Reset password | Done | `/auth/reset` handles recovery links and updates passwords with policy checks. |
@@ -46,8 +46,8 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Apple OAuth | Blocked by credentials | Code path and button are present; Apple Services ID/private key/team config and Supabase redirect allow-list are required. |
 | OAuth callback | Done | `/auth/callback` exchanges PKCE codes and uses safe redirect handling. |
 | iPhone PWA | Done | Manifest, iOS meta tags, service worker fallback, and `/install` guidance are present. iPhone-sized viewport was verified for homepage and protected app layout. |
-| Native iOS/TestFlight | Partial | Capacitor config/scripts, safe native route handling, Live Activity bridge payloads, native booking action bridge, and build-time AASA/app-links generation are present. Apple Developer access, final Team ID/bundle ID/signing, native target generation, native bridge wiring, and review assets remain required. |
-| Android native shell | Partial | Capacitor Android scripts, native booking action bridge, and build-time `assetlinks.json` generation are present. Final package signing, release certificate fingerprint, native bridge wiring, Play Integrity/App Check strategy, and Play review assets remain required. |
+| Native iOS/TestFlight | Partial | `/mobile` Expo app scaffold, EAS profiles, SecureStore session storage, and mobile release docs are present. Apple Developer access, final Team ID/bundle ID/signing, EAS project credentials, native App Intents/Live Activity integration, TestFlight build, and review assets remain required. |
+| Android native shell | Partial | `/mobile` Expo app scaffold, EAS Android profiles, Expo push-token readiness, and app-link config are present. Final package signing, Play Console record, release certificate fingerprint, Play Integrity/App Check strategy, internal testing build, and Play review assets remain required. |
 
 ## Security and Compliance
 

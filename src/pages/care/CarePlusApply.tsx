@@ -87,7 +87,7 @@ const CarePlusApply = () => {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="dark min-h-screen bg-background text-foreground">
         <Navbar />
         <div className="container max-w-2xl py-24 text-center">
           <div className="grid place-items-center h-20 w-20 rounded-full bg-sage/15 mx-auto mb-6">
@@ -110,11 +110,11 @@ const CarePlusApply = () => {
   const progress = (step / totalSteps) * 100;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dark min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="container max-w-3xl py-12">
         <div className="mb-8">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">HomeCare+ placement</p>
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Care+ placement</p>
           <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">Let's find your permanent housekeeper.</h1>
           <div className="mt-6 h-2 rounded-full bg-muted overflow-hidden">
             <div className="h-full gradient-warm transition-all duration-500" style={{ width: `${progress}%` }} />
@@ -122,7 +122,8 @@ const CarePlusApply = () => {
           <p className="text-xs text-muted-foreground mt-2">Step {step} of {totalSteps}</p>
         </div>
 
-        <div className="rounded-3xl bg-card border border-border p-6 md:p-8 shadow-card space-y-5">
+        <div className="liquid-glass-shell zoot-concierge-panel rounded-[2rem] p-6 shadow-warm md:p-8">
+          <div className="liquid-glass-readable space-y-5">
           {step === 1 && (
             <>
               <h2 className="font-display text-2xl font-bold">About yourself</h2>
@@ -168,7 +169,7 @@ const CarePlusApply = () => {
                 <Label>Daily pay rate (Rand)</Label>
                 <Input type="number" min={220} value={form.daily_pay_rate} onChange={(e) => update("daily_pay_rate", Number(e.target.value))} />
                 <p className="text-xs text-muted-foreground mt-2">
-                  Recommended market average: <strong>Half day R250–R300 · Full day R300–R400</strong>.
+                  Recommended market average: <strong>Half day R250-R300 / Full day R300-R400</strong>.
                   Minimum pay enforced: R220 (half) / R300 (full) for dignified work.
                 </p>
               </div>
@@ -193,7 +194,7 @@ const CarePlusApply = () => {
             <>
               <h2 className="font-display text-2xl font-bold">Ideal candidate</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                <div><Label>Preferred language</Label><Input placeholder="English, Zulu, Xhosa, Afrikaans…" value={form.preferred_language} onChange={(e) => update("preferred_language", e.target.value)} /></div>
+                <div><Label>Preferred language</Label><Input placeholder="English, Zulu, Xhosa, Afrikaans..." value={form.preferred_language} onChange={(e) => update("preferred_language", e.target.value)} /></div>
                 <div>
                   <Label>Ideal personality</Label>
                   <RadioGroup value={form.ideal_personality} onValueChange={(v) => update("ideal_personality", v)} className="grid grid-cols-3 gap-2 mt-2">
@@ -241,11 +242,11 @@ const CarePlusApply = () => {
             <>
               <h2 className="font-display text-2xl font-bold">Review & submit</h2>
               <div className="rounded-2xl bg-muted/50 p-5 text-sm space-y-2">
-                <p><strong>{form.first_name} {form.last_name}</strong> · {form.email} · {form.phone}</p>
+                <p><strong>{form.first_name} {form.last_name}</strong> / {form.email} / {form.phone}</p>
                 <p>{form.address}</p>
-                <p>{form.days_of_week.join(", ") || "No days selected"} · {form.daily_start_time}–{form.daily_end_time}</p>
-                <p>Pay: R{form.daily_pay_rate}/day · Overtime: {form.overtime || "—"}</p>
-                <p>Skills: {form.required_skills.join(", ") || "—"}</p>
+                <p>{form.days_of_week.join(", ") || "No days selected"} / {form.daily_start_time}-{form.daily_end_time}</p>
+                <p>Pay: R{form.daily_pay_rate}/day / Overtime: {form.overtime || "-"}</p>
+                <p>Skills: {form.required_skills.join(", ") || "-"}</p>
               </div>
               <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5">
                 <p className="text-sm font-semibold mb-1">Non-refundable admin fee: R399</p>
@@ -281,6 +282,7 @@ const CarePlusApply = () => {
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit application"}
               </Button>
             )}
+          </div>
           </div>
         </div>
       </main>

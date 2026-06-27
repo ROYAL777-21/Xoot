@@ -21,6 +21,8 @@ This document maps every callback class needed for staging and production. Value
 | `care-plus-membership` | `https://<project-ref>.functions.supabase.co/care-plus-membership` | Care+ membership request/cancellation action layer, payment record creation, admin queue, notification queue | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `ops-workflow` | `https://<project-ref>.functions.supabase.co/ops-workflow` | Authenticated action layer for support routing, property account ops routing, Gift Clean payment requests, ZootCred redemption, booking status changes, masked call requests, trust incidents, low-rating follow-up, Zooter application submission, Zooter job response, and typed admin queue/KYC actions | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `support-respond` | `https://<project-ref>.functions.supabase.co/support-respond` | Support bot response and escalation | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, `OPENAI_SUPPORT_MODEL`, `ALLOWED_ORIGINS` | Implemented |
+| `get-booking-public-keys` | `https://<project-ref>.functions.supabase.co/get-booking-public-keys` | Authenticated booking chat public-key lookup for verified booking participants only | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
+| `get-sensitive-access` | `https://<project-ref>.functions.supabase.co/get-sensitive-access` | Authenticated Zooter sensitive field reveal with booking-window checks and reveal logging | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 
 ## Supabase Auth Callbacks
 
@@ -85,14 +87,15 @@ Required checks before confirming payment:
 
 ## Twilio
 
-Planned endpoints:
+Implemented endpoints:
 
 | Callback | Suggested endpoint | Purpose | Required verification |
 | --- | --- | --- | --- |
-| Voice webhook | `https://<project-ref>.functions.supabase.co/twilio-voice` | Masked call setup/TwiML | Twilio request signature. |
-| Voice status callback | `https://<project-ref>.functions.supabase.co/twilio-voice-status` | Call lifecycle, duration, completion | Twilio request signature. |
-| Message webhook | `https://<project-ref>.functions.supabase.co/twilio-message` | Inbound SMS/WhatsApp if enabled | Twilio request signature. |
-| Verify callback/logging | Provider dashboard or internal logs | OTP delivery/verification operations | Do not log OTP values. |
+| SMS message webhook | `https://<project-ref>.functions.supabase.co/twilio-message-webhook` | Inbound operational SMS and support handoff | Twilio request signature. |
+| WhatsApp webhook | `https://<project-ref>.functions.supabase.co/twilio-whatsapp-webhook` | Inbound WhatsApp operational support handoff | Twilio request signature. |
+| Voice webhook | `https://<project-ref>.functions.supabase.co/twilio-voice-webhook` | Masked call setup/TwiML | Twilio request signature. |
+| Status callback | `https://<project-ref>.functions.supabase.co/twilio-status-callback` | SMS, WhatsApp, and call lifecycle/failure logging | Twilio request signature. |
+| Verify callback/logging | `https://<project-ref>.functions.supabase.co/twilio-verify-webhook` | OTP delivery/verification operations | Twilio request signature; do not log OTP values. |
 
 Masked calling notes:
 
@@ -100,6 +103,10 @@ Masked calling notes:
 - Browser/mobile payloads must never contain user or Zooter phone numbers.
 - Use Twilio API keys for production outbound calls when possible.
 - Keep Auth Token available only where signature validation requires it.
+- Deploy `supabase/migrations/20260621001000_twilio_webhook_events.sql` before enabling callbacks.
+- Twilio webhook functions log redacted metadata to `public.twilio_webhook_events`; raw phone numbers are not stored.
+- Set `TWILIO_WEBHOOK_BASE_URL` to the exact public Supabase Functions origin used in the Twilio Console, and set a per-environment `TWILIO_WEBHOOK_HASH_SALT`.
+- Rotate any Twilio credentials that were pasted into chat, issues, PRs, screenshots, or logs before production launch.
 
 ## Brevo
 

@@ -33,6 +33,16 @@ export default defineConfig(() => {
         output: {
           manualChunks(id) {
             if (!id.includes("node_modules")) return undefined;
+            if (
+              id.includes("mapbox-gl") ||
+              id.includes("@mapbox") ||
+              /node_modules[\\/](cheap-ruler|csscolorparser|earcut|geojson-vt|gl-matrix|grid-index|kdbush|pbf|potpack|quickselect|resolve-protobuf-schema|supercluster|vt-pbf)[\\/]/.test(
+                id,
+              )
+            ) {
+              return "vendor-mapbox";
+            }
+            if (id.includes("@sentry")) return "vendor-monitoring";
             if (id.includes("react") || id.includes("scheduler")) return "vendor-react";
             if (id.includes("@supabase")) return "vendor-supabase";
             if (id.includes("@tanstack")) return "vendor-query";

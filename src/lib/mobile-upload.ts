@@ -1,4 +1,23 @@
-import { Capacitor } from "@capacitor/core";
+import { importOptionalNativePlugin, isOptionalNativePlatform } from "@/lib/optional-capacitor";
+
+type NativeCameraModule = {
+  Camera?: {
+    getPhoto: (options: {
+      resultType: unknown;
+      source: unknown;
+      quality: number;
+      allowEditing: boolean;
+    }) => Promise<{ format?: string; webPath?: string; path?: string }>;
+  };
+  CameraResultType?: { Uri?: unknown };
+  CameraSource?: { Prompt?: unknown };
+};
+
+type NativeFilesystemModule = {
+  Filesystem?: {
+    readFile: (options: { path: string }) => Promise<{ data: string | Blob }>;
+  };
+};
 
 const extensionForMime = (mimeType: string) => {
   if (mimeType.includes("png")) return "png";
@@ -24,13 +43,19 @@ const selectWebImage = () =>
   });
 
 export async function captureOrSelectImage(): Promise<File | null> {
-  if (!Capacitor.isNativePlatform()) return selectWebImage();
+  if (!isOptionalNativePlatform()) return selectWebImage();
 
   try {
-    const [{ Camera, CameraResultType, CameraSource }, { Filesystem }] = await Promise.all([
-      import("@capacitor/camera"),
-      import("@capacitor/filesystem"),
+    const [cameraModule, filesystemModule] = await Promise.all([
+      importOptionalNativePlugin<NativeCameraModule>("@capacitor/camera"),
+      importOptionalNativePlugin<NativeFilesystemModule>("@capacitor/filesystem"),
     ]);
+    const Camera = cameraModule?.Camera;
+    const CameraResultType = cameraModule?.CameraResultType;
+    const CameraSource = cameraModule?.CameraSource;
+    const Filesystem = filesystemModule?.Filesystem;
+    if (!Camera || !CameraResultType?.Uri || !CameraSource?.Prompt || !Filesystem) return selectWebImage();
+
     const photo = await Camera.getPhoto({
       resultType: CameraResultType.Uri,
       source: CameraSource.Prompt,

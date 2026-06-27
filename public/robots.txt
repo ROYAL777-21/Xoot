@@ -12,5 +12,14 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /app
+Disallow: /auth
+Disallow: /zooter/jobs
+Disallow: /zooter/earnings
+Disallow: /zooter/kyc
+Disallow: /zooter/profile
+Disallow: /zooter/training
+Allow: /zooter/apply
 
 Sitemap: https://zoothome.co.za/sitemap.xml

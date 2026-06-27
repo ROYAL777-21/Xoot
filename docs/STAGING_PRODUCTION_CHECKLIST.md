@@ -13,6 +13,9 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 - [ ] `npm run test` passes.
 - [ ] `npm run build` passes.
 - [ ] `npm run security:scan` passes.
+- [ ] Security scan confirms no frontend `admin_review_queue` or `integration_outbox` mutations.
+- [ ] Root `package-lock.json` is included when `package.json` changes.
+- [ ] `mobile/package-lock.json` is included with the `/mobile` Expo app when mobile dependencies change.
 - [ ] No live credentials are present in commits, docs, screenshots, logs, or PR text.
 - [ ] CodeRabbit or another review pass is complete if required by the PR process.
 
@@ -29,6 +32,8 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 ## Supabase
 
 - [ ] Separate staging and production projects exist.
+- [ ] Staging schema migrations are deployed using `docs/STAGING_BACKEND_DEPLOYMENT.md`.
+- [ ] Staging Edge Functions are deployed after schema and secrets exist.
 - [ ] Supabase Auth Site URL is set per environment.
 - [ ] Supabase Redirect URLs include `/auth/callback` and `/auth/reset` per environment.
 - [ ] Email confirmation is enabled for production.
@@ -38,6 +43,7 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 - [ ] Storage buckets exist with correct RLS/storage policies.
 - [ ] Edge Function secrets are configured per environment.
 - [ ] Supabase advisors and policy smoke tests are reviewed before launch.
+- [x] Helper-function hardening migration `20260621000000_helper_function_hardening.sql` is applied to staging; `has_role`, `lookup_referral_code`, and `can_access_sensitive_data` no longer produce staging security lints.
 
 ## Auth And Account Security
 
@@ -72,11 +78,16 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 - [ ] Auth Token is stored only where request signature validation needs it.
 - [ ] Verify Service SID exists if Twilio OTP is enabled.
 - [ ] Voice/TwiML app exists if masked calling is enabled.
-- [ ] Voice webhook validates Twilio signatures.
-- [ ] Status callback validates Twilio signatures.
-- [ ] Message webhook validates Twilio signatures if used.
+- [x] Migration `20260621001000_twilio_webhook_events.sql` is deployed in staging and production.
+- [x] `twilio-message-webhook`, `twilio-whatsapp-webhook`, `twilio-voice-webhook`, `twilio-status-callback`, and `twilio-verify-webhook` are deployed in staging and production.
+- [x] `TWILIO_WEBHOOK_BASE_URL` and `TWILIO_WEBHOOK_HASH_SALT` are set per environment.
+- [x] Voice webhook validates Twilio signatures.
+- [x] Status callback validates Twilio signatures.
+- [x] Message and WhatsApp webhooks validate Twilio signatures.
+- [x] Twilio webhook events store only redacted metadata, salted phone hashes, and last-four references.
 - [ ] Geo-permissions restrict SMS/voice to served countries.
 - [ ] Masked calling never exposes real user or Zooter phone numbers in frontend payloads.
+- [ ] Any Twilio credentials pasted into chat, issues, logs, or screenshots have been rotated before production launch.
 
 ## Brevo
 
@@ -117,7 +128,7 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 
 - [ ] Final iOS Bundle ID is confirmed.
 - [ ] Final Android application ID is confirmed.
-- [ ] `capacitor.config.ts` appId matches final IDs.
+- [ ] `mobile/app.config.ts` iOS bundle ID and Android package match final store IDs.
 - [ ] Apple Team ID and signing profiles are configured.
 - [ ] Android signing key or Play App Signing is configured.
 - [ ] AASA is generated and deployed with correct Team ID/bundle ID.
@@ -126,6 +137,8 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 - [ ] App Store privacy labels match actual data collection.
 - [ ] Play Store Data Safety matches actual data collection.
 - [ ] Dynamic Island/Live Activity payloads do not expose sensitive home access data.
+- [ ] Native Mapbox builds use EAS/dev-client builds, not Expo Go, and private Mapbox downloads token is stored only in EAS/CI secrets.
+- [ ] Siri/App Intents and Android shortcuts open safe routes only and never expose addresses, access notes, payment details, or support incident content.
 
 ## Hostinger / Production Hosting
 

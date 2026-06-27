@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -22,6 +21,7 @@ import {
 } from "@/lib/native-booking-actions";
 import { haptic } from "@/lib/haptics";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import { isOptionalNativePlatform } from "@/lib/optional-capacitor";
 import { getClientVisibleStatus, normaliseBookingStatus, type BookingStatus } from "@/lib/booking-state-machine";
 import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { toast } from "sonner";
@@ -289,7 +289,7 @@ const BookingDetail = () => {
       const callerProxyNumber = user.id === booking.user_id
         ? call.proxy_numbers?.client
         : call.proxy_numbers?.zooter;
-      if (callerProxyNumber && Capacitor.isNativePlatform()) {
+      if (callerProxyNumber && isOptionalNativePlatform()) {
         window.location.href = `tel:${callerProxyNumber.replace(/[^\d+]/g, "")}`;
       }
     } catch (error) {

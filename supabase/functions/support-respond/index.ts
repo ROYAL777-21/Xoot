@@ -1,9 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getZootKnowledgeReply, zootKnowledgeContext } from "../_shared/zoot-knowledge.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:4173",
+  "https://staging.zoothome.co.za",
+  "https://preview.zoothome.co.za",
   "https://zoothome.co.za",
   "https://www.zoothome.co.za",
 ];
@@ -66,7 +69,7 @@ type UserRole = "user" | "zooter";
 
 type AssistantResult = {
   response: string;
-  source: "openai_responses" | "human_escalation";
+  source: "knowledge_base" | "openai_responses" | "human_escalation";
   requestId?: string | null;
 };
 
@@ -136,7 +139,7 @@ const buildOpenAiSupportResponse = async ({
     body: JSON.stringify({
       model,
       store: false,
-      max_output_tokens: 180,
+      max_output_tokens: 260,
       text: { format: { type: "text" } },
       instructions: [
         "You are Zoot Assistant, the in-app support concierge for Zoot home-care bookings in South Africa.",
@@ -149,6 +152,8 @@ const buildOpenAiSupportResponse = async ({
         "Never claim a refund, payment, insurance, safety, or contractor replacement is approved.",
         "Never ask for passwords, OTPs, full card numbers, gate codes, access codes, lockbox codes, or private keys.",
         "For anything risky, tell the user a human support reviewer will handle it in the app.",
+        "Use this Zoot source-of-truth context and do not invent facts beyond it:",
+        zootKnowledgeContext,
       ].join(" "),
       input: [
         {
@@ -222,9 +227,10 @@ Deno.serve(async (req) => {
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
     const signedIn = Boolean(authData.user);
+    const knowledgeAssistant = escalated ? null : getZootKnowledgeReply(`${safeSubject} ${safeBody}`, signedIn);
     const openAiAssistant = escalated
       ? null
-      : await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole, signedIn });
+      : knowledgeAssistant ?? (await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole, signedIn }));
     const assistant: AssistantResult = escalated
       ? {
           response: signedIn

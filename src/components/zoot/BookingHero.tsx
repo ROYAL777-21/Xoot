@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Sparkles, MapPin, Calendar, Clock, Home, Building2, BedDouble, Wand2, ArrowRight, Truck, TimerReset } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { approvedLaunchRegions } from "@/lib/operations";
 import { VerifiedAddressInput } from "@/components/zoot/VerifiedAddressInput";
 import heroImg from "@/assets/hero-zoot.jpg";
@@ -26,10 +26,13 @@ export const BookingHero = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    if (!isSupabaseConfigured) return;
     (supabase as any).from("zooters_public").select("id", { count: "exact", head: true }).then(({ count }) => {
       setActiveZooters(count ?? 0);
     });
   }, []);
+
+  const liveZooterLabel = isSupabaseConfigured ? String(activeZooters) : "Live roster";
 
   const startBooking = () => {
     const target = `/app?service=${active}${address.trim() ? `&address=${encodeURIComponent(address.trim())}` : ""}`;
@@ -83,7 +86,7 @@ export const BookingHero = () => {
                 <VerifiedAddressInput
                   value={address}
                   onChange={setAddress}
-                  placeholder={active === "office" ? "Office address anywhere in South Africa..." : "Search any South African address..."}
+                  placeholder={active === "office" ? "Office address..." : "Search address..."}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -100,6 +103,20 @@ export const BookingHero = () => {
                 {user ? "Start a booking" : "Book now"}
                 <ArrowRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Link
+                  to="/?zootBot=open&intent=concierge"
+                  className="liquid-glass-interactive interactive-press inline-flex min-h-11 items-center justify-center rounded-2xl px-4 text-center text-sm font-bold text-foreground shadow-card"
+                >
+                  Ask Concierge first
+                </Link>
+                <Link
+                  to="/app/properties/office"
+                  className="liquid-glass-interactive interactive-press inline-flex min-h-11 items-center justify-center rounded-2xl px-4 text-center text-sm font-bold text-foreground shadow-card"
+                >
+                  Plan office or Airbnb cleaning
+                </Link>
+              </div>
               <p className="text-xs text-muted-foreground text-center">
                 Active coverage includes {approvedLaunchRegions.slice(0, 6).map((region) => region.replace(/\b\w/g, (c) => c.toUpperCase())).join(", ")}. Other South African requests go to coverage review.
               </p>
@@ -107,7 +124,7 @@ export const BookingHero = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <span><span className="font-semibold text-foreground">{activeZooters}</span> approved Zooters currently live</span>
+            <span><span className="font-semibold text-foreground">{liveZooterLabel}</span> {isSupabaseConfigured ? "approved Zooters currently live" : "loads from Supabase when configured"}</span>
             <span><span className="font-semibold text-foreground">MIE-ready</span> trust workflow</span>
           </div>
         </div>
@@ -117,18 +134,20 @@ export const BookingHero = () => {
             <img src={heroImg} alt="Friendly Zoot cleaner finishing a residential clean" className="h-full w-full object-cover" width={1280} height={1600} />
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-transparent to-transparent" />
             <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
-              <div className="rounded-2xl bg-background/95 backdrop-blur-md p-3 shadow-card flex items-center gap-3 animate-fade-in">
-                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{activeZooters}</span></div>
-                <div><p className="text-xs text-muted-foreground">Live Zooters</p><p className="text-sm font-semibold">After verification</p></div>
+              <div className="liquid-glass-shell rounded-2xl p-3 shadow-card flex items-center gap-3 animate-fade-in">
+                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{isSupabaseConfigured ? activeZooters : "Z"}</span></div>
+                <div className="liquid-glass-readable"><p className="text-xs text-muted-foreground">Live Zooters</p><p className="text-sm font-semibold">{isSupabaseConfigured ? "After verification" : "Supabase-backed"}</p></div>
               </div>
             </div>
             <div className="absolute bottom-6 left-6 right-6">
-              <div className="rounded-2xl bg-background/95 backdrop-blur-md p-4 shadow-card flex items-center justify-between animate-fade-up">
+              <div className="liquid-glass-shell rounded-2xl p-4 shadow-card flex items-center justify-between animate-fade-up">
+                <div className="liquid-glass-readable flex w-full items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-full gradient-sage grid place-items-center"><Home className="h-5 w-5 text-primary-foreground" /></div>
                   <div><p className="text-sm font-semibold">Arrival timeline</p><p className="text-xs text-muted-foreground">On the way, arrived, started, completed</p></div>
                 </div>
                 <span className="text-xs font-bold text-primary px-3 py-1.5 rounded-full bg-primary/10">TRUST</span>
+                </div>
               </div>
             </div>
           </div>

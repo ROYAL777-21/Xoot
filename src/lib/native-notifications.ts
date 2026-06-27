@@ -1,8 +1,19 @@
-import { Capacitor } from "@capacitor/core";
+import { getOptionalNativePlatform, importOptionalNativePlugin } from "@/lib/optional-capacitor";
 
 export type NativeNotificationPlatform = "ios" | "android" | "web" | "unknown";
 export type NativePushPermissionStatus = "prompt" | "prompt-with-rationale" | "granted" | "denied" | "unknown";
-export type NativePushTokenType = "capacitor" | "web_push" | "unknown";
+export type NativePushTokenType = "capacitor" | "expo_push" | "web_push" | "unknown";
+type NativePushPluginModule = {
+  PushNotifications?: {
+    checkPermissions: () => Promise<{ receive?: string }>;
+    requestPermissions: () => Promise<{ receive?: string }>;
+    register: () => Promise<void>;
+    addListener: (
+      event: "registration" | "registrationError",
+      callback: (payload: { value?: string; error?: string }) => void,
+    ) => Promise<{ remove: () => Promise<void> }>;
+  };
+};
 
 export type NativePushSubscriptionInput = {
   userId: string;
@@ -41,7 +52,7 @@ export type NativePushRegistrationResult = NativePushCapability & {
 
 const DEVICE_ID_KEY = "zoot.native.device_id";
 const permissionStatuses = new Set<NativePushPermissionStatus>(["prompt", "prompt-with-rationale", "granted", "denied", "unknown"]);
-const tokenTypes = new Set<NativePushTokenType>(["capacitor", "web_push", "unknown"]);
+const tokenTypes = new Set<NativePushTokenType>(["capacitor", "expo_push", "web_push", "unknown"]);
 
 const stripUnsafeText = (value: string) =>
   value
@@ -122,7 +133,7 @@ export const buildNativePushSubscriptionRecord = ({
     device_id: safeDeviceId,
     platform: normalisePushPlatform(platform),
     push_token: safeToken || null,
-    token_type: normaliseTokenType(tokenType ?? "capacitor"),
+    token_type: normaliseTokenType(tokenType ?? "expo_push"),
     permission_status: safeStatus,
     app_version: safeText(appVersion ?? "", 80) || null,
     last_seen_at: now ?? new Date().toISOString(),
@@ -131,7 +142,7 @@ export const buildNativePushSubscriptionRecord = ({
 };
 
 export const getNativePushCapability = (): NativePushCapability => {
-  const platform = normalisePushPlatform(Capacitor.getPlatform());
+  const platform = normalisePushPlatform(getOptionalNativePlatform());
   return { platform, available: platform === "ios" || platform === "android" };
 };
 
@@ -140,7 +151,9 @@ export const requestNativePushRegistration = async (): Promise<NativePushRegistr
   if (!capability.available) return { ...capability, permissionStatus: "unknown" };
 
   try {
-    const { PushNotifications } = await import("@capacitor/push-notifications");
+    const PushNotifications =
+      (await importOptionalNativePlugin<NativePushPluginModule>("@capacitor/push-notifications"))?.PushNotifications ?? null;
+    if (!PushNotifications) return { ...capability, permissionStatus: "unknown", error: "native push plugin unavailable" };
     const current = await PushNotifications.checkPermissions();
     const requested = current.receive === "granted" ? current : await PushNotifications.requestPermissions();
     const permissionStatus = normalisePermissionStatus(requested.receive);

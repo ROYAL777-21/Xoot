@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, type SVGProps } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase, supabaseConfigErrorMessage } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,7 +99,7 @@ const Auth = () => {
     : isOtpMode
       ? otpSent ? getOtpCodeIssue(otpCode) : getEmailIssue(email)
       : getAuthFormIssue({ mode: authMode, email, password, fullName });
-  const canSubmit = !loading && !providerLoading && !isLocked && !formIssue;
+  const canSubmit = isSupabaseConfigured && !loading && !providerLoading && !isLocked && !formIssue;
 
   useEffect(() => {
     if (user && mode !== "forgot") navigate(redirectPath, { replace: true });
@@ -397,6 +397,13 @@ const Auth = () => {
         <h1 className="mb-1 font-display text-2xl font-bold sm:text-3xl">{heading}</h1>
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{subheading}</p>
 
+        {!isSupabaseConfigured && (
+          <div className="mb-5 flex items-start gap-2 rounded-2xl border border-primary/25 bg-primary/10 p-3 text-sm leading-relaxed text-muted-foreground">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <span>{supabaseConfigErrorMessage} Auth actions are disabled in this local public-page preview.</span>
+          </div>
+        )}
+
         {!isForgotPassword && !isOtpMode && (
           <div className="mb-5 grid gap-3 sm:grid-cols-2">
             {(["google", "apple"] as SocialAuthProvider[]).map((provider) => {
@@ -408,7 +415,7 @@ const Auth = () => {
                   type="button"
                   variant="outline"
                   className="h-11 rounded-xl"
-                  disabled={loading || !!providerLoading}
+                  disabled={!isSupabaseConfigured || loading || !!providerLoading}
                   onClick={() => void handleOAuth(provider)}
                 >
                   {isProviderLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Icon className="mr-2 h-4 w-4" />}

@@ -1,9 +1,8 @@
 const ALLOWED_DOMAINS = [
   "supabase.co",
-  "api.twilio.com",
-  "api.brevo.com",
-  "api.stitch.money",
-  "api.ozow.com",
+  "api.mapbox.com",
+  "tiles.mapbox.com",
+  "events.mapbox.com",
 ];
 
 const privateRanges = [/^10\./, /^172\.(1[6-9]|2[0-9]|3[01])\./, /^192\.168\./];

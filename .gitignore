@@ -16,9 +16,23 @@ dist-ssr
 .env
 .env.*
 !.env.example
+!.env.*.example
+*.p8
+*.p12
+*.mobileprovision
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+google-play-service-account*.json
+credentials.json
+eas-credentials*.json
+AuthKey_*.p8
 
 # Local Codex helper binaries and downloads
 .codex/tools/
+outputs/
+supabase/.temp/
 
 # Generated native app association files
 public/.well-known/apple-app-site-association

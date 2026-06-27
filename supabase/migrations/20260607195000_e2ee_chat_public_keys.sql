@@ -38,4 +38,5 @@ create policy "users manage own encryption keys"
 drop policy if exists "authenticated users read active public encryption keys" on public.user_encryption_keys;
 create policy "authenticated users read active public encryption keys"
   on public.user_encryption_keys for select
-  using (auth.role() = 'authenticated' and revoked_at is null);
+  to authenticated
+  using (auth.uid() = user_id and revoked_at is null);

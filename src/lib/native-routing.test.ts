@@ -20,6 +20,9 @@ describe("resolveNativeRoute", () => {
     expect(resolveNativeRoute("za.co.zoot.app://callback?code=abc&type=oauth")).toBe(
       "/auth/callback?code=abc&type=oauth",
     );
+    expect(resolveNativeRoute("za.co.zoothome.app://callback?code=abc&type=oauth")).toBe(
+      "/auth/callback?code=abc&type=oauth",
+    );
     expect(resolveNativeRoute("zoot://auth/reset#access_token=token&type=recovery")).toBe(
       "/auth/reset#access_token=token&type=recovery",
     );
@@ -28,6 +31,21 @@ describe("resolveNativeRoute", () => {
   it("maps zoot URL scheme shortcuts onto existing app routes", () => {
     expect(resolveNativeRoute("zoot://app/bookings/booking_456")).toBe("/app/bookings/booking_456");
     expect(resolveNativeRoute("zoot://bookings?id=booking-456")).toBe("/app/bookings/booking-456");
+    expect(resolveNativeRoute("zoot://book-cleaner")).toBe("/app");
+    expect(resolveNativeRoute("https://zoothome.co.za/app?intent=book_clean")).toBe("/app?intent=book_clean");
+    expect(resolveNativeRoute("zoot://book?intent=book_clean&service=office&date=2026-07-03&area=Rosebank")).toBe(
+      "/app?area=Rosebank&date=2026-07-03&intent=book_clean&service=office",
+    );
+    expect(resolveNativeRoute("zoot://book?intent=book_clean&gate_code=1234")).toBe("/app?intent=book_clean");
+    expect(resolveNativeRoute("zoot://clean-house?intent=book_clean&date=2026-07-03&service=residential")).toBe(
+      "/app?date=2026-07-03&intent=book_clean&service=residential",
+    );
+    expect(resolveNativeRoute("zoot://office-clean?intent=book_clean&service=office&access_code=1234")).toBe(
+      "/app?intent=book_clean&service=office",
+    );
+    expect(resolveNativeRoute("zoot://airbnb-turnover?intent=book_clean&service=airbnb")).toBe(
+      "/app?intent=book_clean&service=airbnb",
+    );
     expect(resolveNativeRoute("zoot://care-plus/apply")).toBe("/care-plus/apply");
     expect(resolveNativeRoute("zoot://office-dashboard")).toBe("/app/properties/office");
   });

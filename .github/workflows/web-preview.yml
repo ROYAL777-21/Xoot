@@ -17,9 +17,15 @@ permissions:
 env:
   VITE_APP_ENV: ${{ vars.VITE_APP_ENV || 'development' }}
   VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://zoothome.co.za' }}
+  VITE_SITE_URL: ${{ vars.VITE_SITE_URL || vars.VITE_PUBLIC_SITE_URL || 'https://zoothome.co.za' }}
   VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
   VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
   VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+  VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+  VITE_MAPBOX_PUBLIC_TOKEN: ${{ vars.VITE_MAPBOX_PUBLIC_TOKEN }}
+  VITE_CLOUDFLARE_TURNSTILE_SITE_KEY: ${{ vars.VITE_CLOUDFLARE_TURNSTILE_SITE_KEY }}
+  VITE_GOOGLE_WEB_CLIENT_ID: ${{ vars.VITE_GOOGLE_WEB_CLIENT_ID }}
+  VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
 
 jobs:
   build:
@@ -34,8 +40,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm install
+      - name: Check lockfiles
+        run: node scripts/config/validate-lockfiles.mjs
+
+      - name: Install web dependencies
+        run: npm ci
+
+      - name: Install mobile dependencies
+        run: npm --prefix mobile ci
 
       - name: Validate public environment
         run: npm run config:check
@@ -48,6 +60,12 @@ jobs:
 
       - name: Run lightweight secret scan
         run: npm run security:scan
+
+      - name: Validate mobile config
+        run: npm run mobile:config:check
+
+      - name: Typecheck mobile app
+        run: npm run mobile:typecheck
 
       - name: Build website
         run: npm run build

@@ -50,6 +50,7 @@ grant select, insert, update, delete on public.native_push_subscriptions to auth
 create or replace function public.touch_native_push_subscriptions_updated_at()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_at = now();

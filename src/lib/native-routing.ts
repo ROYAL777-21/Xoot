@@ -18,8 +18,16 @@ const staticRoutes = new Set([
   "/care-plus/apply",
   "/install",
   "/legal/privacy",
+  "/legal/popia",
+  "/legal/refunds-cancellations",
+  "/legal/account-deletion",
+  "/legal/acceptable-use",
+  "/legal/ai-concierge",
+  "/legal/care-plus-terms",
+  "/legal/cookies",
   "/legal/terms",
   "/legal/trust-safety",
+  "/legal/zooter-terms",
   "/trust-centre",
   "/zooter",
   "/zooter/earnings",
@@ -30,14 +38,29 @@ const staticRoutes = new Set([
 ]);
 
 const authRoutes = new Set(["/auth/callback", "/auth/reset"]);
+const queryPreservingRoutes = new Set(["/app", "/care-plus"]);
+const allowedSafeQueryKeys = new Set(["area", "date", "intent", "service", "zootBot"]);
 
 const screenRoutes = new Map<string, string>([
   ["book", "/app"],
+  ["book_clean", "/app"],
+  ["book_cleaner", "/app"],
+  ["book_cleaning", "/app"],
+  ["book_house_clean", "/app"],
+  ["clean_house", "/app"],
+  ["clean_home", "/app"],
+  ["clean_place", "/app"],
   ["booking", "/app/bookings"],
   ["booking_update", "/app/bookings"],
   ["booking_status", "/app/bookings"],
   ["booking_live_activity", "/app/bookings"],
   ["bookings", "/app/bookings"],
+  ["cleaner", "/app"],
+  ["office_clean", "/app"],
+  ["office_cleaning", "/app"],
+  ["commercial_clean", "/app"],
+  ["airbnb_turnover", "/app"],
+  ["moving_clean", "/app"],
   ["callback", "/auth/callback"],
   ["care", "/app/plans"],
   ["care_plus", "/app/plans"],
@@ -112,11 +135,35 @@ const normalizePath = (pathname: string) => {
   return path;
 };
 
+const safeQueryValue = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 120) return null;
+  if (/[<>"'`\\]/.test(trimmed)) return null;
+  return trimmed;
+};
+
+const safeQuery = (url: URL) => {
+  const params = new URLSearchParams();
+
+  allowedSafeQueryKeys.forEach((key) => {
+    const value = url.searchParams.get(key);
+    if (!value) return;
+    const safeValue = safeQueryValue(value);
+    if (safeValue) params.set(key, safeValue);
+  });
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
+};
+
+const appendSafeQuery = (path: string, url: URL) =>
+  queryPreservingRoutes.has(path) ? `${path}${safeQuery(url)}` : path;
+
 const routeForUrl = (url: URL) => {
   const path = normalizePath(url.pathname);
   if (!path) return null;
-  if (path === "/") return "/app";
-  if (staticRoutes.has(path)) return authRoutes.has(path) ? `${path}${url.search}${url.hash}` : path;
+  if (path === "/") return appendSafeQuery("/app", url);
+  if (staticRoutes.has(path)) return authRoutes.has(path) ? `${path}${url.search}${url.hash}` : appendSafeQuery(path, url);
 
   const bookingMatch = path.match(/^\/app\/bookings\/([^/]+)$/);
   if (bookingMatch) return bookingRoute(bookingMatch[1]);
@@ -159,7 +206,7 @@ const routeFromZootUrl = (url: URL) => {
   if (host === "callback") return toSafeRoute(`/auth/callback${url.search}${url.hash}`);
 
   const mapped = screenRoutes.get(host);
-  if (mapped && !pathname) return mapped;
+  if (mapped && !pathname) return appendSafeQuery(mapped, url);
 
   if (["app", "auth", "zooter", "care_plus", "care_plus_apply", "trust_centre"].includes(host)) {
     return toSafeRoute(`/${host.replace(/_/g, "-")}${pathname}${url.search}${url.hash}`);
@@ -178,7 +225,9 @@ const routeFromUrl = (candidate: string) => {
 
   try {
     const url = new URL(value);
-    if (url.protocol === "zoot:" || url.protocol === "za.co.zoot.app:") return routeFromZootUrl(url);
+    if (url.protocol === "zoot:" || url.protocol === "za.co.zoothome.app:" || url.protocol === "za.co.zoot.app:") {
+      return routeFromZootUrl(url);
+    }
     if (url.protocol === "https:" || url.protocol === "http:") return routeForUrl(url);
   } catch {
     return toSafeRoute(value);

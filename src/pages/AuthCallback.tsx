@@ -1,17 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2, ShieldCheck } from "lucide-react";
-import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SEO } from "@/components/SEO";
 import { getSafeRedirectPath } from "@/lib/auth-security";
 import { enableNativeQuickUnlock } from "@/lib/native-auth";
+import { importOptionalNativePlugin, isOptionalNativePlatform } from "@/lib/optional-capacitor";
 import { sanitiseSearchParam } from "@/lib/sanitise";
 
 type NativeListenerHandle = { remove: () => Promise<void> | void };
 type CapacitorAppUrlOpen = { url?: string };
+type CapacitorAppModule = {
+  App?: {
+    getLaunchUrl: () => Promise<{ url?: string } | null>;
+    addListener: (event: "appUrlOpen", callback: (event: CapacitorAppUrlOpen) => void) => Promise<NativeListenerHandle>;
+  };
+};
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -39,7 +45,7 @@ const AuthCallback = () => {
         const callbackParams = getCallbackParams(rawUrl);
         const code = sanitiseSearchParam(callbackParams.get("code"));
         const redirectPath = getSafeRedirectPath(callbackParams.get("next"), nextPath);
-        const isNativePendingCallback = Capacitor.isNativePlatform() && !code;
+        const isNativePendingCallback = isOptionalNativePlatform() && !code;
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
@@ -58,10 +64,11 @@ const AuthCallback = () => {
     };
 
     const registerNativeCallback = async () => {
-      if (!Capacitor.isNativePlatform()) return;
+      if (!isOptionalNativePlatform()) return;
 
       try {
-        const { App: CapacitorApp } = await import("@capacitor/app");
+        const CapacitorApp = (await importOptionalNativePlugin<CapacitorAppModule>("@capacitor/app"))?.App ?? null;
+        if (!CapacitorApp) return;
         const launch = await CapacitorApp.getLaunchUrl();
         if (launch?.url) void completeAuth(launch.url);
         appUrlOpenHandle = await CapacitorApp.addListener("appUrlOpen", (event: CapacitorAppUrlOpen) => {

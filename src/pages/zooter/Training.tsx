@@ -119,10 +119,21 @@ const Training = () => {
     const completedModules = modules.filter((module) => done[module.id]?.passed);
     const points = completedModules.reduce((sum, module) => sum + getRankPoints(module), 0);
     const maxPoints = modules.reduce((sum, module) => sum + getRankPoints(module), 0);
+    const categoryStats = Object.values(
+      modules.reduce<Record<string, { category: string; total: number; completed: number; required: number }>>((acc, module) => {
+        const key = module.category || "general";
+        acc[key] ??= { category: key, total: 0, completed: 0, required: 0 };
+        acc[key].total += 1;
+        if (module.required) acc[key].required += 1;
+        if (done[module.id]?.passed) acc[key].completed += 1;
+        return acc;
+      }, {}),
+    ).sort((a, b) => b.required - a.required || a.category.localeCompare(b.category));
     return {
       requiredModules,
       optionalModules,
       completedModules,
+      categoryStats,
       points,
       maxPoints,
       requiredDone: requiredModules.filter((module) => done[module.id]?.passed).length,
@@ -188,6 +199,30 @@ const Training = () => {
           )}
         </Card>
       </div>
+
+      {progress.categoryStats.length > 0 && (
+        <Card className="mb-8 rounded-3xl p-5">
+          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Learning paths</p>
+              <h2 className="font-display text-2xl font-bold">Category coverage</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">Progress is pulled from your completed module records.</p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {progress.categoryStats.map((stat) => (
+              <div key={stat.category} className="rounded-2xl border border-border bg-muted/30 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="truncate text-sm font-semibold capitalize">{stat.category.replace(/-/g, " ")}</p>
+                  {stat.required > 0 && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase text-primary">{stat.required} required</span>}
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">{stat.completed}/{stat.total} modules passed</p>
+                <Progress value={stat.total ? (stat.completed / stat.total) * 100 : 0} className="mt-3 h-1.5" />
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {modules.length === 0 ? (
         <Card className="p-8 rounded-3xl text-center text-muted-foreground">Training modules will appear here after setup.</Card>

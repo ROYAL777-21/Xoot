@@ -41,12 +41,12 @@ extension View {
         if #available(iOSApplicationExtension 26.0, *) {
             if interactive {
                 self.glassEffect(
-                    .regular.tint(tint.opacity(0.16)).interactive(),
+                    .regular.tint(tint.opacity(0.14)).interactive(),
                     in: .rect(cornerRadius: cornerRadius)
                 )
             } else {
                 self.glassEffect(
-                    .regular.tint(tint.opacity(0.14)),
+                    .regular.tint(tint.opacity(0.12)),
                     in: .rect(cornerRadius: cornerRadius)
                 )
             }
@@ -61,23 +61,35 @@ extension View {
     @ViewBuilder
     private func zootGlassFallback(cornerRadius: CGFloat, tint: Color) -> some View {
         self
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.82),
+                        tint.opacity(0.16),
+                        Color.black.opacity(0.76),
+                    ],
+                    startPoint: .topTrailing,
+                    endPoint: .bottomLeading
+                ),
+                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .fill(
                         LinearGradient(
                             colors: [
-                                tint.opacity(0.22),
-                                Color.white.opacity(0.08),
+                                Color.white.opacity(0.18),
+                                tint.opacity(0.08),
+                                Color.clear,
                             ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                            startPoint: .topTrailing,
+                            endPoint: .bottomLeading
                         )
                     )
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.36), lineWidth: 0.75)
+                    .strokeBorder(Color.white.opacity(0.34), lineWidth: 0.75)
             )
     }
 }

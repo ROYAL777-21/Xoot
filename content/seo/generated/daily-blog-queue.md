@@ -1,4 +1,4 @@
-# Daily SEO Blog Queue - 2026-06-13
+# Daily SEO Blog Queue - 2026-06-20
 
 Generated from `content/seo/keyword-intent-map.json`.
 Semrush/Search Console validation should be added to each keyword row before publication when exports are available.
@@ -13,6 +13,7 @@ Semrush/Search Console validation should be added to each keyword row before pub
 - Reader psychology: Time pressure, reputation protection, relief through a clear checklist.
 - Practical promise: Decision checklist for offices, studios, salons, clinics, and small teams.
 - CTA: Book an office reset or create a recurring business cleaning rhythm.
+- Status: published at `/articles/quick-office-cleaning-sandton`
 
 Outline:
 - Open with the real-life pressure behind the search.
@@ -39,6 +40,7 @@ Quality gate:
 - Reader psychology: Review anxiety, control, visible readiness.
 - Practical promise: Turnover checklist, access notes, linen, photos, and repeat instructions.
 - CTA: Book an Airbnb turnover clean and save host instructions in Zoot.
+- Status: published at `/articles/airbnb-turnover-cleaning-johannesburg`
 
 Outline:
 - Open with the real-life pressure behind the search.
@@ -54,4 +56,3 @@ Quality gate:
 - Specific local examples; no generic filler.
 - Human review required before publishing.
 - Update title, meta description, FAQ, and JSON-LD before release.
-

@@ -19,6 +19,9 @@ struct ZootBookingLiveActivityWidget: Widget {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .zootLiquidGlassCard(cornerRadius: 16, tint: .zootCream)
                 }
 
                 DynamicIslandExpandedRegion(.trailing) {
@@ -27,6 +30,9 @@ struct ZootBookingLiveActivityWidget: Widget {
                         Text(context.state.etaMinutes.map { "\($0) min" } ?? context.state.statusLabel)
                             .font(.caption.bold())
                     }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .zootLiquidGlassCard(cornerRadius: 16, tint: .zootSage)
                 }
 
                 DynamicIslandExpandedRegion(.bottom) {
@@ -35,11 +41,14 @@ struct ZootBookingLiveActivityWidget: Widget {
                             .font(.caption)
                             .lineLimit(1)
                         Spacer()
-                        if context.state.supportState != .standard {
-                            Label("Priority", systemImage: "lifepreserver")
-                                .font(.caption2.bold())
-                        }
+                    if context.state.supportState != .standard {
+                        Label("Priority", systemImage: "lifepreserver")
+                            .font(.caption2.bold())
                     }
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .zootLiquidGlassCard(cornerRadius: 16, tint: .zootTerracotta)
                 }
             } compactLeading: {
                 Image(systemName: context.state.status.systemImage)

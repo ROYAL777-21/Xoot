@@ -56,12 +56,12 @@ const createPlacementApplication = async (req: Request, origin: string | null, u
     subjectId: data.id,
     userId: user.id,
     priority: "normal",
-    summary: `HomeCare+ placement request for ${firstName} ${lastName}`,
+    summary: `Care+ placement request for ${firstName} ${lastName}`,
   });
   await insertNotification(supa, {
     userId: user.id,
     kind: "care_plus_application_submitted",
-    title: "HomeCare+ request received",
+    title: "Care+ request received",
     body: "Your placement request is in the support queue. We will review the details and next steps in-app.",
     link: "/app",
   });
@@ -71,7 +71,7 @@ const createPlacementApplication = async (req: Request, origin: string | null, u
     targetTable: "care_plus_applications",
     targetId: data.id,
     changes: { status: "submitted" },
-    reason: "Client submitted HomeCare+ placement request through Edge Function",
+    reason: "Client submitted Care+ placement request through Edge Function",
     ipAddress: req.headers.get("x-forwarded-for"),
   });
 

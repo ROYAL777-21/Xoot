@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { buildEmailPayload } from "../_shared/email-playbook.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -145,7 +146,9 @@ Deno.serve(async (req) => {
           channel,
           owner: channel === "brevo_email" ? "Retention & Loyalty Agent" : "Customer Support Agent",
           stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
-          payload: { plan_id: plan.id, subscription_id: subscription.id, payment_record_id: payment.id },
+          payload: channel === "brevo_email"
+            ? buildEmailPayload("care_plus_membership_requested", { plan_id: plan.id, subscription_id: subscription.id, payment_record_id: payment.id })
+            : { plan_id: plan.id, subscription_id: subscription.id, payment_record_id: payment.id },
           status: "queued",
           approval_required: false,
           failure_mode: null,

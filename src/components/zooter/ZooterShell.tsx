@@ -20,19 +20,19 @@ export const ZooterShell = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="min-h-screen flex bg-background">
-      <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card/50 p-5 sticky top-0 h-screen">
-        <NavLink to="/" className="flex items-center gap-2 mb-2">
+      <aside className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-[2rem] p-5 sticky top-3 h-[calc(100vh-1.5rem)]">
+        <NavLink to="/" className="liquid-glass-readable flex items-center gap-2 mb-2">
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-sage shadow-warm">
             <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
           </span>
           <span className="font-display text-2xl font-bold tracking-tight">zooter</span>
         </NavLink>
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1 mb-7 self-start border border-accent/20">
+        <div className="liquid-glass-readable inline-flex items-center gap-1.5 rounded-full bg-accent-soft/80 px-2.5 py-1 mb-7 self-start border border-accent/20">
           <Sparkles className="h-3 w-3 text-sage-deep" />
           <span className="text-[10px] font-bold uppercase tracking-wider text-sage-deep">Pro</span>
         </div>
 
-        <nav className="flex-1 space-y-1">
+        <nav className="liquid-glass-readable flex-1 space-y-1.5">
           {nav.map((n) => {
             const Icon = n.icon;
             return (
@@ -41,8 +41,8 @@ export const ZooterShell = ({ children }: { children: ReactNode }) => {
                 to={n.to}
                 end={n.end}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                    isActive ? "bg-accent/15 text-sage-deep" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  `interactive-press liquid-glass-interactive flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                    isActive ? "bg-accent/15 text-sage-deep" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   }`
                 }
               >
@@ -53,33 +53,35 @@ export const ZooterShell = ({ children }: { children: ReactNode }) => {
           })}
         </nav>
 
-        <div className="border-t border-border pt-4 mt-4">
+        <div className="liquid-glass-readable border-t border-border/60 pt-4 mt-4">
           <p className="text-xs text-muted-foreground truncate mb-2">{user?.email}</p>
-          <Button variant="ghost" size="sm" onClick={handleSignOut} className="w-full justify-start">
+          <Button variant="ghost" size="sm" onClick={handleSignOut} className="interactive-press liquid-glass-interactive w-full justify-start rounded-2xl">
             <LogOut className="h-4 w-4 mr-2" /> Sign out
           </Button>
         </div>
       </aside>
 
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur border-t border-border flex justify-around py-2">
-        {nav.slice(0, 5).map((n) => {
-          const Icon = n.icon;
-          return (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.end}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium ${
-                  isActive ? "text-sage-deep" : "text-muted-foreground"
-                }`
-              }
-            >
-              <Icon className="h-5 w-5" />
-              {n.label}
-            </NavLink>
-          );
-        })}
+      <nav className="liquid-glass-nav lg:hidden fixed bottom-3 inset-x-3 z-40 rounded-[1.75rem] px-2 py-2">
+        <div className="liquid-glass-readable flex items-stretch justify-around gap-1">
+          {nav.slice(0, 5).map((n) => {
+            const Icon = n.icon;
+            return (
+              <NavLink
+                key={n.to}
+                to={n.to}
+                end={n.end}
+                className={({ isActive }) =>
+                  `interactive-press liquid-glass-interactive tap-target flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1.5 py-1 text-[10px] leading-tight font-semibold transition-colors ${
+                    isActive ? "text-sage-deep" : "text-muted-foreground"
+                  }`
+                }
+              >
+                <Icon className="h-5 w-5" />
+                {n.label}
+              </NavLink>
+            );
+          })}
+        </div>
       </nav>
 
       <main className="flex-1 pb-24 lg:pb-0 min-w-0">{children}</main>

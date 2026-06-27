@@ -33,31 +33,59 @@
   ],
   "shortcuts": [
     {
-      "name": "Book a Zooter",
+      "name": "Book a Zoot clean",
       "short_name": "Book",
       "description": "Start a home-care booking.",
-      "url": "/app",
+      "url": "/app?intent=book_clean",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Clean my house",
+      "short_name": "House clean",
+      "description": "Start a residential cleaning booking.",
+      "url": "/app?intent=book_clean&service=residential",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "I need my office cleaned",
+      "short_name": "Office clean",
+      "description": "Start an office cleaning booking.",
+      "url": "/app?intent=book_clean&service=office",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "I need my place cleaned",
+      "short_name": "Clean place",
+      "description": "Start a home or apartment cleaning booking.",
+      "url": "/app?intent=book_clean&service=residential",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Book an Airbnb turnover",
+      "short_name": "Airbnb clean",
+      "description": "Start an Airbnb turnover cleaning booking.",
+      "url": "/app?intent=book_clean&service=airbnb",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Ask Zoot Concierge",
+      "short_name": "Concierge",
+      "description": "Ask general Zoot, Care+, cleaning, and support questions.",
+      "url": "/?zootBot=open&intent=concierge",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Care+",
       "short_name": "Care+",
       "description": "Open Care+ membership.",
-      "url": "/care-plus",
+      "url": "/care-plus?intent=care_plus",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "Install Zoot",
-      "short_name": "Install",
-      "description": "Add Zoot to an iPhone Home Screen.",
-      "url": "/install",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Support",
-      "short_name": "Help",
-      "description": "Open priority support.",
-      "url": "/app/support",
+      "name": "My Zoot bookings",
+      "short_name": "Bookings",
+      "description": "Open your Zoot bookings.",
+      "url": "/app/bookings?intent=bookings",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]

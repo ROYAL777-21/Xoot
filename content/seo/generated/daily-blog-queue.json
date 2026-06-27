@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-13T14:32:26.171Z",
+  "generatedAt": "2026-06-20T14:11:31.626Z",
   "briefs": [
     {
-      "date": "2026-06-13",
+      "date": "2026-06-20",
       "slot": 1,
       "slug": "quick-office-cleaning-sandton",
       "title": "Quick Office Cleaning Sandton",
@@ -38,10 +38,12 @@
         "Human review required before publishing.",
         "Update title, meta description, FAQ, and JSON-LD before release."
       ],
-      "callToAction": "Book an office reset or create a recurring business cleaning rhythm."
+      "callToAction": "Book an office reset or create a recurring business cleaning rhythm.",
+      "status": "published",
+      "publishedUrl": "/articles/quick-office-cleaning-sandton"
     },
     {
-      "date": "2026-06-13",
+      "date": "2026-06-20",
       "slot": 2,
       "slug": "airbnb-turnover-cleaning-johannesburg",
       "title": "Airbnb Turnover Cleaning Johannesburg",
@@ -78,7 +80,9 @@
         "Human review required before publishing.",
         "Update title, meta description, FAQ, and JSON-LD before release."
       ],
-      "callToAction": "Book an Airbnb turnover clean and save host instructions in Zoot."
+      "callToAction": "Book an Airbnb turnover clean and save host instructions in Zoot.",
+      "status": "published",
+      "publishedUrl": "/articles/airbnb-turnover-cleaning-johannesburg"
     }
   ]
 }
