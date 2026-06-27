@@ -18,14 +18,14 @@ const Jobs = () => {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const { data, error } = await supabase.rpc("get_zooter_job_cards");
+    const { data, error } = await supabase.functions.invoke("get-zooter-job-cards");
     if (error) {
       console.warn("Zooter jobs lookup failed", error.message);
       setJobs([]);
       return;
     }
 
-    setJobs((data ?? []).map((job) => ({
+    setJobs(((data?.jobs ?? []) as any[]).map((job) => ({
       id: job.job_id,
       booking_id: job.booking_id,
       zooter_id: job.zooter_id,

@@ -4,9 +4,21 @@ Reviewed: 2026-06-27
 
 This note records the next Phase 1 implementation slice: backend-owned feature flags, kill switches, provider event idempotency, approval requests, rate-limit primitives, agent contracts and analytics privacy contracts.
 
+## Live Rollout Evidence
+
+- Staging applied via Supabase connector on 2026-06-27 as migration `20260627094915_phase1_governance_controls`.
+- Production applied via Supabase connector on 2026-06-27 as migration `20260627095149_phase1_governance_controls`.
+- Zooter job-card RPC service-boundary fix applied as `20260627101824_zooter_job_cards_service_boundary` in staging and `20260627102231_zooter_job_cards_service_boundary` in production.
+- Governance advisor follow-up applied as `20260627103053_governance_advisor_followups` in staging and `20260627103118_governance_advisor_followups` in production.
+- Staging governance smoke tests passed on 2026-06-27 for duplicate provider-event claim handling, rate-limit exhaustion, admin-read policy presence and disabled-by-default provider gates.
+- Production governance smoke tests passed on 2026-06-27 for duplicate provider-event claim handling, rate-limit exhaustion, admin-read policy presence and disabled-by-default provider gates.
+- Both live applications were additive only and did not activate provider checkout, OpenAI fallback, Twilio sends, Care+ checkout, or native voice booking.
+- Follow-up advisor cleanup applied through `supabase/migrations/20260627103000_governance_advisor_followups.sql` to add governance FK indexes and avoid per-row auth re-evaluation in governance admin-read policies.
+
 ## Added Artifacts
 
 - Migration: `supabase/migrations/20260627090000_phase1_governance_controls.sql`
+- Migration: `supabase/migrations/20260627103000_governance_advisor_followups.sql`
 - Client monitoring scrubber: `src/lib/monitoring.ts`
 - Readiness checks: `scripts/ops/verify-production-readiness.ps1`
 
@@ -39,12 +51,9 @@ The sensitive-access kill switch is seeded as enabled because sensitive access i
 
 ## Rollout
 
-1. Apply to staging first.
-2. Verify tables, policies and functions exist.
-3. Smoke-test duplicate provider event claims with a staging service-role session.
-4. Smoke-test rate-limit exhaustion with hashed test actors only.
-5. Update Edge Functions to use `private.claim_provider_event(...)` before payment, Twilio, Brevo, Expo or OpenAI side effects.
-6. Apply to production after staging verification and founder/security approval.
+1. Verify tables, policies and functions exist in both live environments using `scripts/ops/verify-supabase-live.ps1`.
+2. Update Edge Functions to use `private.claim_provider_event(...)` before payment, Twilio, Brevo, Expo or OpenAI side effects.
+3. Keep provider-facing controls disabled until provider dashboards, secrets and legal approvals are complete.
 
 ## Rollback
 
@@ -56,4 +65,4 @@ This migration is additive. If rollback is needed before any Edge Function depen
 - Wire anonymous Concierge and support paths to `private.consume_rate_limit(...)`.
 - Add an approved admin-only control-management Edge Function.
 - Connect PostHog only after event contracts and privacy settings are approved.
-- Run role-based staging smoke tests before considering this phase closed.
+- Run role-based staging and production smoke tests with real client, admin and Zooter users before considering this phase closed.

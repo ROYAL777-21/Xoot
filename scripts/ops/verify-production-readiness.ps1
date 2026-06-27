@@ -107,12 +107,17 @@ Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_
 Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "destination_address" "accepted-job destination field"
 Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "zj\.state = 'accepted'" "destination only after accepted job"
 Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "not in \('cancelled', 'completed', 'rated'\)" "destination hidden after terminal booking states"
+Test-RepoPattern "supabase" "supabase/migrations/20260627101500_zooter_job_cards_service_boundary.sql" "get_zooter_job_cards_for_user" "service-role zooter job-card RPC"
+Test-RepoPattern "supabase" "supabase/migrations/20260627101500_zooter_job_cards_service_boundary.sql" "revoke all on function public\.get_zooter_job_cards\(\) from authenticated" "legacy zooter job-card RPC not browser-callable"
+Test-RepoFile "supabase" "supabase/functions/get-zooter-job-cards/index.ts" | Out-Null
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "operational_controls" "Phase 1 operational controls table"
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "approval_requests" "Phase 1 approval request model"
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "provider_events" "Phase 1 provider idempotency registry"
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "private\.claim_provider_event" "Phase 1 provider event claim helper"
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "private\.consume_rate_limit" "Phase 1 rate-limit helper"
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "analytics_event_contracts" "Phase 1 analytics privacy contract"
+Test-RepoPattern "supabase" "supabase/migrations/20260627103000_governance_advisor_followups.sql" "operational_controls_approved_by_idx" "Phase 1 governance FK advisor indexes"
+Test-RepoPattern "supabase" "supabase/migrations/20260627103000_governance_advisor_followups.sql" "public\.has_role\(\(select auth\.uid\(\)\)" "Phase 1 governance RLS initplan cleanup"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -143,7 +148,6 @@ Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODER
 
 Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Use real staging client, admin, and Zooter users to verify accepted-job destination visibility and sensitive-access notifications."
 Add-ManualBlocker "supabase-live" "live database readiness SQL" "Run scripts/ops/verify-supabase-live.ps1 with SUPABASE_DB_URL for staging and production."
-Add-ManualBlocker "supabase-live" "Phase 1 governance controls live rollout" "Apply and smoke-test 20260627090000_phase1_governance_controls.sql in staging before production."
 Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase dashboard/API access; local config is prepared but live allowlists still need verification."
 Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, and rotated secrets."
 Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privilege browser, native, and build-download tokens from Mapbox."

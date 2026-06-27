@@ -92,14 +92,28 @@ checks as (
   union all
   select
     'safe zooter job cards RPC exists',
-    to_regprocedure('public.get_zooter_job_cards()') is not null,
-    'public.get_zooter_job_cards()'
+    to_regprocedure('public.get_zooter_job_cards_for_user(uuid)') is not null,
+    'public.get_zooter_job_cards_for_user(uuid)'
 
   union all
   select
     'accepted destination RPC exists',
-    to_regprocedure('public.get_accepted_zooter_job_destinations(uuid[])') is not null,
-    'public.get_accepted_zooter_job_destinations(uuid[])'
+    to_regprocedure('public.get_accepted_zooter_job_destinations_for_user(uuid,uuid[])') is not null,
+    'public.get_accepted_zooter_job_destinations_for_user(uuid,uuid[])'
+
+  union all
+  select
+    'legacy zooter job card RPC not executable by authenticated',
+    to_regprocedure('public.get_zooter_job_cards()') is not null
+      and not has_function_privilege('authenticated', 'public.get_zooter_job_cards()', 'EXECUTE'),
+    'authenticated execute revoked'
+
+  union all
+  select
+    'legacy accepted destination RPC not executable by authenticated',
+    to_regprocedure('public.get_accepted_zooter_job_destinations(uuid[])') is not null
+      and not has_function_privilege('authenticated', 'public.get_accepted_zooter_job_destinations(uuid[])', 'EXECUTE'),
+    'authenticated execute revoked'
 
   union all
   select
@@ -150,6 +164,126 @@ checks as (
     'notifications client insert not granted',
     not has_table_privilege('authenticated', 'public.notifications', 'INSERT'),
     'authenticated insert denied'
+
+  union all
+  select
+    'Phase 1 operational controls table exists',
+    to_regclass('public.operational_controls') is not null,
+    'public.operational_controls'
+
+  union all
+  select
+    'Phase 1 provider events table exists',
+    to_regclass('public.provider_events') is not null,
+    'public.provider_events'
+
+  union all
+  select
+    'Phase 1 approval requests table exists',
+    to_regclass('public.approval_requests') is not null,
+    'public.approval_requests'
+
+  union all
+  select
+    'Phase 1 rate limit table exists',
+    to_regclass('public.rate_limit_events') is not null,
+    'public.rate_limit_events'
+
+  union all
+  select
+    'Phase 1 provider event claim helper exists',
+    to_regprocedure('private.claim_provider_event(text,text,text,text,text,uuid,jsonb)') is not null,
+    'private.claim_provider_event(text,text,text,text,text,uuid,jsonb)'
+
+  union all
+  select
+    'Phase 1 rate-limit helper exists',
+    to_regprocedure('private.consume_rate_limit(text,text,text,integer,integer)') is not null,
+    'private.consume_rate_limit(text,text,text,integer,integer)'
+
+  union all
+  select
+    'Phase 1 operational controls admin-read policy exists',
+    exists (
+      select 1
+      from pg_policies
+      where schemaname = 'public'
+        and tablename = 'operational_controls'
+        and policyname = 'operational_controls_admin_read'
+    ),
+    'public.operational_controls.operational_controls_admin_read'
+
+  union all
+  select
+    'Phase 1 provider controls default disabled',
+    exists (
+      select 1
+      from public.operational_controls
+      where control_key = 'payments.provider_checkout'
+        and enabled = false
+    )
+      and exists (
+        select 1
+        from public.operational_controls
+        where control_key = 'support.openai_fallback'
+          and enabled = false
+    )
+      and exists (
+        select 1
+        from public.operational_controls
+        where control_key = 'twilio.operational_messages'
+          and enabled = false
+      ),
+    'payments.provider_checkout/support.openai_fallback/twilio.operational_messages'
+
+  union all
+  select
+    'Phase 1 governance FK indexes exist',
+    not exists (
+      select 1
+      from (
+        values
+          ('operational_controls_approved_by_idx'),
+          ('approval_requests_requested_by_idx'),
+          ('approval_requests_decided_by_idx'),
+          ('experiment_registry_approval_request_id_idx'),
+          ('agent_action_contracts_approval_request_id_idx'),
+          ('analytics_event_contracts_approval_request_id_idx')
+      ) as expected(index_name)
+      where not exists (
+        select 1
+        from pg_indexes i
+        where i.schemaname = 'public'
+          and i.indexname = expected.index_name
+      )
+    ),
+    'governance foreign-key advisor indexes'
+
+  union all
+  select
+    'Phase 1 governance admin policies use select auth uid',
+    not exists (
+      select 1
+      from (
+        values
+          ('operational_controls', 'operational_controls_admin_read'),
+          ('approval_requests', 'approval_requests_admin_read'),
+          ('provider_events', 'provider_events_admin_read'),
+          ('rate_limit_events', 'rate_limit_events_admin_read'),
+          ('experiment_registry', 'experiment_registry_admin_read'),
+          ('agent_action_contracts', 'agent_action_contracts_admin_read'),
+          ('analytics_event_contracts', 'analytics_event_contracts_admin_read')
+      ) as expected(tablename, policyname)
+      where not exists (
+        select 1
+        from pg_policies p
+        where p.schemaname = 'public'
+          and p.tablename = expected.tablename
+          and p.policyname = expected.policyname
+          and p.qual like '%( SELECT auth.uid() AS uid)%'
+      )
+    ),
+    'governance admin-read RLS initplan cleanup'
 )
 select
   check_name,
