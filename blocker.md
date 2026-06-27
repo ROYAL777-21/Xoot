@@ -45,6 +45,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - GitHub connector can read PR-triggered workflow runs but cannot write repository variables. It returned no PR-triggered runs for latest pushed SHA `08ebb57e916c568a09c7f448444b6c1709b42ae2`.
 - CodeRabbit CLI is not on PATH in this shell. The provider diagnostic checks both `coderabbit` and `cr`; neither is currently available.
 - `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable.
+- The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Its installer downloads and recompiles the official Linux payload and may run an unverified Bun installer unless a pinned checksum is supplied; do not run it for production readiness without explicit checksum approval or use the official CodeRabbit GitHub App instead.
 - CodeRabbit review requires one of:
   - `coderabbit auth login --api-key <api-key>` using a key from an approved vault; or
   - installation of the CodeRabbit GitHub App on the repository.
