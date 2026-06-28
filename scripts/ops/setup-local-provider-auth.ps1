@@ -48,15 +48,20 @@ if ($GitHub) {
     throw "GitHub CLI is required. Install gh before running GitHub setup."
   }
 
-  & gh auth status *> $null
-  if ($LASTEXITCODE -eq 0) {
+  $previousErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  $ghStatusOutput = (& gh auth status 2>&1 | Out-String)
+  $ghStatusCode = $LASTEXITCODE
+  $ErrorActionPreference = $previousErrorActionPreference
+
+  if ($ghStatusCode -eq 0) {
     Write-Host "GitHub CLI is already authenticated."
   } elseif (-not [string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
     Write-Host "Using GH_TOKEN from the local environment for this GitHub CLI session."
     & gh auth status
   } else {
     Write-Host "Starting GitHub browser login. Do not paste tokens into chat."
-    & gh auth login --web
+    & gh auth login --web --hostname github.com --git-protocol https
   }
 }
 

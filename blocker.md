@@ -1,17 +1,16 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-28
+Reviewed: 2026-06-28 17:30 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
 ## Supabase
 
 - Supabase Auth redirect allowlists still need dashboard/API configuration for local web, staging, production, Expo dev client, `zoot://auth/callback`, Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the intended redirects, but the connector exposes no safe redirect setter.
-- Production Supabase security advisor still reports leaked password protection disabled. This must be enabled or explicitly risk-accepted before launch.
+- Staging and production Supabase security advisors still report leaked password protection disabled. This must be enabled or explicitly risk-accepted before launch.
 - Production and staging migration histories remain materially different because production started from launch squashed migrations while staging follows the local chain. Current convergence, booking, sensitive-access, training, storage, Twilio, accepted-job destination, governance, zooter-job-card service-boundary, and legacy RLS policy convergence artifacts were verified live in both projects, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
-- Real role-based smoke tests are still required with staging client, admin, and Zooter users for accepted-job destination visibility, sensitive-access reveal windows, admin-only governance reads, and notification delivery. Staging had zero auth users/roles/bookings when checked on 2026-06-28; `npm run ops:smoke:staging -- --all` now provides a guarded staging-only seed and test path once local staging secrets are available.
 - Local `psql` and Docker are not available on this Windows host, so local database reset still requires Docker/PostgreSQL client tools or a separate ops shell. The live catalog-readiness SQL was run through the authenticated Supabase connector on 2026-06-28 and passed in staging and production.
-- Supabase CLI is installed but not authenticated in this shell. The provider diagnostic reports `supabase-auth` false until `SUPABASE_ACCESS_TOKEN` is set locally or `supabase login` is completed.
+- Supabase CLI `2.108.0` is installed but not authenticated in this shell. The provider diagnostic reports `supabase-auth` false until `SUPABASE_ACCESS_TOKEN` is set locally or `supabase login` is completed in an interactive shell.
 - Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks now show zero missing public FK-covering indexes, zero old targeted policy residues, zero missing expected advisor-cleanup policies, zero raw `auth.uid()` predicates in public policies, zero duplicate-permissive groups for `admin_review_queue`/`favorites`/`messages`/`referrals`, and zero duplicate public index groups in staging or production.
 
 ## Provider Secrets And External Dashboards
@@ -24,7 +23,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 ## Twilio
 
 - The Twilio account still needs production readiness work: trial status removal, approved phone number or ported number, WhatsApp sender approval, Messaging Service classification corrected to transactional/operational use, sender verification, webhook assignments, regulatory registrations, and approved message templates.
-- Twilio SMS, WhatsApp, voice, phone, Verify OTP, and email-adjacent flows must remain disabled through `twilio.operational_messages` until the above work and secret rotation are complete.
+- Twilio SMS, WhatsApp, voice, phone, Verify OTP, and email-adjacent flows must remain disabled through `twilio.operational_messages` until the above work and secret verification are complete.
 
 ## Mapbox
 
@@ -38,7 +37,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Cloudflare
 
-- The connected Cloudflare account currently has no Zoot zone. On 2026-06-28, the Cloudflare API `/zones?name=zoothome.co.za` call returned zero zones for the connected account.
+- The connected Cloudflare account currently has no Zoot zone. On 2026-06-28 17:29 SAST, the Cloudflare API `/zones?name=zoothome.co.za` call returned zero zones for the connected account.
 - The available Cloudflare app/API permissions cannot create `zoothome.co.za`; the latest create attempt failed because the token lacks `com.cloudflare.api.account.zone.create`.
 - Cloudflare Turnstile widgets are not verified. The connector lists Turnstile widget APIs, but the account-level widget list call still returned authentication error `10000` on 2026-06-28, so create restricted web/mobile Turnstile widgets in the dashboard or with a rotated token that has the required Turnstile permissions.
 - WAF, bot/rate-limit rules, Turnstile, DNS, TLS, and origin protection cannot be activated until the zone exists and the token has the required scoped permissions.
@@ -52,11 +51,11 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## GitHub, CodeRabbit, And CI
 
-- GitHub CLI is installed but unauthenticated. Local `gh auth status` reports no logged-in GitHub hosts.
+- GitHub CLI is installed but unauthenticated. Local `gh auth status` reports no logged-in GitHub hosts, and the browser login attempt timed out before completion.
 - GitHub repository/environment variables for optional public integrations still need approved public-safe values where applicable: Expo public Supabase values, site URL, Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL if used. Private provider secrets must not be GitHub repository variables.
 - GitHub connector can read PR-triggered workflow runs but cannot write repository variables. On 2026-06-28, PR #7 pointed at commit `ee5e6fa4ccdb084d2f304d208fe338865c695d86`, but the connector returned no combined statuses and no PR-triggered workflow runs for that commit.
-- CodeRabbit CLI is not on PATH in this shell. The provider diagnostic checks both `coderabbit` and `cr`; neither is currently available.
-- `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable.
+- CodeRabbit CLI `0.6.4` is installed, but `coderabbit auth status --agent` reports `not_authenticated`.
+- `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable. Use an approved local `CODERABBIT_API_KEY` or the official CodeRabbit GitHub App.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.
 - CodeRabbit review requires either `coderabbit auth login --api-key <api-key>` using a key from an approved vault, or installation of the CodeRabbit GitHub App on the repository.
 
@@ -72,7 +71,6 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Verification Still Needed
 
-- Run `npm run ops:smoke:staging -- --all` with local staging-only secrets to seed and verify client, admin, and Zooter users.
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
 - Run signed Twilio webhook smoke tests after Twilio dashboard channels and Edge secrets are verified with the rotated values.
 - Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.

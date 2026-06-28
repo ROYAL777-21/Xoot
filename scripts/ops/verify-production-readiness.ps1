@@ -174,6 +174,7 @@ Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "b
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "get_zooter_job_cards" "live SQL checks zooter card RPC"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "sensitive_access_available_notified_at" "live SQL checks sensitive-access notification column"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "private\.enqueue_sensitive_access_notifications" "live SQL checks sensitive-access notification function"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "integration outbox allows expo push channel" "live SQL checks Expo push outbox channel"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no duplicate public indexes" "live SQL checks duplicate indexes"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "legacy targeted RLS policies converged" "live SQL checks targeted legacy RLS convergence"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "zooters base table not readable by anon" "live SQL checks zooters base table anon grant"
@@ -193,7 +194,16 @@ if (
   Add-ManualBlocker "supabase-live" "live database readiness SQL" "Run scripts/ops/verify-supabase-live.ps1 with SUPABASE_DB_URL or record authenticated Supabase connector SQL evidence for staging and production."
 }
 
-Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Run npm run ops:smoke:staging -- --all with local staging secrets to seed and verify client, admin, and Zooter users, accepted-job destination visibility, sensitive-access reveals, and notifications."
+$roleSmokeEvidence = Read-RepoText "docs/implementation/staging-role-smoke-20260628.md"
+if (
+  $null -ne $roleSmokeEvidence -and
+  $roleSmokeEvidence -match '7 pass / 0 fail' -and
+  $roleSmokeEvidence -match 'Sensitive access availability notification is enqueued for Zooter'
+) {
+  Add-Check "supabase-live" "role-based Supabase smoke tests" "pass" "docs/implementation/staging-role-smoke-20260628.md records staging role/RLS/RPC/notification smoke evidence."
+} else {
+  Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Run npm run ops:smoke:staging -- --all with local staging secrets to seed and verify client, admin, and Zooter users, accepted-job destination visibility, sensitive-access reveals, and notifications."
+}
 Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase dashboard/API access; local config is prepared but live allowlists still need verification."
 Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, dashboard webhook assignment, and verification that current approved secrets are set in Supabase."
 Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privilege browser, native, and build-download tokens from Mapbox."

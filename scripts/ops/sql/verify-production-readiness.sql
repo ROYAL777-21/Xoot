@@ -143,6 +143,18 @@ checks as (
 
   union all
   select
+    'integration outbox allows expo push channel',
+    exists (
+      select 1
+      from pg_constraint c
+      where c.conrelid = 'public.integration_outbox'::regclass
+        and c.conname = 'integration_outbox_channel_check'
+        and pg_get_constraintdef(c.oid) like '%expo_push%'
+    ),
+    'public.integration_outbox.integration_outbox_channel_check'
+
+  union all
+  select
     'public has_role is self-scoped invoker',
     exists (
       select 1

@@ -115,9 +115,10 @@ $codeRabbitBin = Join-Path $env:LOCALAPPDATA "Programs\CodeRabbit\bin"
 $bunBin = Join-Path $env:USERPROFILE ".bun\bin"
 $scoopShims = Join-Path $env:USERPROFILE "scoop\shims"
 $env:DO_NOT_TRACK = "1"
-$env:Path = "$codeRabbitBin;$bunBin;$scoopShims;$env:Path"
+$pathSegments = @($codeRabbitBin, $bunBin, $scoopShims) | Where-Object { Test-Path -LiteralPath $_ }
+$env:Path = (($pathSegments + @($env:Path)) -join ";")
 $processPath = [Environment]::GetEnvironmentVariable("Path", "Process")
-[Environment]::SetEnvironmentVariable("PATH", $null, "Process")
+[Environment]::SetEnvironmentVariable("PATH", $processPath, "Process")
 [Environment]::SetEnvironmentVariable("Path", $processPath, "Process")
 
 $commands = @(
@@ -135,7 +136,7 @@ $statuses = @()
 
 $supabaseCommand = Get-Command "supabase" -ErrorAction SilentlyContinue
 if ($supabaseCommand) {
-  $statuses += Invoke-ExternalStatus "supabase-cli" "supabase" @("--version") -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
+  $statuses += Invoke-ExternalStatus "supabase-cli" "supabase" @("--version") -TimeoutSeconds 30 -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
   $statuses += Invoke-ExternalStatus "supabase-auth" "supabase" @("projects", "list")
 } elseif ($env:ZOOT_CHECK_NPX_SUPABASE -eq "1") {
   $statuses += Invoke-ExternalStatus "supabase-cli" "npx.cmd" @("-y", "supabase@2.108.0", "--version") -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
@@ -155,7 +156,7 @@ if ($supabaseCommand) {
 
 $statuses += @(
   Invoke-ExternalStatus "github-auth" "gh" @("auth", "status")
-  Invoke-ExternalStatus "coderabbit-version" "coderabbit" @("--version")
+  Invoke-ExternalStatus "coderabbit-version" "coderabbit" @("--version") -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
   Invoke-ExternalStatus "coderabbit-auth" "coderabbit" @("auth", "status", "--agent") -OkWhen { param($Text) $Text -match '"authenticated"\s*:\s*true' }
 )
 
