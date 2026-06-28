@@ -38,9 +38,9 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Cloudflare
 
-- The connected Cloudflare account currently has no Zoot zone. On 2026-06-27, the Cloudflare API `/zones?name=zoothome.co.za` call returned zero zones for the connected account.
+- The connected Cloudflare account currently has no Zoot zone. On 2026-06-28, the Cloudflare API `/zones?name=zoothome.co.za` call returned zero zones for the connected account.
 - The available Cloudflare app/API permissions cannot create `zoothome.co.za`; the latest create attempt failed because the token lacks `com.cloudflare.api.account.zone.create`.
-- Cloudflare Turnstile widgets are not verified. The connector lists Turnstile widget APIs, but the account-level widget list call currently returns an authentication error, so create restricted web/mobile Turnstile widgets in the dashboard or with a rotated token that has the required Turnstile permissions.
+- Cloudflare Turnstile widgets are not verified. The connector lists Turnstile widget APIs, but the account-level widget list call still returned authentication error `10000` on 2026-06-28, so create restricted web/mobile Turnstile widgets in the dashboard or with a rotated token that has the required Turnstile permissions.
 - WAF, bot/rate-limit rules, Turnstile, DNS, TLS, and origin protection cannot be activated until the zone exists and the token has the required scoped permissions.
 
 ## Apple, Google, Expo, And Stores
@@ -54,7 +54,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - GitHub CLI is installed but unauthenticated. Local `gh auth status` reports no logged-in GitHub hosts.
 - GitHub repository/environment variables for optional public integrations still need approved public-safe values where applicable: Expo public Supabase values, site URL, Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL if used. Private provider secrets must not be GitHub repository variables.
-- GitHub connector can read PR-triggered workflow runs but cannot write repository variables. On 2026-06-27 it returned no combined statuses for the pushed Phase 1 governance commits and no PR-triggered workflow runs for this branch.
+- GitHub connector can read PR-triggered workflow runs but cannot write repository variables. On 2026-06-28, PR #7 pointed at commit `ee5e6fa4ccdb084d2f304d208fe338865c695d86`, but the connector returned no combined statuses and no PR-triggered workflow runs for that commit.
 - CodeRabbit CLI is not on PATH in this shell. The provider diagnostic checks both `coderabbit` and `cr`; neither is currently available.
 - `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.
