@@ -180,8 +180,18 @@ Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "p
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no raw auth uid in public policies" "live SQL checks legacy auth-initplan cleanup"
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
 
+$liveDatabaseEvidence = Read-RepoText "docs/implementation/live-database-readiness-20260628.md"
+if (
+  $null -ne $liveDatabaseEvidence -and
+  $liveDatabaseEvidence -match 'Staging project `fxmxyabdjqviqbcxmvlp`: 33 pass / 0 fail' -and
+  $liveDatabaseEvidence -match 'Production project `mvlrkelahhsyjrwgsxaf`: 33 pass / 0 fail'
+) {
+  Add-Check "supabase-live" "live database readiness SQL" "pass" "docs/implementation/live-database-readiness-20260628.md records staging and production connector SQL checks."
+} else {
+  Add-ManualBlocker "supabase-live" "live database readiness SQL" "Run scripts/ops/verify-supabase-live.ps1 with SUPABASE_DB_URL or record authenticated Supabase connector SQL evidence for staging and production."
+}
+
 Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Use real staging client, admin, and Zooter users to verify accepted-job destination visibility and sensitive-access notifications."
-Add-ManualBlocker "supabase-live" "live database readiness SQL" "Run scripts/ops/verify-supabase-live.ps1 with SUPABASE_DB_URL for staging and production."
 Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase dashboard/API access; local config is prepared but live allowlists still need verification."
 Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, and rotated secrets."
 Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privilege browser, native, and build-download tokens from Mapbox."
