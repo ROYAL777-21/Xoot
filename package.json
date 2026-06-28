@@ -32,6 +32,7 @@
     "mobile:build:preview:android": "npm --prefix mobile run build:preview:android",
     "mobile:build:production": "npm --prefix mobile run build:production",
     "ops:github-vars": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-github-public-vars.ps1",
+    "ops:smoke:staging": "node scripts/ops/staging-role-smoke.mjs",
     "ops:supabase:deploy:staging": "powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1",
     "ops:supabase:secrets:staging": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-edge-secrets.ps1"
   },

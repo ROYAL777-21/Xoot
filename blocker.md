@@ -9,7 +9,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Supabase Auth redirect allowlists still need dashboard/API configuration for local web, staging, production, Expo dev client, `zoot://auth/callback`, Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the intended redirects, but the connector exposes no safe redirect setter.
 - Production Supabase security advisor still reports leaked password protection disabled. This must be enabled or explicitly risk-accepted before launch.
 - Production and staging migration histories remain materially different because production started from launch squashed migrations while staging follows the local chain. Current convergence, booking, sensitive-access, training, storage, Twilio, accepted-job destination, governance, zooter-job-card service-boundary, and legacy RLS policy convergence artifacts were verified live in both projects, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
-- Real role-based smoke tests are still required with staging client, admin, and Zooter users for accepted-job destination visibility, sensitive-access reveal windows, admin-only governance reads, and notification delivery.
+- Real role-based smoke tests are still required with staging client, admin, and Zooter users for accepted-job destination visibility, sensitive-access reveal windows, admin-only governance reads, and notification delivery. Staging had zero auth users/roles/bookings when checked on 2026-06-28; `npm run ops:smoke:staging -- --all` now provides a guarded staging-only seed and test path once local staging secrets are available.
 - Local `psql` and Docker are not available on this Windows host, so local database reset still requires Docker/PostgreSQL client tools or a separate ops shell. The live catalog-readiness SQL was run through the authenticated Supabase connector on 2026-06-28 and passed in staging and production.
 - Supabase CLI is installed but not authenticated in this shell. The provider diagnostic reports `supabase-auth` false until `SUPABASE_ACCESS_TOKEN` is set locally or `supabase login` is completed.
 - Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks now show zero missing public FK-covering indexes, zero old targeted policy residues, zero missing expected advisor-cleanup policies, zero raw `auth.uid()` predicates in public policies, zero duplicate-permissive groups for `admin_review_queue`/`favorites`/`messages`/`referrals`, and zero duplicate public index groups in staging or production.
@@ -18,8 +18,8 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Real production secrets for Stitch, Ozow, Twilio, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, Mapbox, and WordPress still need to be set in their correct secret stores.
 - Private secrets must not be committed or placed in frontend/mobile env files. Store them only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
-- Secrets pasted into chat, including Supabase, Twilio, Cloudflare, Expo, and Mapbox token values, must be rotated before production launch.
-- `admin-control-management`, `confirm-payment`, `support-respond`, and the Twilio webhook functions are active in staging and production with Phase 1 governance helper calls deployed. Twilio still needs live dashboard channel setup, rotated Edge secrets verification, and signed webhook smoke tests before operational messaging can be enabled.
+- Secrets pasted into chat, including Supabase, Cloudflare, Expo, and Mapbox token values, must be rotated before production launch. The Twilio secret values previously pasted in chat were reported rotated on 2026-06-28; keep using only the rotated values in approved secret stores.
+- `admin-control-management`, `confirm-payment`, `support-respond`, and the Twilio webhook functions are active in staging and production with Phase 1 governance helper calls deployed. Twilio still needs live dashboard channel setup, Edge secret verification with the rotated values, and signed webhook smoke tests before operational messaging can be enabled.
 
 ## Twilio
 
@@ -72,9 +72,9 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Verification Still Needed
 
-- Run real staging smoke tests with client, admin, and Zooter users.
+- Run `npm run ops:smoke:staging -- --all` with local staging-only secrets to seed and verify client, admin, and Zooter users.
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
-- Run signed Twilio webhook smoke tests after Twilio dashboard channels and rotated Edge secrets are verified.
+- Run signed Twilio webhook smoke tests after Twilio dashboard channels and Edge secrets are verified with the rotated values.
 - Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.
 - Run CodeRabbit review once authenticated.

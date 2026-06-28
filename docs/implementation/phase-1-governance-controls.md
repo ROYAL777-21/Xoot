@@ -73,6 +73,6 @@ This migration is additive. If rollback is needed before any Edge Function depen
 
 ## Remaining Phase 1 Work
 
-- Run signed Twilio webhook smoke tests after live Twilio dashboard channel setup and rotated Edge secrets are verified.
+- Run signed Twilio webhook smoke tests after live Twilio dashboard channel setup and current approved Edge secrets are verified.
 - Connect PostHog only after event contracts and privacy settings are approved.
 - Run role-based staging and production smoke tests with real client, admin and Zooter users before considering this phase closed.
