@@ -1,6 +1,6 @@
 # Phase 1 Governance Controls
 
-Reviewed: 2026-06-27
+Reviewed: 2026-06-28
 
 This note records the next Phase 1 implementation slice: backend-owned feature flags, kill switches, provider event idempotency, approval requests, rate-limit primitives, agent contracts and analytics privacy contracts.
 
@@ -23,6 +23,9 @@ This note records the next Phase 1 implementation slice: backend-owned feature f
 - `admin-control-management` deployed to staging and production through the Supabase connector on 2026-06-27 with JWT verification enabled.
 - `support-respond` redeployed to staging and production through the Supabase connector on 2026-06-27 with the Phase 1 rate-limit and OpenAI fallback gate helpers.
 - `confirm-payment` redeployed to staging and production through the Supabase connector on 2026-06-27 with Phase 1 provider-event idempotency helpers.
+- Twilio webhook functions redeployed through the Supabase connector on 2026-06-28 with JWT verification disabled for Twilio compatibility and request signature validation/idempotency enforced in function code:
+  - staging: `twilio-message-webhook` v6; `twilio-whatsapp-webhook`, `twilio-status-callback`, `twilio-voice-webhook`, and `twilio-verify-webhook` v5.
+  - production: `twilio-message-webhook`, `twilio-whatsapp-webhook`, `twilio-status-callback`, `twilio-voice-webhook`, and `twilio-verify-webhook` v5.
 
 ## Added Artifacts
 
@@ -70,6 +73,6 @@ This migration is additive. If rollback is needed before any Edge Function depen
 
 ## Remaining Phase 1 Work
 
-- Redeploy the updated Twilio webhook Edge Functions after live Twilio secrets are set so provider-event idempotency is live for SMS, WhatsApp, voice, status and Verify callbacks.
+- Run signed Twilio webhook smoke tests after live Twilio dashboard channel setup and rotated Edge secrets are verified.
 - Connect PostHog only after event contracts and privacy settings are approved.
 - Run role-based staging and production smoke tests with real client, admin and Zooter users before considering this phase closed.
