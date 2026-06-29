@@ -204,6 +204,19 @@ if (
 } else {
   Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Run npm run ops:smoke:staging -- --all with local staging secrets to seed and verify client, admin, and Zooter users, accepted-job destination visibility, sensitive-access reveals, and notifications."
 }
+
+$edgeFunctionEvidence = Read-RepoText "docs/implementation/live-edge-functions-20260629.md"
+if (
+  $null -ne $edgeFunctionEvidence -and
+  $edgeFunctionEvidence -match 'Staging project `fxmxyabdjqviqbcxmvlp`: required functions active' -and
+  $edgeFunctionEvidence -match 'Production project `mvlrkelahhsyjrwgsxaf`: required functions active' -and
+  $edgeFunctionEvidence -match '`get-booking-public-keys` was deployed to staging and production' -and
+  $edgeFunctionEvidence -match 'UNAUTHORIZED_NO_AUTH_HEADER'
+) {
+  Add-Check "supabase-live" "live Edge Function inventory" "pass" "docs/implementation/live-edge-functions-20260629.md records staging and production function inventory and get-booking-public-keys deployment."
+} else {
+  Add-ManualBlocker "supabase-live" "live Edge Function inventory" "Re-list staging and production Edge Functions through Supabase and verify required app functions, including get-booking-public-keys, are active."
+}
 Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase dashboard/API access; local config is prepared but live allowlists still need verification."
 Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, dashboard webhook assignment, and verification that current approved secrets are set in Supabase."
 Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privilege browser, native, and build-download tokens from Mapbox."

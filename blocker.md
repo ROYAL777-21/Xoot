@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 04:36 SAST
+Reviewed: 2026-06-29 04:52 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -18,7 +18,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Real production secrets for Stitch, Ozow, Twilio, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, Mapbox, and WordPress still need to be set in their correct secret stores.
 - Private secrets must not be committed or placed in frontend/mobile env files. Store them only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
 - Secrets pasted into chat, including Supabase, Cloudflare, Expo, PostHog private API, and Mapbox token values, must be rotated before production launch. The Twilio secret values previously pasted in chat were reported rotated on 2026-06-28; keep using only rotated values in approved secret stores.
-- `admin-control-management`, `confirm-payment`, `support-respond`, and the Twilio webhook functions are implemented in the repo and reported deployed in staging and production, but provider secret verification still requires an authenticated Supabase CLI/session or dashboard secret setter.
+- Live Edge Function inventories for staging and production now show the required app functions active, including `admin-control-management`, `confirm-payment`, `support-respond`, Twilio webhooks, and `get-booking-public-keys`. Provider secret verification and signed smoke tests still require an authenticated Supabase CLI/session, dashboard secret setter, or real provider dashboard access.
 
 ## Twilio
 
@@ -70,6 +70,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
 - Run signed Twilio webhook smoke tests after Twilio dashboard channels and Edge secrets are verified with the rotated values.
+- Run authenticated booking-chat public-key lookup smoke tests against `get-booking-public-keys` with real staging client/Zooter booking participants.
 - Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.
 - Run CodeRabbit review once authenticated.

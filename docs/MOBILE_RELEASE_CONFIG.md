@@ -189,6 +189,44 @@ PostHog React Native is configured behind public-safe environment variables:
 
 ## Store Readiness
 
+### Apple, Google, And EAS Release Credentials Explained
+
+Release credentials are the signing identities, API keys, and dashboard records that prove to Apple, Google, and Expo that Zoot is allowed to build, sign, upload, test, and release `za.co.zoothome.app`.
+
+Apple release requirements:
+
+- Apple Developer membership for the company account that will own Zoot.
+- Apple Team ID selected in EAS credentials.
+- Bundle ID record for `za.co.zoothome.app` in Apple Developer.
+- App Store Connect app record with matching bundle ID, SKU, primary language, app category, support URL, privacy policy URL, and review contact details.
+- App Store Connect API key for non-interactive EAS submit: `.p8` private key file, key ID, issuer ID, and App Store Connect app ID.
+- iOS distribution certificate and App Store provisioning profile, preferably managed by EAS credentials.
+- APNs key/certificate if push notifications, Live Activities, Dynamic Island, or widgets receive server updates.
+- Associated Domains, Sign in with Apple, Push Notifications, App Groups, Live Activities, and any required capabilities enabled before building.
+- Internal TestFlight tester group and reviewer demo accounts.
+
+Google release requirements:
+
+- Google Play Developer account that will own Zoot.
+- Play Console app record for package `za.co.zoothome.app`.
+- App signing setup: Google Play App Signing plus an EAS-managed upload key, or a controlled upload keystore stored in EAS credentials.
+- SHA-256 signing certificate fingerprints for Android App Links, OAuth, and any provider dashboards that require them.
+- Google Cloud service account linked to Play Console API access with the minimum permissions required for internal testing and production submissions.
+- Service account JSON stored as an EAS file secret, never committed.
+- Internal testing track, tester list, content rating, Data Safety form, privacy policy URL, support email, app category, screenshots, and release notes.
+
+EAS release requirements:
+
+- Expo account access to `@don-pacho777/zoot`.
+- EAS project ID configured in public-safe mobile env.
+- EAS build profiles for development, preview, and production.
+- EAS submit profiles for TestFlight and Google Play.
+- EAS environments for development, preview, and production with only public-safe `EXPO_PUBLIC_` values exposed to the app.
+- EAS secrets or credential store entries for Apple API key material, Google Play service account JSON, Android signing credentials, Sentry upload token, and Mapbox downloads token where needed.
+- Remote app version source with auto-increment enabled for iOS build numbers and Android version codes.
+
+Do not put App Store Connect `.p8` contents, Google service account JSON, Android keystores, provisioning profiles, distribution certificates, Apple app-specific passwords, EAS access tokens, or provider secrets in repo files, screenshots, chat, frontend variables, or Expo public variables.
+
 Before TestFlight:
 
 - App Store Connect app record exists.

@@ -165,6 +165,19 @@ Rules:
 | Android upload key | EAS or Play Console | EAS credentials |
 | Firebase/FCM project | Firebase Console | EAS credentials/backend secret store |
 
+Release records that must exist before store submission:
+
+- Apple Developer bundle ID: `za.co.zoothome.app`.
+- App Store Connect app record using the same bundle ID.
+- App Store Connect app-specific metadata: SKU, category, primary language, support URL, privacy policy URL, review contact, demo credentials, screenshots, app privacy answers, and export compliance answer.
+- EAS iOS credentials: Apple Team ID, distribution certificate, provisioning profile, APNs key, associated domains capability, Sign in with Apple capability if enabled, and App Store Connect API key material.
+- Google Play app record using package `za.co.zoothome.app`.
+- Google Play app-specific metadata: app category, store listing, screenshots, support email, privacy policy URL, content rating, Data Safety, target audience, permissions declarations, AI-generated content declaration if applicable, and testing track setup.
+- EAS Android credentials: upload key or EAS-managed signing, package name, version-code auto-increment, Google Play service account file secret, and SHA-256 signing fingerprints for OAuth/App Links/provider dashboards.
+- EAS project configuration: project ID, development/preview/production environments, build profiles, submit profiles, remote version source, and secrets for non-public signing/upload values.
+
+The App Store Connect API key environment names used by EAS CLI are `EXPO_ASC_API_KEY_PATH`, `EXPO_ASC_KEY_ID`, and `EXPO_ASC_ISSUER_ID` when running non-interactive submit flows. Prefer EAS credential storage or a secure CI/vault-backed path over local plaintext files.
+
 ## OAuth
 
 | Provider | Required setup |
