@@ -1,29 +1,30 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-28 17:30 SAST
+Reviewed: 2026-06-29 04:25 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
 ## Supabase
 
-- Supabase Auth redirect allowlists still need dashboard/API configuration for local web, staging, production, Expo dev client, `zoot://auth/callback`, Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the intended redirects, but the connector exposes no safe redirect setter.
-- Staging and production Supabase security advisors still report leaked password protection disabled. This must be enabled or explicitly risk-accepted before launch.
-- Production and staging migration histories remain materially different because production started from launch squashed migrations while staging follows the local chain. Current convergence, booking, sensitive-access, training, storage, Twilio, accepted-job destination, governance, zooter-job-card service-boundary, and legacy RLS policy convergence artifacts were verified live in both projects, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
-- Local `psql` and Docker are not available on this Windows host, so local database reset still requires Docker/PostgreSQL client tools or a separate ops shell. The live catalog-readiness SQL was run through the authenticated Supabase connector on 2026-06-28 and passed in staging and production.
-- Supabase CLI `2.108.0` is installed but not authenticated in this shell. The provider diagnostic reports `supabase-auth` false until `SUPABASE_ACCESS_TOKEN` is set locally or `supabase login` is completed in an interactive shell.
-- Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks now show zero missing public FK-covering indexes, zero old targeted policy residues, zero missing expected advisor-cleanup policies, zero raw `auth.uid()` predicates in public policies, zero duplicate-permissive groups for `admin_review_queue`/`favorites`/`messages`/`referrals`, and zero duplicate public index groups in staging or production.
+- Live Supabase Auth redirect allowlists still need dashboard/API configuration and verification for local web, staging, production, Expo dev client, `zoot://auth/callback`, Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the intended redirects, but the available connector exposes no safe redirect setter.
+- Staging and production Supabase security advisors still report leaked password protection disabled. Enable it if the current Supabase plan supports it, or record an explicit launch risk acceptance before public launch.
+- Supabase CLI `2.108.0` is installed but not authenticated in this shell. The provider diagnostic reports `supabase-auth` false until `SUPABASE_ACCESS_TOKEN` is set locally or `supabase login` is completed in an interactive shell. Do not paste the token into chat.
+- Production and staging migration histories are still different because production started from launch squashed migrations while staging follows the local chain. Current catalog checks show the schemas and booking states are converged, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
+- Local `psql` and Docker are not available on this Windows host, so local database reset still requires Docker/PostgreSQL client tools or a separate ops shell. Live catalog-readiness SQL was rechecked through the Supabase connector on 2026-06-29 and passed in staging and production.
+- Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks show no missing public FK-covering indexes, no targeted legacy policy residues, no missing expected advisor-cleanup policies, no raw `auth.uid()` predicates in public policies, no duplicate-permissive groups for the targeted tables, and no duplicate public index groups.
 
 ## Provider Secrets And External Dashboards
 
 - Real production secrets for Stitch, Ozow, Twilio, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, Mapbox, and WordPress still need to be set in their correct secret stores.
 - Private secrets must not be committed or placed in frontend/mobile env files. Store them only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
-- Secrets pasted into chat, including Supabase, Cloudflare, Expo, and Mapbox token values, must be rotated before production launch. The Twilio secret values previously pasted in chat were reported rotated on 2026-06-28; keep using only the rotated values in approved secret stores.
-- `admin-control-management`, `confirm-payment`, `support-respond`, and the Twilio webhook functions are active in staging and production with Phase 1 governance helper calls deployed. Twilio still needs live dashboard channel setup, Edge secret verification with the rotated values, and signed webhook smoke tests before operational messaging can be enabled.
+- Secrets pasted into chat, including Supabase, Cloudflare, Expo, PostHog private API, and Mapbox token values, must be rotated before production launch. The Twilio secret values previously pasted in chat were reported rotated on 2026-06-28; keep using only rotated values in approved secret stores.
+- `admin-control-management`, `confirm-payment`, `support-respond`, and the Twilio webhook functions are implemented in the repo and reported deployed in staging and production, but provider secret verification still requires an authenticated Supabase CLI/session or dashboard secret setter.
 
 ## Twilio
 
-- The Twilio account still needs production readiness work: trial status removal, approved phone number or ported number, WhatsApp sender approval, Messaging Service classification corrected to transactional/operational use, sender verification, webhook assignments, regulatory registrations, and approved message templates.
-- Twilio SMS, WhatsApp, voice, phone, Verify OTP, and email-adjacent flows must remain disabled through `twilio.operational_messages` until the above work and secret verification are complete.
+- The Twilio account still needs production readiness work: trial status removal, approved or ported phone number, WhatsApp sender approval, Messaging Service classification corrected to transactional/operational use, sender verification, webhook assignments, regulatory registrations, and approved message templates.
+- Twilio SMS, WhatsApp, voice, phone, Verify OTP, and email-adjacent flows must remain disabled through `twilio.operational_messages` until dashboard channel setup, rotated secret verification, and signed webhook smoke tests are complete.
+- No Twilio account-management MCP/API tool is currently exposed in this Codex session, so the dashboard configuration cannot be completed from the repo alone.
 
 ## Mapbox
 
@@ -37,10 +38,9 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Cloudflare
 
-- The connected Cloudflare account currently has no Zoot zone. On 2026-06-28 17:29 SAST, the Cloudflare API `/zones?name=zoothome.co.za` call returned zero zones for the connected account.
-- The available Cloudflare app/API permissions cannot create `zoothome.co.za`; the latest create attempt failed because the token lacks `com.cloudflare.api.account.zone.create`.
-- Cloudflare Turnstile widgets are not verified. The connector lists Turnstile widget APIs, but the account-level widget list call still returned authentication error `10000` on 2026-06-28, so create restricted web/mobile Turnstile widgets in the dashboard or with a rotated token that has the required Turnstile permissions.
-- WAF, bot/rate-limit rules, Turnstile, DNS, TLS, and origin protection cannot be activated until the zone exists and the token has the required scoped permissions.
+- The connected Cloudflare account still has no `zoothome.co.za` zone. On 2026-06-29, the Cloudflare API create-zone attempt failed because the connected token lacks `com.cloudflare.api.account.zone.create`.
+- WAF, bot/rate-limit rules, Turnstile, DNS, TLS, and origin protection cannot be activated until the zone exists and the connected token has the required scoped permissions.
+- Cloudflare Turnstile widgets are not verified. Create restricted web/mobile widgets in the dashboard or with a rotated token that has the required Turnstile permissions.
 
 ## Apple, Google, Expo, And Stores
 
@@ -51,22 +51,21 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## GitHub, CodeRabbit, And CI
 
-- GitHub CLI is installed but unauthenticated. Local `gh auth status` reports no logged-in GitHub hosts, and the browser login attempt timed out before completion.
-- GitHub repository/environment variables for optional public integrations still need approved public-safe values where applicable: Expo public Supabase values, site URL, Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL if used. Private provider secrets must not be GitHub repository variables.
-- GitHub connector can read PR-triggered workflow runs but cannot write repository variables. On 2026-06-28, PR #7 pointed at commit `ee5e6fa4ccdb084d2f304d208fe338865c695d86`, but the connector returned no combined statuses and no PR-triggered workflow runs for that commit.
+- GitHub CLI is authenticated and PR #7 checks are passing. This is no longer a blocker.
+- Optional public-safe GitHub repository variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables.
+- PR #8 (`codex/native-routing-bridge`) is a separate older branch with a failing `src/lib/native-routing.test.ts` assertion for `zoot://bookings?id=booking-456`. If that branch still needs to merge, update its route parser/test and rerun checks.
 - CodeRabbit CLI `0.6.4` is installed, but `coderabbit auth status --agent` reports `not_authenticated`.
-- `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable. Use an approved local `CODERABBIT_API_KEY` or the official CodeRabbit GitHub App.
+- `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable. Use `coderabbit auth login --api-key <api-key>` with a key from an approved vault, or install the official CodeRabbit GitHub App on the repository.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.
-- CodeRabbit review requires either `coderabbit auth login --api-key <api-key>` using a key from an approved vault, or installation of the CodeRabbit GitHub App on the repository.
 
 ## WordPress SEO Stack
 
 - WordPress has been added as a target SEO/content stack, but the production WordPress host, domain/subdomain, security hardening, editorial roles, backup policy, API access model, and publish/sync workflow are not provisioned yet.
 - WordPress must not become a path for unaudited plugins, fake testimonials, weak content, or leaked credentials. Any headless integration must use read-only public APIs for published content and server-side secrets for protected actions.
 
-## Netlify And Hosting
+## Netlify, Hostinger, And Hosting
 
-- Netlify project `zoot-home-care` exists. Public-safe Netlify env var writes for Supabase URL, project ID, site URL, `VITE_APP_ENV`, and the active production Supabase publishable key from the Supabase connector reported success, but Netlify env readback still returned an empty list; do not treat Netlify env as verified until the dashboard/build confirms it.
+- Netlify project `zoot-home-care` exists, but dashboard/build readback is still required before treating Netlify environment configuration as production-verified.
 - Hostinger production deployment credentials and final domain wiring still need dashboard verification.
 
 ## Verification Still Needed

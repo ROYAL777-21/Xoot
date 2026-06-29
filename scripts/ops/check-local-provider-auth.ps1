@@ -155,7 +155,11 @@ if ($supabaseCommand) {
 }
 
 $statuses += @(
-  Invoke-ExternalStatus "github-auth" "gh" @("auth", "status")
+  Invoke-ExternalStatus "github-auth" "gh" @("auth", "status") -OkWhen {
+    param($Text)
+    $Text -match "Logged in to github\.com account" -and
+    $Text -match "Active account:\s*true"
+  }
   Invoke-ExternalStatus "coderabbit-version" "coderabbit" @("--version") -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
   Invoke-ExternalStatus "coderabbit-auth" "coderabbit" @("auth", "status", "--agent") -OkWhen { param($Text) $Text -match '"authenticated"\s*:\s*true' }
 )
