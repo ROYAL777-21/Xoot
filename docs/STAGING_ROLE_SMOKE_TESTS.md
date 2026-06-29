@@ -1,8 +1,8 @@
 # Staging Role Smoke Tests
 
-Reviewed: 2026-06-28
+Reviewed: 2026-06-29
 
-These checks verify the Phase 1 role boundary with real staging users. They intentionally require local environment variables so no secrets or passwords are committed, printed, or pasted into chat.
+These checks verify the Phase 1 role boundary and the Phase 2 booking-chat action layer with real staging users. They intentionally require local environment variables so no secrets or passwords are committed, printed, or pasted into chat.
 
 ## What It Tests
 
@@ -14,6 +14,10 @@ These checks verify the Phase 1 role boundary with real staging users. They inte
 - Clients cannot reveal Zooter-only sensitive household access.
 - Assigned Zooters can reveal approved sensitive access only through `get-sensitive-access`.
 - Zooters receive the `sensitive_access_available` notification for the accepted job window.
+- Booking participants can send encrypted chat only through `send-booking-message`.
+- Direct client inserts into `public.messages` are denied after Phase 2 hardening.
+- Booking participants can mark messages read through `mark-booking-message-read`.
+- Booking participants can report a message through `report-booking-message`, creating an admin review queue item.
 
 ## Current Staging State
 
@@ -49,4 +53,4 @@ Use `--seed` to create/update fixtures only and `--test` to test an existing fix
 
 ## Evidence
 
-After a successful run, record the run date, staging project ref, and redacted output summary in `docs/implementation/`. Do not include emails, passwords, API keys, or sensitive household values.
+After a successful run, record the run date, staging project ref, and redacted output summary in `docs/implementation/`. Do not include emails, passwords, API keys, encrypted message payloads, report details, or sensitive household values.

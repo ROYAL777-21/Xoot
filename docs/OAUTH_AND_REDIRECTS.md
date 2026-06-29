@@ -58,14 +58,14 @@ Example dry run:
 $env:ZOOT_SUPABASE_PROJECT_REF = "abcdefghijklmnopqrst"
 $env:ZOOT_AUTH_SITE_URL = "https://<registered-domain>"
 $env:ZOOT_AUTH_REDIRECT_URLS = "https://<registered-domain>/auth/callback,https://<registered-domain>/auth/reset,zoot://auth/callback"
-powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-auth-config.ps1
+npm run ops:supabase:auth-config
 ```
 
 Apply only after the values are real and approved:
 
 ```powershell
 $env:SUPABASE_ACCESS_TOKEN = "<from local vault, not chat>"
-powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-auth-config.ps1 -Apply
+npm run ops:supabase:auth-config -- -Apply
 ```
 
 ## Google OAuth

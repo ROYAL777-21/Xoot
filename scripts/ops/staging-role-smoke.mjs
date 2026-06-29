@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const STAGING_PROJECT_REF = "fxmxyabdjqviqbcxmvlp";
 const SMOKE_TAG = "ZOOT_PHASE1_ROLE_SMOKE";
+const CHAT_SMOKE_FLAG = "zoot_phase2_booking_chat_smoke";
 const POLL_INTERVAL_MS = 5_000;
 const NOTIFICATION_TIMEOUT_MS = 90_000;
 
@@ -338,6 +339,79 @@ const invoke = async (client, functionName, body = {}) => {
   return { data, error };
 };
 
+const makeSmokeEnvelope = () => {
+  const payload = Buffer.from(
+    JSON.stringify({
+      smoke: true,
+      flag: CHAT_SMOKE_FLAG,
+      created_at: new Date().toISOString(),
+    }),
+  ).toString("base64url");
+
+  return `zoot:e2ee:v1:${payload}`;
+};
+
+const testBookingChatActionLayer = async ({ booking, client, zooter, admin }) => {
+  const encryptedBody = makeSmokeEnvelope();
+  const sendResult = await invoke(client, "send-booking-message", {
+    booking_id: booking.id,
+    encrypted_body: encryptedBody,
+    client_safety_flags: [],
+  });
+  assertNoError("send-booking-message", sendResult.error);
+
+  const message = sendResult.data?.data?.message;
+  expect(message?.id, "send-booking-message did not return a message id.");
+  expect(message.booking_id === booking.id, "send-booking-message returned a message for the wrong booking.");
+  expect(message.sender_type === "user", "send-booking-message did not record the client sender type.");
+  expect(message.body === encryptedBody, "send-booking-message did not preserve the encrypted envelope.");
+
+  const directInsert = await client.from("messages").insert({
+    booking_id: booking.id,
+    sender_type: "user",
+    sender_user_id: message.sender_user_id,
+    body: makeSmokeEnvelope(),
+    envelope_version: 1,
+  });
+  expect(directInsert.error, "Client could still insert public.messages directly after Phase 2 hardening.");
+
+  const zooterRead = await zooter
+    .from("messages")
+    .select("id,booking_id,body,sender_type,moderation_state")
+    .eq("id", message.id)
+    .maybeSingle();
+  assertNoError("zooter reads booking chat message", zooterRead.error);
+  expect(zooterRead.data?.body === encryptedBody, "Assigned Zooter could not read the encrypted booking chat envelope.");
+
+  const receiptResult = await invoke(zooter, "mark-booking-message-read", {
+    booking_id: booking.id,
+    message_ids: [message.id],
+  });
+  assertNoError("mark-booking-message-read", receiptResult.error);
+  expect(receiptResult.data?.data?.marked === 1, "mark-booking-message-read did not mark the smoke message.");
+
+  const reportResult = await invoke(zooter, "report-booking-message", {
+    message_id: message.id,
+    reason: "Smoke test booking chat report",
+    details: `${CHAT_SMOKE_FLAG}: verifies report queue path for staging only`,
+  });
+  assertNoError("report-booking-message", reportResult.error);
+  const report = reportResult.data?.data?.report;
+  expect(report?.id, "report-booking-message did not return a report id.");
+  expect(report.message_id === message.id, "report-booking-message linked the report to the wrong message.");
+
+  const adminQueue = await admin
+    .from("admin_review_queue")
+    .select("id,queue_type,subject_table,subject_id,booking_id")
+    .eq("queue_type", "booking_chat_report")
+    .eq("subject_id", message.id)
+    .maybeSingle();
+  assertNoError("admin review queue booking chat report", adminQueue.error);
+  expect(adminQueue.data?.subject_table === "messages", "Booking chat report did not create a messages admin review queue item.");
+
+  info("Booking chat action-layer smoke passed: Edge send, direct insert denial, read receipt, and report queue.");
+};
+
 const waitForNotification = async (zooterClient) => {
   const started = Date.now();
   while (Date.now() - started <= NOTIFICATION_TIMEOUT_MS) {
@@ -390,7 +464,9 @@ const test = async () => {
   const hasNotification = await waitForNotification(zooter);
   expect(hasNotification, "Zooter did not receive a sensitive_access_available notification within the polling window.");
 
-  info("Role smoke tests passed: client/admin/Zooter auth, accepted destination, sensitive reveal, and notification delivery.");
+  await testBookingChatActionLayer({ booking, client, zooter, admin });
+
+  info("Role smoke tests passed: client/admin/Zooter auth, accepted destination, sensitive reveal, notification delivery, and booking chat action layer.");
 };
 
 if (mode === "seed" || mode === "all") {

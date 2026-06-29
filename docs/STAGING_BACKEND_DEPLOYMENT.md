@@ -185,8 +185,8 @@ The dashboard can be replaced by the Management API script once `SUPABASE_ACCESS
 $env:ZOOT_SUPABASE_PROJECT_REF="fxmxyabdjqviqbcxmvlp"
 $env:ZOOT_AUTH_SITE_URL="https://<approved-staging-domain-or-preview-origin>"
 $env:ZOOT_AUTH_REDIRECT_URLS="http://localhost:5173/auth/callback,http://localhost:5173/auth/reset,zoot://auth/callback,zoot://auth/reset"
-powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-auth-config.ps1
-powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-auth-config.ps1 -Apply
+npm run ops:supabase:auth-config
+npm run ops:supabase:auth-config -- -Apply
 ```
 
 Do not use `-Apply` with placeholder domains, mixed staging/production URLs, or a token pasted into chat.

@@ -163,6 +163,10 @@ Test-RepoPattern "phase-2-chat" "supabase/config.toml" "\[functions\.mark-bookin
 Test-RepoPattern "phase-2-chat" "src/components/zoot/BookingChat.tsx" "send-booking-message" "booking chat sends through Edge Function"
 Test-RepoPattern "phase-2-chat" "src/components/zoot/BookingChat.tsx" "report-booking-message" "booking chat report action"
 Test-RepoPattern "phase-2-chat" "src/lib/booking-chat-safety.ts" "off_platform" "booking chat client-side off-platform safety filter"
+Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "send-booking-message" "staging smoke covers booking chat send"
+Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "mark-booking-message-read" "staging smoke covers booking chat read receipts"
+Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "report-booking-message" "staging smoke covers booking chat reports"
+Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "Client could still insert public.messages directly" "staging smoke verifies direct message inserts are denied"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -189,6 +193,7 @@ Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "SUP
 Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Dry run only" "Supabase Auth config is dry-run first"
 Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Refusing to read live redirect configuration from inside the repository" "Supabase Auth redirect file must stay outside repo"
 Test-RepoPattern "supabase-auth" "docs/OAUTH_AND_REDIRECTS.md" "set-supabase-auth-config.ps1" "OAuth docs reference Auth config automation"
+Test-RepoPattern "supabase-auth" "package.json" "ops:supabase:auth-config" "npm script exposes Supabase Auth config automation"
 Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "SUPABASE_ACCESS_TOKEN" "shared deploy requires Supabase auth"
 Test-RepoPattern "supabase" "scripts/ops/setup-local-provider-auth.ps1" "supabase@2\.108\.0" "local Supabase auth setup uses pinned npx CLI"
 Test-RepoPattern "supabase" "scripts/ops/deploy-production-backend.ps1" "production" "production deploy wrapper exists"

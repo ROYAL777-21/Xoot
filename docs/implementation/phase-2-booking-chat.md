@@ -11,6 +11,7 @@ This slice hardens the existing `public.messages` booking chat path. It does not
 - Edge Function: `supabase/functions/report-booking-message/index.ts`
 - Edge Function: `supabase/functions/mark-booking-message-read/index.ts`
 - Client safety helper: `src/lib/booking-chat-safety.ts`
+- Staging smoke coverage: `scripts/ops/staging-role-smoke.mjs`
 
 ## Security Boundary
 
@@ -43,4 +44,10 @@ If the action layer causes delivery issues:
 
 ## Live Follow-Up
 
-Apply the migration to staging first, deploy the three Edge Functions with JWT verification enabled, then smoke-test client and Zooter send/read/report flows on one staging booking.
+Apply the migration to staging first, deploy the three Edge Functions with JWT verification enabled, then run:
+
+```powershell
+npm run ops:smoke:staging -- --all
+```
+
+The smoke run now verifies client/Zooter participant auth, Edge-only chat sending, denied direct `public.messages` insert, read receipts, message reports, and admin review queue creation on one staging booking.
