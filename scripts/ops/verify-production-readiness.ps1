@@ -182,6 +182,23 @@ Test-RepoPattern "phase-3-care-plus" "src/pages/app/Plans.tsx" "useHouseholdOper
 Test-RepoPattern "phase-3-care-plus" "src/pages/app/OfficeDashboard.tsx" "useHouseholdOperatingLayer" "office dashboard uses shared household layer"
 Test-RepoPattern "phase-3-care-plus" "src/pages/app/AirbnbHostDashboard.tsx" "useHouseholdOperatingLayer" "host dashboard uses shared household layer"
 Test-RepoPattern "phase-3-care-plus" "src/pages/care/CarePlus.tsx" "Household operating layer" "Care+ active panel shows household operating status"
+Test-RepoFile "phase-4-invoices" "docs/implementation/phase-4-completed-booking-invoices.md" | Out-Null
+Test-RepoFile "phase-4-invoices" "supabase/functions/generate-booking-invoice/index.ts" | Out-Null
+Test-RepoFile "phase-4-invoices" "supabase/functions/resend-booking-invoice/index.ts" | Out-Null
+Test-RepoPattern "phase-4-invoices" "supabase/migrations/20260629194645_completed_booking_invoices.sql" "create table if not exists public\.booking_invoices" "booking invoice table exists"
+Test-RepoPattern "phase-4-invoices" "supabase/migrations/20260629194645_completed_booking_invoices.sql" "constraint booking_invoices_booking_unique unique \(booking_id\)" "booking invoice idempotency constraint"
+Test-RepoPattern "phase-4-invoices" "supabase/migrations/20260629194645_completed_booking_invoices.sql" "prevent_booking_invoice_snapshot_mutation" "booking invoice immutable snapshot trigger"
+Test-RepoPattern "phase-4-invoices" "supabase/migrations/20260629194645_completed_booking_invoices.sql" "'booking-invoices', 'booking-invoices', false" "private booking invoice storage bucket"
+Test-RepoPattern "phase-4-invoices" "supabase/migrations/20260629194645_completed_booking_invoices.sql" "booking_invoices_owner_or_admin_read" "booking invoice owner/admin RLS"
+Test-RepoPattern "phase-4-invoices" "supabase/migrations/20260629194645_completed_booking_invoices.sql" "booking_invoices_owner_admin_read" "booking invoice PDF owner/admin storage policy"
+Test-RepoPattern "phase-4-invoices" "supabase/functions/generate-booking-invoice/index.ts" "payment_records" "invoice generation verifies backend payment record"
+Test-RepoPattern "phase-4-invoices" "supabase/functions/generate-booking-invoice/index.ts" "booking_invoice_created" "invoice generation queues Brevo outbox delivery"
+Test-RepoPattern "phase-4-invoices" "supabase/functions/generate-booking-invoice/index.ts" "ZOOT_INVOICE_LEGAL_ENTITY" "invoice generation has legal config gate"
+Test-RepoPattern "phase-4-invoices" "supabase/functions/resend-booking-invoice/index.ts" "booking_invoice_resend" "invoice resend queues original PDF outbox delivery"
+Test-RepoPattern "phase-4-invoices" "supabase/config.toml" "\[functions\.generate-booking-invoice\]\s+verify_jwt = true" "generate-booking-invoice requires JWT"
+Test-RepoPattern "phase-4-invoices" "supabase/config.toml" "\[functions\.resend-booking-invoice\]\s+verify_jwt = true" "resend-booking-invoice requires JWT"
+Test-RepoPattern "phase-4-invoices" "supabase/functions/.env.example" "ZOOT_INVOICE_LEGAL_ENTITY" "invoice legal env template"
+Test-RepoPattern "phase-4-invoices" "docs/EMAIL_TEMPLATES.md" "booking_invoice_resend" "email playbook covers invoice resend"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",

@@ -109,6 +109,8 @@ Status values:
 | Webhook key | `BREVO_WEBHOOK_KEY` | Edge secret | Template | Verify inbound webhook authenticity. |
 | Marketing list IDs | `BREVO_MARKETING_LIST_ID` | Edge secret or ops config | Template | Keep staging/prod separate. |
 | Transactional template IDs | `BREVO_TRANSACTIONAL_TEMPLATE_BOOKING_ID`, `BREVO_TRANSACTIONAL_TEMPLATE_SUPPORT_ID` | Edge secret or ops config | Template | Version and QA before production send. |
+| Invoice legal entity | `ZOOT_INVOICE_LEGAL_ENTITY`, `ZOOT_INVOICE_LEGAL_ENTITY_REGISTRATION` | Supabase Edge Function secret | Template | Required by `generate-booking-invoice`; use final reviewed business/legal values. |
+| Invoice VAT config | `ZOOT_INVOICE_VAT_RATE`, `ZOOT_INVOICE_VAT_NUMBER` | Supabase Edge Function secret | Template | If VAT rate is greater than zero, the VAT number is required before invoices can be generated. |
 
 ## KIE
 

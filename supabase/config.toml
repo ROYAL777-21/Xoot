@@ -38,6 +38,12 @@ verify_jwt = true
 [functions.get-sensitive-access]
 verify_jwt = true
 
+[functions.generate-booking-invoice]
+verify_jwt = true
+
+[functions.resend-booking-invoice]
+verify_jwt = true
+
 [functions.twilio-message-webhook]
 verify_jwt = false
 

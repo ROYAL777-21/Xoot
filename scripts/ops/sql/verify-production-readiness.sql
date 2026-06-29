@@ -155,6 +155,79 @@ checks as (
 
   union all
   select
+    'booking invoices table exists',
+    to_regclass('public.booking_invoices') is not null,
+    'public.booking_invoices'
+
+  union all
+  select
+    'booking invoices unique per booking',
+    exists (
+      select 1
+      from pg_constraint c
+      where c.conrelid = 'public.booking_invoices'::regclass
+        and c.conname = 'booking_invoices_booking_unique'
+        and c.contype = 'u'
+    ),
+    'public.booking_invoices.booking_invoices_booking_unique'
+
+  union all
+  select
+    'booking invoices immutable trigger exists',
+    exists (
+      select 1
+      from pg_trigger t
+      where t.tgrelid = 'public.booking_invoices'::regclass
+        and t.tgname = 'prevent_booking_invoice_snapshot_mutation'
+        and not t.tgisinternal
+    ),
+    'public.booking_invoices.prevent_booking_invoice_snapshot_mutation'
+
+  union all
+  select
+    'booking invoices owner admin read policy exists',
+    exists (
+      select 1
+      from pg_policies
+      where schemaname = 'public'
+        and tablename = 'booking_invoices'
+        and policyname = 'booking_invoices_owner_or_admin_read'
+    ),
+    'public.booking_invoices.booking_invoices_owner_or_admin_read'
+
+  union all
+  select
+    'booking invoices no authenticated writes',
+    not has_table_privilege('authenticated', 'public.booking_invoices', 'INSERT')
+      and not has_table_privilege('authenticated', 'public.booking_invoices', 'UPDATE')
+      and not has_table_privilege('authenticated', 'public.booking_invoices', 'DELETE'),
+    'authenticated invoice writes denied'
+
+  union all
+  select
+    'booking invoice private bucket exists',
+    exists (
+      select 1
+      from storage.buckets
+      where id = 'booking-invoices'
+        and public = false
+    ),
+    'storage.buckets.booking-invoices'
+
+  union all
+  select
+    'booking invoice storage owner admin read policy exists',
+    exists (
+      select 1
+      from pg_policies
+      where schemaname = 'storage'
+        and tablename = 'objects'
+        and policyname = 'booking_invoices_owner_admin_read'
+    ),
+    'storage.objects.booking_invoices_owner_admin_read'
+
+  union all
+  select
     'public has_role is self-scoped invoker',
     exists (
       select 1
