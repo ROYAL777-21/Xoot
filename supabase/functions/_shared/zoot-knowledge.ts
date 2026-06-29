@@ -3,6 +3,8 @@ export type ZootKnowledgeReply = {
   source: "knowledge_base";
 };
 
+export const zootKnowledgeVersion = "2026-06-29.phase5";
+
 const launchAreas = [
   "Sandton",
   "Bryanston",
@@ -21,6 +23,32 @@ const launchAreas = [
 const includesAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
 
 const reply = (response: string): ZootKnowledgeReply => ({ response, source: "knowledge_base" });
+
+const stripUnsafeText = (value: string) =>
+  value
+    .split("")
+    .map((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 31 || code === 127 || character === "<" || character === ">" || character === "`" || character === "\\"
+        ? " "
+        : character;
+    })
+    .join("");
+
+export const sanitiseSupportText = (value: unknown, maxLength = 1500) =>
+  typeof value === "string"
+    ? stripUnsafeText(value).replace(/\s+/g, " ").trim().slice(0, maxLength)
+    : "";
+
+export const redactSupportText = (value: string) =>
+  value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email redacted]")
+    .replace(/(?:\+?\d[\d\s().-]{6,}\d)\b/g, "[phone redacted]")
+    .replace(/\b\d{13}\b/g, "[id number redacted]")
+    .replace(/\b(?:\d[ -]*?){13,19}\b/g, "[card number redacted]")
+    .replace(/\b(gate|access|lockbox|alarm|door|garage)\s*(code|pin|password)?\s*[:#-]?\s*[A-Z0-9-]{3,}\b/gi, "$1 code [redacted]")
+    .replace(/\b(password|passcode|otp|one-time code)\s*[:#-]?\s*\S+/gi, "$1 [redacted]")
+    .slice(0, 1200);
 
 export const zootKnowledgeContext = [
   "Zoot is a premium South African home-care platform for vetted independent cleaning contractors called Zooters.",

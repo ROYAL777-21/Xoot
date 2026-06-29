@@ -228,6 +228,35 @@ checks as (
 
   union all
   select
+    'concierge knowledge versions table exists',
+    to_regclass('public.zoot_concierge_knowledge_versions') is not null,
+    'public.zoot_concierge_knowledge_versions'
+
+  union all
+  select
+    'concierge feedback table exists',
+    to_regclass('public.zoot_concierge_feedback') is not null,
+    'public.zoot_concierge_feedback'
+
+  union all
+  select
+    'concierge feedback direct client writes denied',
+    not has_table_privilege('authenticated', 'public.zoot_concierge_feedback', 'INSERT')
+      and not has_table_privilege('anon', 'public.zoot_concierge_feedback', 'INSERT'),
+    'public.zoot_concierge_feedback insert denied'
+
+  union all
+  select
+    'concierge Turnstile gate exists',
+    exists (
+      select 1
+      from public.operational_controls
+      where control_key = 'support.turnstile_required'
+    ),
+    'public.operational_controls.support.turnstile_required'
+
+  union all
+  select
     'public has_role is self-scoped invoker',
     exists (
       select 1

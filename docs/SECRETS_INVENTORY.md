@@ -143,6 +143,7 @@ Status values:
 | --- | --- | --- | --- | --- |
 | API key/provider key | `OPENAI_API_KEY` | Supabase Edge Function secret | Referenced | Used by `support-respond`; fallback rules work if missing. |
 | Model name | `OPENAI_SUPPORT_MODEL` | Supabase Edge Function secret | Referenced | Defaults to `gpt-4.1-mini`. |
+| Guest anti-abuse hard requirement | `ZOOT_REQUIRE_CONCIERGE_TURNSTILE` | Supabase Edge Function secret/env | Optional | Use only after Cloudflare Turnstile widget and domain restrictions are configured. The database gate is `support.turnstile_required`. |
 | System prompt location | `supabase/functions/support-respond/index.ts` | Code | Referenced | Prompt forbids passwords, OTPs, refunds, payments, and unsafe approvals. |
 | Rate limit strategy | Edge Function/API gateway | Template | Add per-user and per-ticket throttles before scale. |
 | Human escalation rules | `support-respond` escalation keywords | Code | Referenced | Refunds, payments, damage, unsafe, cancellation, replacement, access codes escalate. |

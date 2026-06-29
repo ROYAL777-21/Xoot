@@ -15,12 +15,16 @@ type BotMessage = {
   id: string;
   role: "assistant" | "user" | "system";
   body: string;
+  source?: SupportBotReply["source"] | "local_knowledge";
+  knowledgeVersion?: string | null;
 };
 
 type SupportBotReply = {
   response?: string;
   escalated?: boolean;
   source?: "knowledge_base" | "openai_responses" | "human_escalation";
+  knowledge_version?: string | null;
+  turnstile_required?: boolean;
 };
 
 const secretLikePattern =
@@ -84,14 +88,43 @@ export const ZootSupportBot = () => {
     setMessages((current) => [...current, { id: createMessageId(), ...message }]);
   };
 
-  const reportAnswer = () => {
+  const reportAnswer = async () => {
     haptic("selection");
+    const lastAssistant = [...messages].reverse().find((message) => message.role === "assistant" && message.id !== "welcome");
     captureAnalyticsEvent("concierge_answer_reported", {
       source: "zoot_concierge",
       reason: "user_report",
       signed_in: Boolean(user),
       role,
     });
+
+    if (isSupabaseConfigured && lastAssistant) {
+      const recentContext = messages
+        .slice(-5)
+        .map((message) => `${message.role}: ${message.body}`)
+        .join("\n")
+        .slice(0, 900);
+
+      const { error } = await supabase.functions.invoke("report-concierge-answer", {
+        body: {
+          reason: "User reported this Concierge answer",
+          role,
+          source: lastAssistant.source ?? "unknown",
+          knowledge_version: lastAssistant.knowledgeVersion ?? null,
+          answer_excerpt: lastAssistant.body,
+          conversation_context: recentContext,
+        },
+      });
+
+      if (error) {
+        appendMessage({
+          role: "system",
+          body: "I could not record that report automatically. Open Support and reference this Concierge answer so a human reviewer can check it.",
+        });
+        return;
+      }
+    }
+
     appendMessage({
       role: "system",
       body: user
@@ -142,6 +175,8 @@ export const ZootSupportBot = () => {
         appendMessage({
           role: "assistant",
           body: localReply.response,
+          source: localReply.source,
+          knowledgeVersion: "local",
         });
         haptic("success");
         return;
@@ -163,6 +198,8 @@ export const ZootSupportBot = () => {
         body:
           reply?.response ??
           "Zoot Support could not answer automatically. Open Support so a human can review the request in the app.",
+        source: reply?.source ?? "human_escalation",
+        knowledgeVersion: reply?.knowledge_version ?? null,
       });
       if (reply?.escalated) {
         appendMessage({
@@ -177,6 +214,8 @@ export const ZootSupportBot = () => {
         appendMessage({
           role: "assistant",
           body: `${localReply.response} Live support is not reachable in this session, so I cannot perform account, booking, payment or admin actions here.`,
+          source: localReply.source,
+          knowledgeVersion: "local",
         });
         haptic("warning");
         return;

@@ -199,6 +199,18 @@ Test-RepoPattern "phase-4-invoices" "supabase/config.toml" "\[functions\.generat
 Test-RepoPattern "phase-4-invoices" "supabase/config.toml" "\[functions\.resend-booking-invoice\]\s+verify_jwt = true" "resend-booking-invoice requires JWT"
 Test-RepoPattern "phase-4-invoices" "supabase/functions/.env.example" "ZOOT_INVOICE_LEGAL_ENTITY" "invoice legal env template"
 Test-RepoPattern "phase-4-invoices" "docs/EMAIL_TEMPLATES.md" "booking_invoice_resend" "email playbook covers invoice resend"
+Test-RepoFile "phase-5-concierge" "docs/implementation/phase-5-zoot-concierge.md" | Out-Null
+Test-RepoFile "phase-5-concierge" "supabase/functions/report-concierge-answer/index.ts" | Out-Null
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "zoot_concierge_knowledge_versions" "Concierge knowledge versions table"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "zoot_concierge_feedback" "Concierge feedback table"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "support\.turnstile_required" "Concierge Turnstile operational gate"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "refund_payment" "Concierge prohibited payment actions"
+Test-RepoPattern "phase-5-concierge" "supabase/functions/_shared/turnstile.ts" "siteverify" "Cloudflare Turnstile server verification"
+Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "verifyTurnstile" "Concierge Turnstile verification boundary"
+Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "store: false" "Concierge OpenAI no-store setting"
+Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "fetchWithTimeout" "Concierge OpenAI timeout fallback"
+Test-RepoPattern "phase-5-concierge" "supabase/config.toml" "\[functions\.report-concierge-answer\]\s+verify_jwt = false" "report-concierge-answer allows guest reports"
+Test-RepoPattern "phase-5-concierge" "src/components/zoot/ZootSupportBot.tsx" "report-concierge-answer" "Concierge UI reports answers through Edge Function"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",

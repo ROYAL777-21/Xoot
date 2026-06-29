@@ -23,6 +23,9 @@ verify_jwt = false
 [functions.support-respond]
 verify_jwt = false
 
+[functions.report-concierge-answer]
+verify_jwt = false
+
 [functions.get-booking-public-keys]
 verify_jwt = true
 

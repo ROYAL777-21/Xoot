@@ -15,6 +15,8 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Phase 2 booking chat action-layer migration and Edge Functions are implemented locally, and the staging smoke script now covers send/read/report/direct-insert-denial. Live staging/prod deployment and execution still require Supabase CLI/session access: `20260629113000_booking_chat_action_layer.sql`, `send-booking-message`, `report-booking-message`, and `mark-booking-message-read`.
 - Phase 4 completed-booking invoice migration, private bucket, immutable snapshot trigger, and Edge Functions are implemented locally. Live staging/prod deployment and execution still require Supabase CLI/session access: `20260629194645_completed_booking_invoices.sql`, `generate-booking-invoice`, and `resend-booking-invoice`.
 - Completed-booking invoice generation requires final reviewed legal/VAT values in Supabase Edge Function secrets: `ZOOT_INVOICE_LEGAL_ENTITY`, `ZOOT_INVOICE_LEGAL_ENTITY_REGISTRATION`, `ZOOT_INVOICE_VAT_RATE`, and `ZOOT_INVOICE_VAT_NUMBER` when VAT applies.
+- Phase 5 Zoot Concierge migration and `report-concierge-answer` are implemented locally. Live staging/prod deployment and execution still require Supabase CLI/session access: `20260629200351_phase5_zoot_concierge.sql`, `support-respond`, and `report-concierge-answer`.
+- Anonymous Concierge Turnstile enforcement must stay disabled until a production domain and restricted Cloudflare Turnstile widget exist. When available, set `support.turnstile_required` or `ZOOT_REQUIRE_CONCIERGE_TURNSTILE=true` only after the rotated Turnstile secret is stored in Supabase Edge Function secrets.
 
 ## Provider Secrets And External Dashboards
 
