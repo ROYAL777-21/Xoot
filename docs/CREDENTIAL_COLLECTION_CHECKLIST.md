@@ -207,6 +207,7 @@ The App Store Connect API key environment names used by EAS CLI are `EXPO_ASC_AP
 - Decide whether to upgrade Supabase to Pro for leaked password protection now, or use strong password rules plus OTP/OAuth until launch risk justifies the upgrade.
 - Apply the repo schema/migrations to the `Zoot Staging` Supabase project after migration history is reconciled. Use `npm run ops:supabase:deploy:staging` once local Supabase auth/DB credentials are available.
 - Set Supabase Edge Function secrets for production and staging. Use `npm run ops:supabase:secrets:staging -- -EnvFile <outside-repo-file>` for staging.
+- Configure Supabase Auth Site URL and redirect allowlists with `scripts/ops/set-supabase-auth-config.ps1` after `SUPABASE_ACCESS_TOKEN`, the project ref, and approved local/staging/production/native URLs are available locally. Run it first without `-Apply`.
 - Deploy all Edge Functions after schema and secrets are set. Use `powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1 -DeployFunctions`.
 - Expo login and EAS project initialization are complete for `@don-pacho777/zoot`.
 - EAS environments and public variables are configured for development, preview, and production.

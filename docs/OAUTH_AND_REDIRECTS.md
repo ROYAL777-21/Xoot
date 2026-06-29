@@ -1,6 +1,6 @@
 # Zoot OAuth And Redirects
 
-Reviewed: 2026-06-20
+Reviewed: 2026-06-29
 
 This file inventories OAuth, Supabase Auth redirects, and native deep-link requirements. It contains placeholders only.
 
@@ -46,11 +46,27 @@ Required Supabase Auth dashboard setup:
 - Add all redirect URLs per environment.
 - Keep staging and production provider credentials separate.
 
-Live status on 2026-06-24:
+Live status on 2026-06-29:
 
 - The local Supabase configuration now contains the complete web and `zoot://` redirect set.
-- Staging and production dashboard allowlists remain empty because the active dashboard session is signed out and the connected Supabase database tool does not expose Auth config writes.
+- Staging and production dashboard allowlists still need live verification. The repo now includes `scripts/ops/set-supabase-auth-config.ps1`, which can update Supabase Auth Site URL and redirect allowlist through the Supabase Management API after `SUPABASE_ACCESS_TOKEN`, the project ref, and real environment URLs are available locally.
 - Do not launch email confirmation, password reset, Google OAuth, or Apple OAuth until the dashboard values exactly match this document.
+
+Example dry run:
+
+```powershell
+$env:ZOOT_SUPABASE_PROJECT_REF = "abcdefghijklmnopqrst"
+$env:ZOOT_AUTH_SITE_URL = "https://<registered-domain>"
+$env:ZOOT_AUTH_REDIRECT_URLS = "https://<registered-domain>/auth/callback,https://<registered-domain>/auth/reset,zoot://auth/callback"
+powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-auth-config.ps1
+```
+
+Apply only after the values are real and approved:
+
+```powershell
+$env:SUPABASE_ACCESS_TOKEN = "<from local vault, not chat>"
+powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-auth-config.ps1 -Apply
+```
 
 ## Google OAuth
 

@@ -1,12 +1,12 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 12:20 SAST
+Reviewed: 2026-06-29 16:40 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
 ## Supabase
 
-- Live Supabase Auth redirect allowlists still need dashboard/API configuration and verification for local web, staging, production, Expo dev client, `zoot://auth/callback`, Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the intended redirects, but the available connector exposes no safe redirect setter.
+- Live Supabase Auth redirect allowlists still need API/dashboard configuration and verification for local web, staging, production, Expo dev client, `zoot://auth/callback`, Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the intended redirects, and `scripts/ops/set-supabase-auth-config.ps1` can apply them through the Supabase Management API once `SUPABASE_ACCESS_TOKEN`, the target project ref, and real approved URLs are available locally.
 - Staging and production Supabase security advisors still report leaked password protection disabled. Enable it if the current Supabase plan supports it, or record an explicit launch risk acceptance before public launch.
 - Supabase CLI `2.108.0` is installed but not authenticated in this shell. On 2026-06-29, `supabase projects list --debug` still returned `LegacyPlatformAuthRequiredError` because no local profile or `SUPABASE_ACCESS_TOKEN` is available. Set `SUPABASE_ACCESS_TOKEN` locally or run `supabase login --token <token>` in an interactive shell. Do not paste the token into chat.
 - Production and staging migration histories are still different because production started from launch squashed migrations while staging follows the local chain. Current catalog checks show the schemas and booking states are converged, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
@@ -87,7 +87,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Run signed Twilio webhook smoke tests after Twilio dashboard channels and Edge secrets are verified with the rotated values.
 - Deploy and smoke-test the Phase 2 booking chat action layer in staging/prod: direct `messages` inserts revoked, participant sends through Edge Function, read receipts written, and message reports queued for admin review.
 - Run authenticated booking-chat public-key lookup smoke tests against `get-booking-public-keys` with real staging client/Zooter booking participants.
-- Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
+- Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-supabase-auth-config.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.
 - Run CodeRabbit review once authenticated.
 - Confirm Cloudflare WAF/rate-limit/Turnstile rules after the zone is added.

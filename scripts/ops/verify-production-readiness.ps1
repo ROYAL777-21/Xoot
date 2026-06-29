@@ -87,6 +87,7 @@ Test-RepoFile "ops" "scripts/ops/deploy-production-backend.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/deploy-supabase-backend.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-github-public-vars.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-supabase-edge-secrets.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/set-supabase-auth-config.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/verify-supabase-live.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/sql/verify-production-readiness.sql" | Out-Null
 Test-RepoFile "ops" "scripts/ops/staging-role-smoke.mjs" | Out-Null
@@ -183,6 +184,11 @@ Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "sk\\\." "Git
 Test-RepoPattern "security" "scripts/security/secret-scan.mjs" "Cloudflare API token" "secret scan catches Cloudflare API tokens"
 Test-RepoPattern "security" "scripts/security/secret-scan.mjs" "Mapbox secret token" "secret scan catches Mapbox secret tokens"
 Test-RepoPattern "supabase" "scripts/ops/set-supabase-edge-secrets.ps1" "Refusing to read Edge secrets from inside the repository" "Edge secrets file must stay outside repo"
+Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" '/v1/projects/\$ProjectRef/config/auth' "Supabase Auth config uses Management API endpoint"
+Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "SUPABASE_ACCESS_TOKEN" "Supabase Auth config requires local access token"
+Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Dry run only" "Supabase Auth config is dry-run first"
+Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Refusing to read live redirect configuration from inside the repository" "Supabase Auth redirect file must stay outside repo"
+Test-RepoPattern "supabase-auth" "docs/OAUTH_AND_REDIRECTS.md" "set-supabase-auth-config.ps1" "OAuth docs reference Auth config automation"
 Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "SUPABASE_ACCESS_TOKEN" "shared deploy requires Supabase auth"
 Test-RepoPattern "supabase" "scripts/ops/setup-local-provider-auth.ps1" "supabase@2\.108\.0" "local Supabase auth setup uses pinned npx CLI"
 Test-RepoPattern "supabase" "scripts/ops/deploy-production-backend.ps1" "production" "production deploy wrapper exists"
