@@ -167,6 +167,21 @@ Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "send-booki
 Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "mark-booking-message-read" "staging smoke covers booking chat read receipts"
 Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "report-booking-message" "staging smoke covers booking chat reports"
 Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "Client could still insert public.messages directly" "staging smoke verifies direct message inserts are denied"
+Test-RepoFile "phase-3-care-plus" "docs/implementation/phase-3-care-plus-household.md" | Out-Null
+Test-RepoFile "phase-3-care-plus" "src/hooks/useHouseholdOperatingLayer.ts" | Out-Null
+Test-RepoFile "phase-3-care-plus" "src/hooks/useHouseholdOperatingLayer.test.ts" | Out-Null
+Test-RepoPattern "phase-3-care-plus" "src/hooks/useHouseholdOperatingLayer.ts" "household_profiles" "household operating layer reads Home Memory"
+Test-RepoPattern "phase-3-care-plus" "src/hooks/useHouseholdOperatingLayer.ts" "property_accounts" "household operating layer reads property profiles"
+Test-RepoPattern "phase-3-care-plus" "src/hooks/useHouseholdOperatingLayer.ts" "buildReadyModes" "household operating layer derives ready modes"
+Test-RepoPattern "phase-3-care-plus" "src/hooks/useHouseholdOperatingLayer.ts" "buildServiceRecoverySignals" "household operating layer derives service recovery"
+$householdLayerText = Read-RepoText "src/hooks/useHouseholdOperatingLayer.ts"
+if ($null -ne $householdLayerText) {
+  Add-Check "phase-3-care-plus" "household operating layer does not return gate codes" ($(if ($householdLayerText -notmatch "gate_code") { "pass" } else { "fail" })) "Gate codes must stay behind the sensitive-access Edge Function."
+}
+Test-RepoPattern "phase-3-care-plus" "src/pages/app/Plans.tsx" "useHouseholdOperatingLayer" "Care+ plan page uses shared household layer"
+Test-RepoPattern "phase-3-care-plus" "src/pages/app/OfficeDashboard.tsx" "useHouseholdOperatingLayer" "office dashboard uses shared household layer"
+Test-RepoPattern "phase-3-care-plus" "src/pages/app/AirbnbHostDashboard.tsx" "useHouseholdOperatingLayer" "host dashboard uses shared household layer"
+Test-RepoPattern "phase-3-care-plus" "src/pages/care/CarePlus.tsx" "Household operating layer" "Care+ active panel shows household operating status"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",

@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 21:16 SAST
+Reviewed: 2026-06-29 21:39 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -23,7 +23,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Domain Registration
 
-- No production domain is registered yet. Domain-dependent setup cannot be completed without the final domain and registrar/DNS access.
+- No production domain is registered yet. The founder reconfirmed this on 2026-06-29, so domain-dependent setup cannot be completed without the final domain and registrar/DNS access.
 - Pending until domain registration: Cloudflare zone/DNS/TLS/WAF/Turnstile restrictions, production Supabase Auth redirect allowlists, Google/Apple OAuth origins and callbacks, Brevo sender-domain DNS, Hostinger custom-domain SSL, WordPress production/canonical URLs, Mapbox URL-restricted browser tokens, Apple AASA, Android assetlinks, privacy/support/account-deletion URLs, and store listing URLs.
 - Use localhost, staging project URLs, and Expo development URLs for preview only. Do not mark production launch ready until the final domain is registered, configured, and verified.
 

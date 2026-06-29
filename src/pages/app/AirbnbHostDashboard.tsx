@@ -1,27 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { BedDouble, Camera, CheckCircle2, Clock, Home, LifeBuoy, ListChecks, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { PropertyProfileCard, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
-import { smartReminders } from "@/data/care-plus";
 import { haptic } from "@/lib/haptics";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import type { PropertyProfile } from "@/types/care-plus";
-
-const mapPropertyAccount = (row: Record<string, unknown>): PropertyProfile => ({
-  id: String(row.id ?? crypto.randomUUID()),
-  name: String(row.name ?? row.property_name ?? "Saved property"),
-  type: (row.type === "landlord" ? "landlord" : "airbnb"),
-  suburb: String(row.suburb ?? row.location ?? "Saved suburb"),
-  defaultService: String(row.default_service ?? "Airbnb turnover clean"),
-  readinessScore: Number(row.readiness_score ?? 0),
-  turnoverInstructions: typeof row.turnover_instructions === "string" ? row.turnover_instructions : undefined,
-  cleaningHistoryCount: Number(row.cleaning_history_count ?? 0),
-  nextRecommendedBooking: typeof row.next_recommended_booking === "string" ? row.next_recommended_booking : undefined,
-});
+import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
 
 const turnoverTasks = [
   "Lockbox code checked inside the app",
@@ -30,35 +15,17 @@ const turnoverTasks = [
   "Before/after proof attached after completion",
 ];
 
-const recentHistory = [
-  { property: "Rosebank guest loft", date: "27 May", status: "Guest-ready", zooter: "Nomsa" },
-  { property: "Melville cottage", date: "24 May", status: "Photo proof complete", zooter: "Aisha" },
-  { property: "Sandton studio", date: "20 May", status: "Turnover completed", zooter: "Nomsa" },
-];
-
 const AirbnbHostDashboard = () => {
-  const { user } = useAuth();
-  const [hostProperties, setHostProperties] = useState<PropertyProfile[]>([]);
-  const [loadingProfiles, setLoadingProfiles] = useState(true);
-
-  const refreshProperties = useCallback(async () => {
-    if (!user) {
-      setHostProperties([]);
-      setLoadingProfiles(false);
-      return;
-    }
-
-    // TODO: replace with real query - supabase.from('property_accounts') should become a typed property profile hook once schema generation catches up.
-    const { data } = await (supabase as any)
-      .from("property_accounts")
-      .select("id,name,property_name,type,suburb,location,default_service,readiness_score,turnover_instructions,cleaning_history_count,next_recommended_booking")
-      .eq("user_id", user.id)
-      .in("type", ["airbnb", "landlord"]);
-    setHostProperties(Array.isArray(data) ? data.map(mapPropertyAccount) : []);
-    setLoadingProfiles(false);
-  }, [user]);
-
-  useEffect(() => { refreshProperties(); }, [refreshProperties]);
+  const household = useHouseholdOperatingLayer();
+  const hostProperties = useMemo(
+    () => household.propertyProfiles.filter((profile) => profile.type === "airbnb" || profile.type === "landlord"),
+    [household.propertyProfiles],
+  );
+  const hostReadiness = hostProperties.length
+    ? Math.round(hostProperties.reduce((sum, profile) => sum + profile.readinessScore, 0) / hostProperties.length)
+    : 0;
+  const latestBooking = household.recentBookings[0];
+  const guestReadyMode = household.readyModes.find((mode) => mode.id === "guest-ready");
 
   return (
     <div className="container max-w-6xl py-8 lg:py-12">
@@ -83,10 +50,10 @@ const AirbnbHostDashboard = () => {
 
       <div className="grid gap-4 md:grid-cols-4">
         {[
-          ["Guest-ready score", "92%", "3 turnovers this week"],
-          ["Next check-in", "14:00", "Rosebank guest loft"],
-          ["Photo proof", "8 sets", "Before/after stored"],
-          ["Support", "Priority", "Care+ host profile"],
+          ["Host profiles", String(hostProperties.length), "Saved host or landlord properties"],
+          ["Readiness", `${hostReadiness}%`, "Average profile completion"],
+          ["Latest booking", latestBooking ? latestBooking.status.replace(/_/g, " ") : "None yet", latestBooking?.service ?? "Schedule when ready"],
+          ["Support", String(household.serviceRecovery.length), "Open recovery signals"],
         ].map(([label, value, note]) => (
           <Card key={label} className="rounded-3xl p-5 shadow-card">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
@@ -101,7 +68,7 @@ const AirbnbHostDashboard = () => {
           <div className="mb-5 flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-sage-deep">Guest-Ready Mode</p>
-              <h2 className="font-display text-3xl font-bold">Today&apos;s turnover checklist</h2>
+              <h2 className="font-display text-3xl font-bold">Turnover operating template</h2>
             </div>
             <ListChecks className="h-8 w-8 text-primary" />
           </div>
@@ -115,7 +82,7 @@ const AirbnbHostDashboard = () => {
           </div>
           <div className="mt-5 rounded-3xl border border-accent/20 bg-accent-soft p-4">
             <p className="flex items-center gap-2 text-sm font-semibold text-sage-deep"><Sparkles className="h-4 w-4" /> Care+ prompt</p>
-            <p className="mt-1 text-sm text-muted-foreground">Guest arriving soon? Schedule an Airbnb turnover clean.</p>
+            <p className="mt-1 text-sm text-muted-foreground">{household.lifecycleTriggers.find((reminder) => reminder.intent === "turnover")?.message ?? guestReadyMode?.summary ?? "Save a host property to unlock turnover planning."}</p>
           </div>
         </Card>
 
@@ -123,19 +90,19 @@ const AirbnbHostDashboard = () => {
           <div className="mb-5 flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-sage-deep">Readiness</p>
-              <h2 className="font-display text-3xl font-bold">Rosebank guest loft</h2>
+              <h2 className="font-display text-3xl font-bold">{hostProperties[0]?.name ?? "No host property yet"}</h2>
             </div>
             <Clock className="h-8 w-8 text-primary" />
           </div>
-          <Progress value={92} className="mb-4" />
+          <Progress value={hostProperties[0]?.readinessScore ?? 0} className="mb-4" />
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl bg-muted/50 p-3">
-              <p className="text-xs font-semibold uppercase text-muted-foreground">Turnover time</p>
-              <p className="mt-1 font-display text-2xl font-bold">11:00</p>
+              <p className="text-xs font-semibold uppercase text-muted-foreground">Default service</p>
+              <p className="mt-1 font-display text-2xl font-bold">{hostProperties[0]?.defaultService ?? "Not set"}</p>
             </div>
             <div className="rounded-2xl bg-muted/50 p-3">
-              <p className="text-xs font-semibold uppercase text-muted-foreground">Check-in</p>
-              <p className="mt-1 font-display text-2xl font-bold">14:00</p>
+              <p className="text-xs font-semibold uppercase text-muted-foreground">Readiness</p>
+              <p className="mt-1 font-display text-2xl font-bold">{hostProperties[0]?.readinessScore ?? 0}%</p>
             </div>
           </div>
           <Button className="mt-5 rounded-full" variant="outline" onClick={() => haptic("selection")}>
@@ -147,7 +114,7 @@ const AirbnbHostDashboard = () => {
       <div className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="space-y-4">
           <h2 className="font-display text-2xl font-bold">Property profiles</h2>
-          {loadingProfiles ? (
+          {household.loading ? (
             <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">Loading saved host properties...</Card>
           ) : hostProperties.length > 0 ? (
             hostProperties.map((profile) => <PropertyProfileCard key={profile.id} profile={profile} />)
@@ -157,19 +124,25 @@ const AirbnbHostDashboard = () => {
         </div>
         <div className="space-y-4">
           <h2 className="font-display text-2xl font-bold">Host reminders</h2>
-          <SmartReminderList reminders={smartReminders.filter((reminder) => reminder.intent === "turnover" || reminder.intent === "slot")} />
+          {household.lifecycleTriggers.length > 0 ? (
+            <SmartReminderList reminders={household.lifecycleTriggers.filter((reminder) => reminder.intent === "turnover" || reminder.intent === "slot" || reminder.intent === "rebook")} />
+          ) : (
+            <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">No host reminders yet. Save a property or complete a booking to unlock pattern-based prompts.</Card>
+          )}
           <Card className="rounded-3xl p-5 shadow-card">
             <h3 className="font-display text-xl font-bold mb-3">Cleaning history</h3>
             <div className="space-y-3">
-              {recentHistory.map((item) => (
-                <div key={`${item.property}-${item.date}`} className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 p-3 text-sm">
+              {household.recentBookings.length > 0 ? household.recentBookings.slice(0, 3).map((item) => (
+                <div key={item.id} className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 p-3 text-sm">
                   <div>
-                    <p className="font-semibold">{item.property}</p>
-                    <p className="text-muted-foreground">{item.date} - {item.zooter}</p>
+                    <p className="font-semibold">{item.service}</p>
+                    <p className="text-muted-foreground">{new Date(item.scheduledAt).toLocaleDateString()} - {item.durationHours}h</p>
                   </div>
-                  <span className="rounded-full bg-sage/15 px-3 py-1 text-xs font-bold text-sage-deep">{item.status}</span>
+                  <span className="rounded-full bg-sage/15 px-3 py-1 text-xs font-bold text-sage-deep">{item.status.replace(/_/g, " ")}</span>
                 </div>
-              ))}
+              )) : (
+                <div className="rounded-2xl bg-muted/50 p-3 text-sm text-muted-foreground">No completed host booking history yet.</div>
+              )}
             </div>
           </Card>
         </div>

@@ -1,63 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Building2, CheckCircle2, Clock3, Coffee, DoorOpen, LifeBuoy, Plus, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { PropertyProfileCard, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
-import { smartReminders } from "@/data/care-plus";
 import { haptic } from "@/lib/haptics";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import type { PropertyProfile } from "@/types/care-plus";
-
-const mapOfficeAccount = (row: Record<string, unknown>): PropertyProfile => ({
-  id: String(row.id ?? crypto.randomUUID()),
-  name: String(row.name ?? row.property_name ?? "Saved office"),
-  type: "small_office",
-  suburb: String(row.suburb ?? row.location ?? "Saved suburb"),
-  defaultService: String(row.default_service ?? "Small office clean"),
-  readinessScore: Number(row.readiness_score ?? 0),
-  turnoverInstructions: typeof row.turnover_instructions === "string" ? row.turnover_instructions : undefined,
-  cleaningHistoryCount: Number(row.cleaning_history_count ?? 0),
-  nextRecommendedBooking: typeof row.next_recommended_booking === "string" ? row.next_recommended_booking : undefined,
-});
-
-const roomPriorities = [
-  { room: "Reception", detail: "Floors, bins, visitor surface wipe", score: 90 },
-  { room: "Boardroom", detail: "Glass, table polish, cups reset", score: 84 },
-  { room: "Kitchen", detail: "Bins, counters, fridge handle, sink", score: 78 },
-];
-
-const accessNotes = [
-  "Parking bay B12 after 17:00",
-  "Reception code stored only inside the app",
-  "Use low-scent products for allergy-sensitive team members",
-];
+import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
 
 const OfficeDashboard = () => {
-  const { user } = useAuth();
-  const [officeProfiles, setOfficeProfiles] = useState<PropertyProfile[]>([]);
-  const [loadingProfiles, setLoadingProfiles] = useState(true);
-
-  const refreshProfiles = useCallback(async () => {
-    if (!user) {
-      setOfficeProfiles([]);
-      setLoadingProfiles(false);
-      return;
-    }
-
-    // TODO: replace with real query - supabase.from('property_accounts') should become a typed property profile hook once schema generation catches up.
-    const { data } = await (supabase as any)
-      .from("property_accounts")
-      .select("id,name,property_name,type,suburb,location,default_service,readiness_score,turnover_instructions,cleaning_history_count,next_recommended_booking")
-      .eq("user_id", user.id)
-      .eq("type", "small_office");
-    setOfficeProfiles(Array.isArray(data) ? data.map(mapOfficeAccount) : []);
-    setLoadingProfiles(false);
-  }, [user]);
-
-  useEffect(() => { refreshProfiles(); }, [refreshProfiles]);
+  const household = useHouseholdOperatingLayer();
+  const officeProfiles = useMemo(
+    () => household.propertyProfiles.filter((profile) => profile.type === "small_office"),
+    [household.propertyProfiles],
+  );
+  const officeReadiness = officeProfiles.length
+    ? Math.round(officeProfiles.reduce((sum, profile) => sum + profile.readinessScore, 0) / officeProfiles.length)
+    : 0;
+  const latestBooking = household.recentBookings[0];
+  const workplaceMode = household.readyModes.find((mode) => mode.id === "workplace-ready");
 
   return (
     <div className="container max-w-6xl py-8 lg:py-12">
@@ -82,10 +43,10 @@ const OfficeDashboard = () => {
 
       <div className="grid gap-4 md:grid-cols-4">
         {[
-          ["Recurring schedule", "Tue/Fri", "Earlier slot access"],
-          ["Room priorities", "Boardroom", "Reception next"],
-          ["Replacement support", "Priority", "Not guaranteed"],
-          ["ZootCred", "1.5x", "Completed bookings"],
+          ["Office profiles", String(officeProfiles.length), "Saved workplace locations"],
+          ["Readiness", `${officeReadiness}%`, "Average profile completion"],
+          ["Latest booking", latestBooking ? latestBooking.status.replace(/_/g, " ") : "None yet", latestBooking?.service ?? "Book when ready"],
+          ["Service recovery", String(household.serviceRecovery.length), "Open support signals"],
         ].map(([label, value, note]) => (
           <Card key={label} className="rounded-3xl p-5 shadow-card">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
@@ -100,23 +61,27 @@ const OfficeDashboard = () => {
           <div className="mb-5 flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-sage-deep">Room priorities</p>
-              <h2 className="font-display text-3xl font-bold">Default office flow</h2>
+              <h2 className="font-display text-3xl font-bold">Saved office readiness</h2>
             </div>
             <Coffee className="h-8 w-8 text-primary" />
           </div>
           <div className="space-y-4">
-            {roomPriorities.map((room) => (
-              <div key={room.room} className="rounded-2xl bg-muted/50 p-4">
+            {officeProfiles.length > 0 ? officeProfiles.slice(0, 3).map((profile) => (
+              <div key={profile.id} className="rounded-2xl bg-muted/50 p-4">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div>
-                    <p className="font-semibold">{room.room}</p>
-                    <p className="text-sm text-muted-foreground">{room.detail}</p>
+                    <p className="font-semibold">{profile.name}</p>
+                    <p className="text-sm text-muted-foreground">{profile.turnoverInstructions}</p>
                   </div>
-                  <span className="text-sm font-bold text-sage-deep">{room.score}%</span>
+                  <span className="text-sm font-bold text-sage-deep">{profile.readinessScore}%</span>
                 </div>
-                <Progress value={room.score} />
+                <Progress value={profile.readinessScore} />
               </div>
-            ))}
+            )) : (
+              <div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">
+                Save an office profile to track workplace access, cleaning preferences and recurring service rhythm.
+              </div>
+            )}
           </div>
         </Card>
 
@@ -129,7 +94,11 @@ const OfficeDashboard = () => {
             <ShieldCheck className="h-8 w-8 text-primary" />
           </div>
           <div className="space-y-3">
-            {accessNotes.map((note) => (
+            {[
+              household.homeMemory?.parkingInstructions ?? "No parking instructions saved yet.",
+              household.homeMemory?.cleaningPreferences ?? "No workplace cleaning preferences saved yet.",
+              household.homeMemory?.hasAccessNotes ? "Access notes are saved inside the authenticated app." : "No protected access notes saved yet.",
+            ].map((note) => (
               <div key={note} className="flex items-start gap-3 rounded-2xl bg-muted/50 p-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-sage-deep" />
                 <span className="text-sm font-medium">{note}</span>
@@ -138,7 +107,7 @@ const OfficeDashboard = () => {
           </div>
           <div className="mt-5 rounded-3xl border border-accent/20 bg-accent-soft p-4">
             <p className="flex items-center gap-2 text-sm font-semibold text-sage-deep"><Sparkles className="h-4 w-4" /> Care+ prompt</p>
-            <p className="mt-1 text-sm text-muted-foreground">Your usual Tuesday morning slot is available. Reserve it before the week fills up.</p>
+            <p className="mt-1 text-sm text-muted-foreground">{household.lifecycleTriggers[0]?.message ?? workplaceMode?.summary ?? "Add a workplace profile to unlock office-specific reminders."}</p>
           </div>
         </Card>
       </div>
@@ -146,7 +115,7 @@ const OfficeDashboard = () => {
       <div className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="space-y-4">
           <h2 className="font-display text-2xl font-bold">Office profiles</h2>
-          {loadingProfiles ? (
+          {household.loading ? (
             <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">Loading saved office profiles...</Card>
           ) : officeProfiles.length > 0 ? (
             officeProfiles.map((profile) => <PropertyProfileCard key={profile.id} profile={profile} />)
@@ -156,8 +125,8 @@ const OfficeDashboard = () => {
           <Card className="rounded-3xl p-5 shadow-card">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-display text-xl font-bold">Next recommended booking</p>
-                <p className="text-sm text-muted-foreground">Tuesday 08:00 before the team arrives.</p>
+                <p className="font-display text-xl font-bold">Next recommended action</p>
+                <p className="text-sm text-muted-foreground">{household.lifecycleTriggers[0]?.cta ?? "Save an office profile"}</p>
               </div>
               <Clock3 className="h-7 w-7 text-primary" />
             </div>
@@ -165,7 +134,11 @@ const OfficeDashboard = () => {
         </div>
         <div className="space-y-4">
           <h2 className="font-display text-2xl font-bold">Office reminders</h2>
-          <SmartReminderList reminders={smartReminders.filter((reminder) => reminder.intent === "slot" || reminder.intent === "default_addon")} />
+          {household.lifecycleTriggers.length > 0 ? (
+            <SmartReminderList reminders={household.lifecycleTriggers.filter((reminder) => reminder.intent === "slot" || reminder.intent === "default_addon" || reminder.intent === "rebook")} />
+          ) : (
+            <Card className="rounded-3xl p-5 text-sm text-muted-foreground shadow-card">No office reminders yet. Save a profile or complete a booking to unlock pattern-based prompts.</Card>
+          )}
           <Card className="rounded-3xl p-5 shadow-card">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>

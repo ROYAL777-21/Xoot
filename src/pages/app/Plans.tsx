@@ -9,19 +9,13 @@ import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import { useZootCred } from "@/hooks/useZootCred";
+import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
 
 type Plan = {
   id: string;
   name: string;
   cadence: string;
   monthly_price: number;
-};
-
-type HomeMemorySnapshot = {
-  pet_notes?: string | null;
-  cleaning_preferences?: string | null;
-  fragile_areas?: string | null;
-  favourite_products?: string | null;
 };
 
 const carePlusHighlights = [
@@ -63,11 +57,11 @@ const Plans = () => {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
-  const [homeMemory, setHomeMemory] = useState<HomeMemorySnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const zootCred = useZootCred();
+  const household = useHouseholdOperatingLayer();
 
   const refresh = useCallback(async () => {
     const { data: p } = await supabase.from("subscription_plans").select("*").order("monthly_price").limit(1).maybeSingle();
@@ -76,20 +70,9 @@ const Plans = () => {
       const { data: s } = await (supabase as any).from("user_subscriptions").select("id, plan_id, status").eq("user_id", user.id).in("status", ["active", "pending_payment"]).maybeSingle();
       setActiveId(s?.plan_id ?? null);
       setSubscriptionStatus(s?.status ?? null);
-
-      // TODO: replace with real query - supabase.from('household_profiles') should become a typed Home Memory hook once the schema is final.
-      const { data: household } = await (supabase as any)
-        .from("household_profiles")
-        .select("pet_notes, cleaning_preferences, fragile_areas, favourite_products")
-        .eq("user_id", user.id)
-        .eq("is_default", true)
-        .maybeSingle();
-      setHomeMemory((household as HomeMemorySnapshot | null) ?? null);
-
     } else {
       setActiveId(null);
       setSubscriptionStatus(null);
-      setHomeMemory(null);
     }
     setLoading(false);
   }, [user]);
@@ -108,7 +91,7 @@ const Plans = () => {
       const result = data as { already_exists?: boolean; subscription_status?: string } | null;
       haptic("success");
       toast.success(result?.already_exists ? "Care+ request is already recorded" : "Care+ request recorded");
-      await Promise.all([refresh(), zootCred.refresh()]);
+      await Promise.all([refresh(), zootCred.refresh(), household.refresh()]);
     } finally {
       setActionLoading(false);
     }
@@ -125,7 +108,7 @@ const Plans = () => {
       setCancelOpen(false);
       haptic("success");
       toast("Care+ cancelled");
-      await Promise.all([refresh(), zootCred.refresh()]);
+      await Promise.all([refresh(), zootCred.refresh(), household.refresh()]);
     } finally {
       setActionLoading(false);
     }
@@ -190,16 +173,27 @@ const Plans = () => {
 
         <Card className="rounded-3xl border-accent/30 bg-gradient-to-br from-accent-soft via-card to-card p-6">
           <div className="mb-5 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-sage-deep" /><h2 className="font-display text-2xl font-bold">Home Memory</h2></div>
-          {homeMemory ? (
+          {household.homeMemory ? (
             <div className="space-y-3 text-sm">
-              <MemoryRow label="Pets" value={homeMemory.pet_notes || "No pet notes saved yet"} />
-              <MemoryRow label="Preferences" value={homeMemory.cleaning_preferences || "No cleaning preferences saved yet"} />
-              <MemoryRow label="Fragile areas" value={homeMemory.fragile_areas || "No fragile areas saved yet"} />
-              <MemoryRow label="Products" value={homeMemory.favourite_products || "No product preferences saved yet"} />
+              <MemoryRow label="Pets" value={household.homeMemory.petNotes} />
+              <MemoryRow label="Preferences" value={household.homeMemory.cleaningPreferences} />
+              <MemoryRow label="Fragile areas" value={household.homeMemory.fragileAreas} />
+              <MemoryRow label="Products" value={household.homeMemory.favouriteProducts} />
+              <MemoryRow label="Parking" value={household.homeMemory.parkingInstructions} />
             </div>
           ) : (
             <div className="rounded-2xl bg-background/75 p-4 text-sm text-muted-foreground">
               Save a household profile to unlock Home Memory details for pets, access, fragile areas and product preferences.
+            </div>
+          )}
+          {household.readyModes.length > 0 && (
+            <div className="mt-4 grid gap-2">
+              {household.readyModes.slice(0, 3).map((mode) => (
+                <div key={mode.id} className="flex items-center justify-between gap-3 rounded-2xl bg-background/75 p-3 text-sm">
+                  <span className="font-semibold">{mode.title}</span>
+                  <span className="text-xs font-bold text-sage-deep">{mode.readinessScore}% ready</span>
+                </div>
+              ))}
             </div>
           )}
           {user && (

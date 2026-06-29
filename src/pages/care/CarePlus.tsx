@@ -23,6 +23,7 @@ import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 import { CarePlusBenefitCard, CarePlusComparisonTable, CarePlusSupportPromise } from "@/components/care-plus/CarePlusShowcase";
 import { carePlusBenefits, carePlusMoatBenefits } from "@/data/care-plus";
 import { useCarePlus } from "@/hooks/useCarePlus";
+import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
 import { useZootCred } from "@/hooks/useZootCred";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
@@ -63,6 +64,7 @@ const formatDate = (value?: string | null) =>
 
 const CarePlus = () => {
   const carePlus = useCarePlus();
+  const household = useHouseholdOperatingLayer();
   const zootCred = useZootCred();
 
   const joinCarePlus = async () => {
@@ -141,7 +143,7 @@ const CarePlus = () => {
                 <Loader2 className="h-7 w-7 animate-spin text-primary" />
               </Card>
             ) : (
-              <CarePlusStatePanel carePlus={carePlus} zootCred={zootCred} onJoin={joinCarePlus} />
+              <CarePlusStatePanel carePlus={carePlus} household={household} zootCred={zootCred} onJoin={joinCarePlus} />
             )}
           </div>
         </section>
@@ -247,9 +249,10 @@ const CarePlus = () => {
 };
 
 type CarePlusHook = ReturnType<typeof useCarePlus>;
+type HouseholdHook = ReturnType<typeof useHouseholdOperatingLayer>;
 type ZootCredHook = ReturnType<typeof useZootCred>;
 
-const CarePlusStatePanel = ({ carePlus, zootCred, onJoin }: { carePlus: CarePlusHook; zootCred: ZootCredHook; onJoin: () => Promise<void> }) => {
+const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlus: CarePlusHook; household: HouseholdHook; zootCred: ZootCredHook; onJoin: () => Promise<void> }) => {
   const state = carePlus.state;
 
   if (state.status === "unauthenticated") {
@@ -337,6 +340,29 @@ const CarePlusStatePanel = ({ carePlus, zootCred, onJoin }: { carePlus: CarePlus
           <p className="mt-1 text-sm text-muted-foreground">Property profiles are loaded from your account.</p>
         </Card>
       </div>
+
+      {household.readyModes.length > 0 && (
+        <Card className="rounded-3xl border-border/70 bg-card/90 p-5 shadow-card">
+          <p className="text-sm font-semibold text-sage-deep">Household operating layer</p>
+          <div className="mt-4 grid gap-3">
+            {household.readyModes.slice(0, 3).map((mode) => (
+              <div key={mode.id} className="flex flex-col gap-2 rounded-2xl bg-muted/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-semibold">{mode.title}</p>
+                  <p className="text-sm text-muted-foreground">{mode.summary}</p>
+                </div>
+                <span className="text-sm font-bold text-sage-deep">{mode.readinessScore}%</span>
+              </div>
+            ))}
+          </div>
+          {household.serviceRecovery.length > 0 && (
+            <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 p-4">
+              <p className="text-sm font-semibold">Service recovery active</p>
+              <p className="mt-1 text-sm text-muted-foreground">{household.serviceRecovery[0].summary}</p>
+            </div>
+          )}
+        </Card>
+      )}
 
       {carePlus.properties.length > 0 && (
         <div className="grid gap-3">
