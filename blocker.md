@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 04:25 SAST
+Reviewed: 2026-06-29 04:36 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -51,9 +51,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## GitHub, CodeRabbit, And CI
 
-- GitHub CLI is authenticated and PR #7 checks are passing. This is no longer a blocker.
 - Optional public-safe GitHub repository variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables.
-- PR #8 (`codex/native-routing-bridge`) is a separate older branch with a failing `src/lib/native-routing.test.ts` assertion for `zoot://bookings?id=booking-456`. If that branch still needs to merge, update its route parser/test and rerun checks.
 - CodeRabbit CLI `0.6.4` is installed, but `coderabbit auth status --agent` reports `not_authenticated`.
 - `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable. Use `coderabbit auth login --api-key <api-key>` with a key from an approved vault, or install the official CodeRabbit GitHub App on the repository.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.
