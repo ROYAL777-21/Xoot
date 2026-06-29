@@ -94,8 +94,8 @@ Logs must not contain raw passwords, full secrets, full bank details, full ID do
 - In-app messages must be tied to a valid booking relationship.
 - Clients and Zooters may communicate only where the booking context allows it.
 - Block or review phone numbers, bank details, external payment requests, off-platform booking requests, abusive content, and moderation bypass attempts.
-- WhatsApp is for urgent real-time booking events only. Routine rebooking, Care+, ZootCred, onboarding nudges, and marketing belong in-app or email.
-- Twilio is voice-only for masked calls during active booking windows.
+- WhatsApp and SMS are for OTP, urgent booking, safety, and service-status events only after sender approval, consent, opt-out, and signed webhook verification are complete. Routine rebooking, Care+, ZootCred, onboarding nudges, and marketing belong in-app or approved email flows.
+- Twilio voice and masked calling are allowed only inside approved booking/support windows and must never expose raw client or Zooter phone numbers in the frontend.
 
 ## Production Gate
 

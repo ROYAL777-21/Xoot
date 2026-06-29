@@ -203,6 +203,12 @@ Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "n
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "coderabbit auth login --self-hosted" "CodeRabbit self-hosted auth support"
 Test-RepoPattern "admin-access" "docs/ADMIN_ACCESS.md" "public\.user_roles" "admin access is role-based"
+Test-RepoPattern "domain-readiness" "docs/SECRETS_INVENTORY.md" "does not have a registered production domain yet" "secrets inventory records domain-dependent setup"
+Test-RepoPattern "twilio-governance" "docs/AGENT_RULES.md" "Verify OTP, operational SMS, urgent WhatsApp, voice, masked calls" "agent rules match approved Twilio channel scope"
+$agentRulesText = Read-RepoText "docs/AGENT_RULES.md"
+if ($null -ne $agentRulesText) {
+  Add-Check "twilio-governance" "agent rules do not force voice-only Twilio" ($(if ($agentRulesText -notmatch "voice-only") { "pass" } else { "fail" })) "Twilio scope is governed by approved sender/compliance controls, not an obsolete voice-only rule."
+}
 
 $liveDatabaseEvidence = Read-RepoText "docs/implementation/live-database-readiness-20260628.md"
 if (

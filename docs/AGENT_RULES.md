@@ -12,7 +12,7 @@ These rules apply to Codex, Hermes, and any support agent working on Zoot. Agent
 - Do not make unsupported public claims, guarantees, reviews, legal promises, insurance promises, or availability promises.
 - Preserve premium positioning and avoid discount-led copy.
 - Never introduce the words `Zapier` or `Zap` into agent outputs or automation files.
-- Twilio implementation must remain voice-only unless project governance changes.
+- Twilio implementation may cover Verify OTP, operational SMS, urgent WhatsApp, voice, masked calls, and optional SendGrid email only when the relevant sender, consent, regulatory, and webhook-signature controls are approved. It must not replace in-app client-Zooter chat or become a routine marketing channel.
 - Use in-app notifications as the primary operational channel.
 
 ## Hermes Rules
