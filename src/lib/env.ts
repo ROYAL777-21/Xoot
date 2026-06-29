@@ -10,6 +10,7 @@ const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local
 const publicSecretNamePattern = /(?:SERVICE_ROLE|CLIENT_SECRET|AUTH_TOKEN|PRIVATE_KEY|WEBHOOK_SECRET|SIGNING_SECRET|SECRET_KEY|API_SECRET)/i;
 const allowedPublicSecretLikeNames = new Set(["VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SENTRY_DSN"]);
 const publicMapboxTokenNames = ["VITE_MAPBOX_PUBLIC_TOKEN", "VITE_MAPBOX_BROWSER_TOKEN"];
+const publicPostHogTokenNames = ["VITE_POSTHOG_PROJECT_TOKEN"];
 
 const envText = (env: PublicEnvironment, name: string) => {
   const value = env[name];
@@ -58,11 +59,20 @@ export const isUnsafePublicMapboxToken = (value?: string) => {
 export const getUnsafePublicMapboxTokenNames = (env: PublicEnvironment) =>
   publicMapboxTokenNames.filter((name) => isUnsafePublicMapboxToken(envText(env, name)));
 
+export const isUnsafePublicPostHogToken = (value?: string) => {
+  const token = value?.trim() ?? "";
+  return token.startsWith("phx_");
+};
+
+export const getUnsafePublicPostHogTokenNames = (env: PublicEnvironment) =>
+  publicPostHogTokenNames.filter((name) => isUnsafePublicPostHogToken(envText(env, name)));
+
 export const getPublicConfigIssueForEnv = (env: PublicEnvironment, flags: RuntimeFlags = {}) => {
   const appEnv = normaliseAppEnvironment(envText(env, "VITE_APP_ENV"));
   const isProdBuild = Boolean(flags.prod);
   const leaks = getPublicSecretLeaks(env);
   const unsafeMapboxTokens = getUnsafePublicMapboxTokenNames(env);
+  const unsafePostHogTokens = getUnsafePublicPostHogTokenNames(env);
 
   if (leaks.length > 0) {
     return `Public VITE_ variables cannot contain secret-like names: ${leaks.join(", ")}`;
@@ -70,6 +80,10 @@ export const getPublicConfigIssueForEnv = (env: PublicEnvironment, flags: Runtim
 
   if (unsafeMapboxTokens.length > 0) {
     return `Mapbox secret tokens cannot be used in public VITE_ variables: ${unsafeMapboxTokens.join(", ")}. Use restricted public pk.* tokens instead.`;
+  }
+
+  if (unsafePostHogTokens.length > 0) {
+    return `PostHog private API keys cannot be used in public VITE_ variables: ${unsafePostHogTokens.join(", ")}. Use the public phc_* project token only.`;
   }
 
   if (appEnv && !allowedAppEnvironments.has(appEnv)) {

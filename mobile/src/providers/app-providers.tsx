@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/react-native';
 import { useEffect, useState } from 'react';
 
 import { mobileEnv } from '@/lib/env';
+import { MobileAnalyticsProvider } from '@/lib/analytics';
 import { AuthProvider } from '@/providers/auth-provider';
 
 const queryClient = new QueryClient({
@@ -37,7 +38,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
+      <MobileAnalyticsProvider>
+        <AuthProvider>{children}</AuthProvider>
+      </MobileAnalyticsProvider>
     </QueryClientProvider>
   );
 }

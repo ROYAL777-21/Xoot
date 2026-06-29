@@ -120,6 +120,11 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 - [ ] Frontend monitoring is configured or explicitly deferred.
 - [ ] `VITE_SENTRY_DSN` is environment-specific if Sentry is enabled.
 - [ ] `SENTRY_AUTH_TOKEN` is CI-only if source maps are uploaded.
+- [ ] `VITE_POSTHOG_PROJECT_TOKEN` and `VITE_POSTHOG_HOST` are set per environment only if privacy-approved analytics is enabled.
+- [ ] `EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN` and `EXPO_PUBLIC_POSTHOG_HOST` are set per EAS environment only if mobile analytics is enabled.
+- [ ] No PostHog private `phx_` API key appears in `VITE_`, `EXPO_PUBLIC_`, committed files, screenshots, logs, or PR text.
+- [ ] PostHog autocapture and session replay remain disabled until privacy/legal approval explicitly allows them.
+- [ ] PostHog events match the approved low-risk analytics event contract and do not include names, phone numbers, addresses, access notes, payments, support message bodies, or free-form text.
 - [ ] Release version is set from Git SHA or app version.
 - [ ] Edge Functions log request IDs and safe error categories.
 - [ ] Production incident owner and alerting path are documented.
@@ -136,6 +141,7 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 - [ ] Push Notifications capability is enabled if native push is shipped.
 - [ ] App Store privacy labels match actual data collection.
 - [ ] Play Store Data Safety matches actual data collection.
+- [ ] App Store and Play disclosures include PostHog analytics if enabled in mobile builds.
 - [ ] Dynamic Island/Live Activity payloads do not expose sensitive home access data.
 - [ ] Native Mapbox builds use EAS/dev-client builds, not Expo Go, and private Mapbox downloads token is stored only in EAS/CI secrets.
 - [ ] Siri/App Intents and Android shortcuts open safe routes only and never expose addresses, access notes, payment details, or support incident content.

@@ -40,6 +40,8 @@ The Supabase URL is public project metadata. Publishable keys are public-safe bu
 | Supabase publishable key | Supabase API settings | EAS env, GitHub vars | `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PUBLISHABLE_KEY` |
 | EAS project ID | `eas init` / Expo dashboard | EAS env | `EXPO_PUBLIC_EAS_PROJECT_ID` |
 | Sentry DSN | Sentry project settings | EAS env, web host env | `EXPO_PUBLIC_SENTRY_DSN`, `VITE_SENTRY_DSN` |
+| PostHog public project token | PostHog project settings | EAS env, web host env | `EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN`, `VITE_POSTHOG_PROJECT_TOKEN` |
+| PostHog ingest host | PostHog project settings | EAS env, web host env | `EXPO_PUBLIC_POSTHOG_HOST`, `VITE_POSTHOG_HOST` |
 | Mapbox public token | Mapbox dashboard | EAS env, web host env | `EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN`, `VITE_MAPBOX_PUBLIC_TOKEN` |
 | Turnstile site key | Cloudflare Turnstile dashboard | EAS env, web host env | `EXPO_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY`, `VITE_CLOUDFLARE_TURNSTILE_SITE_KEY` |
 
@@ -134,6 +136,8 @@ Rules:
 | Cloudflare API token | Cloudflare dashboard | CI/deployment secret store only |
 | Mapbox secret token | Mapbox dashboard | Supabase Edge Function secrets or CI/server secret store only |
 | Mapbox downloads token | Mapbox dashboard | EAS/CI secret store only |
+| PostHog private API key | PostHog project settings | CI/server secret store only if dashboard/export automation is built |
+| PostHog project ID | PostHog project settings | CI/server config only |
 | Cloudflare Turnstile secret | Cloudflare Turnstile dashboard | Supabase Edge Function secrets |
 | Cloudflare R2 endpoint | Cloudflare R2 dashboard | CI/server config |
 | Cloudflare R2 access key ID/secret | Cloudflare R2 dashboard | CI/server secret store only |
@@ -144,6 +148,7 @@ Rules:
 - The support bot must not perform refunds, payment changes, admin decisions, or direct account changes.
 - Generated content and images need human approval before publishing.
 - Provider tokens must not be embedded in Expo or Vite bundles.
+- The PostHog private `phx_` API key was pasted into chat and must be rotated before production automation uses it. Browser and Expo builds may only receive the public `phc_` project token.
 
 ## App Store And Play Store
 

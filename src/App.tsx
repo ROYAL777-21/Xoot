@@ -14,6 +14,7 @@ import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer
 import { ZootSupportBot } from "@/components/zoot/ZootSupportBot";
 import { ZooterShell } from "@/components/zooter/ZooterShell";
 import { RequireRole } from "@/components/RequireRole";
+import { ZootAnalyticsProvider } from "@/lib/analytics";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
@@ -114,8 +115,9 @@ const RouteLoading = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <HelmetProvider>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange storageKey="zoot-theme">
+    <ZootAnalyticsProvider>
+      <HelmetProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange storageKey="zoot-theme">
         <TooltipProvider>
           <ErrorBoundary>
             <Toaster />
@@ -187,8 +189,9 @@ const App = () => (
             </BrowserRouter>
           </ErrorBoundary>
         </TooltipProvider>
-      </ThemeProvider>
-    </HelmetProvider>
+        </ThemeProvider>
+      </HelmetProvider>
+    </ZootAnalyticsProvider>
   </QueryClientProvider>
 );
 

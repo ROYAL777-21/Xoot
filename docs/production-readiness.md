@@ -12,6 +12,8 @@ VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_SUPABASE_URL=
 VITE_MAPBOX_PUBLIC_TOKEN=
 VITE_SENTRY_DSN=
+VITE_POSTHOG_PROJECT_TOKEN=
+VITE_POSTHOG_HOST=https://us.i.posthog.com
 VITE_CLOUDFLARE_TURNSTILE_SITE_KEY=
 ```
 
@@ -40,6 +42,9 @@ TWILIO_TWIML_APP_SID=
 BREVO_API_KEY=
 WEBHOOK_SIGNING_SECRET=
 SENTRY_DSN=
+POSTHOG_API_KEY=
+POSTHOG_PROJECT_ID=
+POSTHOG_HOST=https://us.posthog.com
 MAPBOX_SECRET_TOKEN=
 ```
 
@@ -142,6 +147,7 @@ Supabase checks:
 - Webhook signature validation for payment and communications endpoints before live traffic.
 - Twilio webhooks follow `docs/TWILIO_CHANNELS_SETUP.md` and validate `X-Twilio-Signature` before mutating any row.
 - Mapbox public tokens are URL/app restricted; native Mapbox downloads token is stored only as an EAS/CI secret.
+- PostHog public analytics uses only approved low-risk events; autocapture/session replay remain disabled unless privacy/legal explicitly approves them.
 
 Browser checks:
 

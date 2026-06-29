@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { haptic } from "@/lib/haptics";
 import { getLocalZootConciergeReply } from "@/lib/zoot-concierge-fallback";
+import { captureAnalyticsEvent } from "@/lib/analytics";
 
 type BotMessage = {
   id: string;
@@ -85,6 +86,12 @@ export const ZootSupportBot = () => {
 
   const reportAnswer = () => {
     haptic("selection");
+    captureAnalyticsEvent("concierge_answer_reported", {
+      source: "zoot_concierge",
+      reason: "user_report",
+      signed_in: Boolean(user),
+      role,
+    });
     appendMessage({
       role: "system",
       body: user

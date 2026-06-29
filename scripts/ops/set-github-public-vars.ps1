@@ -18,7 +18,7 @@ function Assert-PublicValue {
     throw "$Key looks like a placeholder. Refusing to set it on GitHub."
   }
 
-  if ($Value -match "(?i)sb_secret_|service_role|BEGIN [A-Z ]*PRIVATE KEY|sk_live_|sk_test_|sk\.|api[_-]?secret|auth[_-]?token|cfat_|personal[_-]?access[_-]?token|download[_-]?token") {
+  if ($Value -match "(?i)sb_secret_|service_role|BEGIN [A-Z ]*PRIVATE KEY|sk_live_|sk_test_|sk\.|api[_-]?secret|auth[_-]?token|cfat_|personal[_-]?access[_-]?token|download[_-]?token|phx_") {
     throw "$Key looks private. Refusing to set it as a public GitHub variable."
   }
 }
@@ -61,6 +61,8 @@ $optionalPublic = @(
   "VITE_SENTRY_DSN",
   "VITE_SENTRY_ENVIRONMENT",
   "VITE_SENTRY_RELEASE",
+  "VITE_POSTHOG_PROJECT_TOKEN",
+  "VITE_POSTHOG_HOST",
   "VITE_MAPBOX_PUBLIC_TOKEN",
   "VITE_MAPBOX_BROWSER_TOKEN",
   "VITE_CLOUDFLARE_TURNSTILE_SITE_KEY",
@@ -72,6 +74,8 @@ $optionalPublic = @(
   "EXPO_PUBLIC_EAS_PROJECT_ID",
   "EXPO_PUBLIC_SITE_URL",
   "EXPO_PUBLIC_SENTRY_DSN",
+  "EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN",
+  "EXPO_PUBLIC_POSTHOG_HOST",
   "EXPO_PUBLIC_MAPBOX_TOKEN",
   "EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN",
   "EXPO_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY",

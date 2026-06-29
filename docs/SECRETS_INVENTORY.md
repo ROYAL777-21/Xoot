@@ -158,6 +158,12 @@ Status values:
 | Source map token | `SENTRY_AUTH_TOKEN` | CI secret only | Template | Never frontend. |
 | Frontend monitoring status | `src/lib/monitoring.ts` | Code | Partial | Captures through `window.Sentry` if the SDK is loaded later. |
 | Edge monitoring notes | Edge Functions | Template | Add structured logging and request IDs before production incident workflows. |
+| PostHog web project token | `VITE_POSTHOG_PROJECT_TOKEN` | Public web env | Template | Public `phc_` token only; Zoot disables autocapture/session replay and sends approved events only. |
+| PostHog mobile project token | `EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN` | EAS public env | Template | Public `phc_` token only; Expo autocapture is disabled. |
+| PostHog ingest host | `VITE_POSTHOG_HOST`, `EXPO_PUBLIC_POSTHOG_HOST` | Public env | Template | Usually `https://us.i.posthog.com` for client SDKs. |
+| PostHog private API key | `POSTHOG_API_KEY` | Server/CI secret only | Rotate | A `phx_` key was pasted into chat. Treat as compromised for production unless rotated; never use in frontend/mobile. |
+| PostHog project ID | `POSTHOG_PROJECT_ID` | Server/CI config | Provided | Needed only for dashboard/export automation; not required for browser/mobile capture. |
+| PostHog privacy contract | `public.analytics_event_contracts` | Supabase table | Draft | Events must remain low-risk and approved before broad instrumentation. |
 
 ## Mapbox
 

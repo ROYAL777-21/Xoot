@@ -6,6 +6,7 @@ import { Sparkles, MapPin, Calendar, Clock, Home, Building2, BedDouble, Wand2, A
 import { useAuth } from "@/contexts/AuthContext";
 import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { approvedLaunchRegions } from "@/lib/operations";
+import { captureAnalyticsEvent, getAnalyticsDeviceType } from "@/lib/analytics";
 import { VerifiedAddressInput } from "@/components/zoot/VerifiedAddressInput";
 import heroImg from "@/assets/hero-zoot.jpg";
 
@@ -35,6 +36,12 @@ export const BookingHero = () => {
   const liveZooterLabel = isSupabaseConfigured ? String(activeZooters) : "Live roster";
 
   const startBooking = () => {
+    captureAnalyticsEvent("booking_flow_started", {
+      service_category: active,
+      launch_area: "public_hero",
+      source: user ? "signed_in_homepage" : "guest_homepage",
+      device_type: getAnalyticsDeviceType(),
+    });
     const target = `/app?service=${active}${address.trim() ? `&address=${encodeURIComponent(address.trim())}` : ""}`;
     if (!user) {
       navigate("/auth", { state: { from: { pathname: target } } });

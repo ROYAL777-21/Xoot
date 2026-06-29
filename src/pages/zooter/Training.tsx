@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Award, BadgeCheck, CheckCircle2, Crown, Flame, GraduationCap, Loader2, Sparkles, Target, Trophy, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
+import { captureAnalyticsEvent } from "@/lib/analytics";
 
 type QuizQuestion = {
   q: string;
@@ -105,6 +106,11 @@ const Training = () => {
     }, { onConflict: "user_id,module_id" });
 
     if (passed) {
+      captureAnalyticsEvent("zooter_training_module_completed", {
+        module_category: active.category || "general",
+        score_band: score >= 90 ? "90_100" : score >= 80 ? "80_89" : "below_80",
+        badge_awarded: Boolean(active.badge_label),
+      });
       toast.success(`Passed with ${score}%. ${active.badge_label ?? "Skill badge"} unlocked.`);
     } else {
       toast.error(`${score}% - try again; you need ${passScore}%.`);

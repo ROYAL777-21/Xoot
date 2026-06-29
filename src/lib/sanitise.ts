@@ -1,4 +1,4 @@
-import DOMPurify from "isomorphic-dompurify";
+import DOMPurify from "dompurify";
 
 export function sanitiseInput(value: string | null | undefined): string {
   if (!value) return "";

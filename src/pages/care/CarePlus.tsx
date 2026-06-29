@@ -26,6 +26,7 @@ import { useCarePlus } from "@/hooks/useCarePlus";
 import { useZootCred } from "@/hooks/useZootCred";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
+import { captureAnalyticsEvent, getAnalyticsDeviceType } from "@/lib/analytics";
 
 const pillars = [
   {
@@ -77,6 +78,13 @@ const CarePlus = () => {
   };
 
   const state = carePlus.state;
+  const captureCarePlusCta = (ctaLocation: string) => {
+    captureAnalyticsEvent("care_plus_cta_clicked", {
+      cta_location: ctaLocation,
+      membership_state: state.status,
+      device_type: getAnalyticsDeviceType(),
+    });
+  };
 
   return (
     <div className="dark min-h-screen bg-background text-foreground">
@@ -102,20 +110,20 @@ const CarePlus = () => {
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 {state.status === "unauthenticated" ? (
-                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => haptic("success")}>
+                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => { haptic("success"); captureCarePlusCta("hero_guest_join"); }}>
                     <Link to="/auth">Join Care+ membership <ArrowRight className="ml-1 h-4 w-4" /></Link>
                   </Button>
                 ) : state.status === "not_member" || state.status === "cancelled" ? (
-                  <Button size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={joinCarePlus} disabled={carePlus.actionLoading}>
+                  <Button size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => { captureCarePlusCta("hero_join"); void joinCarePlus(); }} disabled={carePlus.actionLoading}>
                     {carePlus.actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crown className="mr-2 h-4 w-4" />}
                     Join for {formatZAR(carePlus.plan.priceZar)}/month
                   </Button>
                 ) : state.status === "pending_payment" ? (
-                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto">
+                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => captureCarePlusCta("hero_pending_payment")}>
                     <a href={state.checkout_url}>Complete setup <ArrowRight className="ml-1 h-4 w-4" /></a>
                   </Button>
                 ) : (
-                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto">
+                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => captureCarePlusCta("hero_active_book")}>
                     <Link to="/app">Book with Care+ <ArrowRight className="ml-1 h-4 w-4" /></Link>
                   </Button>
                 )}

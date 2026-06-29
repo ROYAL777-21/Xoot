@@ -8,6 +8,7 @@ const allowedPublicSecretLikeNames = new Set([
   'EXPO_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY',
 ]);
 const publicMapboxTokenNames = ['EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN', 'EXPO_PUBLIC_MAPBOX_TOKEN'];
+const publicPostHogTokenNames = ['EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN'];
 
 const allowedEnvironments = new Set(['development', 'preview', 'staging', 'production']);
 
@@ -38,6 +39,11 @@ if (publicLeaks.length > 0) {
 const unsafeMapboxTokens = publicMapboxTokenNames.filter((name) => text(name).startsWith('sk.'));
 if (unsafeMapboxTokens.length > 0) {
   fail(`Mapbox secret tokens cannot be used in public EXPO_PUBLIC_ variables: ${unsafeMapboxTokens.join(', ')}. Use restricted public pk.* tokens instead.`);
+}
+
+const unsafePostHogTokens = publicPostHogTokenNames.filter((name) => text(name).startsWith('phx_'));
+if (unsafePostHogTokens.length > 0) {
+  fail(`PostHog private API keys cannot be used in public EXPO_PUBLIC_ variables: ${unsafePostHogTokens.join(', ')}. Use the public phc_* project token only.`);
 }
 
 if (!allowedEnvironments.has(appEnv)) {

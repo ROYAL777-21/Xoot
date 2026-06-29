@@ -66,6 +66,8 @@ These are bundled into the app and must be public-safe:
 - `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `EXPO_PUBLIC_EAS_PROJECT_ID`
 - `EXPO_PUBLIC_SENTRY_DSN`
+- `EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN` only as the public `phc_` project token after analytics/privacy approval
+- `EXPO_PUBLIC_POSTHOG_HOST`, normally `https://us.i.posthog.com`
 - `EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN` only if restricted to the mobile app use case
 - `EXPO_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY` only after a restricted Turnstile widget is created
 - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` only if native Google auth is enabled
@@ -176,6 +178,15 @@ Use Sentry React Native:
 - one Sentry project for mobile or separate `zoot-mobile-ios` and `zoot-mobile-android` projects
 - release name tied to EAS build/version
 
+## Product Analytics
+
+PostHog React Native is configured behind public-safe environment variables:
+
+- `EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN` must be the public `phc_` project token, never a private `phx_` API key.
+- `EXPO_PUBLIC_POSTHOG_HOST` should point to the approved ingest host.
+- Autocapture, session replay, and default person profiles stay disabled unless privacy/legal approval changes that decision.
+- Only approved, low-risk events should be captured. Do not send addresses, phone numbers, gate codes, payment references, support message content, documents, or free-form notes.
+
 ## Store Readiness
 
 Before TestFlight:
@@ -193,6 +204,7 @@ Before Play internal testing:
 - Play Console app record exists.
 - Android package matches `za.co.zoothome.app`.
 - Data Safety draft completed from actual SDK behavior.
+- PostHog analytics disclosed if enabled in the submitted build.
 - Content rating completed.
 - Google Play service account is linked and scoped.
 - App Links verified after `assetlinks.json` deployment.

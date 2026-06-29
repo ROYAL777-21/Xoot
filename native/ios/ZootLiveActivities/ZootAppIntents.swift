@@ -137,8 +137,8 @@ struct OpenZootIntent: AppIntent {
   }
 
   @MainActor
-  func perform() async throws -> some IntentResult & ProvidesDialog & OpensIntent {
-    .result(dialog: "Opening \(destination.dialogName) in Zoot.", opensIntent: OpenURLIntent(destination.safeDeepLinkURL))
+  func perform() async throws -> some IntentResult & ProvidesDialog {
+    .result(dialog: "Opening \(destination.dialogName) in Zoot.")
   }
 }
 
@@ -194,7 +194,7 @@ struct BookZootCleanerIntent: AppIntent {
   }
 
   @MainActor
-  func perform() async throws -> some IntentResult & ProvidesDialog & OpensIntent {
+  func perform() async throws -> some IntentResult & ProvidesDialog {
     let dateText: String
     if let requestedDate {
       dateText = DateFormatter.localizedString(from: requestedDate, dateStyle: .medium, timeStyle: .none)
@@ -204,14 +204,12 @@ struct BookZootCleanerIntent: AppIntent {
 
     if let area, !area.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       return .result(
-        dialog: "Opening Zoot to start your cleaner booking in \(area) for \(dateText). Confirm your address, time and payment inside the app.",
-        opensIntent: OpenURLIntent(bookingDeepLinkURL)
+        dialog: "Opening Zoot to start your cleaner booking in \(area) for \(dateText). Confirm your address, time and payment inside the app."
       )
     }
 
     return .result(
-      dialog: "Opening Zoot to start your cleaner booking for \(dateText). Confirm your address, time and payment inside the app.",
-      opensIntent: OpenURLIntent(bookingDeepLinkURL)
+      dialog: "Opening Zoot to start your cleaner booking for \(dateText). Confirm your address, time and payment inside the app."
     )
   }
 }
@@ -234,16 +232,14 @@ struct AskZootConciergeIntent: AppIntent {
   }
 
   @MainActor
-  func perform() async throws -> some IntentResult & ProvidesDialog & OpensIntent {
-    let conciergeURL = URL(string: "zoot://concierge?zootBot=open&intent=concierge")!
+  func perform() async throws -> some IntentResult & ProvidesDialog {
     if let question, !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       return .result(
-        dialog: "Opening Zoot Concierge. Keep private booking, payment, address and access details inside the signed-in app.",
-        opensIntent: OpenURLIntent(conciergeURL)
+        dialog: "Opening Zoot Concierge. Keep private booking, payment, address and access details inside the signed-in app."
       )
     }
 
-    return .result(dialog: "Opening Zoot Concierge.", opensIntent: OpenURLIntent(conciergeURL))
+    return .result(dialog: "Opening Zoot Concierge.")
   }
 }
 
@@ -265,10 +261,9 @@ struct CheckZootBookingStatusIntent: AppIntent {
   }
 
   @MainActor
-  func perform() async throws -> some IntentResult & ProvidesDialog & OpensIntent {
+  func perform() async throws -> some IntentResult & ProvidesDialog {
     .result(
-      dialog: "Opening your Zoot booking status. Private address, access, payment, and support details stay inside the signed-in app.",
-      opensIntent: OpenURLIntent(URL(string: "zoot://bookings?intent=booking_status")!)
+      dialog: "Opening your Zoot booking status. Private address, access, payment, and support details stay inside the signed-in app."
     )
   }
 }
@@ -280,10 +275,9 @@ struct OpenZootJobsIntent: AppIntent {
   static let openAppWhenRun = true
 
   @MainActor
-  func perform() async throws -> some IntentResult & ProvidesDialog & OpensIntent {
+  func perform() async throws -> some IntentResult & ProvidesDialog {
     .result(
-      dialog: "Opening Zooter jobs in Zoot. Sensitive client access details stay protected inside the app.",
-      opensIntent: OpenURLIntent(URL(string: "zoot://zooter/jobs?intent=zooter_jobs")!)
+      dialog: "Opening Zooter jobs in Zoot. Sensitive client access details stay protected inside the app."
     )
   }
 }

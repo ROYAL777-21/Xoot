@@ -7,6 +7,7 @@ const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local
 const publicSecretNamePattern = /(?:SERVICE_ROLE|CLIENT_SECRET|AUTH_TOKEN|PRIVATE_KEY|WEBHOOK_SECRET|SIGNING_SECRET|SECRET_KEY|API_SECRET)/i;
 const allowedPublicSecretLikeNames = new Set(["VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SENTRY_DSN"]);
 const publicMapboxTokenNames = ["VITE_MAPBOX_PUBLIC_TOKEN", "VITE_MAPBOX_BROWSER_TOKEN"];
+const publicPostHogTokenNames = ["VITE_POSTHOG_PROJECT_TOKEN"];
 
 const parseEnvFile = (filename) => {
   const file = join(ROOT, filename);
@@ -70,6 +71,11 @@ if (leaks.length > 0) {
 const unsafeMapboxTokens = publicMapboxTokenNames.filter((name) => text(name).startsWith("sk."));
 if (unsafeMapboxTokens.length > 0) {
   fail(`Mapbox secret tokens cannot be used in public VITE_ variables: ${unsafeMapboxTokens.join(", ")}. Use restricted public pk.* tokens instead.`);
+}
+
+const unsafePostHogTokens = publicPostHogTokenNames.filter((name) => text(name).startsWith("phx_"));
+if (unsafePostHogTokens.length > 0) {
+  fail(`PostHog private API keys cannot be used in public VITE_ variables: ${unsafePostHogTokens.join(", ")}. Use the public phc_* project token only.`);
 }
 
 if (appEnv && !allowedAppEnvironments.has(appEnv)) {

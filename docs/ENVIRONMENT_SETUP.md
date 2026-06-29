@@ -15,6 +15,8 @@ Frontend/public runtime:
 - `VITE_SUPABASE_PUBLISHABLE_KEY` - public Supabase anon/publishable key.
 - `VITE_SUPABASE_PROJECT_ID` - deployment/admin reference.
 - `VITE_SENTRY_DSN` - public Sentry browser DSN if frontend monitoring is enabled.
+- `VITE_POSTHOG_PROJECT_TOKEN` - public PostHog project token for privacy-approved product analytics events.
+- `VITE_POSTHOG_HOST` - PostHog ingest host, normally `https://us.i.posthog.com`.
 - `VITE_MAPBOX_PUBLIC_TOKEN` - public Mapbox browser token for service-area and dispatch maps.
 - `VITE_CLOUDFLARE_TURNSTILE_SITE_KEY` - public Turnstile site key if bot checks are enabled.
 - `VITE_GOOGLE_WEB_CLIENT_ID` - public Google web OAuth client ID when a direct client flow is enabled.
@@ -63,6 +65,8 @@ Supabase Edge Functions:
 | OAuth client secrets/private keys | Supabase provider dashboard or secure backend secret store | Public repo or app bundle |
 | Mobile signing keys/profiles | Apple Developer, App Store Connect, Google Play Console, secure CI secrets | Repo or frontend env |
 | Sentry source map auth token | CI secret only | Frontend env or static files |
+| PostHog public project token | Hostinger/Vercel/GitHub/EAS public env | Private secret stores as if it were privileged |
+| PostHog private API key | Server/CI secret store only if dashboards or exports are automated | `VITE_`, `EXPO_PUBLIC_`, docs, or app bundles |
 
 ## Required Environments
 
@@ -88,6 +92,8 @@ VITE_ENABLE_DEMO_MODE=false
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_SENTRY_DSN=
+VITE_POSTHOG_PROJECT_TOKEN=
+VITE_POSTHOG_HOST=https://us.i.posthog.com
 VITE_MAPBOX_PUBLIC_TOKEN=
 VITE_CLOUDFLARE_TURNSTILE_SITE_KEY=
 ```
@@ -140,6 +146,9 @@ TWILIO_SENDGRID_SENDER_EMAIL=
 BREVO_API_KEY=
 KIE_API_KEY=
 SENTRY_DSN=
+POSTHOG_API_KEY=
+POSTHOG_PROJECT_ID=
+POSTHOG_HOST=
 MAPBOX_SECRET_TOKEN=
 AIRTABLE_API_TOKEN=
 CLOUDFLARE_API_TOKEN=
@@ -219,6 +228,7 @@ Supabase Auth Redirect URLs should include:
 - Configure Stitch/Ozow sandbox and production callback URLs.
 - Configure Twilio webhooks and request signature validation.
 - Configure Mapbox public tokens for browser/Expo clients and private native downloads tokens only in EAS or CI secrets.
+- Configure PostHog public project tokens for web and Expo only after the privacy-approved event contract is accepted. Keep `phx_` API keys server-side only.
 - Configure Cloudflare bot/rate-limit rules for protected app routes and API endpoints; public SEO pages remain crawlable.
 - Configure WordPress as the headless/editorial SEO CMS for approved article drafts, with app-password credentials stored only in CI/server secret storage.
 - Configure Brevo sender domain, transactional templates, and webhook validation.
