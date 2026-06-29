@@ -43,6 +43,9 @@ export default defineConfig(() => {
               return "vendor-mapbox";
             }
             if (id.includes("@sentry")) return "vendor-monitoring";
+            if (/node_modules[\\/](lodash|lodash-es)[\\/]/.test(id)) return "vendor-lodash";
+            if (id.includes("posthog-js") || id.includes("dompurify")) return "vendor-analytics";
+            if (id.includes("@floating-ui")) return "vendor-floating";
             if (id.includes("react") || id.includes("scheduler")) return "vendor-react";
             if (id.includes("@supabase")) return "vendor-supabase";
             if (id.includes("@tanstack")) return "vendor-query";
