@@ -43,7 +43,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             <span className="grid h-10 w-10 place-items-center rounded-2xl gradient-warm shadow-warm">
               <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
             </span>
-            <span className="font-display text-2xl font-bold tracking-tight text-foreground">zoot</span>
+            <span className="font-display text-2xl font-bold tracking-tight text-foreground">Zoot</span>
           </NavLink>
           <NotificationBell />
         </div>

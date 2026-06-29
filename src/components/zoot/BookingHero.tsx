@@ -52,22 +52,22 @@ export const BookingHero = () => {
 
   return (
     <section className="relative overflow-hidden gradient-hero">
-      <div className="container relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 py-12 lg:py-20 items-center">
+      <div className="container relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 py-8 lg:py-20 items-center">
         <div className="relative z-10 animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-4 py-1.5 mb-6 border border-accent/20">
+          <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 mb-4 lg:mb-6 border border-accent/20">
             <Sparkles className="h-3.5 w-3.5 text-sage-deep" />
-            <span className="text-xs font-medium text-sage-deep">South African requests with active coverage signals</span>
+            <span className="text-[11px] sm:text-xs font-medium text-sage-deep">Launching in selected Johannesburg suburbs</span>
           </div>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.02] tracking-tight text-balance text-foreground">
+          <h1 className="font-display text-[2.25rem] sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-balance text-foreground">
             Premium home care,<br />
             <span className="relative inline-block">
               <span className="relative z-10 text-primary">built on trust</span>
               <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/15 -z-0" />
             </span>
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground max-w-md">Book vetted independent Zooters for homes, Airbnb turnovers, office workspaces, moving cleans and premium resets. Zoot verifies your address and confirms availability before final dispatch.</p>
+          <p className="mt-4 lg:mt-5 text-base sm:text-lg text-muted-foreground max-w-md">Book vetted independent Zooters for homes, Airbnb turnovers, office workspaces, moving cleans and premium resets. Zoot verifies your address and confirms availability before final dispatch.</p>
 
-          <div className="mt-8 rounded-3xl bg-card border border-border shadow-soft p-4 sm:p-5 md:p-6">
+          <div className="mt-6 lg:mt-8 rounded-3xl bg-card border border-border shadow-soft p-4 sm:p-5 md:p-6">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {services.map((s) => {
                 const Icon = s.icon;
@@ -136,7 +136,7 @@ export const BookingHero = () => {
           </div>
         </div>
 
-        <div className="relative animate-scale-in">
+        <div className="relative animate-scale-in hidden md:block">
           <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-warm">
             <img src={heroImg} alt="Friendly Zoot cleaner finishing a residential clean" className="h-full w-full object-cover" width={1280} height={1600} />
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-transparent to-transparent" />
