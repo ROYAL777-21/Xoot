@@ -200,7 +200,7 @@ The App Store Connect API key environment names used by EAS CLI are `EXPO_ASC_AP
 - Create Sentry mobile project and source-map upload token.
 - Create separate restricted Mapbox tokens: one public browser token restricted to Zoot web origins, one public Expo/mobile token restricted as far as Mapbox supports for native use, and one private downloads token stored only in EAS/CI. Rotate any `sk.` token pasted into chat before production.
 - Configure Cloudflare DNS, app links, AASA, assetlinks, and production SSL.
-- Create the `zoothome.co.za` Cloudflare zone with a token that has `account.zone.create`; the connected token currently cannot create zones.
+- Create the `zoothome.co.za` Cloudflare zone with `POST /zones` using `name: "zoothome.co.za"`, `type: "full"`, and `jump_start: true`, or add it manually in the Cloudflare dashboard. The API token must include account-level zone creation permission (`com.cloudflare.api.account.zone.create`); DNS edit alone is not enough.
 - Create restricted Cloudflare Turnstile widgets for web and Expo/mobile, then store the public site keys in public env and the secret key only in Edge/server secrets.
 - Configure WordPress as the SEO editorial CMS with draft-first publishing, protected previews, no-index drafts, approved media only, and canonical article URLs on the Zoot website.
 

@@ -217,6 +217,18 @@ if (
 } else {
   Add-ManualBlocker "supabase-live" "live Edge Function inventory" "Re-list staging and production Edge Functions through Supabase and verify required app functions, including get-booking-public-keys, are active."
 }
+
+$providerAuthEvidence = Read-RepoText "docs/implementation/provider-auth-cloudflare-attempts-20260629.md"
+if (
+  $null -ne $providerAuthEvidence -and
+  $providerAuthEvidence -match 'LegacyPlatformAuthRequiredError' -and
+  $providerAuthEvidence -match 'environment_unsupported' -and
+  $providerAuthEvidence -match 'com.cloudflare.api.account.zone.create'
+) {
+  Add-Check "provider-live" "provider auth and Cloudflare attempt evidence" "pass" "docs/implementation/provider-auth-cloudflare-attempts-20260629.md records current Supabase CLI, CodeRabbit CLI, and Cloudflare zone-create blockers."
+} else {
+  Add-ManualBlocker "provider-live" "provider auth and Cloudflare attempt evidence" "Re-run provider auth checks and Cloudflare zone list/create attempt, then record non-secret evidence."
+}
 Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase dashboard/API access; local config is prepared but live allowlists still need verification."
 Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, dashboard webhook assignment, and verification that current approved secrets are set in Supabase."
 Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privilege browser, native, and build-download tokens from Mapbox."

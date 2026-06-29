@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 04:52 SAST
+Reviewed: 2026-06-29 10:52 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -8,7 +8,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Live Supabase Auth redirect allowlists still need dashboard/API configuration and verification for local web, staging, production, Expo dev client, `zoot://auth/callback`, Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the intended redirects, but the available connector exposes no safe redirect setter.
 - Staging and production Supabase security advisors still report leaked password protection disabled. Enable it if the current Supabase plan supports it, or record an explicit launch risk acceptance before public launch.
-- Supabase CLI `2.108.0` is installed but not authenticated in this shell. The provider diagnostic reports `supabase-auth` false until `SUPABASE_ACCESS_TOKEN` is set locally or `supabase login` is completed in an interactive shell. Do not paste the token into chat.
+- Supabase CLI `2.108.0` is installed but not authenticated in this shell. On 2026-06-29, `supabase projects list --debug` still returned `LegacyPlatformAuthRequiredError` because no local profile or `SUPABASE_ACCESS_TOKEN` is available. Set `SUPABASE_ACCESS_TOKEN` locally or run `supabase login --token <token>` in an interactive shell. Do not paste the token into chat.
 - Production and staging migration histories are still different because production started from launch squashed migrations while staging follows the local chain. Current catalog checks show the schemas and booking states are converged, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
 - Local `psql` and Docker are not available on this Windows host, so local database reset still requires Docker/PostgreSQL client tools or a separate ops shell. Live catalog-readiness SQL was rechecked through the Supabase connector on 2026-06-29 and passed in staging and production.
 - Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks show no missing public FK-covering indexes, no targeted legacy policy residues, no missing expected advisor-cleanup policies, no raw `auth.uid()` predicates in public policies, no duplicate-permissive groups for the targeted tables, and no duplicate public index groups.
@@ -38,7 +38,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Cloudflare
 
-- The connected Cloudflare account still has no `zoothome.co.za` zone. On 2026-06-29, the Cloudflare API create-zone attempt failed because the connected token lacks `com.cloudflare.api.account.zone.create`.
+- The connected Cloudflare account still has no `zoothome.co.za` zone. On 2026-06-29, listing zones returned zero matches and the Cloudflare API create-zone attempt for `zoothome.co.za` failed because the connected token lacks `com.cloudflare.api.account.zone.create`.
 - WAF, bot/rate-limit rules, Turnstile, DNS, TLS, and origin protection cannot be activated until the zone exists and the connected token has the required scoped permissions.
 - Cloudflare Turnstile widgets are not verified. Create restricted web/mobile widgets in the dashboard or with a rotated token that has the required Turnstile permissions.
 
@@ -53,7 +53,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Optional public-safe GitHub repository variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables.
 - CodeRabbit CLI `0.6.4` is installed, but `coderabbit auth status --agent` reports `not_authenticated`.
-- `coderabbit auth login --agent` is not usable on this Windows session because localhost callback and stdin fallback are unavailable. Use `coderabbit auth login --api-key <api-key>` with a key from an approved vault, or install the official CodeRabbit GitHub App on the repository.
+- On 2026-06-29, `coderabbit auth login --agent` returned `environment_unsupported` because localhost callback and stdin fallback are unavailable in this Windows session. Use `coderabbit auth login --api-key <api-key>` with a key from an approved vault, or install the official CodeRabbit GitHub App on the repository.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.
 
 ## WordPress SEO Stack
