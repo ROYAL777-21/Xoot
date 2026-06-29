@@ -159,6 +159,9 @@
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
+  .ease-spring {
+    transition-timing-function: var(--ease-spring);
+  }
   .text-balance {
     text-wrap: balance;
   }
