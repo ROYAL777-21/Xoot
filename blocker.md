@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 10:52 SAST
+Reviewed: 2026-06-29 11:13 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -10,7 +10,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Staging and production Supabase security advisors still report leaked password protection disabled. Enable it if the current Supabase plan supports it, or record an explicit launch risk acceptance before public launch.
 - Supabase CLI `2.108.0` is installed but not authenticated in this shell. On 2026-06-29, `supabase projects list --debug` still returned `LegacyPlatformAuthRequiredError` because no local profile or `SUPABASE_ACCESS_TOKEN` is available. Set `SUPABASE_ACCESS_TOKEN` locally or run `supabase login --token <token>` in an interactive shell. Do not paste the token into chat.
 - Production and staging migration histories are still different because production started from launch squashed migrations while staging follows the local chain. Current catalog checks show the schemas and booking states are converged, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
-- Local `psql` and Docker are not available on this Windows host, so local database reset still requires Docker/PostgreSQL client tools or a separate ops shell. Live catalog-readiness SQL was rechecked through the Supabase connector on 2026-06-29 and passed in staging and production.
+- A working PostgreSQL client is available at the local Scoop extraction path, but Scoop did not finish creating the `psql` shim on PATH. Docker is still unavailable on this Windows host, so full local Supabase database reset still requires Docker or a separate ops shell. Live catalog-readiness SQL was rechecked through the Supabase connector on 2026-06-29 and passed in staging and production.
 - Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks show no missing public FK-covering indexes, no targeted legacy policy residues, no missing expected advisor-cleanup policies, no raw `auth.uid()` predicates in public policies, no duplicate-permissive groups for the targeted tables, and no duplicate public index groups.
 
 ## Provider Secrets And External Dashboards
@@ -51,7 +51,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## GitHub, CodeRabbit, And CI
 
-- Optional public-safe GitHub repository variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables.
+- GitHub CLI is authenticated and the required public Supabase variables are present. Public site URL, EAS project ID, and PostHog public variables are also present. Optional public-safe GitHub repository variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables.
 - CodeRabbit CLI `0.6.4` is installed, but `coderabbit auth status --agent` reports `not_authenticated`.
 - On 2026-06-29, `coderabbit auth login --agent` returned `environment_unsupported` because localhost callback and stdin fallback are unavailable in this Windows session. Use `coderabbit auth login --api-key <api-key>` with a key from an approved vault, or install the official CodeRabbit GitHub App on the repository.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.

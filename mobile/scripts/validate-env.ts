@@ -14,6 +14,15 @@ const allowedEnvironments = new Set(['development', 'preview', 'staging', 'produ
 
 const text = (name: string) => process.env[name]?.trim() ?? '';
 
+const getSupabaseHostedProjectRef = (value: string) => {
+  try {
+    const host = new URL(value).hostname;
+    return /^([a-z0-9]{20})\.supabase\.co$/i.exec(host)?.[1] ?? '';
+  } catch {
+    return '';
+  }
+};
+
 const isPlaceholder = (value: string) =>
   !value ||
   value.includes('your-project-ref') ||
@@ -53,6 +62,16 @@ if (!allowedEnvironments.has(appEnv)) {
 if (appEnv === 'preview' || appEnv === 'staging' || appEnv === 'production') {
   for (const name of ['EXPO_PUBLIC_SUPABASE_URL', 'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'EXPO_PUBLIC_SUPABASE_PROJECT_ID']) {
     if (isPlaceholder(text(name))) fail(`${name} must be a real value for ${appEnv} builds.`);
+  }
+
+  const supabaseProjectId = text('EXPO_PUBLIC_SUPABASE_PROJECT_ID');
+  const supabaseUrlRef = getSupabaseHostedProjectRef(text('EXPO_PUBLIC_SUPABASE_URL'));
+  if (!supabaseUrlRef) {
+    fail('EXPO_PUBLIC_SUPABASE_URL must be a valid hosted Supabase project URL for preview/staging/production builds.');
+  }
+
+  if (supabaseUrlRef !== supabaseProjectId) {
+    fail('EXPO_PUBLIC_SUPABASE_PROJECT_ID must match the project ref in EXPO_PUBLIC_SUPABASE_URL.');
   }
 }
 

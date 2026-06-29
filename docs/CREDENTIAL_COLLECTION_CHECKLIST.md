@@ -23,7 +23,8 @@ Do not paste secret values into chat. Do not commit real secrets. Do not create 
 | Supabase publishable key | Confirmed by connector; value intentionally not written to repo/docs/chat |
 | Separate Supabase staging project | Created: `Zoot Staging`, project ref `fxmxyabdjqviqbcxmvlp`, URL `https://fxmxyabdjqviqbcxmvlp.supabase.co`; schema/functions/secrets still pending |
 | Expo EAS project ID | Created: `@don-pacho777/zoot`, project ID `b4c6e0b8-e2e7-40c5-b259-3b34c79be30b` |
-| EAS public env | Production points to production Supabase; preview/development point to staging Supabase |
+| EAS public env | Baseline exists, but each environment must be rechecked before builds so `EXPO_PUBLIC_SUPABASE_PROJECT_ID` matches the project ref in `EXPO_PUBLIC_SUPABASE_URL`. |
+| GitHub public env | Required Vite Supabase variables are present and consistent. Public site URL, EAS project ID, and PostHog public variables are present; optional Mapbox/Sentry/OAuth/Turnstile/WordPress public values still wait on provider setup. |
 | Supabase Auth advisor | Leaked password protection is still disabled; official docs list this as Pro plan and above |
 | Staging backend deployment runbook | Added in `docs/STAGING_BACKEND_DEPLOYMENT.md`; scripts live in `scripts/ops/` |
 
@@ -188,13 +189,14 @@ The App Store Connect API key environment names used by EAS CLI are `EXPO_ASC_AP
 
 ## Dashboard Tasks
 
-- Store the confirmed Supabase publishable key in GitHub repo variables and Hostinger/Vercel env without committing it. EAS project env is already set. Use `npm run ops:github-vars` after installing/authenticating GitHub CLI.
+- Keep GitHub repo variables limited to public-safe values. Required Vite Supabase variables are set; add optional Mapbox/Sentry/OAuth/Turnstile/WordPress public variables only after the provider dashboards issue restricted public values.
 - Decide whether to upgrade Supabase to Pro for leaked password protection now, or use strong password rules plus OTP/OAuth until launch risk justifies the upgrade.
 - Apply the repo schema/migrations to the `Zoot Staging` Supabase project after migration history is reconciled. Use `npm run ops:supabase:deploy:staging` once local Supabase auth/DB credentials are available.
 - Set Supabase Edge Function secrets for production and staging. Use `npm run ops:supabase:secrets:staging -- -EnvFile <outside-repo-file>` for staging.
 - Deploy all Edge Functions after schema and secrets are set. Use `powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1 -DeployFunctions`.
 - Expo login and EAS project initialization are complete for `@don-pacho777/zoot`.
 - EAS environments and public variables are configured for development, preview, and production.
+- Correct the latest supplied Expo public Supabase pair before storing it in EAS: the staging project ref must use the staging Supabase URL, and the production Supabase URL must use the production project ref.
 - Configure EAS iOS and Android credentials.
 - Create App Store Connect and Play Console app records.
 - Create Sentry mobile project and source-map upload token.

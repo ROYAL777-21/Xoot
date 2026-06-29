@@ -13,6 +13,22 @@ function Test-Command {
     }
   }
 
+  if ($Name -eq "psql") {
+    $fallbacks = @(
+      (Join-Path $env:USERPROFILE "scoop\apps\postgresql\current\bin\psql.exe")
+      (Join-Path $env:USERPROFILE "scoop\apps\postgresql\18.4\bin\psql.exe")
+      (Join-Path $env:USERPROFILE "scoop\apps\postgresql\18.4\_tmp\pgsql\bin\psql.exe")
+    )
+    $fallback = $fallbacks | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+    if ($fallback) {
+      return [pscustomobject]@{
+        name = $Name
+        installed = $true
+        source = $fallback
+      }
+    }
+  }
+
   return [pscustomobject]@{
     name = $Name
     installed = $false
@@ -133,6 +149,10 @@ $commands = @(
 )
 
 $statuses = @()
+$psqlCommand = $commands | Where-Object { $_.name -eq "psql" } | Select-Object -First 1
+if ($psqlCommand -and $psqlCommand.installed) {
+  $statuses += Invoke-ExternalStatus "psql-version" $psqlCommand.source @("--version") -TimeoutSeconds 30 -OkWhen { param($Text) $Text -match "psql \(PostgreSQL\)\s+\d+\.\d+" }
+}
 
 $supabaseCommand = Get-Command "supabase" -ErrorAction SilentlyContinue
 if ($supabaseCommand) {
@@ -172,6 +192,7 @@ $statuses += @(
     "This report intentionally avoids printing secret values.",
     "External checks use short timeouts so readiness verification fails fast instead of hanging.",
     "Scoop shims are added to PATH for this diagnostic so a user-level Supabase CLI install can be detected.",
+    "A working PostgreSQL client under the user Scoop app directory is accepted for diagnostics even if Scoop did not finish creating the psql shim.",
     "DO_NOT_TRACK=1 is set for this diagnostic so Supabase CLI telemetry writes do not fail in restricted shells.",
     "Supabase npx probing is opt-in with ZOOT_CHECK_NPX_SUPABASE=1 because network startup can hang in restricted shells.",
     "If supabase-auth is false, set SUPABASE_ACCESS_TOKEN locally or run supabase login.",

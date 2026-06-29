@@ -4,6 +4,16 @@ Reviewed: 2026-06-29
 
 These checks were run without printing or storing provider secret values in the repository.
 
+## Local Tooling
+
+- `psql (PostgreSQL) 18.4` is available through the local Scoop PostgreSQL extraction path, even though Scoop did not finish creating the `psql` shim on PATH.
+- Docker is still not installed, so full local Supabase reset still needs Docker or a separate ops shell.
+
+## GitHub CLI
+
+- `gh auth status` reports an active authenticated `ROYAL777-21` GitHub account.
+- GitHub CLI is no longer an authentication blocker for repo variable or PR operations; the remaining GitHub work is to supply only public-safe variable values and keep private provider secrets out of repository variables.
+
 ## Supabase CLI
 
 - `supabase --version` reports `2.108.0`.

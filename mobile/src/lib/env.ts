@@ -14,6 +14,15 @@ const publicPostHogTokenNames = ['EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN'];
 
 const envText = (env: PublicEnvironment, name: string) => env[name]?.trim() ?? '';
 
+const getSupabaseHostedProjectRef = (value?: string) => {
+  try {
+    const host = new URL(value ?? '').hostname;
+    return /^([a-z0-9]{20})\.supabase\.co$/i.exec(host)?.[1] ?? '';
+  } catch {
+    return '';
+  }
+};
+
 export const mobileEnv = {
   appEnv: process.env.EXPO_PUBLIC_APP_ENV?.trim() || 'development',
   siteUrl: process.env.EXPO_PUBLIC_SITE_URL?.trim() ?? '',
@@ -83,6 +92,16 @@ export const getMobileConfigIssue = (env: PublicEnvironment = process.env) => {
       if (isPlaceholderValue(envText(env, name))) {
         return `${name} must be set to a real Supabase value. Placeholder Supabase mode is disabled for ${appEnv}.`;
       }
+    }
+
+    const supabaseProjectId = envText(env, 'EXPO_PUBLIC_SUPABASE_PROJECT_ID');
+    const supabaseUrlRef = getSupabaseHostedProjectRef(envText(env, 'EXPO_PUBLIC_SUPABASE_URL'));
+    if (!supabaseUrlRef) {
+      return 'EXPO_PUBLIC_SUPABASE_URL must be a valid hosted Supabase project URL for preview/staging/production builds.';
+    }
+
+    if (supabaseUrlRef !== supabaseProjectId) {
+      return 'EXPO_PUBLIC_SUPABASE_PROJECT_ID must match the project ref in EXPO_PUBLIC_SUPABASE_URL.';
     }
   }
 
