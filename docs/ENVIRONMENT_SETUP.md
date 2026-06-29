@@ -264,6 +264,7 @@ Ops helper commands:
 ```bash
 npm run ops:github-vars
 npm run ops:provider-auth:check
+npm run ops:readiness
 npm run ops:supabase:deploy:staging
 npm run ops:supabase:deploy:production
 npm run ops:supabase:secrets:staging

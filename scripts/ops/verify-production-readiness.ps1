@@ -194,6 +194,7 @@ Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Dry
 Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Refusing to read live redirect configuration from inside the repository" "Supabase Auth redirect file must stay outside repo"
 Test-RepoPattern "supabase-auth" "docs/OAUTH_AND_REDIRECTS.md" "set-supabase-auth-config.ps1" "OAuth docs reference Auth config automation"
 Test-RepoPattern "supabase-auth" "package.json" "ops:supabase:auth-config" "npm script exposes Supabase Auth config automation"
+Test-RepoPattern "ops" "package.json" "ops:readiness" "npm script exposes production-readiness verifier"
 Test-RepoPattern "provider-live" "package.json" "ops:provider-auth:check" "npm script exposes provider auth diagnostics"
 Test-RepoPattern "provider-live" "package.json" "ops:provider-auth:setup" "npm script exposes provider auth setup"
 Test-RepoPattern "supabase" "package.json" "ops:supabase:deploy:staging" "npm script exposes staging Supabase deploy"
