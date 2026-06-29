@@ -63,7 +63,7 @@ The sensitive-access kill switch is seeded as enabled because sensitive access i
 
 ## Rollout
 
-1. Verify tables, policies and functions exist in both live environments using `scripts/ops/verify-supabase-live.ps1`.
+1. Verify tables, policies and functions exist in both live environments using `npm run ops:supabase:verify:live`.
 2. Update Edge Functions to use `private.claim_provider_event(...)` before payment, Twilio, Brevo, Expo or OpenAI side effects.
 3. Keep provider-facing controls disabled until provider dashboards, secrets and legal approvals are complete.
 

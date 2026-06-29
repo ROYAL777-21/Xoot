@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 17:10 SAST
+Reviewed: 2026-06-29 21:16 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -8,9 +8,9 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Live Supabase Auth redirect allowlists still need API/dashboard configuration and verification for local web, staging, production, Expo dev client, `zoot://auth/callback`, Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the intended redirects, and `scripts/ops/set-supabase-auth-config.ps1` can apply them through the Supabase Management API once `SUPABASE_ACCESS_TOKEN`, the target project ref, and real approved URLs are available locally.
 - Staging and production Supabase security advisors still report leaked password protection disabled. Enable it if the current Supabase plan supports it, or record an explicit launch risk acceptance before public launch.
-- Supabase CLI `2.108.0` is installed but not authenticated in this shell. On 2026-06-29, `supabase projects list --debug` still returned `LegacyPlatformAuthRequiredError` because no local profile or `SUPABASE_ACCESS_TOKEN` is available. Set `SUPABASE_ACCESS_TOKEN` locally or run `supabase login --token <token>` in an interactive shell. Do not paste the token into chat.
+- Supabase CLI `2.108.0` is installed but not authenticated in this shell. On 2026-06-29 21:19 SAST, `npm run ops:provider-auth:check` still reported `LegacyPlatformAuthRequiredError` because no local profile or `SUPABASE_ACCESS_TOKEN` is available. Set `SUPABASE_ACCESS_TOKEN` locally or run `supabase login --token <token>` in an interactive shell. Do not paste the token into chat.
 - Production and staging migration histories are still different because production started from launch squashed migrations while staging follows the local chain. Current catalog checks show the schemas and booking states are converged, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
-- A working PostgreSQL client is available at the local Scoop extraction path, but Scoop did not finish creating the `psql` shim on PATH. Docker is still unavailable on this Windows host, so full local Supabase database reset still requires Docker or a separate ops shell. Live catalog-readiness SQL was rechecked through the Supabase connector on 2026-06-29 and passed in staging and production.
+- A working PostgreSQL client is available at the local Scoop extraction path used by the provider-auth diagnostic. Docker is still unavailable on this Windows host, so full local Supabase database reset still requires Docker or a separate ops shell. Live catalog-readiness SQL was rechecked through the Supabase connector on 2026-06-29 and passed in staging and production.
 - Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks show no missing public FK-covering indexes, no targeted legacy policy residues, no missing expected advisor-cleanup policies, no raw `auth.uid()` predicates in public policies, no duplicate-permissive groups for the targeted tables, and no duplicate public index groups.
 - Phase 2 booking chat action-layer migration and Edge Functions are implemented locally, and the staging smoke script now covers send/read/report/direct-insert-denial. Live staging/prod deployment and execution still require Supabase CLI/session access: `20260629113000_booking_chat_action_layer.sql`, `send-booking-message`, `report-booking-message`, and `mark-booking-message-read`.
 
@@ -87,7 +87,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Run signed Twilio webhook smoke tests after Twilio dashboard channels and Edge secrets are verified with the rotated values.
 - Deploy and smoke-test the Phase 2 booking chat action layer in staging/prod with `npm run ops:smoke:staging -- --all`: direct `messages` inserts revoked, participant sends through Edge Function, read receipts written, and message reports queued for admin review.
 - Run authenticated booking-chat public-key lookup smoke tests against `get-booking-public-keys` with real staging client/Zooter booking participants.
-- Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-supabase-auth-config.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
+- Run `npm run ops:provider-auth:setup`, `npm run ops:supabase:auth-config`, `npm run ops:github-vars`, `npm run ops:supabase:deploy:staging`, `npm run ops:supabase:deploy:production`, `npm run ops:supabase:secrets:staging`, and `npm run ops:supabase:secrets:production` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.
 - Run CodeRabbit review once authenticated.
 - Confirm Cloudflare WAF/rate-limit/Turnstile rules after the zone is added.

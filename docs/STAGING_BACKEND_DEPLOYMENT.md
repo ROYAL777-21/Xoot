@@ -41,13 +41,13 @@ Do not pass live secrets through chat. Prefer a local password manager, an uncom
 ## Dry Run
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1 -DryRun
+npm run ops:supabase:deploy:staging -- -DryRun
 ```
 
 ## Deploy Schema
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1
+npm run ops:supabase:deploy:staging
 ```
 
 ## Deploy Production Schema
@@ -59,8 +59,8 @@ first, verify it, then run production.
 ```powershell
 $env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF="mvlrkelahhsyjrwgsxaf"
 $env:ZOOT_PRODUCTION_SUPABASE_DB_URL="postgresql://..."
-powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-production-backend.ps1 -DryRun
-powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-production-backend.ps1 -VerifyLive
+npm run ops:supabase:deploy:production -- -DryRun
+npm run ops:supabase:deploy:production -- -VerifyLive
 ```
 
 Do not paste the database URL into chat or commit it.
@@ -72,13 +72,19 @@ Do not paste the database URL into chat or commit it.
 3. Run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-edge-secrets.ps1 -EnvFile C:\secure\zoot-staging-edge.env
+npm run ops:supabase:secrets:staging -- -EnvFile C:\secure\zoot-staging-edge.env
+```
+
+For production, keep a separate production-only secrets file outside the repo:
+
+```powershell
+npm run ops:supabase:secrets:production -- -EnvFile C:\secure\zoot-production-edge.env
 ```
 
 ## Deploy Edge Functions
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1 -DeployFunctions
+npm run ops:supabase:deploy:staging -- -DeployFunctions
 ```
 
 ## GitHub Public Variables
@@ -125,7 +131,7 @@ Live metadata verification can be run after staging and production deployment:
 
 ```powershell
 $env:SUPABASE_DB_URL="postgresql://..."
-powershell -ExecutionPolicy Bypass -File scripts/ops/verify-supabase-live.ps1
+npm run ops:supabase:verify:live
 ```
 
 For deploy-and-verify in one step, pass `-VerifyLive` to either

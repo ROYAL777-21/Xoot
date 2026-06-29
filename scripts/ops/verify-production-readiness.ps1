@@ -194,6 +194,13 @@ Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Dry
 Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Refusing to read live redirect configuration from inside the repository" "Supabase Auth redirect file must stay outside repo"
 Test-RepoPattern "supabase-auth" "docs/OAUTH_AND_REDIRECTS.md" "set-supabase-auth-config.ps1" "OAuth docs reference Auth config automation"
 Test-RepoPattern "supabase-auth" "package.json" "ops:supabase:auth-config" "npm script exposes Supabase Auth config automation"
+Test-RepoPattern "provider-live" "package.json" "ops:provider-auth:check" "npm script exposes provider auth diagnostics"
+Test-RepoPattern "provider-live" "package.json" "ops:provider-auth:setup" "npm script exposes provider auth setup"
+Test-RepoPattern "supabase" "package.json" "ops:supabase:deploy:staging" "npm script exposes staging Supabase deploy"
+Test-RepoPattern "supabase" "package.json" "ops:supabase:deploy:production" "npm script exposes production Supabase deploy"
+Test-RepoPattern "supabase" "package.json" "ops:supabase:secrets:staging" "npm script exposes staging Edge secret setter"
+Test-RepoPattern "supabase" "package.json" "ops:supabase:secrets:production" "npm script exposes production Edge secret setter"
+Test-RepoPattern "supabase" "package.json" "ops:supabase:verify:live" "npm script exposes live Supabase verifier"
 Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "SUPABASE_ACCESS_TOKEN" "shared deploy requires Supabase auth"
 Test-RepoPattern "supabase" "scripts/ops/setup-local-provider-auth.ps1" "supabase@2\.108\.0" "local Supabase auth setup uses pinned npx CLI"
 Test-RepoPattern "supabase" "scripts/ops/deploy-production-backend.ps1" "production" "production deploy wrapper exists"
@@ -229,7 +236,7 @@ if (
 ) {
   Add-Check "supabase-live" "live database readiness SQL" "pass" "docs/implementation/live-database-readiness-20260628.md records staging and production connector SQL checks."
 } else {
-  Add-ManualBlocker "supabase-live" "live database readiness SQL" "Run scripts/ops/verify-supabase-live.ps1 with SUPABASE_DB_URL or record authenticated Supabase connector SQL evidence for staging and production."
+  Add-ManualBlocker "supabase-live" "live database readiness SQL" "Run npm run ops:supabase:verify:live with SUPABASE_DB_URL or record authenticated Supabase connector SQL evidence for staging and production."
 }
 
 $roleSmokeEvidence = Read-RepoText "docs/implementation/staging-role-smoke-20260628.md"

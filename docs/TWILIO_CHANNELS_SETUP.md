@@ -85,7 +85,7 @@ Use a local file outside the repository, then push it into Supabase Edge Functio
 ```powershell
 # Example path only. Keep the real file outside the repo and do not paste values into chat.
 notepad C:\secure\zoot-staging-edge.env
-powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-edge-secrets.ps1 -EnvFile C:\secure\zoot-staging-edge.env
+npm run ops:supabase:secrets:staging -- -EnvFile C:\secure\zoot-staging-edge.env
 ```
 
 The local file should contain the Twilio keys listed above plus the shared Supabase/OpenAI/Brevo/payment secrets needed by the deployed Edge Functions. Delete or vault the local file after setting the secrets.

@@ -206,9 +206,10 @@ The App Store Connect API key environment names used by EAS CLI are `EXPO_ASC_AP
 - Keep GitHub repo variables limited to public-safe values. Required Vite Supabase variables are set; add optional Mapbox/Sentry/OAuth/Turnstile/WordPress public variables only after the provider dashboards issue restricted public values.
 - Decide whether to upgrade Supabase to Pro for leaked password protection now, or use strong password rules plus OTP/OAuth until launch risk justifies the upgrade.
 - Apply the repo schema/migrations to the `Zoot Staging` Supabase project after migration history is reconciled. Use `npm run ops:supabase:deploy:staging` once local Supabase auth/DB credentials are available.
-- Set Supabase Edge Function secrets for production and staging. Use `npm run ops:supabase:secrets:staging -- -EnvFile <outside-repo-file>` for staging.
+- Apply approved production migrations only after staging passes. Use `npm run ops:supabase:deploy:production -- -DryRun` first, then `npm run ops:supabase:deploy:production -- -VerifyLive` with production database credentials set locally.
+- Set Supabase Edge Function secrets for production and staging. Use `npm run ops:supabase:secrets:staging -- -EnvFile <outside-repo-file>` for staging and `npm run ops:supabase:secrets:production -- -EnvFile <outside-repo-file>` for production.
 - Configure Supabase Auth Site URL and redirect allowlists with `npm run ops:supabase:auth-config` after `SUPABASE_ACCESS_TOKEN`, the project ref, and approved local/staging/production/native URLs are available locally. Run it first without `-Apply`.
-- Deploy all Edge Functions after schema and secrets are set. Use `powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1 -DeployFunctions`.
+- Deploy all Edge Functions after schema and secrets are set. Use `npm run ops:supabase:deploy:staging -- -DeployFunctions` first, then `npm run ops:supabase:deploy:production -- -DeployFunctions` after staging smoke tests pass.
 - Expo login and EAS project initialization are complete for `@don-pacho777/zoot`.
 - EAS environments and public variables are configured for development, preview, and production.
 - Correct the latest supplied Expo public Supabase pair before storing it in EAS: the staging project ref must use the staging Supabase URL, and the production Supabase URL must use the production project ref.
@@ -227,9 +228,9 @@ These methods were verified from the local CLI help output and should be used in
 
 | Tool | Preferred local setup | Notes |
 | --- | --- | --- |
-| Supabase CLI | Set `SUPABASE_ACCESS_TOKEN` in the local shell, then run `supabase login --token $env:SUPABASE_ACCESS_TOKEN --name zoot-local`. | `supabase login --no-browser` is also available for browserless flows. Keep the token in the password manager or shell profile, not repo files. |
+| Supabase CLI | Set `SUPABASE_ACCESS_TOKEN` in the local shell, then run `supabase login --token $env:SUPABASE_ACCESS_TOKEN --name zoot-local`. | `supabase login --no-browser` is also available for browserless flows. Keep the token in the password manager or shell profile, not repo files. `npm run ops:provider-auth:check` reports current status without printing tokens. |
 | GitHub CLI | Current machine is authenticated as `ROYAL777-21`. If it expires, run `gh auth login --web --hostname github.com --git-protocol https`. | Do not paste GitHub PATs into chat. |
-| CodeRabbit CLI | Set `CODERABBIT_API_KEY` locally, then run `coderabbit auth login --api-key $env:CODERABBIT_API_KEY`. | If Zoot later has a self-hosted CodeRabbit URL, run `coderabbit auth login --self-hosted` or `scripts/ops/setup-local-provider-auth.ps1 -CodeRabbit -CodeRabbitSelfHosted`. The official GitHub App remains the safest production option. |
+| CodeRabbit CLI | Set `CODERABBIT_API_KEY` locally, then run `coderabbit auth login --api-key $env:CODERABBIT_API_KEY`. | If Zoot later has a self-hosted CodeRabbit URL, run `coderabbit auth login --self-hosted` or `npm run ops:provider-auth:setup -- -CodeRabbit -CodeRabbitSelfHosted`. The official GitHub App remains the safest production option. |
 
 Current status on 2026-06-29: GitHub CLI is authenticated; Supabase CLI is installed but not authenticated; CodeRabbit CLI is installed but not authenticated.
 

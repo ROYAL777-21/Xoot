@@ -173,7 +173,7 @@ Only Edge Functions and other trusted server-side code may read these values.
 For staging, copy `supabase/functions/.env.staging.example` outside the repository, fill real values locally, then run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-edge-secrets.ps1 -EnvFile C:\secure\zoot-staging-edge.env
+npm run ops:supabase:secrets:staging -- -EnvFile C:\secure\zoot-staging-edge.env
 ```
 
 ## Production No-Mock Guard
@@ -263,6 +263,10 @@ Ops helper commands:
 
 ```bash
 npm run ops:github-vars
+npm run ops:provider-auth:check
 npm run ops:supabase:deploy:staging
+npm run ops:supabase:deploy:production
 npm run ops:supabase:secrets:staging
+npm run ops:supabase:secrets:production
+npm run ops:supabase:verify:live
 ```

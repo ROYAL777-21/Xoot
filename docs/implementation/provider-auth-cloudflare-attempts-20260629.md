@@ -1,12 +1,13 @@
 # Provider Auth And Cloudflare Attempt Evidence
 
-Reviewed: 2026-06-29
+Reviewed: 2026-06-29 21:19 SAST
 
 These checks were run without printing or storing provider secret values in the repository.
 
 ## Local Tooling
 
-- `psql (PostgreSQL) 18.4` is available through the local Scoop PostgreSQL extraction path, even though Scoop did not finish creating the `psql` shim on PATH.
+- `npm run ops:provider-auth:check` completed successfully on 2026-06-29 21:19 SAST.
+- `psql (PostgreSQL) 18.4` is available through the local Scoop PostgreSQL extraction path used by the diagnostic.
 - Docker is still not installed, so full local Supabase reset still needs Docker or a separate ops shell.
 
 ## GitHub CLI
@@ -18,7 +19,7 @@ These checks were run without printing or storing provider secret values in the 
 
 - `supabase --version` reports `2.108.0`.
 - `supabase login --help` confirms the CLI supports `supabase login --token <token>` and `--no-browser`.
-- `supabase projects list --debug` still fails with `LegacyPlatformAuthRequiredError` because this shell has no local Supabase profile and no `SUPABASE_ACCESS_TOKEN`.
+- The provider-auth diagnostic still reports `LegacyPlatformAuthRequiredError` because this shell has no local Supabase profile and no `SUPABASE_ACCESS_TOKEN`.
 - Per Supabase CLI docs, a personal access token should be supplied through native CLI login or a local environment variable. Do not paste the token into chat.
 
 ## CodeRabbit CLI
