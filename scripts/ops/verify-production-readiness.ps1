@@ -143,6 +143,24 @@ Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advi
 Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "create index if not exists" "FK-covering indexes created conditionally"
 Test-RepoPattern "supabase" "supabase/migrations/20260627120000_legacy_auth_initplan_cleanup.sql" "regexp_replace" "legacy auth.uid initplan cleanup"
 Test-RepoPattern "supabase" "supabase/migrations/20260627120000_legacy_auth_initplan_cleanup.sql" "obj_description" "legacy RLS policy comments preserved"
+Test-RepoPattern "phase-2-chat" "supabase/migrations/20260629113000_booking_chat_action_layer.sql" "revoke insert, update, delete on table public\.messages from authenticated" "direct booking chat mutations revoked"
+Test-RepoPattern "phase-2-chat" "supabase/migrations/20260629113000_booking_chat_action_layer.sql" "booking_message_reports" "booking chat report table"
+Test-RepoPattern "phase-2-chat" "supabase/migrations/20260629113000_booking_chat_action_layer.sql" "booking_message_read_receipts" "booking chat read receipt table"
+Test-RepoPattern "phase-2-chat" "supabase/migrations/20260629113000_booking_chat_action_layer.sql" "booking_chat_typing_indicators" "booking chat typing model"
+Test-RepoPattern "phase-2-chat" "supabase/migrations/20260629113000_booking_chat_action_layer.sql" "booking\.chat_send" "booking chat kill switch control"
+Test-RepoFile "phase-2-chat" "supabase/functions/send-booking-message/index.ts" | Out-Null
+Test-RepoPattern "phase-2-chat" "supabase/functions/send-booking-message/index.ts" "consumeRateLimit" "booking chat send rate limit"
+Test-RepoPattern "phase-2-chat" "supabase/functions/send-booking-message/index.ts" "booking\.chat_send" "booking chat send operational control"
+Test-RepoPattern "phase-2-chat" "supabase/functions/send-booking-message/index.ts" "zoot:e2ee:v1:" "booking chat encrypted envelope required"
+Test-RepoFile "phase-2-chat" "supabase/functions/report-booking-message/index.ts" | Out-Null
+Test-RepoPattern "phase-2-chat" "supabase/functions/report-booking-message/index.ts" "booking_chat_report" "booking chat report creates admin review queue item"
+Test-RepoFile "phase-2-chat" "supabase/functions/mark-booking-message-read/index.ts" | Out-Null
+Test-RepoPattern "phase-2-chat" "supabase/config.toml" "\[functions\.send-booking-message\]\s+verify_jwt = true" "send-booking-message requires JWT"
+Test-RepoPattern "phase-2-chat" "supabase/config.toml" "\[functions\.report-booking-message\]\s+verify_jwt = true" "report-booking-message requires JWT"
+Test-RepoPattern "phase-2-chat" "supabase/config.toml" "\[functions\.mark-booking-message-read\]\s+verify_jwt = true" "mark-booking-message-read requires JWT"
+Test-RepoPattern "phase-2-chat" "src/components/zoot/BookingChat.tsx" "send-booking-message" "booking chat sends through Edge Function"
+Test-RepoPattern "phase-2-chat" "src/components/zoot/BookingChat.tsx" "report-booking-message" "booking chat report action"
+Test-RepoPattern "phase-2-chat" "src/lib/booking-chat-safety.ts" "off_platform" "booking chat client-side off-platform safety filter"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",

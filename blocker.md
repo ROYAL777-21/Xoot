@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 11:13 SAST
+Reviewed: 2026-06-29 11:55 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -12,6 +12,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Production and staging migration histories are still different because production started from launch squashed migrations while staging follows the local chain. Current catalog checks show the schemas and booking states are converged, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
 - A working PostgreSQL client is available at the local Scoop extraction path, but Scoop did not finish creating the `psql` shim on PATH. Docker is still unavailable on this Windows host, so full local Supabase database reset still requires Docker or a separate ops shell. Live catalog-readiness SQL was rechecked through the Supabase connector on 2026-06-29 and passed in staging and production.
 - Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks show no missing public FK-covering indexes, no targeted legacy policy residues, no missing expected advisor-cleanup policies, no raw `auth.uid()` predicates in public policies, no duplicate-permissive groups for the targeted tables, and no duplicate public index groups.
+- Phase 2 booking chat action-layer migration and Edge Functions are implemented locally but still need staging/prod deployment after Supabase CLI/session access is restored: `20260629113000_booking_chat_action_layer.sql`, `send-booking-message`, `report-booking-message`, and `mark-booking-message-read`.
 
 ## Provider Secrets And External Dashboards
 
@@ -46,6 +47,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Apple Team ID, App Store Connect app record, Google Play app record, Android signing fingerprints, store privacy declarations, and final legal/business metadata remain unavailable.
 - EAS credentials and submit profiles still need final provider-backed credentials.
+- Latest pasted Expo public Supabase values mix a staging project reference with a production Supabase URL. Keep the currently configured production GitHub variables as-is, and define separate EAS/GitHub environment profiles before adding staging mobile values.
 - Native association files are skipped during build until `ZOOT_APPLE_TEAM_ID` or `ZOOT_IOS_APP_ID` and `ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS` are supplied.
 - Store submission cannot proceed until developer-console access, signing credentials, privacy/data-safety answers, account deletion URLs, support URLs, and legal review are complete.
 
@@ -70,6 +72,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
 - Run signed Twilio webhook smoke tests after Twilio dashboard channels and Edge secrets are verified with the rotated values.
+- Deploy and smoke-test the Phase 2 booking chat action layer in staging/prod: direct `messages` inserts revoked, participant sends through Edge Function, read receipts written, and message reports queued for admin review.
 - Run authenticated booking-chat public-key lookup smoke tests against `get-booking-public-keys` with real staging client/Zooter booking participants.
 - Run `scripts/ops/setup-local-provider-auth.ps1`, `scripts/ops/set-github-public-vars.ps1`, `scripts/ops/deploy-staging-backend.ps1`, `scripts/ops/deploy-production-backend.ps1`, and `scripts/ops/set-supabase-edge-secrets.ps1` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.

@@ -278,23 +278,38 @@ export type Database = {
         Row: {
           body: string
           booking_id: string
+          client_safety_flags: string[]
           created_at: string
+          envelope_version: number
           id: string
+          moderation_state: string
+          reported_at: string | null
           sender_type: string
+          sender_user_id: string | null
         }
         Insert: {
           body: string
           booking_id: string
+          client_safety_flags?: string[]
           created_at?: string
+          envelope_version?: number
           id?: string
+          moderation_state?: string
+          reported_at?: string | null
           sender_type: string
+          sender_user_id?: string | null
         }
         Update: {
           body?: string
           booking_id?: string
+          client_safety_flags?: string[]
           created_at?: string
+          envelope_version?: number
           id?: string
+          moderation_state?: string
+          reported_at?: string | null
           sender_type?: string
+          sender_user_id?: string | null
         }
         Relationships: [
           {

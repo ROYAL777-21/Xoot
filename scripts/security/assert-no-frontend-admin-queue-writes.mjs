@@ -4,7 +4,7 @@ import { join, relative } from "node:path";
 const ROOT = process.cwd();
 const SRC_DIR = join(ROOT, "src");
 const MUTATION_METHODS = ["insert", "update", "upsert", "delete"];
-const TABLES = ["admin_review_queue", "integration_outbox"];
+const TABLES = ["admin_review_queue", "integration_outbox", "messages"];
 const TEXT_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 
 const isTextFile = (file) => TEXT_EXTENSIONS.has(file.slice(file.lastIndexOf(".")));
@@ -35,9 +35,9 @@ for (const file of walk(SRC_DIR)) {
 }
 
 if (findings.length > 0) {
-  console.error("Frontend admin queue mutations are not allowed. Move these writes behind audited Edge Functions:");
+  console.error("Frontend mutations to critical tables are not allowed. Move these writes behind audited Edge Functions:");
   for (const finding of findings) console.error(`- ${finding}`);
   process.exit(1);
 }
 
-console.log("No frontend admin_review_queue/integration_outbox mutations found.");
+console.log("No frontend admin_review_queue/integration_outbox/messages mutations found.");

@@ -26,6 +26,15 @@ verify_jwt = false
 [functions.get-booking-public-keys]
 verify_jwt = true
 
+[functions.send-booking-message]
+verify_jwt = true
+
+[functions.report-booking-message]
+verify_jwt = true
+
+[functions.mark-booking-message-read]
+verify_jwt = true
+
 [functions.get-sensitive-access]
 verify_jwt = true
 

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Send, ShieldCheck } from "lucide-react";
+import { Flag, Loader2, Send, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { getBookingChatSafety } from "@/lib/booking-chat-safety";
 import {
   decryptChatMessage,
   encryptChatMessage,
@@ -57,16 +58,18 @@ const uniqueIds = (values: Array<string | null | undefined>) => Array.from(new S
 export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserId }: BookingChatProps) => {
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
+  const [reportingMessageId, setReportingMessageId] = useState<string | null>(null);
   const [decrypting, setDecrypting] = useState(false);
   const [decryptedBodies, setDecryptedBodies] = useState<Record<string, string>>({});
   const [security, setSecurity] = useState<ChatSecurityState>(initialSecurityState);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const zooterUserId = booking?.zooter?.user_id ?? zooter?.user_id;
   const participantIds = useMemo(
-    () => uniqueIds([booking?.user_id, booking?.zooter?.user_id]),
-    [booking?.user_id, booking?.zooter?.user_id],
+    () => uniqueIds([booking?.user_id, zooterUserId]),
+    [booking?.user_id, zooterUserId],
   );
-  const currentSenderType = booking?.zooter?.user_id === currentUserId ? "zooter" : "user";
+  const currentSenderType = zooterUserId === currentUserId ? "zooter" : "user";
 
   useEffect(() => {
     let cancelled = false;
@@ -229,10 +232,32 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages, decryptedBodies]);
 
+  useEffect(() => {
+    const unreadMessageIds = messages
+      .filter((message) => message.sender_type !== currentSenderType)
+      .map((message) => message.id);
+
+    if (!bookingId || !currentUserId || unreadMessageIds.length === 0) return;
+
+    supabase.functions
+      .invoke("mark-booking-message-read", {
+        body: { booking_id: bookingId, message_ids: unreadMessageIds },
+      })
+      .then(({ error }) => {
+        if (error) console.warn("booking chat read receipt failed", error.message);
+      });
+  }, [bookingId, currentSenderType, currentUserId, messages]);
+
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = body.trim();
     if (!text || !bookingId || !currentUserId) return;
+
+    const safety = getBookingChatSafety(text);
+    if (!safety.allowed) {
+      toast.error(safety.message ?? "Keep sensitive booking details out of chat.");
+      return;
+    }
 
     if (!security.ready || !security.deviceKey) {
       toast.error(security.issue ?? "Secure chat is still preparing.");
@@ -252,9 +277,13 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
       });
 
       setBody("");
-      const { error } = await (supabase as any)
-        .from("messages")
-        .insert({ booking_id: bookingId, sender_type: currentSenderType, body: encryptedBody });
+      const { error } = await supabase.functions.invoke("send-booking-message", {
+        body: {
+          booking_id: bookingId,
+          encrypted_body: encryptedBody,
+          client_safety_flags: safety.flags,
+        },
+      });
 
       if (error) throw error;
     } catch {
@@ -268,6 +297,25 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
   const getMessageBody = (message: Msg) => {
     if (!isEncryptedChatBody(message.body)) return message.body;
     return decryptedBodies[message.id] ?? (decrypting ? "Decrypting secure message..." : "Secure message unavailable on this device.");
+  };
+
+  const reportMessage = async (messageId: string) => {
+    if (!bookingId || !currentUserId || reportingMessageId) return;
+    setReportingMessageId(messageId);
+    try {
+      const { error } = await supabase.functions.invoke("report-booking-message", {
+        body: {
+          message_id: messageId,
+          reason: "User reported a booking chat message",
+        },
+      });
+      if (error) throw error;
+      toast.success("Message reported for Zoot review.");
+    } catch {
+      toast.error("Message report could not be sent. Please try again.");
+    } finally {
+      setReportingMessageId(null);
+    }
   };
 
   return (
@@ -310,7 +358,19 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
                 }`}
               >
                 <div>{getMessageBody(message)}</div>
-                {isSecure && <div className="mt-1 text-[10px] opacity-70">Encrypted</div>}
+                <div className="mt-1 flex items-center justify-between gap-2 text-[10px] opacity-70">
+                  <span>{isSecure ? "Encrypted" : "Legacy message"}</span>
+                  <button
+                    type="button"
+                    onClick={() => reportMessage(message.id)}
+                    disabled={reportingMessageId === message.id}
+                    className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 transition hover:bg-background/20 disabled:opacity-50"
+                    title="Report message"
+                    aria-label="Report booking chat message"
+                  >
+                    <Flag className="h-3 w-3" />
+                  </button>
+                </div>
               </div>
             </div>
           );
