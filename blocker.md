@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 11:55 SAST
+Reviewed: 2026-06-29 12:20 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -20,6 +20,12 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Private secrets must not be committed or placed in frontend/mobile env files. Store them only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
 - Secrets pasted into chat, including Supabase, Cloudflare, Expo, PostHog private API, and Mapbox token values, must be rotated before production launch. The Twilio secret values previously pasted in chat were reported rotated on 2026-06-28; keep using only rotated values in approved secret stores.
 - Live Edge Function inventories for staging and production now show the required app functions active, including `admin-control-management`, `confirm-payment`, `support-respond`, Twilio webhooks, and `get-booking-public-keys`. Provider secret verification and signed smoke tests still require an authenticated Supabase CLI/session, dashboard secret setter, or real provider dashboard access.
+
+## Domain Registration
+
+- No production domain is registered yet. Domain-dependent setup cannot be completed without the final domain and registrar/DNS access.
+- Pending until domain registration: Cloudflare zone/DNS/TLS/WAF/Turnstile restrictions, production Supabase Auth redirect allowlists, Google/Apple OAuth origins and callbacks, Brevo sender-domain DNS, Hostinger custom-domain SSL, WordPress production/canonical URLs, Mapbox URL-restricted browser tokens, Apple AASA, Android assetlinks, privacy/support/account-deletion URLs, and store listing URLs.
+- Use localhost, staging project URLs, and Expo development URLs for preview only. Do not mark production launch ready until the final domain is registered, configured, and verified.
 
 ## Twilio
 
@@ -56,7 +62,14 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - GitHub CLI is authenticated and the required public Supabase variables are present. Public site URL, EAS project ID, and PostHog public variables are also present. Optional public-safe GitHub repository variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables.
 - CodeRabbit CLI `0.6.4` is installed, but `coderabbit auth status --agent` reports `not_authenticated`.
 - On 2026-06-29, `coderabbit auth login --agent` returned `environment_unsupported` because localhost callback and stdin fallback are unavailable in this Windows session. Use `coderabbit auth login --api-key <api-key>` with a key from an approved vault, or install the official CodeRabbit GitHub App on the repository.
+- CodeRabbit self-hosted login is available through `coderabbit auth login --self-hosted`, but no Zoot self-hosted CodeRabbit URL has been supplied. Use it only if Zoot actually provisions a self-hosted instance; otherwise use the official GitHub App or API-key CLI auth.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.
+
+## Admin Access
+
+- There are no shared admin sign-in credentials in the repo, app, or env templates. Admin access is granted by a Supabase Auth account plus an `admin` role in `public.user_roles`.
+- Staging admin smoke credentials must be supplied only through local env vars before running `npm run ops:smoke:staging -- --all`; see `docs/ADMIN_ACCESS.md`.
+- Production founder/admin accounts still need secure creation, MFA enrollment, and audited role assignment before production operations.
 
 ## WordPress SEO Stack
 

@@ -91,6 +91,7 @@ Test-RepoFile "ops" "scripts/ops/verify-supabase-live.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/sql/verify-production-readiness.sql" | Out-Null
 Test-RepoFile "ops" "scripts/ops/staging-role-smoke.mjs" | Out-Null
 Test-RepoFile "ops" "docs/STAGING_ROLE_SMOKE_TESTS.md" | Out-Null
+Test-RepoFile "ops" "docs/ADMIN_ACCESS.md" | Out-Null
 
 $blockerText = Read-RepoText "blocker.md"
 if ($null -ne $blockerText) {
@@ -200,6 +201,8 @@ Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "n
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "performance advisor RLS policy cleanup converged" "live SQL checks performance advisor RLS cleanup"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no raw auth uid in public policies" "live SQL checks legacy auth-initplan cleanup"
 Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "CODERABBIT_API_KEY" "CodeRabbit API-key auth support"
+Test-RepoPattern "coderabbit" "scripts/ops/setup-local-provider-auth.ps1" "coderabbit auth login --self-hosted" "CodeRabbit self-hosted auth support"
+Test-RepoPattern "admin-access" "docs/ADMIN_ACCESS.md" "public\.user_roles" "admin access is role-based"
 
 $liveDatabaseEvidence = Read-RepoText "docs/implementation/live-database-readiness-20260628.md"
 if (
@@ -251,6 +254,7 @@ Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase 
 Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, dashboard webhook assignment, and verification that current approved secrets are set in Supabase."
 Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privilege browser, native, and build-download tokens from Mapbox."
 Add-ManualBlocker "cloudflare-live" "Cloudflare Zoot zone" "Requires a Cloudflare zone and token with the required zone-management permissions."
+Add-ManualBlocker "domain-live" "production domain registration" "Requires a registered final domain before Cloudflare zone, DNS, TLS, OAuth origins, sender-domain DNS, app links, support/legal URLs, and store URLs can be completed."
 Add-ManualBlocker "stores-live" "Apple/Google/EAS release credentials" "Requires developer-console records, signing credentials, privacy declarations, and legal review."
 
 if ($IncludeExternal -or $RequireLive) {

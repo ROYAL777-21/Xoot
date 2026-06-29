@@ -2,6 +2,7 @@ param(
   [switch]$Supabase,
   [switch]$GitHub,
   [switch]$CodeRabbit,
+  [switch]$CodeRabbitSelfHosted,
   [string]$SupabaseProfileName = "zoot-local"
 )
 
@@ -76,8 +77,12 @@ if ($CodeRabbit) {
   } elseif (-not [string]::IsNullOrWhiteSpace($env:CODERABBIT_API_KEY)) {
     Write-Host "Authenticating CodeRabbit CLI with CODERABBIT_API_KEY from the local environment."
     & coderabbit auth login --api-key $env:CODERABBIT_API_KEY
+  } elseif ($CodeRabbitSelfHosted) {
+    Write-Host "Starting CodeRabbit self-hosted login. Enter the self-hosted CodeRabbit URL in the CLI prompt."
+    Write-Host "Do not paste CodeRabbit API keys or session tokens into chat."
+    & coderabbit auth login --self-hosted
   } else {
-    throw "CodeRabbit is not authenticated. Set CODERABBIT_API_KEY locally or install the CodeRabbit GitHub App. Do not paste the key into chat."
+    throw "CodeRabbit is not authenticated. Set CODERABBIT_API_KEY locally, rerun with -CodeRabbitSelfHosted if Zoot has a self-hosted CodeRabbit URL, or install the CodeRabbit GitHub App. Do not paste the key into chat."
   }
 }
 

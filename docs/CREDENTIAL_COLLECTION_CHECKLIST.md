@@ -1,6 +1,6 @@
 # Zoot Credential Collection Checklist
 
-Reviewed: 2026-06-19
+Reviewed: 2026-06-29
 
 Do not paste secret values into chat. Do not commit real secrets. Do not create a committed `.env` with live values. This checklist records what must be collected, where to get it, and where to store it.
 
@@ -29,6 +29,20 @@ Do not paste secret values into chat. Do not commit real secrets. Do not create 
 | Staging backend deployment runbook | Added in `docs/STAGING_BACKEND_DEPLOYMENT.md`; scripts live in `scripts/ops/` |
 
 The Supabase URL is public project metadata. Publishable keys are public-safe but should still be stored through EAS/GitHub/hosting environment management rather than hardcoded.
+
+## Domain-Dependent Items
+
+Zoot does not have a registered domain yet. Do not force or fake domain-dependent setup. Record these as pending until the final domain is registered and pointed to the selected DNS provider:
+
+- Cloudflare zone creation, DNS, TLS, WAF, bot/rate-limit rules, Turnstile origin restrictions, R2 custom domains, and Access policies.
+- Production OAuth origins and redirect URLs for Supabase Auth, Google, Apple, Expo deep links, and app links.
+- Brevo sender-domain authentication records, SPF, DKIM, DMARC, bounce handling, and tracking domain.
+- Hostinger production custom-domain deployment and SSL verification.
+- WordPress production URL, headless API URL, preview URL, canonical URLs, and sitemap ownership.
+- Mapbox public token URL restrictions for the website and web-app.
+- Apple associated domains, AASA file hosting, Android asset links, support URL, privacy URL, account deletion URL, and store listing URLs.
+
+Use temporary localhost, staging, and Expo development URLs only for development and preview. Revisit this section after domain registration.
 
 ## Public App Config
 
@@ -202,9 +216,21 @@ The App Store Connect API key environment names used by EAS CLI are `EXPO_ASC_AP
 - Create Sentry mobile project and source-map upload token.
 - Create separate restricted Mapbox tokens: one public browser token restricted to Zoot web origins, one public Expo/mobile token restricted as far as Mapbox supports for native use, and one private downloads token stored only in EAS/CI. Rotate any `sk.` token pasted into chat before production.
 - Configure Cloudflare DNS, app links, AASA, assetlinks, and production SSL.
-- Create the `zoothome.co.za` Cloudflare zone with `POST /zones` using `name: "zoothome.co.za"`, `type: "full"`, and `jump_start: true`, or add it manually in the Cloudflare dashboard. The API token must include account-level zone creation permission (`com.cloudflare.api.account.zone.create`); DNS edit alone is not enough.
+- After the final domain is registered, create its Cloudflare zone with `POST /zones` using the registered domain name, `type: "full"`, and `jump_start: true`, or add it manually in the Cloudflare dashboard. The API token must include account-level zone creation permission (`com.cloudflare.api.account.zone.create`); DNS edit alone is not enough.
 - Create restricted Cloudflare Turnstile widgets for web and Expo/mobile, then store the public site keys in public env and the secret key only in Edge/server secrets.
 - Configure WordPress as the SEO editorial CMS with draft-first publishing, protected previews, no-index drafts, approved media only, and canonical article URLs on the Zoot website.
+
+## Local CLI Authentication Notes
+
+These methods were verified from the local CLI help output and should be used instead of repeatedly pasting tokens into chat:
+
+| Tool | Preferred local setup | Notes |
+| --- | --- | --- |
+| Supabase CLI | Set `SUPABASE_ACCESS_TOKEN` in the local shell, then run `supabase login --token $env:SUPABASE_ACCESS_TOKEN --name zoot-local`. | `supabase login --no-browser` is also available for browserless flows. Keep the token in the password manager or shell profile, not repo files. |
+| GitHub CLI | Current machine is authenticated as `ROYAL777-21`. If it expires, run `gh auth login --web --hostname github.com --git-protocol https`. | Do not paste GitHub PATs into chat. |
+| CodeRabbit CLI | Set `CODERABBIT_API_KEY` locally, then run `coderabbit auth login --api-key $env:CODERABBIT_API_KEY`. | If Zoot later has a self-hosted CodeRabbit URL, run `coderabbit auth login --self-hosted` or `scripts/ops/setup-local-provider-auth.ps1 -CodeRabbit -CodeRabbitSelfHosted`. The official GitHub App remains the safest production option. |
+
+Current status on 2026-06-29: GitHub CLI is authenticated; Supabase CLI is installed but not authenticated; CodeRabbit CLI is installed but not authenticated.
 
 ## Do Not Collect In Chat
 
