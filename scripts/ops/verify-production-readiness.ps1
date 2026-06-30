@@ -245,6 +245,25 @@ Test-RepoPattern "phase-8-native-launch" "mobile/src/app/index.tsx" "router\.rep
 Test-RepoPattern "phase-8-native-launch" "mobile/src/app/_layout.tsx" "SplashScreen\.setOptions" "Expo splash fade configured"
 Test-RepoPattern "phase-8-native-launch" "src/lib/mobile-native-launch.test.ts" "intent=book_clean" "native launch safe voice-booking test"
 Test-RepoPattern "phase-8-native-launch" "mobile/src/components/native-launch-experience.tsx" "AccessibilityInfo\.isReduceMotionEnabled" "native launch respects reduced motion"
+Test-RepoFile "phase-9-twilio" "docs/implementation/phase-9-twilio-verify-masked-voice.md" | Out-Null
+Test-RepoPattern "phase-9-twilio" "supabase/migrations/20260630102715_phase9_twilio_verify_masked_voice.sql" "twilio_verify_attempts" "Twilio Verify redacted attempt table"
+Test-RepoPattern "phase-9-twilio" "supabase/migrations/20260630102715_phase9_twilio_verify_masked_voice.sql" "twilio\.verify_otp" "Twilio Verify provider gate"
+Test-RepoPattern "phase-9-twilio" "supabase/migrations/20260630102715_phase9_twilio_verify_masked_voice.sql" "twilio\.masked_voice" "Twilio masked voice provider gate"
+Test-RepoPattern "phase-9-twilio" "supabase/migrations/20260630102715_phase9_twilio_verify_masked_voice.sql" "twilio\.whatsapp_urgent" "Twilio urgent WhatsApp provider gate"
+Test-RepoPattern "phase-9-twilio" "supabase/migrations/20260630102715_phase9_twilio_verify_masked_voice.sql" "private\.can_create_masked_call" "masked voice private eligibility helper"
+Test-RepoPattern "phase-9-twilio" "supabase/migrations/20260630102715_phase9_twilio_verify_masked_voice.sql" "masked_call_sessions_no_recording" "masked voice no-recording constraint"
+Test-RepoPattern "phase-9-twilio" "supabase/migrations/20260630102715_phase9_twilio_verify_masked_voice.sql" "revoke insert, update, delete on table public\.masked_call_sessions from authenticated" "masked voice direct client writes revoked"
+Test-RepoPattern "phase-9-twilio" "supabase/migrations/20260630102715_phase9_twilio_verify_masked_voice.sql" "grant execute on function private\.can_create_masked_call\(uuid, uuid\) to service_role" "masked voice helper service-role only"
+Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "consumeRateLimit" "create-masked-call rate limit"
+Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "can_create_masked_call" "create-masked-call uses DB eligibility helper"
+Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "twilio\.masked_voice" "create-masked-call requires masked voice provider gate"
+Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "if \(providerAllowed && clientPhone && zooterPhone\)" "create-masked-call does not call provider unless gate and phones pass"
+Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "recording_enabled: false" "create-masked-call records no-recording provider status"
+Test-RepoPattern "phase-9-twilio" "supabase/functions/ops-workflow/index.ts" "can_create_masked_call" "ops masked-call branch uses DB eligibility helper"
+Test-RepoPattern "phase-9-twilio" "supabase/functions/ops-workflow/index.ts" "twilio\.masked_voice" "ops masked-call branch records provider gate status"
+Test-RepoPattern "phase-9-twilio" "supabase/config.toml" "\[functions\.create-masked-call\]\s+verify_jwt = true" "create-masked-call requires JWT"
+Test-RepoPattern "phase-9-twilio" "supabase/config.toml" "\[functions\.ops-workflow\]\s+verify_jwt = true" "ops-workflow requires JWT"
+Test-RepoPattern "phase-9-twilio" "src/lib/twilio-phase9-readiness.test.ts" "Phase 9 Twilio Verify and masked voice readiness" "Phase 9 static regression tests"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -366,6 +385,7 @@ Add-ManualBlocker "stores-live" "Apple/Google/EAS release credentials" "Requires
 Add-ManualBlocker "phase-6-zoot-black" "Zoot Black live activation approvals" "Requires founder, operations, supplier, and legal approval plus staging/prod migration deployment before enabling zoot_black.* controls or exposing any customer flow."
 Add-ManualBlocker "phase-7-payments" "Phase 7 payment and payout activation approvals" "Requires Stitch/Ozow credentials, callback dashboard configuration, signed webhook smoke tests, finance/legal approvals, payout account verification workflow, payout hold policy, and staging/prod migration deployment before enabling payment or payout controls."
 Add-ManualBlocker "phase-8-native-launch" "Phase 8 development-build device verification" "Requires EAS development builds and real iOS/Android device tests for normal launch, reduced-motion static launch, urgent route bypass, and safe assistant deep links."
+Add-ManualBlocker "phase-9-twilio" "Phase 9 Twilio live activation approvals" "Requires upgraded Twilio account or approved subaccount strategy, South African number, transactional Messaging Service, approved WhatsApp sender/templates, Verify Fraud Guard and geo permissions, callback assignment, rotated secrets, and signed staging smoke tests before enabling twilio.* controls."
 
 if ($IncludeExternal -or $RequireLive) {
   $authScript = Resolve-RepoPath "scripts/ops/check-local-provider-auth.ps1"

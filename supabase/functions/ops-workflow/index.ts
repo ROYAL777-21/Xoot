@@ -4,6 +4,7 @@ import {
   normaliseBookingStatus,
   type BookingStatus,
 } from "../_shared/booking-state-machine.ts";
+import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -160,40 +161,6 @@ const getPriority = (text: string) => {
   return "normal";
 };
 
-const canAccessSensitiveBookingData = ({
-  scheduledAt,
-  status,
-  completedAt,
-  cancelledAt,
-}: {
-  scheduledAt: string;
-  status: string;
-  completedAt?: string | null;
-  cancelledAt?: string | null;
-}) => {
-  if (status === "cancelled" || cancelledAt) return false;
-
-  const current = Date.now();
-  const start = new Date(scheduledAt).getTime();
-  const accessOpens = start - 45 * 60 * 1000;
-  if (current < accessOpens) return false;
-
-  if (status === "completed") {
-    const complete = completedAt ? new Date(completedAt).getTime() : current;
-    return current <= complete + 30 * 60 * 1000;
-  }
-
-  const normalizedStatus = normaliseBookingStatus(status);
-  return Boolean(normalizedStatus && [
-    "assigned",
-    "contractor_accepted",
-    "en_route",
-    "in_progress",
-    "replacement_offered",
-    "reassigned",
-  ].includes(normalizedStatus));
-};
-
 const isBookingParticipant = async (supa: any, booking: Record<string, any>, userId: string) => {
   if (booking.user_id === userId) return { participant: true, role: "client" };
   if (!booking.zooter_id) return { participant: false, role: null };
@@ -206,6 +173,26 @@ const isBookingParticipant = async (supa: any, booking: Record<string, any>, use
 
   if (zooter?.user_id === userId) return { participant: true, role: "contractor" };
   return { participant: false, role: null };
+};
+
+const privateRpc = (supa: any, fn: string, args: Record<string, unknown>) => {
+  if (typeof supa.schema === "function") return supa.schema("private").rpc(fn, args);
+  return supa.rpc(fn, args);
+};
+
+const getMaskedCallEligibility = async (supa: any, bookingId: string, actorId: string) => {
+  const { data, error } = await privateRpc(supa, "can_create_masked_call", {
+    p_booking_id: bookingId,
+    p_actor_id: actorId,
+  });
+  if (error) throw new Error(`masked call eligibility check failed: ${error.message}`);
+  const row = Array.isArray(data) ? data[0] : data;
+  return {
+    allowed: Boolean(row?.allowed),
+    reason: typeof row?.reason === "string" ? row.reason : "unknown",
+    participantRole: typeof row?.participant_role === "string" ? row.participant_role : "none",
+    eligibleUntil: typeof row?.eligible_until === "string" ? row.eligible_until : null,
+  };
 };
 
 const insertOutbox = async (
@@ -600,21 +587,41 @@ Deno.serve(async (req) => {
 
       const participant = await isBookingParticipant(supa, booking, userId);
       if (!participant.participant) return json({ error: "booking access denied" }, 403, origin);
-      if (!canAccessSensitiveBookingData({
-        scheduledAt: booking.scheduled_at,
-        status: booking.status,
-        completedAt: booking.job_completed_at,
-        cancelledAt: booking.cancelled_at,
-      })) {
-        return json({ error: "masked calls are available during the active booking window" }, 403, origin);
+
+      const rateLimit = await consumeRateLimit(supa, {
+        bucket: "twilio.masked_voice",
+        actor: `ops-masked-call:${userId}:${booking.id}`,
+        action: "create",
+        limitCount: 3,
+        windowSeconds: 600,
+      });
+      if (!rateLimit.allowed) return json({ error: "too many masked call requests" }, 429, origin);
+
+      const eligibility = await getMaskedCallEligibility(supa, booking.id, userId);
+      if (!eligibility.allowed) {
+        return json({ error: "masked calls are available during the active booking window", reason: eligibility.reason }, 403, origin);
       }
 
-      const calleeRole = participant.role === "contractor" ? "client" : "contractor";
+      const twilioAccountReady = await isOperationalControlEnabled(supa, "twilio.operational_messages").catch(() => false);
+      const maskedVoiceReady = await isOperationalControlEnabled(supa, "twilio.masked_voice").catch(() => false);
+      const providerAllowed = twilioAccountReady && maskedVoiceReady;
+      const calleeRole = eligibility.participantRole === "contractor" ? "client" : "contractor";
       const { data: call, error: callError } = await supa.from("masked_call_sessions").insert({
         booking_id: booking.id,
         caller_id: userId,
         callee_role: calleeRole,
         status: "queued",
+        eligibility_checked_at: new Date().toISOString(),
+        eligible_until: eligibility.eligibleUntil,
+        provider_status: {
+          provider: "twilio_voice_queue",
+          provider_allowed: providerAllowed,
+          operational_messages_ready: twilioAccountReady,
+          masked_voice_ready: maskedVoiceReady,
+          eligibility_reason: eligibility.reason,
+          recording_enabled: false,
+          transcription_enabled: false,
+        },
       }).select("id").single();
       if (callError || !call?.id) throw new Error("masked call insert failed");
 
@@ -625,7 +632,14 @@ Deno.serve(async (req) => {
         channel: "twilio_voice",
         owner: "Customer Support Agent",
         stack_tool: "Twilio masked voice queue",
-        payload: { booking_id: booking.id, callee_role: calleeRole },
+        payload: {
+          booking_id: booking.id,
+          callee_role: calleeRole,
+          provider_allowed: providerAllowed,
+          eligibility_reason: eligibility.reason,
+          recording_enabled: false,
+          transcription_enabled: false,
+        },
         status: "needs_approval",
         approval_required: true,
         failure_mode: "Keep communication in chat if masked call setup fails.",

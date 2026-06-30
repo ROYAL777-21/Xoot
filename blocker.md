@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-30 03:33 SAST
+Reviewed: 2026-06-30 12:44 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -8,7 +8,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Live Supabase Auth redirect allowlists still need API/dashboard configuration and verification for local web, staging, production, Expo dev client, `zoot://auth/callback`, Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the intended redirects, and `scripts/ops/set-supabase-auth-config.ps1` can apply them through the Supabase Management API once `SUPABASE_ACCESS_TOKEN`, the target project ref, and real approved URLs are available locally.
 - Staging and production Supabase security advisors still report leaked password protection disabled. Enable it if the current Supabase plan supports it, or record an explicit launch risk acceptance before public launch.
-- Supabase CLI `2.108.0` is installed but not authenticated in this shell. On 2026-06-29 21:19 SAST, `npm run ops:provider-auth:check` still reported `LegacyPlatformAuthRequiredError` because no local profile or `SUPABASE_ACCESS_TOKEN` is available. Set `SUPABASE_ACCESS_TOKEN` locally or run `supabase login --token <token>` in an interactive shell. Do not paste the token into chat.
+- Supabase CLI `2.108.0` is installed but not authenticated in this shell. On 2026-06-30 12:44 SAST, `npm run ops:provider-auth:check` still reported `LegacyPlatformAuthRequiredError` because no local profile or `SUPABASE_ACCESS_TOKEN` is available. Set `SUPABASE_ACCESS_TOKEN` locally or run `supabase login --token <token>` in an interactive shell. Do not paste the token into chat.
 - Production and staging migration histories are still different because production started from launch squashed migrations while staging follows the local chain. Current catalog checks show the schemas and booking states are converged, but future deploys must use the controlled migration scripts rather than assuming a clean `supabase db push`.
 - A working PostgreSQL client is available at the local Scoop extraction path used by the provider-auth diagnostic. Docker is still unavailable on this Windows host, so full local Supabase database reset still requires Docker or a separate ops shell. Live catalog-readiness SQL was rechecked through the Supabase connector on 2026-06-29 and passed in staging and production.
 - Supabase performance advisors still report workload-dependent unused-index candidates in staging and production. Direct catalog checks show no missing public FK-covering indexes, no targeted legacy policy residues, no missing expected advisor-cleanup policies, no raw `auth.uid()` predicates in public policies, no duplicate-permissive groups for the targeted tables, and no duplicate public index groups.
@@ -22,6 +22,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Phase 7 payments and payout verification foundation is implemented locally and disabled by default. Live staging/prod deployment still requires Supabase CLI/session access: `20260630005420_phase7_payments_payouts_foundation.sql`.
 - Phase 7 live payment/payout activation remains blocked by Stitch/Ozow production credentials, provider callback configuration, signed webhook smoke tests, finance approval, legal approval, payout account verification workflow, payout hold policy, and production reconciliation runbook. Do not enable `payments.provider_checkout`, `payments.hosted_checkout.stitch`, `payments.hosted_checkout.ozow`, or `payouts.enabled` until all approvals and tests are complete.
 - Phase 8 native launch experience is implemented locally in `/mobile`. Real iOS/Android development-build verification is still required for normal launch, reduced-motion static launch, urgent route bypass, and safe Siri/Gemini deep links before native release use.
+- Phase 9 Twilio Verify and masked voice foundation is implemented locally and disabled by default. Live staging/prod deployment still requires Supabase CLI/session access: `20260630102715_phase9_twilio_verify_masked_voice.sql`, `create-masked-call`, and `ops-workflow`.
 
 ## Provider Secrets And External Dashboards
 
@@ -39,6 +40,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Twilio
 
+- Phase 9 local controls now exist for `twilio.verify_otp`, `twilio.masked_voice`, and `twilio.whatsapp_urgent`, with Verify attempt redaction, masked-call eligibility, direct client write revocation for `masked_call_sessions`, and no-recording/no-transcription metadata. These controls remain disabled until provider setup and signed staging smoke tests pass.
 - The Twilio account still needs production readiness work: trial status removal, approved or ported phone number, WhatsApp sender approval, Messaging Service classification corrected to transactional/operational use, sender verification, webhook assignments, regulatory registrations, and approved message templates.
 - Twilio SMS, WhatsApp, voice, phone, Verify OTP, and email-adjacent flows must remain disabled through `twilio.operational_messages` until dashboard channel setup, rotated secret verification, and signed webhook smoke tests are complete.
 - No Twilio account-management MCP/API tool is currently exposed in this Codex session, so the dashboard configuration cannot be completed from the repo alone.
@@ -97,6 +99,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Run signed Twilio webhook smoke tests after Twilio dashboard channels and Edge secrets are verified with the rotated values.
 - Deploy and smoke-test the Phase 2 booking chat action layer in staging/prod with `npm run ops:smoke:staging -- --all`: direct `messages` inserts revoked, participant sends through Edge Function, read receipts written, and message reports queued for admin review.
 - Deploy and smoke-test the Phase 4 invoice layer in staging/prod: completed paid booking generates exactly one immutable invoice, uploads a private PDF, queues Brevo delivery, owner/admin can read it, and resend queues the original PDF path without regenerating.
+- Deploy and smoke-test the Phase 9 Twilio layer in staging/prod after Twilio account resources exist: Verify rate-limit/redaction tests, unsigned webhook denial, signed webhook acceptance, masked-call denial outside the window, non-participant denial, terminal-booking denial, no-recording/no-transcription metadata, and provider-gated queue creation.
 - Run authenticated booking-chat public-key lookup smoke tests against `get-booking-public-keys` with real staging client/Zooter booking participants.
 - Run `npm run ops:provider-auth:setup`, `npm run ops:supabase:auth-config`, `npm run ops:github-vars`, `npm run ops:supabase:deploy:staging`, `npm run ops:supabase:deploy:production`, `npm run ops:supabase:secrets:staging`, and `npm run ops:supabase:secrets:production` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.

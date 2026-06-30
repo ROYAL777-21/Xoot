@@ -8,11 +8,14 @@ import {
   requireAuth,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
-import { normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
-
-const activeCallStates = new Set(["en_route", "in_progress"]);
+import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
 
 const basicAuth = (username: string, password: string) => `Basic ${btoa(`${username}:${password}`)}`;
+
+const privateRpc = (supa: any, fn: string, args: Record<string, unknown>) => {
+  if (typeof supa.schema === "function") return supa.schema("private").rpc(fn, args);
+  return supa.rpc(fn, args);
+};
 
 const getUserPhone = async (supa: any, userId: string) => {
   const { data } = await supa.from("profiles").select("phone").eq("id", userId).maybeSingle();
@@ -62,6 +65,23 @@ const createTwilioProxySession = async (bookingId: string, clientPhone: string, 
     session_sid: session.sid,
     client_proxy_number: client.proxy_identifier ?? client.proxyIdentifier ?? null,
     zooter_proxy_number: zooter.proxy_identifier ?? zooter.proxyIdentifier ?? null,
+    recording_enabled: false,
+    transcription_enabled: false,
+  };
+};
+
+const getMaskedCallEligibility = async (supa: any, bookingId: string, actorId: string) => {
+  const { data, error } = await privateRpc(supa, "can_create_masked_call", {
+    p_booking_id: bookingId,
+    p_actor_id: actorId,
+  });
+  if (error) throw new Error(`masked call eligibility check failed: ${error.message}`);
+  const row = Array.isArray(data) ? data[0] : data;
+  return {
+    allowed: Boolean(row?.allowed),
+    reason: typeof row?.reason === "string" ? row.reason : "unknown",
+    participantRole: typeof row?.participant_role === "string" ? row.participant_role : "none",
+    eligibleUntil: typeof row?.eligible_until === "string" ? row.eligible_until : null,
   };
 };
 
@@ -88,10 +108,23 @@ Deno.serve(async (req) => {
 
     const participant = await assertBookingParticipant(supa, booking, user.id);
     if (!participant.participant) return fail("booking access denied", origin, 403);
-    const currentStatus = normaliseBookingStatus(booking.status);
-    if (!currentStatus || !activeCallStates.has(currentStatus) || booking.cancelled_at) {
-      return fail("masked calls are available during the active booking window", origin, 403);
+
+    const rateLimit = await consumeRateLimit(supa, {
+      bucket: "twilio.masked_voice",
+      actor: `masked-call:${user.id}:${bookingId}`,
+      action: "create",
+      limitCount: 3,
+      windowSeconds: 600,
+    });
+    if (!rateLimit.allowed) return fail("too many masked call requests", origin, 429);
+
+    const eligibility = await getMaskedCallEligibility(supa, booking.id, user.id);
+    if (!eligibility.allowed) {
+      return fail("masked calls are available during the active booking window", origin, 403, {
+        reason: eligibility.reason,
+      });
     }
+
     if (!booking.zooter_id) return fail("booking has no assigned Zooter", origin, 409);
 
     const { data: zooter } = await supa.from("zooters").select("user_id").eq("id", booking.zooter_id).maybeSingle();
@@ -99,23 +132,50 @@ Deno.serve(async (req) => {
 
     const clientPhone = await getUserPhone(supa, booking.user_id);
     const zooterPhone = await getUserPhone(supa, zooter.user_id);
-    const calleeRole = participant.role === "contractor" ? "client" : "contractor";
+    const calleeRole = eligibility.participantRole === "contractor" ? "client" : "contractor";
+    const twilioAccountReady = await isOperationalControlEnabled(supa, "twilio.operational_messages").catch(() => false);
+    const maskedVoiceReady = await isOperationalControlEnabled(supa, "twilio.masked_voice").catch(() => false);
+    const providerAllowed = twilioAccountReady && maskedVoiceReady;
 
     const { data: call, error: callError } = await supa.from("masked_call_sessions").insert({
       booking_id: booking.id,
       caller_id: user.id,
       callee_role: calleeRole,
       status: "queued",
+      eligibility_checked_at: new Date().toISOString(),
+      eligible_until: eligibility.eligibleUntil,
+      provider_status: {
+        provider: "twilio_proxy",
+        provider_allowed: providerAllowed,
+        operational_messages_ready: twilioAccountReady,
+        masked_voice_ready: maskedVoiceReady,
+        eligibility_reason: eligibility.reason,
+        recording_enabled: false,
+        transcription_enabled: false,
+      },
     }).select("id").single();
     if (callError || !call?.id) throw new Error("masked call session insert failed");
 
-    let providerStatus: Record<string, unknown> = { configured: false };
-    if (clientPhone && zooterPhone) {
+    let providerStatus: Record<string, unknown> = {
+      configured: false,
+      provider_allowed: providerAllowed,
+      gated: !providerAllowed,
+      operational_messages_ready: twilioAccountReady,
+      masked_voice_ready: maskedVoiceReady,
+      recording_enabled: false,
+      transcription_enabled: false,
+    };
+    if (providerAllowed && clientPhone && zooterPhone) {
       providerStatus = await createTwilioProxySession(booking.id, clientPhone, zooterPhone);
     }
 
     if (providerStatus.configured) {
-      await supa.from("masked_call_sessions").update({ status: "active", started_at: new Date().toISOString() }).eq("id", call.id);
+      await supa.from("masked_call_sessions").update({
+        status: "active",
+        started_at: new Date().toISOString(),
+        provider_session_reference: providerStatus.session_sid ?? null,
+        provider_status: providerStatus,
+      }).eq("id", call.id);
     }
 
     await insertOutbox(supa, {
@@ -130,6 +190,10 @@ Deno.serve(async (req) => {
         callee_role: calleeRole,
         provider_status: providerStatus,
         missing_phone: !clientPhone || !zooterPhone,
+        provider_allowed: providerAllowed,
+        eligibility_reason: eligibility.reason,
+        recording_enabled: false,
+        transcription_enabled: false,
       },
       status: providerStatus.configured ? "completed" : "needs_approval",
       approval_required: !providerStatus.configured,
@@ -142,7 +206,14 @@ Deno.serve(async (req) => {
       action: "create_masked_call",
       targetTable: "masked_call_sessions",
       targetId: call.id,
-      changes: { booking_id: booking.id, provider_configured: Boolean(providerStatus.configured) },
+      changes: {
+        booking_id: booking.id,
+        provider_allowed: providerAllowed,
+        provider_configured: Boolean(providerStatus.configured),
+        eligibility_reason: eligibility.reason,
+        recording_enabled: false,
+        transcription_enabled: false,
+      },
       reason: "Booking participant requested masked voice contact",
       ipAddress: req.headers.get("x-forwarded-for"),
     });

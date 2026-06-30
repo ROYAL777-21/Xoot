@@ -181,6 +181,8 @@ Required:
 
 Provider activation belongs here, not Phase 0.
 
+Foundation status: implemented locally as `20260630102715_phase9_twilio_verify_masked_voice.sql`; live activation remains blocked by Twilio account/channel approvals, rotated secrets, callback assignments and signed staging smoke tests.
+
 Current readiness work:
 
 - webhook functions exist;

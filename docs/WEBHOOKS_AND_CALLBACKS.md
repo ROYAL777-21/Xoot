@@ -1,6 +1,6 @@
 # Zoot Webhooks And Callbacks
 
-Reviewed: 2026-06-08
+Reviewed: 2026-06-30
 
 This document maps every callback class needed for staging and production. Values are placeholders and route designs; no real secrets belong here.
 
@@ -99,12 +99,19 @@ Implemented endpoints:
 
 Masked calling notes:
 
-- Frontend may request a masked-call session, but backend must create/approve it.
+- Frontend may request a masked-call session, but backend must create/approve it through `create-masked-call` or the legacy `ops-workflow` branch.
+- Backend must call `private.can_create_masked_call()` before creating a masked-call row.
+- Masked-call provider traffic requires both `twilio.operational_messages` and `twilio.masked_voice` controls.
+- Masked-call sessions are allowed only for booking participants in accepted/active booking states and within the approved booking contact window.
+- Browser/mobile clients cannot insert or update `public.masked_call_sessions` directly.
 - Browser/mobile payloads must never contain user or Zooter phone numbers.
+- Zoot masked voice must not record or transcribe calls.
 - Use Twilio API keys for production outbound calls when possible.
 - Keep Auth Token available only where signature validation requires it.
 - Deploy `supabase/migrations/20260621001000_twilio_webhook_events.sql` before enabling callbacks.
+- Deploy `supabase/migrations/20260630102715_phase9_twilio_verify_masked_voice.sql` before enabling Verify or masked voice.
 - Twilio webhook functions log redacted metadata to `public.twilio_webhook_events`; raw phone numbers are not stored.
+- Verify OTP attempts log only redacted metadata to `public.twilio_verify_attempts`; OTP values are never stored.
 - Set `TWILIO_WEBHOOK_BASE_URL` to the exact public Supabase Functions origin used in the Twilio Console, and set a per-environment `TWILIO_WEBHOOK_HASH_SALT`.
 - Rotate any Twilio credentials that were pasted into chat, issues, PRs, screenshots, or logs before production launch.
 

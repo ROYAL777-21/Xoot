@@ -1,6 +1,6 @@
 # Twilio Channels Setup
 
-Reviewed: 2026-06-24
+Reviewed: 2026-06-30
 
 This runbook covers Zoot's planned Twilio channels: SMS, WhatsApp, phone/voice, masked calling, Verify OTP, and optional Twilio SendGrid email. It contains placeholders only. Do not paste Twilio credentials into docs, GitHub, frontend env, Expo public env, screenshots, or chat.
 
@@ -16,6 +16,14 @@ Completed on 2026-06-24:
 - Unsigned webhook requests are rejected with `403`.
 - Signed staging smoke tests returned valid TwiML or `204`, as appropriate.
 - Audit verification confirmed that raw phone numbers and message bodies are not stored.
+
+Completed locally on 2026-06-30:
+
+- `20260630102715_phase9_twilio_verify_masked_voice.sql` adds disabled Phase 9 controls for `twilio.verify_otp`, `twilio.masked_voice`, and `twilio.whatsapp_urgent`.
+- `public.twilio_verify_attempts` stores redacted Verify attempt metadata only: hashed destination, optional last four, status, and provider reference. It never stores OTP values or raw destinations.
+- `private.can_create_masked_call()` centralizes masked-call eligibility: booking participant only, accepted/active booking only, no terminal booking states, and the approved booking contact window.
+- `masked_call_sessions` direct browser/mobile writes are revoked. Clients can read their own session status; creation and updates stay behind Edge Functions.
+- Zoot masked voice is explicitly no-recording and no-transcription for launch.
 
 Still required in the Twilio Console:
 
@@ -43,6 +51,10 @@ Current provider-account finding on 2026-06-24:
 - Validate `X-Twilio-Signature` on every Twilio webhook before updating bookings, notifications, outbox rows, support tickets, or audit logs.
 - Webhooks must be HTTPS.
 - Never expose user or Zooter phone numbers in browser/mobile code.
+- Never store OTP codes, raw phone numbers, raw email addresses, or message bodies in `twilio_verify_attempts`, webhook logs, outbox payloads, or analytics events.
+- Do not call live Twilio Verify, Proxy, Voice, SMS, or WhatsApp APIs unless the relevant `twilio.*` operational control is enabled for the environment.
+- Masked calls must be booking-scoped. They may not dial arbitrary numbers supplied by a client request.
+- Masked voice must not record or transcribe calls.
 - Never trust a Twilio status callback without matching it to an existing `integration_outbox` or booking workflow row.
 - Separate staging and production Twilio projects/subaccounts where possible.
 - Rotate any Twilio credentials that were pasted into chat before production launch.
@@ -121,6 +133,19 @@ These functions should:
 - Return a minimal response and never leak internal IDs unless already known to Twilio.
 - Never store raw phone numbers; store only salted hashes and last-four references for reconciliation.
 
+## Phase 9 Operational Gates
+
+Leave all Twilio provider controls disabled until staging proves the exact channel:
+
+| Control | Default | Enables |
+| --- | --- | --- |
+| `twilio.operational_messages` | Off | Global Twilio transactional readiness after account upgrade, sender classification, callbacks and signed smoke tests. |
+| `twilio.verify_otp` | Off | Verify OTP sends/checks after Fraud Guard, geo-permissions, rate limits and Verify Service setup. |
+| `twilio.masked_voice` | Off | Live masked voice provider calls for eligible active bookings only. |
+| `twilio.whatsapp_urgent` | Off | Approved urgent WhatsApp templates only. |
+
+Turning on a secret alone must not activate a provider. The Edge Functions also check the controls above.
+
 ## Launch Checklist
 
 - Twilio account/subaccount created for staging and production.
@@ -128,9 +153,13 @@ These functions should:
 - SMS sender or Messaging Service configured.
 - WhatsApp sender approved and templates reviewed.
 - Voice number and TwiML App configured.
+- Verify Service configured with Fraud Guard, geo-permissions and approved countries only.
 - Webhook URLs set to Supabase Edge Function endpoints.
 - `20260621001000_twilio_webhook_events.sql` deployed before webhooks are enabled.
+- `20260630102715_phase9_twilio_verify_masked_voice.sql` deployed before Verify or masked voice is enabled.
 - All webhook functions deployed and signature validation tested.
+- Masked-call staging tests cover: outside-window denial, non-participant denial, terminal-booking denial, no-recording metadata, and provider-gated queue creation.
+- Verify staging tests cover: rate limits, Fraud Guard/geo rules, redacted attempt logging, wrong-code handling, and approved-code handling.
 - `TWILIO_WEBHOOK_BASE_URL` and `TWILIO_WEBHOOK_HASH_SALT` set per environment.
 - `TWILIO_API_KEY_SID` and `TWILIO_API_KEY_SECRET` used for outbound API calls; `TWILIO_AUTH_TOKEN` used only for webhook signature validation and emergency account operations.
 - Opt-in/opt-out wording reviewed.
