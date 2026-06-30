@@ -85,6 +85,7 @@ Test-RepoFile "ops" "scripts/ops/setup-local-provider-auth.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/deploy-staging-backend.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/deploy-production-backend.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/deploy-supabase-backend.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/repair-supabase-migration-history.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-github-public-vars.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-supabase-edge-secrets.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-supabase-auth-config.ps1" | Out-Null
@@ -321,6 +322,10 @@ Test-RepoPattern "supabase" "scripts/ops/setup-local-provider-auth.ps1" "supabas
 Test-RepoPattern "supabase" "scripts/ops/deploy-production-backend.ps1" "production" "production deploy wrapper exists"
 Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "VerifyLive" "shared deploy supports live verification"
 Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "ZOOT_PRODUCTION_SUPABASE_DB_URL" "shared deploy supports production DB URL"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "knownSchemaEquivalentVersions" "migration repair helper allowlists proven schema-equivalent versions"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "blockedPartialOrSplitVersions" "migration repair helper blocks partial or split migrations"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "ConfirmRepair" "migration repair helper requires explicit confirmation"
+Test-RepoPattern "supabase" "package.json" "ops:supabase:repair-migrations" "npm script exposes guarded migration-history repair"
 Test-RepoPattern "supabase" "scripts/ops/verify-supabase-live.ps1" "SUPABASE_DB_URL" "live Supabase verifier requires database URL"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "booking_status_valid" "live SQL checks booking status constraint"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "get_zooter_job_cards" "live SQL checks zooter card RPC"

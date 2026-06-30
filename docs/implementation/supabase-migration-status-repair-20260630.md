@@ -60,13 +60,12 @@ Run this only from a local shell with approved credentials loaded from a vault o
 
 3. Compare the CLI output with the table above and the live catalog-readiness checks. Do not use `supabase db push` to repair history until the migration list is understood.
 
-4. For local migration versions that are fully proven already applied, mark only those exact local versions as applied:
+4. For local migration versions that are fully proven already applied, use the guarded repair helper. It captures the migration list before changing anything, defaults to dry-run, refuses known partial/split migrations, and only allows the schema-equivalent versions listed in this runbook:
 
    ```powershell
-   supabase migration repair --db-url $env:ZOOT_PRODUCTION_SUPABASE_DB_URL --status applied 20260629113000
-   supabase migration repair --db-url $env:ZOOT_PRODUCTION_SUPABASE_DB_URL --status applied 20260629200351
-   supabase migration repair --db-url $env:ZOOT_PRODUCTION_SUPABASE_DB_URL --status applied 20260630005420
-   supabase migration repair --db-url $env:ZOOT_PRODUCTION_SUPABASE_DB_URL --status applied 20260630102715
+   npm run ops:supabase:repair-migrations
+
+   npm run ops:supabase:repair-migrations -- -ConfirmRepair
    ```
 
 5. Do not repair-mark `20260629194645_completed_booking_invoices`, `20260630003602_phase6_zoot_black_foundation`, or `20260630155159_connector_safe_invoice_zoot_black_schema` until the storage-policy owner gap and split live rows are reconciled.
