@@ -167,6 +167,8 @@ Requires finance, legal and provider approval.
 
 Expo-only path.
 
+Foundation status: implemented locally in `/mobile`; development-build device verification remains required before release use.
+
 Required:
 
 - local bundled native-rendered experience;

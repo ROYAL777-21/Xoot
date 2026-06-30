@@ -235,6 +235,16 @@ Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_p
 Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "canCreateProviderCheckout" "hosted payment checkout shared gate"
 Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "buildPaymentReconciliationReference" "payment reconciliation reference helper"
 Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "canReleaseZooterPayout" "payout release shared gate"
+Test-RepoFile "phase-8-native-launch" "docs/implementation/phase-8-native-launch-experience.md" | Out-Null
+Test-RepoFile "phase-8-native-launch" "mobile/src/components/native-launch-experience.tsx" | Out-Null
+Test-RepoPattern "phase-8-native-launch" "mobile/src/lib/native-launch.ts" "remoteAssets: false" "native launch uses no remote launch assets"
+Test-RepoPattern "phase-8-native-launch" "mobile/src/lib/native-launch.ts" "webView: false" "native launch does not use WebView"
+Test-RepoPattern "phase-8-native-launch" "mobile/src/lib/native-launch.ts" "getNativeLaunchMode" "native launch static fallback helper"
+Test-RepoPattern "phase-8-native-launch" "mobile/src/lib/native-launch.ts" "shouldBypassNativeLaunchExperience" "urgent-route launch bypass helper"
+Test-RepoPattern "phase-8-native-launch" "mobile/src/app/index.tsx" "router\.replace\(launchTarget\)" "assistant intents bypass native launch layer"
+Test-RepoPattern "phase-8-native-launch" "mobile/src/app/_layout.tsx" "SplashScreen\.setOptions" "Expo splash fade configured"
+Test-RepoPattern "phase-8-native-launch" "src/lib/mobile-native-launch.test.ts" "intent=book_clean" "native launch safe voice-booking test"
+Test-RepoPattern "phase-8-native-launch" "mobile/src/components/native-launch-experience.tsx" "AccessibilityInfo\.isReduceMotionEnabled" "native launch respects reduced motion"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -253,6 +263,10 @@ Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "EXPO_PUBLIC_
 Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "sb_secret_\|service_role\|BEGIN \[A-Z \]\*PRIVATE KEY" "GitHub variable private-value guard"
 Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "cfat_" "GitHub variable Cloudflare private-token guard"
 Test-RepoPattern "github" "scripts/ops/set-github-public-vars.ps1" "sk\\\." "GitHub variable Mapbox private-token guard"
+Test-RepoPattern "github" ".github/workflows/web-preview.yml" "cache-dependency-path: '\*\*/package-lock\.json'" "Web build npm cache covers root and mobile lockfiles"
+Test-RepoPattern "github" ".github/workflows/web-preview.yml" "npm ci --no-audit --prefer-offline" "Web dependency install reduces registry calls"
+Test-RepoPattern "github" ".github/workflows/web-preview.yml" "npm --prefix mobile ci --no-audit --prefer-offline" "Mobile dependency install reduces registry calls"
+Test-RepoPattern "github" ".github/workflows/web-preview.yml" "attempts=3" "Web build install retries transient npm failures"
 Test-RepoPattern "security" "scripts/security/secret-scan.mjs" "Cloudflare API token" "secret scan catches Cloudflare API tokens"
 Test-RepoPattern "security" "scripts/security/secret-scan.mjs" "Mapbox secret token" "secret scan catches Mapbox secret tokens"
 Test-RepoPattern "supabase" "scripts/ops/set-supabase-edge-secrets.ps1" "Refusing to read Edge secrets from inside the repository" "Edge secrets file must stay outside repo"
@@ -351,6 +365,7 @@ Add-ManualBlocker "domain-live" "production domain registration" "Requires a reg
 Add-ManualBlocker "stores-live" "Apple/Google/EAS release credentials" "Requires developer-console records, signing credentials, privacy declarations, and legal review."
 Add-ManualBlocker "phase-6-zoot-black" "Zoot Black live activation approvals" "Requires founder, operations, supplier, and legal approval plus staging/prod migration deployment before enabling zoot_black.* controls or exposing any customer flow."
 Add-ManualBlocker "phase-7-payments" "Phase 7 payment and payout activation approvals" "Requires Stitch/Ozow credentials, callback dashboard configuration, signed webhook smoke tests, finance/legal approvals, payout account verification workflow, payout hold policy, and staging/prod migration deployment before enabling payment or payout controls."
+Add-ManualBlocker "phase-8-native-launch" "Phase 8 development-build device verification" "Requires EAS development builds and real iOS/Android device tests for normal launch, reduced-motion static launch, urgent route bypass, and safe assistant deep links."
 
 if ($IncludeExternal -or $RequireLive) {
   $authScript = Resolve-RepoPath "scripts/ops/check-local-provider-auth.ps1"

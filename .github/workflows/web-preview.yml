@@ -39,15 +39,53 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Check lockfiles
         run: node scripts/config/validate-lockfiles.mjs
 
-      - name: Install web dependencies
-        run: npm ci
+      - name: Install web dependencies (with retries)
+        run: |
+          set -euo pipefail
+          attempts=3
+          for i in $(seq 1 $attempts); do
+            echo "Attempt $i: npm ci (web)"
+            if npm ci --no-audit --prefer-offline; then
+              echo "npm ci succeeded"
+              break
+            fi
 
-      - name: Install mobile dependencies
-        run: npm --prefix mobile ci
+            if [ "$i" -lt "$attempts" ]; then
+              wait=$((i * 5))
+              echo "npm ci failed. Retrying after ${wait}s..."
+              sleep "$wait"
+            else
+              echo "npm ci failed after ${attempts} attempts"
+              exit 1
+            fi
+          done
+
+      - name: Install mobile dependencies (with retries)
+        run: |
+          set -euo pipefail
+          attempts=3
+          for i in $(seq 1 $attempts); do
+            echo "Attempt $i: npm --prefix mobile ci"
+            if npm --prefix mobile ci --no-audit --prefer-offline; then
+              echo "mobile install succeeded"
+              break
+            fi
+
+            if [ "$i" -lt "$attempts" ]; then
+              wait=$((i * 5))
+              echo "mobile install failed. Retrying after ${wait}s..."
+              sleep "$wait"
+            else
+              echo "mobile install failed after ${attempts} attempts"
+              exit 1
+            fi
+          done
 
       - name: Validate public environment
         run: npm run config:check

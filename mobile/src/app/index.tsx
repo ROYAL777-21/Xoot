@@ -1,14 +1,47 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
 
+import { NativeLaunchExperience } from '@/components/native-launch-experience';
 import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
 import { mobileEnv } from '@/lib/env';
+import {
+  buildNativeLaunchTarget,
+  type NativeLaunchQueryParams,
+  resolveNativeLaunchIntent,
+  shouldBypassNativeLaunchExperience,
+} from '@/lib/native-launch';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function HomeScreen() {
   const { user, isLoading } = useAuth();
+  const params = useLocalSearchParams();
+  const launchParams = params as NativeLaunchQueryParams;
+  const nativeLaunchIntent = resolveNativeLaunchIntent(launchParams);
+  const bypassLaunch = shouldBypassNativeLaunchExperience(nativeLaunchIntent);
+  const launchTarget = buildNativeLaunchTarget(nativeLaunchIntent, launchParams);
+
+  useEffect(() => {
+    if (!bypassLaunch) return;
+    router.replace(launchTarget);
+  }, [bypassLaunch, launchTarget]);
+
+  if (bypassLaunch) {
+    return (
+      <ZootScreen>
+        <LiquidCard>
+          <Eyebrow>Opening Zoot</Eyebrow>
+          <Title>Taking you to the right place.</Title>
+          <Body muted>Voice and urgent app links skip the launch layer and open the protected Zoot route.</Body>
+          <StatusPill tone="success">Safe handoff</StatusPill>
+        </LiquidCard>
+      </ZootScreen>
+    );
+  }
 
   return (
     <ZootScreen>
+      <NativeLaunchExperience onBook={() => router.push('/book')} onConcierge={() => router.push('/concierge')} />
+
       <LiquidCard>
         <Eyebrow>Zoot mobile</Eyebrow>
         <Title>Premium home care, ready for native launch.</Title>

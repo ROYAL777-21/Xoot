@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-30 02:58 SAST
+Reviewed: 2026-06-30 03:33 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -21,6 +21,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Zoot Black activation remains blocked by founder, operations, supplier, and legal approvals. Do not enable `zoot_black.enabled`, `zoot_black.area_pilot`, or `zoot_black.certificates`, expose a customer purchase path, or publish availability claims until approvals, pilot areas, equipment evidence rules, line-item amount, certificate wording, and smoke tests are complete.
 - Phase 7 payments and payout verification foundation is implemented locally and disabled by default. Live staging/prod deployment still requires Supabase CLI/session access: `20260630005420_phase7_payments_payouts_foundation.sql`.
 - Phase 7 live payment/payout activation remains blocked by Stitch/Ozow production credentials, provider callback configuration, signed webhook smoke tests, finance approval, legal approval, payout account verification workflow, payout hold policy, and production reconciliation runbook. Do not enable `payments.provider_checkout`, `payments.hosted_checkout.stitch`, `payments.hosted_checkout.ozow`, or `payouts.enabled` until all approvals and tests are complete.
+- Phase 8 native launch experience is implemented locally in `/mobile`. Real iOS/Android development-build verification is still required for normal launch, reduced-motion static launch, urgent route bypass, and safe Siri/Gemini deep links before native release use.
 
 ## Provider Secrets And External Dashboards
 
