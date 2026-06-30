@@ -1,17 +1,17 @@
 # Zoot Staging Backend Deployment
 
-Reviewed: 2026-06-27
+Reviewed: 2026-06-30
 
 ## Current State
 
 - Staging project: `Zoot Staging` / `fxmxyabdjqviqbcxmvlp`.
 - The repository contains the application migration chain, storage policies, helper-function hardening, training modules, and Twilio webhook audit schema.
-- Live staging and production application must be verified with an authenticated Supabase path before these items can be treated as deployed.
-- The Phase 6 Zoot Black foundation migration `20260630003602_phase6_zoot_black_foundation.sql` is local and pending live deployment. After deployment, the `zoot_black.*` operational controls must remain disabled until founder, operations, supplier and legal approvals are complete.
+- Live staging and production application must still be verified with authenticated client/admin/Zooter smoke flows before these items can be treated as release-ready.
+- Phase 4 invoice public schema and Phase 6 Zoot Black public schema were applied to staging and production through connector-safe live migrations on 2026-06-30. The remaining database deployment gap is owner-only private `storage.objects` policies for generated invoice PDFs and Zoot Black certificate PDFs. The `zoot_black.*` operational controls must remain disabled until founder, operations, supplier and legal approvals are complete.
 - Supabase Branching is unavailable on the current plan, so staging is a separate free project.
 - Production migration history still differs from the local migration file list and must remain reconciled before broad migration pushes.
 - The local migration chain contains legacy prototype seed data; `20260619001000_remove_demo_seed_data.sql` removes the hardcoded demo Zooters after those migrations run.
-- Production and staging live histories now include the Zooter optional training gamification prerequisite, expanded training module migration, storage policies, Twilio webhook audit schema, convergence migrations, booking policy, sensitive-access notification scheduler, policy performance hardening, accepted-job destination hardening, governance controls, zooter-job-card service-boundary, duplicate-index cleanup, and legacy RLS policy convergence.
+- Production and staging live histories now include the Zooter optional training gamification prerequisite, expanded training module migration, storage policies, Twilio webhook audit schema, convergence migrations, booking policy, sensitive-access notification scheduler, policy performance hardening, accepted-job destination hardening, governance controls, zooter-job-card service-boundary, duplicate-index cleanup, legacy RLS policy convergence, booking chat public schema, Concierge public schema, invoice public schema, Zoot Black public schema, payment readiness schema, and Twilio readiness schema.
 - The accepted-job destination hardening migration creates `get_zooter_job_cards()` and returns `destination_address` only after a Zooter accepts the assigned job. Real role-based smoke tests with staging client/admin/Zooter users are still required.
 - Production needed the accepted-job migration to repair drift in `public.zooter_jobs` by adding the optional response columns before creating the job-card RPC. Keep that idempotent compatibility step in the migration.
 - Production's remaining security-advisor warning is leaked-password protection. Enable it when the selected Supabase plan exposes the control.
