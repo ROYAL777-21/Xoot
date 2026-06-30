@@ -232,7 +232,7 @@ These methods were verified from the local CLI help output and should be used in
 | GitHub CLI | Current machine is authenticated as `ROYAL777-21`. If it expires, run `gh auth login --web --hostname github.com --git-protocol https`. | Do not paste GitHub PATs into chat. |
 | CodeRabbit CLI | Set `CODERABBIT_API_KEY` locally, then run `coderabbit auth login --api-key $env:CODERABBIT_API_KEY`. | If Zoot later has a self-hosted CodeRabbit URL, run `coderabbit auth login --self-hosted` or `npm run ops:provider-auth:setup -- -CodeRabbit -CodeRabbitSelfHosted`. The official GitHub App remains the safest production option. |
 
-Current status on 2026-06-29: GitHub CLI is authenticated; Supabase CLI is installed but not authenticated; CodeRabbit CLI is installed but not authenticated.
+Current status on 2026-06-30 22:45 SAST: GitHub CLI is authenticated as `ROYAL777-21`; Supabase CLI is installed but not authenticated and no local `SUPABASE_ACCESS_TOKEN` is available; CodeRabbit CLI is installed but not authenticated.
 
 ## Do Not Collect In Chat
 
