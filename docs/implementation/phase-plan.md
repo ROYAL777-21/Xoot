@@ -149,6 +149,8 @@ Requires founder, operations, supplier and legal approval.
 
 ## Phase 7 - Payments And Payout Verification
 
+Foundation status: implemented locally as `20260630005420_phase7_payments_payouts_foundation.sql`; live payment and payout activation remain blocked by provider, finance and legal gates.
+
 Required:
 
 - provider-hosted customer payment flow;

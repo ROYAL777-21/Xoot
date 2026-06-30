@@ -221,6 +221,20 @@ Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6
 Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "no_external_certification_claims" "Zoot Black avoids unsupported certification claims"
 Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "canOfferZootBlack" "Zoot Black shared eligibility gate"
 Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "buildZootBlackLineItem" "Zoot Black explicit line item helper"
+Test-RepoFile "phase-7-payments" "docs/implementation/phase-7-payments-payouts.md" | Out-Null
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payment_provider_capabilities" "payment provider capability table"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payment_reconciliation_checks" "payment reconciliation audit table"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "zooter_payout_accounts" "verified payout account table"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payout_change_requests" "payout account change workflow"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "zooter_payout_holds" "payout hold ledger"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "can_activate_payment_provider" "payment provider activation helper"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "can_release_zooter_payout" "payout release readiness helper"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payments\.hosted_checkout\.stitch" "Stitch hosted checkout provider gate"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payments\.hosted_checkout\.ozow" "Ozow hosted checkout provider gate"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payouts\.enabled" "payout release provider gate"
+Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "canCreateProviderCheckout" "hosted payment checkout shared gate"
+Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "buildPaymentReconciliationReference" "payment reconciliation reference helper"
+Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "canReleaseZooterPayout" "payout release shared gate"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -336,6 +350,7 @@ Add-ManualBlocker "cloudflare-live" "Cloudflare Zoot zone" "Requires a Cloudflar
 Add-ManualBlocker "domain-live" "production domain registration" "Requires a registered final domain before Cloudflare zone, DNS, TLS, OAuth origins, sender-domain DNS, app links, support/legal URLs, and store URLs can be completed."
 Add-ManualBlocker "stores-live" "Apple/Google/EAS release credentials" "Requires developer-console records, signing credentials, privacy declarations, and legal review."
 Add-ManualBlocker "phase-6-zoot-black" "Zoot Black live activation approvals" "Requires founder, operations, supplier, and legal approval plus staging/prod migration deployment before enabling zoot_black.* controls or exposing any customer flow."
+Add-ManualBlocker "phase-7-payments" "Phase 7 payment and payout activation approvals" "Requires Stitch/Ozow credentials, callback dashboard configuration, signed webhook smoke tests, finance/legal approvals, payout account verification workflow, payout hold policy, and staging/prod migration deployment before enabling payment or payout controls."
 
 if ($IncludeExternal -or $RequireLive) {
   $authScript = Resolve-RepoPath "scripts/ops/check-local-provider-auth.ps1"

@@ -56,7 +56,7 @@ Status values:
 | Payment callback URL | `STITCH_PAYMENT_CALLBACK_URL` | Provider dashboard and docs | Template | Should point to a server endpoint, not a frontend-only route. |
 | Payment success URL | `STITCH_PAYMENT_SUCCESS_URL` | Provider dashboard | Template | Frontend may display pending status only. |
 | Payment failure URL | `STITCH_PAYMENT_FAILURE_URL` | Provider dashboard | Template | Must not cancel/confirm without server state. |
-| Reconciliation reference | Backend-generated | Database/payment_records | Template | Format: `zoot-{env}-{bookingId}-{paymentRecordId}`. |
+| Reconciliation reference | Backend-generated | Database/payment_records and `payment_reconciliation_checks` | Template | Format: `ZOOT-{PROVIDER}-{BOOKING8}-{PAYMENT8}`. |
 
 ## Payments: Ozow
 

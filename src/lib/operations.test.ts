@@ -3,8 +3,11 @@ import {
   applyZootCredLedger,
   buildZootBlackLineItem,
   buildPendingPaymentRecord,
+  buildPaymentReconciliationReference,
   canAccessSensitiveBookingData,
+  canCreateProviderCheckout,
   canOfferZootBlack,
+  canReleaseZooterPayout,
   calculateBookingQuote,
   getActivationReadiness,
   getAcceptedZooterJobAddress,
@@ -132,6 +135,59 @@ describe("Zoot operating rules", () => {
     });
     expect(buildZootBlackLineItem(0)).toBeNull();
     expect(buildZootBlackLineItem(Number.NaN)).toBeNull();
+  });
+
+  it("keeps hosted payment checkout disabled until every provider gate is proven", () => {
+    const ready = {
+      provider: "stitch" as const,
+      providerGateEnabled: true,
+      hostedCheckoutConfigured: true,
+      webhookSignatureVerified: true,
+      callbackUrlsVerified: true,
+      reconciliationVerified: true,
+      approvalStatus: "approved" as const,
+      frontendSuccessTrusted: false,
+    };
+
+    expect(canCreateProviderCheckout(ready)).toBe(true);
+    expect(canCreateProviderCheckout({ ...ready, providerGateEnabled: false })).toBe(false);
+    expect(canCreateProviderCheckout({ ...ready, webhookSignatureVerified: false })).toBe(false);
+    expect(canCreateProviderCheckout({ ...ready, reconciliationVerified: false })).toBe(false);
+    expect(canCreateProviderCheckout({ ...ready, approvalStatus: "pending" })).toBe(false);
+    expect(canCreateProviderCheckout({ ...ready, frontendSuccessTrusted: true })).toBe(false);
+  });
+
+  it("builds non-secret payment reconciliation references", () => {
+    expect(buildPaymentReconciliationReference({
+      provider: "ozow",
+      bookingId: "booking-123456789",
+      paymentId: "payment-abcdefghi",
+    })).toBe("ZOOT-OZOW-BOOKING1-PAYMENTA");
+
+    expect(buildPaymentReconciliationReference({
+      provider: "stitch",
+      bookingId: "abc",
+      paymentId: "payment-abcdefghi",
+    })).toBeNull();
+  });
+
+  it("blocks payout release when verification, step-up or hold gates are not clean", () => {
+    const ready = {
+      payoutsEnabled: true,
+      verifiedPayoutAccount: true,
+      stepUpRequiredForAccountChanges: true,
+      pendingPayoutAccountChange: false,
+      activeHold: false,
+      trustOrDisputeReviewOpen: false,
+    };
+
+    expect(canReleaseZooterPayout(ready)).toBe(true);
+    expect(canReleaseZooterPayout({ ...ready, payoutsEnabled: false })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, verifiedPayoutAccount: false })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, stepUpRequiredForAccountChanges: false })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, pendingPayoutAccountChange: true })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, activeHold: true })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, trustOrDisputeReviewOpen: true })).toBe(false);
   });
 
   it("builds pending payment records instead of claiming live provider payment", () => {

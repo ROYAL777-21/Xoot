@@ -84,6 +84,28 @@ export type ZootBlackLineItem = {
   currency: "ZAR";
 };
 
+export type PaymentProvider = "stitch" | "ozow";
+
+export type PaymentProviderReadinessInput = {
+  provider: PaymentProvider;
+  providerGateEnabled: boolean;
+  hostedCheckoutConfigured: boolean;
+  webhookSignatureVerified: boolean;
+  callbackUrlsVerified: boolean;
+  reconciliationVerified: boolean;
+  approvalStatus: "pending" | "approved" | "rejected" | "missing";
+  frontendSuccessTrusted?: boolean;
+};
+
+export type PayoutReadinessInput = {
+  payoutsEnabled: boolean;
+  verifiedPayoutAccount: boolean;
+  stepUpRequiredForAccountChanges: boolean;
+  pendingPayoutAccountChange: boolean;
+  activeHold: boolean;
+  trustOrDisputeReviewOpen: boolean;
+};
+
 export type HomeCleaningSize = "small" | "medium" | "large";
 export type MovingCleanSize = "tiny" | "small" | "medium" | "large" | "extra_large";
 export type LinenOption = "do_not_replace" | "replace_only" | "replace_and_wash";
@@ -363,6 +385,60 @@ export const buildZootBlackLineItem = (amount: number): ZootBlackLineItem | null
     total_amount: roundedAmount,
     currency: "ZAR",
   };
+};
+
+export const canCreateProviderCheckout = ({
+  providerGateEnabled,
+  hostedCheckoutConfigured,
+  webhookSignatureVerified,
+  callbackUrlsVerified,
+  reconciliationVerified,
+  approvalStatus,
+  frontendSuccessTrusted = false,
+}: PaymentProviderReadinessInput) => {
+  return Boolean(
+    providerGateEnabled
+      && hostedCheckoutConfigured
+      && webhookSignatureVerified
+      && callbackUrlsVerified
+      && reconciliationVerified
+      && approvalStatus === "approved"
+      && !frontendSuccessTrusted,
+  );
+};
+
+export const buildPaymentReconciliationReference = ({
+  provider,
+  bookingId,
+  paymentId,
+}: {
+  provider: PaymentProvider;
+  bookingId: string;
+  paymentId: string;
+}) => {
+  const clean = (value: string) => value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase();
+  const bookingPart = clean(bookingId);
+  const paymentPart = clean(paymentId);
+  if (bookingPart.length < 6 || paymentPart.length < 6) return null;
+  return `ZOOT-${provider.toUpperCase()}-${bookingPart}-${paymentPart}`;
+};
+
+export const canReleaseZooterPayout = ({
+  payoutsEnabled,
+  verifiedPayoutAccount,
+  stepUpRequiredForAccountChanges,
+  pendingPayoutAccountChange,
+  activeHold,
+  trustOrDisputeReviewOpen,
+}: PayoutReadinessInput) => {
+  return Boolean(
+    payoutsEnabled
+      && verifiedPayoutAccount
+      && stepUpRequiredForAccountChanges
+      && !pendingPayoutAccountChange
+      && !activeHold
+      && !trustOrDisputeReviewOpen,
+  );
 };
 
 export const buildPendingPaymentRecord = ({

@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29
+Reviewed: 2026-06-30
 
 Canonical blocker file: `blocker.md`.
 

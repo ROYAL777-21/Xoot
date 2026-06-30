@@ -335,6 +335,75 @@ checks as (
 
   union all
   select
+    'Phase 7 payment provider capabilities table exists',
+    to_regclass('public.payment_provider_capabilities') is not null,
+    'public.payment_provider_capabilities'
+
+  union all
+  select
+    'Phase 7 payment reconciliation table exists',
+    to_regclass('public.payment_reconciliation_checks') is not null,
+    'public.payment_reconciliation_checks'
+
+  union all
+  select
+    'Phase 7 payout account table exists',
+    to_regclass('public.zooter_payout_accounts') is not null,
+    'public.zooter_payout_accounts'
+
+  union all
+  select
+    'Phase 7 payout change request table exists',
+    to_regclass('public.payout_change_requests') is not null,
+    'public.payout_change_requests'
+
+  union all
+  select
+    'Phase 7 payout hold table exists',
+    to_regclass('public.zooter_payout_holds') is not null,
+    'public.zooter_payout_holds'
+
+  union all
+  select
+    'Phase 7 provider activation helper not client executable',
+    to_regprocedure('public.can_activate_payment_provider(text,text)') is not null
+      and not has_function_privilege('anon', 'public.can_activate_payment_provider(text,text)', 'EXECUTE')
+      and not has_function_privilege('authenticated', 'public.can_activate_payment_provider(text,text)', 'EXECUTE'),
+    'public.can_activate_payment_provider(text,text)'
+
+  union all
+  select
+    'Phase 7 payout release helper not client executable',
+    to_regprocedure('public.can_release_zooter_payout(uuid,uuid)') is not null
+      and not has_function_privilege('anon', 'public.can_release_zooter_payout(uuid,uuid)', 'EXECUTE')
+      and not has_function_privilege('authenticated', 'public.can_release_zooter_payout(uuid,uuid)', 'EXECUTE'),
+    'public.can_release_zooter_payout(uuid,uuid)'
+
+  union all
+  select
+    'Phase 7 provider controls default disabled',
+    exists (
+      select 1
+      from public.operational_controls
+      where control_key = 'payments.hosted_checkout.stitch'
+        and enabled = false
+    )
+      and exists (
+        select 1
+        from public.operational_controls
+        where control_key = 'payments.hosted_checkout.ozow'
+          and enabled = false
+      )
+      and exists (
+        select 1
+        from public.operational_controls
+        where control_key = 'payouts.enabled'
+          and enabled = false
+      ),
+    'public.operational_controls phase 7 payment/payout provider gates'
+
+  union all
+  select
     'public has_role is self-scoped invoker',
     exists (
       select 1
