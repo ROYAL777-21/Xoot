@@ -257,6 +257,84 @@ checks as (
 
   union all
   select
+    'Zoot Black controls default disabled',
+    exists (
+      select 1
+      from public.operational_controls
+      where control_key = 'zoot_black.enabled'
+        and enabled = false
+    )
+      and exists (
+        select 1
+        from public.operational_controls
+        where control_key = 'zoot_black.area_pilot'
+          and enabled = false
+      )
+      and exists (
+        select 1
+        from public.operational_controls
+        where control_key = 'zoot_black.certificates'
+          and enabled = false
+      ),
+    'public.operational_controls zoot_black.*'
+
+  union all
+  select
+    'Zoot Black selected area table exists',
+    to_regclass('public.zoot_black_area_pilots') is not null,
+    'public.zoot_black_area_pilots'
+
+  union all
+  select
+    'Zoot Black equipment evidence table exists',
+    to_regclass('public.zoot_black_equipment_evidence') is not null,
+    'public.zoot_black_equipment_evidence'
+
+  union all
+  select
+    'Zoot Black status history table exists',
+    to_regclass('public.zoot_black_status_history') is not null,
+    'public.zoot_black_status_history'
+
+  union all
+  select
+    'Zoot Black training requirements table exists',
+    to_regclass('public.zoot_black_training_requirements') is not null,
+    'public.zoot_black_training_requirements'
+
+  union all
+  select
+    'Zoot Black explicit line items table exists',
+    to_regclass('public.booking_service_line_items') is not null,
+    'public.booking_service_line_items'
+
+  union all
+  select
+    'Zoot Black completion certificates table exists',
+    to_regclass('public.zoot_black_completion_certificates') is not null,
+    'public.zoot_black_completion_certificates'
+
+  union all
+  select
+    'Zoot Black certificate private bucket exists',
+    exists (
+      select 1
+      from storage.buckets
+      where id = 'zoot-black-certificates'
+        and public = false
+    ),
+    'storage.buckets.zoot-black-certificates'
+
+  union all
+  select
+    'Zoot Black eligibility helper not client executable',
+    to_regprocedure('public.is_zoot_black_eligible(uuid,text)') is not null
+      and not has_function_privilege('anon', 'public.is_zoot_black_eligible(uuid,text)', 'EXECUTE')
+      and not has_function_privilege('authenticated', 'public.is_zoot_black_eligible(uuid,text)', 'EXECUTE'),
+    'public.is_zoot_black_eligible(uuid,text)'
+
+  union all
+  select
     'public has_role is self-scoped invoker',
     exists (
       select 1

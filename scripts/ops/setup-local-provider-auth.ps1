@@ -20,9 +20,13 @@ function Add-IfExistsToPath {
   }
 }
 
-if (-not ($Supabase -or $GitHub -or $CodeRabbit)) {
+if (-not ($Supabase -or $GitHub -or $CodeRabbit -or $CodeRabbitSelfHosted)) {
   $Supabase = $true
   $GitHub = $true
+  $CodeRabbit = $true
+}
+
+if ($CodeRabbitSelfHosted) {
   $CodeRabbit = $true
 }
 

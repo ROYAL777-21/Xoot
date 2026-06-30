@@ -1,6 +1,6 @@
 # Zoot Admin Access
 
-Reviewed: 2026-06-29
+Reviewed: 2026-06-30
 
 Zoot does not have universal admin sign-in credentials in the website, app, repository, or env templates. Admin access is role-based:
 
@@ -46,4 +46,3 @@ Production admin access must be created through a secure ops process:
 5. Record the action in the admin audit trail.
 
 The production admin password is not stored in this repo and should not be known by Codex. If an initial founder admin needs to be created, use a local secure shell or dashboard session with secrets supplied from the password manager, not chat.
-

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   applyZootCredLedger,
+  buildZootBlackLineItem,
   buildPendingPaymentRecord,
   canAccessSensitiveBookingData,
+  canOfferZootBlack,
   calculateBookingQuote,
   getActivationReadiness,
   getAcceptedZooterJobAddress,
@@ -97,6 +99,39 @@ describe("Zoot operating rules", () => {
     expect(getAcceptedZooterJobAddress({ jobState: "accepted", address })).toBe(address);
     expect(getAcceptedZooterJobAddress({ jobState: "completed", address })).toBeNull();
     expect(getAcceptedZooterJobAddress({ jobState: "accepted", address: "   " })).toBeNull();
+  });
+
+  it("keeps Zoot Black unavailable unless every approval and eligibility gate passes", () => {
+    const eligible = {
+      featureEnabled: true,
+      explicitOptIn: true,
+      zooterTier: "elite_verified",
+      zooterVerified: true,
+      equipmentEvidenceApproved: true,
+      areaPilotApproved: true,
+      legalApproved: true,
+    };
+
+    expect(canOfferZootBlack(eligible)).toBe(true);
+    expect(canOfferZootBlack({ ...eligible, featureEnabled: false })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, explicitOptIn: false })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, zooterTier: "standard" })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, equipmentEvidenceApproved: false })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, areaPilotApproved: false })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, legalApproved: false })).toBe(false);
+  });
+
+  it("builds an explicit Zoot Black line item only from a positive backend amount", () => {
+    expect(buildZootBlackLineItem(175.555)).toEqual({
+      item_key: "zoot_black_service",
+      label: "Zoot Black service",
+      quantity: 1,
+      unit_amount: 175.56,
+      total_amount: 175.56,
+      currency: "ZAR",
+    });
+    expect(buildZootBlackLineItem(0)).toBeNull();
+    expect(buildZootBlackLineItem(Number.NaN)).toBeNull();
   });
 
   it("builds pending payment records instead of claiming live provider payment", () => {

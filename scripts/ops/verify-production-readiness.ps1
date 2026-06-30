@@ -211,6 +211,16 @@ Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.t
 Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "fetchWithTimeout" "Concierge OpenAI timeout fallback"
 Test-RepoPattern "phase-5-concierge" "supabase/config.toml" "\[functions\.report-concierge-answer\]\s+verify_jwt = false" "report-concierge-answer allows guest reports"
 Test-RepoPattern "phase-5-concierge" "src/components/zoot/ZootSupportBot.tsx" "report-concierge-answer" "Concierge UI reports answers through Edge Function"
+Test-RepoFile "phase-6-zoot-black" "docs/implementation/phase-6-zoot-black.md" | Out-Null
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black.enabled" "Zoot Black feature flag exists"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_area_pilots" "Zoot Black selected-area pilot gates"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_equipment_evidence" "Zoot Black private equipment evidence"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_status_history" "Zoot Black status history"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "booking_service_line_items" "explicit booking line items"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_completion_certificates" "Zoot Black completion certificates"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "no_external_certification_claims" "Zoot Black avoids unsupported certification claims"
+Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "canOfferZootBlack" "Zoot Black shared eligibility gate"
+Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "buildZootBlackLineItem" "Zoot Black explicit line item helper"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -325,6 +335,7 @@ Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privi
 Add-ManualBlocker "cloudflare-live" "Cloudflare Zoot zone" "Requires a Cloudflare zone and token with the required zone-management permissions."
 Add-ManualBlocker "domain-live" "production domain registration" "Requires a registered final domain before Cloudflare zone, DNS, TLS, OAuth origins, sender-domain DNS, app links, support/legal URLs, and store URLs can be completed."
 Add-ManualBlocker "stores-live" "Apple/Google/EAS release credentials" "Requires developer-console records, signing credentials, privacy declarations, and legal review."
+Add-ManualBlocker "phase-6-zoot-black" "Zoot Black live activation approvals" "Requires founder, operations, supplier, and legal approval plus staging/prod migration deployment before enabling zoot_black.* controls or exposing any customer flow."
 
 if ($IncludeExternal -or $RequireLive) {
   $authScript = Resolve-RepoPath "scripts/ops/check-local-provider-auth.ps1"

@@ -7,6 +7,7 @@ Reviewed: 2026-06-27
 - Staging project: `Zoot Staging` / `fxmxyabdjqviqbcxmvlp`.
 - The repository contains the application migration chain, storage policies, helper-function hardening, training modules, and Twilio webhook audit schema.
 - Live staging and production application must be verified with an authenticated Supabase path before these items can be treated as deployed.
+- The Phase 6 Zoot Black foundation migration `20260630003602_phase6_zoot_black_foundation.sql` is local and pending live deployment. After deployment, the `zoot_black.*` operational controls must remain disabled until founder, operations, supplier and legal approvals are complete.
 - Supabase Branching is unavailable on the current plan, so staging is a separate free project.
 - Production migration history still differs from the local migration file list and must remain reconciled before broad migration pushes.
 - The local migration chain contains legacy prototype seed data; `20260619001000_remove_demo_seed_data.sql` removes the hardcoded demo Zooters after those migrations run.

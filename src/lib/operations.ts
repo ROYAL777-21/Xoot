@@ -65,6 +65,25 @@ export type LedgerEntry = {
   direction: "credit" | "debit";
 };
 
+export type ZootBlackEligibilityInput = {
+  featureEnabled: boolean;
+  explicitOptIn: boolean;
+  zooterTier?: string | null;
+  zooterVerified: boolean;
+  equipmentEvidenceApproved: boolean;
+  areaPilotApproved: boolean;
+  legalApproved: boolean;
+};
+
+export type ZootBlackLineItem = {
+  item_key: "zoot_black_service";
+  label: "Zoot Black service";
+  quantity: 1;
+  unit_amount: number;
+  total_amount: number;
+  currency: "ZAR";
+};
+
 export type HomeCleaningSize = "small" | "medium" | "large";
 export type MovingCleanSize = "tiny" | "small" | "medium" | "large" | "extra_large";
 export type LinenOption = "do_not_replace" | "replace_only" | "replace_and_wash";
@@ -309,6 +328,41 @@ export const getSensitiveAccessAvailability = ({
   }
 
   return { state: "closed", opensAt, minutesUntilOpen: 0 };
+};
+
+export const canOfferZootBlack = ({
+  featureEnabled,
+  explicitOptIn,
+  zooterTier,
+  zooterVerified,
+  equipmentEvidenceApproved,
+  areaPilotApproved,
+  legalApproved,
+}: ZootBlackEligibilityInput) => {
+  const eliteTier = ["elite", "elite_verified", "black"].includes((zooterTier ?? "").toLowerCase());
+  return Boolean(
+    featureEnabled
+      && explicitOptIn
+      && eliteTier
+      && zooterVerified
+      && equipmentEvidenceApproved
+      && areaPilotApproved
+      && legalApproved,
+  );
+};
+
+export const buildZootBlackLineItem = (amount: number): ZootBlackLineItem | null => {
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  const roundedAmount = Math.round(amount * 100) / 100;
+  return {
+    item_key: "zoot_black_service",
+    label: "Zoot Black service",
+    quantity: 1,
+    unit_amount: roundedAmount,
+    total_amount: roundedAmount,
+    currency: "ZAR",
+  };
 };
 
 export const buildPendingPaymentRecord = ({

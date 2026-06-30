@@ -134,6 +134,8 @@ Required:
 
 Feature flags default off.
 
+Foundation status: implemented locally as `20260630003602_phase6_zoot_black_foundation.sql`; live deployment and activation remain blocked by approval gates.
+
 Required:
 
 - Elite-only eligibility;

@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-29 21:54 SAST
+Reviewed: 2026-06-30 01:15 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -17,6 +17,8 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Completed-booking invoice generation requires final reviewed legal/VAT values in Supabase Edge Function secrets: `ZOOT_INVOICE_LEGAL_ENTITY`, `ZOOT_INVOICE_LEGAL_ENTITY_REGISTRATION`, `ZOOT_INVOICE_VAT_RATE`, and `ZOOT_INVOICE_VAT_NUMBER` when VAT applies.
 - Phase 5 Zoot Concierge migration and `report-concierge-answer` are implemented locally. Live staging/prod deployment and execution still require Supabase CLI/session access: `20260629200351_phase5_zoot_concierge.sql`, `support-respond`, and `report-concierge-answer`.
 - Anonymous Concierge Turnstile enforcement must stay disabled until a production domain and restricted Cloudflare Turnstile widget exist. When available, set `support.turnstile_required` or `ZOOT_REQUIRE_CONCIERGE_TURNSTILE=true` only after the rotated Turnstile secret is stored in Supabase Edge Function secrets.
+- Phase 6 Zoot Black foundation is implemented locally and disabled by default. Live staging/prod deployment still requires Supabase CLI/session access: `20260630003602_phase6_zoot_black_foundation.sql`.
+- Zoot Black activation remains blocked by founder, operations, supplier, and legal approvals. Do not enable `zoot_black.enabled`, `zoot_black.area_pilot`, or `zoot_black.certificates`, expose a customer purchase path, or publish availability claims until approvals, pilot areas, equipment evidence rules, line-item amount, certificate wording, and smoke tests are complete.
 
 ## Provider Secrets And External Dashboards
 
@@ -28,7 +30,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Domain Registration
 
-- No production domain is registered yet. The founder reconfirmed this on 2026-06-29, so domain-dependent setup cannot be completed without the final domain and registrar/DNS access.
+- No production domain is registered yet. The founder reconfirmed this on 2026-06-30, so domain-dependent setup cannot be completed without the final domain and registrar/DNS access.
 - Pending until domain registration: Cloudflare zone/DNS/TLS/WAF/Turnstile restrictions, production Supabase Auth redirect allowlists, Google/Apple OAuth origins and callbacks, Brevo sender-domain DNS, Hostinger custom-domain SSL, WordPress production/canonical URLs, Mapbox URL-restricted browser tokens, Apple AASA, Android assetlinks, privacy/support/account-deletion URLs, and store listing URLs.
 - Use localhost, staging project URLs, and Expo development URLs for preview only. Do not mark production launch ready until the final domain is registered, configured, and verified.
 
@@ -66,8 +68,8 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - GitHub CLI is authenticated and the required public Supabase variables are present. Public site URL, EAS project ID, and PostHog public variables are also present. Optional public-safe GitHub repository variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables.
 - CodeRabbit CLI `0.6.4` is installed, but `coderabbit auth status --agent` reports `not_authenticated`.
-- On 2026-06-29, `coderabbit auth login --agent` returned `environment_unsupported` because localhost callback and stdin fallback are unavailable in this Windows session. Use `coderabbit auth login --api-key <api-key>` with a key from an approved vault, or install the official CodeRabbit GitHub App on the repository.
-- CodeRabbit self-hosted login is available through `coderabbit auth login --self-hosted`, but no Zoot self-hosted CodeRabbit URL has been supplied. Use it only if Zoot actually provisions a self-hosted instance; otherwise use the official GitHub App or API-key CLI auth.
+- On 2026-06-30, `coderabbit auth login --agent` returned `environment_unsupported` because localhost callback and stdin fallback are unavailable in this Windows session. Use `coderabbit auth login --api-key <api-key>` with a key from an approved vault, or install the official CodeRabbit GitHub App on the repository.
+- CodeRabbit self-hosted login is available through `npm run ops:provider-auth:setup -- -CodeRabbitSelfHosted`, but no Zoot self-hosted CodeRabbit URL has been supplied. Use it only if Zoot actually provisions a self-hosted instance; otherwise use the official GitHub App or API-key CLI auth.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.
 
 ## Admin Access
