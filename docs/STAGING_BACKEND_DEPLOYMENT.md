@@ -12,6 +12,7 @@ Reviewed: 2026-06-30
 - Production migration history still differs from the local migration file list and must remain reconciled before broad migration pushes.
 - The local migration chain contains legacy prototype seed data; `20260619001000_remove_demo_seed_data.sql` removes the hardcoded demo Zooters after those migrations run.
 - Production and staging live histories now include the Zooter optional training gamification prerequisite, expanded training module migration, storage policies, Twilio webhook audit schema, convergence migrations, booking policy, sensitive-access notification scheduler, policy performance hardening, accepted-job destination hardening, governance controls, zooter-job-card service-boundary, duplicate-index cleanup, legacy RLS policy convergence, booking chat public schema, Concierge public schema, invoice public schema, Zoot Black public schema, payment readiness schema, and Twilio readiness schema.
+- The production dashboard still reports `MIGRATIONS_FAILED` at branch metadata level because production uses squashed historical migrations and later connector-applied migrations have Supabase-generated timestamps. The live catalog contains the applied app schema, but migration history repair must be done narrowly. See `docs/implementation/supabase-migration-status-repair-20260630.md`.
 - The accepted-job destination hardening migration creates `get_zooter_job_cards()` and returns `destination_address` only after a Zooter accepts the assigned job. Real role-based smoke tests with staging client/admin/Zooter users are still required.
 - Production needed the accepted-job migration to repair drift in `public.zooter_jobs` by adding the optional response columns before creating the job-card RPC. Keep that idempotent compatibility step in the migration.
 - Production's remaining security-advisor warning is leaked-password protection. Enable it when the selected Supabase plan exposes the control.
@@ -56,6 +57,11 @@ npm run ops:supabase:deploy:staging
 Production uses the same shared deployment script as staging, but with the
 production project reference and production database credentials. Run staging
 first, verify it, then run production.
+
+If the Supabase dashboard shows skipped/pending migrations while the catalog
+checks pass, do not run a broad production `db push` as a repair. First run the
+migration-history procedure in
+`docs/implementation/supabase-migration-status-repair-20260630.md`.
 
 ```powershell
 $env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF="mvlrkelahhsyjrwgsxaf"
