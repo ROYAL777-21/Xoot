@@ -264,6 +264,19 @@ Test-RepoPattern "phase-9-twilio" "supabase/functions/ops-workflow/index.ts" "tw
 Test-RepoPattern "phase-9-twilio" "supabase/config.toml" "\[functions\.create-masked-call\]\s+verify_jwt = true" "create-masked-call requires JWT"
 Test-RepoPattern "phase-9-twilio" "supabase/config.toml" "\[functions\.ops-workflow\]\s+verify_jwt = true" "ops-workflow requires JWT"
 Test-RepoPattern "phase-9-twilio" "src/lib/twilio-phase9-readiness.test.ts" "Phase 9 Twilio Verify and masked voice readiness" "Phase 9 static regression tests"
+Test-RepoFile "phase-10-assistant" "docs/implementation/phase-10-siri-app-intents.md" | Out-Null
+Test-RepoFile "phase-10-assistant" "mobile/plugins/withZootAssistantIntents.cjs" | Out-Null
+Test-RepoPattern "phase-10-assistant" "mobile/app.config.ts" "\./plugins/withZootAssistantIntents\.cjs" "Expo config registers assistant-intents plugin"
+Test-RepoPattern "phase-10-assistant" "mobile/plugins/withZootAssistantIntents.cjs" "android\.app\.shortcuts" "assistant plugin registers Android shortcuts"
+Test-RepoPattern "phase-10-assistant" "mobile/plugins/withZootAssistantIntents.cjs" "ZootAppIntents\.swift" "assistant plugin copies iOS App Intents"
+Test-RepoPattern "phase-10-assistant" "mobile/plugins/withZootAssistantIntents.cjs" "withXcodeProject" "assistant plugin updates generated Xcode project"
+Test-RepoPattern "phase-10-assistant" "native/ios/ZootLiveActivities/ZootAppIntents.swift" "ZootAssistantDeepLinkSafety" "iOS assistant handoff sanitizes area text"
+Test-RepoPattern "phase-10-assistant" "native/ios/ZootLiveActivities/ZootAppIntents.swift" "Confirm your address, time and payment inside the app" "iOS assistant requires in-app confirmation"
+Test-RepoPattern "phase-10-assistant" "native/android/res/xml/shortcuts.xml" "zoot://book\?intent=book_clean" "Android shortcut opens native booking route"
+Test-RepoPattern "phase-10-assistant" "native/android/res/xml/shortcuts.xml" "zoot://zooter/jobs\?intent=zooter_jobs" "Android shortcut opens native Zooter jobs route"
+Test-RepoFile "phase-10-assistant" "mobile/src/app/bookings.tsx" | Out-Null
+Test-RepoFile "phase-10-assistant" "mobile/src/app/zooter/jobs.tsx" | Out-Null
+Test-RepoPattern "phase-10-assistant" "src/lib/phase10-assistant-intents-readiness.test.ts" "Phase 10 Siri and Android assistant readiness" "Phase 10 static regression tests"
 
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
@@ -386,6 +399,7 @@ Add-ManualBlocker "phase-6-zoot-black" "Zoot Black live activation approvals" "R
 Add-ManualBlocker "phase-7-payments" "Phase 7 payment and payout activation approvals" "Requires Stitch/Ozow credentials, callback dashboard configuration, signed webhook smoke tests, finance/legal approvals, payout account verification workflow, payout hold policy, and staging/prod migration deployment before enabling payment or payout controls."
 Add-ManualBlocker "phase-8-native-launch" "Phase 8 development-build device verification" "Requires EAS development builds and real iOS/Android device tests for normal launch, reduced-motion static launch, urgent route bypass, and safe assistant deep links."
 Add-ManualBlocker "phase-9-twilio" "Phase 9 Twilio live activation approvals" "Requires upgraded Twilio account or approved subaccount strategy, South African number, transactional Messaging Service, approved WhatsApp sender/templates, Verify Fraud Guard and geo permissions, callback assignment, rotated secrets, and signed staging smoke tests before enabling twilio.* controls."
+Add-ManualBlocker "phase-10-assistant" "Phase 10 Siri and Android assistant device verification" "Requires Expo prebuild inspection, EAS development builds, and real iOS/Android assistant tests before treating Siri/App Intents or Android shortcuts as release-ready."
 
 if ($IncludeExternal -or $RequireLive) {
   $authScript = Resolve-RepoPath "scripts/ops/check-local-provider-auth.ps1"

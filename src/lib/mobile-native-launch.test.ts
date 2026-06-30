@@ -28,6 +28,8 @@ describe("mobile native launch experience", () => {
     expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ intent: "book_clean" }))).toBe(true);
     expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ zootBot: "open" }))).toBe(true);
     expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ intent: "care_plus" }))).toBe(true);
+    expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ intent: "booking_status" }))).toBe(true);
+    expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ intent: "zooter_jobs" }))).toBe(true);
     expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({}))).toBe(false);
   });
 
@@ -49,5 +51,12 @@ describe("mobile native launch experience", () => {
         service: "unknown",
       }),
     ).toBe("/book?intent=book_clean");
+  });
+
+  it("routes safe assistant surfaces to real Expo screens only", () => {
+    expect(buildNativeLaunchTarget("concierge", {})).toBe("/concierge");
+    expect(buildNativeLaunchTarget("care_plus", {})).toBe("/care-plus");
+    expect(buildNativeLaunchTarget("bookings", {})).toBe("/bookings?intent=bookings");
+    expect(buildNativeLaunchTarget("zooter_jobs", {})).toBe("/zooter/jobs?intent=zooter_jobs");
   });
 });

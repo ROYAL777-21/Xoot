@@ -55,6 +55,18 @@ enum ZootAssistantDestination: String, AppEnum {
 }
 
 @available(iOS 16.0, *)
+enum ZootAssistantDeepLinkSafety {
+  static func safeAreaValue(_ value: String?) -> String? {
+    guard let value else { return nil }
+    let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty, trimmed.count <= 80 else { return nil }
+    let blockedCharacters = CharacterSet(charactersIn: "<>\"'`\\")
+    guard trimmed.rangeOfCharacter(from: blockedCharacters) == nil else { return nil }
+    return trimmed
+  }
+}
+
+@available(iOS 16.0, *)
 enum ZootSafeBookingStatus: String, AppEnum {
   case upcoming
   case assigned
@@ -179,8 +191,8 @@ struct BookZootCleanerIntent: AppIntent {
       queryItems.append(URLQueryItem(name: "service", value: service.deepLinkValue))
     }
 
-    if let area, !area.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-      queryItems.append(URLQueryItem(name: "area", value: area.trimmingCharacters(in: .whitespacesAndNewlines)))
+    if let safeArea = ZootAssistantDeepLinkSafety.safeAreaValue(area) {
+      queryItems.append(URLQueryItem(name: "area", value: safeArea))
     }
 
     if let requestedDate {
@@ -202,9 +214,9 @@ struct BookZootCleanerIntent: AppIntent {
       dateText = "your chosen date"
     }
 
-    if let area, !area.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+    if let safeArea = ZootAssistantDeepLinkSafety.safeAreaValue(area) {
       return .result(
-        dialog: "Opening Zoot to start your cleaner booking in \(area) for \(dateText). Confirm your address, time and payment inside the app."
+        dialog: "Opening Zoot to start your cleaner booking in \(safeArea) for \(dateText). Confirm your address, time and payment inside the app."
       )
     }
 

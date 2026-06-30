@@ -119,6 +119,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         RNMapboxMapsVersion: '11.20.1',
       },
     ],
+    './plugins/withZootAssistantIntents.cjs',
     [
       '@sentry/react-native/expo',
       {

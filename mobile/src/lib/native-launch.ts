@@ -1,4 +1,4 @@
-export type NativeLaunchIntent = 'book' | 'concierge' | 'care_plus' | 'default';
+export type NativeLaunchIntent = 'book' | 'concierge' | 'care_plus' | 'bookings' | 'zooter_jobs' | 'default';
 
 export type NativeLaunchModeInput = {
   forceStatic?: boolean;
@@ -44,6 +44,8 @@ export const resolveNativeLaunchIntent = (params: NativeLaunchQueryParams): Nati
   if (intent === 'book_clean' || intent === 'book_cleaner') return 'book';
   if (intent === 'concierge' || zootBot === 'open') return 'concierge';
   if (intent === 'care_plus' || intent === 'care+') return 'care_plus';
+  if (intent === 'bookings' || intent === 'booking_status') return 'bookings';
+  if (intent === 'zooter_jobs') return 'zooter_jobs';
 
   return 'default';
 };
@@ -53,6 +55,8 @@ export const shouldBypassNativeLaunchExperience = (intent: NativeLaunchIntent) =
 export const buildNativeLaunchTarget = (intent: NativeLaunchIntent, params: NativeLaunchQueryParams) => {
   if (intent === 'concierge') return '/concierge';
   if (intent === 'care_plus') return '/care-plus';
+  if (intent === 'bookings') return '/bookings?intent=bookings';
+  if (intent === 'zooter_jobs') return '/zooter/jobs?intent=zooter_jobs';
   if (intent !== 'book') return '/';
 
   const query = new URLSearchParams();

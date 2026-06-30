@@ -16,4 +16,8 @@
   <string name="shortcut_care_plus_long">Open Care+ membership</string>
   <string name="shortcut_bookings_short">Bookings</string>
   <string name="shortcut_bookings_long">Open my Zoot bookings</string>
+  <string name="shortcut_booking_status_short">Status</string>
+  <string name="shortcut_booking_status_long">Check my Zoot booking status</string>
+  <string name="shortcut_zooter_jobs_short">Zooter jobs</string>
+  <string name="shortcut_zooter_jobs_long">Open my Zoot jobs</string>
 </resources>

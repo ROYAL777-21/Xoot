@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-30 12:44 SAST
+Reviewed: 2026-06-30 13:18 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -23,6 +23,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Phase 7 live payment/payout activation remains blocked by Stitch/Ozow production credentials, provider callback configuration, signed webhook smoke tests, finance approval, legal approval, payout account verification workflow, payout hold policy, and production reconciliation runbook. Do not enable `payments.provider_checkout`, `payments.hosted_checkout.stitch`, `payments.hosted_checkout.ozow`, or `payouts.enabled` until all approvals and tests are complete.
 - Phase 8 native launch experience is implemented locally in `/mobile`. Real iOS/Android development-build verification is still required for normal launch, reduced-motion static launch, urgent route bypass, and safe Siri/Gemini deep links before native release use.
 - Phase 9 Twilio Verify and masked voice foundation is implemented locally and disabled by default. Live staging/prod deployment still requires Supabase CLI/session access: `20260630102715_phase9_twilio_verify_masked_voice.sql`, `create-masked-call`, and `ops-workflow`.
+- Phase 10 Siri/App Intents and Android assistant shortcut foundation is implemented locally through `mobile/plugins/withZootAssistantIntents.cjs`. Real Expo prebuild output inspection, EAS development builds, and physical iOS/Android assistant tests are still required before native release use.
 
 ## Provider Secrets And External Dashboards
 
@@ -100,6 +101,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Deploy and smoke-test the Phase 2 booking chat action layer in staging/prod with `npm run ops:smoke:staging -- --all`: direct `messages` inserts revoked, participant sends through Edge Function, read receipts written, and message reports queued for admin review.
 - Deploy and smoke-test the Phase 4 invoice layer in staging/prod: completed paid booking generates exactly one immutable invoice, uploads a private PDF, queues Brevo delivery, owner/admin can read it, and resend queues the original PDF path without regenerating.
 - Deploy and smoke-test the Phase 9 Twilio layer in staging/prod after Twilio account resources exist: Verify rate-limit/redaction tests, unsigned webhook denial, signed webhook acceptance, masked-call denial outside the window, non-participant denial, terminal-booking denial, no-recording/no-transcription metadata, and provider-gated queue creation.
+- Run Phase 10 assistant-device tests after EAS development builds exist: Siri and Android assistant shortcuts open booking, Concierge, Care+, booking status, and Zooter jobs; unsafe params are ignored; no booking or payment is completed from speech/deep-link input alone.
 - Run authenticated booking-chat public-key lookup smoke tests against `get-booking-public-keys` with real staging client/Zooter booking participants.
 - Run `npm run ops:provider-auth:setup`, `npm run ops:supabase:auth-config`, `npm run ops:github-vars`, `npm run ops:supabase:deploy:staging`, `npm run ops:supabase:deploy:production`, `npm run ops:supabase:secrets:staging`, and `npm run ops:supabase:secrets:production` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.

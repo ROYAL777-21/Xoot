@@ -167,6 +167,7 @@ Backend setup still required:
 - Restrict public Mapbox tokens by domain/app where Mapbox allows it.
 - Siri/App Intents are scaffolded in `native/ios/ZootLiveActivities/ZootAppIntents.swift`, including `BookZootCleanerIntent`.
 - Android launcher shortcuts are scaffolded in `native/android/res/xml/shortcuts.xml`.
+- Expo prebuild wiring is handled by `mobile/plugins/withZootAssistantIntents.cjs`, which copies iOS App Intents and Android shortcut resources into generated native projects.
 - Assistant entry points open safe booking or Concierge screens only; address, access, payment and support details stay inside authenticated app screens.
 
 ## Crash Monitoring

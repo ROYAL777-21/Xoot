@@ -204,6 +204,8 @@ Required:
 
 Use existing safe App Intent source.
 
+Foundation status: implemented locally through the Expo config plugin `mobile/plugins/withZootAssistantIntents.cjs`; development-build device verification remains required before release use.
+
 Required:
 
 - integrate through an Expo config plugin or approved native target;
