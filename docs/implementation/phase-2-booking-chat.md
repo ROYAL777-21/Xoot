@@ -1,6 +1,6 @@
 # Phase 2 Booking-Scoped Chat
 
-Reviewed: 2026-06-29
+Reviewed: 2026-06-30
 
 This slice hardens the existing `public.messages` booking chat path. It does not create a second chat system.
 
@@ -44,10 +44,10 @@ If the action layer causes delivery issues:
 
 ## Live Follow-Up
 
-Apply the migration to staging first, deploy the three Edge Functions with JWT verification enabled, then run:
+The migration and three Edge Functions are applied in staging and production as of 2026-06-30. Next run:
 
 ```powershell
 npm run ops:smoke:staging -- --all
 ```
 
-The smoke run now verifies client/Zooter participant auth, Edge-only chat sending, denied direct `public.messages` insert, read receipts, message reports, and admin review queue creation on one staging booking.
+The smoke run verifies client/Zooter participant auth, Edge-only chat sending, denied direct `public.messages` insert, read receipts, message reports, and admin review queue creation on one staging booking.
