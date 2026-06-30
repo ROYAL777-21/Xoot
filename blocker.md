@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-30 22:54 SAST
+Reviewed: 2026-06-30 22:57 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -30,7 +30,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 - Real production secrets for Stitch, Ozow, Twilio, Brevo, KIE, OpenAI, Airtable, Hostinger, Cloudflare, Sentry, Expo/EAS, Apple, Google, Mapbox, and WordPress still need to be set in their correct secret stores.
 - Private secrets must not be committed or placed in frontend/mobile env files. Store them only in Supabase Edge Function secrets, EAS secrets, GitHub/environment secrets, provider dashboards, or the approved password manager.
-- Secrets pasted into chat, including Supabase, Cloudflare, Expo, PostHog private API, and Mapbox token values, must be rotated before production launch. The Twilio secret values previously pasted in chat were reported rotated on 2026-06-28; keep using only rotated values in approved secret stores.
+- Secrets pasted into chat, including Supabase, Cloudflare, Expo, PostHog private API, and Mapbox token values, must be rotated before production launch. A Supabase CLI access token was also pasted into chat on 2026-06-30 and must be rotated before it is used for production operations. The Twilio secret values previously pasted in chat were reported rotated on 2026-06-28; keep using only rotated values in approved secret stores.
 - Live Edge Function inventories for staging and production now show the required app functions active, including `admin-control-management`, `confirm-payment`, `support-respond`, Twilio webhooks, `get-booking-public-keys`, and the Phase 2 booking chat functions. Provider secret verification and signed smoke tests still require an authenticated Supabase CLI/session, dashboard secret setter, or real provider dashboard access.
 - Brevo invoice templates and delivery worker wiring still need live provider setup for outbox events `booking_invoice_created` and `booking_invoice_resend`.
 

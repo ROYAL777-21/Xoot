@@ -234,6 +234,8 @@ These methods were verified from the local CLI help output and should be used in
 
 Current status on 2026-06-30 22:45 SAST: GitHub CLI is authenticated as `ROYAL777-21`; Supabase CLI is installed but not authenticated and no local `SUPABASE_ACCESS_TOKEN` is available; CodeRabbit CLI is installed but not authenticated.
 
+Security update on 2026-06-30: a Supabase CLI access token was pasted into chat and must be rotated before production use. Load the rotated token only through the local environment or an approved secret store, not through chat or committed files.
+
 ## Do Not Collect In Chat
 
 Never paste these into chat:
