@@ -49,23 +49,21 @@ Required Supabase Auth dashboard setup:
 Live status on 2026-06-29:
 
 - The local Supabase configuration now contains the complete web and `zoot://` redirect set.
-- Staging and production dashboard allowlists still need live verification. The repo now includes `scripts/ops/set-supabase-auth-config.ps1`, which can update Supabase Auth Site URL and redirect allowlist through the Supabase Management API after `SUPABASE_ACCESS_TOKEN`, the project ref, and real environment URLs are available locally.
+- Staging and production dashboard allowlists still need live verification. The repo includes `scripts/ops/set-supabase-auth-config.ps1`, which can update Supabase Auth Site URL and redirect allowlist through the Supabase Management API after `SUPABASE_ACCESS_TOKEN`, the project ref, and the target Site URL are available locally. Use `-UseLocalConfig` to reuse the committed redirect inventory, but pass `-SiteUrl` explicitly for staging or production.
 - Do not launch email confirmation, password reset, Google OAuth, or Apple OAuth until the dashboard values exactly match this document.
 
 Example dry run:
 
 ```powershell
 $env:ZOOT_SUPABASE_PROJECT_REF = "abcdefghijklmnopqrst"
-$env:ZOOT_AUTH_SITE_URL = "https://<registered-domain>"
-$env:ZOOT_AUTH_REDIRECT_URLS = "https://<registered-domain>/auth/callback,https://<registered-domain>/auth/reset,zoot://auth/callback"
-npm run ops:supabase:auth-config
+npm run ops:supabase:auth-config -- -UseLocalConfig -SiteUrl "https://<registered-domain>"
 ```
 
 Apply only after the values are real and approved:
 
 ```powershell
 $env:SUPABASE_ACCESS_TOKEN = "<from local vault, not chat>"
-npm run ops:supabase:auth-config -- -Apply
+npm run ops:supabase:auth-config -- -UseLocalConfig -SiteUrl "https://<registered-domain>" -Apply
 ```
 
 ## Google OAuth

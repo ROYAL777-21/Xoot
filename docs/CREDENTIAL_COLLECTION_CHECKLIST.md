@@ -208,7 +208,7 @@ The App Store Connect API key environment names used by EAS CLI are `EXPO_ASC_AP
 - Apply the repo schema/migrations to the `Zoot Staging` Supabase project after migration history is reconciled. Use `npm run ops:supabase:deploy:staging` once local Supabase auth/DB credentials are available.
 - Apply approved production migrations only after staging passes. Use `npm run ops:supabase:deploy:production -- -DryRun` first, then `npm run ops:supabase:deploy:production -- -VerifyLive` with production database credentials set locally.
 - Set Supabase Edge Function secrets for production and staging. Use `npm run ops:supabase:secrets:staging -- -EnvFile <outside-repo-file>` for staging and `npm run ops:supabase:secrets:production -- -EnvFile <outside-repo-file>` for production.
-- Configure Supabase Auth Site URL and redirect allowlists with `npm run ops:supabase:auth-config` after `SUPABASE_ACCESS_TOKEN`, the project ref, and approved local/staging/production/native URLs are available locally. Run it first without `-Apply`.
+- Configure Supabase Auth Site URL and redirect allowlists with `npm run ops:supabase:auth-config -- -UseLocalConfig -SiteUrl "https://<target-domain>"` after `SUPABASE_ACCESS_TOKEN`, the project ref, and approved local/staging/production/native URLs are available locally. Run it first without `-Apply`; live apply requires an explicit target Site URL so localhost from `supabase/config.toml` cannot be applied to production accidentally.
 - Deploy all Edge Functions after schema and secrets are set. Use `npm run ops:supabase:deploy:staging -- -DeployFunctions` first, then `npm run ops:supabase:deploy:production -- -DeployFunctions` after staging smoke tests pass.
 - Expo login and EAS project initialization are complete for `@don-pacho777/zoot`.
 - EAS environments and public variables are configured for development, preview, and production.
@@ -232,7 +232,7 @@ These methods were verified from the local CLI help output and should be used in
 | GitHub CLI | Current machine is authenticated as `ROYAL777-21`. If it expires, run `gh auth login --web --hostname github.com --git-protocol https`. | Do not paste GitHub PATs into chat. |
 | CodeRabbit CLI | Set `CODERABBIT_API_KEY` locally, then run `coderabbit auth login --api-key $env:CODERABBIT_API_KEY`. | If Zoot later has a self-hosted CodeRabbit URL, run `coderabbit auth login --self-hosted` or `npm run ops:provider-auth:setup -- -CodeRabbit -CodeRabbitSelfHosted`. The official GitHub App remains the safest production option. |
 
-Current status on 2026-06-30 22:45 SAST: GitHub CLI is authenticated as `ROYAL777-21`; Supabase CLI is installed but not authenticated and no local `SUPABASE_ACCESS_TOKEN` is available; CodeRabbit CLI is installed but not authenticated.
+Current status on 2026-06-30 23:05 SAST: GitHub CLI is authenticated as `ROYAL777-21`; Supabase CLI is installed but not authenticated and no local `SUPABASE_ACCESS_TOKEN` or Supabase database URL is available; CodeRabbit CLI is installed but not authenticated.
 
 Security update on 2026-06-30: a Supabase CLI access token was pasted into chat and must be rotated before production use. Load the rotated token only through the local environment or an approved secret store, not through chat or committed files.
 

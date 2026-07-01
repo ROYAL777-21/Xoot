@@ -7,6 +7,7 @@ param(
   [int]$PasswordMinLength = 12,
   [switch]$RequireStrongPasswordCharacters,
   [switch]$EnableLeakedPasswordProtection,
+  [switch]$UseLocalConfig,
   [switch]$Apply
 )
 
@@ -64,12 +65,77 @@ function Assert-SafePublicUrl {
   }
 }
 
+function Read-LocalSupabaseAuthConfig {
+  $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+  $configPath = Join-Path $repoRoot.Path "supabase\config.toml"
+  if (-not (Test-Path -LiteralPath $configPath)) {
+    throw "Local Supabase config not found: $configPath"
+  }
+
+  $site = $null
+  $redirects = @()
+  $inAuth = $false
+  $inRedirects = $false
+
+  foreach ($line in Get-Content -LiteralPath $configPath) {
+    $trimmed = $line.Trim()
+    if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith("#")) {
+      continue
+    }
+
+    if ($trimmed -match '^\[(.+)\]$') {
+      $inAuth = $Matches[1] -eq "auth"
+      $inRedirects = $false
+      continue
+    }
+
+    if (-not $inAuth) {
+      continue
+    }
+
+    if ($trimmed -match '^site_url\s*=\s*"([^"]+)"') {
+      $site = $Matches[1]
+      continue
+    }
+
+    if ($trimmed -match '^additional_redirect_urls\s*=\s*\[') {
+      $inRedirects = $true
+    }
+
+    if ($inRedirects) {
+      foreach ($match in [regex]::Matches($trimmed, '"([^"]+)"')) {
+        $redirects += $match.Groups[1].Value
+      }
+
+      if ($trimmed -match '\]') {
+        $inRedirects = $false
+      }
+    }
+  }
+
+  [pscustomobject]@{
+    site_url = $site
+    redirect_urls = $redirects
+  }
+}
+
 if ([string]::IsNullOrWhiteSpace($ProjectRef)) {
   throw "Missing ProjectRef. Set ZOOT_SUPABASE_PROJECT_REF or pass -ProjectRef."
 }
 
 if ($ProjectRef -notmatch "^[a-z]{20}$") {
   throw "ProjectRef must be a 20-letter Supabase project ref."
+}
+
+$localConfig = $null
+if ($UseLocalConfig) {
+  $localConfig = Read-LocalSupabaseAuthConfig
+  if ([string]::IsNullOrWhiteSpace($SiteUrl)) {
+    if ($Apply) {
+      throw "When using -UseLocalConfig with -Apply, pass an explicit -SiteUrl or set ZOOT_AUTH_SITE_URL for the target environment."
+    }
+    $SiteUrl = $localConfig.site_url
+  }
 }
 
 Assert-SafePublicUrl -Value $SiteUrl -Name "SiteUrl"
@@ -85,7 +151,8 @@ if (-not [string]::IsNullOrWhiteSpace($RedirectFile)) {
   $fileRedirects = Split-RedirectText -Text (Get-Content -Raw -LiteralPath $resolvedRedirectFile.Path)
 }
 
-$allRedirects = @($RedirectUrls + $envRedirects + $fileRedirects) |
+$localRedirects = if ($localConfig) { @($localConfig.redirect_urls) } else { @() }
+$allRedirects = @($localRedirects + $RedirectUrls + $envRedirects + $fileRedirects) |
   ForEach-Object { $_.Trim() } |
   Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
   Select-Object -Unique
@@ -99,7 +166,9 @@ foreach ($redirect in $allRedirects) {
 }
 
 if (-not $env:SUPABASE_ACCESS_TOKEN) {
-  throw "Set SUPABASE_ACCESS_TOKEN locally before applying Supabase Auth config. Do not paste it into chat."
+  if ($Apply) {
+    throw "Set SUPABASE_ACCESS_TOKEN locally before applying Supabase Auth config. Do not paste it into chat."
+  }
 }
 
 $requiredCharacters = ""

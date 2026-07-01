@@ -306,6 +306,8 @@ Test-RepoPattern "supabase" "scripts/ops/set-supabase-edge-secrets.ps1" "Refusin
 Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" '/v1/projects/\$ProjectRef/config/auth' "Supabase Auth config uses Management API endpoint"
 Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "SUPABASE_ACCESS_TOKEN" "Supabase Auth config requires local access token"
 Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Dry run only" "Supabase Auth config is dry-run first"
+Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "UseLocalConfig" "Supabase Auth config can reuse committed redirect inventory"
+Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "pass an explicit -SiteUrl" "Supabase Auth apply requires explicit target Site URL"
 Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Refusing to read live redirect configuration from inside the repository" "Supabase Auth redirect file must stay outside repo"
 Test-RepoPattern "supabase-auth" "docs/OAUTH_AND_REDIRECTS.md" "set-supabase-auth-config.ps1" "OAuth docs reference Auth config automation"
 Test-RepoPattern "supabase-auth" "package.json" "ops:supabase:auth-config" "npm script exposes Supabase Auth config automation"
