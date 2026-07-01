@@ -1,6 +1,6 @@
 # Provider Auth And Cloudflare Attempt Evidence
 
-Reviewed: 2026-07-01 12:59 SAST
+Reviewed: 2026-07-01 13:24 SAST
 
 These checks were run without printing or storing provider secret values in the repository.
 
@@ -21,6 +21,7 @@ These checks were run without printing or storing provider secret values in the 
 - `supabase login --help` confirms the CLI supports `supabase login --token <token>` and `--no-browser`.
 - The provider-auth diagnostic still reports `LegacyPlatformAuthRequiredError` because this shell has no local Supabase profile and no `SUPABASE_ACCESS_TOKEN`.
 - Per Supabase CLI docs, a personal access token should be supplied through native CLI login or a local environment variable. Do not paste the token into chat.
+- Migration-history repair now also supports `-PromptDatabasePassword` in `scripts/ops/repair-supabase-migration-history.ps1`, so a full database URL no longer needs to be pasted into chat or stored in the repo for the guarded repair flow.
 
 ## CodeRabbit CLI
 

@@ -1,6 +1,6 @@
 # Zoot Expo Mobile App Build Path
 
-Reviewed: 2026-06-19
+Reviewed: 2026-07-01
 
 Zoot's production mobile path is Expo, not Capacitor. The React/Vite website remains in the repo root. Native iOS and Android work now belongs in `/mobile`.
 
@@ -47,6 +47,19 @@ npx eas-cli@latest credentials -p ios
 npx eas-cli@latest build -p ios --profile preview
 ```
 
+The current iOS artifact is a simulator build only:
+
+```text
+mobile/outputs/zoot-preview-ios-simulator-build-d4de44a1.tar.gz
+```
+
+It can be tested on a Mac with Xcode Simulator after extracting the archive. A physical iPhone cannot install this simulator artifact. To test on a real iPhone, configure EAS iOS internal-distribution credentials, then run:
+
+```bash
+cd mobile
+npm run build:preview:ios
+```
+
 Required before TestFlight:
 
 - Apple Developer membership.
@@ -65,6 +78,22 @@ npx eas-cli@latest credentials -p android
 npx eas-cli@latest build -p android --profile preview
 ```
 
+The current Android preview APK is available at:
+
+```text
+outputs/zoot-preview-android-v5.apk
+```
+
+Verify the artifact and install it on a connected Android device with:
+
+```powershell
+npm run ops:mobile:preview-smoke -- -InstallAndroid
+```
+
+By default, the helper selects the newest APK under `outputs/` and the newest iOS simulator archive under `mobile/outputs/`. Pass `-AndroidApkPath` or `-IosSimulatorArchivePath` when you need to lock the evidence to a specific build artifact.
+
+If no Android device or `adb` is available, the command reports the remaining manual step without failing the repo checks. When `-InstallAndroid` or `-RequireAndroidDevice` is supplied, missing Android tooling or an unauthorized device fails the command because install evidence was explicitly requested.
+
 Required before Play internal testing:
 
 - Play Console account and app record.
@@ -77,6 +106,7 @@ Required before Play internal testing:
 ## Native Experience Rules
 
 - Use SecureStore for sessions.
+- Do not rely on Expo Go for full Zoot testing. The app uses native modules such as Mapbox and Liquid Glass support, so preview/development builds are the real test targets.
 - Keep client-contractor chat inside Zoot.
 - Do not use WhatsApp for routine communication.
 - Route sensitive actions through Supabase Edge Functions.

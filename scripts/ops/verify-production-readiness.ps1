@@ -90,6 +90,7 @@ Test-RepoFile "ops" "scripts/ops/set-github-public-vars.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-supabase-edge-secrets.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-supabase-auth-config.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/verify-supabase-live.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/mobile-preview-smoke.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/sql/verify-production-readiness.sql" | Out-Null
 Test-RepoFile "ops" "scripts/ops/staging-role-smoke.mjs" | Out-Null
 Test-RepoFile "ops" "docs/STAGING_ROLE_SMOKE_TESTS.md" | Out-Null
@@ -312,6 +313,10 @@ Test-RepoPattern "supabase-auth" "scripts/ops/set-supabase-auth-config.ps1" "Ref
 Test-RepoPattern "supabase-auth" "docs/OAUTH_AND_REDIRECTS.md" "set-supabase-auth-config.ps1" "OAuth docs reference Auth config automation"
 Test-RepoPattern "supabase-auth" "package.json" "ops:supabase:auth-config" "npm script exposes Supabase Auth config automation"
 Test-RepoPattern "ops" "package.json" "ops:readiness" "npm script exposes production-readiness verifier"
+Test-RepoPattern "phase-8-native-launch" "package.json" "ops:mobile:preview-smoke" "npm script exposes mobile preview smoke helper"
+Test-RepoPattern "phase-8-native-launch" "scripts/ops/mobile-preview-smoke.ps1" "InstallAndroid" "mobile preview smoke helper can install Android APK through adb"
+Test-RepoPattern "phase-8-native-launch" "scripts/ops/mobile-preview-smoke.ps1" "physical iOS preview" "mobile preview smoke helper records physical iOS credential gate"
+Test-RepoPattern "phase-8-native-launch" "docs/native/mobile-app-build.md" "Expo Go" "mobile build docs explain Expo Go limitation"
 Test-RepoPattern "provider-live" "package.json" "ops:provider-auth:check" "npm script exposes provider auth diagnostics"
 Test-RepoPattern "provider-live" "package.json" "ops:provider-auth:setup" "npm script exposes provider auth setup"
 Test-RepoPattern "supabase" "package.json" "ops:supabase:deploy:staging" "npm script exposes staging Supabase deploy"
@@ -329,6 +334,8 @@ Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" 
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "ConfirmRepair" "migration repair helper requires explicit confirmation"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "PlanOnly" "migration repair helper supports credential-free planning"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "-PlanOnly cannot be combined with -ConfirmRepair" "migration repair planning cannot be combined with live confirmation"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "PromptDatabasePassword" "migration repair helper supports secure database password prompt"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" 'db\.\$normalizedProjectRef\.supabase\.co' "migration repair helper can derive standard direct Supabase DB URL"
 Test-RepoPattern "supabase" "package.json" "ops:supabase:repair-migrations" "npm script exposes guarded migration-history repair"
 Test-RepoPattern "supabase" "scripts/ops/verify-supabase-live.ps1" "SUPABASE_DB_URL" "live Supabase verifier requires database URL"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "booking_status_valid" "live SQL checks booking status constraint"

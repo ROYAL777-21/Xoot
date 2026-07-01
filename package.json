@@ -32,6 +32,7 @@
     "mobile:build:preview:android": "npm --prefix mobile run build:preview:android",
     "mobile:build:production": "npm --prefix mobile run build:production",
     "ops:github-vars": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-github-public-vars.ps1",
+    "ops:mobile:preview-smoke": "powershell -ExecutionPolicy Bypass -File scripts/ops/mobile-preview-smoke.ps1",
     "ops:provider-auth:check": "powershell -ExecutionPolicy Bypass -File scripts/ops/check-local-provider-auth.ps1",
     "ops:provider-auth:setup": "powershell -ExecutionPolicy Bypass -File scripts/ops/setup-local-provider-auth.ps1",
     "ops:readiness": "powershell -ExecutionPolicy Bypass -File scripts/ops/verify-production-readiness.ps1",

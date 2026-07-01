@@ -2,6 +2,8 @@ param(
   [ValidateSet("staging", "production")]
   [string]$Environment = "production",
   [string]$DatabaseUrl,
+  [string]$ProjectRef,
+  [switch]$PromptDatabasePassword,
   [string[]]$MigrationVersions = @(
     "20260629113000",
     "20260629200351",
@@ -33,6 +35,41 @@ function Require-Command {
   if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
     throw "$Name is required but was not found on PATH."
   }
+}
+
+function Convert-SecureStringToPlainText {
+  param([securestring]$Value)
+
+  $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Value)
+  try {
+    return [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+  } finally {
+    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+  }
+}
+
+function New-SupabaseDirectDatabaseUrl {
+  param(
+    [string]$ProjectRef,
+    [securestring]$DatabasePassword
+  )
+
+  if ([string]::IsNullOrWhiteSpace($ProjectRef)) {
+    throw "ProjectRef is required when using -PromptDatabasePassword."
+  }
+
+  $normalizedProjectRef = $ProjectRef.Trim().ToLowerInvariant()
+  if ($normalizedProjectRef -notmatch "^[a-z0-9]{20}$") {
+    throw "ProjectRef must be a 20-character lowercase alphanumeric Supabase project ref."
+  }
+
+  $plainPassword = Convert-SecureStringToPlainText -Value $DatabasePassword
+  if ([string]::IsNullOrWhiteSpace($plainPassword)) {
+    throw "Database password cannot be empty."
+  }
+
+  $encodedPassword = [System.Uri]::EscapeDataString($plainPassword)
+  return "postgresql://postgres:$encodedPassword@db.$normalizedProjectRef.supabase.co:5432/postgres"
 }
 
 if ($PlanOnly -and $ConfirmRepair) {
@@ -67,8 +104,10 @@ if ($PlanOnly) {
     versions_safe_to_repair_mark = $normalizedVersions
     blocked_partial_or_split_versions = $blockedPartialOrSplitVersions
     requires_database_url_for_live_dry_run = $true
+    secure_password_prompt_supported = $true
     requires_confirm_repair_for_live_repair = $true
     live_repair_command = "npm run ops:supabase:repair-migrations -- -Environment $Environment"
+    live_prompt_command = "npm run ops:supabase:repair-migrations -- -Environment $Environment -ProjectRef <project-ref> -PromptDatabasePassword"
     live_confirm_command = "npm run ops:supabase:repair-migrations -- -Environment $Environment -ConfirmRepair"
     review_runbook = "docs/implementation/supabase-migration-status-repair-20260630.md"
     notes = @(
@@ -81,6 +120,21 @@ if ($PlanOnly) {
 }
 
 Require-Command "npx.cmd"
+
+if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
+  if ($PromptDatabasePassword) {
+    if ([string]::IsNullOrWhiteSpace($ProjectRef)) {
+      $ProjectRef = if ($Environment -eq "production") {
+        "mvlrkelahhsyjrwgsxaf"
+      } else {
+        "fxmxyabdjqviqbcxmvlp"
+      }
+    }
+
+    $securePassword = Read-Host -Prompt "Enter the $Environment Supabase database password" -AsSecureString
+    $DatabaseUrl = New-SupabaseDirectDatabaseUrl -ProjectRef $ProjectRef -DatabasePassword $securePassword
+  }
+}
 
 if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
   $DatabaseUrl = if ($Environment -eq "production") {

@@ -123,8 +123,8 @@ if ([string]::IsNullOrWhiteSpace($ProjectRef)) {
   throw "Missing ProjectRef. Set ZOOT_SUPABASE_PROJECT_REF or pass -ProjectRef."
 }
 
-if ($ProjectRef -notmatch "^[a-z]{20}$") {
-  throw "ProjectRef must be a 20-letter Supabase project ref."
+if ($ProjectRef -notmatch "^[a-z0-9]{20}$") {
+  throw "ProjectRef must be a 20-character lowercase alphanumeric Supabase project ref."
 }
 
 $localConfig = $null

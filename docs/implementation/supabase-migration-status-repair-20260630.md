@@ -52,11 +52,20 @@ Run this only from a local shell with approved credentials loaded from a vault o
    npm run ops:supabase:repair-migrations -- -Environment staging -PlanOnly
    ```
 
-2. Set a production database URL locally:
+2. Supply the database connection locally without putting the password in chat or git. Either set an approved database URL from the password manager:
 
    ```powershell
    $env:ZOOT_PRODUCTION_SUPABASE_DB_URL = "postgresql://..."
    ```
+
+   Or use the guarded password prompt. This derives the standard direct Supabase DB URL in memory and does not print the password or store it in the repo:
+
+   ```powershell
+   npm run ops:supabase:repair-migrations -- -Environment production -ProjectRef mvlrkelahhsyjrwgsxaf -PromptDatabasePassword
+   npm run ops:supabase:repair-migrations -- -Environment staging -ProjectRef fxmxyabdjqviqbcxmvlp -PromptDatabasePassword
+   ```
+
+   These commands still default to dry-run. Add `-ConfirmRepair` only after reviewing the captured before-file.
 
 3. Save the CLI view of local versus remote migration history outside the repo:
 
@@ -73,6 +82,8 @@ Run this only from a local shell with approved credentials loaded from a vault o
    npm run ops:supabase:repair-migrations
 
    npm run ops:supabase:repair-migrations -- -ConfirmRepair
+
+   npm run ops:supabase:repair-migrations -- -Environment production -ProjectRef mvlrkelahhsyjrwgsxaf -PromptDatabasePassword -ConfirmRepair
    ```
 
 6. Do not repair-mark `20260629194645_completed_booking_invoices`, `20260630003602_phase6_zoot_black_foundation`, or `20260630155159_connector_safe_invoice_zoot_black_schema` until the storage-policy owner gap and split live rows are reconciled.
