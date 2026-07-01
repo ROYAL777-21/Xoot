@@ -9,7 +9,8 @@ param(
     "20260630102715"
   ),
   [string]$SupabaseVersion = $(if ($env:SUPABASE_CLI_VERSION) { $env:SUPABASE_CLI_VERSION } else { "2.108.0" }),
-  [switch]$ConfirmRepair
+  [switch]$ConfirmRepair,
+  [switch]$PlanOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,26 +35,8 @@ function Require-Command {
   }
 }
 
-Require-Command "npx.cmd"
-
-if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
-  $DatabaseUrl = if ($Environment -eq "production") {
-    $env:ZOOT_PRODUCTION_SUPABASE_DB_URL
-  } else {
-    $env:ZOOT_STAGING_SUPABASE_DB_URL
-  }
-
-  if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
-    $DatabaseUrl = $env:SUPABASE_DB_URL
-  }
-}
-
-if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
-  throw "Set ZOOT_$($Environment.ToUpperInvariant())_SUPABASE_DB_URL or SUPABASE_DB_URL locally before repairing migration history. Do not paste the database URL into chat."
-}
-
-if ($DatabaseUrl -notmatch '^postgres(ql)?://') {
-  throw "DatabaseUrl must be a PostgreSQL connection string."
+if ($PlanOnly -and $ConfirmRepair) {
+  throw "-PlanOnly cannot be combined with -ConfirmRepair."
 }
 
 $normalizedVersions = @($MigrationVersions | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim() })
@@ -76,6 +59,49 @@ foreach ($version in $normalizedVersions) {
 }
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+
+if ($PlanOnly) {
+  [pscustomobject][ordered]@{
+    environment = $Environment
+    plan_only = $true
+    versions_safe_to_repair_mark = $normalizedVersions
+    blocked_partial_or_split_versions = $blockedPartialOrSplitVersions
+    requires_database_url_for_live_dry_run = $true
+    requires_confirm_repair_for_live_repair = $true
+    live_repair_command = "npm run ops:supabase:repair-migrations -- -Environment $Environment"
+    live_confirm_command = "npm run ops:supabase:repair-migrations -- -Environment $Environment -ConfirmRepair"
+    review_runbook = "docs/implementation/supabase-migration-status-repair-20260630.md"
+    notes = @(
+      "PlanOnly validates the allowlist and refuses known partial/split migrations without requiring credentials.",
+      "Run the live dry-run first after loading the approved database URL locally.",
+      "Do not run ConfirmRepair until the before-file and runbook have been reviewed."
+    )
+  } | ConvertTo-Json -Depth 5
+  return
+}
+
+Require-Command "npx.cmd"
+
+if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
+  $DatabaseUrl = if ($Environment -eq "production") {
+    $env:ZOOT_PRODUCTION_SUPABASE_DB_URL
+  } else {
+    $env:ZOOT_STAGING_SUPABASE_DB_URL
+  }
+
+  if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
+    $DatabaseUrl = $env:SUPABASE_DB_URL
+  }
+}
+
+if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
+  throw "Set ZOOT_$($Environment.ToUpperInvariant())_SUPABASE_DB_URL or SUPABASE_DB_URL locally before repairing migration history. Do not paste the database URL into chat."
+}
+
+if ($DatabaseUrl -notmatch '^postgres(ql)?://') {
+  throw "DatabaseUrl must be a PostgreSQL connection string."
+}
+
 $historyDir = Join-Path ([System.IO.Path]::GetTempPath()) "zoot-supabase-migration-repair"
 New-Item -ItemType Directory -Force -Path $historyDir | Out-Null
 $timestamp = Get-Date -Format "yyyyMMddHHmmss"

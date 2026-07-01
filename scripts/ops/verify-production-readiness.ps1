@@ -327,6 +327,8 @@ Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "ZOOT_PROD
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "knownSchemaEquivalentVersions" "migration repair helper allowlists proven schema-equivalent versions"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "blockedPartialOrSplitVersions" "migration repair helper blocks partial or split migrations"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "ConfirmRepair" "migration repair helper requires explicit confirmation"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "PlanOnly" "migration repair helper supports credential-free planning"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "-PlanOnly cannot be combined with -ConfirmRepair" "migration repair planning cannot be combined with live confirmation"
 Test-RepoPattern "supabase" "package.json" "ops:supabase:repair-migrations" "npm script exposes guarded migration-history repair"
 Test-RepoPattern "supabase" "scripts/ops/verify-supabase-live.ps1" "SUPABASE_DB_URL" "live Supabase verifier requires database URL"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "booking_status_valid" "live SQL checks booking status constraint"
@@ -390,9 +392,10 @@ if (
   $null -ne $providerAuthEvidence -and
   $providerAuthEvidence -match 'LegacyPlatformAuthRequiredError' -and
   $providerAuthEvidence -match 'environment_unsupported' -and
+  $providerAuthEvidence -match 'CodeRabbit is now API-key authenticated locally' -and
   $providerAuthEvidence -match 'com.cloudflare.api.account.zone.create'
 ) {
-  Add-Check "provider-live" "provider auth and Cloudflare attempt evidence" "pass" "docs/implementation/provider-auth-cloudflare-attempts-20260629.md records current Supabase CLI, CodeRabbit CLI, and Cloudflare zone-create blockers."
+  Add-Check "provider-live" "provider auth and Cloudflare attempt evidence" "pass" "docs/implementation/provider-auth-cloudflare-attempts-20260629.md records current Supabase CLI, CodeRabbit CLI, and Cloudflare zone-create evidence."
 } else {
   Add-ManualBlocker "provider-live" "provider auth and Cloudflare attempt evidence" "Re-run provider auth checks and Cloudflare zone list/create attempt, then record non-secret evidence."
 }

@@ -1,6 +1,6 @@
 # Supabase Migration Status Repair
 
-Reviewed: 2026-06-30 22:33 SAST
+Reviewed: 2026-07-01 12:58 SAST
 
 ## Why Production Shows `MIGRATIONS_FAILED`
 
@@ -12,12 +12,12 @@ This is why the dashboard can say `1 skipped`, `2 pending`, and `migrations fail
 
 ## Current GitHub PR State
 
-Open pull requests were checked with GitHub CLI on 2026-06-30:
+Open pull requests were checked with GitHub CLI on 2026-07-01:
 
 | PR | Status | Notes |
 | --- | --- | --- |
-| `#7` `[codex] Full Zoot iPhone PWA auth and security readiness` | Green | Web build, production readiness guard, native Swift check, and CodeRabbit status pass. GitHub Pages and Supabase Preview are intentionally skipped where configured. |
-| `#8` `Add native routing bridge for app links and push taps` | Green | Web build and CodeRabbit status pass. Preview deploy checks are skipped by configuration. |
+| `#7` `[codex] Full Zoot iPhone PWA auth and security readiness` | Green | Web build, production readiness guard, and native Swift check pass. GitHub Pages and Supabase Preview are intentionally skipped where configured. |
+| `#8` `Add native routing bridge for app links and push taps` | Green | Web build passes. Preview deploy checks are skipped by configuration. |
 
 Closed historical failures cannot be made green in place after closure. The relevant stale failures are:
 
@@ -29,7 +29,7 @@ Closed historical failures cannot be made green in place after closure. The rele
 
 ## Known Local/Live Migration Equivalence
 
-Do not mark any of these as applied without first running `supabase migration list` and verifying the live catalog again.
+Do not mark any of these as applied without first running `supabase migration list` and verifying the live catalog again. The Supabase connector rechecked staging and production migration history on 2026-07-01, but the connector cannot safely run Supabase CLI migration-history repair.
 
 | Local migration | Production live row | Staging live row | Repair note |
 | --- | --- | --- | --- |
@@ -45,22 +45,29 @@ Do not mark any of these as applied without first running `supabase migration li
 
 Run this only from a local shell with approved credentials loaded from a vault or local secret store. Do not paste tokens or database URLs into chat.
 
-1. Set a production database URL locally:
+1. Review the credential-free repair plan first. This validates the allowlist and refuses known partial/split migrations without needing a database URL:
+
+   ```powershell
+   npm run ops:supabase:repair-migrations -- -Environment production -PlanOnly
+   npm run ops:supabase:repair-migrations -- -Environment staging -PlanOnly
+   ```
+
+2. Set a production database URL locally:
 
    ```powershell
    $env:ZOOT_PRODUCTION_SUPABASE_DB_URL = "postgresql://..."
    ```
 
-2. Save the CLI view of local versus remote migration history outside the repo:
+3. Save the CLI view of local versus remote migration history outside the repo:
 
    ```powershell
    $env:DO_NOT_TRACK = "1"
    supabase migration list --db-url $env:ZOOT_PRODUCTION_SUPABASE_DB_URL > C:\secure\zoot-production-migration-list.txt
    ```
 
-3. Compare the CLI output with the table above and the live catalog-readiness checks. Do not use `supabase db push` to repair history until the migration list is understood.
+4. Compare the CLI output with the table above and the live catalog-readiness checks. Do not use `supabase db push` to repair history until the migration list is understood.
 
-4. For local migration versions that are fully proven already applied, use the guarded repair helper. It captures the migration list before changing anything, defaults to dry-run, refuses known partial/split migrations, and only allows the schema-equivalent versions listed in this runbook:
+5. For local migration versions that are fully proven already applied, use the guarded repair helper. It captures the migration list before changing anything, defaults to dry-run, refuses known partial/split migrations, and only allows the schema-equivalent versions listed in this runbook:
 
    ```powershell
    npm run ops:supabase:repair-migrations
@@ -68,16 +75,16 @@ Run this only from a local shell with approved credentials loaded from a vault o
    npm run ops:supabase:repair-migrations -- -ConfirmRepair
    ```
 
-5. Do not repair-mark `20260629194645_completed_booking_invoices`, `20260630003602_phase6_zoot_black_foundation`, or `20260630155159_connector_safe_invoice_zoot_black_schema` until the storage-policy owner gap and split live rows are reconciled.
+6. Do not repair-mark `20260629194645_completed_booking_invoices`, `20260630003602_phase6_zoot_black_foundation`, or `20260630155159_connector_safe_invoice_zoot_black_schema` until the storage-policy owner gap and split live rows are reconciled.
 
-6. Re-run:
+7. Re-run:
 
    ```powershell
    supabase migration list --db-url $env:ZOOT_PRODUCTION_SUPABASE_DB_URL
    npm run ops:readiness -- -Json
    ```
 
-7. Recheck the Supabase dashboard branch status. If the migration history is clean but branch metadata still says `MIGRATIONS_FAILED`, open a Supabase support ticket or use the dashboard owner path to clear the failed branch runner state.
+8. Recheck the Supabase dashboard branch status. If the migration history is clean but branch metadata still says `MIGRATIONS_FAILED`, open a Supabase support ticket or use the dashboard owner path to clear the failed branch runner state.
 
 ## Risk Rules
 

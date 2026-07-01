@@ -1,12 +1,12 @@
 # Provider Auth And Cloudflare Attempt Evidence
 
-Reviewed: 2026-06-30 12:44 SAST
+Reviewed: 2026-07-01 12:59 SAST
 
 These checks were run without printing or storing provider secret values in the repository.
 
 ## Local Tooling
 
-- `npm run ops:provider-auth:check` completed successfully on 2026-06-30 12:44 SAST.
+- `npm run ops:provider-auth:check` completed successfully on 2026-07-01 12:57 SAST.
 - `psql (PostgreSQL) 18.4` is available through the local Scoop PostgreSQL extraction path used by the diagnostic.
 - Docker is still not installed, so full local Supabase reset still needs Docker or a separate ops shell.
 
@@ -25,9 +25,10 @@ These checks were run without printing or storing provider secret values in the 
 ## CodeRabbit CLI
 
 - `coderabbit --version` reports `0.6.4`.
-- `coderabbit auth status --agent` reports `not_authenticated`.
-- `coderabbit auth login --agent` returns `environment_unsupported` because localhost callback and stdin fallback are unavailable in this Windows session.
-- `coderabbit auth login --help` confirms `coderabbit auth login --api-key <api-key>` is the available non-browser path. Use an approved vault or the official GitHub app; do not paste the API key into chat.
+- `coderabbit auth login --agent` previously returned `environment_unsupported` because localhost callback and stdin fallback are unavailable in this Windows session.
+- `coderabbit auth login --help` confirms `coderabbit auth login --api-key <api-key>` is the available non-browser path.
+- CodeRabbit is now API-key authenticated locally. `coderabbit doctor` reports 8 pass, 1 warning for browser OAuth fallback only.
+- `coderabbit review --type uncommitted --plain` completed on 2026-07-01 with no findings for the migration-repair helper patch.
 
 ## Cloudflare Zone
 
