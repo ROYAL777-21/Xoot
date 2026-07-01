@@ -29,6 +29,21 @@ const hasXcodeFileReference = (project, fileName) => {
   });
 };
 
+const getAppSourceGroup = (project, projectName) => {
+  const appGroupKey =
+    project.findPBXGroupKey({ name: projectName }) ??
+    project.findPBXGroupKey({ path: projectName });
+
+  if (appGroupKey) {
+    return { groupKey: appGroupKey, sourcePath: "ZootAppIntents.swift" };
+  }
+
+  const mainGroupKey = project.getFirstProject?.()?.firstProject?.mainGroup;
+  return mainGroupKey
+    ? { groupKey: mainGroupKey, sourcePath: `${projectName}/ZootAppIntents.swift` }
+    : null;
+};
+
 const withZootAssistantIntents = (config) => {
   config = withInfoPlist(config, (config) => {
     const existingActivities = Array.isArray(config.modResults.NSUserActivityTypes)
@@ -106,10 +121,14 @@ const withZootAssistantIntents = (config) => {
     const project = config.modResults;
     const target = project.getFirstTarget();
     const projectName = config.modRequest.projectName;
-    const appIntentsPath = `${projectName}/ZootAppIntents.swift`;
+    const appSourceGroup = getAppSourceGroup(project, projectName);
 
-    if (target?.uuid && !hasXcodeFileReference(project, "ZootAppIntents.swift")) {
-      project.addSourceFile(appIntentsPath, { target: target.uuid });
+    if (target?.uuid && appSourceGroup && !hasXcodeFileReference(project, "ZootAppIntents.swift")) {
+      project.addSourceFile(
+        appSourceGroup.sourcePath,
+        { target: target.uuid, lastKnownFileType: "sourcecode.swift" },
+        appSourceGroup.groupKey,
+      );
     }
 
     return config;
