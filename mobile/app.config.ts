@@ -21,6 +21,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   runtimeVersion: {
     policy: 'appVersion',
   },
+  updates: {
+    url: `https://u.expo.dev/${easProjectId}`,
+  },
   ios: {
     ...config.ios,
     bundleIdentifier: bundleId,

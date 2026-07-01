@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-06-30 23:08 SAST
+Reviewed: 2026-07-01 04:25 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -22,7 +22,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Zoot Black activation remains blocked by founder, operations, supplier, and legal approvals. Do not enable `zoot_black.enabled`, `zoot_black.area_pilot`, or `zoot_black.certificates`, expose a customer purchase path, or publish availability claims until approvals, pilot areas, equipment evidence rules, line-item amount, certificate wording, and smoke tests are complete.
 - Phase 7 payments and payout verification database migration was applied to staging and production through the Supabase connector on 2026-06-30. The controls remain disabled by default until provider credentials, callback setup, approvals, and signed smoke tests are complete.
 - Phase 7 live payment/payout activation remains blocked by Stitch/Ozow production credentials, provider callback configuration, signed webhook smoke tests, finance approval, legal approval, payout account verification workflow, payout hold policy, and production reconciliation runbook. Do not enable `payments.provider_checkout`, `payments.hosted_checkout.stitch`, `payments.hosted_checkout.ozow`, or `payouts.enabled` until all approvals and tests are complete.
-- Phase 8 native launch experience is implemented locally in `/mobile`. Real iOS/Android development-build verification is still required for normal launch, reduced-motion static launch, urgent route bypass, and safe Siri/Gemini deep links before native release use.
+- Phase 8 native launch experience is implemented locally in `/mobile`. A corrected Android EAS preview build was queued on 2026-07-01 after adding `expo-updates` and the EAS Update URL; install and smoke-test the Android artifact when it finishes. iOS development-build verification is still required for normal launch, reduced-motion static launch, urgent route bypass, and safe Siri/Gemini deep links before native release use.
 - Phase 9 Twilio Verify and masked voice database migration was applied to staging and production through the Supabase connector on 2026-06-30. Live function deployment/smoke execution still requires Supabase CLI/session access or dashboard function deployment for `create-masked-call` and the relevant `ops-workflow` paths.
 - Phase 10 Siri/App Intents and Android assistant shortcut foundation is implemented locally through `mobile/plugins/withZootAssistantIntents.cjs`. Real Expo prebuild output inspection, EAS development builds, and physical iOS/Android assistant tests are still required before native release use.
 
@@ -66,7 +66,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 ## Apple, Google, Expo, And Stores
 
 - Apple Team ID, App Store Connect app record, Google Play app record, Android signing fingerprints, store privacy declarations, and final legal/business metadata remain unavailable.
-- EAS credentials and submit profiles still need final provider-backed credentials.
+- EAS Android internal preview credentials now exist on Expo's remote credential store. Final iOS credentials, Play/App Store submit credentials, store records, and privacy/legal metadata still need final provider-backed setup.
 - Latest pasted Expo public Supabase values mix a staging project reference with a production Supabase URL. Keep the currently configured production GitHub variables as-is, and define separate EAS/GitHub environment profiles before adding staging mobile values.
 - Native association files are skipped during build until `ZOOT_APPLE_TEAM_ID` or `ZOOT_IOS_APP_ID` and `ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS` are supplied.
 - Store submission cannot proceed until developer-console access, signing credentials, privacy/data-safety answers, account deletion URLs, support URLs, and legal review are complete.
