@@ -1,6 +1,6 @@
 # Environment Readiness
 
-Reviewed: 2026-07-01 12:43 SAST
+Reviewed: 2026-07-01 12:50 SAST
 
 ## Safe Public Variables
 
@@ -19,5 +19,13 @@ Reviewed: 2026-07-01 12:43 SAST
 - `ZOOT_PRODUCTION_SUPABASE_DB_URL`: not present in this shell.
 - `ZOOT_STAGING_SUPABASE_DB_URL`: not present in this shell.
 - `SUPABASE_DB_URL`: not present in this shell.
+- `CODERABBIT_API_KEY`: not present in this shell.
 
 Because these values are absent, live Supabase Auth redirect configuration and migration repair cannot be executed safely from this shell.
+
+## Verified Dry Runs
+
+- Production Supabase Auth config dry-run passed for project `mvlrkelahhsyjrwgsxaf` with `-UseLocalConfig -SiteUrl https://zoothome.co.za`; no live PATCH was attempted.
+- Staging Supabase Auth config dry-run passed for project `fxmxyabdjqviqbcxmvlp` with `-UseLocalConfig -SiteUrl https://staging.zoothome.co.za`; no live PATCH was attempted.
+- Both dry runs resolved 12 redirect URLs from `supabase/config.toml`, including local callback/reset URLs, staging and production callback/reset URLs, `www` production callback/reset URLs, and `zoot://auth/*` native callbacks.
+- CodeRabbit CLI `0.6.4` is installed, but `coderabbit auth status --agent` remains `not_authenticated`; `coderabbit auth login --agent` returned `environment_unsupported`, so this Windows shell requires `coderabbit auth login --api-key <key from approved vault>` or the official GitHub App.

@@ -1,13 +1,13 @@
 # Branch And Pull Request Map
 
-Reviewed: 2026-07-01 05:35 SAST
+Reviewed: 2026-07-01 12:50 SAST
 
 ## Canonical Integration Branch
 
 - Branch: `codex/full-zoot-iphone-pwa-auth-security`
 - Pull request: #7, `[codex] Full Zoot iPhone PWA auth and security readiness`
 - Base branch: `main`
-- Status at review: open draft PR, mergeable, clean merge state, current checks passing.
+- Status at review: open draft PR, mergeable, clean merge state, current checks passing on 2026-07-01 12:50 SAST.
 - Reason: this branch contains the complete web, backend, Supabase, security, Expo mobile, release-readiness, and blocker-tracking work. It is the safest single source of truth for deployment hardening.
 
 ## Open Pull Requests
@@ -20,7 +20,7 @@ Reviewed: 2026-07-01 05:35 SAST
 2. PR #8: `codex/native-routing-bridge`
    - Classification: deferred/selective integration candidate.
    - Relevance: narrower native routing bridge work.
-   - Current role: do not merge into #7 automatically. Review selectively only if a routing regression appears in the canonical branch.
+   - Current role: do not merge into #7 automatically. Checks are green, but review selectively only if a routing regression appears in the canonical branch.
 
 ## Branches To Ignore For This Task
 
@@ -32,4 +32,3 @@ Reviewed: 2026-07-01 05:35 SAST
 
 - PR #7 reports clean/mergeable.
 - No new branch is required for the current iOS preview and release-documentation work.
-

@@ -1,12 +1,12 @@
 # Release Blockers
 
-Reviewed: 2026-07-01 12:43 SAST
+Reviewed: 2026-07-01 12:50 SAST
 
 This document summarizes release blockers. `blocker.md` remains the detailed unresolved-only ledger.
 
 ## High
 
-- Supabase Auth redirect allowlists still require live dashboard/API configuration.
+- Supabase Auth redirect allowlists still require live dashboard/API configuration; production and staging dry-runs passed, but live PATCH still requires a rotated local `SUPABASE_ACCESS_TOKEN`.
 - Supabase migration metadata repair still requires a rotated local `SUPABASE_ACCESS_TOKEN` and approved production/staging DB URLs loaded outside chat.
 - Production and staging cannot be called fully release-ready until live role-based smoke tests and storage/function policy checks are complete.
 
