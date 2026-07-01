@@ -1,6 +1,6 @@
 # Release Blockers
 
-Reviewed: 2026-07-01 05:35 SAST
+Reviewed: 2026-07-01 12:43 SAST
 
 This document summarizes release blockers. `blocker.md` remains the detailed unresolved-only ledger.
 
@@ -18,6 +18,4 @@ This document summarizes release blockers. `blocker.md` remains the detailed unr
 
 ## Low
 
-- EAS CLI was previously pinned to `20.3.0`; commands are being updated to `20.5.0` to remove the stale CLI warning.
 - Some provider/SEO/store polish remains deferred until release-critical checks are stable.
-
