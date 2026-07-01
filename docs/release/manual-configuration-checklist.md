@@ -1,6 +1,6 @@
 # Manual Configuration Checklist
 
-Reviewed: 2026-07-01 17:31 SAST
+Reviewed: 2026-07-01 17:53 SAST
 
 These items require provider dashboards, rotated credentials loaded outside chat, hardware, or founder/legal approval.
 

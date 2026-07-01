@@ -1,6 +1,6 @@
 # Environment Readiness
 
-Reviewed: 2026-07-01 17:31 SAST
+Reviewed: 2026-07-01 17:53 SAST
 
 ## Safe Public Variables
 
@@ -31,3 +31,4 @@ Because the Supabase token is absent, live Supabase Auth redirect configuration 
 - CodeRabbit CLI `0.6.4` is installed and API-key authenticated locally. `coderabbit doctor` reports 8 pass, 1 warning for browser OAuth fallback only, and `coderabbit review --type uncommitted --plain` returned no findings for the current repair-helper patch.
 - Supabase migration repair planning passed for staging and production with `npm run ops:supabase:repair-migrations -- -Environment <env> -PlanOnly`; the helper refuses known partial/split migrations and refuses `-PlanOnly -ConfirmRepair`.
 - Supabase `security_advisor_rpc_hardening` was applied to staging and production on 2026-07-01. Security advisors now report only leaked password protection disabled; explicit SQL checks confirm anon/authenticated cannot execute the payment/payout helper RPCs and the invoice trigger helper has a pinned search path.
+- Supabase `live_schema_convergence_app_runtime` was applied to staging and production on 2026-07-01. Targeted SQL checks confirm the current app-facing runtime objects are present and secured: `booking_zooter_profiles`, saved-address city/postal code fields, Care+ application fields, Zooter application compatibility fields, booking event metadata, and `zooter_applications_user_id_key`.
