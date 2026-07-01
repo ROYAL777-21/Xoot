@@ -4,6 +4,19 @@ const appEnv = process.env.EXPO_PUBLIC_APP_ENV ?? 'development';
 const isProduction = appEnv === 'production';
 const isPreview = appEnv === 'preview' || appEnv === 'staging';
 const easProjectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? 'b4c6e0b8-e2e7-40c5-b259-3b34c79be30b';
+const sentryOrg = process.env.SENTRY_ORG?.trim();
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN?.trim();
+const sentryUploadPlugin: NonNullable<ExpoConfig['plugins']>[number] | null =
+  sentryOrg && sentryAuthToken
+    ? [
+        '@sentry/react-native/expo',
+        {
+          organization: sentryOrg,
+          project: process.env.SENTRY_MOBILE_PROJECT ?? 'zoot-mobile',
+          url: 'https://sentry.io/',
+        },
+      ]
+    : null;
 
 const bundleId = isProduction ? 'za.co.zoothome.app' : 'za.co.zoothome.app.preview';
 const appName = isProduction ? 'Zoot' : 'Zoot Preview';
@@ -123,14 +136,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     './plugins/withZootAssistantIntents.cjs',
-    [
-      '@sentry/react-native/expo',
-      {
-        organization: process.env.SENTRY_ORG,
-        project: process.env.SENTRY_MOBILE_PROJECT ?? 'zoot-mobile',
-        url: 'https://sentry.io/',
-      },
-    ],
+    ...(sentryUploadPlugin ? [sentryUploadPlugin] : []),
   ],
   extra: {
     eas: {
