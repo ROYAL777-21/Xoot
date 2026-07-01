@@ -40,7 +40,7 @@ const getAppSourceGroup = (project, projectName) => {
 
   const mainGroupKey = project.getFirstProject?.()?.firstProject?.mainGroup;
   return mainGroupKey
-    ? { groupKey: mainGroupKey, sourcePath: `${projectName}/ZootAppIntents.swift` }
+    ? { groupKey: mainGroupKey, sourcePath: "ZootAppIntents.swift" }
     : null;
 };
 
@@ -108,10 +108,10 @@ const withZootAssistantIntents = (config) => {
   config = withDangerousMod(config, [
     "ios",
     async (config) => {
-      const { platformProjectRoot, projectName, projectRoot } = config.modRequest;
+      const { platformProjectRoot, projectRoot } = config.modRequest;
       copyFileEnsuringDirectory(
         getNativeAssetPath(projectRoot, "ios", "ZootLiveActivities", "ZootAppIntents.swift"),
-        path.join(platformProjectRoot, projectName, "ZootAppIntents.swift"),
+        path.join(platformProjectRoot, "ZootAppIntents.swift"),
       );
       return config;
     },
