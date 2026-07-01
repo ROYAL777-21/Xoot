@@ -1,6 +1,6 @@
 # Environment Readiness
 
-Reviewed: 2026-07-01 12:59 SAST
+Reviewed: 2026-07-01 17:31 SAST
 
 ## Safe Public Variables
 
@@ -21,7 +21,7 @@ Reviewed: 2026-07-01 12:59 SAST
 - `SUPABASE_DB_URL`: not present in this shell.
 - `CODERABBIT_API_KEY`: not present as an environment variable; CodeRabbit CLI is authenticated through its local API-key credential store.
 
-Because the Supabase values are absent, live Supabase Auth redirect configuration and migration repair cannot be executed safely from this shell.
+Because the Supabase token is absent, live Supabase Auth redirect configuration cannot be executed safely from this shell. Migration repair can be run without storing a DB URL if the database password is entered through the guarded `-PromptDatabasePassword` flow.
 
 ## Verified Dry Runs
 
@@ -30,3 +30,4 @@ Because the Supabase values are absent, live Supabase Auth redirect configuratio
 - Both dry runs resolved 12 redirect URLs from `supabase/config.toml`, including local callback/reset URLs, staging and production callback/reset URLs, `www` production callback/reset URLs, and `zoot://auth/*` native callbacks.
 - CodeRabbit CLI `0.6.4` is installed and API-key authenticated locally. `coderabbit doctor` reports 8 pass, 1 warning for browser OAuth fallback only, and `coderabbit review --type uncommitted --plain` returned no findings for the current repair-helper patch.
 - Supabase migration repair planning passed for staging and production with `npm run ops:supabase:repair-migrations -- -Environment <env> -PlanOnly`; the helper refuses known partial/split migrations and refuses `-PlanOnly -ConfirmRepair`.
+- Supabase `security_advisor_rpc_hardening` was applied to staging and production on 2026-07-01. Security advisors now report only leaked password protection disabled; explicit SQL checks confirm anon/authenticated cannot execute the payment/payout helper RPCs and the invoice trigger helper has a pinned search path.

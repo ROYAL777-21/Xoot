@@ -1,11 +1,11 @@
 # Manual Configuration Checklist
 
-Reviewed: 2026-07-01 05:35 SAST
+Reviewed: 2026-07-01 17:31 SAST
 
 These items require provider dashboards, rotated credentials loaded outside chat, hardware, or founder/legal approval.
 
 - Supabase Auth redirect allowlists for local, staging, production, OAuth, and Expo deep links.
-- Supabase migration metadata repair with a rotated local token and approved DB URLs.
+- Supabase migration metadata repair with a rotated local token plus either approved DB URLs or the guarded password-prompt mode in `npm run ops:supabase:repair-migrations -- -Environment <env> -PromptDatabasePassword`.
 - Supabase leaked-password protection decision or explicit launch risk acceptance.
 - Android real-device install and smoke test with `adb` or EAS install link.
 - EAS iOS internal-distribution credentials for physical-device preview builds.
@@ -16,5 +16,4 @@ These items require provider dashboards, rotated credentials loaded outside chat
 - Restricted Mapbox browser/native/download tokens.
 - Twilio production number, WhatsApp sender, regulatory approvals, transactional Messaging Service, and webhooks.
 - Payment provider credentials and callback smoke tests.
-- CodeRabbit CLI/GitHub App authentication if command-line review is required.
-
+- CodeRabbit GitHub App only if inline PR review is required beyond the authenticated local CLI review path.
