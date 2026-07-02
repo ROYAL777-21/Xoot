@@ -17,6 +17,7 @@ This inventory supports Phase 1 of the hardening programme. It records the curre
 | --- | --- |
 | `npm audit --omit=dev --audit-level=moderate --json` | 0 info / 0 low / 0 moderate / 0 high / 0 critical production vulnerabilities |
 | `npm --prefix mobile audit --omit=dev --audit-level=moderate --json` | 0 info / 0 low / 0 moderate / 0 high / 0 critical production vulnerabilities |
+| `npm run build:artifact-scan` | Build output scan fails on private tokens, service-role JWTs, database URLs, server-only env names, Twilio credential IDs, and public source maps |
 
 Audit output is point-in-time evidence. Re-run before release and after any dependency change.
 
@@ -53,6 +54,7 @@ Audit output is point-in-time evidence. Re-run before release and after any depe
 - Web and mobile installs retry `npm ci` three times and use `--no-audit --prefer-offline` to reduce transient registry failure. Security audit runs separately in controlled local/release review.
 - `scripts/config/validate-lockfiles.mjs` fails if web or mobile lockfiles are missing, out of sync, or contain legacy Capacitor packages.
 - `npm run security:scan` fails if known secret patterns appear in source or if frontend code writes directly to protected queues.
+- `npm run build:artifact-scan` scans `dist` before artifact upload and blocks private tokens, service-role JWTs, server-only env names, database URLs, Twilio credential identifiers and public source maps.
 - Production build writes native association files only when required identifiers/fingerprints exist; missing values skip generation rather than inventing IDs.
 
 ## Upgrade Policy

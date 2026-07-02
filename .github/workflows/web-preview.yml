@@ -108,6 +108,9 @@ jobs:
       - name: Build website
         run: npm run build
 
+      - name: Scan website build artifact
+        run: npm run build:artifact-scan
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:

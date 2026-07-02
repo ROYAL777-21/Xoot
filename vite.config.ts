@@ -25,7 +25,7 @@ export default defineConfig(() => {
     },
     build: {
       target: "es2020",
-      sourcemap: true,
+      sourcemap: enableSentryUpload ? "hidden" : false,
       rolldownOptions: {
         checks: {
           pluginTimings: false,
@@ -67,6 +67,7 @@ export default defineConfig(() => {
             telemetry: false,
             sourcemaps: {
               assets: "./dist/**",
+              filesToDeleteAfterUpload: "./dist/**/*.map",
             },
           })
         : null,
