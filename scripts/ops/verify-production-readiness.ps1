@@ -103,6 +103,7 @@ $hardeningDocs = @(
   "docs/security/attack-surface-register.md",
   "docs/security/security-decision-log.md",
   "docs/security/security-regression-matrix.md",
+  "docs/security/dependency-and-supply-chain-inventory.md",
   "docs/security/rls-and-database-security-review.md",
   "docs/security/edge-function-and-webhook-threat-model.md",
   "docs/security/frontend-and-cache-security-review.md",
@@ -126,6 +127,9 @@ foreach ($hardeningDoc in $hardeningDocs) {
 Test-RepoPattern "hardening" "docs/security/platform-hardening-baseline.md" "Non-Negotiable Invariants" "hardening baseline captures non-negotiable invariants"
 Test-RepoPattern "hardening" "docs/security/asvs-informed-verification-matrix.md" "ASVS-Informed Verification Matrix" "ASVS-informed verification matrix exists"
 Test-RepoPattern "hardening" "docs/security/asvs-informed-verification-matrix.md" "No row marked Critical or High" "ASVS matrix defines release rule"
+Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "npm audit --omit=dev --audit-level=moderate --json" "dependency inventory records web audit command"
+Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "npm --prefix mobile audit --omit=dev --audit-level=moderate --json" "dependency inventory records mobile audit command"
+Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "legacy Capacitor packages" "dependency inventory records Expo-only mobile guard"
 Test-RepoPattern "hardening" "docs/release/security-release-gate.md" "Stop Conditions" "security release gate defines stop conditions"
 Test-RepoPattern "hardening" "docs/operations/incident-response-playbook.md" "First 15 Minutes" "incident response playbook defines immediate response"
 Test-RepoPattern "hardening" "docs/operations/service-continuity-runbook.md" "Fail closed" "service continuity runbook defines fail-closed behavior"
