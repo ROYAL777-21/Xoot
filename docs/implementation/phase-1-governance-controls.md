@@ -46,7 +46,7 @@ This note records the next Phase 1 implementation slice: backend-owned feature f
 | `public.rate_limit_events` | Hashed actor counters for anonymous and authenticated rate limits. | Admin read only. |
 | `private.consume_rate_limit(...)` | Service-role helper for fixed-window rate limits. | Service role only. |
 | `public.experiment_registry` | Approved experiment and metric-owner registry. | Admin read only. |
-| `public.agent_action_contracts` | Machine-readable action boundaries for Concierge, native assistants and future Hermes agents. | Admin read only. |
+| `public.agent_action_contracts` | Machine-readable action boundaries for Concierge, native assistants and future Codex harness agents. | Admin read only. |
 | `public.analytics_event_contracts` | PostHog/Sentry privacy contracts and allowed property lists. | Admin read only. |
 
 ## Default Controls

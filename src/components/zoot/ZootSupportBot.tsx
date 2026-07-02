@@ -237,6 +237,7 @@ export const ZootSupportBot = () => {
       {open && (
         <section
           className="liquid-glass-shell zoot-concierge-panel mb-3 flex h-[min(36rem,calc(100vh-7rem))] w-[min(calc(100vw-1.5rem),25.5rem)] flex-col rounded-[1.85rem] shadow-warm"
+          data-open="true"
           aria-label="Zoot Concierge support bot"
         >
           <div className="liquid-glass-readable flex items-center justify-between gap-3 border-b border-border/55 px-4 py-3.5">
@@ -259,16 +260,17 @@ export const ZootSupportBot = () => {
           </div>
 
           <div ref={scrollRef} className="liquid-glass-readable liquid-glass-conversation flex-1 space-y-3 overflow-y-auto px-4 py-4" aria-live="polite">
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[84%] rounded-2xl px-3 py-2 text-sm leading-6 shadow-card ${
+                  className={`zoot-message-enter max-w-[84%] rounded-2xl px-3 py-2 text-sm leading-6 shadow-card ${
                     message.role === "user"
                       ? "liquid-glass-message bg-primary text-primary-foreground"
                       : message.role === "system"
                         ? "liquid-glass-message border border-primary/20 bg-primary/10 text-foreground"
                         : "liquid-glass-message border border-white/25 bg-card/72 text-foreground"
                   }`}
+                  style={{ animationDelay: `${Math.min(index, 7) * 42}ms` }}
                 >
                   <span className="relative z-10 block">
                     {message.role === "system" && <ShieldAlert className="mb-1 h-3.5 w-3.5 text-primary" />}
@@ -289,7 +291,7 @@ export const ZootSupportBot = () => {
             ))}
             {sending && (
               <div className="flex justify-start">
-                <div className="liquid-glass-message flex items-center gap-2 rounded-2xl border border-white/25 bg-card/72 px-3 py-2 text-sm text-muted-foreground shadow-card">
+                <div className="zoot-typing-shimmer liquid-glass-message flex items-center gap-2 rounded-2xl border border-white/25 bg-card/72 px-3 py-2 text-sm text-muted-foreground shadow-card">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                   Checking Zoot's playbook
                 </div>
@@ -342,7 +344,8 @@ export const ZootSupportBot = () => {
 
       <Button
         type="button"
-        className="interactive-press liquid-glass-shell zoot-concierge-panel h-14 w-14 rounded-full px-0 shadow-warm sm:w-auto sm:px-4"
+        className="zoot-concierge-launcher interactive-press liquid-glass-shell zoot-concierge-panel h-14 w-14 rounded-full px-0 shadow-warm sm:w-auto sm:px-4"
+        data-open={open ? "true" : "false"}
         onClick={() => {
           haptic("selection");
           setOpen((current) => !current);

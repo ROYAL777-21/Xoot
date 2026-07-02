@@ -5,7 +5,7 @@ This file is the agent-facing security summary for Zoot implementation work. It 
 - [Launch Critical Controls](./security/launch-critical-controls.md)
 - [Zoot Security Programme](./security/zoot-security-programme.md)
 
-Every Codex or Hermes change must preserve the goal of preventing account takeover, data leakage, payment abuse, fake bookings, contractor/client impersonation, off-platform manipulation, and operational disruption.
+Every Codex or Codex harness change must preserve the goal of preventing account takeover, data leakage, payment abuse, fake bookings, contractor/client impersonation, off-platform manipulation, and operational disruption.
 
 ## Backend Authority Rules
 
@@ -63,7 +63,7 @@ The frontend may display estimates and available actions, but must not be truste
 - No agent may receive raw API keys, service role keys, production secrets, gate codes, ID documents, bank details, or raw verification files unless an approved secure tool path explicitly requires it.
 - Human approval is required for refunds above threshold, payout changes, account bans, legal-sensitive responses, public claims, production deployments, bulk outreach, and trust decisions.
 - Agents must not invent statuses, guarantees, reviews, credentials, contractor availability, payment outcomes, or verification results.
-- Hermes automations must run only from known source-of-truth triggers.
+- Codex harness automations must run only from known source-of-truth triggers.
 
 ## Audit Requirements
 

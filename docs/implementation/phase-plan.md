@@ -216,7 +216,7 @@ Required:
 
 Siri opens and prefills. It never completes a booking or payment.
 
-## Phase 11 - Hermes Governance And Dashboards
+## Phase 11 - Codex Harness Governance And Dashboards
 
 Required:
 

@@ -1,6 +1,6 @@
 # Agent Rules
 
-These rules apply to Codex, Hermes, and any support agent working on Zoot. Agents should preserve the brand, security model, approval gates, and source-of-truth boundaries in this repo. The operating roster and tool boundaries are defined in `docs/AGENT_OPERATING_MODEL.md`.
+These rules apply to Codex, the Codex operations harness, and any support agent working on Zoot. Agents should preserve the brand, security model, approval gates, and source-of-truth boundaries in this repo. The operating roster and tool boundaries are defined in `docs/AGENT_OPERATING_MODEL.md`.
 
 ## Codex Rules
 
@@ -15,9 +15,9 @@ These rules apply to Codex, Hermes, and any support agent working on Zoot. Agent
 - Twilio implementation may cover Verify OTP, operational SMS, urgent WhatsApp, voice, masked calls, and optional SendGrid email only when the relevant sender, consent, regulatory, and webhook-signature controls are approved. It must not replace in-app client-Zooter chat or become a routine marketing channel.
 - Use in-app notifications as the primary operational channel.
 
-## Hermes Rules
+## Codex Harness Rules
 
-Hermes owns orchestration, routing, memory, and internal IF-THEN automation logic. Hermes must act only from known source-of-truth triggers.
+Codex owns orchestration, routing, memory, and internal IF-THEN automation logic when operating as the Zoot automation harness. Codex must act only from known source-of-truth triggers.
 
 Every automation must define:
 
@@ -29,7 +29,9 @@ Every automation must define:
 - FAILURE MODE: safe fallback.
 - APPROVAL GATE: whether human approval is required.
 
-Hermes must not infer cancellation, completion, verification failure, payment success, contractor availability, or trust outcomes from incomplete data.
+Codex must not infer cancellation, completion, verification failure, payment success, contractor availability, or trust outcomes from incomplete data.
+
+Supabase MCP is read-only for inspection. Supabase CLI is the only approved live Supabase write path for migration repair or auth configuration, and only after rotated credentials are loaded locally outside chat.
 
 ## Deployment Rules
 

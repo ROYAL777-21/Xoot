@@ -173,6 +173,15 @@ const Ops = () => {
     void runTypedAction(key, () => markOutboxProcessed(row.id, reason), "Outbox completion audited");
   };
 
+  const outboxQueued = outbox.filter((o) => ["queued", "needs_approval", "processing"].includes(o.status));
+  const outboxRetryRows = outbox.filter((o) => ["failed", "retry", "retrying", "needs_retry"].includes(o.status));
+  const outboxDeadLetters = outbox.filter((o) => ["dead_letter", "dead-letter", "permanent_failure"].includes(o.status));
+  const agentDecisionRows = auditLogs.filter((row) =>
+    ["integration_outbox", "admin_review_queue", "support_tickets", "booking_status_events"].includes(row.target_table) ||
+    String(row.action ?? "").toLowerCase().includes("agent") ||
+    String(row.reason ?? "").toLowerCase().includes("agent")
+  );
+
   if (checkingMfa || !mfaVerified || loading) {
     return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
@@ -188,9 +197,12 @@ const Ops = () => {
         <p className="mt-2 text-muted-foreground">Typed, MFA-gated actions for payments, integrations, support, trust review, Zooter activation and analytics.</p>
       </div>
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
         <Stat icon={WalletCards} label="Pending payments" value={payments.filter((p) => p.status === "pending").length} />
-        <Stat icon={BarChart3} label="Outbox queued" value={outbox.filter((o) => ["queued", "needs_approval"].includes(o.status)).length} />
+        <Stat icon={BarChart3} label="Outbox queued" value={outboxQueued.length} />
+        <Stat icon={Loader2} label="Retry needed" value={outboxRetryRows.length} />
+        <Stat icon={ShieldAlert} label="Dead letters" value={outboxDeadLetters.length} />
+        <Stat icon={ClipboardCheck} label="Agent decisions" value={agentDecisionRows.length} />
         <Stat icon={ShieldAlert} label="Open reviews" value={reviews.filter((r) => r.status === "open").length} />
         <Stat icon={CheckCircle2} label="Open support" value={supportTickets.filter((t) => t.status === "open").length} />
         <Stat icon={UserCheck} label="Zooter queue" value={zooterApplications.filter((a) => a.status === "submitted").length} />
@@ -233,6 +245,32 @@ const Ops = () => {
               </div>
             );
           }}
+        </Queue>
+
+        <Queue title="Outbox retries and dead letters" rows={[...outboxRetryRows, ...outboxDeadLetters]} empty="No failed delivery rows in the latest outbox sample.">
+          {(row) => (
+            <div className="grid gap-1">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-semibold">{row.event_type ?? "Integration event"}</p>
+                <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">{row.status}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">{row.channel ?? "unknown channel"} - {row.provider ?? "provider pending"} - created {row.created_at ? new Date(row.created_at).toLocaleString() : "unknown"}</p>
+              <p className="text-sm text-muted-foreground">Review provider credentials, webhook status, consent, and idempotency before replaying this row.</p>
+            </div>
+          )}
+        </Queue>
+
+        <Queue title="Agent decisions" rows={agentDecisionRows} empty="No agent decisions in the latest audit sample.">
+          {(row) => (
+            <div className="grid gap-1">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-semibold">{row.action}</p>
+                <ClipboardCheck className="h-4 w-4 text-sage-deep" />
+              </div>
+              <p className="text-xs text-muted-foreground">{row.target_table} - {row.target_id ?? "no target"} - {new Date(row.created_at).toLocaleString()}</p>
+              {row.reason ? <p className="text-sm text-muted-foreground">{row.reason}</p> : null}
+            </div>
+          )}
         </Queue>
 
         <Queue title="Admin review queue" rows={reviews} empty="No admin review items.">

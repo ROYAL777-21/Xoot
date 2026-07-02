@@ -68,7 +68,7 @@ export const Navbar = () => {
               onFocus={() => prefetchRoute(l.href)}
               onMouseEnter={() => prefetchRoute(l.href)}
               onTouchStart={() => prefetchRoute(l.href)}
-              className="liquid-glass-interactive interactive-press rounded-full px-3 py-2 text-sm font-semibold text-foreground/76 transition-colors hover:text-foreground 2xl:px-4"
+              className="zoot-liquid-nav-item liquid-glass-interactive interactive-press rounded-full px-3 py-2 text-sm font-semibold text-foreground/76 transition-colors hover:text-foreground 2xl:px-4"
             >
               {renderLabel(l.label)}
             </a>
@@ -101,7 +101,7 @@ export const Navbar = () => {
                 onMouseEnter={() => prefetchRoute(l.href)}
                 onTouchStart={() => prefetchRoute(l.href)}
                 onClick={() => setOpen(false)}
-                className="liquid-glass-interactive interactive-press rounded-2xl bg-background/18 px-3 py-3 text-sm font-semibold text-foreground/78 transition-colors hover:border-border hover:bg-background/72 hover:text-foreground"
+                className="zoot-liquid-nav-item liquid-glass-interactive interactive-press rounded-2xl bg-background/18 px-3 py-3 text-sm font-semibold text-foreground/78 transition-colors hover:border-border hover:bg-background/72 hover:text-foreground"
               >
                 {renderLabel(l.label)}
               </a>

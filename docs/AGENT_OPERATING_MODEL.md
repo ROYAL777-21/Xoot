@@ -8,6 +8,7 @@ This document defines how Zoot agents operate without granting them uncontrolled
 
 - Agents do not infer payment success, booking completion, cancellation, verification failure, contractor availability, refunds, or trust outcomes from incomplete data.
 - Agents write through typed Edge Functions, audited admin actions, or explicit outbox rows. Browser clients are not the authority for sensitive state changes.
+- Codex is the automation harness. It coordinates inspection, implementation, verification, and handoff; it does not bypass app-level approval gates or live credential boundaries.
 - Sensitive data, service-role keys, provider secrets, ID documents, bank details, gate codes, access notes, and raw verification evidence are never sent to public clients or chat.
 - In-app notification is the primary operational channel. Email, SMS, WhatsApp, and voice are secondary channels gated by provider readiness, consent, regulatory status, and webhook-signature verification.
 - Public SEO and Concierge content cannot invent client claims, guarantees, prices, partnerships, or operational coverage.
@@ -17,7 +18,7 @@ This document defines how Zoot agents operate without granting them uncontrolled
 | Agent | Primary job | Source triggers | Tools used | Approval gate |
 | --- | --- | --- | --- | --- |
 | Codex Engineering Agent | Implement, verify, and document repo changes | User tasks, PR feedback, CI failures, readiness blockers | Git, GitHub CLI/connector, CodeRabbit CLI, Supabase MCP read-only, Supabase CLI when locally authenticated, shell tests, Playwright/Chrome, Expo/EAS CLI | Required for production deploys, auth/RLS/payment/booking changes, public legal claims |
-| Hermes Operations Orchestrator | Route internal IF-THEN automations | `integration_outbox`, `booking_status_events`, `admin_review_queue`, operational controls | `ops-workflow`, Supabase Edge Functions, Airtable ops queue, Brevo queue, Twilio urgent queue, payment-provider queue | Required for trust, refund, payout, bulk outreach, bans, manual review actions |
+| Codex Operations Harness | Route internal IF-THEN automations and keep agent decisions auditable | `integration_outbox`, `booking_status_events`, `admin_review_queue`, operational controls | `ops-workflow`, Supabase Edge Functions, Airtable ops queue, Brevo queue, Twilio urgent queue, payment-provider queue, ops dashboard | Required for trust, refund, payout, bulk outreach, bans, manual review actions |
 | Zoot Concierge Agent | Answer Zoot support and sales questions safely | Guest/signed-in support messages, reported answers | `support-respond`, bundled Zoot knowledge, OpenAI fallback only when enabled, `report-concierge-answer`, support tickets | Human escalation for payment, refund, legal, safety, complaint, admin, account-risk cases |
 | Scheduling & Allocation Agent | Manage booking lifecycle and contractor handoff | Booking created/paid/assigned, replacement requests, Zooter responses | `create-booking-request`, `create-booking`, `ai-match`, `get-zooter-job-cards`, `request-replacement`, in-app/expo push outbox | Required for manual reassignment, replacement exceptions, operational overrides |
 | Trust & Safety Agent | Protect clients, Zooters, and household access | Zooter application submitted, trust incident, sensitive-access window, low ratings | `submit-zooter-application`, `approve-zooter`, `admin-reject-zooter`, `get-sensitive-access`, `revoke-sensitive-access`, MIE/KIE queue, admin review queue | Required for verification decisions, account bans, sensitive evidence review |
@@ -37,6 +38,18 @@ Agents start from explicit triggers, not background guessing:
 4. Provider delivery happens only after provider credentials, dashboard callbacks, and signed webhook checks are verified.
 5. Human review is required whenever the action affects money, trust, legal posture, sensitive data, public claims, or account status.
 
+## Codex Harness Loop
+
+Codex-run automation follows a bounded loop:
+
+1. Observe: read source tables, logs, advisories, CI, and queue state through read-only tools where possible.
+2. Decide: map the finding to a typed action, human review item, outbox event, or code change.
+3. Act: use the narrowest approved tool. Supabase MCP remains read-only for inspection; Supabase CLI is used for live writes only after rotated secrets are loaded locally outside chat.
+4. Verify: run the smallest meaningful checks first, then broaden to build, security scan, readiness, k6 staging smoke, and live smoke tests when configured.
+5. Learn: write the decision, blocker, or runbook update back to docs, audit logs, or the ops dashboard so the next loop starts with evidence.
+
+The loop is not allowed to self-approve production deploys, refunds, payouts, bans, legal claims, trust decisions, migration repair, or provider dashboard changes.
+
 ## Active Automation Surfaces
 
 - Booking lifecycle and status events: booking state machine, `booking_status_events`, `ops-workflow`, and booking Edge Functions.
@@ -45,8 +58,9 @@ Agents start from explicit triggers, not background guessing:
 - Booking chat: `send-booking-message`, `mark-booking-message-read`, `report-booking-message`, and encrypted message envelope checks.
 - Admin actions: typed audited Edge Functions and `admin_audit_log`.
 - Twilio readiness: Verify, operational SMS, urgent WhatsApp, voice callbacks, masked-call queue, and signature/idempotency guards.
-- SEO: `npm run seo:daily` generates review-ready drafts; publishing remains review-gated.
+- SEO: `npm run seo:daily` generates review-ready drafts; publishing remains review-gated, including any future WordPress editorial workflow.
 - Release readiness: `npm run ops:readiness`, live Supabase verification scripts, GitHub workflows, EAS preview builds, CodeRabbit review.
+- Ops visibility: `/admin/ops` surfaces outbox retries, dead letters, and recent agent decisions so failed automation can be reviewed before replay.
 
 ## Current Tool Status
 
@@ -61,5 +75,5 @@ Agents start from explicit triggers, not background guessing:
 1. Use Supabase MCP for read-only schema/advisor inspection before touching migrations.
 2. Use Supabase CLI only from a local shell with rotated secrets loaded outside the repo and outside chat.
 3. Run `npm run ops:readiness -IncludeExternal -RequireLive` after the domain, Supabase Auth redirects, provider secrets, and device credentials exist.
-4. Install `k6` and record staging load evidence before claiming 10,000-request readiness.
+4. Run `npm run load:test` with `BASE_URL`, `SUPABASE_URL`, and `SUPABASE_ANON_KEY` pointed at staging before claiming 10,000-request readiness.
 5. Keep WordPress SEO as an editorial CMS only; the app runtime remains React/Vite, Expo, Supabase, and Edge Functions.

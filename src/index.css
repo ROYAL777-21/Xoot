@@ -415,6 +415,29 @@
       0 10px 24px -20px hsl(var(--foreground) / 0.5);
   }
 
+  .zoot-liquid-nav-item {
+    overflow: hidden;
+  }
+
+  .zoot-liquid-nav-item[aria-current="page"],
+  .zoot-liquid-nav-item[data-active="true"] {
+    color: hsl(var(--foreground));
+    border-color: hsl(0 0% 100% / 0.36);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.52),
+      inset 0 0 22px hsl(var(--primary-glow) / 0.14),
+      0 16px 36px -28px hsl(var(--foreground) / 0.52);
+  }
+
+  .zoot-liquid-nav-item[aria-current="page"]::before,
+  .zoot-liquid-nav-item[data-active="true"]::before {
+    transform: scale(1.02);
+  }
+
+  .zoot-liquid-nav-item:active {
+    animation: zoot-nav-bubble 480ms var(--ease-spring) both;
+  }
+
   .liquid-glass-shell:active::after,
   .liquid-glass-nav:active::after {
     animation: zoot-glass-shell-glint 620ms var(--ease-native) both;
@@ -464,6 +487,28 @@
       0 26px 70px -34px hsl(var(--foreground) / 0.54);
   }
 
+  .zoot-concierge-panel[data-open="true"] {
+    transform-origin: bottom right;
+    animation: zoot-concierge-morph 360ms var(--ease-spring) both;
+  }
+
+  .zoot-concierge-launcher {
+    overflow: hidden;
+  }
+
+  .zoot-concierge-launcher svg {
+    transition:
+      transform 240ms var(--ease-spring),
+      filter 220ms var(--ease-native);
+  }
+
+  .zoot-concierge-launcher:hover svg,
+  .zoot-concierge-launcher:focus-visible svg,
+  .zoot-concierge-launcher[data-open="true"] svg {
+    filter: drop-shadow(0 0 12px hsl(var(--primary-glow) / 0.48));
+    transform: rotate(8deg) scale(1.08);
+  }
+
   .liquid-glass-conversation {
     position: relative;
     isolation: isolate;
@@ -508,6 +553,59 @@
   .liquid-glass-message > * {
     position: relative;
     z-index: 1;
+  }
+
+  .zoot-message-enter {
+    animation: zoot-message-enter 260ms var(--ease-native) both;
+  }
+
+  .zoot-typing-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .zoot-typing-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-105%);
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.34), transparent);
+    animation: zoot-typing-glide 1.15s var(--ease-native) infinite;
+  }
+
+  .zoot-duration-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  }
+
+  .zoot-duration-card {
+    min-height: 9.5rem;
+    background:
+      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.56), transparent 20%),
+      linear-gradient(145deg, hsl(var(--card) / 0.78), hsl(var(--secondary) / 0.48));
+  }
+
+  .zoot-duration-card[data-selected="true"] {
+    border-color: hsl(var(--foreground) / 0.72);
+    color: hsl(var(--foreground));
+    background:
+      radial-gradient(circle at 90% 2%, hsl(0 0% 100% / 0.88), transparent 18%),
+      radial-gradient(circle at 82% 18%, hsl(var(--primary-glow) / 0.32), transparent 38%),
+      linear-gradient(145deg, hsl(var(--primary) / 0.18), hsl(var(--card) / 0.86));
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.58),
+      inset 0 0 32px hsl(var(--primary-glow) / 0.12),
+      0 22px 44px -34px hsl(var(--foreground) / 0.62);
+  }
+
+  .zoot-duration-card[data-selected="true"]::after {
+    opacity: 0.62;
+    animation: zoot-glass-glisten 1.2s var(--ease-native) both;
+  }
+
+  .zoot-map-context {
+    background:
+      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.50), transparent 24%),
+      linear-gradient(145deg, hsl(var(--secondary) / 0.44), hsl(var(--card) / 0.76));
   }
 
   @supports (-webkit-backdrop-filter: blur(1px)) {
@@ -723,6 +821,42 @@
   }
 }
 
+@keyframes zoot-nav-bubble {
+  0% { transform: scale(0.985); }
+  46% { transform: scale(1.045); }
+  100% { transform: scale(1); }
+}
+
+@keyframes zoot-concierge-morph {
+  0% {
+    opacity: 0;
+    transform: translate3d(16px, 18px, 0) scale(0.92);
+  }
+  58% {
+    opacity: 1;
+    transform: translate3d(0, -2px, 0) scale(1.012);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes zoot-message-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes zoot-typing-glide {
+  100% { transform: translateX(105%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -740,7 +874,10 @@
   .interactive-press,
   .interactive-press:active,
   .interactive-lift:hover,
-  .native-input:focus {
+  .native-input:focus,
+  .zoot-liquid-nav-item:active,
+  .zoot-concierge-panel[data-open="true"],
+  .zoot-message-enter {
     transform: none !important;
   }
 }

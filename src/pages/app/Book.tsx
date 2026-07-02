@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Home as HomeIcon, Building2, BedDouble, Sparkles, ArrowRight, ArrowLeft, Loader2, Wand2, Plus, Minus, ShieldCheck, Repeat, Truck, TimerReset, CheckCircle2 } from "lucide-react";
+import { Home as HomeIcon, Building2, BedDouble, Sparkles, ArrowRight, ArrowLeft, Loader2, Wand2, Plus, Minus, ShieldCheck, Repeat, Truck, TimerReset, CheckCircle2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -348,14 +348,14 @@ const Book = () => {
           </div>
 
           <section className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h3 className="font-semibold">How much time should we reserve?</h3>
-                <p className="text-xs text-muted-foreground">You can still add specific tasks below.</p>
+                <h3 className="font-semibold">Reserve the right amount of time</h3>
+                <p className="text-xs text-muted-foreground">Choose the visit shape first. Extras and home size refine the estimate below.</p>
               </div>
-              <span className="hidden rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary sm:inline-flex">{length.badge}</span>
+              <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{length.badge}</span>
             </div>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="zoot-duration-grid grid gap-3">
               {SERVICE_LENGTHS.map((option) => {
                 const selected = serviceLength === option.id;
                 return (
@@ -363,16 +363,20 @@ const Book = () => {
                     key={option.id}
                     type="button"
                     onClick={() => setServiceLength(option.id)}
-                    className={`min-h-[132px] rounded-2xl border p-4 text-left transition ${selected ? "border-foreground bg-foreground text-background shadow-warm" : "border-border bg-muted/35 hover:bg-muted"}`}
+                    data-selected={selected ? "true" : "false"}
+                    className="zoot-duration-card liquid-glass-interactive interactive-press rounded-[1.35rem] border border-border p-4 text-left transition"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-display text-lg font-bold">{option.label}</p>
-                        <p className={`mt-1 text-xs ${selected ? "text-background/75" : "text-muted-foreground"}`}>{option.desc}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{option.desc}</p>
                       </div>
-                      {selected ? <CheckCircle2 className="h-5 w-5 shrink-0" /> : <span className="rounded-full bg-background/70 px-2.5 py-1 text-xs font-semibold text-foreground">{option.badge}</span>}
+                      {selected ? <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" /> : <span className="rounded-full bg-background/70 px-2.5 py-1 text-xs font-semibold text-foreground">{option.badge}</span>}
                     </div>
-                    <p className={`mt-4 text-sm font-semibold ${selected ? "text-background" : "text-foreground"}`}>{option.hours} reserved hours</p>
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold text-foreground">{option.hours} reserved hours</p>
+                      <p className="text-xs text-muted-foreground">{formatZAR(Math.round(size.price * option.priceFactor))} base</p>
+                    </div>
                   </button>
                 );
               })}
@@ -441,10 +445,30 @@ const Book = () => {
               ))}
             </div>
           </section>
-          <div>
+          <div className="grid gap-3">
             <Label>Your address</Label>
-            <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full street address in Sandton, Midrand, Rosebank..." />
-            {address.trim() && <p className={`text-xs mt-1 ${inLaunchRegion ? "text-sage-deep" : "text-destructive"}`}>{inLaunchRegion ? "Inside current Zoot launch coverage." : "Outside current launch coverage. Use one of the approved launch suburbs."}</p>}
+            <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full street address in Sandton, Midrand, Rosebank..." className="h-12 rounded-2xl" />
+            <div className={`zoot-map-context rounded-2xl border p-3 text-sm ${address.trim() && !inLaunchRegion ? "border-destructive/35" : "border-border"}`}>
+              <div className="flex items-start gap-2">
+                <MapPin className={`mt-0.5 h-4 w-4 shrink-0 ${address.trim() && !inLaunchRegion ? "text-destructive" : "text-sage-deep"}`} />
+                <div>
+                  <p className="font-semibold text-foreground">
+                    {address.trim()
+                      ? inLaunchRegion
+                        ? "Launch coverage confirmed"
+                        : "Coverage review needed"
+                      : "Map-aware coverage context"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {address.trim()
+                      ? inLaunchRegion
+                        ? "Zoot can use this area context for calmer arrival planning once live Mapbox routing is configured."
+                        : "Use one of the approved launch suburbs so Zoot can match the right nearby Zooter."
+                      : "Add the address now; routing and ETA features stay server-gated until restricted Mapbox tokens are available."}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
           {householdNotes && <div className="rounded-2xl bg-accent-soft border border-accent/20 p-4 text-xs text-muted-foreground"><p className="font-semibold text-foreground mb-1">Household profile applied</p><pre className="whitespace-pre-wrap font-sans">{householdNotes}</pre></div>}
           <div><Label>Specific instructions</Label><Textarea rows={4} value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="Keys, dogs, product preferences, fragile areas" /></div>
