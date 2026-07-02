@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-07-02 11:28 SAST
+Reviewed: 2026-07-02 11:40 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -74,8 +74,8 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## GitHub, CodeRabbit, And CI
 
-- GitHub CLI is authenticated and the required public Supabase variables are present. Public site URL, EAS project ID, and PostHog public variables are also present. Optional public-safe GitHub repository variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables. Open PRs `#7` and `#8` were checked on 2026-07-02 11:24 SAST and are green/clean; remaining failed GitHub runs are stale closed/merged historical runs, not current open-PR blockers.
-- CodeRabbit CLI `0.6.4` is installed and API-key authenticated locally as of 2026-07-02 11:24 SAST. `coderabbit doctor` reports 8 pass, 1 warning for browser OAuth fallback only. Local `coderabbit review --type uncommitted --plain` and `coderabbit review --type uncommitted --light --plain` attempts on 2026-07-02 timed out after 300 seconds and 180 seconds respectively while reviewing the current agent-tooling patch, so rely on the GitHub CodeRabbit app for PR review and re-run local CodeRabbit only on smaller focused patches.
+- GitHub CLI is authenticated and the required public Supabase variables are present. Public site URL, EAS project ID, and PostHog public variables are also present. Optional public-safe GitHub repository variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables. Open PRs `#7` and `#8` were checked on 2026-07-02 11:40 SAST and are green/clean; PR `#7` head `d59ed1e` has successful GitHub checks for Web preview build, Native iOS Swift check, Production readiness guard, and CodeRabbit. Remaining failed GitHub runs are stale closed/merged historical runs, not current open-PR blockers.
+- CodeRabbit CLI `0.6.4` is installed and API-key authenticated locally as of 2026-07-02 11:24 SAST. `coderabbit doctor` reports 8 pass, 1 warning for browser OAuth fallback only, and the GitHub CodeRabbit app reports success on PR `#7`. Local `coderabbit review --type uncommitted --plain` and `coderabbit review --type uncommitted --light --plain` attempts on 2026-07-02 timed out after 300 seconds and 180 seconds respectively while reviewing the larger agent-tooling patch, so use the GitHub CodeRabbit app for PR review and re-run local CodeRabbit only on smaller focused patches.
 - CodeRabbit self-hosted login is available through `npm run ops:provider-auth:setup -- -CodeRabbitSelfHosted`, but no Zoot self-hosted CodeRabbit URL has been supplied. Use it only if Zoot actually provisions a self-hosted instance; otherwise use the official GitHub App or API-key CLI auth.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.
 
