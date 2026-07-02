@@ -40,6 +40,7 @@ Safe content is limited to short booking status, service type, safe ETA, suburb-
   - Safe static widget shell that deep-links to authenticated booking status
 - Expo prebuild plugin: `mobile/plugins/withZootAssistantIntents.cjs`
   - Copies iOS App Intents and Android assistant/widget resources during prebuild
+- Placeholder widget entries deliberately say `Open app` rather than showing realistic names, times, suburbs or balances. Real widget summaries must come from an authenticated app-group cache that stores only non-sensitive summary fields.
 
 ## Next Native Upgrade
 

@@ -471,9 +471,11 @@ const Auth = () => {
               <Label htmlFor="name">Full name</Label>
               <Input
                 id="name"
+                name="name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 autoComplete="name"
+                enterKeyHint="next"
                 required
                 className="rounded-xl"
               />
@@ -484,6 +486,7 @@ const Auth = () => {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               value={email}
               onChange={(e) => {
@@ -493,8 +496,12 @@ const Auth = () => {
                   setOtpCode("");
                 }
               }}
-              autoComplete="email"
+              autoCapitalize="none"
+              autoComplete={mode === "signin" ? "username" : "email"}
+              autoCorrect="off"
               inputMode="email"
+              spellCheck={false}
+              enterKeyHint="next"
               required
               className="rounded-xl"
             />
@@ -505,6 +512,7 @@ const Auth = () => {
               <Label htmlFor="otp-code">Email code</Label>
               <Input
                 id="otp-code"
+                name="one-time-code"
                 value={otpCode}
                 onChange={(e) => setOtpCode(normaliseOtpCode(e.target.value))}
                 autoComplete="one-time-code"
@@ -512,6 +520,7 @@ const Auth = () => {
                 pattern="[0-9]*"
                 maxLength={6}
                 placeholder="123456"
+                enterKeyHint="done"
                 required
                 className="rounded-xl text-center font-display text-2xl tracking-[0.3em]"
               />
@@ -567,10 +576,14 @@ const Auth = () => {
               </div>
               <Input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                autoCorrect="off"
+                spellCheck={false}
+                enterKeyHint="done"
                 required
                 minLength={mode === "signup" ? 8 : undefined}
                 className="rounded-xl pr-12"

@@ -44,4 +44,15 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
       expect(existsSync(join(repoRoot, path)), `${path} should exist`).toBe(true);
     }
   });
+
+  it("keeps native widgets free of realistic fake production data", () => {
+    const swiftWidget = read("native/ios/ZootLiveActivities/ZootBookingSummaryWidget.swift");
+    const androidWidget = read("native/android/src/main/java/za/co/zoothome/widgets/ZootStatusWidgetProvider.java");
+
+    expect(swiftWidget).toContain("Live details stay inside Zoot");
+    expect(swiftWidget).toContain("Open app");
+    expect(swiftWidget).not.toMatch(/\b(Nomsa|Hyde Park|R\d+|Thu\s+\d{2}:\d{2}|Friday)\b/);
+    expect(androidWidget).toContain("Open Zoot for live booking status.");
+    expect(androidWidget).not.toMatch(/\b(Nomsa|Hyde Park|R\d+|Thu\s+\d{2}:\d{2}|Friday)\b/);
+  });
 });

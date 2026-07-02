@@ -49,7 +49,7 @@ struct ZootWidgetEntry: TimelineEntry {
 @available(iOSApplicationExtension 17.0, *)
 struct ZootWidgetProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> ZootWidgetEntry {
-        ZootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "86%", detail: "Thursday slot available", deeplink: URL(string: "zoot://app")!)
+        ZootWidgetEntry(date: .now, kind: "Zoot", title: "Safe summary", value: "Open app", detail: "Live details stay inside Zoot", deeplink: URL(string: "zoot://app")!)
     }
 
     func snapshot(for configuration: ZootWidgetConfigurationIntent, in context: Context) async -> ZootWidgetEntry {
@@ -63,13 +63,13 @@ struct ZootWidgetProvider: AppIntentTimelineProvider {
     private func entry(for kind: ZootWidgetKind) -> ZootWidgetEntry {
         switch kind {
         case .nextBooking:
-            return ZootWidgetEntry(date: .now, kind: "Booking", title: "Next clean", value: "Thu 08:30", detail: "Nomsa - Hyde Park", deeplink: URL(string: "zoot://bookings")!)
+            return ZootWidgetEntry(date: .now, kind: "Booking", title: "Next clean", value: "Open app", detail: "View live time and safe status in Zoot", deeplink: URL(string: "zoot://bookings")!)
         case .carePlusReadiness:
-            return ZootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "86%", detail: "Home Memory almost complete", deeplink: URL(string: "zoot://care-plus")!)
+            return ZootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "Open app", detail: "Check live member reminders in Zoot", deeplink: URL(string: "zoot://care-plus")!)
         case .zootCred:
-            return ZootWidgetEntry(date: .now, kind: "ZootCred", title: "Available", value: "R185", detail: "R30 add-on credit active", deeplink: URL(string: "zoot://loyalty")!)
+            return ZootWidgetEntry(date: .now, kind: "ZootCred", title: "Available", value: "Open app", detail: "Balance and expiry stay in Zoot", deeplink: URL(string: "zoot://loyalty")!)
         case .favouriteZooter:
-            return ZootWidgetEntry(date: .now, kind: "Favourite", title: "Book Nomsa again", value: "4.96", detail: "Next slot Friday", deeplink: URL(string: "zoot://favorites")!)
+            return ZootWidgetEntry(date: .now, kind: "Favourite", title: "Favourite Zooter", value: "Open app", detail: "Book again from your signed-in profile", deeplink: URL(string: "zoot://favorites")!)
         case .acceptedZooterJob:
             return ZootWidgetEntry(date: .now, kind: "Zooter", title: "Accepted job", value: "Open route", detail: "Address opens in the authenticated job screen", deeplink: URL(string: "zoot://zooter/jobs")!)
         }
@@ -99,9 +99,9 @@ struct ZootWidgetEntryView: View {
             ZootLiquidGlassGroup(spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
-                        Circle()
-                            .fill(Color.zootTerracotta.opacity(0.18))
-                            .frame(width: 8, height: 8)
+                        Image(systemName: "sparkles")
+                            .font(.caption.bold())
+                            .foregroundStyle(Color.zootTerracotta)
                         Text(entry.kind)
                             .font(.caption.bold())
                             .foregroundStyle(Color.zootTerracotta)

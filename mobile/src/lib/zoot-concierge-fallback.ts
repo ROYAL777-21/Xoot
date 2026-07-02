@@ -80,9 +80,34 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
     );
   }
 
+  if (includesAny(text, ["how long", "duration", "hours", "bedroom", "bathroom", "deep clean", "standard clean", "spring clean"])) {
+    return reply(
+      "A good booking brief starts with the home type, bedrooms, bathrooms, priority rooms, and whether you need a standard reset or deeper catch-up clean. If the home has heavy build-up, post-event mess, pets, or laundry-style add-ons, choose more time rather than trying to compress the job. The signed-in booking flow keeps the final duration and price authoritative.",
+    );
+  }
+
+  if (includesAny(text, ["recurring", "weekly", "fortnight", "biweekly", "monthly", "repeat clean", "regular clean"])) {
+    return reply(
+      "For recurring cleaning, Zoot works best when you save Home Memory notes: preferred products, rooms to prioritise, pet routines, parking, and what a great clean looks like to you. Care+ is designed to reduce repeated explanations through favourite Zooter continuity, smart reminders and priority support.",
+    );
+  }
+
+  if (includesAny(text, ["pet", "pets", "dog", "cat", "allergy", "asthma", "eco", "non toxic", "fragrance", "chemical"])) {
+    return reply(
+      "Add pets, allergies, asthma, fragrance preferences and product sensitivities inside the protected booking notes before the clean. Zooters should see what helps them work respectfully and safely, but access codes and private household-sensitive details must stay in the protected access fields, not chat.",
+    );
+  }
+
   if (includesAny(text, ["cancel", "refund", "reschedule", "change booking", "payment failed", "payment issue", "charge"])) {
     return reply(
       "Cancellations, refunds, failed payments and booking changes must be handled inside the signed-in app so Zoot can use the real booking state and keep an audit trail. I can explain the process, but I cannot change payments, refunds or bookings from chat.",
+      true,
+    );
+  }
+
+  if (includesAny(text, ["damage", "broken", "stolen", "theft", "harassment", "unsafe", "complaint", "incident", "police", "legal"])) {
+    return reply(
+      "That should go to protected Support for human review. Use the signed-in app so Zoot can attach the real booking, timestamps, photos and messages. Do not put accusations, private addresses, access codes, ID numbers or payment details in public chat.",
       true,
     );
   }
@@ -106,6 +131,12 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
   if (includesAny(text, ["office", "business", "salon", "clinic", "studio", "workspace"])) {
     return reply(
       "Zoot supports business cleaning needs such as quick office resets, studios, salons, clinics and client-facing spaces. A strong request includes timing, access notes, priority rooms, bathrooms or kitchenette needs, parking and whether the clean should recur.",
+    );
+  }
+
+  if (includesAny(text, ["tip", "tips", "tipping", "rate the zooter", "review"])) {
+    return reply(
+      "The best way to support a great Zooter is to rate the job clearly, mention what went well, and book them again when available. If tipping is available in your signed-in flow, use the app so payment records remain auditable and the Zooter receives the right allocation.",
     );
   }
 
