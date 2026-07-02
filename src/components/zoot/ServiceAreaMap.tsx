@@ -47,15 +47,20 @@ export const ServiceAreaMap = () => {
       serviceAreas.forEach((area) => {
         const marker = document.createElement("div");
         marker.className = "grid h-9 w-9 place-items-center rounded-full border border-white/60 bg-primary text-primary-foreground shadow-warm";
-        marker.innerHTML = '<span class="h-2.5 w-2.5 rounded-full bg-current"></span>';
+        const markerDot = document.createElement("span");
+        markerDot.className = "h-2.5 w-2.5 rounded-full bg-current";
+        marker.appendChild(markerDot);
+
+        const popupContent = document.createElement("div");
+        const popupTitle = document.createElement("strong");
+        popupTitle.textContent = area.name;
+        const popupNote = document.createElement("span");
+        popupNote.textContent = area.note;
+        popupContent.append(popupTitle, document.createElement("br"), popupNote);
 
         new mapboxgl.Marker({ element: marker, anchor: "center" })
           .setLngLat(area.coordinates)
-          .setPopup(
-            new mapboxgl.Popup({ closeButton: false, offset: 18 }).setHTML(
-              `<strong>${area.name}</strong><br/><span>${area.note}</span>`,
-            ),
-          )
+          .setPopup(new mapboxgl.Popup({ closeButton: false, offset: 18 }).setDOMContent(popupContent))
           .addTo(map);
       });
 

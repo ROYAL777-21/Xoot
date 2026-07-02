@@ -15,6 +15,7 @@ Reviewed: 2026-07-02
 - Sensitive fields use Edge Function reveal instead of direct table queries.
 - Native/deep-link web URLs are restricted to approved Zoot hosts or local development hosts in `src/lib/native-routing.ts`.
 - Stored notification links are resolved through `src/lib/notification-routing.ts` and render as plain text when the route is external, auth-token bearing, unsafe, or outside approved in-app surfaces.
+- `npm run security:scan` fails on raw frontend HTML insertion or string-execution APIs through `scripts/security/assert-no-unsafe-dom-apis.mjs`.
 - Public pages must not include private data, fake claims, or secrets.
 - Widgets, push, SMS, email, and SEO content must not contain household access data.
 

@@ -18,7 +18,7 @@
     "seo:validate": "node scripts/seo/validate-articles.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "security:scan": "node scripts/security/secret-scan.mjs && node scripts/security/assert-no-frontend-admin-queue-writes.mjs",
+    "security:scan": "node scripts/security/secret-scan.mjs && node scripts/security/assert-no-frontend-admin-queue-writes.mjs && node scripts/security/assert-no-unsafe-dom-apis.mjs",
     "build:artifact-scan": "node scripts/security/scan-build-artifacts.mjs dist",
     "verify": "npm run lockfiles:check && npm run lint && npm run test && npm run build && npm run build:artifact-scan && npm run security:scan",
     "load:test": "k6 run scripts/load/zoot-smoke.js",
