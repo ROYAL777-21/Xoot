@@ -78,6 +78,15 @@ describe("auth security helpers", () => {
     expect(getAuthRedirectTo("/app/support", "/auth/callback")).toMatch(/\/auth\/callback\?next=%2Fapp%2Fsupport$/);
   });
 
+  it("blocks nested redirects and sensitive query state in post-auth redirects", () => {
+    expect(getSafeRedirectPath("/app?next=https%3A%2F%2Fevil.example")).toBe("/app");
+    expect(getSafeRedirectPath("/app?redirect=/admin/ops")).toBe("/app");
+    expect(getSafeRedirectPath("/app?role=admin")).toBe("/app");
+    expect(getSafeRedirectPath("/app?payment_status=paid")).toBe("/app");
+    expect(getSafeRedirectPath("/app?area=https://evil.example")).toBe("/app");
+    expect(getSafeRedirectPath("/app#access_token=secret")).toBe("/app");
+  });
+
   it("validates password update confirmation", () => {
     expect(getPasswordUpdateIssue("Short1", "Short1")).toBe("Use at least 8 characters.");
     expect(getPasswordUpdateIssue("StrongPass8", "DifferentPass8")).toBe("Passwords need to match.");

@@ -3,6 +3,45 @@ export type SocialAuthProvider = "google" | "apple";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEFAULT_AUTH_REDIRECT = "/app";
+const BLOCKED_REDIRECT_QUERY_KEYS = new Set([
+  "access_token",
+  "admin",
+  "amount",
+  "app_role",
+  "callback",
+  "code",
+  "continue",
+  "destination",
+  "href",
+  "id_token",
+  "next",
+  "payment_status",
+  "payment_success",
+  "price",
+  "provider_token",
+  "redirect",
+  "redirect_to",
+  "refresh_token",
+  "return_to",
+  "returnto",
+  "role",
+  "token",
+  "url",
+]);
+
+const isUnsafeRedirectQuery = (params: URLSearchParams) => {
+  for (const [rawKey, rawValue] of params.entries()) {
+    const key = rawKey.trim().toLowerCase().replace(/-/g, "_");
+    const value = rawValue.trim();
+    if (BLOCKED_REDIRECT_QUERY_KEYS.has(key)) return true;
+    if (!value) continue;
+    if (value.includes("\\") || /[<>"'`]/.test(value)) return true;
+    if (/(^|\/)(?:\.{2}|%2e%2e)(?:\/|$)/i.test(value)) return true;
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(value)) return true;
+  }
+
+  return false;
+};
 
 export const normaliseEmail = (email: string) => email.trim().toLowerCase();
 export const normaliseOtpCode = (code: string) => code.replace(/\D/g, "").slice(0, 6);
@@ -130,7 +169,8 @@ export const getSafeRedirectPath = (value: string | null | undefined, fallback =
   try {
     const parsed = new URL(trimmed, "https://zoot.local");
     if (parsed.origin !== "https://zoot.local") return fallback;
-    const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    if (isUnsafeRedirectQuery(parsed.searchParams)) return fallback;
+    const path = `${parsed.pathname}${parsed.search}`;
     if (!path.startsWith("/") || path.startsWith("/auth")) return fallback;
     return path;
   } catch {
