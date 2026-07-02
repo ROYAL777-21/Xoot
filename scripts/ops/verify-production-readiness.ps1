@@ -96,6 +96,41 @@ Test-RepoFile "ops" "scripts/ops/staging-role-smoke.mjs" | Out-Null
 Test-RepoFile "ops" "docs/STAGING_ROLE_SMOKE_TESTS.md" | Out-Null
 Test-RepoFile "ops" "docs/ADMIN_ACCESS.md" | Out-Null
 
+$hardeningDocs = @(
+  "docs/security/platform-hardening-baseline.md",
+  "docs/security/asset-and-data-inventory.md",
+  "docs/security/trust-boundary-map.md",
+  "docs/security/attack-surface-register.md",
+  "docs/security/security-decision-log.md",
+  "docs/security/security-regression-matrix.md",
+  "docs/security/rls-and-database-security-review.md",
+  "docs/security/edge-function-and-webhook-threat-model.md",
+  "docs/security/frontend-and-cache-security-review.md",
+  "docs/security/mobile-and-deep-link-security-review.md",
+  "docs/security/payment-and-payout-integrity-review.md",
+  "docs/security/third-party-provider-risk-register.md",
+  "docs/security/secret-handling-and-rotation-runbook.md",
+  "docs/security/storage-and-document-access-review.md",
+  "docs/security/asvs-informed-verification-matrix.md",
+  "docs/operations/incident-severity-matrix.md",
+  "docs/operations/service-continuity-runbook.md",
+  "docs/operations/incident-response-playbook.md",
+  "docs/operations/communications-incident-template.md",
+  "docs/operations/rollback-runbook.md",
+  "docs/operations/data-integrity-investigation-runbook.md",
+  "docs/release/security-release-gate.md"
+)
+foreach ($hardeningDoc in $hardeningDocs) {
+  Test-RepoFile "hardening" $hardeningDoc | Out-Null
+}
+Test-RepoPattern "hardening" "docs/security/platform-hardening-baseline.md" "Non-Negotiable Invariants" "hardening baseline captures non-negotiable invariants"
+Test-RepoPattern "hardening" "docs/security/asvs-informed-verification-matrix.md" "ASVS-Informed Verification Matrix" "ASVS-informed verification matrix exists"
+Test-RepoPattern "hardening" "docs/security/asvs-informed-verification-matrix.md" "No row marked Critical or High" "ASVS matrix defines release rule"
+Test-RepoPattern "hardening" "docs/release/security-release-gate.md" "Stop Conditions" "security release gate defines stop conditions"
+Test-RepoPattern "hardening" "docs/operations/incident-response-playbook.md" "First 15 Minutes" "incident response playbook defines immediate response"
+Test-RepoPattern "hardening" "docs/operations/service-continuity-runbook.md" "Fail closed" "service continuity runbook defines fail-closed behavior"
+Test-RepoPattern "hardening" "docs/security/secret-handling-and-rotation-runbook.md" "Treat any secret already pasted into chat as compromised" "secret runbook covers chat-exposed secret rotation"
+
 $blockerText = Read-RepoText "blocker.md"
 if ($null -ne $blockerText) {
   Add-Check "ops" "blocker.md unresolved-only ledger" ($(if ($blockerText -notmatch "(?m)^## Resolved\b") { "pass" } else { "fail" })) "should not contain a resolved-history section"
