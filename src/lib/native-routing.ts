@@ -40,6 +40,13 @@ const staticRoutes = new Set([
 const authRoutes = new Set(["/auth/callback", "/auth/reset"]);
 const queryPreservingRoutes = new Set(["/app", "/care-plus"]);
 const allowedSafeQueryKeys = new Set(["area", "date", "intent", "service", "zootBot"]);
+const allowedWebHosts = new Set([
+  "zoothome.co.za",
+  "www.zoothome.co.za",
+  "staging.zoothome.co.za",
+  "zoot.co.za",
+  "www.zoot.co.za",
+]);
 
 const screenRoutes = new Map<string, string>([
   ["book", "/app"],
@@ -118,6 +125,16 @@ const firstString = (record: NativeRouteRecord, keys: string[]) => {
 };
 
 const hasPathTraversal = (value: string) => /(^|\/)(\.\.|%2e%2e)(\/|$)/i.test(value);
+
+const isLocalWebHost = (host: string) =>
+  host === "localhost" || host === "127.0.0.1" || host === "::1" || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host);
+
+const isAllowedWebUrl = (url: URL) => {
+  const host = url.hostname.toLowerCase();
+  if (url.protocol === "https:" && allowedWebHosts.has(host)) return true;
+  if (url.protocol === "http:" && isLocalWebHost(host)) return true;
+  return false;
+};
 
 const safeSegment = (value: unknown) => {
   const segment = String(value ?? "").trim();
@@ -228,7 +245,7 @@ const routeFromUrl = (candidate: string) => {
     if (url.protocol === "zoot:" || url.protocol === "za.co.zoothome.app:" || url.protocol === "za.co.zoot.app:") {
       return routeFromZootUrl(url);
     }
-    if (url.protocol === "https:" || url.protocol === "http:") return routeForUrl(url);
+    if (url.protocol === "https:" || url.protocol === "http:") return isAllowedWebUrl(url) ? routeForUrl(url) : null;
   } catch {
     return toSafeRoute(value);
   }

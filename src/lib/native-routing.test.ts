@@ -66,6 +66,9 @@ describe("resolveNativeRoute", () => {
   });
 
   it("rejects unknown routes and unsafe path segments", () => {
+    expect(resolveNativeRoute("https://evil.example/app")).toBeNull();
+    expect(resolveNativeRoute("http://evil.example/app")).toBeNull();
+    expect(resolveNativeRoute("http://localhost:4173/app?intent=book_clean")).toBe("/app?intent=book_clean");
     expect(resolveNativeRoute("/admin/ops")).toBeNull();
     expect(resolveNativeRoute("zoot://app/bookings/../../support")).toBeNull();
     expect(resolveNativeRoute({ bookingId: "booking/with/slash" })).toBeNull();

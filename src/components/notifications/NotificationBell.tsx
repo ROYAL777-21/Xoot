@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
 import { NativePushPrompt } from "@/components/notifications/NativePushPrompt";
+import { resolveNotificationLink } from "@/lib/notification-routing";
 
 type N = { id: string; kind: string; title: string; body: string | null; link: string | null; read: boolean; created_at: string };
 
@@ -86,7 +87,8 @@ export const NotificationBell = () => {
                   </div>
                 </div>
               );
-              return n.link ? <Link key={n.id} to={n.link}>{Body}</Link> : <div key={n.id}>{Body}</div>;
+              const safeLink = resolveNotificationLink(n.link);
+              return safeLink ? <Link key={n.id} to={safeLink}>{Body}</Link> : <div key={n.id}>{Body}</div>;
             })
           )}
         </div>

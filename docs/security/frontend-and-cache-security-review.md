@@ -13,6 +13,8 @@ Reviewed: 2026-07-02
 - Public env validation fails loudly for missing Supabase URL/key or secret-like `VITE_` names.
 - Frontend mutation guard blocks direct writes to admin/outbox/messages paths.
 - Sensitive fields use Edge Function reveal instead of direct table queries.
+- Native/deep-link web URLs are restricted to approved Zoot hosts or local development hosts in `src/lib/native-routing.ts`.
+- Stored notification links are resolved through `src/lib/notification-routing.ts` and render as plain text when the route is external, auth-token bearing, unsafe, or outside approved in-app surfaces.
 - Public pages must not include private data, fake claims, or secrets.
 - Widgets, push, SMS, email, and SEO content must not contain household access data.
 
