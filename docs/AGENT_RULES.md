@@ -1,6 +1,6 @@
 # Agent Rules
 
-These rules apply to Codex, Hermes, and any support agent working on Zoot. Agents should preserve the brand, security model, approval gates, and source-of-truth boundaries in this repo.
+These rules apply to Codex, Hermes, and any support agent working on Zoot. Agents should preserve the brand, security model, approval gates, and source-of-truth boundaries in this repo. The operating roster and tool boundaries are defined in `docs/AGENT_OPERATING_MODEL.md`.
 
 ## Codex Rules
 
