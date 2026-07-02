@@ -45,24 +45,44 @@
 
 /app/*
   X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
 
 /auth/*
   X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
 
 /admin/*
   X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
 
 /zooter/jobs*
   X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
 
 /zooter/earnings*
   X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
 
 /zooter/kyc*
   X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
 
 /zooter/profile*
   X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
 
 /zooter/training*
   X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/app
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/auth
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/admin
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
