@@ -12,6 +12,7 @@ import { AlertCircle, Eye, EyeOff, Fingerprint, KeyRound, Loader2, LockKeyhole, 
 import { haptic } from "@/lib/haptics";
 import { clearNativeQuickUnlock, enableNativeQuickUnlock, getNativeQuickUnlockEnabled, isNativeAuthPlatform } from "@/lib/native-auth";
 import {
+  generateStrongPassword,
   getAuthFormIssue,
   getAuthRedirectTo,
   getEmailIssue,
@@ -338,6 +339,14 @@ const Auth = () => {
     }
   };
 
+  const handleGeneratePassword = () => {
+    const generated = generateStrongPassword();
+    setPassword(generated);
+    setShowPassword(true);
+    haptic("success");
+    toast.success("Strong password generated. Save it in your password manager.");
+  };
+
   const setAuthMode = (nextMode: AuthView) => {
     haptic("selection");
     setMode(nextMode);
@@ -529,6 +538,16 @@ const Auth = () => {
                       className="text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
                     >
                       Forgot password?
+                    </button>
+                  )}
+                  {mode === "signup" && (
+                    <button
+                      type="button"
+                      onClick={handleGeneratePassword}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                      Generate
                     </button>
                   )}
                   <button

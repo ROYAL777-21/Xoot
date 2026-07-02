@@ -41,8 +41,9 @@ const initialMessages: BotMessage[] = [
 ];
 
 const quickPrompts = [
+  "How do I book a cleaner?",
   "What does Care+ include?",
-  "Where is Zoot launching first?",
+  "What should I prepare before a Zooter arrives?",
   "Can Zoot help my office or Airbnb?",
 ];
 

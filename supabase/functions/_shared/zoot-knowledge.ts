@@ -101,6 +101,38 @@ export const getZootKnowledgeReply = (rawText: string, signedIn: boolean): ZootK
     );
   }
 
+  if (includesAny(text, ["urgent", "emergency", "same day", "same-day", "today", "tonight", "last minute"])) {
+    return reply(
+      "For urgent or same-day cleaning, open the booking flow and choose the earliest available time. Availability depends on your area, service scope, travel time and live Zooter capacity. If the clean is tied to a guest arrival, inspection, complaint or safety issue, use Support after booking so a human can prioritise the case.",
+    );
+  }
+
+  if (includesAny(text, ["prepare", "before", "ready", "what should i do", "before zooter", "before cleaner"])) {
+    return reply(
+      "Before your Zooter arrives, clear personal valuables, note priority rooms, secure pets, add parking and access instructions inside the protected booking fields, and photograph anything fragile or unusual. Keep gate codes, alarm codes and lockbox details out of chat.",
+    );
+  }
+
+  if (includesAny(text, ["cancel", "refund", "reschedule", "change booking", "payment failed", "payment issue", "charge"])) {
+    return reply(
+      "Cancellations, refunds, failed payments and booking changes must be handled inside the signed-in app so Zoot can use the real booking state and keep an audit trail. I can explain the process, but I cannot change payments, refunds or bookings from public chat.",
+    );
+  }
+
+  if (includesAny(text, ["where is my cleaner", "track", "tracking", "eta", "late", "not arrived"])) {
+    return reply(
+      signedIn
+        ? "Open your booking detail page to see the latest safe status, ETA and support options. If the booking is late or the ETA looks wrong, use Support so the team can review it with the real booking record."
+        : "Tracking and ETA are private booking details. Sign in, open your booking, and use Support if the Zooter is late or the status looks wrong.",
+    );
+  }
+
+  if (includesAny(text, ["gate code", "alarm code", "lockbox", "access code", "access instructions", "exact address", "private note"])) {
+    return reply(
+      "Do not put access codes, alarm codes, lockbox details, exact private address notes or household-sensitive details in chat. Zoot stores those in protected booking fields and shows them only to the assigned Zooter during the approved access window.",
+    );
+  }
+
   if (includesAny(text, ["office", "business", "salon", "clinic", "studio", "workspace"])) {
     return reply(
       "Zoot supports business cleaning needs such as quick office resets, studios, salons, clinics and client-facing spaces. The best request includes access notes, priority rooms, bathrooms or kitchenette needs, timing, parking and whether it should become recurring.",
@@ -122,8 +154,8 @@ export const getZootKnowledgeReply = (rawText: string, signedIn: boolean): ZootK
   if (includesAny(text, ["book", "booking", "cleaner", "cleaning", "clean", "zooter"])) {
     return reply(
       signedIn
-        ? "To book, open the app, choose the service, area, date, time, property notes and preferred Zooter options. Keep private access details in the protected booking fields rather than chat."
-        : "You can ask general booking questions here, but sign in to create a booking. Zoot will ask for the service, launch area, date, time, property notes and preferred Zooter options inside the protected app flow.",
+        ? "To book, open the app, choose the service type, area, date, time, duration, property notes and preferred Zooter options, then confirm payment through the protected flow. Keep private access details in protected booking fields rather than chat."
+        : "You can ask general booking questions here, but sign in to create a booking. Zoot will ask for service type, launch area, date, time, duration, property notes and preferred Zooter options inside the protected app flow.",
     );
   }
 

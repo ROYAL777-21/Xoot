@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  generateStrongPassword,
   getAuthFormIssue,
   getAuthRedirectTo,
   getOtpCodeIssue,
@@ -49,6 +50,23 @@ describe("auth security helpers", () => {
   it("scores password strength without exposing password content", () => {
     expect(getPasswordStrength("weak")).toBe(0);
     expect(getPasswordStrength("StrongPass8!")).toBe(4);
+  });
+
+  it("generates password-manager friendly strong passwords", () => {
+    const generated = generateStrongPassword();
+
+    expect(generated).toHaveLength(18);
+    expect(getPasswordIssues(generated, "signup")).toEqual([]);
+    expect(getPasswordStrength(generated)).toBe(4);
+    expect(generated).toMatch(/[a-z]/);
+    expect(generated).toMatch(/[A-Z]/);
+    expect(generated).toMatch(/\d/);
+    expect(generated).toMatch(/[^a-zA-Z0-9\s]/);
+  });
+
+  it("clamps generated password length to a safe range", () => {
+    expect(generateStrongPassword(4)).toHaveLength(12);
+    expect(generateStrongPassword(64)).toHaveLength(32);
   });
 
   it("keeps post-auth redirects relative and outside auth routes", () => {

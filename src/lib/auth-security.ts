@@ -52,6 +52,50 @@ export const getPasswordStrength = (password: string) => {
   return score;
 };
 
+const PASSWORD_LOWER = "abcdefghijkmnopqrstuvwxyz";
+const PASSWORD_UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+const PASSWORD_DIGITS = "23456789";
+const PASSWORD_SYMBOLS = "!@#$%&*?";
+const PASSWORD_ALPHABET = `${PASSWORD_LOWER}${PASSWORD_UPPER}${PASSWORD_DIGITS}${PASSWORD_SYMBOLS}`;
+
+const randomIndex = (maxExclusive: number) => {
+  const cryptoRef = globalThis.crypto;
+  if (!cryptoRef?.getRandomValues) return Math.floor(Math.random() * maxExclusive);
+
+  const maxUint32 = 0xffffffff;
+  const limit = maxUint32 - (maxUint32 % maxExclusive);
+  const values = new Uint32Array(1);
+
+  do {
+    cryptoRef.getRandomValues(values);
+  } while (values[0] >= limit);
+
+  return values[0] % maxExclusive;
+};
+
+const pick = (alphabet: string) => alphabet[randomIndex(alphabet.length)];
+
+export const generateStrongPassword = (length = 18) => {
+  const safeLength = Math.max(12, Math.min(length, 32));
+  const characters = [
+    pick(PASSWORD_LOWER),
+    pick(PASSWORD_UPPER),
+    pick(PASSWORD_DIGITS),
+    pick(PASSWORD_SYMBOLS),
+  ];
+
+  while (characters.length < safeLength) {
+    characters.push(pick(PASSWORD_ALPHABET));
+  }
+
+  for (let index = characters.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomIndex(index + 1);
+    [characters[index], characters[swapIndex]] = [characters[swapIndex], characters[index]];
+  }
+
+  return characters.join("");
+};
+
 export const getAuthFormIssue = ({
   mode,
   email,

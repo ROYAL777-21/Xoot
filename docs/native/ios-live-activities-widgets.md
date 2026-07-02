@@ -11,6 +11,10 @@ Primary Apple references reviewed on 2026-05-28:
 - Human Interface Guidelines for Live Activities: https://developer.apple.com/design/human-interface-guidelines/live-activities
 - App Review Guidelines: https://developer.apple.com/app-store/review/guidelines/
 
+Design and motion preview reviewed on 2026-07-02:
+
+- Zoot Native Widgets - Liquid Glass Motion Preview: https://www.figma.com/design/2M0vWKGmiLApMcB980WYC4
+
 ## Native iOS Experience Goals
 
 - Use a native SwiftUI shell for tab navigation, booking detail, Care+, support, and account/profile settings instead of a plain web wrapper for App Store submission.
@@ -88,6 +92,7 @@ User-created widgets should be configurable using WidgetKit and App Intents:
 - `Care+ Home Readiness`: readiness score, Home Memory completeness, next prompt.
 - `ZootCred`: available ZootCred, pending ZootCred, monthly add-on credit expiry.
 - `Favourite Zooter`: preferred Zooter and deep link to rebook.
+- `Accepted Zooter Job`: accepted job prompt and deep link to the authenticated Zooter job screen.
 
 Widget content should use cached, non-sensitive summaries. Tapping a widget should deep-link into the authenticated app.
 

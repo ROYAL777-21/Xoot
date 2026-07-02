@@ -8,6 +8,7 @@ enum ZootWidgetKind: String, AppEnum {
     case carePlusReadiness
     case zootCred
     case favouriteZooter
+    case acceptedZooterJob
 
     static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Zoot Widget")
     static var caseDisplayRepresentations: [ZootWidgetKind: DisplayRepresentation] = [
@@ -15,6 +16,7 @@ enum ZootWidgetKind: String, AppEnum {
         .carePlusReadiness: "Care+ Readiness",
         .zootCred: "ZootCred",
         .favouriteZooter: "Favourite Zooter",
+        .acceptedZooterJob: "Accepted Zooter Job",
     ]
 }
 
@@ -68,6 +70,8 @@ struct ZootWidgetProvider: AppIntentTimelineProvider {
             return ZootWidgetEntry(date: .now, kind: "ZootCred", title: "Available", value: "R185", detail: "R30 add-on credit active", deeplink: URL(string: "zoot://loyalty")!)
         case .favouriteZooter:
             return ZootWidgetEntry(date: .now, kind: "Favourite", title: "Book Nomsa again", value: "4.96", detail: "Next slot Friday", deeplink: URL(string: "zoot://favorites")!)
+        case .acceptedZooterJob:
+            return ZootWidgetEntry(date: .now, kind: "Zooter", title: "Accepted job", value: "Open route", detail: "Address opens in the authenticated job screen", deeplink: URL(string: "zoot://zooter/jobs")!)
         }
     }
 }
@@ -82,7 +86,7 @@ struct ZootBookingSummaryWidget: Widget {
                 .containerBackground(Color(red: 0.98, green: 0.96, blue: 0.91), for: .widget)
         }
         .configurationDisplayName("Zoot")
-        .description("Create a Zoot widget for bookings, Care+, ZootCred, or your favourite Zooter.")
+        .description("Create a Zoot widget for bookings, Care+, ZootCred, favourite Zooters, or accepted Zooter jobs.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

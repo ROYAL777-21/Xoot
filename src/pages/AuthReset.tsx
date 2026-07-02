@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff, Loader2, LockKeyhole, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Loader2, LockKeyhole, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SEO } from "@/components/SEO";
 import {
+  generateStrongPassword,
   getPasswordStrength,
   getPasswordUpdateIssue,
   getSafePasswordUpdateErrorMessage,
@@ -29,6 +30,15 @@ const AuthReset = () => {
   const passwordStrength = getPasswordStrength(password);
   const passwordStrengthLabel = ["Very weak", "Weak", "Good", "Strong", "Very strong"][passwordStrength];
   const strengthColour = passwordStrength >= 3 ? "bg-sage-deep" : passwordStrength >= 2 ? "bg-primary" : "bg-destructive";
+
+  const handleGeneratePassword = () => {
+    const generated = generateStrongPassword();
+    setPassword(generated);
+    setConfirmation(generated);
+    setShowPassword(true);
+    haptic("success");
+    toast.success("Strong password generated. Save it in your password manager.");
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -129,21 +139,31 @@ const AuthReset = () => {
         {!checkingLink && linkReady && (
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <Label htmlFor="password">New password</Label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    haptic("selection");
-                    setShowPassword((value) => !value);
-                  }}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
-                  aria-controls="password"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  {showPassword ? "Hide" : "Show"}
-                </button>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <button
+                    type="button"
+                    onClick={handleGeneratePassword}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
+                  >
+                    <KeyRound className="h-3.5 w-3.5" />
+                    Generate
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      haptic("selection");
+                      setShowPassword((value) => !value);
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
+                    aria-controls="password"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
               <Input
                 id="password"
