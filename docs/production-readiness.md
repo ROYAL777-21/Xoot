@@ -184,7 +184,10 @@ Production requirements:
 
 ## 10,000-Request Readiness
 
-The repository includes a k6 script at `scripts/load/zoot-smoke.js`.
+The repository includes two k6 scripts:
+
+- `scripts/load/zoot-smoke.js` for local or small staging smoke checks.
+- `scripts/load/zoot-staging-10k-readiness.js` for a staging-only 10,000-request evidence run.
 
 Run a smoke check:
 
@@ -192,7 +195,20 @@ Run a smoke check:
 BASE_URL=https://<staging-domain> k6 run scripts/load/zoot-smoke.js
 ```
 
-Run a larger public-route check by overriding options in k6 or splitting route groups. Do not claim Zoot supports 10,000 concurrent users until:
+Run the staging 10,000-request evidence check:
+
+```bash
+LOAD_TEST_ENV=staging \
+BASE_URL=https://<staging-or-preview-domain> \
+SUPABASE_URL=https://<staging-project-ref>.supabase.co \
+SUPABASE_ANON_KEY=<staging-anon-or-publishable-key> \
+LOAD_TEST_SUMMARY_PATH=outputs/k6-staging-10k-summary.json \
+npm run load:test:10k:staging
+```
+
+This script intentionally counts 10,000 total public/staging requests, not 10,000 concurrent users. It refuses localhost by default, refuses the production domain by default, and uses only the public-safe Supabase anon/publishable key. If the staging host is a temporary preview URL that does not include a staging-style hostname, set `ALLOW_NON_STAGING_BASE_URL=true` only after confirming the target is not production.
+
+Do not claim Zoot supports 10,000 concurrent users until:
 
 - Static frontend responses meet target latency under CDN/Hostinger conditions.
 - Supabase database-facing reads have measured latency and no failing RLS/policy paths.

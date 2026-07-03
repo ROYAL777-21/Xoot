@@ -22,6 +22,7 @@
     "build:artifact-scan": "node scripts/security/scan-build-artifacts.mjs dist",
     "verify": "npm run lockfiles:check && npm run lint && npm run test && npm run build && npm run build:artifact-scan && npm run security:scan",
     "load:test": "k6 run scripts/load/zoot-smoke.js",
+    "load:test:10k:staging": "k6 run scripts/load/zoot-staging-10k-readiness.js",
     "mobile:install": "npm --prefix mobile ci",
     "mobile:start": "npm --prefix mobile run start",
     "mobile:ios": "npm --prefix mobile run ios",

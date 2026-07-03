@@ -16,7 +16,7 @@ Zoot cannot be marked production-ready until every required gate below is either
 | Payments and payouts | Stitch/Ozow callbacks verified, idempotent, reconciled, disabled controls intentionally enabled only after approval | Pending provider credentials and smoke |
 | Communications | Twilio/Brevo setup verified, signed webhooks pass, operational messaging gates enabled only after approval | Pending provider setup |
 | Concierge | Guest answers are useful, source-guided, non-fake; account actions require sign-in; reports/escalation work | Pending live function smoke |
-| Load readiness | k6 staging run records p95 latency, error rate, and rate-limit behavior before any 10,000-request claim | Pending staging run |
+| Load readiness | `npm run load:test:10k:staging` records p95 latency, p99 latency, error rate, and rate-limit behavior before any 10,000-request claim | Pending staging run |
 | Domain and Cloudflare | Domain registered, Cloudflare zone active, TLS/WAF/rate limits/Turnstile configured and verified | Pending domain |
 | Store readiness | Apple/Google app records, signing credentials, privacy/data-safety, account deletion, legal URLs, and review metadata complete | Pending external records |
 | Legal readiness | Terms, Privacy, POPIA, Cookie, Refund, Care+, Zooter, AI Concierge, account deletion, and trust/legal copy reviewed | Drafts exist; legal review pending |

@@ -75,5 +75,5 @@ The loop is not allowed to self-approve production deploys, refunds, payouts, ba
 1. Use Supabase MCP for read-only schema/advisor inspection before touching migrations.
 2. Use Supabase CLI only from a local shell with rotated secrets loaded outside the repo and outside chat.
 3. Run `npm run ops:readiness -IncludeExternal -RequireLive` after the domain, Supabase Auth redirects, provider secrets, and device credentials exist.
-4. Run `npm run load:test` with `BASE_URL`, `SUPABASE_URL`, and `SUPABASE_ANON_KEY` pointed at staging before claiming 10,000-request readiness.
+4. Run `npm run load:test:10k:staging` with `LOAD_TEST_ENV=staging`, `BASE_URL`, `SUPABASE_URL`, and `SUPABASE_ANON_KEY` pointed at staging before claiming 10,000-request readiness.
 5. Keep WordPress SEO as an editorial CMS only; the app runtime remains React/Vite, Expo, Supabase, and Edge Functions.
