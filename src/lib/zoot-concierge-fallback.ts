@@ -88,14 +88,14 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
 
   if (includesAny(text, ["price", "pricing", "cost", "how much", "fee"])) {
     return reply(
-      "Pricing depends on service type, home size, add-ons, timing, number of Zooters and coverage. Care+ is listed publicly as R99/month where live. Exact totals must come from the signed-in booking flow so backend pricing and payment state stay authoritative.",
+      "Pricing depends on service type, home size, add-ons, timing, number of Zooters and coverage. Exact totals must come from the signed-in booking flow so backend pricing and payment state stay authoritative.",
       protectedCta(signedIn, "Check live pricing", "/app"),
     );
   }
 
   if (includesAny(text, ["care+", "care plus", "membership", "home memory", "favourite zooter", "favorite zooter"])) {
     return reply(
-      "Care+ is Zoot's membership layer for homes that want Home Memory, favourite Zooter workflows, smart reminders, priority support and member ZootCred benefits. It is designed for repeat households, hosts, landlords and offices that want less repeated admin.",
+      "Care+ details need the approved Care+ policy. I can guide you to the Care+ page or support, but I cannot promise pricing, benefits, billing outcomes, credits or preferred Zooter availability from this chat.",
       { label: "View Care+ membership", to: "/care-plus" },
     );
   }
@@ -129,7 +129,7 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
 
   if (includesAny(text, ["recurring", "weekly", "fortnight", "biweekly", "monthly", "repeat clean", "regular clean"])) {
     return reply(
-      "For recurring cleaning, Zoot works best when you save Home Memory notes: preferred products, rooms to prioritise, pet routines, parking, and what a great clean looks like to you. Care+ is designed to reduce repeated explanations through favourite Zooter continuity, smart reminders and priority support.",
+      "For recurring cleaning, Zoot works best when you save clear home notes: preferred products, rooms to prioritise, pet routines, parking, and what a great clean looks like to you. If Care+ is available, confirm the current benefits on the Care+ page before relying on membership details.",
     );
   }
 

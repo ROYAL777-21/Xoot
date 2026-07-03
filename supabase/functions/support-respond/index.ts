@@ -55,6 +55,10 @@ type AssistantResult = {
   response: string;
   source: "knowledge_base" | "openai_responses" | "human_escalation";
   requestId?: string | null;
+  knowledge_id?: string;
+  knowledge_version?: string;
+  answer_type?: string;
+  confidence?: string;
 };
 
 const escalationKeywords = [
@@ -79,7 +83,10 @@ const escalationKeywords = [
   "bug",
 ];
 
-const includesAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const includesAny = (text: string, terms: string[]) =>
+  terms.some((term) => new RegExp(`(^|[^a-z0-9])${escapeRegex(term)}([^a-z0-9]|$)`, "i").test(text));
 
 const shouldEscalate = (text: string) => includesAny(text, escalationKeywords);
 
@@ -338,7 +345,10 @@ Deno.serve(async (req) => {
         escalated: needsHumanReview,
         source: assistant.source,
         openai_request_id: assistant.requestId,
-        knowledge_version: zootKnowledgeVersion,
+        knowledge_version: assistant.knowledge_version ?? zootKnowledgeVersion,
+        knowledge_id: assistant.knowledge_id ?? null,
+        answer_type: assistant.answer_type ?? (needsHumanReview ? "support_escalation" : "model_guidance"),
+        confidence: assistant.confidence ?? null,
         turnstile_required: turnstileRequired,
       },
       200,

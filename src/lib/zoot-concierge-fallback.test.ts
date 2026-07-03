@@ -23,7 +23,10 @@ describe("Zoot Concierge local knowledge fallback", () => {
   });
 
   it("covers Care+, business cleaning, property managers and voice assistant handoff", () => {
-    expect(getLocalZootConciergeReply("What does Care+ include?", false)?.cta).toEqual({
+    const carePlusReply = getLocalZootConciergeReply("What does Care+ include?", false);
+    expect(carePlusReply?.response).toContain("approved Care+ policy");
+    expect(carePlusReply?.response).not.toContain("R99/month");
+    expect(carePlusReply?.cta).toEqual({
       label: "View Care+ membership",
       to: "/care-plus",
     });
