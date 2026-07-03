@@ -51,6 +51,24 @@ describe("mobile native launch experience", () => {
         service: "unknown",
       }),
     ).toBe("/book?intent=book_clean");
+
+    const unsafeTarget = buildNativeLaunchTarget("book", {
+      admin: "true",
+      amount: "1",
+      booking_id: "booking-1",
+      payment_status: "paid",
+      price: "1",
+      provider_token: "token",
+      role: "admin",
+      service: "office",
+    });
+
+    expect(unsafeTarget).toBe("/book?intent=book_clean&service=office");
+    expect(unsafeTarget).not.toContain("booking");
+    expect(unsafeTarget).not.toContain("payment");
+    expect(unsafeTarget).not.toContain("price");
+    expect(unsafeTarget).not.toContain("token");
+    expect(unsafeTarget).not.toContain("admin");
   });
 
   it("routes safe assistant surfaces to real Expo screens only", () => {

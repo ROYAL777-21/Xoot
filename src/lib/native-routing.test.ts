@@ -37,6 +37,10 @@ describe("resolveNativeRoute", () => {
       "/app?area=Rosebank&date=2026-07-03&intent=book_clean&service=office",
     );
     expect(resolveNativeRoute("zoot://book?intent=book_clean&gate_code=1234")).toBe("/app?intent=book_clean");
+    expect(resolveNativeRoute("zoot://book?intent=https://evil.example&service=office")).toBe(
+      "/app?service=office",
+    );
+    expect(resolveNativeRoute("zoot://book?intent=book_clean&area=../admin")).toBe("/app?intent=book_clean");
     expect(resolveNativeRoute("zoot://clean-house?intent=book_clean&date=2026-07-03&service=residential")).toBe(
       "/app?date=2026-07-03&intent=book_clean&service=residential",
     );

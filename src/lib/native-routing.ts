@@ -156,6 +156,8 @@ const safeQueryValue = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed || trimmed.length > 120) return null;
   if (/[<>"'`\\]/.test(trimmed)) return null;
+  if (hasPathTraversal(trimmed)) return null;
+  if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(trimmed)) return null;
   return trimmed;
 };
 

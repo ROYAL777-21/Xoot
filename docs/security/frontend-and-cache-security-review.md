@@ -1,6 +1,6 @@
 # Frontend And Cache Security Review
 
-Reviewed: 2026-07-02
+Reviewed: 2026-07-03
 
 ## Surfaces
 
@@ -11,7 +11,7 @@ Reviewed: 2026-07-02
 ## Controls
 
 - Public env validation fails loudly for missing Supabase URL/key or secret-like `VITE_` names.
-- Frontend mutation guard blocks direct writes to admin/outbox/messages paths.
+- Frontend/mobile mutation guard blocks direct client writes to support handoff, admin review, outbox, chat message, payment, ZootCred, subscription, booking-status-event, and masked-call critical tables.
 - Sensitive fields use Edge Function reveal instead of direct table queries.
 - Native/deep-link web URLs are restricted to approved Zoot hosts or local development hosts in `src/lib/native-routing.ts`.
 - Stored notification links are resolved through `src/lib/notification-routing.ts` and render as plain text when the route is external, auth-token bearing, unsafe, or outside approved in-app surfaces.

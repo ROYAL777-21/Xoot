@@ -1,6 +1,6 @@
 # Mobile And Deep Link Security Review
 
-Reviewed: 2026-07-02
+Reviewed: 2026-07-03
 
 ## Surfaces
 
@@ -11,6 +11,7 @@ Reviewed: 2026-07-02
 ## Rules
 
 - Deep links may open safe screens but cannot complete booking, payment, refund, payout, admin, support-risk, or sensitive access actions without in-app authenticated confirmation.
+- Voice assistant and deep-link booking handoffs preserve only safe service/date/area context; URL-like, path-traversal, payment, role, booking ID, provider token, and access-code state is stripped before routing.
 - Widgets and Live Activities show safe status, ETA, and progress only; no full address, gate codes, alarm codes, private notes, or payment references.
 - Sensitive access is fetched on demand and cleared after the reveal window.
 - Expo public variables may include only public-safe values.
