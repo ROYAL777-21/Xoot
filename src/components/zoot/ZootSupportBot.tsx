@@ -10,6 +10,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { haptic } from "@/lib/haptics";
 import { getLocalZootConciergeReply } from "@/lib/zoot-concierge-fallback";
 import { captureAnalyticsEvent } from "@/lib/analytics";
+import { redactConciergeClientText } from "@/lib/concierge-privacy";
 
 type BotMessage = {
   id: string;
@@ -107,7 +108,7 @@ export const ZootSupportBot = () => {
     if (isSupabaseConfigured && lastAssistant) {
       const recentContext = messages
         .slice(-5)
-        .map((message) => `${message.role}: ${message.body}`)
+        .map((message) => `${message.role}: ${redactConciergeClientText(message.body, 220)}`)
         .join("\n")
         .slice(0, 900);
 
@@ -117,8 +118,8 @@ export const ZootSupportBot = () => {
           role,
           source: lastAssistant.source ?? "unknown",
           knowledge_version: lastAssistant.knowledgeVersion ?? null,
-          answer_excerpt: lastAssistant.body,
-          conversation_context: recentContext,
+          answer_excerpt: redactConciergeClientText(lastAssistant.body, 900),
+          conversation_context: redactConciergeClientText(recentContext, 900),
         },
       });
 

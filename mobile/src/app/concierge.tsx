@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { type Href, useRouter } from 'expo-router';
 import { AccessibilityInfo, Animated, Easing, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
 import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { redactConciergeClientText } from '@/lib/concierge-privacy';
 import { invokeZootFunction } from '@/lib/edge-functions';
 import { getLocalZootConciergeReply } from '@/lib/zoot-concierge-fallback';
 import { useAuth } from '@/providers/auth-provider';
@@ -13,6 +15,7 @@ type SupportResponse = {
   escalated: boolean;
   source: 'knowledge_base' | 'openai_responses' | 'human_escalation' | 'local_knowledge';
   openai_request_id?: string | null;
+  knowledge_version?: string | null;
 };
 
 type ConciergeMessage = {
@@ -21,6 +24,11 @@ type ConciergeMessage = {
   body: string;
   source?: SupportResponse['source'];
   escalated?: boolean;
+  knowledgeVersion?: string | null;
+  cta?: {
+    label: string;
+    to: string;
+  };
 };
 
 const secretLikePattern =
@@ -63,6 +71,7 @@ function RoboticStarMark() {
 
 export default function ConciergeScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ConciergeMessage[]>([firstMessage]);
@@ -119,6 +128,43 @@ export default function ConciergeScreen() {
     setMessages((currentMessages) => [...currentMessages, { id: createMessageId(), ...nextMessage }]);
   };
 
+  const openCta = (to: string) => {
+    router.push(to as Href);
+  };
+
+  const reportAnswer = async (assistantMessage: ConciergeMessage) => {
+    const recentContext = messages
+      .slice(-5)
+      .map((item) => `${item.role}: ${redactConciergeClientText(item.body, 220)}`)
+      .join('\n');
+
+    try {
+      await invokeZootFunction('report-concierge-answer', {
+        reason: 'User reported this Concierge answer',
+        role: 'user',
+        source: assistantMessage.source ?? 'unknown',
+        knowledge_version: assistantMessage.knowledgeVersion ?? null,
+        answer_excerpt: redactConciergeClientText(assistantMessage.body, 900),
+        conversation_context: redactConciergeClientText(recentContext, 900),
+      });
+
+      appendMessage({
+        role: 'system',
+        body: user
+          ? 'Thanks. Zoot can review that Concierge answer through the approved support channel. The bot will not change bookings, payments, refunds or account state.'
+          : 'Thanks. Sign in and open Support for account-protected review. Do not paste private booking, payment, address or access-code details into public chat.',
+        source: 'local_knowledge',
+      });
+    } catch {
+      appendMessage({
+        role: 'system',
+        body: 'I could not record that report automatically. Open Support and reference this Concierge answer so a human reviewer can check it.',
+        source: 'local_knowledge',
+        escalated: true,
+      });
+    }
+  };
+
   const askConcierge = async () => {
     const trimmedMessage = message.trim();
     if (trimmedMessage.length < 3 || isSubmitting) return;
@@ -149,6 +195,7 @@ export default function ConciergeScreen() {
         body: response.response,
         source: response.source,
         escalated: response.escalated,
+        knowledgeVersion: response.knowledge_version ?? null,
       });
       if (response.escalated) {
         appendMessage({
@@ -165,6 +212,7 @@ export default function ConciergeScreen() {
         body: `${localReply?.response ?? 'I can help with general Zoot questions, but I cannot reach live support right now.'} Live support is not reachable in this session, so I cannot perform account, booking, payment or admin actions here.`,
         source: localReply?.source ?? 'local_knowledge',
         escalated: localReply?.escalated ?? true,
+        cta: localReply?.cta,
       });
     } finally {
       setIsSubmitting(false);
@@ -214,6 +262,20 @@ export default function ConciergeScreen() {
                       {item.source.replace(/_/g, ' ')}
                       {item.escalated ? ' - human review' : ''}
                     </Text>
+                  ) : null}
+                  {item.cta || (item.role === 'assistant' && item.id !== 'welcome') ? (
+                    <View style={styles.messageActions}>
+                      {item.cta ? (
+                        <SecondaryButton onPress={() => openCta(item.cta!.to)} style={styles.messageActionButton}>
+                          {item.cta.label}
+                        </SecondaryButton>
+                      ) : null}
+                      {item.role === 'assistant' && item.id !== 'welcome' ? (
+                        <SecondaryButton onPress={() => reportAnswer(item)} style={styles.messageActionButton}>
+                          Report answer
+                        </SecondaryButton>
+                      ) : null}
+                    </View>
                   ) : null}
                 </View>
               </View>
@@ -384,6 +446,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginTop: 8,
     textTransform: 'uppercase',
+  },
+  messageActions: {
+    alignItems: 'flex-start',
+    gap: Spacing.two,
+    marginTop: Spacing.two,
+  },
+  messageActionButton: {
+    alignSelf: 'flex-start',
+    minHeight: 38,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
   },
   typingBubble: {
     opacity: 0.84,

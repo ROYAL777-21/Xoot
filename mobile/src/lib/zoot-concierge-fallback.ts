@@ -2,6 +2,10 @@ export type ZootConciergeFallbackReply = {
   response: string;
   source: "local_knowledge";
   escalated: boolean;
+  cta?: {
+    label: string;
+    to: string;
+  };
 };
 
 const launchAreas = [
@@ -21,10 +25,16 @@ const launchAreas = [
 
 const includesAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
 
-const reply = (response: string, escalated = false): ZootConciergeFallbackReply => ({
+const reply = (response: string, escalated = false, cta?: ZootConciergeFallbackReply["cta"]): ZootConciergeFallbackReply => ({
   response,
   source: "local_knowledge",
   escalated,
+  cta,
+});
+
+const protectedCta = (signedIn: boolean, label: string, to: string) => ({
+  label: signedIn ? label : "Sign in to continue",
+  to: signedIn ? to : "/account",
 });
 
 export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): ZootConciergeFallbackReply | null => {
@@ -52,12 +62,16 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
   if (includesAny(text, ["price", "pricing", "cost", "how much", "fee"])) {
     return reply(
       "Pricing depends on service type, home size, add-ons, timing, number of Zooters and coverage. Exact totals must come from the signed-in booking flow so backend pricing and payment state stay authoritative.",
+      false,
+      protectedCta(signedIn, "Check live pricing", "/book"),
     );
   }
 
   if (includesAny(text, ["care+", "care plus", "membership", "home memory", "favourite zooter", "favorite zooter"])) {
     return reply(
       "Care+ details need the approved Care+ policy. I can guide you to the Care+ page or support, but I cannot promise pricing, benefits, billing outcomes, credits or preferred Zooter availability from this chat.",
+      false,
+      { label: "View Care+ membership", to: "/care-plus" },
     );
   }
 
@@ -71,18 +85,23 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
     return reply(
       "For urgent or same-day cleaning, open the booking flow and choose the earliest available time. Availability depends on your area, service scope, travel time and live Zooter capacity. If the clean is tied to a guest arrival, inspection, complaint or safety issue, use Support after booking so a human can prioritise the case.",
       true,
+      protectedCta(signedIn, "Find the earliest slot", "/book"),
     );
   }
 
   if (includesAny(text, ["prepare", "before", "ready", "what should i do", "before zooter", "before cleaner"])) {
     return reply(
       "Before your Zooter arrives, clear personal valuables, note priority rooms, secure pets, add parking and access instructions inside the protected booking fields, and photograph anything fragile or unusual. Keep gate codes, alarm codes and lockbox details out of chat.",
+      false,
+      protectedCta(signedIn, "Update home notes", "/book"),
     );
   }
 
   if (includesAny(text, ["how long", "duration", "hours", "bedroom", "bathroom", "deep clean", "standard clean", "spring clean"])) {
     return reply(
       "A good booking brief starts with the home type, bedrooms, bathrooms, priority rooms, and whether you need a standard reset or deeper catch-up clean. If the home has heavy build-up, post-event mess, pets, or laundry-style add-ons, choose more time rather than trying to compress the job. The signed-in booking flow keeps the final duration and price authoritative.",
+      false,
+      protectedCta(signedIn, "Choose service duration", "/book"),
     );
   }
 
@@ -102,6 +121,7 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
     return reply(
       "Cancellations, refunds, failed payments and booking changes must be handled inside the signed-in app so Zoot can use the real booking state and keep an audit trail. I can explain the process, but I cannot change payments, refunds or bookings from chat.",
       true,
+      protectedCta(signedIn, "Open protected Support", "/concierge"),
     );
   }
 
@@ -109,6 +129,7 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
     return reply(
       "That should go to protected Support for human review. Use the signed-in app so Zoot can attach the real booking, timestamps, photos and messages. Do not put accusations, private addresses, access codes, ID numbers or payment details in public chat.",
       true,
+      protectedCta(signedIn, "Escalate to Support", "/concierge"),
     );
   }
 
@@ -131,6 +152,8 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
   if (includesAny(text, ["office", "business", "salon", "clinic", "studio", "workspace"])) {
     return reply(
       "Zoot supports business cleaning needs such as quick office resets, studios, salons, clinics and client-facing spaces. A strong request includes timing, access notes, priority rooms, bathrooms or kitchenette needs, parking and whether the clean should recur.",
+      false,
+      protectedCta(signedIn, "Set up office cleaning", "/book"),
     );
   }
 
@@ -143,12 +166,16 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
   if (includesAny(text, ["airbnb", "guest", "turnover", "host", "short-term", "short term"])) {
     return reply(
       "For Airbnb and short-term rental turnovers, Zoot is built around saved property notes, guest-ready checklists, access rules, linen instructions and support routing. Same-day turnovers depend on location, scope, timing and live Zooter availability.",
+      false,
+      protectedCta(signedIn, "Set up host turnover", "/book"),
     );
   }
 
   if (includesAny(text, ["landlord", "property manager", "property managers", "handover", "move out", "move-out", "inspection"])) {
     return reply(
       "Landlords and property managers can use Zoot for handovers, move-out cleans, inspection-ready resets and repeat property profiles. The best setup keeps each property's notes, recurring needs and safe access rules in the app so every clean is easier to brief and audit.",
+      false,
+      protectedCta(signedIn, "Add a property profile", "/book"),
     );
   }
 
@@ -157,12 +184,16 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
       signedIn
         ? "To book, open the app, choose the service type, area, date, time, duration, property notes and preferred Zooter options, then confirm payment through the protected flow. Keep private access details in protected booking fields rather than chat."
         : "You can ask general booking questions here. Sign in to create a booking so Zoot can protect your address, payment state, access notes and support history. The booking flow will ask for service type, date, time, duration and property notes.",
+      false,
+      protectedCta(signedIn, "Start booking", "/book"),
     );
   }
 
   if (includesAny(text, ["join", "work", "contractor", "apply", "become a zooter", "zooter onboarding"])) {
     return reply(
       "To become a Zooter, use the Become a Zooter application flow. Zooters complete onboarding, identity and document checks, training and operational readiness before live jobs. Do not send ID documents or banking details through chat.",
+      false,
+      { label: "Ask Zooter Support", to: "/zooter/jobs" },
     );
   }
 
