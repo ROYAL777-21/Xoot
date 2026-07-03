@@ -15,8 +15,8 @@ Reviewed: 2026-07-02
 | Brevo | Transactional email | Sender spoofing, delivery failure, template mistakes | Setup pending | SPF/DKIM/DMARC, outbox retries |
 | KIE | Generated media/content | Unsafe output, fake proof | Disabled/pending | Human review, private storage, no fake claims |
 | OpenAI | Concierge fallback | Hallucinations, prompt injection, data leakage | Optional Edge-only fallback | Redaction, no tools, escalation |
-| PostHog | Analytics | PII/session replay leakage | Public vars supported | Event allowlist and data minimisation |
-| Sentry | Error monitoring | Sensitive logs | Scrubber exists | Verify DSN/env and scrubbing in production |
+| PostHog | Analytics | PII/session replay leakage | Public vars supported; web/mobile session replay and autocapture disabled | Event allowlist, data minimisation, provider retention review |
+| Sentry | Error monitoring | Sensitive logs | Web and mobile scrubbers exist | Verify DSN/env, alert routing, retention, and scrubbing in production |
 | Airtable | Ops/editorial workflows | Data export and token leakage | Optional/pending | Server-side token only, review before sync |
 | Hostinger/Netlify | Hosting | Misconfigured headers, env drift | Verification pending | Readback headers/env and fallback routing |
 | WordPress | SEO editorial CMS | Plugin risk, draft leaks, fake content | Not provisioned | Draft-first, hardened roles, read-only public API |

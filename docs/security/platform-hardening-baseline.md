@@ -22,6 +22,7 @@ This baseline records the current Zoot production-readiness posture before the n
 | Supabase runtime schema | App-runtime convergence migrations are present; production branch metadata still reports failed migration status. | `blocker.md`, `docs/implementation/live-schema-convergence-20260701.md`, `docs/implementation/supabase-migration-status-repair-20260630.md`. |
 | Auth redirects | Local config defines intended redirect set; dashboard/live allowlists still need controlled apply and verification. | `supabase/config.toml`, `blocker.md`. |
 | Secret handling | Secret scan exists and public env validation fails loudly; pasted secrets must still be rotated before production use. | `scripts/security/secret-scan.mjs`, `docs/SECRETS_INVENTORY.md`, `blocker.md`. |
+| Observability privacy | Web and mobile monitoring scrub sensitive keys, free-text contact details, access-code phrases, street-address patterns, credential-like strings, and payment-like numbers before Sentry send. PostHog remains event-allowlisted with autocapture/session replay disabled. | `src/lib/monitoring.ts`, `mobile/src/lib/monitoring-privacy.ts`, `src/lib/mobile-monitoring-privacy.test.ts`, `src/lib/analytics.tsx`, `mobile/src/lib/analytics.tsx`. |
 | Agent model | Codex is the harness and agents follow observe -> decide -> act -> verify -> learn. | `docs/AGENT_OPERATING_MODEL.md`. |
 | Load readiness | k6 script exists; staging proof has not been run with live staging credentials. | `scripts/load/zoot-smoke.js`, `blocker.md`. |
 

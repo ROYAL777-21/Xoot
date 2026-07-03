@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { mobileEnv } from '@/lib/env';
 import { MobileAnalyticsProvider } from '@/lib/analytics';
+import { scrubMobileSentryEvent } from '@/lib/monitoring-privacy';
 import { AuthProvider } from '@/providers/auth-provider';
 
 const queryClient = new QueryClient({
@@ -32,6 +33,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       enableNative: true,
       tracesSampleRate: mobileEnv.appEnv === 'production' ? 0.15 : 1,
       sendDefaultPii: false,
+      beforeSend: scrubMobileSentryEvent,
     });
     setSentryReady(true);
   }, [sentryReady]);

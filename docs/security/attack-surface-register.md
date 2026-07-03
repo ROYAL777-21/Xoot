@@ -16,7 +16,7 @@ Reviewed: 2026-07-02
 | AS-010 | File uploads and storage | Malware, public documents, overbroad bucket access | Upload validation, private bucket plans | Storage owner policy deployment and periodic bucket audit |
 | AS-011 | Mobile deep links and assistants | Unsafe action from speech/deep link, data disclosure | Safe route allowlist, App Intents/shortcuts, no sensitive widget text | Physical device tests, app association files with final IDs/fingerprints |
 | AS-012 | Native widgets and Live Activities | Lock-screen leakage, stale sensitive state | Public-safe widget content and deep links | Real-device review and cancellation/completion sanitization tests |
-| AS-013 | Analytics and monitoring | PII leakage, replay exposure, noisy alerts | Sentry scrubber, analytics contract docs | Final PostHog/Sentry project policies and data retention review |
+| AS-013 | Analytics and monitoring | PII leakage, replay exposure, noisy alerts | Web and mobile Sentry scrubbers, PostHog event allowlist, session replay/autocapture disabled, analytics contract docs | Final PostHog/Sentry project policies, retention, alerting, and production DSN readback |
 | AS-014 | CI/CD and dependencies | Supply-chain compromise, network flakes, leaked artifacts | Lockfile check, retrying npm install, secret scan, CodeRabbit/GitHub checks | Dependency audit cadence, protected branch rules, store-signing controls |
 | AS-015 | Supabase migration history | Drift, unsafe repair, production metadata failure | Guarded repair planner, MCP read-only rule | Live repair with local rotated credentials and split-migration review |
 
