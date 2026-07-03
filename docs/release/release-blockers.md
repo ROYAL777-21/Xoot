@@ -1,6 +1,6 @@
 # Release Blockers
 
-Reviewed: 2026-07-03 17:20 SAST
+Reviewed: 2026-07-03 17:35 SAST
 
 This document summarizes release blockers. `blocker.md` remains the detailed unresolved-only ledger.
 
@@ -9,7 +9,7 @@ This document summarizes release blockers. `blocker.md` remains the detailed unr
 - Supabase Auth redirect allowlists still require live dashboard/API configuration; production and staging dry-runs passed, but live PATCH still requires a rotated local `SUPABASE_ACCESS_TOKEN`.
 - Supabase migration metadata repair still requires a rotated local `SUPABASE_ACCESS_TOKEN` and approved production/staging DB URLs loaded outside chat.
 - Production and staging cannot be called fully release-ready until live role-based smoke tests and storage/function policy checks are complete.
-- Concierge Phase 1 governance is local only; the new controls migration, updated `support-respond` metadata path, approved knowledge workflow, and human handoff tests still need staging/prod deployment and smoke evidence.
+- Concierge Phase 1 governance and structured handoff are local only; the new controls/handoff migrations, updated `support-respond` metadata path, `create-concierge-handoff` Edge Function, approved knowledge workflow, and human handoff tests still need staging/prod deployment and smoke evidence.
 
 ## Medium
 

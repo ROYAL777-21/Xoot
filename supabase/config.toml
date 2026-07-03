@@ -53,6 +53,9 @@ verify_jwt = true
 [functions.create-masked-call]
 verify_jwt = true
 
+[functions.create-concierge-handoff]
+verify_jwt = true
+
 [functions.twilio-message-webhook]
 verify_jwt = false
 

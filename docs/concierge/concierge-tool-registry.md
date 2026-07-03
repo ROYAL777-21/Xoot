@@ -39,6 +39,12 @@ Initial safe tools:
 | open_safe_in_app_route | Return a safe app/web route | read | guest, user, zooter, admin | concierge.safe_static_fallback | product |
 | retrieve_approved_knowledge_answer | Return an answer from approved knowledge only | read | guest, user, zooter, admin | concierge.safe_static_fallback | product |
 
+Implemented local tool:
+
+| tool_name | backend surface | status | safeguards |
+| --- | --- | --- | --- |
+| create_support_escalation_request | `create-concierge-handoff` Edge Function plus `support_handoff_contexts` | staged locally, disabled by default | JWT required, rate-limited, role resolved server-side, booking participation checked, sensitive text redacted, in-app/admin-review outbox only |
+
 Prohibited direct tools:
 
 - create_booking;

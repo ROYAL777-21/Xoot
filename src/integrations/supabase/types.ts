@@ -540,6 +540,78 @@ export type Database = {
         }
         Relationships: []
       }
+      support_handoff_contexts: {
+        Row: {
+          booking_id: string | null
+          consent_to_share_context: boolean
+          correlation_id: string
+          created_at: string
+          customer_stated_issue: string
+          id: string
+          intent_category: string
+          recommended_owner: string
+          recommended_queue: string
+          requested_action: string
+          role_type: string
+          safe_context: Json
+          ticket_id: string
+          updated_at: string
+          urgency_level: number
+          user_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          consent_to_share_context?: boolean
+          correlation_id?: string
+          created_at?: string
+          customer_stated_issue: string
+          id?: string
+          intent_category?: string
+          recommended_owner?: string
+          recommended_queue?: string
+          requested_action?: string
+          role_type?: string
+          safe_context?: Json
+          ticket_id: string
+          updated_at?: string
+          urgency_level?: number
+          user_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          consent_to_share_context?: boolean
+          correlation_id?: string
+          created_at?: string
+          customer_stated_issue?: string
+          id?: string
+          intent_category?: string
+          recommended_owner?: string
+          recommended_queue?: string
+          requested_action?: string
+          role_type?: string
+          safe_context?: Json
+          ticket_id?: string
+          updated_at?: string
+          urgency_level?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_handoff_contexts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_handoff_contexts_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           ai_response: string | null
