@@ -137,7 +137,7 @@ const AuthReset = () => {
         )}
 
         {!checkingLink && linkReady && (
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on" noValidate>
             <div className="space-y-1.5">
               <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <Label htmlFor="password">New password</Label>
@@ -167,6 +167,7 @@ const AuthReset = () => {
               </div>
               <Input
                 id="password"
+                name="new-password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -180,6 +181,7 @@ const AuthReset = () => {
               <Label htmlFor="password-confirmation">Confirm password</Label>
               <Input
                 id="password-confirmation"
+                name="password-confirmation"
                 type={showPassword ? "text" : "password"}
                 value={confirmation}
                 onChange={(event) => setConfirmation(event.target.value)}

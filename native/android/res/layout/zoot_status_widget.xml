@@ -8,17 +8,37 @@
   android:orientation="vertical"
   android:padding="18dp">
 
-  <TextView
-    android:id="@+id/zoot_widget_eyebrow"
-    android:layout_width="wrap_content"
+  <LinearLayout
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/zoot_widget_action_background"
-    android:paddingHorizontal="10dp"
-    android:paddingVertical="4dp"
-    android:text="@string/zoot_widget_eyebrow"
-    android:textColor="#F3D4A2"
-    android:textSize="11sp"
-    android:textStyle="bold" />
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <TextView
+      android:id="@+id/zoot_widget_star"
+      android:layout_width="34dp"
+      android:layout_height="34dp"
+      android:background="@drawable/zoot_widget_mark_background"
+      android:gravity="center"
+      android:text="@string/zoot_widget_star"
+      android:textColor="#F3D4A2"
+      android:textSize="19sp"
+      android:textStyle="bold" />
+
+    <TextView
+      android:id="@+id/zoot_widget_eyebrow"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="9dp"
+      android:layout_marginStart="9dp"
+      android:background="@drawable/zoot_widget_action_background"
+      android:paddingHorizontal="10dp"
+      android:paddingVertical="4dp"
+      android:text="@string/zoot_widget_eyebrow"
+      android:textColor="#F3D4A2"
+      android:textSize="11sp"
+      android:textStyle="bold" />
+  </LinearLayout>
 
   <TextView
     android:id="@+id/zoot_widget_title"
@@ -27,7 +47,7 @@
     android:layout_marginTop="12dp"
     android:text="@string/zoot_widget_title"
     android:textColor="#FFF8EA"
-    android:textSize="24sp"
+    android:textSize="23sp"
     android:textStyle="bold" />
 
   <TextView

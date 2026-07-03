@@ -465,7 +465,7 @@ const Auth = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on" noValidate>
           {mode === "signup" && (
             <div className="space-y-1.5">
               <Label htmlFor="name">Full name</Label>

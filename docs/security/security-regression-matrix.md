@@ -18,7 +18,7 @@ Reviewed: 2026-07-02
 | Concierge avoids fake actions | Unit/fallback and live smoke | Fallback tests, `support-respond` staging smoke | Public support launch |
 | Native assistants are safe | Deep-link and device smoke | iOS/Android device checklist | Store submission |
 | Load readiness is evidenced | k6 staging run | `npm run load:test:10k:staging` with staging env and stored summary | 10,000-request claim |
-| Operations are replay-safe | Ops dashboard and outbox review | `/admin/ops`, outbox/dead-letter records | Automation activation |
+| Operations are replay-safe | Ops dashboard and outbox review | `/admin/ops`, `src/lib/admin-ops-readiness.test.ts`, outbox/dead-letter records | Automation activation |
 
 ## Failure Rule
 

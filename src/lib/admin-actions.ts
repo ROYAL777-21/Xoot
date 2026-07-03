@@ -12,7 +12,7 @@ export async function resolveAdminReview(reviewId: string, resolution: string, r
   });
 }
 
-export async function markOutboxProcessed(outboxId: string, reason?: string) {
+export async function markOutboxProcessed(outboxId: string, reason: string) {
   return supabase.functions.invoke("admin-mark-outbox", {
     body: { outbox_id: outboxId, reason },
   });

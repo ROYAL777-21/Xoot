@@ -1,8 +1,9 @@
 # Native Widget And Motion System
 
-Reviewed: 2026-07-02
+Reviewed: 2026-07-03
 
 Figma preview: https://www.figma.com/design/2M0vWKGmiLApMcB980WYC4
+Figma motion board: same file, with native widget frames for Next Booking, Care+ Readiness, ZootCred, Favourite Zooter, and Accepted Zooter Job. If Codex/Figma auth expires, code remains the source of truth until the editable board can be re-synced.
 
 This document defines the first production-safe widget direction for Zoot's Expo native app. It covers iOS widgets, iOS Live Activities, Dynamic Island, Android home-screen widgets, and safe assistant deep links.
 
@@ -25,6 +26,7 @@ Safe content is limited to short booking status, service type, safe ETA, suburb-
 - Liquid Glass direction: clear material, top-right light source, edge shimmer, readable foreground text, background obscured enough that underlying text cannot be read.
 - Message and widget entrance: staggered `42ms` increments, maximum seven visible delays.
 - Reduced motion: remove shimmer and glisten movement; keep opacity and color feedback.
+- Widget identity: use a simple robotic-star mark, compact enough for small iOS and Android widgets, and never use fake client names, prices, suburbs, balances, or access details.
 
 ## Implemented Native Surfaces
 

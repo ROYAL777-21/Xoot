@@ -94,11 +94,19 @@ Test-RepoFile "ops" "scripts/ops/mobile-preview-smoke.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/sql/verify-production-readiness.sql" | Out-Null
 Test-RepoFile "ops" "scripts/ops/staging-role-smoke.mjs" | Out-Null
 Test-RepoFile "ops" "scripts/load/zoot-staging-10k-readiness.js" | Out-Null
+Test-RepoFile "ops" "supabase/functions/admin-mark-outbox/index.ts" | Out-Null
 Test-RepoFile "ops" "docs/STAGING_ROLE_SMOKE_TESTS.md" | Out-Null
 Test-RepoFile "ops" "docs/ADMIN_ACCESS.md" | Out-Null
 Test-RepoPattern "ops" "package.json" "load:test:10k:staging" "npm script exposes staging 10k load-readiness harness"
 Test-RepoPattern "ops" "scripts/load/zoot-staging-10k-readiness.js" "LOAD_TEST_ENV !== `"staging`"" "staging 10k load test requires explicit staging target"
 Test-RepoPattern "ops" "scripts/load/zoot-staging-10k-readiness.js" "ALLOW_PRODUCTION_LOAD_TEST" "staging 10k load test refuses production by default"
+Test-RepoPattern "ops" "src/pages/admin/Ops.tsx" "outboxRetryRows" "admin ops computes retryable outbox rows"
+Test-RepoPattern "ops" "src/pages/admin/Ops.tsx" "outboxDeadLetters" "admin ops computes dead-letter outbox rows"
+Test-RepoPattern "ops" "src/pages/admin/Ops.tsx" "agentDecisionRows" "admin ops surfaces recent agent decisions"
+Test-RepoPattern "ops" "src/lib/admin-actions.ts" "markOutboxProcessed" "admin actions expose typed outbox completion helper"
+Test-RepoPattern "ops" "src/lib/admin-actions.ts" "reason: string" "admin outbox completion requires typed reason"
+Test-RepoPattern "ops" "supabase/functions/admin-mark-outbox/index.ts" "requireAdminReason" "admin outbox completion requires audited Edge reason"
+Test-RepoPattern "ops" "supabase/functions/admin-mark-outbox/index.ts" "\[`"queued`", `"needs_approval`", `"processing`"\]\.includes\(outbox\.status\)" "admin outbox completion rejects terminal rows"
 
 $hardeningDocs = @(
   "docs/security/platform-hardening-baseline.md",

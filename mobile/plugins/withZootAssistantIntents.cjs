@@ -162,6 +162,10 @@ const withZootAssistantIntents = (config) => {
         path.join(platformProjectRoot, "app", "src", "main", "res", "drawable", "zoot_widget_action_background.xml"),
       );
       copyFileEnsuringDirectory(
+        getNativeAssetPath(projectRoot, "android", "res", "drawable", "zoot_widget_mark_background.xml"),
+        path.join(platformProjectRoot, "app", "src", "main", "res", "drawable", "zoot_widget_mark_background.xml"),
+      );
+      copyFileEnsuringDirectory(
         getNativeAssetPath(projectRoot, "android", "src", "main", "java", "za", "co", "zoothome", "widgets", "ZootStatusWidgetProvider.java"),
         path.join(platformProjectRoot, "app", "src", "main", "java", "za", "co", "zoothome", "widgets", "ZootStatusWidgetProvider.java"),
       );

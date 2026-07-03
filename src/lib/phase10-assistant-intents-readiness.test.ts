@@ -15,6 +15,7 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
     expect(plugin).toContain("android.app.shortcuts");
     expect(plugin).toContain("zoot_assistant_shortcuts.xml");
     expect(plugin).toContain("ZootAppIntents.swift");
+    expect(plugin).toContain("zoot_widget_mark_background.xml");
     expect(plugin).toContain("withXcodeProject");
   });
 
@@ -51,8 +52,21 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
 
     expect(swiftWidget).toContain("Live details stay inside Zoot");
     expect(swiftWidget).toContain("Open app");
+    expect(swiftWidget).toContain("ZootRoboticStarMark");
     expect(swiftWidget).not.toMatch(/\b(Nomsa|Hyde Park|R\d+|Thu\s+\d{2}:\d{2}|Friday)\b/);
     expect(androidWidget).toContain("Open Zoot for live booking status.");
     expect(androidWidget).not.toMatch(/\b(Nomsa|Hyde Park|R\d+|Thu\s+\d{2}:\d{2}|Friday)\b/);
+  });
+
+  it("keeps widget motion and liquid-glass assets explicit", () => {
+    const motionDoc = read("docs/native/native-widget-motion-system.md");
+    const glass = read("native/ios/ZootLiveActivities/ZootLiquidGlass.swift");
+    const androidLayout = read("native/android/res/layout/zoot_status_widget.xml");
+
+    expect(motionDoc).toContain("Figma motion board");
+    expect(glass).toContain("ZootRoboticStarMark");
+    expect(glass).toContain("topTrailing");
+    expect(androidLayout).toContain("zoot_widget_star");
+    expect(androidLayout).toContain("zoot_widget_mark_background");
   });
 });

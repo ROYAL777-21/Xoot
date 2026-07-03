@@ -22,6 +22,7 @@ public class ZootStatusWidgetProvider extends AppWidgetProvider {
     if (layoutId == 0) return;
 
     RemoteViews views = new RemoteViews(context.getPackageName(), layoutId);
+    views.setTextViewText(resId(context, "id", "zoot_widget_star"), "*");
     views.setTextViewText(resId(context, "id", "zoot_widget_eyebrow"), "Zoot");
     views.setTextViewText(resId(context, "id", "zoot_widget_title"), "Next clean");
     views.setTextViewText(resId(context, "id", "zoot_widget_body"), "Open Zoot for live booking status.");

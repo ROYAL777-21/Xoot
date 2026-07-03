@@ -97,22 +97,32 @@ struct ZootWidgetEntryView: View {
     var body: some View {
         Link(destination: entry.deeplink) {
             ZootLiquidGlassGroup(spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "sparkles")
-                            .font(.caption.bold())
-                            .foregroundStyle(Color.zootTerracotta)
-                        Text(entry.kind)
-                            .font(.caption.bold())
-                            .foregroundStyle(Color.zootTerracotta)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 10) {
+                        ZootRoboticStarMark()
+                            .zootLiquidGlassCard(cornerRadius: 17, tint: .zootGold, interactive: true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Zoot")
+                                .font(.caption.bold())
+                                .foregroundStyle(Color.zootGold)
+                            Text(entry.kind)
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 6)
+                        Image(systemName: "arrow.up.forward")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(Color.zootGold.opacity(0.88))
                     }
-                    Spacer(minLength: 4)
+
+                    Spacer(minLength: 0)
+
                     Text(entry.title)
                         .font(.headline)
                         .foregroundStyle(.primary)
                         .lineLimit(2)
                     Text(entry.value)
-                        .font(.title.bold())
+                        .font(.title.weight(.black))
                         .foregroundStyle(.primary)
                         .minimumScaleFactor(0.75)
                     Text(entry.detail)
@@ -121,7 +131,7 @@ struct ZootWidgetEntryView: View {
                         .lineLimit(2)
                 }
                 .padding()
-                .zootLiquidGlassCard(cornerRadius: 22, tint: .zootCream, interactive: true)
+                .zootLiquidGlassCard(cornerRadius: 24, tint: .zootCream, interactive: true)
             }
         }
     }

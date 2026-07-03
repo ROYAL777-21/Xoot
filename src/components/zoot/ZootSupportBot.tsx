@@ -17,6 +17,10 @@ type BotMessage = {
   body: string;
   source?: SupportBotReply["source"] | "local_knowledge";
   knowledgeVersion?: string | null;
+  cta?: {
+    label: string;
+    to: string;
+  };
 };
 
 type SupportBotReply = {
@@ -41,10 +45,11 @@ const initialMessages: BotMessage[] = [
 ];
 
 const quickPrompts = [
-  "How do I book a cleaner?",
+  "Help me choose the right clean",
+  "How long should I book for?",
   "What does Care+ include?",
-  "What should I prepare before a Zooter arrives?",
   "Can Zoot help my office or Airbnb?",
+  "How does voice booking work?",
 ];
 
 const RoboticStarIcon = (props: SVGProps<SVGSVGElement>) => (
@@ -178,6 +183,7 @@ export const ZootSupportBot = () => {
           body: localReply.response,
           source: localReply.source,
           knowledgeVersion: "local",
+          cta: localReply.cta,
         });
         haptic("success");
         return;
@@ -217,6 +223,7 @@ export const ZootSupportBot = () => {
           body: `${localReply.response} Live support is not reachable in this session, so I cannot perform account, booking, payment or admin actions here.`,
           source: localReply.source,
           knowledgeVersion: "local",
+          cta: localReply.cta,
         });
         haptic("warning");
         return;
@@ -276,6 +283,14 @@ export const ZootSupportBot = () => {
                   <span className="relative z-10 block">
                     {message.role === "system" && <ShieldAlert className="mb-1 h-3.5 w-3.5 text-primary" />}
                     {message.body}
+                    {message.cta && (
+                      <Link
+                        to={message.cta.to}
+                        className="mt-2 inline-flex w-fit items-center rounded-full border border-white/30 bg-white/18 px-2.5 py-1 text-[11px] font-semibold shadow-sm transition-smooth hover:bg-white/28"
+                      >
+                        {message.cta.label}
+                      </Link>
+                    )}
                     {message.role === "assistant" && message.id !== "welcome" && (
                       <button
                         type="button"
