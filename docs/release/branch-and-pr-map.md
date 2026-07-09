@@ -1,34 +1,33 @@
 # Branch And Pull Request Map
 
-Reviewed: 2026-07-01 12:50 SAST
+Reviewed: 2026-07-09 12:30 SAST
 
-## Canonical Integration Branch
+## Canonical Source Of Truth
 
-- Branch: `codex/full-zoot-iphone-pwa-auth-security`
-- Pull request: #7, `[codex] Full Zoot iPhone PWA auth and security readiness`
-- Base branch: `main`
-- Status at review: open draft PR, mergeable, clean merge state, current checks passing on 2026-07-01 12:50 SAST.
-- Reason: this branch contains the complete web, backend, Supabase, security, Expo mobile, release-readiness, and blocker-tracking work. It is the safest single source of truth for deployment hardening.
+- Target branch: `main`
+- Policy: `main` is the only long-lived code source of truth. Feature branches are short-lived, reviewed through pull requests, merged, and deleted.
+- Release safety: a push to `main` builds and verifies the product but does not deploy GitHub Pages. Deployment requires an explicit `workflow_dispatch` with `deploy_pages=true`.
+- Current merge candidate: PR #7, `[codex] Full Zoot iPhone PWA auth and security readiness`.
+- Current state: PR #7 is mergeable and 280 commits ahead of `main`. It contains the complete web, Supabase, security, Expo mobile, release-readiness, and blocker-tracking work.
 
 ## Open Pull Requests
 
 1. PR #7: `codex/full-zoot-iphone-pwa-auth-security`
-   - Classification: merge candidate after manual blockers and founder approval.
+   - Classification: canonical merge candidate.
    - Relevance: primary release-hardening branch.
-   - Current role: continue controlled blocker fixes here.
+   - Current role: finish verification, merge to `main`, then delete the remote branch.
 
 2. PR #8: `codex/native-routing-bridge`
-   - Classification: deferred/selective integration candidate.
-   - Relevance: narrower native routing bridge work.
-   - Current role: do not merge into #7 automatically. Checks are green, but review selectively only if a routing regression appears in the canonical branch.
+   - Classification: superseded candidate.
+   - Relevance: its routing behavior is already present in PR #7 with broader URL allowlisting, auth callback handling, assistant intent support, and optional legacy-shell loading.
+   - Current role: close after PR #7 is merged; do not merge duplicate code.
 
 ## Branches To Ignore For This Task
 
-- `main`: production base only, not the working integration branch.
-- `codex/native-routing-bridge`: useful but narrower; avoid duplicating or mixing it into the current release-hardening task without a specific reason.
+- `codex/native-routing-bridge`: superseded by PR #7.
 - `coderabbitai/*`: CodeRabbit-generated branches should not be treated as release sources without review.
 
 ## Merge Conflict Status
 
 - PR #7 reports clean/mergeable.
-- No new branch is required for the current iOS preview and release-documentation work.
+- No new long-lived branch is required.

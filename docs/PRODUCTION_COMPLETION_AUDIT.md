@@ -4,6 +4,8 @@ Reviewed: 2026-07-02
 
 This file defines the evidence needed before the active Zoot goal can be considered complete. `blocker.md` lists unresolved blockers; this audit lists the proof gates that remain necessary even after blockers are closed.
 
+Use `docs/release/production-command-center.md` as the index for source ownership, gate order, and founder inputs.
+
 ## Completion Gates
 
 - Web app: current PR checks green, `npm run lint`, `npm test`, `npm run build`, `npm run security:scan`, and `npm run ops:readiness` passing on the merge candidate.

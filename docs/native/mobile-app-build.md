@@ -26,6 +26,23 @@ npm run typecheck
 
 Set real public-safe Supabase and EAS values in `.env.local` for local development. Do not put secrets in `.env.local` unless they are only used by local CLI tooling and the file remains ignored.
 
+## Expo Go Versus Development Builds
+
+Zoot cannot be fully tested in Expo Go. It includes custom native code through `@rnmapbox/maps` and the Zoot assistant-intents config plugin. Expo Go cannot load native code that is not compiled into the Expo Go client.
+
+Use one of these paths:
+
+1. Immediate standalone smoke test:
+   - Install `outputs/zoot-preview-android-v5.apk` on an Android device.
+   - This build runs without Metro and is suitable for auth, navigation, maps, notifications, Concierge and booking smoke tests.
+2. Iterative development test:
+   - Build the `development` EAS profile for the target device.
+   - Install that development client.
+   - Start Metro with `npm run mobile:start:dev-client`.
+   - Open the installed Zoot development client and connect to the Metro URL or QR code.
+
+The first native build must be rebuilt whenever native dependencies, config plugins, permissions or app identifiers change. JavaScript-only changes can then be tested through Metro without rebuilding the native client.
+
 ## EAS Setup
 
 ```bash

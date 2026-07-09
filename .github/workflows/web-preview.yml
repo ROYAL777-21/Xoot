@@ -8,6 +8,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      deploy_pages:
+        description: Deploy the verified build to GitHub Pages
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -119,20 +125,20 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
 
-      - name: Check deployment environment
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && (vars.VITE_SUPABASE_URL == '' || vars.VITE_SUPABASE_PUBLISHABLE_KEY == '' || vars.VITE_SUPABASE_PROJECT_ID == '')
+      - name: Document deployment gate
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          echo "::notice::GitHub Pages deployment skipped because VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, or VITE_SUPABASE_PROJECT_ID is not configured in repository variables."
+          echo "::notice::Main is the source-of-truth branch. GitHub Pages deployment requires an explicit workflow_dispatch with deploy_pages=true."
 
       - name: Upload GitHub Pages artifact
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_PUBLISHABLE_KEY != '' && vars.VITE_SUPABASE_PROJECT_ID != ''
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_pages == true && vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_PUBLISHABLE_KEY != '' && vars.VITE_SUPABASE_PROJECT_ID != ''
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy-pages:
     name: Deploy GitHub Pages
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_PUBLISHABLE_KEY != '' && vars.VITE_SUPABASE_PROJECT_ID != ''
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_pages == true && vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_PUBLISHABLE_KEY != '' && vars.VITE_SUPABASE_PROJECT_ID != ''
     needs: build
     runs-on: ubuntu-latest
     environment:

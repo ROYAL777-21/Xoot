@@ -25,6 +25,7 @@
     "load:test:10k:staging": "k6 run scripts/load/zoot-staging-10k-readiness.js",
     "mobile:install": "npm --prefix mobile ci",
     "mobile:start": "npm --prefix mobile run start",
+    "mobile:start:dev-client": "npm --prefix mobile run start:dev-client",
     "mobile:ios": "npm --prefix mobile run ios",
     "mobile:android": "npm --prefix mobile run android",
     "mobile:web": "npm --prefix mobile run web",
