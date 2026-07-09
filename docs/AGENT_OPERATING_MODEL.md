@@ -25,7 +25,7 @@ This document defines how Zoot agents operate without granting them uncontrolled
 | Finance Operations Agent | Keep payments, invoices, ZootCred, and payouts auditable | Payment callback, invoice request, refund/payout review, ZootCred debit | `confirm-payment`, `admin-confirm-payment`, `generate-booking-invoice`, `resend-booking-invoice`, Stitch/Ozow functions, `redeem-zootcred`, admin audit log | Required for refunds, payout changes, manual payment confirmation |
 | Retention & Loyalty Agent | Operate Care+, reminders, ZootCred, and renewal nudges | Care+ lifecycle, subscription state, ledger entries, last booking date | `activate-care-plus`, `care-plus-membership`, ZootCred ledger hooks, in-app notifications, Brevo queue | Required for billing changes, subscription exceptions, promotional sends |
 | Marketing & SEO Agent | Create review-ready local SEO content | Daily SEO queue command, approved editorial prompts, WordPress draft workflow | `npm run seo:daily`, content queue files, WordPress editorial CMS when provisioned, Search Console/Semrush data when available | Human editorial approval before publish; no fake claims or unreviewed AI auto-publish |
-| Notification Delivery Agent | Fan out safe operational notifications | Outbox rows, booking state changes, sensitive-access availability, support follow-up | `integration_outbox`, Expo push, in-app notifications, Brevo, Twilio SMS/WhatsApp/voice after activation | Required for WhatsApp campaigns, marketing messages, or non-urgent routine external chat |
+| Notification Delivery Agent | Fan out safe operational notifications | Outbox rows, booking state changes, sensitive-access availability, support follow-up, privacy-safe behavior signals | `integration_outbox`, Expo push, in-app notifications, Brevo, Twilio SMS/WhatsApp/voice after activation, `notification-personalization-system.md` | Required for WhatsApp campaigns, marketing messages, or non-urgent routine external chat |
 | Release & Observability Agent | Prove release health and regression safety | GitHub Actions, EAS builds, Supabase advisors, Sentry/PostHog signals | GitHub Actions, EAS CLI, Supabase advisors/MCP, `npm run ops:readiness`, Sentry, PostHog, k6 when installed | Required before production launch, store release, or rollback decisions |
 
 ## How Agents Start Working
@@ -53,7 +53,7 @@ The loop is not allowed to self-approve production deploys, refunds, payouts, ba
 ## Active Automation Surfaces
 
 - Booking lifecycle and status events: booking state machine, `booking_status_events`, `ops-workflow`, and booking Edge Functions.
-- Sensitive-access availability and revocation: `can_access_sensitive_data`, sensitive-access logs, notification scheduler, and `revoke-sensitive-access`.
+- Sensitive-access availability and revocation: `can_access_sensitive_data`, sensitive-access logs, notification scheduler, safe personalization rules, and `revoke-sensitive-access`.
 - Concierge support: `support-respond`, `report-concierge-answer`, support ticket escalation, and deterministic fallback.
 - Booking chat: `send-booking-message`, `mark-booking-message-read`, `report-booking-message`, and encrypted message envelope checks.
 - Admin actions: typed audited Edge Functions and `admin_audit_log`.

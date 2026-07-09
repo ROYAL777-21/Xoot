@@ -1122,6 +1122,231 @@ export const blogPosts: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "is-zoot-legit-trust-first-cleaning-south-africa",
+    title: "Is Zoot legit? How to judge a new cleaning service before you book",
+    seoTitle: "Is Zoot Legit? Trust-First Cleaning In South Africa",
+    description:
+      "A practical trust guide for checking whether Zoot is legit, how bookings should work, and what to verify before using any cleaning app.",
+    excerpt:
+      "If you are going to let a cleaner into your home, asking whether Zoot is legit is not rude. It is the right question.",
+    publishedAt: "2026-07-09",
+    readingTime: "5 min read",
+    author: "Zoot Team",
+    primaryKeyword: "is Zoot legit",
+    secondaryKeywords: [
+      "Zoot cleaning app",
+      "trusted cleaning service South Africa",
+      "safe home cleaning app",
+      "vetted cleaners Johannesburg",
+      "cleaning service trust checklist",
+    ],
+    areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank", "Pretoria"],
+    sections: [
+      {
+        heading: "The honest answer",
+        body: [
+          "Zoot is being built as a trust-first South African home-care platform. The right way to judge whether Zoot is legit is not by hype, logos or a perfect landing page. It is by the operating controls around bookings, payments, Zooter screening, support, privacy and what happens when something goes wrong.",
+          "For launch, Zoot should be treated as a careful new platform rather than a mature national utility. That means you should expect clear service areas, protected account access, honest availability, backend-confirmed payments, in-app communication and no casual handling of private home details.",
+        ],
+      },
+      {
+        heading: "What legitimacy should look like in home cleaning",
+        body: [
+          "A legitimate cleaning service should tell you what it can do, what it cannot promise yet, how support works and how your private information is protected. It should not ask for gate codes in public chat, mark payments successful from the frontend, or promise the same person before availability is confirmed.",
+          "For Zoot, the standard is simple: book through the app or website, keep sensitive access details inside approved workflows, use authenticated support for account-specific questions, and treat payment, refund, Care+, ZootCred and Booking Cover changes as backend or human-reviewed actions.",
+        ],
+      },
+      {
+        heading: "The trust checklist before you book",
+        body: [
+          "Before using any cleaning app, check five things: the official website or app route, the service area, the payment path, the support route and the privacy boundary. If a service asks you to move routine communication to WhatsApp, pay outside the app, or share sensitive access notes loosely, treat that as a warning sign.",
+          "Zoot is designed to keep client-Zooter communication inside the app, route support through structured workflows and keep sensitive details away from push notifications, public pages and loose messages. Those details matter more than a slogan because home cleaning is a high-trust service.",
+        ],
+      },
+      {
+        heading: "What Zoot should never pretend",
+        body: [
+          "Zoot should not pretend that every area is live, every preferred Zooter is available, every payment is confirmed, or every support outcome can be decided by a bot. Those are exactly the kinds of claims that damage trust.",
+          "If availability, pricing, refunds, Booking Cover, Care+ membership state or account data cannot be verified live, Zoot should say so and guide you to the approved app flow or a human support route. A trustworthy platform is allowed to say: we need to check that.",
+        ],
+      },
+      {
+        heading: "The bottom line",
+        body: [
+          "Zoot is being built to be legitimate by design: clear booking flows, vetted Zooter journeys, server-side payment confirmation, safe account support, privacy rules and structured escalation. The remaining launch work is not marketing polish. It is provider setup, live smoke testing, store credentials, domain security and final approvals.",
+          "If you want to try Zoot during launch, use the official app or website, check whether your area is active, avoid off-platform payment or support shortcuts, and keep private household access information inside the approved Zoot flow.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Is Zoot a real cleaning platform?",
+        answer:
+          "Zoot is a real product being built for South African home care, but launch readiness still depends on live provider setup, service-area availability, store credentials, and verified staging or production smoke tests.",
+      },
+      {
+        question: "Should I pay a Zooter directly?",
+        answer:
+          "No. Zoot payments should use approved in-app or website payment flows. Direct cash, EFT or off-platform payment requests should be reported through support.",
+      },
+      {
+        question: "Can the Zoot Concierge confirm a refund or payment?",
+        answer:
+          "No. Concierge can guide and escalate, but payment success, refunds and account changes must be verified through approved backend or human-review workflows.",
+      },
+    ],
+  },
+  {
+    slug: "sweepsouth-alternatives-south-africa-trust-first-cleaning",
+    title: "SweepSouth alternatives in South Africa: what to look for before choosing",
+    seoTitle: "SweepSouth Alternatives South Africa | Zoot Cleaning Guide",
+    description:
+      "A fair guide to SweepSouth alternatives in South Africa, with a trust checklist for homes, hosts, offices and property managers.",
+    excerpt:
+      "Looking for a SweepSouth alternative usually means one thing: you want the clean handled, but you also want more trust, memory or control.",
+    publishedAt: "2026-07-09",
+    readingTime: "6 min read",
+    author: "Zoot Team",
+    primaryKeyword: "SweepSouth alternatives South Africa",
+    secondaryKeywords: [
+      "SweepSouth alternative",
+      "cleaning app South Africa",
+      "home cleaning Johannesburg",
+      "trusted cleaners South Africa",
+      "premium cleaning service",
+    ],
+    areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank", "Cape Town"],
+    sections: [
+      {
+        heading: "Why people look beyond the obvious option",
+        body: [
+          "SweepSouth is an established South African home-services platform with web and app booking, home cleaning, office cleaning, outdoor services and other household support categories. For many people, it is the first name they search.",
+          "But looking for SweepSouth alternatives does not always mean someone had a bad experience. It can mean they want a different style of service: more home memory, more premium support, a Johannesburg-focused launch, property-manager workflows, Airbnb turnovers, in-app communication or a clearer repeat-cleaning rhythm.",
+        ],
+      },
+      {
+        heading: "The alternative should solve your actual problem",
+        body: [
+          "If your problem is a once-off clean, compare availability and service scope. If your problem is a recurring home, compare how preferences, favourite cleaners and support history are handled. If your problem is an Airbnb, compare turnover notes, photos, access handling and repeatability.",
+          "If your problem is an office, salon, clinic or property-management portfolio, compare whether the platform understands business context rather than only ordinary household tasks.",
+        ],
+      },
+      {
+        heading: "Where Zoot is different",
+        body: [
+          "Zoot is positioning itself as a premium, trust-first home-care operating system rather than a cheap generic marketplace. The product direction focuses on vetted Zooters, Care+ Home Memory, favourite Zooter continuity where available, safer in-app communication, protected access details, ZootCred, Concierge support and property workflows.",
+          "That difference matters if you care less about the broadest national catalogue and more about a managed, repeatable experience for one home, a set of Airbnb units, a small office or a property handover.",
+        ],
+      },
+      {
+        heading: "The comparison checklist",
+        body: [
+          "Before choosing a cleaning app, compare service area, vetting, payment confirmation, support escalation, recurring booking tools, access-note privacy, notification privacy, customer support and what the service does when a cleaner is late or a booking needs review.",
+          "Do not choose only on price. A low-friction booking is useful, but the expensive failure is a home that feels unsafe, a guest unit that misses check-in, an office that is not client-ready, or a support issue that leaves you repeating the same facts.",
+        ],
+      },
+      {
+        heading: "When Zoot may be the better fit",
+        body: [
+          "Zoot may be a better fit if you are in a launch area, want a more premium tone, care about saved preferences, need support workflows for hosts or property managers, or want an app that treats private household details as sensitive by default.",
+          "If you need immediate broad national coverage today, compare live availability before deciding. The honest answer is that Zoot should win carefully in approved launch areas before claiming every city or every service category.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Is Zoot a SweepSouth alternative?",
+        answer:
+          "Zoot is being built as a trust-first alternative for homes, hosts, offices and property workflows, subject to live area availability and launch readiness.",
+      },
+      {
+        question: "What should I compare between cleaning apps?",
+        answer:
+          "Compare service area, vetting, recurring support, payment confirmation, privacy, support escalation, access-note handling and whether the platform understands your specific use case.",
+      },
+      {
+        question: "Should I use the cheapest cleaning option?",
+        answer:
+          "Price matters, but for high-trust spaces it should not be the only factor. Reliability, privacy, support and repeatability can matter more than the cheapest booking.",
+      },
+    ],
+  },
+  {
+    slug: "sweepsouth-vs-zoot-cleaning-service-comparison",
+    title: "SweepSouth vs Zoot: how to choose the right cleaning service",
+    seoTitle: "SweepSouth Vs Zoot | Cleaning Service Comparison",
+    description:
+      "A fair SweepSouth vs Zoot comparison for South African homes, offices, hosts and property managers choosing a cleaning service.",
+    excerpt:
+      "SweepSouth and Zoot should not be judged by the same checklist alone. The better choice depends on what you need the cleaning service to remember, protect and solve.",
+    publishedAt: "2026-07-09",
+    readingTime: "6 min read",
+    author: "Zoot Team",
+    primaryKeyword: "SweepSouth vs Zoot",
+    secondaryKeywords: [
+      "SweepSouth vs Zoot cleaning",
+      "Zoot vs SweepSouth",
+      "cleaning service comparison South Africa",
+      "home cleaning app comparison",
+      "premium cleaning Johannesburg",
+    ],
+    areas: ["South Africa", "Johannesburg", "Sandton", "Rosebank", "Bryanston"],
+    sections: [
+      {
+        heading: "Start with the job to be done",
+        body: [
+          "A fair SweepSouth vs Zoot comparison starts with the job. Are you booking a one-time clean, looking for recurring help, managing an Airbnb turnover, preparing an office, or trying to build a trusted rhythm for one household?",
+          "SweepSouth publicly positions itself around quick home-service booking, trusted professionals, cleaning, care, placements and household support. Zoot is being built around a more managed trust-first model for home care, Care+, property workflows, ZootCred and safer in-app support.",
+        ],
+      },
+      {
+        heading: "Where SweepSouth may suit you",
+        body: [
+          "SweepSouth may suit someone who wants a familiar South African platform, broad service categories, web and app booking, and current availability in listed locations. Its own service pages describe on-demand, recurring and regular home-cleaning booking options, plus office and outdoor service categories.",
+          "If your priority is immediate access to a mature, established marketplace, check SweepSouth's current service area and booking flow directly before deciding.",
+        ],
+      },
+      {
+        heading: "Where Zoot may suit you",
+        body: [
+          "Zoot may suit someone who wants a premium, carefully launched product with saved home or property context, structured support, protected access notes, favourite Zooter continuity where available, Care+ membership value and a Concierge layer that routes safely rather than guessing.",
+          "Zoot should be especially relevant for busy homes, Airbnb hosts, small offices, property managers and people who want the service to become easier every time instead of restarting from zero.",
+        ],
+      },
+      {
+        heading: "The privacy and support question",
+        body: [
+          "Cleaning is not only a booking category. It touches private homes, keys, gates, pets, offices, short-term rentals and personal routines. That is why the support model matters.",
+          "When comparing any platform, ask where access notes live, whether push notifications reveal sensitive information, whether payments are confirmed server-side, whether support can escalate serious issues and whether the app avoids routine off-platform communication.",
+        ],
+      },
+      {
+        heading: "The practical choice",
+        body: [
+          "Choose SweepSouth if its live coverage, service categories and booking model fit the immediate job. Choose Zoot if your area is active and you want a more trust-dense, premium, repeatable home-care experience with stronger memory and in-app support direction.",
+          "The best choice is the one that matches your real risk: time pressure, privacy, recurring quality, host reviews, office reputation or support when something does not go as planned.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Is Zoot better than SweepSouth?",
+        answer:
+          "It depends on the job. Zoot is designed for a premium, trust-first and repeatable experience, while SweepSouth is an established broad home-services platform. Compare live availability and the workflow you need.",
+      },
+      {
+        question: "Can Zoot replace SweepSouth for recurring cleaning?",
+        answer:
+          "Zoot is being built for recurring cleaning through Home Memory, Care+, favourite Zooter workflows and support routing, but live replacement depends on your service area and approved Zooter availability.",
+      },
+      {
+        question: "Which app should Airbnb hosts consider?",
+        answer:
+          "Hosts should compare turnover notes, access privacy, timing, photo proof, support escalation and repeatability. Zoot is being shaped around these property workflows, subject to launch coverage.",
+      },
+    ],
+  },
 ];
 
 export const getBlogPost = (slug: string | undefined) => blogPosts.find((post) => post.slug === slug) ?? null;

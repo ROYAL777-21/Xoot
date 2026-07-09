@@ -86,6 +86,7 @@ Test-RepoFile "ops" "scripts/ops/deploy-staging-backend.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/deploy-production-backend.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/deploy-supabase-backend.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/repair-supabase-migration-history.ps1" | Out-Null
+Test-RepoFile "ops" "scripts/ops/check-supabase-metadata-drift.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-github-public-vars.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-supabase-edge-secrets.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/set-supabase-auth-config.ps1" | Out-Null
@@ -94,10 +95,15 @@ Test-RepoFile "ops" "scripts/ops/mobile-preview-smoke.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/sql/verify-production-readiness.sql" | Out-Null
 Test-RepoFile "ops" "scripts/ops/staging-role-smoke.mjs" | Out-Null
 Test-RepoFile "ops" "scripts/load/zoot-staging-10k-readiness.js" | Out-Null
+Test-RepoFile "ops" "supabase/migration-drift-allowlist.json" | Out-Null
 Test-RepoFile "ops" "supabase/functions/admin-mark-outbox/index.ts" | Out-Null
 Test-RepoFile "ops" "docs/STAGING_ROLE_SMOKE_TESTS.md" | Out-Null
 Test-RepoFile "ops" "docs/ADMIN_ACCESS.md" | Out-Null
 Test-RepoPattern "ops" "package.json" "load:test:10k:staging" "npm script exposes staging 10k load-readiness harness"
+Test-RepoPattern "ops" "package.json" "ops:supabase:drift-check" "npm script exposes Supabase metadata drift guard"
+Test-RepoPattern "ops" "supabase/migration-drift-allowlist.json" "schemaEquivalentSafeToRepair" "migration drift manifest records safe repair versions"
+Test-RepoPattern "ops" "supabase/migration-drift-allowlist.json" "blockedPartialOrSplit" "migration drift manifest records blocked split migrations"
+Test-RepoPattern "ops" "scripts/ops/check-supabase-metadata-drift.ps1" "RemoteMigrationsFile" "metadata drift guard can verify saved remote migration evidence"
 Test-RepoPattern "ops" "scripts/load/zoot-staging-10k-readiness.js" "LOAD_TEST_ENV !== `"staging`"" "staging 10k load test requires explicit staging target"
 Test-RepoPattern "ops" "scripts/load/zoot-staging-10k-readiness.js" "ALLOW_PRODUCTION_LOAD_TEST" "staging 10k load test refuses production by default"
 Test-RepoPattern "ops" "src/pages/admin/Ops.tsx" "outboxRetryRows" "admin ops computes retryable outbox rows"
@@ -107,6 +113,14 @@ Test-RepoPattern "ops" "src/lib/admin-actions.ts" "markOutboxProcessed" "admin a
 Test-RepoPattern "ops" "src/lib/admin-actions.ts" "reason: string" "admin outbox completion requires typed reason"
 Test-RepoPattern "ops" "supabase/functions/admin-mark-outbox/index.ts" "requireAdminReason" "admin outbox completion requires audited Edge reason"
 Test-RepoPattern "ops" "supabase/functions/admin-mark-outbox/index.ts" "\[`"queued`", `"needs_approval`", `"processing`"\]\.includes\(outbox\.status\)" "admin outbox completion rejects terminal rows"
+Test-RepoFile "ops" "docs/product/notification-personalization-system.md" | Out-Null
+Test-RepoFile "ops" "src/lib/notification-personalization.ts" | Out-Null
+Test-RepoFile "ops" "src/lib/notification-personalization.test.ts" | Out-Null
+Test-RepoPattern "ops" "docs/product/notification-personalization-system.md" "Behavior Signals" "notification personalization doc defines behavior signals"
+Test-RepoPattern "ops" "src/lib/notification-personalization.ts" "containsSensitiveNotificationText" "notification personalization strips sensitive preview text"
+Test-RepoPattern "ops" "src/lib/notification-personalization.test.ts" "sensitive access notifications on safe app channels only" "notification personalization regression covers sensitive access"
+Test-RepoPattern "ops" "mobile/src/lib/push-notifications.ts" "zoot-booking-updates" "Expo app defines booking notification channel"
+Test-RepoPattern "ops" "mobile/src/lib/push-notifications.ts" "zoot-zooter-jobs" "Expo app defines Zooter job notification channel"
 
 $hardeningDocs = @(
   "docs/security/platform-hardening-baseline.md",
@@ -354,6 +368,9 @@ Test-RepoPattern "github" ".github/workflows/web-preview.yml" "npm ci --no-audit
 Test-RepoPattern "github" ".github/workflows/web-preview.yml" "npm --prefix mobile ci --no-audit --prefer-offline" "Mobile dependency install reduces registry calls"
 Test-RepoPattern "github" ".github/workflows/web-preview.yml" "attempts=3" "Web build install retries transient npm failures"
 Test-RepoPattern "github" ".github/workflows/web-preview.yml" "npm run build:artifact-scan" "Web build scans dist before artifact upload"
+Test-RepoPattern "github" ".github/workflows/production-readiness.yml" "check-supabase-metadata-drift\.ps1" "Production readiness CI parses Supabase metadata drift guard"
+Test-RepoPattern "github" ".github/workflows/production-readiness.yml" "check-supabase-metadata-drift\.ps1 -Environment staging" "Production readiness CI checks staging metadata drift guard"
+Test-RepoPattern "github" ".github/workflows/production-readiness.yml" "check-supabase-metadata-drift\.ps1 -Environment production" "Production readiness CI checks production metadata drift guard"
 Test-RepoPattern "security" "scripts/security/secret-scan.mjs" "Cloudflare API token" "secret scan catches Cloudflare API tokens"
 Test-RepoPattern "security" "scripts/security/secret-scan.mjs" "Mapbox secret token" "secret scan catches Mapbox secret tokens"
 Test-RepoFile "security" "scripts/security/scan-build-artifacts.mjs" | Out-Null
@@ -387,12 +404,15 @@ Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "VerifyLiv
 Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "ZOOT_PRODUCTION_SUPABASE_DB_URL" "shared deploy supports production DB URL"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "knownSchemaEquivalentVersions" "migration repair helper allowlists proven schema-equivalent versions"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "blockedPartialOrSplitVersions" "migration repair helper blocks partial or split migrations"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "schemaEquivalentSafeToRepair" "migration repair helper derives safe versions from drift manifest"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "blockedPartialOrSplit" "migration repair helper derives blocked versions from drift manifest"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "ConfirmRepair" "migration repair helper requires explicit confirmation"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "PlanOnly" "migration repair helper supports credential-free planning"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "-PlanOnly cannot be combined with -ConfirmRepair" "migration repair planning cannot be combined with live confirmation"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "PromptDatabasePassword" "migration repair helper supports secure database password prompt"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" 'db\.\$normalizedProjectRef\.supabase\.co' "migration repair helper can derive standard direct Supabase DB URL"
 Test-RepoPattern "supabase" "package.json" "ops:supabase:repair-migrations" "npm script exposes guarded migration-history repair"
+Test-RepoPattern "supabase" "package.json" "ops:supabase:drift-check" "npm script exposes metadata drift checker"
 Test-RepoPattern "supabase" "scripts/ops/verify-supabase-live.ps1" "SUPABASE_DB_URL" "live Supabase verifier requires database URL"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "booking_status_valid" "live SQL checks booking status constraint"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "get_zooter_job_cards" "live SQL checks zooter card RPC"
