@@ -404,6 +404,8 @@ Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "VerifyLiv
 Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "ZOOT_PRODUCTION_SUPABASE_DB_URL" "shared deploy supports production DB URL"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "knownSchemaEquivalentVersions" "migration repair helper allowlists proven schema-equivalent versions"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "blockedPartialOrSplitVersions" "migration repair helper blocks partial or split migrations"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "schemaEquivalentSafeToRepair" "migration repair helper derives safe versions from drift manifest"
+Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "blockedPartialOrSplit" "migration repair helper derives blocked versions from drift manifest"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "ConfirmRepair" "migration repair helper requires explicit confirmation"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "PlanOnly" "migration repair helper supports credential-free planning"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "-PlanOnly cannot be combined with -ConfirmRepair" "migration repair planning cannot be combined with live confirmation"

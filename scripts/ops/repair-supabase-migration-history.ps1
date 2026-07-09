@@ -4,12 +4,7 @@ param(
   [string]$DatabaseUrl,
   [string]$ProjectRef,
   [switch]$PromptDatabasePassword,
-  [string[]]$MigrationVersions = @(
-    "20260629113000",
-    "20260629200351",
-    "20260630005420",
-    "20260630102715"
-  ),
+  [string[]]$MigrationVersions = @(),
   [string]$SupabaseVersion = $(if ($env:SUPABASE_CLI_VERSION) { $env:SUPABASE_CLI_VERSION } else { "2.108.0" }),
   [switch]$ConfirmRepair,
   [switch]$PlanOnly
@@ -17,18 +12,25 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$knownSchemaEquivalentVersions = @(
-  "20260629113000",
-  "20260629200351",
-  "20260630005420",
-  "20260630102715"
-)
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+$driftManifest = Join-Path $repoRoot "supabase\migration-drift-allowlist.json"
 
-$blockedPartialOrSplitVersions = @(
-  "20260629194645",
-  "20260630003602",
-  "20260630155159"
-)
+if (-not (Test-Path -LiteralPath $driftManifest)) {
+  throw "supabase/migration-drift-allowlist.json is required before any migration-history repair planning."
+}
+
+$manifest = Get-Content -Raw -LiteralPath $driftManifest | ConvertFrom-Json
+
+$knownSchemaEquivalentVersions = @($manifest.schemaEquivalentSafeToRepair | ForEach-Object { [string]$_.localVersion })
+$blockedPartialOrSplitVersions = @($manifest.blockedPartialOrSplit | ForEach-Object { [string]$_.localVersion })
+
+if ($knownSchemaEquivalentVersions.Count -eq 0) {
+  throw "supabase/migration-drift-allowlist.json does not define any schemaEquivalentSafeToRepair versions."
+}
+
+if ($blockedPartialOrSplitVersions.Count -eq 0) {
+  throw "supabase/migration-drift-allowlist.json does not define any blockedPartialOrSplit versions."
+}
 
 function Require-Command {
   param([string]$Name)
@@ -76,6 +78,10 @@ if ($PlanOnly -and $ConfirmRepair) {
   throw "-PlanOnly cannot be combined with -ConfirmRepair."
 }
 
+if ($MigrationVersions.Count -eq 0) {
+  $MigrationVersions = $knownSchemaEquivalentVersions
+}
+
 $normalizedVersions = @($MigrationVersions | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim() })
 if ($normalizedVersions.Count -eq 0) {
   throw "At least one migration version is required."
@@ -91,15 +97,8 @@ foreach ($version in $normalizedVersions) {
   }
 
   if ($knownSchemaEquivalentVersions -notcontains $version) {
-    throw "Refusing to repair-mark '$version'. Add it to this script only after live catalog checks prove it is fully schema-equivalent."
+    throw "Refusing to repair-mark '$version'. Add it to supabase/migration-drift-allowlist.json only after live catalog checks prove it is fully schema-equivalent."
   }
-}
-
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
-$driftManifest = Join-Path $repoRoot "supabase\migration-drift-allowlist.json"
-
-if (-not (Test-Path -LiteralPath $driftManifest)) {
-  throw "supabase/migration-drift-allowlist.json is required before any migration-history repair planning."
 }
 
 if ($PlanOnly) {

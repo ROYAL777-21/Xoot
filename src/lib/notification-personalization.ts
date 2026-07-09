@@ -129,13 +129,12 @@ const getCandidateChannels = (input: NotificationDecisionInput) => {
   const preferred = input.profile.preferredChannels?.length ? input.profile.preferredChannels : DEFAULT_CHANNELS;
   const channels = preferred.filter((channel, index, all) => all.indexOf(channel) === index);
 
-  if (input.urgency === "urgent" && input.category === "support" && input.profile.preferredChannels?.includes("whatsapp_urgent")) {
-    channels.push("whatsapp_urgent");
-  }
-
   if (input.category === "security") return channels.filter((channel) => channel === "in_app" || channel === "expo_push" || channel === "brevo_email");
   if (input.category === "sensitive_access") return channels.filter((channel) => channel === "in_app" || channel === "expo_push");
   if (input.category === "marketing") return channels.filter((channel) => channel === "in_app" || channel === "brevo_email");
+  if (input.category === "support" && input.urgency === "urgent") {
+    return channels.filter((channel) => channel === "in_app" || channel === "expo_push" || channel === "brevo_email" || channel === "whatsapp_urgent");
+  }
 
   return channels.filter((channel) => channel === "in_app" || channel === "expo_push" || channel === "brevo_email");
 };

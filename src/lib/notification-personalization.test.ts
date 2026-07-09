@@ -89,6 +89,24 @@ describe("notification personalization", () => {
     expect(decision.channels).toEqual(["in_app", "expo_push"]);
   });
 
+  it("allows urgent support WhatsApp only when it is explicitly preferred", () => {
+    const decision = buildPersonalizedNotificationDecision({
+      category: "support",
+      urgency: "urgent",
+      title: "Urgent support update",
+      body: "Open Zoot for the next safe step.",
+      route: "/support",
+      profile: {
+        role: "customer",
+        preferredChannels: ["in_app", "expo_push", "whatsapp_urgent"],
+        behaviorSignals: ["support_waiting"],
+      },
+    });
+
+    expect(decision.status).toBe("send");
+    expect(decision.channels).toEqual(["in_app", "expo_push", "whatsapp_urgent"]);
+  });
+
   it("rejects role-inappropriate notification categories", () => {
     const decision = buildPersonalizedNotificationDecision({
       category: "zooter_jobs",

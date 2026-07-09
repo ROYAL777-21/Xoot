@@ -70,15 +70,14 @@ foreach ($row in $blockedRows) {
 
 if (Test-Path -LiteralPath $repairHelperPath) {
   $repairHelperText = Get-Content -Raw -LiteralPath $repairHelperPath
-  foreach ($row in $safeRows) {
-    if ($repairHelperText -notmatch [regex]::Escape([string]$row.localVersion)) {
-      $errors.Add("Repair helper does not contain safe allowlist version '$($row.localVersion)'.")
-    }
+  if ($repairHelperText -notmatch "migration-drift-allowlist\.json") {
+    $errors.Add("Repair helper does not require supabase/migration-drift-allowlist.json.")
   }
-  foreach ($row in $blockedRows) {
-    if ($repairHelperText -notmatch [regex]::Escape([string]$row.localVersion)) {
-      $errors.Add("Repair helper does not contain blocked version '$($row.localVersion)'.")
-    }
+  if ($repairHelperText -notmatch "schemaEquivalentSafeToRepair") {
+    $errors.Add("Repair helper does not derive safe repair versions from schemaEquivalentSafeToRepair.")
+  }
+  if ($repairHelperText -notmatch "blockedPartialOrSplit") {
+    $errors.Add("Repair helper does not derive blocked versions from blockedPartialOrSplit.")
   }
 } else {
   $errors.Add("Repair helper was not found at scripts/ops/repair-supabase-migration-history.ps1.")

@@ -10,36 +10,42 @@ const ZOOT_ANDROID_NOTIFICATION_CHANNELS: Array<{
   name: string;
   importance: Notifications.AndroidImportance;
   description: string;
+  visibility: Notifications.AndroidNotificationVisibility;
 }> = [
   {
     id: 'zoot-booking-updates',
     name: 'Booking updates',
     importance: Notifications.AndroidImportance.HIGH,
     description: 'Booking status, assignment, arrival, and job-day updates without sensitive access details.',
+    visibility: Notifications.AndroidNotificationVisibility.PUBLIC,
   },
   {
     id: 'zoot-support-updates',
     name: 'Support updates',
     importance: Notifications.AndroidImportance.DEFAULT,
     description: 'Support case progress and safe Concierge handoff updates.',
+    visibility: Notifications.AndroidNotificationVisibility.PUBLIC,
   },
   {
     id: 'zoot-care-plus',
     name: 'Care+ reminders',
     importance: Notifications.AndroidImportance.DEFAULT,
     description: 'Care+ reminders, saved-home prompts, and preference updates.',
+    visibility: Notifications.AndroidNotificationVisibility.PUBLIC,
   },
   {
     id: 'zoot-security',
     name: 'Account security',
     importance: Notifications.AndroidImportance.HIGH,
     description: 'Security, login, and account-protection updates.',
+    visibility: Notifications.AndroidNotificationVisibility.PRIVATE,
   },
   {
     id: 'zoot-zooter-jobs',
     name: 'Zooter jobs',
     importance: Notifications.AndroidImportance.HIGH,
     description: 'Accepted job, job-day, and sensitive-access availability prompts that require opening Zoot.',
+    visibility: Notifications.AndroidNotificationVisibility.PRIVATE,
   },
 ];
 
@@ -52,7 +58,7 @@ const configureAndroidNotificationChannels = async () => {
         name: channel.name,
         description: channel.description,
         importance: channel.importance,
-        lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+        lockscreenVisibility: channel.visibility,
         vibrationPattern: [0, 140, 90, 140],
       }),
     ),
