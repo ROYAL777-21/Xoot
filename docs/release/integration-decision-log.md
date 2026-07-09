@@ -1,6 +1,6 @@
 # Integration Decision Log
 
-Reviewed: 2026-07-09 23:24 SAST
+Reviewed: 2026-07-09 23:58 SAST
 
 ## Decisions
 
@@ -38,4 +38,8 @@ Reviewed: 2026-07-09 23:24 SAST
 9. Keep one long-lived source branch.
    - Decision: GitHub `main` is the single code source of truth. Staging and production differences belong in environment configuration, feature flags, migrations, and secret stores.
    - Reason: parallel long-lived product branches created drift and made release evidence ambiguous.
+
+10. Do not hard-code a moving "latest main" SHA as durable release truth.
+   - Decision: GitHub Actions checks on current `main` are the current evidence. Historical PR and commit references remain useful audit records, but release docs should not require a new documentation-only PR after every green merge just to refresh a SHA.
+   - Reason: hard-coded latest-SHA fields create metadata drift by design.
 

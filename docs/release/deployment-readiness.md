@@ -1,13 +1,13 @@
 # Deployment Readiness
 
-Reviewed: 2026-07-09 23:24 SAST
+Reviewed: 2026-07-09 23:58 SAST
 
 ## Source Of Truth
 
 - Canonical integration and production source branch: `main`
 - Current staging branch: none confirmed as a separate Git branch.
 - Current pull request: none.
-- Last verified green `main` reference: `d4e931c`.
+- Last verified green `main` reference: use the latest completed GitHub Actions runs on `main`. Do not hard-code this field to a moving SHA; every new merge would otherwise create metadata drift.
 
 ## Current Deployment State
 
