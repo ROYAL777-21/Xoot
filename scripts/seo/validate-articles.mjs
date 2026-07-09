@@ -6,6 +6,19 @@ const siteUrl = "https://zoothome.co.za";
 const blogPostsPath = path.join(root, "src/lib/blog-posts.ts");
 const sitemapPath = path.join(root, "public/sitemap.xml");
 const queuePath = path.join(root, "content/seo/generated/daily-blog-queue.json");
+const releaseTimezone = "Africa/Johannesburg";
+
+const currentReleaseDate = () => {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone: releaseTimezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const get = (type) => parts.find((part) => part.type === type)?.value;
+  return `${get("year")}-${get("month")}-${get("day")}`;
+};
 
 const readOptionalJson = async (filePath) => {
   try {
@@ -27,7 +40,7 @@ const postBlocks = [...text.matchAll(/^  \{\r?\n\s+slug:\s*"([^"]+)"[\s\S]*?^  \
 
 const errors = [];
 const slugs = new Set();
-const today = new Date().toISOString().slice(0, 10);
+const today = currentReleaseDate();
 
 if (postBlocks.length === 0) {
   errors.push("No published article blocks were found in src/lib/blog-posts.ts.");

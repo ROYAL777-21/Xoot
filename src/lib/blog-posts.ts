@@ -1130,7 +1130,7 @@ export const blogPosts: BlogPost[] = [
       "A practical trust guide for checking whether Zoot is legit, how bookings should work, and what to verify before using any cleaning app.",
     excerpt:
       "If you are going to let a cleaner into your home, asking whether Zoot is legit is not rude. It is the right question.",
-    publishedAt: "2026-07-09",
+    publishedAt: "2026-07-10",
     readingTime: "5 min read",
     author: "Zoot Team",
     primaryKeyword: "is Zoot legit",
@@ -1205,7 +1205,7 @@ export const blogPosts: BlogPost[] = [
       "A fair guide to SweepSouth alternatives in South Africa, with a trust checklist for homes, hosts, offices and property managers.",
     excerpt:
       "Looking for a SweepSouth alternative usually means one thing: you want the clean handled, but you also want more trust, memory or control.",
-    publishedAt: "2026-07-09",
+    publishedAt: "2026-07-10",
     readingTime: "6 min read",
     author: "Zoot Team",
     primaryKeyword: "SweepSouth alternatives South Africa",
@@ -1280,7 +1280,7 @@ export const blogPosts: BlogPost[] = [
       "A fair SweepSouth vs Zoot comparison for South African homes, offices, hosts and property managers choosing a cleaning service.",
     excerpt:
       "SweepSouth and Zoot should not be judged by the same checklist alone. The better choice depends on what you need the cleaning service to remember, protect and solve.",
-    publishedAt: "2026-07-09",
+    publishedAt: "2026-07-10",
     readingTime: "6 min read",
     author: "Zoot Team",
     primaryKeyword: "SweepSouth vs Zoot",

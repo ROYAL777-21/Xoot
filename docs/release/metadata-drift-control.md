@@ -51,6 +51,16 @@ Do not use broad `supabase db push`, direct edits to `supabase_migrations`, or u
 2. Publish dates must use real release dates, not draft dates.
 3. Comparison articles must stay factual, non-defamatory, and grounded in approved Zoot source-of-truth content.
 4. WordPress may become the editorial CMS, but canonical published website URLs remain controlled by the Zoot web app until a different strategy is approved.
+5. When articles are released with a website deployment, sync article registry dates, queue dates, generated draft-ledger dates, and sitemap `lastmod` with the South Africa release date before running validation:
+
+```powershell
+npm run seo:sync-release-dates -- --date YYYY-MM-DD --slugs slug-one,slug-two
+npm run seo:validate
+```
+
+Use `--dry-run` first if you only want to confirm which published articles would change.
+
+The SEO validator uses the Zoot market timezone, `Africa/Johannesburg`, so a SAST release date is not misclassified as future by UTC CI runners.
 
 ## Provider And Environment Rules
 

@@ -7,7 +7,7 @@ Reviewed: 2026-07-10 00:12 SAST
 - Target branch: `main`
 - Policy: `main` is the only long-lived code source of truth. Feature branches are short-lived, reviewed through pull requests, merged, and deleted.
 - Release safety: a push to `main` builds and verifies the product but does not deploy GitHub Pages. Deployment requires an explicit `workflow_dispatch` with `deploy_pages=true`.
-- Current state: `main` is current through the latest merged source-of-truth, drift-control, and CI-hardening pull requests, including PR #17. Use `git log --oneline -5` and the latest GitHub Actions runs on `main` for the exact current commit and check evidence.
+- Current state: `main` is current through the latest merged source-of-truth, drift-control, CI-hardening, provider-auth evidence, and blocker-ledger guard pull requests, including PR #20. Use `git log --oneline -5` and the latest GitHub Actions runs on `main` for the exact current commit and check evidence.
 - Temporary branch refs may still exist remotely for audit, but they are not release branches and must not be used as product sources. New work must branch from current `main`.
 
 ## Pull Request Status
@@ -49,6 +49,18 @@ Reviewed: 2026-07-10 00:12 SAST
 9. PR #17: merged into `main`.
    - Classification: release-evidence drift cleanup.
    - Result: removed the need to refresh a moving "latest main SHA" in release docs after every merge; current GitHub Actions runs on `main` are the live release evidence.
+
+10. PR #18: merged into `main`.
+    - Classification: blocker and drift evidence refresh.
+    - Result: refreshed unresolved-blocker evidence and kept Supabase metadata-drift checks aligned with current source state.
+
+11. PR #19: merged into `main`.
+    - Classification: provider-auth diagnostic hardening.
+    - Result: reduced false local provider-auth failures by stabilising GitHub auth timeout evidence and refreshed environment readiness records.
+
+12. PR #20: merged into `main`.
+    - Classification: blocker-ledger drift guard.
+    - Result: added an automated guard that verifies `blocker.md` still covers all launch-critical unresolved blocker categories before production-readiness checks pass.
 
 There are no open pull requests as of this review.
 
