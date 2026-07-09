@@ -96,6 +96,11 @@ foreach ($version in $normalizedVersions) {
 }
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+$driftManifest = Join-Path $repoRoot "supabase\migration-drift-allowlist.json"
+
+if (-not (Test-Path -LiteralPath $driftManifest)) {
+  throw "supabase/migration-drift-allowlist.json is required before any migration-history repair planning."
+}
 
 if ($PlanOnly) {
   [pscustomobject][ordered]@{
@@ -106,6 +111,8 @@ if ($PlanOnly) {
     requires_database_url_for_live_dry_run = $true
     secure_password_prompt_supported = $true
     requires_confirm_repair_for_live_repair = $true
+    drift_manifest = "supabase/migration-drift-allowlist.json"
+    drift_check_command = "npm run ops:supabase:drift-check -- -Environment $Environment"
     live_repair_command = "npm run ops:supabase:repair-migrations -- -Environment $Environment"
     live_prompt_command = "npm run ops:supabase:repair-migrations -- -Environment $Environment -ProjectRef <project-ref> -PromptDatabasePassword"
     live_confirm_command = "npm run ops:supabase:repair-migrations -- -Environment $Environment -ConfirmRepair"

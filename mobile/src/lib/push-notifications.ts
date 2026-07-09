@@ -5,6 +5,60 @@ import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 
+const ZOOT_ANDROID_NOTIFICATION_CHANNELS: Array<{
+  id: string;
+  name: string;
+  importance: Notifications.AndroidImportance;
+  description: string;
+}> = [
+  {
+    id: 'zoot-booking-updates',
+    name: 'Booking updates',
+    importance: Notifications.AndroidImportance.HIGH,
+    description: 'Booking status, assignment, arrival, and job-day updates without sensitive access details.',
+  },
+  {
+    id: 'zoot-support-updates',
+    name: 'Support updates',
+    importance: Notifications.AndroidImportance.DEFAULT,
+    description: 'Support case progress and safe Concierge handoff updates.',
+  },
+  {
+    id: 'zoot-care-plus',
+    name: 'Care+ reminders',
+    importance: Notifications.AndroidImportance.DEFAULT,
+    description: 'Care+ reminders, saved-home prompts, and preference updates.',
+  },
+  {
+    id: 'zoot-security',
+    name: 'Account security',
+    importance: Notifications.AndroidImportance.HIGH,
+    description: 'Security, login, and account-protection updates.',
+  },
+  {
+    id: 'zoot-zooter-jobs',
+    name: 'Zooter jobs',
+    importance: Notifications.AndroidImportance.HIGH,
+    description: 'Accepted job, job-day, and sensitive-access availability prompts that require opening Zoot.',
+  },
+];
+
+const configureAndroidNotificationChannels = async () => {
+  if (Platform.OS !== 'android') return;
+
+  await Promise.all(
+    ZOOT_ANDROID_NOTIFICATION_CHANNELS.map((channel) =>
+      Notifications.setNotificationChannelAsync(channel.id, {
+        name: channel.name,
+        description: channel.description,
+        importance: channel.importance,
+        lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+        vibrationPattern: [0, 140, 90, 140],
+      }),
+    ),
+  );
+};
+
 export async function registerForZootPushNotifications(userId: string) {
   if (!Device.isDevice) {
     throw new Error('Push notifications require a physical device.');
@@ -22,13 +76,7 @@ export async function registerForZootPushNotifications(userId: string) {
     throw new Error('Notification permission was not granted.');
   }
 
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('zoot-service-updates', {
-      name: 'Zoot service updates',
-      importance: Notifications.AndroidImportance.DEFAULT,
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-    });
-  }
+  await configureAndroidNotificationChannels();
 
   const projectId =
     Constants.expoConfig?.extra?.eas?.projectId ??

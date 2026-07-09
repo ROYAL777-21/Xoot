@@ -18,6 +18,8 @@ Historical failed runs on superseded commits remain immutable audit records. The
 
 ## Known Local/Live Migration Equivalence
 
+The authoritative machine-readable copy of this equivalence is `supabase/migration-drift-allowlist.json`. Keep the table below and that manifest aligned. The readiness gate now checks the manifest, the repair helper, and the local migration files so metadata drift cannot silently become an undocumented company-wide assumption.
+
 Do not mark any of these as applied without first running `supabase migration list` and verifying the live catalog again. The read-only Supabase connector rechecked staging and production migration history on 2026-07-09 14:38 SAST, but the connector cannot safely run Supabase CLI migration-history repair.
 
 | Local migration | Production live row | Staging live row | Repair note |
@@ -37,6 +39,8 @@ Run this only from a local shell with approved credentials loaded from a vault o
 1. Review the credential-free repair plan first. This validates the allowlist and refuses known partial/split migrations without needing a database URL:
 
    ```powershell
+   npm run ops:supabase:drift-check -- -Environment production
+   npm run ops:supabase:drift-check -- -Environment staging
    npm run ops:supabase:repair-migrations -- -Environment production -PlanOnly
    npm run ops:supabase:repair-migrations -- -Environment staging -PlanOnly
    ```
@@ -61,6 +65,12 @@ Run this only from a local shell with approved credentials loaded from a vault o
    ```powershell
    $env:DO_NOT_TRACK = "1"
    supabase migration list --db-url $env:ZOOT_PRODUCTION_SUPABASE_DB_URL > C:\secure\zoot-production-migration-list.txt
+   ```
+
+   Then run the non-mutating drift check against the saved evidence:
+
+   ```powershell
+   npm run ops:supabase:drift-check -- -Environment production -RemoteMigrationsFile C:\secure\zoot-production-migration-list.txt -RequireRemoteEvidence
    ```
 
 4. Compare the CLI output with the table above and the live catalog-readiness checks. Do not use `supabase db push` to repair history until the migration list is understood.

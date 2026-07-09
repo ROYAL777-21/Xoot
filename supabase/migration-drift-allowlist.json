@@ -1,0 +1,63 @@
+{
+  "reviewedAt": "2026-07-09",
+  "purpose": "Authoritative local record for known Supabase migration metadata drift. This file is inspection-only and does not repair live metadata.",
+  "rules": [
+    "Use this manifest to prevent accidental broad db push or unreviewed migration repair.",
+    "Only schemaEquivalentSafeToRepair local versions may be repair-marked, and only after live catalog verification.",
+    "blockedPartialOrSplit local versions must not be repair-marked until their storage-owner or split-row gaps are resolved.",
+    "Supabase MCP remains read-only; live writes must use Supabase CLI with rotated local credentials."
+  ],
+  "schemaEquivalentSafeToRepair": [
+    {
+      "localVersion": "20260629113000",
+      "localName": "booking_chat_action_layer",
+      "productionLiveVersion": "20260630154133",
+      "stagingLiveVersion": "20260630152901",
+      "reason": "Schema-equivalent public booking chat migration was applied live under connector-generated timestamps."
+    },
+    {
+      "localVersion": "20260629200351",
+      "localName": "phase5_zoot_concierge",
+      "productionLiveVersion": "20260630154215",
+      "stagingLiveVersion": "20260630153215",
+      "reason": "Schema-equivalent Concierge migration was applied live under connector-generated timestamps."
+    },
+    {
+      "localVersion": "20260630005420",
+      "localName": "phase7_payments_payouts_foundation",
+      "productionLiveVersion": "20260630154353",
+      "stagingLiveVersion": "20260630153743",
+      "reason": "Schema-equivalent payment and payout readiness migration was applied live under connector-generated timestamps."
+    },
+    {
+      "localVersion": "20260630102715",
+      "localName": "phase9_twilio_verify_masked_voice",
+      "productionLiveVersion": "20260630154456",
+      "stagingLiveVersion": "20260630153941",
+      "reason": "Schema-equivalent Twilio readiness migration was applied live under connector-generated timestamps."
+    }
+  ],
+  "blockedPartialOrSplit": [
+    {
+      "localVersion": "20260629194645",
+      "localName": "completed_booking_invoices",
+      "productionLiveEvidence": ["20260630155714"],
+      "stagingLiveEvidence": ["20260630155643"],
+      "blockedReason": "Only connector-safe public invoice schema is applied; storage.objects private PDF policy still needs owner-level deployment."
+    },
+    {
+      "localVersion": "20260630003602",
+      "localName": "phase6_zoot_black_foundation",
+      "productionLiveEvidence": ["20260630155930", "20260630160205"],
+      "stagingLiveEvidence": ["20260630155818", "20260630160047"],
+      "blockedReason": "Connector-safe public Zoot Black schema is split across live rows; private certificate storage policy still needs owner-level deployment."
+    },
+    {
+      "localVersion": "20260630155159",
+      "localName": "connector_safe_invoice_zoot_black_schema",
+      "productionLiveEvidence": ["20260630155714", "20260630155930", "20260630160205"],
+      "stagingLiveEvidence": ["20260630155643", "20260630155818", "20260630160047"],
+      "blockedReason": "Local source consolidates connector-safe invoice and Zoot Black schema, while live rows are split; review before any repair."
+    }
+  ]
+}

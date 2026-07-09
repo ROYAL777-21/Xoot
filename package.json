@@ -41,6 +41,7 @@
     "ops:readiness": "powershell -ExecutionPolicy Bypass -File scripts/ops/verify-production-readiness.ps1",
     "ops:smoke:staging": "node scripts/ops/staging-role-smoke.mjs",
     "ops:supabase:auth-config": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-auth-config.ps1",
+    "ops:supabase:drift-check": "powershell -ExecutionPolicy Bypass -File scripts/ops/check-supabase-metadata-drift.ps1",
     "ops:supabase:deploy:staging": "powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-staging-backend.ps1",
     "ops:supabase:deploy:production": "powershell -ExecutionPolicy Bypass -File scripts/ops/deploy-production-backend.ps1",
     "ops:supabase:repair-migrations": "powershell -ExecutionPolicy Bypass -File scripts/ops/repair-supabase-migration-history.ps1",
