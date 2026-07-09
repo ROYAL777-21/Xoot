@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-07-09 14:38 SAST
+Reviewed: 2026-07-09 18:24 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -104,5 +104,4 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - k6 `2.1.0` is installed locally as of 2026-07-02. The staging-only 10,000-request harness now exists at `scripts/load/zoot-staging-10k-readiness.js` and is wired to `npm run load:test:10k:staging`; local fail-closed behavior was verified on 2026-07-03 when the command refused to run without `BASE_URL`. Run it against a confirmed staging/preview target with `LOAD_TEST_ENV=staging`, `BASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `LOAD_TEST_SUMMARY_PATH=outputs/k6-staging-10k-summary.json` loaded locally before claiming 10,000-request readiness.
 - Run `npm run ops:provider-auth:setup`, `npm run ops:supabase:auth-config`, `npm run ops:github-vars`, `npm run ops:supabase:repair-migrations`, `npm run ops:supabase:deploy:staging`, `npm run ops:supabase:deploy:production`, `npm run ops:supabase:secrets:staging`, and `npm run ops:supabase:secrets:production` from a local shell that has approved provider credentials in environment variables or browser sessions when those credentials are available.
 - Run `scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive` after provider access is configured. It must pass before the production-readiness blockers can be closed.
-- Re-run CodeRabbit review after each substantive patch or before final merge.
 - Confirm Cloudflare WAF/rate-limit/Turnstile rules after the zone is added.

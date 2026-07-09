@@ -1,6 +1,6 @@
 # Zoot Production Command Center
 
-Reviewed: 2026-07-09
+Reviewed: 2026-07-09 18:24 SAST
 
 This document is the navigation layer for completing Zoot. It does not replace the detailed runbooks it links to.
 
@@ -42,7 +42,7 @@ Do not maintain parallel long-lived product branches. Staging and production dif
 
 | Gate | Required evidence | Current status source |
 | --- | --- | --- |
-| 1. Source convergence | Complete: PR #7 merged, PR #8 closed, temporary branches deleted, and merged `main` checks green | `docs/release/branch-and-pr-map.md` |
+| 1. Source convergence | Complete: PR #7 and PR #12 merged, PR #8 closed, temporary branches deleted, and merged `main` checks green | `docs/release/branch-and-pr-map.md` |
 | 2. Backend convergence | Guarded migration repair complete; new migrations/functions deployed to staging; schema smoke tests pass | `docs/implementation/supabase-migration-status-repair-20260630.md` |
 | 3. Identity | Auth redirects, OAuth callbacks, password policy, admin MFA, account deletion verified | `docs/OAUTH_AND_REDIRECTS.md` |
 | 4. Security | RLS, secret scans, abuse controls, threat models, advisor review, incident runbooks pass | `docs/release/security-release-gate.md` |
