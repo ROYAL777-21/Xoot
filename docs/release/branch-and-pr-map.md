@@ -1,14 +1,14 @@
 # Branch And Pull Request Map
 
-Reviewed: 2026-07-09 14:15 SAST
+Reviewed: 2026-07-09 18:24 SAST
 
 ## Canonical Source Of Truth
 
 - Target branch: `main`
 - Policy: `main` is the only long-lived code source of truth. Feature branches are short-lived, reviewed through pull requests, merged, and deleted.
 - Release safety: a push to `main` builds and verifies the product but does not deploy GitHub Pages. Deployment requires an explicit `workflow_dispatch` with `deploy_pages=true`.
-- Current state: PR #7 was merged into `main` at commit `2f0de84` on 2026-07-09. The Web build, Production readiness guard, and Native iOS Swift check all passed on the merged commit.
-- Local and remote temporary branches for PR #7 and PR #8 were deleted after verification.
+- Current state: PR #12 was squashed and merged into `main` at commit `12e06f6` on 2026-07-09. The Web build, Production readiness guard, Native iOS Swift check, and CodeRabbit review all passed on the merge candidate; post-merge main checks passed.
+- Local and remote temporary branches for PR #7, PR #8, and PR #12 were deleted after verification.
 
 ## Pull Request Status
 
@@ -20,6 +20,10 @@ Reviewed: 2026-07-09 14:15 SAST
    - Classification: superseded.
    - Relevance: its routing behavior is already present in PR #7 with broader URL allowlisting, auth callback handling, assistant intent support, and optional legacy-shell loading.
    - Result: duplicate code was not merged.
+
+3. PR #12: merged into `main`.
+   - Classification: production-readiness evidence refresh.
+   - Result: Supabase metadata-drift guardrails, SEO article releases, notification personalization, iOS/native check evidence, and updated blocker/release records now live in the canonical Git history.
 
 There are no open pull requests as of this review.
 
