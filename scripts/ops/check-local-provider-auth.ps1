@@ -175,7 +175,7 @@ if ($supabaseCommand) {
 }
 
 $statuses += @(
-  Invoke-ExternalStatus "github-auth" "gh" @("auth", "status") -OkWhen {
+  Invoke-ExternalStatus "github-auth" "gh" @("auth", "status") -TimeoutSeconds 30 -OkWhen {
     param($Text)
     $Text -match "Logged in to github\.com account" -and
     $Text -match "Active account:\s*true"
@@ -194,6 +194,7 @@ $statuses += @(
     "Scoop shims are added to PATH for this diagnostic so a user-level Supabase CLI install can be detected.",
     "A working PostgreSQL client under the user Scoop app directory is accepted for diagnostics even if Scoop did not finish creating the psql shim.",
     "DO_NOT_TRACK=1 is set for this diagnostic so Supabase CLI telemetry writes do not fail in restricted shells.",
+    "GitHub auth uses a longer timeout than other quick checks because gh auth status can be slow against GitHub's API on Windows.",
     "Supabase npx probing is opt-in with ZOOT_CHECK_NPX_SUPABASE=1 because network startup can hang in restricted shells.",
     "If supabase-auth is false, set SUPABASE_ACCESS_TOKEN locally or run supabase login.",
     "If github-auth is false, run gh auth login.",
