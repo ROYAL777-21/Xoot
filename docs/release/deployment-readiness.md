@@ -1,6 +1,6 @@
 # Deployment Readiness
 
-Reviewed: 2026-07-09 23:58 SAST
+Reviewed: 2026-07-10 00:12 SAST
 
 ## Source Of Truth
 
@@ -12,7 +12,7 @@ Reviewed: 2026-07-09 23:58 SAST
 ## Current Deployment State
 
 - Release state: stabilising, blocked from production by manual provider, domain, store, and Supabase credential tasks.
-- Web: required GitHub checks pass on current `main`; GitHub Pages remains explicitly manual and requires `workflow_dispatch` with `deploy_pages=true`.
+- Web: required GitHub checks pass on current `main` as of the PR #17 post-merge checks; GitHub Pages remains explicitly manual and requires `workflow_dispatch` with `deploy_pages=true`.
 - Backend: Supabase schema and Edge Function work is tracked, but live Auth redirects and some storage/function smoke tests still require credentials/dashboard access.
 - Database: live catalog-readiness checks have passed through connector evidence, but dashboard migration metadata still needs controlled repair with rotated local credentials.
 - Android: EAS preview build `114d0c10-c754-4426-9a90-9fdfeadb8a06` produced an APK versionCode `5`; Android Platform Tools are installed, but real-device smoke testing is still pending because no authorized device is connected.
