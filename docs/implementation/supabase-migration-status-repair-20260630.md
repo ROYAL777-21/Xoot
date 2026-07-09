@@ -1,6 +1,6 @@
 # Supabase Migration Status Repair
 
-Reviewed: 2026-07-09 14:38 SAST
+Reviewed: 2026-07-09 23:24 SAST
 
 ## Why Production Shows `MIGRATIONS_FAILED`
 
@@ -12,7 +12,7 @@ This is why the dashboard can say `1 skipped`, `2 pending`, and `migrations fail
 
 ## Current GitHub Source State
 
-GitHub source convergence is complete. PR `#7` was merged into `main`, PR `#8` was closed as superseded, and the follow-up status correction in PR `#11` was merged at `8a788d4`. Current `main` passed the Web build, Production readiness guard, and Native iOS Swift check. GitHub Pages remains an explicit manual deployment action.
+GitHub source convergence is complete. PR `#7` was merged into `main`, PR `#8` was closed as superseded, PR `#12` refreshed production-readiness evidence at `12e06f6`, and PR `#13` recorded the post-merge source-of-truth state at `d4e931c`. Current `main` passed the Web build, Production readiness guard, and Native iOS Swift check. GitHub Pages remains an explicit manual deployment action.
 
 Historical failed runs on superseded commits remain immutable audit records. They do not describe current `main`; use the latest required checks on the current commit as release evidence.
 

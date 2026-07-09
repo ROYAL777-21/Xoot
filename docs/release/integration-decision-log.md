@@ -1,6 +1,6 @@
 # Integration Decision Log
 
-Reviewed: 2026-07-09 18:24 SAST
+Reviewed: 2026-07-09 23:24 SAST
 
 ## Decisions
 
@@ -18,16 +18,24 @@ Reviewed: 2026-07-09 18:24 SAST
    - Outcome: superseded and closed. Its temporary branch was deleted after confirming the required routing behavior was already present in the merged source.
    - Reason: it was narrower native-routing work and duplicated already-integrated functionality.
 
-4. Preserve physical-device iOS `preview` profile and add `preview-simulator`.
+4. Keep PR #10 closed unless its generated tests are intentionally reviewed and rebased.
+   - Outcome: closed. PR #10 was a CodeRabbit-generated unit-test proposal for superseded PR #8.
+   - Reason: generated tests should not be merged blindly into current `main`; current native-routing safety tests already cover route allowlisting, query stripping, auth callbacks, push payload routing, booking source checks, and unsafe route rejection.
+
+5. Use PR #13 as the post-merge source-of-truth record.
+   - Outcome: completed. PR #13 was merged into `main` at commit `d4e931c` after PR #12 landed.
+   - Reason: it makes release docs and blockers reflect the latest `main` state instead of stale PR #7 or PR #12-only evidence.
+
+6. Preserve physical-device iOS `preview` profile and add `preview-simulator`.
    - Reason: the physical preview path must keep its Apple credential gate. Simulator builds provide iOS compile/build evidence but are not a substitute for TestFlight or device testing.
 
-5. Do not use pasted provider secrets.
+7. Do not use pasted provider secrets.
    - Reason: values pasted into chat are not safe long-term credentials. Rotate and load them locally through provider-approved mechanisms.
 
-6. Do not production deploy automatically.
+8. Do not production deploy automatically.
    - Reason: release commander rules require staging, smoke tests, and founder approval before a deployment action. Merging reviewed, green PRs into `main` is allowed when the change preserves `main` as the source of truth and the workflow deploy gate remains manual.
 
-7. Keep one long-lived source branch.
+9. Keep one long-lived source branch.
    - Decision: GitHub `main` is the single code source of truth. Staging and production differences belong in environment configuration, feature flags, migrations, and secret stores.
    - Reason: parallel long-lived product branches created drift and made release evidence ambiguous.
 
