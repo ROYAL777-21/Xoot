@@ -39,10 +39,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -118,7 +118,7 @@ jobs:
         run: npm run build:artifact-scan
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: zoot-web-dist
           path: dist
@@ -132,7 +132,7 @@ jobs:
 
       - name: Upload GitHub Pages artifact
         if: github.event_name == 'workflow_dispatch' && inputs.deploy_pages == true && vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_PUBLISHABLE_KEY != '' && vars.VITE_SUPABASE_PROJECT_ID != ''
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -147,4 +147,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
