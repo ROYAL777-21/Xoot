@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-07-09 13:50 SAST
+Reviewed: 2026-07-09 14:15 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
@@ -78,7 +78,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## GitHub, CodeRabbit, And CI
 
-- GitHub CLI is authenticated and the required public Supabase variables are present. Optional public-safe variables are still missing where applicable because no restricted public values are available yet: Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables. PR #7 is the canonical merge candidate; PR #8 is superseded by the stronger routing implementation already in PR #7. GitHub Pages deployment is now explicitly gated and will not run automatically on a push to `main`.
+- GitHub source convergence is complete: PR #7 was merged into `main` at commit `2f0de84`, PR #8 was closed as superseded, their temporary branches were deleted, and the merged Web build, Production readiness guard, and Native iOS Swift check passed. GitHub Pages deployment is explicitly gated and did not run. Remaining GitHub configuration is limited to optional public-safe variables where applicable: restricted Mapbox public token, Sentry public DSN, Google/Apple public OAuth client IDs, Cloudflare Turnstile site key, and WordPress public API URL. Private provider secrets must not be GitHub repository variables.
 - CodeRabbit CLI `0.6.4` is installed and API-key authenticated locally as of 2026-07-02 11:24 SAST. `coderabbit doctor` reports 8 pass, 1 warning for browser OAuth fallback only, and the GitHub CodeRabbit app reports success on PR `#7`. Local `coderabbit review --type uncommitted --plain` completed on 2026-07-03 with no findings for the current focused widget/auth/Concierge/admin-ops patch. The GitHub CodeRabbit app still skips full PR review when the PR diff exceeds the service's 300-file limit, so keep future review slices smaller where possible.
 - CodeRabbit self-hosted login is available through `npm run ops:provider-auth:setup -- -CodeRabbitSelfHosted`, but no Zoot self-hosted CodeRabbit URL has been supplied. Use it only if Zoot actually provisions a self-hosted instance; otherwise use the official GitHub App or API-key CLI auth.
 - The requested `Sukarth/CodeRabbit-Windows` path is an unofficial community wrapper. Do not run it for production readiness without an approved checksum and security review; the official CodeRabbit GitHub App or API-key CLI auth is safer.

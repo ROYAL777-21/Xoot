@@ -1,33 +1,33 @@
 # Branch And Pull Request Map
 
-Reviewed: 2026-07-09 12:30 SAST
+Reviewed: 2026-07-09 14:15 SAST
 
 ## Canonical Source Of Truth
 
 - Target branch: `main`
 - Policy: `main` is the only long-lived code source of truth. Feature branches are short-lived, reviewed through pull requests, merged, and deleted.
 - Release safety: a push to `main` builds and verifies the product but does not deploy GitHub Pages. Deployment requires an explicit `workflow_dispatch` with `deploy_pages=true`.
-- Current merge candidate: PR #7, `[codex] Full Zoot iPhone PWA auth and security readiness`.
-- Current state: PR #7 is mergeable and 280 commits ahead of `main`. It contains the complete web, Supabase, security, Expo mobile, release-readiness, and blocker-tracking work.
+- Current state: PR #7 was merged into `main` at commit `2f0de84` on 2026-07-09. The Web build, Production readiness guard, and Native iOS Swift check all passed on the merged commit.
+- Local and remote temporary branches for PR #7 and PR #8 were deleted after verification.
 
-## Open Pull Requests
+## Pull Request Status
 
-1. PR #7: `codex/full-zoot-iphone-pwa-auth-security`
-   - Classification: canonical merge candidate.
-   - Relevance: primary release-hardening branch.
-   - Current role: finish verification, merge to `main`, then delete the remote branch.
+1. PR #7: merged into `main`.
+   - Classification: completed source convergence.
+   - Result: web, backend, Supabase, security, Expo mobile, release-readiness, and blocker tracking now live in the canonical Git history.
 
-2. PR #8: `codex/native-routing-bridge`
-   - Classification: superseded candidate.
+2. PR #8: closed and branch deleted.
+   - Classification: superseded.
    - Relevance: its routing behavior is already present in PR #7 with broader URL allowlisting, auth callback handling, assistant intent support, and optional legacy-shell loading.
-   - Current role: close after PR #7 is merged; do not merge duplicate code.
+   - Result: duplicate code was not merged.
 
-## Branches To Ignore For This Task
+There are no open pull requests as of this review.
 
-- `codex/native-routing-bridge`: superseded by PR #7.
-- `coderabbitai/*`: CodeRabbit-generated branches should not be treated as release sources without review.
+## Historical Branches
+
+Older remote branches remain for audit and archival. Do not delete them in bulk: compare each branch with `main`, preserve any unique approved work, then delete only branches proven merged or obsolete. CodeRabbit-generated branches are not release sources without review.
 
 ## Merge Conflict Status
 
-- PR #7 reports clean/mergeable.
-- No new long-lived branch is required.
+- `main` is clean and tracks `origin/main`.
+- New work must use a short-lived branch and pull request.
