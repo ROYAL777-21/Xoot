@@ -1,6 +1,6 @@
 # Metadata Drift Control
 
-Reviewed: 2026-07-10 00:12 SAST
+Reviewed: 2026-07-10 00:53 SAST
 
 This document defines how Zoot prevents source, release, database, article, and provider metadata from drifting away from the actual product state.
 
@@ -21,6 +21,7 @@ Run these before merging release, migration, article, or provider-readiness chan
 
 ```powershell
 npm run ops:readiness -- -Json
+npm run ops:blockers:check -- -Json
 npm run seo:validate
 npm run ops:supabase:drift-check -- -Environment staging
 npm run ops:supabase:drift-check -- -Environment production
@@ -69,3 +70,9 @@ When drift is detected:
 4. Add or update a guard so the same drift cannot recur silently.
 5. Re-run the required drift gates.
 6. Record the result in `blocker.md` only if live/manual work remains.
+
+## Blocker Ledger Guard
+
+`blocker.md` is the unresolved-only blocker ledger. The guard at `scripts/ops/check-blocker-ledger.ps1` maps the current manual/live blocker categories to required evidence phrases in `blocker.md`. It is run in the production-readiness workflow so a PR cannot remove or rename launch-critical blockers without replacing them with equivalent unresolved-blocker coverage.
+
+This guard is intentionally conservative. If a blocker is genuinely resolved, update the source evidence, remove the unresolved entry from `blocker.md`, and update the guard map in the same PR so the closure is reviewed with the verification evidence.

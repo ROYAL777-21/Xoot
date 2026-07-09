@@ -80,6 +80,7 @@ function Add-ManualBlocker {
 
 Test-RepoFile "ops" "blocker.md" | Out-Null
 Test-RepoFile "ops" "BLOCKER_REPORT.md" | Out-Null
+Test-RepoFile "ops" "scripts/ops/check-blocker-ledger.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/check-local-provider-auth.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/setup-local-provider-auth.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/deploy-staging-backend.ps1" | Out-Null
@@ -100,7 +101,12 @@ Test-RepoFile "ops" "supabase/functions/admin-mark-outbox/index.ts" | Out-Null
 Test-RepoFile "ops" "docs/STAGING_ROLE_SMOKE_TESTS.md" | Out-Null
 Test-RepoFile "ops" "docs/ADMIN_ACCESS.md" | Out-Null
 Test-RepoPattern "ops" "package.json" "load:test:10k:staging" "npm script exposes staging 10k load-readiness harness"
+Test-RepoPattern "ops" "package.json" "ops:blockers:check" "npm script exposes blocker-ledger drift guard"
 Test-RepoPattern "ops" "package.json" "ops:supabase:drift-check" "npm script exposes Supabase metadata drift guard"
+Test-RepoPattern "ops" "scripts/ops/check-blocker-ledger.ps1" "requiredBlockers" "blocker ledger guard defines required blocker map"
+Test-RepoPattern "ops" "scripts/ops/check-blocker-ledger.ps1" "Supabase Auth redirect allowlists" "blocker ledger guard tracks Supabase Auth redirects"
+Test-RepoPattern "ops" "scripts/ops/check-blocker-ledger.ps1" "MIGRATIONS_FAILED" "blocker ledger guard tracks Supabase migration metadata failure"
+Test-RepoPattern "ops" "scripts/ops/check-blocker-ledger.ps1" "10,000-request" "blocker ledger guard tracks load-test proof"
 Test-RepoPattern "ops" "supabase/migration-drift-allowlist.json" "schemaEquivalentSafeToRepair" "migration drift manifest records safe repair versions"
 Test-RepoPattern "ops" "supabase/migration-drift-allowlist.json" "blockedPartialOrSplit" "migration drift manifest records blocked split migrations"
 Test-RepoPattern "ops" "scripts/ops/check-supabase-metadata-drift.ps1" "RemoteMigrationsFile" "metadata drift guard can verify saved remote migration evidence"

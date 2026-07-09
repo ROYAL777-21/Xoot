@@ -32,6 +32,7 @@ jobs:
         run: |
           $files = @(
             'scripts/ops/check-local-provider-auth.ps1',
+            'scripts/ops/check-blocker-ledger.ps1',
             'scripts/ops/setup-local-provider-auth.ps1',
             'scripts/ops/deploy-supabase-backend.ps1',
             'scripts/ops/deploy-staging-backend.ps1',
@@ -60,6 +61,11 @@ jobs:
         shell: pwsh
         run: |
           ./scripts/ops/verify-production-readiness.ps1 -Json
+
+      - name: Check unresolved blocker ledger coverage
+        shell: pwsh
+        run: |
+          ./scripts/ops/check-blocker-ledger.ps1 -Json
 
       - name: Check Supabase migration metadata drift guardrails
         shell: pwsh
