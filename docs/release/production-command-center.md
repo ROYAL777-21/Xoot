@@ -4,6 +4,16 @@ Reviewed: 2026-07-09
 
 This document is the navigation layer for completing Zoot. It does not replace the detailed runbooks it links to.
 
+## Current Next Action
+
+Load the rotated staging database credential locally, run the guarded staging migration-history dry-run, review its captured before-file, then run the allowlisted staging repair. Do not repair production until the staging result is verified.
+
+```powershell
+npm run ops:supabase:repair-migrations -- -Environment staging -ProjectRef fxmxyabdjqviqbcxmvlp -PromptDatabasePassword
+```
+
+The command is a dry-run unless `-ConfirmRepair` is added. Never paste the password into chat, commit it, or place it in a public environment variable.
+
 ## Sources Of Truth
 
 | Area | Authoritative source |

@@ -1,6 +1,6 @@
 # Zoot Credential Collection Checklist
 
-Reviewed: 2026-06-29
+Reviewed: 2026-07-09
 
 Do not paste secret values into chat. Do not commit real secrets. Do not create a committed `.env` with live values. This checklist records what must be collected, where to get it, and where to store it.
 
@@ -232,7 +232,7 @@ These methods were verified from the local CLI help output and should be used in
 | GitHub CLI | Current machine is authenticated as `ROYAL777-21`. If it expires, run `gh auth login --web --hostname github.com --git-protocol https`. | Do not paste GitHub PATs into chat. |
 | CodeRabbit CLI | Set `CODERABBIT_API_KEY` locally, then run `coderabbit auth login --api-key $env:CODERABBIT_API_KEY`. | If Zoot later has a self-hosted CodeRabbit URL, run `coderabbit auth login --self-hosted` or `npm run ops:provider-auth:setup -- -CodeRabbit -CodeRabbitSelfHosted`. The official GitHub App remains the safest production option. |
 
-Current status on 2026-06-30 23:05 SAST: GitHub CLI is authenticated as `ROYAL777-21`; Supabase CLI is installed but not authenticated and no local `SUPABASE_ACCESS_TOKEN` or Supabase database URL is available; CodeRabbit CLI is installed but not authenticated.
+Current status on 2026-07-09 14:38 SAST: GitHub CLI is authenticated as `ROYAL777-21`; CodeRabbit CLI is installed and authenticated through its local credential store; Supabase CLI is installed but no local `SUPABASE_ACCESS_TOKEN` or Supabase database URL is available in this shell.
 
 Security update on 2026-06-30: a Supabase CLI access token was pasted into chat and must be rotated before production use. Load the rotated token only through the local environment or an approved secret store, not through chat or committed files.
 

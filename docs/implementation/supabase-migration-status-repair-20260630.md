@@ -1,6 +1,6 @@
 # Supabase Migration Status Repair
 
-Reviewed: 2026-07-01 12:58 SAST
+Reviewed: 2026-07-09 14:38 SAST
 
 ## Why Production Shows `MIGRATIONS_FAILED`
 
@@ -10,26 +10,15 @@ Production started from earlier launch/squashed migrations. Later live fixes wer
 
 This is why the dashboard can say `1 skipped`, `2 pending`, and `migrations failed` while catalog checks still show booking chat, Concierge, invoice public schema, Zoot Black public schema, payment readiness, and Twilio readiness objects present.
 
-## Current GitHub PR State
+## Current GitHub Source State
 
-Open pull requests were checked with GitHub CLI on 2026-07-01:
+GitHub source convergence is complete. PR `#7` was merged into `main`, PR `#8` was closed as superseded, and the follow-up status correction in PR `#11` was merged at `8a788d4`. Current `main` passed the Web build, Production readiness guard, and Native iOS Swift check. GitHub Pages remains an explicit manual deployment action.
 
-| PR | Status | Notes |
-| --- | --- | --- |
-| `#7` `[codex] Full Zoot iPhone PWA auth and security readiness` | Green | Web build, production readiness guard, and native Swift check pass. GitHub Pages and Supabase Preview are intentionally skipped where configured. |
-| `#8` `Add native routing bridge for app links and push taps` | Green | Web build passes. Preview deploy checks are skipped by configuration. |
-
-Closed historical failures cannot be made green in place after closure. The relevant stale failures are:
-
-| PR/run | Current handling |
-| --- | --- |
-| PR `#10` CodeRabbit generated tests | Closed. The failing branch used older workflow/test state and failed `NativeInteractionLayer` tests, not the current PR head. |
-| PR `#9` Phase 1 convergence | Merged. The failed readiness run was caused by a missing `scripts/security/assert-no-frontend-admin-queue-writes.mjs` at that historical commit; current PR `#7` has that guard and passes. |
-| Older main push failures | Historical runs on old commits. New branch runs on current code are green. |
+Historical failed runs on superseded commits remain immutable audit records. They do not describe current `main`; use the latest required checks on the current commit as release evidence.
 
 ## Known Local/Live Migration Equivalence
 
-Do not mark any of these as applied without first running `supabase migration list` and verifying the live catalog again. The Supabase connector rechecked staging and production migration history on 2026-07-01, but the connector cannot safely run Supabase CLI migration-history repair.
+Do not mark any of these as applied without first running `supabase migration list` and verifying the live catalog again. The read-only Supabase connector rechecked staging and production migration history on 2026-07-09 14:38 SAST, but the connector cannot safely run Supabase CLI migration-history repair.
 
 | Local migration | Production live row | Staging live row | Repair note |
 | --- | --- | --- | --- |
