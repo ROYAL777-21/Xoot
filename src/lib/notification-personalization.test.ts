@@ -87,6 +87,70 @@ describe("notification personalization", () => {
 
     expect(decision.status).toBe("send");
     expect(decision.channels).toEqual(["in_app", "expo_push"]);
+    expect(decision.personalizationTags).toContain("booking_operations");
+  });
+
+  it("keeps recently opened low-priority routes in the app instead of pushing again", () => {
+    const decision = buildPersonalizedNotificationDecision({
+      category: "booking",
+      urgency: "low",
+      title: "Finish your cleaning booking",
+      body: "Your selected service is waiting.",
+      route: "/app",
+      profile: {
+        role: "customer",
+        recentlyOpenedRoutes: ["/app"],
+        behaviorSignals: ["abandoned_booking_15m"],
+      },
+    });
+
+    expect(decision.status).toBe("route_only");
+    expect(decision.channels).toEqual(["in_app"]);
+    expect(decision.reasonCodes).toEqual(["recent_route_opened"]);
+    expect(decision.personalizationTags).toContain("booking_recovery");
+  });
+
+  it("removes fatigued external channels without losing the in-app record", () => {
+    const decision = buildPersonalizedNotificationDecision({
+      category: "support",
+      urgency: "normal",
+      title: "Support has an update",
+      body: "Open Zoot for the next step.",
+      route: "/app/support",
+      profile: {
+        role: "customer",
+        preferredChannels: ["in_app", "expo_push", "brevo_email"],
+        channelFatigue: { expo_push: 3, brevo_email: 4 },
+        behaviorSignals: ["support_waiting"],
+      },
+    });
+
+    expect(decision.status).toBe("send");
+    expect(decision.channels).toEqual(["in_app"]);
+    expect(decision.reasonCodes).toContain("channel_fatigue");
+    expect(decision.personalizationTags).toContain("support_followup");
+  });
+
+  it("handles inactive re-engagement conservatively", () => {
+    const decision = buildPersonalizedNotificationDecision({
+      category: "marketing",
+      urgency: "low",
+      title: "Zoot can help with your next reset",
+      body: "Open Zoot when you are ready.",
+      route: "/care-plus",
+      profile: {
+        role: "customer",
+        localHour: 12,
+        marketingConsent: true,
+        preferredChannels: ["in_app", "expo_push", "brevo_email"],
+        behaviorSignals: ["inactive_14d"],
+      },
+    });
+
+    expect(decision.status).toBe("send");
+    expect(decision.channels).toEqual(["in_app", "brevo_email"]);
+    expect(decision.reasonCodes).toContain("inactive_reengagement_conservative");
+    expect(decision.personalizationTags).toContain("inactive_reengagement");
   });
 
   it("allows urgent support WhatsApp only when it is explicitly preferred", () => {

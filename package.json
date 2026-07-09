@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "preview:host": "vite preview --host 0.0.0.0",
     "seo:daily": "node scripts/seo/generate-daily-blog-queue.mjs",
+    "seo:sync-release-dates": "node scripts/seo/sync-article-release-dates.mjs",
     "seo:validate": "node scripts/seo/validate-articles.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

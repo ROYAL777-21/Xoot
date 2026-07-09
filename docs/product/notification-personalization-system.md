@@ -21,14 +21,27 @@ The personalization model may use privacy-safe signals only:
 | `new_user` | User has not completed core setup | In-app setup nudge, no external send by default |
 | `booking_started` | Booking flow started but not completed | Calm reminder to continue booking |
 | `service_selected` | User chose a service but stopped before details | Service-specific next-step prompt |
+| `abandoned_booking_15m` | User started a booking and left recently | In-app first, push only when not recently reopened |
+| `abandoned_booking_24h` | Booking recovery window is longer | Conservative re-entry prompt, no pressure copy |
+| `booking_change_requested` | User has requested or needs a booking update | Booking operations route only |
 | `payment_pending` | Backend/provider says payment is pending | High-priority app route to payment status |
 | `booking_assigned` | Backend says a Zooter is assigned | Booking route prompt, no address in push |
 | `booking_accepted` | Assigned Zooter accepted | Customer and Zooter route prompts |
 | `job_day` | Booking is close enough to need attention | Push allowed outside quiet-hours suppression |
+| `invoice_ready` | Backend says an invoice route is available | Route to invoice view, no invoice reference in preview |
+| `service_feedback_due` | Completed booking is ready for feedback | In-app or normal push, no complaint assumptions |
 | `repeat_customer` | User has repeat usage | Care+ and saved preference prompts |
+| `care_plus_viewed` | User viewed Care+ content | In-app education, avoid hard selling |
+| `care_plus_checkout_started` | User started Care+ membership flow | Route back to Care+ state only |
 | `care_plus_candidate` | User shows repeat-home or host intent | Care+ education, only with consent for marketing |
+| `zootcred_earned` | Backend says future-use credit is available | Route to wallet, no raw balance in preview |
 | `support_waiting` | Support case has safe status update | Route to support, no complaint content in push |
+| `security_reauth_required` | Account needs a safe security step | High-priority app route, no account-existence leakage |
+| `zooter_job_offer` | Zooter has a safe job opportunity prompt | Job route, no full client address in preview |
 | `zooter_active_today` | Zooter has an accepted job today | Job checklist prompt |
+| `zooter_eta_required` | Zooter should update ETA in app | Time-sensitive job route |
+| `zooter_check_in_due` | Zooter should open the job screen near start | Time-sensitive job route |
+| `zooter_sensitive_access_ready` | Approved sensitive access window is open | App-only route, no access details in preview |
 | `inactive_14d` | User has been quiet for retention window | In-app or consented email only |
 
 Do not use raw chat text, access notes, full addresses, payment references, support allegations, fraud signals, ID documents, bank details, or private Zooter/client identifiers as notification personalization inputs.
@@ -51,6 +64,9 @@ Do not use raw chat text, access notes, full addresses, payment references, supp
 - Default cap: 6 non-urgent notifications/day and 24/week.
 - Quiet hours: 21:00 to 07:00 local time unless urgency is `urgent` or the behavior signal is time-sensitive, such as `job_day`, `payment_pending`, `support_waiting`, or `zooter_active_today`.
 - If a cap is reached, keep the notification in-app or route-only instead of pushing externally.
+- Recently opened low-priority routes stay route-only in-app instead of sending another push.
+- Channels with repeated non-urgent fatigue are removed from the send plan while preserving the in-app record.
+- Inactive re-engagement uses only in-app or consented email, never WhatsApp/SMS/voice and never push by default.
 - Every delivery decision must record reason codes, chosen channel, suppressed channel, category, and correlation ID in the server-owned outbox/decision log.
 
 ## Privacy Rules
@@ -79,6 +95,15 @@ If sensitive text is detected, replace the preview with:
 - Server delivery queue: `public.integration_outbox`.
 - User-visible in-app rows: `public.notifications`.
 - Native token store: `public.native_push_subscriptions`.
+
+## Decision Metadata
+
+Every decision helper result includes:
+
+- `reasonCodes`: why channels were selected, suppressed, sanitized, capped, or downgraded;
+- `personalizationTags`: broad behavior groups such as `booking_recovery`, `booking_operations`, `payment_attention`, `care_plus_lifecycle`, `support_followup`, `security_attention`, `zooter_operations`, and `inactive_reengagement`.
+
+These tags are safe for ops dashboards and analytics because they describe the workflow category, not the raw user message, address, support complaint, payment reference, or household access data.
 
 ## Release Gate
 
