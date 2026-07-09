@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
   applyZootCredLedger,
+  buildZootBlackLineItem,
   buildPendingPaymentRecord,
+  buildPaymentReconciliationReference,
   canAccessSensitiveBookingData,
+  canCreateProviderCheckout,
+  canOfferZootBlack,
+  canReleaseZooterPayout,
   calculateBookingQuote,
   getActivationReadiness,
+  getAcceptedZooterJobAddress,
+  getSensitiveAccessAvailability,
   isApprovedLaunchRegion,
   routeNotificationChannel,
 } from "./operations";
@@ -55,9 +62,132 @@ describe("Zoot operating rules", () => {
     const scheduledAt = "2026-05-18T10:00:00.000Z";
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "confirmed", now: "2026-05-18T09:10:00.000Z" })).toBe(false);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "confirmed", now: "2026-05-18T09:20:00.000Z" })).toBe(true);
+    expect(canAccessSensitiveBookingData({ scheduledAt, status: "confirmed", durationHours: 2, now: "2026-05-18T12:31:00.000Z" })).toBe(false);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "completed", completedAt: "2026-05-18T12:00:00.000Z", now: "2026-05-18T12:25:00.000Z" })).toBe(true);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "completed", completedAt: "2026-05-18T12:00:00.000Z", now: "2026-05-18T12:31:00.000Z" })).toBe(false);
     expect(canAccessSensitiveBookingData({ scheduledAt, status: "cancelled", cancelledAt: "2026-05-18T09:30:00.000Z", now: "2026-05-18T09:31:00.000Z" })).toBe(false);
+  });
+
+  it("explains when sensitive access will become available without exposing household data", () => {
+    const scheduledAt = "2026-05-18T10:00:00.000Z";
+
+    expect(getSensitiveAccessAvailability({
+      scheduledAt,
+      status: "assigned",
+      now: "2026-05-18T09:10:00.000Z",
+    })).toEqual({
+      state: "locked",
+      opensAt: "2026-05-18T09:15:00.000Z",
+      minutesUntilOpen: 5,
+    });
+
+    expect(getSensitiveAccessAvailability({
+      scheduledAt,
+      status: "assigned",
+      now: "2026-05-18T09:15:00.000Z",
+    }).state).toBe("available");
+
+    expect(getSensitiveAccessAvailability({
+      scheduledAt,
+      status: "cancelled",
+      cancelledAt: "2026-05-18T09:12:00.000Z",
+      now: "2026-05-18T09:15:00.000Z",
+    }).state).toBe("closed");
+  });
+
+  it("reveals the destination only after a Zooter accepts the job", () => {
+    const address = "12 Alice Lane, Sandton";
+
+    expect(getAcceptedZooterJobAddress({ jobState: "offered", address })).toBeNull();
+    expect(getAcceptedZooterJobAddress({ jobState: "accepted", address })).toBe(address);
+    expect(getAcceptedZooterJobAddress({ jobState: "completed", address })).toBeNull();
+    expect(getAcceptedZooterJobAddress({ jobState: "accepted", address: "   " })).toBeNull();
+  });
+
+  it("keeps Zoot Black unavailable unless every approval and eligibility gate passes", () => {
+    const eligible = {
+      featureEnabled: true,
+      explicitOptIn: true,
+      zooterTier: "elite_verified",
+      zooterVerified: true,
+      equipmentEvidenceApproved: true,
+      areaPilotApproved: true,
+      legalApproved: true,
+    };
+
+    expect(canOfferZootBlack(eligible)).toBe(true);
+    expect(canOfferZootBlack({ ...eligible, featureEnabled: false })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, explicitOptIn: false })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, zooterTier: "standard" })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, equipmentEvidenceApproved: false })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, areaPilotApproved: false })).toBe(false);
+    expect(canOfferZootBlack({ ...eligible, legalApproved: false })).toBe(false);
+  });
+
+  it("builds an explicit Zoot Black line item only from a positive backend amount", () => {
+    expect(buildZootBlackLineItem(175.555)).toEqual({
+      item_key: "zoot_black_service",
+      label: "Zoot Black service",
+      quantity: 1,
+      unit_amount: 175.56,
+      total_amount: 175.56,
+      currency: "ZAR",
+    });
+    expect(buildZootBlackLineItem(0)).toBeNull();
+    expect(buildZootBlackLineItem(Number.NaN)).toBeNull();
+  });
+
+  it("keeps hosted payment checkout disabled until every provider gate is proven", () => {
+    const ready = {
+      provider: "stitch" as const,
+      providerGateEnabled: true,
+      hostedCheckoutConfigured: true,
+      webhookSignatureVerified: true,
+      callbackUrlsVerified: true,
+      reconciliationVerified: true,
+      approvalStatus: "approved" as const,
+      frontendSuccessTrusted: false,
+    };
+
+    expect(canCreateProviderCheckout(ready)).toBe(true);
+    expect(canCreateProviderCheckout({ ...ready, providerGateEnabled: false })).toBe(false);
+    expect(canCreateProviderCheckout({ ...ready, webhookSignatureVerified: false })).toBe(false);
+    expect(canCreateProviderCheckout({ ...ready, reconciliationVerified: false })).toBe(false);
+    expect(canCreateProviderCheckout({ ...ready, approvalStatus: "pending" })).toBe(false);
+    expect(canCreateProviderCheckout({ ...ready, frontendSuccessTrusted: true })).toBe(false);
+  });
+
+  it("builds non-secret payment reconciliation references", () => {
+    expect(buildPaymentReconciliationReference({
+      provider: "ozow",
+      bookingId: "booking-123456789",
+      paymentId: "payment-abcdefghi",
+    })).toBe("ZOOT-OZOW-BOOKING1-PAYMENTA");
+
+    expect(buildPaymentReconciliationReference({
+      provider: "stitch",
+      bookingId: "abc",
+      paymentId: "payment-abcdefghi",
+    })).toBeNull();
+  });
+
+  it("blocks payout release when verification, step-up or hold gates are not clean", () => {
+    const ready = {
+      payoutsEnabled: true,
+      verifiedPayoutAccount: true,
+      stepUpRequiredForAccountChanges: true,
+      pendingPayoutAccountChange: false,
+      activeHold: false,
+      trustOrDisputeReviewOpen: false,
+    };
+
+    expect(canReleaseZooterPayout(ready)).toBe(true);
+    expect(canReleaseZooterPayout({ ...ready, payoutsEnabled: false })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, verifiedPayoutAccount: false })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, stepUpRequiredForAccountChanges: false })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, pendingPayoutAccountChange: true })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, activeHold: true })).toBe(false);
+    expect(canReleaseZooterPayout({ ...ready, trustOrDisputeReviewOpen: true })).toBe(false);
   });
 
   it("builds pending payment records instead of claiming live provider payment", () => {

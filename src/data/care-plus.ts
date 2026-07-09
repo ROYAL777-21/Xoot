@@ -30,9 +30,10 @@ export const carePlusPlan: CarePlusPlan = {
   ],
 };
 
-export const mockCarePlusMembership: CarePlusMembership = {
-  id: "care-plus-demo",
-  userId: "demo-user",
+// Public marketing showcase content only. Authenticated production pages must query Supabase for member-specific rows.
+export const carePlusShowcaseMembership: CarePlusMembership = {
+  id: "care-plus-showcase",
+  userId: "care-plus-showcase-user",
   planId: carePlusPlan.id,
   status: "active",
   priceZar: 99,
@@ -43,11 +44,11 @@ export const mockCarePlusMembership: CarePlusMembership = {
   addOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
   zootCredMultiplier: 1.5,
   homeReadinessScore: 86,
-  favouriteZooterId: "nomsa-demo",
+  favouriteZooterId: "nomsa-showcase",
 };
 
-export const mockFavouriteZooter: FavouriteZooter = {
-  id: "nomsa-demo",
+export const carePlusShowcaseFavouriteZooter: FavouriteZooter = {
+  id: "nomsa-showcase",
   name: "Nomsa",
   rating: 4.96,
   specialties: ["Airbnb turnovers", "Premium home reset", "Ironing"],
@@ -56,8 +57,8 @@ export const mockFavouriteZooter: FavouriteZooter = {
   preferredFor: "Kitchen detail, pet notes, linen reset",
 };
 
-export const mockZootCredBalance: ZootCredBalance = {
-  userId: "demo-user",
+export const carePlusShowcaseZootCredBalance: ZootCredBalance = {
+  userId: "care-plus-showcase-user",
   availableZar: 185,
   pendingZar: 45,
   multiplier: 1.5,
@@ -66,7 +67,7 @@ export const mockZootCredBalance: ZootCredBalance = {
   monthlyAddOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
 };
 
-export const mockPropertyProfiles: PropertyProfile[] = [
+export const carePlusShowcasePropertyProfiles: PropertyProfile[] = [
   {
     id: "hyde-park-home",
     name: "Hyde Park family home",
@@ -101,8 +102,8 @@ export const mockPropertyProfiles: PropertyProfile[] = [
   },
 ];
 
-export const mockHomeMemoryProfile: HomeMemoryProfile = {
-  id: "home-memory-demo",
+export const carePlusShowcaseHomeMemoryProfile: HomeMemoryProfile = {
+  id: "home-memory-showcase",
   propertyProfileId: "hyde-park-home",
   petNotes: ["Two calm dogs", "Keep back gate closed"],
   accessInstructions: "Use the intercom, access notes stay inside the authenticated app.",
@@ -220,28 +221,28 @@ export const carePlusMoatBenefits: CarePlusBenefit[] = [
 export const smartReminders: SmartReminder[] = [
   {
     id: "cleaned-12-days",
-    message: "Your home was cleaned 12 days ago. Want to book Nomsa again?",
+    message: "Your home still has that after-clean calm. Nomsa has a nearby slot before the week gets busy.",
     intent: "rebook",
-    cta: "Book Nomsa again",
+    cta: "Keep the rhythm",
     priority: "high",
   },
   {
     id: "thursday-slot",
-    message: "Your usual Thursday slot is available.",
+    message: "Your usual Thursday window is open, so you can protect the routine before peak slots fill.",
     intent: "slot",
     cta: "Reserve Thursday",
     priority: "normal",
   },
   {
     id: "guest-arriving",
-    message: "Guest arriving soon? Schedule an Airbnb turnover clean.",
+    message: "Guests arriving soon? Turnover notes, linen reset and photo-proof expectations are ready to reuse.",
     intent: "turnover",
-    cta: "Schedule turnover",
+    cta: "Prep guest-ready",
     priority: "high",
   },
   {
     id: "ironing-default",
-    message: "You often add ironing. Save it as a default?",
+    message: "You add ironing often. Save it once so the next booking feels less like admin.",
     intent: "default_addon",
     cta: "Save default",
     priority: "normal",

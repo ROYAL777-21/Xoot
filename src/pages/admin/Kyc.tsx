@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ShieldCheck, FileText, Check, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
 import { getActivationReadiness } from "@/lib/operations";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import { approveZooterAdmin, rejectZooterAdmin } from "@/lib/admin-actions";
 
 const verificationFields = [
   ["id_verification_status", "Government ID"],
@@ -19,7 +20,6 @@ const verificationFields = [
 ] as const;
 
 const AdminKyc = () => {
-  const { user } = useAuth();
   const [apps, setApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<any>(null);
@@ -60,8 +60,18 @@ const AdminKyc = () => {
 
   const setVerification = async (field: string, status: "approved" | "rejected" | "pending") => {
     if (!active) return;
-    const { data, error } = await (supabase as any).from("zooter_applications").update({ [field]: status }).eq("id", active.id).select("*").single();
-    if (error) return toast.error(error.message);
+    let data: any;
+    try {
+      const result = await invokeOpsWorkflow<{ application?: any }>({
+        action: "admin_set_kyc_verification",
+        applicationId: active.id,
+        field,
+        status,
+      });
+      data = result.application ?? { ...active, [field]: status };
+    } catch (error) {
+      return toast.error(error instanceof Error ? error.message : "Verification update failed");
+    }
     setActive(data);
     setApps((items) => items.map((item) => item.id === data.id ? data : item));
   };
@@ -82,47 +92,26 @@ const AdminKyc = () => {
   const allVerified = active && readiness.activationReady;
 
   const decide = async (status: "approved" | "rejected") => {
-    if (!active || !user) return;
+    if (!active) return;
+    const reason = notes.trim();
+    if (reason.length < 10) {
+      toast.error("Reviewer notes must be at least 10 characters for the audit trail.");
+      return;
+    }
     if (status === "approved" && !readiness.activationReady) {
       toast.error(`Activation locked: ${readiness.missing.join(", ")}`);
       return;
     }
 
-    const { error } = await (supabase as any).from("zooter_applications").update({
-      status,
-      reviewer_notes: notes,
-      reviewed_by: user.id,
-      reviewed_at: new Date().toISOString(),
-    }).eq("id", active.id);
-    if (error) { toast.error(error.message); return; }
-
-    if (status === "approved") {
-      const { data: existing } = await supabase.from("zooters").select("id").eq("user_id", active.user_id).maybeSingle();
-      const zooterPayload: any = {
-        user_id: active.user_id,
-        name: active.full_name,
-        role: active.service_category ?? "cleaning",
-        hourly_rate: 35,
-        bio: active.bio,
-        tags: ["Verified", "Background checked"],
-        distance_mi: 1,
-        active: true,
-        verified: true,
-        background_checked: true,
-        background_check_status: "approved",
-        reliability_score: 100,
-        job_completion_rate: 100,
-        tier: "verified",
-        years_experience: Number(active.years_experience ?? 2),
-        suburb_coverage: [active.suburb, active.city].filter(Boolean),
-        transport: active.transport || "Transport confirmed",
-        supplies_owned: active.supplies_owned ?? [],
-        pet_comfort: active.pet_comfort || "Pet comfort reviewed",
-      };
-      if (!existing) await (supabase as any).from("zooters").insert(zooterPayload);
-      else await (supabase as any).from("zooters").update(zooterPayload).eq("id", existing.id);
-      await supabase.from("user_roles").insert({ user_id: active.user_id, role: "zooter" }).select();
-      await (supabase as any).from("admin_review_queue").update({ status: "resolved", resolution_notes: "Application approved and activated", resolved_at: new Date().toISOString() }).eq("subject_id", active.id).eq("queue_type", "kyc");
+    try {
+      const { data, error } = status === "approved"
+        ? await approveZooterAdmin(active.id, reason)
+        : await rejectZooterAdmin(active.id, reason);
+      if (error) throw error;
+      if ((data as any)?.success === false) throw new Error((data as any).error ?? "Application decision failed");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Application decision failed");
+      return;
     }
 
     toast.success(`Application ${status}`);
@@ -141,14 +130,14 @@ const AdminKyc = () => {
         <Card className="rounded-3xl overflow-hidden h-fit">
           <div className="p-4 border-b border-border"><p className="font-display font-bold">Queue ({apps.filter((a) => a.status === "submitted").length})</p></div>
           <div className="divide-y divide-border max-h-[70vh] overflow-y-auto">
-            {apps.map((a) => <button key={a.id} onClick={() => openApp(a)} className={`block w-full text-left px-4 py-3 hover:bg-muted ${active?.id === a.id ? "bg-muted" : ""}`}><p className="font-medium text-sm truncate">{a.full_name}</p><p className="text-xs text-muted-foreground capitalize">{a.service_category} · <span className={a.status === "submitted" ? "text-primary" : a.status === "approved" ? "text-sage-deep" : "text-destructive"}>{a.status}</span></p></button>)}
+            {apps.map((a) => <button key={a.id} onClick={() => openApp(a)} className={`block w-full text-left px-4 py-3 hover:bg-muted ${active?.id === a.id ? "bg-muted" : ""}`}><p className="font-medium text-sm truncate">{a.full_name ?? a.name ?? "Unnamed applicant"}</p><p className="text-xs text-muted-foreground capitalize">{a.service_category ?? "cleaning"} · <span className={a.status === "submitted" ? "text-primary" : a.status === "approved" ? "text-sage-deep" : "text-destructive"}>{a.status}</span></p></button>)}
           </div>
         </Card>
 
         {active ? (
           <Card className="p-6 rounded-3xl">
-            <h2 className="font-display text-2xl font-bold mb-1">{active.full_name}</h2>
-            <p className="text-sm text-muted-foreground mb-4">{active.email} · {active.phone} · {active.city}</p>
+            <h2 className="font-display text-2xl font-bold mb-1">{active.full_name ?? active.name ?? "Unnamed applicant"}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{active.email ?? "No email"} · {active.phone ?? "No phone"} · {active.city ?? active.suburb ?? "No area"}</p>
             <div className="grid sm:grid-cols-2 gap-2 text-sm mb-4">
               <Field k="ID number" v={active.id_number} /><Field k="DOB" v={active.date_of_birth} /><Field k="Address" v={active.address} /><Field k="Bank" v={active.bank_name} /><Field k="Emergency contact" v={`${active.emergency_contact_name ?? ""} ${active.emergency_contact_phone ?? ""}`} /><Field k="Reference 1" v={`${active.reference_1_name ?? ""} ${active.reference_1_phone ?? ""}`} /><Field k="Reference 2" v={`${active.reference_2_name ?? ""} ${active.reference_2_phone ?? ""}`} /><Field k="Consent" v={active.background_check_consent ? "Yes" : "No"} />
             </div>

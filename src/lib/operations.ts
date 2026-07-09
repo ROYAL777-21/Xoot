@@ -1,3 +1,5 @@
+import { normaliseBookingStatus } from "./booking-state-machine";
+
 export const approvedLaunchRegions = [
   "midrand",
   "sandton",
@@ -61,6 +63,47 @@ export type ActivationInput = {
 export type LedgerEntry = {
   amount: number;
   direction: "credit" | "debit";
+};
+
+export type ZootBlackEligibilityInput = {
+  featureEnabled: boolean;
+  explicitOptIn: boolean;
+  zooterTier?: string | null;
+  zooterVerified: boolean;
+  equipmentEvidenceApproved: boolean;
+  areaPilotApproved: boolean;
+  legalApproved: boolean;
+};
+
+export type ZootBlackLineItem = {
+  item_key: "zoot_black_service";
+  label: "Zoot Black service";
+  quantity: 1;
+  unit_amount: number;
+  total_amount: number;
+  currency: "ZAR";
+};
+
+export type PaymentProvider = "stitch" | "ozow";
+
+export type PaymentProviderReadinessInput = {
+  provider: PaymentProvider;
+  providerGateEnabled: boolean;
+  hostedCheckoutConfigured: boolean;
+  webhookSignatureVerified: boolean;
+  callbackUrlsVerified: boolean;
+  reconciliationVerified: boolean;
+  approvalStatus: "pending" | "approved" | "rejected" | "missing";
+  frontendSuccessTrusted?: boolean;
+};
+
+export type PayoutReadinessInput = {
+  payoutsEnabled: boolean;
+  verifiedPayoutAccount: boolean;
+  stepUpRequiredForAccountChanges: boolean;
+  pendingPayoutAccountChange: boolean;
+  activeHold: boolean;
+  trustOrDisputeReviewOpen: boolean;
 };
 
 export type HomeCleaningSize = "small" | "medium" | "large";
@@ -191,18 +234,22 @@ export const canAccessSensitiveBookingData = ({
   status,
   completedAt,
   cancelledAt,
+  durationHours,
   now,
 }: {
   scheduledAt: string;
   status: string;
   completedAt?: string | null;
   cancelledAt?: string | null;
+  durationHours?: number | string | null;
   now?: string;
 }) => {
   if (status === "cancelled" || cancelledAt) return false;
 
   const current = now ? new Date(now).getTime() : Date.now();
   const start = new Date(scheduledAt).getTime();
+  if (!Number.isFinite(start)) return false;
+
   const accessOpens = start - 45 * 60 * 1000;
   if (current < accessOpens) return false;
 
@@ -211,7 +258,187 @@ export const canAccessSensitiveBookingData = ({
     return current <= complete + 30 * 60 * 1000;
   }
 
-  return ["confirmed", "enroute", "arrived", "in_progress", "pending"].includes(status);
+  const normalizedStatus = normaliseBookingStatus(status);
+  const activeStatus = Boolean(normalizedStatus && [
+    "assigned",
+    "contractor_accepted",
+    "en_route",
+    "in_progress",
+    "replacement_offered",
+    "reassigned",
+  ].includes(normalizedStatus));
+
+  if (!activeStatus) return false;
+
+  const parsedDuration = Number(durationHours ?? 0);
+  const durationMs = Number.isFinite(parsedDuration) && parsedDuration > 0 ? parsedDuration * 60 * 60 * 1000 : 0;
+  const accessCloses = start + durationMs + 30 * 60 * 1000;
+  return current <= accessCloses;
+};
+
+export type SensitiveAccessAvailability =
+  | { state: "locked"; opensAt: string; minutesUntilOpen: number }
+  | { state: "available"; opensAt: string; minutesUntilOpen: 0 }
+  | { state: "closed"; opensAt: string | null; minutesUntilOpen: 0 };
+
+export const getAcceptedZooterJobAddress = ({
+  jobState,
+  address,
+}: {
+  jobState: string;
+  address?: string | null;
+}): string | null => {
+  if (jobState !== "accepted") return null;
+  const normalizedAddress = address?.trim();
+  return normalizedAddress || null;
+};
+
+export const getSensitiveAccessAvailability = ({
+  scheduledAt,
+  status,
+  completedAt,
+  cancelledAt,
+  sensitiveDataRevokedAt,
+  durationHours,
+  now,
+}: {
+  scheduledAt: string;
+  status: string;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  sensitiveDataRevokedAt?: string | null;
+  durationHours?: number | string | null;
+  now?: string;
+}): SensitiveAccessAvailability => {
+  const start = new Date(scheduledAt).getTime();
+  if (!Number.isFinite(start)) return { state: "closed", opensAt: null, minutesUntilOpen: 0 };
+
+  const opensAtMs = start - 45 * 60 * 1000;
+  const opensAt = new Date(opensAtMs).toISOString();
+  const current = now ? new Date(now).getTime() : Date.now();
+  if (!Number.isFinite(current)) return { state: "closed", opensAt, minutesUntilOpen: 0 };
+
+  if (sensitiveDataRevokedAt || status === "cancelled" || status === "rated" || cancelledAt) {
+    return { state: "closed", opensAt, minutesUntilOpen: 0 };
+  }
+
+  if (canAccessSensitiveBookingData({
+    scheduledAt,
+    status,
+    completedAt,
+    cancelledAt,
+    durationHours,
+    now: new Date(current).toISOString(),
+  })) {
+    return { state: "available", opensAt, minutesUntilOpen: 0 };
+  }
+
+  const normalizedStatus = normaliseBookingStatus(status);
+  const canOpenLater = Boolean(normalizedStatus && [
+    "assigned",
+    "contractor_accepted",
+    "replacement_offered",
+    "reassigned",
+  ].includes(normalizedStatus));
+
+  if (canOpenLater && current < opensAtMs) {
+    return {
+      state: "locked",
+      opensAt,
+      minutesUntilOpen: Math.max(1, Math.ceil((opensAtMs - current) / 60000)),
+    };
+  }
+
+  return { state: "closed", opensAt, minutesUntilOpen: 0 };
+};
+
+export const canOfferZootBlack = ({
+  featureEnabled,
+  explicitOptIn,
+  zooterTier,
+  zooterVerified,
+  equipmentEvidenceApproved,
+  areaPilotApproved,
+  legalApproved,
+}: ZootBlackEligibilityInput) => {
+  const eliteTier = ["elite", "elite_verified", "black"].includes((zooterTier ?? "").toLowerCase());
+  return Boolean(
+    featureEnabled
+      && explicitOptIn
+      && eliteTier
+      && zooterVerified
+      && equipmentEvidenceApproved
+      && areaPilotApproved
+      && legalApproved,
+  );
+};
+
+export const buildZootBlackLineItem = (amount: number): ZootBlackLineItem | null => {
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  const roundedAmount = Math.round(amount * 100) / 100;
+  return {
+    item_key: "zoot_black_service",
+    label: "Zoot Black service",
+    quantity: 1,
+    unit_amount: roundedAmount,
+    total_amount: roundedAmount,
+    currency: "ZAR",
+  };
+};
+
+export const canCreateProviderCheckout = ({
+  providerGateEnabled,
+  hostedCheckoutConfigured,
+  webhookSignatureVerified,
+  callbackUrlsVerified,
+  reconciliationVerified,
+  approvalStatus,
+  frontendSuccessTrusted = false,
+}: PaymentProviderReadinessInput) => {
+  return Boolean(
+    providerGateEnabled
+      && hostedCheckoutConfigured
+      && webhookSignatureVerified
+      && callbackUrlsVerified
+      && reconciliationVerified
+      && approvalStatus === "approved"
+      && !frontendSuccessTrusted,
+  );
+};
+
+export const buildPaymentReconciliationReference = ({
+  provider,
+  bookingId,
+  paymentId,
+}: {
+  provider: PaymentProvider;
+  bookingId: string;
+  paymentId: string;
+}) => {
+  const clean = (value: string) => value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase();
+  const bookingPart = clean(bookingId);
+  const paymentPart = clean(paymentId);
+  if (bookingPart.length < 6 || paymentPart.length < 6) return null;
+  return `ZOOT-${provider.toUpperCase()}-${bookingPart}-${paymentPart}`;
+};
+
+export const canReleaseZooterPayout = ({
+  payoutsEnabled,
+  verifiedPayoutAccount,
+  stepUpRequiredForAccountChanges,
+  pendingPayoutAccountChange,
+  activeHold,
+  trustOrDisputeReviewOpen,
+}: PayoutReadinessInput) => {
+  return Boolean(
+    payoutsEnabled
+      && verifiedPayoutAccount
+      && stepUpRequiredForAccountChanges
+      && !pendingPayoutAccountChange
+      && !activeHold
+      && !trustOrDisputeReviewOpen,
+  );
 };
 
 export const buildPendingPaymentRecord = ({

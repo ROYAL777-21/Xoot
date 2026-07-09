@@ -11,9 +11,10 @@ const PRIVATE_HOST_PATTERNS = [
 
 const DEFAULT_ALLOWED_HOSTS = [
   "api.supabase.co",
-  "api.twilio.com",
-  "api.brevo.com",
   "supabase.co",
+  "api.mapbox.com",
+  "tiles.mapbox.com",
+  "events.mapbox.com",
 ];
 
 export const isPrivateHost = (host: string) => {

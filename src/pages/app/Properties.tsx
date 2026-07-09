@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { BedDouble, Briefcase, Building2, ChevronRight, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
 const emptyForm = {
   account_type: "airbnb_host",
@@ -44,14 +45,14 @@ const Properties = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!user) return;
     const { data } = await (supabase as any).from("property_accounts").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     setAccounts(data ?? []);
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { refresh(); }, [user]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,24 +71,13 @@ const Properties = () => {
     }).select("id").single();
 
     if (!error) {
-      await (supabase as any).from("admin_review_queue").insert({
-        queue_type: "b2b_invoice",
-        subject_table: "property_accounts",
-        subject_id: account.id,
-        user_id: user.id,
-        priority: "normal",
-        summary: `B2B monthly invoice setup for ${form.name}`,
-      });
-      await (supabase as any).from("integration_outbox").insert({
-        source_table: "property_accounts",
-        source_id: account.id,
-        event_type: "property_account_created",
-        channel: "airtable_ops",
-        owner: "Strategy & Operations Agent",
-        stack_tool: "Airtable ops queue",
-        payload: { property_account_id: account.id, account_type: form.account_type },
-        created_by: user.id,
-      });
+      try {
+        await invokeOpsWorkflow({ action: "property_account_created", propertyAccountId: account.id });
+      } catch {
+        haptic("warning");
+        setSubmitting(false);
+        return toast.error("Property account saved, but operations routing is unavailable. Please try again shortly.");
+      }
     }
 
     setSubmitting(false);

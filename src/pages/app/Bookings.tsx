@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -11,23 +11,57 @@ import { Calendar, Loader2, MapPin, MessageSquare, Repeat, AlertCircle, CheckCir
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { resolvePhoto } from "@/components/zoot/ZooterCard";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import { getClientVisibleStatus, normaliseBookingStatus } from "@/lib/booking-state-machine";
 
 type Booking = {
   id: string; service: string; scheduled_at: string; status: string;
   price: number; address: string | null; was_reassigned: boolean;
   reassignment_acknowledged: boolean;
+  zooter_id: string | null;
   zooter: { id: string; name: string; photo_url: string | null; rating: number; role: string } | null;
 };
 
 const statusBadge: Record<string, string> = {
+  draft: "bg-muted text-muted-foreground",
+  pending_payment: "bg-muted text-muted-foreground",
+  payment_confirmed: "bg-primary/15 text-primary",
+  awaiting_assignment: "bg-primary/15 text-primary",
+  assigned: "bg-primary/15 text-primary",
+  contractor_accepted: "bg-sage/15 text-sage-deep",
   confirmed: "bg-sage/15 text-sage-deep",
   pending: "bg-muted text-muted-foreground",
   enroute: "bg-primary/15 text-primary",
+  en_route: "bg-primary/15 text-primary",
   in_progress: "bg-primary/15 text-primary",
   completed: "bg-sage/15 text-sage-deep",
+  rated: "bg-sage/15 text-sage-deep",
   cancelled: "bg-destructive/15 text-destructive",
+  replacement_required: "bg-primary/15 text-primary",
+  replacement_offered: "bg-primary/15 text-primary",
   reassigned: "bg-primary/15 text-primary",
 };
+
+const getVisibleStatus = (status: string) => {
+  const canonical = normaliseBookingStatus(status);
+  return canonical ? getClientVisibleStatus(canonical) : status.replace(/_/g, " ");
+};
+
+const activeStatuses = new Set([
+  "draft",
+  "pending_payment",
+  "payment_confirmed",
+  "awaiting_assignment",
+  "assigned",
+  "contractor_accepted",
+  "en_route",
+  "in_progress",
+  "replacement_required",
+  "replacement_offered",
+  "reassigned",
+]);
+
+const pastStatuses = new Set(["completed", "rated", "cancelled"]);
 
 const Bookings = () => {
   const { user } = useAuth();
@@ -37,16 +71,28 @@ const Bookings = () => {
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkDate, setBulkDate] = useState("");
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from("bookings")
-      .select("id, service, scheduled_at, status, price, address, was_reassigned, reassignment_acknowledged, zooter:zooters(id,name,photo_url,rating,role)")
+      .select("id, zooter_id, service, scheduled_at, status, price, address, was_reassigned, reassignment_acknowledged")
       .eq("user_id", user.id).order("scheduled_at", { ascending: false });
-    setList((data ?? []) as any);
+    const bookings = (data ?? []) as Array<Omit<Booking, "zooter">>;
+    const bookingIds = bookings.map((booking) => booking.id);
+    const { data: zooters } = bookingIds.length
+      ? await (supabase as any)
+        .from("booking_zooter_profiles")
+        .select("booking_id,id,name,photo_url,rating,role")
+        .in("booking_id", bookingIds)
+      : { data: [] };
+    const zootersByBookingId = new Map(
+      ((zooters ?? []) as Array<NonNullable<Booking["zooter"]> & { booking_id: string }>)
+        .map((zooter) => [zooter.booking_id, zooter]),
+    );
+    setList(bookings.map((booking) => ({ ...booking, zooter: zootersByBookingId.get(booking.id) ?? null })) as Booking[]);
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { refresh(); }, [user]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const toggle = (id: string) => {
     const n = new Set(selected); n.has(id) ? n.delete(id) : n.add(id); setSelected(n);
@@ -54,13 +100,31 @@ const Bookings = () => {
 
   const bulkReschedule = async () => {
     if (!bulkDate || selected.size === 0) return;
-    await supabase.from("bookings").update({ scheduled_at: new Date(bulkDate).toISOString() }).in("id", Array.from(selected));
-    toast.success(`Rescheduled ${selected.size} booking${selected.size === 1 ? "" : "s"}`);
-    setBulkOpen(false); setSelected(new Set()); refresh();
+    try {
+      await Promise.all(
+        Array.from(selected).map((bookingId) =>
+          invokeOpsWorkflow({
+            action: "booking_reschedule_requested",
+            bookingId,
+            scheduledAt: new Date(bulkDate).toISOString(),
+          }),
+        ),
+      );
+      toast.success(`Rescheduled ${selected.size} booking${selected.size === 1 ? "" : "s"}`);
+      setBulkOpen(false); setSelected(new Set()); refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Reschedule failed");
+    }
   };
 
-  const upcoming = list.filter((b) => ["pending", "confirmed", "enroute", "in_progress", "reassigned"].includes(b.status));
-  const past = list.filter((b) => ["completed", "cancelled"].includes(b.status));
+  const upcoming = list.filter((b) => {
+    const canonical = normaliseBookingStatus(b.status);
+    return canonical ? activeStatuses.has(canonical) : false;
+  });
+  const past = list.filter((b) => {
+    const canonical = normaliseBookingStatus(b.status);
+    return canonical ? pastStatuses.has(canonical) : false;
+  });
 
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
@@ -90,7 +154,7 @@ const Bookings = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold truncate">{b.zooter?.name ?? "Reassigning…"}</p>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${statusBadge[b.status]}`}>{b.status}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${statusBadge[normaliseBookingStatus(b.status) ?? b.status] ?? "bg-muted text-muted-foreground"}`}>{getVisibleStatus(b.status)}</span>
                   {b.was_reassigned && !b.reassignment_acknowledged && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary text-primary-foreground flex items-center gap-1">
                       <AlertCircle className="h-3 w-3" /> NEW ZOOTER

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -6,16 +6,62 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { LifeBuoy, Loader2, Sparkles, Clock } from "lucide-react";
+import { Bot, CheckCircle2, Clock, LifeBuoy, Loader2, MessageCircle, ShieldAlert, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { routeNotificationChannel } from "@/lib/operations";
 import { haptic } from "@/lib/haptics";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { SupportCaseInput } from "@/lib/validators";
 
-const getPriority = (text: string) => {
-  const normalized = text.toLowerCase();
-  if (normalized.includes("no-show") || normalized.includes("unsafe") || normalized.includes("damage")) return "urgent";
-  if (normalized.includes("refund") || normalized.includes("replacement") || normalized.includes("complaint")) return "high";
-  return "normal";
+type SupportAssistantReply = {
+  response?: string;
+  escalated?: boolean;
+  source?: "openai_responses" | "human_escalation";
+  openai_request_id?: string | null;
+};
+
+const quickSupportPrompts = [
+  {
+    label: "Late Zooter",
+    subject: "My Zooter is late",
+    body: "My Zooter has not arrived yet. Please check the booking and help me understand the next step.",
+  },
+  {
+    label: "Replacement",
+    subject: "I need a replacement Zooter",
+    body: "I need help with a replacement for my booking. Please review the safest option for this job.",
+  },
+  {
+    label: "Quality review",
+    subject: "I need help after a clean",
+    body: "I would like Zoot to review a service concern and advise what can be done next.",
+  },
+  {
+    label: "Join Zoot",
+    subject: "I need help with Zooter onboarding",
+    body: "I am applying to become a Zooter and need help with onboarding, document uploads, training, or trust review.",
+  },
+  {
+    label: "Care+",
+    subject: "I have a Care+ question",
+    body: "I want to understand Care+ benefits, Home Memory, Favourite Zooter rebooking, ZootCred, or priority support.",
+  },
+];
+
+const requestSupportAssistantReply = async (
+  ticketId: string,
+  subject: string,
+  body: string,
+): Promise<SupportAssistantReply | null> => {
+  const functionsClient = (supabase as any).functions;
+  if (!functionsClient?.invoke) return null;
+
+  const { data, error } = await functionsClient.invoke("support-respond", {
+    body: { ticket_id: ticketId, subject, body, role: "user" },
+  });
+
+  if (error) throw error;
+  if (!data || typeof data.response !== "string") return null;
+  return data as SupportAssistantReply;
 };
 
 const Support = () => {
@@ -24,24 +70,38 @@ const Support = () => {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [assistantReply, setAssistantReply] = useState<SupportAssistantReply | null>(null);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from("support_tickets").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     setTickets(data ?? []);
-  };
+  }, [user]);
 
-  useEffect(() => { refresh(); }, [user]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    setSubmitting(true);
+    const supportInput = SupportCaseInput.safeParse({ category: subject, description: body, booking_id: "" });
+    if (!supportInput.success) {
+      haptic("warning");
+      toast.error(supportInput.error.issues[0]?.message ?? "Please check your support message.");
+      return;
+    }
+    const safeSupport = supportInput.data;
+    if (!checkRateLimit("support", 5, 3_600_000)) {
+      haptic("warning");
+      toast.error("Too many support requests. Please wait before creating another ticket.");
+      return;
+    }
 
-    const { data: ticket, error } = await supabase.from("support_tickets")
-      .insert({ user_id: user.id, subject, body })
-      .select()
-      .single();
+    setSubmitting(true);
+    setAssistantReply(null);
+
+    const { data, error } = await supabase.functions.invoke("create-support-case", {
+      body: { subject: safeSupport.category, description: safeSupport.description, category: safeSupport.category },
+    });
 
     if (error) {
       haptic("warning");
@@ -49,36 +109,30 @@ const Support = () => {
       setSubmitting(false);
       return;
     }
+    const result = data as { success?: boolean; error?: string; data?: { case_id?: string } } | null;
+    if (result?.success === false || !result?.data?.case_id) {
+      haptic("warning");
+      toast.error(result?.error ?? "Support ticket could not be created");
+      setSubmitting(false);
+      return;
+    }
 
-    const priority = getPriority(`${subject} ${body}`);
-    await (supabase as any).from("support_followups").insert({
-      ticket_id: ticket.id,
-      user_id: user.id,
-      trigger_type: "manual",
-      priority,
-      notes: subject,
-    });
-    await (supabase as any).from("admin_review_queue").insert({
-      queue_type: "support",
-      subject_table: "support_tickets",
-      subject_id: ticket.id,
-      user_id: user.id,
-      priority,
-      summary: subject,
-    });
-    await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("support_opened").map((channel) => ({
-      source_table: "support_tickets",
-      source_id: ticket.id,
-      event_type: "support_opened",
-      channel,
-      owner: "Customer Support Agent",
-      stack_tool: "Zoot in-app notification",
-      payload: { ticket_id: ticket.id, subject, priority },
-      created_by: user.id,
-    })));
+    let assistantReply: SupportAssistantReply | null = null;
+    try {
+      assistantReply = await requestSupportAssistantReply(result.data.case_id, safeSupport.category, safeSupport.description);
+    } catch {
+      assistantReply = null;
+    }
+    setAssistantReply(assistantReply);
 
     haptic("success");
-    toast.success("We've got your message. Support will review it in the app.");
+    if (assistantReply?.escalated) {
+      toast.success("We've flagged this for human support review in the app.");
+    } else if (assistantReply?.response) {
+      toast.success("Zoot Assistant replied and support has your ticket.");
+    } else {
+      toast.success("We've got your message. Support will review it in the app.");
+    }
     setSubject("");
     setBody("");
     setSubmitting(false);
@@ -86,7 +140,7 @@ const Support = () => {
   };
 
   return (
-    <div className="container py-8 lg:py-12 max-w-4xl">
+    <div className="container py-8 lg:py-12 max-w-5xl">
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 rounded-full bg-sage/15 px-3 py-1 mb-3">
           <Clock className="h-3 w-3 text-sage-deep" />
@@ -96,21 +150,99 @@ const Support = () => {
         <p className="text-muted-foreground mt-2">Booking issues, refund reviews, replacements, and trust concerns are routed to the right internal queue. Care+ members receive priority handling for booking issues, cancellations, and service concerns.</p>
       </div>
 
-      <Card className="p-6 rounded-3xl mb-8">
-        <form onSubmit={submit} className="space-y-3">
-          <div>
-            <Label>Subject</Label>
-            <Input value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder="e.g. Reschedule tomorrow's clean" />
+      <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-4 mb-8">
+        <Card className="p-6 rounded-3xl">
+          <form onSubmit={submit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Subject</Label>
+              <Input value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder="e.g. Reschedule tomorrow's clean" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Tell us what's happening</Label>
+              <Textarea value={body} onChange={(e) => setBody(e.target.value)} required rows={5} />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {quickSupportPrompts.map((prompt) => (
+                <button
+                  key={prompt.label}
+                  type="button"
+                  className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                  onClick={() => {
+                    setSubject(prompt.subject);
+                    setBody(prompt.body);
+                  }}
+                >
+                  {prompt.label}
+                </button>
+              ))}
+            </div>
+            <Button type="submit" disabled={submitting} className="rounded-xl gradient-warm">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><LifeBuoy className="h-4 w-4 mr-1" /> Get help</>}
+            </Button>
+          </form>
+        </Card>
+
+        <aside className="liquid-glass-shell rounded-3xl p-5">
+          <div className="liquid-glass-readable space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-2xl gradient-sage text-primary-foreground shadow-warm">
+                  <Bot className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-display text-xl font-bold">Zoot bot</p>
+                  <p className="text-xs text-muted-foreground">Fast triage with human backup</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-sage/15 px-2.5 py-1 text-[10px] font-bold uppercase text-sage-deep">Care desk</span>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/45 p-4">
+              {submitting ? (
+                <div className="flex items-start gap-3">
+                  <Loader2 className="mt-0.5 h-4 w-4 animate-spin text-primary" />
+                  <div>
+                    <p className="font-semibold">Reading your message</p>
+                    <p className="text-sm leading-6 text-muted-foreground">The assistant is preparing a safe first reply while your ticket enters the support queue.</p>
+                  </div>
+                </div>
+              ) : assistantReply?.response ? (
+                <div className="space-y-3">
+                  <p className="flex items-center gap-2 text-xs font-bold uppercase text-sage-deep">
+                    {assistantReply.escalated ? <ShieldAlert className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                    {assistantReply.escalated ? "Human review queued" : "Assistant reply"}
+                  </p>
+                  <p className="text-sm leading-6 text-foreground">{assistantReply.response}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="flex items-center gap-2 font-semibold">
+                    <MessageCircle className="h-4 w-4 text-primary" /> Start with the details that matter
+                  </p>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    Share the booking, timing, location, and what outcome would help. Refunds, payments, replacements, and trust issues always stay in human review before anything changes.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+              <div className="rounded-2xl border border-border/70 bg-background/35 p-3">
+                <p className="font-bold text-foreground">Triage</p>
+                <p className="text-muted-foreground">First read</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/35 p-3">
+                <p className="font-bold text-foreground">Safety</p>
+                <p className="text-muted-foreground">Escalates risk</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/35 p-3">
+                <p className="font-bold text-foreground">Care+</p>
+                <p className="text-muted-foreground">Priority queue</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <Label>Tell us what's happening</Label>
-            <Textarea value={body} onChange={(e) => setBody(e.target.value)} required rows={4} />
-          </div>
-          <Button type="submit" disabled={submitting} className="rounded-xl gradient-warm">
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><LifeBuoy className="h-4 w-4 mr-1" /> Get help</>}
-          </Button>
-        </form>
-      </Card>
+        </aside>
+      </div>
 
       <h2 className="font-display text-xl font-bold mb-3">Your tickets</h2>
       {tickets.length === 0 ? (
@@ -125,11 +257,13 @@ const Support = () => {
               </div>
               <p className="text-sm text-muted-foreground mb-3">{t.body}</p>
               {t.ai_response && (
-                <div className="rounded-2xl bg-accent-soft border border-accent/20 p-3 text-sm">
-                  <p className="flex items-center gap-1 text-xs font-bold text-sage-deep uppercase mb-1">
-                    <Sparkles className="h-3 w-3" /> Zoot Assistant
-                  </p>
-                  {t.ai_response}
+                <div className="liquid-glass-shell rounded-2xl p-3 text-sm">
+                  <div className="liquid-glass-readable">
+                    <p className="flex items-center gap-1 text-xs font-bold text-sage-deep uppercase mb-1">
+                      <Sparkles className="h-3 w-3" /> Zoot Assistant
+                    </p>
+                    <p className="text-sm leading-6 text-foreground">{t.ai_response}</p>
+                  </div>
                 </div>
               )}
             </Card>

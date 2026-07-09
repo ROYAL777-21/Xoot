@@ -1,73 +1,131 @@
-# Zoot Mobile App Build Path
+# Zoot Expo Mobile App Build Path
 
-Reviewed on 2026-05-28.
+Reviewed: 2026-07-01
 
-Zoot now has a concrete Capacitor app path for turning the React/Vite web app into iOS and Android app projects while keeping the premium web experience, Care+, haptics, dashboards, and security constraints in one codebase.
+Zoot's production mobile path is Expo, not Capacitor. The React/Vite website remains in the repo root. Native iOS and Android work now belongs in `/mobile`.
 
-## What This Adds
+## What Exists
 
-- `capacitor.config.ts` with Zoot app identity, `dist` web output, native schemes, push-notification presentation options, and warm launch styling.
-- `package.json` scripts for adding, syncing, building, and opening iOS/Android app projects.
-- Capacitor dependencies for native app shell, app lifecycle, haptics, preferences, and push notifications.
-- Native haptics bridge in `src/lib/haptics.ts` with browser vibration fallback and reduced-motion respect.
-- Existing iOS Live Activities, Dynamic Island, and WidgetKit source under `native/ios/ZootLiveActivities` for integration into the generated iOS project.
+- `/mobile` Expo SDK 56 app.
+- Expo Router with TypeScript.
+- `mobile/app.config.ts` for dynamic app identity.
+- `mobile/eas.json` for development, preview, and production builds.
+- SecureStore-backed Supabase auth session storage.
+- Expo Push Service token registration helper.
+- Native Liquid Glass card shell using `expo-glass-effect` on supported iOS devices.
 
-## First-Time iOS Project Creation
-
-Run from a machine with Node.js, npm, Xcode, and CocoaPods available:
-
-```bash
-npm install
-npm run build
-npm run mobile:add:ios
-npm run mobile:sync
-npm run mobile:open:ios
-```
-
-Then in Xcode:
-
-- Add the Live Activities and WidgetKit files from `native/ios/ZootLiveActivities` to the app and widget extension targets.
-- Add the Info.plist keys in `native/ios/ZootLiveActivities/Info.plist.snippet.xml`.
-- Enable Push Notifications, App Groups if widget cache sharing is used, and required signing capabilities.
-- Verify Dynamic Island, Lock Screen, and widget previews do not show addresses, gate codes, lockbox codes, access notes, payment references, ID data, or sensitive support details.
-
-## First-Time Android Project Creation
-
-Run from a machine with Node.js, npm, JDK, Android Studio, and Android SDK available:
+## First-Time Setup
 
 ```bash
-npm install
-npm run build
-npm run mobile:add:android
-npm run mobile:sync
-npm run mobile:open:android
+cd mobile
+npm ci
+copy .env.example .env.local
+npm run config:check
+npm run typecheck
 ```
 
-Then in Android Studio:
+Set real public-safe Supabase and EAS values in `.env.local` for local development. Do not put secrets in `.env.local` unless they are only used by local CLI tooling and the file remains ignored.
 
-- Configure package signing, version code/name, adaptive icons, splash screen, notification channels, deep links, and release build types.
-- Add Android widgets only for non-sensitive summaries: Next Booking, Care+ Home Readiness, ZootCred, and Favourite Zooter.
-- Complete Play Data Safety from actual code and SDK behavior.
-- Run emulator QA before Play submission.
+## Expo Go Versus Development Builds
 
-## Release Verification
+Zoot cannot be fully tested in Expo Go. It includes custom native code through `@rnmapbox/maps` and the Zoot assistant-intents config plugin. Expo Go cannot load native code that is not compiled into the Expo Go client.
 
-Before any store submission:
+Use one of these paths:
 
-- `npm run lint`
-- `npm run test`
-- `npm run build`
-- `npm run mobile:sync`
-- iOS archive build in Xcode
-- Android release bundle build in Android Studio or Gradle
-- App Store and Play Store checklist review in `docs/release/app-store-play-store-checklist.md`
-- AI usage review in `docs/release/ai-usage-review-checklist.md`
-- Security launch controls review in `docs/security/launch-critical-controls.md`
+1. Immediate standalone smoke test:
+   - Install `outputs/zoot-preview-android-v5.apk` on an Android device.
+   - This build runs without Metro and is suitable for auth, navigation, maps, notifications, Concierge and booking smoke tests.
+2. Iterative development test:
+   - Build the `development` EAS profile for the target device.
+   - Install that development client.
+   - Start Metro with `npm run mobile:start:dev-client`.
+   - Open the installed Zoot development client and connect to the Metro URL or QR code.
+
+The first native build must be rebuilt whenever native dependencies, config plugins, permissions or app identifiers change. JavaScript-only changes can then be tested through Metro without rebuilding the native client.
+
+## EAS Setup
+
+```bash
+cd mobile
+npx eas-cli@latest login
+npx eas-cli@latest init
+npx eas-cli@latest env:create --environment development --name EXPO_PUBLIC_APP_ENV --value development --visibility plaintext
+npx eas-cli@latest env:create --environment preview --name EXPO_PUBLIC_APP_ENV --value preview --visibility plaintext
+npx eas-cli@latest env:create --environment production --name EXPO_PUBLIC_APP_ENV --value production --visibility plaintext
+```
+
+Add the remaining public-safe variables listed in `docs/MOBILE_RELEASE_CONFIG.md`.
+
+## iOS Preview/TestFlight
+
+```bash
+cd mobile
+npx eas-cli@latest credentials -p ios
+npx eas-cli@latest build -p ios --profile preview
+```
+
+The current iOS artifact is a simulator build only:
+
+```text
+mobile/outputs/zoot-preview-ios-simulator-build-d4de44a1.tar.gz
+```
+
+It can be tested on a Mac with Xcode Simulator after extracting the archive. A physical iPhone cannot install this simulator artifact. To test on a real iPhone, configure EAS iOS internal-distribution credentials, then run:
+
+```bash
+cd mobile
+npm run build:preview:ios
+```
+
+Required before TestFlight:
+
+- Apple Developer membership.
+- Bundle ID `za.co.zoothome.app`.
+- App Store Connect app record.
+- Associated Domains.
+- Push Notifications.
+- Sign in with Apple if Apple OAuth is enabled.
+- App Store Connect API key for automated submit.
+
+## Android Internal Testing
+
+```bash
+cd mobile
+npx eas-cli@latest credentials -p android
+npx eas-cli@latest build -p android --profile preview
+```
+
+The current Android preview APK is available at:
+
+```text
+outputs/zoot-preview-android-v5.apk
+```
+
+Verify the artifact and install it on a connected Android device with:
+
+```powershell
+npm run ops:mobile:preview-smoke -- -InstallAndroid
+```
+
+By default, the helper selects the newest APK under `outputs/` and the newest iOS simulator archive under `mobile/outputs/`. Pass `-AndroidApkPath` or `-IosSimulatorArchivePath` when you need to lock the evidence to a specific build artifact.
+
+If no Android device or `adb` is available, the command reports the remaining manual step without failing the repo checks. When `-InstallAndroid` or `-RequireAndroidDevice` is supplied, missing Android tooling or an unauthorized device fails the command because install evidence was explicitly requested.
+
+Required before Play internal testing:
+
+- Play Console account and app record.
+- Package `za.co.zoothome.app`.
+- Play App Signing/upload key.
+- Google Play service account JSON stored as an EAS file secret.
+- Firebase/FCM setup for notifications.
+- Android App Links verified.
 
 ## Native Experience Rules
 
-- Use native haptics for important confirmations and warnings, but keep them subtle.
-- Use native push/Live Activities/widgets for status visibility, but never expose sensitive home access details outside the authenticated app.
-- Use Keychain/Android Keystore-backed storage for tokens in the native shell.
-- Keep booking, support, payment, cancellation, Care+, and ZootCred changes inside authenticated in-app flows.
-- Treat the PWA as a useful fallback; App Store and Play Store submission still requires real native project builds and native QA.
+- Use SecureStore for sessions.
+- Do not rely on Expo Go for full Zoot testing. The app uses native modules such as Mapbox and Liquid Glass support, so preview/development builds are the real test targets.
+- Keep client-contractor chat inside Zoot.
+- Do not use WhatsApp for routine communication.
+- Route sensitive actions through Supabase Edge Functions.
+- Never expose household access details in push notifications, widgets, logs, screenshots, Live Activities, or lock-screen surfaces.
+- Payment return screens are display-only and must fetch verified backend status.

@@ -2,7 +2,7 @@
 
 Reviewed on 2026-05-28.
 
-This repository currently contains the Zoot React/Vite web app and installable PWA assets. It does not contain a full Android project yet: no Gradle project, AndroidManifest, Kotlin/Java source, app bundle config, emulator fixtures, signing config, notification-channel setup, or Android widget source was found in this branch.
+This repository contains the Zoot React/Vite web app plus a separate `/mobile` Expo app. It still does not keep a committed Gradle project, because Android native files are generated through Expo prebuild/EAS. Native assistant shortcut and safe widget source now live under `native/android` and are copied by `mobile/plugins/withZootAssistantIntents.cjs`.
 
 ## Current Branch Coverage
 
@@ -10,15 +10,17 @@ This repository currently contains the Zoot React/Vite web app and installable P
 - Store-readiness checklists cover Google Play, Android Data Safety, AI-generated content policy, and OWASP Mobile Top 10 risks.
 - The web app includes safe haptics and native bridge patterns, but browser vibration is not a substitute for native Android haptics.
 - Care+, Home Memory, Favourite Zooter, ZootCred, host dashboards, office dashboards, support priority, and security docs are represented in the web app.
+- Android assistant shortcuts are defined in `native/android/res/xml/shortcuts.xml` and deep-link into safe authenticated routes.
+- A first safe Android home-screen widget is defined in `native/android/src/main/java/za/co/zoothome/widgets/ZootStatusWidgetProvider.java` with resource files under `native/android/res`. It displays only non-sensitive summary copy and deep-links into Zoot for live booking status.
 
 ## Required Before Google Play Submission
 
-- Create an Android app project with Gradle, package id, adaptive icons, splash screen, signing setup, version code/name, release build type, and Play track configuration.
+- Keep the Expo Android prebuild path healthy with package id, adaptive icons, splash screen, signing setup, version code/name, release build type, and Play track configuration.
 - Implement secure auth/session storage with Android Keystore-backed storage, not raw shared preferences.
 - Add notification channels for booking updates, support, Care+, and account/security events.
 - Add deep links for bookings, support cases, Care+, host dashboard, office dashboard, Favourite Zooter rebook, and ZootCred.
 - Implement native haptics for primary actions, confirmation, warning, and error states using Android APIs while respecting accessibility and system settings.
-- Add Android home-screen widgets only with non-sensitive summaries: Next Booking, Care+ Home Readiness, ZootCred, and Favourite Zooter.
+- Extend Android home-screen widgets only with non-sensitive summaries: Next Booking, Care+ Home Readiness, ZootCred, Favourite Zooter, and accepted Zooter job prompts.
 - Keep full addresses, access notes, gate codes, lockbox codes, payment references, support complaint details, ID data, and background-check data out of widgets and notification previews.
 - Complete Play Data Safety based on actual code and SDK behavior, including auth, analytics, crash reporting, maps, payments, messaging, AI, and support vendors.
 - Run emulator QA on representative devices before Play submission.

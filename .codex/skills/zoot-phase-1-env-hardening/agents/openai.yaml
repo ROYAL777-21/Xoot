@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zoot Phase 1 Env"
+  short_description: "Block production mock data and enforce Supabase env guards."
+  default_prompt: "Use the Zoot Phase 1 env hardening skill to verify or implement production no-mock guards, env validation, and mock authenticated UI removal."

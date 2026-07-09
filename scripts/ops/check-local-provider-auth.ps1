@@ -1,0 +1,202 @@
+param()
+
+$ErrorActionPreference = "Continue"
+
+function Test-Command {
+  param([string]$Name)
+  $command = Get-Command $Name -ErrorAction SilentlyContinue
+  if ($command) {
+    return [pscustomobject]@{
+      name = $Name
+      installed = $true
+      source = $command.Source
+    }
+  }
+
+  if ($Name -eq "psql") {
+    $fallbacks = @(
+      (Join-Path $env:USERPROFILE "scoop\apps\postgresql\current\bin\psql.exe")
+      (Join-Path $env:USERPROFILE "scoop\apps\postgresql\18.4\bin\psql.exe")
+      (Join-Path $env:USERPROFILE "scoop\apps\postgresql\18.4\_tmp\pgsql\bin\psql.exe")
+    )
+    $fallback = $fallbacks | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+    if ($fallback) {
+      return [pscustomobject]@{
+        name = $Name
+        installed = $true
+        source = $fallback
+      }
+    }
+  }
+
+  return [pscustomobject]@{
+    name = $Name
+    installed = $false
+    source = $null
+  }
+}
+
+function Invoke-Status {
+  param(
+    [string]$Name,
+    [scriptblock]$Script,
+    [scriptblock]$OkWhen
+  )
+
+  try {
+    $output = & $Script 2>&1
+    $text = (($output | Out-String).Trim() -replace '(?i)(password|token|secret|key)=\S+', '$1=<redacted>')
+    $ok = ($LASTEXITCODE -eq 0)
+    if ($OkWhen) {
+      $ok = [bool](& $OkWhen $text)
+    }
+
+    return [pscustomobject]@{
+      name = $Name
+      ok = $ok
+      output = $text
+    }
+  } catch {
+    return [pscustomobject]@{
+      name = $Name
+      ok = $false
+      output = $_.Exception.Message
+    }
+  }
+}
+
+function Invoke-ExternalStatus {
+  param(
+    [string]$Name,
+    [string]$FilePath,
+    [string[]]$ArgumentList = @(),
+    [int]$TimeoutSeconds = 8,
+    [scriptblock]$OkWhen
+  )
+
+  $command = Get-Command $FilePath -ErrorAction SilentlyContinue
+  if (-not $command) {
+    return [pscustomobject]@{
+      name = $Name
+      ok = $false
+      output = "$FilePath was not found on PATH."
+    }
+  }
+
+  $outFile = New-TemporaryFile
+  $errFile = New-TemporaryFile
+  try {
+    $process = Start-Process -FilePath $command.Source -ArgumentList $ArgumentList -NoNewWindow -PassThru -RedirectStandardOutput $outFile.FullName -RedirectStandardError $errFile.FullName
+    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+      try {
+        $process.Kill()
+      } catch {
+        # Best-effort cleanup only.
+      }
+
+      return [pscustomobject]@{
+        name = $Name
+        ok = $false
+        output = "Timed out after ${TimeoutSeconds}s."
+      }
+    }
+
+    $raw = @(
+      Get-Content -Raw -LiteralPath $outFile.FullName -ErrorAction SilentlyContinue
+      Get-Content -Raw -LiteralPath $errFile.FullName -ErrorAction SilentlyContinue
+    ) -join "`n"
+    $text = ($raw.Trim() -replace '(?i)(password|token|secret|key)=\S+', '$1=<redacted>')
+    $ok = ($process.ExitCode -eq 0)
+    if ($OkWhen) {
+      $ok = [bool](& $OkWhen $text)
+    }
+
+    return [pscustomobject]@{
+      name = $Name
+      ok = $ok
+      output = $text
+    }
+  } catch {
+    return [pscustomobject]@{
+      name = $Name
+      ok = $false
+      output = $_.Exception.Message
+    }
+  } finally {
+    Remove-Item -LiteralPath $outFile.FullName, $errFile.FullName -Force -ErrorAction SilentlyContinue
+  }
+}
+
+$codeRabbitBin = Join-Path $env:LOCALAPPDATA "Programs\CodeRabbit\bin"
+$bunBin = Join-Path $env:USERPROFILE ".bun\bin"
+$scoopShims = Join-Path $env:USERPROFILE "scoop\shims"
+$env:DO_NOT_TRACK = "1"
+$pathSegments = @($codeRabbitBin, $bunBin, $scoopShims) | Where-Object { Test-Path -LiteralPath $_ }
+$env:Path = (($pathSegments + @($env:Path)) -join ";")
+$processPath = [Environment]::GetEnvironmentVariable("Path", "Process")
+[Environment]::SetEnvironmentVariable("PATH", $processPath, "Process")
+[Environment]::SetEnvironmentVariable("Path", $processPath, "Process")
+
+$commands = @(
+  Test-Command "node"
+  Test-Command "npm"
+  Test-Command "gh"
+  Test-Command "coderabbit"
+  Test-Command "cr"
+  Test-Command "supabase"
+  Test-Command "psql"
+  Test-Command "docker"
+)
+
+$statuses = @()
+$psqlCommand = $commands | Where-Object { $_.name -eq "psql" } | Select-Object -First 1
+if ($psqlCommand -and $psqlCommand.installed) {
+  $statuses += Invoke-ExternalStatus "psql-version" $psqlCommand.source @("--version") -TimeoutSeconds 30 -OkWhen { param($Text) $Text -match "psql \(PostgreSQL\)\s+\d+\.\d+" }
+}
+
+$supabaseCommand = Get-Command "supabase" -ErrorAction SilentlyContinue
+if ($supabaseCommand) {
+  $statuses += Invoke-ExternalStatus "supabase-cli" "supabase" @("--version") -TimeoutSeconds 30 -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
+  $statuses += Invoke-ExternalStatus "supabase-auth" "supabase" @("projects", "list")
+} elseif ($env:ZOOT_CHECK_NPX_SUPABASE -eq "1") {
+  $statuses += Invoke-ExternalStatus "supabase-cli" "npx.cmd" @("-y", "supabase@2.108.0", "--version") -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
+  $statuses += Invoke-ExternalStatus "supabase-auth" "npx.cmd" @("-y", "supabase@2.108.0", "projects", "list")
+} else {
+  $statuses += [pscustomobject]@{
+    name = "supabase-cli"
+    ok = $false
+    output = "supabase was not found on PATH. Set ZOOT_CHECK_NPX_SUPABASE=1 to probe npx, or install/login the Supabase CLI locally."
+  }
+  $statuses += [pscustomobject]@{
+    name = "supabase-auth"
+    ok = $false
+    output = "Skipped because supabase CLI was not found on PATH."
+  }
+}
+
+$statuses += @(
+  Invoke-ExternalStatus "github-auth" "gh" @("auth", "status") -OkWhen {
+    param($Text)
+    $Text -match "Logged in to github\.com account" -and
+    $Text -match "Active account:\s*true"
+  }
+  Invoke-ExternalStatus "coderabbit-version" "coderabbit" @("--version") -OkWhen { param($Text) $Text -match "\b\d+\.\d+\.\d+\b" }
+  Invoke-ExternalStatus "coderabbit-auth" "coderabbit" @("auth", "status", "--agent") -OkWhen { param($Text) $Text -match '"authenticated"\s*:\s*true' }
+)
+
+[pscustomobject]@{
+  checkedAt = (Get-Date).ToString("o")
+  commands = $commands
+  statuses = $statuses
+  notes = @(
+    "This report intentionally avoids printing secret values.",
+    "External checks use short timeouts so readiness verification fails fast instead of hanging.",
+    "Scoop shims are added to PATH for this diagnostic so a user-level Supabase CLI install can be detected.",
+    "A working PostgreSQL client under the user Scoop app directory is accepted for diagnostics even if Scoop did not finish creating the psql shim.",
+    "DO_NOT_TRACK=1 is set for this diagnostic so Supabase CLI telemetry writes do not fail in restricted shells.",
+    "Supabase npx probing is opt-in with ZOOT_CHECK_NPX_SUPABASE=1 because network startup can hang in restricted shells.",
+    "If supabase-auth is false, set SUPABASE_ACCESS_TOKEN locally or run supabase login.",
+    "If github-auth is false, run gh auth login.",
+    "If coderabbit-auth is false on Windows, use coderabbit auth login --api-key with a key from an approved vault, not chat."
+  )
+} | ConvertTo-Json -Depth 6

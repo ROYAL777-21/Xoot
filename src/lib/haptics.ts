@@ -1,4 +1,5 @@
 import type { MouseEventHandler } from "react";
+import { importOptionalNativePlugin } from "@/lib/optional-capacitor";
 
 export type HapticIntent = "selection" | "impact" | "success" | "warning";
 
@@ -26,7 +27,8 @@ const prefersReducedMotion = () => {
 
 const nativeHaptic = async (intent: HapticIntent) => {
   try {
-    const mod = (await import("@capacitor/haptics")) as CapacitorHapticsModule;
+    const mod = await importOptionalNativePlugin<CapacitorHapticsModule>("@capacitor/haptics");
+    if (!mod) return false;
     const haptics = mod.Haptics;
     if (!haptics) return false;
 

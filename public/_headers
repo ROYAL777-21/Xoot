@@ -1,0 +1,88 @@
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; child-src 'self' blob:; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), bluetooth=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Origin-Agent-Cluster: ?1
+  X-Permitted-Cross-Domain-Policies: none
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/manifest.webmanifest
+  Cache-Control: public, max-age=3600
+
+/manifest.json
+  Cache-Control: public, max-age=3600
+
+/icon-192.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/icon-512.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/apple-touch-icon.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+  Cache-Control: public, max-age=300
+
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: public, max-age=300
+
+/sw.js
+  Cache-Control: no-cache
+
+/app/*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/auth/*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/admin/*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/zooter/jobs*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/zooter/earnings*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/zooter/kyc*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/zooter/profile*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/zooter/training*
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/app
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/auth
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate
+
+/admin
+  X-Robots-Tag: noindex, noarchive, nosnippet
+  Cache-Control: no-store, private, max-age=0, must-revalidate

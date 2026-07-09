@@ -1,0 +1,71 @@
+{
+  "cli": {
+    "version": ">= 16.0.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "environment": "development",
+      "channel": "development",
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "channel": "preview",
+      "autoIncrement": true,
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview-simulator": {
+      "distribution": "internal",
+      "environment": "preview",
+      "channel": "preview",
+      "ios": {
+        "simulator": true,
+        "resourceClass": "m-medium"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "environment": "production",
+      "channel": "production",
+      "autoIncrement": true,
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "preview": {
+      "ios": {},
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft",
+        "serviceAccountKeyPath": "@secret:GOOGLE_PLAY_SERVICE_ACCOUNT"
+      }
+    },
+    "production": {
+      "ios": {},
+      "android": {
+        "track": "production",
+        "releaseStatus": "draft",
+        "serviceAccountKeyPath": "@secret:GOOGLE_PLAY_SERVICE_ACCOUNT"
+      }
+    }
+  }
+}

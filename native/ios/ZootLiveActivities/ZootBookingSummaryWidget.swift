@@ -8,6 +8,7 @@ enum ZootWidgetKind: String, AppEnum {
     case carePlusReadiness
     case zootCred
     case favouriteZooter
+    case acceptedZooterJob
 
     static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Zoot Widget")
     static var caseDisplayRepresentations: [ZootWidgetKind: DisplayRepresentation] = [
@@ -15,6 +16,7 @@ enum ZootWidgetKind: String, AppEnum {
         .carePlusReadiness: "Care+ Readiness",
         .zootCred: "ZootCred",
         .favouriteZooter: "Favourite Zooter",
+        .acceptedZooterJob: "Accepted Zooter Job",
     ]
 }
 
@@ -47,7 +49,7 @@ struct ZootWidgetEntry: TimelineEntry {
 @available(iOSApplicationExtension 17.0, *)
 struct ZootWidgetProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> ZootWidgetEntry {
-        ZootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "86%", detail: "Thursday slot available", deeplink: URL(string: "zoot://app")!)
+        ZootWidgetEntry(date: .now, kind: "Zoot", title: "Safe summary", value: "Open app", detail: "Live details stay inside Zoot", deeplink: URL(string: "zoot://app")!)
     }
 
     func snapshot(for configuration: ZootWidgetConfigurationIntent, in context: Context) async -> ZootWidgetEntry {
@@ -61,13 +63,15 @@ struct ZootWidgetProvider: AppIntentTimelineProvider {
     private func entry(for kind: ZootWidgetKind) -> ZootWidgetEntry {
         switch kind {
         case .nextBooking:
-            return ZootWidgetEntry(date: .now, kind: "Booking", title: "Next clean", value: "Thu 08:30", detail: "Nomsa · Hyde Park", deeplink: URL(string: "zoot://bookings")!)
+            return ZootWidgetEntry(date: .now, kind: "Booking", title: "Next clean", value: "Open app", detail: "View live time and safe status in Zoot", deeplink: URL(string: "zoot://bookings")!)
         case .carePlusReadiness:
-            return ZootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "86%", detail: "Home Memory almost complete", deeplink: URL(string: "zoot://care-plus")!)
+            return ZootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "Open app", detail: "Check live member reminders in Zoot", deeplink: URL(string: "zoot://care-plus")!)
         case .zootCred:
-            return ZootWidgetEntry(date: .now, kind: "ZootCred", title: "Available", value: "R185", detail: "R30 add-on credit active", deeplink: URL(string: "zoot://loyalty")!)
+            return ZootWidgetEntry(date: .now, kind: "ZootCred", title: "Available", value: "Open app", detail: "Balance and expiry stay in Zoot", deeplink: URL(string: "zoot://loyalty")!)
         case .favouriteZooter:
-            return ZootWidgetEntry(date: .now, kind: "Favourite", title: "Book Nomsa again", value: "4.96", detail: "Next slot Friday", deeplink: URL(string: "zoot://favorites")!)
+            return ZootWidgetEntry(date: .now, kind: "Favourite", title: "Favourite Zooter", value: "Open app", detail: "Book again from your signed-in profile", deeplink: URL(string: "zoot://favorites")!)
+        case .acceptedZooterJob:
+            return ZootWidgetEntry(date: .now, kind: "Zooter", title: "Accepted job", value: "Open route", detail: "Address opens in the authenticated job screen", deeplink: URL(string: "zoot://zooter/jobs")!)
         }
     }
 }
@@ -82,7 +86,7 @@ struct ZootBookingSummaryWidget: Widget {
                 .containerBackground(Color(red: 0.98, green: 0.96, blue: 0.91), for: .widget)
         }
         .configurationDisplayName("Zoot")
-        .description("Create a Zoot widget for bookings, Care+, ZootCred, or your favourite Zooter.")
+        .description("Create a Zoot widget for bookings, Care+, ZootCred, favourite Zooters, or accepted Zooter jobs.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -92,25 +96,43 @@ struct ZootWidgetEntryView: View {
 
     var body: some View {
         Link(destination: entry.deeplink) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(entry.kind)
-                    .font(.caption.bold())
-                    .foregroundStyle(Color(red: 0.76, green: 0.40, blue: 0.29))
-                Spacer(minLength: 4)
-                Text(entry.title)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                    .lineLimit(2)
-                Text(entry.value)
-                    .font(.title.bold())
-                    .foregroundStyle(.primary)
-                    .minimumScaleFactor(0.75)
-                Text(entry.detail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+            ZootLiquidGlassGroup(spacing: 12) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 10) {
+                        ZootRoboticStarMark()
+                            .zootLiquidGlassCard(cornerRadius: 17, tint: .zootGold, interactive: true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Zoot")
+                                .font(.caption.bold())
+                                .foregroundStyle(Color.zootGold)
+                            Text(entry.kind)
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 6)
+                        Image(systemName: "arrow.up.forward")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(Color.zootGold.opacity(0.88))
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Text(entry.title)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                    Text(entry.value)
+                        .font(.title.weight(.black))
+                        .foregroundStyle(.primary)
+                        .minimumScaleFactor(0.75)
+                    Text(entry.detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                .padding()
+                .zootLiquidGlassCard(cornerRadius: 24, tint: .zootCream, interactive: true)
             }
-            .padding()
         }
     }
 }

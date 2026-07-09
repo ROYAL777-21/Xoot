@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="shortcut_book_clean_short">Book</string>
+  <string name="shortcut_book_clean_long">Book a Zoot clean</string>
+  <string name="shortcut_clean_house_short">Clean house</string>
+  <string name="shortcut_clean_house_long">Clean my house with Zoot</string>
+  <string name="shortcut_office_clean_short">Office clean</string>
+  <string name="shortcut_office_clean_long">I need my office cleaned</string>
+  <string name="shortcut_clean_place_short">Clean place</string>
+  <string name="shortcut_clean_place_long">I need my place cleaned</string>
+  <string name="shortcut_airbnb_short">Airbnb clean</string>
+  <string name="shortcut_airbnb_long">Book an Airbnb turnover clean</string>
+  <string name="shortcut_concierge_short">Concierge</string>
+  <string name="shortcut_concierge_long">Ask Zoot Concierge</string>
+  <string name="shortcut_care_plus_short">Care+</string>
+  <string name="shortcut_care_plus_long">Open Care+ membership</string>
+  <string name="shortcut_bookings_short">Bookings</string>
+  <string name="shortcut_bookings_long">Open my Zoot bookings</string>
+  <string name="shortcut_booking_status_short">Status</string>
+  <string name="shortcut_booking_status_long">Check my Zoot booking status</string>
+  <string name="shortcut_zooter_jobs_short">Zooter jobs</string>
+  <string name="shortcut_zooter_jobs_long">Open my Zoot jobs</string>
+  <string name="zoot_widget_name">Zoot Status</string>
+  <string name="zoot_widget_description">Safe Zoot booking and home-care summary. Private details stay inside the app.</string>
+  <string name="zoot_widget_star">*</string>
+  <string name="zoot_widget_eyebrow">Zoot</string>
+  <string name="zoot_widget_title">Next clean</string>
+  <string name="zoot_widget_body">Open Zoot for live booking status.</string>
+  <string name="zoot_widget_action">View in app</string>
+</resources>

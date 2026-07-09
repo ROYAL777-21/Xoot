@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zoot Master"
+  short_description: "Use Zoot company rules and source docs before implementation."
+  default_prompt: "Use the Zoot master skill to inspect the relevant company docs, plan the task, implement narrowly, and report tests and risks."

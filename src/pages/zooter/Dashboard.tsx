@@ -4,13 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Briefcase, GraduationCap, ShieldCheck, Wallet, Star, Loader2, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Briefcase, GraduationCap, Loader2, ShieldCheck, Sparkles, Star, Wallet } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [zooter, setZooter] = useState<any>(null);
   const [app, setApp] = useState<any>(null);
   const [stats, setStats] = useState({ open_jobs: 0, week_earnings: 0, completion_rate: 100 });
+  const [trainingSummary, setTrainingSummary] = useState({ points: 0, passed: 0, available: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,13 +21,25 @@ const Dashboard = () => {
         supabase.from("zooters").select("*").eq("user_id", user.id).maybeSingle(),
         supabase.from("zooter_applications").select("*").eq("user_id", user.id).maybeSingle(),
       ]);
-      setZooter(z); setApp(a);
+      setZooter(z);
+      setApp(a);
+
+      const [{ data: modules }, { data: completions }] = await Promise.all([
+        supabase.from("training_modules").select("*"),
+        supabase.from("zooter_training_completions").select("*").eq("user_id", user.id).eq("passed", true),
+      ]);
+      const passedIds = new Set((completions ?? []).map((completion: any) => completion.module_id));
+      const trainingPoints = (modules ?? [])
+        .filter((module: any) => passedIds.has(module.id))
+        .reduce((sum: number, module: any) => sum + Number(module.rank_points ?? (module.required ? 40 : 25)), 0);
+      setTrainingSummary({ points: trainingPoints, passed: passedIds.size, available: (modules ?? []).length });
+
       if (z) {
         const [{ count: openJobs }, { data: earn }] = await Promise.all([
           supabase.from("zooter_jobs").select("id", { count: "exact", head: true }).eq("zooter_id", z.id).eq("state", "offered"),
           supabase.from("zooter_earnings").select("net_amount").eq("zooter_id", z.id).gte("created_at", new Date(Date.now() - 7 * 864e5).toISOString()),
         ]);
-        const week = (earn ?? []).reduce((s: number, e: any) => s + Number(e.net_amount), 0);
+        const week = (earn ?? []).reduce((sum: number, earning: any) => sum + Number(earning.net_amount), 0);
         setStats({ open_jobs: openJobs ?? 0, week_earnings: week, completion_rate: 100 });
       }
       setLoading(false);
@@ -57,23 +70,28 @@ const Dashboard = () => {
       {!zooter && status !== "approved" && (
         <Card className="p-6 rounded-3xl gradient-warm text-primary-foreground border-0 mb-8 shadow-warm">
           <p className="font-display text-2xl font-bold mb-1">Finish verification</p>
-          <p className="text-sm opacity-90 mb-4">{status === "submitted" ? "Your application is in the trust review queue. We'll notify you when each verification area is reviewed." : "Upload your ID, proof of address, banking and consent to a background check."}</p>
+          <p className="text-sm opacity-90 mb-4">
+            {status === "submitted"
+              ? "Your application is in the trust review queue. We'll notify you when each verification area is reviewed."
+              : "Upload your ID, proof of address, banking and consent to a background check."}
+          </p>
           <Button asChild variant="secondary" className="rounded-full">
             <Link to="/zooter/kyc">{status === "submitted" ? "View status" : "Continue application"} <ArrowRight className="h-4 w-4 ml-1" /></Link>
           </Button>
         </Card>
       )}
 
-      <div className="grid sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Stat icon={Briefcase} label="Open job offers" value={stats.open_jobs.toString()} accent="primary" />
         <Stat icon={Wallet} label="This week net" value={`R${stats.week_earnings.toFixed(0)}`} accent="sage" />
-        <Stat icon={Star} label="Rating" value={zooter ? Number(zooter.rating).toFixed(2) : "—"} accent="primary" />
+        <Stat icon={GraduationCap} label="Training points" value={trainingSummary.points.toString()} accent="sage" />
+        <Stat icon={Star} label="Rating" value={zooter ? Number(zooter.rating).toFixed(2) : "-"} accent="primary" />
       </div>
 
       <h2 className="font-display text-2xl font-bold mb-4">Get the most out of Zoot</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Tile to="/zooter/jobs" icon={Briefcase} title="Browse jobs" body="Accept the matches that fit your schedule." />
-        <Tile to="/zooter/training" icon={GraduationCap} title="Training" body="Pass quizzes to unlock higher tiers and a smaller commission." />
+        <Tile to="/zooter/training" icon={GraduationCap} title="Training" body={`${trainingSummary.passed}/${trainingSummary.available} modules passed. Optional badges help with premium matching.`} />
         <Tile to="/zooter/earnings" icon={Wallet} title="Earnings" body="See gross, commission and net for every booking." />
         <Tile to="/zooter/kyc" icon={ShieldCheck} title="Verification" body="Re-upload documents or check review status." />
         <Tile to="/zooter/profile" icon={Star} title="Profile" body="Update your bio, photo and service tags." />

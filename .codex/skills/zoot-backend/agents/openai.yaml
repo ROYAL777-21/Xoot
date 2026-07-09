@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zoot Backend"
+  short_description: "Move Zoot critical writes into Supabase Edge Functions."
+  default_prompt: "Use the Zoot backend skill to implement authenticated Edge Functions, payment webhooks, and booking state transitions without frontend-owned business logic."

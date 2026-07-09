@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Calendar, MapPin, Loader2, Check, X, DollarSign } from "lucide-react";
+import { Briefcase, Calendar, MapPin, Loader2, Check, X, DollarSign, LockKeyhole } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
-import { routeNotificationChannel } from "@/lib/operations";
 import { haptic } from "@/lib/haptics";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import { getAcceptedZooterJobAddress, getSensitiveAccessAvailability } from "@/lib/operations";
+import { SensitiveFieldReveal } from "@/components/zoot/SensitiveFieldReveal";
 
 const Jobs = () => {
   const { user } = useAuth();
@@ -15,56 +17,64 @@ const Jobs = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async (zid: string) => {
-    const { data } = await supabase
-      .from("zooter_jobs")
-      .select("*, bookings:booking_id(id, service, service_type, scheduled_at, price, duration_hours, status, job_completed_at, cancelled_at, user_id)")
-      .eq("zooter_id", zid)
-      .order("offered_at", { ascending: false });
-    setJobs(data ?? []);
+  const load = async () => {
+    const { data, error } = await supabase.functions.invoke("get-zooter-job-cards");
+    if (error) {
+      console.warn("Zooter jobs lookup failed", error.message);
+      setJobs([]);
+      return;
+    }
+
+    setJobs(((data?.jobs ?? []) as any[]).map((job) => ({
+      id: job.job_id,
+      booking_id: job.booking_id,
+      zooter_id: job.zooter_id,
+      state: job.state,
+      offered_at: job.offered_at,
+      responded_at: job.responded_at,
+      decline_reason: job.decline_reason,
+      destination_address: job.destination_address,
+      bookings: {
+        id: job.booking_id,
+        service: job.service,
+        service_type: job.service_type,
+        scheduled_at: job.scheduled_at,
+        price: job.price,
+        duration_hours: job.duration_hours,
+        status: job.status,
+        job_completed_at: job.job_completed_at,
+        completed_at: job.completed_at,
+        cancelled_at: job.cancelled_at,
+        sensitive_data_revoked_at: job.sensitive_data_revoked_at,
+        sensitive_access_available_notified_at: job.sensitive_access_available_notified_at,
+        user_id: job.user_id,
+      },
+    })));
   };
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data: z } = await supabase.from("zooters").select("id").eq("user_id", user.id).maybeSingle();
-      if (z) { setZooterId(z.id); await load(z.id); }
+      if (z) { setZooterId(z.id); await load(); }
       setLoading(false);
     })();
   }, [user]);
 
   const respond = async (jobId: string, bookingId: string, accept: boolean) => {
     haptic(accept ? "success" : "warning");
-    const { error } = await supabase.from("zooter_jobs").update({
-      state: accept ? "accepted" : "declined", responded_at: new Date().toISOString(),
-    }).eq("id", jobId);
-    if (!error && accept) {
-      await supabase.from("bookings").update({ status: "confirmed" }).eq("id", bookingId);
-      await (supabase as any).from("booking_status_events").insert({ booking_id: bookingId, actor_id: user?.id, status: "confirmed", label: "Confirmed" });
-      await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("contractor_assigned").map((channel) => ({
-        source_table: "bookings",
-        source_id: bookingId,
-        event_type: "contractor_assigned",
-        channel,
-        owner: "Scheduling & Allocation Agent",
-        stack_tool: "Zoot in-app notification",
-        payload: { booking_id: bookingId, zooter_id: zooterId },
-        created_by: user?.id,
-      })));
-    }
-    if (!error && !accept) {
-      await (supabase as any).from("admin_review_queue").insert({
-        queue_type: "replacement",
-        subject_table: "bookings",
-        subject_id: bookingId,
-        zooter_id: zooterId,
-        booking_id: bookingId,
-        priority: "normal",
-        summary: "Contractor declined job offer; review replacement availability",
+    try {
+      await invokeOpsWorkflow({
+        action: "zooter_job_response",
+        jobId,
+        bookingId,
+        accept,
       });
+      toast.success(accept ? "Job accepted" : "Job declined");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Job response failed");
     }
-    if (error) toast.error(error.message); else toast.success(accept ? "Job accepted" : "Job declined");
-    if (zooterId) load(zooterId);
+    if (zooterId) load();
   };
 
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -90,16 +100,28 @@ const Jobs = () => {
   return (
     <div className="container py-8 lg:py-12 max-w-5xl">
       <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">Jobs</h1>
-      <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. Client address details stay protected and are not exposed in this offer list.</p>
+      <p className="text-muted-foreground mb-8">Accept jobs that fit your schedule. The destination appears after acceptance; household access details remain time-locked and logged.</p>
 
       <Section title="New offers" jobs={grouped.offered} respond={respond} actions />
-      <Section title="Upcoming" jobs={grouped.accepted} respond={respond} />
-      <Section title="History" jobs={grouped.history} respond={respond} />
+      <Section title="Upcoming" jobs={grouped.accepted} respond={respond} revealAccess />
+      <Section title="History" jobs={grouped.history} respond={respond} revealAccess />
     </div>
   );
 };
 
-const Section = ({ title, jobs, respond, actions = false }: any) => (
+const getSensitiveAccessState = (booking: any) => {
+  if (!booking) return { state: "closed" as const, opensAt: null, minutesUntilOpen: 0 };
+  return getSensitiveAccessAvailability({
+    scheduledAt: booking.scheduled_at,
+    status: booking.status,
+    completedAt: booking.completed_at ?? booking.job_completed_at,
+    cancelledAt: booking.cancelled_at,
+    sensitiveDataRevokedAt: booking.sensitive_data_revoked_at,
+    durationHours: booking.duration_hours,
+  });
+};
+
+const Section = ({ title, jobs, respond, actions = false, revealAccess = false }: any) => (
   <div className="mb-10">
     <h2 className="font-display text-2xl font-bold mb-3">{title}</h2>
     {jobs.length === 0 ? (
@@ -109,6 +131,13 @@ const Section = ({ title, jobs, respond, actions = false }: any) => (
         {jobs.map((j: any) => {
           const b = j.bookings;
           if (!b) return null;
+          const accessState = getSensitiveAccessState(b);
+          const withinWindow = accessState.state === "available";
+          const canShowReveal = revealAccess && j.state !== "declined" && j.state !== "expired";
+          const acceptedAddress = getAcceptedZooterJobAddress({
+            jobState: j.state,
+            address: j.destination_address,
+          });
           return (
             <Card key={j.id} className="p-5 rounded-2xl">
               <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -116,7 +145,10 @@ const Section = ({ title, jobs, respond, actions = false }: any) => (
                   <p className="font-display text-lg font-bold capitalize mb-1">{b.service_type ?? b.service}</p>
                   <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(b.scheduled_at).toLocaleString()}</span>
-                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> Address unlocks through secure booking details near the appointment window</span>
+                    <span className="inline-flex min-w-0 items-start gap-1">
+                      <MapPin className="mt-0.5 h-3 w-3 shrink-0" />
+                      {acceptedAddress ?? "Address shown after you accept the job"}
+                    </span>
                     <span className="inline-flex items-center gap-1"><DollarSign className="h-3 w-3" /> {formatZAR(Number(b.price))} - {b.duration_hours}h</span>
                   </div>
                 </div>
@@ -127,6 +159,33 @@ const Section = ({ title, jobs, respond, actions = false }: any) => (
                   </div>
                 )}
               </div>
+              {canShowReveal && (
+                <div className="mt-5 border-t border-border/70 pt-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <p className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <LockKeyhole className={`h-4 w-4 ${withinWindow ? "text-sage-deep" : "text-muted-foreground"}`} />
+                      Access information
+                    </p>
+                    {accessState.state === "available" ? (
+                      <p className="text-xs font-medium text-sage-deep">Available now. Viewing is logged.</p>
+                    ) : accessState.state === "locked" ? (
+                      <p className="text-xs text-muted-foreground">
+                        Unlocks {new Date(accessState.opensAt).toLocaleString()}.
+                        {" "}We will notify you when it becomes available, 45 minutes before the scheduled start.
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Access is not available for this booking.</p>
+                    )}
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <SensitiveFieldReveal bookingId={b.id} field="gate_code" label="Gate code" withinWindow={withinWindow} />
+                    <SensitiveFieldReveal bookingId={b.id} field="alarm_code" label="Alarm code" withinWindow={withinWindow} />
+                    <SensitiveFieldReveal bookingId={b.id} field="access_instructions" label="Access instructions" withinWindow={withinWindow} />
+                    <SensitiveFieldReveal bookingId={b.id} field="parking_instructions" label="Parking instructions" withinWindow={withinWindow} />
+                    <SensitiveFieldReveal bookingId={b.id} field="pet_notes" label="Pet notes" withinWindow={withinWindow} className="md:col-span-2" />
+                  </div>
+                </div>
+              )}
             </Card>
           );
         })}

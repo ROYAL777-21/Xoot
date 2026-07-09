@@ -1,6 +1,6 @@
 # Native-Feel UX Checklist
 
-Zoot should feel calm, premium, and native rather than web-wrapped. These details apply to the website, PWA, Capacitor shell, and any future React Native or Expo build.
+Zoot should feel calm, premium, and native rather than web-wrapped. These details apply to the website, PWA, and the Expo React Native mobile app.
 
 ## Implemented In The Web App Layer
 
@@ -25,10 +25,11 @@ Zoot should feel calm, premium, and native rather than web-wrapped. These detail
 19. Safe-area utilities support notched iPhones and bottom browser bars.
 20. Native scrolling utilities use momentum scrolling and contained overscroll.
 21. Text selection uses the Zoot brand tint.
-22. Haptics use Capacitor native feedback first, then safe web vibration fallback.
+22. Haptics use Expo/native feedback in the mobile app, then safe web vibration fallback for browser surfaces.
 23. Live Activity payloads avoid leaking full address or access-note details.
 24. PWA manifest and service worker support app-like install paths.
 25. Native iOS documentation covers Live Activities, Dynamic Island, and WidgetKit.
+26. Apple/Safari standalone sessions receive the enhanced liquid-glass background treatment on navigation/support surfaces while foreground text stays on a non-blurred layer.
 
 ## Future React Native Or Expo Guidance
 

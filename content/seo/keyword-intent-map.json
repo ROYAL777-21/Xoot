@@ -1,0 +1,80 @@
+[
+  {
+    "primaryKeyword": "quick office cleaning Sandton",
+    "secondaryKeywords": ["quick cleaning for my office", "office cleaning Sandton", "on demand cleaning services for business"],
+    "cluster": "Sandton office cleaning",
+    "intent": "urgent business reset",
+    "areas": ["Sandton", "Rosebank", "Hyde Park"],
+    "priority": 98,
+    "source": "Seeded from Zoot launch SEO plan; validate volume and difficulty with Semrush/Search Console export.",
+    "hook": "A client meeting is in two hours and the boardroom still looks like yesterday.",
+    "emotionalMechanism": "Time pressure, reputation protection, relief through a clear checklist.",
+    "logicalValue": "Decision checklist for offices, studios, salons, clinics, and small teams.",
+    "cta": "Book an office reset or create a recurring business cleaning rhythm."
+  },
+  {
+    "primaryKeyword": "Airbnb turnover cleaning Johannesburg",
+    "secondaryKeywords": ["Airbnb cleaning Johannesburg", "guest-ready cleaning", "same day Airbnb turnover cleaning"],
+    "cluster": "Airbnb turnover Johannesburg",
+    "intent": "host handover reliability",
+    "areas": ["Rosebank", "Sandton", "Parkhurst", "Melville"],
+    "priority": 96,
+    "source": "Seeded from Zoot launch SEO plan; validate volume and difficulty with Semrush/Search Console export.",
+    "hook": "Checkout was at 10, check-in is at 3, and one missed detail becomes a public review.",
+    "emotionalMechanism": "Review anxiety, control, visible readiness.",
+    "logicalValue": "Turnover checklist, access notes, linen, photos, and repeat instructions.",
+    "cta": "Book an Airbnb turnover clean and save host instructions in Zoot."
+  },
+  {
+    "primaryKeyword": "move out cleaning Johannesburg landlords",
+    "secondaryKeywords": ["landlord move out cleaning", "inspection ready cleaning", "tenant handover cleaning"],
+    "cluster": "Landlord move-out cleaning",
+    "intent": "property handover",
+    "areas": ["Sandton", "Bryanston", "Midrand", "Bedfordview"],
+    "priority": 91,
+    "source": "Seeded from Zoot launch SEO plan; validate volume and difficulty with Semrush/Search Console export.",
+    "hook": "The keys are due back today, but the property still has fingerprints, dust, and awkward corners.",
+    "emotionalMechanism": "Deadline pressure, loss avoidance, professional control.",
+    "logicalValue": "Room-by-room handover checklist and photo-proof expectations.",
+    "cta": "Book a move-out clean before inspection."
+  },
+  {
+    "primaryKeyword": "deep cleaning vs regular cleaning Johannesburg",
+    "secondaryKeywords": ["deep cleaning Johannesburg", "regular home cleaning", "when to book deep clean"],
+    "cluster": "Service comparison",
+    "intent": "service selection",
+    "areas": ["Bryanston", "Sandton", "Fourways", "Midrand"],
+    "priority": 88,
+    "source": "Seeded from Zoot launch SEO plan; validate volume and difficulty with Semrush/Search Console export.",
+    "hook": "If the home feels clean but still heavy, you may not need more hours. You may need the right type of clean.",
+    "emotionalMechanism": "Clarity, relief from decision fatigue.",
+    "logicalValue": "Comparison framework for regular, deep, moving, Airbnb, and express cleans.",
+    "cta": "Choose the right Zoot service before booking."
+  },
+  {
+    "primaryKeyword": "recurring cleaner Bryanston",
+    "secondaryKeywords": ["recurring home cleaning Bryanston", "trusted cleaner Bryanston", "book same cleaner again"],
+    "cluster": "Bryanston recurring cleaning",
+    "intent": "repeat household care",
+    "areas": ["Bryanston", "Dainfern", "Fourways", "Hyde Park"],
+    "priority": 86,
+    "source": "Seeded from Zoot launch SEO plan; validate volume and difficulty with Semrush/Search Console export.",
+    "hook": "The first clean matters, but the fifth clean is where quality systems show.",
+    "emotionalMechanism": "Continuity, trust, less household management.",
+    "logicalValue": "How to evaluate recurring cleaning quality and saved preferences.",
+    "cta": "Join Care+ for home memory and favourite Zooter workflows."
+  },
+  {
+    "primaryKeyword": "cleaner in Rosebank apartment",
+    "secondaryKeywords": ["Rosebank apartment cleaning", "where can I find a cleaner in Rosebank", "quick flat reset Rosebank"],
+    "cluster": "Rosebank cleaner",
+    "intent": "apartment reset",
+    "areas": ["Rosebank", "Parkhurst", "Melville", "Braamfontein"],
+    "priority": 84,
+    "source": "Seeded from Zoot launch SEO plan; validate volume and difficulty with Semrush/Search Console export.",
+    "hook": "Small apartments get messy fast because every surface has a job.",
+    "emotionalMechanism": "Recognition, calm, fresh-start feeling.",
+    "logicalValue": "Apartment cleaning priorities for busy professionals.",
+    "cta": "Book a Rosebank apartment clean."
+  }
+]

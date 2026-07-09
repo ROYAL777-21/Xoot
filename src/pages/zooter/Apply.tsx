@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -11,13 +11,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ShieldCheck, Loader2, ArrowRight, ArrowLeft, Upload, FileCheck2, Sparkles, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
-import { routeNotificationChannel } from "@/lib/operations";
 import { haptic } from "@/lib/haptics";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { captureOrSelectImage } from "@/lib/mobile-upload";
+import { ZooterApplicationInput } from "@/lib/validators";
 
 type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const ALLOWED_UPLOAD_TYPES = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
+const ALLOWED_UPLOAD_EXTENSIONS = new Set(["pdf", "jpg", "jpeg", "png", "webp"]);
 
 const docMeta: { key: DocType; label: string; hint: string }[] = [
   { key: "id", label: "Government ID / passport", hint: "Clear photo of both sides. Name and DOB visible." },
@@ -59,13 +62,40 @@ const emptyForm = {
   background_check_consent: false,
 };
 
+type ApplicationForm = typeof emptyForm;
+
+const RequiredFieldContext = createContext<{ form: ApplicationForm; requiredKeys: string[] }>({
+  form: emptyForm,
+  requiredKeys: [],
+});
+
+const F = ({ label, name, children }: { label: string; name?: keyof ApplicationForm; children: ReactNode }) => {
+  const { form, requiredKeys } = useContext(RequiredFieldContext);
+  const missingRequired = Boolean(name && !String(form[name] ?? "").trim() && requiredKeys.includes(String(name)));
+
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>
+      {children}
+      {missingRequired && <p className="text-[11px] text-muted-foreground">Required</p>}
+    </div>
+  );
+};
+
 const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
 const joinList = (value?: string[] | null) => (value ?? []).join(", ");
 const safeFileName = (name: string) => name.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/-+/g, "-").slice(0, 90);
+const getFileExtension = (name: string) => name.split(".").pop()?.toLowerCase() ?? "";
+const looksLikeEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+const looksLikePhone = (value: string) => /^\+?[0-9\s().-]{7,20}$/.test(value.trim());
+const looksLikeBankAccount = (value: string) => /^[0-9]{6,20}$/.test(value.trim());
 
 const validateUpload = (file: File) => {
   if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
     return "Upload a PDF, JPG, PNG or WebP file.";
+  }
+  if (!ALLOWED_UPLOAD_EXTENSIONS.has(getFileExtension(file.name))) {
+    return "Upload a file with a PDF, JPG, PNG or WebP extension.";
   }
   if (file.size > MAX_UPLOAD_BYTES) {
     return "Upload files smaller than 8MB.";
@@ -81,7 +111,11 @@ const Apply = () => {
   const [submitting, setSubmitting] = useState(false);
   const [appId, setAppId] = useState<string | null>(null);
   const [docs, setDocs] = useState<Record<string, string>>({});
+  const [uploadingDoc, setUploadingDoc] = useState<DocType | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const setField = <K extends keyof ApplicationForm>(key: K, value: ApplicationForm[K]) => {
+    setForm((current) => ({ ...current, [key]: value }));
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -115,55 +149,59 @@ const Apply = () => {
     })();
   }, [user, navigate]);
 
-  const saveDraft = async () => {
+  const buildApplicationPayload = (sourceForm = form) => ({
+    full_name: sourceForm.full_name,
+    phone: sourceForm.phone,
+    email: sourceForm.email,
+    date_of_birth: sourceForm.date_of_birth,
+    id_number: sourceForm.id_number,
+    suburb: sourceForm.suburb,
+    years_experience: Number(sourceForm.years_experience || 0),
+    transport: sourceForm.transport,
+    supplies_owned: splitList(sourceForm.supplies_owned),
+    pet_comfort: sourceForm.pet_comfort,
+    availability: { notes: sourceForm.availability_notes },
+    behavioural_screening: {
+      luxury_home: sourceForm.luxury_home_answer,
+      fragile_items: sourceForm.fragile_items_answer,
+      punctuality: sourceForm.punctuality_answer,
+      off_platform: sourceForm.off_platform_answer,
+    },
+    address: sourceForm.address,
+    city: sourceForm.city,
+    postal_code: sourceForm.postal_code,
+    service_category: "cleaning",
+    bio: sourceForm.bio,
+    bank_name: sourceForm.bank_name,
+    bank_account_number: sourceForm.bank_account_number,
+    bank_branch_code: sourceForm.bank_branch_code,
+    emergency_contact_name: sourceForm.emergency_contact_name,
+    emergency_contact_phone: sourceForm.emergency_contact_phone,
+    reference_1_name: sourceForm.reference_1_name,
+    reference_1_phone: sourceForm.reference_1_phone,
+    reference_2_name: sourceForm.reference_2_name,
+    reference_2_phone: sourceForm.reference_2_phone,
+    background_check_consent: sourceForm.background_check_consent,
+    selfie_storage_path: docs.selfie ?? null,
+    docs,
+  });
+
+  const saveDraft = async (mode: "draft" | "submitted" = "draft", sourceForm = form) => {
     if (!user) return null;
-    const payload: any = {
-      full_name: form.full_name,
-      phone: form.phone,
-      email: form.email,
-      date_of_birth: form.date_of_birth,
-      id_number: form.id_number,
-      suburb: form.suburb,
-      years_experience: Number(form.years_experience || 0),
-      transport: form.transport,
-      supplies_owned: splitList(form.supplies_owned),
-      pet_comfort: form.pet_comfort,
-      availability: { notes: form.availability_notes },
-      behavioural_screening: {
-        luxury_home: form.luxury_home_answer,
-        fragile_items: form.fragile_items_answer,
-        punctuality: form.punctuality_answer,
-        off_platform: form.off_platform_answer,
-      },
-      address: form.address,
-      city: form.city,
-      postal_code: form.postal_code,
-      service_category: "cleaning",
-      bio: form.bio,
-      bank_name: form.bank_name,
-      bank_account_number: form.bank_account_number,
-      bank_branch_code: form.bank_branch_code,
-      emergency_contact_name: form.emergency_contact_name,
-      emergency_contact_phone: form.emergency_contact_phone,
-      reference_1_name: form.reference_1_name,
-      reference_1_phone: form.reference_1_phone,
-      reference_2_name: form.reference_2_name,
-      reference_2_phone: form.reference_2_phone,
-      background_check_consent: form.background_check_consent,
-      user_id: user.id,
-      status: "draft",
-    };
-    if (!payload.date_of_birth) delete payload.date_of_birth;
-    const query = (supabase as any).from("zooter_applications");
-    if (appId) {
-      const { error } = await query.update(payload).eq("id", appId);
-      if (error) { toast.error(error.message); return null; }
-      return appId;
-    }
-    const { data, error } = await query.insert(payload).select("id").single();
+    const payload = buildApplicationPayload(sourceForm);
+    if (!payload.date_of_birth) delete (payload as any).date_of_birth;
+    const { data, error } = await supabase.functions.invoke("submit-zooter-application", {
+      body: { mode, application: payload, applicationId: appId },
+    });
     if (error) { toast.error(error.message); return null; }
-    setAppId(data.id);
-    return data.id;
+    const result = data as { success?: boolean; error?: string; data?: { application_id?: string } } | null;
+    if (result?.success === false || !result?.data?.application_id) {
+      const missing = Array.isArray((result as any)?.missing) ? ` Missing: ${(result as any).missing.join(", ")}` : "";
+      toast.error(`${result?.error ?? "Application save failed"}${missing}`);
+      return null;
+    }
+    setAppId(result.data.application_id);
+    return result.data.application_id;
   };
 
   const handleUpload = async (key: DocType, file: File) => {
@@ -174,19 +212,46 @@ const Apply = () => {
       toast.error(validationError);
       return;
     }
-    const id = appId ?? (await saveDraft());
-    if (!id) return;
-    const path = `${user.id}/${key}-${Date.now()}-${safeFileName(file.name)}`;
-    const { error } = await supabase.storage.from("kyc-docs").upload(path, file, {
-      cacheControl: "0",
-      contentType: file.type,
-      upsert: true,
-    });
-    if (error) { haptic("warning"); toast.error(error.message); return; }
-    await supabase.from("zooter_documents").insert({ user_id: user.id, application_id: id, doc_type: key, storage_path: path, status: "pending" });
-    setDocs((d) => ({ ...d, [key]: path }));
-    haptic("success");
-    toast.success(`${key.replace(/_/g, " ")} uploaded`);
+    setUploadingDoc(key);
+    let uploadedPath: string | null = null;
+    try {
+      const id = appId ?? (await saveDraft());
+      if (!id) return;
+      const uploadId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const path = `${user.id}/${key}-${uploadId}-${safeFileName(file.name)}`;
+      const { error } = await supabase.storage.from("kyc-docs").upload(path, file, {
+        cacheControl: "0",
+        contentType: file.type,
+        upsert: false,
+      });
+      if (error) { haptic("warning"); toast.error(error.message); return; }
+      uploadedPath = path;
+      const { data, error: docError } = await supabase.functions.invoke("submit-zooter-application", {
+        body: {
+          mode: "document",
+          applicationId: id,
+          document: { doc_type: key, storage_path: path },
+        },
+      });
+      const docResult = data as { success?: boolean; error?: string } | null;
+      if (docError || docResult?.success === false) {
+        if (uploadedPath) await supabase.storage.from("kyc-docs").remove([uploadedPath]);
+        haptic("warning");
+        toast.error(docError?.message ?? docResult?.error ?? "Document metadata could not be saved");
+        return;
+      }
+      setDocs((d) => ({ ...d, [key]: path }));
+      haptic("success");
+      toast.success(`${key.replace(/_/g, " ")} uploaded`);
+    } finally {
+      setUploadingDoc(null);
+    }
+  };
+
+  const captureSelfie = async () => {
+    const file = await captureOrSelectImage();
+    if (!file) return;
+    await handleUpload("selfie", file);
   };
 
   const requiredForStep = () => {
@@ -201,6 +266,11 @@ const Apply = () => {
   const validateStep = () => {
     const missing = requiredForStep().filter((key) => !String((form as any)[key] ?? "").trim());
     if (missing.length) { haptic("warning"); toast.error("Please complete all required fields"); return false; }
+    if (step === 0 && !looksLikeEmail(form.email)) { haptic("warning"); toast.error("Enter a valid email address"); return false; }
+    if (step === 0 && !looksLikePhone(form.phone)) { haptic("warning"); toast.error("Enter a valid phone number"); return false; }
+    if (step === 0 && Number(form.years_experience) < 0) { haptic("warning"); toast.error("Years of experience cannot be negative"); return false; }
+    if (step === 3 && !looksLikeBankAccount(form.bank_account_number)) { haptic("warning"); toast.error("Enter a valid bank account number"); return false; }
+    if (step === 3 && !/^[0-9]{4,8}$/.test(form.bank_branch_code.trim())) { haptic("warning"); toast.error("Enter a valid branch code"); return false; }
     if (step === 5) {
       const missingDocs = docMeta.filter((d) => !docs[d.key]);
       if (missingDocs.length) { haptic("warning"); toast.error(`Upload required: ${missingDocs.map((d) => d.label).join(", ")}`); return false; }
@@ -218,58 +288,33 @@ const Apply = () => {
   const submit = async () => {
     if (!user) return;
     if (!form.background_check_consent) { haptic("warning"); toast.error("Background check consent is required"); return; }
-    setSubmitting(true);
-    const id = appId ?? (await saveDraft());
-    if (!id) { setSubmitting(false); return; }
-    const { error } = await (supabase as any).from("zooter_applications").update({
-      status: "submitted",
-      id_verification_status: "pending",
-      selfie_verification_status: "pending",
-      address_verification_status: "pending",
-      banking_verification_status: "pending",
-      reference_verification_status: "pending",
-      background_check_status: "pending",
-      third_party_verification_status: "pending",
-      activation_locked_reason: "Verification, MIE screening, and required training must be complete before activation.",
-    }).eq("id", id);
-    if (!error) {
-      await supabase.from("notifications").insert({ user_id: user.id, kind: "zooter_application_submitted", title: "Application received", body: "Our trust team reviews ID, selfie, address, bank, references and background checks before activation." });
-      await (supabase as any).from("admin_review_queue").insert({
-        queue_type: "kyc",
-        subject_table: "zooter_applications",
-        subject_id: id,
-        user_id: user.id,
-        priority: "normal",
-        summary: `KYC review for ${form.full_name}`,
-      });
-      await (supabase as any).from("integration_outbox").insert([
-        {
-          source_table: "zooter_applications",
-          source_id: id,
-          event_type: "mie_screening_requested",
-          channel: "mie_screening",
-          owner: "Trust & Safety Agent",
-          stack_tool: "MIE screening queue",
-          payload: { application_id: id, suburb: form.suburb, years_experience: form.years_experience },
-          status: "needs_approval",
-          approval_required: true,
-          failure_mode: "Keep application pending until manual review is complete.",
-          created_by: user.id,
-        },
-        ...routeNotificationChannel("trust_verification_update").map((channel) => ({
-          source_table: "zooter_applications",
-          source_id: id,
-          event_type: "trust_verification_update",
-          channel,
-          owner: channel === "brevo_email" ? "Contractor Success Agent" : "Trust & Safety Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
-          payload: { application_id: id, status: "submitted" },
-          created_by: user.id,
-        })),
-      ]);
+    const applicationInput = ZooterApplicationInput.safeParse({
+      full_name: form.full_name,
+      phone: form.phone,
+      suburb: form.suburb,
+      years_experience: form.years_experience,
+    });
+    if (!applicationInput.success) {
+      haptic("warning");
+      toast.error(applicationInput.error.issues[0]?.message ?? "Please check your application details.");
+      return;
     }
+    if (!checkRateLimit("application", 3, 3_600_000)) {
+      haptic("warning");
+      toast.error("Too many application submissions. Please wait before trying again.");
+      return;
+    }
+    const safeForm = {
+      ...form,
+      full_name: applicationInput.data.full_name,
+      phone: applicationInput.data.phone,
+      suburb: applicationInput.data.suburb,
+      years_experience: String(applicationInput.data.years_experience),
+    };
+    setSubmitting(true);
+    const id = await saveDraft("submitted", safeForm);
+    if (!id) { setSubmitting(false); return; }
     setSubmitting(false);
-    if (error) { haptic("warning"); toast.error(error.message); return; }
     haptic("success");
     toast.success("Application submitted. Trust review is now queued.");
     navigate("/zooter");
@@ -277,10 +322,9 @@ const Apply = () => {
 
   const steps = ["About you", "Address", "Experience", "Banking", "References", "Documents", "Consent"];
   const progress = ((step + 1) / steps.length) * 100;
+  const requiredKeys = requiredForStep();
 
   if (loading) return <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-
-  const F = ({ label, name, children }: { label: string; name?: string; children: React.ReactNode }) => <div className="space-y-1.5"><Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>{children}{name && !String((form as any)[name] ?? "").trim() && requiredForStep().includes(name) && <p className="text-[11px] text-muted-foreground">Required</p>}</div>;
 
   return (
     <div className="min-h-screen gradient-hero py-10 px-6">
@@ -290,6 +334,7 @@ const Apply = () => {
         <p className="text-muted-foreground mb-6">Build predictable income with recurring clients, premium homes, fast support, strong vetting and visible trust badges.</p>
         <div className="mb-4"><div className="flex justify-between text-xs text-muted-foreground mb-1.5"><span>Step {step + 1} of {steps.length} - {steps[step]}</span><span>{Math.round(progress)}%</span></div><Progress value={progress} /></div>
 
+        <RequiredFieldContext.Provider value={{ form, requiredKeys }}>
         <Card className="p-6 rounded-3xl shadow-soft">
           {step === 0 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">About you</h2><div className="grid sm:grid-cols-2 gap-3"><F label="Full name" name="full_name"><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></F><F label="Phone" name="phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+27..." /></F><F label="Email" name="email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></F><F label="Date of birth" name="date_of_birth"><Input type="date" value={form.date_of_birth ?? ""} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} /></F><F label="ID / Passport number" name="id_number"><Input value={form.id_number ?? ""} onChange={(e) => setForm({ ...form, id_number: e.target.value })} /></F><F label="Years of experience" name="years_experience"><Input type="number" min="0" value={form.years_experience ?? ""} onChange={(e) => setForm({ ...form, years_experience: e.target.value })} /></F><F label="Primary service"><Input value="House cleaning" disabled /></F></div><F label="Short bio" name="bio"><Textarea rows={3} value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Airbnb turnover specialist, gentle with pets, eco-friendly products..." /></F></div>}
 
@@ -301,12 +346,60 @@ const Apply = () => {
 
           {step === 4 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> References & emergency contact</h2><p className="text-sm text-muted-foreground">References help us keep marketplace quality high before a Zooter goes live.</p><div className="grid sm:grid-cols-2 gap-3"><F label="Emergency contact name" name="emergency_contact_name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} /></F><F label="Emergency contact phone" name="emergency_contact_phone"><Input value={form.emergency_contact_phone ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} /></F><F label="Reference 1 name" name="reference_1_name"><Input value={form.reference_1_name ?? ""} onChange={(e) => setForm({ ...form, reference_1_name: e.target.value })} /></F><F label="Reference 1 phone" name="reference_1_phone"><Input value={form.reference_1_phone ?? ""} onChange={(e) => setForm({ ...form, reference_1_phone: e.target.value })} /></F><F label="Reference 2 name" name="reference_2_name"><Input value={form.reference_2_name ?? ""} onChange={(e) => setForm({ ...form, reference_2_name: e.target.value })} /></F><F label="Reference 2 phone" name="reference_2_phone"><Input value={form.reference_2_phone ?? ""} onChange={(e) => setForm({ ...form, reference_2_phone: e.target.value })} /></F></div></div>}
 
-          {step === 5 && <div className="space-y-3"><h2 className="font-display text-2xl font-bold">Upload documents</h2><p className="text-sm text-muted-foreground">All four documents are required and reviewed by the trust team. PDFs, JPGs, PNGs and WebP images under 8MB are accepted.</p>{docMeta.map((d) => <div key={d.key} className="rounded-2xl border border-border p-4 flex items-center gap-3"><div className={`grid h-10 w-10 place-items-center rounded-xl ${docs[d.key] ? "bg-accent/15 text-sage-deep" : "bg-muted text-muted-foreground"}`}>{docs[d.key] ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}</div><div className="flex-1 min-w-0"><p className="font-medium text-sm">{d.label}</p><p className="text-xs text-muted-foreground">{d.hint}</p></div><label className="cursor-pointer"><input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => e.target.files?.[0] && handleUpload(d.key, e.target.files[0])} /><span className="inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-semibold px-3 py-1.5">{docs[d.key] ? "Replace" : "Upload"}</span></label></div>)}</div>}
+          {step === 5 && (
+            <div className="space-y-3">
+              <h2 className="font-display text-2xl font-bold">Upload documents</h2>
+              <p className="text-sm text-muted-foreground">All four documents are required and reviewed by the trust team. PDFs, JPGs, PNGs and WebP images under 8MB are accepted.</p>
+              {docMeta.map((d) => {
+                const isUploading = uploadingDoc === d.key;
+                const uploadLocked = Boolean(uploadingDoc) || submitting;
+                const hasDoc = Boolean(docs[d.key]);
+                return (
+                  <div key={d.key} className="rounded-2xl border border-border p-4 flex items-center gap-3">
+                    <div className={`grid h-10 w-10 place-items-center rounded-xl ${hasDoc ? "bg-accent/15 text-sage-deep" : "bg-muted text-muted-foreground"}`}>
+                      {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : hasDoc ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{d.label}</p>
+                      <p className="text-xs text-muted-foreground">{isUploading ? "Uploading securely..." : d.hint}</p>
+                    </div>
+                    <label className={uploadLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"}>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/jpeg,image/png,image/webp,application/pdf"
+                        disabled={uploadLocked}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = "";
+                          if (file) void handleUpload(d.key, file);
+                        }}
+                      />
+                      <span className="inline-flex items-center justify-center rounded-full bg-foreground text-background text-xs font-semibold px-3 py-1.5">
+                        {isUploading ? "Uploading" : hasDoc ? "Replace" : uploadLocked ? "Wait" : "Upload"}
+                      </span>
+                    </label>
+                    {d.key === "selfie" && (
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                        onClick={() => void captureSelfie()}
+                        disabled={uploadLocked}
+                      >
+                        Camera
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-          {step === 6 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Trust review consent</h2><div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2"><p className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> By submitting you authorise Zoot to verify identity, selfie, address, banking details, references, and criminal background status.</p><p>No live third-party check is run in this version. Admin reviewers classify each verification area before activation.</p></div><label className="flex items-start gap-3 cursor-pointer"><Checkbox checked={form.background_check_consent} onCheckedChange={(v) => setForm({ ...form, background_check_consent: !!v })} /><span className="text-sm">I consent to the Zoot trust review and background-check process.</span></label></div>}
+          {step === 6 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Trust review consent</h2><div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2"><p className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> By submitting you authorise Zoot to verify identity, selfie, address, banking details, references, and criminal background status.</p><p>No live third-party check is run in this version. Admin reviewers classify each verification area before activation.</p></div><label className="flex items-start gap-3 cursor-pointer"><Checkbox checked={form.background_check_consent} onCheckedChange={(v) => setField("background_check_consent", !!v)} /><span className="text-sm">I consent to the Zoot trust review and background-check process.</span></label></div>}
 
           <div className="flex justify-between mt-8 pt-4 border-t border-border"><Button variant="ghost" onClick={() => { haptic("selection"); setStep(Math.max(step - 1, 0)); }} disabled={step === 0}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>{step < steps.length - 1 ? <Button onClick={next} className="gradient-warm">Save & continue <ArrowRight className="h-4 w-4 ml-1" /></Button> : <Button onClick={submit} disabled={submitting || !form.background_check_consent} className="gradient-warm">{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Submit application <ArrowRight className="h-4 w-4 ml-1" /></>}</Button>}</div>
         </Card>
+        </RequiredFieldContext.Provider>
       </div>
     </div>
   );

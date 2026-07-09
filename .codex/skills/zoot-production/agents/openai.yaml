@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zoot Production"
+  short_description: "Verify Zoot build, monitoring, PWA, SEO, and mobile readiness."
+  default_prompt: "Use the Zoot production skill to prepare and verify web, PWA, Hostinger, Capacitor, iOS, Android, monitoring, and SEO release readiness."

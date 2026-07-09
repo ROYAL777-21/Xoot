@@ -1,15 +1,29 @@
 {
+  "id": "/app",
   "name": "Zoot",
   "short_name": "Zoot",
   "description": "Premium South African home-care booking, Care+, Home Memory, ZootCred, and priority support.",
-  "start_url": "/app",
+  "start_url": "/app?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
-  "background_color": "#faf4e8",
-  "theme_color": "#c2654a",
+  "background_color": "#FAF4E8",
+  "theme_color": "#1A1A2E",
   "categories": ["lifestyle", "productivity"],
   "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/zoot-icon.svg",
       "sizes": "any",
@@ -19,32 +33,60 @@
   ],
   "shortcuts": [
     {
-      "name": "Book a Zooter",
+      "name": "Book a Zoot clean",
       "short_name": "Book",
       "description": "Start a home-care booking.",
-      "url": "/app",
-      "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "url": "/app?intent=book_clean",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Clean my house",
+      "short_name": "House clean",
+      "description": "Start a residential cleaning booking.",
+      "url": "/app?intent=book_clean&service=residential",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "I need my office cleaned",
+      "short_name": "Office clean",
+      "description": "Start an office cleaning booking.",
+      "url": "/app?intent=book_clean&service=office",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "I need my place cleaned",
+      "short_name": "Clean place",
+      "description": "Start a home or apartment cleaning booking.",
+      "url": "/app?intent=book_clean&service=residential",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Book an Airbnb turnover",
+      "short_name": "Airbnb clean",
+      "description": "Start an Airbnb turnover cleaning booking.",
+      "url": "/app?intent=book_clean&service=airbnb",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Ask Zoot Concierge",
+      "short_name": "Concierge",
+      "description": "Ask general Zoot, Care+, cleaning, and support questions.",
+      "url": "/?zootBot=open&intent=concierge",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Care+",
       "short_name": "Care+",
       "description": "Open Care+ membership.",
-      "url": "/care-plus",
-      "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "url": "/care-plus?intent=care_plus",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "Properties",
-      "short_name": "Homes",
-      "description": "Open Airbnb, landlord and office profiles.",
-      "url": "/app/properties",
-      "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    },
-    {
-      "name": "Support",
-      "short_name": "Help",
-      "description": "Open priority support.",
-      "url": "/app/support",
-      "icons": [{ "src": "/zoot-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "name": "My Zoot bookings",
+      "short_name": "Bookings",
+      "description": "Open your Zoot bookings.",
+      "url": "/app/bookings?intent=bookings",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

@@ -1,1 +1,72 @@
-project_id = "mwqmfthhowtalrxbhxyy"
+project_id = "mvlrkelahhsyjrwgsxaf"
+
+[auth]
+site_url = "http://localhost:5173"
+additional_redirect_urls = [
+  "http://127.0.0.1:5173/auth/callback",
+  "http://127.0.0.1:5173/auth/reset",
+  "http://127.0.0.1:4173/auth/callback",
+  "http://127.0.0.1:4173/auth/reset",
+  "https://staging.zoothome.co.za/auth/callback",
+  "https://staging.zoothome.co.za/auth/reset",
+  "https://zoothome.co.za/auth/callback",
+  "https://zoothome.co.za/auth/reset",
+  "https://www.zoothome.co.za/auth/callback",
+  "https://www.zoothome.co.za/auth/reset",
+  "zoot://auth/callback",
+  "zoot://auth/reset",
+]
+
+[functions.confirm-payment]
+verify_jwt = false
+
+[functions.support-respond]
+verify_jwt = false
+
+[functions.report-concierge-answer]
+verify_jwt = false
+
+[functions.get-booking-public-keys]
+verify_jwt = true
+
+[functions.send-booking-message]
+verify_jwt = true
+
+[functions.report-booking-message]
+verify_jwt = true
+
+[functions.mark-booking-message-read]
+verify_jwt = true
+
+[functions.get-sensitive-access]
+verify_jwt = true
+
+[functions.generate-booking-invoice]
+verify_jwt = true
+
+[functions.resend-booking-invoice]
+verify_jwt = true
+
+[functions.ops-workflow]
+verify_jwt = true
+
+[functions.create-masked-call]
+verify_jwt = true
+
+[functions.create-concierge-handoff]
+verify_jwt = true
+
+[functions.twilio-message-webhook]
+verify_jwt = false
+
+[functions.twilio-whatsapp-webhook]
+verify_jwt = false
+
+[functions.twilio-voice-webhook]
+verify_jwt = false
+
+[functions.twilio-status-callback]
+verify_jwt = false
+
+[functions.twilio-verify-webhook]
+verify_jwt = false

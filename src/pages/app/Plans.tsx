@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -7,9 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { CalendarClock, Check, Crown, Heart, Home, Loader2, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
-import { buildPendingPaymentRecord, routeNotificationChannel } from "@/lib/operations";
 import { haptic } from "@/lib/haptics";
-import { mockFavouriteZooter, mockHomeMemoryProfile, mockZootCredBalance } from "@/data/care-plus";
+import { useZootCred } from "@/hooks/useZootCred";
+import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
 
 type Plan = {
   id: string;
@@ -20,7 +20,7 @@ type Plan = {
 
 const carePlusHighlights = [
   "Home Memory for pets, access, parking, fragile areas, allergies and product preferences",
-  `Favourite Zooter rebooking with Book ${mockFavouriteZooter.name} again`,
+  "Favourite Zooter rebooking when a trusted Zooter is available",
   "Earlier access to high-demand slots and recurring schedules",
   "Priority replacement support when a Zooter becomes unavailable",
   "R30 monthly add-on credit for completed bookings",
@@ -37,7 +37,7 @@ const valueCards = [
   },
   {
     title: "Continuity",
-    body: `Save a trusted Zooter and rebook with a personal action like Book ${mockFavouriteZooter.name} again.`,
+    body: "Save a trusted Zooter and rebook from real booking history when availability allows.",
     icon: Heart,
   },
   {
@@ -47,7 +47,7 @@ const valueCards = [
   },
   {
     title: "Loyalty",
-    body: `Earn ${mockZootCredBalance.multiplier}x ZootCred and use a R${mockZootCredBalance.monthlyAddOnCreditZar} monthly add-on credit with completed bookings.`,
+    body: "Earn boosted ZootCred and use monthly add-on credit only after completed, verified bookings.",
     icon: WalletCards,
   },
 ];
@@ -58,88 +58,60 @@ const Plans = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const zootCred = useZootCred();
+  const household = useHouseholdOperatingLayer();
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     const { data: p } = await supabase.from("subscription_plans").select("*").order("monthly_price").limit(1).maybeSingle();
     setPlan(p as Plan | null);
     if (user) {
       const { data: s } = await (supabase as any).from("user_subscriptions").select("id, plan_id, status").eq("user_id", user.id).in("status", ["active", "pending_payment"]).maybeSingle();
       setActiveId(s?.plan_id ?? null);
       setSubscriptionStatus(s?.status ?? null);
+    } else {
+      setActiveId(null);
+      setSubscriptionStatus(null);
     }
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { refresh(); }, [user]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const subscribe = async () => {
     if (!user || !plan) return;
     haptic("impact");
-    const { data: payment, error: paymentError } = await (supabase as any).from("payment_records").insert({
-      ...buildPendingPaymentRecord({ userId: user.id, amount: Number(plan.monthly_price), kind: "homecare_membership" }),
-      meta: { plan_id: plan.id, membership_name: "Care+" },
-    }).select("id").single();
-    if (paymentError) { haptic("warning"); return toast.error(paymentError.message); }
-
-    const { error } = await (supabase as any).from("user_subscriptions").insert({ user_id: user.id, plan_id: plan.id, status: "pending_payment" });
-    if (error) { haptic("warning"); return toast.error(error.message); }
-    await (supabase as any).from("admin_review_queue").insert({
-      queue_type: "payment",
-      subject_table: "payment_records",
-      subject_id: payment?.id,
-      user_id: user.id,
-      priority: "normal",
-      summary: "Care+ membership payment pending confirmation",
-    });
-    await (supabase as any).from("integration_outbox").insert([
-      ...routeNotificationChannel("homecare_summary").map((channel) => ({
-        source_table: "user_subscriptions",
-        source_id: payment?.id,
-        event_type: "care_plus_membership_requested",
-        channel,
-        owner: channel === "brevo_email" ? "Retention & Loyalty Agent" : "Customer Support Agent",
-        stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
-        payload: { plan_id: plan.id, payment_record_id: payment?.id },
-        created_by: user.id,
-      })),
-      {
-        source_table: "payment_records",
-        source_id: payment?.id,
-        event_type: "care_plus_payment_authorisation_requested",
-        channel: "payment_provider",
-        owner: "Finance Operations",
-        stack_tool: "Payment provider queue",
-        payload: { payment_record_id: payment?.id, amount: Number(plan.monthly_price), currency: "ZAR" },
-        status: "needs_approval",
-        approval_required: true,
-        failure_mode: "Keep membership pending until provider callback or admin confirmation exists.",
-        created_by: user.id,
-      },
-    ]);
-    await supabase.from("notifications").insert({
-      user_id: user.id,
-      kind: "homecare_plus_active",
-      title: "Care+ request received",
-      body: "Your membership is pending payment confirmation. Home Memory, priority support and ZootCred boost activate after confirmation.",
-      link: "/app",
-    });
-    haptic("success");
-    toast.success("Care+ request recorded");
-    refresh();
+    setActionLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("care-plus-membership", {
+        body: { action: "request_membership", planId: plan.id },
+      });
+      if (error) { haptic("warning"); return toast.error(error.message); }
+      const result = data as { already_exists?: boolean; subscription_status?: string } | null;
+      haptic("success");
+      toast.success(result?.already_exists ? "Care+ request is already recorded" : "Care+ request recorded");
+      await Promise.all([refresh(), zootCred.refresh(), household.refresh()]);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const cancel = async () => {
     if (!user || !activeId) return;
-    const { data: sub } = await supabase.from("user_subscriptions").select("id").eq("user_id", user.id).eq("plan_id", activeId).eq("status", "active").maybeSingle();
-    if (!sub) return;
-    const { error } = await supabase.from("user_subscriptions").update({ status: "cancelled" }).eq("id", sub.id);
-    if (error) { haptic("warning"); return toast.error(error.message); }
-    await supabase.from("notifications").insert({ user_id: user.id, kind: "homecare_plus_cancelled", title: "Care+ cancelled", body: "Your membership has ended. Your saved home profile remains available." });
-    setCancelOpen(false);
-    haptic("success");
-    toast("Care+ cancelled");
-    refresh();
+    setActionLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke("care-plus-membership", {
+        body: { action: "cancel_membership", planId: activeId },
+      });
+      if (error) { haptic("warning"); return toast.error(error.message); }
+      setCancelOpen(false);
+      haptic("success");
+      toast("Care+ cancelled");
+      await Promise.all([refresh(), zootCred.refresh(), household.refresh()]);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -165,11 +137,14 @@ const Plans = () => {
             <div className="mt-2"><span className="font-display text-6xl font-bold">{formatZAR(plan.monthly_price)}</span><span className="text-muted-foreground">/month</span></div>
             <p className="mt-3 text-sm text-muted-foreground">A household reliability, memory, priority and loyalty layer.</p>
             {isActive ? (
-              <Button onClick={() => { haptic("selection"); setCancelOpen(true); }} variant="outline" className="mt-6 h-12 w-full rounded-2xl">Cancel Care+</Button>
+              <Button onClick={() => { haptic("selection"); setCancelOpen(true); }} variant="outline" className="mt-6 h-12 w-full rounded-2xl" disabled={actionLoading}>Cancel Care+</Button>
             ) : isPending ? (
               <Button disabled className="mt-6 h-12 w-full rounded-2xl">Pending payment confirmation</Button>
             ) : (
-              <Button onClick={subscribe} className="mt-6 h-12 w-full rounded-2xl gradient-warm font-semibold shadow-warm"><Crown className="mr-2 h-4 w-4" /> Join Care+ for R99/month</Button>
+              <Button onClick={subscribe} className="mt-6 h-12 w-full rounded-2xl gradient-warm font-semibold shadow-warm" disabled={actionLoading}>
+                {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crown className="mr-2 h-4 w-4" />}
+                Join Care+ for R99/month
+              </Button>
             )}
           </Card>
         </div>
@@ -197,13 +172,35 @@ const Plans = () => {
         </Card>
 
         <Card className="rounded-3xl border-accent/30 bg-gradient-to-br from-accent-soft via-card to-card p-6">
-          <div className="mb-5 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-sage-deep" /><h2 className="font-display text-2xl font-bold">Home Memory preview</h2></div>
-          <div className="space-y-3 text-sm">
-            <MemoryRow label="Pets" value={mockHomeMemoryProfile.petNotes.join(", ")} />
-            <MemoryRow label="Room priorities" value={mockHomeMemoryProfile.roomPriorities.join(", ")} />
-            <MemoryRow label="Fragile areas" value={mockHomeMemoryProfile.fragileAreas.join(", ")} />
-            <MemoryRow label="Add-ons" value={mockHomeMemoryProfile.favouriteAddOns.join(", ")} />
-          </div>
+          <div className="mb-5 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-sage-deep" /><h2 className="font-display text-2xl font-bold">Home Memory</h2></div>
+          {household.homeMemory ? (
+            <div className="space-y-3 text-sm">
+              <MemoryRow label="Pets" value={household.homeMemory.petNotes} />
+              <MemoryRow label="Preferences" value={household.homeMemory.cleaningPreferences} />
+              <MemoryRow label="Fragile areas" value={household.homeMemory.fragileAreas} />
+              <MemoryRow label="Products" value={household.homeMemory.favouriteProducts} />
+              <MemoryRow label="Parking" value={household.homeMemory.parkingInstructions} />
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-background/75 p-4 text-sm text-muted-foreground">
+              Save a household profile to unlock Home Memory details for pets, access, fragile areas and product preferences.
+            </div>
+          )}
+          {household.readyModes.length > 0 && (
+            <div className="mt-4 grid gap-2">
+              {household.readyModes.slice(0, 3).map((mode) => (
+                <div key={mode.id} className="flex items-center justify-between gap-3 rounded-2xl bg-background/75 p-3 text-sm">
+                  <span className="font-semibold">{mode.title}</span>
+                  <span className="text-xs font-bold text-sage-deep">{mode.readinessScore}% ready</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {user && (
+            <p className="mt-4 text-sm font-semibold text-sage-deep">
+              Current ZootCred balance: {zootCred.loading ? "Loading..." : formatZAR(zootCred.availableBalance)}
+            </p>
+          )}
           <p className="mt-5 text-xs text-muted-foreground">Sensitive access notes stay inside the authenticated app and should not be exposed in push notifications, SMS or email.</p>
         </Card>
       </div>
@@ -216,7 +213,10 @@ const Plans = () => {
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => { haptic("selection"); setCancelOpen(false); }} className="rounded-full">Keep Care+</Button>
-            <Button variant="destructive" onClick={cancel} className="rounded-full">Cancel membership</Button>
+            <Button variant="destructive" onClick={cancel} className="rounded-full" disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Cancel membership
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

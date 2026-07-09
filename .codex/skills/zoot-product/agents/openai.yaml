@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zoot Product Data"
+  short_description: "Use live Care+, ZootCred, booking, and property data rules."
+  default_prompt: "Use the Zoot product data skill to replace mock authenticated experiences with live Supabase-backed states and safe empty states."

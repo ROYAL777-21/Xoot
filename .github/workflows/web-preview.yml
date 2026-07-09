@@ -1,4 +1,4 @@
-name: Web preview build
+name: Web build
 
 on:
   push:
@@ -8,6 +8,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      deploy_pages:
+        description: Deploy the verified build to GitHub Pages
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -15,13 +21,21 @@ permissions:
   id-token: write
 
 env:
-  VITE_SUPABASE_PROJECT_ID: preview-project
-  VITE_SUPABASE_PUBLISHABLE_KEY: preview-anon-key
-  VITE_SUPABASE_URL: https://preview.supabase.co
+  VITE_APP_ENV: ${{ vars.VITE_APP_ENV || 'development' }}
+  VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://zoothome.co.za' }}
+  VITE_SITE_URL: ${{ vars.VITE_SITE_URL || vars.VITE_PUBLIC_SITE_URL || 'https://zoothome.co.za' }}
+  VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
+  VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+  VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+  VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+  VITE_MAPBOX_PUBLIC_TOKEN: ${{ vars.VITE_MAPBOX_PUBLIC_TOKEN }}
+  VITE_CLOUDFLARE_TURNSTILE_SITE_KEY: ${{ vars.VITE_CLOUDFLARE_TURNSTILE_SITE_KEY }}
+  VITE_GOOGLE_WEB_CLIENT_ID: ${{ vars.VITE_GOOGLE_WEB_CLIENT_ID }}
+  VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
 
 jobs:
   build:
-    name: Install, lint, test, and build
+    name: Install, lint, test, scan, and build
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -31,9 +45,56 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Check lockfiles
+        run: node scripts/config/validate-lockfiles.mjs
+
+      - name: Install web dependencies (with retries)
+        run: |
+          set -euo pipefail
+          attempts=3
+          for i in $(seq 1 $attempts); do
+            echo "Attempt $i: npm ci (web)"
+            if npm ci --no-audit --prefer-offline; then
+              echo "npm ci succeeded"
+              break
+            fi
+
+            if [ "$i" -lt "$attempts" ]; then
+              wait=$((i * 5))
+              echo "npm ci failed. Retrying after ${wait}s..."
+              sleep "$wait"
+            else
+              echo "npm ci failed after ${attempts} attempts"
+              exit 1
+            fi
+          done
+
+      - name: Install mobile dependencies (with retries)
+        run: |
+          set -euo pipefail
+          attempts=3
+          for i in $(seq 1 $attempts); do
+            echo "Attempt $i: npm --prefix mobile ci"
+            if npm --prefix mobile ci --no-audit --prefer-offline; then
+              echo "mobile install succeeded"
+              break
+            fi
+
+            if [ "$i" -lt "$attempts" ]; then
+              wait=$((i * 5))
+              echo "mobile install failed. Retrying after ${wait}s..."
+              sleep "$wait"
+            else
+              echo "mobile install failed after ${attempts} attempts"
+              exit 1
+            fi
+          done
+
+      - name: Validate public environment
+        run: npm run config:check
 
       - name: Run lint
         run: npm run lint
@@ -41,8 +102,20 @@ jobs:
       - name: Run tests
         run: npm run test
 
+      - name: Run lightweight secret scan
+        run: npm run security:scan
+
+      - name: Validate mobile config
+        run: npm run mobile:config:check
+
+      - name: Typecheck mobile app
+        run: npm run mobile:typecheck
+
       - name: Build website
         run: npm run build
+
+      - name: Scan website build artifact
+        run: npm run build:artifact-scan
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -50,16 +123,22 @@ jobs:
           name: zoot-web-dist
           path: dist
           if-no-files-found: error
+          include-hidden-files: true
+
+      - name: Document deployment gate
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "::notice::Main is the source-of-truth branch. GitHub Pages deployment requires an explicit workflow_dispatch with deploy_pages=true."
 
       - name: Upload GitHub Pages artifact
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_pages == true && vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_PUBLISHABLE_KEY != '' && vars.VITE_SUPABASE_PROJECT_ID != ''
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy-pages:
-    name: Deploy GitHub Pages preview
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    name: Deploy GitHub Pages
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_pages == true && vars.VITE_SUPABASE_URL != '' && vars.VITE_SUPABASE_PUBLISHABLE_KEY != '' && vars.VITE_SUPABASE_PROJECT_ID != ''
     needs: build
     runs-on: ubuntu-latest
     environment:

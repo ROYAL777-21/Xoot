@@ -1,34 +1,57 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, MapPin, Send, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle } from "lucide-react";
+import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle, Navigation, Share2 } from "lucide-react";
 import { resolvePhoto } from "@/components/zoot/ZooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
+import { BookingChat } from "@/components/zoot/BookingChat";
 import { deriveZooterBadges, requiresCompletionPhotos } from "@/lib/trust";
-import { canAccessSensitiveBookingData, routeNotificationChannel } from "@/lib/operations";
+import { canAccessSensitiveBookingData } from "@/lib/operations";
 import { notifyBookingLiveActivity, type ZootBookingLiveActivityStatus } from "@/lib/native-live-activity";
+import {
+  buildBookingEtaShareText,
+  createNativeBookingActionPayload,
+  openBookingDirections,
+  sendNativeBookingAction,
+  type NativeBookingActionInput,
+} from "@/lib/native-booking-actions";
+import { haptic } from "@/lib/haptics";
+import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import { isOptionalNativePlatform } from "@/lib/optional-capacitor";
+import { getClientVisibleStatus, normaliseBookingStatus, type BookingStatus } from "@/lib/booking-state-machine";
+import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { toast } from "sonner";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
 type TimelineEvent = { id: string; status: string; label: string; created_at: string };
 type CompletionPhoto = { id: string; photo_type: "before" | "after"; storage_path: string; created_at: string };
 type Review = { id: string; rating: number; notes: string | null };
+type MaskedCallDetails = {
+  call_session_id?: string;
+  status?: string;
+  proxy_numbers?: {
+    client?: string | null;
+    zooter?: string | null;
+  } | null;
+};
 
 const statusSteps = [
-  { key: "confirmed", label: "Confirmed" },
-  { key: "enroute", label: "On the way" },
-  { key: "arrived", label: "Arrived" },
-  { key: "in_progress", label: "Job started" },
-  { key: "completed", label: "Job completed" },
+  { keys: ["contractor_accepted", "confirmed"], label: "Zooter confirmed" },
+  { keys: ["en_route", "enroute"], label: "On the way" },
+  { keys: ["arrived"], label: "Arrived" },
+  { keys: ["in_progress"], label: "Job started" },
+  { keys: ["completed"], label: "Job completed" },
 ];
 
 const statusLabel: Record<string, string> = {
-  confirmed: "Confirmed",
+  confirmed: "Zooter confirmed",
+  contractor_accepted: "Zooter confirmed",
   enroute: "On the way",
+  en_route: "On the way",
   arrived: "Arrived",
   in_progress: "Job started",
   completed: "Job completed",
@@ -49,9 +72,20 @@ const liveActivityStatuses: ZootBookingLiveActivityStatus[] = [
 ];
 
 const toLiveActivityStatus = (status: string): ZootBookingLiveActivityStatus =>
-  liveActivityStatuses.includes(status as ZootBookingLiveActivityStatus)
-    ? (status as ZootBookingLiveActivityStatus)
-    : "pending";
+  status === "en_route"
+    ? "enroute"
+    : status === "contractor_accepted" || status === "assigned"
+      ? "confirmed"
+      : liveActivityStatuses.includes(status as ZootBookingLiveActivityStatus)
+        ? (status as ZootBookingLiveActivityStatus)
+        : "pending";
+
+const getCanonicalStatus = (status: unknown): BookingStatus | null => normaliseBookingStatus(status);
+
+const getVisibleStatusLabel = (status: unknown) => {
+  const canonical = getCanonicalStatus(status);
+  return canonical ? getClientVisibleStatus(canonical) : statusLabel[String(status)] ?? "Pending confirmation";
+};
 
 const liveActivityNextStep: Record<ZootBookingLiveActivityStatus, string> = {
   confirmed: "We will keep your booking ready and protected.",
@@ -64,6 +98,8 @@ const liveActivityNextStep: Record<ZootBookingLiveActivityStatus, string> = {
   pending: "We are confirming your booking details.",
 };
 
+const serviceNameForBooking = (booking: any) => booking?.service_type ?? booking?.service ?? "Home care";
+
 const BookingDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -73,7 +109,6 @@ const BookingDetail = () => {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [photos, setPhotos] = useState<CompletionPhoto[]>([]);
   const [review, setReview] = useState<Review | null>(null);
-  const [body, setBody] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewNotes, setReviewNotes] = useState("");
   const [incidentType, setIncidentType] = useState("poor_quality");
@@ -81,28 +116,29 @@ const BookingDetail = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
   const [requestingCall, setRequestingCall] = useState(false);
+  const [maskedCall, setMaskedCall] = useState<MaskedCallDetails | null>(null);
   const [eta, setEta] = useState(12);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user || !id) return;
-    const [{ data }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
-      supabase.from("bookings").select("*, zooter:zooters!bookings_zooter_id_fkey(*)").eq("id", id).maybeSingle(),
+    const [{ data }, { data: zooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
+      supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
+      (supabase as any).from("booking_zooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
       supabase.from("messages").select("*").eq("booking_id", id).order("created_at"),
       (supabase as any).from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
       (supabase as any).from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
       (supabase as any).from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
     ]);
     if (!data) { navigate("/app/bookings"); return; }
-    setBooking(data);
+    setBooking({ ...data, zooter: zooter ?? null });
     setMessages((m ?? []) as Msg[]);
     setEvents((ev ?? []) as TimelineEvent[]);
     setPhotos((ph ?? []) as CompletionPhoto[]);
     setReview(rv as Review | null);
     setLoading(false);
-  };
+  }, [id, navigate, user]);
 
-  useEffect(() => { load(); }, [id, user]);
+  useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
     if (!id) return;
@@ -112,49 +148,91 @@ const BookingDetail = () => {
     return () => { supabase.removeChannel(ch); };
   }, [id]);
 
-  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }); }, [messages]);
-
   useEffect(() => {
-    if (booking?.status !== "enroute") return;
+    if (getCanonicalStatus(booking?.status) !== "en_route") return;
     const t = setInterval(() => setEta((e) => Math.max(1, e - 1)), 5000);
     return () => clearInterval(t);
   }, [booking?.status]);
 
-  const send = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!body.trim() || !id) return;
-    const text = body;
-    setBody("");
-    const sender = booking?.zooter?.user_id === user?.id ? "zooter" : "user";
-    await supabase.from("messages").insert({ booking_id: id, sender_type: sender, body: text });
+  const getNativeBookingActionInput = (): NativeBookingActionInput | null => {
+    if (!id || !booking) return null;
+    const canonicalStatus = getCanonicalStatus(booking.status);
+    const liveStatus = toLiveActivityStatus(canonicalStatus ?? booking.status ?? "pending");
+
+    return {
+      bookingId: id,
+      status: liveStatus,
+      statusLabel: getVisibleStatusLabel(booking.status),
+      serviceName: serviceNameForBooking(booking),
+      zooterName: booking.zooter?.name,
+      propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name,
+      suburb: booking.suburb,
+      address: booking.address,
+      etaMinutes: liveStatus === "enroute" ? eta : undefined,
+    };
+  };
+
+  const handleOpenDirections = () => {
+    const input = getNativeBookingActionInput();
+    if (!input) return;
+    haptic("selection");
+    const result = openBookingDirections(input);
+    if (!result.fallbackUrl) {
+      toast.error("No destination is saved for this booking.");
+      return;
+    }
+    toast.success(result.delivered ? "Directions sent to native app" : "Directions opened");
+  };
+
+  const shareEta = async () => {
+    const input = getNativeBookingActionInput();
+    if (!input || typeof window === "undefined") return;
+    haptic("selection");
+
+    const payload = createNativeBookingActionPayload("share_eta", input);
+    const delivered = sendNativeBookingAction(payload);
+    const shareText = buildBookingEtaShareText(payload);
+    const shareUrl = `${window.location.origin}${payload.route}`;
+    const navigatorWithShare = window.navigator as Navigator & {
+      share?: (data: ShareData) => Promise<void>;
+    };
+
+    try {
+      if (typeof navigatorWithShare.share === "function") {
+        await navigatorWithShare.share({ title: "Zoot booking update", text: shareText, url: shareUrl });
+        toast.success("ETA shared");
+        return;
+      }
+
+      if (navigatorWithShare.clipboard?.writeText) {
+        await navigatorWithShare.clipboard.writeText(`${shareText} ${shareUrl}`);
+        toast.success("ETA copied");
+        return;
+      }
+
+      if (delivered) {
+        toast.success("ETA sent to native app");
+        return;
+      }
+
+      toast.error("Sharing is unavailable on this device.");
+    } catch {
+      if (delivered) toast.success("ETA sent to native app");
+      else toast.error("Sharing was cancelled or unavailable.");
+    }
   };
 
   const setStatus = async (status: string) => {
     if (!id || !booking) return;
-    const timestampField = status === "arrived" ? "arrived_at" : status === "in_progress" ? "job_started_at" : status === "completed" ? "job_completed_at" : null;
-    const bookingStatus = status === "arrived" ? "in_progress" : status;
-    const payload: any = { status: bookingStatus };
-    if (timestampField) payload[timestampField] = new Date().toISOString();
-
-    await (supabase as any).from("bookings").update(payload).eq("id", id);
-    await (supabase as any).from("booking_status_events").insert({
-      booking_id: id,
-      actor_id: user?.id,
-      status,
-      label: statusLabel[status] ?? status,
-    });
-    const eventType = status === "enroute" ? "contractor_on_the_way" : status === "arrived" ? "contractor_arrived" : status === "completed" ? "job_completed" : null;
-    if (eventType) {
-      await (supabase as any).from("integration_outbox").insert(routeNotificationChannel(eventType).map((channel) => ({
-        source_table: "bookings",
-        source_id: id,
-        event_type: eventType,
-        channel,
-        owner: channel === "whatsapp_urgent" ? "Scheduling & Allocation Agent" : "Customer Support Agent",
-        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
-        payload: { booking_id: id, status, scheduled_at: booking.scheduled_at },
-        created_by: user?.id,
-      })));
+    try {
+      await invokeOpsWorkflow({
+        action: "booking_status_changed",
+        bookingId: id,
+        status,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Booking status update failed");
+      return;
     }
 
     const liveStatus = toLiveActivityStatus(status);
@@ -162,7 +240,7 @@ const BookingDetail = () => {
       bookingId: id,
       status: liveStatus,
       statusLabel: statusLabel[status] ?? status,
-      serviceName: booking.service_type ?? booking.service ?? "Home care",
+      serviceName: serviceNameForBooking(booking),
       zooterName: booking.zooter?.name,
       propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Zoot home",
       suburb: booking.suburb,
@@ -172,15 +250,6 @@ const BookingDetail = () => {
       supportState: booking.care_plus ? "priority" : "standard",
       updatedAt: new Date().toISOString(),
     });
-
-    if (status === "completed") {
-      const { data: lp } = await supabase.from("loyalty_points").select("*").eq("user_id", user!.id).single();
-      if (lp) {
-        const total = lp.total_bookings + 1;
-        await supabase.from("loyalty_points").update({ total_bookings: total, points: lp.points + 10, free_credits: lp.free_credits + (total % 10 === 0 ? 1 : 0) }).eq("user_id", user!.id);
-      }
-      await supabase.from("zooter_jobs").update({ state: "completed" }).eq("booking_id", id);
-    }
 
     toast.success(statusLabel[status] ?? `Booking marked ${status}`);
     load();
@@ -193,69 +262,59 @@ const BookingDetail = () => {
       status: booking.status,
       completedAt: booking.job_completed_at,
       cancelledAt: booking.cancelled_at,
+      durationHours: booking.duration_hours,
     })) {
       toast.error("Masked calls are available during the active booking window.");
       return;
     }
     setRequestingCall(true);
-    const calleeRole = booking.zooter?.user_id === user.id ? "client" : "contractor";
-    const { data: call, error } = await (supabase as any).from("masked_call_sessions").insert({
-      booking_id: id,
-      caller_id: user.id,
-      callee_role: calleeRole,
-      status: "queued",
-    }).select("id").single();
-    if (!error) {
-      await (supabase as any).from("integration_outbox").insert({
-        source_table: "masked_call_sessions",
-        source_id: call?.id,
-        event_type: "masked_voice_call_requested",
-        channel: "twilio_voice",
-        owner: "Customer Support Agent",
-        stack_tool: "Twilio masked voice queue",
-        payload: { booking_id: id, callee_role: calleeRole },
-        status: "needs_approval",
-        approval_required: true,
-        failure_mode: "Keep communication in chat if masked call setup fails.",
-        created_by: user.id,
+    try {
+      const { data, error } = await supabase.functions.invoke("create-masked-call", {
+        body: { booking_id: id },
       });
+      if (error) throw error;
+
+      const call = (data ?? {}) as MaskedCallDetails;
+      setMaskedCall(call);
+
+      const nativeInput = getNativeBookingActionInput();
+      if (nativeInput) {
+        sendNativeBookingAction(createNativeBookingActionPayload("masked_call", {
+          ...nativeInput,
+          callSessionId: call.call_session_id,
+          updatedAt: new Date().toISOString(),
+        }));
+      }
+
+      const callerProxyNumber = user.id === booking.user_id
+        ? call.proxy_numbers?.client
+        : call.proxy_numbers?.zooter;
+      if (callerProxyNumber && isOptionalNativePlatform()) {
+        window.location.href = `tel:${callerProxyNumber.replace(/[^\d+]/g, "")}`;
+      }
+    } catch (error) {
+      setRequestingCall(false);
+      toast.error(error instanceof Error ? error.message : "Masked call request failed");
+      return;
     }
     setRequestingCall(false);
-    if (error) return toast.error(error.message);
+    haptic("success");
     toast.success("Masked call request queued");
   };
 
   const submitIncident = async () => {
     if (!user || !id || !booking?.zooter_id || !incidentNotes.trim()) return;
-    const { data: incident, error } = await (supabase as any).from("trust_incidents").insert({
-      booking_id: id,
-      zooter_id: booking.zooter_id,
-      user_id: user.id,
-      incident_type: incidentType,
-      severity: incidentType === "suspicious_behaviour" || incidentType === "damages" ? 4 : 3,
-      notes: incidentNotes,
-    }).select("id").single();
-    if (error) return toast.error(error.message);
-    await (supabase as any).from("admin_review_queue").insert({
-      queue_type: "trust_incident",
-      subject_table: "trust_incidents",
-      subject_id: incident?.id,
-      user_id: user.id,
-      zooter_id: booking.zooter_id,
-      booking_id: id,
-      priority: incidentType === "suspicious_behaviour" || incidentType === "damages" ? "urgent" : "high",
-      summary: `Trust incident: ${incidentType.replace(/_/g, " ")}`,
-    });
-    await (supabase as any).from("integration_outbox").insert(routeNotificationChannel("critical_trust_safety_alert").map((channel) => ({
-      source_table: "trust_incidents",
-      source_id: incident?.id,
-      event_type: "critical_trust_safety_alert",
-      channel,
-      owner: "Trust & Safety Agent",
-      stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
-      payload: { booking_id: id, incident_type: incidentType },
-      created_by: user.id,
-    })));
+    try {
+      await invokeOpsWorkflow({
+        action: "trust_incident_submitted",
+        bookingId: id,
+        incidentType,
+        notes: incidentNotes,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Trust incident submission failed");
+      return;
+    }
     setIncidentNotes("");
     toast.success("Incident sent to Trust & Safety");
   };
@@ -275,23 +334,14 @@ const BookingDetail = () => {
     if (error) return toast.error(error.message);
     setReview(savedReview as Review);
     if (reviewRating <= 2) {
-      await (supabase as any).from("support_followups").insert({
-        booking_id: id,
-        user_id: user.id,
-        trigger_type: "low_rating",
-        priority: "high",
-        notes: reviewNotes || "Low post-job rating",
-      });
-      await (supabase as any).from("admin_review_queue").insert({
-        queue_type: "support",
-        subject_table: "post_job_reviews",
-        subject_id: savedReview?.id,
-        user_id: user.id,
-        zooter_id: booking.zooter_id,
-        booking_id: id,
-        priority: "high",
-        summary: "Low post-job rating needs follow-up",
-      });
+      try {
+        await invokeOpsWorkflow({
+          action: "review_followup_requested",
+          reviewId: savedReview?.id,
+        });
+      } catch {
+        toast.warning("Review saved, but support follow-up routing is unavailable.");
+      }
     }
     toast.success("Review submitted");
   };
@@ -309,17 +359,33 @@ const BookingDetail = () => {
     load();
   };
 
+  const chooseAndUploadPhoto = async (photoType: "before" | "after") => {
+    const file = await captureOrSelectImage();
+    if (!file) return;
+    await uploadPhoto(photoType, file);
+  };
+
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (!booking) return null;
 
   const z = booking.zooter;
-  const serviceType = booking.service_type ?? booking.service;
+  const serviceType = serviceNameForBooking(booking);
   const photoProofRequired = booking.completion_photo_required || requiresCompletionPhotos(serviceType);
   const beforeDone = photos.some((p) => p.photo_type === "before");
   const afterDone = photos.some((p) => p.photo_type === "after");
-  const timeline = events.length ? events : [{ id: "current", status: booking.status, label: statusLabel[booking.status] ?? booking.status, created_at: booking.updated_at }];
+  const canonicalStatus = getCanonicalStatus(booking.status);
+  const visibleStatus = getVisibleStatusLabel(booking.status);
+  const timeline = events.length ? events : [{ id: "current", status: canonicalStatus ?? booking.status, label: visibleStatus, created_at: booking.updated_at }];
   const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
   const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
+  const isAssignedZooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
+  const maskedCallAvailable = Boolean(canonicalStatus && ["en_route", "in_progress"].includes(canonicalStatus) && canAccessSensitiveBookingData({
+    scheduledAt: booking.scheduled_at,
+    status: booking.status,
+    completedAt: booking.job_completed_at,
+    cancelledAt: booking.cancelled_at,
+    durationHours: booking.duration_hours,
+  }));
 
   return (
     <div className="container py-6 lg:py-10 max-w-5xl">
@@ -338,7 +404,7 @@ const BookingDetail = () => {
               <div className="absolute bottom-1/4 right-1/3 grid place-items-center h-10 w-10 rounded-full bg-foreground text-background shadow-warm"><span className="text-xs font-bold">YOU</span></div>
               <div className="absolute top-3 left-3 right-3 flex justify-between">
                 <div className="rounded-full bg-background/95 backdrop-blur px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-card">
-                  <span className="h-2 w-2 rounded-full bg-sage animate-pulse" />{booking.status === "enroute" ? `Arriving in ${eta} min` : (statusLabel[booking.status] ?? booking.status)}
+                  <span className="h-2 w-2 rounded-full bg-sage animate-pulse" />{canonicalStatus === "en_route" ? `Arriving in ${eta} min` : visibleStatus}
                 </div>
                 <div className="rounded-full bg-background/95 backdrop-blur px-3 py-1.5 text-xs font-bold shadow-card">R{Number(booking.price).toFixed(0)}</div>
               </div>
@@ -356,20 +422,44 @@ const BookingDetail = () => {
             )}
 
             <div className="px-5 pb-5 grid grid-cols-2 gap-2">
-              {booking.status === "confirmed" && <Button onClick={() => setStatus("enroute")} variant="outline" className="rounded-xl">On the way</Button>}
-              {booking.status === "enroute" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
-              {booking.status === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
-              {booking.status === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
-              <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2"><Phone className="h-4 w-4 mr-1" /> Request masked call</Button>
+              {isAssignedZooter && canonicalStatus === "contractor_accepted" && <Button onClick={() => setStatus("en_route")} variant="outline" className="rounded-xl">On the way</Button>}
+              {isAssignedZooter && canonicalStatus === "en_route" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
+              {isAssignedZooter && canonicalStatus === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
+              {isAssignedZooter && canonicalStatus === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
+              {maskedCallAvailable && (
+                <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2">
+                  {requestingCall ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Phone className="h-4 w-4 mr-1" />}
+                  Request masked call
+                </Button>
+              )}
             </div>
+            {maskedCall?.proxy_numbers && (
+              <div className="mx-5 mb-5 rounded-2xl border border-border bg-muted/35 p-3 text-sm">
+                <p className="mb-2 font-semibold">Masked call proxy numbers</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-xl bg-background/75 p-2">
+                    <p className="text-xs text-muted-foreground">Client proxy</p>
+                    <p className="font-medium">{maskedCall.proxy_numbers.client ?? "Pending Twilio assignment"}</p>
+                  </div>
+                  <div className="rounded-xl bg-background/75 p-2">
+                    <p className="text-xs text-muted-foreground">Zooter proxy</p>
+                    <p className="font-medium">{maskedCall.proxy_numbers.zooter ?? "Pending Twilio assignment"}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </Card>
 
           <Card className="rounded-3xl p-5">
             <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Arrival tracking</h2>
+            <div className="mb-4 grid grid-cols-2 gap-2">
+              <Button onClick={handleOpenDirections} variant="outline" className="rounded-xl justify-center"><Navigation className="h-4 w-4 mr-1" /> Directions</Button>
+              <Button onClick={shareEta} variant="outline" className="rounded-xl justify-center"><Share2 className="h-4 w-4 mr-1" /> Share ETA</Button>
+            </div>
             <div className="space-y-3">
               {statusSteps.map((step) => {
-                const hit = timeline.find((e) => e.status === step.key || e.label === step.label);
-                return <div key={step.key} className="flex items-center gap-3"><span className={`h-3 w-3 rounded-full ${hit ? "bg-primary" : "bg-muted"}`} /><div><p className="text-sm font-medium">{step.label}</p>{hit && <p className="text-xs text-muted-foreground">{new Date(hit.created_at).toLocaleString("en-ZA")}</p>}</div></div>;
+                const hit = timeline.find((e) => step.keys.includes(e.status) || e.label === step.label);
+                return <div key={step.keys[0]} className="flex items-center gap-3"><span className={`h-3 w-3 rounded-full ${hit ? "bg-primary" : "bg-muted"}`} /><div><p className="text-sm font-medium">{step.label}</p>{hit && <p className="text-xs text-muted-foreground">{new Date(hit.created_at).toLocaleString("en-ZA")}</p>}</div></div>;
               })}
             </div>
           </Card>
@@ -381,13 +471,24 @@ const BookingDetail = () => {
               <div className="grid sm:grid-cols-2 gap-3">
                 {(["before", "after"] as const).map((kind) => {
                   const done = photos.some((p) => p.photo_type === kind);
-                  return <label key={kind} className={`rounded-2xl border p-4 cursor-pointer ${done ? "border-sage bg-accent-soft" : "border-border"}`}><input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadPhoto(kind, e.target.files[0])} /><span className="flex items-center gap-2 font-semibold capitalize"><ShieldCheck className="h-4 w-4" /> {kind} photo</span><p className="text-xs text-muted-foreground mt-1">{done ? "Uploaded" : uploading === kind ? "Uploading..." : "Tap to upload"}</p></label>;
+                  return (
+                    <button
+                      key={kind}
+                      type="button"
+                      onClick={() => void chooseAndUploadPhoto(kind)}
+                      disabled={Boolean(uploading)}
+                      className={`rounded-2xl border p-4 text-left transition-smooth ${done ? "border-sage bg-accent-soft" : "border-border hover:border-primary/40"}`}
+                    >
+                      <span className="flex items-center gap-2 font-semibold capitalize"><ShieldCheck className="h-4 w-4" /> {kind} photo</span>
+                      <p className="text-xs text-muted-foreground mt-1">{done ? "Uploaded" : uploading === kind ? "Uploading..." : "Tap to capture or select"}</p>
+                    </button>
+                  );
                 })}
               </div>
             </Card>
           )}
 
-          {booking.status === "completed" && (
+          {canonicalStatus === "completed" && (
             <Card className="rounded-3xl p-5">
               <h2 className="font-display text-xl font-bold mb-2 flex items-center gap-2"><Star className="h-5 w-5 text-primary" /> Post-clean satisfaction</h2>
               {review ? (
@@ -426,11 +527,7 @@ const BookingDetail = () => {
           </Card>
         </div>
 
-        <Card className="rounded-3xl flex flex-col h-[500px] overflow-hidden">
-          <div className="px-5 py-4 border-b border-border"><p className="font-display font-bold">Chat with {z?.name?.split(" ")[0] ?? "Zooter"}</p><p className="text-xs text-muted-foreground">Messages stay on-platform for booking protection</p></div>
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2">{messages.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">Say hi</p>}{messages.map((m) => <div key={m.id} className={`flex ${m.sender_type === "user" ? "justify-end" : "justify-start"}`}><div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${m.sender_type === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>{m.body}</div></div>)}</div>
-          <form onSubmit={send} className="p-3 border-t border-border flex gap-2"><Input value={body} onChange={(e) => setBody(e.target.value)} placeholder="Type a message..." className="rounded-full" /><Button type="submit" size="icon" className="rounded-full"><Send className="h-4 w-4" /></Button></form>
-        </Card>
+        <BookingChat bookingId={id} booking={booking} zooter={z} messages={messages} currentUserId={user?.id} />
       </div>
     </div>
   );

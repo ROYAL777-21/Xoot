@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zoot Security"
+  short_description: "Apply Zoot security, env, RLS, and no-mock production rules."
+  default_prompt: "Use the Zoot security skill to harden env guards, mock-data gates, Supabase RLS, admin audit, and sensitive data flows."

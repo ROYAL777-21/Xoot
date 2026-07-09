@@ -3,7 +3,7 @@ import { Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { Zooter, ZooterCard } from "@/components/zoot/ZooterCard";
 import { sortZootersForMarketplace } from "@/lib/trust";
 
@@ -13,11 +13,16 @@ export const NearbyWorkers = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setWorkers([]);
+      setLoading(false);
+      return;
+    }
+
     let mounted = true;
-    supabase
-      .from("zooters")
+    (supabase as any)
+      .from("zooters_public")
       .select("*")
-      .eq("active", true)
       .order("rating", { ascending: false })
       .limit(4)
       .then(({ data }) => {
@@ -60,9 +65,11 @@ export const NearbyWorkers = () => {
             <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft">
               <ShieldCheck className="h-6 w-6 text-sage-deep" />
             </div>
-            <h3 className="font-display text-2xl font-bold mb-2">No live Zooters yet</h3>
+            <h3 className="font-display text-2xl font-bold mb-2">{isSupabaseConfigured ? "No live Zooters yet" : "Live Zooter roster needs Supabase"}</h3>
             <p className="text-sm text-muted-foreground">
-              Contractor profiles will appear only after admin-reviewed verification, training, and activation.
+              {isSupabaseConfigured
+                ? "Contractor profiles will appear only after admin-reviewed verification, training, and activation."
+                : "Public preview is running without live backend config, so verified Zooter profiles are intentionally not shown here."}
             </p>
           </Card>
         )}

@@ -1,0 +1,55 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; child-src 'self' blob:; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "accelerometer=(), ambient-light-sensor=(), autoplay=(), bluetooth=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Cross-Origin-Resource-Policy "same-origin"
+  Header always set Origin-Agent-Cluster "?1"
+  Header always set X-Permitted-Cross-Domain-Policies "none"
+  SetEnvIf Request_URI "^/(app|auth|admin)(/|$)" ZOOT_NOINDEX=1
+  SetEnvIf Request_URI "^/zooter/(jobs|earnings|kyc|profile|training)(/|$)" ZOOT_NOINDEX=1
+  SetEnvIf Request_URI "^/(app|auth|admin)(/|$)" ZOOT_NOSTORE=1
+  SetEnvIf Request_URI "^/zooter/(jobs|earnings|kyc|profile|training)(/|$)" ZOOT_NOSTORE=1
+  Header always set X-Robots-Tag "noindex, noarchive, nosnippet" env=ZOOT_NOINDEX
+  Header always set Cache-Control "no-store, private, max-age=0, must-revalidate" env=ZOOT_NOSTORE
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType application/manifest+json "access plus 1 hour"
+</IfModule>
+
+<Files "apple-app-site-association">
+  ForceType application/json
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=300"
+  </IfModule>
+</Files>
+
+<Files "assetlinks.json">
+  ForceType application/json
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=300"
+  </IfModule>
+</Files>
+
+<Files "sw.js">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "no-cache"
+  </IfModule>
+</Files>

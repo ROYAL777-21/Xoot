@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ZooterCard, Zooter } from "@/components/zoot/ZooterCard";
@@ -22,17 +22,29 @@ const Favorites = () => {
   const [list, setList] = useState<FavoriteRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("favorites")
-      .select("zooter_id, favorite_kind, repeat_bookings_count, last_booked_at, zooters(*)")
+      .select("zooter_id, favorite_kind, repeat_bookings_count, last_booked_at")
       .eq("user_id", user.id);
-    setList(((data ?? []) as any[]).filter((row) => row.zooters) as FavoriteRow[]);
-    setLoading(false);
-  };
 
-  useEffect(() => { load(); }, [user]);
+    const favorites = (data ?? []) as Array<Omit<FavoriteRow, "zooters">>;
+    const zooterIds = favorites.map((row) => row.zooter_id).filter(Boolean);
+    const { data: zooters } = zooterIds.length
+      ? await (supabase as any).from("zooters_public").select("*").in("id", zooterIds)
+      : { data: [] };
+    const zootersById = new Map(((zooters ?? []) as Zooter[]).map((zooter) => [zooter.id, zooter]));
+
+    setList(
+      favorites
+        .map((row) => ({ ...row, zooters: zootersById.get(row.zooter_id) ?? null }))
+        .filter((row) => row.zooters) as FavoriteRow[],
+    );
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => { load(); }, [load]);
 
   const markKind = async (zooterId: string, favoriteKind: FavoriteRow["favorite_kind"]) => {
     if (!user) return;

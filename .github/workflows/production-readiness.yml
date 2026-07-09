@@ -1,0 +1,72 @@
+name: Production readiness guard
+
+on:
+  push:
+    branches:
+      - main
+      - "codex/**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readiness:
+    name: Verify blocker and provider-readiness artifacts
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Parse PowerShell ops scripts
+        shell: pwsh
+        run: |
+          $files = @(
+            'scripts/ops/check-local-provider-auth.ps1',
+            'scripts/ops/setup-local-provider-auth.ps1',
+            'scripts/ops/deploy-supabase-backend.ps1',
+            'scripts/ops/deploy-staging-backend.ps1',
+            'scripts/ops/deploy-production-backend.ps1',
+            'scripts/ops/set-github-public-vars.ps1',
+            'scripts/ops/set-supabase-edge-secrets.ps1',
+            'scripts/ops/verify-production-readiness.ps1',
+            'scripts/ops/verify-supabase-live.ps1'
+          )
+
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) > $null
+            if ($errors.Count -gt 0) {
+              Write-Error "PowerShell parse failed for $file"
+              $errors | Format-List | Out-String | Write-Error
+              exit 1
+            }
+
+            Write-Host "OK: $file"
+          }
+
+      - name: Run offline production-readiness verifier
+        shell: pwsh
+        run: |
+          ./scripts/ops/verify-production-readiness.ps1 -Json
+
+      - name: Run secret and frontend-write guards
+        shell: pwsh
+        run: |
+          node scripts/security/secret-scan.mjs
+          node scripts/security/assert-no-frontend-admin-queue-writes.mjs
+
+      - name: Document live-provider checks
+        shell: pwsh
+        run: |
+          Write-Host "Live provider checks are intentionally not run in this workflow."
+          Write-Host "Run scripts/ops/verify-production-readiness.ps1 -IncludeExternal -RequireLive only from an authenticated local or controlled ops shell."

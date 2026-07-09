@@ -111,6 +111,13 @@ create table if not exists public.zootcred_ledger (
   created_at timestamptz not null default now()
 );
 
+alter table public.zootcred_ledger
+  add column if not exists booking_id uuid references public.bookings(id) on delete set null,
+  add column if not exists direction text,
+  add column if not exists status text not null default 'available',
+  add column if not exists expires_at timestamptz,
+  add column if not exists meta jsonb not null default '{}'::jsonb;
+
 create table if not exists public.gift_clean_orders (
   id uuid primary key default gen_random_uuid(),
   purchaser_user_id uuid not null references auth.users(id) on delete cascade,

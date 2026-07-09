@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
+const cssColorPattern = /^(#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([a-zA-Z0-9\s.,%()+/-]+\)|var\(--[a-zA-Z0-9-_]+\)|[a-zA-Z]+)$/;
+const cssIdentifierPattern = /^[a-zA-Z0-9_-]+$/;
 
 export type ChartConfig = {
   [k in string]: {
@@ -65,26 +67,26 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
+  const safeId = id.replace(/[^a-zA-Z0-9_-]/g, "");
+  const styleText = Object.entries(THEMES)
+    .map(
+      ([theme, prefix]) => `
+${prefix} [data-chart=${safeId}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
     const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
+    const safeKey = cssIdentifierPattern.test(key) ? key : "";
+    const safeColor = color && cssColorPattern.test(color) ? color : "";
+    return safeKey && safeColor ? `  --color-${safeKey}: ${safeColor};` : null;
   })
+  .filter(Boolean)
   .join("\n")}
 }
 `,
-          )
-          .join("\n"),
-      }}
-    />
-  );
+    )
+    .join("\n");
+
+  return <style>{styleText}</style>;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;

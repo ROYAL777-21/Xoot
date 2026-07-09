@@ -12,6 +12,10 @@ export const RequireRole = ({ role, children }: { role: Role; children: ReactNod
   const [hasRole, setHasRole] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (loading) {
+      setHasRole(null);
+      return;
+    }
     if (!user) { setHasRole(false); return; }
     supabase
       .from("user_roles")
@@ -20,7 +24,7 @@ export const RequireRole = ({ role, children }: { role: Role; children: ReactNod
       .eq("role", role)
       .maybeSingle()
       .then(({ data }) => setHasRole(!!data));
-  }, [user, role]);
+  }, [loading, user, role]);
 
   if (loading || hasRole === null) {
     return (

@@ -1,15 +1,35 @@
 import { describe, expect, it } from "vitest";
 import {
+  generateStrongPassword,
   getAuthFormIssue,
+  getAuthRedirectTo,
+  getOtpCodeIssue,
   getPasswordIssues,
   getPasswordStrength,
+  getPasswordUpdateIssue,
   getSafeAuthErrorMessage,
+  getSafeOAuthErrorMessage,
+  getSafeOtpErrorMessage,
+  getSafeOtpSentMessage,
+  getSafePasswordResetMessage,
+  getSafeRedirectPath,
   normaliseEmail,
+  normaliseOtpCode,
 } from "./auth-security";
 
 describe("auth security helpers", () => {
   it("normalises email before auth calls", () => {
     expect(normaliseEmail("  Test@Example.COM ")).toBe("test@example.com");
+  });
+
+  it("normalises pasted email OTP input", () => {
+    expect(normaliseOtpCode(" 12 3-4a5b678 ")).toBe("123456");
+  });
+
+  it("validates six-digit email OTP codes", () => {
+    expect(getOtpCodeIssue("")).toBe("Enter the 6-digit email code.");
+    expect(getOtpCodeIssue("12345")).toBe("Enter all 6 digits from your email.");
+    expect(getOtpCodeIssue("123456")).toBeNull();
   });
 
   it("requires stronger passwords for signup", () => {
@@ -32,8 +52,60 @@ describe("auth security helpers", () => {
     expect(getPasswordStrength("StrongPass8!")).toBe(4);
   });
 
-  it("uses generic auth errors to avoid account enumeration", () => {
+  it("generates password-manager friendly strong passwords", () => {
+    const generated = generateStrongPassword();
+
+    expect(generated).toHaveLength(18);
+    expect(getPasswordIssues(generated, "signup")).toEqual([]);
+    expect(getPasswordStrength(generated)).toBe(4);
+    expect(generated).toMatch(/[a-z]/);
+    expect(generated).toMatch(/[A-Z]/);
+    expect(generated).toMatch(/\d/);
+    expect(generated).toMatch(/[^a-zA-Z0-9\s]/);
+  });
+
+  it("clamps generated password length to a safe range", () => {
+    expect(generateStrongPassword(4)).toHaveLength(12);
+    expect(generateStrongPassword(64)).toHaveLength(32);
+  });
+
+  it("keeps post-auth redirects relative and outside auth routes", () => {
+    expect(getSafeRedirectPath("/app/bookings?status=open")).toBe("/app/bookings?status=open");
+    expect(getSafeRedirectPath("https://evil.example/app")).toBe("/app");
+    expect(getSafeRedirectPath("//evil.example/app")).toBe("/app");
+    expect(getSafeRedirectPath("/auth?next=/admin")).toBe("/app");
+    expect(getSafeRedirectPath("/auth/reset?next=/app")).toBe("/app");
+    expect(getAuthRedirectTo("/app/support", "/auth/callback")).toMatch(/\/auth\/callback\?next=%2Fapp%2Fsupport$/);
+  });
+
+  it("blocks nested redirects and sensitive query state in post-auth redirects", () => {
+    expect(getSafeRedirectPath("/app?next=https%3A%2F%2Fevil.example")).toBe("/app");
+    expect(getSafeRedirectPath("/app?redirect=/admin/ops")).toBe("/app");
+    expect(getSafeRedirectPath("/app?role=admin")).toBe("/app");
+    expect(getSafeRedirectPath("/app?payment_status=paid")).toBe("/app");
+    expect(getSafeRedirectPath("/app?payment_success=true")).toBe("/app");
+    expect(getSafeRedirectPath("/app?price=1")).toBe("/app");
+    expect(getSafeRedirectPath("/app?provider_token=token")).toBe("/app");
+    expect(getSafeRedirectPath("/app?return_to=%2Fadmin%2Fops")).toBe("/app");
+    expect(getSafeRedirectPath("/app?url=%2F%2Fevil.example")).toBe("/app");
+    expect(getSafeRedirectPath("/app?continue=zoot%3A%2F%2Fbooking")).toBe("/app");
+    expect(getSafeRedirectPath("/app?area=https://evil.example")).toBe("/app");
+    expect(getSafeRedirectPath("/app#access_token=secret")).toBe("/app");
+  });
+
+  it("validates password update confirmation", () => {
+    expect(getPasswordUpdateIssue("Short1", "Short1")).toBe("Use at least 8 characters.");
+    expect(getPasswordUpdateIssue("StrongPass8", "DifferentPass8")).toBe("Passwords need to match.");
+    expect(getPasswordUpdateIssue("StrongPass8", "StrongPass8")).toBeNull();
+  });
+
+  it("uses generic auth, OTP, and recovery errors to avoid account enumeration", () => {
     expect(getSafeAuthErrorMessage("signin")).not.toContain("email exists");
     expect(getSafeAuthErrorMessage("signup")).not.toContain("registered");
+    expect(getSafeOtpSentMessage()).not.toContain("account exists");
+    expect(getSafeOtpErrorMessage()).not.toContain("email exists");
+    expect(getSafePasswordResetMessage()).not.toContain("account exists");
+    expect(getSafeOAuthErrorMessage("google")).toContain("Google");
+    expect(getSafeOAuthErrorMessage("apple")).toContain("Apple");
   });
 });

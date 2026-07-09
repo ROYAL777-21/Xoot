@@ -20,6 +20,8 @@ export type Database = {
           cancellation_fee: number
           cancelled_at: string | null
           cancelled_by: string | null
+          assigned_at: string | null
+          completed_at: string | null
           created_at: string
           duration_hours: number
           frequency: string
@@ -29,9 +31,12 @@ export type Database = {
           price: number
           reassignment_acknowledged: boolean
           replacement_offered: boolean
+          replacement_count: number
           scheduled_at: string
           service: Database["public"]["Enums"]["service_category"]
           status: Database["public"]["Enums"]["booking_status"]
+          payment_confirmed_at: string | null
+          sensitive_data_revoked_at: string | null
           updated_at: string
           user_id: string
           was_reassigned: boolean
@@ -42,6 +47,8 @@ export type Database = {
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
+          assigned_at?: string | null
+          completed_at?: string | null
           created_at?: string
           duration_hours?: number
           frequency?: string
@@ -51,9 +58,12 @@ export type Database = {
           price: number
           reassignment_acknowledged?: boolean
           replacement_offered?: boolean
+          replacement_count?: number
           scheduled_at: string
           service: Database["public"]["Enums"]["service_category"]
           status?: Database["public"]["Enums"]["booking_status"]
+          payment_confirmed_at?: string | null
+          sensitive_data_revoked_at?: string | null
           updated_at?: string
           user_id: string
           was_reassigned?: boolean
@@ -64,6 +74,8 @@ export type Database = {
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
+          assigned_at?: string | null
+          completed_at?: string | null
           created_at?: string
           duration_hours?: number
           frequency?: string
@@ -73,9 +85,12 @@ export type Database = {
           price?: number
           reassignment_acknowledged?: boolean
           replacement_offered?: boolean
+          replacement_count?: number
           scheduled_at?: string
           service?: Database["public"]["Enums"]["service_category"]
           status?: Database["public"]["Enums"]["booking_status"]
+          payment_confirmed_at?: string | null
+          sensitive_data_revoked_at?: string | null
           updated_at?: string
           user_id?: string
           was_reassigned?: boolean
@@ -263,23 +278,38 @@ export type Database = {
         Row: {
           body: string
           booking_id: string
+          client_safety_flags: string[]
           created_at: string
+          envelope_version: number
           id: string
+          moderation_state: string
+          reported_at: string | null
           sender_type: string
+          sender_user_id: string | null
         }
         Insert: {
           body: string
           booking_id: string
+          client_safety_flags?: string[]
           created_at?: string
+          envelope_version?: number
           id?: string
+          moderation_state?: string
+          reported_at?: string | null
           sender_type: string
+          sender_user_id?: string | null
         }
         Update: {
           body?: string
           booking_id?: string
+          client_safety_flags?: string[]
           created_at?: string
+          envelope_version?: number
           id?: string
+          moderation_state?: string
+          reported_at?: string | null
           sender_type?: string
+          sender_user_id?: string | null
         }
         Relationships: [
           {
@@ -510,6 +540,78 @@ export type Database = {
         }
         Relationships: []
       }
+      support_handoff_contexts: {
+        Row: {
+          booking_id: string | null
+          consent_to_share_context: boolean
+          correlation_id: string
+          created_at: string
+          customer_stated_issue: string
+          id: string
+          intent_category: string
+          recommended_owner: string
+          recommended_queue: string
+          requested_action: string
+          role_type: string
+          safe_context: Json
+          ticket_id: string
+          updated_at: string
+          urgency_level: number
+          user_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          consent_to_share_context?: boolean
+          correlation_id?: string
+          created_at?: string
+          customer_stated_issue: string
+          id?: string
+          intent_category?: string
+          recommended_owner?: string
+          recommended_queue?: string
+          requested_action?: string
+          role_type?: string
+          safe_context?: Json
+          ticket_id: string
+          updated_at?: string
+          urgency_level?: number
+          user_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          consent_to_share_context?: boolean
+          correlation_id?: string
+          created_at?: string
+          customer_stated_issue?: string
+          id?: string
+          intent_category?: string
+          recommended_owner?: string
+          recommended_queue?: string
+          requested_action?: string
+          role_type?: string
+          safe_context?: Json
+          ticket_id?: string
+          updated_at?: string
+          urgency_level?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_handoff_contexts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_handoff_contexts_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           ai_response: string | null
@@ -542,6 +644,7 @@ export type Database = {
       }
       training_modules: {
         Row: {
+          badge_label: string | null
           badge_color: string
           category: string
           description: string
@@ -549,10 +652,12 @@ export type Database = {
           id: string
           pass_score: number
           quiz_questions: Json
+          rank_points: number
           required: boolean
           title: string
         }
         Insert: {
+          badge_label?: string | null
           badge_color?: string
           category: string
           description: string
@@ -560,10 +665,12 @@ export type Database = {
           id?: string
           pass_score?: number
           quiz_questions?: Json
+          rank_points?: number
           required?: boolean
           title: string
         }
         Update: {
+          badge_label?: string | null
           badge_color?: string
           category?: string
           description?: string
@@ -571,6 +678,7 @@ export type Database = {
           id?: string
           pass_score?: number
           quiz_questions?: Json
+          rank_points?: number
           required?: boolean
           title?: string
         }
@@ -1029,6 +1137,39 @@ export type Database = {
     }
     Functions: {
       gen_referral_code: { Args: never; Returns: string }
+      get_accepted_zooter_job_destinations: {
+        Args: { p_job_ids: string[] }
+        Returns: {
+          job_id: string
+          booking_id: string
+          address: string
+        }[]
+      }
+      get_zooter_job_cards: {
+        Args: never
+        Returns: {
+          job_id: string
+          booking_id: string
+          zooter_id: string
+          state: string
+          offered_at: string
+          responded_at: string | null
+          decline_reason: string | null
+          service: string | null
+          service_type: string | null
+          scheduled_at: string
+          price: number | null
+          duration_hours: number | null
+          status: string | null
+          job_completed_at: string | null
+          completed_at: string | null
+          cancelled_at: string | null
+          sensitive_data_revoked_at: string | null
+          sensitive_access_available_notified_at: string | null
+          user_id: string
+          destination_address: string | null
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1040,6 +1181,16 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user" | "zooter"
       booking_status:
+        | "draft"
+        | "pending_payment"
+        | "payment_confirmed"
+        | "awaiting_assignment"
+        | "assigned"
+        | "contractor_accepted"
+        | "en_route"
+        | "rated"
+        | "replacement_required"
+        | "replacement_offered"
         | "pending"
         | "confirmed"
         | "enroute"
@@ -1055,7 +1206,7 @@ export type Database = {
         | "babysitting"
         | "petcare"
         | "maintenance"
-      subscription_status: "active" | "paused" | "cancelled"
+      subscription_status: "active" | "paused" | "cancelled" | "pending_payment" | "past_due"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1185,6 +1336,16 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user", "zooter"],
       booking_status: [
+        "draft",
+        "pending_payment",
+        "payment_confirmed",
+        "awaiting_assignment",
+        "assigned",
+        "contractor_accepted",
+        "en_route",
+        "rated",
+        "replacement_required",
+        "replacement_offered",
         "pending",
         "confirmed",
         "enroute",
@@ -1202,7 +1363,7 @@ export const Constants = {
         "petcare",
         "maintenance",
       ],
-      subscription_status: ["active", "paused", "cancelled"],
+      subscription_status: ["active", "paused", "cancelled", "pending_payment", "past_due"],
     },
   },
 } as const

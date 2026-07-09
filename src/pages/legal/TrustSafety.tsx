@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/zoot/Navbar";
 import { Footer } from "@/components/zoot/Footer";
+import { SEO } from "@/components/SEO";
 import { ShieldCheck, FileSearch, Star, HeartHandshake, LockKeyhole, Clock3 } from "lucide-react";
 
 const items = [
@@ -37,6 +38,11 @@ const items = [
 
 const TrustSafety = () => (
   <div className="min-h-screen bg-background">
+    <SEO
+      title="Zoot Trust Centre - Verified home care and protected booking details"
+      description="See how Zoot handles verification, protected household information, support escalation, and reliability monitoring for trusted home care."
+      canonical="/trust-centre"
+    />
     <Navbar />
     <main className="container max-w-5xl py-12 md:py-20">
       <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">Trust & Safety</p>

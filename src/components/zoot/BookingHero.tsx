@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sparkles, MapPin, Calendar, Clock, Home, Building2, BedDouble, Wand2, ArrowRight, Truck, TimerReset } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { approvedLaunchRegions } from "@/lib/operations";
+import { captureAnalyticsEvent, getAnalyticsDeviceType } from "@/lib/analytics";
+import { VerifiedAddressInput } from "@/components/zoot/VerifiedAddressInput";
 import heroImg from "@/assets/hero-zoot.jpg";
 
 const services = [
@@ -26,12 +27,21 @@ export const BookingHero = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    supabase.from("zooters").select("id", { count: "exact", head: true }).eq("active", true).then(({ count }) => {
+    if (!isSupabaseConfigured) return;
+    (supabase as any).from("zooters_public").select("id", { count: "exact", head: true }).then(({ count }) => {
       setActiveZooters(count ?? 0);
     });
   }, []);
 
+  const liveZooterLabel = isSupabaseConfigured ? String(activeZooters) : "Live roster";
+
   const startBooking = () => {
+    captureAnalyticsEvent("booking_flow_started", {
+      service_category: active,
+      launch_area: "public_hero",
+      source: user ? "signed_in_homepage" : "guest_homepage",
+      device_type: getAnalyticsDeviceType(),
+    });
     const target = `/app?service=${active}${address.trim() ? `&address=${encodeURIComponent(address.trim())}` : ""}`;
     if (!user) {
       navigate("/auth", { state: { from: { pathname: target } } });
@@ -42,7 +52,7 @@ export const BookingHero = () => {
 
   return (
     <section className="relative overflow-hidden gradient-hero">
-      <div className="container grid lg:grid-cols-2 gap-8 lg:gap-8 py-8 lg:py-20 items-center">
+      <div className="container relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 py-8 lg:py-20 items-center">
         <div className="relative z-10 animate-fade-up">
           <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 mb-4 lg:mb-6 border border-accent/20">
             <Sparkles className="h-3.5 w-3.5 text-sage-deep" />
@@ -55,27 +65,36 @@ export const BookingHero = () => {
               <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/15 -z-0" />
             </span>
           </h1>
-          <p className="mt-4 lg:mt-5 text-base sm:text-lg text-muted-foreground max-w-md">Book vetted independent Zooters for homes, Airbnbs, offices, moving cleans and premium resets in the current launch area.</p>
+          <p className="mt-4 lg:mt-5 text-base sm:text-lg text-muted-foreground max-w-md">Book vetted independent Zooters for homes, Airbnb turnovers, office workspaces, moving cleans and premium resets. Zoot verifies your address and confirms availability before final dispatch.</p>
 
           <div className="mt-6 lg:mt-8 rounded-3xl bg-card border border-border shadow-soft p-4 sm:p-5 md:p-6">
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {services.map((s) => {
                 const Icon = s.icon;
                 const isActive = active === s.id;
                 return (
-                  <button key={s.id} onClick={() => setActive(s.id)} className={`flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 ${isActive ? "bg-foreground text-background shadow-warm" : "bg-muted/60 text-muted-foreground hover:bg-muted"}`}>
-                    <Icon className="h-4 w-4" />{s.label}
+                  <button
+                    key={s.id}
+                    onClick={() => setActive(s.id)}
+                    className={`flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-2xl px-3 py-2 text-center text-sm font-semibold leading-tight transition-all duration-300 ${isActive ? "bg-foreground text-background shadow-warm" : "bg-muted/60 text-muted-foreground hover:bg-muted"}`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 break-words">{s.label}</span>
                   </button>
                 );
               })}
             </div>
             <div className="mt-5 grid gap-3">
-              <div className="rounded-2xl bg-muted/40 border border-border/60 p-3 flex items-center gap-3">
-                <span className="grid place-items-center h-9 w-9 rounded-full bg-primary/10 text-primary"><MapPin className="h-4 w-4" /></span>
-                <div className="flex-1">
-                  <Label htmlFor="addr" className="text-[10px] uppercase tracking-wider text-muted-foreground">Where</Label>
-                  <Input id="addr" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Sandton, Midrand, Rosebank..." className="border-0 bg-transparent p-0 h-6 focus-visible:ring-0 text-sm font-medium" />
+              <div className="rounded-2xl bg-muted/40 border border-border/60 p-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="grid place-items-center h-9 w-9 rounded-full bg-primary/10 text-primary"><MapPin className="h-4 w-4" /></span>
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Where</Label>
                 </div>
+                <VerifiedAddressInput
+                  value={address}
+                  onChange={setAddress}
+                  placeholder={active === "office" ? "Office address..." : "Search address..."}
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-2xl bg-muted/40 border border-border/60 p-3 flex items-center gap-3">
@@ -88,17 +107,31 @@ export const BookingHero = () => {
                 </div>
               </div>
               <Button size="lg" onClick={startBooking} className="rounded-2xl h-14 text-base font-semibold gradient-warm hover:opacity-95 shadow-warm group">
-                {user ? "Start a booking" : "Sign up to book"}
+                {user ? "Start a booking" : "Book now"}
                 <ArrowRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Link
+                  to="/?zootBot=open&intent=concierge"
+                  className="liquid-glass-interactive interactive-press inline-flex min-h-11 items-center justify-center rounded-2xl px-4 text-center text-sm font-bold text-foreground shadow-card"
+                >
+                  Ask Concierge first
+                </Link>
+                <Link
+                  to="/app/properties/office"
+                  className="liquid-glass-interactive interactive-press inline-flex min-h-11 items-center justify-center rounded-2xl px-4 text-center text-sm font-bold text-foreground shadow-card"
+                >
+                  Plan office or Airbnb cleaning
+                </Link>
+              </div>
               <p className="text-xs text-muted-foreground text-center">
-                Launch areas include {approvedLaunchRegions.slice(0, 6).map((region) => region.replace(/\b\w/g, (c) => c.toUpperCase())).join(", ")} and nearby approved suburbs.
+                Active coverage includes {approvedLaunchRegions.slice(0, 6).map((region) => region.replace(/\b\w/g, (c) => c.toUpperCase())).join(", ")}. Other South African requests go to coverage review.
               </p>
             </div>
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <span><span className="font-semibold text-foreground">{activeZooters}</span> approved Zooters currently live</span>
+            <span><span className="font-semibold text-foreground">{liveZooterLabel}</span> {isSupabaseConfigured ? "approved Zooters currently live" : "loads from Supabase when configured"}</span>
             <span><span className="font-semibold text-foreground">MIE-ready</span> trust workflow</span>
           </div>
         </div>
@@ -108,18 +141,20 @@ export const BookingHero = () => {
             <img src={heroImg} alt="Friendly Zoot cleaner finishing a residential clean" className="h-full w-full object-cover" width={1280} height={1600} />
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-transparent to-transparent" />
             <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
-              <div className="rounded-2xl bg-background/95 backdrop-blur-md p-3 shadow-card flex items-center gap-3 animate-fade-in">
-                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{activeZooters}</span></div>
-                <div><p className="text-xs text-muted-foreground">Live Zooters</p><p className="text-sm font-semibold">After verification</p></div>
+              <div className="liquid-glass-shell rounded-2xl p-3 shadow-card flex items-center gap-3 animate-fade-in">
+                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{isSupabaseConfigured ? activeZooters : "Z"}</span></div>
+                <div className="liquid-glass-readable"><p className="text-xs text-muted-foreground">Live Zooters</p><p className="text-sm font-semibold">{isSupabaseConfigured ? "After verification" : "Supabase-backed"}</p></div>
               </div>
             </div>
             <div className="absolute bottom-6 left-6 right-6">
-              <div className="rounded-2xl bg-background/95 backdrop-blur-md p-4 shadow-card flex items-center justify-between animate-fade-up">
+              <div className="liquid-glass-shell rounded-2xl p-4 shadow-card flex items-center justify-between animate-fade-up">
+                <div className="liquid-glass-readable flex w-full items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-11 w-11 rounded-full gradient-sage grid place-items-center"><Home className="h-5 w-5 text-primary-foreground" /></div>
+                <div className="h-11 w-11 rounded-full gradient-sage grid place-items-center"><Home className="h-5 w-5 text-primary-foreground" /></div>
                   <div><p className="text-sm font-semibold">Arrival timeline</p><p className="text-xs text-muted-foreground">On the way, arrived, started, completed</p></div>
                 </div>
                 <span className="text-xs font-bold text-primary px-3 py-1.5 rounded-full bg-primary/10">TRUST</span>
+                </div>
               </div>
             </div>
           </div>
