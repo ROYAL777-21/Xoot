@@ -1,13 +1,13 @@
 # Branch And Pull Request Map
 
-Reviewed: 2026-07-09 23:24 SAST
+Reviewed: 2026-07-09 23:58 SAST
 
 ## Canonical Source Of Truth
 
 - Target branch: `main`
 - Policy: `main` is the only long-lived code source of truth. Feature branches are short-lived, reviewed through pull requests, merged, and deleted.
 - Release safety: a push to `main` builds and verifies the product but does not deploy GitHub Pages. Deployment requires an explicit `workflow_dispatch` with `deploy_pages=true`.
-- Current state: PR #13 was squashed and merged into `main` at commit `d4e931c` on 2026-07-09 after PR #12's production-readiness refresh landed at `12e06f6`. The Web build, Production readiness guard, Native iOS Swift check, and CodeRabbit review passed on the merge candidates; post-merge main checks passed.
+- Current state: `main` is current through the latest merged source-of-truth, drift-control, and CI-hardening pull requests. Use `git log --oneline -5` and the latest GitHub Actions runs on `main` for the exact current commit and check evidence.
 - Temporary branch refs may still exist remotely for audit, but they are not release branches and must not be used as product sources. New work must branch from current `main`.
 
 ## Pull Request Status
@@ -29,7 +29,19 @@ Reviewed: 2026-07-09 23:24 SAST
    - Classification: post-merge source-of-truth record.
    - Result: blocker and release records were updated after PR #12 so current `main` evidence is discoverable from the release docs.
 
-5. PR #10: closed.
+5. PR #14: merged into `main`.
+   - Classification: source-truth and metadata-drift control.
+   - Result: added a company-wide metadata drift runbook and recorded PR #8/#10 decisions.
+
+6. PR #15: merged into `main`.
+   - Classification: CI runtime hardening.
+   - Result: set GitHub workflow project runtime to Node 24.
+
+7. PR #16: merged into `main`.
+   - Classification: CI action hardening.
+   - Result: updated official GitHub Actions to Node 24-compatible major versions where available.
+
+8. PR #10: closed.
    - Classification: CodeRabbit-generated test proposal for superseded PR #8.
    - Relevance: useful as historical review material only. It targets PR #8's branch shape and should not be merged blindly into current `main`.
    - Result: current `main` keeps focused native-route tests in `src/lib/native-routing.test.ts`; broader generated tests require review before any future adoption.

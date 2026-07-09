@@ -1,6 +1,6 @@
 # Security Release Gate
 
-Reviewed: 2026-07-09 23:24 SAST
+Reviewed: 2026-07-09 23:58 SAST
 
 Zoot cannot be marked production-ready until every required gate below is either passed with evidence or explicitly deferred with founder/legal risk acceptance.
 
@@ -8,7 +8,7 @@ Zoot cannot be marked production-ready until every required gate below is either
 
 | Gate | Required evidence | Status |
 | --- | --- | --- |
-| Web build integrity | `npm run lint`, `npm test`, `npm run build`, `npm run security:scan`, and GitHub Web build pass on merge candidate | Passing on `main` commit `d4e931c`; re-run before the next release candidate |
+| Web build integrity | `npm run lint`, `npm test`, `npm run build`, `npm run security:scan`, and GitHub Web build pass on merge candidate | Passing on latest checked `main`; use GitHub Actions as the current commit evidence and re-run before the next release candidate |
 | Mobile preview integrity | Android and iOS preview/development builds install on real devices and pass auth/deep-link/widget smoke tests | Pending real-device smoke and iOS internal credentials |
 | Supabase schema and migration health | Runtime schema smoke passes and production `MIGRATIONS_FAILED` metadata is repaired through guarded CLI flow | Pending live repair |
 | Metadata drift controls | `npm run ops:readiness -- -Json`, `npm run seo:validate`, Supabase drift checks, and release docs agree with current `main` | Passing locally for source/article/docs; live Supabase repair still pending |
