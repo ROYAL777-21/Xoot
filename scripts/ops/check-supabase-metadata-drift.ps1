@@ -22,6 +22,9 @@ if (-not (Test-Path -LiteralPath $migrationDir)) {
   throw "Migration directory was not found: supabase/migrations"
 }
 
+$errors = New-Object System.Collections.Generic.List[string]
+$warnings = New-Object System.Collections.Generic.List[string]
+
 $manifest = Get-Content -Raw -LiteralPath $manifestFullPath | ConvertFrom-Json
 $migrationFiles = Get-ChildItem -LiteralPath $migrationDir -Filter "*.sql" | ForEach-Object {
   if ($_.BaseName -match "^(\d{14})_(.+)$") {
@@ -30,11 +33,10 @@ $migrationFiles = Get-ChildItem -LiteralPath $migrationDir -Filter "*.sql" | For
       name = $Matches[2]
       file = $_.Name
     }
+  } else {
+    $errors.Add("Migration file '$($_.Name)' does not match the expected <14-digit-version>_<name>.sql pattern.")
   }
 }
-
-$errors = New-Object System.Collections.Generic.List[string]
-$warnings = New-Object System.Collections.Generic.List[string]
 
 $versionGroups = $migrationFiles | Group-Object version | Where-Object { $_.Count -gt 1 }
 foreach ($group in $versionGroups) {
@@ -95,7 +97,7 @@ if (-not [string]::IsNullOrWhiteSpace($RemoteMigrationsFile)) {
     $errors.Add("Remote migrations evidence file was not found: $RemoteMigrationsFile")
   } else {
     $remoteText = Get-Content -Raw -LiteralPath $remotePath
-    $remoteVersions = @([regex]::Matches($remoteText, "\d{14}") | ForEach-Object { $_.Value } | Sort-Object -Unique)
+    $remoteVersions = @([regex]::Matches($remoteText, "(?<!\d)\d{14}(?!\d)") | ForEach-Object { $_.Value } | Sort-Object -Unique)
   }
 } elseif ($RequireRemoteEvidence) {
   $errors.Add("Remote migration evidence is required. Pass -RemoteMigrationsFile with a saved supabase migration list export.")
