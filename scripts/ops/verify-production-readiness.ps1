@@ -368,6 +368,9 @@ Test-RepoPattern "github" ".github/workflows/web-preview.yml" "npm ci --no-audit
 Test-RepoPattern "github" ".github/workflows/web-preview.yml" "npm --prefix mobile ci --no-audit --prefer-offline" "Mobile dependency install reduces registry calls"
 Test-RepoPattern "github" ".github/workflows/web-preview.yml" "attempts=3" "Web build install retries transient npm failures"
 Test-RepoPattern "github" ".github/workflows/web-preview.yml" "npm run build:artifact-scan" "Web build scans dist before artifact upload"
+Test-RepoPattern "github" ".github/workflows/production-readiness.yml" "check-supabase-metadata-drift\.ps1" "Production readiness CI parses Supabase metadata drift guard"
+Test-RepoPattern "github" ".github/workflows/production-readiness.yml" "check-supabase-metadata-drift\.ps1 -Environment staging" "Production readiness CI checks staging metadata drift guard"
+Test-RepoPattern "github" ".github/workflows/production-readiness.yml" "check-supabase-metadata-drift\.ps1 -Environment production" "Production readiness CI checks production metadata drift guard"
 Test-RepoPattern "security" "scripts/security/secret-scan.mjs" "Cloudflare API token" "secret scan catches Cloudflare API tokens"
 Test-RepoPattern "security" "scripts/security/secret-scan.mjs" "Mapbox secret token" "secret scan catches Mapbox secret tokens"
 Test-RepoFile "security" "scripts/security/scan-build-artifacts.mjs" | Out-Null

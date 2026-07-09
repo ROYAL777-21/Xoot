@@ -37,6 +37,7 @@ jobs:
             'scripts/ops/deploy-production-backend.ps1',
             'scripts/ops/set-github-public-vars.ps1',
             'scripts/ops/set-supabase-edge-secrets.ps1',
+            'scripts/ops/check-supabase-metadata-drift.ps1',
             'scripts/ops/verify-production-readiness.ps1',
             'scripts/ops/verify-supabase-live.ps1'
           )
@@ -58,6 +59,12 @@ jobs:
         shell: pwsh
         run: |
           ./scripts/ops/verify-production-readiness.ps1 -Json
+
+      - name: Check Supabase migration metadata drift guardrails
+        shell: pwsh
+        run: |
+          ./scripts/ops/check-supabase-metadata-drift.ps1 -Environment staging -Json
+          ./scripts/ops/check-supabase-metadata-drift.ps1 -Environment production -Json
 
       - name: Run secret and frontend-write guards
         shell: pwsh
