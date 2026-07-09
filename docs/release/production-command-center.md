@@ -1,6 +1,6 @@
 # Zoot Production Command Center
 
-Reviewed: 2026-07-09 23:58 SAST
+Reviewed: 2026-07-10 00:12 SAST
 
 This document is the navigation layer for completing Zoot. It does not replace the detailed runbooks it links to.
 

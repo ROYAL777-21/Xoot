@@ -1,6 +1,6 @@
 # Security Release Gate
 
-Reviewed: 2026-07-09 23:58 SAST
+Reviewed: 2026-07-10 00:12 SAST
 
 Zoot cannot be marked production-ready until every required gate below is either passed with evidence or explicitly deferred with founder/legal risk acceptance.
 

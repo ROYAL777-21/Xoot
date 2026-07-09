@@ -1,6 +1,6 @@
 # Metadata Drift Control
 
-Reviewed: 2026-07-09 23:24 SAST
+Reviewed: 2026-07-10 00:12 SAST
 
 This document defines how Zoot prevents source, release, database, article, and provider metadata from drifting away from the actual product state.
 
@@ -41,7 +41,7 @@ Do not use broad `supabase db push`, direct edits to `supabase_migrations`, or u
 1. Every implementation branch must start from current `main`.
 2. A merged PR is not the active source after a newer PR lands; current `main` is the active source.
 3. Closed or CodeRabbit-generated PRs may be used as review material only after their changes are rebased and verified against current `main`.
-4. Release docs must record the latest green `main` commit after each source-of-truth PR.
+4. Release docs must point to the latest green GitHub Actions evidence on `main`; do not require a documentation-only PR just to refresh a moving SHA.
 5. Temporary branch refs may remain for audit, but they are not deployment targets.
 
 ## Article Rules

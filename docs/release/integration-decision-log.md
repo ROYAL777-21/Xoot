@@ -1,10 +1,10 @@
 # Integration Decision Log
 
-Reviewed: 2026-07-09 23:58 SAST
+Reviewed: 2026-07-10 00:12 SAST
 
 ## Decisions
 
-1. Use PR #7 as the canonical release-hardening path.
+1. Use PR #7 as the historical release-hardening convergence path.
    - Outcome: completed. PR #7 was merged into `main`; current `main` is now the canonical product source.
    - Reason: it contained the broadest verified implementation and its required checks passed.
    - Alternative rejected: opening another long-lived branch or merging PR #8 blindly.
@@ -42,4 +42,8 @@ Reviewed: 2026-07-09 23:58 SAST
 10. Do not hard-code a moving "latest main" SHA as durable release truth.
    - Decision: GitHub Actions checks on current `main` are the current evidence. Historical PR and commit references remain useful audit records, but release docs should not require a new documentation-only PR after every green merge just to refresh a SHA.
    - Reason: hard-coded latest-SHA fields create metadata drift by design.
+
+11. Treat PR #17 as the release-evidence drift cleanup.
+   - Outcome: completed. PR #17 was merged into `main` after Web build, Production readiness guard, Native iOS Swift check, and CodeRabbit passed.
+   - Reason: it aligned release docs with the no-moving-SHA rule and recorded PR #15/#16 CI hardening as historical evidence rather than a separate source of truth.
 

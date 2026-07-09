@@ -1,6 +1,6 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-07-09 18:24 SAST
+Reviewed: 2026-07-10 00:12 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 

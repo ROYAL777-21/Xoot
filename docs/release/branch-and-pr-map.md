@@ -1,13 +1,13 @@
 # Branch And Pull Request Map
 
-Reviewed: 2026-07-09 23:58 SAST
+Reviewed: 2026-07-10 00:12 SAST
 
 ## Canonical Source Of Truth
 
 - Target branch: `main`
 - Policy: `main` is the only long-lived code source of truth. Feature branches are short-lived, reviewed through pull requests, merged, and deleted.
 - Release safety: a push to `main` builds and verifies the product but does not deploy GitHub Pages. Deployment requires an explicit `workflow_dispatch` with `deploy_pages=true`.
-- Current state: `main` is current through the latest merged source-of-truth, drift-control, and CI-hardening pull requests. Use `git log --oneline -5` and the latest GitHub Actions runs on `main` for the exact current commit and check evidence.
+- Current state: `main` is current through the latest merged source-of-truth, drift-control, and CI-hardening pull requests, including PR #17. Use `git log --oneline -5` and the latest GitHub Actions runs on `main` for the exact current commit and check evidence.
 - Temporary branch refs may still exist remotely for audit, but they are not release branches and must not be used as product sources. New work must branch from current `main`.
 
 ## Pull Request Status
@@ -45,6 +45,10 @@ Reviewed: 2026-07-09 23:58 SAST
    - Classification: CodeRabbit-generated test proposal for superseded PR #8.
    - Relevance: useful as historical review material only. It targets PR #8's branch shape and should not be merged blindly into current `main`.
    - Result: current `main` keeps focused native-route tests in `src/lib/native-routing.test.ts`; broader generated tests require review before any future adoption.
+
+9. PR #17: merged into `main`.
+   - Classification: release-evidence drift cleanup.
+   - Result: removed the need to refresh a moving "latest main SHA" in release docs after every merge; current GitHub Actions runs on `main` are the live release evidence.
 
 There are no open pull requests as of this review.
 
