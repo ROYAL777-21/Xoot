@@ -1,6 +1,6 @@
 # Security Release Gate
 
-Reviewed: 2026-07-09 18:24 SAST
+Reviewed: 2026-07-09 23:24 SAST
 
 Zoot cannot be marked production-ready until every required gate below is either passed with evidence or explicitly deferred with founder/legal risk acceptance.
 
@@ -8,9 +8,10 @@ Zoot cannot be marked production-ready until every required gate below is either
 
 | Gate | Required evidence | Status |
 | --- | --- | --- |
-| Web build integrity | `npm run lint`, `npm test`, `npm run build`, `npm run security:scan`, and GitHub Web build pass on merge candidate | Passing on `main` commit `12e06f6`; re-run before the next release candidate |
+| Web build integrity | `npm run lint`, `npm test`, `npm run build`, `npm run security:scan`, and GitHub Web build pass on merge candidate | Passing on `main` commit `d4e931c`; re-run before the next release candidate |
 | Mobile preview integrity | Android and iOS preview/development builds install on real devices and pass auth/deep-link/widget smoke tests | Pending real-device smoke and iOS internal credentials |
 | Supabase schema and migration health | Runtime schema smoke passes and production `MIGRATIONS_FAILED` metadata is repaired through guarded CLI flow | Pending live repair |
+| Metadata drift controls | `npm run ops:readiness -- -Json`, `npm run seo:validate`, Supabase drift checks, and release docs agree with current `main` | Passing locally for source/article/docs; live Supabase repair still pending |
 | Supabase Auth redirects | Local, staging, production, Expo, `zoot://auth/callback`, Google, and Apple redirects are configured and read back | Pending live configuration |
 | Sensitive access | Zooter access works only for assigned booking and approved window; every reveal is logged; cancelled/completed behavior verified | Pending live role smoke |
 | Payments and payouts | Stitch/Ozow callbacks verified, idempotent, reconciled, disabled controls intentionally enabled only after approval | Pending provider credentials and smoke |

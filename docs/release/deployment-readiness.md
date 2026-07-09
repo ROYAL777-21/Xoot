@@ -1,13 +1,13 @@
 # Deployment Readiness
 
-Reviewed: 2026-07-09 18:24 SAST
+Reviewed: 2026-07-09 23:24 SAST
 
 ## Source Of Truth
 
 - Canonical integration and production source branch: `main`
 - Current staging branch: none confirmed as a separate Git branch.
 - Current pull request: none.
-- Last verified green `main` reference: `12e06f6`.
+- Last verified green `main` reference: `d4e931c`.
 
 ## Current Deployment State
 
