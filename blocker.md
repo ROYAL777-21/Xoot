@@ -1,8 +1,20 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-07-10 00:42 SAST
+Reviewed: 2026-07-10 15:10 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
+
+## Master AI Operating Programme
+
+- The Phase 1 discovery report is available at `docs/programme/master-discovery-report.md`, but the requested master prompt pack is intentionally not implemented until the founder approves or amends the architecture decisions. Remaining prompt-pack work includes the Codex harness and seven specialist roles, typed tools/handoffs, AI cost governance, self-improvement loops, anti-hallucination/drift controls, source-of-truth consolidation, security hardening, company-wide bug review, and interaction-QA prompts.
+- The external company-wide Markdown pack still conflicts with current repository truth: it names Hermes and Capacitor, while the current approved implementation uses Codex as the harness and Expo/CNG for mobile. Approved policy truth must move into repository-owned `docs/source-of-truth` before agents consume it.
+- GitHub `main` is documented as the only long-lived code source of truth, but live GitHub readback on 2026-07-10 reports that `main` is not protected and the only repository ruleset is disabled. Enable an enforced ruleset requiring pull requests and green web, native, readiness, and review checks before treating the one-main policy as operationally enforced.
+- Company-wide AI cost governance is incomplete. Zoot still needs per-agent model tiers, input/output/context/tool/retry/runtime limits, daily/monthly cost ceilings, durable token and cost accounting, handoff/tool-loop detection, deterministic fallbacks, and tests proving that agents cannot increase their own budgets or authority.
+- Company-wide agent evaluation and drift controls are incomplete. Add versioned evaluation sets for stale/missing/conflicting evidence, prompt injection, cross-role access, provider outages, tool timeouts, schema failures, unsupported certainty, cost growth, and repeated human overrides before scheduled autonomous loops are enabled.
+- The current Swift App Intents compile foundation constructs safe deep-link URLs but does not invoke those URLs from `perform()`, and it uses `openAppWhenRun`, which current Apple documentation marks deprecated. The iOS 27 phase must use the installed public SDK, explicit safe-route continuation, availability guards, authentication/role checks, and physical-device tests before Siri handoffs are considered functional.
+- No Playwright browser suite or mobile Maestro/Detox-style interaction suite exists. Codex cannot yet provide repeatable button-by-button logical and visual regression evidence across web, Android, and iOS.
+- The vulnerability-disclosure/bug-bounty experience does not exist. Implement a legal-reviewed `Zoot Vulnerability Disclosure Programme` page, footer link, restricted server-side report form, rate limits/Turnstile, private evidence storage, security-only review queue, and security contact before publishing. Do not promise financial rewards until founder, finance, and legal approval exist.
+- Current EAS Android and iOS preview artifacts were built from 2026-07-01 commits and expire on 2026-07-15. They may support limited early testing, but fresh current-`main` Android and physical-iOS builds plus device smoke evidence are required after the programme implementation phases.
 
 ## Supabase
 
