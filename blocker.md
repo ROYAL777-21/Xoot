@@ -94,6 +94,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 
 ## Verification Still Needed
 
+- Level 3 company-wide user-data hardening is defined in `docs/security/level-3-company-wide-security-hardening.md`, but it cannot be marked passed until live Supabase, provider, domain, mobile-device, load, monitoring, privacy, incident-recovery, and approval evidence is attached or explicitly risk-accepted.
 - Configure Supabase Auth redirects in both environments and verify web, mobile, and OAuth callbacks.
 - Run signed Twilio webhook smoke tests after Twilio dashboard channels and Edge secrets are verified with the rotated values.
 - Smoke-test the Phase 2 booking chat action layer in staging/prod with real booking participants: direct `messages` inserts revoked, participant sends through Edge Function, read receipts written, and message reports queued for admin review.
