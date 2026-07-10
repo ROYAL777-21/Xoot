@@ -47,3 +47,11 @@ Reviewed: 2026-07-10 00:12 SAST
    - Outcome: completed. PR #17 was merged into `main` after Web build, Production readiness guard, Native iOS Swift check, and CodeRabbit passed.
    - Reason: it aligned release docs with the no-moving-SHA rule and recorded PR #15/#16 CI hardening as historical evidence rather than a separate source of truth.
 
+12. Treat PR #21 as the SEO article and notification-personalization release.
+   - Outcome: completed. PR #21 was merged into `main`; the "is Zoot legit", "SweepSouth alternatives", and "SweepSouth vs Zoot" articles are now published through the web article registry, queue, and sitemap using SAST release dates.
+   - Reason: approved article drafts must be shipped through the same metadata controls as the website, not left as detached drafts.
+
+13. Treat PR #22 as the current PR-source-map refresh.
+   - Outcome: completed. PR #22 was merged into `main`; PR #7 remains a historical milestone, not the current working branch.
+   - Reason: squash-merged branches may still look unmerged by raw Git ancestry, so PR state and current `main` file diffs are the product source-of-truth.
+

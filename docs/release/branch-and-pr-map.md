@@ -1,13 +1,13 @@
 # Branch And Pull Request Map
 
-Reviewed: 2026-07-10 09:21 SAST
+Reviewed: 2026-07-10 10:20 SAST
 
 ## Canonical Source Of Truth
 
 - Target branch: `main`
 - Policy: `main` is the only long-lived code source of truth. Feature branches are short-lived, reviewed through pull requests, merged, and deleted.
 - Release safety: a push to `main` builds and verifies the product but does not deploy GitHub Pages. Deployment requires an explicit `workflow_dispatch` with `deploy_pages=true`.
-- Current state: `main` is current through the latest merged source-of-truth, drift-control, CI-hardening, provider-auth evidence, blocker-ledger guard, article metadata, notification-personalization, and PR-source-map pull requests, including PR #22 after it merges. Use `git log --oneline -5` and the latest GitHub Actions runs on `main` for the exact current commit and check evidence.
+- Current state: `main` is current through the latest merged source-of-truth, drift-control, CI-hardening, provider-auth evidence, blocker-ledger guard, article metadata, notification-personalization, and PR-source-map pull requests, including PR #22. Use `git log --oneline -5` and the latest GitHub Actions runs on `main` for the exact current commit and check evidence.
 - Temporary branch refs may still exist remotely for audit, but they are not release branches and must not be used as product sources. New work must branch from current `main`.
 
 ## Pull Request Status
@@ -69,19 +69,21 @@ Reviewed: 2026-07-10 09:21 SAST
 
 14. PR #21: merged into `main`.
     - Classification: article metadata and notification-personalization hardening.
-    - Result: published the approved “is Zoot legit”, “SweepSouth alternatives”, and “SweepSouth vs Zoot” articles into the website registry and sitemap with SAST-aware release dates; added the article release-date sync guard; expanded notification personalization around behaviour signals, route recency, quiet hours, channel fatigue, urgency, and consent.
+    - Result: published the approved "is Zoot legit", "SweepSouth alternatives", and "SweepSouth vs Zoot" articles into the website registry and sitemap with SAST-aware release dates; added the article release-date sync guard; expanded notification personalization around behaviour signals, route recency, quiet hours, channel fatigue, urgency, and consent.
 
-15. PR #22: opened for merge into `main`.
+15. PR #22: merged into `main`.
     - Classification: PR-source-map refresh.
     - Result: records the PR #21 source state, clarifies that PR #7 is historical, and classifies PR #2/#3 as superseded so old branches are not mistaken for active product sources.
 
-There are no unrelated open pull requests as of this review. PR #7 is not the current working branch; it is a historical merged milestone contained in `main`. The current canonical source is `main` at or after commit `0d8871d`, then PR #22 after this source-map refresh merges.
+There are no unrelated open pull requests as of this review. PR #7 is not the current working branch; it is a historical merged milestone contained in `main`. The current canonical source is `main` at or after commit `c7777c2`, plus any later reviewed merges.
 
 ## Historical Branches
 
 Older remote branches remain for audit and archival. Do not delete them in bulk: compare each branch with `main`, preserve any unique approved work, then delete only branches proven merged or obsolete. CodeRabbit-generated branches are not release sources without review.
 
+Squash-merged PR branches can still appear in `git branch -r --no-merged origin/main` because the original branch commits are not ancestors of the squash commit. That output is not, by itself, evidence of missing product work. Use GitHub PR state, `docs/release/integration-decision-log.md`, and file-level diffs against current `main` before reopening or reusing any historical branch.
+
 ## Merge Conflict Status
 
-- `main` is clean and tracks `origin/main`.
+- `main` is clean and tracks `origin/main` at this review.
 - New work must use a short-lived branch and pull request.

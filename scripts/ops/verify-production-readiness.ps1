@@ -110,6 +110,13 @@ Test-RepoPattern "ops" "scripts/ops/check-blocker-ledger.ps1" "10,000-request" "
 Test-RepoPattern "ops" "supabase/migration-drift-allowlist.json" "schemaEquivalentSafeToRepair" "migration drift manifest records safe repair versions"
 Test-RepoPattern "ops" "supabase/migration-drift-allowlist.json" "blockedPartialOrSplit" "migration drift manifest records blocked split migrations"
 Test-RepoPattern "ops" "scripts/ops/check-supabase-metadata-drift.ps1" "RemoteMigrationsFile" "metadata drift guard can verify saved remote migration evidence"
+Test-RepoPattern "source-truth" "docs/release/branch-and-pr-map.md" "PR #7 is not the current working branch" "branch map records PR #7 as historical"
+Test-RepoPattern "source-truth" "docs/release/branch-and-pr-map.md" "Squash-merged PR branches" "branch map explains squash-merge branch ancestry drift"
+Test-RepoPattern "source-truth" "docs/release/metadata-drift-control.md" "Company-Wide Drift Controls" "metadata drift control defines company-wide controls"
+Test-RepoPattern "source-truth" "docs/release/metadata-drift-control.md" "Article metadata must pass" "metadata drift control gates article release metadata"
+Test-RepoPattern "article-drift" "package.json" "seo:validate" "npm script exposes article metadata validator"
+Test-RepoPattern "article-drift" "package.json" "seo:sync-release-dates" "npm script exposes SAST release-date sync"
+Test-RepoPattern "article-drift" "scripts/seo/validate-articles.mjs" "Published queue item" "article validator checks published queue registry alignment"
 Test-RepoPattern "ops" "scripts/load/zoot-staging-10k-readiness.js" "LOAD_TEST_ENV !== `"staging`"" "staging 10k load test requires explicit staging target"
 Test-RepoPattern "ops" "scripts/load/zoot-staging-10k-readiness.js" "ALLOW_PRODUCTION_LOAD_TEST" "staging 10k load test refuses production by default"
 Test-RepoPattern "ops" "src/pages/admin/Ops.tsx" "outboxRetryRows" "admin ops computes retryable outbox rows"
@@ -151,6 +158,7 @@ $hardeningDocs = @(
   "docs/operations/communications-incident-template.md",
   "docs/operations/rollback-runbook.md",
   "docs/operations/data-integrity-investigation-runbook.md",
+  "docs/release/hardening-command-evidence.md",
   "docs/release/security-release-gate.md"
 )
 foreach ($hardeningDoc in $hardeningDocs) {
@@ -167,6 +175,15 @@ Test-RepoPattern "hardening" "docs/release/security-release-gate.md" "Stop Condi
 Test-RepoPattern "hardening" "docs/operations/incident-response-playbook.md" "First 15 Minutes" "incident response playbook defines immediate response"
 Test-RepoPattern "hardening" "docs/operations/service-continuity-runbook.md" "Fail closed" "service continuity runbook defines fail-closed behavior"
 Test-RepoPattern "hardening" "docs/security/secret-handling-and-rotation-runbook.md" "Treat any secret already pasted into chat as compromised" "secret runbook covers chat-exposed secret rotation"
+Test-RepoPattern "hardening" "docs/release/hardening-command-evidence.md" "npm run lint" "hardening command ledger records lint"
+Test-RepoPattern "hardening" "docs/release/hardening-command-evidence.md" "npm test" "hardening command ledger records tests"
+Test-RepoPattern "hardening" "docs/release/hardening-command-evidence.md" "npm run build" "hardening command ledger records build"
+Test-RepoPattern "hardening" "docs/release/hardening-command-evidence.md" "npx expo-doctor" "hardening command ledger records expo-doctor"
+Test-RepoPattern "hardening" "docs/release/hardening-command-evidence.md" "supabase db reset" "hardening command ledger records Supabase reset"
+Test-RepoPattern "hardening" "docs/release/hardening-command-evidence.md" "supabase test db" "hardening command ledger records Supabase pgTAP tests"
+Test-RepoPattern "hardening" "docs/release/hardening-command-evidence.md" "expo prebuild --platform ios" "hardening command ledger records iOS prebuild"
+Test-RepoPattern "hardening" "docs/release/hardening-command-evidence.md" "expo prebuild --platform android" "hardening command ledger records Android prebuild"
+Test-RepoPattern "hardening" "docs/release/hardening-command-evidence.md" "chat-pasted secrets" "hardening command ledger bans chat-pasted secrets"
 
 $blockerText = Read-RepoText "blocker.md"
 if ($null -ne $blockerText) {
