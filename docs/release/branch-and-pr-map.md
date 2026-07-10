@@ -7,7 +7,7 @@ Reviewed: 2026-07-10 10:20 SAST
 - Target branch: `main`
 - Policy: `main` is the only long-lived code source of truth. Feature branches are short-lived, reviewed through pull requests, merged, and deleted.
 - Release safety: a push to `main` builds and verifies the product but does not deploy GitHub Pages. Deployment requires an explicit `workflow_dispatch` with `deploy_pages=true`.
-- Current state: `main` is current through the latest merged source-of-truth, drift-control, CI-hardening, provider-auth evidence, blocker-ledger guard, article metadata, notification-personalization, and PR-source-map pull requests, including PR #22. Use `git log --oneline -5` and the latest GitHub Actions runs on `main` for the exact current commit and check evidence.
+- Current state: `main` is current through the latest merged source-of-truth, drift-control, CI-hardening, provider-auth evidence, blocker-ledger guard, article metadata, notification-personalization, PR-source-map, and Level 3 security-gate pull requests, including PR #24. Use `git log --oneline -5` and the latest GitHub Actions runs on `main` for the exact current commit and check evidence.
 - Temporary branch refs may still exist remotely for audit, but they are not release branches and must not be used as product sources. New work must branch from current `main`.
 
 ## Pull Request Status
@@ -75,7 +75,15 @@ Reviewed: 2026-07-10 10:20 SAST
     - Classification: PR-source-map refresh.
     - Result: records the PR #21 source state, clarifies that PR #7 is historical, and classifies PR #2/#3 as superseded so old branches are not mistaken for active product sources.
 
-There are no unrelated open pull requests as of this review. PR #7 is not the current working branch; it is a historical merged milestone contained in `main`. The current canonical source is `main` at or after commit `c7777c2`, plus any later reviewed merges.
+16. PR #24: merged into `main`.
+    - Classification: Level 3 user-data security launch gate.
+    - Result: adds the company-wide Level 3 evidence model and wires its stop conditions into the production-readiness gate. Live Level 3 evidence remains unresolved in `blocker.md`.
+
+17. PR #25: open draft against `main`.
+    - Classification: Master AI Operating Programme discovery and prompt pack.
+    - Result: contains the Phase 1 evidence baseline and Phase 2 master prompts. It is review material until CI, CodeRabbit, and human review pass and it is merged; it is not a deployment source.
+
+PR #25 is the only open pull request as of this review. PR #7 is not the current working branch; it is a historical merged milestone contained in `main`. The current canonical source is `main` at or after commit `1d41c28`, plus any later reviewed merges.
 
 ## Historical Branches
 

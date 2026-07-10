@@ -68,6 +68,82 @@ function Test-RepoPattern {
   Add-Check $Area $Name ($(if ($pass) { "pass" } else { "fail" })) "$RelativePath :: $Pattern"
 }
 
+function Get-MarkdownSection {
+  param(
+    [string]$Text,
+    [string]$Heading
+  )
+
+  if ($null -eq $Text) {
+    return $null
+  }
+
+  $pattern = "(?ms)^##\s+" + [regex]::Escape($Heading) + "\s*\r?\n(?<body>.*?)(?=^##\s+|\z)"
+  $match = [regex]::Match($Text, $pattern)
+  if (-not $match.Success) {
+    return $null
+  }
+
+  return $match.Groups["body"].Value.Trim()
+}
+
+function Test-MasterPromptContract {
+  param([string]$RelativePath)
+
+  $text = Read-RepoText $RelativePath
+  $inspection = Get-MarkdownSection $text "Inspect before editing"
+  $stopConditions = Get-MarkdownSection $text "Stop conditions"
+  $finalResponse = Get-MarkdownSection $text "Required final response"
+  $forbidden = @(
+    '(?m)^Deploy production\.?\s*$',
+    '(?m)^Production deployment is authorized\.?\s*$',
+    '(?m)^Merge automatically\.?\s*$'
+  )
+  $contradiction = $false
+  foreach ($pattern in $forbidden) {
+    if ($null -ne $text -and $text -match $pattern) {
+      $contradiction = $true
+    }
+  }
+
+  $pass = (
+    $null -ne $inspection -and $inspection.Length -gt 80 -and
+    $null -ne $text -and $text -match '(?m)^Do not deploy production\.' -and
+    $null -ne $stopConditions -and $stopConditions -match '(?i)block|stop|disable|pause|prohibit' -and
+    $stopConditions -match 'blocker\.md' -and
+    $null -ne $finalResponse -and $finalResponse -match '(?m)^Report:' -and
+    $finalResponse -match 'Confirmation' -and
+    $text -match '(?i)\bevidence\b' -and
+    $text -match '(?i)\bapproval\b' -and
+    $text -match '(?i)\brollback\b' -and
+    $text -match '(?i)\bprivacy\b|\bsecurity\b' -and
+    -not $contradiction
+  )
+
+  Add-Check "master-ai-programme" "$RelativePath semantic contract" ($(if ($pass) { "pass" } else { "fail" })) "requires inspection, no-deploy directive, stop/blocker section, evidence, approval, privacy/security, rollback, final confirmation, and no contradictory authorization"
+}
+
+function Test-SourceTruthContract {
+  param([string]$RelativePath)
+
+  $text = Read-RepoText $RelativePath
+  $conflict = Get-MarkdownSection $text "Conflict Behavior"
+  $runtime = Get-MarkdownSection $text "Runtime Consumption Rule"
+  $pass = (
+    $null -ne $text -and
+    $text -match 'Only a file with `status: approved`' -and
+    $text -match 'dependent_feature_flags' -and
+    $text -match 'kill_switches' -and
+    $null -ne $conflict -and $conflict -match '(?i)stop the affected workflow' -and
+    $conflict -match '(?i)do not guess' -and
+    $null -ne $runtime -and $runtime -match '(?i)reject `draft` and `deprecated`' -and
+    $runtime -match '(?i)fail closed' -and
+    $runtime -match '(?i)content hash'
+  )
+
+  Add-Check "master-ai-programme" "$RelativePath semantic policy contract" ($(if ($pass) { "pass" } else { "fail" })) "requires approved-only policy, explicit controls, conflict stop, draft rejection, fail-closed behavior, and evidence hash"
+}
+
 function Add-ManualBlocker {
   param(
     [string]$Area,
@@ -114,6 +190,70 @@ Test-RepoPattern "source-truth" "docs/release/branch-and-pr-map.md" "PR #7 is no
 Test-RepoPattern "source-truth" "docs/release/branch-and-pr-map.md" "Squash-merged PR branches" "branch map explains squash-merge branch ancestry drift"
 Test-RepoPattern "source-truth" "docs/release/metadata-drift-control.md" "Company-Wide Drift Controls" "metadata drift control defines company-wide controls"
 Test-RepoPattern "source-truth" "docs/release/metadata-drift-control.md" "Article metadata must pass" "metadata drift control gates article release metadata"
+$masterPromptFiles = @(
+  "docs/programme/master-discovery-report.md",
+  "docs/superpowers/plans/2026-07-10-master-ai-os-phase-2-prompt-pack.md",
+  "docs/prompts/README.md",
+  "docs/prompts/siri-ai-app-intents-ios27-master-prompt.md",
+  "docs/prompts/ai-agent-architecture-master-prompt.md",
+  "docs/prompts/company-wide-self-improvement-loops-master-prompt.md",
+  "docs/prompts/company-wide-security-hardening-master-prompt.md",
+  "docs/prompts/anti-hallucination-and-drift-master-prompt.md",
+  "docs/prompts/canonical-main-and-migration-drift-master-prompt.md",
+  "docs/prompts/company-wide-bug-review-and-patch-master-prompt.md",
+  "docs/prompts/codex-interaction-qa-master-prompt.md",
+  "docs/source-of-truth/README.md",
+  "docs/source-of-truth/policy-template.md",
+  "docs/source-of-truth/policy-registry.md"
+)
+foreach ($masterPromptFile in $masterPromptFiles) {
+  Test-RepoFile "master-ai-programme" $masterPromptFile | Out-Null
+}
+$executableMasterPrompts = @(
+  "docs/prompts/siri-ai-app-intents-ios27-master-prompt.md",
+  "docs/prompts/ai-agent-architecture-master-prompt.md",
+  "docs/prompts/company-wide-self-improvement-loops-master-prompt.md",
+  "docs/prompts/company-wide-security-hardening-master-prompt.md",
+  "docs/prompts/anti-hallucination-and-drift-master-prompt.md",
+  "docs/prompts/canonical-main-and-migration-drift-master-prompt.md",
+  "docs/prompts/company-wide-bug-review-and-patch-master-prompt.md",
+  "docs/prompts/codex-interaction-qa-master-prompt.md"
+)
+foreach ($executableMasterPrompt in $executableMasterPrompts) {
+  Test-MasterPromptContract $executableMasterPrompt
+}
+Test-SourceTruthContract "docs/source-of-truth/README.md"
+Test-RepoPattern "master-ai-programme" "docs/prompts/README.md" "Codex as the executive automation harness" "prompt pack keeps Codex as the only harness"
+Test-RepoPattern "master-ai-programme" "docs/prompts/README.md" "Supabase MCP is project-scoped and read-only" "prompt pack keeps Supabase MCP read-only"
+Test-RepoPattern "master-ai-programme" "docs/prompts/ai-agent-architecture-master-prompt.md" "exactly seven specialist agents" "agent architecture fixes the specialist count"
+Test-RepoPattern "master-ai-programme" "docs/prompts/ai-agent-architecture-master-prompt.md" "No agent may increase its own budget" "agent architecture prevents self-raised budgets"
+Test-RepoPattern "master-ai-programme" "docs/prompts/anti-hallucination-and-drift-master-prompt.md" "return unknown" "AI assurance fails closed on unsupported claims"
+Test-RepoPattern "master-ai-programme" "docs/prompts/canonical-main-and-migration-drift-master-prompt.md" "RequireRemoteEvidence" "migration prompt requires remote evidence"
+Test-RepoPattern "master-ai-programme" "docs/prompts/siri-ai-app-intents-ios27-master-prompt.md" "must not create or confirm a booking" "Siri prompt blocks consequential booking actions"
+Test-RepoPattern "master-ai-programme" "docs/prompts/company-wide-security-hardening-master-prompt.md" "Zoot Vulnerability Disclosure Programme" "security prompt specifies disclosure programme"
+Test-RepoPattern "master-ai-programme" "docs/prompts/codex-interaction-qa-master-prompt.md" "physical iPhone" "interaction prompt requires physical iPhone evidence"
+Test-RepoPattern "master-ai-programme" "docs/source-of-truth/README.md" "status: approved" "source-of-truth contract admits approved policy only"
+Test-RepoPattern "master-ai-programme" "docs/prompts/README.md" "Shared Execution Contract" "prompt index defines shared execution controls"
+Test-RepoPattern "master-ai-programme" "docs/prompts/README.md" "Prompt Change Control" "prompt index requires approval and evaluation for changes"
+Test-RepoPattern "master-ai-programme" "docs/prompts/siri-ai-app-intents-ios27-master-prompt.md" "Parameter Contract" "Siri prompt defines validated parameter boundaries"
+Test-RepoPattern "master-ai-programme" "docs/prompts/siri-ai-app-intents-ios27-master-prompt.md" "SDK-backed Swift/Xcode compilation" "Siri prompt requires native compile evidence"
+Test-RepoPattern "master-ai-programme" "docs/prompts/ai-agent-architecture-master-prompt.md" "Data and Action Boundaries" "agent prompt defines privacy and action boundaries"
+Test-RepoPattern "master-ai-programme" "docs/prompts/ai-agent-architecture-master-prompt.md" "Stop conditions" "agent prompt defines stop conditions"
+Test-RepoPattern "master-ai-programme" "docs/prompts/company-wide-self-improvement-loops-master-prompt.md" "privacy_impact" "loop prompt requires structured privacy evidence"
+Test-RepoPattern "master-ai-programme" "docs/prompts/company-wide-self-improvement-loops-master-prompt.md" "rollback" "loop prompt requires rollback"
+Test-RepoPattern "master-ai-programme" "docs/prompts/company-wide-security-hardening-master-prompt.md" "Data Classification" "security prompt defines data classification"
+Test-RepoPattern "master-ai-programme" "docs/prompts/company-wide-security-hardening-master-prompt.md" "Stop conditions" "security prompt defines release stop conditions"
+Test-RepoPattern "master-ai-programme" "docs/prompts/anti-hallucination-and-drift-master-prompt.md" "Grounding Contract" "AI assurance prompt requires evidence grounding"
+Test-RepoPattern "master-ai-programme" "docs/prompts/anti-hallucination-and-drift-master-prompt.md" "Privacy and Observability" "AI assurance prompt defines privacy controls"
+Test-RepoPattern "master-ai-programme" "docs/prompts/canonical-main-and-migration-drift-master-prompt.md" "GitHub Protection" "source-control prompt requires verified protection"
+Test-RepoPattern "master-ai-programme" "docs/prompts/canonical-main-and-migration-drift-master-prompt.md" "Migration Truth" "source-control prompt defines migration evidence"
+Test-RepoPattern "master-ai-programme" "docs/prompts/company-wide-bug-review-and-patch-master-prompt.md" "Root-Cause Method" "bug prompt requires root-cause evidence"
+Test-RepoPattern "master-ai-programme" "docs/prompts/company-wide-bug-review-and-patch-master-prompt.md" "rollback" "bug prompt requires rollback"
+Test-RepoPattern "master-ai-programme" "docs/prompts/codex-interaction-qa-master-prompt.md" "Test Environments" "interaction prompt defines environment safety"
+Test-RepoPattern "master-ai-programme" "docs/prompts/codex-interaction-qa-master-prompt.md" "Stop conditions" "interaction prompt defines test stop conditions"
+Test-RepoPattern "master-ai-programme" "docs/source-of-truth/README.md" "Conflict Behavior" "source-of-truth contract fails closed on policy conflict"
+Test-RepoPattern "master-ai-programme" "docs/source-of-truth/README.md" "dependent_feature_flags" "source-of-truth contract requires policy control metadata"
+Test-RepoPattern "master-ai-programme" "docs/source-of-truth/README.md" "Runtime Consumption Rule" "source-of-truth contract governs runtime policy loading"
 Test-RepoPattern "article-drift" "package.json" "seo:validate" "npm script exposes article metadata validator"
 Test-RepoPattern "article-drift" "package.json" "seo:sync-release-dates" "npm script exposes SAST release-date sync"
 Test-RepoPattern "article-drift" "scripts/seo/validate-articles.mjs" "Published queue item" "article validator checks published queue registry alignment"

@@ -2,7 +2,8 @@
 
 Reviewed: 2026-07-10
 Phase: 1 - Discovery and decision baseline
-Repository baseline: `origin/main` at `13d9b30`
+Repository discovery baseline: `origin/main` at `13d9b30`
+Reconciled baseline: `origin/main` at `1d41c28` after Level 3 security PR #24 merged
 Working branch: `codex/master-ai-os-phase1-discovery-20260710`
 Status: complete for discovery; no implementation authority is implied
 
@@ -65,7 +66,7 @@ The next phases should extend these systems instead of creating parallel replace
 5. `supabase/functions/_shared/governance-utils.ts` for server-side control checks.
 6. `supabase/migration-drift-allowlist.json`, drift checker, guarded repair helper, and readiness workflow for migration metadata safety.
 7. `mobile/plugins/withZootAssistantIntents.cjs` and `native/ios/ZootLiveActivities/ZootAppIntents.swift` for Expo CNG assistant integration.
-8. `scripts/security`, build-artifact scanning, CSP/static headers, and Level 3 hardening PR #24 for release security.
+8. `scripts/security`, build-artifact scanning, CSP/static headers, and the merged Level 3 hardening gate from PR #24 for release security.
 9. `/admin/ops` for outbox, dead-letter, and agent-decision visibility.
 10. Existing article metadata, notification-personalisation, Sentry, PostHog, and EAS environment contracts.
 
@@ -77,7 +78,7 @@ The next phases should extend these systems instead of creating parallel replace
 | Capacitor versus Expo | External stack docs name Capacitor/PWA; current implementation and release plan are Expo-only | Expo and CNG become authoritative. Capacitor remains historical web-wrapper evidence only. |
 | Agent roster size | Attached programme specifies one orchestrator plus seven specialists; current operating model lists multiple product agents, delivery agents, and release agents | Keep seven accountable specialist agents. Model Concierge, notification delivery, release verification, and SEO generation as versioned skills/surfaces owned by those agents. |
 | Policy locations | Company policy pack sits outside the repository; only one agent source-of-truth policy exists inside the repo and it is draft | Move approved policy truth into repository-owned `docs/source-of-truth`; external packs become inputs, not runtime authority. |
-| Level 3 terminology | PR #24 defines a company launch gate; ASVS also has a Level 3 assurance target | Name them separately: `Zoot L3 operational gate` and `OWASP ASVS v5.0.0 verification target`. Do not imply certification. |
+| Level 3 terminology | Merged PR #24 defines a company launch gate; ASVS also has assurance levels | Name them separately: `Zoot L3 operational gate` and `OWASP ASVS v5.0.0 verification target`. Do not imply certification. |
 | Siri route intent | Swift builds safe URLs but `perform()` never returns or invokes them; `openAppWhenRun` is deprecated in current Apple documentation | Rework against the installed public SDK using `supportedModes`, explicit safe URL opening/continuation, tests, and availability guards. |
 | Migration truth | Local files, connector-generated live timestamps, and production branch metadata disagree | Preserve the allowlist and guarded repair flow, require saved remote evidence in controlled CI/ops, and block release on unexplained drift. |
 | Branch truth | Docs define protected `main`; GitHub reports no branch protection and a disabled ruleset | Enable an enforced ruleset with PR review and required checks before treating the one-main policy as real. |
@@ -100,7 +101,7 @@ The next phases should extend these systems instead of creating parallel replace
 - Supabase production branch metadata still reports `MIGRATIONS_FAILED`; the safe repair remains unexecuted.
 - Supabase Auth redirect allowlists and leaked-password posture remain unresolved.
 - High-risk provider, domain, store, and device controls are manual.
-- A company-wide Level 3 gate is proposed in green PR #24 but is not yet part of `main` and has not been satisfied with live evidence.
+- The company-wide Level 3 gate from PR #24 is now part of `main`, but it remains unsatisfied until the required live evidence is attached.
 - No public vulnerability-disclosure page, restricted intake, security contact, or `security.txt` exists.
 - There is no automated browser end-to-end suite and no device-level Maestro/Detox equivalent.
 - Current mobile preview artifacts were built from July 1 commits, not current `main`.
