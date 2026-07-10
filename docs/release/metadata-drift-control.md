@@ -37,6 +37,17 @@ npm run ops:supabase:drift-check -- -Environment production -RemoteMigrationsFil
 
 Do not use broad `supabase db push`, direct edits to `supabase_migrations`, or undocumented repair-marking to clear drift.
 
+## Company-Wide Drift Controls
+
+1. `main` is the only long-lived code source of truth. A merged pull request, including PR #7, is historical evidence after a newer merge lands.
+2. Squash-merged branches may still look unmerged in raw Git branch ancestry. Treat GitHub PR state and verified file diffs against current `main` as the decision source.
+3. `docs/release/branch-and-pr-map.md` records PR status and why closed or generated PRs are not active release inputs.
+4. `docs/release/hardening-command-evidence.md` records required command attempts and exact blockers when an environment cannot safely run a command.
+5. `blocker.md` is unresolved-only. Solved items must be removed with evidence, and new manual/live blockers must be covered by `scripts/ops/check-blocker-ledger.ps1`.
+6. Article metadata must pass `npm run seo:validate` after any release-date sync, WordPress sync, or sitemap change.
+7. Supabase migration metadata repair must follow the guarded allowlist helper and remote evidence flow, not dashboard edits or broad pushes.
+8. Provider dashboards are source of truth only after readback evidence is recorded in the relevant runbook.
+
 ## Pull Request Rules
 
 1. Every implementation branch must start from current `main`.

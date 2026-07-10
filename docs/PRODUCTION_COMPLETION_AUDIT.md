@@ -6,11 +6,12 @@ This file defines the evidence needed before the active Zoot goal can be conside
 
 Use `docs/release/production-command-center.md` as the index for source ownership, gate order, and founder inputs.
 
-As of this review, GitHub `main` has no open pull requests and the post-merge Web build, Production readiness guard, and Native iOS Swift check for PR #17 all passed. Treat this as dated evidence only; re-check the latest GitHub Actions runs on `main` before any release candidate.
+As of this review, GitHub `main` has no open pull requests and the post-merge Web build, Production readiness guard, and Native iOS Swift check for current `main` commit `c7777c2` passed. Treat this as dated evidence only; re-check the latest GitHub Actions runs on `main` before any release candidate.
 
 ## Completion Gates
 
 - Web app: required GitHub checks green on current `main`, with `npm run lint`, `npm test`, `npm run build`, `npm run security:scan`, and `npm run ops:readiness` passing on the release candidate.
+- Hardening command evidence: `docs/release/hardening-command-evidence.md` is refreshed with current command attempts, successful evidence, and exact environment/project blockers for commands that cannot safely run.
 - Mobile app: EAS Android and iOS preview or development builds install on real devices, auth works, protected routes work, assistant deep links open safe screens, and widget surfaces show no sensitive data.
 - Supabase: production `MIGRATIONS_FAILED` branch metadata repaired through the guarded CLI flow, staging and production runtime schema smoke tests pass, Auth redirects are configured, and Edge Functions are deployed with required secrets.
 - Security hardening: baseline inventory, trust boundary map, attack surface register, security decision log, regression matrix, incident severity matrix, continuity runbook, and release gate are current and linked from launch review.
