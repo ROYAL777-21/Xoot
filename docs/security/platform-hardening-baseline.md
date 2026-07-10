@@ -25,6 +25,7 @@ This baseline records the current Zoot production-readiness posture before the n
 | Observability privacy | Web and mobile monitoring scrub sensitive keys, free-text contact details, access-code phrases, street-address patterns, credential-like strings, and payment-like numbers before Sentry send. PostHog remains event-allowlisted with autocapture/session replay disabled. | `src/lib/monitoring.ts`, `mobile/src/lib/monitoring-privacy.ts`, `src/lib/mobile-monitoring-privacy.test.ts`, `src/lib/analytics.tsx`, `mobile/src/lib/analytics.tsx`. |
 | Agent model | Codex is the harness and agents follow observe -> decide -> act -> verify -> learn. | `docs/AGENT_OPERATING_MODEL.md`. |
 | Load readiness | k6 script exists; staging proof has not been run with live staging credentials. | `scripts/load/zoot-smoke.js`, `blocker.md`. |
+| Level 3 user-data hardening | Zoot now has a company-wide Level 3 launch gate for systems that handle real user data. | `docs/security/level-3-company-wide-security-hardening.md`. |
 
 ## Non-Negotiable Invariants
 
@@ -48,3 +49,5 @@ This baseline records the current Zoot production-readiness posture before the n
 ## Baseline Decision
 
 The repo is suitable for continued controlled hardening and preview testing. It is not yet approved for production launch, paid provider activation, broad public communications, store submission, or sensitive live customer operations.
+
+Level 3 company-wide user-data hardening is defined, but not fully passed until every live evidence item in `docs/security/level-3-company-wide-security-hardening.md` is satisfied or explicitly risk-accepted.

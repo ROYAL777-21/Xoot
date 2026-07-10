@@ -152,6 +152,7 @@ $hardeningDocs = @(
   "docs/security/secret-handling-and-rotation-runbook.md",
   "docs/security/storage-and-document-access-review.md",
   "docs/security/asvs-informed-verification-matrix.md",
+  "docs/security/level-3-company-wide-security-hardening.md",
   "docs/operations/incident-severity-matrix.md",
   "docs/operations/service-continuity-runbook.md",
   "docs/operations/incident-response-playbook.md",
@@ -165,6 +166,9 @@ foreach ($hardeningDoc in $hardeningDocs) {
   Test-RepoFile "hardening" $hardeningDoc | Out-Null
 }
 Test-RepoPattern "hardening" "docs/security/platform-hardening-baseline.md" "Non-Negotiable Invariants" "hardening baseline captures non-negotiable invariants"
+Test-RepoPattern "hardening" "docs/security/level-3-company-wide-security-hardening.md" "Level 3 Required Controls" "Level 3 user-data hardening defines required controls"
+Test-RepoPattern "hardening" "docs/security/level-3-company-wide-security-hardening.md" "Level 3 Stop Conditions" "Level 3 user-data hardening defines stop conditions"
+Test-RepoPattern "hardening" "docs/security/level-3-company-wide-security-hardening.md" "not fully satisfied until live evidence is attached" "Level 3 hardening cannot be claimed without live evidence"
 Test-RepoPattern "hardening" "docs/security/asvs-informed-verification-matrix.md" "ASVS-Informed Verification Matrix" "ASVS-informed verification matrix exists"
 Test-RepoPattern "hardening" "docs/security/asvs-informed-verification-matrix.md" "No row marked Critical or High" "ASVS matrix defines release rule"
 Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "npm audit --omit=dev --audit-level=moderate --json" "dependency inventory records web audit command"

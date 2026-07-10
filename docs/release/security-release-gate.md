@@ -10,6 +10,7 @@ Zoot cannot be marked production-ready until every required gate below is either
 | --- | --- | --- |
 | Web build integrity | `npm run lint`, `npm test`, `npm run build`, `npm run security:scan`, and GitHub Web build pass on merge candidate | Passing on latest checked `main`; use GitHub Actions as the current commit evidence and re-run before the next release candidate |
 | Hardening command ledger | `docs/release/hardening-command-evidence.md` records the required hardening command attempts and exact blockers for unsafe or unavailable commands | Present; refresh before release candidate |
+| Level 3 user-data hardening | `docs/security/level-3-company-wide-security-hardening.md` defines company-wide controls for user data, and every Level 3 gate has live evidence or explicit founder/legal/finance risk acceptance | Defined; live evidence pending |
 | Mobile preview integrity | Android and iOS preview/development builds install on real devices and pass auth/deep-link/widget smoke tests | Pending real-device smoke and iOS internal credentials |
 | Supabase schema and migration health | Runtime schema smoke passes and production `MIGRATIONS_FAILED` metadata is repaired through guarded CLI flow | Pending live repair |
 | Metadata drift controls | `npm run ops:readiness -- -Json`, `npm run seo:validate`, Supabase drift checks, and release docs agree with current `main` | Passing locally for source/article/docs; live Supabase repair still pending |
@@ -26,6 +27,7 @@ Zoot cannot be marked production-ready until every required gate below is either
 ## Stop Conditions
 
 - Any private secret is found in git, frontend, Expo bundle, logs, screenshots, docs, or PR comments.
+- Level 3 user-data hardening is not passed or explicitly risk-accepted for a named deferred gate.
 - Frontend/mobile can mark payment successful, issue refunds, change payouts, or make admin mutations without an audited Edge Function.
 - Sensitive household data appears in push, SMS, WhatsApp, email, widget, lock screen, public page, analytics, or Concierge output.
 - Provider webhook verification cannot distinguish signed from unsigned or replayed events.
