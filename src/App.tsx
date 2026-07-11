@@ -51,6 +51,7 @@ const AcceptableUse = lazy(() => import("./pages/legal/AcceptableUse"));
 const AiConciergeNotice = lazy(() => import("./pages/legal/AiConciergeNotice"));
 const CarePlusTerms = lazy(() => import("./pages/legal/CarePlusTerms"));
 const ZooterTerms = lazy(() => import("./pages/legal/ZooterTerms"));
+const VulnerabilityDisclosure = lazy(() => import("./pages/security/VulnerabilityDisclosure"));
 const ZooterApply = lazy(() => import("./pages/zooter/Apply"));
 const ZooterDashboard = lazy(() => import("./pages/zooter/Dashboard"));
 const ZooterJobs = lazy(() => import("./pages/zooter/Jobs"));
@@ -152,6 +153,7 @@ const App = () => (
                   <Route path="/legal/ai-concierge" element={<AiConciergeNotice />} />
                   <Route path="/legal/care-plus-terms" element={<CarePlusTerms />} />
                   <Route path="/legal/zooter-terms" element={<ZooterTerms />} />
+                  <Route path="/security/vulnerability-disclosure" element={<VulnerabilityDisclosure />} />
                   <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />

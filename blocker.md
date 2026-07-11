@@ -1,12 +1,13 @@
 # Zoot Production Blockers
 
-Reviewed: 2026-07-10 15:10 SAST
+Reviewed: 2026-07-11 07:35 SAST
 
 This file lists unresolved blockers only. Resolved implementation history lives in git commits, Supabase migration history, and phase reports.
 
 ## Master AI Operating Programme
 
 - Phase 1 discovery and the Phase 2 master prompt pack are implemented on draft PR #25. They are not canonical until CI, CodeRabbit, human review, and merge complete. The prompt-driven runtime work remains: Codex harness plus seven specialist roles, typed tools/handoffs, AI cost governance, measured improvement loops, anti-hallucination/drift evaluations, browser/device QA, and owner-approved autonomy controls.
+- The locally installed CodeRabbit Windows executable is not runnable (`not a valid application for this OS platform` on 2026-07-11). Use the GitHub CodeRabbit app on PR #25 or install/authenticate the supported CLI in WSL before treating CodeRabbit review as complete.
 - `docs/source-of-truth` now defines the authority hierarchy, policy metadata, conflict behavior, template, and required registry. The 18 business/security/AI policies are deliberately not treated as approved: accountable owners must instantiate, review, and approve each policy before a production loader or agent can consume it.
 - The external company-wide Markdown pack still conflicts with current repository truth: it names Hermes and Capacitor, while the current approved implementation uses Codex as the harness and Expo/CNG for mobile. Approved policy truth must move into repository-owned `docs/source-of-truth` before agents consume it.
 - GitHub `main` is documented as the only long-lived code source of truth, but live GitHub readback on 2026-07-10 reports that `main` is not protected and the only repository ruleset is disabled. Enable an enforced ruleset requiring pull requests and green web, native, readiness, and review checks before treating the one-main policy as operationally enforced.
@@ -14,7 +15,7 @@ This file lists unresolved blockers only. Resolved implementation history lives 
 - Company-wide agent evaluation and drift controls are incomplete. Add versioned evaluation sets for stale/missing/conflicting evidence, prompt injection, cross-role access, provider outages, tool timeouts, schema failures, unsupported certainty, cost growth, and repeated human overrides before scheduled autonomous loops are enabled.
 - The current Swift App Intents compile foundation constructs safe deep-link URLs but does not invoke those URLs from `perform()`, and it uses `openAppWhenRun`, which current Apple documentation marks deprecated. The iOS 27 phase must use the installed public SDK, explicit safe-route continuation, availability guards, authentication/role checks, and physical-device tests before Siri handoffs are considered functional.
 - No Playwright browser suite or mobile Maestro/Detox-style interaction suite exists. Codex cannot yet provide repeatable button-by-button logical and visual regression evidence across web, Android, and iOS.
-- The vulnerability-disclosure/bug-bounty experience does not exist. Implement a legal-reviewed `Zoot Vulnerability Disclosure Programme` page, footer link, restricted server-side report form, rate limits/Turnstile, private evidence storage, security-only review queue, and security contact before publishing. Do not promise financial rewards until founder, finance, and legal approval exist.
+- The vulnerability-disclosure page, footer link, restricted service-role-only report schema, hashed rate limit, mandatory Turnstile gate, redaction, append-only events, kill switch, and triage runbook are implemented on draft PR #25. Public activation remains blocked until legal approves scope/safe-harbour/privacy wording, named security and backup reviewers accept ownership, a real domain and restricted Turnstile widget exist, the migration/function are deployed to staging, denial/redaction/kill-switch smoke tests pass, retention is approved, and a verified security contact can generate `security.txt`. This remains a responsible disclosure programme; no financial reward may be promised without founder, finance, and legal approval.
 - Current EAS Android and iOS preview artifacts were built from 2026-07-01 commits and expire on 2026-07-15. They may support limited early testing, but fresh current-`main` Android and physical-iOS builds plus device smoke evidence are required after the programme implementation phases.
 
 ## Supabase

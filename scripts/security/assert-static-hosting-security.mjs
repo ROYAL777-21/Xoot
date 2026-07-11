@@ -48,6 +48,8 @@ const requiredPrivateRoutes = [
 requireMatch("Netlify headers define CSP", headersText, /Content-Security-Policy:\s+.*default-src 'self'/);
 requireMatch("Netlify CSP blocks framing", headersText, /Content-Security-Policy:\s+.*frame-ancestors 'none'/);
 requireMatch("Netlify CSP blocks plugins", headersText, /Content-Security-Policy:\s+.*object-src 'none'/);
+requireMatch("Netlify CSP allowlists Turnstile only where needed", headersText, /script-src 'self' https:\/\/challenges\.cloudflare\.com/);
+requireMatch("Netlify CSP constrains Turnstile frames", headersText, /frame-src https:\/\/challenges\.cloudflare\.com/);
 requireMatch("Netlify headers enable HSTS", headersText, /Strict-Transport-Security:\s+max-age=31536000; includeSubDomains; preload/);
 requireMatch("Netlify headers disable MIME sniffing", headersText, /X-Content-Type-Options:\s+nosniff/);
 requireMatch("Netlify headers set referrer policy", headersText, /Referrer-Policy:\s+strict-origin-when-cross-origin/);
@@ -68,6 +70,8 @@ requireMatch("Apache .htaccess sets CSP", htaccessText, /Header always set Conte
 requireMatch("Apache .htaccess CSP uses self default", htaccessText, /Content-Security-Policy ".*default-src 'self'/);
 requireMatch("Apache .htaccess CSP blocks framing", htaccessText, /Content-Security-Policy ".*frame-ancestors 'none'/);
 requireMatch("Apache .htaccess CSP blocks plugins", htaccessText, /Content-Security-Policy ".*object-src 'none'/);
+requireMatch("Apache .htaccess allowlists Turnstile script", htaccessText, /script-src 'self' https:\/\/challenges\.cloudflare\.com/);
+requireMatch("Apache .htaccess constrains Turnstile frames", htaccessText, /frame-src https:\/\/challenges\.cloudflare\.com/);
 requireMatch("Apache .htaccess protects private SPA routes from indexing", htaccessText, /SetEnvIf Request_URI "\^\/\(app\|auth\|admin\)\(\/\|\$\)" ZOOT_NOINDEX/);
 requireMatch("Apache .htaccess marks private SPA routes no-store", htaccessText, /SetEnvIf Request_URI "\^\/\(app\|auth\|admin\)\(\/\|\$\)" ZOOT_NOSTORE/);
 requireMatch("Apache .htaccess emits no-store for private routes", htaccessText, /Header always set Cache-Control "no-store, private, max-age=0, must-revalidate" env=ZOOT_NOSTORE/);

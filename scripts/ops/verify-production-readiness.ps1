@@ -293,10 +293,12 @@ $hardeningDocs = @(
   "docs/security/storage-and-document-access-review.md",
   "docs/security/asvs-informed-verification-matrix.md",
   "docs/security/level-3-company-wide-security-hardening.md",
+  "docs/security/vulnerability-disclosure-programme.md",
   "docs/operations/incident-severity-matrix.md",
   "docs/operations/service-continuity-runbook.md",
   "docs/operations/incident-response-playbook.md",
   "docs/operations/communications-incident-template.md",
+  "docs/operations/vulnerability-disclosure-triage-runbook.md",
   "docs/operations/rollback-runbook.md",
   "docs/operations/data-integrity-investigation-runbook.md",
   "docs/release/hardening-command-evidence.md",
@@ -309,10 +311,19 @@ Test-RepoPattern "hardening" "docs/security/platform-hardening-baseline.md" "Non
 Test-RepoPattern "hardening" "docs/security/level-3-company-wide-security-hardening.md" "Level 3 Required Controls" "Level 3 user-data hardening defines required controls"
 Test-RepoPattern "hardening" "docs/security/level-3-company-wide-security-hardening.md" "Level 3 Stop Conditions" "Level 3 user-data hardening defines stop conditions"
 Test-RepoPattern "hardening" "docs/security/level-3-company-wide-security-hardening.md" "not fully satisfied until live evidence is attached" "Level 3 hardening cannot be claimed without live evidence"
+Test-RepoPattern "hardening" "src/pages/security/VulnerabilityDisclosure.tsx" "submit-security-report" "vulnerability page uses restricted Edge Function intake"
+Test-RepoPattern "hardening" "supabase/migrations/20260710224500_security_disclosure_intake.sql" "revoke all on public.security_disclosure_reports from anon, authenticated" "security reports deny direct client access"
+Test-RepoPattern "hardening" "supabase/functions/submit-security-report/index.ts" "security.disclosure_turnstile_required" "security intake requires controlled Turnstile verification"
+Test-RepoPattern "hardening" "supabase/functions/submit-security-report/index.ts" "consumeRateLimit" "security intake enforces hashed rate limits"
+Test-RepoPattern "hardening" "supabase/functions/submit-security-report/index.ts" "redactSensitiveText" "security intake redacts common sensitive patterns"
+Test-RepoPattern "hardening" "supabase/config.toml" "\[functions\.submit-security-report\]\s+verify_jwt = false" "public security report Edge Function is explicitly configured"
+Test-RepoPattern "hardening" "scripts/security/assert-public-edge-ingress-limits.mjs" "byte-capped request-body reader" "public Edge Functions have a drift guard for body limits"
+Test-RepoPattern "hardening" "supabase/functions/confirm-payment/index.ts" "verifyPaymentWebhook" "payment callbacks use provider-specific webhook authentication"
+Test-RepoPattern "hardening" ".github/workflows/web-preview.yml" "npm audit --omit=dev --audit-level=high" "web CI audits production dependencies"
 Test-RepoPattern "hardening" "docs/security/asvs-informed-verification-matrix.md" "ASVS-Informed Verification Matrix" "ASVS-informed verification matrix exists"
 Test-RepoPattern "hardening" "docs/security/asvs-informed-verification-matrix.md" "No row marked Critical or High" "ASVS matrix defines release rule"
-Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "npm audit --omit=dev --audit-level=moderate --json" "dependency inventory records web audit command"
-Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "npm --prefix mobile audit --omit=dev --audit-level=moderate --json" "dependency inventory records mobile audit command"
+Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "npm audit --omit=dev --audit-level=high --json" "dependency inventory records web audit command"
+Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "npm --prefix mobile audit --omit=dev --audit-level=high --json" "dependency inventory records mobile audit command"
 Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "legacy Capacitor packages" "dependency inventory records Expo-only mobile guard"
 Test-RepoPattern "hardening" "docs/security/dependency-and-supply-chain-inventory.md" "npm run build:artifact-scan" "dependency inventory records build artifact scan"
 Test-RepoPattern "hardening" "docs/release/security-release-gate.md" "Stop Conditions" "security release gate defines stop conditions"

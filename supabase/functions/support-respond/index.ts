@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
+import { readJsonWithLimit } from "../_shared/request-body.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
 import { getZootKnowledgeReply, redactSupportText, sanitiseSupportText, zootKnowledgeContext, zootKnowledgeVersion } from "../_shared/zoot-knowledge.ts";
 
@@ -222,7 +223,9 @@ Deno.serve(async (req) => {
       ? await authClient.auth.getUser().catch(() => ({ data: { user: null } }))
       : { data: { user: null } };
 
-    const requestBody = await req.json();
+    const bodyResult = await readJsonWithLimit(req, 16 * 1024);
+    if (!bodyResult.ok) return json({ error: bodyResult.error }, bodyResult.status, origin);
+    const requestBody = bodyResult.value;
     const safeSubject = sanitiseSupportText(requestBody.subject, 180);
     const safeBody = sanitiseSupportText(requestBody.body);
     const safeTicketId = sanitiseUuid(requestBody.ticket_id);

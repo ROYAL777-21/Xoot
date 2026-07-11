@@ -1,6 +1,6 @@
 # Platform Hardening Baseline
 
-Reviewed: 2026-07-02
+Reviewed: 2026-07-11
 
 This baseline records the current Zoot production-readiness posture before the next hardening phase. It is an evidence map, not a launch approval.
 
@@ -26,6 +26,8 @@ This baseline records the current Zoot production-readiness posture before the n
 | Agent model | Codex is the harness and agents follow observe -> decide -> act -> verify -> learn. | `docs/AGENT_OPERATING_MODEL.md`. |
 | Load readiness | k6 script exists; staging proof has not been run with live staging credentials. | `scripts/load/zoot-smoke.js`, `blocker.md`. |
 | Level 3 user-data hardening | Zoot now has a company-wide Level 3 launch gate for systems that handle real user data. | `docs/security/level-3-company-wide-security-hardening.md`. |
+| Vulnerability disclosure | A disabled-by-default public route and service-role-only security intake are implemented with Turnstile, hashed limits, redaction, audit events, and a triage runbook. | `src/pages/security/VulnerabilityDisclosure.tsx`, `supabase/functions/submit-security-report`, migration `20260710224500`, and `docs/operations/vulnerability-disclosure-triage-runbook.md`. |
+| Public Edge ingress | All nine unauthenticated functions use byte-capped, content-type-checked body readers; payment callbacks bind provider identity to one provider-specific signature header; security disclosure binds Turnstile to its expected action. | `supabase/functions/_shared/request-body.ts`, `payment-webhook-auth.ts`, `scripts/security/assert-public-edge-ingress-limits.mjs`, and `src/lib/public-ingress-hardening.test.ts`. |
 
 ## Non-Negotiable Invariants
 

@@ -9,49 +9,10 @@ import {
 } from "../_shared/action-utils.ts";
 import { assertTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 import { claimProviderEvent, markProviderEventProcessed } from "../_shared/governance-utils.ts";
-
-const encoder = new TextEncoder();
-
-const toHex = (buffer: ArrayBuffer) =>
-  Array.from(new Uint8Array(buffer))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-
-const timingSafeEqual = (a: string, b: string) => {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i += 1) result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return result === 0;
-};
-
-const verifyWebhookSignature = async (rawBody: string, signatureHeader: string | null) => {
-  const secret = Deno.env.get("STITCH_WEBHOOK_SECRET") ?? Deno.env.get("OZOW_WEBHOOK_SECRET") ?? Deno.env.get("PAYMENT_WEBHOOK_SECRET");
-  if (!secret) return { ok: false, reason: "payment webhook secret is not configured" };
-  if (!signatureHeader) return { ok: false, reason: "payment webhook signature missing" };
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const expected = toHex(await crypto.subtle.sign("HMAC", key, encoder.encode(rawBody)));
-  const supplied = signatureHeader.replace(/^sha256=/i, "").trim().toLowerCase();
-  return { ok: timingSafeEqual(expected, supplied), reason: "payment webhook signature invalid" };
-};
+import { verifyPaymentWebhook } from "../_shared/payment-webhook-auth.ts";
+import { readRequestTextWithLimit } from "../_shared/request-body.ts";
 
 const isPaidStatus = (status: string) => ["paid", "success", "succeeded", "complete", "completed"].includes(status.toLowerCase());
-
-const allowedProviderEvents = new Set(["stitch", "ozow", "twilio", "brevo", "openai", "mapbox", "expo", "cloudflare", "hostinger", "airtable", "internal"]);
-
-const resolvePaymentProvider = (payload: Record<string, unknown>, headers: Headers) => {
-  const explicit = String(payload.provider ?? payload.payment_provider ?? "").trim().toLowerCase();
-  if (allowedProviderEvents.has(explicit)) return explicit;
-  if (headers.get("x-stitch-signature")) return "stitch";
-  if (headers.get("x-ozow-signature")) return "ozow";
-  return "internal";
-};
 
 const resolvePaymentEventId = (payload: Record<string, unknown>, providerReference: string, status: string) =>
   String(
@@ -68,9 +29,18 @@ Deno.serve(async (req) => {
   const preflight = handlePreflight(req, origin);
   if (preflight) return preflight;
 
-  const signature = req.headers.get("x-zoot-webhook-signature") ?? req.headers.get("x-stitch-signature") ?? req.headers.get("x-ozow-signature");
-  const rawBody = await req.text();
-  const signatureResult = await verifyWebhookSignature(rawBody, signature);
+  const requestBody = await readRequestTextWithLimit(req, {
+    maxBytes: 64 * 1024,
+    allowedContentTypes: ["application/json"],
+  });
+  if (!requestBody.ok) return fail(requestBody.error, origin, requestBody.status);
+
+  const rawBody = requestBody.value;
+  const signatureResult = await verifyPaymentWebhook(rawBody, req.headers, {
+    stitch: Deno.env.get("STITCH_WEBHOOK_SECRET"),
+    ozow: Deno.env.get("OZOW_WEBHOOK_SECRET"),
+    internal: Deno.env.get("PAYMENT_WEBHOOK_SECRET"),
+  });
   if (!signatureResult.ok) return fail(signatureResult.reason, origin, 401);
 
   let providerEventId: string | null = null;
@@ -118,7 +88,7 @@ Deno.serve(async (req) => {
       bookingForPayment = booking;
     }
 
-    const provider = resolvePaymentProvider(payload, req.headers);
+    const provider = signatureResult.provider;
     const providerEvent = await claimProviderEvent(supa, {
       provider,
       eventId: resolvePaymentEventId(payload, providerReference, status),

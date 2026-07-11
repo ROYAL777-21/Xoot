@@ -102,7 +102,7 @@ The next phases should extend these systems instead of creating parallel replace
 - Supabase Auth redirect allowlists and leaked-password posture remain unresolved.
 - High-risk provider, domain, store, and device controls are manual.
 - The company-wide Level 3 gate from PR #24 is now part of `main`, but it remains unsatisfied until the required live evidence is attached.
-- No public vulnerability-disclosure page, restricted intake, security contact, or `security.txt` exists.
+- Phase 3 now implements the vulnerability-disclosure page and restricted intake in the repository. Public activation, a verified security contact, legal scope, security reviewer ownership, staging proof, and generated `security.txt` remain blocked.
 - There is no automated browser end-to-end suite and no device-level Maestro/Detox equivalent.
 - Current mobile preview artifacts were built from July 1 commits, not current `main`.
 

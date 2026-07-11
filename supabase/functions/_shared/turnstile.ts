@@ -17,10 +17,14 @@ export const verifyTurnstile = async ({
   token,
   remoteIp,
   required,
+  expectedAction,
+  allowedHostnames,
 }: {
   token: unknown;
   remoteIp: string;
   required: boolean;
+  expectedAction?: string;
+  allowedHostnames?: string[];
 }): Promise<TurnstileValidation> => {
   const secret = Deno.env.get("CLOUDFLARE_TURNSTILE_SECRET_KEY")?.trim() ?? "";
   const response = typeof token === "string" ? token.trim() : "";
@@ -53,11 +57,26 @@ export const verifyTurnstile = async ({
     });
 
     const payload = await verification.json().catch(() => null);
+    const configuredHostnames = (
+      allowedHostnames ??
+      (Deno.env.get("CLOUDFLARE_TURNSTILE_ALLOWED_HOSTNAMES")?.split(",") ?? [])
+    )
+      .map((hostname) => hostname.trim().toLowerCase())
+      .filter(Boolean);
+    const responseHostname = typeof payload?.hostname === "string" ? payload.hostname.trim().toLowerCase() : "";
+    const responseAction = typeof payload?.action === "string" ? payload.action.trim() : "";
+    const hostnameValid = configuredHostnames.length === 0 || configuredHostnames.includes(responseHostname);
+    const actionValid = !expectedAction || responseAction === expectedAction;
+
     return {
-      ok: verification.ok && payload?.success === true,
+      ok: verification.ok && payload?.success === true && hostnameValid && actionValid,
       required,
       configured: true,
-      error: payload?.["error-codes"]?.join(",") || (verification.ok ? undefined : `http_${verification.status}`),
+      error:
+        payload?.["error-codes"]?.join(",") ||
+        (!hostnameValid ? "turnstile hostname mismatch" : undefined) ||
+        (!actionValid ? "turnstile action mismatch" : undefined) ||
+        (verification.ok ? undefined : `http_${verification.status}`),
     };
   } catch {
     return { ok: false, required, configured: true, error: "turnstile verification failed" };

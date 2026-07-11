@@ -56,6 +56,9 @@ verify_jwt = true
 [functions.create-concierge-handoff]
 verify_jwt = true
 
+[functions.submit-security-report]
+verify_jwt = false
+
 [functions.twilio-message-webhook]
 verify_jwt = false
 

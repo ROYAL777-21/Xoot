@@ -1,6 +1,6 @@
 # Dependency And Supply Chain Inventory
 
-Reviewed: 2026-07-02
+Reviewed: 2026-07-11
 
 This inventory supports Phase 1 of the hardening programme. It records the current dependency posture, high-risk packages, CI install controls, and build-artifact safeguards. It is not an approval for automatic dependency upgrades.
 
@@ -13,10 +13,10 @@ This inventory supports Phase 1 of the hardening programme. It records the curre
 
 ## Audit Evidence
 
-| Command | Result on 2026-07-02 |
+| Command | Result on 2026-07-11 |
 | --- | --- |
-| `npm audit --omit=dev --audit-level=moderate --json` | 0 info / 0 low / 0 moderate / 0 high / 0 critical production vulnerabilities |
-| `npm --prefix mobile audit --omit=dev --audit-level=moderate --json` | 0 info / 0 low / 0 moderate / 0 high / 0 critical production vulnerabilities |
+| `npm audit --omit=dev --audit-level=high --json` | 0 info / 0 low / 0 moderate / 0 high / 0 critical production vulnerabilities |
+| `npm --prefix mobile audit --omit=dev --audit-level=high --json` | 0 info / 0 low / 0 moderate / 0 high / 0 critical production vulnerabilities |
 | `npm run build:artifact-scan` | Build output scan fails on private tokens, service-role JWTs, database URLs, server-only env names, Twilio credential IDs, and public source maps |
 
 Audit output is point-in-time evidence. Re-run before release and after any dependency change.
@@ -49,9 +49,9 @@ Audit output is point-in-time evidence. Re-run before release and after any depe
 
 ## CI And Build Controls
 
-- GitHub Actions pins major action versions and grants minimal listed permissions.
+- GitHub Actions are pinned to immutable commit SHAs with version comments, disable persisted checkout credentials, and grant Pages write/OIDC permissions only to the deploy job.
 - Web workflow uses Node 20 with npm cache keyed by `**/package-lock.json`.
-- Web and mobile installs retry `npm ci` three times and use `--no-audit --prefer-offline` to reduce transient registry failure. Security audit runs separately in controlled local/release review.
+- Web and mobile installs retry `npm ci` three times and use `--no-audit --prefer-offline` to reduce transient registry failure. The Web build then audits both production dependency trees at `high` severity before lint, tests, scans, and build.
 - `scripts/config/validate-lockfiles.mjs` fails if web or mobile lockfiles are missing, out of sync, or contain legacy Capacitor packages.
 - `npm run security:scan` fails if known secret patterns appear in source or if frontend code writes directly to protected queues.
 - `npm run build:artifact-scan` scans `dist` before artifact upload and blocks private tokens, service-role JWTs, server-only env names, database URLs, Twilio credential identifiers and public source maps.
@@ -68,6 +68,6 @@ Audit output is point-in-time evidence. Re-run before release and after any depe
 
 ## Open Items
 
-- Add scheduled dependency audit cadence after launch.
+- Add a scheduled dependency audit cadence after launch; PR and push audits are already enforced in the Web build.
 - Add store-signing and EAS credential review once Apple/Google records exist.
 - Run build-artifact secret inspection on final production host output after domain/hosting configuration is complete.

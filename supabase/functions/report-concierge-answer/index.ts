@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
+import { readJsonWithLimit } from "../_shared/request-body.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
 import { redactSupportText, sanitiseSupportText } from "../_shared/zoot-knowledge.ts";
 
@@ -79,7 +80,9 @@ Deno.serve(async (req) => {
     const feedbackEnabled = await isOperationalControlEnabled(adminClient, "support.concierge_feedback").catch(() => true);
     if (!feedbackEnabled) return json({ error: "concierge feedback disabled" }, 403, origin);
 
-    const body = await req.json();
+    const bodyResult = await readJsonWithLimit(req, 16 * 1024);
+    if (!bodyResult.ok) return json({ error: bodyResult.error }, bodyResult.status, origin);
+    const body = bodyResult.value;
     const role = body.role === "zooter" ? "zooter" : "user";
     const source = allowedSources.has(body.source) ? body.source : "unknown";
     const reason = sanitiseSupportText(body.reason, 240) || "User reported this Concierge answer";

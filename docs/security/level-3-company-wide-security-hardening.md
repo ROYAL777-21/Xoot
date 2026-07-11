@@ -1,6 +1,6 @@
 # Level 3 Company-Wide User-Data Security Hardening
 
-Reviewed: 2026-07-10
+Reviewed: 2026-07-11
 
 Status: defined as a launch gate; not fully satisfied until live evidence is attached.
 
@@ -33,9 +33,11 @@ Zoot may continue preview and internal testing below Level 3. Zoot must not repr
 | Domain and edge protection | Domain, TLS, Cloudflare WAF/rate limits/Turnstile, bot controls, and origin protection are active without blocking approved SEO content. | Pending domain registration and Cloudflare zone. |
 | Mobile and store safety | Android and iOS builds pass real-device auth, deep-link, assistant, widget, notification, and sensitive-data smoke tests before store submission. | Pending real-device tests and iOS internal credentials. |
 | Load and abuse readiness | k6 staging run records 10,000-request evidence with latency, error-rate, and rate-limit behavior before any scale claim. | Pending live staging run. |
+| Public ingress abuse resistance | Every unauthenticated Edge Function enforces a byte cap, accepted media types, signature or Turnstile controls where applicable, and fail-closed rate limiting before privileged work. | Repository guards and regression tests pass for all nine public functions; staging abuse/timeout smoke is pending. |
 | Incident recovery | Backup restore, rollback, account-takeover, leaked-secret, payment-fraud, privacy-incident, and outage runbooks are tabletop-tested. | Runbooks exist; tabletop/restore evidence pending. |
 | Metadata drift prevention | Branch/PR source map, Supabase drift allowlist, command evidence, blocker ledger, and release audit match current `main`. | Source controls pass locally; live Supabase metadata repair pending. |
 | Agent and automation control | Agents follow observe -> decide -> act -> verify -> learn, cannot self-approve sensitive actions, and leave auditable decisions in ops review. | Repo rules exist; ops dashboard/live review still pending. |
+| Vulnerability disclosure | Researchers have a restricted, rate-limited, privacy-safe reporting route with legal scope, named security reviewers, retention controls, and an emergency kill switch. | Repo route, schema, Edge Function, redaction, Turnstile gate, and runbook exist; legal/owner approval, staging deploy, and smoke evidence pending. |
 
 ## Company-Wide Invariants
 
@@ -43,6 +45,8 @@ Zoot may continue preview and internal testing below Level 3. Zoot must not repr
 - Public pages may be crawlable for SEO, but private data must be protected by RLS, private storage, audited Edge Functions, and provider-side controls.
 - Sensitive household access, identity documents, bank details, payment details, trust incidents, and admin evidence never appear in public content, notifications, analytics, logs, support transcripts, widgets, or model prompts.
 - Every production write path that affects money, trust, safety, identity, booking state, or user access must have server-side validation, audit records, rollback or reversal guidance, and a named owner.
+- Every public Edge Function must reject oversized, compressed, malformed, or unexpected-media-type request bodies before parsing or privileged provider/database work.
+- Payment webhook identity comes from exactly one verified provider-specific signature header. Request payloads cannot select their own provider or secret.
 - Every launch claim must be backed by current evidence from the release candidate, not historical PR success.
 
 ## Level 3 Stop Conditions

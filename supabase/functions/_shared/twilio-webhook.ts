@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { claimProviderEvent, markProviderEventProcessed } from "./governance-utils.ts";
+import { readRequestTextWithLimit } from "./request-body.ts";
 
 type TwilioChannel = "sms" | "whatsapp" | "voice" | "verify" | "status" | "unknown";
 
@@ -267,8 +268,18 @@ const logTwilioEvent = async ({ eventType, channel, params, signatureValid, stat
 };
 
 const readTwilioParams = async (req: Request) => {
-  const rawBody = await req.text();
-  return { rawBody, params: new URLSearchParams(rawBody) };
+  const body = await readRequestTextWithLimit(req, {
+    maxBytes: 64 * 1024,
+    allowedContentTypes: ["application/x-www-form-urlencoded"],
+  });
+  if (!body.ok) {
+    return {
+      rawBody: "",
+      params: new URLSearchParams(),
+      response: json({ error: body.error }, body.status),
+    };
+  }
+  return { rawBody: body.value, params: new URLSearchParams(body.value), response: null };
 };
 
 const claimTwilioProviderEvent = async (
@@ -341,7 +352,8 @@ export const handleTwilioMessagingWebhook = async (
   options: { expectedChannel?: "sms" | "whatsapp" } = {},
 ) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-  const { rawBody, params } = await readTwilioParams(req);
+  const { rawBody, params, response } = await readTwilioParams(req);
+  if (response) return response;
   const verification = await rejectIfInvalid(req, params);
   if (verification.response) return verification.response;
 
@@ -380,7 +392,8 @@ export const handleTwilioMessagingWebhook = async (
 
 export const handleTwilioStatusCallback = async (req: Request) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-  const { rawBody, params } = await readTwilioParams(req);
+  const { rawBody, params, response } = await readTwilioParams(req);
+  if (response) return response;
   const verification = await rejectIfInvalid(req, params);
   if (verification.response) return verification.response;
 
@@ -405,7 +418,8 @@ export const handleTwilioStatusCallback = async (req: Request) => {
 
 export const handleTwilioVoiceWebhook = async (req: Request) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-  const { rawBody, params } = await readTwilioParams(req);
+  const { rawBody, params, response } = await readTwilioParams(req);
+  if (response) return response;
   const verification = await rejectIfInvalid(req, params);
   if (verification.response) return verification.response;
 
@@ -434,7 +448,8 @@ export const handleTwilioVoiceWebhook = async (req: Request) => {
 
 export const handleTwilioVerifyWebhook = async (req: Request) => {
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-  const { rawBody, params } = await readTwilioParams(req);
+  const { rawBody, params, response } = await readTwilioParams(req);
+  if (response) return response;
   const verification = await rejectIfInvalid(req, params);
   if (verification.response) return verification.response;
 

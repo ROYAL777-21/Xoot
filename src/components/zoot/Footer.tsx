@@ -46,6 +46,7 @@ const cols: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "AI Concierge", href: "/legal/ai-concierge" },
       { label: "Account deletion", href: "/legal/account-deletion" },
       { label: "Trust & safety", href: "/legal/trust-safety" },
+      { label: "Report a vulnerability", href: "/security/vulnerability-disclosure" },
       { label: "Install app", href: "/install" },
     ],
   },
@@ -60,7 +61,7 @@ export const Footer = () => (
             <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm">
               <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
             </span>
-            <span className="font-display text-2xl font-bold">zoot</span>
+            <span className="font-display text-2xl font-bold">Zoot</span>
           </div>
           <p className="max-w-xs text-sm text-muted-foreground">
             Premium home, office and Airbnb cleaning in Zoot launch suburbs with vetting, training and trust workflows.
