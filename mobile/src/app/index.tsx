@@ -17,11 +17,11 @@ export default function HomeScreen() {
   const launchParams = params as NativeLaunchQueryParams;
   const nativeLaunchIntent = resolveNativeLaunchIntent(launchParams);
   const bypassLaunch = shouldBypassNativeLaunchExperience(nativeLaunchIntent);
-  const launchTarget = buildNativeLaunchTarget(nativeLaunchIntent, launchParams);
+  const launchTarget = buildNativeLaunchTarget(nativeLaunchIntent, launchParams) as Href;
 
   useEffect(() => {
     if (!bypassLaunch) return;
-    router.replace(launchTarget as Href);
+    router.replace(launchTarget);
   }, [bypassLaunch, launchTarget]);
 
   if (bypassLaunch) {
