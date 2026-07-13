@@ -22,6 +22,7 @@ type BotMessage = {
     label: string;
     to: string;
   };
+  retryText?: string;
 };
 
 type SupportBotReply = {
@@ -36,6 +37,24 @@ const secretLikePattern =
   /\b(password|passcode|otp|one[-\s]?time code|card number|cvv|cvc|gate code|access code|alarm code|lockbox|private key|service role)\b/i;
 
 const createMessageId = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const conciergeTimeoutMs = 9_000;
+const genericOfflineReply =
+  "I can help with general Zoot questions, but live Concierge is not reachable right now. Try again, or open protected Support for anything about an account, booking, payment, address or safety concern.";
+
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error("Concierge request timed out")), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+};
 
 const initialMessages: BotMessage[] = [
   {
@@ -140,9 +159,8 @@ export const ZootSupportBot = () => {
     });
   };
 
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    const text = body.trim();
+  const askConcierge = async (rawText: string) => {
+    const text = rawText.trim();
     if (!text || sending) return;
 
     if (text.length < 3) {
@@ -168,9 +186,27 @@ export const ZootSupportBot = () => {
     appendMessage({ role: "user", body: text });
     setBody("");
 
+    const localReply = getLocalZootConciergeReply(text, Boolean(user));
+    if (localReply) {
+      appendMessage({
+        role: "assistant",
+        body: localReply.response,
+        source: localReply.source,
+        knowledgeVersion: "local",
+        cta: localReply.cta,
+      });
+      haptic("success");
+      return;
+    }
+
     const rateLimitKey = user ? "zoot-global-bot" : "zoot-guest-bot";
-    const rateLimit = user ? 8 : 4;
-    if (!checkRateLimit(rateLimitKey, rateLimit, 10 * 60_000)) {
+    const rateLimit = user ? 40 : 16;
+    if (!checkRateLimit(rateLimitKey, rateLimit, 5 * 60_000)) {
+      appendMessage({
+        role: "assistant",
+        body: "I have paused live answers for a few minutes because this session reached its message limit. Approved quick answers still work, or you can open protected Support for an account-specific issue.",
+        source: "human_escalation",
+      });
       toast.error("Zoot bot is rate-limited for a few minutes. Try again shortly.");
       return;
     }
@@ -178,26 +214,33 @@ export const ZootSupportBot = () => {
     setSending(true);
     try {
       if (!isSupabaseConfigured) {
-        const localReply = getLocalZootConciergeReply(text, Boolean(user));
         appendMessage({
           role: "assistant",
-          body: localReply.response,
-          source: localReply.source,
+          body: genericOfflineReply,
+          source: "human_escalation",
           knowledgeVersion: "local",
-          cta: localReply.cta,
+          retryText: text,
         });
-        haptic("success");
+        haptic("warning");
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("support-respond", {
-        body: {
-          subject: "Website Zoot Concierge conversation",
-          body: text,
-          role,
-          guest: !user,
-        },
-      });
+      const recentContext = [...messages.slice(-6), { role: "user" as const, body: text }]
+        .map((message) => `${message.role}: ${redactConciergeClientText(message.body, 240)}`)
+        .join("\n")
+        .slice(0, 1600);
+      const { data, error } = await withTimeout(
+        supabase.functions.invoke("support-respond", {
+          body: {
+            subject: "Website Zoot Concierge conversation",
+            body: text,
+            conversation_context: recentContext,
+            role,
+            guest: !user,
+          },
+        }),
+        conciergeTimeoutMs,
+      );
 
       if (error) throw error;
       const reply = data as SupportBotReply | null;
@@ -217,28 +260,21 @@ export const ZootSupportBot = () => {
       }
       haptic("success");
     } catch {
-      const localReply = getLocalZootConciergeReply(text, Boolean(user));
-      if (localReply) {
-        appendMessage({
-          role: "assistant",
-          body: `${localReply.response} Live support is not reachable in this session, so I cannot perform account, booking, payment or admin actions here.`,
-          source: localReply.source,
-          knowledgeVersion: "local",
-          cta: localReply.cta,
-        });
-        haptic("warning");
-        return;
-      }
       appendMessage({
         role: "assistant",
-        body: user
-          ? "I could not reach Zoot Support right now. Open Support from the app menu for protected ticket handling."
-          : "I could not reach Zoot Support right now. Please try again shortly, or sign in if this is about a booking, payment, address or account.",
+        body: genericOfflineReply,
+        source: "human_escalation",
+        retryText: text,
       });
       haptic("warning");
     } finally {
       setSending(false);
     }
+  };
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    void askConcierge(body);
   };
 
   return (
@@ -293,14 +329,25 @@ export const ZootSupportBot = () => {
                       </Link>
                     )}
                     {message.role === "assistant" && message.id !== "welcome" && (
-                      <button
-                        type="button"
-                        onClick={reportAnswer}
-                        className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/25 px-2 py-1 text-[11px] font-semibold opacity-80 transition-opacity hover:opacity-100"
-                      >
-                        <Flag className="h-3 w-3" />
-                        Report answer
-                      </button>
+                      <span className="mt-2 flex flex-wrap gap-1.5">
+                        {message.retryText && (
+                          <button
+                            type="button"
+                            onClick={() => void askConcierge(message.retryText!)}
+                            className="inline-flex items-center rounded-full border border-white/25 px-2 py-1 text-[11px] font-semibold opacity-80 transition-opacity hover:opacity-100"
+                          >
+                            Retry
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={reportAnswer}
+                          className="inline-flex items-center gap-1 rounded-full border border-white/25 px-2 py-1 text-[11px] font-semibold opacity-80 transition-opacity hover:opacity-100"
+                        >
+                          <Flag className="h-3 w-3" />
+                          Report answer
+                        </button>
+                      </span>
                     )}
                   </span>
                 </div>
@@ -321,7 +368,7 @@ export const ZootSupportBot = () => {
                     key={prompt}
                     type="button"
                     className="liquid-glass-interactive rounded-2xl bg-background/35 px-3 py-2 text-left text-sm font-semibold text-foreground/82 transition-colors hover:text-foreground"
-                    onClick={() => setBody(prompt)}
+                    onClick={() => void askConcierge(prompt)}
                   >
                     {prompt}
                   </button>

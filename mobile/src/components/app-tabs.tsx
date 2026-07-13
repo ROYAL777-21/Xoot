@@ -5,7 +5,7 @@ import { Colors } from '@/constants/theme';
 
 export default function AppTabs() {
   const scheme = useColorScheme();
-  const colors = Colors[!scheme || scheme === 'unspecified' ? 'dark' : scheme];
+  const colors = Colors[!scheme || scheme === 'unspecified' ? 'light' : scheme];
 
   return (
     <NativeTabs
@@ -32,14 +32,6 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>Care+</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="concierge">
-        <NativeTabs.Trigger.Label>Concierge</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
           renderingMode="template"
         />
       </NativeTabs.Trigger>

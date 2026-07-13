@@ -8,7 +8,7 @@ The Zoot mobile app is now planned as a separate Expo app in `/mobile`. The exis
 
 | Item | Preview/internal testing | Production |
 | --- | --- | --- |
-| App name | Zoot Preview | Zoot |
+| App name | Zoot | Zoot |
 | Expo scheme | `zoot` | `zoot` |
 | iOS bundle ID | `za.co.zoothome.app.preview` | `za.co.zoothome.app` |
 | Android package | `za.co.zoothome.app.preview` | `za.co.zoothome.app` |

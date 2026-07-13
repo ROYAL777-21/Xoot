@@ -193,7 +193,19 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
     );
   }
 
-  if (includesAny(text, ["book", "booking", "cleaner", "cleaning", "clean", "zooter"])) {
+  if (
+    includesAny(text, [
+      "how do i book",
+      "how can i book",
+      "start a booking",
+      "book a cleaner",
+      "book a clean",
+      "need a cleaner",
+      "clean my house",
+      "clean my home",
+      "clean my place",
+    ])
+  ) {
     return reply(
       signedIn
         ? "To book, open the app, choose the service type, area, date, time, duration, property notes and preferred Zooter options, then confirm payment through the protected flow. Keep private access details in protected booking fields rather than chat."
@@ -208,7 +220,5 @@ export const getLocalZootConciergeReply = (rawText: string, signedIn: boolean): 
     );
   }
 
-  return reply(
-    "I can answer general Zoot questions about cleaning, Care+, ZootCred, launch areas, office resets, Airbnb turnovers and becoming a Zooter. For anything account-specific, payment-related, private, unsafe or urgent, sign in and use protected Support so a human can review it.",
-  );
+  return null;
 };

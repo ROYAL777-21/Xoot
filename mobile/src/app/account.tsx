@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput } from 'react-native';
+import { router } from 'expo-router';
+import { Platform, StyleSheet, Text, TextInput } from 'react-native';
 
 import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
-import { getAuthRedirectUrl, startOAuth } from '@/lib/auth-links';
+import { getAuthRedirectUrl, oauthProviderAvailability, startOAuth } from '@/lib/auth-links';
 import { supabase } from '@/lib/supabase';
-import { registerForZootPushNotifications } from '@/lib/push-notifications';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -40,6 +40,10 @@ export default function AccountScreen() {
     setIsSubmitting(true);
     setStatus(null);
     try {
+      if (Platform.OS === 'web') {
+        throw new Error('Service notifications are available in the Zoot iOS and Android apps.');
+      }
+      const { registerForZootPushNotifications } = await import('@/lib/push-notifications');
       await registerForZootPushNotifications(user.id);
       setStatus('Push notifications are connected for safe Zoot service updates.');
     } catch (error) {
@@ -54,9 +58,9 @@ export default function AccountScreen() {
       <ZootScreen>
         <LiquidCard>
           <Eyebrow>Account</Eyebrow>
-          <Title>Your Zoot session is active.</Title>
+          <Title>You are signed in.</Title>
           <Body muted>{user.email ?? user.id}</Body>
-          <StatusPill tone="success">Secure session storage enabled</StatusPill>
+          <StatusPill tone="success">Ready for private booking updates</StatusPill>
           <PrimaryButton disabled={isSubmitting} onPress={enablePush}>Enable service notifications</PrimaryButton>
           <SecondaryButton onPress={signOut}>Sign out</SecondaryButton>
           {status ? <Body>{status}</Body> : null}
@@ -69,14 +73,18 @@ export default function AccountScreen() {
     <ZootScreen>
       <LiquidCard>
         <Eyebrow>Sign in</Eyebrow>
-        <Title>Use Zoot with protected account access.</Title>
-        <Body muted>
-          General Concierge questions work for guests. Bookings, Care+, payment status, support tickets, and saved home details require sign-in.
-        </Body>
-        <TextInput
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
+        <Title>Sign in when you are ready to confirm.</Title>
+         <Body muted>
+           Browse services and ask Concierge as a guest. Sign in only to confirm a booking, save a home, or see private updates.
+         </Body>
+        <Text nativeID="zoot-sign-in-email-label" style={[styles.label, { color: theme.text }]}>Email address</Text>
+         <TextInput
+          accessibilityLabel="Email address"
+          accessibilityLabelledBy="zoot-sign-in-email-label"
+           autoCapitalize="none"
+           autoComplete="email"
+           keyboardType="email-address"
+          textContentType="emailAddress"
           value={email}
           onChangeText={setEmail}
           placeholder="you@example.com"
@@ -86,11 +94,18 @@ export default function AccountScreen() {
         <PrimaryButton disabled={isSubmitting || !email.includes('@')} onPress={sendMagicLink}>
           {isSubmitting ? 'Sending link' : 'Send secure sign-in link'}
         </PrimaryButton>
-        <SecondaryButton disabled={isSubmitting} onPress={() => startOAuth('google').catch((error) => setStatus(error.message))}>
-          Continue with Google
-        </SecondaryButton>
-        <SecondaryButton disabled={isSubmitting} onPress={() => startOAuth('apple').catch((error) => setStatus(error.message))}>
-          Continue with Apple
+        {oauthProviderAvailability.google ? (
+          <SecondaryButton disabled={isSubmitting} onPress={() => startOAuth('google').catch((error) => setStatus(error.message))}>
+            Continue with Google
+          </SecondaryButton>
+        ) : null}
+        {Platform.OS === 'ios' && oauthProviderAvailability.apple ? (
+          <SecondaryButton disabled={isSubmitting} onPress={() => startOAuth('apple').catch((error) => setStatus(error.message))}>
+            Continue with Apple
+          </SecondaryButton>
+        ) : null}
+        <SecondaryButton disabled={isSubmitting} onPress={() => router.replace('/')}>
+          Continue as guest
         </SecondaryButton>
         {status ? <Body>{status}</Body> : null}
       </LiquidCard>
@@ -99,6 +114,10 @@ export default function AccountScreen() {
 }
 
 const styles = StyleSheet.create({
+  label: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
   input: {
     borderRadius: 18,
     borderWidth: 1,

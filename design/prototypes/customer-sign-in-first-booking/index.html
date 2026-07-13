@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Zoot customer journey directions</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#prototype-board">Skip to directions</a>
+    <header class="review-header">
+      <div class="review-brand">
+        <img src="../../../public/zoot-icon.svg" alt="" width="42" height="42" />
+        <div>
+          <p class="review-eyebrow">Owner review board</p>
+          <h1>Zoot customer sign-in and first booking</h1>
+        </div>
+      </div>
+      <div class="review-status" role="status">
+        <span>Pre-Figma exploration</span>
+        <strong>Not approved for implementation</strong>
+      </div>
+    </header>
+
+    <main id="prototype-board">
+      <section class="decision-panel" aria-labelledby="direction-heading">
+        <div>
+          <p class="review-eyebrow">Three connected directions</p>
+          <h2 id="direction-heading">Choose the product character before detailed design.</h2>
+          <p>
+            Each direction covers the same customer journey and product truth. The difference is hierarchy,
+            emotional tone, navigation, material restraint, and how trust is earned.
+          </p>
+        </div>
+        <div class="direction-picker" role="group" aria-label="Prototype direction">
+          <button type="button" class="direction-button is-active" data-direction-button="a" aria-pressed="true">
+            <span>A</span>
+            Vibrant Native
+          </button>
+          <button type="button" class="direction-button" data-direction-button="b" aria-pressed="false">
+            <span>B</span>
+            Clear Glass Concierge
+          </button>
+          <button type="button" class="direction-button" data-direction-button="c" aria-pressed="false">
+            <span>C</span>
+            Editorial Trust
+          </button>
+        </div>
+      </section>
+
+      <section class="direction direction-a is-active" data-direction="a" aria-labelledby="direction-a-title">
+        <header class="direction-header">
+          <div>
+            <p class="direction-number">Direction A</p>
+            <h2 id="direction-a-title">Vibrant Native</h2>
+            <p class="direction-thesis">Fast, light and direct. Service colour carries wayfinding while native controls keep the booking calm.</p>
+          </div>
+          <dl class="direction-facts">
+            <div><dt>Best for</dt><dd>Lowest onboarding friction</dd></div>
+            <div><dt>Material</dt><dd>Solid content, clear nav only</dd></div>
+            <div><dt>Risk</dt><dd>Needs disciplined colour restraint</dd></div>
+          </dl>
+        </header>
+
+        <div class="phone-grid" aria-label="Vibrant Native connected flow">
+          <article class="phone phone-a" aria-labelledby="a-home-title">
+            <div class="phone-status"><span>09:41</span><span>Johannesburg</span></div>
+            <div class="phone-body">
+              <header class="app-header">
+                <strong class="wordmark">Zoot</strong>
+                <button class="icon-button" type="button" aria-label="Open account">NS</button>
+              </header>
+              <p class="screen-kicker">Good morning</p>
+              <h3 id="a-home-title">What needs handling?</h3>
+              <p class="screen-copy">Choose a service now. Sign in only when you are ready to confirm.</p>
+              <div class="service-grid">
+                <button class="service-choice home is-selected" type="button"><strong>Home clean</strong><span>Everyday care</span></button>
+                <button class="service-choice deep" type="button"><strong>Deep clean</strong><span>A thorough reset</span></button>
+                <button class="service-choice office" type="button"><strong>Office</strong><span>For focused teams</span></button>
+                <button class="service-choice turnover" type="button"><strong>Turnover</strong><span>Guest-ready stays</span></button>
+              </div>
+              <button class="primary-action" type="button">Plan my home clean</button>
+              <button class="text-action" type="button">Ask Zoot Concierge</button>
+            </div>
+            <nav class="native-nav" aria-label="Prototype navigation"><strong>Home</strong><span>Book</span><span>Care+</span><span>Account</span></nav>
+          </article>
+
+          <article class="phone phone-a" aria-labelledby="a-details-title">
+            <div class="phone-status"><span>09:42</span><span>Step 2 of 5</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <p class="screen-kicker">Home clean</p>
+              <h3 id="a-details-title">Shape the visit.</h3>
+              <p class="screen-copy">Clear choices now mean fewer questions on the day.</p>
+              <fieldset class="choice-fieldset">
+                <legend>How long?</legend>
+                <div class="segment-row">
+                  <button type="button">2 hr</button><button type="button" class="is-selected">3 hr</button><button type="button">4 hr</button>
+                </div>
+              </fieldset>
+              <fieldset class="choice-fieldset">
+                <legend>Home size</legend>
+                <div class="stepper"><span>Bedrooms</span><button type="button" aria-label="Remove bedroom">−</button><strong>2</strong><button type="button" aria-label="Add bedroom">+</button></div>
+                <div class="stepper"><span>Bathrooms</span><button type="button" aria-label="Remove bathroom">−</button><strong>1</strong><button type="button" aria-label="Add bathroom">+</button></div>
+              </fieldset>
+              <div class="summary-band"><span>Estimated service</span><strong>3 hours</strong><small>Final price shown before payment.</small></div>
+              <button class="primary-action" type="button">Choose a date</button>
+            </div>
+          </article>
+
+          <article class="phone phone-a" aria-labelledby="a-slot-title">
+            <div class="phone-status"><span>09:43</span><span>Step 3 of 5</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <p class="screen-kicker">Date and address</p>
+              <h3 id="a-slot-title">When should Zoot arrive?</h3>
+              <div class="address-row"><div><strong>Home</strong><span>Rosebank, Johannesburg</span></div><button type="button">Change</button></div>
+              <div class="date-strip" aria-label="Choose date"><button type="button"><span>Tue</span><strong>15</strong></button><button type="button" class="is-selected"><span>Wed</span><strong>16</strong></button><button type="button"><span>Thu</span><strong>17</strong></button><button type="button"><span>Fri</span><strong>18</strong></button></div>
+              <fieldset class="choice-fieldset">
+                <legend>Available starts</legend>
+                <div class="time-grid"><button type="button">08:00</button><button type="button" class="is-selected">10:00</button><button type="button">13:00</button><button type="button">15:00</button></div>
+              </fieldset>
+              <p class="helper-copy">Availability is checked again before confirmation.</p>
+              <button class="primary-action" type="button">Use Wednesday at 10:00</button>
+            </div>
+          </article>
+
+          <article class="phone phone-a" aria-labelledby="a-auth-title">
+            <div class="phone-status"><span>09:44</span><span>Secure sign-in</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <div class="draft-continuity"><span>Your clean is saved</span><strong>Wed 16 July · 10:00</strong></div>
+              <p class="screen-kicker">Almost there</p>
+              <h3 id="a-auth-title">Where should we send your secure link?</h3>
+              <label class="field-label" for="a-email">Email address</label>
+              <input id="a-email" type="email" autocomplete="email" value="nkosi@example.com" />
+              <button class="primary-action" type="button">Email my secure sign-in link</button>
+              <p class="privacy-copy">The link returns you to this booking. No password to remember.</p>
+              <div class="status-message success"><strong>Link sent</strong><span>Open it on this device to continue.</span></div>
+              <button class="text-action" type="button">Use a different email</button>
+            </div>
+          </article>
+
+          <article class="phone phone-a" aria-labelledby="a-review-title">
+            <div class="phone-status"><span>09:47</span><span>Step 5 of 5</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <p class="screen-kicker">Review</p>
+              <h3 id="a-review-title">Everything in one place.</h3>
+              <div class="review-list">
+                <div><span>Service</span><strong>Home clean · 3 hr</strong></div>
+                <div><span>When</span><strong>Wed 16 Jul · 10:00</strong></div>
+                <div><span>Area</span><strong>Rosebank</strong></div>
+                <div><span>Frequency</span><strong>Once off</strong></div>
+              </div>
+              <button class="inline-option" type="button"><span>Payment method</span><strong>Add securely</strong></button>
+              <div class="price-total"><span>Price shown by secure provider</span><strong>Pending</strong></div>
+              <p class="helper-copy">No booking is created until the provider confirms payment.</p>
+              <button class="primary-action" type="button">Continue to secure payment</button>
+            </div>
+          </article>
+
+          <article class="phone phone-a" aria-labelledby="a-regular-title">
+            <div class="phone-status"><span>10:02</span><span>Preferences</span></div>
+            <div class="phone-body">
+              <p class="screen-kicker">Make next time easier</p>
+              <h3 id="a-regular-title">Keep the routine, stay in control.</h3>
+              <div class="zooter-row"><div class="initials" aria-hidden="true">TM</div><div><strong>Thandi M.</strong><span>Preferred Zooter · when available</span></div></div>
+              <fieldset class="choice-fieldset">
+                <legend>Repeat this clean</legend>
+                <div class="segment-row"><button type="button">Weekly</button><button type="button" class="is-selected">Fortnightly</button><button type="button">Monthly</button></div>
+              </fieldset>
+              <div class="control-list">
+                <div><span>Preferred day</span><strong>Wednesday</strong></div>
+                <div><span>Preferred start</span><strong>10:00</strong></div>
+                <div><span>If Thandi is unavailable</span><strong>Ask me first</strong></div>
+              </div>
+              <button class="primary-action" type="button">Review recurring plan</button>
+              <button class="text-action" type="button">Keep this once off</button>
+            </div>
+          </article>
+
+          <article class="phone phone-a" aria-labelledby="a-status-title">
+            <div class="phone-status"><span>10:04</span><span>Booking status</span></div>
+            <div class="phone-body">
+              <div class="confirmation-mark" aria-hidden="true"><img src="../../../public/zoot-icon.svg" alt="" /></div>
+              <p class="screen-kicker">Payment confirmed</p>
+              <h3 id="a-status-title">Your booking is awaiting assignment.</h3>
+              <p class="screen-copy">We are matching an available professional for Wednesday at 10:00.</p>
+              <ol class="status-timeline">
+                <li class="is-complete"><strong>Payment confirmed</strong><span>10:03</span></li>
+                <li class="is-current"><strong>Finding your Zooter</strong><span>In progress</span></li>
+                <li><strong>Assigned</strong><span>We will notify you</span></li>
+              </ol>
+              <button class="primary-action" type="button">View booking</button>
+              <button class="secondary-action" type="button">Get help</button>
+            </div>
+          </article>
+
+          <article class="phone phone-a" aria-labelledby="a-issue-title">
+            <div class="phone-status"><span>18:12</span><span>Support</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <p class="screen-kicker">Service support</p>
+              <h3 id="a-issue-title">Tell us what needs attention.</h3>
+              <p class="screen-copy">Choose the booking and describe the concern. Serious safety matters are escalated immediately.</p>
+              <button class="booking-reference" type="button"><span>Home clean · 16 Jul</span><strong>Select</strong></button>
+              <fieldset class="choice-fieldset">
+                <legend>What happened?</legend>
+                <div class="issue-list"><button type="button" class="is-selected">Quality concern</button><button type="button">Late or no arrival</button><button type="button">Safety or conduct</button></div>
+              </fieldset>
+              <label class="field-label" for="a-issue">Brief description</label>
+              <textarea id="a-issue" rows="3">The kitchen counters need another look.</textarea>
+              <button class="primary-action" type="button">Send for review</button>
+              <p class="helper-copy">Support will confirm what happens next. No refund is promised here.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="direction direction-b" data-direction="b" aria-labelledby="direction-b-title" hidden>
+        <header class="direction-header">
+          <div>
+            <p class="direction-number">Direction B</p>
+            <h2 id="direction-b-title">Clear Glass Concierge</h2>
+            <p class="direction-thesis">Guided help above stable forms, with clear glass limited to navigation and temporary guidance</p>
+          </div>
+          <dl class="direction-facts">
+            <div><dt>Best for</dt><dd>Guided, premium reassurance</dd></div>
+            <div><dt>Material</dt><dd>Clear controls, opaque forms</dd></div>
+            <div><dt>Risk</dt><dd>Assistant must never slow experts</dd></div>
+          </dl>
+        </header>
+
+        <div class="phone-grid" aria-label="Clear Glass Concierge connected flow">
+          <article class="phone phone-b" aria-labelledby="b-home-title">
+            <div class="phone-photo-backdrop"></div>
+            <div class="phone-status inverse"><span>09:41</span><span>Johannesburg</span></div>
+            <div class="phone-body layered">
+              <header class="glass-nav"><strong>Zoot</strong><button type="button">Account</button></header>
+              <div class="hero-copy inverse"><p class="screen-kicker">Home care, handled</p><h3 id="b-home-title">Start with what you need</h3><p>Choose directly or ask Concierge for guidance</p></div>
+              <div class="solid-sheet">
+                <div class="assistant-prompt"><strong>Zoot Concierge</strong><span>What would make today easier</span></div>
+                <div class="compact-services"><button type="button" class="is-selected">Home clean</button><button type="button">Deep clean</button><button type="button">Office</button><button type="button">Turnover</button></div>
+                <button class="primary-action cobalt" type="button">Plan a home clean</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="phone phone-b" aria-labelledby="b-details-title">
+            <div class="phone-status"><span>09:42</span><span>Booking draft</span></div>
+            <div class="phone-body">
+              <header class="glass-nav compact"><button type="button">Back</button><strong>Step 2 of 5</strong><button type="button">Help</button></header>
+              <h3 id="b-details-title">A three-hour clean fits this home</h3>
+              <p class="screen-copy">Adjust anything, with the impact explained before you continue</p>
+              <div class="duration-scale"><button type="button"><strong>2</strong><span>Quick reset</span></button><button type="button" class="is-selected"><strong>3</strong><span>Recommended</span></button><button type="button"><strong>4</strong><span>More detail</span></button></div>
+              <div class="scope-list"><div><span>Bedrooms</span><strong>2</strong></div><div><span>Bathrooms</span><strong>1</strong></div><div><span>Bring supplies</span><strong>Yes</strong></div></div>
+              <div class="concierge-note"><strong>Why three hours</strong><span>Based on your selected scope, never a promise of completion</span></div>
+              <button class="primary-action cobalt" type="button">Choose timing</button>
+            </div>
+          </article>
+
+          <article class="phone phone-b" aria-labelledby="b-slot-title">
+            <div class="phone-status"><span>09:43</span><span>Live availability</span></div>
+            <div class="phone-body">
+              <header class="glass-nav compact"><button type="button">Back</button><strong>Date and time</strong><button type="button">Help</button></header>
+              <h3 id="b-slot-title">Choose a verified opening</h3>
+              <div class="map-context"><span>Rosebank</span><strong>Home</strong><small>Exact address remains private</small></div>
+              <div class="date-strip"><button type="button"><span>Tue</span><strong>15</strong></button><button type="button" class="is-selected"><span>Wed</span><strong>16</strong></button><button type="button"><span>Thu</span><strong>17</strong></button></div>
+              <div class="time-grid"><button type="button">08:00</button><button type="button" class="is-selected">10:00</button><button type="button">13:00</button><button type="button">15:00</button></div>
+              <div class="concierge-note"><strong>10:00 is available now</strong><span>Checked again before booking confirmation</span></div>
+              <button class="primary-action cobalt" type="button">Use this opening</button>
+            </div>
+          </article>
+
+          <article class="phone phone-b" aria-labelledby="b-auth-title">
+            <div class="scrim"></div>
+            <div class="phone-status inverse"><span>09:44</span><span>Secure handoff</span></div>
+            <div class="phone-body layered">
+              <div class="obscured-content" aria-hidden="true"><h3>Review your clean</h3><p>Wednesday at 10:00</p></div>
+              <div class="glass-dialog">
+                <p class="screen-kicker">Draft saved</p>
+                <h3 id="b-auth-title">Sign in without losing your place</h3>
+                <label class="field-label" for="b-email">Email address</label>
+                <input id="b-email" type="email" autocomplete="email" value="nkosi@example.com" />
+                <button class="primary-action cobalt" type="button">Send secure link</button>
+                <p class="privacy-copy">Return to the same review step after verification</p>
+                <button class="text-action" type="button">Continue browsing as guest</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="phone phone-b" aria-labelledby="b-review-title">
+            <div class="phone-status"><span>09:47</span><span>Secure review</span></div>
+            <div class="phone-body">
+              <header class="glass-nav compact"><button type="button">Back</button><strong>Review</strong><button type="button">Help</button></header>
+              <h3 id="b-review-title">Confirm the plan, then pay securely</h3>
+              <div class="review-list"><div><span>Service</span><strong>Home clean / 3 hr</strong></div><div><span>When</span><strong>Wed 16 Jul / 10:00</strong></div><div><span>Area</span><strong>Rosebank</strong></div></div>
+              <div class="payment-boundary"><strong>Payment is handled by the approved provider</strong><span>Zoot waits for server confirmation before showing success</span></div>
+              <button class="primary-action cobalt" type="button">Open secure payment</button>
+              <button class="secondary-action" type="button">Change booking</button>
+            </div>
+          </article>
+
+          <article class="phone phone-b" aria-labelledby="b-regular-title">
+            <div class="phone-status"><span>10:02</span><span>Routine</span></div>
+            <div class="phone-body">
+              <header class="glass-nav compact"><button type="button">Back</button><strong>Repeat care</strong><button type="button">Help</button></header>
+              <h3 id="b-regular-title">Let Zoot remember the plan, while you keep control</h3>
+              <div class="zooter-row"><div class="initials blue" aria-hidden="true">TM</div><div><strong>Thandi M</strong><span>Preferred when available</span></div></div>
+              <div class="scope-list"><div><span>Cadence</span><strong>Fortnightly</strong></div><div><span>Preferred time</span><strong>Wednesday / 10:00</strong></div><div><span>If unavailable</span><strong>Ask me first</strong></div></div>
+              <div class="concierge-note"><strong>You stay in control</strong><span>Pause, skip, reschedule or cancel from the booking</span></div>
+              <button class="primary-action cobalt" type="button">Review repeat plan</button>
+            </div>
+          </article>
+
+          <article class="phone phone-b" aria-labelledby="b-status-title">
+            <div class="phone-status"><span>10:04</span><span>Verified status</span></div>
+            <div class="phone-body">
+              <header class="glass-nav compact"><strong>Zoot</strong><span>Booking</span><button type="button">Help</button></header>
+              <p class="screen-kicker">Payment confirmed</p>
+              <h3 id="b-status-title">Matching is in progress</h3>
+              <div class="status-hero"><strong>Awaiting assignment</strong><span>Wednesday / 10:00</span></div>
+              <ol class="status-timeline"><li class="is-complete"><strong>Payment confirmed</strong><span>10:03</span></li><li class="is-current"><strong>Finding your Zooter</strong><span>In progress</span></li><li><strong>Assigned</strong><span>Next update</span></li></ol>
+              <button class="primary-action cobalt" type="button">View booking</button>
+              <button class="secondary-action" type="button">Ask Concierge</button>
+            </div>
+          </article>
+
+          <article class="phone phone-b" aria-labelledby="b-issue-title">
+            <div class="phone-status"><span>18:12</span><span>Human support</span></div>
+            <div class="phone-body">
+              <header class="glass-nav compact"><button type="button">Back</button><strong>Get help</strong><span></span></header>
+              <h3 id="b-issue-title">A person should review this</h3>
+              <p class="screen-copy">Concierge organises the safe context, while you choose what is shared</p>
+              <div class="handoff-summary"><strong>Quality concern</strong><span>Home clean / 16 Jul</span><p>The kitchen counters need another look</p></div>
+              <label class="consent-row"><input type="checkbox" checked /> Share this summary with Zoot support</label>
+              <button class="primary-action cobalt" type="button">Send for human review</button>
+              <p class="helper-copy">The next update arrives through an approved Zoot support channel</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="direction direction-c" data-direction="c" aria-labelledby="direction-c-title" hidden>
+        <header class="direction-header">
+          <div>
+            <p class="direction-number">Direction C</p>
+            <h2 id="direction-c-title">Editorial Trust</h2>
+            <p class="direction-thesis">Process evidence and human context reduce hesitation before the customer commits</p>
+          </div>
+          <dl class="direction-facts">
+            <div><dt>Best for</dt><dd>Trust before first booking</dd></div>
+            <div><dt>Material</dt><dd>Quiet solid surfaces</dd></div>
+            <div><dt>Risk</dt><dd>Photography provenance must be approved</dd></div>
+          </dl>
+        </header>
+
+        <div class="asset-warning" role="note"><strong>Asset review</strong> The portrait below is an existing repository reference only and cannot become production trust evidence until provenance, consent and commissioning are approved</div>
+
+        <div class="phone-grid" aria-label="Editorial Trust connected flow">
+          <article class="phone phone-c" aria-labelledby="c-home-title">
+            <div class="phone-status"><span>09:41</span><span>Johannesburg</span></div>
+            <div class="phone-body edge-to-edge">
+              <header class="editorial-nav"><strong>Zoot</strong><button type="button">Account</button></header>
+              <figure class="editorial-photo"><img src="../../../src/assets/hero-zoot.jpg" alt="Existing Zoot visual reference" /><figcaption>Reference asset / not approved trust evidence</figcaption></figure>
+              <div class="editorial-copy"><p class="screen-kicker">Care built on continuity</p><h3 id="c-home-title">A cleaner home without starting from scratch each time</h3><p>Choose a service, keep your preferences and sign in only when you are ready</p></div>
+              <div class="editorial-services"><button type="button" class="is-selected">Home clean</button><button type="button">Deep clean</button><button type="button">Office</button></div>
+              <button class="primary-action rust" type="button">Plan my first clean</button>
+            </div>
+          </article>
+
+          <article class="phone phone-c" aria-labelledby="c-details-title">
+            <div class="phone-status"><span>09:42</span><span>Step 2 of 5</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <p class="screen-kicker">The visit</p>
+              <h3 id="c-details-title">Enough time for the home you described</h3>
+              <blockquote>Three hours gives the selected rooms a realistic service window</blockquote>
+              <div class="duration-list"><button type="button"><strong>2 hours</strong><span>Focused reset</span></button><button type="button" class="is-selected"><strong>3 hours</strong><span>Recommended for this scope</span></button><button type="button"><strong>4 hours</strong><span>More detailed attention</span></button></div>
+              <div class="editorial-note"><strong>What this means</strong><p>Duration guides scope, not a guaranteed outcome</p></div>
+              <button class="primary-action rust" type="button">Choose the date</button>
+            </div>
+          </article>
+
+          <article class="phone phone-c" aria-labelledby="c-slot-title">
+            <div class="phone-status"><span>09:43</span><span>Availability</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <p class="screen-kicker">Timing</p>
+              <h3 id="c-slot-title">A clear opening with no hidden promise</h3>
+              <div class="address-row"><div><strong>Home</strong><span>Rosebank</span></div><button type="button">Change</button></div>
+              <div class="editorial-calendar"><strong>Wednesday, 16 July</strong><span>Available starts</span><div class="time-grid"><button type="button">08:00</button><button type="button" class="is-selected">10:00</button><button type="button">13:00</button></div></div>
+              <div class="editorial-note"><strong>Before confirmation</strong><p>Zoot checks availability again and shows the verified payment state</p></div>
+              <button class="primary-action rust" type="button">Choose 10:00</button>
+            </div>
+          </article>
+
+          <article class="phone phone-c" aria-labelledby="c-auth-title">
+            <div class="phone-status"><span>09:44</span><span>Draft protected</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <p class="screen-kicker">Your plan is saved</p>
+              <h3 id="c-auth-title">Sign in only when the booking becomes yours</h3>
+              <div class="trust-points"><div><strong>No password required</strong><span>A secure link verifies your email</span></div><div><strong>Your draft stays here</strong><span>Return to the same review step</span></div><div><strong>No booking yet</strong><span>Nothing is created before confirmation</span></div></div>
+              <label class="field-label" for="c-email">Email address</label>
+              <input id="c-email" type="email" autocomplete="email" value="nkosi@example.com" />
+              <button class="primary-action rust" type="button">Email my secure link</button>
+            </div>
+          </article>
+
+          <article class="phone phone-c" aria-labelledby="c-review-title">
+            <div class="phone-status"><span>09:47</span><span>Review</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <p class="screen-kicker">Your clean</p>
+              <h3 id="c-review-title">Clear details before commitment</h3>
+              <div class="review-list editorial"><div><span>Service</span><strong>Home clean / 3 hr</strong></div><div><span>Date</span><strong>Wed 16 Jul / 10:00</strong></div><div><span>Area</span><strong>Rosebank</strong></div><div><span>Repeat</span><strong>Not enabled</strong></div></div>
+              <div class="editorial-note"><strong>Payment boundary</strong><p>The approved provider shows the final amount, while Zoot waits for server confirmation</p></div>
+              <button class="primary-action rust" type="button">Continue to secure payment</button>
+            </div>
+          </article>
+
+          <article class="phone phone-c" aria-labelledby="c-regular-title">
+            <div class="phone-status"><span>10:02</span><span>Continuity</span></div>
+            <div class="phone-body">
+              <p class="screen-kicker">A familiar routine</p>
+              <h3 id="c-regular-title">Keep the relationship, not the admin</h3>
+              <div class="profile-feature"><div class="initials rust" aria-hidden="true">TM</div><div><strong>Thandi M</strong><span>Preferred Zooter when available</span><p>Zoot asks before offering an alternative</p></div></div>
+              <div class="duration-list compact"><button type="button"><strong>Weekly</strong><span>Most regular</span></button><button type="button" class="is-selected"><strong>Fortnightly</strong><span>Selected</span></button><button type="button"><strong>Monthly</strong><span>Flexible</span></button></div>
+              <button class="primary-action rust" type="button">Review repeat plan</button>
+              <button class="text-action" type="button">Keep this once off</button>
+            </div>
+          </article>
+
+          <article class="phone phone-c" aria-labelledby="c-status-title">
+            <div class="phone-status"><span>10:04</span><span>Verified status</span></div>
+            <div class="phone-body">
+              <p class="screen-kicker">What happens next</p>
+              <h3 id="c-status-title">Zoot is matching your booking</h3>
+              <div class="status-quote"><strong>Awaiting assignment</strong><p>Payment confirmed, with a Zooter still to be assigned</p></div>
+              <ol class="status-timeline editorial"><li class="is-complete"><strong>Payment confirmed</strong><span>Complete</span></li><li class="is-current"><strong>Matching</strong><span>Now</span></li><li><strong>Assignment</strong><span>Next</span></li></ol>
+              <button class="primary-action rust" type="button">View booking details</button>
+              <button class="secondary-action" type="button">Speak to support</button>
+            </div>
+          </article>
+
+          <article class="phone phone-c" aria-labelledby="c-issue-title">
+            <div class="phone-status"><span>18:12</span><span>Service recovery</span></div>
+            <div class="phone-body">
+              <button class="back-button" type="button">Back</button>
+              <p class="screen-kicker">We will review this carefully</p>
+              <h3 id="c-issue-title">Describe the concern once</h3>
+              <p class="screen-copy">Your booking context is attached safely, while access details and payment data stay out of support chat</p>
+              <div class="issue-list editorial"><button type="button" class="is-selected">Quality concern</button><button type="button">Late or no arrival</button><button type="button">Safety or conduct</button></div>
+              <label class="field-label" for="c-issue">What happened?</label>
+              <textarea id="c-issue" rows="3">The kitchen counters need another look</textarea>
+              <div class="editorial-note"><strong>Next step</strong><p>A support person reviews the case, with no outcome promised before review</p></div>
+              <button class="primary-action rust" type="button">Send for review</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="state-matrix" aria-labelledby="state-matrix-title">
+        <div>
+          <p class="review-eyebrow">Required detailed-design states</p>
+          <h2 id="state-matrix-title">The selected direction must still be completed in Figma.</h2>
+          <p>Exploration proves product character, not production completeness. The owner-approved flow must include every state below before implementation.</p>
+        </div>
+        <ul>
+          <li>Loading, empty, partial, stale and offline</li>
+          <li>Invalid or out-of-area address</li>
+          <li>No availability and changed availability</li>
+          <li>Sign-in, callback, expiry and recovery errors</li>
+          <li>Payment pending, failed, cancelled and unknown</li>
+          <li>Duplicate submission and timeout recovery</li>
+          <li>Large text and keyboard-open layouts</li>
+          <li>VoiceOver, TalkBack and web focus order</li>
+          <li>Reduced motion and reduced transparency</li>
+          <li>Preferred-Zooter conflict and substitution choice</li>
+        </ul>
+      </section>
+
+      <section class="motion-panel" aria-labelledby="motion-title">
+        <div>
+          <p class="review-eyebrow">Motion and material contract</p>
+          <h2 id="motion-title">Responsive, never performative</h2>
+        </div>
+        <div class="motion-grid">
+          <article><strong>Tap</strong><p>100-180 ms tactile compression with immediate selection clarity</p></article>
+          <article><strong>Step change</strong><p>220-320 ms continuity without delaying focus or navigation</p></article>
+          <article><strong>Verified success</strong><p>350-500 ms restrained confirmation only after backend truth</p></article>
+          <article><strong>Reduced motion</strong><p>Render the settled state immediately and preserve all status information</p></article>
+          <article><strong>Clear glass</strong><p>Top-right light on web and Android fallback, with no idle shimmer or glass-on-glass</p></article>
+          <article><strong>Modal privacy</strong><p>A separate backdrop makes underlying text unreadable while content stays opaque</p></article>
+        </div>
+      </section>
+
+      <section class="owner-decision" aria-labelledby="owner-decision-title">
+        <div>
+          <p class="review-eyebrow">Owner decision</p>
+          <h2 id="owner-decision-title">Record a direction for Figma development</h2>
+          <p>This local choice is a review note only and never changes `approved-frames.json` or grants design approval</p>
+        </div>
+        <div class="owner-actions" role="group" aria-label="Record preferred direction">
+          <button type="button" data-owner-choice="A">Choose A</button>
+          <button type="button" data-owner-choice="B">Choose B</button>
+          <button type="button" data-owner-choice="C">Choose C</button>
+          <button type="button" data-owner-choice="B+C" aria-pressed="true">Choose B with C</button>
+        </div>
+        <p id="owner-choice-status" class="owner-choice-status" role="status">Current review preference: B + C hybrid - Figma approval still required</p>
+      </section>
+    </main>
+
+    <script src="./prototype.js"></script>
+  </body>
+</html>

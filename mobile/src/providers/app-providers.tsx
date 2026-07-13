@@ -1,48 +1,44 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import * as Sentry from '@sentry/react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { mobileEnv } from '@/lib/env';
 import { MobileAnalyticsProvider } from '@/lib/analytics';
 import { scrubMobileSentryEvent } from '@/lib/monitoring-privacy';
 import { AuthProvider } from '@/providers/auth-provider';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60_000,
-      gcTime: 10 * 60_000,
-      retry: 2,
-      refetchOnReconnect: true,
-      refetchOnWindowFocus: false,
-    },
-    mutations: {
-      retry: 0,
-    },
-  },
-});
-
 export function AppProviders({ children }: { children: React.ReactNode }) {
-  const [sentryReady, setSentryReady] = useState(false);
+  const sentryReady = useRef(false);
 
   useEffect(() => {
-    if (!mobileEnv.sentryDsn || sentryReady) return;
-    Sentry.init({
-      dsn: mobileEnv.sentryDsn,
-      environment: mobileEnv.appEnv || 'development',
-      enableNative: true,
-      tracesSampleRate: mobileEnv.appEnv === 'production' ? 0.15 : 1,
-      sendDefaultPii: false,
-      beforeSend: scrubMobileSentryEvent,
-    });
-    setSentryReady(true);
-  }, [sentryReady]);
+    if (!mobileEnv.sentryDsn || sentryReady.current) return;
+
+    let cancelled = false;
+    const initializeSentry = async () => {
+      try {
+        const Sentry = await import('@sentry/react-native');
+        if (cancelled || sentryReady.current) return;
+        Sentry.init({
+          dsn: mobileEnv.sentryDsn,
+          environment: mobileEnv.appEnv || 'development',
+          enableNative: true,
+          tracesSampleRate: mobileEnv.appEnv === 'production' ? 0.15 : 1,
+          sendDefaultPii: false,
+          beforeSend: scrubMobileSentryEvent,
+        });
+        sentryReady.current = true;
+      } catch (error) {
+        console.warn('[Zoot mobile] Sentry initialisation failed.', error);
+      }
+    };
+
+    void initializeSentry();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <MobileAnalyticsProvider>
-        <AuthProvider>{children}</AuthProvider>
-      </MobileAnalyticsProvider>
-    </QueryClientProvider>
+    <MobileAnalyticsProvider>
+      <AuthProvider>{children}</AuthProvider>
+    </MobileAnalyticsProvider>
   );
 }

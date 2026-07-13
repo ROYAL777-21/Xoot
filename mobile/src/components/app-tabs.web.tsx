@@ -28,9 +28,6 @@ export default function AppTabs() {
           <TabTrigger name="care-plus" href="/care-plus" asChild>
             <TabButton>Care+</TabButton>
           </TabTrigger>
-          <TabTrigger name="concierge" href="/concierge" asChild>
-            <TabButton>Concierge</TabButton>
-          </TabTrigger>
           <TabTrigger name="account" href="/account" asChild>
             <TabButton>Account</TabButton>
           </TabTrigger>

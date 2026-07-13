@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { type Href, useRouter } from 'expo-router';
-import { AccessibilityInfo, Animated, Easing, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { redactConciergeClientText } from '@/lib/concierge-privacy';
 import { invokeZootFunction } from '@/lib/edge-functions';
@@ -29,6 +29,7 @@ type ConciergeMessage = {
     label: string;
     to: string;
   };
+  retryText?: string;
 };
 
 const secretLikePattern =
@@ -50,20 +51,23 @@ const firstMessage: ConciergeMessage = {
 };
 
 const createMessageId = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+const genericOfflineReply =
+  'I can help with general Zoot questions, but live Concierge is not reachable right now. Try again, or sign in for protected help with an account, booking, payment, address or safety concern.';
 
 function RoboticStarMark() {
+  const theme = useTheme();
   return (
     <View style={styles.starShell}>
-      <View style={styles.starRayVertical} />
-      <View style={styles.starRayHorizontal} />
-      <View style={styles.starRayDiagonalA} />
-      <View style={styles.starRayDiagonalB} />
-      <View style={styles.starFace}>
+      <View style={[styles.starRayVertical, { backgroundColor: theme.accent }]} />
+      <View style={[styles.starRayHorizontal, { backgroundColor: theme.accent }]} />
+      <View style={[styles.starRayDiagonalA, { backgroundColor: theme.accent }]} />
+      <View style={[styles.starRayDiagonalB, { backgroundColor: theme.accent }]} />
+      <View style={[styles.starFace, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
         <View style={styles.starEyes}>
-          <View style={styles.starEye} />
-          <View style={styles.starEye} />
+          <View style={[styles.starEye, { backgroundColor: theme.accent }]} />
+          <View style={[styles.starEye, { backgroundColor: theme.accent }]} />
         </View>
-        <View style={styles.starMouth} />
+        <View style={[styles.starMouth, { backgroundColor: theme.accent }]} />
       </View>
     </View>
   );
@@ -78,6 +82,12 @@ export default function ConciergeScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(true);
   const pulse = useRef(new Animated.Value(0)).current;
+  const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: !prefersReducedMotion }), 40);
+    return () => clearTimeout(timeout);
+  }, [isSubmitting, messages, prefersReducedMotion]);
 
   useEffect(() => {
     let mounted = true;
@@ -165,14 +175,12 @@ export default function ConciergeScreen() {
     }
   };
 
-  const askConcierge = async () => {
-    const trimmedMessage = message.trim();
+  const askConcierge = async (overrideMessage?: string) => {
+    const trimmedMessage = (overrideMessage ?? message).trim();
     if (trimmedMessage.length < 3 || isSubmitting) return;
 
-    setMessage('');
-    appendMessage({ role: 'user', body: trimmedMessage });
-
     if (secretLikePattern.test(trimmedMessage)) {
+      setMessage('');
       appendMessage({
         role: 'system',
         body: 'For safety, do not send passwords, OTPs, card details, gate codes, alarm codes or lockbox details to chat. Keep private access details inside protected booking fields.',
@@ -182,14 +190,35 @@ export default function ConciergeScreen() {
       return;
     }
 
+    setMessage('');
+    appendMessage({ role: 'user', body: trimmedMessage });
+
+    const localReply = getLocalZootConciergeReply(trimmedMessage, Boolean(user));
+    if (localReply) {
+      appendMessage({
+        role: 'assistant',
+        body: localReply.response,
+        source: localReply.source,
+        escalated: localReply.escalated,
+        knowledgeVersion: 'local',
+        cta: localReply.cta,
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const recentContext = [...messages.slice(-6), { role: 'user' as const, body: trimmedMessage }]
+        .map((item) => `${item.role}: ${redactConciergeClientText(item.body, 240)}`)
+        .join('\n')
+        .slice(0, 1600);
       const response = await invokeZootFunction<SupportResponse>('support-respond', {
         subject: 'Mobile concierge question',
         body: trimmedMessage,
+        conversation_context: recentContext,
         role: 'user',
         guest: !user,
-      });
+      }, { timeoutMs: 9_000 });
       appendMessage({
         role: 'assistant',
         body: response.response,
@@ -206,13 +235,12 @@ export default function ConciergeScreen() {
         });
       }
     } catch {
-      const localReply = getLocalZootConciergeReply(trimmedMessage, Boolean(user));
       appendMessage({
         role: 'assistant',
-        body: `${localReply?.response ?? 'I can help with general Zoot questions, but I cannot reach live support right now.'} Live support is not reachable in this session, so I cannot perform account, booking, payment or admin actions here.`,
-        source: localReply?.source ?? 'local_knowledge',
-        escalated: localReply?.escalated ?? true,
-        cta: localReply?.cta,
+        body: genericOfflineReply,
+        source: 'human_escalation',
+        escalated: true,
+        retryText: trimmedMessage,
       });
     } finally {
       setIsSubmitting(false);
@@ -223,11 +251,16 @@ export default function ConciergeScreen() {
   const starGlow = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.28, 0.72] });
 
   return (
-    <ZootScreen>
+    <ZootScreen scrollRef={scrollRef}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <LiquidCard style={styles.heroCard}>
           <View style={styles.heroRow}>
-            <Animated.View style={[styles.starWrap, !prefersReducedMotion && { opacity: starGlow, transform: [{ scale: starScale }] }]}>
+            <Animated.View
+              style={[
+                styles.starWrap,
+                { backgroundColor: theme.accentSoft, borderColor: theme.border },
+                !prefersReducedMotion && { opacity: starGlow, transform: [{ scale: starScale }] },
+              ]}>
               <RoboticStarMark />
             </Animated.View>
             <View style={styles.heroCopy}>
@@ -254,15 +287,10 @@ export default function ConciergeScreen() {
                       borderColor: item.role === 'system' ? theme.danger : theme.border,
                     },
                   ]}>
-                  <Text selectable style={[styles.messageText, { color: item.role === 'user' ? Colors.dark.background : theme.text }]}>
+                  <Text selectable style={[styles.messageText, { color: item.role === 'user' ? '#ffffff' : theme.text }]}>
                     {item.body}
                   </Text>
-                  {item.source ? (
-                    <Text style={[styles.messageMeta, { color: item.role === 'user' ? 'rgba(7, 16, 10, 0.68)' : theme.textSecondary }]}>
-                      {item.source.replace(/_/g, ' ')}
-                      {item.escalated ? ' - human review' : ''}
-                    </Text>
-                  ) : null}
+                  {item.escalated ? <Text style={[styles.messageMeta, { color: theme.textSecondary }]}>Human review recommended</Text> : null}
                   {item.cta || (item.role === 'assistant' && item.id !== 'welcome') ? (
                     <View style={styles.messageActions}>
                       {item.cta ? (
@@ -271,9 +299,16 @@ export default function ConciergeScreen() {
                         </SecondaryButton>
                       ) : null}
                       {item.role === 'assistant' && item.id !== 'welcome' ? (
-                        <SecondaryButton onPress={() => reportAnswer(item)} style={styles.messageActionButton}>
-                          Report answer
-                        </SecondaryButton>
+                        <>
+                          {item.retryText ? (
+                            <SecondaryButton onPress={() => askConcierge(item.retryText)} style={styles.messageActionButton}>
+                              Retry
+                            </SecondaryButton>
+                          ) : null}
+                          <SecondaryButton onPress={() => reportAnswer(item)} style={styles.messageActionButton}>
+                            Report answer
+                          </SecondaryButton>
+                        </>
                       ) : null}
                     </View>
                   ) : null}
@@ -293,7 +328,7 @@ export default function ConciergeScreen() {
         {messages.length <= 1 ? (
           <View style={styles.quickPrompts}>
             {quickPrompts.map((prompt) => (
-              <SecondaryButton key={prompt} onPress={() => setMessage(prompt)} style={styles.quickPrompt}>
+              <SecondaryButton key={prompt} onPress={() => askConcierge(prompt)} style={styles.quickPrompt}>
                 {prompt}
               </SecondaryButton>
             ))}
@@ -310,17 +345,21 @@ export default function ConciergeScreen() {
             style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.backgroundElement }]}
             textAlignVertical="top"
             returnKeyType="send"
+            maxLength={600}
+            onSubmitEditing={() => {
+              if (message.trim().length >= 3) void askConcierge();
+            }}
           />
           <View style={styles.inputActions}>
             <Body muted>No passwords, OTPs, access codes or card details.</Body>
-            <PrimaryButton disabled={isSubmitting || message.trim().length < 3} onPress={askConcierge}>
+            <PrimaryButton disabled={isSubmitting || message.trim().length < 3} onPress={() => askConcierge()}>
               {isSubmitting ? 'Asking' : 'Send'}
             </PrimaryButton>
           </View>
         </LiquidCard>
 
-        <View style={styles.supportNote}>
-          <Text selectable style={styles.supportNoteText}>
+        <View style={[styles.supportNote, { borderColor: theme.border }]}>
+          <Text selectable style={[styles.supportNoteText, { color: theme.textSecondary }]}>
             Refunds, payments, damage, theft, safety, legal or account-risk issues need protected human support.
           </Text>
         </View>
@@ -344,8 +383,6 @@ const styles = StyleSheet.create({
   },
   starWrap: {
     alignItems: 'center',
-    backgroundColor: 'rgba(216, 178, 110, 0.18)',
-    borderColor: 'rgba(255, 248, 236, 0.42)',
     borderCurve: 'continuous',
     borderRadius: 30,
     borderWidth: 1,
@@ -361,21 +398,18 @@ const styles = StyleSheet.create({
     width: 54,
   },
   starRayVertical: {
-    backgroundColor: Colors.dark.accent,
     borderRadius: 999,
     height: 52,
     position: 'absolute',
     width: 9,
   },
   starRayHorizontal: {
-    backgroundColor: Colors.dark.accent,
     borderRadius: 999,
     height: 9,
     position: 'absolute',
     width: 52,
   },
   starRayDiagonalA: {
-    backgroundColor: Colors.dark.accent,
     borderRadius: 999,
     height: 8,
     position: 'absolute',
@@ -383,7 +417,6 @@ const styles = StyleSheet.create({
     width: 42,
   },
   starRayDiagonalB: {
-    backgroundColor: Colors.dark.accent,
     borderRadius: 999,
     height: 8,
     position: 'absolute',
@@ -392,8 +425,6 @@ const styles = StyleSheet.create({
   },
   starFace: {
     alignItems: 'center',
-    backgroundColor: 'rgba(7, 16, 10, 0.86)',
-    borderColor: 'rgba(255, 248, 236, 0.34)',
     borderRadius: 16,
     borderWidth: 1,
     gap: 5,
@@ -406,13 +437,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   starEye: {
-    backgroundColor: Colors.dark.accent,
     borderRadius: 999,
     height: 4,
     width: 4,
   },
   starMouth: {
-    backgroundColor: 'rgba(216, 178, 110, 0.82)',
     borderRadius: 999,
     height: 3,
     width: 13,
@@ -472,20 +501,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     fontSize: 16,
-    minHeight: 120,
+    minHeight: 64,
     padding: 16,
   },
   inputActions: {
     gap: Spacing.three,
   },
   supportNote: {
-    borderColor: 'rgba(255, 250, 242, 0.14)',
     borderRadius: 18,
     borderWidth: 1,
     padding: Spacing.three,
   },
   supportNoteText: {
-    color: Colors.dark.textSecondary,
     fontSize: 12,
     fontWeight: '700',
     lineHeight: 18,

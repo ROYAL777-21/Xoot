@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Zoot approved Figma frames",
+  "type": "object",
+  "required": ["version", "frames"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "updatedAt": { "type": ["string", "null"], "format": "date-time" },
+    "frames": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["figmaFileKey", "nodeId", "label", "platform", "approvedBy", "approvedAt"],
+        "properties": {
+          "figmaFileKey": { "type": "string", "minLength": 1 },
+          "nodeId": { "type": "string", "minLength": 1 },
+          "label": { "const": "APPROVED BY OWNER" },
+          "platform": { "enum": ["web", "mobile", "admin", "operations", "shared"] },
+          "approvedBy": { "type": "string", "minLength": 1 },
+          "approvedAt": { "type": "string", "format": "date-time" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

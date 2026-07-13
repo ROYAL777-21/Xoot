@@ -19,7 +19,7 @@ const sentryUploadPlugin: NonNullable<ExpoConfig['plugins']>[number] | null =
     : null;
 
 const bundleId = isProduction ? 'za.co.zoothome.app' : 'za.co.zoothome.app.preview';
-const appName = isProduction ? 'Zoot' : 'Zoot Preview';
+const appName = 'Zoot';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'zoot',
-  userInterfaceStyle: 'dark',
+  userInterfaceStyle: 'light',
   runtimeVersion: {
     policy: 'appVersion',
   },
@@ -60,7 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config.android,
     package: bundleId,
     adaptiveIcon: {
-      backgroundColor: '#0f1711',
+      backgroundColor: '#f5f7f5',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -113,14 +113,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         icon: './assets/images/android-icon-monochrome.png',
-        color: '#d8b26e',
+        color: '#176b45',
         defaultChannel: 'zoot-service-updates',
       },
     ],
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#0f1711',
+        backgroundColor: '#f5f7f5',
         image: './assets/images/splash-icon.png',
         imageWidth: 88,
         android: {

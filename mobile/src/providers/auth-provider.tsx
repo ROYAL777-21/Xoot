@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 
+import { subscribeToAuthLinks } from '@/lib/auth-links';
 import { supabase } from '@/lib/supabase';
 
 type AuthState = {
@@ -29,9 +30,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(nextSession);
       setIsLoading(false);
     });
+    const unsubscribeFromAuthLinks = subscribeToAuthLinks((error) => {
+      console.warn('Zoot auth callback failed', error.message);
+      setIsLoading(false);
+    });
 
     return () => {
       isMounted = false;
+      unsubscribeFromAuthLinks();
       data.subscription.unsubscribe();
     };
   }, []);

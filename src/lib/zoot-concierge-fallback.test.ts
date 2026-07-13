@@ -43,4 +43,13 @@ describe("Zoot Concierge local knowledge fallback", () => {
     expect(response).toContain("Do not put access codes");
     expect(response).not.toContain("/app");
   });
+
+  it("lets complex questions reach the grounded server answer layer", () => {
+    expect(
+      getLocalZootConciergeReply(
+        "How can I build a long-term operations plan that balances quality, budgets and changing staff?",
+        true,
+      ),
+    ).toBeNull();
+  });
 });

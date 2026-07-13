@@ -1,17 +1,31 @@
 import { GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect';
-import { Pressable, ScrollView, StyleSheet, Text, type PressableProps, View, type ViewProps } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, type PressableProps, View, type ViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ConciergeLauncher } from '@/components/concierge-launcher';
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-export function ZootScreen({ children }: { children: React.ReactNode }) {
+export function ZootScreen({
+  children,
+  scrollRef,
+  showConciergeLauncher = true,
+}: {
+  children: React.ReactNode;
+  scrollRef?: React.RefObject<ScrollView | null>;
+  showConciergeLauncher?: boolean;
+}) {
   const theme = useTheme();
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {showConciergeLauncher ? (
+          <View style={styles.toolbar}>
+            <ConciergeLauncher />
+          </View>
+        ) : null}
+        <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {children}
         </ScrollView>
       </SafeAreaView>
@@ -27,15 +41,14 @@ export function LiquidCard({ children, style }: ViewProps) {
     <View style={[styles.card, { borderColor: theme.border, backgroundColor: theme.backgroundElement }, style]}>
       {glassAvailable ? (
         <GlassView
-          colorScheme="dark"
+          colorScheme={theme.background === Colors.dark.background ? 'dark' : 'light'}
           glassEffectStyle="clear"
-          tintColor="rgba(216, 178, 110, 0.18)"
+          tintColor={theme.background === Colors.dark.background ? 'rgba(216, 178, 110, 0.18)' : 'rgba(255, 255, 255, 0.28)'}
           style={StyleSheet.absoluteFill}
           isInteractive
         />
       ) : null}
-      <View pointerEvents="none" style={styles.glassTopLight} />
-      <View pointerEvents="none" style={styles.glassEdgeLight} />
+      <View style={styles.glassEdgeLight} />
       <View style={styles.cardContent}>{children}</View>
     </View>
   );
@@ -56,43 +69,53 @@ export function Body({ children, muted = false }: { children: React.ReactNode; m
   return <Text style={[styles.body, { color: muted ? theme.textSecondary : theme.text }]}>{children}</Text>;
 }
 
-export function PrimaryButton({ children, style, ...props }: PressableProps & { children: React.ReactNode }) {
+export function PrimaryButton({
+  children,
+  style,
+  accessibilityRole = 'button',
+  ...props
+}: PressableProps & { children: React.ReactNode }) {
   const theme = useTheme();
   return (
     <Pressable
+      accessibilityRole={accessibilityRole}
       {...props}
-      style={({ pressed }) => [
+      style={(state) => [
         styles.primaryButton,
-        { backgroundColor: pressed ? theme.accentSoft : theme.accent },
-        pressed && styles.pressed,
-        typeof style === 'function' ? style({ pressed }) : style,
+        { backgroundColor: state.pressed ? theme.accentSoft : theme.accent },
+        state.pressed && styles.pressed,
+        typeof style === 'function' ? style(state) : style,
       ]}>
       {({ pressed }) => (
         <>
-          <View pointerEvents="none" style={styles.buttonTopLight} />
-          <View pointerEvents="none" style={[styles.buttonGlint, pressed && styles.buttonGlintPressed]} />
-          <Text style={[styles.primaryButtonText, { color: Colors.dark.background }]}>{children}</Text>
+          <View style={[styles.buttonGlint, pressed && styles.buttonGlintPressed]} />
+          <Text style={[styles.primaryButtonText, { color: '#ffffff' }]}>{children}</Text>
         </>
       )}
     </Pressable>
   );
 }
 
-export function SecondaryButton({ children, style, ...props }: PressableProps & { children: React.ReactNode }) {
+export function SecondaryButton({
+  children,
+  style,
+  accessibilityRole = 'button',
+  ...props
+}: PressableProps & { children: React.ReactNode }) {
   const theme = useTheme();
   return (
     <Pressable
+      accessibilityRole={accessibilityRole}
       {...props}
-      style={({ pressed }) => [
+      style={(state) => [
         styles.secondaryButton,
-        { borderColor: theme.border, backgroundColor: pressed ? theme.backgroundSelected : 'transparent' },
-        pressed && styles.pressed,
-        typeof style === 'function' ? style({ pressed }) : style,
+        { borderColor: theme.border, backgroundColor: state.pressed ? theme.backgroundSelected : 'transparent' },
+        state.pressed && styles.pressed,
+        typeof style === 'function' ? style(state) : style,
       ]}>
       {({ pressed }) => (
         <>
-          <View pointerEvents="none" style={styles.buttonTopLight} />
-          <View pointerEvents="none" style={[styles.buttonGlint, pressed && styles.buttonGlintPressed]} />
+          <View style={[styles.buttonGlint, pressed && styles.buttonGlintPressed]} />
           <Text style={[styles.secondaryButtonText, { color: theme.text }]}>{children}</Text>
         </>
       )}
@@ -117,6 +140,11 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  toolbar: {
+    alignItems: 'flex-end',
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.two,
+  },
   content: {
     alignSelf: 'center',
     gap: Spacing.four,
@@ -129,19 +157,15 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 1,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.34,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: 18 },
-  },
-  glassTopLight: {
-    position: 'absolute',
-    right: -40,
-    top: -48,
-    width: 160,
-    height: 160,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    ...Platform.select({
+      web: { boxShadow: '0 18px 30px rgba(0, 0, 0, 0.34)' },
+      default: {
+        shadowColor: '#000',
+        shadowOpacity: 0.34,
+        shadowRadius: 30,
+        shadowOffset: { width: 0, height: 18 },
+      },
+    }),
   },
   glassEdgeLight: {
     position: 'absolute',
@@ -155,6 +179,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255, 255, 255, 0.08)',
     borderLeftColor: 'rgba(255, 255, 255, 0.14)',
     borderWidth: 1,
+    pointerEvents: 'none',
   },
   cardContent: {
     gap: Spacing.three,
@@ -207,15 +232,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     zIndex: 1,
   },
-  buttonTopLight: {
-    position: 'absolute',
-    right: -28,
-    top: -42,
-    width: 104,
-    height: 104,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
-  },
   buttonGlint: {
     position: 'absolute',
     right: 14,
@@ -225,6 +241,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(255, 255, 255, 0.22)',
     opacity: 0.42,
+    pointerEvents: 'none',
     transform: [{ rotate: '-12deg' }],
   },
   buttonGlintPressed: {
