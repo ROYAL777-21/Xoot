@@ -44,7 +44,7 @@ describe("mobile monitoring privacy", () => {
   });
 
   it("scrubs Sentry-like mobile events before sending", () => {
-    const event = scrubMobileSentryEvent({
+    const event = scrubMobileSentryEvent<any>({
       message: "Failed booking for user@example.com at 12 Main Road",
       user: { id: "admin-user", email: "admin@example.com" },
       request: {
