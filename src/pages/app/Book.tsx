@@ -122,6 +122,10 @@ const Book = () => {
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [bookingStatus, setBookingStatus] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   const size = HOME_SIZES.find((s) => s.id === homeSize) ?? HOME_SIZES[0];
   const length = SERVICE_LENGTHS.find((option) => option.id === serviceLength) ?? SERVICE_LENGTHS[1];
   const totalWorkers = Math.max(1, workerCount);
@@ -273,14 +277,15 @@ const Book = () => {
   const maxPick = allowsMultipleWorkers(active) ? workerCount : 1;
 
   return (
-    <div className="container py-5 lg:py-10 max-w-4xl">
+    <div className="container py-5 lg:py-10 max-w-4xl pb-32 md:pb-10">
       <div className="flex items-start justify-between gap-3 mb-5 lg:mb-6">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-2 border border-accent/20">
             <Sparkles className="h-3 w-3 text-sage-deep" />
-            <span className="text-xs font-medium text-sage-deep">Book a clean</span>
+            <span className="text-xs font-medium text-sage-deep">Book a clean · takes under a minute</span>
           </div>
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Book a Zooter</h1>
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Your home, handled.</h1>
+          <p className="mt-1 text-sm text-muted-foreground hidden sm:block">Four calm steps. Vetted Zooter. Price you see is the price you pay.</p>
         </div>
         <div className="lg:block hidden"><NotificationBell /></div>
       </div>
