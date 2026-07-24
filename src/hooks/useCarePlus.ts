@@ -249,7 +249,7 @@ export const useCarePlus = () => {
           .from("bookings")
           .select("id,scheduled_at,status")
           .eq("user_id", user.id)
-          .in("status", ["completed", "rated"])
+          .in("status", ["completed", "rated"] as any)
           .order("scheduled_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
