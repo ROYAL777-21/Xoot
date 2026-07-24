@@ -238,7 +238,7 @@ export const buildPersonalizedNotificationDecision = (input: NotificationDecisio
     return { status: "route_only", channels: ["in_app"], title: safeTitle, body: safeBody, route, reasonCodes: ["recent_route_opened"], personalizationTags };
   }
 
-  let channels = getCandidateChannels(input);
+  let channels: ZootNotificationChannel[] = getCandidateChannels(input);
 
   if (input.profile.behaviorSignals?.includes("inactive_14d") && urgency === "low") {
     channels = channels.filter((channel) => channel === "in_app" || channel === "brevo_email");
