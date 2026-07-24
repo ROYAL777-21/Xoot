@@ -518,6 +518,29 @@ const Book = () => {
       {step === 4 && (
         <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5"><div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div><h2 className="font-display text-3xl font-bold">Booking draft created</h2><p className="text-muted-foreground max-w-md mx-auto">Your server-priced booking draft is ready. Zoot confirms payment from the provider webhook before assignment is finalised.</p>{bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus}</span></div>}<div className="flex flex-col sm:flex-row gap-2 justify-center"><Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); }} variant="outline" className="rounded-full">Book another</Button><Button asChild className="rounded-full gradient-warm"><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button></div></div>
       )}
+
+      {step < 3 && (
+        <div className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-border bg-background/95 backdrop-blur-lg shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.15)]" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+          <div className="container flex items-center justify-between gap-3 py-3">
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Estimate</p>
+              <p className="font-display text-lg font-bold leading-tight truncate">{formatZAR(bookingTotal)}</p>
+              <p className="text-[11px] text-muted-foreground truncate">{estHours}h · {length.label}</p>
+            </div>
+            <Button
+              onClick={() => {
+                if (step === 0) setStep(1);
+                else if (step === 1 && validateStep()) setStep(2);
+                else if (step === 2 && validateStep()) setStep(3);
+              }}
+              disabled={step === 2 && picked.length === 0}
+              className="rounded-2xl h-12 px-5 gradient-warm font-semibold shrink-0"
+            >
+              {step === 2 ? "Review" : "Continue"} <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
