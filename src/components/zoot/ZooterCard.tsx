@@ -55,15 +55,15 @@ export const ZooterCard = ({ z, onBook, actionLabel }: { z: Zooter; onBook?: (z:
 
   return (
     <article className="group rounded-3xl bg-card border border-border overflow-hidden shadow-card hover:shadow-warm transition-all duration-500 hover:-translate-y-1 flex flex-col">
-      <div className="relative aspect-[4/5] overflow-hidden">
+      <div className="relative aspect-4/5 overflow-hidden">
         <img src={resolvePhoto(z.photo_url)} alt={`${z.name}, professional cleaner`} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-transparent to-transparent" />
-        <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-background/95 backdrop-blur px-2.5 py-1 text-xs font-semibold shadow-card">
+        <div className="absolute inset-0 bg-linear-to-t from-ink/75 via-transparent to-transparent" />
+        <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-background/95 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold shadow-card">
           <Star className="h-3 w-3 fill-primary text-primary" />{Number(z.rating).toFixed(2)}
         </div>
         <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
           {z.is_zotm && (<div className="flex items-center gap-1 rounded-full bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold shadow-warm"><Crown className="h-3 w-3" /> ZOTM</div>)}
-          <button onClick={(e) => { e.stopPropagation(); toggleFavorite(z.id); }} className="grid place-items-center h-8 w-8 rounded-full bg-background/95 backdrop-blur shadow-card hover:scale-110 transition-transform" aria-label={fav ? "Unfavorite" : "Favorite"}>
+          <button onClick={(e) => { e.stopPropagation(); toggleFavorite(z.id); }} className="grid place-items-center h-8 w-8 rounded-full bg-background/95 backdrop-blur-sm shadow-card hover:scale-110 transition-transform" aria-label={fav ? "Unfavorite" : "Favorite"}>
             <Heart className={`h-4 w-4 ${fav ? "fill-primary text-primary" : "text-muted-foreground"}`} />
           </button>
           <div className="grid place-items-center h-7 w-7 rounded-full bg-sage text-primary-foreground shadow-card"><BadgeCheck className="h-4 w-4" /></div>

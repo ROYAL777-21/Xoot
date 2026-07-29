@@ -71,7 +71,7 @@ const Loyalty = () => {
             <p className="text-sm opacity-90">Available free cleans</p>
             <p className="font-display text-6xl font-bold">{loyalty?.free_credits ?? 0}</p>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-background/20 px-3 py-1.5 text-sm font-bold backdrop-blur">
+          <div className="flex items-center gap-1.5 rounded-full bg-background/20 px-3 py-1.5 text-sm font-bold backdrop-blur-sm">
             <Trophy className="h-4 w-4" /> {tier} tier
           </div>
         </div>

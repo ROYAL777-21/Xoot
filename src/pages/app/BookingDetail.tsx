@@ -394,7 +394,7 @@ const BookingDetail = () => {
       <div className="grid lg:grid-cols-[1fr_400px] gap-5">
         <div className="space-y-5">
           <Card className="rounded-3xl overflow-hidden border-border">
-            <div className="relative h-64 bg-gradient-to-br from-sage/20 via-accent-soft to-cream">
+            <div className="relative h-64 bg-linear-to-br from-sage/20 via-accent-soft to-cream">
               <svg className="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 400 250">
                 <path d="M0 120 Q100 80 200 130 T400 110" stroke="hsl(var(--sage-deep))" strokeWidth="2" fill="none" />
                 <path d="M50 0 L120 250" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.4" />
@@ -403,10 +403,10 @@ const BookingDetail = () => {
               <div className="absolute top-1/3 left-1/4 grid place-items-center h-10 w-10 rounded-full bg-primary text-primary-foreground shadow-warm animate-pulse"><MapPin className="h-5 w-5" /></div>
               <div className="absolute bottom-1/4 right-1/3 grid place-items-center h-10 w-10 rounded-full bg-foreground text-background shadow-warm"><span className="text-xs font-bold">YOU</span></div>
               <div className="absolute top-3 left-3 right-3 flex justify-between">
-                <div className="rounded-full bg-background/95 backdrop-blur px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-card">
+                <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-card">
                   <span className="h-2 w-2 rounded-full bg-sage animate-pulse" />{canonicalStatus === "en_route" ? `Arriving in ${eta} min` : visibleStatus}
                 </div>
-                <div className="rounded-full bg-background/95 backdrop-blur px-3 py-1.5 text-xs font-bold shadow-card">R{Number(booking.price).toFixed(0)}</div>
+                <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold shadow-card">R{Number(booking.price).toFixed(0)}</div>
               </div>
             </div>
 

@@ -36,7 +36,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
     <div className="min-h-screen flex bg-background">
       <aside
         data-scrolled={scrolled ? "true" : "false"}
-        className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-[2rem] p-4 sticky top-3 h-[calc(100vh-1.5rem)]"
+        className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-4xl p-4 sticky top-3 h-[calc(100vh-1.5rem)]"
       >
         <div className="liquid-glass-readable flex items-center justify-between mb-8">
           <NavLink to="/" className="flex items-center gap-2 interactive-press" onClick={() => haptic("selection")}>

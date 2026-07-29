@@ -171,7 +171,7 @@ const Plans = () => {
           </ul>
         </Card>
 
-        <Card className="rounded-3xl border-accent/30 bg-gradient-to-br from-accent-soft via-card to-card p-6">
+        <Card className="rounded-3xl border-accent/30 bg-linear-to-br from-accent-soft via-card to-card p-6">
           <div className="mb-5 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-sage-deep" /><h2 className="font-display text-2xl font-bold">Home Memory</h2></div>
           {household.homeMemory ? (
             <div className="space-y-3 text-sm">

@@ -52,7 +52,7 @@ export const NativePushPrompt = () => {
     <div className="border-b border-border bg-muted/30 px-4 py-3">
       <Button
         type="button"
-        variant={isEnabled ? "secondary" : "outline"}
+        variant={isEnabled ? "secondary" : "outline-solid"}
         size="sm"
         className="h-9 w-full justify-start rounded-xl"
         onClick={() => void enableNotifications()}

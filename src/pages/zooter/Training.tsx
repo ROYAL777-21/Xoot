@@ -172,7 +172,7 @@ const Training = () => {
       <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-4 mb-8">
         <Card className="p-5 rounded-3xl gradient-sage text-primary-foreground border-0 shadow-warm">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-background/20 backdrop-blur">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-background/20 backdrop-blur-sm">
               <Trophy className="h-7 w-7" />
             </div>
             <div className="flex-1">
@@ -373,7 +373,7 @@ const ModuleCard = ({
         ) : (
           <span className="text-xs text-muted-foreground">Not completed</span>
         )}
-        <Button size="sm" variant={passed ? "outline" : "default"} className="rounded-full" onClick={() => onOpen(module)}>
+        <Button size="sm" variant={passed ? "outline-solid" : "default"} className="rounded-full" onClick={() => onOpen(module)}>
           {passed ? "Retake" : "Start"}
         </Button>
       </div>

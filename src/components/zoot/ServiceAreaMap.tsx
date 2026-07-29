@@ -108,12 +108,12 @@ export const ServiceAreaMap = () => {
           </div>
         </div>
 
-        <div className="liquid-glass-shell relative min-h-[22rem] overflow-hidden rounded-[2rem] shadow-warm">
+        <div className="liquid-glass-shell relative min-h-88 overflow-hidden rounded-4xl shadow-warm">
           {mapboxToken ? (
             <>
               <div ref={mapContainerRef} className="absolute inset-0" aria-label="Zoot service area map" />
               {!mapReady && (
-                <div className="liquid-glass-readable absolute inset-4 grid place-items-center rounded-[1.5rem] bg-background/70 text-sm font-semibold text-muted-foreground">
+                <div className="liquid-glass-readable absolute inset-4 grid place-items-center rounded-3xl bg-background/70 text-sm font-semibold text-muted-foreground">
                   Loading service map
                 </div>
               )}

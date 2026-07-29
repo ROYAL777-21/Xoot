@@ -47,7 +47,7 @@ export const HowItWorks = () => {
                   className="group relative rounded-3xl bg-card border border-border p-6 md:p-7 shadow-card hover:shadow-warm transition-all duration-500"
                 >
                   <div className="flex gap-5 items-start">
-                    <div className="relative flex-shrink-0">
+                    <div className="relative shrink-0">
                       <div className="grid place-items-center h-14 w-14 rounded-2xl gradient-warm shadow-warm">
                         <Icon className="h-6 w-6 text-primary-foreground" />
                       </div>

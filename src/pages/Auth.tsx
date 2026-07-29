@@ -390,7 +390,7 @@ const Auth = () => {
         canonical="/auth"
         noIndex
       />
-      <Card className="w-full max-w-[23rem] rounded-3xl border-border p-5 shadow-warm sm:max-w-md sm:p-8">
+      <Card className="w-full max-w-92 rounded-3xl border-border p-5 shadow-warm sm:max-w-md sm:p-8">
         <Link to="/" className="mb-5 flex items-center gap-2 sm:mb-6" aria-label="Back to Zoot home">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-warm shadow-warm">
             <span className="font-display text-lg font-bold text-primary-foreground">Z</span>

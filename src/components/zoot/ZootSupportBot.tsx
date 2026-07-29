@@ -252,7 +252,7 @@ export const ZootSupportBot = () => {
           <div className="liquid-glass-readable flex items-center justify-between gap-3 border-b border-border/55 px-4 py-3.5">
             <div className="flex items-center gap-3">
               <div className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-[1.2rem] gradient-warm text-primary-foreground shadow-warm">
-                <span className="absolute inset-x-1 top-1 h-3 rounded-full bg-white/35 blur-sm" />
+                <span className="absolute inset-x-1 top-1 h-3 rounded-full bg-white/35 blur-xs" />
                 <RoboticStarIcon className="relative h-6 w-6" />
               </div>
               <div>
@@ -287,7 +287,7 @@ export const ZootSupportBot = () => {
                     {message.cta && (
                       <Link
                         to={message.cta.to}
-                        className="mt-2 inline-flex w-fit items-center rounded-full border border-white/30 bg-white/18 px-2.5 py-1 text-[11px] font-semibold shadow-sm transition-smooth hover:bg-white/28"
+                        className="mt-2 inline-flex w-fit items-center rounded-full border border-white/30 bg-white/18 px-2.5 py-1 text-[11px] font-semibold shadow-xs transition-smooth hover:bg-white/28"
                       >
                         {message.cta.label}
                       </Link>

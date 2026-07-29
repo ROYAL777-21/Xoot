@@ -6,9 +6,9 @@ export const BecomeZooter = () => {
   return (
     <section id="become-zooter" className="py-20 md:py-28 bg-secondary/40 border-y border-border">
       <div className="container">
-        <div className="rounded-[2rem] gradient-warm p-10 md:p-16 shadow-warm text-primary-foreground relative overflow-hidden">
+        <div className="rounded-4xl gradient-warm p-10 md:p-16 shadow-warm text-primary-foreground relative overflow-hidden">
           <div className="relative max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 px-3 py-1 mb-5 backdrop-blur">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 px-3 py-1 mb-5 backdrop-blur-sm">
               <Sparkles className="h-3 w-3" />
               <span className="text-xs font-semibold">Join the Zoot marketplace</span>
             </div>

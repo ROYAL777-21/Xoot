@@ -36,7 +36,7 @@ const Training = () => {
         <Card className="p-6 rounded-3xl gradient-warm text-primary-foreground border-0 mb-8 flex items-center gap-5 shadow-warm">
           <img src={resolvePhoto(zotm.photo_url)} alt={zotm.name} className="h-20 w-20 rounded-2xl object-cover border-2 border-background" />
           <div className="flex-1">
-            <div className="inline-flex items-center gap-1 rounded-full bg-background/20 backdrop-blur px-2.5 py-1 text-xs font-bold mb-1">
+            <div className="inline-flex items-center gap-1 rounded-full bg-background/20 backdrop-blur-sm px-2.5 py-1 text-xs font-bold mb-1">
               <Crown className="h-3 w-3" /> ZOOTER OF THE MONTH
             </div>
             <p className="font-display text-2xl font-bold">{zotm.name}</p>

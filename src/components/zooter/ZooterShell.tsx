@@ -20,7 +20,7 @@ export const ZooterShell = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="min-h-screen flex bg-background">
-      <aside className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-[2rem] p-5 sticky top-3 h-[calc(100vh-1.5rem)]">
+      <aside className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-4xl p-5 sticky top-3 h-[calc(100vh-1.5rem)]">
         <NavLink to="/" className="liquid-glass-readable flex items-center gap-2 mb-2">
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-sage shadow-warm">
             <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
