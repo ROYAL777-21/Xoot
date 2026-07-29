@@ -161,6 +161,29 @@
   If we ever want to remove these styles, we need to add an explicit border
   color utility to any element that depends on these defaults.
 */
+/* ── Motion utilities ────────────────────────────────────────────────────────
+   Ported from the app-iteration design layer. `rise-in` is the staggered card
+   entrance used throughout onboarding: apply it to siblings and offset each with
+   an animation-delay in 55ms steps. Both respect prefers-reduced-motion, which
+   for an entrance means showing the final state immediately rather than nothing. */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50%      { transform: rotate(3deg); }
+}
+
+@utility rise-in {
+  opacity: 0;
+  animation: rise-in 0.62s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in { opacity: 1; transform: none; animation: none; }
+}
+
 @layer base {
   *,
   ::after,

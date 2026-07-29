@@ -104,9 +104,9 @@ const AuthReset = () => {
       <Card className="w-full max-w-md rounded-3xl border-border p-8 shadow-warm">
         <Link to="/" className="mb-6 flex items-center gap-2" aria-label="Back to Xoot home">
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm shadow-warm">
-            <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
+            <span className="font-display text-lg font-bold text-primary-foreground">X</span>
           </span>
-          <span className="font-display text-2xl font-bold tracking-tight">zoot</span>
+          <span className="font-display text-2xl font-bold tracking-tight">xoot</span>
         </Link>
 
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">

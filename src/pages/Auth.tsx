@@ -260,7 +260,7 @@ const Auth = () => {
         await clearNativeQuickUnlock();
         setQuickUnlockEnabled(false);
         haptic("warning");
-        toast.error("Your saved Xoot session expired. Sign in securely to continue.");
+        toast.error("Your Xoot session timed out. Pick up where you left off to continue.");
         return;
       }
 
@@ -361,16 +361,16 @@ const Auth = () => {
   const passwordStrengthLabel = ["Very weak", "Weak", "Good", "Strong", "Very strong"][passwordStrength];
   const strengthColour = passwordStrength >= 3 ? "bg-sage-deep" : passwordStrength >= 2 ? "bg-primary" : "bg-destructive";
   const heading = mode === "signin"
-    ? "Sign in to Xoot"
+    ? "Pick up where you left off"
     : mode === "signup"
-      ? "Create your account"
+      ? "Let's get your home sorted"
       : mode === "otp"
         ? "Use an email code"
         : "Reset your password";
   const subheading = mode === "signin"
-    ? "Access your bookings, XootCred, Care+ status and saved home profile."
+    ? "Your bookings, XootCred, Care+ status and saved home profile are all here."
     : mode === "signup"
-      ? "Start booking trusted Xooters with a protected home profile."
+      ? "Set up once and booking a trusted Xooter takes a single tap after that."
       : mode === "otp"
         ? "Get a one-time email code or secure sign-in link for passwordless access."
         : "Enter your email and we will send a secure reset link if the account can access Xoot.";
@@ -379,23 +379,23 @@ const Auth = () => {
     : isOtpMode
       ? otpSent ? "Verify code" : "Send one-time code"
       : mode === "signin"
-        ? "Sign in securely"
-        : "Create secure account";
+        ? "Continue"
+        : "Get started";
 
   return (
     <div className="grid min-h-screen place-items-center overflow-hidden gradient-hero px-4 py-6 sm:p-6">
       <SEO
-        title="Secure Xoot sign-in"
-        description="Sign in to Xoot securely to manage bookings, Care+, XootCred, support and protected household details."
+        title="Continue to Xoot"
+        description="Continue to Xoot to manage bookings, Care+, XootCred, support and protected household details."
         canonical="/auth"
         noIndex
       />
       <Card className="w-full max-w-92 rounded-3xl border-border p-5 shadow-warm sm:max-w-md sm:p-8">
         <Link to="/" className="mb-5 flex items-center gap-2 sm:mb-6" aria-label="Back to Xoot home">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-warm shadow-warm">
-            <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
+            <span className="font-display text-lg font-bold text-primary-foreground">X</span>
           </span>
-          <span className="font-display text-2xl font-bold tracking-tight">zoot</span>
+          <span className="font-display text-2xl font-bold tracking-tight">xoot</span>
         </Link>
 
         <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
@@ -444,7 +444,7 @@ const Auth = () => {
             disabled={loading || providerLoading !== null || quickUnlockLoading}
           >
             {quickUnlockLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Fingerprint className="mr-2 h-4 w-4" />}
-            Sign in with Face ID / Touch ID
+            Continue with Face ID / Touch ID
           </Button>
         )}
 
@@ -644,7 +644,7 @@ const Auth = () => {
           )}
           {mode === "signup" && (
             <button type="button" onClick={() => setAuthMode("signin")} className="transition-smooth hover:text-foreground">
-              Already have an account? Sign in
+              Been here before? Pick up where you left off
             </button>
           )}
           {(mode === "forgot" || mode === "otp") && (

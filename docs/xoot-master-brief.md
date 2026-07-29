@@ -508,6 +508,29 @@ vocabulary exists; the flow does not.
 - **Below, smaller:** benefits and outcome of signing up.
 - **Four buttons:** `Continue with phone` · `Continue with Email` · Apple logo · Google logo.
 
+### 5.2a Built so far, and the gap it exposes
+
+`src/pages/Welcome.tsx` at `/welcome` implements §5.2 against live components: Zoey with
+her orbiting stars, line-art blooms, the four-step progress bar, Georgia header, and the
+four ways in. It authenticates nothing — every button routes into the existing `/auth`,
+which already owns rate limiting, lockout, OAuth and OTP. That flow was not rebuilt.
+
+> ⚠️ **"Continue with phone" has no backend yet.** `Auth.tsx` implements
+> `signInWithOtp({ email })` — **email OTP only**. There is no phone/SMS auth path, so the
+> most prominent button on the first screen currently promises something the backend
+> cannot do.
+>
+> This is not a small wiring job. Phone auth means SMS OTP, which means Twilio Verify —
+> and `ZD-009` restricts the current Twilio Messaging Service to Verify, masked voice and
+> limited operational messages, with the account still needing upgrade and sender
+> approval (`phase-9-twilio-verify-masked-voice.md`). So the button is blocked on the same
+> activation work as Phase 2's calling.
+>
+> **Until that lands, one of two things has to be true:** either "Continue with phone"
+> is hidden, or it is demoted below Email so the working path leads. Shipping it as the
+> primary CTA while it dead-ends is the worst option. Recommend demoting rather than
+> hiding — the layout stays honest and the button returns to the top once Verify is live.
+
 ### 5.3 Language
 
 Never "Sign up" / "Sign in". Warm, not transactional:

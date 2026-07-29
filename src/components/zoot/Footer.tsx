@@ -58,9 +58,9 @@ export const Footer = () => (
         <div className="lg:col-span-1">
           <div className="mb-4 flex items-center gap-2">
             <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm">
-              <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
+              <span className="font-display text-lg font-bold text-primary-foreground">X</span>
             </span>
-            <span className="font-display text-2xl font-bold">zoot</span>
+            <span className="font-display text-2xl font-bold">xoot</span>
           </div>
           <p className="max-w-xs text-sm text-muted-foreground">
             Premium home, office and Airbnb cleaning in Xoot launch suburbs with vetting, training and trust workflows.

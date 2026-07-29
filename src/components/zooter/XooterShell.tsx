@@ -23,9 +23,9 @@ export const XooterShell = ({ children }: { children: ReactNode }) => {
       <aside className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-4xl p-5 sticky top-3 h-[calc(100vh-1.5rem)]">
         <NavLink to="/" className="liquid-glass-readable flex items-center gap-2 mb-2">
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-sage shadow-warm">
-            <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
+            <span className="font-display text-lg font-bold text-primary-foreground">X</span>
           </span>
-          <span className="font-display text-2xl font-bold tracking-tight">zooter</span>
+          <span className="font-display text-2xl font-bold tracking-tight">xooter</span>
         </NavLink>
         <div className="liquid-glass-readable inline-flex items-center gap-1.5 rounded-full bg-accent-soft/80 px-2.5 py-1 mb-7 self-start border border-accent/20">
           <Sparkles className="h-3 w-3 text-sage-deep" />

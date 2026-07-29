@@ -53,7 +53,7 @@ export const Navbar = () => {
       <div className="liquid-glass-content mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link to="/" className="flex min-w-0 items-center gap-2 group">
           <span className="grid h-9 w-9 place-items-center rounded-2xl gradient-warm shadow-warm transition-transform group-hover:scale-105">
-            <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
+            <span className="font-display text-lg font-bold text-primary-foreground">X</span>
           </span>
           <span className="font-display text-2xl font-bold tracking-tight text-foreground">
             Xoot
