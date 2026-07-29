@@ -1,5 +1,9 @@
 // Zoey — a hand-drawn heart with dots for eyes and a curved smile. One SVG,
-// pose-driven. Ink-black stroke + brand red fill read on any wallpaper.
+// pose-driven. Ink stroke + brand red fill read on any wallpaper.
+//
+// Colours come from theme tokens (--zoey-fill, --zoey-halo, --foreground) with literal
+// HSL fallbacks, so she follows light/dark automatically but still renders correctly
+// if mounted outside the token scope — a widget extension, say, or a bare SVG export.
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -121,20 +125,20 @@ export function Zoey({
       </defs>
 
       {/* soft halo */}
-      <circle cx="80" cy="86" r="62" fill="var(--zoey-halo, #FFD9D4)" opacity="0.35" />
+      <circle cx="80" cy="86" r="62" fill="hsl(var(--zoey-halo, 6 100% 92%))" opacity="0.35" />
 
       {/* Far half of every orbit — drawn before the heart, so it is occluded by it. */}
       {stars && !still && <Orbits half="far" />}
 
       {/* hand-drawn shadow offset */}
-      <path d={HEART_D} fill="var(--charcoal, #2A2622)" opacity="0.9" transform="translate(3 4)" />
+      <path d={HEART_D} fill="hsl(var(--foreground, 14 18% 14%))" opacity="0.9" transform="translate(3 4)" />
 
       {/* heart body — brand red, ink outline. Falls back to a literal so the mascot
           never renders unfilled if it is used outside the token scope. */}
       <path
         d={HEART_D}
-        fill="var(--zoey-fill, #E02B20)"
-        stroke="var(--charcoal, #2A2622)"
+        fill="hsl(var(--zoey-fill, 3 78% 53%))"
+        stroke="hsl(var(--foreground, 14 18% 14%))"
         strokeWidth="3.5"
         strokeLinejoin="round"
       />
@@ -152,13 +156,13 @@ export function Zoey({
       {/* eyes */}
       {asleep ? (
         <>
-          <path d={`M58 ${eyeY} q6 6 12 0`} stroke="var(--charcoal, #2A2622)" strokeWidth="3.4" strokeLinecap="round" fill="none" />
-          <path d={`M90 ${eyeY} q6 6 12 0`} stroke="var(--charcoal, #2A2622)" strokeWidth="3.4" strokeLinecap="round" fill="none" />
+          <path d={`M58 ${eyeY} q6 6 12 0`} stroke="hsl(var(--foreground, 14 18% 14%))" strokeWidth="3.4" strokeLinecap="round" fill="none" />
+          <path d={`M90 ${eyeY} q6 6 12 0`} stroke="hsl(var(--foreground, 14 18% 14%))" strokeWidth="3.4" strokeLinecap="round" fill="none" />
         </>
       ) : pose === "point" ? (
         <>
-          <circle cx="64" cy={eyeY} r="4.6" fill="var(--charcoal, #2A2622)" />
-          <path d={`M90 ${eyeY} q6 5 12 0`} stroke="var(--charcoal, #2A2622)" strokeWidth="3.2" strokeLinecap="round" fill="none" />
+          <circle cx="64" cy={eyeY} r="4.6" fill="hsl(var(--foreground, 14 18% 14%))" />
+          <path d={`M90 ${eyeY} q6 5 12 0`} stroke="hsl(var(--foreground, 14 18% 14%))" strokeWidth="3.2" strokeLinecap="round" fill="none" />
         </>
       ) : (
         <motion.g
@@ -166,8 +170,8 @@ export function Zoey({
           transition={{ duration: 0.28, repeat: Infinity, repeatDelay: 3.6, ease: "easeInOut" }}
           style={{ transformBox: "view-box", transformOrigin: `80px ${eyeY}px` }}
         >
-          <circle cx="64" cy={eyeY} r="4.8" fill="var(--charcoal, #2A2622)" />
-          <circle cx="96" cy={eyeY} r="4.8" fill="var(--charcoal, #2A2622)" />
+          <circle cx="64" cy={eyeY} r="4.8" fill="hsl(var(--foreground, 14 18% 14%))" />
+          <circle cx="96" cy={eyeY} r="4.8" fill="hsl(var(--foreground, 14 18% 14%))" />
         </motion.g>
       )}
 
@@ -178,7 +182,7 @@ export function Zoey({
       {/* mouth */}
       <path
         d={smile}
-        stroke="var(--charcoal, #2A2622)"
+        stroke="hsl(var(--foreground, 14 18% 14%))"
         strokeWidth="3.2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -188,10 +192,10 @@ export function Zoey({
       {/* celebrate confetti dots */}
       {pose === "celebrate" && !still && (
         <motion.g animate={{ rotate: 360 }} transition={{ duration: 3.2, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: "80px 80px" }}>
-          <circle cx="18" cy="30" r="3" fill="var(--zoey-fill, #E02B20)" />
+          <circle cx="18" cy="30" r="3" fill="hsl(var(--zoey-fill, 3 78% 53%))" />
           <circle cx="142" cy="42" r="2.5" fill="#FFFFFF" />
-          <circle cx="150" cy="110" r="3" fill="var(--zoey-halo, #FFD9D4)" />
-          <circle cx="14" cy="120" r="2.5" fill="var(--charcoal, #2A2622)" />
+          <circle cx="150" cy="110" r="3" fill="hsl(var(--zoey-halo, 6 100% 92%))" />
+          <circle cx="14" cy="120" r="2.5" fill="hsl(var(--foreground, 14 18% 14%))" />
         </motion.g>
       )}
 
@@ -210,7 +214,7 @@ export function Zoey({
           y="42"
           fontSize="20"
           fontFamily="Cormorant Garamond, serif"
-          fill="var(--charcoal, #2A2622)"
+          fill="hsl(var(--foreground, 14 18% 14%))"
           animate={{ opacity: [0, 1, 0], y: [42, 24, 16] }}
           transition={{ duration: 2.8, repeat: Infinity }}
         >
