@@ -66,6 +66,13 @@ form actions, ref-as-prop). TanStack Router → react-router-dom route rewrites 
 onboarding routes. 271 commits of app-iteration history become an archived reference rather
 than live history.
 
+> ⚠️ **Updated 2026-07-29 — the cost above was understated.** The repos also differ on
+> **Tailwind: v3.4 with a config file versus v4.2 CSS-first**, on token format (HSL vs OKLCH),
+> and local-helpers has **no framer-motion at all**. Tailwind 3→4 is an architecture change,
+> not a version bump. This does **not** change the choice of base — the backend asymmetry
+> that decided it is unaffected — but it adds a decision about method.
+> See `docs/port-inventory.md` for the full gap and the three options.
+
 ### B. app-iteration becomes the single repo; port the backend in
 
 Newer stack, and the design work stays put.

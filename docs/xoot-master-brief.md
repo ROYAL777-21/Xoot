@@ -522,30 +522,41 @@ home is in careful hands, and that the language is warm rather than transactiona
   - Zooter — completed-job counts, bonus tiers, and a **streak counter** for consecutive
     active days/jobs.
 
-### 6.1 Tipping — new feature
+### 6.1 Tipping — **already built, and needs correcting**
 
-Customers can **tip their Zooter after a completed service**.
+Not a new feature. It exists in **app-iteration only** and must be ported to the consolidated
+repo — but not as-is.
 
-Placement: the post-service rating moment, which `docs/BOOKING_LOGIC.md` already defines at
-lifecycle step 12 (*"rating, ZootCred, Care+ boost… are processed"*). Tip alongside the
-rating, not as a separate errand.
+**What exists:**
+- `src/components/zoot/ReviewTipCard.tsx` (112 lines) — rating + tip in one card, at the
+  post-service moment. Right placement.
+- `bookings.tip_cents` column (`20260724161716_*.sql:202`).
+- An RLS guard reverting `tip_cents` changes by anyone other than the customer
+  (`20260725190021_*.sql:90` and `20260726144840_*.sql:31`). Good — keep this.
+- **Nothing in local-helpers.** `tip_cents` does not exist in its 52 migrations.
 
-Design notes:
-- Preset amounts plus a custom option. Presets should be sensible rand values, not
-  percentages — percentage tipping is not the norm for SA home services and does the
-  arithmetic *against* the customer on larger bookings.
-- **Never pre-select a tip amount.** Pre-selected tips are the most-complained-about pattern
-  in tipping UI and they damage trust in exactly the moment the product is trying to earn it.
-- Skippable without friction or guilt copy.
-- Celebrate the send with a haptic and a small animation — it is a generous act, treat it as one.
+**What is wrong with it:**
 
-> **`CONFIRM` — commercial and legal, needed before build:**
-> 1. Does Xoot take any cut of tips? (Strong recommendation: **no.** "100% goes to your
->    Zooter" is a real trust asset and is trivially checkable by Zooters.)
-> 2. Payout path — with the booking payout, or separately? Affects `phase-7-payments-payouts`.
-> 3. Tax/VAT treatment of tips to contractors in SA. Needs the accountant, not a guess.
-> 4. Are tips visible to the Zooter before they rate the customer? (Recommend **no** — it
->    biases mutual ratings.)
+1. **The tip is pre-selected at 15%** (`ReviewTipCard.tsx:27`, `useState(15)`). Every customer
+   who taps through without noticing tips 15%. This is the single most-complained-about
+   pattern in tipping UI and it does real damage precisely where the product is trying to
+   earn trust. **Default to zero — no preset selected.**
+2. **Percentages, not rand amounts** (`tipCents = totalCents * (tipPct/100)`). Percentage
+   tipping is not the SA norm for home services, and it scales the tip with booking size —
+   so a 10-hour clean is charged nearly double the tip of a 4-hour one for the same gesture.
+   **Use rand presets plus a custom field.**
+
+**Still to confirm before the port ships:**
+
+> 1. Does Xoot take any cut of tips? Strong recommendation: **no.** "100% goes to your Zooter"
+>    is a real trust asset and is trivially checkable by Zooters.
+> 2. Payout path — with the booking payout or separately? Affects `phase-7-payments-payouts`.
+> 3. Tax/VAT treatment of tips to contractors in SA. Accountant question, not a guess.
+> 4. Are tips visible to the Zooter before they rate the customer? Recommend **no** — it
+>    biases mutual ratings.
+
+Keep the good parts: placement at the rating moment, the RLS guard, `tip_cents` as integer
+cents. Add: haptic and a small celebration on send, and a genuinely frictionless skip.
 
 ---
 
