@@ -1,5 +1,8 @@
 # Port inventory — app-iteration → consolidated repo
 
+> **Status 2026-07-29:** Tailwind v4 upgrade done (`ZD-020` era, see git history). First port
+> pass complete — see "Ported so far" at the bottom. Components still to come.
+
 Companion to `docs/repo-consolidation-plan.md` (Option A, approved 2026-07-29: local-helpers
 is the base, app-iteration's design layer ports in, consolidate **before** Phase 1).
 
@@ -131,3 +134,47 @@ components use icons newer than 0.462.
 6. Re-issue `tip_cents` + RLS as a fresh migration once `ZD-005` closes.
 7. Reconcile the duplicated `xoot-master-brief.md` to one copy.
 8. Archive app-iteration read-only. Do not delete — 271 commits of design history.
+
+
+---
+
+## Ported so far (2026-07-29)
+
+Landed in local-helpers, full gate green (lint, typecheck, 158 tests, build):
+
+| File | Notes |
+|---|---|
+| `src/lib/service-visual.ts` | As-is. Colour values still pending the Phase 1 palette decision. |
+| `src/lib/glass.ts` | As-is. clear/frosted/solid presets. |
+| `src/lib/prefs.ts` | As-is. Provides `haptic()`. |
+| `src/components/zoot/AnimatedIcon.tsx` | As-is. Needed by `service-visual`, and Phase 8 builds on its motion vocabulary. |
+| `src/components/zoot/mascot/Zooey.tsx` | **Restyled to the decided spec** — see below. |
+
+`framer-motion@12.43.0` added to local-helpers.
+
+### Zooey changes on port
+
+- Default fill is now brand red via `var(--zoey-fill, #E02B20)`, replacing
+  `var(--gold, #E88E6A)`. The literal fallback means the mascot never renders unfilled if
+  used outside the token scope. **The hex is a placeholder** until the Phase 1 palette lands.
+- Three white 4-pointed stars orbit on independent radii, speeds and phases, each dragging a
+  four-segment trail that traces the path it just travelled. New `stars` prop (default `true`)
+  turns them off where they would be noise.
+- Halo and confetti recoloured off the old gold/brown tokens.
+- Verified by rendering the real component in isolation and screenshotting, light and dark.
+
+### Deliberately NOT ported yet
+
+| File | Why |
+|---|---|
+| `src/lib/onboarding-state.ts` | Imports `@/lib/pricing` — the superseded module — and `booking-defaults`. Coupled to a booking model Phase 1 replaces. Port during Phase 1. |
+| `src/components/zoot/ReviewTipCard.tsx` | **Blocked.** local-helpers has no `tip_cents` column, no `reviews` table and no `formatMoney` in `format.ts`. Needs the migration, which is gated on `ZD-005`. The corrected version (rand presets, nothing pre-selected, custom amount, haptic) is live in app-iteration and ports over once the schema does. |
+| `src/lib/format.ts` | local-helpers already has one. Needs a manual merge — app-iteration's exports `formatMoney`, which local-helpers lacks. |
+| Onboarding parts, `ProgressStepper`, `BottomTabBar`, tracking UI | Next pass. Phase 1 rewrites most of their markup, so porting is cheapest alongside that work. |
+
+### Lesson worth keeping
+
+The Tailwind v4 codemod rewrote three Button `variant="outline"` **props** to
+`"outline-solid"`, treating a prop value as a CSS class. Lint passed. Build passed. Only
+`tsc` caught it, because Vite does not typecheck. A `typecheck` script now exists and runs
+in CI ahead of the tests.

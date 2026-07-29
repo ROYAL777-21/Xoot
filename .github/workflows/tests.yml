@@ -43,6 +43,13 @@ jobs:
       - name: Lint
         run: bun run lint
 
+      # Not redundant with the build. Vite does not typecheck, so this is the only
+      # step that catches type regressions — it is what caught the Tailwind v4
+      # codemod rewriting Button `variant="outline"` props to `"outline-solid"`,
+      # which linted and built clean.
+      - name: Typecheck
+        run: bun run typecheck
+
       - name: Unit tests
         run: bun run test
 

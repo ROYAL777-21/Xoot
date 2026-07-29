@@ -373,7 +373,7 @@ const ModuleCard = ({
         ) : (
           <span className="text-xs text-muted-foreground">Not completed</span>
         )}
-        <Button size="sm" variant={passed ? "outline-solid" : "default"} className="rounded-full" onClick={() => onOpen(module)}>
+        <Button size="sm" variant={passed ? "outline" : "default"} className="rounded-full" onClick={() => onOpen(module)}>
           {passed ? "Retake" : "Start"}
         </Button>
       </div>
