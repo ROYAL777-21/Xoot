@@ -13,30 +13,21 @@ import {
   toNumber,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import {
+  ADD_ON_CENTS,
+  BOOKING_COVER_CENTS,
+  HOME_SIZE_HOURS,
+  SERVICE_LENGTH_HOURS,
+  ONE_TIME_SERVICE_FEE_CENTS,
+  basePrice,
+  resolveHours,
+} from "../_shared/pricing.ts";
 
 const services = new Set(["residential", "express", "airbnb", "office", "deep", "moving", "premium"]);
-const serviceMultiplier: Record<string, number> = {
-  residential: 1,
-  express: 0.85,
-  airbnb: 1.15,
-  office: 1.2,
-  deep: 1.35,
-  moving: 1.4,
-  premium: 1.55,
-};
-
-const homeSizes: Record<string, { hours: number; price: number }> = {
-  small: { hours: 4, price: 270 },
-  medium: { hours: 5.5, price: 315 },
-  large: { hours: 8, price: 390 },
-};
-
-const serviceLengths: Record<string, { hours: number; priceFactor: number }> = {
-  refresh: { hours: 3, priceFactor: 0.82 },
-  standard: { hours: 4.5, priceFactor: 1 },
-  extended: { hours: 6, priceFactor: 1.28 },
-  full_day: { hours: 8, priceFactor: 1.62 },
-};
+// Pricing tables now live in ../_shared/pricing.ts. The multiplier model they replaced
+// (homeSize.price x serviceLength.priceFactor x serviceMultiplier) double-counted
+// duration and used R270/R315/R390, figures the locked commercial facts never approved.
+// Home size and service length now only imply DEFAULT HOURS; hours alone set the price.
 
 const allowedTimes = new Set(["07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "14:00", "15:00", "16:00", "17:00"]);
 const multiWorkerServices = new Set(["airbnb", "office", "deep", "moving", "premium"]);
@@ -98,8 +89,8 @@ Deno.serve(async (req) => {
     const requestedRedemption = Math.max(0, toNumber(body.zootcredRedemption ?? body.zootcred_redemption, 0));
 
     if (!services.has(serviceType)) return fail("unsupported service", origin, 400);
-    if (!homeSizes[homeSizeId]) return fail("unsupported home size", origin, 400);
-    if (!serviceLengths[serviceLengthId]) return fail("unsupported service length", origin, 400);
+    if (HOME_SIZE_HOURS[homeSizeId] === undefined) return fail("unsupported home size", origin, 400);
+    if (SERVICE_LENGTH_HOURS[serviceLengthId] === undefined) return fail("unsupported service length", origin, 400);
     if (!allowedTimes.has(time)) return fail("unsupported time", origin, 400);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail("invalid date", origin, 400);
     if (!address || !isApprovedLaunchRegion(address)) return fail("outside launch coverage", origin, 400);
@@ -120,17 +111,29 @@ Deno.serve(async (req) => {
       if (!zooters || zooters.length !== selectedXooterIds.length) return fail("selected Xooter is unavailable", origin, 409);
     }
 
-    const size = homeSizes[homeSizeId];
-    const length = serviceLengths[serviceLengthId];
     const workerCount = Math.max(selectedXooterIds.length, 1);
-    const basePrice = Math.round(size.price * length.priceFactor * (serviceMultiplier[serviceType] ?? 1));
+
+    const bookedHours = resolveHours({ hours: body?.hours, serviceLengthId, homeSizeId });
+    if (bookedHours === null) return fail("booked hours are required", origin, 400);
+
+    const priced = basePrice(serviceType, bookedHours);
+    if (!priced.ok) return fail(priced.reason, origin, 400);
+
+    // Cents internally; converted back to rands at the boundary so stored columns and
+    // the response keep the shape every existing caller already expects.
     const multiWorkerDiscount = selectedXooterIds.length >= 3 ? 0.1 : 0;
-    const discountedBase = Math.round(basePrice * (1 - multiWorkerDiscount)) * workerCount;
-    const addOnsTotal = addOns.length * 30;
-    const subtotal = discountedBase + addOnsTotal;
-    const highDemandPremium = isHighDemandSlot(time) ? Math.round(subtotal * 0.15) : 0;
-    const serviceFee = frequency === "one_time" ? 39 : 0;
-    const bookingCover = bookingCoverOptIn === false ? 0 : 21;
+    const discountedBaseCents = Math.round(priced.baseCents * (1 - multiWorkerDiscount)) * workerCount;
+    const addOnsCents = addOns.length * ADD_ON_CENTS;
+    const subtotalCents = discountedBaseCents + addOnsCents;
+    const highDemandCents = isHighDemandSlot(time) ? Math.round(subtotalCents * 0.15) : 0;
+    const serviceFeeCents = frequency === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0;
+    const bookingCoverCents = bookingCoverOptIn === false ? 0 : BOOKING_COVER_CENTS;
+
+    const toRands = (cents: number) => Math.round(cents / 100);
+    const subtotal = toRands(subtotalCents);
+    const highDemandPremium = toRands(highDemandCents);
+    const serviceFee = toRands(serviceFeeCents);
+    const bookingCover = toRands(bookingCoverCents);
     const carePlusDiscountRate = await getCarePlusDiscount(supa, user.id);
     const carePlusDiscount = Math.round(subtotal * carePlusDiscountRate);
     const grossTotal = subtotal + highDemandPremium + serviceFee + bookingCover - carePlusDiscount;
@@ -149,7 +152,8 @@ Deno.serve(async (req) => {
     const perBookingCover = Math.round(bookingCover / workerCount);
     const perBookingHighDemand = Math.round(highDemandPremium / workerCount);
     const perBookingDiscount = Math.round(carePlusDiscount / workerCount);
-    const estHours = length.hours + addOns.length;
+    // Add-ons extend the visit; the booked hours are the priced duration.
+    const estHours = priced.hours + addOns.length;
     const launchRegion = resolveLaunchRegion(address);
     const bookingTargets = selectedXooterIds.length ? selectedXooterIds : [null];
 

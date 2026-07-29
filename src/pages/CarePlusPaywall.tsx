@@ -95,21 +95,24 @@ export default function CarePlusPaywall() {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Care+ Standard</p>
             <p className="mt-1 flex items-baseline justify-center gap-2">
               <span className="font-display text-3xl font-bold">{formatRand(WIN_BACK_MONTHLY_CENTS)}</span>
-              <span className="text-sm text-muted-foreground line-through">{formatRand(STANDARD_MONTHLY_CENTS)}</span>
               <span className="text-sm text-muted-foreground">/month</span>
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">Half price, for as long as you stay a member.</p>
+            {/* The 50% claim names what it is measured against. An unqualified "50% off"
+                would imply R99 was once higher, which it never was. */}
+            <p className="mt-1 text-xs text-muted-foreground">
+              Half the price of Care+ Premium at {formatRand(PREMIUM_MONTHLY_CENTS)}/month.
+            </p>
           </div>
 
           {/* Real countdown: started once on first decline, read back from storage. */}
           {live ? (
             <p className="flex items-center justify-center gap-1.5 text-xs font-semibold text-muted-foreground">
               <Clock3 className="size-3.5" aria-hidden="true" />
-              Offer holds for <span className="tabular-nums text-foreground">{formatCountdown(remaining)}</span>
+              Reserved for you for <span className="tabular-nums text-foreground">{formatCountdown(remaining)}</span>
             </p>
           ) : (
             <p className="text-center text-xs text-muted-foreground">
-              This offer has expired — Care+ Standard is {formatRand(STANDARD_MONTHLY_CENTS)}/month.
+              Take your time — Care+ Standard stays {formatRand(STANDARD_MONTHLY_CENTS)}/month.
             </p>
           )}
 
@@ -127,7 +130,7 @@ export default function CarePlusPaywall() {
 
           <div className="flex flex-col gap-2">
             <Button size="lg" className="h-12 w-full rounded-full" onClick={() => { haptic("success"); navigate("/app"); }}>
-              {live ? `Start at ${formatRand(WIN_BACK_MONTHLY_CENTS)}/month` : `Join at ${formatRand(STANDARD_MONTHLY_CENTS)}/month`}
+              Start at {formatRand(WIN_BACK_MONTHLY_CENTS)}/month
             </Button>
             <button
               type="button"

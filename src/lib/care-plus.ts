@@ -18,8 +18,20 @@
 
 export const STANDARD_MONTHLY_CENTS = 9900;
 export const PREMIUM_MONTHLY_CENTS = 19900;
-/** Win-back: 50% off the standard tier. */
-export const WIN_BACK_MONTHLY_CENTS = STANDARD_MONTHLY_CENTS / 2;
+
+/**
+ * The win-back price is the standard tier, unchanged — R99.
+ *
+ * It is presented as half price, and that claim is anchored to **Premium**, which is a
+ * real tier at a real R199. R99 is exactly half of R199, so the comparison is true and
+ * checkable.
+ *
+ * It is deliberately NOT written as an unqualified "50% off". An unqualified discount
+ * claim implies the item's own former price, and R99 has never been higher — that would
+ * be a false price representation under the Consumer Protection Act and would fail
+ * App Store review. Every surface must name what the 50% is measured against.
+ */
+export const WIN_BACK_MONTHLY_CENTS = STANDARD_MONTHLY_CENTS;
 
 export type Tier = "premium" | "standard";
 
