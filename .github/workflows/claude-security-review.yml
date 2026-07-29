@@ -1,0 +1,55 @@
+name: Claude Security Review
+
+# Anthropic's claude-code-security-review action (§9 of docs/xoot-master-brief.md).
+# This is a GitHub Action, not a Claude Code skill — it lives here, not in .claude/skills/.
+#
+# PREREQUISITE: repository secret CLAUDE_API_KEY must be set, enabled for both the
+# Claude API and Claude Code usage. Until it exists this workflow will fail on every PR.
+#
+# The upstream action is explicitly NOT hardened against prompt injection, so this only
+# runs on same-repo PRs. Fork PRs are skipped: they carry untrusted diffs and would not
+# receive the secret anyway.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: claude-security-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  security-review:
+    # Skip forks (untrusted diff + no secret access) and skip when the key is absent,
+    # so a missing secret does not show up as a red check on every PR.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for API key
+        id: guard
+        env:
+          KEY: ${{ secrets.CLAUDE_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "CLAUDE_API_KEY not set — skipping security review." >> "$GITHUB_STEP_SUMMARY"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.run == 'true'
+        with:
+          fetch-depth: 0
+
+      # Pinned to a commit rather than @main: this action runs with pull-requests: write.
+      - uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda
+        if: steps.guard.outputs.run == 'true'
+        with:
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          comment-pr: true
+          exclude-directories: 'node_modules,dist,build,.claude/skills,ios/Pods,android'
