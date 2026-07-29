@@ -1,29 +1,41 @@
 import { Platform } from 'react-native';
 
+/**
+ * Xoot brand palette, in hex because React Native has no CSS custom properties.
+ *
+ * These are the same values as the `--background` / `--foreground` / `--primary`
+ * tokens in `src/index.css`, converted from HSL. The web is the source; when a token
+ * changes there, convert and mirror it here. Until this file was written the native
+ * app still carried the pre-rebrand gold-and-green palette, so the same product was
+ * two different brands depending on which surface you opened.
+ *
+ * `accent` is the brand red — on native it is the tint on tabs, links and primary
+ * buttons, which is what `accent` is read for here.
+ */
 export const Colors = {
   light: {
-    text: '#172016',
-    background: '#f8f5ef',
-    backgroundElement: '#fffaf2',
-    backgroundSelected: '#eadfcd',
-    border: 'rgba(23, 32, 22, 0.14)',
-    accent: '#926f34',
-    accentSoft: '#ead6ad',
-    success: '#2f7d52',
-    danger: '#b54747',
-    textSecondary: '#5d675d',
+    text: '#2a201d',
+    background: '#fff7f5',
+    backgroundElement: '#ffffff',
+    backgroundSelected: '#f2ebe3',
+    border: '#e7e0da',
+    accent: '#e42a21',
+    accentSoft: '#ffe3e0',
+    success: '#188157',
+    danger: '#8d1115',
+    textSecondary: '#6a5c58',
   },
   dark: {
-    text: '#fff8ec',
-    background: '#07100a',
-    backgroundElement: 'rgba(17, 26, 18, 0.96)',
-    backgroundSelected: 'rgba(216, 178, 110, 0.22)',
-    border: 'rgba(255, 250, 242, 0.16)',
-    accent: '#d8b26e',
-    accentSoft: 'rgba(216, 178, 110, 0.18)',
-    success: '#72d39b',
-    danger: '#ff8b8b',
-    textSecondary: '#c9d0c3',
+    text: '#f7efed',
+    background: '#15100f',
+    backgroundElement: '#201918',
+    backgroundSelected: 'rgba(255, 84, 71, 0.22)',
+    border: '#362826',
+    accent: '#ff5447',
+    accentSoft: 'rgba(255, 84, 71, 0.18)',
+    success: '#37be88',
+    danger: '#c72329',
+    textSecondary: '#b3a29e',
   },
 } as const;
 

@@ -60,7 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config.android,
     package: bundleId,
     adaptiveIcon: {
-      backgroundColor: '#0f1711',
+      backgroundColor: '#fff7f5',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -113,19 +113,26 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         icon: './assets/images/android-icon-monochrome.png',
-        color: '#d8b26e',
+        color: '#e42a21',
         defaultChannel: 'zoot-service-updates',
       },
     ],
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#0f1711',
+        // Brand background, matching `--background` in the web app's index.css.
+        // `userInterfaceStyle: 'dark'` above means the dark variant is the one that
+        // actually shows today; both are set so the launch screen keeps matching the
+        // first frame of the app if that setting is ever relaxed to follow the system.
+        backgroundColor: '#fff7f5',
+        dark: { backgroundColor: '#15100f' },
         image: './assets/images/splash-icon.png',
-        imageWidth: 88,
+        imageWidth: 128,
         android: {
+          backgroundColor: '#fff7f5',
+          dark: { backgroundColor: '#15100f' },
           image: './assets/images/splash-icon.png',
-          imageWidth: 88,
+          imageWidth: 128,
         },
       },
     ],
