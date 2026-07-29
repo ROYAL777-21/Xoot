@@ -8,7 +8,7 @@ import { Gift, Loader2, Sparkles, Trophy, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
-import { useZootCred } from "@/hooks/useZootCred";
+import { useXootCred } from "@/hooks/useXootCred";
 
 const TARGET = 10;
 
@@ -23,7 +23,7 @@ const reasonLabel = (reason: string) =>
 
 const Loyalty = () => {
   const { user } = useAuth();
-  const zootCred = useZootCred();
+  const zootCred = useXootCred();
   const [loyalty, setLoyalty] = useState<{ points: number; free_credits: number; total_bookings: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -59,10 +59,10 @@ const Loyalty = () => {
       <div className="mb-8">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1">
           <Gift className="h-3 w-3 text-primary" />
-          <span className="text-xs font-medium text-primary">Zoot Rewards</span>
+          <span className="text-xs font-medium text-primary">Xoot Rewards</span>
         </div>
         <h1 className="font-display text-4xl font-bold md:text-5xl">Earn while you book</h1>
-        <p className="mt-2 text-muted-foreground">Rewards, ZootCred, referral credits, and free-clean milestones stay on-platform.</p>
+        <p className="mt-2 text-muted-foreground">Rewards, XootCred, referral credits, and free-clean milestones stay on-platform.</p>
       </div>
 
       <Card className="mb-6 rounded-3xl border-0 p-8 text-primary-foreground shadow-warm gradient-warm">
@@ -92,11 +92,11 @@ const Loyalty = () => {
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="rounded-2xl p-5">
           <p className="font-display text-3xl font-bold">{formatZAR(zootCred.availableBalance)}</p>
-          <p className="text-sm text-muted-foreground">Available ZootCred</p>
+          <p className="text-sm text-muted-foreground">Available XootCred</p>
         </Card>
         <Card className="rounded-2xl p-5">
           <p className="font-display text-3xl font-bold">{formatZAR(zootCred.pendingBalance)}</p>
-          <p className="text-sm text-muted-foreground">Pending ZootCred</p>
+          <p className="text-sm text-muted-foreground">Pending XootCred</p>
         </Card>
         <Card className="rounded-2xl p-5">
           <p className="font-display text-3xl font-bold">{loyalty?.points ?? 0}</p>
@@ -111,7 +111,7 @@ const Loyalty = () => {
       <Card className="rounded-3xl p-6 shadow-card">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
-            <h2 className="font-display text-2xl font-bold">ZootCred transaction history</h2>
+            <h2 className="font-display text-2xl font-bold">XootCred transaction history</h2>
             <p className="mt-1 text-sm text-muted-foreground">Calculated from ledger rows. Wallet columns are not used.</p>
           </div>
           <WalletCards className="h-6 w-6 text-primary" />
@@ -123,7 +123,7 @@ const Loyalty = () => {
           </div>
         ) : zootCred.entries.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            No ZootCred ledger entries yet. Completed bookings and eligible credits will appear here.
+            No XootCred ledger entries yet. Completed bookings and eligible credits will appear here.
           </div>
         ) : (
           <div className="divide-y divide-border">

@@ -114,5 +114,5 @@ export const getMobileConfigIssue = (env: PublicEnvironment = process.env) => {
 
 export const assertValidMobileConfig = () => {
   const issue = getMobileConfigIssue();
-  if (issue) throw new Error(`[Zoot mobile] ${issue}`);
+  if (issue) throw new Error(`[Xoot mobile] ${issue}`);
 };

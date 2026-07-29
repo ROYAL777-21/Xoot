@@ -1,4 +1,4 @@
-export type ZootBookingLiveActivityStatus =
+export type XootBookingLiveActivityStatus =
   | "confirmed"
   | "enroute"
   | "arrived"
@@ -8,9 +8,9 @@ export type ZootBookingLiveActivityStatus =
   | "reassigned"
   | "pending";
 
-export interface ZootBookingLiveActivityPayload {
+export interface XootBookingLiveActivityPayload {
   bookingId: string;
-  status: ZootBookingLiveActivityStatus;
+  status: XootBookingLiveActivityStatus;
   statusLabel: string;
   serviceName: string;
   zooterName?: string;
@@ -27,21 +27,21 @@ declare global {
   interface Window {
     webkit?: {
       messageHandlers?: {
-        zootLiveActivity?: { postMessage: (payload: ZootBookingLiveActivityPayload) => void };
+        zootLiveActivity?: { postMessage: (payload: XootBookingLiveActivityPayload) => void };
       };
     };
     ReactNativeWebView?: { postMessage: (message: string) => void };
-    ZootNative?: { updateBookingLiveActivity?: (payload: ZootBookingLiveActivityPayload) => void };
+    XootNative?: { updateBookingLiveActivity?: (payload: XootBookingLiveActivityPayload) => void };
   }
 }
 
-export const notifyBookingLiveActivity = (payload: ZootBookingLiveActivityPayload) => {
+export const notifyBookingLiveActivity = (payload: XootBookingLiveActivityPayload) => {
   if (typeof window === "undefined") return false;
 
   window.dispatchEvent(new CustomEvent("zoot:booking-live-activity", { detail: payload }));
 
   window.webkit?.messageHandlers?.zootLiveActivity?.postMessage(payload);
-  window.ZootNative?.updateBookingLiveActivity?.(payload);
+  window.XootNative?.updateBookingLiveActivity?.(payload);
   window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "zoot.bookingLiveActivity", payload }));
 
   return true;

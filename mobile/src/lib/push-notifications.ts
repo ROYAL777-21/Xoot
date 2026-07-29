@@ -42,9 +42,9 @@ const ZOOT_ANDROID_NOTIFICATION_CHANNELS: Array<{
   },
   {
     id: 'zoot-zooter-jobs',
-    name: 'Zooter jobs',
+    name: 'Xooter jobs',
     importance: Notifications.AndroidImportance.HIGH,
-    description: 'Accepted job, job-day, and sensitive-access availability prompts that require opening Zoot.',
+    description: 'Accepted job, job-day, and sensitive-access availability prompts that require opening Xoot.',
     visibility: Notifications.AndroidNotificationVisibility.PRIVATE,
   },
 ];
@@ -65,7 +65,7 @@ const configureAndroidNotificationChannels = async () => {
   );
 };
 
-export async function registerForZootPushNotifications(userId: string) {
+export async function registerForXootPushNotifications(userId: string) {
   if (!Device.isDevice) {
     throw new Error('Push notifications require a physical device.');
   }

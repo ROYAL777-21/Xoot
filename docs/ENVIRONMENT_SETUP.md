@@ -1,4 +1,4 @@
-# Zoot Environment Setup
+# Xoot Environment Setup
 
 Reviewed: 2026-06-08
 
@@ -36,7 +36,7 @@ Build/native association scripts:
 SEO CMS and publishing automation:
 
 - `WORDPRESS_SITE_URL` - public WordPress CMS URL.
-- `WORDPRESS_PUBLIC_CANONICAL_BASE` - canonical Zoot article base, normally `https://zoothome.co.za/articles`.
+- `WORDPRESS_PUBLIC_CANONICAL_BASE` - canonical Xoot article base, normally `https://zoothome.co.za/articles`.
 - `WORDPRESS_REST_API_URL` - server/CI-only REST API endpoint for approved article sync.
 - `WORDPRESS_APP_USERNAME` / `WORDPRESS_APP_PASSWORD` - least-privilege WordPress application credential for server/CI sync only.
 - `WORDPRESS_WEBHOOK_SECRET` / `WORDPRESS_PREVIEW_SECRET` - server/CI-only publishing and draft-preview protection.
@@ -70,13 +70,13 @@ Supabase Edge Functions:
 
 ## Required Environments
 
-Zoot uses three operational environments:
+Xoot uses three operational environments:
 
 | Environment | Purpose | Supabase project | Payment credentials | Demo mode |
 | --- | --- | --- | --- | --- |
 | Local development | Developer iteration and preview data | Local or staging-safe project | Sandbox only | Allowed when `VITE_APP_ENV=development` |
-| Staging | Real end-to-end QA before launch | `Zoot Staging` (`fxmxyabdjqviqbcxmvlp`) once migrations/functions/secrets are deployed | Sandbox/test credentials | Not allowed |
-| Production | Customer and Zooter traffic | `Zoot` (`mvlrkelahhsyjrwgsxaf`) | Production credentials | Not allowed |
+| Staging | Real end-to-end QA before launch | `Xoot Staging` (`fxmxyabdjqviqbcxmvlp`) once migrations/functions/secrets are deployed | Sandbox/test credentials | Not allowed |
+| Production | Customer and Xooter traffic | `Xoot` (`mvlrkelahhsyjrwgsxaf`) | Production credentials | Not allowed |
 
 Staging and production credentials must be separate. A staging webhook, OAuth app, payment callback, or Supabase project must never share production secrets unless a provider explicitly forces one account and the scopes are isolated.
 
@@ -201,7 +201,7 @@ Required dashboard items for both staging and production:
 - Service-role key stored only as an Edge Function secret.
 - Auth Site URL.
 - Auth Redirect URLs.
-- Storage buckets for user documents, support attachments, completion photos, KIE prompt/output files, public Zooter avatars, and public marketing assets.
+- Storage buckets for user documents, support attachments, completion photos, KIE prompt/output files, public Xooter avatars, and public marketing assets.
 - Deployed Edge Function secrets.
 - Webhook URLs for payments, Twilio, Brevo, and support workflows as they are implemented.
 
@@ -227,7 +227,7 @@ Supabase Auth Redirect URLs should include:
 
 ## Manual Dashboard Setup Needed
 
-- Deploy the repo schema, RLS, storage policies, Edge Functions, and staging secrets to the `Zoot Staging` Supabase project. Use `docs/STAGING_BACKEND_DEPLOYMENT.md` as the runbook.
+- Deploy the repo schema, RLS, storage policies, Edge Functions, and staging secrets to the `Xoot Staging` Supabase project. Use `docs/STAGING_BACKEND_DEPLOYMENT.md` as the runbook.
 - Configure Supabase Auth providers, Site URL, Redirect URLs, email OTP settings, and leaked-password protection.
 - Create storage buckets and RLS policies before enabling uploads. Current bucket migration: `supabase/migrations/20260620000000_storage_buckets_and_policies.sql`.
 - Set Edge Function secrets per environment.

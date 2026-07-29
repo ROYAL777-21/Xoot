@@ -200,7 +200,7 @@ const Auth = () => {
     setLockoutUntil(null);
     await enableNativeQuickUnlock();
     haptic("success");
-    toast.success("One-time code verified. Welcome to Zoot.");
+    toast.success("One-time code verified. Welcome to Xoot.");
     navigate(redirectPath, { replace: true });
   };
 
@@ -230,10 +230,10 @@ const Auth = () => {
       haptic("success");
       if (data.session) {
         await enableNativeQuickUnlock();
-        toast.success("Welcome to Zoot. Your account is ready.");
+        toast.success("Welcome to Xoot. Your account is ready.");
         navigate(redirectPath, { replace: true });
       } else {
-        toast.success("Check your email to finish setting up Zoot.");
+        toast.success("Check your email to finish setting up Xoot.");
         setMode("signin");
       }
       return;
@@ -260,7 +260,7 @@ const Auth = () => {
         await clearNativeQuickUnlock();
         setQuickUnlockEnabled(false);
         haptic("warning");
-        toast.error("Your saved Zoot session expired. Sign in securely to continue.");
+        toast.error("Your saved Xoot session expired. Sign in securely to continue.");
         return;
       }
 
@@ -361,19 +361,19 @@ const Auth = () => {
   const passwordStrengthLabel = ["Very weak", "Weak", "Good", "Strong", "Very strong"][passwordStrength];
   const strengthColour = passwordStrength >= 3 ? "bg-sage-deep" : passwordStrength >= 2 ? "bg-primary" : "bg-destructive";
   const heading = mode === "signin"
-    ? "Sign in to Zoot"
+    ? "Sign in to Xoot"
     : mode === "signup"
       ? "Create your account"
       : mode === "otp"
         ? "Use an email code"
         : "Reset your password";
   const subheading = mode === "signin"
-    ? "Access your bookings, ZootCred, Care+ status and saved home profile."
+    ? "Access your bookings, XootCred, Care+ status and saved home profile."
     : mode === "signup"
-      ? "Start booking trusted Zooters with a protected home profile."
+      ? "Start booking trusted Xooters with a protected home profile."
       : mode === "otp"
         ? "Get a one-time email code or secure sign-in link for passwordless access."
-        : "Enter your email and we will send a secure reset link if the account can access Zoot.";
+        : "Enter your email and we will send a secure reset link if the account can access Xoot.";
   const submitLabel = isForgotPassword
     ? "Send reset link"
     : isOtpMode
@@ -385,13 +385,13 @@ const Auth = () => {
   return (
     <div className="grid min-h-screen place-items-center overflow-hidden gradient-hero px-4 py-6 sm:p-6">
       <SEO
-        title="Secure Zoot sign-in"
-        description="Sign in to Zoot securely to manage bookings, Care+, ZootCred, support and protected household details."
+        title="Secure Xoot sign-in"
+        description="Sign in to Xoot securely to manage bookings, Care+, XootCred, support and protected household details."
         canonical="/auth"
         noIndex
       />
       <Card className="w-full max-w-92 rounded-3xl border-border p-5 shadow-warm sm:max-w-md sm:p-8">
-        <Link to="/" className="mb-5 flex items-center gap-2 sm:mb-6" aria-label="Back to Zoot home">
+        <Link to="/" className="mb-5 flex items-center gap-2 sm:mb-6" aria-label="Back to Xoot home">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-warm shadow-warm">
             <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
           </span>
@@ -400,7 +400,7 @@ const Auth = () => {
 
         <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
           {mode === "signin" ? <LockKeyhole className="h-3 w-3 shrink-0 text-sage-deep" /> : mode === "forgot" ? <Mail className="h-3 w-3 shrink-0 text-sage-deep" /> : mode === "otp" ? <KeyRound className="h-3 w-3 shrink-0 text-sage-deep" /> : <Sparkles className="h-3 w-3 shrink-0 text-sage-deep" />}
-          <span className="text-xs font-medium text-sage-deep">{mode === "signin" ? "Secure sign-in" : mode === "forgot" ? "Password recovery" : mode === "otp" ? "Email one-time code" : "Join Zoot"}</span>
+          <span className="text-xs font-medium text-sage-deep">{mode === "signin" ? "Secure sign-in" : mode === "forgot" ? "Password recovery" : mode === "otp" ? "Email one-time code" : "Join Xoot"}</span>
         </div>
 
         <h1 className="mb-1 font-display text-2xl font-bold sm:text-3xl">{heading}</h1>
@@ -460,7 +460,7 @@ const Auth = () => {
           <div className="mb-5 rounded-2xl border border-accent/25 bg-accent-soft p-3 text-sm leading-relaxed text-sage-deep">
             <p className="font-semibold">Passwordless sign-in</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Zoot sends the code through Supabase Auth. The code is one-time use and should only be entered inside this app.
+              Xoot sends the code through Supabase Auth. The code is one-time use and should only be entered inside this app.
             </p>
           </div>
         )}
@@ -622,7 +622,7 @@ const Auth = () => {
           <div className="rounded-2xl border border-border bg-muted/35 p-3 text-xs leading-relaxed text-muted-foreground">
             <p className="flex items-start gap-2">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sage-deep" />
-              Zoot will never ask for your password, OTP, card PIN or bank login details in chat, WhatsApp, phone calls or email.
+              Xoot will never ask for your password, OTP, card PIN or bank login details in chat, WhatsApp, phone calls or email.
             </p>
           </div>
 
@@ -638,7 +638,7 @@ const Auth = () => {
                 Use a one-time email code
               </button>
               <button type="button" onClick={() => setAuthMode("signup")} className="transition-smooth hover:text-foreground">
-                New to Zoot? Create an account
+                New to Xoot? Create an account
               </button>
             </>
           )}

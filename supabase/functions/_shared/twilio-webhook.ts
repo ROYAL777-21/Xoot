@@ -374,7 +374,7 @@ export const handleTwilioMessagingWebhook = async (
   await markProviderEventProcessed(supa, claim.providerEventId, "processed");
 
   return twimlMessage(
-    "Thanks for contacting Zoot. For bookings, payments, private addresses or cleaner details, please open the Zoot app so we can protect your account.",
+    "Thanks for contacting Xoot. For bookings, payments, private addresses or cleaner details, please open the Xoot app so we can protect your account.",
   );
 };
 
@@ -413,7 +413,7 @@ export const handleTwilioVoiceWebhook = async (req: Request) => {
   const claim = await claimTwilioProviderEvent(supa, "voice_webhook", "voice", params, rawBody);
   if (claim.alreadySeen) {
     return twimlVoice(
-      "Welcome to Zoot. For a booking, open the Zoot app and choose Book a clean. For protected support, use the Support tab so we can verify your account.",
+      "Welcome to Xoot. For a booking, open the Xoot app and choose Book a clean. For protected support, use the Support tab so we can verify your account.",
     );
   }
 
@@ -428,7 +428,7 @@ export const handleTwilioVoiceWebhook = async (req: Request) => {
   await markProviderEventProcessed(supa, claim.providerEventId, "processed");
 
   return twimlVoice(
-    "Welcome to Zoot. For a booking, open the Zoot app and choose Book a clean. For protected support, use the Support tab so we can verify your account.",
+    "Welcome to Xoot. For a booking, open the Xoot app and choose Book a clean. For protected support, use the Support tab so we can verify your account.",
   );
 };
 

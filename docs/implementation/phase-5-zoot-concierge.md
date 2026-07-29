@@ -1,10 +1,10 @@
-# Phase 5 - Zoot Concierge
+# Phase 5 - Xoot Concierge
 
 Reviewed: 2026-06-29
 
 ## Scope
 
-Phase 5 consolidates Zoot Concierge into a source-guided, answer-only support layer. It can answer public Zoot questions, route private or risky topics to protected support, and accept user reports about Concierge answers.
+Phase 5 consolidates Xoot Concierge into a source-guided, answer-only support layer. It can answer public Xoot questions, route private or risky topics to protected support, and accept user reports about Concierge answers.
 
 ## Implemented
 

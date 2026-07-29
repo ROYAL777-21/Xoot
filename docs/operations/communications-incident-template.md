@@ -6,7 +6,7 @@ Use this template for user-facing incident communications. Replace bracketed fie
 
 ## Short Status Update
 
-Subject: Update on [affected Zoot feature]
+Subject: Update on [affected Xoot feature]
 
 We are currently investigating an issue affecting [feature or journey]. Your [booking/payment/account/home access] data remains [known safe status]. We have paused [affected action] while we verify the issue.
 

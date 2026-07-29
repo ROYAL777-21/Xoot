@@ -14,7 +14,7 @@ const workflows = [
   "Address search",
   "Price breakdown",
   "Care+",
-  "Zooter application",
+  "Xooter application",
   "Support chat",
   "Installable app",
   "Airbnb and Office",
@@ -37,7 +37,7 @@ export const FeedbackSection = () => {
 
     if (!user) {
       haptic("warning");
-      toast.error("Please sign in before sending product feedback so Zoot can follow up safely.");
+      toast.error("Please sign in before sending product feedback so Xoot can follow up safely.");
       return;
     }
 
@@ -53,7 +53,7 @@ export const FeedbackSection = () => {
       if (error) throw error;
 
       haptic("success");
-      toast.success("Thanks. Your feedback has been routed to Zoot support.");
+      toast.success("Thanks. Your feedback has been routed to Xoot support.");
       setFeedback("");
     } catch {
       haptic("warning");
@@ -76,7 +76,7 @@ export const FeedbackSection = () => {
             Help shape the workflows before they become habit.
           </h2>
           <p className="mt-4 max-w-xl text-muted-foreground">
-            Tell Zoot where a booking, support, Care+, address, or installable-app step feels unclear. Useful critique helps the product become calmer, faster and more dependable.
+            Tell Xoot where a booking, support, Care+, address, or installable-app step feels unclear. Useful critique helps the product become calmer, faster and more dependable.
           </p>
         </div>
 

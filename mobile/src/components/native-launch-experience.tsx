@@ -89,7 +89,7 @@ export function NativeLaunchExperience({ onBook, onConcierge }: NativeLaunchExpe
 
       <View style={styles.copy}>
         <Eyebrow>Native launch</Eyebrow>
-        <Title>Zoot opens calm, private and ready.</Title>
+        <Title>Xoot opens calm, private and ready.</Title>
         <Body muted>
           A bundled Expo experience loads before live data. Urgent booking, Concierge and Care+ deep links bypass this screen and open the right protected route.
         </Body>
@@ -100,7 +100,7 @@ export function NativeLaunchExperience({ onBook, onConcierge }: NativeLaunchExpe
 
       <View style={styles.actions}>
         <PrimaryButton onPress={onBook}>Book a clean</PrimaryButton>
-        <SecondaryButton onPress={onConcierge}>Ask Zoot Concierge</SecondaryButton>
+        <SecondaryButton onPress={onConcierge}>Ask Xoot Concierge</SecondaryButton>
       </View>
 
       <View style={styles.guardRail}>

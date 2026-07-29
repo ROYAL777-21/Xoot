@@ -7,7 +7,7 @@ import { Loader2, ShieldCheck, FileText, Check, X, AlertTriangle } from "lucide-
 import { toast } from "sonner";
 import { getActivationReadiness } from "@/lib/operations";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
-import { approveZooterAdmin, rejectZooterAdmin } from "@/lib/admin-actions";
+import { approveXooterAdmin, rejectXooterAdmin } from "@/lib/admin-actions";
 
 const verificationFields = [
   ["id_verification_status", "Government ID"],
@@ -105,8 +105,8 @@ const AdminKyc = () => {
 
     try {
       const { data, error } = status === "approved"
-        ? await approveZooterAdmin(active.id, reason)
-        : await rejectZooterAdmin(active.id, reason);
+        ? await approveXooterAdmin(active.id, reason)
+        : await rejectXooterAdmin(active.id, reason);
       if (error) throw error;
       if ((data as any)?.success === false) throw new Error((data as any).error ?? "Application decision failed");
     } catch (error) {

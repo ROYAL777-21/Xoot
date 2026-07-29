@@ -1,4 +1,4 @@
-# Zoot Feature Completion Audit
+# Xoot Feature Completion Audit
 
 Branch: `codex/full-zoot-iphone-pwa-auth-security`
 Date: 2026-06-08
@@ -10,14 +10,14 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Area | Status | Notes |
 | --- | --- | --- |
 | Premium public homepage | Done | Existing route `/` presents premium home-care positioning, service categories, trust cues, launch suburbs, Care+, and booking CTAs. |
-| Care+ membership page | Done | `/care-plus` includes hero, problem, benefits, value pillars, comparison, Airbnb/landlord use case, ZootCred, Home Memory, Favourite Zooter, and final CTA. |
+| Care+ membership page | Done | `/care-plus` includes hero, problem, benefits, value pillars, comparison, Airbnb/landlord use case, XootCred, Home Memory, Favourite Xooter, and final CTA. |
 | Care+ backend billing | Partial | Membership request/cancellation now routes through the `care-plus-membership` Edge Function, which creates pending payment records, subscription rows, admin review items, outbox events, and notifications server-side. Provider checkout and verified recurring payment webhooks remain required before activation can be live. |
 | Trust Centre and legal routes | Done | `/trust-centre`, `/legal/privacy`, `/legal/terms`, and `/legal/trust-safety` are routed. |
-| Guided booking app | Partial | Protected `/app` booking experience exists with pricing, trust signals, arrival tracking, Live Activity updates, native directions/ETA share actions, and masked-call request handoff. Booking creation uses `create-booking-request`; booking status changes, masked-call requests, trust incidents, low-rating follow-ups, Gift Clean payment requests, ZootCred redemption, support routing, property ops routing, and Zooter job responses now use the `ops-workflow` Edge Function instead of browser-owned admin/outbox/payment mutations. Payment confirmation and dispatch automation remain provider/backend work. Production and preview must use real Supabase config; placeholder/mock mode is disabled. |
+| Guided booking app | Partial | Protected `/app` booking experience exists with pricing, trust signals, arrival tracking, Live Activity updates, native directions/ETA share actions, and masked-call request handoff. Booking creation uses `create-booking-request`; booking status changes, masked-call requests, trust incidents, low-rating follow-ups, Gift Clean payment requests, XootCred redemption, support routing, property ops routing, and Xooter job responses now use the `ops-workflow` Edge Function instead of browser-owned admin/outbox/payment mutations. Payment confirmation and dispatch automation remain provider/backend work. Production and preview must use real Supabase config; placeholder/mock mode is disabled. |
 | Airbnb host dashboard | Done | `/app/properties/airbnb` is routed and uses typed UI data for portfolio/turnover operations. |
 | Small office dashboard | Done | `/app/properties/office` is routed and uses typed UI data for office operations. |
 | Protected client app routes | Done | Booking, bookings, profile, loyalty, gifts, support, insurance, plans, favourites, and property routes are protected by auth. |
-| Contractor/Zooter portal | Partial | Zooter routes exist with role guards and UI. Application submission and job responses now route through `ops-workflow`; production screening/provider integrations remain operational setup. |
+| Contractor/Xooter portal | Partial | Xooter routes exist with role guards and UI. Application submission and job responses now route through `ops-workflow`; production screening/provider integrations remain operational setup. |
 | Admin routes | Partial | Admin KYC/Ops routes are role-protected and use typed `ops-workflow` actions for payment confirmation, outbox completion, queue resolution, support follow-up closure, KYC verification, and application approval/activation. Production admin MFA and IP/device policies must be enforced in Supabase/app configuration. |
 
 ## Care+, Retention, and Premium Feel
@@ -25,9 +25,9 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | Area | Status | Notes |
 | --- | --- | --- |
 | Home Memory | Done | Preview and saved-profile UI patterns exist; sensitive fields must remain encrypted/backend-controlled in production. |
-| Favourite Zooter | Done | UI uses the required `Book Nomsa again` pattern instead of generic rebook copy. |
+| Favourite Xooter | Done | UI uses the required `Book Nomsa again` pattern instead of generic rebook copy. |
 | One-tap rebook | Mock/UI only | UI and haptic pattern exist; live availability and booking creation require backend booking mutation. |
-| ZootCred boost | Mock/UI only | 1.5x ZootCred and R30 add-on credit are visible; ledger enforcement must be server-side before real value is issued. |
+| XootCred boost | Mock/UI only | 1.5x XootCred and R30 add-on credit are visible; ledger enforcement must be server-side before real value is issued. |
 | Smart reminders | Done | Care+ and app surfaces show concierge-style reminders. |
 | Property profiles | Done | Multi-property host/office dashboards and previews exist. |
 | Moat features | Mock/UI only | Home Readiness Score, seasonal reset perks, before/after photo proof, member-only peak slots, flexible reschedule, Guest-Ready Mode, and concierge prompts are UI-ready but not all backend-enforced. |
@@ -73,4 +73,4 @@ Status key: `Done`, `Partial`, `Mock/UI only`, `Blocked by credentials`, `Not st
 | 10,000-request readiness | Partial | k6 smoke/load script exists. Do not claim capacity until it is run against staging/production and database metrics are reviewed. |
 | Hostinger deployment | Partial | Static build, SPA fallback, Apache headers, and native association-file content types are prepared. Final deployment needs Hostinger domain/environment configuration and release signing values. |
 | Vercel/Netlify/GitHub Pages preview | Partial | GitHub Actions build artifact is available for preview; production target remains Hostinger unless changed. |
-| Figma dashboard | Partial | Blank file created at https://www.figma.com/design/vsT7yHn1OPxKgKpVzLryo3 as `Zoot Care+ Host & Office Dashboards`. Populating the dashboard frames is blocked by the Figma Starter-plan MCP tool-call limit. |
+| Figma dashboard | Partial | Blank file created at https://www.figma.com/design/vsT7yHn1OPxKgKpVzLryo3 as `Xoot Care+ Host & Office Dashboards`. Populating the dashboard frames is blocked by the Figma Starter-plan MCP tool-call limit. |

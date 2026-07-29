@@ -8,7 +8,7 @@ This note records the next Phase 1 implementation slice: backend-owned feature f
 
 - Staging applied via Supabase connector on 2026-06-27 as migration `20260627094915_phase1_governance_controls`.
 - Production applied via Supabase connector on 2026-06-27 as migration `20260627095149_phase1_governance_controls`.
-- Zooter job-card RPC service-boundary fix applied as `20260627101824_zooter_job_cards_service_boundary` in staging and `20260627102231_zooter_job_cards_service_boundary` in production.
+- Xooter job-card RPC service-boundary fix applied as `20260627101824_zooter_job_cards_service_boundary` in staging and `20260627102231_zooter_job_cards_service_boundary` in production.
 - Governance advisor follow-up applied as `20260627103053_governance_advisor_followups` in staging and `20260627103118_governance_advisor_followups` in production.
 - Staging governance smoke tests passed on 2026-06-27 for duplicate provider-event claim handling, rate-limit exhaustion, admin-read policy presence and disabled-by-default provider gates.
 - Production governance smoke tests passed on 2026-06-27 for duplicate provider-event claim handling, rate-limit exhaustion, admin-read policy presence and disabled-by-default provider gates.
@@ -75,4 +75,4 @@ This migration is additive. If rollback is needed before any Edge Function depen
 
 - Run signed Twilio webhook smoke tests after live Twilio dashboard channel setup and current approved Edge secrets are verified.
 - Connect PostHog only after event contracts and privacy settings are approved.
-- Run role-based staging and production smoke tests with real client, admin and Zooter users before considering this phase closed.
+- Run role-based staging and production smoke tests with real client, admin and Xooter users before considering this phase closed.

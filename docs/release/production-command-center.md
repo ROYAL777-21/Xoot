@@ -1,8 +1,8 @@
-# Zoot Production Command Center
+# Xoot Production Command Center
 
 Reviewed: 2026-07-10 00:12 SAST
 
-This document is the navigation layer for completing Zoot. It does not replace the detailed runbooks it links to.
+This document is the navigation layer for completing Xoot. It does not replace the detailed runbooks it links to.
 
 ## Current Next Action
 
@@ -47,7 +47,7 @@ Do not maintain parallel long-lived product branches. Staging and production dif
 | 2. Backend convergence | Guarded migration repair complete; new migrations/functions deployed to staging; schema smoke tests pass | `docs/implementation/supabase-migration-status-repair-20260630.md` |
 | 3. Identity | Auth redirects, OAuth callbacks, password policy, admin MFA, account deletion verified | `docs/OAUTH_AND_REDIRECTS.md` |
 | 4. Security | RLS, secret scans, abuse controls, threat models, advisor review, incident runbooks pass | `docs/release/security-release-gate.md` |
-| 5. Product workflows | Booking, payment pending/confirmed, chat, Care+, Concierge handoff and Zooter access tested in staging | `docs/STAGING_PRODUCTION_CHECKLIST.md` |
+| 5. Product workflows | Booking, payment pending/confirmed, chat, Care+, Concierge handoff and Xooter access tested in staging | `docs/STAGING_PRODUCTION_CHECKLIST.md` |
 | 6. Reliability | k6 staging evidence, outbox retries, dead letters, Sentry and PostHog privacy checks | `docs/PRODUCTION_COMPLETION_AUDIT.md` |
 | 7. Device proof | Android and iOS builds installed on real devices; auth, push, links, maps and assistant routes pass | `docs/EXPO_MOBILE_PRODUCTION_READINESS.md` |
 | 8. Provider and store proof | Domain, Cloudflare, Twilio, Mapbox, payment, email, Apple and Google records verified | `docs/release/manual-configuration-checklist.md` |
@@ -58,14 +58,14 @@ Do not maintain parallel long-lived product branches. Staging and production dif
 - Register the final production domain and provide registrar/DNS access.
 - Load a rotated Supabase access token and staging/production database credentials into the approved local secret store.
 - Supply or approve Apple Developer, App Store Connect, and Google Play organization access.
-- Supply final legal entity, VAT, Information Officer, privacy, refund, Care+, Zooter and Booking Cover decisions.
+- Supply final legal entity, VAT, Information Officer, privacy, refund, Care+, Xooter and Booking Cover decisions.
 - Approve provider accounts and production credentials for payment, communications, email, maps, monitoring, hosting and AI.
-- Provide real staging test users for customer, Zooter, support and admin roles.
+- Provide real staging test users for customer, Xooter, support and admin roles.
 - Approve the production launch window and rollback owner.
 
 ## Immediate Device Test
 
-- Android: install `outputs/zoot-preview-android-v5.apk`; Expo Go is not compatible with Zoot's custom Mapbox and assistant native modules.
+- Android: install `outputs/zoot-preview-android-v5.apk`; Expo Go is not compatible with Xoot's custom Mapbox and assistant native modules.
 - Iterative Android development: install an EAS `development` build, then run `npm run mobile:start:dev-client`.
 - Physical iOS: provide Apple Developer team access and register the device or use TestFlight after the App Store Connect record exists.
 

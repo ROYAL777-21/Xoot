@@ -9,7 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.widget.RemoteViews;
 
-public class ZootStatusWidgetProvider extends AppWidgetProvider {
+public class XootStatusWidgetProvider extends AppWidgetProvider {
   @Override
   public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
     for (int appWidgetId : appWidgetIds) {
@@ -23,9 +23,9 @@ public class ZootStatusWidgetProvider extends AppWidgetProvider {
 
     RemoteViews views = new RemoteViews(context.getPackageName(), layoutId);
     views.setTextViewText(resId(context, "id", "zoot_widget_star"), "*");
-    views.setTextViewText(resId(context, "id", "zoot_widget_eyebrow"), "Zoot");
+    views.setTextViewText(resId(context, "id", "zoot_widget_eyebrow"), "Xoot");
     views.setTextViewText(resId(context, "id", "zoot_widget_title"), "Next clean");
-    views.setTextViewText(resId(context, "id", "zoot_widget_body"), "Open Zoot for live booking status.");
+    views.setTextViewText(resId(context, "id", "zoot_widget_body"), "Open Xoot for live booking status.");
     views.setTextViewText(resId(context, "id", "zoot_widget_action"), "View in app");
 
     PendingIntent openApp = PendingIntent.getActivity(

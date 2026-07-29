@@ -44,7 +44,7 @@ export const isSupabaseConfigured = Boolean(
 
 export const requireSupabaseConfig = () => {
   if (!isSupabaseConfigured) {
-    throw new Error(`[Zoot] Supabase public configuration is missing or invalid. ${supabaseConfigErrorMessage}`);
+    throw new Error(`[Xoot] Supabase public configuration is missing or invalid. ${supabaseConfigErrorMessage}`);
   }
 };
 

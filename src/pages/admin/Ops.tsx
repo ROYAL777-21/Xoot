@@ -17,11 +17,11 @@ import {
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import {
-  approveZooterAdmin,
+  approveXooterAdmin,
   confirmPaymentAdmin,
   escalateSupportCase,
   markOutboxProcessed,
-  rejectZooterAdmin,
+  rejectXooterAdmin,
   resolveAdminReview,
 } from "@/lib/admin-actions";
 
@@ -39,7 +39,7 @@ const Ops = () => {
   const [outbox, setOutbox] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [supportTickets, setSupportTickets] = useState<any[]>([]);
-  const [zooterApplications, setZooterApplications] = useState<any[]>([]);
+  const [zooterApplications, setXooterApplications] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [bookingAnalytics, setBookingAnalytics] = useState<any[]>([]);
   const [qualityAnalytics, setQualityAnalytics] = useState<any[]>([]);
@@ -69,7 +69,7 @@ const Ops = () => {
     setOutbox(outboxRows.data ?? []);
     setReviews(reviewRows.data ?? []);
     setSupportTickets(supportRows.data ?? []);
-    setZooterApplications(applicationRows.data ?? []);
+    setXooterApplications(applicationRows.data ?? []);
     setAuditLogs(auditRows.data ?? []);
     setBookingAnalytics(bookingRows.data ?? []);
     setQualityAnalytics(qualityRows.data ?? []);
@@ -156,14 +156,14 @@ const Ops = () => {
     const key = `application:${row.id}`;
     const reason = requireReason(key);
     if (!reason) return;
-    void runTypedAction(key, () => approveZooterAdmin(row.id, reason), "Zooter approval audited");
+    void runTypedAction(key, () => approveXooterAdmin(row.id, reason), "Xooter approval audited");
   };
 
   const rejectApplication = (row: any) => {
     const key = `application:${row.id}`;
     const reason = requireReason(key);
     if (!reason) return;
-    void runTypedAction(key, () => rejectZooterAdmin(row.id, reason), "Zooter rejection audited");
+    void runTypedAction(key, () => rejectXooterAdmin(row.id, reason), "Xooter rejection audited");
   };
 
   const markOutbox = (row: any) => {
@@ -193,8 +193,8 @@ const Ops = () => {
           <BarChart3 className="h-3 w-3 text-primary" />
           <span className="text-xs font-medium text-primary">Admin operations</span>
         </div>
-        <h1 className="font-display text-4xl font-bold md:text-5xl">Zoot operating queues</h1>
-        <p className="mt-2 text-muted-foreground">Typed, MFA-gated actions for payments, integrations, support, trust review, Zooter activation and analytics.</p>
+        <h1 className="font-display text-4xl font-bold md:text-5xl">Xoot operating queues</h1>
+        <p className="mt-2 text-muted-foreground">Typed, MFA-gated actions for payments, integrations, support, trust review, Xooter activation and analytics.</p>
       </div>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
@@ -205,7 +205,7 @@ const Ops = () => {
         <Stat icon={ClipboardCheck} label="Agent decisions" value={agentDecisionRows.length} />
         <Stat icon={ShieldAlert} label="Open reviews" value={reviews.filter((r) => r.status === "open").length} />
         <Stat icon={CheckCircle2} label="Open support" value={supportTickets.filter((t) => t.status === "open").length} />
-        <Stat icon={UserCheck} label="Zooter queue" value={zooterApplications.filter((a) => a.status === "submitted").length} />
+        <Stat icon={UserCheck} label="Xooter queue" value={zooterApplications.filter((a) => a.status === "submitted").length} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -311,7 +311,7 @@ const Ops = () => {
           }}
         </Queue>
 
-        <Queue title="Zooter applications" rows={zooterApplications} empty="No Zooter applications.">
+        <Queue title="Xooter applications" rows={zooterApplications} empty="No Xooter applications.">
           {(row) => {
             const key = `application:${row.id}`;
             return (

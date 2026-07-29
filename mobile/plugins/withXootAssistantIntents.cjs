@@ -9,7 +9,7 @@ const {
   withXcodeProject,
 } = require("expo/config-plugins");
 
-const pluginName = "withZootAssistantIntents";
+const pluginName = "withXootAssistantIntents";
 const pluginVersion = "1.0.0";
 
 const copyFileEnsuringDirectory = (from, to) => {
@@ -43,16 +43,16 @@ const getAppSourceGroup = (project, projectName) => {
     project.findPBXGroupKey({ path: projectName });
 
   if (appGroupKey) {
-    return { groupKey: appGroupKey, sourcePath: "ZootAppIntents.swift" };
+    return { groupKey: appGroupKey, sourcePath: "XootAppIntents.swift" };
   }
 
   const mainGroupKey = project.getFirstProject?.()?.firstProject?.mainGroup;
   return mainGroupKey
-    ? { groupKey: mainGroupKey, sourcePath: "ZootAppIntents.swift" }
+    ? { groupKey: mainGroupKey, sourcePath: "XootAppIntents.swift" }
     : null;
 };
 
-const withZootAssistantIntents = (config) => {
+const withXootAssistantIntents = (config) => {
   config = withInfoPlist(config, (config) => {
     const existingActivities = Array.isArray(config.modResults.NSUserActivityTypes)
       ? config.modResults.NSUserActivityTypes
@@ -68,7 +68,7 @@ const withZootAssistantIntents = (config) => {
       ]),
     );
     config.modResults.NSSupportsLiveActivities = true;
-    config.modResults.ZootAssistantIntents = {
+    config.modResults.XootAssistantIntents = {
       version: pluginVersion,
       policy: "open-app-safe-routes-only",
     };
@@ -98,10 +98,10 @@ const withZootAssistantIntents = (config) => {
 
     const widgetReceiver = ensureAndroidManifestEntry(
       application.receiver,
-      "za.co.zoothome.widgets.ZootStatusWidgetProvider",
+      "za.co.zoothome.widgets.XootStatusWidgetProvider",
       () => ({
         $: {
-          "android:name": "za.co.zoothome.widgets.ZootStatusWidgetProvider",
+          "android:name": "za.co.zoothome.widgets.XootStatusWidgetProvider",
           "android:exported": "false",
           "android:label": "@string/zoot_widget_name",
         },
@@ -166,8 +166,8 @@ const withZootAssistantIntents = (config) => {
         path.join(platformProjectRoot, "app", "src", "main", "res", "drawable", "zoot_widget_mark_background.xml"),
       );
       copyFileEnsuringDirectory(
-        getNativeAssetPath(projectRoot, "android", "src", "main", "java", "za", "co", "zoothome", "widgets", "ZootStatusWidgetProvider.java"),
-        path.join(platformProjectRoot, "app", "src", "main", "java", "za", "co", "zoothome", "widgets", "ZootStatusWidgetProvider.java"),
+        getNativeAssetPath(projectRoot, "android", "src", "main", "java", "za", "co", "zoothome", "widgets", "XootStatusWidgetProvider.java"),
+        path.join(platformProjectRoot, "app", "src", "main", "java", "za", "co", "zoothome", "widgets", "XootStatusWidgetProvider.java"),
       );
       return config;
     },
@@ -178,8 +178,8 @@ const withZootAssistantIntents = (config) => {
     async (config) => {
       const { platformProjectRoot, projectRoot } = config.modRequest;
       copyFileEnsuringDirectory(
-        getNativeAssetPath(projectRoot, "ios", "ZootLiveActivities", "ZootAppIntents.swift"),
-        path.join(platformProjectRoot, "ZootAppIntents.swift"),
+        getNativeAssetPath(projectRoot, "ios", "XootLiveActivities", "XootAppIntents.swift"),
+        path.join(platformProjectRoot, "XootAppIntents.swift"),
       );
       return config;
     },
@@ -191,7 +191,7 @@ const withZootAssistantIntents = (config) => {
     const projectName = config.modRequest.projectName;
     const appSourceGroup = getAppSourceGroup(project, projectName);
 
-    if (target?.uuid && appSourceGroup && !hasXcodeFileReference(project, "ZootAppIntents.swift")) {
+    if (target?.uuid && appSourceGroup && !hasXcodeFileReference(project, "XootAppIntents.swift")) {
       project.addSourceFile(
         appSourceGroup.sourcePath,
         { target: target.uuid, lastKnownFileType: "sourcecode.swift" },
@@ -205,4 +205,4 @@ const withZootAssistantIntents = (config) => {
   return config;
 };
 
-module.exports = createRunOncePlugin(withZootAssistantIntents, pluginName, pluginVersion);
+module.exports = createRunOncePlugin(withXootAssistantIntents, pluginName, pluginVersion);

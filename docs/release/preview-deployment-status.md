@@ -5,7 +5,7 @@ Current public preview:
 - Netlify site: https://zoot-home-care.netlify.app
 - Netlify project: https://app.netlify.com/projects/zoot-home-care
 - Current Netlify deploy ID: `6a189bd7a6082006e0ca6aed`
-- Status: live static overview preview. It is useful for showing the Zoot/Care+ direction, but it is not the full React app bundle.
+- Status: live static overview preview. It is useful for showing the Xoot/Care+ direction, but it is not the full React app bundle.
 
 Verified full-app local preview:
 

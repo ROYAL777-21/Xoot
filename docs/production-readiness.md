@@ -1,6 +1,6 @@
-# Zoot Production Readiness Guide
+# Xoot Production Readiness Guide
 
-This guide separates code readiness from operational credentials and dashboard settings. It is intentionally conservative: Zoot should measure readiness before claiming high-scale capacity.
+This guide separates code readiness from operational credentials and dashboard settings. It is intentionally conservative: Xoot should measure readiness before claiming high-scale capacity.
 
 ## Required Environment Variables
 
@@ -113,7 +113,7 @@ Release checks:
 1. Use the final Apple Team ID and bundle ID before TestFlight submission.
 2. Use the Android release signing certificate SHA-256 fingerprint, not a debug fingerprint, before Play submission.
 3. Deploy the generated `.well-known` files at the production domain over HTTPS with `application/json` content type.
-4. Confirm universal links route into `/app`, booking links, auth callback/reset, Care+, install, trust centre, and Zooter routes through `resolveNativeRoute`.
+4. Confirm universal links route into `/app`, booking links, auth callback/reset, Care+, install, trust centre, and Xooter routes through `resolveNativeRoute`.
 5. Keep the `zoot://` custom scheme as a fallback, but do not rely on it as the only production linking path.
 
 ## iPhone PWA Verification
@@ -168,7 +168,7 @@ Public SEO pages cannot be made impossible to scrape without also blocking legit
 - Public marketing and article pages remain crawlable.
 - Protected app, admin, auth, and contractor account routes send `X-Robots-Tag: noindex, noarchive, nosnippet`.
 - Browser CSP allows Supabase and Mapbox only; Twilio, Brevo, payments, OpenAI, KIE, Airtable, Hostinger, and Cloudflare provider APIs must be called only from server-side Edge Functions or CI/provider dashboards.
-- Private account, booking, payment, household, Zooter, and support data must be protected by Supabase Auth, RLS, Edge Function authorization, and rate limits.
+- Private account, booking, payment, household, Xooter, and support data must be protected by Supabase Auth, RLS, Edge Function authorization, and rate limits.
 - Cloudflare should enforce bot/rate-limit rules on `/app/*`, `/auth/*`, `/admin/*`, Supabase-facing functions, and high-risk form submissions before public launch.
 
 ## ChatGPT Support Assistant
@@ -178,7 +178,7 @@ Public SEO pages cannot be made impossible to scrape without also blocking legit
 Production requirements:
 
 - Set `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, and `OPENAI_SUPPORT_MODEL` as Supabase Edge Function secrets only.
-- Keep the deterministic Zoot support-rule fallback enabled for API outages or missing credentials.
+- Keep the deterministic Xoot support-rule fallback enabled for API outages or missing credentials.
 - Do not send refund, payment, trust, safety, cancellation, access-code, lockbox, or bug escalations to the model; those must route to human review.
 - Review OpenAI request IDs from Edge Function logs when debugging provider failures.
 
@@ -208,11 +208,11 @@ npm run load:test:10k:staging
 
 This script intentionally counts 10,000 total public/staging requests, not 10,000 concurrent users. It refuses localhost by default, refuses the production domain by default, and uses only the public-safe Supabase anon/publishable key. If the staging host is a temporary preview URL that does not include a staging-style hostname, set `ALLOW_NON_STAGING_BASE_URL=true` only after confirming the target is not production.
 
-Do not claim Zoot supports 10,000 concurrent users until:
+Do not claim Xoot supports 10,000 concurrent users until:
 
 - Static frontend responses meet target latency under CDN/Hostinger conditions.
 - Supabase database-facing reads have measured latency and no failing RLS/policy paths.
-- `create-booking-request` is deployed and live frontend booking calls are verified against it; remaining payment, refund, ZootCred redemption, subscription cancellation, and support mutations should move behind Edge Functions before real value is issued.
+- `create-booking-request` is deployed and live frontend booking calls are verified against it; remaining payment, refund, XootCred redemption, subscription cancellation, and support mutations should move behind Edge Functions before real value is issued.
 - Provider webhooks are idempotent and rate-limited.
 - Error budgets, Sentry alerts, and rollback procedures are active.
 
@@ -234,8 +234,8 @@ These are intentionally not hardcoded into the repo:
 
 ## Production Guardrails
 
-- Real booking prices, cover, ZootCred, refunds, and Care+ membership state must be calculated server-side.
-- Browser clients must not be the authority for contractor assignment, payment confirmation, ZootCred balance changes, subscription state, cancellation penalties, refunds, or sensitive access decisions.
+- Real booking prices, cover, XootCred, refunds, and Care+ membership state must be calculated server-side.
+- Browser clients must not be the authority for contractor assignment, payment confirmation, XootCred balance changes, subscription state, cancellation penalties, refunds, or sensitive access decisions.
 - Gate codes and sensitive access notes must be encrypted and fetched only inside the allowed booking window.
 - Notifications must follow the app-first hierarchy: in-app first, email for records, WhatsApp only for urgent operational events, Twilio voice only during active bookings.
 - Avoid unsupported guarantees in public copy unless backed by policy, insurance, and operational capacity.

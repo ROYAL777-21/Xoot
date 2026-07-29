@@ -13,6 +13,6 @@ source_of_truth_reference: Privacy, POPIA and AI Concierge legal pages
 
 # Privacy And Data Guide
 
-Zoot protects sensitive user, booking, payment, support and household access information through authenticated flows, RLS, server-side tools, audit logs and redaction.
+Xoot protects sensitive user, booking, payment, support and household access information through authenticated flows, RLS, server-side tools, audit logs and redaction.
 
 The Concierge must route privacy, account deletion, data deletion, formal complaint, legal or data-subject requests to the approved human process.

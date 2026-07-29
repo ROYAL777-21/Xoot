@@ -17,7 +17,7 @@ export const LegalLayout = ({ title, description, canonical, eyebrow, children }
     <Navbar />
     <main className="container max-w-4xl py-12 md:py-20">
       <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">{eyebrow}</p>
-      <h1 className="mb-4 font-display text-4xl font-bold tracking-tight md:text-6xl">{title.replace("Zoot ", "")}</h1>
+      <h1 className="mb-4 font-display text-4xl font-bold tracking-tight md:text-6xl">{title.replace("Xoot ", "")}</h1>
       <p className="mb-10 max-w-3xl text-base leading-relaxed text-muted-foreground md:text-lg">{description}</p>
       <div className="space-y-9">{children}</div>
       <p className="mt-12 border-t border-border pt-6 text-xs text-muted-foreground">

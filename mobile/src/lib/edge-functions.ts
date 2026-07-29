@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-export async function invokeZootFunction<TResponse>(
+export async function invokeXootFunction<TResponse>(
   name: string,
   body: Record<string, unknown>,
 ): Promise<TResponse> {

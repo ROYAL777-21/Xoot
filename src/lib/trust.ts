@@ -15,7 +15,7 @@ export type ReliabilityInputs = {
   escalations?: number;
 };
 
-export type ZooterTrustProfile = {
+export type XooterTrustProfile = {
   verified?: boolean | null;
   background_checked?: boolean | null;
   background_check_status?: string | null;
@@ -59,11 +59,11 @@ export const calculateReliabilityScore = ({
   return clampScore(100 - penalty + qualityBoost + repeatBoost);
 };
 
-export const shouldDeprioritizeZooter = (score?: number | null) => typeof score === "number" && score < 75;
+export const shouldDeprioritizeXooter = (score?: number | null) => typeof score === "number" && score < 75;
 
-export const shouldFlagZooterForReview = (score?: number | null) => typeof score === "number" && score < 50;
+export const shouldFlagXooterForReview = (score?: number | null) => typeof score === "number" && score < 50;
 
-export const deriveZooterBadges = (zooter: ZooterTrustProfile): TrustBadgeKind[] => {
+export const deriveXooterBadges = (zooter: XooterTrustProfile): TrustBadgeKind[] => {
   const badges: TrustBadgeKind[] = [];
   const backgroundChecked = zooter.background_checked || zooter.background_check_status === "approved";
 
@@ -77,12 +77,12 @@ export const deriveZooterBadges = (zooter: ZooterTrustProfile): TrustBadgeKind[]
   return badges;
 };
 
-export const sortZootersForMarketplace = <T extends ZooterTrustProfile>(zooters: T[]) => {
+export const sortXootersForMarketplace = <T extends XooterTrustProfile>(zooters: T[]) => {
   return [...zooters].sort((a, b) => {
     const aScore = a.reliability_score ?? 100;
     const bScore = b.reliability_score ?? 100;
-    const aPenalty = shouldDeprioritizeZooter(aScore) ? 1 : 0;
-    const bPenalty = shouldDeprioritizeZooter(bScore) ? 1 : 0;
+    const aPenalty = shouldDeprioritizeXooter(aScore) ? 1 : 0;
+    const bPenalty = shouldDeprioritizeXooter(bScore) ? 1 : 0;
 
     if (aPenalty !== bPenalty) return aPenalty - bPenalty;
     if (bScore !== aScore) return bScore - aScore;
@@ -96,14 +96,14 @@ export const requiresCompletionPhotos = (serviceType?: string | null) => {
 };
 
 export const getSmartRecurringSuggestion = (history: BookingHistoryItem[]) => {
-  if (history.length < 2) return "Book a recurring slot to keep your preferred Zooter available.";
+  if (history.length < 2) return "Book a recurring slot to keep your preferred Xooter available.";
 
   const ordered = [...history]
     .map((item) => new Date(item.scheduled_at))
     .filter((date) => !Number.isNaN(date.getTime()))
     .sort((a, b) => a.getTime() - b.getTime());
 
-  if (ordered.length < 2) return "Book a recurring slot to keep your preferred Zooter available.";
+  if (ordered.length < 2) return "Book a recurring slot to keep your preferred Xooter available.";
 
   const gaps = ordered.slice(1).map((date, index) => {
     const previous = ordered[index];

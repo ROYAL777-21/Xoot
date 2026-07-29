@@ -19,7 +19,7 @@ Outline:
 - Open with the real-life pressure behind the search.
 - Name the local service and area naturally in the first section.
 - Give a practical checklist or decision framework.
-- Explain how Zoot handles trust, saved notes, support, and repeatability.
+- Explain how Xoot handles trust, saved notes, support, and repeatability.
 - Answer two to four long-tail questions a customer would actually ask.
 - Close with a clear booking or Care+ call to action.
 
@@ -39,14 +39,14 @@ Quality gate:
 - Hook: Checkout was at 10, check-in is at 3, and one missed detail becomes a public review.
 - Reader psychology: Review anxiety, control, visible readiness.
 - Practical promise: Turnover checklist, access notes, linen, photos, and repeat instructions.
-- CTA: Book an Airbnb turnover clean and save host instructions in Zoot.
+- CTA: Book an Airbnb turnover clean and save host instructions in Xoot.
 - Status: published at `/articles/airbnb-turnover-cleaning-johannesburg`
 
 Outline:
 - Open with the real-life pressure behind the search.
 - Name the local service and area naturally in the first section.
 - Give a practical checklist or decision framework.
-- Explain how Zoot handles trust, saved notes, support, and repeatability.
+- Explain how Xoot handles trust, saved notes, support, and repeatability.
 - Answer two to four long-tail questions a customer would actually ask.
 - Close with a clear booking or Care+ call to action.
 

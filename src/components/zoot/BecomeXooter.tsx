@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 
-export const BecomeZooter = () => {
+export const BecomeXooter = () => {
   return (
     <section id="become-zooter" className="py-20 md:py-28 bg-secondary/40 border-y border-border">
       <div className="container">
@@ -10,7 +10,7 @@ export const BecomeZooter = () => {
           <div className="relative max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 px-3 py-1 mb-5 backdrop-blur-sm">
               <Sparkles className="h-3 w-3" />
-              <span className="text-xs font-semibold">Join the Zoot marketplace</span>
+              <span className="text-xs font-semibold">Join the Xoot marketplace</span>
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-5">
               For independent contractors who want premium work standards.

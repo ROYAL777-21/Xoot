@@ -9,7 +9,7 @@ import {
 describe("notification personalization", () => {
   it("sanitizes sensitive text before it can leave the app", () => {
     expect(containsSensitiveNotificationText("Gate code is 1234")).toBe(true);
-    expect(sanitizeNotificationText("Gate code is 1234")).toBe("Open Zoot to view this securely.");
+    expect(sanitizeNotificationText("Gate code is 1234")).toBe("Open Xoot to view this securely.");
   });
 
   it("keeps sensitive access notifications on safe app channels only", () => {
@@ -28,7 +28,7 @@ describe("notification personalization", () => {
 
     expect(decision.status).toBe("send");
     expect(decision.channels).toEqual(["in_app", "expo_push"]);
-    expect(decision.body).toBe("Open Zoot to view this securely.");
+    expect(decision.body).toBe("Open Xoot to view this securely.");
     expect(decision.reasonCodes).toContain("sensitive_access_app_required");
     expect(decision.reasonCodes).toContain("sensitive_text_sanitized");
   });
@@ -55,7 +55,7 @@ describe("notification personalization", () => {
       category: "care_plus",
       urgency: "low",
       title: "Your Sunday reset can be easier",
-      body: "Open Zoot to save your home preferences.",
+      body: "Open Xoot to save your home preferences.",
       route: "/care-plus",
       profile: {
         role: "customer",
@@ -75,7 +75,7 @@ describe("notification personalization", () => {
       category: "booking",
       urgency: "normal",
       title: "Your booking needs a quick check",
-      body: "Open Zoot for the latest status.",
+      body: "Open Xoot for the latest status.",
       route: "/app/bookings/booking-123",
       profile: {
         role: "customer",
@@ -115,7 +115,7 @@ describe("notification personalization", () => {
       category: "support",
       urgency: "normal",
       title: "Support has an update",
-      body: "Open Zoot for the next step.",
+      body: "Open Xoot for the next step.",
       route: "/app/support",
       profile: {
         role: "customer",
@@ -135,8 +135,8 @@ describe("notification personalization", () => {
     const decision = buildPersonalizedNotificationDecision({
       category: "marketing",
       urgency: "low",
-      title: "Zoot can help with your next reset",
-      body: "Open Zoot when you are ready.",
+      title: "Xoot can help with your next reset",
+      body: "Open Xoot when you are ready.",
       route: "/care-plus",
       profile: {
         role: "customer",
@@ -158,7 +158,7 @@ describe("notification personalization", () => {
       category: "support",
       urgency: "urgent",
       title: "Urgent support update",
-      body: "Open Zoot for the next safe step.",
+      body: "Open Xoot for the next safe step.",
       route: "/support",
       profile: {
         role: "customer",
@@ -175,7 +175,7 @@ describe("notification personalization", () => {
     const decision = buildPersonalizedNotificationDecision({
       category: "zooter_jobs",
       title: "New job offer",
-      body: "Open Zoot.",
+      body: "Open Xoot.",
       route: "/zooter/jobs",
       profile: { role: "customer" },
     });

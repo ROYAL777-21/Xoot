@@ -85,10 +85,10 @@ export const ServiceAreaMap = () => {
             Mapbox-powered coverage
           </div>
           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
-            See where Zoot is launching, then book from the same flow.
+            See where Xoot is launching, then book from the same flow.
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-            Zoot uses map-aware coverage checks for launch suburbs, contractor dispatch, ETA surfaces and safe route context. Public maps show service areas only; exact customer addresses and access notes stay inside protected booking screens.
+            Xoot uses map-aware coverage checks for launch suburbs, contractor dispatch, ETA surfaces and safe route context. Public maps show service areas only; exact customer addresses and access notes stay inside protected booking screens.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {approvedLaunchRegions.slice(0, 8).map((region) => (
@@ -103,7 +103,7 @@ export const ServiceAreaMap = () => {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
             <Link to="/care-plus" className="liquid-glass-interactive inline-flex h-12 items-center justify-center rounded-full px-5 text-sm font-bold text-foreground shadow-card">
-              Keep my favourite Zooter
+              Keep my favourite Xooter
             </Link>
           </div>
         </div>
@@ -111,7 +111,7 @@ export const ServiceAreaMap = () => {
         <div className="liquid-glass-shell relative min-h-88 overflow-hidden rounded-4xl shadow-warm">
           {mapboxToken ? (
             <>
-              <div ref={mapContainerRef} className="absolute inset-0" aria-label="Zoot service area map" />
+              <div ref={mapContainerRef} className="absolute inset-0" aria-label="Xoot service area map" />
               {!mapReady && (
                 <div className="liquid-glass-readable absolute inset-4 grid place-items-center rounded-3xl bg-background/70 text-sm font-semibold text-muted-foreground">
                   Loading service map

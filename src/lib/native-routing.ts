@@ -209,7 +209,7 @@ const toSafeRoute = (candidate: string) => {
 const bookingQueryParam = (url: URL) =>
   url.searchParams.get("bookingId") ?? url.searchParams.get("booking_id") ?? url.searchParams.get("id");
 
-const routeFromZootUrl = (url: URL) => {
+const routeFromXootUrl = (url: URL) => {
   const host = normalizeKey(url.hostname);
   const pathname = url.pathname === "/" ? "" : url.pathname;
   const bookingIdParam = bookingQueryParam(url);
@@ -245,7 +245,7 @@ const routeFromUrl = (candidate: string) => {
   try {
     const url = new URL(value);
     if (url.protocol === "zoot:" || url.protocol === "za.co.zoothome.app:" || url.protocol === "za.co.zoot.app:") {
-      return routeFromZootUrl(url);
+      return routeFromXootUrl(url);
     }
     if (url.protocol === "https:" || url.protocol === "http:") return isAllowedWebUrl(url) ? routeForUrl(url) : null;
   } catch {

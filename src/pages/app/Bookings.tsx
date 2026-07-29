@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar, Loader2, MapPin, MessageSquare, Repeat, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { resolvePhoto } from "@/components/zoot/ZooterCard";
+import { resolvePhoto } from "@/components/zoot/XooterCard";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 import { getClientVisibleStatus, normaliseBookingStatus } from "@/lib/booking-state-machine";
 

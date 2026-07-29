@@ -4,16 +4,16 @@ Reviewed: 2026-07-02
 
 ## Current Position
 
-Zoot uses Supabase Postgres, RLS, security-invoker views where needed, and Edge Functions for privileged actions. Supabase MCP remains read-only for inspection. Live writes, migration repair, and Auth config changes require Supabase CLI/dashboard access with locally loaded rotated credentials.
+Xoot uses Supabase Postgres, RLS, security-invoker views where needed, and Edge Functions for privileged actions. Supabase MCP remains read-only for inspection. Live writes, migration repair, and Auth config changes require Supabase CLI/dashboard access with locally loaded rotated credentials.
 
 ## Critical Tables And Controls
 
 | Area | Tables/functions | Required access model |
 | --- | --- | --- |
-| Bookings | `bookings`, booking events, job-card RPCs | Client sees own; Zooter sees assigned; admin through audited paths |
-| Household access | `household_profiles`, `booking_sensitive_access`, `can_access_sensitive_data` | Owner/admin only; Zooter through active booking window only |
+| Bookings | `bookings`, booking events, job-card RPCs | Client sees own; Xooter sees assigned; admin through audited paths |
+| Household access | `household_profiles`, `booking_sensitive_access`, `can_access_sensitive_data` | Owner/admin only; Xooter through active booking window only |
 | Payments and credits | `payment_records`, `zootcred_ledger`, invoices | Provider/Edge authoritative; no direct frontend mutation |
-| Zooter onboarding | Applications, documents, training progress | Applicant owns own application; admin/trust decisions audited |
+| Xooter onboarding | Applications, documents, training progress | Applicant owns own application; admin/trust decisions audited |
 | Admin operations | `admin_audit_log`, review queues, operational controls | Admin role and reason for sensitive actions |
 | Communications | `integration_outbox`, Twilio events, notifications | Server-owned queueing and provider-signed callbacks |
 

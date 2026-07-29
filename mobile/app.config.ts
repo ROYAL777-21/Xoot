@@ -19,7 +19,7 @@ const sentryUploadPlugin: NonNullable<ExpoConfig['plugins']>[number] | null =
     : null;
 
 const bundleId = isProduction ? 'za.co.zoothome.app' : 'za.co.zoothome.app.preview';
-const appName = isProduction ? 'Zoot' : 'Zoot Preview';
+const appName = isProduction ? 'Xoot' : 'Xoot Preview';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -50,10 +50,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       usesNonExemptEncryption: false,
     },
     infoPlist: {
-      NSCameraUsageDescription: 'Zoot uses the camera only when you choose to upload service or verification photos.',
-      NSPhotoLibraryUsageDescription: 'Zoot uses your photo library only when you choose to upload service or verification photos.',
+      NSCameraUsageDescription: 'Xoot uses the camera only when you choose to upload service or verification photos.',
+      NSPhotoLibraryUsageDescription: 'Xoot uses your photo library only when you choose to upload service or verification photos.',
       NSLocationWhenInUseUsageDescription:
-        'Zoot uses your location only when you choose location-assisted address or arrival features.',
+        'Xoot uses your location only when you choose location-assisted address or arrival features.',
     },
   },
   android: {
@@ -135,7 +135,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         RNMapboxMapsVersion: '11.20.1',
       },
     ],
-    './plugins/withZootAssistantIntents.cjs',
+    './plugins/withXootAssistantIntents.cjs',
     ...(sentryUploadPlugin ? [sentryUploadPlugin] : []),
   ],
   extra: {

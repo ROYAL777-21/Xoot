@@ -2,7 +2,7 @@
 
 Reviewed: 2026-07-02
 
-This baseline records the current Zoot production-readiness posture before the next hardening phase. It is an evidence map, not a launch approval.
+This baseline records the current Xoot production-readiness posture before the next hardening phase. It is an evidence map, not a launch approval.
 
 ## Scope
 
@@ -25,12 +25,12 @@ This baseline records the current Zoot production-readiness posture before the n
 | Observability privacy | Web and mobile monitoring scrub sensitive keys, free-text contact details, access-code phrases, street-address patterns, credential-like strings, and payment-like numbers before Sentry send. PostHog remains event-allowlisted with autocapture/session replay disabled. | `src/lib/monitoring.ts`, `mobile/src/lib/monitoring-privacy.ts`, `src/lib/mobile-monitoring-privacy.test.ts`, `src/lib/analytics.tsx`, `mobile/src/lib/analytics.tsx`. |
 | Agent model | Codex is the harness and agents follow observe -> decide -> act -> verify -> learn. | `docs/AGENT_OPERATING_MODEL.md`. |
 | Load readiness | k6 script exists; staging proof has not been run with live staging credentials. | `scripts/load/zoot-smoke.js`, `blocker.md`. |
-| Level 3 user-data hardening | Zoot now has a company-wide Level 3 launch gate for systems that handle real user data. | `docs/security/level-3-company-wide-security-hardening.md`. |
+| Level 3 user-data hardening | Xoot now has a company-wide Level 3 launch gate for systems that handle real user data. | `docs/security/level-3-company-wide-security-hardening.md`. |
 
 ## Non-Negotiable Invariants
 
-- Frontend and mobile clients are never authoritative for payment success, booking state, refunds, payouts, admin actions, verification decisions, Care+ state, ZootCred balances, or sensitive household access.
-- Zooters may access approved household access data only from 45 minutes before scheduled start until 30 minutes after completion, and access is revoked immediately on cancellation.
+- Frontend and mobile clients are never authoritative for payment success, booking state, refunds, payouts, admin actions, verification decisions, Care+ state, XootCred balances, or sensitive household access.
+- Xooters may access approved household access data only from 45 minutes before scheduled start until 30 minutes after completion, and access is revoked immediately on cancellation.
 - Sensitive household data, ID documents, bank details, provider secrets, service-role keys, and private admin/trust evidence are never sent to public clients, widgets, lock screens, public SEO content, or chat.
 - Provider webhooks must be signature-checked, replay-aware where possible, idempotent, and audited.
 - Agents can propose or queue sensitive work, but cannot self-approve production deploys, refunds, payouts, bans, legal claims, migration repair, or provider dashboard changes.

@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
-import { getZootKnowledgeReply, redactSupportText, sanitiseSupportText, zootKnowledgeContext, zootKnowledgeVersion } from "../_shared/zoot-knowledge.ts";
+import { getXootKnowledgeReply, redactSupportText, sanitiseSupportText, zootKnowledgeContext, zootKnowledgeVersion } from "../_shared/zoot-knowledge.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -152,8 +152,8 @@ const buildOpenAiSupportResponse = async ({
         max_output_tokens: 260,
         text: { format: { type: "text" } },
         instructions: [
-          "You are Zoot Assistant, the in-app support concierge for Zoot home-care bookings in South Africa.",
-          "You can answer practical Zoot questions about booking cleaners, launch areas, Care+, ZootCred, property profiles, office cleaning, Airbnb turnovers, onboarding, training, support routing, and how to prepare for a clean.",
+          "You are Xoot Assistant, the in-app support concierge for Xoot home-care bookings in South Africa.",
+          "You can answer practical Xoot questions about booking cleaners, launch areas, Care+, XootCred, property profiles, office cleaning, Airbnb turnovers, onboarding, training, support routing, and how to prepare for a clean.",
           "Guests may receive general guidance only. You have no account, booking, payment, address, ticket, or private user context unless the request is authenticated.",
           "Give short, calm, practical help in 2-4 sentences with one clear next step.",
           "Write in a human, warm, premium service tone; never sound like a generic AI policy bot.",
@@ -163,7 +163,7 @@ const buildOpenAiSupportResponse = async ({
           "Never ask for passwords, OTPs, full card numbers, gate codes, access codes, lockbox codes, or private keys.",
           "Do not perform or promise tools, actions, refunds, cancellations, bookings, claims, payouts, account changes, admin decisions or sensitive-data reveals.",
           "For anything risky, tell the user a human support reviewer will handle it in the app.",
-          "Use this Zoot source-of-truth context and do not invent facts beyond it:",
+          "Use this Xoot source-of-truth context and do not invent facts beyond it:",
           zootKnowledgeContext,
         ].join(" "),
         input: [
@@ -301,7 +301,7 @@ Deno.serve(async (req) => {
     const userRole: UserRole = requestBody.role === "zooter" ? "zooter" : "user";
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
-    const knowledgeAssistant = escalated ? null : getZootKnowledgeReply(`${safeSubject} ${safeBody}`, signedIn);
+    const knowledgeAssistant = escalated ? null : getXootKnowledgeReply(`${safeSubject} ${safeBody}`, signedIn);
     const openAiAllowed = adminClient
       ? await isOperationalControlEnabled(adminClient, "support.openai_fallback").catch((error) => {
           console.warn("support OpenAI gate lookup failed", { error: error instanceof Error ? error.message : String(error) });
@@ -315,12 +315,12 @@ Deno.serve(async (req) => {
       ? {
           response: signedIn
             ? "I've flagged this to our human support team. They'll review it in the app and follow up through the right support queue."
-            : "I can explain the general process, but this needs protected support. Sign in to Zoot and open Support so a human reviewer can handle the booking, payment, safety or account detail.",
+            : "I can explain the general process, but this needs protected support. Sign in to Xoot and open Support so a human reviewer can handle the booking, payment, safety or account detail.",
           source: "human_escalation" as const,
           requestId: null,
         }
       : openAiAssistant ?? {
-          response: "Zoot Support could not answer this automatically right now. A human support reviewer can handle it in the app without making unsupported claims.",
+          response: "Xoot Support could not answer this automatically right now. A human support reviewer can handle it in the app without making unsupported claims.",
           source: "human_escalation" as const,
           requestId: null,
         };

@@ -116,5 +116,5 @@ export const assertValidPublicConfig = () => {
     dev: import.meta.env.DEV,
   });
 
-  if (issue) throw new Error(`Zoot environment configuration error: ${issue}`);
+  if (issue) throw new Error(`Xoot environment configuration error: ${issue}`);
 };

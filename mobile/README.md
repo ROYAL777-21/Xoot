@@ -1,6 +1,6 @@
-# Zoot Mobile
+# Xoot Mobile
 
-This is the separate Expo app for Zoot native iOS and Android releases. The React/Vite website remains in the repository root and is not replaced by this app.
+This is the separate Expo app for Xoot native iOS and Android releases. The React/Vite website remains in the repository root and is not replaced by this app.
 
 ## Stack
 

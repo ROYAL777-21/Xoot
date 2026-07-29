@@ -1,22 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyZootCredLedger,
-  buildZootBlackLineItem,
+  applyXootCredLedger,
+  buildXootBlackLineItem,
   buildPendingPaymentRecord,
   buildPaymentReconciliationReference,
   canAccessSensitiveBookingData,
   canCreateProviderCheckout,
-  canOfferZootBlack,
-  canReleaseZooterPayout,
+  canOfferXootBlack,
+  canReleaseXooterPayout,
   calculateBookingQuote,
   getActivationReadiness,
-  getAcceptedZooterJobAddress,
+  getAcceptedXooterJobAddress,
   getSensitiveAccessAvailability,
   isApprovedLaunchRegion,
   routeNotificationChannel,
 } from "./operations";
 
-describe("Zoot operating rules", () => {
+describe("Xoot operating rules", () => {
   it("validates launch geography against approved suburbs and nearby wording", () => {
     expect(isApprovedLaunchRegion("12 Alice Lane, Sandton")).toBe(true);
     expect(isApprovedLaunchRegion("Dainfern Valley Estate")).toBe(true);
@@ -95,16 +95,16 @@ describe("Zoot operating rules", () => {
     }).state).toBe("closed");
   });
 
-  it("reveals the destination only after a Zooter accepts the job", () => {
+  it("reveals the destination only after a Xooter accepts the job", () => {
     const address = "12 Alice Lane, Sandton";
 
-    expect(getAcceptedZooterJobAddress({ jobState: "offered", address })).toBeNull();
-    expect(getAcceptedZooterJobAddress({ jobState: "accepted", address })).toBe(address);
-    expect(getAcceptedZooterJobAddress({ jobState: "completed", address })).toBeNull();
-    expect(getAcceptedZooterJobAddress({ jobState: "accepted", address: "   " })).toBeNull();
+    expect(getAcceptedXooterJobAddress({ jobState: "offered", address })).toBeNull();
+    expect(getAcceptedXooterJobAddress({ jobState: "accepted", address })).toBe(address);
+    expect(getAcceptedXooterJobAddress({ jobState: "completed", address })).toBeNull();
+    expect(getAcceptedXooterJobAddress({ jobState: "accepted", address: "   " })).toBeNull();
   });
 
-  it("keeps Zoot Black unavailable unless every approval and eligibility gate passes", () => {
+  it("keeps Xoot Black unavailable unless every approval and eligibility gate passes", () => {
     const eligible = {
       featureEnabled: true,
       explicitOptIn: true,
@@ -115,26 +115,26 @@ describe("Zoot operating rules", () => {
       legalApproved: true,
     };
 
-    expect(canOfferZootBlack(eligible)).toBe(true);
-    expect(canOfferZootBlack({ ...eligible, featureEnabled: false })).toBe(false);
-    expect(canOfferZootBlack({ ...eligible, explicitOptIn: false })).toBe(false);
-    expect(canOfferZootBlack({ ...eligible, zooterTier: "standard" })).toBe(false);
-    expect(canOfferZootBlack({ ...eligible, equipmentEvidenceApproved: false })).toBe(false);
-    expect(canOfferZootBlack({ ...eligible, areaPilotApproved: false })).toBe(false);
-    expect(canOfferZootBlack({ ...eligible, legalApproved: false })).toBe(false);
+    expect(canOfferXootBlack(eligible)).toBe(true);
+    expect(canOfferXootBlack({ ...eligible, featureEnabled: false })).toBe(false);
+    expect(canOfferXootBlack({ ...eligible, explicitOptIn: false })).toBe(false);
+    expect(canOfferXootBlack({ ...eligible, zooterTier: "standard" })).toBe(false);
+    expect(canOfferXootBlack({ ...eligible, equipmentEvidenceApproved: false })).toBe(false);
+    expect(canOfferXootBlack({ ...eligible, areaPilotApproved: false })).toBe(false);
+    expect(canOfferXootBlack({ ...eligible, legalApproved: false })).toBe(false);
   });
 
-  it("builds an explicit Zoot Black line item only from a positive backend amount", () => {
-    expect(buildZootBlackLineItem(175.555)).toEqual({
+  it("builds an explicit Xoot Black line item only from a positive backend amount", () => {
+    expect(buildXootBlackLineItem(175.555)).toEqual({
       item_key: "zoot_black_service",
-      label: "Zoot Black service",
+      label: "Xoot Black service",
       quantity: 1,
       unit_amount: 175.56,
       total_amount: 175.56,
       currency: "ZAR",
     });
-    expect(buildZootBlackLineItem(0)).toBeNull();
-    expect(buildZootBlackLineItem(Number.NaN)).toBeNull();
+    expect(buildXootBlackLineItem(0)).toBeNull();
+    expect(buildXootBlackLineItem(Number.NaN)).toBeNull();
   });
 
   it("keeps hosted payment checkout disabled until every provider gate is proven", () => {
@@ -181,13 +181,13 @@ describe("Zoot operating rules", () => {
       trustOrDisputeReviewOpen: false,
     };
 
-    expect(canReleaseZooterPayout(ready)).toBe(true);
-    expect(canReleaseZooterPayout({ ...ready, payoutsEnabled: false })).toBe(false);
-    expect(canReleaseZooterPayout({ ...ready, verifiedPayoutAccount: false })).toBe(false);
-    expect(canReleaseZooterPayout({ ...ready, stepUpRequiredForAccountChanges: false })).toBe(false);
-    expect(canReleaseZooterPayout({ ...ready, pendingPayoutAccountChange: true })).toBe(false);
-    expect(canReleaseZooterPayout({ ...ready, activeHold: true })).toBe(false);
-    expect(canReleaseZooterPayout({ ...ready, trustOrDisputeReviewOpen: true })).toBe(false);
+    expect(canReleaseXooterPayout(ready)).toBe(true);
+    expect(canReleaseXooterPayout({ ...ready, payoutsEnabled: false })).toBe(false);
+    expect(canReleaseXooterPayout({ ...ready, verifiedPayoutAccount: false })).toBe(false);
+    expect(canReleaseXooterPayout({ ...ready, stepUpRequiredForAccountChanges: false })).toBe(false);
+    expect(canReleaseXooterPayout({ ...ready, pendingPayoutAccountChange: true })).toBe(false);
+    expect(canReleaseXooterPayout({ ...ready, activeHold: true })).toBe(false);
+    expect(canReleaseXooterPayout({ ...ready, trustOrDisputeReviewOpen: true })).toBe(false);
   });
 
   it("builds pending payment records instead of claiming live provider payment", () => {
@@ -206,8 +206,8 @@ describe("Zoot operating rules", () => {
     });
   });
 
-  it("calculates ZootCred balance from immutable ledger entries", () => {
-    expect(applyZootCredLedger([
+  it("calculates XootCred balance from immutable ledger entries", () => {
+    expect(applyXootCredLedger([
       { amount: 100, direction: "credit" },
       { amount: 35, direction: "debit" },
       { amount: 20, direction: "credit" },

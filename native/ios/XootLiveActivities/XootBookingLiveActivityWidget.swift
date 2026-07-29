@@ -3,10 +3,10 @@ import SwiftUI
 import WidgetKit
 
 @available(iOSApplicationExtension 16.1, *)
-struct ZootBookingLiveActivityWidget: Widget {
+struct XootBookingLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: ZootBookingActivityAttributes.self) { context in
-            ZootLockScreenLiveActivityView(context: context)
+        ActivityConfiguration(for: XootBookingActivityAttributes.self) { context in
+            XootLockScreenLiveActivityView(context: context)
                 .activityBackgroundTint(Color(red: 0.98, green: 0.96, blue: 0.91))
                 .activitySystemActionForegroundColor(Color(red: 0.76, green: 0.40, blue: 0.29))
         } dynamicIsland: { context in
@@ -81,11 +81,11 @@ struct ZootBookingLiveActivityWidget: Widget {
 }
 
 @available(iOSApplicationExtension 16.1, *)
-private struct ZootLockScreenLiveActivityView: View {
-    let context: ActivityViewContext<ZootBookingActivityAttributes>
+private struct XootLockScreenLiveActivityView: View {
+    let context: ActivityViewContext<XootBookingActivityAttributes>
 
     var body: some View {
-        ZootLiquidGlassGroup(spacing: 14) {
+        XootLiquidGlassGroup(spacing: 14) {
             HStack(spacing: 14) {
                 ZStack {
                     Circle().fill(Color.zootTerracotta.opacity(0.14))

@@ -65,7 +65,7 @@ export const CarePlusComparisonTable = () => (
   <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-card">
     <div className="grid grid-cols-[1fr_1fr_1fr] gap-0 bg-muted/60 px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground max-md:hidden">
       <span>Feature</span>
-      <span>Standard Zoot</span>
+      <span>Standard Xoot</span>
       <span><CarePlusMark /></span>
     </div>
     <div className="divide-y divide-border">

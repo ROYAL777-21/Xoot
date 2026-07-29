@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 
 import { NativeLaunchExperience } from '@/components/native-launch-experience';
-import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
+import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
 import { mobileEnv } from '@/lib/env';
 import {
   buildNativeLaunchTarget,
@@ -27,32 +27,32 @@ export default function HomeScreen() {
 
   if (bypassLaunch) {
     return (
-      <ZootScreen>
+      <XootScreen>
         <LiquidCard>
-          <Eyebrow>Opening Zoot</Eyebrow>
+          <Eyebrow>Opening Xoot</Eyebrow>
           <Title>Taking you to the right place.</Title>
-          <Body muted>Voice and urgent app links skip the launch layer and open the protected Zoot route.</Body>
+          <Body muted>Voice and urgent app links skip the launch layer and open the protected Xoot route.</Body>
           <StatusPill tone="success">Safe handoff</StatusPill>
         </LiquidCard>
-      </ZootScreen>
+      </XootScreen>
     );
   }
 
   return (
-    <ZootScreen>
+    <XootScreen>
       <NativeLaunchExperience onBook={() => router.push('/book')} onConcierge={() => router.push('/concierge')} />
 
       <LiquidCard>
-        <Eyebrow>Zoot mobile</Eyebrow>
+        <Eyebrow>Xoot mobile</Eyebrow>
         <Title>Premium home care, ready for native launch.</Title>
         <Body muted>
-          Book, manage Care+, speak to Zoot Concierge, and keep sensitive home details inside the authenticated Zoot app.
+          Book, manage Care+, speak to Xoot Concierge, and keep sensitive home details inside the authenticated Xoot app.
         </Body>
         <StatusPill tone={user ? 'success' : 'neutral'}>
           {isLoading ? 'Checking session' : user ? 'Signed in' : 'Guest mode'}
         </StatusPill>
         <PrimaryButton onPress={() => router.push('/book')}>Book a clean</PrimaryButton>
-        <SecondaryButton onPress={() => router.push('/concierge')}>Ask Zoot Concierge</SecondaryButton>
+        <SecondaryButton onPress={() => router.push('/concierge')}>Ask Xoot Concierge</SecondaryButton>
       </LiquidCard>
 
       <LiquidCard>
@@ -64,6 +64,6 @@ export default function HomeScreen() {
           Payment success, masked calling, email, AI support, and admin operations stay behind Supabase Edge Functions.
         </Body>
       </LiquidCard>
-    </ZootScreen>
+    </XootScreen>
   );
 }

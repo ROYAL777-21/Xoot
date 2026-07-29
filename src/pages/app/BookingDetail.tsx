@@ -6,12 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle, Navigation, Share2 } from "lucide-react";
-import { resolvePhoto } from "@/components/zoot/ZooterCard";
+import { resolvePhoto } from "@/components/zoot/XooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { BookingChat } from "@/components/zoot/BookingChat";
-import { deriveZooterBadges, requiresCompletionPhotos } from "@/lib/trust";
+import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
 import { canAccessSensitiveBookingData } from "@/lib/operations";
-import { notifyBookingLiveActivity, type ZootBookingLiveActivityStatus } from "@/lib/native-live-activity";
+import { notifyBookingLiveActivity, type XootBookingLiveActivityStatus } from "@/lib/native-live-activity";
 import {
   buildBookingEtaShareText,
   createNativeBookingActionPayload,
@@ -40,7 +40,7 @@ type MaskedCallDetails = {
 };
 
 const statusSteps = [
-  { keys: ["contractor_accepted", "confirmed"], label: "Zooter confirmed" },
+  { keys: ["contractor_accepted", "confirmed"], label: "Xooter confirmed" },
   { keys: ["en_route", "enroute"], label: "On the way" },
   { keys: ["arrived"], label: "Arrived" },
   { keys: ["in_progress"], label: "Job started" },
@@ -48,8 +48,8 @@ const statusSteps = [
 ];
 
 const statusLabel: Record<string, string> = {
-  confirmed: "Zooter confirmed",
-  contractor_accepted: "Zooter confirmed",
+  confirmed: "Xooter confirmed",
+  contractor_accepted: "Xooter confirmed",
   enroute: "On the way",
   en_route: "On the way",
   arrived: "Arrived",
@@ -60,7 +60,7 @@ const statusLabel: Record<string, string> = {
   pending: "Pending confirmation",
 };
 
-const liveActivityStatuses: ZootBookingLiveActivityStatus[] = [
+const liveActivityStatuses: XootBookingLiveActivityStatus[] = [
   "confirmed",
   "enroute",
   "arrived",
@@ -71,13 +71,13 @@ const liveActivityStatuses: ZootBookingLiveActivityStatus[] = [
   "pending",
 ];
 
-const toLiveActivityStatus = (status: string): ZootBookingLiveActivityStatus =>
+const toLiveActivityStatus = (status: string): XootBookingLiveActivityStatus =>
   status === "en_route"
     ? "enroute"
     : status === "contractor_accepted" || status === "assigned"
       ? "confirmed"
-      : liveActivityStatuses.includes(status as ZootBookingLiveActivityStatus)
-        ? (status as ZootBookingLiveActivityStatus)
+      : liveActivityStatuses.includes(status as XootBookingLiveActivityStatus)
+        ? (status as XootBookingLiveActivityStatus)
         : "pending";
 
 const getCanonicalStatus = (status: unknown): BookingStatus | null => normaliseBookingStatus(status);
@@ -87,10 +87,10 @@ const getVisibleStatusLabel = (status: unknown) => {
   return canonical ? getClientVisibleStatus(canonical) : statusLabel[String(status)] ?? "Pending confirmation";
 };
 
-const liveActivityNextStep: Record<ZootBookingLiveActivityStatus, string> = {
+const liveActivityNextStep: Record<XootBookingLiveActivityStatus, string> = {
   confirmed: "We will keep your booking ready and protected.",
-  enroute: "Your Zooter is on the way. Access notes stay inside the app.",
-  arrived: "Your Zooter has arrived and is preparing to begin.",
+  enroute: "Your Xooter is on the way. Access notes stay inside the app.",
+  arrived: "Your Xooter has arrived and is preparing to begin.",
   in_progress: "Your home-care visit is in progress.",
   completed: "Your booking is complete. Review and photo proof are available in-app.",
   cancelled: "Support can help review the next available option.",
@@ -199,7 +199,7 @@ const BookingDetail = () => {
 
     try {
       if (typeof navigatorWithShare.share === "function") {
-        await navigatorWithShare.share({ title: "Zoot booking update", text: shareText, url: shareUrl });
+        await navigatorWithShare.share({ title: "Xoot booking update", text: shareText, url: shareUrl });
         toast.success("ETA shared");
         return;
       }
@@ -242,7 +242,7 @@ const BookingDetail = () => {
       statusLabel: statusLabel[status] ?? status,
       serviceName: serviceNameForBooking(booking),
       zooterName: booking.zooter?.name,
-      propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Zoot home",
+      propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Xoot home",
       suburb: booking.suburb,
       scheduledAt: booking.scheduled_at,
       etaMinutes: liveStatus === "enroute" ? eta : undefined,
@@ -378,7 +378,7 @@ const BookingDetail = () => {
   const timeline = events.length ? events : [{ id: "current", status: canonicalStatus ?? booking.status, label: visibleStatus, created_at: booking.updated_at }];
   const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
   const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
-  const isAssignedZooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
+  const isAssignedXooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
   const maskedCallAvailable = Boolean(canonicalStatus && ["en_route", "in_progress"].includes(canonicalStatus) && canAccessSensitiveBookingData({
     scheduledAt: booking.scheduled_at,
     status: booking.status,
@@ -416,16 +416,16 @@ const BookingDetail = () => {
                 <div className="flex-1 min-w-0">
                   <p className="font-display font-bold text-lg">{z.name}</p>
                   <p className="text-sm text-muted-foreground capitalize flex items-center gap-2">{z.role}<span className="flex items-center gap-1"><Star className="h-3 w-3 fill-primary text-primary" /> {Number(z.rating).toFixed(2)}</span></p>
-                  <div className="mt-2"><TrustBadges badges={deriveZooterBadges(z)} limit={4} /></div>
+                  <div className="mt-2"><TrustBadges badges={deriveXooterBadges(z)} limit={4} /></div>
                 </div>
               </div>
             )}
 
             <div className="px-5 pb-5 grid grid-cols-2 gap-2">
-              {isAssignedZooter && canonicalStatus === "contractor_accepted" && <Button onClick={() => setStatus("en_route")} variant="outline" className="rounded-xl">On the way</Button>}
-              {isAssignedZooter && canonicalStatus === "en_route" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
-              {isAssignedZooter && canonicalStatus === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
-              {isAssignedZooter && canonicalStatus === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
+              {isAssignedXooter && canonicalStatus === "contractor_accepted" && <Button onClick={() => setStatus("en_route")} variant="outline" className="rounded-xl">On the way</Button>}
+              {isAssignedXooter && canonicalStatus === "en_route" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
+              {isAssignedXooter && canonicalStatus === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
+              {isAssignedXooter && canonicalStatus === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
               {maskedCallAvailable && (
                 <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2">
                   {requestingCall ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Phone className="h-4 w-4 mr-1" />}
@@ -442,7 +442,7 @@ const BookingDetail = () => {
                     <p className="font-medium">{maskedCall.proxy_numbers.client ?? "Pending Twilio assignment"}</p>
                   </div>
                   <div className="rounded-xl bg-background/75 p-2">
-                    <p className="text-xs text-muted-foreground">Zooter proxy</p>
+                    <p className="text-xs text-muted-foreground">Xooter proxy</p>
                     <p className="font-medium">{maskedCall.proxy_numbers.zooter ?? "Pending Twilio assignment"}</p>
                   </div>
                 </div>

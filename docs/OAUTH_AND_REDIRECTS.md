@@ -1,4 +1,4 @@
-# Zoot OAuth And Redirects
+# Xoot OAuth And Redirects
 
 Reviewed: 2026-06-29
 
@@ -13,7 +13,7 @@ The React app already includes:
 - `/auth/reset` - password recovery/update.
 - `/install` - PWA install guidance.
 - `/app/*` - authenticated customer app.
-- `/zooter/*` - Zooter portal.
+- `/zooter/*` - Xooter portal.
 - `/admin/*` - admin routes.
 
 ## Supabase Auth

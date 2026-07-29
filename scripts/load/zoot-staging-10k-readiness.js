@@ -6,7 +6,7 @@ const SUPABASE_URL = requireEnv("SUPABASE_URL");
 const SUPABASE_ANON_KEY = requireEnv("SUPABASE_ANON_KEY");
 const LOAD_TEST_ENV = requireEnv("LOAD_TEST_ENV");
 
-const USER_AGENT = "ZootStagingLoadReadiness/1.0";
+const USER_AGENT = "XootStagingLoadReadiness/1.0";
 const RESPONSE_TIMEOUT = __ENV.RESPONSE_TIMEOUT || "10s";
 
 const publicRoutes = ["/", "/care-plus", "/install", "/trust-centre", "/articles"];
@@ -100,7 +100,7 @@ export function handleSummary(data) {
 
   const outputs = {
     stdout: [
-      "Zoot staging 10,000-request readiness run complete.",
+      "Xoot staging 10,000-request readiness run complete.",
       `Host: ${summary.base_url_host}`,
       `Supabase: ${summary.supabase_host}`,
       "Do not treat this as a 10,000-concurrent-user result.",

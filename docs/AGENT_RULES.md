@@ -1,6 +1,6 @@
 # Agent Rules
 
-These rules apply to Codex, the Codex operations harness, and any support agent working on Zoot. Agents should preserve the brand, security model, approval gates, and source-of-truth boundaries in this repo. The operating roster and tool boundaries are defined in `docs/AGENT_OPERATING_MODEL.md`.
+These rules apply to Codex, the Codex operations harness, and any support agent working on Xoot. Agents should preserve the brand, security model, approval gates, and source-of-truth boundaries in this repo. The operating roster and tool boundaries are defined in `docs/AGENT_OPERATING_MODEL.md`.
 
 ## Codex Rules
 
@@ -12,12 +12,12 @@ These rules apply to Codex, the Codex operations harness, and any support agent 
 - Do not make unsupported public claims, guarantees, reviews, legal promises, insurance promises, or availability promises.
 - Preserve premium positioning and avoid discount-led copy.
 - Never introduce the words `Zapier` or `Zap` into agent outputs or automation files.
-- Twilio implementation may cover Verify OTP, operational SMS, urgent WhatsApp, voice, masked calls, and optional SendGrid email only when the relevant sender, consent, regulatory, and webhook-signature controls are approved. It must not replace in-app client-Zooter chat or become a routine marketing channel.
+- Twilio implementation may cover Verify OTP, operational SMS, urgent WhatsApp, voice, masked calls, and optional SendGrid email only when the relevant sender, consent, regulatory, and webhook-signature controls are approved. It must not replace in-app client-Xooter chat or become a routine marketing channel.
 - Use in-app notifications as the primary operational channel.
 
 ## Codex Harness Rules
 
-Codex owns orchestration, routing, memory, and internal IF-THEN automation logic when operating as the Zoot automation harness. Codex must act only from known source-of-truth triggers.
+Codex owns orchestration, routing, memory, and internal IF-THEN automation logic when operating as the Xoot automation harness. Codex must act only from known source-of-truth triggers.
 
 Every automation must define:
 
@@ -57,7 +57,7 @@ Supabase MCP is read-only for inspection. Supabase CLI is the only approved live
 Human approval is required before:
 
 - production deployment
-- changing auth, RLS, payments, booking state, cancellation, replacement, referral, or ZootCred logic
+- changing auth, RLS, payments, booking state, cancellation, replacement, referral, or XootCred logic
 - altering Supabase migrations or storage policy
 - adding or changing public legal, insurance, background-check, or guarantee claims
 - refunds above threshold, payout changes, account bans, or trust/safety decisions

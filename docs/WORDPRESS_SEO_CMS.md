@@ -2,7 +2,7 @@
 
 Reviewed: 2026-06-26
 
-WordPress is included in the Zoot tech stack as the SEO editorial CMS. It supports article review, scheduling, media approval, metadata governance, and content operations. The React/Vite website remains the public renderer and app shell.
+WordPress is included in the Xoot tech stack as the SEO editorial CMS. It supports article review, scheduling, media approval, metadata governance, and content operations. The React/Vite website remains the public renderer and app shell.
 
 ## Architecture
 
@@ -10,16 +10,16 @@ WordPress is included in the Zoot tech stack as the SEO editorial CMS. It suppor
 | --- | --- |
 | WordPress | Drafting, editing, approvals, scheduling, author notes, categories, tags, excerpts, media library, SEO metadata. |
 | Vite website | Public pages, article rendering, sitemap, JSON-LD, conversion CTAs, app routes, security headers, and Core Web Vitals. |
-| Supabase | Authenticated app data, bookings, support, Zooter data, payments, sensitive access, article automation metadata if needed. |
+| Supabase | Authenticated app data, bookings, support, Xooter data, payments, sensitive access, article automation metadata if needed. |
 | CI/server sync | Pull approved WordPress posts into the build or sync metadata into `src/lib/blog-posts.ts` after editorial approval. |
 
 ## Content Governance
 
 - WordPress may contain only public marketing and article content.
-- No client, Zooter, booking, payment, household, support, identity, access-code, or admin data belongs in WordPress.
+- No client, Xooter, booking, payment, household, support, identity, access-code, or admin data belongs in WordPress.
 - AI-generated drafts must remain draft-first and human-reviewed before publication.
 - Do not publish fake client logos, fake testimonials, fake guarantees, or unsupported service-area claims.
-- Canonical Zoot article URLs should remain `/articles/<slug>` unless a different canonical strategy is approved.
+- Canonical Xoot article URLs should remain `/articles/<slug>` unless a different canonical strategy is approved.
 
 ## Required WordPress Configuration
 
@@ -59,6 +59,6 @@ Never expose WordPress application passwords or webhook secrets in `VITE_` or `E
 - [ ] Create a least-privilege API user for article sync only.
 - [ ] Store credentials only in CI/provider secret storage.
 - [ ] Confirm published posts contain title, slug, excerpt, meta description, category, tags, local SEO intent, and CTA.
-- [ ] Confirm sitemap and canonical URLs point to the public Zoot website.
+- [ ] Confirm sitemap and canonical URLs point to the public Xoot website.
 - [ ] Confirm draft/preview endpoints are not indexed.
 - [ ] Confirm media library contains only approved public assets.

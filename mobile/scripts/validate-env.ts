@@ -31,7 +31,7 @@ const isPlaceholder = (value: string) =>
   value.includes('preview.supabase.co');
 
 const fail = (message: string): never => {
-  console.error(`[Zoot mobile config] ${message}`);
+  console.error(`[Xoot mobile config] ${message}`);
   process.exit(1);
   throw new Error(message);
 };
@@ -79,4 +79,4 @@ if (appEnv === 'production' && !text('EXPO_PUBLIC_EAS_PROJECT_ID')) {
   fail('EXPO_PUBLIC_EAS_PROJECT_ID is required for production push notifications and EAS release tracing.');
 }
 
-console.log(`[Zoot mobile config] ${appEnv} configuration shape is valid.`);
+console.log(`[Xoot mobile config] ${appEnv} configuration shape is valid.`);

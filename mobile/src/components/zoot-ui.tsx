@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-export function ZootScreen({ children }: { children: React.ReactNode }) {
+export function XootScreen({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
 
   return (

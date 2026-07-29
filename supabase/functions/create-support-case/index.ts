@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
       event_type: "support_opened",
       channel: "in_app",
       owner: "Customer Support Agent",
-      stack_tool: "Zoot support queue",
+      stack_tool: "Xoot support queue",
       payload: { ticket_id: ticket.id, priority, category, booking_id: booking?.id ?? null },
       status: "queued",
       approval_required: false,

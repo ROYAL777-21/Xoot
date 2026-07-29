@@ -11,7 +11,7 @@ export function ServiceAreaMap() {
       <Text style={styles.kicker}>Mapbox service map</Text>
       <Text style={styles.title}>{mobileEnv.mapboxPublicToken ? 'Native map ready in development builds.' : 'Add a public Mapbox token to activate maps.'}</Text>
       <Text style={styles.body}>
-        Zoot maps show service coverage, safe ETA context and dispatch readiness. Exact addresses and access instructions stay inside protected booking screens.
+        Xoot maps show service coverage, safe ETA context and dispatch readiness. Exact addresses and access instructions stay inside protected booking screens.
       </Text>
       <View style={styles.areas}>
         {launchAreas.map((area) => (

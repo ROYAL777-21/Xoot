@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     if (participant.role !== "client" && participant.role !== "admin") return fail("booking access denied", origin, 403);
     const currentStatus = normaliseBookingStatus(booking.status);
     if (!currentStatus || !["draft", "pending_payment"].includes(currentStatus)) {
-      return fail("ZootCred can only be redeemed before payment confirmation", origin, 409);
+      return fail("XootCred can only be redeemed before payment confirmation", origin, 409);
     }
 
     const { data: payment } = await supa
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     const currentAmountDue = Number(payment.amount ?? 0);
     const balance = await getAvailableBalance(supa, booking.user_id);
     const redeemable = Math.min(requestedAmount, balance, Math.max(0, currentAmountDue - 50));
-    if (redeemable <= 0) return fail("ZootCred cannot reduce booking below R50", origin, 409);
+    if (redeemable <= 0) return fail("XootCred cannot reduce booking below R50", origin, 409);
 
     await supa.from("zootcred_ledger").insert({
       user_id: booking.user_id,
@@ -94,13 +94,13 @@ Deno.serve(async (req) => {
       targetTable: "zootcred_ledger",
       targetId: booking.id,
       changes: { redeemed: redeemable, previous_amount_due: currentAmountDue, amount_due: newAmountDue },
-      reason: "Client redeemed available ZootCred against pending booking payment",
+      reason: "Client redeemed available XootCred against pending booking payment",
       ipAddress: req.headers.get("x-forwarded-for"),
     });
 
     return ok({ booking_id: booking.id, redeemed: redeemable, updated_balance: balance - redeemable, amount_due: newAmountDue }, origin);
   } catch (error) {
     console.error("redeem-zootcred failed", error);
-    return fail("ZootCred redemption failed", origin, 500);
+    return fail("XootCred redemption failed", origin, 500);
   }
 });

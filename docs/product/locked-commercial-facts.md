@@ -1,7 +1,7 @@
-# Zoot Locked Commercial Facts
+# Xoot Locked Commercial Facts
 
 Reviewed: 2026-06-24
-Authority: Zoot Master Phased Implementation Program
+Authority: Xoot Master Phased Implementation Program
 
 > ⚠️ **SUPERSEDED IN PART — see ZD-020 (2026-07-29).** The pricing table below is stale.
 > Pricing moved from flat per-home-size to per-half-hour ladders per service; Booking Cover
@@ -17,8 +17,8 @@ These values and policies are locked. Code, copy, agents and provider configurat
 
 - Position: premium managed home-care infrastructure.
 - Promise: Your home. Handled.
-- Professionals are called Zooters.
-- Do not describe Zoot as cheap cleaning or a loose gig marketplace.
+- Professionals are called Xooters.
+- Do not describe Xoot as cheap cleaning or a loose gig marketplace.
 
 ## Pricing
 
@@ -59,13 +59,13 @@ Customer-facing term: membership.
 Care+ includes:
 
 - R30 monthly add-on credit;
-- 1.5x ZootCred multiplier;
+- 1.5x XootCred multiplier;
 - priority booking windows;
-- favourite-Zooter continuity support;
+- favourite-Xooter continuity support;
 - home-memory benefits;
 - priority service recovery support.
 
-Care+ does not guarantee a specific Zooter.
+Care+ does not guarantee a specific Xooter.
 
 ## Launch Geography
 
@@ -91,15 +91,15 @@ Mapbox-backed service-area validation is required before checkout.
 
 The customer provides ordinary cleaning materials and equipment unless an approved option is selected.
 
-## Zoot Black
+## Xoot Black
 
-Zoot Black is:
+Xoot Black is:
 
 - Elite Verified only;
 - explicit and never preselected;
 - limited by area, supply and feature flags;
-- performed with Zoot-approved equipment and supplies;
-- eligible for a Zoot-issued service completion certificate.
+- performed with Xoot-approved equipment and supplies;
+- eligible for a Xoot-issued service completion certificate.
 
 Do not claim government, insurer, medical or independent certification without evidence.
 
@@ -111,9 +111,9 @@ Required wording:
 
 Rules:
 
-- Zoot is not the insurer.
+- Xoot is not the insurer.
 - Claim approval is never guaranteed.
-- Zoot does not interpret policy wording.
+- Xoot does not interpret policy wording.
 - Internal commission is recognized only after verified payment, confirmed selection and successful activation.
 
 ## Booking States
@@ -139,7 +139,7 @@ Legacy values require a migration plan, not new business meaning.
 
 ## Sensitive Access
 
-Zooters may access approved household access information:
+Xooters may access approved household access information:
 
 - from 45 minutes before scheduled start;
 - until 30 minutes after verified completion;
@@ -149,7 +149,7 @@ Sensitive access details must not appear in ordinary chat, email, SMS, WhatsApp,
 
 ## Notification Hierarchy
 
-1. Zoot app and in-app notifications.
+1. Xoot app and in-app notifications.
 2. Brevo transactional email.
 3. WhatsApp for approved urgent operational events only.
 4. Twilio Verify for OTP and step-up verification.
@@ -157,8 +157,8 @@ Sensitive access details must not appear in ordinary chat, email, SMS, WhatsApp,
 Allowed WhatsApp uses:
 
 - approved Verify OTP flow;
-- Zooter on the way;
-- Zooter arrived;
+- Xooter on the way;
+- Xooter arrived;
 - same-day cancellation with replacement offer;
 - safety alert;
 - no-show alert.
@@ -168,16 +168,16 @@ Disallowed WhatsApp uses:
 - marketing;
 - routine Care+ reminders;
 - routine rebooking;
-- ZootCred or badge updates;
+- XootCred or badge updates;
 - normal support;
-- client-to-Zooter chat;
+- client-to-Xooter chat;
 - payment, refund or insurance support.
 
 ## Repeat Booking Copy
 
 Use:
 
-`Book [Zooter first name] again`
+`Book [Xooter first name] again`
 
 Do not use:
 
@@ -193,7 +193,7 @@ The frontend and agents are never authoritative for:
 - payment success;
 - refund approval;
 - Care+ state;
-- ZootCred;
+- XootCred;
 - booking state;
 - referral qualification;
 - contractor verification;
@@ -207,7 +207,7 @@ Legal pages in the repository are operational drafts. South African counsel must
 - Terms of Service;
 - Privacy Policy and POPIA notice;
 - Care+ terms;
-- Zooter terms;
+- Xooter terms;
 - refund and cancellation policy;
 - Booking Cover wording;
 - account/data deletion;

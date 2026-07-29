@@ -19,7 +19,7 @@ export const SafetyTrust = () => {
             Trust is built into the workflow, not added as decoration.
           </h2>
           <p className="text-lg text-muted-foreground">
-            Zoot combines vetting, training, reliability scoring, arrival tracking and admin review queues to protect marketplace quality.
+            Xoot combines vetting, training, reliability scoring, arrival tracking and admin review queues to protect marketplace quality.
           </p>
         </div>
 

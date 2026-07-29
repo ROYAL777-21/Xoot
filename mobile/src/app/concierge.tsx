@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { type Href, useRouter } from 'expo-router';
 import { AccessibilityInfo, Animated, Easing, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
+import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
 import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { redactConciergeClientText } from '@/lib/concierge-privacy';
-import { invokeZootFunction } from '@/lib/edge-functions';
-import { getLocalZootConciergeReply } from '@/lib/zoot-concierge-fallback';
+import { invokeXootFunction } from '@/lib/edge-functions';
+import { getLocalXootConciergeReply } from '@/lib/zoot-concierge-fallback';
 import { useAuth } from '@/providers/auth-provider';
 
 type SupportResponse = {
@@ -37,15 +37,15 @@ const secretLikePattern =
 const quickPrompts = [
   'How do I book a cleaner?',
   'How long should I book for?',
-  'Can Zoot help my office?',
-  'What should I prepare before a Zooter arrives?',
+  'Can Xoot help my office?',
+  'What should I prepare before a Xooter arrives?',
   'What does Care+ include?',
 ];
 
 const firstMessage: ConciergeMessage = {
   id: 'welcome',
   role: 'assistant',
-  body: 'Hi, I am Zoot Concierge. Ask me about cleaning, booking prep, Care+, ZootCred, launch areas, office resets, Airbnb turnovers or becoming a Zooter. Keep private booking, payment, address and access details inside the signed-in app.',
+  body: 'Hi, I am Xoot Concierge. Ask me about cleaning, booking prep, Care+, XootCred, launch areas, office resets, Airbnb turnovers or becoming a Xooter. Keep private booking, payment, address and access details inside the signed-in app.',
   source: 'local_knowledge',
 };
 
@@ -139,7 +139,7 @@ export default function ConciergeScreen() {
       .join('\n');
 
     try {
-      await invokeZootFunction('report-concierge-answer', {
+      await invokeXootFunction('report-concierge-answer', {
         reason: 'User reported this Concierge answer',
         role: 'user',
         source: assistantMessage.source ?? 'unknown',
@@ -151,7 +151,7 @@ export default function ConciergeScreen() {
       appendMessage({
         role: 'system',
         body: user
-          ? 'Thanks. Zoot can review that Concierge answer through the approved support channel. The bot will not change bookings, payments, refunds or account state.'
+          ? 'Thanks. Xoot can review that Concierge answer through the approved support channel. The bot will not change bookings, payments, refunds or account state.'
           : 'Thanks. Sign in and open Support for account-protected review. Do not paste private booking, payment, address or access-code details into public chat.',
         source: 'local_knowledge',
       });
@@ -184,7 +184,7 @@ export default function ConciergeScreen() {
 
     setIsSubmitting(true);
     try {
-      const response = await invokeZootFunction<SupportResponse>('support-respond', {
+      const response = await invokeXootFunction<SupportResponse>('support-respond', {
         subject: 'Mobile concierge question',
         body: trimmedMessage,
         role: 'user',
@@ -206,10 +206,10 @@ export default function ConciergeScreen() {
         });
       }
     } catch {
-      const localReply = getLocalZootConciergeReply(trimmedMessage, Boolean(user));
+      const localReply = getLocalXootConciergeReply(trimmedMessage, Boolean(user));
       appendMessage({
         role: 'assistant',
-        body: `${localReply?.response ?? 'I can help with general Zoot questions, but I cannot reach live support right now.'} Live support is not reachable in this session, so I cannot perform account, booking, payment or admin actions here.`,
+        body: `${localReply?.response ?? 'I can help with general Xoot questions, but I cannot reach live support right now.'} Live support is not reachable in this session, so I cannot perform account, booking, payment or admin actions here.`,
         source: localReply?.source ?? 'local_knowledge',
         escalated: localReply?.escalated ?? true,
         cta: localReply?.cta,
@@ -223,7 +223,7 @@ export default function ConciergeScreen() {
   const starGlow = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.28, 0.72] });
 
   return (
-    <ZootScreen>
+    <XootScreen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <LiquidCard style={styles.heroCard}>
           <View style={styles.heroRow}>
@@ -231,7 +231,7 @@ export default function ConciergeScreen() {
               <RoboticStarMark />
             </Animated.View>
             <View style={styles.heroCopy}>
-              <Eyebrow>Zoot Concierge</Eyebrow>
+              <Eyebrow>Xoot Concierge</Eyebrow>
               <Title>Ask before you book.</Title>
             </View>
           </View>
@@ -283,7 +283,7 @@ export default function ConciergeScreen() {
             {isSubmitting ? (
               <View style={styles.assistantRow}>
                 <View style={[styles.messageBubble, styles.typingBubble, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
-                  <Text style={[styles.messageText, { color: theme.textSecondary }]}>Checking Zoot's playbook...</Text>
+                  <Text style={[styles.messageText, { color: theme.textSecondary }]}>Checking Xoot's playbook...</Text>
                 </View>
               </View>
             ) : null}
@@ -325,7 +325,7 @@ export default function ConciergeScreen() {
           </Text>
         </View>
       </KeyboardAvoidingView>
-    </ZootScreen>
+    </XootScreen>
   );
 }
 

@@ -13,7 +13,7 @@ export interface CarePlusMembership {
   addOnCreditExpiresAt: string;
   zootCredMultiplier: number;
   homeReadinessScore: number;
-  favouriteZooterId?: string;
+  favouriteXooterId?: string;
 }
 
 export interface HomeMemoryProfile {
@@ -30,7 +30,7 @@ export interface HomeMemoryProfile {
   updatedAt: string;
 }
 
-export interface FavouriteZooter {
+export interface FavouriteXooter {
   id: string;
   name: string;
   rating: number;
@@ -40,7 +40,7 @@ export interface FavouriteZooter {
   preferredFor: string;
 }
 
-export interface ZootCredBalance {
+export interface XootCredBalance {
   userId: string;
   availableZar: number;
   pendingZar: number;

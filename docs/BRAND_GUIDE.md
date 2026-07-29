@@ -2,7 +2,7 @@
 
 ## Brand Positioning
 
-Zoot is premium home-care infrastructure for South African homes, hosts, offices, and Zooters. It should never feel like a cheap cleaning marketplace, a loose gig app, or a generic booking form. Every surface should communicate trust, continuity, calm support, and a home that feels handled.
+Xoot is premium home-care infrastructure for South African homes, hosts, offices, and Xooters. It should never feel like a cheap cleaning marketplace, a loose gig app, or a generic booking form. Every surface should communicate trust, continuity, calm support, and a home that feels handled.
 
 Core line: `Your home. Handled.`
 
@@ -26,13 +26,13 @@ Care+ line: `Care+ keeps your home remembered, protected, and ready.`
 
 ## Copy Tone
 
-Zoot copy should be warm, calm, practical, trustworthy, and human. It should sell outcomes and relief, not labour or price.
+Xoot copy should be warm, calm, practical, trustworthy, and human. It should sell outcomes and relief, not labour or price.
 
 Use:
 
 - `trusted`, `premium`, `reliable`, `handled`, `ready`, `remembered`, `protected`, `peace of mind`
 - `join Care+` or `become a Care+ member`
-- `Book Nomsa again` or `Book [Zooter Name] again`
+- `Book Nomsa again` or `Book [Xooter Name] again`
 - `priority replacement support` when the backend prioritises matching
 
 Avoid in user-facing copy:
@@ -57,7 +57,7 @@ Avoid in user-facing copy:
 ## Onboarding Principles
 
 - Start with value before data collection.
-- Frame home details as personalisation: `Help your Zooter do their best work.`
+- Frame home details as personalisation: `Help your Xooter do their best work.`
 - Show pricing and expected time before account creation where feasible.
 - Ask for sensitive fields only when needed, explain why, and keep them inside authenticated app surfaces.
 - Do not overwhelm first-time users with every advanced feature at once.
@@ -70,12 +70,12 @@ Care+ is not a discount plan. It is the household reliability, memory, priority,
 Care+ should make R99/month feel justified through:
 
 - Home Memory.
-- Favourite Zooter continuity.
-- `Book [Zooter Name] again` rebooking.
+- Favourite Xooter continuity.
+- `Book [Xooter Name] again` rebooking.
 - Priority booking windows.
 - Priority replacement support without unsupported guarantees.
 - R30 monthly add-on credit tied to completed bookings.
-- 1.5x ZootCred on completed bookings.
+- 1.5x XootCred on completed bookings.
 - Smart reminders.
 - Property profiles.
 - Priority support for booking issues, cancellations, and service concerns.

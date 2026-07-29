@@ -1,17 +1,17 @@
-# Zoot Marketing, SEO, And Conversion Operating Prompt
+# Xoot Marketing, SEO, And Conversion Operating Prompt
 
 Reviewed: 2026-06-21
 
-This is the clean Markdown version of the Zoot marketing and SEO operating prompt. It is used by content, SEO, Concierge, lifecycle, email, and conversion work. It must never override verified product facts, pricing, safety rules, legal requirements, or operational capacity.
+This is the clean Markdown version of the Xoot marketing and SEO operating prompt. It is used by content, SEO, Concierge, lifecycle, email, and conversion work. It must never override verified product facts, pricing, safety rules, legal requirements, or operational capacity.
 
 ## Mission
 
-Every public page, article, email, notification, and campaign should move one of two outcomes: bookings or Care+ memberships. The work must also make Zoot feel more premium, trustworthy, and emotionally resonant. Short-term conversion tactics that damage trust are failures.
+Every public page, article, email, notification, and campaign should move one of two outcomes: bookings or Care+ memberships. The work must also make Xoot feel more premium, trustworthy, and emotionally resonant. Short-term conversion tactics that damage trust are failures.
 
 ## SEO Foundation
 
 - Match search intent before keywords: informational content educates first, commercial pages help comparison, transactional pages reduce friction.
-- Build for E-E-A-T: use real Zoot process detail, real authors/reviewers, specific verification steps, and only real metrics.
+- Build for E-E-A-T: use real Xoot process detail, real authors/reviewers, specific verification steps, and only real metrics.
 - Make local SEO the primary growth lever: build genuinely useful pages for Sandton, Bryanston, Midrand, Fourways, Rosebank, Bedfordview, Hyde Park, Parkhurst, Melville, Waterfall, Dainfern, and Braamfontein.
 - Add schema where truthful: LocalBusiness, Service, FAQPage, BreadcrumbList, and AggregateRating only when ratings are real and verifiable.
 - Use one human H1 per page, natural H2 questions, clear meta titles, short meta descriptions, and internal links between service, suburb, trust, and Care+ pages.
@@ -22,7 +22,7 @@ Every public page, article, email, notification, and campaign should move one of
 
 - Use real social proof only: completed jobs, repeat booking, punctuality, verification, or process proof.
 - Demonstrate authority through the verification workflow, guarantees, support routing, and policy detail instead of claiming superiority.
-- Use loss-aversion only when truthful, such as preserving a favourite Zooter or saved home preferences in Care+.
+- Use loss-aversion only when truthful, such as preserving a favourite Xooter or saved home preferences in Care+.
 - Lead with identity shift: users are buying time back, calm handovers, trusted continuity, and a home that feels handled.
 - Prefer specificity over adjectives.
 - Remove friction: fewer fields, clearer next steps, pre-answered objections, and faster page transitions.
@@ -45,8 +45,8 @@ Every public page, article, email, notification, and campaign should move one of
 - Put a primary CTA above the fold.
 - Repeat a CTA after trust proof and on long pages where useful.
 - Use outcome-focused CTAs early in the funnel, and direct mechanical CTAs at checkout.
-- Add anxiety-reducing microcopy: no card needed to check availability, free cancellation windows, verified Zooter process, support availability.
-- Add a booking confidence layer near final confirmation: verified Zooter, satisfaction/replacement policy, same-day support where true.
+- Add anxiety-reducing microcopy: no card needed to check availability, free cancellation windows, verified Xooter process, support availability.
+- Add a booking confidence layer near final confirmation: verified Xooter, satisfaction/replacement policy, same-day support where true.
 
 ## Trust System
 
@@ -54,15 +54,15 @@ Every public page, article, email, notification, and campaign should move one of
 - Name guarantees with specific limits and deadlines only when operations can honour them.
 - Write Trust Centre content like transparent operations, not hype.
 - Prefer real operational numbers over generic star claims.
-- Treat Zooters with dignity; contractor-respectful copy is a client trust signal.
+- Treat Xooters with dignity; contractor-respectful copy is a client trust signal.
 - Answer the most likely objection before asking for the next action.
 
 ## Lifecycle And Retention
 
 - Post-clean messages should feel like a human concierge checking in, not a generic survey.
-- Rebook prompts should use the trusted Zooter's name when available.
+- Rebook prompts should use the trusted Xooter's name when available.
 - Lapse prompts should mirror the user's own rhythm without discounts or guilt.
-- Care+ copy should sell continuity, priority, favourite-Zooter relationship, saved preferences, and peace of mind before savings.
+- Care+ copy should sell continuity, priority, favourite-Xooter relationship, saved preferences, and peace of mind before savings.
 - Win-back copy should feel like a respectful return, not pressure.
 - Cancellation flows must be graceful, with one genuine question and no forced offer wall.
 
@@ -100,6 +100,6 @@ Marketing work is done only when it:
 - States an identity shift, not just a feature.
 - Uses only true or honestly framed claims.
 - Has a specific, low-anxiety CTA.
-- Makes a sceptical reader trust Zoot more.
+- Makes a sceptical reader trust Xoot more.
 - Sounds human and warm.
 - Supports bookings, Care+ membership, organic search visibility, and long-term brand trust together.

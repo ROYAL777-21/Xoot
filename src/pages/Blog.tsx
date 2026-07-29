@@ -14,8 +14,8 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Zoot Articles - Cleaning, Care+ and Johannesburg home-care guides"
-        description="Read Zoot articles for trusted cleaning, Care+, Airbnb turnovers, office cleaning and premium home-care services in Johannesburg launch areas."
+        title="Xoot Articles - Cleaning, Care+ and Johannesburg home-care guides"
+        description="Read Xoot articles for trusted cleaning, Care+, Airbnb turnovers, office cleaning and premium home-care services in Johannesburg launch areas."
         canonical="/articles"
       />
       <Navbar />
@@ -27,10 +27,10 @@ const Blog = () => {
               Local cleaning guides
             </div>
             <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Zoot Articles
+              Xoot Articles
             </h1>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-              Practical, human guides for premium cleaning, trusted Zooters, Care+, Airbnb turnovers, office resets, and launch-area home care across Johannesburg.
+              Practical, human guides for premium cleaning, trusted Xooters, Care+, Airbnb turnovers, office resets, and launch-area home care across Johannesburg.
             </p>
           </div>
         </section>

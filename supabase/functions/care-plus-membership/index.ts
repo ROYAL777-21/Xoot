@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
           event_type: "care_plus_membership_requested",
           channel,
           owner: channel === "brevo_email" ? "Retention & Loyalty Agent" : "Customer Support Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
+          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Xoot in-app notification",
           payload: channel === "brevo_email"
             ? buildEmailPayload("care_plus_membership_requested", { plan_id: plan.id, subscription_id: subscription.id, payment_record_id: payment.id })
             : { plan_id: plan.id, subscription_id: subscription.id, payment_record_id: payment.id },
@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
         user_id: authData.user.id,
         kind: "homecare_plus_active",
         title: "Care+ request received",
-        body: "Your membership is pending payment confirmation. Home Memory, priority support and ZootCred boost activate after confirmation.",
+        body: "Your membership is pending payment confirmation. Home Memory, priority support and XootCred boost activate after confirmation.",
         link: "/app",
       });
       assertNoDbError(notificationError, "notification insert");
@@ -209,7 +209,7 @@ Deno.serve(async (req) => {
         event_type: "care_plus_membership_cancelled",
         channel: "in_app",
         owner: "Customer Support Agent",
-        stack_tool: "Zoot in-app notification",
+        stack_tool: "Xoot in-app notification",
         payload: { plan_id: plan.id, previous_status: subscription.status },
         created_by: authData.user.id,
       });

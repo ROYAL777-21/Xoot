@@ -15,7 +15,7 @@ This pass fixed staging/production schema drift that directly affected current w
 ## Runtime Fixes
 
 - Created/secured `public.booking_zooter_profiles` in production and refreshed it in staging.
-- Added Zooter public-profile compatibility columns used by app-facing views:
+- Added Xooter public-profile compatibility columns used by app-facing views:
   - `background_checked`
   - `airbnb_specialist`
   - `premium_care_plus`
@@ -24,7 +24,7 @@ This pass fixed staging/production schema drift that directly affected current w
 - Added `saved_addresses.city` and `saved_addresses.postal_code`.
 - Added `booking_status_events.meta`.
 - Added the Care+ placement fields expected by `activate-care-plus`.
-- Added Zooter onboarding compatibility fields expected by `submit-zooter-application`, admin review, and KYC pages.
+- Added Xooter onboarding compatibility fields expected by `submit-zooter-application`, admin review, and KYC pages.
 - Added `zooter_applications_user_id_key` where missing so the current onboarding Edge Function can safely `upsert` on `user_id`.
 
 ## Verification

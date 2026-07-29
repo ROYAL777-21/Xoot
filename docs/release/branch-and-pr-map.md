@@ -69,7 +69,7 @@ Reviewed: 2026-07-10 10:20 SAST
 
 14. PR #21: merged into `main`.
     - Classification: article metadata and notification-personalization hardening.
-    - Result: published the approved "is Zoot legit", "SweepSouth alternatives", and "SweepSouth vs Zoot" articles into the website registry and sitemap with SAST-aware release dates; added the article release-date sync guard; expanded notification personalization around behaviour signals, route recency, quiet hours, channel fatigue, urgency, and consent.
+    - Result: published the approved "is Xoot legit", "SweepSouth alternatives", and "SweepSouth vs Xoot" articles into the website registry and sitemap with SAST-aware release dates; added the article release-date sync guard; expanded notification personalization around behaviour signals, route recency, quiet hours, channel fatigue, urgency, and consent.
 
 15. PR #22: merged into `main`.
     - Classification: PR-source-map refresh.

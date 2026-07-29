@@ -1,8 +1,8 @@
 {
   "id": "/app",
-  "name": "Zoot",
-  "short_name": "Zoot",
-  "description": "Premium South African home-care booking, Care+, Home Memory, ZootCred, and priority support.",
+  "name": "Xoot",
+  "short_name": "Xoot",
+  "description": "Premium South African home-care booking, Care+, Home Memory, XootCred, and priority support.",
   "start_url": "/app?source=pwa",
   "scope": "/",
   "display": "standalone",
@@ -33,7 +33,7 @@
   ],
   "shortcuts": [
     {
-      "name": "Book a Zoot clean",
+      "name": "Book a Xoot clean",
       "short_name": "Book",
       "description": "Start a home-care booking.",
       "url": "/app?intent=book_clean",
@@ -68,9 +68,9 @@
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "Ask Zoot Concierge",
+      "name": "Ask Xoot Concierge",
       "short_name": "Concierge",
-      "description": "Ask general Zoot, Care+, cleaning, and support questions.",
+      "description": "Ask general Xoot, Care+, cleaning, and support questions.",
       "url": "/?zootBot=open&intent=concierge",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
@@ -82,9 +82,9 @@
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "My Zoot bookings",
+      "name": "My Xoot bookings",
       "short_name": "Bookings",
-      "description": "Open your Zoot bookings.",
+      "description": "Open your Xoot bookings.",
       "url": "/app/bookings?intent=bookings",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }

@@ -63,7 +63,7 @@ for (const workspace of workspaces) {
 
   for (const name of dependencyNames(manifest)) {
     if (bannedPackagePrefixes.some((prefix) => name.startsWith(prefix))) {
-      errors.push(`${workspace.name}: ${name} belongs to the legacy Capacitor mobile path. Zoot mobile uses Expo.`);
+      errors.push(`${workspace.name}: ${name} belongs to the legacy Capacitor mobile path. Xoot mobile uses Expo.`);
     }
   }
 
@@ -79,11 +79,11 @@ for (const workspace of workspaces) {
 }
 
 if (errors.length > 0) {
-  console.error("Zoot lockfile validation failed:");
+  console.error("Xoot lockfile validation failed:");
   for (const error of errors) {
     console.error(`- ${error}`);
   }
   process.exit(1);
 }
 
-console.log("Zoot lockfile validation passed for web and mobile.");
+console.log("Xoot lockfile validation passed for web and mobile.");

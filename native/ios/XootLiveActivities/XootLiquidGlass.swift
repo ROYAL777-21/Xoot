@@ -8,7 +8,7 @@ extension Color {
     static let zootGold = Color(red: 0.92, green: 0.72, blue: 0.39)
 }
 
-struct ZootRoboticStarMark: View {
+struct XootRoboticStarMark: View {
     var body: some View {
         ZStack {
             Image(systemName: "sparkle")
@@ -29,7 +29,7 @@ struct ZootRoboticStarMark: View {
     }
 }
 
-struct ZootLiquidGlassGroup<Content: View>: View {
+struct XootLiquidGlassGroup<Content: View>: View {
     let spacing: CGFloat
     let content: Content
 

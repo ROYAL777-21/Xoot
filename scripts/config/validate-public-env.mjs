@@ -37,7 +37,7 @@ const env = {
 
 const text = (name) => String(env[name] ?? "").trim();
 const fail = (message) => {
-  console.error(`Zoot environment configuration error: ${message}`);
+  console.error(`Xoot environment configuration error: ${message}`);
   process.exit(1);
 };
 
@@ -108,8 +108,8 @@ if (requiresRealSupabase && !hasRealSupabase) {
 
 if (process.env.CI && !requiresRealSupabase && !hasRealSupabase) {
   console.warn(
-    "Zoot environment warning: CI is running code checks without deploy Supabase config. Runtime still fails loudly until real public Supabase values are set.",
+    "Xoot environment warning: CI is running code checks without deploy Supabase config. Runtime still fails loudly until real public Supabase values are set.",
   );
 }
 
-console.log(`Zoot public environment check passed for ${appEnv || "local"}.`);
+console.log(`Xoot public environment check passed for ${appEnv || "local"}.`);

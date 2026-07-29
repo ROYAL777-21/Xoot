@@ -133,7 +133,7 @@ Test-RepoPattern "ops" "docs/product/notification-personalization-system.md" "Be
 Test-RepoPattern "ops" "src/lib/notification-personalization.ts" "containsSensitiveNotificationText" "notification personalization strips sensitive preview text"
 Test-RepoPattern "ops" "src/lib/notification-personalization.test.ts" "sensitive access notifications on safe app channels only" "notification personalization regression covers sensitive access"
 Test-RepoPattern "ops" "mobile/src/lib/push-notifications.ts" "zoot-booking-updates" "Expo app defines booking notification channel"
-Test-RepoPattern "ops" "mobile/src/lib/push-notifications.ts" "zoot-zooter-jobs" "Expo app defines Zooter job notification channel"
+Test-RepoPattern "ops" "mobile/src/lib/push-notifications.ts" "zoot-zooter-jobs" "Expo app defines Xooter job notification channel"
 
 $hardeningDocs = @(
   "docs/security/platform-hardening-baseline.md",
@@ -305,17 +305,17 @@ Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.t
 Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "store: false" "Concierge OpenAI no-store setting"
 Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "fetchWithTimeout" "Concierge OpenAI timeout fallback"
 Test-RepoPattern "phase-5-concierge" "supabase/config.toml" "\[functions\.report-concierge-answer\]\s+verify_jwt = false" "report-concierge-answer allows guest reports"
-Test-RepoPattern "phase-5-concierge" "src/components/zoot/ZootSupportBot.tsx" "report-concierge-answer" "Concierge UI reports answers through Edge Function"
+Test-RepoPattern "phase-5-concierge" "src/components/zoot/XootSupportBot.tsx" "report-concierge-answer" "Concierge UI reports answers through Edge Function"
 Test-RepoFile "phase-6-zoot-black" "docs/implementation/phase-6-zoot-black.md" | Out-Null
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black.enabled" "Zoot Black feature flag exists"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_area_pilots" "Zoot Black selected-area pilot gates"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_equipment_evidence" "Zoot Black private equipment evidence"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_status_history" "Zoot Black status history"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black.enabled" "Xoot Black feature flag exists"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_area_pilots" "Xoot Black selected-area pilot gates"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_equipment_evidence" "Xoot Black private equipment evidence"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_status_history" "Xoot Black status history"
 Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "booking_service_line_items" "explicit booking line items"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_completion_certificates" "Zoot Black completion certificates"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "no_external_certification_claims" "Zoot Black avoids unsupported certification claims"
-Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "canOfferZootBlack" "Zoot Black shared eligibility gate"
-Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "buildZootBlackLineItem" "Zoot Black explicit line item helper"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_completion_certificates" "Xoot Black completion certificates"
+Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "no_external_certification_claims" "Xoot Black avoids unsupported certification claims"
+Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "canOfferXootBlack" "Xoot Black shared eligibility gate"
+Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "buildXootBlackLineItem" "Xoot Black explicit line item helper"
 Test-RepoFile "phase-7-payments" "docs/implementation/phase-7-payments-payouts.md" | Out-Null
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payment_provider_capabilities" "payment provider capability table"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payment_reconciliation_checks" "payment reconciliation audit table"
@@ -329,7 +329,7 @@ Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_p
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payouts\.enabled" "payout release provider gate"
 Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "canCreateProviderCheckout" "hosted payment checkout shared gate"
 Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "buildPaymentReconciliationReference" "payment reconciliation reference helper"
-Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "canReleaseZooterPayout" "payout release shared gate"
+Test-RepoPattern "phase-7-payments" "src/lib/operations.ts" "canReleaseXooterPayout" "payout release shared gate"
 Test-RepoFile "phase-8-native-launch" "docs/implementation/phase-8-native-launch-experience.md" | Out-Null
 Test-RepoFile "phase-8-native-launch" "mobile/src/components/native-launch-experience.tsx" | Out-Null
 Test-RepoPattern "phase-8-native-launch" "mobile/src/lib/native-launch.ts" "remoteAssets: false" "native launch uses no remote launch assets"
@@ -360,15 +360,15 @@ Test-RepoPattern "phase-9-twilio" "supabase/config.toml" "\[functions\.create-ma
 Test-RepoPattern "phase-9-twilio" "supabase/config.toml" "\[functions\.ops-workflow\]\s+verify_jwt = true" "ops-workflow requires JWT"
 Test-RepoPattern "phase-9-twilio" "src/lib/twilio-phase9-readiness.test.ts" "Phase 9 Twilio Verify and masked voice readiness" "Phase 9 static regression tests"
 Test-RepoFile "phase-10-assistant" "docs/implementation/phase-10-siri-app-intents.md" | Out-Null
-Test-RepoFile "phase-10-assistant" "mobile/plugins/withZootAssistantIntents.cjs" | Out-Null
-Test-RepoPattern "phase-10-assistant" "mobile/app.config.ts" "\./plugins/withZootAssistantIntents\.cjs" "Expo config registers assistant-intents plugin"
-Test-RepoPattern "phase-10-assistant" "mobile/plugins/withZootAssistantIntents.cjs" "android\.app\.shortcuts" "assistant plugin registers Android shortcuts"
-Test-RepoPattern "phase-10-assistant" "mobile/plugins/withZootAssistantIntents.cjs" "ZootAppIntents\.swift" "assistant plugin copies iOS App Intents"
-Test-RepoPattern "phase-10-assistant" "mobile/plugins/withZootAssistantIntents.cjs" "withXcodeProject" "assistant plugin updates generated Xcode project"
-Test-RepoPattern "phase-10-assistant" "native/ios/ZootLiveActivities/ZootAppIntents.swift" "ZootAssistantDeepLinkSafety" "iOS assistant handoff sanitizes area text"
-Test-RepoPattern "phase-10-assistant" "native/ios/ZootLiveActivities/ZootAppIntents.swift" "Confirm your address, time and payment inside the app" "iOS assistant requires in-app confirmation"
+Test-RepoFile "phase-10-assistant" "mobile/plugins/withXootAssistantIntents.cjs" | Out-Null
+Test-RepoPattern "phase-10-assistant" "mobile/app.config.ts" "\./plugins/withXootAssistantIntents\.cjs" "Expo config registers assistant-intents plugin"
+Test-RepoPattern "phase-10-assistant" "mobile/plugins/withXootAssistantIntents.cjs" "android\.app\.shortcuts" "assistant plugin registers Android shortcuts"
+Test-RepoPattern "phase-10-assistant" "mobile/plugins/withXootAssistantIntents.cjs" "XootAppIntents\.swift" "assistant plugin copies iOS App Intents"
+Test-RepoPattern "phase-10-assistant" "mobile/plugins/withXootAssistantIntents.cjs" "withXcodeProject" "assistant plugin updates generated Xcode project"
+Test-RepoPattern "phase-10-assistant" "native/ios/XootLiveActivities/XootAppIntents.swift" "XootAssistantDeepLinkSafety" "iOS assistant handoff sanitizes area text"
+Test-RepoPattern "phase-10-assistant" "native/ios/XootLiveActivities/XootAppIntents.swift" "Confirm your address, time and payment inside the app" "iOS assistant requires in-app confirmation"
 Test-RepoPattern "phase-10-assistant" "native/android/res/xml/shortcuts.xml" "zoot://book\?intent=book_clean" "Android shortcut opens native booking route"
-Test-RepoPattern "phase-10-assistant" "native/android/res/xml/shortcuts.xml" "zoot://zooter/jobs\?intent=zooter_jobs" "Android shortcut opens native Zooter jobs route"
+Test-RepoPattern "phase-10-assistant" "native/android/res/xml/shortcuts.xml" "zoot://zooter/jobs\?intent=zooter_jobs" "Android shortcut opens native Xooter jobs route"
 Test-RepoFile "phase-10-assistant" "mobile/src/app/bookings.tsx" | Out-Null
 Test-RepoFile "phase-10-assistant" "mobile/src/app/zooter/jobs.tsx" | Out-Null
 Test-RepoPattern "phase-10-assistant" "src/lib/phase10-assistant-intents-readiness.test.ts" "Phase 10 Siri and Android assistant readiness" "Phase 10 static regression tests"
@@ -477,11 +477,11 @@ $roleSmokeEvidence = Read-RepoText "docs/implementation/staging-role-smoke-20260
 if (
   $null -ne $roleSmokeEvidence -and
   $roleSmokeEvidence -match '7 pass / 0 fail' -and
-  $roleSmokeEvidence -match 'Sensitive access availability notification is enqueued for Zooter'
+  $roleSmokeEvidence -match 'Sensitive access availability notification is enqueued for Xooter'
 ) {
   Add-Check "supabase-live" "role-based Supabase smoke tests" "pass" "docs/implementation/staging-role-smoke-20260628.md records staging role/RLS/RPC/notification smoke evidence."
 } else {
-  Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Run npm run ops:smoke:staging -- --all with local staging secrets to seed and verify client, admin, and Zooter users, accepted-job destination visibility, sensitive-access reveals, and notifications."
+  Add-ManualBlocker "supabase-live" "role-based Supabase smoke tests" "Run npm run ops:smoke:staging -- --all with local staging secrets to seed and verify client, admin, and Xooter users, accepted-job destination visibility, sensitive-access reveals, and notifications."
 }
 
 $edgeFunctionEvidence = Read-RepoText "docs/implementation/live-edge-functions-20260629.md"
@@ -512,10 +512,10 @@ if (
 Add-ManualBlocker "supabase-live" "dashboard Auth redirects" "Requires Supabase dashboard/API access; local config is prepared but live allowlists still need verification."
 Add-ManualBlocker "twilio-live" "Twilio production channels" "Requires upgraded Twilio account, phone number, WhatsApp sender, regulatory approvals, dashboard webhook assignment, and verification that current approved secrets are set in Supabase."
 Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privilege browser, native, and build-download tokens from Mapbox."
-Add-ManualBlocker "cloudflare-live" "Cloudflare Zoot zone" "Requires a Cloudflare zone and token with the required zone-management permissions."
+Add-ManualBlocker "cloudflare-live" "Cloudflare Xoot zone" "Requires a Cloudflare zone and token with the required zone-management permissions."
 Add-ManualBlocker "domain-live" "production domain registration" "Requires a registered final domain before Cloudflare zone, DNS, TLS, OAuth origins, sender-domain DNS, app links, support/legal URLs, and store URLs can be completed."
 Add-ManualBlocker "stores-live" "Apple/Google/EAS release credentials" "Requires developer-console records, signing credentials, privacy declarations, and legal review."
-Add-ManualBlocker "phase-6-zoot-black" "Zoot Black live activation approvals" "Requires founder, operations, supplier, and legal approval plus staging/prod migration deployment before enabling zoot_black.* controls or exposing any customer flow."
+Add-ManualBlocker "phase-6-zoot-black" "Xoot Black live activation approvals" "Requires founder, operations, supplier, and legal approval plus staging/prod migration deployment before enabling zoot_black.* controls or exposing any customer flow."
 Add-ManualBlocker "phase-7-payments" "Phase 7 payment and payout activation approvals" "Requires Stitch/Ozow credentials, callback dashboard configuration, signed webhook smoke tests, finance/legal approvals, payout account verification workflow, payout hold policy, and staging/prod migration deployment before enabling payment or payout controls."
 Add-ManualBlocker "phase-8-native-launch" "Phase 8 development-build device verification" "Requires EAS development builds and real iOS/Android device tests for normal launch, reduced-motion static launch, urgent route bypass, and safe assistant deep links."
 Add-ManualBlocker "phase-9-twilio" "Phase 9 Twilio live activation approvals" "Requires upgraded Twilio account or approved subaccount strategy, South African number, transactional Messaging Service, approved WhatsApp sender/templates, Verify Fraud Guard and geo permissions, callback assignment, rotated secrets, and signed staging smoke tests before enabling twilio.* controls."

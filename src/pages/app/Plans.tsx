@@ -8,7 +8,7 @@ import { CalendarClock, Check, Crown, Heart, Home, Loader2, ShieldCheck, Sparkle
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
-import { useZootCred } from "@/hooks/useZootCred";
+import { useXootCred } from "@/hooks/useXootCred";
 import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
 
 type Plan = {
@@ -20,11 +20,11 @@ type Plan = {
 
 const carePlusHighlights = [
   "Home Memory for pets, access, parking, fragile areas, allergies and product preferences",
-  "Favourite Zooter rebooking when a trusted Zooter is available",
+  "Favourite Xooter rebooking when a trusted Xooter is available",
   "Earlier access to high-demand slots and recurring schedules",
-  "Priority replacement support when a Zooter becomes unavailable",
+  "Priority replacement support when a Xooter becomes unavailable",
   "R30 monthly add-on credit for completed bookings",
-  "1.5x ZootCred on completed bookings",
+  "1.5x XootCred on completed bookings",
   "Smart home reminders and property profiles",
   "Priority support for booking issues, cancellations and service concerns",
 ];
@@ -37,7 +37,7 @@ const valueCards = [
   },
   {
     title: "Continuity",
-    body: "Save a trusted Zooter and rebook from real booking history when availability allows.",
+    body: "Save a trusted Xooter and rebook from real booking history when availability allows.",
     icon: Heart,
   },
   {
@@ -47,7 +47,7 @@ const valueCards = [
   },
   {
     title: "Loyalty",
-    body: "Earn boosted ZootCred and use monthly add-on credit only after completed, verified bookings.",
+    body: "Earn boosted XootCred and use monthly add-on credit only after completed, verified bookings.",
     icon: WalletCards,
   },
 ];
@@ -60,7 +60,7 @@ const Plans = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
-  const zootCred = useZootCred();
+  const zootCred = useXootCred();
   const household = useHouseholdOperatingLayer();
 
   const refresh = useCallback(async () => {
@@ -130,10 +130,10 @@ const Plans = () => {
               <span className="text-xs font-bold uppercase tracking-wider">Care+ membership</span>
             </div>
             <h1 className="font-display text-5xl font-bold tracking-tight md:text-6xl">Care+ keeps your home ready.</h1>
-            <p className="mt-4 max-w-2xl text-lg text-muted-foreground">Save your home preferences, rebook your favourite Zooter, earn boosted ZootCred, and get priority support when your home-care plans need attention.</p>
+            <p className="mt-4 max-w-2xl text-lg text-muted-foreground">Save your home preferences, rebook your favourite Xooter, earn boosted XootCred, and get priority support when your home-care plans need attention.</p>
           </div>
           <Card className="rounded-3xl border-border/70 bg-card/95 p-6 shadow-card">
-            <p className="text-sm font-semibold text-sage-deep">Zoot Care+</p>
+            <p className="text-sm font-semibold text-sage-deep">Xoot Care+</p>
             <div className="mt-2"><span className="font-display text-6xl font-bold">{formatZAR(plan.monthly_price)}</span><span className="text-muted-foreground">/month</span></div>
             <p className="mt-3 text-sm text-muted-foreground">A household reliability, memory, priority and loyalty layer.</p>
             {isActive ? (
@@ -198,7 +198,7 @@ const Plans = () => {
           )}
           {user && (
             <p className="mt-4 text-sm font-semibold text-sage-deep">
-              Current ZootCred balance: {zootCred.loading ? "Loading..." : formatZAR(zootCred.availableBalance)}
+              Current XootCred balance: {zootCred.loading ? "Loading..." : formatZAR(zootCred.availableBalance)}
             </p>
           )}
           <p className="mt-5 text-xs text-muted-foreground">Sensitive access notes stay inside the authenticated app and should not be exposed in push notifications, SMS or email.</p>
@@ -209,7 +209,7 @@ const Plans = () => {
         <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 font-display text-2xl"><Crown className="h-5 w-5 text-primary" /> Cancel Care+?</DialogTitle>
-            <DialogDescription>You will lose Care+ priority handling, boosted ZootCred, monthly add-on credit and saved membership prompts. Your saved home profile remains available.</DialogDescription>
+            <DialogDescription>You will lose Care+ priority handling, boosted XootCred, monthly add-on credit and saved membership prompts. Your saved home profile remains available.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => { haptic("selection"); setCancelOpen(false); }} className="rounded-full">Keep Care+</Button>

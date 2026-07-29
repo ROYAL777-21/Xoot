@@ -4,7 +4,7 @@ type LoadingScreenProps = {
   label?: string;
 };
 
-export const LoadingScreen = ({ label = "Preparing Zoot" }: LoadingScreenProps) => (
+export const LoadingScreen = ({ label = "Preparing Xoot" }: LoadingScreenProps) => (
   <div className="min-h-screen bg-background">
     <div className="mx-auto grid min-h-screen w-full max-w-md place-items-center px-6 text-center">
       <div className="w-full">

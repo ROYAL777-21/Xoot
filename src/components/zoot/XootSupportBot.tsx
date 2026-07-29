@@ -8,7 +8,7 @@ import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { haptic } from "@/lib/haptics";
-import { getLocalZootConciergeReply } from "@/lib/zoot-concierge-fallback";
+import { getLocalXootConciergeReply } from "@/lib/zoot-concierge-fallback";
 import { captureAnalyticsEvent } from "@/lib/analytics";
 import { redactConciergeClientText } from "@/lib/concierge-privacy";
 
@@ -41,7 +41,7 @@ const initialMessages: BotMessage[] = [
   {
     id: "welcome",
     role: "assistant",
-    body: "Welcome to Zoot Concierge. I can answer general questions about Zoot, Care+, ZootCred, booking, launch areas and becoming a Zooter. Sign in only when you need protected help with a booking, payment, address or account.",
+    body: "Welcome to Xoot Concierge. I can answer general questions about Xoot, Care+, XootCred, booking, launch areas and becoming a Xooter. Sign in only when you need protected help with a booking, payment, address or account.",
   },
 ];
 
@@ -49,7 +49,7 @@ const quickPrompts = [
   "Help me choose the right clean",
   "How long should I book for?",
   "What does Care+ include?",
-  "Can Zoot help my office or Airbnb?",
+  "Can Xoot help my office or Airbnb?",
   "How does voice booking work?",
 ];
 
@@ -68,7 +68,7 @@ const RoboticStarIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export const ZootSupportBot = () => {
+export const XootSupportBot = () => {
   const { user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -146,12 +146,12 @@ export const ZootSupportBot = () => {
     if (!text || sending) return;
 
     if (text.length < 3) {
-      toast.error("Ask Zoot a little more clearly.");
+      toast.error("Ask Xoot a little more clearly.");
       return;
     }
 
     if (text.length > 600) {
-      toast.error("Keep Zoot bot messages under 600 characters.");
+      toast.error("Keep Xoot bot messages under 600 characters.");
       return;
     }
 
@@ -171,14 +171,14 @@ export const ZootSupportBot = () => {
     const rateLimitKey = user ? "zoot-global-bot" : "zoot-guest-bot";
     const rateLimit = user ? 8 : 4;
     if (!checkRateLimit(rateLimitKey, rateLimit, 10 * 60_000)) {
-      toast.error("Zoot bot is rate-limited for a few minutes. Try again shortly.");
+      toast.error("Xoot bot is rate-limited for a few minutes. Try again shortly.");
       return;
     }
 
     setSending(true);
     try {
       if (!isSupabaseConfigured) {
-        const localReply = getLocalZootConciergeReply(text, Boolean(user));
+        const localReply = getLocalXootConciergeReply(text, Boolean(user));
         appendMessage({
           role: "assistant",
           body: localReply.response,
@@ -192,7 +192,7 @@ export const ZootSupportBot = () => {
 
       const { data, error } = await supabase.functions.invoke("support-respond", {
         body: {
-          subject: "Website Zoot Concierge conversation",
+          subject: "Website Xoot Concierge conversation",
           body: text,
           role,
           guest: !user,
@@ -205,7 +205,7 @@ export const ZootSupportBot = () => {
         role: "assistant",
         body:
           reply?.response ??
-          "Zoot Support could not answer automatically. Open Support so a human can review the request in the app.",
+          "Xoot Support could not answer automatically. Open Support so a human can review the request in the app.",
         source: reply?.source ?? "human_escalation",
         knowledgeVersion: reply?.knowledge_version ?? null,
       });
@@ -217,7 +217,7 @@ export const ZootSupportBot = () => {
       }
       haptic("success");
     } catch {
-      const localReply = getLocalZootConciergeReply(text, Boolean(user));
+      const localReply = getLocalXootConciergeReply(text, Boolean(user));
       if (localReply) {
         appendMessage({
           role: "assistant",
@@ -232,8 +232,8 @@ export const ZootSupportBot = () => {
       appendMessage({
         role: "assistant",
         body: user
-          ? "I could not reach Zoot Support right now. Open Support from the app menu for protected ticket handling."
-          : "I could not reach Zoot Support right now. Please try again shortly, or sign in if this is about a booking, payment, address or account.",
+          ? "I could not reach Xoot Support right now. Open Support from the app menu for protected ticket handling."
+          : "I could not reach Xoot Support right now. Please try again shortly, or sign in if this is about a booking, payment, address or account.",
       });
       haptic("warning");
     } finally {
@@ -247,7 +247,7 @@ export const ZootSupportBot = () => {
         <section
           className="liquid-glass-shell zoot-concierge-panel mb-3 flex h-[min(36rem,calc(100vh-7rem))] w-[min(calc(100vw-1.5rem),25.5rem)] flex-col rounded-[1.85rem] shadow-warm"
           data-open="true"
-          aria-label="Zoot Concierge support bot"
+          aria-label="Xoot Concierge support bot"
         >
           <div className="liquid-glass-readable flex items-center justify-between gap-3 border-b border-border/55 px-4 py-3.5">
             <div className="flex items-center gap-3">
@@ -256,14 +256,14 @@ export const ZootSupportBot = () => {
                 <RoboticStarIcon className="relative h-6 w-6" />
               </div>
               <div>
-                <p className="font-display text-lg font-bold leading-tight">Zoot Concierge</p>
+                <p className="font-display text-lg font-bold leading-tight">Xoot Concierge</p>
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">
                   <ShieldCheck className="h-3 w-3 text-sage-deep" />
                   Source-guided help with human handoff
                 </p>
               </div>
             </div>
-            <Button size="icon" variant="ghost" className="rounded-full" onClick={() => setOpen(false)} aria-label="Close Zoot Concierge">
+            <Button size="icon" variant="ghost" className="rounded-full" onClick={() => setOpen(false)} aria-label="Close Xoot Concierge">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -310,7 +310,7 @@ export const ZootSupportBot = () => {
               <div className="flex justify-start">
                 <div className="zoot-typing-shimmer liquid-glass-message flex items-center gap-2 rounded-2xl border border-white/25 bg-card/72 px-3 py-2 text-sm text-muted-foreground shadow-card">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                  Checking Zoot's playbook
+                  Checking Xoot's playbook
                 </div>
               </div>
             )}
@@ -342,7 +342,7 @@ export const ZootSupportBot = () => {
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
                 maxLength={600}
-                placeholder={user ? "Ask the concierge..." : "Ask about Zoot, Care+, pricing..."}
+                placeholder={user ? "Ask the concierge..." : "Ask about Xoot, Care+, pricing..."}
                 className="native-input rounded-full bg-background/90"
               />
               <Button type="submit" size="icon" className="interactive-press rounded-full" disabled={sending || !body.trim()}>
@@ -367,7 +367,7 @@ export const ZootSupportBot = () => {
           haptic("selection");
           setOpen((current) => !current);
         }}
-        aria-label={open ? "Hide Zoot Concierge" : "Open Zoot Concierge"}
+        aria-label={open ? "Hide Xoot Concierge" : "Open Xoot Concierge"}
       >
         <span className="liquid-glass-readable flex items-center gap-2">
           {open ? <X className="h-5 w-5" /> : <RoboticStarIcon className="h-5 w-5" />}

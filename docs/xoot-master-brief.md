@@ -17,11 +17,11 @@ sessions this project will take, instead of living in one context window.
 ## 1. Product
 
 Xoot — South African on-demand home-services marketplace, competing with SweepSouth.
-Two-sided: customers book, **Zooters** perform the work. iOS first, Android later.
+Two-sided: customers book, **Xooters** perform the work. iOS first, Android later.
 
 | Term | Meaning |
 |---|---|
-| **Zooter** | The service professional. Customers can book **more than one Zooter per job** — booking flow must support multi-Zooter selection. |
+| **Xooter** | The service professional. Customers can book **more than one Xooter per job** — booking flow must support multi-Xooter selection. |
 | **Care+** | R99/month membership. |
 | **XootCred** | Loyalty currency. |
 | **Xoot Black** | Top tier — see `docs/concierge/knowledge/zoot-black-guide.md`. |
@@ -29,13 +29,32 @@ Two-sided: customers book, **Zooters** perform the work. iOS first, Android late
 
 Brand line: **"Your home. Handled."**
 
-Renamed from "Zoot" → "Xoot". The old name is still everywhere — codebase, docs, DB tables,
-component paths, `ZootCred` in `src/data/`. Fix stray references opportunistically as you
-touch each file; do not do a repo-wide rename as a side quest.
+Renamed from **"Zoot" → "Xoot"**, and the professionals from **"Zooter" → "Xooter"**.
+
+The rename was executed company-wide on 2026-07-29 across every capitalised occurrence in
+`src`, `docs`, `mobile`, `native`, `public`, `content`, `scripts` and `supabase/functions` —
+2,396 replacements across 289 files. Because `Zooter` is literally `Zoot` + `er`, one
+case-sensitive `Zoot`→`Xoot` covered every form: `Zooter`, `ZootCred`, `Zoot Black`,
+`ZootScreen`, and so on.
+
+**What was deliberately NOT renamed, and must not be:**
+
+- **Lowercase database identifiers.** `zooters`, `zooter_id`, `zooter_applications`,
+  `zootcred_ledger`, `zoot_black_*` and friends are live table and column names in the
+  production Supabase project (`mvlrkelahhsyjrwgsxaf`), which holds real seeded rows.
+  Renaming them is a schema migration, not a find-and-replace, and it would break every
+  query the moment code and database disagreed.
+- **`supabase/migrations/`.** Migration files are an applied historical record. Editing them
+  after they have run against production desynchronises the migration ledger.
+- **Internal directory names** such as `src/components/zoot/`. Churn with no user-visible
+  benefit; rename only if a wider refactor is touching those paths anyway.
+
+So: **users see Xoot everywhere; the database still says zoot.** That is intentional and
+safe. Closing the gap is a future migration, tracked as an open question, not a loose end.
 
 ### Care+ benefits
 
-Favourite-Zooter continuity, priority booking windows, Home Memory, 1.5× XootCred, priority
+Favourite-Xooter continuity, priority booking windows, Home Memory, 1.5× XootCred, priority
 support, and the R30 credit described immediately below.
 
 ### ⚠️ The R30 credit — corrected
@@ -50,7 +69,7 @@ Every one of these currently says "monthly" and is **wrong**:
 | `src/data/care-plus.ts` | 26, 170, 258 |
 | `src/pages/app/Plans.tsx` | 26 |
 | `src/pages/care/CarePlus.tsx` | 433 |
-| `src/pages/legal/CarePlusTerms.tsx` | ~27 (section "ZootCred and monthly credit") |
+| `src/pages/legal/CarePlusTerms.tsx` | ~27 (section "XootCred and monthly credit") |
 | `docs/BRAND_GUIDE.md` | 77 |
 | `docs/CARE_PLUS_SPEC.md` | 34, 68, 87 |
 | `docs/product/locked-commercial-facts.md` | 22, 53 |
@@ -441,7 +460,7 @@ payoff framing is explicit — answering these questions produces a **specially 
 experience** where the user never has to lift a finger about cleaning again.
 
 That framing is a promise, so the flow has to honour it: every answer must visibly change
-something downstream (default hours, default add-ons, suggested frequency, preferred Zooter).
+something downstream (default hours, default add-ons, suggested frequency, preferred Xooter).
 A questionnaire whose answers go nowhere is worse than no questionnaire — it spends the
 user's effort and returns nothing.
 
@@ -495,7 +514,7 @@ screen noting they won't get the free first month if they don't take it now.
   ("Get notified about your appointments and more"), one supporting line naming the concrete
   outcome, a filled primary button ("Turn on notifications"), and a plain-text secondary
   ("Not now") that is genuinely easy to hit. For Xoot: *"Enable notifications so you never
-  miss an update on your Zooter."*
+  miss an update on your Xooter."*
 - **Every non-essential step gets Skip.** Secondary data can be collected later in-app.
   The "Not now" above is that escape hatch for permissions specifically.
 
@@ -513,13 +532,13 @@ home is in careful hands, and that the language is warm rather than transactiona
   (light = selection, stronger = confirmation / success / error). `haptic()` already exists in
   `src/lib/prefs`.
 - **Toasts:** brief animated banners for background success (booking confirmed, payment processed).
-- **Reaction animations:** micro-explosions of hearts / emoji / thumbs, **inside customer↔Zooter
+- **Reaction animations:** micro-explosions of hearts / emoji / thumbs, **inside customer↔Xooter
   chat** — Phase 2, once chat is live.
 - **Dynamic icons:** morph or small "dance" on selection, not a static colour swap.
   `AnimatedIcon` already has the motion vocabulary for this.
 - **Gamification:**
   - Customer — celebration at milestones: tier upgrades, loyalty milestones.
-  - Zooter — completed-job counts, bonus tiers, and a **streak counter** for consecutive
+  - Xooter — completed-job counts, bonus tiers, and a **streak counter** for consecutive
     active days/jobs.
 
 ### 6.1 Tipping — **already built, and needs correcting**
@@ -548,11 +567,11 @@ repo — but not as-is.
 
 **Still to confirm before the port ships:**
 
-> 1. Does Xoot take any cut of tips? Strong recommendation: **no.** "100% goes to your Zooter"
->    is a real trust asset and is trivially checkable by Zooters.
+> 1. Does Xoot take any cut of tips? Strong recommendation: **no.** "100% goes to your Xooter"
+>    is a real trust asset and is trivially checkable by Xooters.
 > 2. Payout path — with the booking payout or separately? Affects `phase-7-payments-payouts`.
 > 3. Tax/VAT treatment of tips to contractors in SA. Accountant question, not a guess.
-> 4. Are tips visible to the Zooter before they rate the customer? Recommend **no** — it
+> 4. Are tips visible to the Xooter before they rate the customer? Recommend **no** — it
 >    biases mutual ratings.
 
 Keep the good parts: placement at the rating moment, the RLS guard, `tip_cents` as integer
@@ -569,7 +588,7 @@ cents. Add: haptic and a small celebration on send, and a genuinely frictionless
   visual style. Reference screenshots were shared earlier in the project.
 - The actual ask: build the supplied `FileUpload` drag-and-drop React component pattern for
   two real use cases:
-  1. **Zooter onboarding** — uploading application/onboarding documents.
+  1. **Xooter onboarding** — uploading application/onboarding documents.
   2. **Pre/post-service photos** — proof-of-work images after a booking completes.
 - **Build on the website AND the app.** This is the one deliberate exception to the
   "don't touch website code" constraint.
@@ -632,7 +651,7 @@ from §1 — a legal-copy fix, not just marketing copy.
 | **4** | File upload per §7 | Web **and** app. |
 | **5** | Widgets | Already specified in a prior session — implement to that spec. |
 | **6** | Logo | |
-| **7** | Zooter quality-standard training modules | Cleaning, presentation, conduct, pet handling. Content task — run `humanizer`. |
+| **7** | Xooter quality-standard training modules | Cleaning, presentation, conduct, pet handling. Content task — run `humanizer`. |
 | **8** | App-wide haptics + micro-interactions + gamification | Last, once screens exist. |
 
 ---
@@ -667,4 +686,4 @@ register · Zocdoc permission priming · tipping is in scope.
 **Closed earlier:** Zoey stars (white, 4-pointed, twirling, trailing) · Airbnb linen option
 count and single-select · option 3 raises whole-service minimum to 5h · express default = 1h ·
 recommended hours = preselected default · R30 credit is first-month-only, not monthly ·
-file-upload scope (§7) · multi-Zooter booking.
+file-upload scope (§7) · multi-Xooter booking.

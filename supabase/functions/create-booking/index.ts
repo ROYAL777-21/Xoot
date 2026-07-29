@@ -56,7 +56,7 @@ const getCarePlusDiscount = async (supa: any, userId: string) => {
   return 0.1;
 };
 
-const getAvailableZootCred = async (supa: any, userId: string) => {
+const getAvailableXootCred = async (supa: any, userId: string) => {
   const { data } = await supa
     .from("zootcred_ledger")
     .select("amount,direction,status,expires_at")
@@ -110,21 +110,21 @@ Deno.serve(async (req) => {
     }
 
     const maxWorkers = multiWorkerServices.has(serviceType) ? Math.min(Math.max(requestedWorkerCount || 1, 1), 5) : 1;
-    const selectedZooterIds = zooterIds.slice(0, maxWorkers);
-    if (selectedZooterIds.length > 0) {
+    const selectedXooterIds = zooterIds.slice(0, maxWorkers);
+    if (selectedXooterIds.length > 0) {
       const { data: zooters } = await supa
         .from("zooters")
         .select("id,name,active")
-        .in("id", selectedZooterIds)
+        .in("id", selectedXooterIds)
         .eq("active", true);
-      if (!zooters || zooters.length !== selectedZooterIds.length) return fail("selected Zooter is unavailable", origin, 409);
+      if (!zooters || zooters.length !== selectedXooterIds.length) return fail("selected Xooter is unavailable", origin, 409);
     }
 
     const size = homeSizes[homeSizeId];
     const length = serviceLengths[serviceLengthId];
-    const workerCount = Math.max(selectedZooterIds.length, 1);
+    const workerCount = Math.max(selectedXooterIds.length, 1);
     const basePrice = Math.round(size.price * length.priceFactor * (serviceMultiplier[serviceType] ?? 1));
-    const multiWorkerDiscount = selectedZooterIds.length >= 3 ? 0.1 : 0;
+    const multiWorkerDiscount = selectedXooterIds.length >= 3 ? 0.1 : 0;
     const discountedBase = Math.round(basePrice * (1 - multiWorkerDiscount)) * workerCount;
     const addOnsTotal = addOns.length * 30;
     const subtotal = discountedBase + addOnsTotal;
@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
 
     let zootcredRedemption = 0;
     if (requestedRedemption > 0) {
-      const available = await getAvailableZootCred(supa, user.id);
+      const available = await getAvailableXootCred(supa, user.id);
       zootcredRedemption = Math.min(requestedRedemption, available, Math.max(0, grossTotal - 50));
       if (zootcredRedemption <= 0) return fail("zootcred cannot reduce this booking below R50", origin, 409);
     }
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
     const perBookingDiscount = Math.round(carePlusDiscount / workerCount);
     const estHours = length.hours + addOns.length;
     const launchRegion = resolveLaunchRegion(address);
-    const bookingTargets = selectedZooterIds.length ? selectedZooterIds : [null];
+    const bookingTargets = selectedXooterIds.length ? selectedXooterIds : [null];
 
     const bookingIds: string[] = [];
     const paymentRecordIds: string[] = [];
@@ -251,7 +251,7 @@ Deno.serve(async (req) => {
     if (frequency === "repeat" && bookingIds[0]) {
       await supa.from("recurring_schedules").insert({
         user_id: user.id,
-        zooter_id: selectedZooterIds[0] ?? null,
+        zooter_id: selectedXooterIds[0] ?? null,
         household_profile_id: householdProfileId,
         cadence_days: 14,
         preferred_day: scheduledAt.toLocaleDateString("en-ZA", { weekday: "long" }),

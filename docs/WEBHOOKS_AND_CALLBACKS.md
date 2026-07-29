@@ -1,4 +1,4 @@
-# Zoot Webhooks And Callbacks
+# Xoot Webhooks And Callbacks
 
 Reviewed: 2026-06-30
 
@@ -7,7 +7,7 @@ This document maps every callback class needed for staging and production. Value
 ## Rules
 
 - A frontend success page is never proof that a payment succeeded.
-- Booking, Care+, ZootCred, referral, assignment, refund, and contractor-verification state changes must happen server-side.
+- Booking, Care+, XootCred, referral, assignment, refund, and contractor-verification state changes must happen server-side.
 - Every supported provider webhook must verify signatures, shared secrets, or hashes before mutating data.
 - Every webhook must be idempotent by provider event ID and internal payment/reference ID.
 - Webhooks must log enough metadata for reconciliation without storing full card, bank login, OTP, access-code, private phone, or private key data.
@@ -16,13 +16,13 @@ This document maps every callback class needed for staging and production. Value
 
 | Function | Current endpoint shape | Purpose | Env required | Status |
 | --- | --- | --- | --- | --- |
-| `ai-match` | `https://<project-ref>.functions.supabase.co/ai-match` | Authenticated Zooter matching/ranking | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
+| `ai-match` | `https://<project-ref>.functions.supabase.co/ai-match` | Authenticated Xooter matching/ranking | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `create-booking-request` | `https://<project-ref>.functions.supabase.co/create-booking-request` | Backend-priced booking request creation, payment record creation, notification queue | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `care-plus-membership` | `https://<project-ref>.functions.supabase.co/care-plus-membership` | Care+ membership request/cancellation action layer, payment record creation, admin queue, notification queue | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
-| `ops-workflow` | `https://<project-ref>.functions.supabase.co/ops-workflow` | Authenticated action layer for support routing, property account ops routing, Gift Clean payment requests, ZootCred redemption, booking status changes, masked call requests, trust incidents, low-rating follow-up, Zooter application submission, Zooter job response, and typed admin queue/KYC actions | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
+| `ops-workflow` | `https://<project-ref>.functions.supabase.co/ops-workflow` | Authenticated action layer for support routing, property account ops routing, Gift Clean payment requests, XootCred redemption, booking status changes, masked call requests, trust incidents, low-rating follow-up, Xooter application submission, Xooter job response, and typed admin queue/KYC actions | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `support-respond` | `https://<project-ref>.functions.supabase.co/support-respond` | Support bot response and escalation | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, `OPENAI_SUPPORT_MODEL`, `ALLOWED_ORIGINS` | Implemented |
 | `get-booking-public-keys` | `https://<project-ref>.functions.supabase.co/get-booking-public-keys` | Authenticated booking chat public-key lookup for verified booking participants only | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
-| `get-sensitive-access` | `https://<project-ref>.functions.supabase.co/get-sensitive-access` | Authenticated Zooter sensitive field reveal with booking-window checks and reveal logging | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
+| `get-sensitive-access` | `https://<project-ref>.functions.supabase.co/get-sensitive-access` | Authenticated Xooter sensitive field reveal with booking-window checks and reveal logging | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 
 ## Supabase Auth Callbacks
 
@@ -83,7 +83,7 @@ Required checks before confirming payment:
 - Amount and currency match backend-calculated invoice.
 - Booking is still in a payment-confirmable state.
 - Care+ activates only after a verified successful payment event.
-- ZootCred is awarded only after a completed paid booking meets anti-fraud rules.
+- XootCred is awarded only after a completed paid booking meets anti-fraud rules.
 
 ## Twilio
 
@@ -104,8 +104,8 @@ Masked calling notes:
 - Masked-call provider traffic requires both `twilio.operational_messages` and `twilio.masked_voice` controls.
 - Masked-call sessions are allowed only for booking participants in accepted/active booking states and within the approved booking contact window.
 - Browser/mobile clients cannot insert or update `public.masked_call_sessions` directly.
-- Browser/mobile payloads must never contain user or Zooter phone numbers.
-- Zoot masked voice must not record or transcribe calls.
+- Browser/mobile payloads must never contain user or Xooter phone numbers.
+- Xoot masked voice must not record or transcribe calls.
 - Use Twilio API keys for production outbound calls when possible.
 - Keep Auth Token available only where signature validation requires it.
 - Deploy `supabase/migrations/20260621001000_twilio_webhook_events.sql` before enabling callbacks.

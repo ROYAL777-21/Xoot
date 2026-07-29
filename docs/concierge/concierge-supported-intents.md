@@ -3,14 +3,14 @@
 Supported Phase 1 intent groups:
 
 - greetings and orientation;
-- what Zoot is;
+- what Xoot is;
 - service catalogue guidance;
 - launch-area guidance;
 - how booking works;
 - preparation before a clean;
 - recurring cleaning guidance;
 - office, Airbnb, landlord and property-manager cleaning guidance;
-- Zooter onboarding guidance;
+- Xooter onboarding guidance;
 - account and sign-in guidance;
 - safe support routing;
 - urgent, safety, payment, refund, conduct and access-code escalation.

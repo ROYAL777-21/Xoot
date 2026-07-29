@@ -2,17 +2,17 @@ import { LegalLayout, LegalList, LegalSection } from "./LegalLayout";
 
 const CarePlusTerms = () => (
   <LegalLayout
-    title="Zoot Care+ Terms"
-    description="Terms for Zoot Care+ membership, Home Memory, favourite Zooter workflows, priority support, ZootCred benefits, billing, cancellation, and limitations."
+    title="Xoot Care+ Terms"
+    description="Terms for Xoot Care+ membership, Home Memory, favourite Xooter workflows, priority support, XootCred benefits, billing, cancellation, and limitations."
     canonical="/legal/care-plus-terms"
     eyebrow="Care+"
   >
     <LegalSection title="Membership benefits">
       <p>
-        Care+ is Zoot's membership layer for repeat homes and properties. It may include Home Memory, favourite Zooter workflows where availability allows, priority support handling, smart reminders, and member ZootCred benefits.
+        Care+ is Xoot's membership layer for repeat homes and properties. It may include Home Memory, favourite Xooter workflows where availability allows, priority support handling, smart reminders, and member XootCred benefits.
       </p>
       <p>
-        Care+ does not guarantee instant availability, a specific Zooter, automatic replacement, refund approval, or unlimited support outcomes.
+        Care+ does not guarantee instant availability, a specific Xooter, automatic replacement, refund approval, or unlimited support outcomes.
       </p>
     </LegalSection>
 
@@ -24,9 +24,9 @@ const CarePlusTerms = () => (
       </LegalList>
     </LegalSection>
 
-    <LegalSection title="ZootCred and monthly credit">
+    <LegalSection title="XootCred and monthly credit">
       <p>
-        ZootCred is not cash, cannot be withdrawn, may expire, and may be reversed for refunds, chargebacks, cancelled bookings, abuse, duplicates, or fraud indicators. Monthly credit rules should be shown clearly in the live membership flow.
+        XootCred is not cash, cannot be withdrawn, may expire, and may be reversed for refunds, chargebacks, cancelled bookings, abuse, duplicates, or fraud indicators. Monthly credit rules should be shown clearly in the live membership flow.
       </p>
     </LegalSection>
   </LegalLayout>

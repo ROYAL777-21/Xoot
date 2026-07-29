@@ -177,7 +177,7 @@ const Training = () => {
             </div>
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-display text-2xl font-bold">{progress.tier.current.name} Zooter</p>
+                <p className="font-display text-2xl font-bold">{progress.tier.current.name} Xooter</p>
                 {requiredReady && <span className="rounded-full bg-background/20 px-2.5 py-1 text-[10px] font-bold uppercase">Activation ready</span>}
               </div>
               <p className="text-sm opacity-90">
@@ -235,7 +235,7 @@ const Training = () => {
       ) : (
         <div className="space-y-8">
           <ModuleSection title="Required activation modules" subtitle="These modules keep the marketplace consistent and safe." modules={progress.requiredModules} done={done} onOpen={open} />
-          <ModuleSection title="Optional ranking boosters" subtitle="These are not mandatory, but they help Zoot match you to higher-intent clients and specialised jobs." modules={progress.optionalModules} done={done} onOpen={open} />
+          <ModuleSection title="Optional ranking boosters" subtitle="These are not mandatory, but they help Xoot match you to higher-intent clients and specialised jobs." modules={progress.optionalModules} done={done} onOpen={open} />
         </div>
       )}
 

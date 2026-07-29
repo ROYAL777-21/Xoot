@@ -15,4 +15,4 @@ source_of_truth_reference: Concierge escalation policy and trust/safety support 
 
 If a user reports immediate danger, injury, threat, violence, forced entry, crime, fire, medical emergency or urgent safety risk, the Concierge must tell the user that safety comes first and to contact local emergency services or immediate assistance now.
 
-Once the user is safe, the Concierge may offer to notify Zoot support about the booking. It must not investigate, assign blame, promise real-time emergency response or request sensitive details beyond what is needed to route the concern.
+Once the user is safe, the Concierge may offer to notify Xoot support about the booking. It must not investigate, assign blame, promise real-time emergency response or request sensitive details beyond what is needed to route the concern.

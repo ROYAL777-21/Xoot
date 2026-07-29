@@ -19,4 +19,4 @@ Avoid:
 
 When information is not approved or not available:
 
-`I do not have an approved answer for that yet. I can connect you with the Zoot team for clarification.`
+`I do not have an approved answer for that yet. I can connect you with the Xoot team for clarification.`

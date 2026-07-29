@@ -6,7 +6,7 @@ Concierge is not production ready until:
 - policy conflicts are resolved or safely escalated;
 - roles and RLS are enforced;
 - no sensitive household data can be exposed;
-- no payment, booking, payout, Care+, ZootCred or Booking Cover action can be performed by chat;
+- no payment, booking, payout, Care+, XootCred or Booking Cover action can be performed by chat;
 - human escalation and urgent support routing are tested;
 - fallback works when tools or models fail;
 - feature flags and kill switches are available;

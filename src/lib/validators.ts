@@ -27,7 +27,7 @@ export const SupportCaseInput = z.object({
   booking_id: cleanOptional(80).pipe(z.string().max(80)).optional(),
 });
 
-export const ZooterApplicationInput = z.object({
+export const XooterApplicationInput = z.object({
   full_name: clean(120).pipe(z.string().min(2, "Enter your full name").max(120)),
   phone: cleanPhone.pipe(z.string().regex(saPhone, "Enter a valid South African phone number")),
   suburb: clean(80).pipe(z.string().min(2, "Enter your suburb").max(80)),

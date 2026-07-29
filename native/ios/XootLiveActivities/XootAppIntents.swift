@@ -2,21 +2,21 @@ import AppIntents
 import Foundation
 
 @available(iOS 16.0, *)
-enum ZootAssistantDestination: String, AppEnum {
+enum XootAssistantDestination: String, AppEnum {
   case bookClean
   case carePlus
   case concierge
   case bookings
   case zooterJobs
 
-  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Zoot destination")
+  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Xoot destination")
 
-  static var caseDisplayRepresentations: [ZootAssistantDestination: DisplayRepresentation] = [
+  static var caseDisplayRepresentations: [XootAssistantDestination: DisplayRepresentation] = [
     .bookClean: "Book a clean",
     .carePlus: "Care+ membership",
-    .concierge: "Zoot Concierge",
+    .concierge: "Xoot Concierge",
     .bookings: "My bookings",
-    .zooterJobs: "Zooter jobs",
+    .zooterJobs: "Xooter jobs",
   ]
 
   var dialogName: String {
@@ -26,11 +26,11 @@ enum ZootAssistantDestination: String, AppEnum {
     case .carePlus:
       return "Care+ membership"
     case .concierge:
-      return "Zoot Concierge"
+      return "Xoot Concierge"
     case .bookings:
       return "your bookings"
     case .zooterJobs:
-      return "your Zooter jobs"
+      return "your Xooter jobs"
     }
   }
 
@@ -55,7 +55,7 @@ enum ZootAssistantDestination: String, AppEnum {
 }
 
 @available(iOS 16.0, *)
-enum ZootAssistantDeepLinkSafety {
+enum XootAssistantDeepLinkSafety {
   static func safeAreaValue(_ value: String?) -> String? {
     guard let value else { return nil }
     let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -67,26 +67,26 @@ enum ZootAssistantDeepLinkSafety {
 }
 
 @available(iOS 16.0, *)
-enum ZootSafeBookingStatus: String, AppEnum {
+enum XootSafeBookingStatus: String, AppEnum {
   case upcoming
   case assigned
   case enRoute
   case inProgress
   case completed
 
-  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Zoot booking status")
+  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Xoot booking status")
 
-  static var caseDisplayRepresentations: [ZootSafeBookingStatus: DisplayRepresentation] = [
+  static var caseDisplayRepresentations: [XootSafeBookingStatus: DisplayRepresentation] = [
     .upcoming: "Upcoming",
-    .assigned: "Zooter assigned",
-    .enRoute: "Zooter on the way",
+    .assigned: "Xooter assigned",
+    .enRoute: "Xooter on the way",
     .inProgress: "Clean in progress",
     .completed: "Completed",
   ]
 }
 
 @available(iOS 16.0, *)
-enum ZootCleaningServiceKind: String, AppEnum {
+enum XootCleaningServiceKind: String, AppEnum {
   case homeClean
   case houseClean
   case placeClean
@@ -96,9 +96,9 @@ enum ZootCleaningServiceKind: String, AppEnum {
   case airbnbTurnover
   case movingClean
 
-  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Zoot cleaning service")
+  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Xoot cleaning service")
 
-  static var caseDisplayRepresentations: [ZootCleaningServiceKind: DisplayRepresentation] = [
+  static var caseDisplayRepresentations: [XootCleaningServiceKind: DisplayRepresentation] = [
     .homeClean: "Home cleaning",
     .houseClean: "House cleaning",
     .placeClean: "Place cleaning",
@@ -132,36 +132,36 @@ enum ZootCleaningServiceKind: String, AppEnum {
 }
 
 @available(iOS 16.0, *)
-struct OpenZootIntent: AppIntent {
-  static let title: LocalizedStringResource = "Open Zoot"
-  static let description = IntentDescription("Opens a safe Zoot destination for booking, Care+, Concierge, or bookings.")
+struct OpenXootIntent: AppIntent {
+  static let title: LocalizedStringResource = "Open Xoot"
+  static let description = IntentDescription("Opens a safe Xoot destination for booking, Care+, Concierge, or bookings.")
   static let openAppWhenRun = true
 
   @Parameter(title: "Destination")
-  var destination: ZootAssistantDestination
+  var destination: XootAssistantDestination
 
   init() {
     self.destination = .bookClean
   }
 
-  init(destination: ZootAssistantDestination) {
+  init(destination: XootAssistantDestination) {
     self.destination = destination
   }
 
   @MainActor
   func perform() async throws -> some IntentResult & ProvidesDialog {
-    .result(dialog: "Opening \(destination.dialogName) in Zoot.")
+    .result(dialog: "Opening \(destination.dialogName) in Xoot.")
   }
 }
 
 @available(iOS 16.0, *)
-struct BookZootCleanerIntent: AppIntent {
-  static let title: LocalizedStringResource = "Book a Zoot Cleaner"
-  static let description = IntentDescription("Opens Zoot to start a safe cleaner booking flow. Address, access, payment and profile details stay inside the signed-in app.")
+struct BookXootCleanerIntent: AppIntent {
+  static let title: LocalizedStringResource = "Book a Xoot Cleaner"
+  static let description = IntentDescription("Opens Xoot to start a safe cleaner booking flow. Address, access, payment and profile details stay inside the signed-in app.")
   static let openAppWhenRun = true
 
   @Parameter(title: "Service")
-  var service: ZootCleaningServiceKind?
+  var service: XootCleaningServiceKind?
 
   @Parameter(title: "Area or suburb")
   var area: String?
@@ -175,7 +175,7 @@ struct BookZootCleanerIntent: AppIntent {
     self.requestedDate = nil
   }
 
-  init(service: ZootCleaningServiceKind? = nil, area: String? = nil, requestedDate: Date? = nil) {
+  init(service: XootCleaningServiceKind? = nil, area: String? = nil, requestedDate: Date? = nil) {
     self.service = service
     self.area = area
     self.requestedDate = requestedDate
@@ -191,7 +191,7 @@ struct BookZootCleanerIntent: AppIntent {
       queryItems.append(URLQueryItem(name: "service", value: service.deepLinkValue))
     }
 
-    if let safeArea = ZootAssistantDeepLinkSafety.safeAreaValue(area) {
+    if let safeArea = XootAssistantDeepLinkSafety.safeAreaValue(area) {
       queryItems.append(URLQueryItem(name: "area", value: safeArea))
     }
 
@@ -214,22 +214,22 @@ struct BookZootCleanerIntent: AppIntent {
       dateText = "your chosen date"
     }
 
-    if let safeArea = ZootAssistantDeepLinkSafety.safeAreaValue(area) {
+    if let safeArea = XootAssistantDeepLinkSafety.safeAreaValue(area) {
       return .result(
-        dialog: "Opening Zoot to start your cleaner booking in \(safeArea) for \(dateText). Confirm your address, time and payment inside the app."
+        dialog: "Opening Xoot to start your cleaner booking in \(safeArea) for \(dateText). Confirm your address, time and payment inside the app."
       )
     }
 
     return .result(
-      dialog: "Opening Zoot to start your cleaner booking for \(dateText). Confirm your address, time and payment inside the app."
+      dialog: "Opening Xoot to start your cleaner booking for \(dateText). Confirm your address, time and payment inside the app."
     )
   }
 }
 
 @available(iOS 16.0, *)
-struct AskZootConciergeIntent: AppIntent {
-  static let title: LocalizedStringResource = "Ask Zoot Concierge"
-  static let description = IntentDescription("Opens Zoot Concierge for general Zoot, Care+, cleaning, and support questions.")
+struct AskXootConciergeIntent: AppIntent {
+  static let title: LocalizedStringResource = "Ask Xoot Concierge"
+  static let description = IntentDescription("Opens Xoot Concierge for general Xoot, Care+, cleaning, and support questions.")
   static let openAppWhenRun = true
 
   @Parameter(title: "Question")
@@ -247,18 +247,18 @@ struct AskZootConciergeIntent: AppIntent {
   func perform() async throws -> some IntentResult & ProvidesDialog {
     if let question, !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       return .result(
-        dialog: "Opening Zoot Concierge. Keep private booking, payment, address and access details inside the signed-in app."
+        dialog: "Opening Xoot Concierge. Keep private booking, payment, address and access details inside the signed-in app."
       )
     }
 
-    return .result(dialog: "Opening Zoot Concierge.")
+    return .result(dialog: "Opening Xoot Concierge.")
   }
 }
 
 @available(iOS 16.0, *)
-struct CheckZootBookingStatusIntent: AppIntent {
-  static let title: LocalizedStringResource = "Check Zoot Booking Status"
-  static let description = IntentDescription("Opens Zoot bookings for a safe, authenticated booking status check.")
+struct CheckXootBookingStatusIntent: AppIntent {
+  static let title: LocalizedStringResource = "Check Xoot Booking Status"
+  static let description = IntentDescription("Opens Xoot bookings for a safe, authenticated booking status check.")
   static let openAppWhenRun = true
 
   @Parameter(title: "Booking reference")
@@ -275,33 +275,33 @@ struct CheckZootBookingStatusIntent: AppIntent {
   @MainActor
   func perform() async throws -> some IntentResult & ProvidesDialog {
     .result(
-      dialog: "Opening your Zoot booking status. Private address, access, payment, and support details stay inside the signed-in app."
+      dialog: "Opening your Xoot booking status. Private address, access, payment, and support details stay inside the signed-in app."
     )
   }
 }
 
 @available(iOS 16.0, *)
-struct OpenZootJobsIntent: AppIntent {
-  static let title: LocalizedStringResource = "Open Zoot Jobs"
-  static let description = IntentDescription("Opens the safe Zooter jobs surface for authenticated contractors.")
+struct OpenXootJobsIntent: AppIntent {
+  static let title: LocalizedStringResource = "Open Xoot Jobs"
+  static let description = IntentDescription("Opens the safe Xooter jobs surface for authenticated contractors.")
   static let openAppWhenRun = true
 
   @MainActor
   func perform() async throws -> some IntentResult & ProvidesDialog {
     .result(
-      dialog: "Opening Zooter jobs in Zoot. Sensitive client access details stay protected inside the app."
+      dialog: "Opening Xooter jobs in Xoot. Sensitive client access details stay protected inside the app."
     )
   }
 }
 
 @available(iOS 16.0, *)
-struct ZootAppShortcuts: AppShortcutsProvider {
+struct XootAppShortcuts: AppShortcutsProvider {
   static var appShortcuts: [AppShortcut] {
     AppShortcut(
-      intent: BookZootCleanerIntent(),
+      intent: BookXootCleanerIntent(),
       phrases: [
         "Book a cleaner with \(.applicationName)",
-        "Book a Zoot cleaner with \(.applicationName)",
+        "Book a Xoot cleaner with \(.applicationName)",
         "Book a cleaner for a date with \(.applicationName)",
         "Find me a cleaner in \(.applicationName)",
         "Clean my house with \(.applicationName)",
@@ -318,7 +318,7 @@ struct ZootAppShortcuts: AppShortcutsProvider {
     )
 
     AppShortcut(
-      intent: OpenZootIntent(destination: .bookClean),
+      intent: OpenXootIntent(destination: .bookClean),
       phrases: [
         "Book a clean in \(.applicationName)",
         "Start a \(.applicationName) booking",
@@ -331,7 +331,7 @@ struct ZootAppShortcuts: AppShortcutsProvider {
     )
 
     AppShortcut(
-      intent: AskZootConciergeIntent(),
+      intent: AskXootConciergeIntent(),
       phrases: [
         "Ask \(.applicationName) Concierge",
         "Open \(.applicationName) Concierge",
@@ -341,7 +341,7 @@ struct ZootAppShortcuts: AppShortcutsProvider {
     )
 
     AppShortcut(
-      intent: OpenZootIntent(destination: .carePlus),
+      intent: OpenXootIntent(destination: .carePlus),
       phrases: [
         "Open Care Plus in \(.applicationName)",
         "Show my \(.applicationName) membership",
@@ -351,7 +351,7 @@ struct ZootAppShortcuts: AppShortcutsProvider {
     )
 
     AppShortcut(
-      intent: OpenZootIntent(destination: .bookings),
+      intent: OpenXootIntent(destination: .bookings),
       phrases: [
         "Show my \(.applicationName) bookings",
         "Open bookings in \(.applicationName)",
@@ -361,7 +361,7 @@ struct ZootAppShortcuts: AppShortcutsProvider {
     )
 
     AppShortcut(
-      intent: CheckZootBookingStatusIntent(),
+      intent: CheckXootBookingStatusIntent(),
       phrases: [
         "Check my \(.applicationName) booking status",
         "Where is my \(.applicationName) cleaner",
@@ -372,12 +372,12 @@ struct ZootAppShortcuts: AppShortcutsProvider {
     )
 
     AppShortcut(
-      intent: OpenZootJobsIntent(),
+      intent: OpenXootJobsIntent(),
       phrases: [
         "Open my \(.applicationName) jobs",
-        "Show Zooter jobs in \(.applicationName)",
+        "Show Xooter jobs in \(.applicationName)",
       ],
-      shortTitle: "Zooter Jobs",
+      shortTitle: "Xooter Jobs",
       systemImageName: "briefcase"
     )
   }

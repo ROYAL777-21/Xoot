@@ -13,7 +13,7 @@ const nav = [
   { to: "/zooter/profile", label: "Profile", icon: User },
 ];
 
-export const ZooterShell = ({ children }: { children: ReactNode }) => {
+export const XooterShell = ({ children }: { children: ReactNode }) => {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const handleSignOut = async () => { await signOut(); navigate("/"); };

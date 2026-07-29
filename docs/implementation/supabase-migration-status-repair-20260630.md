@@ -8,7 +8,7 @@ The production Supabase dashboard can show skipped/pending/failed migrations eve
 
 Production started from earlier launch/squashed migrations. Later live fixes were applied through the Supabase connector, and that connector generated new timestamps for migration names. That means several production rows are schema-equivalent to local migrations but do not have the exact same local migration versions. Some later migrations were also split into connector-safe public-schema migrations because storage-owner policies require a different owner path.
 
-This is why the dashboard can say `1 skipped`, `2 pending`, and `migrations failed` while catalog checks still show booking chat, Concierge, invoice public schema, Zoot Black public schema, payment readiness, and Twilio readiness objects present.
+This is why the dashboard can say `1 skipped`, `2 pending`, and `migrations failed` while catalog checks still show booking chat, Concierge, invoice public schema, Xoot Black public schema, payment readiness, and Twilio readiness objects present.
 
 ## Current GitHub Source State
 
@@ -29,8 +29,8 @@ Do not mark any of these as applied without first running `supabase migration li
 | `20260630005420_phase7_payments_payouts_foundation` | `20260630154353_phase7_payments_payouts_foundation` | `20260630153743_phase7_payments_payouts_foundation` | Schema-equivalent payment/payout readiness migration was applied live. |
 | `20260630102715_phase9_twilio_verify_masked_voice` | `20260630154456_phase9_twilio_verify_masked_voice` | `20260630153941_phase9_twilio_verify_masked_voice` | Schema-equivalent Twilio readiness migration was applied live. |
 | `20260629194645_completed_booking_invoices` | `20260630155714_connector_safe_booking_invoice_public_schema` | `20260630155643_connector_safe_booking_invoice_public_schema` | Only the connector-safe public schema is applied. The storage-object policy part is still pending owner-level deployment, so do not mark the full local migration applied without splitting or confirming a safe policy deployment path. |
-| `20260630003602_phase6_zoot_black_foundation` | `20260630155930_connector_safe_zoot_black_core_schema` and `20260630160205_connector_safe_zoot_black_certificate_schema` | `20260630155818_connector_safe_zoot_black_core_schema` and `20260630160047_connector_safe_zoot_black_certificate_schema` | Public/schema-safe Zoot Black parts are applied. Storage-object certificate policy work still requires owner-level deployment. |
-| `20260630155159_connector_safe_invoice_zoot_black_schema` | Split across connector-safe invoice/Zoot Black rows | Split across connector-safe invoice/Zoot Black rows | Treat this as the local source of the connector-safe schema, but review before repairing because live rows are split. |
+| `20260630003602_phase6_zoot_black_foundation` | `20260630155930_connector_safe_zoot_black_core_schema` and `20260630160205_connector_safe_zoot_black_certificate_schema` | `20260630155818_connector_safe_zoot_black_core_schema` and `20260630160047_connector_safe_zoot_black_certificate_schema` | Public/schema-safe Xoot Black parts are applied. Storage-object certificate policy work still requires owner-level deployment. |
+| `20260630155159_connector_safe_invoice_zoot_black_schema` | Split across connector-safe invoice/Xoot Black rows | Split across connector-safe invoice/Xoot Black rows | Treat this as the local source of the connector-safe schema, but review before repairing because live rows are split. |
 
 ## Safe Repair Procedure
 

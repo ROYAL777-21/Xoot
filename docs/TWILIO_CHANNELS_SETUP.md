@@ -2,7 +2,7 @@
 
 Reviewed: 2026-06-30
 
-This runbook covers Zoot's planned Twilio channels: SMS, WhatsApp, phone/voice, masked calling, Verify OTP, and optional Twilio SendGrid email. It contains placeholders only. Do not paste Twilio credentials into docs, GitHub, frontend env, Expo public env, screenshots, or chat.
+This runbook covers Xoot's planned Twilio channels: SMS, WhatsApp, phone/voice, masked calling, Verify OTP, and optional Twilio SendGrid email. It contains placeholders only. Do not paste Twilio credentials into docs, GitHub, frontend env, Expo public env, screenshots, or chat.
 
 If real Twilio credentials were pasted into chat or issue text during setup, rotate them in Twilio before production. Treat the current values as compromised until rotation is complete.
 
@@ -23,7 +23,7 @@ Completed locally on 2026-06-30:
 - `public.twilio_verify_attempts` stores redacted Verify attempt metadata only: hashed destination, optional last four, status, and provider reference. It never stores OTP values or raw destinations.
 - `private.can_create_masked_call()` centralizes masked-call eligibility: booking participant only, accepted/active booking only, no terminal booking states, and the approved booking contact window.
 - `masked_call_sessions` direct browser/mobile writes are revoked. Clients can read their own session status; creation and updates stay behind Edge Functions.
-- Zoot masked voice is explicitly no-recording and no-transcription for launch.
+- Xoot masked voice is explicitly no-recording and no-transcription for launch.
 
 Still required in the Twilio Console:
 
@@ -41,7 +41,7 @@ Current provider-account finding on 2026-06-24:
 - Account status: Trial.
 - Incoming phone numbers: none.
 - WhatsApp senders: none.
-- Existing Messaging Service classification: marketing, which is not acceptable for Zoot booking, OTP, safety, or service-status traffic.
+- Existing Messaging Service classification: marketing, which is not acceptable for Xoot booking, OTP, safety, or service-status traffic.
 - The repository and Edge Functions are ready for signed webhooks, but production delivery cannot be enabled until the sender and regulatory items above are complete.
 
 ## Security Rules
@@ -50,7 +50,7 @@ Current provider-account finding on 2026-06-24:
 - Keep Twilio Auth Token server-side only for request signature validation and emergency account operations.
 - Validate `X-Twilio-Signature` on every Twilio webhook before updating bookings, notifications, outbox rows, support tickets, or audit logs.
 - Webhooks must be HTTPS.
-- Never expose user or Zooter phone numbers in browser/mobile code.
+- Never expose user or Xooter phone numbers in browser/mobile code.
 - Never store OTP codes, raw phone numbers, raw email addresses, or message bodies in `twilio_verify_attempts`, webhook logs, outbox payloads, or analytics events.
 - Do not call live Twilio Verify, Proxy, Voice, SMS, or WhatsApp APIs unless the relevant `twilio.*` operational control is enabled for the environment.
 - Masked calls must be booking-scoped. They may not dial arbitrary numbers supplied by a client request.
@@ -104,7 +104,7 @@ The local file should contain the Twilio keys listed above plus the shared Supab
 
 ## Channel Intent
 
-| Channel | Zoot use | Production rule |
+| Channel | Xoot use | Production rule |
 | --- | --- | --- |
 | SMS | OTP, urgent booking updates, fallback notices | Use Verify for OTP; operational SMS must be opt-out compliant. |
 | WhatsApp | Urgent operational updates only | Do not replace in-app client-contractor chat; use approved templates where required. |

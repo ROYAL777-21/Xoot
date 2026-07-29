@@ -11,7 +11,7 @@ const links = [
   { label: "Trust", href: "/trust-centre" },
   { label: "Blog", href: "/articles" },
   { label: "How it works", href: "/#how" },
-  { label: "Become a Zooter", href: "/zooter/apply" },
+  { label: "Become a Xooter", href: "/zooter/apply" },
 ];
 
 const routePrefetchers: Record<string, () => Promise<unknown>> = {
@@ -56,7 +56,7 @@ export const Navbar = () => {
             <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
           </span>
           <span className="font-display text-2xl font-bold tracking-tight text-foreground">
-            Zoot
+            Xoot
           </span>
         </Link>
 

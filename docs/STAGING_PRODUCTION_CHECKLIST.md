@@ -1,4 +1,4 @@
-# Zoot Staging And Production Checklist
+# Xoot Staging And Production Checklist
 
 Reviewed: 2026-06-08
 
@@ -53,7 +53,7 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 - [ ] Google OAuth works if enabled.
 - [ ] Apple OAuth works if enabled.
 - [ ] Admin routes require admin role.
-- [ ] Zooter routes require Zooter/admin role as appropriate.
+- [ ] Xooter routes require Xooter/admin role as appropriate.
 - [ ] Generic auth errors do not reveal whether an email exists.
 - [ ] No OTP, password, card PIN, bank login, gate code, lockbox code, or private key is requested in support chat.
 
@@ -70,7 +70,7 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 - [ ] Paid amount and currency match backend invoice.
 - [ ] Frontend success/cancel/error URLs do not mutate booking state.
 - [ ] Care+ activates only after verified payment.
-- [ ] ZootCred is awarded only after completed paid booking rules pass.
+- [ ] XootCred is awarded only after completed paid booking rules pass.
 
 ## Twilio
 
@@ -86,7 +86,7 @@ Use this checklist before merging, deploying, submitting mobile builds, or enabl
 - [x] Message and WhatsApp webhooks validate Twilio signatures.
 - [x] Twilio webhook events store only redacted metadata, salted phone hashes, and last-four references.
 - [ ] Geo-permissions restrict SMS/voice to served countries.
-- [ ] Masked calling never exposes real user or Zooter phone numbers in frontend payloads.
+- [ ] Masked calling never exposes real user or Xooter phone numbers in frontend payloads.
 - [ ] Any Twilio credentials pasted into chat, issues, logs, or screenshots have been rotated before production launch.
 
 ## Brevo

@@ -8,7 +8,7 @@ const KEY = "zoot.glass";
 
 export const GLASS_PRESETS: Record<GlassLevel, { blur: number; opacity: number; label: string; hint: string }> = {
   clear: { blur: 14, opacity: 34, label: "Clear", hint: "See-through, minimal blur" },
-  frosted: { blur: 30, opacity: 62, label: "Frosted", hint: "Balanced — the Zoot default" },
+  frosted: { blur: 30, opacity: 62, label: "Frosted", hint: "Balanced — the Xoot default" },
   solid: { blur: 6, opacity: 94, label: "Solid", hint: "Opaque, maximum legibility" },
 };
 

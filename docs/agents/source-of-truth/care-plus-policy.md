@@ -13,9 +13,9 @@ source_of_truth_reference: Existing Care+ product page, Care+ Terms draft and fo
 
 # Care+ Policy
 
-Care+ is Zoot's membership layer for users who want a more continuous home-care experience. Draft public benefits include Home Memory, favourite Zooter continuity where available, smart reminders, priority support and member ZootCred value where configured.
+Care+ is Xoot's membership layer for users who want a more continuous home-care experience. Draft public benefits include Home Memory, favourite Xooter continuity where available, smart reminders, priority support and member XootCred value where configured.
 
-This policy is not yet approved for production Concierge authority. Until founder, legal and finance approval is recorded, the Concierge may guide users to the Care+ page and support route, but must not promise pricing, benefits, availability, guaranteed preferred Zooters, cancellation outcomes, billing outcomes or credits.
+This policy is not yet approved for production Concierge authority. Until founder, legal and finance approval is recorded, the Concierge may guide users to the Care+ page and support route, but must not promise pricing, benefits, availability, guaranteed preferred Xooters, cancellation outcomes, billing outcomes or credits.
 
 Allowed draft guidance:
 
@@ -28,7 +28,7 @@ Prohibited guidance:
 
 - changing Care+ price;
 - inventing benefits;
-- guaranteeing a preferred Zooter;
+- guaranteeing a preferred Xooter;
 - guaranteeing booking availability;
 - changing membership state;
 - applying credits;

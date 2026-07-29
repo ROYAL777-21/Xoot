@@ -108,7 +108,7 @@ export async function initialisePushNotifications(
     });
 
     await addListener(PushNotifications.addListener("pushNotificationReceived", (notification: NativePushNotification) => {
-      toast(notification.title ?? "Zoot", { description: notification.body });
+      toast(notification.title ?? "Xoot", { description: notification.body });
     }));
 
     await addListener(PushNotifications.addListener("pushNotificationActionPerformed", (action) => {

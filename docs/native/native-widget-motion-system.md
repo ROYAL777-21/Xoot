@@ -3,9 +3,9 @@
 Reviewed: 2026-07-03
 
 Figma preview: https://www.figma.com/design/2M0vWKGmiLApMcB980WYC4
-Figma motion board: same file, with native widget frames for Next Booking, Care+ Readiness, ZootCred, Favourite Zooter, and Accepted Zooter Job. If Codex/Figma auth expires, code remains the source of truth until the editable board can be re-synced.
+Figma motion board: same file, with native widget frames for Next Booking, Care+ Readiness, XootCred, Favourite Xooter, and Accepted Xooter Job. If Codex/Figma auth expires, code remains the source of truth until the editable board can be re-synced.
 
-This document defines the first production-safe widget direction for Zoot's Expo native app. It covers iOS widgets, iOS Live Activities, Dynamic Island, Android home-screen widgets, and safe assistant deep links.
+This document defines the first production-safe widget direction for Xoot's Expo native app. It covers iOS widgets, iOS Live Activities, Dynamic Island, Android home-screen widgets, and safe assistant deep links.
 
 ## Safety Rules
 
@@ -17,7 +17,7 @@ Widgets, Live Activities, Dynamic Island, and assistant surfaces must never show
 - payment references, card details, refunds, disputes, or complaint details;
 - ID documents, screening details, background-check data, or admin notes.
 
-Safe content is limited to short booking status, service type, safe ETA, suburb-level context when needed, Care+ readiness, ZootCred summary, favourite Zooter prompt, and deep links into authenticated screens.
+Safe content is limited to short booking status, service type, safe ETA, suburb-level context when needed, Care+ readiness, XootCred summary, favourite Xooter prompt, and deep links into authenticated screens.
 
 ## Motion Contract
 
@@ -30,17 +30,17 @@ Safe content is limited to short booking status, service type, safe ETA, suburb-
 
 ## Implemented Native Surfaces
 
-- iOS: `native/ios/ZootLiveActivities/ZootBookingSummaryWidget.swift`
+- iOS: `native/ios/XootLiveActivities/XootBookingSummaryWidget.swift`
   - Next Booking
   - Care+ Readiness
-  - ZootCred
-  - Favourite Zooter
-  - Accepted Zooter Job
-- iOS: `native/ios/ZootLiveActivities/ZootBookingLiveActivityWidget.swift`
+  - XootCred
+  - Favourite Xooter
+  - Accepted Xooter Job
+- iOS: `native/ios/XootLiveActivities/XootBookingLiveActivityWidget.swift`
   - Live Activity and Dynamic Island status surfaces
-- Android: `native/android/src/main/java/za/co/zoothome/widgets/ZootStatusWidgetProvider.java`
+- Android: `native/android/src/main/java/za/co/zoothome/widgets/XootStatusWidgetProvider.java`
   - Safe static widget shell that deep-links to authenticated booking status
-- Expo prebuild plugin: `mobile/plugins/withZootAssistantIntents.cjs`
+- Expo prebuild plugin: `mobile/plugins/withXootAssistantIntents.cjs`
   - Copies iOS App Intents and Android assistant/widget resources during prebuild
 - Placeholder widget entries deliberately say `Open app` rather than showing realistic names, times, suburbs or balances. Real widget summaries must come from an authenticated app-group cache that stores only non-sensitive summary fields.
 

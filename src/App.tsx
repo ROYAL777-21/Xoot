@@ -11,10 +11,10 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RequireAuth } from "@/components/RequireAuth";
 import { AppShell } from "@/components/zoot/AppShell";
 import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
-import { ZootSupportBot } from "@/components/zoot/ZootSupportBot";
-import { ZooterShell } from "@/components/zooter/ZooterShell";
+import { XootSupportBot } from "@/components/zoot/XootSupportBot";
+import { XooterShell } from "@/components/zooter/XooterShell";
 import { RequireRole } from "@/components/RequireRole";
-import { ZootAnalyticsProvider } from "@/lib/analytics";
+import { XootAnalyticsProvider } from "@/lib/analytics";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
@@ -50,14 +50,14 @@ const Cookies = lazy(() => import("./pages/legal/Cookies"));
 const AcceptableUse = lazy(() => import("./pages/legal/AcceptableUse"));
 const AiConciergeNotice = lazy(() => import("./pages/legal/AiConciergeNotice"));
 const CarePlusTerms = lazy(() => import("./pages/legal/CarePlusTerms"));
-const ZooterTerms = lazy(() => import("./pages/legal/ZooterTerms"));
-const ZooterApply = lazy(() => import("./pages/zooter/Apply"));
-const ZooterDashboard = lazy(() => import("./pages/zooter/Dashboard"));
-const ZooterJobs = lazy(() => import("./pages/zooter/Jobs"));
-const ZooterTraining = lazy(() => import("./pages/zooter/Training"));
-const ZooterEarnings = lazy(() => import("./pages/zooter/Earnings"));
-const ZooterKyc = lazy(() => import("./pages/zooter/Kyc"));
-const ZooterProfile = lazy(() => import("./pages/zooter/Profile"));
+const XooterTerms = lazy(() => import("./pages/legal/XooterTerms"));
+const XooterApply = lazy(() => import("./pages/zooter/Apply"));
+const XooterDashboard = lazy(() => import("./pages/zooter/Dashboard"));
+const XooterJobs = lazy(() => import("./pages/zooter/Jobs"));
+const XooterTraining = lazy(() => import("./pages/zooter/Training"));
+const XooterEarnings = lazy(() => import("./pages/zooter/Earnings"));
+const XooterKyc = lazy(() => import("./pages/zooter/Kyc"));
+const XooterProfile = lazy(() => import("./pages/zooter/Profile"));
 const AdminKyc = lazy(() => import("./pages/admin/Kyc"));
 const AdminOps = lazy(() => import("./pages/admin/Ops"));
 
@@ -108,14 +108,14 @@ const PreloadCoreRoutes = () => {
 };
 
 const RouteLoading = () => (
-  <div className="fixed inset-x-0 top-0 z-70 h-1 overflow-hidden bg-primary/10" aria-label="Loading Zoot route">
+  <div className="fixed inset-x-0 top-0 z-70 h-1 overflow-hidden bg-primary/10" aria-label="Loading Xoot route">
     <div className="h-full w-1/3 animate-pulse rounded-r-full bg-primary/70" />
   </div>
 );
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ZootAnalyticsProvider>
+    <XootAnalyticsProvider>
       <HelmetProvider>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange storageKey="zoot-theme">
         <TooltipProvider>
@@ -151,7 +151,7 @@ const App = () => (
                   <Route path="/legal/acceptable-use" element={<AcceptableUse />} />
                   <Route path="/legal/ai-concierge" element={<AiConciergeNotice />} />
                   <Route path="/legal/care-plus-terms" element={<CarePlusTerms />} />
-                  <Route path="/legal/zooter-terms" element={<ZooterTerms />} />
+                  <Route path="/legal/zooter-terms" element={<XooterTerms />} />
                   <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
@@ -167,14 +167,14 @@ const App = () => (
                   <Route path="/app/insurance" element={<RequireAuth><AppShell><Insurance /></AppShell></RequireAuth>} />
                   <Route path="/app/profile" element={<RequireAuth><AppShell><CustomerProfile /></AppShell></RequireAuth>} />
 
-                  {/* Zooter portal */}
-                  <Route path="/zooter/apply" element={<RequireAuth><ZooterApply /></RequireAuth>} />
-                  <Route path="/zooter" element={<RequireRole role="zooter"><ZooterShell><ZooterDashboard /></ZooterShell></RequireRole>} />
-                  <Route path="/zooter/jobs" element={<RequireRole role="zooter"><ZooterShell><ZooterJobs /></ZooterShell></RequireRole>} />
-                  <Route path="/zooter/training" element={<RequireAuth><ZooterShell><ZooterTraining /></ZooterShell></RequireAuth>} />
-                  <Route path="/zooter/earnings" element={<RequireRole role="zooter"><ZooterShell><ZooterEarnings /></ZooterShell></RequireRole>} />
-                  <Route path="/zooter/kyc" element={<RequireAuth><ZooterShell><ZooterKyc /></ZooterShell></RequireAuth>} />
-                  <Route path="/zooter/profile" element={<RequireRole role="zooter"><ZooterShell><ZooterProfile /></ZooterShell></RequireRole>} />
+                  {/* Xooter portal */}
+                  <Route path="/zooter/apply" element={<RequireAuth><XooterApply /></RequireAuth>} />
+                  <Route path="/zooter" element={<RequireRole role="zooter"><XooterShell><XooterDashboard /></XooterShell></RequireRole>} />
+                  <Route path="/zooter/jobs" element={<RequireRole role="zooter"><XooterShell><XooterJobs /></XooterShell></RequireRole>} />
+                  <Route path="/zooter/training" element={<RequireAuth><XooterShell><XooterTraining /></XooterShell></RequireAuth>} />
+                  <Route path="/zooter/earnings" element={<RequireRole role="zooter"><XooterShell><XooterEarnings /></XooterShell></RequireRole>} />
+                  <Route path="/zooter/kyc" element={<RequireAuth><XooterShell><XooterKyc /></XooterShell></RequireAuth>} />
+                  <Route path="/zooter/profile" element={<RequireRole role="zooter"><XooterShell><XooterProfile /></XooterShell></RequireRole>} />
 
                   {/* Admin */}
                   <Route path="/admin/kyc" element={<RequireRole role="admin"><AdminKyc /></RequireRole>} />
@@ -184,14 +184,14 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 </Suspense>
-                <ZootSupportBot />
+                <XootSupportBot />
               </AuthProvider>
             </BrowserRouter>
           </ErrorBoundary>
         </TooltipProvider>
         </ThemeProvider>
       </HelmetProvider>
-    </ZootAnalyticsProvider>
+    </XootAnalyticsProvider>
   </QueryClientProvider>
 );
 

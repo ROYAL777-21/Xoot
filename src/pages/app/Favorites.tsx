@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ZooterCard, Zooter } from "@/components/zoot/ZooterCard";
+import { XooterCard, Xooter } from "@/components/zoot/XooterCard";
 import { Heart, Loader2, Repeat, Star, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ type FavoriteRow = {
   favorite_kind?: "favorite" | "preferred_team" | "recurring_favorite";
   repeat_bookings_count?: number;
   last_booked_at?: string | null;
-  zooters: Zooter | null;
+  zooters: Xooter | null;
 };
 
 const Favorites = () => {
@@ -34,7 +34,7 @@ const Favorites = () => {
     const { data: zooters } = zooterIds.length
       ? await (supabase as any).from("zooters_public").select("*").in("id", zooterIds)
       : { data: [] };
-    const zootersById = new Map(((zooters ?? []) as Zooter[]).map((zooter) => [zooter.id, zooter]));
+    const zootersById = new Map(((zooters ?? []) as Xooter[]).map((zooter) => [zooter.id, zooter]));
 
     setList(
       favorites
@@ -58,7 +58,7 @@ const Favorites = () => {
     load();
   };
 
-  const bookAgain = (zooter: Zooter) => {
+  const bookAgain = (zooter: Xooter) => {
     navigate(`/app?zooter=${zooter.id}`);
   };
 
@@ -73,8 +73,8 @@ const Favorites = () => {
           <Heart className="h-3 w-3 fill-primary text-primary" />
           <span className="text-xs font-medium text-primary">Your trusted team</span>
         </div>
-        <h1 className="font-display text-4xl md:text-5xl font-bold">My Zooters</h1>
-        <p className="text-muted-foreground mt-2">Re-book the people you trust. Same Zooter, preferred team, and recurring favourites in one place.</p>
+        <h1 className="font-display text-4xl md:text-5xl font-bold">My Xooters</h1>
+        <p className="text-muted-foreground mt-2">Re-book the people you trust. Same Xooter, preferred team, and recurring favourites in one place.</p>
       </div>
 
       <div className="grid sm:grid-cols-3 gap-3 mb-8">
@@ -98,8 +98,8 @@ const Favorites = () => {
         <div className="rounded-3xl border-2 border-dashed border-border p-12 text-center">
           <Heart className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <h3 className="font-display text-xl font-bold mb-2">No favorites yet</h3>
-          <p className="text-muted-foreground mb-4">Tap the heart on any Zooter to save them here.</p>
-          <Button onClick={() => navigate("/app")} className="rounded-full">Browse Zooters</Button>
+          <p className="text-muted-foreground mb-4">Tap the heart on any Xooter to save them here.</p>
+          <Button onClick={() => navigate("/app")} className="rounded-full">Browse Xooters</Button>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -108,7 +108,7 @@ const Favorites = () => {
             const firstName = z.name.split(" ")[0];
             return (
               <div key={z.id} className="space-y-2">
-                <ZooterCard z={{ ...z, repeat_client_count: z.repeat_client_count ?? row.repeat_bookings_count }} onBook={() => bookAgain(z)} actionLabel={`Book ${firstName} Again`} />
+                <XooterCard z={{ ...z, repeat_client_count: z.repeat_client_count ?? row.repeat_bookings_count }} onBook={() => bookAgain(z)} actionLabel={`Book ${firstName} Again`} />
                 <div className="grid grid-cols-2 gap-2">
                   <Button variant="outline" size="sm" className="rounded-xl" onClick={() => bookAgain(z)}>Book {firstName} Again</Button>
                   <Button variant="outline" size="sm" className="rounded-xl" onClick={() => markKind(z.id, "preferred_team")}>Preferred Team</Button>

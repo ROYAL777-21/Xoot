@@ -11,7 +11,7 @@ const nav = [
   { to: "/app/bookings", label: "Bookings", icon: Calendar },
   { to: "/app/plans", label: "Care+", icon: Crown },
   { to: "/app/properties", label: "Properties", icon: Building2 },
-  { to: "/app/favorites", label: "My Zooters", icon: Heart },
+  { to: "/app/favorites", label: "My Xooters", icon: Heart },
   { to: "/app/loyalty", label: "Rewards", icon: Gift },
   { to: "/app/gifts", label: "Gift Clean", icon: Gift },
   { to: "/app/profile", label: "Profile", icon: User },
@@ -43,7 +43,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             <span className="grid h-10 w-10 place-items-center rounded-2xl gradient-warm shadow-warm">
               <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
             </span>
-            <span className="font-display text-2xl font-bold tracking-tight text-foreground">Zoot</span>
+            <span className="font-display text-2xl font-bold tracking-tight text-foreground">Xoot</span>
           </NavLink>
           <NotificationBell />
         </div>

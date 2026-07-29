@@ -1,7 +1,7 @@
 import ActivityKit
 import Foundation
 
-public struct ZootBookingActivityAttributes: ActivityAttributes {
+public struct XootBookingActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         public var status: BookingStatus
         public var statusLabel: String

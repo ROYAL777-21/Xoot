@@ -19,7 +19,7 @@ The live inventory now includes these production-critical function groups in bot
 - Concierge/support: `support-respond`
 - Booking and payment: `create-booking`, `create-booking-request`, `confirm-payment`, `cancel-booking`, `request-replacement`
 - Care+ and credits: `activate-care-plus`, `care-plus-membership`, `redeem-zootcred`
-- Zooter/admin operations: `approve-zooter`, `submit-zooter-application`, `admin-confirm-payment`, `admin-resolve-review`, `admin-mark-outbox`, `admin-escalate-support`, `admin-reject-zooter`, `admin-control-management`
+- Xooter/admin operations: `approve-zooter`, `submit-zooter-application`, `admin-confirm-payment`, `admin-resolve-review`, `admin-mark-outbox`, `admin-escalate-support`, `admin-reject-zooter`, `admin-control-management`
 - Sensitive access and booking chat: `get-sensitive-access`, `revoke-sensitive-access`, `get-zooter-job-cards`, `get-booking-public-keys`, `send-booking-message`, `report-booking-message`, `mark-booking-message-read`
 - Twilio provider callbacks: `twilio-message-webhook`, `twilio-whatsapp-webhook`, `twilio-status-callback`, `twilio-voice-webhook`, `twilio-verify-webhook`
 - Ops: `ops-workflow`

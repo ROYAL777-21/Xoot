@@ -1,13 +1,13 @@
-# Zoot Security Programme
+# Xoot Security Programme
 
-Zoot's security goal is to prevent account takeover, data leakage, payment abuse, fake bookings, contractor/client impersonation, off-platform manipulation, and operational disruption. This checklist is grouped by launch urgency and should be reviewed before every major release.
+Xoot's security goal is to prevent account takeover, data leakage, payment abuse, fake bookings, contractor/client impersonation, off-platform manipulation, and operational disruption. This checklist is grouped by launch urgency and should be reviewed before every major release.
 
 ## Critical Controls
 
-| # | Control | Required Zoot outcome |
+| # | Control | Required Xoot outcome |
 |---|---|---|
-| 1 | Strong authentication and account protection | Separate client, Zooter, admin, support, finance, and agent access. Require verified email/phone, strong password reset flows, rate limits, and MFA for staff/admins. |
-| 2 | API authorisation on every request | Every endpoint checks identity, role, and object ownership. Clients only see their own bookings; Zooters only see assigned work; support/finance/admin access is role-scoped. |
+| 1 | Strong authentication and account protection | Separate client, Xooter, admin, support, finance, and agent access. Require verified email/phone, strong password reset flows, rate limits, and MFA for staff/admins. |
+| 2 | API authorisation on every request | Every endpoint checks identity, role, and object ownership. Clients only see their own bookings; Xooters only see assigned work; support/finance/admin access is role-scoped. |
 | 3 | Secure storage of sensitive data | Encrypt data in transit and at rest. Restrict ID documents, selfies, bank details, gate codes, access notes, support incidents, and verification records. |
 | 4 | Payment security with Stitch/Ozow | Store only provider references and reconciliation metadata. Confirm payment only through provider confirmation or verified webhooks, never frontend success states. |
 | 5 | Contractor document upload flow | Accept only approved file types, validate MIME and extension, enforce size limits, strip risky names, scan where possible, and use private storage with expiring access. |
@@ -20,7 +20,7 @@ Zoot's security goal is to prevent account takeover, data leakage, payment abuse
 | 12 | Secure in-app messaging | Messages must be tied to a valid booking relationship. Block phone numbers, payment details, off-platform booking requests, abuse, and moderation bypasses. |
 | 13 | Booking fraud controls | Require verified phone/payment status, flag suspicious cancellations and payment failures, and review high-risk Airbnb/landlord bookings with unattended access. |
 | 14 | Contractor fraud and impersonation prevention | Verify phone, ID/selfie, bank account, address, references, and screening status. Review device, phone, bank, and location-pattern changes. |
-| 15 | Client address and home-access protection | Treat addresses, gate codes, lockbox codes, parking, pets, and access notes as sensitive. Reveal only to assigned Zooters near booking time. |
+| 15 | Client address and home-access protection | Treat addresses, gate codes, lockbox codes, parking, pets, and access notes as sensitive. Reveal only to assigned Xooters near booking time. |
 | 16 | Secure support-case handling | Classify support severity, restrict visibility, require escalation for safety/theft/harassment/damage/legal issues, and human-approve large refunds. |
 | 17 | AI agent permission controls | Give each agent least-privilege tools and data. Require human approval for payments, refunds, bans, legal-sensitive replies, public claims, production deploys, and bulk outreach. |
 | 18 | Secrets and environment protection | Keep API keys in environment variables or a secrets manager. Never commit keys, prompts with keys, screenshots, frontend code, or chat messages containing secrets. |
@@ -37,30 +37,30 @@ Zoot's security goal is to prevent account takeover, data leakage, payment abuse
 
 ## High Priority Controls
 
-| # | Control | Required Zoot outcome |
+| # | Control | Required Xoot outcome |
 |---|---|---|
 | 29 | Security headers | Set CSP, HSTS, frame-ancestors or X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and secure cookie flags. |
 | 30 | CSRF protection | Protect state-changing cookie-authenticated actions, including bookings, profile updates, password changes, support, payment initiation, and Care+ changes. |
 | 31 | Email and domain protection | Configure SPF, DKIM, and DMARC. Use trustworthy transactional email for booking, payment, and security notices. |
 | 32 | Anti-phishing and brand impersonation monitoring | Reserve domains/handles where possible and tell users payments, OTPs, and passwords are never requested outside official channels. |
-| 33 | Referral and ZootCred abuse prevention | Block self-referrals, duplicate-device abuse, payment reversals, disposable email clusters, and abnormal referral spikes. Issue meaningful credits only after completed paid bookings. |
+| 33 | Referral and XootCred abuse prevention | Block self-referrals, duplicate-device abuse, payment reversals, disposable email clusters, and abnormal referral spikes. Issue meaningful credits only after completed paid bookings. |
 | 34 | Review and rating integrity | Prevent fake reviews, self-reviews, coerced ratings, hidden score edits, and unaudited contractor-score changes. |
 | 35 | Contractor reliability engine protection | Make punctuality, cancellation, complaint, and completion records tamper-resistant and auditable. |
 | 36 | Coupon and promotional controls | Validate discounts server-side, cap stacking, enforce expiry and eligibility, and prevent frontend price manipulation. |
-| 37 | Secure pricing and checkout calculations | Calculate final price, add-ons, Care+ benefits, ZootCred redemption, referrals, surge/peak fees, and taxes/fees on the backend. |
+| 37 | Secure pricing and checkout calculations | Calculate final price, add-ons, Care+ benefits, XootCred redemption, referrals, surge/peak fees, and taxes/fees on the backend. |
 | 38 | Secure cancellation and replacement logic | Enforce cancellation windows, refunds, replacement eligibility, and contractor penalties on the backend. Do not promise guaranteed replacement without backend support. |
 | 39 | Secure notifications | Do not include gate codes, full addresses, ID details, payment references, or private complaint details in push, SMS, or email. |
 | 40 | Secure search and analytics dashboards | Use aggregated data where possible and role-specific dashboards for executive, operations, support, marketing, finance, contractor success, and trust/safety teams. |
 
 ## Medium Priority Controls
 
-| # | Control | Required Zoot outcome |
+| # | Control | Required Xoot outcome |
 |---|---|---|
 | 41 | Device and session management | Let users view active sessions and log out devices. Flag unusual logins, impossible travel, and rapid account changes. |
-| 42 | Admin approval workflows | Require dual approval for large refunds, payout changes, account bans, screening overrides, manual ZootCred changes, and data exports. |
+| 42 | Admin approval workflows | Require dual approval for large refunds, payout changes, account bans, screening overrides, manual XootCred changes, and data exports. |
 | 43 | Data export controls | Restrict CSV exports, log every export, mask sensitive fields, and require explicit permission for raw exports. |
 | 44 | Contractor payout changes | Verify bank-account changes, add waiting periods or manual review, and notify the contractor of changes. |
-| 45 | Customer property access flow | Reveal access notes only within an approved time window and track when assigned Zooters view them. |
+| 45 | Customer property access flow | Reveal access notes only within an approved time window and track when assigned Xooters view them. |
 | 46 | Bot-resistant waitlist and applications | Add CAPTCHA or invisible bot protection to high-abuse forms and deduplicate by phone, email, device, and IP. |
 | 47 | Third-party integration register | Track owner, purpose, key, permissions, data shared, webhook endpoint, and rotation schedule for every integration. |
 | 48 | Content moderation | Moderate bios, reviews, messages, attachments, before/after photos, and profile images for abuse, personal-data leakage, and off-platform solicitation. |
@@ -69,15 +69,15 @@ Zoot's security goal is to prevent account takeover, data leakage, payment abuse
 
 ## Later Hardening
 
-| # | Control | Required Zoot outcome |
+| # | Control | Required Xoot outcome |
 |---|---|---|
-| 51 | Responsible disclosure | Publish a clear path for researchers to safely report vulnerabilities once Zoot has public traction. |
+| 51 | Responsible disclosure | Publish a clear path for researchers to safely report vulnerabilities once Xoot has public traction. |
 | 52 | Security awareness training | Train staff not to click suspicious links, expose API keys, export data casually, or approve suspicious refund/payout requests. |
 | 53 | Feature security checklist | Every feature answers what data is involved, who can access it, how it can be abused, what logs are needed, and what failure looks like. |
 | 54 | Privacy-by-design UX | Explain why sensitive data is collected, especially contractor verification and property access notes. |
-| 55 | Security status page | Add a public status page when Zoot has B2B clients, hosts, offices, or higher operational dependency. |
+| 55 | Security status page | Add a public status page when Xoot has B2B clients, hosts, offices, or higher operational dependency. |
 | 56 | Data minimisation reviews | Quarterly review old documents, support attachments, gate codes, and verification files; delete or archive what is no longer needed. |
 | 57 | Tabletop incident exercises | Practise leaked API key, fake contractor, payment webhook abuse, DDoS, support data leak, and production outage scenarios. |
-| 58 | Vendor risk review | Review vendor security posture, data processing role, reliability, pricing, and export options as Zoot grows. |
+| 58 | Vendor risk review | Review vendor security posture, data processing role, reliability, pricing, and export options as Xoot grows. |
 | 59 | Legal review of claims | Avoid claims like fully insured, guaranteed safe, guaranteed replacement, or named screening providers unless accurate and approved. |
-| 60 | Brand trust monitoring | Monitor reviews, social media, support complaints, impersonation, payment scams, fake Zooters, and suspicious off-platform messages. |
+| 60 | Brand trust monitoring | Monitor reviews, social media, support complaints, impersonation, payment scams, fake Xooters, and suspicious off-platform messages. |

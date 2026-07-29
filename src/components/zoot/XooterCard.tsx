@@ -2,14 +2,14 @@ import { Star, MapPin, BadgeCheck, Heart, Crown, ShieldCheck, RotateCcw } from "
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
 import { formatZAR } from "@/lib/format";
-import { deriveZooterBadges, shouldFlagZooterForReview } from "@/lib/trust";
+import { deriveXooterBadges, shouldFlagXooterForReview } from "@/lib/trust";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import w1 from "@/assets/worker-1.jpg";
 import w2 from "@/assets/worker-2.jpg";
 import w3 from "@/assets/worker-3.jpg";
 import w4 from "@/assets/worker-4.jpg";
 
-export type Zooter = {
+export type Xooter = {
   id: string;
   name: string;
   role: string;
@@ -46,10 +46,10 @@ export const resolvePhoto = (p?: string | null) => (p && (imgMap[p] || p)) || w1
 
 const fmtPct = (value?: number | null) => `${Math.round(Number(value ?? 0))}%`;
 
-export const ZooterCard = ({ z, onBook, actionLabel }: { z: Zooter; onBook?: (z: Zooter) => void; actionLabel?: string }) => {
+export const XooterCard = ({ z, onBook, actionLabel }: { z: Xooter; onBook?: (z: Xooter) => void; actionLabel?: string }) => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const fav = isFavorite(z.id);
-  const badges = deriveZooterBadges(z);
+  const badges = deriveXooterBadges(z);
   const reliability = z.reliability_score ?? 100;
   const firstName = z.name.split(" ")[0];
 
@@ -79,7 +79,7 @@ export const ZooterCard = ({ z, onBook, actionLabel }: { z: Zooter; onBook?: (z:
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl bg-muted/45 px-2 py-2">
             <p className="text-[10px] text-muted-foreground">Reliable</p>
-            <p className={`font-display text-lg font-bold ${shouldFlagZooterForReview(reliability) ? "text-destructive" : "text-foreground"}`}>{reliability}</p>
+            <p className={`font-display text-lg font-bold ${shouldFlagXooterForReview(reliability) ? "text-destructive" : "text-foreground"}`}>{reliability}</p>
           </div>
           <div className="rounded-xl bg-muted/45 px-2 py-2">
             <p className="text-[10px] text-muted-foreground">Complete</p>

@@ -1,14 +1,14 @@
-# Zoot Expo Mobile Release Configuration
+# Xoot Expo Mobile Release Configuration
 
 Reviewed: 2026-06-19
 
-The Zoot mobile app is now planned as a separate Expo app in `/mobile`. The existing React/Vite website remains in place and must not be deleted or converted.
+The Xoot mobile app is now planned as a separate Expo app in `/mobile`. The existing React/Vite website remains in place and must not be deleted or converted.
 
 ## App Identity
 
 | Item | Preview/internal testing | Production |
 | --- | --- | --- |
-| App name | Zoot Preview | Zoot |
+| App name | Xoot Preview | Xoot |
 | Expo scheme | `zoot` | `zoot` |
 | iOS bundle ID | `za.co.zoothome.app.preview` | `za.co.zoothome.app` |
 | Android package | `za.co.zoothome.app.preview` | `za.co.zoothome.app` |
@@ -165,9 +165,9 @@ Backend setup still required:
 - Website maps use `mapbox-gl` with `VITE_MAPBOX_PUBLIC_TOKEN`.
 - Expo native maps use `@rnmapbox/maps`; this requires EAS development/preview/production builds, not Expo Go.
 - Restrict public Mapbox tokens by domain/app where Mapbox allows it.
-- Siri/App Intents are scaffolded in `native/ios/ZootLiveActivities/ZootAppIntents.swift`, including `BookZootCleanerIntent`.
+- Siri/App Intents are scaffolded in `native/ios/XootLiveActivities/XootAppIntents.swift`, including `BookXootCleanerIntent`.
 - Android launcher shortcuts are scaffolded in `native/android/res/xml/shortcuts.xml`.
-- Expo prebuild wiring is handled by `mobile/plugins/withZootAssistantIntents.cjs`, which copies iOS App Intents and Android shortcut resources into generated native projects.
+- Expo prebuild wiring is handled by `mobile/plugins/withXootAssistantIntents.cjs`, which copies iOS App Intents and Android shortcut resources into generated native projects.
 - Assistant entry points open safe booking or Concierge screens only; address, access, payment and support details stay inside authenticated app screens.
 
 ## Crash Monitoring
@@ -192,11 +192,11 @@ PostHog React Native is configured behind public-safe environment variables:
 
 ### Apple, Google, And EAS Release Credentials Explained
 
-Release credentials are the signing identities, API keys, and dashboard records that prove to Apple, Google, and Expo that Zoot is allowed to build, sign, upload, test, and release `za.co.zoothome.app`.
+Release credentials are the signing identities, API keys, and dashboard records that prove to Apple, Google, and Expo that Xoot is allowed to build, sign, upload, test, and release `za.co.zoothome.app`.
 
 Apple release requirements:
 
-- Apple Developer membership for the company account that will own Zoot.
+- Apple Developer membership for the company account that will own Xoot.
 - Apple Team ID selected in EAS credentials.
 - Bundle ID record for `za.co.zoothome.app` in Apple Developer.
 - App Store Connect app record with matching bundle ID, SKU, primary language, app category, support URL, privacy policy URL, and review contact details.
@@ -208,7 +208,7 @@ Apple release requirements:
 
 Google release requirements:
 
-- Google Play Developer account that will own Zoot.
+- Google Play Developer account that will own Xoot.
 - Play Console app record for package `za.co.zoothome.app`.
 - App signing setup: Google Play App Signing plus an EAS-managed upload key, or a controlled upload keystore stored in EAS credentials.
 - SHA-256 signing certificate fingerprints for Android App Links, OAuth, and any provider dashboards that require them.
@@ -255,5 +255,5 @@ Before Play internal testing:
 - No payment success from client return URLs.
 - Sensitive actions go through Supabase Edge Functions.
 - Session storage uses SecureStore on native devices.
-- Client-contractor communication stays inside Zoot.
+- Client-contractor communication stays inside Xoot.
 - WhatsApp is not used for routine booking communication.

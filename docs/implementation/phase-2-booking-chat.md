@@ -50,4 +50,4 @@ The migration and three Edge Functions are applied in staging and production as 
 npm run ops:smoke:staging -- --all
 ```
 
-The smoke run verifies client/Zooter participant auth, Edge-only chat sending, denied direct `public.messages` insert, read receipts, message reports, and admin review queue creation on one staging booking.
+The smoke run verifies client/Xooter participant auth, Edge-only chat sending, denied direct `public.messages` insert, read receipts, message reports, and admin review queue creation on one staging booking.

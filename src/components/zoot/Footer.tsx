@@ -17,10 +17,10 @@ const cols: { title: string; links: { label: string; href: string }[] }[] = [
     ],
   },
   {
-    title: "Join Zoot",
+    title: "Join Xoot",
     links: [
-      { label: "Become a Zooter", href: "/zooter/apply" },
-      { label: "Zooter dashboard", href: "/zooter" },
+      { label: "Become a Xooter", href: "/zooter/apply" },
+      { label: "Xooter dashboard", href: "/zooter" },
       { label: "Training", href: "/zooter/training" },
       { label: "Trust policy", href: "/trust-centre" },
     ],
@@ -41,7 +41,7 @@ const cols: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "Cookies", href: "/legal/cookies" },
       { label: "Refunds & cancellations", href: "/legal/refunds-cancellations" },
       { label: "Care+ terms", href: "/legal/care-plus-terms" },
-      { label: "Zooter terms", href: "/legal/zooter-terms" },
+      { label: "Xooter terms", href: "/legal/zooter-terms" },
       { label: "Acceptable use", href: "/legal/acceptable-use" },
       { label: "AI Concierge", href: "/legal/ai-concierge" },
       { label: "Account deletion", href: "/legal/account-deletion" },
@@ -63,7 +63,7 @@ export const Footer = () => (
             <span className="font-display text-2xl font-bold">zoot</span>
           </div>
           <p className="max-w-xs text-sm text-muted-foreground">
-            Premium home, office and Airbnb cleaning in Zoot launch suburbs with vetting, training and trust workflows.
+            Premium home, office and Airbnb cleaning in Xoot launch suburbs with vetting, training and trust workflows.
           </p>
         </div>
         {cols.map((column) => (
@@ -82,7 +82,7 @@ export const Footer = () => (
         ))}
       </div>
       <div className="flex flex-col justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground md:flex-row">
-        <p>{new Date().getFullYear()} Zoot. All rights reserved.</p>
+        <p>{new Date().getFullYear()} Xoot. All rights reserved.</p>
         <p>Made with care, for every home.</p>
       </div>
     </div>

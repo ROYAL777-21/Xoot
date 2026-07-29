@@ -11,7 +11,7 @@ const args = new Set(process.argv.slice(2));
 const mode = args.has("--all") ? "all" : args.has("--seed") ? "seed" : args.has("--test") ? "test" : "";
 
 const fail = (message) => {
-  console.error(`Zoot staging smoke error: ${message}`);
+  console.error(`Xoot staging smoke error: ${message}`);
   process.exit(1);
 };
 
@@ -56,7 +56,7 @@ const emails = [
   env("ZOOT_SMOKE_ZOOTER_EMAIL").toLowerCase(),
 ];
 if (new Set(emails).size !== emails.length) {
-  fail("Smoke client/admin/Zooter emails must be three distinct staging-only accounts.");
+  fail("Smoke client/admin/Xooter emails must be three distinct staging-only accounts.");
 }
 
 const authOptions = {
@@ -173,19 +173,19 @@ const seed = async () => {
   const client = await ensureUser({
     email: env("ZOOT_SMOKE_CLIENT_EMAIL"),
     password: env("ZOOT_SMOKE_CLIENT_PASSWORD"),
-    fullName: "Zoot Smoke Client",
+    fullName: "Xoot Smoke Client",
     role: "user",
   });
   const admin = await ensureUser({
     email: env("ZOOT_SMOKE_ADMIN_EMAIL"),
     password: env("ZOOT_SMOKE_ADMIN_PASSWORD"),
-    fullName: "Zoot Smoke Admin",
+    fullName: "Xoot Smoke Admin",
     role: "admin",
   });
   const zooterUser = await ensureUser({
     email: env("ZOOT_SMOKE_ZOOTER_EMAIL"),
     password: env("ZOOT_SMOKE_ZOOTER_PASSWORD"),
-    fullName: "Zoot Smoke Zooter",
+    fullName: "Xoot Smoke Xooter",
     role: "zooter",
   });
 
@@ -195,7 +195,7 @@ const seed = async () => {
     filters: { user_id: zooterUser.id },
     insert: {
       user_id: zooterUser.id,
-      name: "Zoot Smoke Zooter",
+      name: "Xoot Smoke Xooter",
       role: "cleaning",
       hourly_rate: 120,
       active: true,
@@ -209,7 +209,7 @@ const seed = async () => {
       reliability_flagged: false,
     },
     update: {
-      name: "Zoot Smoke Zooter",
+      name: "Xoot Smoke Xooter",
       active: true,
       verified: true,
       background_checked: true,
@@ -381,7 +381,7 @@ const testBookingChatActionLayer = async ({ booking, client, zooter, admin }) =>
     .eq("id", message.id)
     .maybeSingle();
   assertNoError("zooter reads booking chat message", zooterRead.error);
-  expect(zooterRead.data?.body === encryptedBody, "Assigned Zooter could not read the encrypted booking chat envelope.");
+  expect(zooterRead.data?.body === encryptedBody, "Assigned Xooter could not read the encrypted booking chat envelope.");
 
   const receiptResult = await invoke(zooter, "mark-booking-message-read", {
     booking_id: booking.id,
@@ -443,30 +443,30 @@ const test = async () => {
   expect((adminControls.data ?? []).length > 0, "Admin user could not read operational controls.");
 
   const clientJobs = await invoke(client, "get-zooter-job-cards");
-  expect(clientJobs.error || (clientJobs.data?.data?.jobs ?? []).length === 0, "Client user received Zooter job cards.");
+  expect(clientJobs.error || (clientJobs.data?.data?.jobs ?? []).length === 0, "Client user received Xooter job cards.");
 
   const zooterJobs = await invoke(zooter, "get-zooter-job-cards");
   assertNoError("zooter job cards function", zooterJobs.error);
   const jobs = zooterJobs.data?.data?.jobs ?? [];
   const smokeJob = jobs.find((job) => job.booking_id === booking.id);
-  expect(smokeJob, "Zooter did not receive the accepted smoke job card.");
+  expect(smokeJob, "Xooter did not receive the accepted smoke job card.");
   expect(smokeJob.state === "accepted", "Smoke job card is not accepted.");
-  expect(Boolean(smokeJob.destination_address), "Accepted smoke job did not expose destination_address to the assigned Zooter.");
+  expect(Boolean(smokeJob.destination_address), "Accepted smoke job did not expose destination_address to the assigned Xooter.");
 
   const clientSensitive = await invoke(client, "get-sensitive-access", { booking_id: booking.id, field: "gate_code" });
-  expect(clientSensitive.error || clientSensitive.data?.success === false, "Client user could reveal Zooter-only sensitive access.");
+  expect(clientSensitive.error || clientSensitive.data?.success === false, "Client user could reveal Xooter-only sensitive access.");
 
   const zooterSensitive = await invoke(zooter, "get-sensitive-access", { booking_id: booking.id, field: "gate_code" });
   assertNoError("zooter sensitive access function", zooterSensitive.error);
-  expect(zooterSensitive.data?.data?.expires_in_seconds === 30, "Zooter sensitive reveal did not return the 30-second reveal contract.");
-  expect(typeof zooterSensitive.data?.data?.value === "string" && zooterSensitive.data.data.value.length > 0, "Zooter sensitive reveal returned an empty value.");
+  expect(zooterSensitive.data?.data?.expires_in_seconds === 30, "Xooter sensitive reveal did not return the 30-second reveal contract.");
+  expect(typeof zooterSensitive.data?.data?.value === "string" && zooterSensitive.data.data.value.length > 0, "Xooter sensitive reveal returned an empty value.");
 
   const hasNotification = await waitForNotification(zooter);
-  expect(hasNotification, "Zooter did not receive a sensitive_access_available notification within the polling window.");
+  expect(hasNotification, "Xooter did not receive a sensitive_access_available notification within the polling window.");
 
   await testBookingChatActionLayer({ booking, client, zooter, admin });
 
-  info("Role smoke tests passed: client/admin/Zooter auth, accepted destination, sensitive reveal, notification delivery, and booking chat action layer.");
+  info("Role smoke tests passed: client/admin/Xooter auth, accepted destination, sensitive reveal, notification delivery, and booking chat action layer.");
 };
 
 if (mode === "seed" || mode === "all") {

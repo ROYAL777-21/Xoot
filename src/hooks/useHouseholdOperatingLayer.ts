@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { FavouriteZooter, PropertyProfile, SmartReminder } from "@/types/care-plus";
+import type { FavouriteXooter, PropertyProfile, SmartReminder } from "@/types/care-plus";
 
 type HouseholdProfileRow = {
   id: string;
@@ -45,7 +45,7 @@ type FavouriteRow = {
   created_at?: string | null;
 };
 
-type PublicZooterRow = {
+type PublicXooterRow = {
   id: string;
   name: string;
   rating?: number | null;
@@ -104,8 +104,8 @@ export type HouseholdOperatingLayer = {
   homeMemory: HomeMemorySnapshot | null;
   propertyProfiles: PropertyProfile[];
   householdCircle: {
-    favourite: FavouriteZooter | null;
-    backupZooters: FavouriteZooter[];
+    favourite: FavouriteXooter | null;
+    backupXooters: FavouriteXooter[];
     savedCount: number;
     recurringCount: number;
   };
@@ -120,7 +120,7 @@ const emptyLayer: HouseholdOperatingLayer = {
   propertyProfiles: [],
   householdCircle: {
     favourite: null,
-    backupZooters: [],
+    backupXooters: [],
     savedCount: 0,
     recurringCount: 0,
   },
@@ -213,7 +213,7 @@ const mapBooking = (row: BookingRow): BookingSnapshot => ({
   durationHours: toNumber(row.duration_hours, 0),
 });
 
-const mapFavourite = (zooter: PublicZooterRow, favourite?: FavouriteRow | null): FavouriteZooter => ({
+const mapFavourite = (zooter: PublicXooterRow, favourite?: FavouriteRow | null): FavouriteXooter => ({
   id: zooter.id,
   name: zooter.name,
   rating: toNumber(zooter.rating, 0),
@@ -224,7 +224,7 @@ const mapFavourite = (zooter: PublicZooterRow, favourite?: FavouriteRow | null):
     ? "Recurring favourite"
     : zooter.jobs_completed
       ? `${zooter.jobs_completed} completed jobs`
-      : "Saved in My Zooters",
+      : "Saved in My Xooters",
 });
 
 export const buildReadyModes = (
@@ -380,7 +380,7 @@ export const buildServiceRecoverySignals = (
   return signals.slice(0, 3);
 };
 
-const resolveZooters = async (favorites: FavouriteRow[]) => {
+const resolveXooters = async (favorites: FavouriteRow[]) => {
   const zooterIds = [...new Set(favorites.map((favorite) => favorite.zooter_id).filter(Boolean))];
   if (zooterIds.length === 0) return [];
 
@@ -389,12 +389,12 @@ const resolveZooters = async (favorites: FavouriteRow[]) => {
     .select("id,name,rating,tags,role,jobs_completed")
     .in("id", zooterIds);
 
-  const zooters = (Array.isArray(data) ? data : []) as PublicZooterRow[];
-  const favoriteByZooter = new Map(favorites.map((favorite) => [favorite.zooter_id, favorite]));
+  const zooters = (Array.isArray(data) ? data : []) as PublicXooterRow[];
+  const favoriteByXooter = new Map(favorites.map((favorite) => [favorite.zooter_id, favorite]));
   return zooterIds
     .map((id) => zooters.find((zooter) => zooter.id === id))
-    .filter((zooter): zooter is PublicZooterRow => Boolean(zooter))
-    .map((zooter) => mapFavourite(zooter, favoriteByZooter.get(zooter.id)));
+    .filter((zooter): zooter is PublicXooterRow => Boolean(zooter))
+    .map((zooter) => mapFavourite(zooter, favoriteByXooter.get(zooter.id)));
 };
 
 export const useHouseholdOperatingLayer = () => {
@@ -464,7 +464,7 @@ export const useHouseholdOperatingLayer = () => {
         ? (bookingResult.data as BookingRow[]).map(mapBooking)
         : [];
       const favorites = Array.isArray(favoriteResult.data) ? (favoriteResult.data as FavouriteRow[]) : [];
-      const zooters = await resolveZooters(favorites);
+      const zooters = await resolveXooters(favorites);
       const tickets = Array.isArray(supportResult.data) ? (supportResult.data as SupportTicketRow[]) : [];
 
       setLayer({
@@ -472,7 +472,7 @@ export const useHouseholdOperatingLayer = () => {
         propertyProfiles: properties,
         householdCircle: {
           favourite: zooters[0] ?? null,
-          backupZooters: zooters.slice(1, 4),
+          backupXooters: zooters.slice(1, 4),
           savedCount: favorites.length,
           recurringCount: favorites.filter((favorite) => favorite.favorite_kind === "recurring_favorite").length,
         },

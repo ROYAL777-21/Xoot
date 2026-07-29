@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-IOS_DIR="$ROOT_DIR/native/ios/ZootLiveActivities"
+IOS_DIR="$ROOT_DIR/native/ios/XootLiveActivities"
 SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path)"
 SWIFTC="$(xcrun --find swiftc)"
 
@@ -24,19 +24,19 @@ APP_FLAGS=(
 
 "$SWIFTC" "${APP_FLAGS[@]}" \
   -target arm64-apple-ios16.0 \
-  "$IOS_DIR/ZootAppIntents.swift"
+  "$IOS_DIR/XootAppIntents.swift"
 
 "$SWIFTC" "${COMMON_FLAGS[@]}" \
   -target arm64-apple-ios16.2 \
-  "$IOS_DIR/ZootBookingActivityAttributes.swift" \
-  "$IOS_DIR/ZootLiveActivityController.swift"
+  "$IOS_DIR/XootBookingActivityAttributes.swift" \
+  "$IOS_DIR/XootLiveActivityController.swift"
 
 "$SWIFTC" "${COMMON_FLAGS[@]}" \
   -target arm64-apple-ios17.0 \
-  "$IOS_DIR/ZootBookingActivityAttributes.swift" \
-  "$IOS_DIR/ZootLiquidGlass.swift" \
-  "$IOS_DIR/ZootBookingLiveActivityWidget.swift" \
-  "$IOS_DIR/ZootBookingSummaryWidget.swift" \
-  "$IOS_DIR/ZootWidgetBundle.swift"
+  "$IOS_DIR/XootBookingActivityAttributes.swift" \
+  "$IOS_DIR/XootLiquidGlass.swift" \
+  "$IOS_DIR/XootBookingLiveActivityWidget.swift" \
+  "$IOS_DIR/XootBookingSummaryWidget.swift" \
+  "$IOS_DIR/XootWidgetBundle.swift"
 
-echo "Zoot native iOS Live Activity and widget Swift type-check passed."
+echo "Xoot native iOS Live Activity and widget Swift type-check passed."

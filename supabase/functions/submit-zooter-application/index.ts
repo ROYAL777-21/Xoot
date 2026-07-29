@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
         subjectId: data.id,
         userId: user.id,
         priority: "normal",
-        summary: `KYC review for ${String(payload.full_name ?? "Zooter applicant")}`,
+        summary: `KYC review for ${String(payload.full_name ?? "Xooter applicant")}`,
       });
       await insertOutbox(supa, [
         {

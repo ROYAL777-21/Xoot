@@ -125,10 +125,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!booking.zooter_id) return fail("booking has no assigned Zooter", origin, 409);
+    if (!booking.zooter_id) return fail("booking has no assigned Xooter", origin, 409);
 
     const { data: zooter } = await supa.from("zooters").select("user_id").eq("id", booking.zooter_id).maybeSingle();
-    if (!zooter?.user_id) return fail("assigned Zooter account not found", origin, 404);
+    if (!zooter?.user_id) return fail("assigned Xooter account not found", origin, 404);
 
     const clientPhone = await getUserPhone(supa, booking.user_id);
     const zooterPhone = await getUserPhone(supa, zooter.user_id);

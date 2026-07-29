@@ -48,7 +48,7 @@ Reviewed: 2026-07-10 00:12 SAST
    - Reason: it aligned release docs with the no-moving-SHA rule and recorded PR #15/#16 CI hardening as historical evidence rather than a separate source of truth.
 
 12. Treat PR #21 as the SEO article and notification-personalization release.
-   - Outcome: completed. PR #21 was merged into `main`; the "is Zoot legit", "SweepSouth alternatives", and "SweepSouth vs Zoot" articles are now published through the web article registry, queue, and sitemap using SAST release dates.
+   - Outcome: completed. PR #21 was merged into `main`; the "is Xoot legit", "SweepSouth alternatives", and "SweepSouth vs Xoot" articles are now published through the web article registry, queue, and sitemap using SAST release dates.
    - Reason: approved article drafts must be shipped through the same metadata controls as the website, not left as detached drafts.
 
 13. Treat PR #22 as the current PR-source-map refresh.

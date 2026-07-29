@@ -4,7 +4,7 @@ Reviewed: 2026-07-03
 
 ## Surfaces
 
-- Expo Router app, SecureStore session handling, push tokens, Mapbox views, Concierge, booking flow, Zooter jobs.
+- Expo Router app, SecureStore session handling, push tokens, Mapbox views, Concierge, booking flow, Xooter jobs.
 - iOS App Intents, Live Activities, widgets, Universal Links/AASA, and `zoot://` custom scheme.
 - Android shortcuts, widgets, App Links/assetlinks, and assistant handoff.
 
@@ -19,7 +19,7 @@ Reviewed: 2026-07-03
 
 ## Required Device Smokes
 
-- Android preview APK install, sign-in, booking route, Concierge route, Zooter jobs route, widget display, assistant shortcut.
+- Android preview APK install, sign-in, booking route, Concierge route, Xooter jobs route, widget display, assistant shortcut.
 - iOS development/preview install, sign-in, App Intent handoff, Live Activity/widget display, reduced-motion behavior.
 - Auth callback via `zoot://auth/callback`.
 - Malformed or hostile deep links are ignored or routed to safe screens.

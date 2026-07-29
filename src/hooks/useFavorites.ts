@@ -16,16 +16,16 @@ export const useFavorites = () => {
   useEffect(() => { refresh(); }, [refresh]);
 
   const toggleFavorite = async (zooterId: string) => {
-    if (!user) { toast.error("Sign in to save Zooters"); return; }
+    if (!user) { toast.error("Sign in to save Xooters"); return; }
     const isFav = favIds.has(zooterId);
     if (isFav) {
       await supabase.from("favorites").delete().eq("user_id", user.id).eq("zooter_id", zooterId);
       const next = new Set(favIds); next.delete(zooterId); setFavIds(next);
-      toast("Removed from My Zooters");
+      toast("Removed from My Xooters");
     } else {
       await supabase.from("favorites").insert({ user_id: user.id, zooter_id: zooterId });
       setFavIds(new Set(favIds).add(zooterId));
-      toast.success("Added to My Zooters");
+      toast.success("Added to My Xooters");
     }
   };
 

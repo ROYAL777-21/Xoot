@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       booking_id: booking.id,
       actor_id: user.id,
       status: "replacement_required",
-      label: "Finding a replacement Zooter",
+      label: "Finding a replacement Xooter",
       meta: { reason, previous_status: currentStatus },
     });
 
@@ -93,15 +93,15 @@ Deno.serve(async (req) => {
         booking_id: booking.id,
         actor_id: user.id,
         status: "replacement_offered",
-        label: "Replacement Zooter found",
+        label: "Replacement Xooter found",
         meta: { replacement_zooter_id: replacement.id },
       });
       await supa.from("zooter_jobs").insert({ booking_id: booking.id, zooter_id: replacement.id, state: "offered" });
       await insertNotification(supa, {
         userId: booking.user_id,
         kind: "replacement_offered",
-        title: "Replacement Zooter found",
-        body: `${replacement.name ?? "A verified Zooter"} is available as a replacement for your booking.`,
+        title: "Replacement Xooter found",
+        body: `${replacement.name ?? "A verified Xooter"} is available as a replacement for your booking.`,
         link: `/app/bookings/${booking.id}`,
       });
       if (replacement.user_id) {
@@ -135,13 +135,13 @@ Deno.serve(async (req) => {
         zooterId: booking.zooter_id,
         bookingId: booking.id,
         priority: "high",
-        summary: "Replacement search found no available Zooter; reschedule support required",
+        summary: "Replacement search found no available Xooter; reschedule support required",
       });
       await insertNotification(supa, {
         userId: booking.user_id,
         kind: "replacement_unavailable",
         title: "Replacement support needed",
-        body: "We could not find a replacement immediately. Support will help reschedule and R30 ZootCred has been queued.",
+        body: "We could not find a replacement immediately. Support will help reschedule and R30 XootCred has been queued.",
         link: `/app/support`,
       });
     }

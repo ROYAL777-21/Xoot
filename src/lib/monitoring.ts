@@ -83,7 +83,7 @@ export const logError = (error: unknown, context?: MonitoringContext) => {
   }
 
   if (import.meta.env.DEV) {
-    console.error("Zoot client error", error, context);
+    console.error("Xoot client error", error, context);
   }
 };
 

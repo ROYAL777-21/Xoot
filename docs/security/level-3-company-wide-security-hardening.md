@@ -4,7 +4,7 @@ Reviewed: 2026-07-10
 
 Status: defined as a launch gate; not fully satisfied until live evidence is attached.
 
-This document defines Zoot's Level 3 security standard for operating with real user data. It is stricter than a local implementation checklist: Level 3 requires repository controls, staging proof, live configuration readback, human approvals, and operational recovery evidence before any public production launch, paid provider activation, store submission, or broad customer data processing.
+This document defines Xoot's Level 3 security standard for operating with real user data. It is stricter than a local implementation checklist: Level 3 requires repository controls, staging proof, live configuration readback, human approvals, and operational recovery evidence before any public production launch, paid provider activation, store submission, or broad customer data processing.
 
 ## Level Model
 
@@ -14,7 +14,7 @@ This document defines Zoot's Level 3 security standard for operating with real u
 | Level 2 | Controls work in staging. | Staging migrations, RLS, Edge Functions, provider test webhooks, support flows, mobile builds, and role smoke tests pass without production data. |
 | Level 3 | Controls are production-operable for user data. | Live readback proves configuration, runtime protections, incident recovery, monitoring, access review, and external-provider controls are in place. |
 
-Zoot may continue preview and internal testing below Level 3. Zoot must not represent the platform, Concierge, mobile apps, payments, provider messaging, or support workflows as production-ready for real users until Level 3 is passed or a named founder/legal/finance risk acceptance explicitly defers a specific gate.
+Xoot may continue preview and internal testing below Level 3. Xoot must not represent the platform, Concierge, mobile apps, payments, provider messaging, or support workflows as production-ready for real users until Level 3 is passed or a named founder/legal/finance risk acceptance explicitly defers a specific gate.
 
 ## Level 3 Required Controls
 
@@ -22,9 +22,9 @@ Zoot may continue preview and internal testing below Level 3. Zoot must not repr
 | --- | --- | --- |
 | Data classification | Every user-data surface has a classification, owner, retention expectation, and public/private boundary. | Partial; inventory exists, live provider stores still need final review. |
 | Identity and privileged access | Admin/internal accounts use MFA, least-privilege roles, audited role assignment, and no shared admin password. | Pending live admin account creation and access review. |
-| RLS and object authorization | Client, Zooter, support, finance, and admin role smokes prove one user cannot read or mutate another user's data. | Pending live staging/prod role smoke. |
+| RLS and object authorization | Client, Xooter, support, finance, and admin role smokes prove one user cannot read or mutate another user's data. | Pending live staging/prod role smoke. |
 | Supabase configuration | Auth redirects, leaked-password protection decision, migration metadata health, storage policies, and Edge Function deployments are read back from staging and production. | Pending live Auth redirects, leaked-password protection, migration repair, private storage policies, and function smoke. |
-| Sensitive household access | Access notes are revealed only to assigned Zooters in the approved time window and never in chat, analytics, notifications, widgets, emails, SMS, WhatsApp, or logs. | Pending live role/device smoke. |
+| Sensitive household access | Access notes are revealed only to assigned Xooters in the approved time window and never in chat, analytics, notifications, widgets, emails, SMS, WhatsApp, or logs. | Pending live role/device smoke. |
 | Payment and payout integrity | Frontend cannot fake success; provider callbacks are signed, idempotent, replay-aware, reconciled, and human-approved before enablement. | Pending provider credentials and signed smoke tests. |
 | Communications integrity | Twilio/Brevo channels are transactional, signed, rate-limited, redacted, and disabled until provider dashboards and Edge secrets are verified. | Pending provider production setup and smoke tests. |
 | Concierge safety | Concierge answers only from approved knowledge or safe account tools, cannot perform consequential actions, redacts sensitive input, and escalates high-risk issues to humans. | Local controls exist; live deployment, approvals, RLS smoke, privacy verification, and handoff tests pending. |
@@ -39,7 +39,7 @@ Zoot may continue preview and internal testing below Level 3. Zoot must not repr
 
 ## Company-Wide Invariants
 
-- Clients, mobile apps, widgets, assistant shortcuts, and Concierge are never authoritative for prices, payments, refunds, payouts, booking state, roles, Care+, ZootCred, Booking Cover, contractor approval, or sensitive access.
+- Clients, mobile apps, widgets, assistant shortcuts, and Concierge are never authoritative for prices, payments, refunds, payouts, booking state, roles, Care+, XootCred, Booking Cover, contractor approval, or sensitive access.
 - Public pages may be crawlable for SEO, but private data must be protected by RLS, private storage, audited Edge Functions, and provider-side controls.
 - Sensitive household access, identity documents, bank details, payment details, trust incidents, and admin evidence never appear in public content, notifications, analytics, logs, support transcripts, widgets, or model prompts.
 - Every production write path that affects money, trust, safety, identity, booking state, or user access must have server-side validation, audit records, rollback or reversal guidance, and a named owner.
@@ -53,7 +53,7 @@ Stop launch, store submission, production provider enablement, or public user-da
 - Production branch metadata reports failed migrations or live schema drift is not explained by the approved drift allowlist.
 - Supabase Auth redirects are not read back for web, mobile, OAuth, and deep-link flows.
 - Any service-role key, database password, provider secret, private token, access code, payment detail, or ID document appears in git, public docs, frontend/mobile bundles, logs, screenshots, analytics, or chat transcripts.
-- Concierge can disclose account data to an unauthenticated user or perform booking, payment, refund, Care+, ZootCred, Booking Cover, payout, admin, or sensitive-access actions.
+- Concierge can disclose account data to an unauthenticated user or perform booking, payment, refund, Care+, XootCred, Booking Cover, payout, admin, or sensitive-access actions.
 - Payment/Twilio/Brevo/webhook paths are enabled without signed provider smoke evidence.
 - Real-device mobile tests have not proved safe notification, widget, assistant, and deep-link behavior.
 - Monitoring cannot detect failed auth spikes, webhook failures, provider delivery failures, suspicious booking activity, admin export attempts, support escalation failures, and privacy scrubber failures.

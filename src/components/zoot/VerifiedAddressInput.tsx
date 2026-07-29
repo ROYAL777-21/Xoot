@@ -45,7 +45,7 @@ export const VerifiedAddressInput = ({ value, onChange, placeholder }: VerifiedA
           )}
           <span className="min-w-0">
             {coverageRegion
-              ? `${toDisplayRegion(coverageRegion)} is in active Zoot coverage.`
+              ? `${toDisplayRegion(coverageRegion)} is in active Xoot coverage.`
               : "This address will go through coverage review before dispatch."}
           </span>
         </div>

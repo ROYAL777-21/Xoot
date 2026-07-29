@@ -108,7 +108,7 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
             setSecurity({
               loading: false,
               ready: false,
-              issue: "Secure chat will activate once a Zooter is assigned to this booking.",
+              issue: "Secure chat will activate once a Xooter is assigned to this booking.",
               deviceKey,
               recipientKeys: [
                 {
@@ -310,7 +310,7 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
         },
       });
       if (error) throw error;
-      toast.success("Message reported for Zoot review.");
+      toast.success("Message reported for Xoot review.");
     } catch {
       toast.error("Message report could not be sent. Please try again.");
     } finally {
@@ -323,7 +323,7 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
       <div className="px-5 py-4 border-b border-border">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-display font-bold">Chat with {zooter?.name?.split(" ")[0] ?? "Zooter"}</p>
+            <p className="font-display font-bold">Chat with {zooter?.name?.split(" ")[0] ?? "Xooter"}</p>
             <p className="text-xs text-muted-foreground flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5 text-primary" />
               {security.ready

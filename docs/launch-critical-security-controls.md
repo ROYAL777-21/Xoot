@@ -1,6 +1,6 @@
 # Launch-Critical Security Controls
 
-This checklist covers the highest-risk launch failures for Zoot: account takeover, data leakage, payment abuse, fake bookings, contractor/client impersonation, off-platform manipulation, and operational disruption.
+This checklist covers the highest-risk launch failures for Xoot: account takeover, data leakage, payment abuse, fake bookings, contractor/client impersonation, off-platform manipulation, and operational disruption.
 
 ## 1. Account Takeover
 
@@ -19,7 +19,7 @@ Required before launch:
 Required before launch:
 
 - RLS enabled and tested on every public Supabase table.
-- Object ownership checks for bookings, profiles, documents, support cases, ZootCred, invoices, and messages.
+- Object ownership checks for bookings, profiles, documents, support cases, XootCred, invoices, and messages.
 - Gate codes, alarm codes, lockbox details, access notes, ID documents, selfies, and bank details encrypted or stored privately.
 - Signed URLs for private uploads with short expiry.
 - Sensitive fields omitted from notifications, logs, analytics exports, and support dashboards unless role-approved.
@@ -30,7 +30,7 @@ Required before launch:
 Required before launch:
 
 - Final pricing calculated server-side.
-- Booking cover, ZootCred, referral credits, Care+ benefits, taxes/fees, and high-demand slot pricing enforced server-side.
+- Booking cover, XootCred, referral credits, Care+ benefits, taxes/fees, and high-demand slot pricing enforced server-side.
 - Stitch/Ozow webhooks verified with signatures/secrets.
 - Payment handlers idempotent to prevent duplicate confirmations or duplicate credits.
 - Frontend success states treated as display only, never as confirmation of payment.
@@ -63,7 +63,7 @@ Required before launch:
 
 - In-app messaging tied to valid booking relationships only.
 - Detection and moderation for phone numbers, bank details, external payment requests, and off-platform language.
-- Terms prohibit direct payment arrangements introduced through Zoot.
+- Terms prohibit direct payment arrangements introduced through Xoot.
 - Suspicious simultaneous inactivity by matched client/contractor flagged for review.
 - Contractor benefits and client Home Memory make staying on-platform materially useful.
 

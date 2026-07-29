@@ -1,13 +1,13 @@
 # AI Usage Review Checklist
 
-Use this checklist before shipping AI-assisted Zoot features to the website, mobile app, support tooling, marketing flows, or internal agents.
+Use this checklist before shipping AI-assisted Xoot features to the website, mobile app, support tooling, marketing flows, or internal agents.
 
 ## Scope And Disclosure
 
 - Identify whether the feature generates content, summarises content, ranks decisions, automates support, recommends bookings, or routes operational work.
 - Tell users when AI is materially involved in support responses, reminders, generated copy, photo analysis, ranking, or moderation.
 - Avoid presenting AI outputs as human decisions unless a human has reviewed and approved them.
-- Do not use AI to imply fake reviews, fake client stories, fake Zooter credentials, fake insurance coverage, or unsupported guarantee claims.
+- Do not use AI to imply fake reviews, fake client stories, fake Xooter credentials, fake insurance coverage, or unsupported guarantee claims.
 - Keep AI-generated Care+ prompts as suggestions, not commitments: availability, replacement support, and support timing must match backend reality.
 
 ## Data Minimisation And Privacy

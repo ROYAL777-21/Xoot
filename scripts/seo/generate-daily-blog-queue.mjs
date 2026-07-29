@@ -44,7 +44,7 @@ const briefs = selected.map((item, index) => ({
     "Open with the real-life pressure behind the search.",
     "Name the local service and area naturally in the first section.",
     "Give a practical checklist or decision framework.",
-    "Explain how Zoot handles trust, saved notes, support, and repeatability.",
+    "Explain how Xoot handles trust, saved notes, support, and repeatability.",
     "Answer two to four long-tail questions a customer would actually ask.",
     "Close with a clear booking or Care+ call to action.",
   ],
@@ -68,10 +68,10 @@ const listToPhrase = (values) => {
 const draftForBrief = (brief) => {
   const areaText = listToPhrase(brief.serviceAreas);
   const secondaryText = brief.secondaryKeywords.join(", ");
-  const metaTitle = `${brief.title} | Zoot`;
+  const metaTitle = `${brief.title} | Xoot`;
   const practicalPromise = cleanSentence(brief.practicalPromise);
   const readerPsychology = cleanSentence(brief.readerPsychology);
-  const metaDescription = `${practicalPromise} for ${areaText}. A practical Zoot guide for ${brief.primaryKeyword} without fake claims or pressure tactics.`;
+  const metaDescription = `${practicalPromise} for ${areaText}. A practical Xoot guide for ${brief.primaryKeyword} without fake claims or pressure tactics.`;
 
   return [
     `---`,
@@ -89,7 +89,7 @@ const draftForBrief = (brief) => {
     "",
     `${brief.humanHook} That is the moment behind the search for ${brief.primaryKeyword}. The person searching does not want another admin task. They want the space handled, the timing respected, and the outcome to feel calm enough that they can move on with the day.`,
     "",
-    `Zoot's job is to make that easier without pretending every clean is the same. In ${areaText}, the difference between a good booking and a stressful one is usually clarity: what matters most, who needs access, what must stay private, and what would make the client feel that the space is ready again.`,
+    `Xoot's job is to make that easier without pretending every clean is the same. In ${areaText}, the difference between a good booking and a stressful one is usually clarity: what matters most, who needs access, what must stay private, and what would make the client feel that the space is ready again.`,
     "",
     `## Start with the pressure, not the keyword`,
     "",
@@ -105,27 +105,27 @@ const draftForBrief = (brief) => {
     "",
     `Relevant searches such as ${secondaryText} are different expressions of the same intent: someone wants a clean that fits a real scenario. The article should answer that scenario with practical guidance, not generic cleaning tips.`,
     "",
-    `## Where Zoot fits`,
+    `## Where Xoot fits`,
     "",
-    `Zoot is built around vetted Zooters, in-app communication, saved home or property notes, support routing, booking state visibility, Care+ continuity, and safer handling of sensitive details. Those product choices matter because cleaning is high-trust work. It happens inside homes, guest spaces, offices and private properties.`,
+    `Xoot is built around vetted Xooters, in-app communication, saved home or property notes, support routing, booking state visibility, Care+ continuity, and safer handling of sensitive details. Those product choices matter because cleaning is high-trust work. It happens inside homes, guest spaces, offices and private properties.`,
     "",
-    `For repeat clients, Care+ can reduce repeated planning by remembering practical preferences and supporting favourite Zooter workflows where live availability allows it. For hosts and property operators, saved profiles can make the next clean start with context instead of another round of instructions.`,
+    `For repeat clients, Care+ can reduce repeated planning by remembering practical preferences and supporting favourite Xooter workflows where live availability allows it. For hosts and property operators, saved profiles can make the next clean start with context instead of another round of instructions.`,
     "",
     `## What to ask before you book`,
     "",
     `Ask: What should the space feel like when the clean is done? Which areas carry the most reputational risk? Are there access notes that need time-limited handling? Is this a once-off reset or the start of a recurring rhythm? Is the requested timing honest for the scope?`,
     "",
-    `Those questions help the client book with confidence and help the Zooter do the right work. They also keep the content useful for people, which is the standard this automation must protect before anything gets published.`,
+    `Those questions help the client book with confidence and help the Xooter do the right work. They also keep the content useful for people, which is the standard this automation must protect before anything gets published.`,
     "",
     `## Next step`,
     "",
-    `${brief.callToAction} Keep the booking clear, keep sensitive details protected, and use Zoot to make the next clean easier than the last one.`,
+    `${brief.callToAction} Keep the booking clear, keep sensitive details protected, and use Xoot to make the next clean easier than the last one.`,
     "",
     `## FAQ`,
     "",
     `### Is ${brief.primaryKeyword} available in every area?`,
     "",
-    `Availability depends on live Zoot coverage and approved Zooters. Use the app or official launch updates for current coverage rather than assuming every suburb is active.`,
+    `Availability depends on live Xoot coverage and approved Xooters. Use the app or official launch updates for current coverage rather than assuming every suburb is active.`,
     "",
     `### What should I include in the booking notes?`,
     "",

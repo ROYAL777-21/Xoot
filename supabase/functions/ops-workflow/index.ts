@@ -25,18 +25,18 @@ const bookingStatusLabels: Record<string, string> = {
   draft: "Setting up your booking",
   pending_payment: "Payment required",
   payment_confirmed: "Payment received",
-  awaiting_assignment: "Finding your Zooter",
-  assigned: "Zooter assigned",
-  contractor_accepted: "Zooter confirmed",
+  awaiting_assignment: "Finding your Xooter",
+  assigned: "Xooter assigned",
+  contractor_accepted: "Xooter confirmed",
   en_route: "On the way",
   arrived: "Arrived",
   in_progress: "Job started",
   completed: "Job completed",
   rated: "Thank you for your review",
   cancelled: "Cancelled",
-  replacement_required: "Finding a replacement Zooter",
-  replacement_offered: "Replacement Zooter found",
-  reassigned: "New Zooter assigned",
+  replacement_required: "Finding a replacement Xooter",
+  replacement_offered: "Replacement Xooter found",
+  reassigned: "New Xooter assigned",
 };
 
 const bookingEventTypes: Record<string, string> = {
@@ -297,7 +297,7 @@ Deno.serve(async (req) => {
         event_type: "support_opened",
         channel,
         owner: "Customer Support Agent",
-        stack_tool: "Zoot in-app notification",
+        stack_tool: "Xoot in-app notification",
         payload: {
           ticket_id: ticket.id,
           subject: cleanText(ticket.subject, 240),
@@ -389,7 +389,7 @@ Deno.serve(async (req) => {
           event_type: "gift_clean_invoice_created",
           channel,
           owner: "Retention & Loyalty Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
+          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Xoot in-app notification",
           payload: { gift_clean_order_id: order.id, amount },
           status: "queued",
           approval_required: false,
@@ -441,7 +441,7 @@ Deno.serve(async (req) => {
         event_type: "zootcred_update",
         channel,
         owner: "Retention & Loyalty Agent",
-        stack_tool: "Zoot in-app notification",
+        stack_tool: "Xoot in-app notification",
         payload: { redemption_type: "free_clean_credit" },
         created_by: userId,
       })));
@@ -502,7 +502,7 @@ Deno.serve(async (req) => {
           event_type: eventType,
           channel,
           owner: channel === "whatsapp_urgent" ? "Scheduling & Allocation Agent" : "Customer Support Agent",
-          stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
+          stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Xoot in-app notification",
           payload: { booking_id: booking.id, status, scheduled_at: booking.scheduled_at },
           created_by: userId,
         })));
@@ -568,7 +568,7 @@ Deno.serve(async (req) => {
         event_type: "booking_reschedule_requested",
         channel,
         owner: "Scheduling & Allocation Agent",
-        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
+        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Xoot in-app notification",
         payload: { booking_id: booking.id, previous_scheduled_at: booking.scheduled_at, scheduled_at: nextScheduledAt },
         created_by: userId,
       })));
@@ -690,7 +690,7 @@ Deno.serve(async (req) => {
         event_type: "critical_trust_safety_alert",
         channel,
         owner: "Trust & Safety Agent",
-        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
+        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Xoot in-app notification",
         payload: { booking_id: booking.id, incident_type: incidentType },
         created_by: userId,
       })));
@@ -764,7 +764,7 @@ Deno.serve(async (req) => {
         subject_id: application.id,
         user_id: userId,
         priority: "normal",
-        summary: `KYC review for ${cleanText(application.full_name, 120) || "Zooter applicant"}`,
+        summary: `KYC review for ${cleanText(application.full_name, 120) || "Xooter applicant"}`,
       });
       await insertOutbox(supa, [
         {
@@ -790,7 +790,7 @@ Deno.serve(async (req) => {
           event_type: "trust_verification_update",
           channel,
           owner: channel === "brevo_email" ? "Contractor Success Agent" : "Trust & Safety Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
+          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Xoot in-app notification",
           payload: { application_id: application.id, status: "submitted" },
           status: "queued",
           approval_required: false,
@@ -870,7 +870,7 @@ Deno.serve(async (req) => {
           event_type: "contractor_assigned",
           channel,
           owner: "Scheduling & Allocation Agent",
-          stack_tool: "Zoot in-app notification",
+          stack_tool: "Xoot in-app notification",
           payload: { booking_id: job.booking_id, zooter_id: zooter.id },
           created_by: userId,
         })));

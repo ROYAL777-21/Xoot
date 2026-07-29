@@ -65,7 +65,7 @@ export type LedgerEntry = {
   direction: "credit" | "debit";
 };
 
-export type ZootBlackEligibilityInput = {
+export type XootBlackEligibilityInput = {
   featureEnabled: boolean;
   explicitOptIn: boolean;
   zooterTier?: string | null;
@@ -75,9 +75,9 @@ export type ZootBlackEligibilityInput = {
   legalApproved: boolean;
 };
 
-export type ZootBlackLineItem = {
+export type XootBlackLineItem = {
   item_key: "zoot_black_service";
-  label: "Zoot Black service";
+  label: "Xoot Black service";
   quantity: 1;
   unit_amount: number;
   total_amount: number;
@@ -281,7 +281,7 @@ export type SensitiveAccessAvailability =
   | { state: "available"; opensAt: string; minutesUntilOpen: 0 }
   | { state: "closed"; opensAt: string | null; minutesUntilOpen: 0 };
 
-export const getAcceptedZooterJobAddress = ({
+export const getAcceptedXooterJobAddress = ({
   jobState,
   address,
 }: {
@@ -352,7 +352,7 @@ export const getSensitiveAccessAvailability = ({
   return { state: "closed", opensAt, minutesUntilOpen: 0 };
 };
 
-export const canOfferZootBlack = ({
+export const canOfferXootBlack = ({
   featureEnabled,
   explicitOptIn,
   zooterTier,
@@ -360,7 +360,7 @@ export const canOfferZootBlack = ({
   equipmentEvidenceApproved,
   areaPilotApproved,
   legalApproved,
-}: ZootBlackEligibilityInput) => {
+}: XootBlackEligibilityInput) => {
   const eliteTier = ["elite", "elite_verified", "black"].includes((zooterTier ?? "").toLowerCase());
   return Boolean(
     featureEnabled
@@ -373,13 +373,13 @@ export const canOfferZootBlack = ({
   );
 };
 
-export const buildZootBlackLineItem = (amount: number): ZootBlackLineItem | null => {
+export const buildXootBlackLineItem = (amount: number): XootBlackLineItem | null => {
   if (!Number.isFinite(amount) || amount <= 0) return null;
 
   const roundedAmount = Math.round(amount * 100) / 100;
   return {
     item_key: "zoot_black_service",
-    label: "Zoot Black service",
+    label: "Xoot Black service",
     quantity: 1,
     unit_amount: roundedAmount,
     total_amount: roundedAmount,
@@ -423,7 +423,7 @@ export const buildPaymentReconciliationReference = ({
   return `ZOOT-${provider.toUpperCase()}-${bookingPart}-${paymentPart}`;
 };
 
-export const canReleaseZooterPayout = ({
+export const canReleaseXooterPayout = ({
   payoutsEnabled,
   verifiedPayoutAccount,
   stepUpRequiredForAccountChanges,
@@ -461,7 +461,7 @@ export const buildPendingPaymentRecord = ({
   payment_kind: kind,
 });
 
-export const applyZootCredLedger = (entries: LedgerEntry[]) => {
+export const applyXootCredLedger = (entries: LedgerEntry[]) => {
   return entries.reduce((balance, entry) => {
     return entry.direction === "credit" ? balance + entry.amount : balance - entry.amount;
   }, 0);

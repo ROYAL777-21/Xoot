@@ -1,11 +1,11 @@
 # App Store, Play Store, and AI Review Checklists
 
-These checklists are for the Zoot PWA/native path and should be completed before submitting iOS or Android builds.
+These checklists are for the Xoot PWA/native path and should be completed before submitting iOS or Android builds.
 
 ## Apple App Store Review
 
 - Use a real production domain and working demo account.
-- Provide reviewer notes explaining that Zoot connects clients with independent home-care contractors.
+- Provide reviewer notes explaining that Xoot connects clients with independent home-care contractors.
 - Include privacy policy and terms links in the app and App Store Connect.
 - Do not claim employment, insurance, background checks, or replacement guarantees beyond approved policy support.
 - Ensure login, forgot password, Google auth, Apple auth, and account deletion/correction paths work.
@@ -29,7 +29,7 @@ These checklists are for the Zoot PWA/native path and should be completed before
 - Declare photos/uploads for contractor verification or before/after proof only where implemented.
 - Generate and deploy `/.well-known/assetlinks.json` with the final package name and release signing certificate SHA-256 fingerprint.
 - Confirm Android app links open booking/auth/support routes in the native shell.
-- Do not request SMS permissions for routine Zoot messaging; Twilio SMS is not part of the approved Zoot scope.
+- Do not request SMS permissions for routine Xoot messaging; Twilio SMS is not part of the approved Xoot scope.
 - Use secure storage for auth tokens in native builds.
 - Avoid logging sensitive data, gate codes, payment references, ID numbers, or support allegations.
 - Confirm app content, screenshots, and metadata do not make unsupported guarantees.

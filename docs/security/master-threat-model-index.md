@@ -1,4 +1,4 @@
-# Zoot Master Threat Model Index
+# Xoot Master Threat Model Index
 
 Reviewed: 2026-06-24
 Owner: Product and Engineering Reliability
@@ -6,7 +6,7 @@ Owner: Product and Engineering Reliability
 ## Security Objectives
 
 1. Prevent unauthorized access to household, identity and financial data.
-2. Prevent frontend or agent control of prices, payment state, booking state, ZootCred, Care+ or contractor verification.
+2. Prevent frontend or agent control of prices, payment state, booking state, XootCred, Care+ or contractor verification.
 3. Preserve traceability for admin and automated actions.
 4. Reject forged, replayed or duplicate provider events.
 5. Keep public marketing crawlable while limiting abuse.
@@ -17,10 +17,10 @@ Owner: Product and Engineering Reliability
 | Boundary | Untrusted side | Trusted side | Required control |
 | --- | --- | --- | --- |
 | Browser/Expo to Supabase | public client | RLS and authenticated Edge Function | publishable key only, JWT validation, ownership checks |
-| Provider webhook to Zoot | internet/provider request | Edge Function/service role | exact signature, timestamp/replay controls, idempotency |
+| Provider webhook to Xoot | internet/provider request | Edge Function/service role | exact signature, timestamp/replay controls, idempotency |
 | Edge Function to database | function input | service-role mutation | typed action, validation, audit event, least privilege |
 | Admin UI to backend | admin browser | typed admin function | role, MFA, reason, audit record |
-| Zooter to household data | contractor device | sensitive access function | assignment, time window, field allowlist, access log |
+| Xooter to household data | contractor device | sensitive access function | assignment, time window, field allowlist, access log |
 | Concierge to OpenAI | redacted low-risk text | optional model response | feature flag, redaction, cost/rate limit, no tools |
 | CI/EAS to providers | build pipeline | signing and deploy systems | scoped secrets, protected environments, approvals |
 | Cloudflare to origin | public traffic | Hostinger/origin | proxied DNS, TLS, WAF, rate limit, origin restriction |
@@ -34,7 +34,7 @@ Owner: Product and Engineering Reliability
 - Database passwords and access tokens.
 - Stitch/Ozow signing secrets and payment records.
 - Apple/Google signing credentials.
-- Zooter identity and banking evidence.
+- Xooter identity and banking evidence.
 - household access codes and instructions.
 - admin roles and audit records.
 
@@ -44,13 +44,13 @@ Owner: Product and Engineering Reliability
 - bookings and service history;
 - support and trust incident details;
 - location and tracking data;
-- ZootCred and Care+ state;
+- XootCred and Care+ state;
 - push tokens and device metadata.
 
 ### Public
 
 - marketing pages and approved articles;
-- intentionally public Zooter profile fields;
+- intentionally public Xooter profile fields;
 - public Mapbox web token with URL restrictions;
 - Sentry DSN;
 - Supabase publishable key.
@@ -60,7 +60,7 @@ Owner: Product and Engineering Reliability
 | ID | Threat | Current control | Gap | Target phase |
 | --- | --- | --- | --- | --- |
 | TM-001 | Client changes payment status | Edge Function intent exists | production owner `ALL` policy and schema divergence | Phase 1 |
-| TM-002 | Client manipulates ZootCred | ledger and trigger in staging | production owner `ALL` policy | Phase 1 |
+| TM-002 | Client manipulates XootCred | ledger and trigger in staging | production owner `ALL` policy | Phase 1 |
 | TM-003 | Client changes Care+ state | Edge Functions exist | duplicate activation paths and broad production policy | Phase 1 |
 | TM-004 | Booking state bypass | state machine copies exist | legacy production enum and direct update policy | Phase 1 |
 | TM-005 | Forged payment webhook | HMAC check | provider-specific algorithms and replay controls missing | Phase 7 |

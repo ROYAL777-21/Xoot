@@ -13,14 +13,14 @@ const TIER_SHARE: Record<string, number> = { new: 65, established: 80, veteran: 
 const Earnings = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
-  const [zooter, setZooter] = useState<any>(null);
+  const [zooter, setXooter] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data: z } = await supabase.from("zooters").select("*").eq("user_id", user.id).maybeSingle();
-      setZooter(z);
+      setXooter(z);
       if (z) {
         const { data } = await supabase.from("zooter_earnings").select("*").eq("zooter_id", z.id).order("created_at", { ascending: false });
         setItems(data ?? []);

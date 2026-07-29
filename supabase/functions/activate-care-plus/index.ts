@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
       userId: user.id,
       kind: "care_plus_activated",
       title: "Care+ is active",
-      body: "Your Care+ benefits are active, including priority support, R30 add-on credit, and 1.5x ZootCred on completed bookings.",
+      body: "Your Care+ benefits are active, including priority support, R30 add-on credit, and 1.5x XootCred on completed bookings.",
       link: "/care-plus",
     });
     await insertOutbox(supa, {

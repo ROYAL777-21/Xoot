@@ -205,18 +205,18 @@ export const getSafeAuthErrorMessage = (mode: AuthMode) => {
 };
 
 export const getSafeOtpSentMessage = () =>
-  "If that email can access Zoot, we sent a one-time code or sign-in link.";
+  "If that email can access Xoot, we sent a one-time code or sign-in link.";
 
 export const getSafeOtpErrorMessage = () =>
   "We could not verify that one-time code. Request a new code and try again.";
 
 export const getSafePasswordResetMessage = () =>
-  "If that email can access Zoot, we will send password reset instructions.";
+  "If that email can access Xoot, we will send password reset instructions.";
 
 export const getSafePasswordUpdateErrorMessage = () =>
   "We could not update your password. Request a new reset link and try again.";
 
 export const getSafeOAuthErrorMessage = (provider: SocialAuthProvider) => {
   const label = provider === "google" ? "Google" : "Apple";
-  return `We could not start ${label} sign-in. Check that this provider is enabled for Zoot and try again.`;
+  return `We could not start ${label} sign-in. Check that this provider is enabled for Xoot and try again.`;
 };

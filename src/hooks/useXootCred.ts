@@ -3,7 +3,7 @@ import type { Json } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-export type ZootCredLedgerRow = {
+export type XootCredLedgerRow = {
   id?: string;
   amount: number | string;
   direction?: "credit" | "debit" | string | null;
@@ -14,7 +14,7 @@ export type ZootCredLedgerRow = {
   expires_at?: string | null;
 };
 
-export type ZootCredEntry = {
+export type XootCredEntry = {
   id: string;
   amount: number;
   displayAmount: number;
@@ -27,12 +27,12 @@ export type ZootCredEntry = {
   isPending: boolean;
 };
 
-export type ZootCredSummary = {
+export type XootCredSummary = {
   availableBalance: number;
   pendingBalance: number;
   monthlyCredit: number;
   monthlyCreditExpiresAt: string | null;
-  entries: ZootCredEntry[];
+  entries: XootCredEntry[];
 };
 
 const inactiveStatuses = new Set(["expired", "cancelled"]);
@@ -46,7 +46,7 @@ const toNumber = (value: number | string | null | undefined) => {
 const isExpired = (expiresAt?: string | null, now = new Date()) =>
   Boolean(expiresAt && new Date(expiresAt).getTime() <= now.getTime());
 
-const getSignedAmount = (row: ZootCredLedgerRow) => {
+const getSignedAmount = (row: XootCredLedgerRow) => {
   const amount = toNumber(row.amount);
   if (row.direction === "debit") return -Math.abs(amount);
   if (row.direction === "credit") return Math.abs(amount);
@@ -65,15 +65,15 @@ const expiresThisMonth = (expiresAt: string | null, now = new Date()) => {
   return expires.getFullYear() === now.getFullYear() && expires.getMonth() === now.getMonth();
 };
 
-const isMonthlyCredit = (row: ZootCredLedgerRow, entry: ZootCredEntry, now = new Date()) => {
+const isMonthlyCredit = (row: XootCredLedgerRow, entry: XootCredEntry, now = new Date()) => {
   if (entry.displayAmount <= 0 || entry.isExpired || entry.isPending || !expiresThisMonth(entry.expiresAt, now)) return false;
   const source = getMetaSource(row.meta);
   return source.includes("care_plus") || source.includes("monthly") || row.reason === "loyalty_reward";
 };
 
-export const calculateZootCredSummary = (rows: ZootCredLedgerRow[], now = new Date()): ZootCredSummary => {
+export const calculateXootCredSummary = (rows: XootCredLedgerRow[], now = new Date()): XootCredSummary => {
   const entries = rows
-    .map((row, index): ZootCredEntry => {
+    .map((row, index): XootCredEntry => {
       const signedAmount = getSignedAmount(row);
       const status = row.status ?? "available";
       return {
@@ -103,7 +103,7 @@ export const calculateZootCredSummary = (rows: ZootCredLedgerRow[], now = new Da
 
   const monthlyCredits = rows
     .map((row, index) => ({ row, entry: entries.find((entry) => entry.id === (row.id ?? `${row.created_at}-${index}`)) }))
-    .filter((item): item is { row: ZootCredLedgerRow; entry: ZootCredEntry } => Boolean(item.entry))
+    .filter((item): item is { row: XootCredLedgerRow; entry: XootCredEntry } => Boolean(item.entry))
     .filter(({ row, entry }) => isMonthlyCredit(row, entry, now));
 
   const monthlyCredit = monthlyCredits.reduce((sum, { entry }) => sum + entry.amount, 0);
@@ -121,7 +121,7 @@ export const calculateZootCredSummary = (rows: ZootCredLedgerRow[], now = new Da
   };
 };
 
-const emptySummary: ZootCredSummary = {
+const emptySummary: XootCredSummary = {
   availableBalance: 0,
   pendingBalance: 0,
   monthlyCredit: 0,
@@ -129,9 +129,9 @@ const emptySummary: ZootCredSummary = {
   entries: [],
 };
 
-export const useZootCred = () => {
+export const useXootCred = () => {
   const { user, loading: authLoading } = useAuth();
-  const [summary, setSummary] = useState<ZootCredSummary>(emptySummary);
+  const [summary, setSummary] = useState<XootCredSummary>(emptySummary);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -159,7 +159,7 @@ export const useZootCred = () => {
       return;
     }
 
-    setSummary(calculateZootCredSummary((data ?? []) as ZootCredLedgerRow[]));
+    setSummary(calculateXootCredSummary((data ?? []) as XootCredLedgerRow[]));
     setLoading(false);
   }, [authLoading, user]);
 

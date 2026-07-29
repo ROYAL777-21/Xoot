@@ -2,7 +2,7 @@
 
 Reviewed: 2026-07-10
 
-This file defines the evidence needed before the active Zoot goal can be considered complete. `blocker.md` lists unresolved blockers; this audit lists the proof gates that remain necessary even after blockers are closed.
+This file defines the evidence needed before the active Xoot goal can be considered complete. `blocker.md` lists unresolved blockers; this audit lists the proof gates that remain necessary even after blockers are closed.
 
 Use `docs/release/production-command-center.md` as the index for source ownership, gate order, and founder inputs.
 

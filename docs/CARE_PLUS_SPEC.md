@@ -2,7 +2,7 @@
 
 ## Membership Positioning
 
-Care+ is Zoot's premium household reliability, memory, priority, and loyalty layer. It must not feel like a discount subscription. It should feel like a calm concierge layer for homes that should not need constant managing.
+Care+ is Xoot's premium household reliability, memory, priority, and loyalty layer. It must not feel like a discount subscription. It should feel like a calm concierge layer for homes that should not need constant managing.
 
 Primary positioning:
 
@@ -18,7 +18,7 @@ Use `join Care+` or `become a Care+ member`. Do not use `subscribe` in user-faci
 
 ## Primary Plan
 
-- Name: Zoot Care+
+- Name: Xoot Care+
 - Price: R99/month
 - Audience: busy households, professionals, recurring customers, families, Airbnb hosts, landlords, and small office operators who value continuity and support.
 - Product type: membership, not a discount plan.
@@ -26,11 +26,11 @@ Use `join Care+` or `become a Care+ member`. Do not use `subscribe` in user-faci
 ## Core Benefits
 
 1. Home Memory: save pet notes, access instructions, parking, room priorities, fragile areas, product preferences, allergy notes, and favourite add-ons.
-2. Favourite Zooter: save and rebook a preferred Zooter using `Book [Zooter Name] again`.
+2. Favourite Xooter: save and rebook a preferred Xooter using `Book [Xooter Name] again`.
 3. Priority Booking: earlier access to high-demand slots and recurring schedules.
-4. Priority Replacement Support: prioritised replacement matching when a Zooter cancels or becomes unavailable. Do not say guaranteed replacement unless backend and operations support it.
-5. One-Tap Rebook: repeat previous bookings using saved home, service, schedule, and preferred Zooter data.
-6. ZootCred Boost: earn 1.5x ZootCred on completed bookings.
+4. Priority Replacement Support: prioritised replacement matching when a Xooter cancels or becomes unavailable. Do not say guaranteed replacement unless backend and operations support it.
+5. One-Tap Rebook: repeat previous bookings using saved home, service, schedule, and preferred Xooter data.
+6. XootCred Boost: earn 1.5x XootCred on completed bookings.
 7. Monthly Add-On Credit: R30 monthly add-on credit usable only with a completed booking. It expires monthly and cannot be withdrawn.
 8. Smart Home Reminders: AI-style prompts based on real booking patterns, home profile data, and availability.
 9. Property Profiles: save multiple homes, access notes, turnover instructions, room priorities, and cleaning history.
@@ -62,22 +62,22 @@ Smart reminders must be based on real source-of-truth data in production. If dat
 ## Growth Loops
 
 - Home Memory makes repeat bookings easier than starting over.
-- Favourite Zooter creates emotional continuity and repeat usage.
+- Favourite Xooter creates emotional continuity and repeat usage.
 - One-tap rebook turns completed bookings into the next action.
-- ZootCred boost keeps value inside the Zoot ecosystem.
+- XootCred boost keeps value inside the Xoot ecosystem.
 - Monthly add-on credit makes R99/month feel tangible without discounting core service value.
 - Smart reminders convert once-off customers into recurring customers.
-- Property profiles make Zoot operational infrastructure for hosts, landlords, and offices.
+- Property profiles make Xoot operational infrastructure for hosts, landlords, and offices.
 
 ## Retention Systems
 
 - Care+ onboarding sequence:
   - Day 1: welcome and what is included.
-  - Day 3: lock in preferred Zooter before the week fills up.
+  - Day 3: lock in preferred Xooter before the week fills up.
   - Day 7: set recurring schedule and reduce future planning.
 - Lapse prevention: if a regular customer misses their usual booking interval, send one warm in-app prompt using their own pattern.
 - Post-clean satisfaction check: one-tap rating 30 minutes after completion, with human follow-up for low ratings.
-- Favourite Zooter fallback: if preferred Zooter is unavailable, suggest the next best match with a clear reason.
+- Favourite Xooter fallback: if preferred Xooter is unavailable, suggest the next best match with a clear reason.
 
 ## Exclusions And Guardrails
 
@@ -95,8 +95,8 @@ Care+ implementation should expose typed reusable data structures for:
 
 - `CarePlusMembership`
 - `HomeMemoryProfile`
-- `FavouriteZooter`
-- `ZootCredBalance`
+- `FavouriteXooter`
+- `XootCredBalance`
 - `PropertyProfile`
 - `SmartReminder`
 - `CarePlusBenefit`

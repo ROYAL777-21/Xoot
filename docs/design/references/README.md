@@ -75,7 +75,7 @@ underneath, including the below-recommended warning.
 where two actions are legitimately equal. Also the compact metadata row
 (`10 key points · 14 min · 10 insights`) — three facts, iconised, one line.
 
-**Applies to:** Zooter profile cards, service cards, Phase 7 training modules.
+**Applies to:** Xooter profile cards, service cards, Phase 7 training modules.
 
 ### ElevenLabs — dock navigation
 **Take:** the floating, rounded, glassy dock instead of a flush tab bar.

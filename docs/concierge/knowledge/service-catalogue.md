@@ -13,6 +13,6 @@ source_of_truth_reference: Website services section and booking flow service cat
 
 # Service Catalogue
 
-Zoot supports public guidance for once-off home cleaning, recurring home care, express resets, deep cleaning, moving cleans, landlord handovers, Airbnb turnover cleaning and office resets.
+Xoot supports public guidance for once-off home cleaning, recurring home care, express resets, deep cleaning, moving cleans, landlord handovers, Airbnb turnover cleaning and office resets.
 
 The Concierge may describe common use cases and help users choose a starting route. Final service availability, duration, price, add-ons and payment state must come from the signed-in booking flow.

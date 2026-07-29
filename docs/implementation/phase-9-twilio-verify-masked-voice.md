@@ -41,12 +41,12 @@ The existing global `twilio.operational_messages` control remains disabled until
 
 - Verify OTP attempts must be stored as redacted metadata only. OTP codes, raw phone numbers, raw emails, and message bodies are not stored.
 - Verify OTP sends must use Twilio Verify after Fraud Guard, geo-permissions, rate limits, and service configuration are reviewed.
-- Masked calls are booking-scoped. The caller must be the booking client or assigned Zooter account.
+- Masked calls are booking-scoped. The caller must be the booking client or assigned Xooter account.
 - Masked calls require an accepted or active booking state.
 - Masked calls are allowed only from 45 minutes before the scheduled start through 30 minutes after the calculated booking end while the booking is not terminal.
 - Browser/mobile clients cannot insert or update `masked_call_sessions` directly.
 - Provider calls require both the global Twilio operational gate and the masked voice gate.
-- Zoot masked voice does not record or transcribe calls.
+- Xoot masked voice does not record or transcribe calls.
 - No endpoint may dial arbitrary numbers supplied by a client request.
 - Twilio Auth Token is server-only and used for webhook signature validation; API keys are preferred for outbound provider calls.
 

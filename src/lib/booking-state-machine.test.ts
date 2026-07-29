@@ -36,7 +36,7 @@ describe("booking state machine", () => {
   });
 
   it("returns premium client-facing labels", () => {
-    expect(getClientVisibleStatus("awaiting_assignment")).toBe("Finding your Zooter");
-    expect(getClientVisibleStatus("replacement_required")).toBe("Finding a replacement Zooter");
+    expect(getClientVisibleStatus("awaiting_assignment")).toBe("Finding your Xooter");
+    expect(getClientVisibleStatus("replacement_required")).toBe("Finding a replacement Xooter");
   });
 });

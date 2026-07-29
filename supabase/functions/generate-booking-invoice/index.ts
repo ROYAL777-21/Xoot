@@ -196,8 +196,8 @@ Deno.serve(async (req) => {
     await insertNotification(supa, {
       userId: booking.user_id,
       kind: "booking_invoice_ready",
-      title: "Your Zoot invoice is ready",
-      body: "Your completed-booking invoice is available in the Zoot app.",
+      title: "Your Xoot invoice is ready",
+      body: "Your completed-booking invoice is available in the Xoot app.",
       link: `/app/bookings/${booking.id}`,
     });
 
