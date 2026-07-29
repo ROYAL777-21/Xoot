@@ -20,6 +20,7 @@ const Index = lazy(() => import("./pages/Index.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Welcome = lazy(() => import("./pages/Welcome"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const AuthReset = lazy(() => import("./pages/AuthReset"));
 const Blog = lazy(() => import("./pages/Blog"));
@@ -132,6 +133,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/welcome" element={<Welcome />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/auth/reset" element={<AuthReset />} />
