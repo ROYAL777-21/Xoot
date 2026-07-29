@@ -1,0 +1,50 @@
+name: Tests
+
+# The vitest suite was not run by any workflow before this file existed, so the two
+# mobile-* suites had been failing to transform without anything reporting it.
+# Lint, build and unit tests now gate every PR.
+
+on:
+  push:
+    branches: [main, "claude/**", "codex/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint, build and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install root dependencies
+        run: bun install --frozen-lockfile
+
+      # Required, not optional. src/lib/mobile-*.test.ts import from mobile/src/lib,
+      # and Vite's oxc transform resolves the nearest tsconfig per file — which for
+      # those is mobile/tsconfig.json, extending `expo/tsconfig.base`. Without this
+      # step both suites fail to transform and 8 tests silently do not run.
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Unit tests
+        run: bun run test
+
+      - name: Build
+        run: bun run build
