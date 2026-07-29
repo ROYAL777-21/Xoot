@@ -146,15 +146,21 @@ There are currently **three incompatible pricing models** in play:
    bedroom/bathroom/property-type multipliers, recurrence discounts, surge.
 4. **This document, §4.1–4.7** — per-half-hour price ladders, Booking Cover at **R22**.
 
-`docs/implementation/decision-log.md` **ZD-007** states these prices are locked and *"Do not
-change silently; create an approved server-pricing migration and release plan."*
-
 **The §4 ladders below are lower than the locked prices** (4h small = R250 here vs R280
-locked; 5.5h medium = R296 vs R325; 8h large = R370 vs R400).
+locked; 5.5h medium = R296 vs R325; 8h large = R370 vs R400). This is a price decrease on the
+core service, not a repackaging — check margin before the migration ships.
 
-> **`CONFIRM` — blocking.** Does §4 supersede ZD-007 and the locked commercial facts? If yes
-> this needs a new decision-log entry and a server-pricing migration, not an edit. Nothing in
-> §4 should reach code until that entry exists.
+> ✅ **RESOLVED 2026-07-29 — `ZD-020`.** The founder confirmed §4 supersedes ZD-007 and the
+> locked commercial facts. `docs/implementation/decision-log.md` carries the entry;
+> `docs/product/locked-commercial-facts.md` is banner-marked as superseded in part.
+>
+> **Approval is to the *model*, not to every number.** The remaining `CONFIRM` tags in §4.1,
+> §4.2, §4.5, §4.6 and §4.8 are still open and must close before a server migration is
+> written. Phase 1 may build UI against §4 — no price is shown until the end of the booking
+> flow anyway — but client and server must not diverge in production.
+>
+> Now non-conforming and needing migration: `supabase/functions/create-booking/index.ts`
+> and `src/lib/pricing.ts`.
 
 ### 4.1 Regular indoor cleaning
 
@@ -516,8 +522,8 @@ from §1 — a legal-copy fix, not just marketing copy.
 
 | # | Question | Blocks |
 |---|---|---|
-| 1 | Does §4 supersede ZD-007 / locked commercial facts? Needs a decision-log entry + server-pricing migration. | **All pricing work** |
-| 2 | Palette/design-system reference images from the dispatch conversation — commit to repo or re-share. | **Phase 1** |
+| 1 | ~~Does §4 supersede ZD-007?~~ **Closed 2026-07-29 — yes, see `ZD-020`.** Server-pricing migration still to be written and signed off. | Migration only |
+| 2 | **Palette/design-system reference images from the dispatch conversation.** Founder chose to commit them before Phase 1 starts. Suggested location `docs/design/references/`. | **Phase 1 — blocking, awaiting founder** |
 | 3 | Regular cleaning: is the hour ladder identical across small/medium/large, or same-shape-different-base? | Phase 1 pricing |
 | 4 | Moving cleaning: is the single shared ladder correct (§4.5 reconstruction)? | Phase 1 pricing |
 | 5 | Airbnb linen: R20 or R30? Option 3 only, or any non-default option? | Phase 1 pricing |

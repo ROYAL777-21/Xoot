@@ -3,6 +3,14 @@
 Reviewed: 2026-06-24
 Authority: Zoot Master Phased Implementation Program
 
+> ⚠️ **SUPERSEDED IN PART — see ZD-020 (2026-07-29).** The pricing table below is stale.
+> Pricing moved from flat per-home-size to per-half-hour ladders per service; Booking Cover
+> moved R21 → R22. Authoritative pricing now lives in `docs/xoot-master-brief.md` §4.
+> The Care+ "R30 monthly add-on credit" line is also wrong — the credit is **one-time in the
+> member's first month**, and only when they did not arrive via the onboarding free trial.
+> Everything else in this document (brand, positioning, recurring rules pending confirmation)
+> still stands.
+
 These values and policies are locked. Code, copy, agents and provider configuration must not contradict them without an approved decision-log entry.
 
 ## Brand

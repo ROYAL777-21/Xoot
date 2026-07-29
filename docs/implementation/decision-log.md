@@ -23,6 +23,45 @@ Reviewed: 2026-06-24
 | ZD-017 | Cloudflare configuration waits until the Zoot domain is added to the connected account. | Active | Connected account currently contains no zones. | Prepare rules now; activate only after DNS/hosting approval. |
 | ZD-018 | Care+ activation paths must be consolidated. | Founder/product decision required | Current functions overlap and one expects missing columns. | Phase 1 defines the authority before Phase 3 expansion. |
 | ZD-019 | Existing integration outbox is reused for invoices, communications and provider jobs. | Approved architecture direction | Duplicate queues increase replay and audit risk. | Add typed event contracts and idempotency instead of a second queue. |
+| ZD-020 | ZD-007 is superseded. Pricing moves from flat per-home-size to per-half-hour ladders per service, defined in `docs/xoot-master-brief.md` §4. Booking Cover moves R21 to R22. | Approved by founder 2026-07-29 | Founder supplied full per-hour ladders for all services and confirmed they supersede the locked commercial facts. | See ZD-020 notes below. Nothing reaches production pricing without founder sign-off on the migration plan. |
+
+## ZD-020 notes — pricing model change
+
+**What is approved.** The pricing *model* changes: price becomes a function of booked hours
+per service, on a half-hour ladder, instead of a flat charge per home size. Booking Cover
+becomes R22. The ladders live in `docs/xoot-master-brief.md` §4 and that document is the
+reference — do not re-key the numbers into a second place.
+
+**What this obsoletes.** `docs/product/locked-commercial-facts.md` pricing table is now
+stale and must be reissued against §4. Two implementations are also now non-conforming:
+
+- `supabase/functions/create-booking/index.ts` — R270/R315/R390 plus unapproved service
+  multipliers and a high-demand premium.
+- `src/lib/pricing.ts` (app-iteration) — bedroom/bathroom/property-type multipliers,
+  recurrence discounts and a surge multiplier. Structurally incompatible: it prices by
+  property attributes, the new model prices by hours.
+
+**Approval is to the model, not yet to every number.** These remain open and are marked
+`CONFIRM` in the master brief. They must be closed before a migration is written:
+
+1. Regular cleaning — is the hour ladder identical across small/medium/large, or same shape
+   with a different base? Home size may only be setting the default hours.
+2. Moving cleaning — the single shared ladder is a reconstruction from a degraded
+   transcript, not a transcription.
+3. Airbnb linen — R20 or R30, and does it attach to option 3 only or any non-default option.
+4. Airbnb 7.0h — R372 or R388.
+5. Laundry/ironing band boundaries, and whether wash and ironing compose into one estimate.
+6. Last-minute surcharge — cutoff window, multiplier vs flat, per-service, Care+ exemption.
+7. Whether the recurring discounts (1-2 / 3-4 / 5+ days per week) survive the change.
+
+**Direction of travel.** The new ladders are *lower* than ZD-007 at equivalent hours
+(4h small R250 vs R280; 5.5h medium R296 vs R325; 8h large R370 vs R400). This is a price
+decrease across the core service, not a repackaging. Margin impact should be checked before
+the migration ships.
+
+**Sequencing.** Phase 1 may build UI against §4 because no price is shown until the end of
+the booking flow. Server pricing is a separate, founder-signed-off migration. Client and
+server must not diverge in production.
 
 ## Pending Founder Decisions
 
