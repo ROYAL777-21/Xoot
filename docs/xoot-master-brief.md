@@ -1,7 +1,7 @@
 # Xoot — Master Build Brief
 
 **Status:** authoritative. Supersedes v1 and v2 prompts where they disagree.
-**Last updated:** 2026-07-29 (Phase 0)
+**Last updated:** 2026-07-29 (Phase 0 + design direction)
 **Kept in sync:** identical copy at `zoot-app-iteration./docs/xoot-master-brief.md`. Edit both.
 
 This file exists so pricing logic, corrections and constraints survive across the many
@@ -67,14 +67,14 @@ is a **legal page**, so that correction is a legal-copy change, not a copy tweak
 
 | File | Repo | Why |
 |---|---|---|
-| `src/styles.css` | app-iteration | Real colour tokens, OKLCH, "Heritage editorial luxe". Source of truth for colour. |
-| `docs/BRAND_GUIDE.md` | local-helpers | Positioning, copy rules, onboarding principles. **Conflicts with `styles.css` — see §3.** |
+| `src/styles.css` | app-iteration | Colour token *mechanism* (OKLCH) and the glass tokens — reuse the structure. Its "Heritage editorial luxe" palette is **superseded** by §3.1. |
+| `docs/BRAND_GUIDE.md` | local-helpers | Positioning, copy rules, onboarding principles — still good. Its fonts and palette are **superseded** by §3.1. |
 | `src/routes/onboarding.tsx` | app-iteration | Existing 4-chapter mascot onboarding, 295 lines. Being restructured in Phase 1 — extend, don't replace. |
 | `src/components/zoot/mascot/Zooey.tsx` | app-iteration | Mascot, 148 lines, pose-driven SVG. |
 | `src/lib/service-visual.ts` | app-iteration | Per-service accent + motion. 19 services already mapped. |
 | `src/lib/pricing.ts` | app-iteration | Existing pricing engine — **multiplier-based, incompatible with §4. See §4.0.** |
 | `docs/BOOKING_LOGIC.md` | local-helpers | Booking lifecycle, state machine, assignment rules, sensitive-access windows. Solid; build against it. |
-| `docs/product/locked-commercial-facts.md` | local-helpers | Locked pricing — **conflicts with §4.** |
+| `docs/product/locked-commercial-facts.md` | local-helpers | Pricing table **superseded** by §4 (`ZD-020`); banner-marked. Brand and positioning still stand. |
 | `docs/implementation/phase-9-twilio-verify-masked-voice.md` | local-helpers | Masked calling, built and inactive. **Activate, don't rebuild.** |
 | `docs/implementation/phase-2-booking-chat.md` | local-helpers | Booking-scoped chat, built and inactive. **Activate, don't rebuild.** |
 
@@ -87,24 +87,78 @@ named motion vocabulary (`bounce`, `twinkle`, `sweep`, `drive`, `pop`, `wag`, `f
 
 ---
 
-## 3. Unresolved design conflicts
+## 3. Design direction
 
-### 3.1 Fonts and colours have drifted between repos
+### 3.1 Palette — decided 2026-07-29
 
-| | `docs/BRAND_GUIDE.md` (local-helpers) | `src/styles.css` (app-iteration) |
-|---|---|---|
-| Display | Space Grotesk | Cormorant Garamond |
-| Body | DM Sans | Inter |
-| Palette | Terracotta + sage | Cream / ivory / gold / brown / charcoal |
+**Vibrant. Primary colours red and white.** This is a deliberate replacement of the previous
+system, and it resolves a conflict that had been open across both repos:
 
-Still unresolved. app-iteration has been treated as current. **Do not silently pick one.**
+| | Status |
+|---|---|
+| `docs/BRAND_GUIDE.md` — Space Grotesk / DM Sans, terracotta + sage | **superseded** |
+| `src/styles.css` — Cormorant Garamond / Inter, cream / ivory / gold / brown | **superseded** |
+| **Red + white, vibrant** | **current** |
 
-This now collides with a third input: the user is open to replacing the design system
-outright, aligned to images shared in the "dispatch conversation".
+Both files need reissuing against the new direction; `styles.css` is the mechanical one
+(OKLCH tokens) and `BRAND_GUIDE.md` the editorial one. Neither should be left stating the old
+palette as current.
 
-> **`CONFIRM` — blocking for Phase 1.** Those images are not in this repo and are not
-> reachable from a Claude Code session. Phase 1 cannot resolve the palette without them.
-> They need to be committed to the repo (suggest `docs/design/references/`) or re-shared.
+Notes for whoever builds the token set:
+
+- Red as a *primary brand* colour needs care, because red is also the universal destructive/
+  error colour. Keep the brand red and the error red visibly distinct in hue or saturation,
+  or destructive actions stop reading as dangerous. `BRAND_GUIDE.md:17` already warns off
+  "harsh discount red" — the brand red should read confident, not clearance-sale.
+- Red/white at high saturation across large areas is fatiguing. Expect to need a neutral
+  and a soft tint for surfaces, with red carrying accents, CTAs and the mascot.
+- Accessibility: white-on-red needs checking at AA for body text; many mid-reds fail.
+
+### 3.2 Surfaces and navigation
+
+- **Glassmorphism.** `styles.css` already ships `--glass-blur: 30px` and
+  `--glass-opacity: 62%` as runtime-overridable tokens — reuse them, don't add a second
+  blur system.
+- **Dock-style bottom navigation**, ElevenLabs-like: a floating, rounded, glassy dock rather
+  than a flush tab bar.
+- **Staggered card entrances** throughout. The existing `rise-in` utility (55ms increments)
+  already does this.
+
+### 3.3 Typography
+
+Follow **Tiimo's** register: rounded, friendly, approachable — and their **rounded on-screen
+keyboard treatment** for text inputs.
+
+> **`CONFIRM`.** Tiimo's exact typeface has not been identified from the reference
+> screenshot. Match the register rather than guessing a name, or confirm the specific family
+> before it goes into a token file.
+
+### 3.4 Zoey
+
+- **Default fill → red**, which now aligns with the primary palette rather than fighting it.
+  Currently `var(--gold, #E88E6A)` at `Zooey.tsx:65`.
+- **Stars → white, 4-pointed, twirling, each leaving a visible trace of its path.**
+  A 4-pointed star path already exists at `Zooey.tsx:129`, currently gold and static.
+- **Animate her through onboarding, Headspace-style** — she transitions and moves *between*
+  steps rather than being a static illustration per screen. See §5.2.
+- Silhouette is **not** redesigned. Restyle around her.
+
+### 3.5 Splash screen
+
+On app start: Zoey **levitates, then flies away**, with the 4-pointed stars trailing behind
+her and **scattering in different directions**, their trails fading out as they go.
+
+Remotion is the right tool if this ships as a real exported video asset; a native/Lottie
+implementation is the alternative if it needs to be interruptible or resolution-independent.
+
+> **`CONFIRM`.** Splash duration, and whether it plays on every cold start or only on first
+> run. A flourish that delights once becomes friction on the fiftieth launch — recommend
+> full animation on first run, and a shortened version (or skip-on-tap) thereafter.
+
+### 3.6 Flowers
+
+Flowers in the splash screen and elsewhere, for vibrancy. Fits the existing Care+ bloom
+motif. Style follows the new red/white palette.
 
 ### 3.2 Zoey
 
@@ -146,9 +200,19 @@ There are currently **three incompatible pricing models** in play:
    bedroom/bathroom/property-type multipliers, recurrence discounts, surge.
 4. **This document, §4.1–4.7** — per-half-hour price ladders, Booking Cover at **R22**.
 
-**The §4 ladders below are lower than the locked prices** (4h small = R250 here vs R280
-locked; 5.5h medium = R296 vs R325; 8h large = R370 vs R400). This is a price decrease on the
-core service, not a repackaging — check margin before the migration ships.
+**The §4 ladders are not a price cut.** They look lower than ZD-007, but ZD-007 quoted an
+**add-on-inclusive** price while §4 quotes the **base price before add-ons**. The gap is
+exactly one R30 add-on at every size — the preselected interior-windows add-on:
+
+| Size | Default hours | ZD-007 | §4 ladder | Gap |
+|---|---|---|---|---|
+| Small | 4.0h | R280 | R250 | R30 |
+| Medium | 5.5h | R325 | R296 | R29 |
+| Large | 8.0h | R400 | R370 | R30 |
+
+Revenue per booking is unchanged. **Do not add the old numbers back on top of the ladder** —
+that double-charges the add-on. (Medium is R29 not R30; likely rounding in the original R325,
+worth a one-line confirm.)
 
 > ✅ **RESOLVED 2026-07-29 — `ZD-020`.** The founder confirmed §4 supersedes ZD-007 and the
 > locked commercial facts. `docs/implementation/decision-log.md` carries the entry;
@@ -310,11 +374,10 @@ R388. **`CONFIRM` the 7-hour price.**
 Confirmed from the follow-up: exactly four options, user picks **one only**, it is required,
 and option 3 raises the entire service minimum to 5h (the earlier v2 ambiguity is resolved).
 
-**Linen pricing —** ⚠️ **`CONFIRM`, contradictory in source.** The transcript first states
-option 3 is a **R20** add-on with the other three at **R0**, then later says *"just make that
-a thirty rand add on for now"* — **R30**. R20 and R30 cannot both be right, and it is also
-unclear whether the charge attaches only to option 3 or to any non-default option.
-**Do not price linen until this is answered.**
+**Linen pricing — ✅ resolved 2026-07-29: R20.** Option 3 (wash, dry and repack on-site)
+carries a **R20** add-on. Options 1, 2 and 4 are **R0**. The transcript's later "thirty rand"
+was the founder mid-correction; **R20 is the number**. Note this is the one add-on in the
+whole product that is not R30 — do not let it get normalised to R30 by a shared constant.
 
 **Add-ons — R30 each:** clean appliances, restock supplies, restock toiletries.
 
@@ -370,6 +433,21 @@ service frequency are all captured during onboarding, so the first real booking 
 confirmation rather than a fresh multi-step form. Care+ paywall sits immediately after,
 before payment.
 
+### 5.1a Shape of the questioning — Headspace pattern
+
+Gather the user's type and details **Headspace-style**: one question per screen, warm and
+conversational, Zoey animating *between* steps rather than sitting still on each. The
+payoff framing is explicit — answering these questions produces a **specially curated
+experience** where the user never has to lift a finger about cleaning again.
+
+That framing is a promise, so the flow has to honour it: every answer must visibly change
+something downstream (default hours, default add-ons, suggested frequency, preferred Zooter).
+A questionnaire whose answers go nowhere is worse than no questionnaire — it spends the
+user's effort and returns nothing.
+
+The existing `ChatQuestion` and `ChoiceGrid` components in
+`src/components/zoot/onboarding/parts.tsx` are the right base.
+
 ### 5.2 First screen — specified directly by the user
 
 - **Split layout:** card fills half the screen, animated creative fills the other half.
@@ -413,8 +491,13 @@ screen noting they won't get the free first month if they don't take it now.
 - **Progress indicator** throughout — step count or bar, never an open-ended scroll.
 - **Social proof** embedded in the flow (live reviews / user stats), not a separate screen.
 - **Permission requests** never bare system prompts. Always a screen explaining the benefit
-  first: *"Enable notifications so you never miss an update on your Zooter."*
+  first, **Zocdoc-style** — the reference pattern is: illustration, a benefit-led headline
+  ("Get notified about your appointments and more"), one supporting line naming the concrete
+  outcome, a filled primary button ("Turn on notifications"), and a plain-text secondary
+  ("Not now") that is genuinely easy to hit. For Xoot: *"Enable notifications so you never
+  miss an update on your Zooter."*
 - **Every non-essential step gets Skip.** Secondary data can be collected later in-app.
+  The "Not now" above is that escape hatch for permissions specifically.
 
 **North star:** the user should come away feeling Xoot has thought of everything, that their
 home is in careful hands, and that the language is warm rather than transactional.
@@ -438,6 +521,31 @@ home is in careful hands, and that the language is warm rather than transactiona
   - Customer — celebration at milestones: tier upgrades, loyalty milestones.
   - Zooter — completed-job counts, bonus tiers, and a **streak counter** for consecutive
     active days/jobs.
+
+### 6.1 Tipping — new feature
+
+Customers can **tip their Zooter after a completed service**.
+
+Placement: the post-service rating moment, which `docs/BOOKING_LOGIC.md` already defines at
+lifecycle step 12 (*"rating, ZootCred, Care+ boost… are processed"*). Tip alongside the
+rating, not as a separate errand.
+
+Design notes:
+- Preset amounts plus a custom option. Presets should be sensible rand values, not
+  percentages — percentage tipping is not the norm for SA home services and does the
+  arithmetic *against* the customer on larger bookings.
+- **Never pre-select a tip amount.** Pre-selected tips are the most-complained-about pattern
+  in tipping UI and they damage trust in exactly the moment the product is trying to earn it.
+- Skippable without friction or guilt copy.
+- Celebrate the send with a haptic and a small animation — it is a generous act, treat it as one.
+
+> **`CONFIRM` — commercial and legal, needed before build:**
+> 1. Does Xoot take any cut of tips? (Strong recommendation: **no.** "100% goes to your
+>    Zooter" is a real trust asset and is trivially checkable by Zooters.)
+> 2. Payout path — with the booking payout, or separately? Affects `phase-7-payments-payouts`.
+> 3. Tax/VAT treatment of tips to contractors in SA. Needs the accountant, not a guess.
+> 4. Are tips visible to the Zooter before they rate the customer? (Recommend **no** — it
+>    biases mutual ratings.)
 
 ---
 
@@ -522,22 +630,30 @@ from §1 — a legal-copy fix, not just marketing copy.
 
 | # | Question | Blocks |
 |---|---|---|
-| 1 | ~~Does §4 supersede ZD-007?~~ **Closed 2026-07-29 — yes, see `ZD-020`.** Server-pricing migration still to be written and signed off. | Migration only |
-| 2 | **Palette/design-system reference images from the dispatch conversation.** Founder chose to commit them before Phase 1 starts. Suggested location `docs/design/references/`. | **Phase 1 — blocking, awaiting founder** |
-| 3 | Regular cleaning: is the hour ladder identical across small/medium/large, or same-shape-different-base? | Phase 1 pricing |
-| 4 | Moving cleaning: is the single shared ladder correct (§4.5 reconstruction)? | Phase 1 pricing |
-| 5 | Airbnb linen: R20 or R30? Option 3 only, or any non-default option? | Phase 1 pricing |
-| 6 | Airbnb 7.0h: R372 or R388? | Phase 1 pricing |
-| 7 | Laundry band boundaries + whether wash/ironing compose into one estimate. | Laundry service |
-| 8 | Last-minute surcharge: cutoff window, multiplier vs flat, per-service, Care+ exempt? | Phase 1 |
-| 9 | Office cleaning add-ons: none by design, or not yet specified? | Phase 1 |
-| 10 | **"Accommodate all industries"** — meaning still unclear. Could mean expanding beyond cleaning into the 19 verticals already in `service-visual.ts` (plumbing, electrical, gardening, pest, pool, pet, painting…), or supporting commercial/B2B clients. **Do not build architecture around a guess.** | Architecture |
-| 11 | Recurring discounts (1–2 / 3–4 / 5+ days per week) — do they survive the repricing? | Phase 1 |
-| 12 | Full legal terms text, apart from the pinned booking-cover terms. | Pre-ship |
-| 13 | Insurance provider details once sorted. | Pre-ship §8 |
-| 14 | Services list beyond those specified here, if any. | Architecture |
+| 1 | Moving cleaning: is the single shared ladder correct? §4.5 is a **reconstruction** from a degraded transcript, not a transcription. | Pricing migration |
+| 2 | Airbnb 7.0h: R372 or R388? | Pricing migration |
+| 3 | Laundry band boundaries (46–60 / 61–75 inferred) + whether wash and ironing compose into one estimate. | Laundry service |
+| 4 | Last-minute surcharge: cutoff window, multiplier vs flat, per-service, Care+ exempt? One worked example is not a rule. | Phase 1 |
+| 5 | Office cleaning add-ons: none by design, or not yet specified? | Phase 1 |
+| 6 | Recurring discounts (1–2 / 3–4 / 5+ days per week) — do they survive the repricing? | Pricing migration |
+| 7 | Regular cleaning medium: R296 or R295? (ZD-007 gap is R29 at medium, R30 at small and large — likely rounding.) | Pricing migration |
+| 8 | **Tipping** — does Xoot take a cut (recommend no), payout path, SA tax treatment, visibility before mutual rating. See §6.1. | Tipping build |
+| 9 | Tiimo's exact typeface — match the register, or confirm the family before it enters a token file. | Phase 1 |
+| 10 | Splash: duration, and every cold start or first run only? Recommend full on first run, shortened/skippable after. | Phase 1 |
+| 11 | The 19 vibrant per-service accent colours in `service-visual.ts` will fight a red-primary system. Re-map, or keep as a deliberate second layer? | Phase 1 |
+| 12 | **"Accommodate all industries"** — still unclear. Could mean expanding beyond cleaning into the 19 verticals already in `service-visual.ts`, or supporting commercial/B2B clients. **Do not build architecture around a guess.** | Architecture |
+| 13 | **Repo consolidation** — one repository is wanted. Approach not yet chosen; see `docs/repo-consolidation-plan.md`. | Everything downstream |
+| 14 | Full legal terms text, apart from the pinned booking-cover terms. | Pre-ship |
+| 15 | Insurance provider details once sorted. | Pre-ship §8 |
+| 16 | Services list beyond those specified here, if any. | Architecture |
 
-**Resolved and closed:** Zoey stars (white, 4-pointed, twirling, trailing) · Airbnb linen
-option count and single-select · option 3 raises whole-service minimum to 5h · express default
-= 1h · recommended hours = preselected default · R30 credit is first-month-only, not monthly ·
+**Closed 2026-07-29:** §4 supersedes ZD-007 (`ZD-020`) · the ladders are **not** a price cut,
+ZD-007 was add-on-inclusive · regular cleaning uses **one shared ladder**, home size sets
+default hours only · Airbnb linen is **R20**, option 3 only · palette is **red + white,
+vibrant** · glassmorphism + dock nav · Headspace-style mascot onboarding · Tiimo input
+register · Zocdoc permission priming · tipping is in scope.
+
+**Closed earlier:** Zoey stars (white, 4-pointed, twirling, trailing) · Airbnb linen option
+count and single-select · option 3 raises whole-service minimum to 5h · express default = 1h ·
+recommended hours = preselected default · R30 credit is first-month-only, not monthly ·
 file-upload scope (§7) · multi-Zooter booking.

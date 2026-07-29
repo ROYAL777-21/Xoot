@@ -4,7 +4,8 @@ These skills are **copied in**, not submoduled. This file records exactly where 
 from so a re-sync is deterministic instead of guesswork. Installed 2026-07-29 per §9 of
 `docs/xoot-master-brief.md`.
 
-Most sources are packs containing many more skills than we installed. Only the folders
+Most sources are packs containing many more skills than we installed (ponytail being the one
+full-pack exception, at the founder's request). Only the folders
 listed below were copied — installing whole packs adds noise that degrades skill selection.
 
 | Installed as | Source repo | Path in source | Source commit |
@@ -30,6 +31,12 @@ listed below were copied — installing whole packs adds noise that degrades ski
 | `seo-audit` | AgriciDaniel/claude-seo | `skills/seo-audit/` | `09d37c7` |
 | `seo-schema` | AgriciDaniel/claude-seo | `skills/seo-schema/` | `09d37c7` |
 | `brandkit` | Leonxlnx/taste-skill | `skills/brandkit/` | `e988add` |
+| `ponytail` | DietrichGebert/ponytail | `skills/ponytail/` | `16f2980` |
+| `ponytail-review` | DietrichGebert/ponytail | `skills/ponytail-review/` | `16f2980` |
+| `ponytail-audit` | DietrichGebert/ponytail | `skills/ponytail-audit/` | `16f2980` |
+| `ponytail-debt` | DietrichGebert/ponytail | `skills/ponytail-debt/` | `16f2980` |
+| `ponytail-gain` | DietrichGebert/ponytail | `skills/ponytail-gain/` | `16f2980` |
+| `ponytail-help` | DietrichGebert/ponytail | `skills/ponytail-help/` | `16f2980` |
 
 The `marketing-*` prefix is a local rename. Upstream names (`onboarding`, `pricing`, `cro`…)
 are generic enough to collide with project skills and to mis-trigger on unrelated prompts.
@@ -54,12 +61,15 @@ the diff against upstream minimal.
   will return nothing until claude-mem is actually initialised. Installed, not yet useful.
 - **`seo-*`** are for the website session only (Phase 4's web half, and later SEO work).
   Deliberately excluded: `extensions/ahrefs/`, which needs its own Ahrefs API key.
+- **`ponytail`** was initially left out and the founder asked for it — installed 2026-07-29,
+  full pack of 6. Worth knowing what it does: it optimises hard for the fewest lines of code
+  and fewest dependencies. That is genuinely useful against bloat, and it pulls against
+  `impeccable`'s clarity rules and against readability on a codebase many sessions touch.
+  Both are installed; when they disagree on a given change, that tension is the point —
+  decide per case rather than letting either win by default.
 
 ## Not installed, and why
 
-- **`ponytail`** (DietrichGebert/ponytail) — optimises for fewest lines of code. That trades
-  directly against readability on a codebase multiple people and sessions touch, and against
-  `impeccable`'s clarity rules. Left out; say the word and it takes a minute to add.
 - **`resolve-human-reviews`** (pbakaus/agent-reviews) — brief scoped this to bot triage only.
 - The other 43 `marketingskills`, 10 `superpowers`, 17 `claude-mem`, and 20+ `claude-seo`
   skills — deliberately not installed, per §9.
@@ -97,4 +107,4 @@ for d in skills/*/; do n=$(basename "$d"); rm -rf ".claude/skills/$n"; cp -r "$d
 **`zoot-app-iteration.`** does *not* ignore `.claude/`, so there the skills are tracked
 directly in `.claude/skills/` and there is no second copy.
 
-Both repos carry the same 21 skills. If you update one, update the other.
+Both repos carry the same 27 skills. If you update one, update the other.

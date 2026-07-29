@@ -41,23 +41,42 @@ stale and must be reissued against §4. Two implementations are also now non-con
   recurrence discounts and a surge multiplier. Structurally incompatible: it prices by
   property attributes, the new model prices by hours.
 
-**Approval is to the model, not yet to every number.** These remain open and are marked
-`CONFIRM` in the master brief. They must be closed before a migration is written:
+**This is not a price cut — corrected 2026-07-29.** An earlier revision of this entry read
+the new ladders as a price decrease. That was wrong. The founder clarified that the ZD-007
+prices already had one add-on baked in, and the arithmetic confirms it exactly:
 
-1. Regular cleaning — is the hour ladder identical across small/medium/large, or same shape
-   with a different base? Home size may only be setting the default hours.
-2. Moving cleaning — the single shared ladder is a reconstruction from a degraded
+| Size | Default hours | ZD-007 locked | New ladder | Difference |
+|---|---|---|---|---|
+| Small | 4.0h | R280 | R250 | **R30** |
+| Medium | 5.5h | R325 | R296 | **R29** |
+| Large | 8.0h | R400 | R370 | **R30** |
+
+The gap is one standard R30 add-on at every size — the preselected interior-windows add-on.
+So ZD-007 quoted an add-on-inclusive price, and §4 quotes the **base service price before
+add-ons**. Headline revenue per booking is unchanged. No margin check is needed on this
+basis. Do not "restore" the old numbers on top of the ladder; that would double-charge the
+add-on.
+
+**This also closes the single-ladder question.** All three locked sizes land on *one* ladder
+at their own default hours once the R30 add-on is removed. Home size therefore sets the
+**default hours only** — it does not change the price of an hour. One ladder, three defaults.
+
+Minor: medium is R29 rather than R30. Almost certainly rounding in the original R325, but
+worth confirming that R296 is right and not R295.
+
+**Approval is to the model, not yet to every number.** Still open, marked `CONFIRM` in the
+master brief, and gating the migration:
+
+1. Moving cleaning — the single shared ladder is a reconstruction from a degraded
    transcript, not a transcription.
-3. Airbnb linen — R20 or R30, and does it attach to option 3 only or any non-default option.
-4. Airbnb 7.0h — R372 or R388.
-5. Laundry/ironing band boundaries, and whether wash and ironing compose into one estimate.
-6. Last-minute surcharge — cutoff window, multiplier vs flat, per-service, Care+ exemption.
-7. Whether the recurring discounts (1-2 / 3-4 / 5+ days per week) survive the change.
+2. Airbnb 7.0h — R372 or R388.
+3. Laundry/ironing band boundaries, and whether wash and ironing compose into one estimate.
+4. Last-minute surcharge — cutoff window, multiplier vs flat, per-service, Care+ exemption.
+5. Whether the recurring discounts (1-2 / 3-4 / 5+ days per week) survive the change.
+6. Office cleaning add-ons — none by design, or not yet specified.
 
-**Direction of travel.** The new ladders are *lower* than ZD-007 at equivalent hours
-(4h small R250 vs R280; 5.5h medium R296 vs R325; 8h large R370 vs R400). This is a price
-decrease across the core service, not a repackaging. Margin impact should be checked before
-the migration ships.
+**Closed:** regular-cleaning ladder is shared across sizes (above). Airbnb linen is **R20**,
+not R30 (founder, 2026-07-29).
 
 **Sequencing.** Phase 1 may build UI against §4 because no price is shown until the end of
 the booking flow. Server pricing is a separate, founder-signed-off migration. Client and
