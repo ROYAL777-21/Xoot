@@ -25,6 +25,7 @@ Reviewed: 2026-06-24
 | ZD-019 | Existing integration outbox is reused for invoices, communications and provider jobs. | Approved architecture direction | Duplicate queues increase replay and audit risk. | Add typed event contracts and idempotency instead of a second queue. |
 | ZD-020 | ZD-007 is superseded. Pricing moves from flat per-home-size to per-half-hour ladders per service, defined in `docs/xoot-master-brief.md` §4. Booking Cover moves R21 to R22. | Approved by founder 2026-07-29 | Founder supplied full per-hour ladders for all services and confirmed they supersede the locked commercial facts. | See ZD-020 notes below. Nothing reaches production pricing without founder sign-off on the migration plan. |
 | ZD-021 | Terms are accepted implicitly at sign-up with a visible linked notice. Post-deploy editing is code-and-deploy, not database-editable config. Care+ discount funding is `shared` short-term, switching to `commission` later. | Approved by founder 2026-07-29 | Founder chose lowest-friction consent, the most secure editing model, and early-frequency discount funding. | See ZD-021 notes below. |
+| ZD-022 | The splash is authored once in `src/lib/splash-choreography.ts` and rendered twice: Remotion for video, Web Animations for the app. Remotion is a devDependency and an authoring tool, never a runtime one. Launcher and launch-screen stills are generated from `ZoeyArt`. | Approved by founder 2026-07-29 ("Use remotion") | Two hand-maintained copies of the same animation drift, and the drift is invisible in review. | See ZD-022 notes below. The animation is web-only; native still shows a static launch screen. |
 
 ## ZD-020 notes — pricing model change
 
@@ -126,6 +127,51 @@ its module rather than a literal buried in a component:
 switch is a one-line change. `splitDiscount()` caps the Xooter's share so it can never
 breach the R220 half-day / R300 full-day floor; Xoot absorbs whatever the cap refuses.
 The risk to watch is not complaints — it is Xooters quietly declining Care+ jobs.
+
+## ZD-022 notes — the splash
+
+**Why one definition.** `splash-choreography.ts` is the whole animation as pure
+functions of time. Remotion samples it per video frame; the app samples it into Web
+Animations keyframes. Neither renderer owns any timing or geometry. The alternative —
+author it in Remotion, then hand-write the app version to match — produces two
+animations that are the same today and different in three months, and nobody reviewing
+a diff will catch the moment they part company. `splash-choreography.test.ts` asserts
+the properties both renderers depend on, because neither can be eyeballed in CI.
+
+**Why not ship Remotion to the browser.** `@remotion/player` would run the composition
+live, at the cost of parsing a player bundle before the first frame of a splash whose
+entire job is to appear instantly. The splash instead plays through the Web Animations
+API, which hands transform and opacity to the compositor — so it holds even while the
+main thread is busy with bundle parse, auth rehydration and the first query, which is
+exactly when a splash runs.
+
+**Four things the render caught that reading could not.** Recorded because each is a
+plausible-looking choice that is wrong only on screen:
+
+1. Keeping the star orbits running underneath the exit is continuous and defensible on
+   paper. The two velocities cancel about a third of the way out; the star stalls
+   mid-flight and its trail blinks off. The ellipse now relaxes as the star departs.
+2. White stars are invisible on the cream background — they only read where they cross
+   the heart. They carry a blurred red glow now. An unblurred scaled copy is the cheap
+   substitute and turns a white star into a red ring.
+3. A tail is only a streak while its segments overlap. At exit speed, four segments
+   read as a dotted line following the star.
+4. Marking the session on mount meant nobody ever saw the splash. `public/sw.js`
+   navigates every client when it activates, so a genuine first visit loads twice, and
+   the reload found the splash already claimed. It is marked on completion now.
+
+**Assets.** `npm run icons:render` regenerates every launcher and launch-screen still
+from `ZoeyArt`, so the icon and the mascot cannot become different characters. Those
+are committed because EAS needs them at build time and does not run Remotion. The
+splash *video* is not committed — it is derivable, and a binary regenerated on every
+render does not belong in git history.
+
+**Open.** The animation is web-only. Native shows the static launch screen and then the
+app. Playing it there needs `react-native-svg` plus Reanimated driving the same
+choreography, or the rendered video behind `expo-splash-screen`. Neither is wired, and
+the choice is a founder/product call about whether the native app takes a new
+dependency.
+
 
 ## Pending Founder Decisions
 

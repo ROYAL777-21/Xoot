@@ -162,38 +162,49 @@ keyboard treatment** for text inputs.
   steps rather than being a static illustration per screen. See §5.2.
 - Silhouette is **not** redesigned. Restyle around her.
 
-### 3.5 Splash screen
+### 3.5 Splash screen — **built**
 
-On app start: Zoey **levitates, then flies away**, with the 4-pointed stars trailing behind
-her and **scattering in different directions**, their trails fading out as they go.
+On app start Zoey levitates, then flies away, with the 4-pointed stars scattering in
+different directions, their trails fading out as they go. Built 2026-07-29; see ZD-022
+in the decision log for the reasoning.
 
-Remotion is the right tool if this ships as a real exported video asset; a native/Lottie
-implementation is the alternative if it needs to be interruptible or resolution-independent.
+**One definition, two renderers.** `src/lib/splash-choreography.ts` holds the whole
+animation as pure functions of time. `remotion/XootSplash.tsx` samples it per video
+frame; `src/components/zoot/SplashScreen.tsx` samples it into Web Animations keyframes
+for the running app. Neither owns any timing or geometry of its own — a splash that
+plays one way in the exported video and another way in the app is a seam users notice
+and reviewers never do. `splash-choreography.test.ts` asserts the properties both
+depend on.
 
-> **`CONFIRM`.** Splash duration, and whether it plays on every cold start or only on first
-> run. A flourish that delights once becomes friction on the fiftieth launch — recommend
-> full animation on first run, and a shortened version (or skip-on-tap) thereafter.
+Remotion is the **authoring and render tool**, not a runtime dependency. It is a
+devDependency and nothing it produces is in the shipped bundle.
+
+| Command | Produces |
+|---|---|
+| `npm run splash:studio` | Remotion Studio, for scrubbing the timeline |
+| `npm run splash:render` | The splash as video, for store previews and marketing |
+| `npm run icons:render` | Every launcher and launch-screen still, into `mobile/assets/images/` |
+
+Icons are committed because EAS needs them at build time and does not run Remotion.
+The video is not — it is derivable, and a binary that regenerates on every render does
+not belong in git history.
+
+**Settled, replacing the earlier `CONFIRM`:** 2.6 seconds, once per session, and only
+on `/` or `/welcome`. Deep links skip it — someone opening a booking confirmation is
+mid-task, and a brand animation there is an obstacle. It is marked played on
+*completion*, not on mount, because the service worker reloads every client when it
+activates and a splash nobody saw has not played. `prefers-reduced-motion` skips
+straight to the app.
+
+Still open: the animation is **web only**. The native app shows the static launch
+screen and then the app. Playing it natively needs either `react-native-svg` plus
+Reanimated driving the same choreography, or the rendered video behind
+`expo-splash-screen`. Neither is wired.
 
 ### 3.6 Flowers
 
 Flowers in the splash screen and elsewhere, for vibrancy. Fits the existing Care+ bloom
 motif. Style follows the new red/white palette.
-
-### 3.2 Zoey
-
-- **Default fill → red.** Currently `var(--gold, #E88E6A)` (warm coral) at `Zoey.tsx:65`.
-  Change the *default* state; themed variants may keep their own fills.
-- **Stars → white, 4-pointed, twirling, each leaving a visible trace of its path.**
-  A 4-pointed star path already exists at `Zoey.tsx:129`, currently gold and static. The
-  work is: recolour white, multiply, animate orbit, add motion trails.
-  (v1's "three pointed" is superseded. 4-pointed is confirmed.)
-- Silhouette is **not** being redesigned. Restyle around her.
-
-### 3.3 Flowers
-
-Flowers wanted in the splash screen and elsewhere, to make the app feel more vibrant.
-Fits the existing Care+ bloom motif. Scope not yet defined — treat as a Phase 1/6 design
-input, not a standalone task.
 
 ---
 
