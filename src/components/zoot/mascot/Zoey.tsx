@@ -1,20 +1,15 @@
 // Zoey — a hand-drawn heart with dots for eyes and a curved smile. One SVG,
 // pose-driven. Ink stroke + brand red fill read on any wallpaper.
 //
-// Colours come from theme tokens (--zoey-fill, --zoey-halo, --foreground) with literal
-// HSL fallbacks, so she follows light/dark automatically but still renders correctly
-// if mounted outside the token scope — a widget extension, say, or a bare SVG export.
+// The drawing itself lives in `ZoeyArt.tsx`; this file adds the living motion —
+// breathing, blinking, per-pose gesture and the orbiting stars. The splash video
+// renders the same `ZoeyArt` from a deterministic timeline, so the two can never
+// drift into being different characters.
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { INK, STAR_D, ZOEY_FILL, ZOEY_HALO, ZoeyArt, type Pose } from "./ZoeyArt";
 
-export type Pose = "idle" | "wave" | "point" | "celebrate" | "sleep" | "peek" | "think";
-
-// Wobbly hand-drawn heart outline (not geometrically perfect on purpose).
-const HEART_D =
-  "M80 138 C40 112 14 88 14 60 C14 38 32 22 52 22 C64 22 74 28 80 40 C86 28 96 22 108 22 C128 22 146 38 146 60 C146 88 120 112 80 138 Z";
-
-// Four-pointed star, drawn from its own centre so translate/scale place it directly.
-const STAR_D = "M0 -10 L2.6 -2.6 L10 0 L2.6 2.6 L0 10 L-2.6 2.6 L-10 0 L-2.6 -2.6 Z";
+export type { Pose };
 
 // Each star rides a flattened ellipse — a circle seen from slightly above — so the
 // orbit reads as a ring *around* Zoey rather than a halo drawn on top of her.
@@ -82,7 +77,6 @@ export function Zoey({
   stars?: boolean;
 }) {
   const still = useReducedMotion();
-  const asleep = pose === "sleep";
 
   const body = still
     ? {}
@@ -90,20 +84,23 @@ export function Zoey({
       ? { y: [0, -14, 0], rotate: [0, -6, 6, 0], transition: { duration: 0.9, repeat: Infinity, ease: "easeInOut" as const } }
       : pose === "wave"
         ? { rotate: [-4, 4, -4], transition: { duration: 1.6, repeat: Infinity, ease: "easeInOut" as const } }
-        : asleep
+        : pose === "sleep"
           ? { scale: [1, 1.03, 1], transition: { duration: 3.8, repeat: Infinity, ease: "easeInOut" as const } }
           : { y: [0, -5, 0], scale: [1, 1.015, 1], transition: { duration: 3, repeat: Infinity, ease: "easeInOut" as const } };
 
-  // Eyes: dots. Sleep = closed arcs. Point = one squint. Blink otherwise.
-  const eyeY = 68;
-  const smile =
-    pose === "celebrate"
-      ? "M60 88 Q80 110 100 88 Q80 100 60 88 Z"
-      : pose === "think"
-        ? "M66 92 H94"
-        : pose === "point"
-          ? "M70 92 Q80 96 90 92"
-          : "M62 88 Q80 106 98 88";
+  // Blink. Only the plain dot eyes blink — sleep and point draw their own lids, and
+  // ZoeyArt falls back to its static eyes when this slot is left empty.
+  const blinkingEyes =
+    still || pose === "sleep" || pose === "point" ? undefined : (
+      <motion.g
+        animate={{ scaleY: [1, 1, 0.1, 1] }}
+        transition={{ duration: 0.28, repeat: Infinity, repeatDelay: 3.6, ease: "easeInOut" }}
+        style={{ transformBox: "view-box", transformOrigin: "80px 68px" }}
+      >
+        <circle cx="64" cy="68" r="4.8" fill={INK} />
+        <circle cx="96" cy="68" r="4.8" fill={INK} />
+      </motion.g>
+    );
 
   return (
     <motion.svg
@@ -124,78 +121,21 @@ export function Zoey({
         </filter>
       </defs>
 
-      {/* soft halo */}
-      <circle cx="80" cy="86" r="62" fill="hsl(var(--zoey-halo, 6 100% 92%))" opacity="0.35" />
-
-      {/* Far half of every orbit — drawn before the heart, so it is occluded by it. */}
+      {/* Far half of every orbit — drawn before the heart, so it is occluded by it.
+          It has to sit above the halo and below the body, which is why the art is
+          rendered in two calls rather than one. */}
+      <circle cx="80" cy="86" r="62" fill={ZOEY_HALO} opacity="0.35" />
       {stars && !still && <Orbits half="far" />}
 
-      {/* hand-drawn shadow offset */}
-      <path d={HEART_D} fill="hsl(var(--foreground, 14 18% 14%))" opacity="0.9" transform="translate(3 4)" />
-
-      {/* heart body — brand red, ink outline. Falls back to a literal so the mascot
-          never renders unfilled if it is used outside the token scope. */}
-      <path
-        d={HEART_D}
-        fill="hsl(var(--zoey-fill, 3 78% 53%))"
-        stroke="hsl(var(--foreground, 14 18% 14%))"
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-      />
-
-      {/* inner shading crescent */}
-      <path
-        d="M32 52 C42 38 60 34 74 42"
-        stroke="#FFFFFF"
-        strokeOpacity="0.55"
-        strokeWidth="4"
-        strokeLinecap="round"
-        fill="none"
-      />
-
-      {/* eyes */}
-      {asleep ? (
-        <>
-          <path d={`M58 ${eyeY} q6 6 12 0`} stroke="hsl(var(--foreground, 14 18% 14%))" strokeWidth="3.4" strokeLinecap="round" fill="none" />
-          <path d={`M90 ${eyeY} q6 6 12 0`} stroke="hsl(var(--foreground, 14 18% 14%))" strokeWidth="3.4" strokeLinecap="round" fill="none" />
-        </>
-      ) : pose === "point" ? (
-        <>
-          <circle cx="64" cy={eyeY} r="4.6" fill="hsl(var(--foreground, 14 18% 14%))" />
-          <path d={`M90 ${eyeY} q6 5 12 0`} stroke="hsl(var(--foreground, 14 18% 14%))" strokeWidth="3.2" strokeLinecap="round" fill="none" />
-        </>
-      ) : (
-        <motion.g
-          animate={still ? {} : { scaleY: [1, 1, 0.1, 1] }}
-          transition={{ duration: 0.28, repeat: Infinity, repeatDelay: 3.6, ease: "easeInOut" }}
-          style={{ transformBox: "view-box", transformOrigin: `80px ${eyeY}px` }}
-        >
-          <circle cx="64" cy={eyeY} r="4.8" fill="hsl(var(--foreground, 14 18% 14%))" />
-          <circle cx="96" cy={eyeY} r="4.8" fill="hsl(var(--foreground, 14 18% 14%))" />
-        </motion.g>
-      )}
-
-      {/* cheeks */}
-      <circle cx="52" cy="82" r="4.5" fill="#FFFFFF" opacity="0.35" />
-      <circle cx="108" cy="82" r="4.5" fill="#FFFFFF" opacity="0.35" />
-
-      {/* mouth */}
-      <path
-        d={smile}
-        stroke="hsl(var(--foreground, 14 18% 14%))"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill={pose === "celebrate" ? "var(--charcoal, #2A2622)" : "none"}
-      />
+      <ZoeyArt pose={pose} eyes={blinkingEyes} haloOpacity={0} />
 
       {/* celebrate confetti dots */}
       {pose === "celebrate" && !still && (
         <motion.g animate={{ rotate: 360 }} transition={{ duration: 3.2, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: "80px 80px" }}>
-          <circle cx="18" cy="30" r="3" fill="hsl(var(--zoey-fill, 3 78% 53%))" />
+          <circle cx="18" cy="30" r="3" fill={ZOEY_FILL} />
           <circle cx="142" cy="42" r="2.5" fill="#FFFFFF" />
-          <circle cx="150" cy="110" r="3" fill="hsl(var(--zoey-halo, 6 100% 92%))" />
-          <circle cx="14" cy="120" r="2.5" fill="hsl(var(--foreground, 14 18% 14%))" />
+          <circle cx="150" cy="110" r="3" fill={ZOEY_HALO} />
+          <circle cx="14" cy="120" r="2.5" fill={INK} />
         </motion.g>
       )}
 
@@ -208,13 +148,13 @@ export function Zoey({
       )}
 
       {/* sleep zzz */}
-      {asleep && !still && (
+      {pose === "sleep" && !still && (
         <motion.text
           x="118"
           y="42"
           fontSize="20"
           fontFamily="Cormorant Garamond, serif"
-          fill="hsl(var(--foreground, 14 18% 14%))"
+          fill={INK}
           animate={{ opacity: [0, 1, 0], y: [42, 24, 16] }}
           transition={{ duration: 2.8, repeat: Infinity }}
         >

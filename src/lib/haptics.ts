@@ -66,7 +66,13 @@ export const haptic = (intent: HapticIntent = "selection") => {
 
     const navigatorWithVibrate = window.navigator as Navigator & {
       vibrate?: (pattern: number | number[]) => boolean;
+      userActivation?: { hasBeenActive: boolean };
     };
+
+    // Browsers refuse to vibrate before the user has interacted with the page, and
+    // log an error when asked to. Calling it anyway achieves nothing and fills the
+    // console on every launch, now that the splash fires a haptic on load.
+    if (navigatorWithVibrate.userActivation?.hasBeenActive === false) return;
 
     if (typeof navigatorWithVibrate.vibrate === "function") {
       navigatorWithVibrate.vibrate(patterns[intent]);
