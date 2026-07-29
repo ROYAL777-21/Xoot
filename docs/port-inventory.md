@@ -85,7 +85,7 @@ Zero or near-zero Tailwind coupling. Safe to move now.
 | `src/lib/prefs.ts` | Includes `haptic()`, which Phase 8 depends on. |
 | `src/lib/format.ts` | Money/date formatting. |
 | `src/lib/onboarding-state.ts` | Answer shape + completion. |
-| `src/components/zoot/mascot/Zooey.tsx` | One SVG, pose-driven. Only **3** `className` uses. **Needs framer-motion added to local-helpers.** |
+| `src/components/zoot/mascot/Zoey.tsx` | One SVG, pose-driven. Only **3** `className` uses. **Needs framer-motion added to local-helpers.** |
 
 **Caveat on `service-visual.ts`:** its 19 accents are vibrant and unrelated to each other
 (teal, magenta, indigo, orange…). Against a red-primary system they will read as noise. Port
@@ -148,11 +148,11 @@ Landed in local-helpers, full gate green (lint, typecheck, 158 tests, build):
 | `src/lib/glass.ts` | As-is. clear/frosted/solid presets. |
 | `src/lib/prefs.ts` | As-is. Provides `haptic()`. |
 | `src/components/zoot/AnimatedIcon.tsx` | As-is. Needed by `service-visual`, and Phase 8 builds on its motion vocabulary. |
-| `src/components/zoot/mascot/Zooey.tsx` | **Restyled to the decided spec** — see below. |
+| `src/components/zoot/mascot/Zoey.tsx` | **Restyled to the decided spec** — see below. |
 
 `framer-motion@12.43.0` added to local-helpers.
 
-### Zooey changes on port
+### Zoey changes on port
 
 - Default fill is now brand red via `var(--zoey-fill, #E02B20)`, replacing
   `var(--gold, #E88E6A)`. The literal fallback means the mascot never renders unfilled if

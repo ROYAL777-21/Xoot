@@ -1,4 +1,4 @@
-// Zooey — a hand-drawn heart with dots for eyes and a curved smile. One SVG,
+// Zoey — a hand-drawn heart with dots for eyes and a curved smile. One SVG,
 // pose-driven. Ink-black stroke + brand red fill read on any wallpaper.
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ const HEART_D =
 const STAR_D = "M0 -10 L2.6 -2.6 L10 0 L2.6 2.6 L0 10 L-2.6 2.6 L-10 0 L-2.6 -2.6 Z";
 
 // Each star rides a flattened ellipse — a circle seen from slightly above — so the
-// orbit reads as a ring *around* Zooey rather than a halo drawn on top of her.
+// orbit reads as a ring *around* Zoey rather than a halo drawn on top of her.
 //
 // Parametrised as θ = 180° + 360°·p, which starts the star at the ellipse's left
 // edge and carries it over the TOP first. That makes the first half of every cycle
@@ -59,13 +59,13 @@ ${ORBITS.map((o, i) => TRAIL.map((t, j) => orbitKeyframes(`zoey-o${i}t${j}`, o, 
 /* Far half of the loop, drawn under the heart. */
 @keyframes zoey-far  { 0%,49.9% { opacity: 1 } 50%,100% { opacity: 0 } }
 /* Near half, drawn over it. The swap lands at the left and right extremes, where
-   the star is level with Zooey's sides and the layer change cannot be seen. */
+   the star is level with Zoey's sides and the layer change cannot be seen. */
 @keyframes zoey-near { 0%,49.9% { opacity: 0 } 50%,100% { opacity: 1 } }
 .zoey-star { animation-timing-function: linear; animation-iteration-count: infinite; }
 @media (prefers-reduced-motion: reduce) { .zoey-orbit { display: none } }
 `;
 
-export function Zooey({
+export function Zoey({
   pose = "idle",
   size = 120,
   className,
@@ -107,7 +107,7 @@ export function Zooey({
       width={size}
       height={size}
       role="img"
-      aria-label="Zooey the heart"
+      aria-label="Zoey the heart"
       className={cn("select-none overflow-visible", className)}
       animate={body}
       style={{ transformOrigin: "80px 90px" }}
@@ -226,7 +226,7 @@ export function Zooey({
  *
  * Each star is rendered twice by the caller — once as `far` before the heart and
  * once as `near` after it — and the two halves cross-fade at the exact points where
- * the star is level with Zooey's sides. From there the swap is invisible, and the
+ * the star is level with Zoey's sides. From there the swap is invisible, and the
  * star genuinely disappears behind her on the way round.
  */
 function Orbits({ half }: { half: "far" | "near" }) {

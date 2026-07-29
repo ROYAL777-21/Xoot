@@ -37,7 +37,7 @@ Expo the approved native path), the native iOS work, 146 docs including `BOOKING
 release checklists, and the readiness tooling.
 
 **app-iteration** — the product design:
-`Zooey.tsx`, the 4-chapter onboarding, `service-visual.ts`, the OKLCH token system and glass
+`Zoey.tsx`, the 4-chapter onboarding, `service-visual.ts`, the OKLCH token system and glass
 tokens in `styles.css`, `AnimatedIcon`, the `rise-in` stagger, `ProgressStepper`,
 `PermissionCard`, `Confetti`. Newer stack. Almost no docs or backend.
 
@@ -104,7 +104,7 @@ Each step is independently revertible. Nothing here is destructive to app-iterat
 stays intact on GitHub as the archive.
 
 1. **Freeze scope.** Confirm nothing new lands in app-iteration from the point work starts.
-2. **Inventory the port list.** Explicitly: `Zooey.tsx`, `components/zoot/onboarding/*`,
+2. **Inventory the port list.** Explicitly: `Zoey.tsx`, `components/zoot/onboarding/*`,
    `AnimatedIcon`, `service-visual.ts`, `styles.css` token structure, `prefs.haptic`,
    `ProgressStepper`, `routes/onboarding.tsx`. Confirm nothing else is wanted before moving.
 3. **Port the token system first**, on its own branch — it has no routing dependencies and

@@ -25,7 +25,7 @@ Two-sided: customers book, **Xooters** perform the work. iOS first, Android late
 | **Care+** | R99/month membership. |
 | **XootCred** | Loyalty currency. |
 | **Xoot Black** | Top tier — see `docs/concierge/knowledge/zoot-black-guide.md`. |
-| **Zoey** | The mascot. Not "Zooey", not "Xoey". Component file is still `Zooey.tsx`. |
+| **Zoey** | The mascot. Not "Zooey", not "Xoey". Component and file renamed to `Zoey.tsx` on 2026-07-29. |
 
 Brand line: **"Your home. Handled."**
 
@@ -89,7 +89,7 @@ is a **legal page**, so that correction is a legal-copy change, not a copy tweak
 | `src/styles.css` | app-iteration | Colour token *mechanism* (OKLCH) and the glass tokens — reuse the structure. Its "Heritage editorial luxe" palette is **superseded** by §3.1. |
 | `docs/BRAND_GUIDE.md` | local-helpers | Positioning, copy rules, onboarding principles — still good. Its fonts and palette are **superseded** by §3.1. |
 | `src/routes/onboarding.tsx` | app-iteration | Existing 4-chapter mascot onboarding, 295 lines. Being restructured in Phase 1 — extend, don't replace. |
-| `src/components/zoot/mascot/Zooey.tsx` | app-iteration | Mascot, 148 lines, pose-driven SVG. |
+| `src/components/zoot/mascot/Zoey.tsx` | app-iteration | Mascot, 148 lines, pose-driven SVG. |
 | `src/lib/service-visual.ts` | app-iteration | Per-service accent + motion. 19 services already mapped. |
 | `src/lib/pricing.ts` | app-iteration | Existing pricing engine — **multiplier-based, incompatible with §4. See §4.0.** |
 | `docs/BOOKING_LOGIC.md` | local-helpers | Booking lifecycle, state machine, assignment rules, sensitive-access windows. Solid; build against it. |
@@ -155,9 +155,9 @@ keyboard treatment** for text inputs.
 ### 3.4 Zoey
 
 - **Default fill → red**, which now aligns with the primary palette rather than fighting it.
-  Currently `var(--gold, #E88E6A)` at `Zooey.tsx:65`.
+  Currently `var(--gold, #E88E6A)` at `Zoey.tsx:65`.
 - **Stars → white, 4-pointed, twirling, each leaving a visible trace of its path.**
-  A 4-pointed star path already exists at `Zooey.tsx:129`, currently gold and static.
+  A 4-pointed star path already exists at `Zoey.tsx:129`, currently gold and static.
 - **Animate her through onboarding, Headspace-style** — she transitions and moves *between*
   steps rather than being a static illustration per screen. See §5.2.
 - Silhouette is **not** redesigned. Restyle around her.
@@ -181,10 +181,10 @@ motif. Style follows the new red/white palette.
 
 ### 3.2 Zoey
 
-- **Default fill → red.** Currently `var(--gold, #E88E6A)` (warm coral) at `Zooey.tsx:65`.
+- **Default fill → red.** Currently `var(--gold, #E88E6A)` (warm coral) at `Zoey.tsx:65`.
   Change the *default* state; themed variants may keep their own fills.
 - **Stars → white, 4-pointed, twirling, each leaving a visible trace of its path.**
-  A 4-pointed star path already exists at `Zooey.tsx:129`, currently gold and static. The
+  A 4-pointed star path already exists at `Zoey.tsx:129`, currently gold and static. The
   work is: recolour white, multiply, animate orbit, add motion trails.
   (v1's "three pointed" is superseded. 4-pointed is confirmed.)
 - Silhouette is **not** being redesigned. Restyle around her.
@@ -467,6 +467,39 @@ user's effort and returns nothing.
 The existing `ChatQuestion` and `ChoiceGrid` components in
 `src/components/zoot/onboarding/parts.tsx` are the right base.
 
+### 5.1b Curated by customer type — build this in
+
+**Founder requirement, 2026-07-29. Not for the first Phase 1 pass, but the flow must be
+built so this drops in rather than being retrofitted.**
+
+Onboarding branches early on what kind of customer this is, and everything downstream is
+curated to that answer:
+
+| Type | What changes |
+|---|---|
+| **Household** | The default path. Home size in bedrooms, recurring frequency, favourite Xooter, add-ons framed around living space. |
+| **Airbnb host** | Turnover-shaped. Booking window capped 07:00–14:00 (§4.6), the required linen selector, calendar sync (Phase 3) offered during onboarding rather than buried, add-ons framed around guest-ready (restock supplies, restock toiletries). Asks about listing count, not bedrooms. |
+| **Office / commercial** | No size selector at all (§4.4). Leads with frequency and a recurring schedule, asks about headcount and access hours, and surfaces invoicing and a billing contact — a business needs a VAT invoice, a household does not. |
+
+**Why this needs designing in now even though it is built later.** Each type wants a
+*different question set*, not the same questions with different labels. An Airbnb host asked
+"how many bedrooms?" has already been told the product isn't for them. So the onboarding
+state has to model answers as a per-type schema from the start, rather than one flat object
+that later grows optional fields.
+
+`src/lib/service-visual.ts` already distinguishes `airbnb` and `office` services, and
+`PropertyType` in the pricing types already carries `office`, `commercial` and `airbnb`. The
+vocabulary exists; the flow does not.
+
+> **`CONFIRM` before building:** does the type get chosen explicitly ("What are we looking
+> after?") or inferred from the first service picked? Explicit is clearer and lets the
+> curation start immediately; inferred is one less step. Recommend explicit — it is the
+> screen that makes an Airbnb host feel the product was built for them.
+>
+> Also unresolved: whether one account can hold **more than one type** — a person with a
+> home *and* a rental is a realistic and valuable customer, and that decision changes the
+> data model, not just the UI.
+
 ### 5.2 First screen — specified directly by the user
 
 - **Split layout:** card fills half the screen, animated creative fills the other half.
@@ -671,7 +704,8 @@ from §1 — a legal-copy fix, not just marketing copy.
 | 9 | Tiimo's exact typeface — match the register, or confirm the family before it enters a token file. | Phase 1 |
 | 10 | Splash: duration, and every cold start or first run only? Recommend full on first run, shortened/skippable after. | Phase 1 |
 | 11 | The 19 vibrant per-service accent colours in `service-visual.ts` will fight a red-primary system. Re-map, or keep as a deliberate second layer? | Phase 1 |
-| 12 | **"Accommodate all industries"** — still unclear. Could mean expanding beyond cleaning into the 19 verticals already in `service-visual.ts`, or supporting commercial/B2B clients. **Do not build architecture around a guess.** | Architecture |
+| 11a | **Customer-type curation (§5.1b)** — explicit choice or inferred from first service? Can one account hold more than one type? | Onboarding data model |
+| 12 | **"Accommodate all industries"** — likely now partly answered by §5.1b: the founder's ask to curate for Airbnb hosts and offices is exactly "serve more than households". Still unclear whether it *also* means expanding beyond cleaning into the 19 verticals in `service-visual.ts`. Worth one question rather than an assumption. | Architecture |
 | 13 | **Repo consolidation** — one repository is wanted. Approach not yet chosen; see `docs/repo-consolidation-plan.md`. | Everything downstream |
 | 14 | Full legal terms text, apart from the pinned booking-cover terms. | Pre-ship |
 | 15 | Insurance provider details once sorted. | Pre-ship §8 |
