@@ -4,6 +4,7 @@ import { SEO } from "@/components/SEO";
 import { Zoey } from "@/components/zoot/mascot/Zoey";
 import { AppleLogo, GoogleLogo } from "@/components/zoot/ProviderLogos";
 import { haptic } from "@/lib/haptics";
+import { TermsNotice } from "@/components/zoot/TermsNotice";
 import { Mail, Phone } from "lucide-react";
 
 /**
@@ -125,6 +126,10 @@ export default function Welcome() {
               <GoogleLogo className="size-[1.15rem]" />
             </Button>
           </div>
+
+          {/* Implicit acceptance: it must be visible before the action it refers to,
+              not tucked away, or it does not bind. */}
+          <TermsNotice action="continuing" className="mt-3" />
         </div>
       </div>
     </div>

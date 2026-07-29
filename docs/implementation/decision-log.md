@@ -24,6 +24,7 @@ Reviewed: 2026-06-24
 | ZD-018 | Care+ activation paths must be consolidated. | Founder/product decision required | Current functions overlap and one expects missing columns. | Phase 1 defines the authority before Phase 3 expansion. |
 | ZD-019 | Existing integration outbox is reused for invoices, communications and provider jobs. | Approved architecture direction | Duplicate queues increase replay and audit risk. | Add typed event contracts and idempotency instead of a second queue. |
 | ZD-020 | ZD-007 is superseded. Pricing moves from flat per-home-size to per-half-hour ladders per service, defined in `docs/xoot-master-brief.md` §4. Booking Cover moves R21 to R22. | Approved by founder 2026-07-29 | Founder supplied full per-hour ladders for all services and confirmed they supersede the locked commercial facts. | See ZD-020 notes below. Nothing reaches production pricing without founder sign-off on the migration plan. |
+| ZD-021 | Terms are accepted implicitly at sign-up with a visible linked notice. Post-deploy editing is code-and-deploy, not database-editable config. Care+ discount funding is `shared` short-term, switching to `commission` later. | Approved by founder 2026-07-29 | Founder chose lowest-friction consent, the most secure editing model, and early-frequency discount funding. | See ZD-021 notes below. |
 
 ## ZD-020 notes — pricing model change
 
@@ -81,6 +82,50 @@ not R30 (founder, 2026-07-29).
 **Sequencing.** Phase 1 may build UI against §4 because no price is shown until the end of
 the booking flow. Server pricing is a separate, founder-signed-off migration. Client and
 server must not diverge in production.
+
+## ZD-021 notes — consent, editability, discount funding
+
+**Terms.** Implicit acceptance with a visible linked notice, rendered by
+`src/components/zoot/TermsNotice.tsx` directly beneath the action it refers to. For
+implicit acceptance to bind it must be genuinely visible before the action and the links
+must work — it cannot be hidden behind a disclosure toggle, greyed to illegibility, or
+pushed below the fold. The component names the actual button ("by starting your trial"
+rather than "by continuing") so the sentence is true on each screen.
+
+Shown on `/welcome` and on the Care+ paywall. **Still to add** wherever else an account is
+created or money is committed.
+
+**Editability — code and deploy, deliberately.** The founder asked for the most secure
+option, and this is it. Database-editable prices and copy are one compromised admin
+session away from changing what customers are charged, with no review step. Code changes
+pass through git history, pull-request review, CI, and the Claude security-review action,
+and leave an immutable audit trail.
+
+The cost is real and worth stating: **every price or copy change needs a developer and a
+deploy.** If that becomes the bottleneck, the secure middle path is to move only low-risk
+strings — marketing copy, benefit lists — into config while prices stay in code, and to
+gate any config write behind the existing `approval_requests` and `admin_audit_log`
+tables rather than a bare admin form.
+
+To keep that tolerable, every tunable value is a named, commented constant at the top of
+its module rather than a literal buried in a component:
+
+| What | Where |
+|---|---|
+| Booking price ladders (display) | `src/lib/xoot-pricing.ts` |
+| Booking price ladders (authoritative) | `supabase/functions/_shared/pricing.ts` |
+| Add-on, cover, linen amounts | both of the above, kept in parity by `pricing-parity.test.ts` |
+| Care+ tier prices, discounts, win-back | `src/lib/care-plus.ts` |
+| Discount funding split and pay floor | `src/lib/care-plus.ts` (`DISCOUNT_FUNDING`) |
+| Trial length | `src/pages/CarePlusPaywall.tsx` (`TRIAL_DAYS`) |
+| Onboarding options and defaults | `src/lib/onboarding.ts` |
+| Colour and type tokens | `src/index.css` |
+
+**Discount funding.** `shared` short-term to drive booking frequency, moving to
+`commission` once volume supports it. It is a constant rather than a hardcoded rule so the
+switch is a one-line change. `splitDiscount()` caps the Xooter's share so it can never
+breach the R220 half-day / R300 full-day floor; Xoot absorbs whatever the cap refuses.
+The risk to watch is not complaints — it is Xooters quietly declining Care+ jobs.
 
 ## Pending Founder Decisions
 

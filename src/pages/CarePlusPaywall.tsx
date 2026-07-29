@@ -21,6 +21,7 @@ import {
   type WinBackOffer,
 } from "@/lib/care-plus";
 import { ArrowRight, Check, Clock3 } from "lucide-react";
+import { TermsNotice } from "@/components/zoot/TermsNotice";
 
 /**
  * Care+ paywall, sold on outcomes rather than on savings.
@@ -220,6 +221,7 @@ export default function CarePlusPaywall() {
           >
             Not now
           </button>
+          <TermsNotice action="starting your trial" className="mt-1" />
         </div>
       </div>
     </div>
