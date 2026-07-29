@@ -99,22 +99,18 @@ export default function BookingConfirm() {
       </header>
 
       <div className="flex flex-1 flex-col gap-4 rounded-t-[1.75rem] bg-card px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        {/* Last-minute notice sits with the time, before any number is shown, so the
-            customer is warned while choosing rather than surprised at the total. */}
-        <div className="flex items-start gap-2.5 rounded-2xl bg-warning/10 p-3.5">
-          <Zap className="mt-0.5 size-4 shrink-0 text-warning-foreground" aria-hidden="true" />
-          <p className="text-xs leading-relaxed text-warning-foreground">
-            <span className="font-semibold">Booking for tomorrow morning.</span> Last-minute slots cost more than
-            booking a few days ahead.
-          </p>
-        </div>
-
         {/* Hours */}
         <section>
           <div className="flex items-baseline justify-between">
             <h2 className="flex items-center gap-1.5 text-sm font-bold">
               <Clock className="size-4" aria-hidden="true" />
               How long
+              {/* A tag, not a banner: it labels the slot it applies to rather than
+                  occupying the top of the screen as an alert. */}
+              <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em] text-warning-foreground">
+                <Zap className="size-2.5" aria-hidden="true" />
+                Last minute
+              </span>
             </h2>
             <span className="text-xs text-muted-foreground">
               {hours} hours{hours === recommended ? " · recommended" : ""}
