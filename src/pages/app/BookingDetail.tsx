@@ -9,6 +9,7 @@ import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCh
 import { resolvePhoto } from "@/components/zoot/XooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { BookingChat } from "@/components/zoot/BookingChat";
+import { TipCard } from "@/components/zoot/TipCard";
 import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
 import { canAccessSensitiveBookingData } from "@/lib/operations";
 import { notifyBookingLiveActivity, type XootBookingLiveActivityStatus } from "@/lib/native-live-activity";
@@ -20,6 +21,8 @@ import {
   type NativeBookingActionInput,
 } from "@/lib/native-booking-actions";
 import { haptic } from "@/lib/haptics";
+import { canOfferTip, isWritableTip } from "@/lib/tipping";
+import { formatRand } from "@/lib/xoot-pricing";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 import { isOptionalNativePlatform } from "@/lib/optional-capacitor";
 import { getClientVisibleStatus, normaliseBookingStatus, type BookingStatus } from "@/lib/booking-state-machine";
@@ -111,6 +114,7 @@ const BookingDetail = () => {
   const [review, setReview] = useState<Review | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [tipCents, setTipCents] = useState<number | null>(null);
   const [incidentType, setIncidentType] = useState("poor_quality");
   const [incidentNotes, setIncidentNotes] = useState("");
   const [loading, setLoading] = useState(true);
@@ -333,6 +337,26 @@ const BookingDetail = () => {
     }).select("id, rating, notes").single();
     if (error) return toast.error(error.message);
     setReview(savedReview as Review);
+
+    // The tip is a second write, and deliberately not allowed to undo the first. The
+    // rating is the record that matters for trust and safety; losing it because a tip
+    // failed would be the worse outcome, so this reports and carries on rather than
+    // rolling back or blocking the follow-up routing below.
+    if (canOfferTip() && isWritableTip(tipCents) && tipCents !== null) {
+      // `as any` because `tip_cents` is not in the generated types yet — the migration
+      // is written and unapplied (ZD-003, ZD-005), which is also why `canOfferTip()`
+      // gates this. The cast goes away when the schema and its types are regenerated.
+      const { error: tipError } = await (supabase as any)
+        .from("bookings")
+        .update({ tip_cents: tipCents })
+        .eq("id", id);
+      if (tipError) {
+        toast.warning("Review saved. The tip did not go through — you have not been charged.");
+      } else {
+        haptic("success");
+      }
+    }
+
     if (reviewRating <= 2) {
       try {
         await invokeOpsWorkflow({
@@ -502,7 +526,10 @@ const BookingDetail = () => {
                     </select>
                   </div>
                   <Input value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} placeholder="Anything the team should know?" />
-                  <Button onClick={submitReview} className="rounded-xl gradient-warm">Submit review</Button>
+                  <TipCard value={tipCents} onChange={setTipCents} className="pt-1" />
+                  <Button onClick={submitReview} className="rounded-xl gradient-warm">
+                    {tipCents === null ? "Submit review" : `Submit review and tip ${formatRand(tipCents)}`}
+                  </Button>
                 </div>
               )}
             </Card>

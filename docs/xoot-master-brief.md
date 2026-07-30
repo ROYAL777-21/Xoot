@@ -213,6 +213,56 @@ which already owned the deep-link bypass and the Reduce Motion / Low Power gate.
 Flowers in the splash screen and elsewhere, for vibrancy. Fits the existing Care+ bloom
 motif. Style follows the new red/white palette.
 
+### 3.7 Deferred design queue — founder, 2026-07-30
+
+Requested and explicitly **deferred by the founder** ("deal with this at a later stage
+though and proceed with the next deliverable"). Recorded here with the exact files so
+each is a short job when it is picked up, not a re-derivation.
+
+**1. Zoey fills the screen on first onboarding.** Instead of flying away, she comes
+*toward* the viewer, fills the frame, and the whole screen becomes brand red. This is
+the **first-run onboarding** entrance, distinct from the every-launch splash.
+
+The choreography already supports it: `zoeyState` is a sum of additive moves, so this
+is a second exported function beside it — `zoeyApproachState(t)` — scaling up and
+forward rather than up and away, plus a background colour ramp. Both would be selected
+by a variant prop on the renderers. Do **not** fork
+`splash-choreography.ts`; the whole point of ZD-022 is one definition per performance.
+
+**2. A wordmark splash: "Xoot" in cursive, written on.** Distinct company red as the
+full background, the wordmark drawn stroke by stroke as if handwritten.
+
+Technique: a single-stroke SVG path per letterform, animated with `stroke-dasharray` /
+`stroke-dashoffset` from full offset to zero. That works identically in all three
+renderers already wired — CSS/WAAPI, Remotion, and `react-native-svg` (which supports
+both attributes). It needs a **cursive wordmark drawn as a stroke path**, not a filled
+typeface outline: filled outlines cannot be "written", only revealed by a wipe, and the
+difference is obvious. That asset does not exist yet and is the gating item.
+
+**3. Zoey is too glossy.** Confirmed founder feedback. The shine comes from exactly
+three elements in `src/lib/zoey-geometry.ts` and `ZoeyArt.tsx`:
+
+| What | Where |
+|---|---|
+| The white highlight crescent | `SHADING_D`, stroked white at 0.55 opacity, 4px |
+| Two white cheek discs at 0.35 | `ZoeyArt.tsx` |
+| The soft halo | `ZOEY_TOKENS["zoey-halo"]` |
+
+Reducing or removing the crescent is the single biggest change; it is what reads as a
+plastic highlight. Because the geometry is shared, one edit fixes the mascot, the
+splash, the video and every generated icon at once — but `npm run icons:render` and
+`npm run shared:sync` must both be re-run afterwards.
+
+**4. A distinct company red for the mascot**, separate from the UI's primary red. The
+token already exists and is already separate: `--zoey-fill` (`3 78% 53%`) is defined
+apart from `--primary` (`3 78% 51%`) precisely so the mascot can diverge without
+dragging button and link colours with it. Changing her colour is one token in
+`src/index.css` plus `ZOEY_TOKENS` in `zoey-geometry.ts`, then the two regeneration
+commands above.
+
+**5. A different overall UI direction — founder undecided.** No work until the founder
+decides. Flagged at each design checkpoint rather than assumed.
+
 ---
 
 ## 4. Pricing and service logic
@@ -615,7 +665,7 @@ home is in careful hands, and that the language is warm rather than transactiona
   - Xooter — completed-job counts, bonus tiers, and a **streak counter** for consecutive
     active days/jobs.
 
-### 6.1 Tipping — **already built, and needs correcting**
+### 6.1 Tipping — **ported and corrected 2026-07-30**
 
 Not a new feature. It exists in **app-iteration only** and must be ported to the consolidated
 repo — but not as-is.
@@ -648,8 +698,37 @@ repo — but not as-is.
 > 4. Are tips visible to the Xooter before they rate the customer? Recommend **no** — it
 >    biases mutual ratings.
 
-Keep the good parts: placement at the rating moment, the RLS guard, `tip_cents` as integer
-cents. Add: haptic and a small celebration on send, and a genuinely frictionless skip.
+**What was built, 2026-07-30.** Not a port in the end — app-iteration's card is written
+against a `reviews` table this repo does not have. This repo has `post_job_reviews` and a
+review form already live in `BookingDetail.tsx`, so tipping was built onto that instead.
+
+| Piece | Where |
+|---|---|
+| Money logic, presets, claim gating | `src/lib/tipping.ts` |
+| The tip row | `src/components/zoot/TipCard.tsx` |
+| Wired at the post-service moment | `src/pages/app/BookingDetail.tsx` |
+| Schema + author guard | `supabase/migrations/20260730090000_booking_tips.sql` |
+
+Both documented corrections are in: nothing preselected, rand amounts not percentages.
+
+**The card does not render yet, on purpose.** `TIP_READINESS` is `schema_pending`
+because the migration is written and unapplied under ZD-003 and ZD-005. A tip row that
+fails on every submit reads as a broken payment at the exact moment the product is
+asking to be trusted. Advance it to `capture_only` when the migration lands, and to
+`settled` only when `payment_records` actually carries a tip to a payout.
+
+**The "100% goes to your Xooter" line is not shipped**, and cannot be until question 1
+below is answered — it is a representation about price under the Consumer Protection
+Act, and it is trivially checkable by the Xooters on the other side of it. The flag is
+`TIP_GOES_ENTIRELY_TO_XOOTER` and a test asserts the claim cannot render while it is
+false.
+
+Two things found while building, both recorded in the migration:
+
+- `payment_records.payment_kind` had no `tip` value, so a recorded tip had nowhere to
+  become money. The migration adds it; wiring the payout is the payments phase.
+- `bookings.price` is `numeric` in **rands** while `tip_cents` is integer **cents**. Do
+  not add them without converting.
 
 ---
 
