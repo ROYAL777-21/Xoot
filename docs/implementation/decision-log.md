@@ -25,7 +25,7 @@ Reviewed: 2026-06-24
 | ZD-019 | Existing integration outbox is reused for invoices, communications and provider jobs. | Approved architecture direction | Duplicate queues increase replay and audit risk. | Add typed event contracts and idempotency instead of a second queue. |
 | ZD-020 | ZD-007 is superseded. Pricing moves from flat per-home-size to per-half-hour ladders per service, defined in `docs/xoot-master-brief.md` §4. Booking Cover moves R21 to R22. | Approved by founder 2026-07-29 | Founder supplied full per-hour ladders for all services and confirmed they supersede the locked commercial facts. | See ZD-020 notes below. Nothing reaches production pricing without founder sign-off on the migration plan. |
 | ZD-021 | Terms are accepted implicitly at sign-up with a visible linked notice. Post-deploy editing is code-and-deploy, not database-editable config. Care+ discount funding is `shared` short-term, switching to `commission` later. | Approved by founder 2026-07-29 | Founder chose lowest-friction consent, the most secure editing model, and early-frequency discount funding. | See ZD-021 notes below. |
-| ZD-022 | The splash is authored once in `src/lib/splash-choreography.ts` and rendered twice: Remotion for video, Web Animations for the app. Remotion is a devDependency and an authoring tool, never a runtime one. Launcher and launch-screen stills are generated from `ZoeyArt`. | Approved by founder 2026-07-29 ("Use remotion") | Two hand-maintained copies of the same animation drift, and the drift is invisible in review. | See ZD-022 notes below. The animation is web-only; native still shows a static launch screen. |
+| ZD-022 | The splash is authored once in `src/lib/splash-choreography.ts` and rendered three ways: Remotion for video, Web Animations for the browser, Reanimated + react-native-svg for native. Remotion is a devDependency and an authoring tool, never a runtime one. Launcher and launch-screen stills are generated from `ZoeyArt`. | Approved by founder 2026-07-29 ("Use remotion"), extended to native 2026-07-30 ("i also want the app to have it") | Hand-maintained copies of the same animation drift, and the drift is invisible in review. | See ZD-022 notes below. Native adds `react-native-svg`, and the shared modules are copied into `mobile/src/generated/` by a script rather than imported across roots. |
 
 ## ZD-020 notes — pricing model change
 
@@ -166,11 +166,33 @@ are committed because EAS needs them at build time and does not run Remotion. Th
 splash *video* is not committed — it is derivable, and a binary regenerated on every
 render does not belong in git history.
 
-**Open.** The animation is web-only. Native shows the static launch screen and then the
-app. Playing it there needs `react-native-svg` plus Reanimated driving the same
-choreography, or the rendered video behind `expo-splash-screen`. Neither is wired, and
-the choice is a founder/product call about whether the native app takes a new
-dependency.
+**Native — added 2026-07-30.** `react-native-svg` plus Reanimated, driving the same
+choreography. `mobile/src/components/splash-animation.tsx` translates it into native
+elements and decides no timing and no geometry of its own; `splash-parity.test.ts`
+holds all three renderers to that.
+
+*Why a generated copy rather than a shared import.* Metro builds its file map from the
+project root and fails with "Failed to get the SHA-1" for anything outside it — through
+`watchFolders`, through `resolveRequest`, and with `EXPO_USE_METRO_WORKSPACE_ROOT` set.
+A symlink is the other usual answer and breaks on Windows checkouts. So
+`npm run shared:sync` copies the dependency-free modules into `mobile/src/generated/`,
+and `shared-native-sync.test.ts` compares them byte-for-byte against the source. A
+duplicated file is only safe while something proves it is still a duplicate; that test
+is what makes this a copy rather than a fork. Mobile's `prestart` runs the sync, so a
+stale copy cannot reach a bundle by accident.
+
+*Where native legitimately differs.* Five trail segments rather than ten, because every
+animated element is a worklet the UI thread evaluates each frame and sixty of them is
+not a bet worth taking on a low-end Android device during app start. The taper is
+shared — `trailSegments(count)` — so only the sampling rate changes. And the star glow
+is a radial gradient rather than a Gaussian blur, because react-native-svg has no
+filter support on Android; the obvious substitute, concentric copies of the star, is
+the exact bullseye failure the web version documents.
+
+*Whether it plays* is `shouldPlayLaunchAnimation` in `mobile/src/lib/native-launch.ts`,
+which already owned the deep-link bypass and the Reduce Motion / Low Power gate. Adding
+a second opinion in the layout would have meant a voice booking intent getting a brand
+flourish over the top of the screen it asked for.
 
 
 ## Pending Founder Decisions

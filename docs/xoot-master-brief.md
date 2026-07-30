@@ -196,10 +196,17 @@ mid-task, and a brand animation there is an obstacle. It is marked played on
 activates and a splash nobody saw has not played. `prefers-reduced-motion` skips
 straight to the app.
 
-Still open: the animation is **web only**. The native app shows the static launch
-screen and then the app. Playing it natively needs either `react-native-svg` plus
-Reanimated driving the same choreography, or the rendered video behind
-`expo-splash-screen`. Neither is wired.
+**Native — added 2026-07-30.** `mobile/src/components/splash-animation.tsx` plays the
+same performance through Reanimated and `react-native-svg`. The native launch screen is
+held until the first frame is ready and hands straight over, so it is one continuous
+moment rather than a static mark, a flash of app, then a flourish.
+
+Metro cannot resolve a file outside its project root, so `npm run shared:sync` copies
+the dependency-free modules into `mobile/src/generated/` and a test compares them
+byte-for-byte against the source. Mobile's `prestart` runs the sync.
+
+Whether it plays is `shouldPlayLaunchAnimation` in `mobile/src/lib/native-launch.ts`,
+which already owned the deep-link bypass and the Reduce Motion / Low Power gate.
 
 ### 3.6 Flowers
 

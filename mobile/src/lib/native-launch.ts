@@ -73,3 +73,25 @@ export const buildNativeLaunchTarget = (intent: NativeLaunchIntent, params: Nati
 
   return `/book?${query.toString()}`;
 };
+
+/**
+ * Whether the Zoey launch animation plays on this start.
+ *
+ * Two reasons not to, and both already have an owner in this module rather than a
+ * second opinion in the layout:
+ *
+ * - A deep link is somewhere to *arrive*. Someone opening a booking, Concierge or a
+ *   voice intent is mid-task, and `shouldBypassNativeLaunchExperience` already says
+ *   so — a brand flourish in front of that is an obstacle, not a welcome.
+ * - `getNativeLaunchMode` already collapses Reduce Motion, Low Power Mode and the
+ *   force-static override into one answer. Low Power in particular is a real reason
+ *   to skip a 60fps animation at app start, and it would have been missed by checking
+ *   Reduce Motion alone.
+ */
+export const shouldPlayLaunchAnimation = ({
+  intent,
+  launchMode,
+}: {
+  intent: NativeLaunchIntent;
+  launchMode: ReturnType<typeof getNativeLaunchMode>;
+}) => !shouldBypassNativeLaunchExperience(intent) && launchMode === 'motion';

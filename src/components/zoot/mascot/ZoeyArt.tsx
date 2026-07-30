@@ -9,22 +9,24 @@
 // HSL fallbacks, so this still renders correctly outside the token scope — a widget
 // extension, a bare SVG export, or a Remotion render with no stylesheet attached.
 import type { ReactNode } from "react";
+import {
+  EYE_Y,
+  HEART_D,
+  SHADING_D,
+  STAR_D,
+  mouthFor,
+  themedColor,
+  type Pose,
+} from "@/lib/zoey-geometry";
 
-export type Pose = "idle" | "wave" | "point" | "celebrate" | "sleep" | "peek" | "think";
+export { HEART_D, STAR_D, ZOEY_VIEWBOX, mouthFor, type Pose } from "@/lib/zoey-geometry";
 
-/** The box this art is authored in. Consumers letterbox it rather than rescaling paths. */
-export const ZOEY_VIEWBOX = 160;
-
-// Wobbly hand-drawn heart outline (not geometrically perfect on purpose).
-export const HEART_D =
-  "M80 138 C40 112 14 88 14 60 C14 38 32 22 52 22 C64 22 74 28 80 40 C86 28 96 22 108 22 C128 22 146 38 146 60 C146 88 120 112 80 138 Z";
-
-// Four-pointed star, drawn from its own centre so translate/scale place it directly.
-export const STAR_D = "M0 -10 L2.6 -2.6 L10 0 L2.6 2.6 L0 10 L-2.6 2.6 L-10 0 L-2.6 -2.6 Z";
-
-export const INK = "hsl(var(--foreground, 14 18% 14%))";
-export const ZOEY_FILL = "hsl(var(--zoey-fill, 3 78% 53%))";
-export const ZOEY_HALO = "hsl(var(--zoey-halo, 6 100% 92%))";
+// Themeable on the web: the token wins, the literal is the fallback for anywhere the
+// token scope does not reach — a bare SVG export, or a Remotion render with no
+// stylesheet attached.
+export const INK = themedColor("foreground");
+export const ZOEY_FILL = themedColor("zoey-fill");
+export const ZOEY_HALO = themedColor("zoey-halo");
 
 /**
  * A star as the splash draws it: a crisp white core inside a soft red glow.
@@ -58,15 +60,6 @@ export function StarMark({ glowFilter, trail }: { glowFilter?: string; trail?: b
       <path d={STAR_D} fill="#FFFFFF" />
     </>
   );
-}
-
-const EYE_Y = 68;
-
-export function mouthFor(pose: Pose) {
-  if (pose === "celebrate") return "M60 88 Q80 110 100 88 Q80 100 60 88 Z";
-  if (pose === "think") return "M66 92 H94";
-  if (pose === "point") return "M70 92 Q80 96 90 92";
-  return "M62 88 Q80 106 98 88";
 }
 
 /**
@@ -132,7 +125,7 @@ export function ZoeyArt({
 
       {/* inner shading crescent */}
       <path
-        d="M32 52 C42 38 60 34 74 42"
+        d={SHADING_D}
         stroke="#FFFFFF"
         strokeOpacity="0.55"
         strokeWidth="4"

@@ -9,6 +9,7 @@ import {
   STARS,
   TRAIL,
   sampleTimes,
+  stageViewBox,
   starState,
   trailState,
   trailStrength,
@@ -186,5 +187,26 @@ describe("splash choreography", () => {
       expect(zoeyState(t)).toEqual(zoeyState(t));
       for (const star of STARS) expect(starState(star, t)).toEqual(starState(star, t));
     }
+  });
+
+  it("survives a viewport that has not been measured yet", () => {
+    // React Native reports 0 during hydration of a static export. Dividing through
+    // gives a viewBox of "0 NaN 400 NaN", which renders an empty screen and warns to
+    // the console rather than failing anywhere visible.
+    for (const [w, h] of [[0, 0], [390, 0], [0, 844], [NaN, NaN], [Infinity, 100]]) {
+      const box = stageViewBox(w, h);
+      expect(box).not.toMatch(/NaN|Infinity/);
+      expect(box.split(" ")).toHaveLength(4);
+    }
+  });
+
+  it("keeps the stage the same physical size across shapes", () => {
+    // Portrait and landscape must both fit the square into the shorter dimension, so
+    // the mascot is never bigger on one device than another.
+    const portrait = stageViewBox(390, 844).split(" ").map(Number);
+    const landscape = stageViewBox(844, 390).split(" ").map(Number);
+    expect(portrait[2]).toBe(STAGE);
+    expect(landscape[3]).toBe(STAGE);
+    expect(stageViewBox(500, 500)).toBe(`0 0 ${STAGE} ${STAGE}`);
   });
 });

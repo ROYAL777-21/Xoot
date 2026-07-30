@@ -54,7 +54,14 @@ export const STAGE = 400;
  * shrinks to nothing.
  */
 export function stageViewBox(width: number, height: number) {
-  const aspect = width / height;
+  // A viewport can be reported as zero or NaN before layout settles — React Native's
+  // `useWindowDimensions` does it during hydration of a static export. Dividing
+  // through produces a viewBox of "0 NaN 400 NaN", which renders nothing at all and
+  // only shows up as a console warning. Falling back to the square is both safe and
+  // very close to right for one frame.
+  const aspect = width > 0 && height > 0 ? width / height : 1;
+  if (!Number.isFinite(aspect)) return `0 0 ${STAGE} ${STAGE}`;
+
   const w = aspect >= 1 ? STAGE * aspect : STAGE;
   const h = aspect >= 1 ? STAGE : STAGE / aspect;
   return `${STAGE / 2 - w / 2} ${STAGE / 2 - h / 2} ${w} ${h}`;
@@ -311,28 +318,40 @@ export function starState(star: SplashStar, t: number): StarState {
 /** How far back in time the tail reaches, in seconds. */
 const TRAIL_SPAN = 0.1;
 
-/**
- * Number of segments across that span.
- *
- * This is a sampling rate, not a style choice. A tail is only a streak if its
- * segments overlap; the moment the spacing exceeds a star's width it stops being a
- * trail and becomes a dotted line following the star. At the top speed of the exit
- * (~1000 stage units/second) the segments are about 11 units apart, against a star
- * roughly 20 units across — so they overlap throughout, and they overlap by more
- * everywhere slower.
- */
-const TRAIL_SEGMENTS = 10;
+export type TrailSegment = { lag: number; opacity: number; size: number };
 
-export const TRAIL = Array.from({ length: TRAIL_SEGMENTS }, (_, i) => {
-  const k = (i + 1) / TRAIL_SEGMENTS;
-  return {
-    lag: TRAIL_SPAN * k,
-    // Both taper toward the tail, so the streak thins and fades as it recedes rather
-    // than ending in a blunt stub.
-    opacity: 0.72 * Math.pow(1 - 0.92 * k, 1.3),
-    size: 0.92 * (1 - 0.72 * k),
-  };
-});
+/**
+ * The tail, sampled into `count` segments across `TRAIL_SPAN`.
+ *
+ * Count is a sampling rate, not a style choice. A tail only reads as a streak while
+ * its segments overlap; the moment the spacing exceeds a star's width it stops being
+ * a trail and becomes a dotted line following the star. At the top speed of the exit
+ * (~1000 stage units/second) ten segments sit about 11 units apart, against a star
+ * roughly 20 units across — so they overlap throughout, and overlap by more
+ * everywhere slower.
+ *
+ * It is a parameter because the renderers have very different budgets. The browser
+ * and the video renderer take ten happily. React Native evaluates one worklet per
+ * animated element on the UI thread every frame, so sixty trail segments there is a
+ * real risk on a low-end Android device, and native trades a little density for
+ * frame rate. The taper is shared either way, which is the part that is a style
+ * choice.
+ */
+export function trailSegments(count: number): TrailSegment[] {
+  return Array.from({ length: count }, (_, i) => {
+    const k = (i + 1) / count;
+    return {
+      lag: TRAIL_SPAN * k,
+      // Both taper toward the tail, so the streak thins and fades as it recedes
+      // rather than ending in a blunt stub.
+      opacity: 0.72 * Math.pow(1 - 0.92 * k, 1.3),
+      size: 0.92 * (1 - 0.72 * k),
+    };
+  });
+}
+
+/** Default density, used by the browser and the video renderer. */
+export const TRAIL = trailSegments(10);
 
 /** Speeds (stage units/second) between which a trail fades up to full strength. */
 const TRAIL_SPEED_MIN = 90;
@@ -355,7 +374,7 @@ export function trailStrength(star: SplashStar, t: number) {
 }
 
 /** Full state for one trail segment, including its own fade. */
-export function trailState(star: SplashStar, segment: (typeof TRAIL)[number], t: number) {
+export function trailState(star: SplashStar, segment: TrailSegment, t: number) {
   const at = t - segment.lag;
   // Before the star existed there is nothing to trail.
   if (at < 0) return null;

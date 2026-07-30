@@ -6,6 +6,7 @@ import {
   nativeLaunchAssets,
   resolveNativeLaunchIntent,
   shouldBypassNativeLaunchExperience,
+  shouldPlayLaunchAnimation,
 } from "../../mobile/src/lib/native-launch";
 
 describe("mobile native launch experience", () => {
@@ -76,5 +77,29 @@ describe("mobile native launch experience", () => {
     expect(buildNativeLaunchTarget("care_plus", {})).toBe("/care-plus");
     expect(buildNativeLaunchTarget("bookings", {})).toBe("/bookings?intent=bookings");
     expect(buildNativeLaunchTarget("zooter_jobs", {})).toBe("/zooter/jobs?intent=zooter_jobs");
+  });
+
+  it("plays the launch animation only on a plain cold start", () => {
+    const plain = resolveNativeLaunchIntent({});
+    expect(shouldPlayLaunchAnimation({ intent: plain, launchMode: "motion" })).toBe(true);
+
+    // Reduce Motion, Low Power and the force-static override all resolve to "static",
+    // and none of them should get a 2.6-second animation at app start.
+    expect(shouldPlayLaunchAnimation({ intent: plain, launchMode: "static" })).toBe(false);
+
+    // A deep link is somewhere to arrive, not somewhere to be welcomed. Every intent
+    // that bypasses the launch layer must bypass the animation too, or the flourish
+    // plays over the top of the screen the link asked for.
+    for (const params of [
+      { intent: "book_clean" },
+      { intent: "care_plus" },
+      { intent: "booking_status" },
+      { intent: "zooter_jobs" },
+      { zootBot: "open" },
+    ]) {
+      const intent = resolveNativeLaunchIntent(params);
+      expect(shouldBypassNativeLaunchExperience(intent)).toBe(true);
+      expect(shouldPlayLaunchAnimation({ intent, launchMode: "motion" })).toBe(false);
+    }
   });
 });

@@ -18,6 +18,7 @@
     "splash:render": "remotion render remotion/index.ts XootSplash public/media/xoot-splash.mp4",
     "splash:still": "remotion still remotion/index.ts XootSplash public/media/xoot-splash-poster.png --frame=0",
     "icons:render": "node scripts/build/render-brand-assets.mjs",
+    "shared:sync": "node scripts/build/sync-shared-native.mjs",
     "seo:daily": "node scripts/seo/generate-daily-blog-queue.mjs",
     "seo:sync-release-dates": "node scripts/seo/sync-article-release-dates.mjs",
     "seo:validate": "node scripts/seo/validate-articles.mjs",

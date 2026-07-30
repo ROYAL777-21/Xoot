@@ -14,6 +14,7 @@ import {
   trailState,
   zoeyState,
   type SplashStar,
+  type TrailSegment,
 } from "@/lib/splash-choreography";
 import { cn } from "@/lib/utils";
 
@@ -56,7 +57,7 @@ const STAR_TRANSFORM = { transformBox: "view-box", transformOrigin: "0 0" } as c
 const round = (n: number) => Math.round(n * 1000) / 1000;
 
 /** Keyframes for one star, or one segment of its trail. */
-function starKeyframes(star: SplashStar, segment?: (typeof TRAIL)[number]): Keyframe[] {
+function starKeyframes(star: SplashStar, segment?: TrailSegment): Keyframe[] {
   const frames: Keyframe[] = [];
   for (const t of sampleTimes()) {
     const s = segment ? trailState(star, segment, t) : starState(star, t);
