@@ -689,14 +689,19 @@ repo — but not as-is.
    so a 10-hour clean is charged nearly double the tip of a 4-hour one for the same gesture.
    **Use rand presets plus a custom field.**
 
-**Still to confirm before the port ships:**
+**Answered by the founder, 2026-07-30:**
 
-> 1. Does Xoot take any cut of tips? Strong recommendation: **no.** "100% goes to your Xooter"
->    is a real trust asset and is trivially checkable by Xooters.
+> 1. **Xoot takes no cut of tips.** `TIP_GOES_ENTIRELY_TO_XOOTER = true`. The
+>    "every rand goes to your Xooter" line is unlocked but still gated on
+>    `TIP_READINESS === "settled"` — a promise about a payout that does not run yet is
+>    no more true for being well intentioned.
+> 4. **Tips are not visible to the Xooter before the relationship is closed out.**
+>    This forced a redesign; see below.
+
+**Still open:**
+
 > 2. Payout path — with the booking payout or separately? Affects `phase-7-payments-payouts`.
 > 3. Tax/VAT treatment of tips to contractors in SA. Accountant question, not a guess.
-> 4. Are tips visible to the Xooter before they rate the customer? Recommend **no** — it
->    biases mutual ratings.
 
 **What was built, 2026-07-30.** Not a port in the end — app-iteration's card is written
 against a `reviews` table this repo does not have. This repo has `post_job_reviews` and a
@@ -707,7 +712,8 @@ review form already live in `BookingDetail.tsx`, so tipping was built onto that 
 | Money logic, presets, claim gating | `src/lib/tipping.ts` |
 | The tip row | `src/components/zoot/TipCard.tsx` |
 | Wired at the post-service moment | `src/pages/app/BookingDetail.tsx` |
-| Schema + author guard | `supabase/migrations/20260730090000_booking_tips.sql` |
+| Schema, policies, guards | `supabase/migrations/20260730090000_booking_tips.sql` |
+| Policy tests | `src/lib/tip-policy.test.ts` |
 
 Both documented corrections are in: nothing preselected, rand amounts not percentages.
 
@@ -723,12 +729,35 @@ Act, and it is trivially checkable by the Xooters on the other side of it. The f
 `TIP_GOES_ENTIRELY_TO_XOOTER` and a test asserts the claim cannot render while it is
 false.
 
-Two things found while building, both recorded in the migration:
+**Why the tip is its own table.** Answer 4 cannot be enforced with a `bookings.tip_cents`
+column, which is what app-iteration has and what the first draft of this migration did.
+RLS in Postgres is row-level: the existing `zooters view assigned bookings` policy
+returns the whole row, so the moment a tip column exists on `bookings` every assigned
+Xooter can read it. Column-level `GRANT`s are the usual escape hatch and do not help
+either, because customers and Xooters share the single `authenticated` role. So the tip
+lives in `booking_tips`, gated on `settled_at` — deliberately settlement rather than job
+completion, because the point of the rule is that the knowledge must not colour the job
+or the rating.
+
+When a Xooter-rates-customer flow exists, tighten the gate to *settled AND the Xooter
+has submitted their rating*. There is none today — `post_job_reviews` runs
+customer→Xooter only — so settlement is the honest line, and it errs on the side of not
+showing.
+
+Three things found while building, all recorded in the migration:
 
 - `payment_records.payment_kind` had no `tip` value, so a recorded tip had nowhere to
   become money. The migration adds it; wiring the payout is the payments phase.
-- `bookings.price` is `numeric` in **rands** while `tip_cents` is integer **cents**. Do
-  not add them without converting.
+- `bookings.price` is `numeric` in **rands** while tips are integer **cents**. Do not
+  add them without converting.
+- **Anyone can rewrite a booking's price.** `update own bookings` and
+  `zooters update assigned bookings` both grant UPDATE on the whole row with no column
+  restriction, so a customer can zero their own booking price and an assigned Xooter can
+  raise the price of a job they are working — one PATCH from the browser, no UI needed.
+  The migration adds a trigger reverting price and status changes from any client
+  session, leaving the server path and a customer's own cancellation intact. **This is a
+  live production hole and the fix is unapplied**, so it needs prioritising against
+  ZD-005 rather than waiting for the rest of tipping.
 
 ---
 

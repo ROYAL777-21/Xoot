@@ -21,7 +21,7 @@ import {
   type NativeBookingActionInput,
 } from "@/lib/native-booking-actions";
 import { haptic } from "@/lib/haptics";
-import { canOfferTip, isWritableTip } from "@/lib/tipping";
+import { buildTipRow, canOfferTip } from "@/lib/tipping";
 import { formatRand } from "@/lib/xoot-pricing";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 import { isOptionalNativePlatform } from "@/lib/optional-capacitor";
@@ -342,14 +342,20 @@ const BookingDetail = () => {
     // rating is the record that matters for trust and safety; losing it because a tip
     // failed would be the worse outcome, so this reports and carries on rather than
     // rolling back or blocking the follow-up routing below.
-    if (canOfferTip() && isWritableTip(tipCents) && tipCents !== null) {
-      // `as any` because `tip_cents` is not in the generated types yet — the migration
-      // is written and unapplied (ZD-003, ZD-005), which is also why `canOfferTip()`
-      // gates this. The cast goes away when the schema and its types are regenerated.
-      const { error: tipError } = await (supabase as any)
-        .from("bookings")
-        .update({ tip_cents: tipCents })
-        .eq("id", id);
+    const tipRow =
+      canOfferTip() && booking
+        ? buildTipRow({ bookingId: id, userId: user.id, zooterId: booking.zooter_id ?? null, cents: tipCents })
+        : null;
+
+    if (tipRow) {
+      // `booking_tips`, not a column on `bookings` — RLS is row-level, so a tip stored
+      // on the booking would be readable by the assigned Xooter immediately, which is
+      // exactly what the founder ruled against. See the migration for the full reason.
+      //
+      // `as any` because the table is not in the generated types yet: the migration is
+      // written and unapplied (ZD-003, ZD-005), which is also why `canOfferTip()` gates
+      // this. The cast goes away when the schema and its types are regenerated.
+      const { error: tipError } = await (supabase as any).from("booking_tips").insert(tipRow);
       if (tipError) {
         toast.warning("Review saved. The tip did not go through — you have not been charged.");
       } else {

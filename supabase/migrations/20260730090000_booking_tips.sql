@@ -1,22 +1,147 @@
 -- Tipping a Xooter after a service.
 --
 -- NOT APPLIED. Written under ZD-003 (no production mutation during Phase 0) and gated
--- on ZD-005 (schema source of truth unresolved). Review both before running this
--- anywhere.
+-- on ZD-005 (schema source of truth unresolved). Review both before running this.
 --
--- Two halves: where the amount is recorded, and who is allowed to record it.
+-- ---------------------------------------------------------------------------
+-- Why a table rather than a bookings column
+-- ---------------------------------------------------------------------------
+--
+-- The founder's decision (2026-07-30) is that a Xooter must not see the tip before the
+-- customer relationship is closed out, because it biases how the job and the customer
+-- are treated.
+--
+-- A `bookings.tip_cents` column — which is what app-iteration has, and what the first
+-- draft of this migration did — cannot enforce that. RLS in Postgres is row-level: the
+-- existing "zooters view assigned bookings" policy returns the whole row, so the moment
+-- a tip column exists on `bookings` every assigned Xooter can read it. Column-level
+-- GRANTs are the usual escape hatch and do not help here either, because customers and
+-- Xooters share the single `authenticated` role, so there is no grant that separates
+-- them.
+--
+-- So the tip lives in its own table with its own policies, which is the only place the
+-- visibility rule can actually be enforced.
 
-alter table public.bookings
-  add column if not exists tip_cents integer not null default 0
-    check (tip_cents >= 0 and tip_cents <= 100000);
+create table if not exists public.booking_tips (
+  -- One tip per booking. A composite or serial key would allow two, and then "the tip"
+  -- becomes a sum that different screens can disagree about.
+  booking_id uuid primary key references public.bookings(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  zooter_id uuid references public.zooters(id) on delete set null,
+  -- Integer cents. Note bookings.price is numeric RANDS — do not add the two without
+  -- converting. Capped to match MAX_TIP_CENTS in src/lib/tipping.ts; that guards a
+  -- mis-keyed rand amount, not generosity.
+  amount_cents integer not null check (amount_cents > 0 and amount_cents <= 100000),
+  -- Null until the tip has actually been paid out. This column is the visibility gate
+  -- below, not just a record of state.
+  settled_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
 
-comment on column public.bookings.tip_cents is
-  'Optional tip in integer CENTS. Note bookings.price is numeric RANDS — do not add the two without converting. Capped to match MAX_TIP_CENTS in src/lib/tipping.ts; a mis-keyed rand amount is the failure that guards against, not generosity.';
+create index if not exists booking_tips_zooter_settled_idx
+  on public.booking_tips (zooter_id, settled_at);
 
--- Settlement path. `payment_kind` had no value for a tip, so a recorded tip had nowhere
--- to become money. Adding the value does not wire the payout; that is the payments
--- phase. It exists so the tip can be settled without a second migration under time
--- pressure later.
+alter table public.booking_tips enable row level security;
+
+grant select, insert, update on table public.booking_tips to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- The customer owns their tip, and only after the work is done
+-- ---------------------------------------------------------------------------
+
+drop policy if exists "customers view own tips" on public.booking_tips;
+create policy "customers view own tips"
+  on public.booking_tips for select
+  using (user_id = auth.uid());
+
+drop policy if exists "customers add tip to own completed booking" on public.booking_tips;
+create policy "customers add tip to own completed booking"
+  on public.booking_tips for insert
+  with check (
+    user_id = auth.uid()
+    and exists (
+      select 1 from public.bookings b
+      where b.id = booking_tips.booking_id
+        and b.user_id = auth.uid()
+        -- A tip offered before the service is a different product with different
+        -- consumer-law consequences. This is the only moment it may be added.
+        and b.status = 'completed'::public.booking_status
+    )
+  );
+
+drop policy if exists "customers change own unsettled tip" on public.booking_tips;
+create policy "customers change own unsettled tip"
+  on public.booking_tips for update
+  using (user_id = auth.uid() and settled_at is null)
+  with check (user_id = auth.uid() and settled_at is null);
+
+-- ---------------------------------------------------------------------------
+-- The Xooter sees it only once it is settled
+-- ---------------------------------------------------------------------------
+--
+-- Deliberately NOT "once the job is complete". The point of the rule is that knowing
+-- about a tip must not colour the job or the rating, and settlement is the first moment
+-- where that is behind them.
+--
+-- When a Xooter-rates-customer flow exists, tighten this further: the gate becomes
+-- settled AND the Xooter has already submitted their rating. Today there is no such
+-- flow — `post_job_reviews` runs customer→Xooter only — so settlement is the honest
+-- line to draw, and it errs on the side of not showing.
+
+drop policy if exists "zooters view settled tips only" on public.booking_tips;
+create policy "zooters view settled tips only"
+  on public.booking_tips for select
+  using (
+    settled_at is not null
+    and exists (
+      select 1 from public.zooters z
+      where z.id = booking_tips.zooter_id and z.user_id = auth.uid()
+    )
+  );
+
+drop policy if exists "admins manage tips" on public.booking_tips;
+create policy "admins manage tips"
+  on public.booking_tips for all
+  using (public.has_role(auth.uid(), 'admin'))
+  with check (public.has_role(auth.uid(), 'admin'));
+
+-- Settlement is a server-side act. Nobody holding a customer or Xooter session may set
+-- it — a customer could otherwise reveal their own tip early, and a Xooter could reveal
+-- everyone's.
+create or replace function public.enforce_tip_settlement_author()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.settled_at is distinct from old.settled_at
+     and auth.uid() is not null
+     and not public.has_role(auth.uid(), 'admin') then
+    new.settled_at := old.settled_at;
+  end if;
+
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists booking_tip_settlement_guard on public.booking_tips;
+
+create trigger booking_tip_settlement_guard
+  before update on public.booking_tips
+  for each row
+  execute function public.enforce_tip_settlement_author();
+
+-- ---------------------------------------------------------------------------
+-- Settlement path
+-- ---------------------------------------------------------------------------
+--
+-- `payment_kind` had no value for a tip, so a recorded tip had nowhere to become money.
+-- Adding the value does not wire the payout; that is the payments phase. It is here so
+-- that work does not need a second migration under time pressure.
+
 alter table public.payment_records
   drop constraint if exists payment_records_payment_kind_check;
 
@@ -33,41 +158,51 @@ alter table public.payment_records
   ));
 
 -- ---------------------------------------------------------------------------
--- Only the customer may set their own tip
+-- Separately found: nobody should be able to rewrite a booking's price
 -- ---------------------------------------------------------------------------
 --
--- A column-level rule rather than a table policy, because customers already hold update
--- rights on their own bookings for other reasons. Without this, anything that can update
--- a booking can also write a tip onto it — including a Xooter tipping themselves, which
--- is the case worth being explicit about.
+-- Not part of tipping, found while writing the guard above and included because it is
+-- the same table and the same class of hole.
 --
--- The trigger reverts rather than raises: a legitimate update that happens not to touch
--- the tip should not fail because it carried the old value along.
+-- `update own bookings` (customers) and `zooters update assigned bookings` both grant
+-- UPDATE on the whole row with no column restriction. So a customer can set the price
+-- of their own booking to zero, and an assigned Xooter can set the price of a job they
+-- are working to anything they like. Both are one PATCH from the browser.
+--
+-- Reverting rather than raising: a legitimate update that carries the old price along
+-- unchanged must not fail. `auth.uid() is null` is the server-side path — edge
+-- functions using the service role — which is where price changes legitimately come
+-- from.
 
-create or replace function public.enforce_booking_tip_author()
+create or replace function public.enforce_booking_price_author()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
 begin
-  if new.tip_cents is distinct from old.tip_cents then
-    -- Only the booking's own customer, and only once the work is done. A tip offered
-    -- before service is a different product with different consumer-law consequences.
-    if auth.uid() is null or auth.uid() <> old.user_id then
-      new.tip_cents := old.tip_cents;
-    elsif old.status <> 'completed'::public.booking_status then
-      new.tip_cents := old.tip_cents;
-    end if;
+  if new.price is distinct from old.price
+     and auth.uid() is not null
+     and not public.has_role(auth.uid(), 'admin') then
+    new.price := old.price;
+  end if;
+
+  if new.status is distinct from old.status
+     and auth.uid() is not null
+     and not public.has_role(auth.uid(), 'admin')
+     -- A customer may cancel their own booking; that is the one status change a client
+     -- session legitimately makes directly.
+     and not (new.status = 'cancelled'::public.booking_status and old.user_id = auth.uid()) then
+    new.status := old.status;
   end if;
 
   return new;
 end;
 $$;
 
-drop trigger if exists booking_tip_author_guard on public.bookings;
+drop trigger if exists booking_price_author_guard on public.bookings;
 
-create trigger booking_tip_author_guard
+create trigger booking_price_author_guard
   before update on public.bookings
   for each row
-  execute function public.enforce_booking_tip_author();
+  execute function public.enforce_booking_price_author();

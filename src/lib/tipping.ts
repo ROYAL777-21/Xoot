@@ -41,16 +41,30 @@ export const TIP_STEP_CENTS = 100;
 // ---------------------------------------------------------------------------
 
 /**
- * Whether the founder has confirmed that Xoot takes no cut of tips.
+ * Xoot takes no cut of tips — confirmed by the founder 2026-07-30.
  *
- * `false` does **not** mean Xoot takes a cut — it means nobody has decided, and until
- * somebody does the app may not say either way. "100% goes to your Xooter" is a
- * representation about price under the Consumer Protection Act, not a marketing line,
- * and it is trivially checkable by the Xooters on the other side of it.
- *
- * Flip this only alongside the answer to master brief §6.1 question 1.
+ * This unlocks the "every rand goes to your Xooter" line, which is a representation
+ * about price under the Consumer Protection Act rather than a marketing claim, and is
+ * trivially checkable by the Xooters on the other side of it. It may only stay true
+ * while the payout carries the full amount; if a fee is ever taken, this flips back
+ * before the fee ships, not after.
  */
-export const TIP_GOES_ENTIRELY_TO_XOOTER = false;
+export const TIP_GOES_ENTIRELY_TO_XOOTER = true;
+
+/**
+ * When a Xooter may see that they were tipped — founder, 2026-07-30: not before the
+ * customer relationship is closed out, because it colours the job and the rating.
+ *
+ * This is enforced in the database, not here, and it is why the tip lives in
+ * `booking_tips` rather than on `bookings`. RLS is row-level: the existing "zooters view
+ * assigned bookings" policy returns whole rows, so a tip column on `bookings` would be
+ * readable by the assigned Xooter the moment it existed, and column-level GRANTs cannot
+ * separate customers from Xooters because they share the `authenticated` role.
+ *
+ * The gate is `booking_tips.settled_at`. Tighten it to "settled AND the Xooter has
+ * submitted their rating" once a Xooter-rates-customer flow exists; there is none today.
+ */
+export const TIP_VISIBLE_TO_XOOTER = "after_settlement" as const;
 
 /**
  * How far tipping has actually got, as one value rather than several flags that can
@@ -88,6 +102,8 @@ export function tipAssurance(): string {
   if (TIP_READINESS === "settled") {
     return "Optional. Added to this booking.";
   }
+  // Capture only: the amount is recorded but nothing has charged it, so the copy may
+  // not imply otherwise however confident the other flags are.
   return "Optional. We will confirm the amount with you before anything is charged.";
 }
 
@@ -142,4 +158,34 @@ export function isWritableTip(cents: number | null): cents is number | null {
 /** Total the customer has committed to for this booking, tip included. */
 export function totalWithTip(bookingCents: number, tipCents: number | null): number {
   return bookingCents + (tipCents ?? 0);
+}
+
+/** The row written to `booking_tips`. One per booking, enforced by its primary key. */
+export type BookingTipInsert = {
+  booking_id: string;
+  user_id: string;
+  zooter_id: string | null;
+  amount_cents: number;
+};
+
+/**
+ * Build the row, or null if there is nothing to write.
+ *
+ * `settled_at` is deliberately absent: a client session cannot set it — the database
+ * trigger reverts any attempt — because that column is what hides the tip from the
+ * Xooter, and a customer able to set it could reveal their own tip early.
+ */
+export function buildTipRow(input: {
+  bookingId: string;
+  userId: string;
+  zooterId: string | null;
+  cents: number | null;
+}): BookingTipInsert | null {
+  if (input.cents === null || !isWritableTip(input.cents)) return null;
+  return {
+    booking_id: input.bookingId,
+    user_id: input.userId,
+    zooter_id: input.zooterId,
+    amount_cents: input.cents,
+  };
 }

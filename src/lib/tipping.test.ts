@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   MAX_TIP_CENTS,
   TIP_GOES_ENTIRELY_TO_XOOTER,
+  TIP_VISIBLE_TO_XOOTER,
   TIP_PRESETS_CENTS,
   TIP_READINESS,
   TIP_STEP_CENTS,
+  buildTipRow,
   canOfferTip,
   formatCustomTipInput,
   isWritableTip,
@@ -82,9 +84,11 @@ describe("tipping", () => {
   it("never states where the money goes before that is decided", () => {
     // "100% goes to your Xooter" is a representation about price under the Consumer
     // Protection Act, and it is trivially checkable by the Xooters on the other side.
-    // While the cut is unconfirmed the copy may not claim it either way.
+    // The founder confirmed no cut on 2026-07-30, but the claim still may not appear
+    // until a tip actually settles — a promise about a payout that does not run yet is
+    // no more true for being well intentioned.
     const copy = tipAssurance();
-    if (!TIP_GOES_ENTIRELY_TO_XOOTER) {
+    if (!TIP_GOES_ENTIRELY_TO_XOOTER || TIP_READINESS !== "settled") {
       expect(copy).not.toMatch(/every rand|100%|all of it|goes to your/i);
     }
     // And it may not imply money has moved while there is no settlement path.
@@ -109,5 +113,30 @@ describe("tipping", () => {
     if (TIP_READINESS !== "settled") {
       expect(tipAssurance()).not.toMatch(/every rand|100%/i);
     }
+  });
+
+  it("keeps the tip away from the Xooter until settlement", () => {
+    // Founder, 2026-07-30: a Xooter must not see the tip before the customer
+    // relationship is closed out. This is enforced in the database — the constant
+    // records which gate the policies implement, and a change here without a matching
+    // migration is the drift worth catching.
+    expect(TIP_VISIBLE_TO_XOOTER).toBe("after_settlement");
+  });
+
+  it("never lets a client session set the column that hides the tip", () => {
+    // `settled_at` is the visibility gate. A customer able to set it could reveal their
+    // own tip early; the row builder must not offer it at all, and the database trigger
+    // reverts it regardless.
+    const row = buildTipRow({ bookingId: "b1", userId: "u1", zooterId: "z1", cents: 3000 });
+    expect(row).toEqual({ booking_id: "b1", user_id: "u1", zooter_id: "z1", amount_cents: 3000 });
+    expect(Object.keys(row!)).not.toContain("settled_at");
+  });
+
+  it("builds no row when there is no tip to write", () => {
+    for (const cents of [null, 0, -100, 2050, MAX_TIP_CENTS + 100]) {
+      expect(buildTipRow({ bookingId: "b1", userId: "u1", zooterId: "z1", cents })).toBeNull();
+    }
+    // An unassigned booking still accepts a tip; the payout resolves the Xooter later.
+    expect(buildTipRow({ bookingId: "b1", userId: "u1", zooterId: null, cents: 2000 })?.zooter_id).toBeNull();
   });
 });

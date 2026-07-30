@@ -26,6 +26,7 @@ Reviewed: 2026-06-24
 | ZD-020 | ZD-007 is superseded. Pricing moves from flat per-home-size to per-half-hour ladders per service, defined in `docs/xoot-master-brief.md` §4. Booking Cover moves R21 to R22. | Approved by founder 2026-07-29 | Founder supplied full per-hour ladders for all services and confirmed they supersede the locked commercial facts. | See ZD-020 notes below. Nothing reaches production pricing without founder sign-off on the migration plan. |
 | ZD-021 | Terms are accepted implicitly at sign-up with a visible linked notice. Post-deploy editing is code-and-deploy, not database-editable config. Care+ discount funding is `shared` short-term, switching to `commission` later. | Approved by founder 2026-07-29 | Founder chose lowest-friction consent, the most secure editing model, and early-frequency discount funding. | See ZD-021 notes below. |
 | ZD-022 | The splash is authored once in `src/lib/splash-choreography.ts` and rendered three ways: Remotion for video, Web Animations for the browser, Reanimated + react-native-svg for native. Remotion is a devDependency and an authoring tool, never a runtime one. Launcher and launch-screen stills are generated from `ZoeyArt`. | Approved by founder 2026-07-29 ("Use remotion"), extended to native 2026-07-30 ("i also want the app to have it") | Hand-maintained copies of the same animation drift, and the drift is invisible in review. | See ZD-022 notes below. Native adds `react-native-svg`, and the shared modules are copied into `mobile/src/generated/` by a script rather than imported across roots. |
+| ZD-023 | Tips live in `public.booking_tips`, not on `bookings`, and are visible to a Xooter only once `settled_at` is set. Xoot takes no cut. Booking `price` and `status` become unwritable from any client session. | Approved by founder 2026-07-30 ("Both no") | Row-level security cannot hide a column, so a tip on `bookings` is readable by the assigned Xooter the moment it exists. | See ZD-023 notes below. The price/status guard fixes a live production hole and is currently unapplied. |
 
 ## ZD-020 notes — pricing model change
 
@@ -193,6 +194,39 @@ the exact bullseye failure the web version documents.
 which already owned the deep-link bypass and the Reduce Motion / Low Power gate. Adding
 a second opinion in the layout would have meant a voice booking intent getting a brand
 flourish over the top of the screen it asked for.
+
+
+## ZD-023 notes — tips, and what looking at them exposed
+
+**The visibility rule drove the schema.** The founder ruled that a Xooter must not see
+the tip before the customer relationship is closed out. That cannot be done with a
+column on `bookings`: RLS in Postgres is row-level, the existing
+`zooters view assigned bookings` policy returns whole rows, and column-level `GRANT`s
+cannot separate customers from Xooters because both are the `authenticated` role. So the
+tip is its own table with its own policies, gated on `settled_at` — settlement rather
+than completion, because the point is that knowing must not colour the job or the
+rating. `settled_at` is server-only; a trigger reverts any client attempt to set it,
+since a customer who could set it would reveal their own tip early.
+
+**Xoot takes no cut**, so `TIP_GOES_ENTIRELY_TO_XOOTER` is true. The claim still does not
+render until `TIP_READINESS === "settled"`. A promise about a payout that does not run
+yet is no more true for being well intentioned, and this one is checkable by every
+Xooter it is made to.
+
+**A live hole, found on the way.** `update own bookings` and
+`zooters update assigned bookings` both grant UPDATE on the whole `bookings` row with no
+column restriction. A customer can set the price of their own booking to zero; an
+assigned Xooter can raise the price of a job they are working. Neither needs a UI — one
+PATCH from the browser with a valid session does it.
+
+The migration adds a trigger that reverts `price` and `status` changes made from any
+client session, allowing the server path (`auth.uid()` null, i.e. the service role),
+admins, and a customer cancelling their own booking. It reverts rather than raises, so a
+legitimate update carrying the old values along does not fail.
+
+**This one should not wait for tipping.** The rest of this migration is gated on ZD-005
+and can sit; the price guard is protecting money in production today. It needs to be
+split out and prioritised on its own.
 
 
 ## Pending Founder Decisions
