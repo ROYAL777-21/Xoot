@@ -57,12 +57,12 @@ safe. Closing the gap is a future migration, tracked as an open question, not a 
 Favourite-Xooter continuity, priority booking windows, Home Memory, 1.5× XootCred, priority
 support, and the R30 credit described immediately below.
 
-### ⚠️ The R30 credit — corrected
+### The R30 credit — **corrected in code 2026-07-30**
 
 The R30 credit is **one-time, in the member's first month**, and applies **only if they did
 not come through the onboarding free trial**. It is **not** a recurring monthly credit.
 
-Every one of these currently says "monthly" and is **wrong**:
+All of these said "monthly" and have been corrected:
 
 | File | Line |
 |---|---|
@@ -77,8 +77,29 @@ Every one of these currently says "monthly" and is **wrong**:
 | `docs/release/app-store-play-store-checklist.md` | 97 |
 | `docs/feature-completion-audit.md` | 30 |
 
-This is wider than the brief implied — it is not just the paywall artifact. `CarePlusTerms.tsx`
-is a **legal page**, so that correction is a legal-copy change, not a copy tweak.
+This was wider than the brief implied — not just the paywall artifact. `CarePlusTerms.tsx`
+is a **legal page**, so that correction was a legal-copy change rather than a copy tweak.
+`docs/SECURITY_RULES.md`, `docs/FEATURE_ROADMAP.md` and
+`docs/native/ios-live-activities-widgets.md` said it too and were not on the list above.
+
+**The behaviour was already right.** `activate-care-plus/index.ts` inserts exactly one
+ledger row at activation; there is no recurring grant anywhere. Only the naming and copy
+were wrong, which is the good version of this problem — the terms were describing a
+product Xoot was not selling, rather than the billing doing something the terms denied.
+`care-plus.test.ts` now asserts both: no surface calls it monthly, and the function
+inserts exactly once.
+
+**A real bug fell out of it.** `useXootCred` only counted the credit while its expiry
+fell in the *current calendar month*, which is not the same as it being live.
+`activate-care-plus` sets expiry to activation + 30 days, so the credit usually straddles
+a month boundary: activate on 20 August, expire on 19 September, and the Care+ card
+reported **R0** for the eleven days of August when the credit was most usable. It counts
+while live now, and the concept is `welcomeCredit` throughout.
+
+**Still open:** the credit is supposed to apply *only if the member did not arrive through
+the onboarding free trial*. `activate-care-plus` grants it unconditionally — there is no
+trial check, and no trial mechanism in this repo to check against. Worth resolving before
+the trial ships, not after.
 
 ---
 

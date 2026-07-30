@@ -47,7 +47,7 @@ const pillars = [
   },
   {
     title: "Loyalty",
-    body: "Track XootCred from the ledger and use monthly add-on credit before it expires.",
+    body: "Track XootCred from the ledger and use your welcome add-on credit before it expires.",
     icon: WalletCards,
   },
 ];
@@ -285,7 +285,7 @@ const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlu
       <Card className="rounded-3xl border-destructive/25 bg-destructive/10 p-6 shadow-card">
         <ShieldCheck className="mb-5 h-8 w-8 text-destructive" />
         <h2 className="font-display text-3xl font-bold">Payment update needed</h2>
-        <p className="mt-3 text-sm text-muted-foreground">Care+ is past due. Update payment to restore priority handling and monthly add-on credit.</p>
+        <p className="mt-3 text-sm text-muted-foreground">Care+ is past due. Update payment to restore priority handling and your remaining add-on credit.</p>
         <p className="mt-4 text-sm font-semibold">Last renewal date: {formatDate(state.membership.renewsAt)}</p>
         <Button asChild className="mt-6 rounded-full">
           <Link to="/app/support">Contact support</Link>
@@ -313,9 +313,9 @@ const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlu
         <div className="grid gap-3 text-center sm:grid-cols-3">
           <Metric label="Renews" value={formatDate(state.membership.renewsAt)} />
           <Metric label="XootCred" value={zootCred.loading ? "..." : formatZAR(zootCred.availableBalance)} />
-          <Metric label="Monthly credit" value={zootCred.loading ? "..." : formatZAR(zootCred.monthlyCredit)} />
+          <Metric label="Welcome credit" value={zootCred.loading ? "..." : formatZAR(zootCred.welcomeCredit)} />
         </div>
-        <p className="mt-4 text-xs text-background/70">Monthly credit expiry: {formatDate(zootCred.monthlyCreditExpiresAt)}</p>
+        <p className="mt-4 text-xs text-background/70">Welcome credit expires: {formatDate(zootCred.welcomeCreditExpiresAt)}</p>
       </Card>
 
       <div className="grid gap-5 md:grid-cols-2">
@@ -430,7 +430,7 @@ const CarePlusSignupPass = ({
           </div>
 
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
-            {["Home Memory", "Priority support", "R30 monthly credit", "Favourite Xooter"].map((item) => (
+            {["Home Memory", "Priority support", "R30 welcome credit", "Favourite Xooter"].map((item) => (
               <div key={item} className="rounded-2xl bg-background/10 px-3 py-2 text-sm font-semibold">
                 {item}
               </div>

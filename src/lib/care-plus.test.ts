@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   CADENCE_DISCOUNT,
@@ -108,5 +110,35 @@ describe("care+ pricing", () => {
     expect(formatCountdown(0)).toBe("00:00:00");
     expect(formatCountdown(OFFER_WINDOW_MS)).toBe("24:00:00");
     expect(formatCountdown(3 * 3600_000 + 7 * 60_000 + 9000)).toBe("03:07:09");
+  });
+
+  it("never calls the R30 credit monthly", () => {
+    // Master brief §1: the credit is one-time in the member's first month, and every
+    // customer-facing surface used to say "monthly" — including CarePlusTerms, which is
+    // a legal page. `activate-care-plus` only ever inserted one ledger row, so the code
+    // was right and the copy was wrong; this stops the wrong version coming back.
+    const surfaces = [
+      "src/data/care-plus.ts",
+      "src/pages/app/Plans.tsx",
+      "src/pages/care/CarePlus.tsx",
+      "src/pages/legal/CarePlusTerms.tsx",
+      "src/hooks/useXootCred.ts",
+    ];
+    for (const file of surfaces) {
+      const src = readFileSync(join(process.cwd(), file), "utf8");
+      // The membership is billed monthly; the credit is not granted monthly. Only the
+      // second is wrong, so match the credit specifically rather than the word.
+      expect(src).not.toMatch(/monthly[- ](add-on )?credit/i);
+      expect(src).not.toMatch(/R30 monthly/i);
+    }
+  });
+
+  it("grants the credit exactly once, at activation", () => {
+    // The behaviour the corrected copy now describes. A second insert, or a scheduled
+    // one, would make the terms false again — and the terms are the legal page.
+    const fn = readFileSync(join(process.cwd(), "supabase/functions/activate-care-plus/index.ts"), "utf8");
+    const inserts = fn.match(/from\("zootcred_ledger"\)\s*\.insert\(/g) ?? [];
+    expect(inserts).toHaveLength(1);
+    expect(fn).toMatch(/source: "care_plus_activation"/);
   });
 });

@@ -23,7 +23,7 @@ const carePlusHighlights = [
   "Favourite Xooter rebooking when a trusted Xooter is available",
   "Earlier access to high-demand slots and recurring schedules",
   "Priority replacement support when a Xooter becomes unavailable",
-  "R30 monthly add-on credit for completed bookings",
+  "R30 welcome add-on credit for completed bookings",
   "1.5x XootCred on completed bookings",
   "Smart home reminders and property profiles",
   "Priority support for booking issues, cancellations and service concerns",
@@ -47,7 +47,7 @@ const valueCards = [
   },
   {
     title: "Loyalty",
-    body: "Earn boosted XootCred and use monthly add-on credit only after completed, verified bookings.",
+    body: "Earn boosted XootCred and use your welcome add-on credit only after completed, verified bookings.",
     icon: WalletCards,
   },
 ];
@@ -209,7 +209,7 @@ const Plans = () => {
         <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 font-display text-2xl"><Crown className="h-5 w-5 text-primary" /> Cancel Care+?</DialogTitle>
-            <DialogDescription>You will lose Care+ priority handling, boosted XootCred, monthly add-on credit and saved membership prompts. Your saved home profile remains available.</DialogDescription>
+            <DialogDescription>You will lose Care+ priority handling, boosted XootCred, any remaining add-on credit and saved membership prompts. Your saved home profile remains available.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => { haptic("selection"); setCancelOpen(false); }} className="rounded-full">Keep Care+</Button>

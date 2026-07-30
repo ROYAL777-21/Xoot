@@ -183,7 +183,7 @@ Intended source:
 - `user_subscriptions` for membership status;
 - `subscription_plans` for server-owned plan configuration;
 - verified `payment_records` for activation;
-- `zootcred_ledger` for the R30 monthly credit.
+- `zootcred_ledger` for the R30 welcome credit — one row per member at activation, not a recurring grant.
 
 Duplicate functionality:
 

@@ -54,8 +54,8 @@ The frontend may display estimates and available actions, but must not be truste
 - Referral rewards must be issued only after qualifying completed paid bookings.
 - Block self-referrals, repeated device/account abuse, disposable email clusters, payment reversals, and abnormal referral spikes.
 - XootCred is closed-loop platform credit and must not be withdrawable as cash.
-- XootCred balances, boosts, monthly add-on credits, and manual adjustments require server-side validation and audit logs.
-- Care+ monthly add-on credit expires monthly, applies only with completed bookings, and cannot be withdrawn.
+- XootCred balances, boosts, the welcome add-on credit, and manual adjustments require server-side validation and audit logs.
+- The Care+ welcome add-on credit is granted once at activation, expires, applies only with completed bookings, and cannot be withdrawn. It is not a recurring monthly grant.
 
 ## Agent Restrictions
 

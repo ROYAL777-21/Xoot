@@ -46,8 +46,9 @@ export interface XootCredBalance {
   pendingZar: number;
   multiplier: number;
   projectedNextBookingZar: number;
-  monthlyAddOnCreditZar: number;
-  monthlyAddOnCreditExpiresAt: string;
+  /** The one-time R30 credit granted when membership starts. Not a recurring grant. */
+  welcomeAddOnCreditZar: number;
+  welcomeAddOnCreditExpiresAt: string;
 }
 
 export interface PropertyProfile {

@@ -58,7 +58,7 @@ Customer-facing term: membership.
 
 Care+ includes:
 
-- R30 monthly add-on credit;
+- R30 welcome add-on credit, one-time (see the banner above);
 - 1.5x XootCred multiplier;
 - priority booking windows;
 - favourite-Xooter continuity support;

@@ -14,10 +14,16 @@ import { MAX_TIP_CENTS, TIP_VISIBLE_TO_XOOTER } from "./tipping";
  * gate depends on.
  */
 
-const sql = readFileSync(
-  join(process.cwd(), "supabase/migrations/20260730090000_booking_tips.sql"),
-  "utf8",
-);
+const read = (file: string) => readFileSync(join(process.cwd(), "supabase/migrations", file), "utf8");
+
+const sql = read("20260730090000_booking_tips.sql");
+
+/**
+ * The price guard is a separate migration with an earlier timestamp, deliberately. The
+ * tipping schema is gated on ZD-005 and can wait; this one protects money in production
+ * today and depends on nothing else, so it must be applicable on its own.
+ */
+const guardSql = read("20260730083000_booking_price_author_guard.sql");
 
 describe("tip visibility policy", () => {
   it("keeps the tip off the bookings row", () => {
@@ -65,12 +71,22 @@ describe("tip visibility policy", () => {
     // Found while writing the tip guard, not part of tipping: both existing UPDATE
     // policies on `bookings` cover the whole row, so a customer could zero their own
     // price and an assigned Xooter could raise the price of a job they are working.
-    expect(sql).toMatch(/new\.price := old\.price/);
-    expect(sql).toMatch(/booking_price_author_guard/);
+    expect(guardSql).toMatch(/new\.price := old\.price/);
+    expect(guardSql).toMatch(/booking_price_author_guard/);
     // The server path must still be able to price a booking.
-    expect(sql).toMatch(/auth\.uid\(\) is not null/);
+    expect(guardSql).toMatch(/auth\.uid\(\) is not null/);
     // And a customer must still be able to cancel.
-    expect(sql).toMatch(/new\.status = 'cancelled'/);
+    expect(guardSql).toMatch(/new\.status = 'cancelled'/);
+  });
+
+  it("keeps the price guard independently applicable", () => {
+    // It must not have drifted back into the tipping migration, and must not depend on
+    // anything that migration creates — otherwise it cannot be applied ahead of a
+    // decision that has not been made.
+    expect(sql).not.toMatch(/booking_price_author_guard/);
+    expect(guardSql).not.toMatch(/booking_tips/);
+    // Earlier timestamp, so migration order puts it first.
+    expect("20260730083000" < "20260730090000").toBe(true);
   });
 
   it("can be run twice", () => {

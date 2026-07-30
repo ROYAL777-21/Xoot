@@ -23,7 +23,7 @@ export const carePlusPlan: CarePlusPlan = {
     "Priority replacement support",
     "One-tap rebook",
     "1.5x XootCred",
-    "R30 monthly add-on credit",
+    "R30 welcome add-on credit, once",
     "Smart home reminders",
     "Property profiles",
     "Priority support",
@@ -63,8 +63,8 @@ export const carePlusShowcaseXootCredBalance: XootCredBalance = {
   pendingZar: 45,
   multiplier: 1.5,
   projectedNextBookingZar: 38,
-  monthlyAddOnCreditZar: 30,
-  monthlyAddOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
+  welcomeAddOnCreditZar: 30,
+  welcomeAddOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
 };
 
 export const carePlusShowcasePropertyProfiles: PropertyProfile[] = [
@@ -166,9 +166,9 @@ export const carePlusBenefits: CarePlusBenefit[] = [
     memberProof: "Repeat bookings quietly build loyalty value.",
   },
   {
-    id: "monthly-credit",
-    title: "R30 Monthly Add-On Credit",
-    summary: "A booking-only add-on credit that expires monthly and cannot be withdrawn.",
+    id: "welcome-credit",
+    title: "R30 Welcome Add-On Credit",
+    summary: "A one-time booking-only add-on credit, granted when membership starts. It expires and cannot be withdrawn.",
     customerValue: "high",
     zootCost: "controlled",
     memberProof: "Makes the R99/month membership easier to justify.",
@@ -255,6 +255,6 @@ export const comparisonRows = [
   { feature: "High-demand slots", standard: "Standard availability", carePlus: "Earlier access to peak windows" },
   { feature: "Replacement support", standard: "Normal matching queue", carePlus: "Prioritised replacement matching" },
   { feature: "Rewards", standard: "Base XootCred", carePlus: "1.5x XootCred on completed bookings" },
-  { feature: "Add-ons", standard: "Pay as needed", carePlus: "R30 monthly add-on credit" },
+  { feature: "Add-ons", standard: "Pay as needed", carePlus: "R30 welcome add-on credit, once" },
   { feature: "Support", standard: "Standard support handling", carePlus: "Priority support for booking issues" },
 ];

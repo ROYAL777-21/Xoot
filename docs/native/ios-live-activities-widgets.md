@@ -90,7 +90,7 @@ User-created widgets should be configurable using WidgetKit and App Intents:
 
 - `Next Booking`: next date/time, service type, Xooter first name, and status.
 - `Care+ Home Readiness`: readiness score, Home Memory completeness, next prompt.
-- `XootCred`: available XootCred, pending XootCred, monthly add-on credit expiry.
+- `XootCred`: available XootCred, pending XootCred, welcome add-on credit expiry.
 - `Favourite Xooter`: preferred Xooter and deep link to rebook.
 - `Accepted Xooter Job`: accepted job prompt and deep link to the authenticated Xooter job screen.
 

@@ -24,9 +24,9 @@ const CarePlusTerms = () => (
       </LegalList>
     </LegalSection>
 
-    <LegalSection title="XootCred and monthly credit">
+    <LegalSection title="XootCred and the welcome credit">
       <p>
-        XootCred is not cash, cannot be withdrawn, may expire, and may be reversed for refunds, chargebacks, cancelled bookings, abuse, duplicates, or fraud indicators. Monthly credit rules should be shown clearly in the live membership flow.
+        XootCred is not cash, cannot be withdrawn, may expire, and may be reversed for refunds, chargebacks, cancelled bookings, abuse, duplicates, or fraud indicators. The R30 add-on credit is granted once, when membership starts. It does not recur, and its rules should be shown clearly in the live membership flow.
       </p>
     </LegalSection>
   </LegalLayout>

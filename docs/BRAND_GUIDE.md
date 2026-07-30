@@ -74,7 +74,7 @@ Care+ should make R99/month feel justified through:
 - `Book [Xooter Name] again` rebooking.
 - Priority booking windows.
 - Priority replacement support without unsupported guarantees.
-- R30 monthly add-on credit tied to completed bookings.
+- R30 welcome add-on credit tied to completed bookings — granted **once**, when membership starts, and only if the member did not arrive through the onboarding free trial. It is **not** recurring.
 - 1.5x XootCred on completed bookings.
 - Smart reminders.
 - Property profiles.

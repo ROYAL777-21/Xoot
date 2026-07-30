@@ -44,7 +44,7 @@ This roadmap is ordered for execution. Each stage should leave the product more 
 ## 6. Care+, Household Memory, And Retention
 
 - Keep `/care-plus` premium and not discount-led.
-- Implement Home Memory, favourite Xooter, smart reminders, priority support, priority replacement support, monthly add-on credit, and XootCred boost as reusable typed components.
+- Implement Home Memory, favourite Xooter, smart reminders, priority support, priority replacement support, the welcome add-on credit, and XootCred boost as reusable typed components.
 - Add Care+ onboarding prompts and lifecycle reminders through in-app and email channels only where appropriate.
 - Keep Care+ exclusions clear: no guaranteed replacement unless backend and operations support it.
 

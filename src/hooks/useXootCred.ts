@@ -30,8 +30,9 @@ export type XootCredEntry = {
 export type XootCredSummary = {
   availableBalance: number;
   pendingBalance: number;
-  monthlyCredit: number;
-  monthlyCreditExpiresAt: string | null;
+  /** The one-time R30 Care+ welcome credit, while it is live. Not a monthly grant. */
+  welcomeCredit: number;
+  welcomeCreditExpiresAt: string | null;
   entries: XootCredEntry[];
 };
 
@@ -59,14 +60,19 @@ const getMetaSource = (meta: Json | null | undefined) => {
   return typeof source === "string" ? source.toLowerCase() : "";
 };
 
-const expiresThisMonth = (expiresAt: string | null, now = new Date()) => {
-  if (!expiresAt) return false;
-  const expires = new Date(expiresAt);
-  return expires.getFullYear() === now.getFullYear() && expires.getMonth() === now.getMonth();
-};
-
-const isMonthlyCredit = (row: XootCredLedgerRow, entry: XootCredEntry, now = new Date()) => {
-  if (entry.displayAmount <= 0 || entry.isExpired || entry.isPending || !expiresThisMonth(entry.expiresAt, now)) return false;
+/**
+ * The Care+ welcome credit: R30, granted once when the membership is activated, not
+ * monthly. `activate-care-plus` inserts exactly one row and there is no recurring job —
+ * the code was always one-time; only the naming said otherwise.
+ *
+ * This used to require the credit to expire in the *current calendar month*, which is
+ * not the same thing as being live. `activate-care-plus` sets `expires_at` to
+ * activation + 30 days, so for most of the year the credit straddles a month boundary:
+ * activate on 20 August, expire on 19 September, and the member saw "R30" reported as
+ * zero for the eleven days it was most usable. It is counted while it is live now.
+ */
+const isWelcomeCredit = (row: XootCredLedgerRow, entry: XootCredEntry) => {
+  if (entry.displayAmount <= 0 || entry.isExpired || entry.isPending) return false;
   const source = getMetaSource(row.meta);
   return source.includes("care_plus") || source.includes("monthly") || row.reason === "loyalty_reward";
 };
@@ -101,13 +107,13 @@ export const calculateXootCredSummary = (rows: XootCredLedgerRow[], now = new Da
     return sum + entry.amount;
   }, 0);
 
-  const monthlyCredits = rows
+  const welcomeCredits = rows
     .map((row, index) => ({ row, entry: entries.find((entry) => entry.id === (row.id ?? `${row.created_at}-${index}`)) }))
     .filter((item): item is { row: XootCredLedgerRow; entry: XootCredEntry } => Boolean(item.entry))
-    .filter(({ row, entry }) => isMonthlyCredit(row, entry, now));
+    .filter(({ row, entry }) => isWelcomeCredit(row, entry));
 
-  const monthlyCredit = monthlyCredits.reduce((sum, { entry }) => sum + entry.amount, 0);
-  const monthlyCreditExpiresAt = monthlyCredits
+  const welcomeCredit = welcomeCredits.reduce((sum, { entry }) => sum + entry.amount, 0);
+  const welcomeCreditExpiresAt = welcomeCredits
     .map(({ entry }) => entry.expiresAt)
     .filter((value): value is string => Boolean(value))
     .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())[0] ?? null;
@@ -115,8 +121,8 @@ export const calculateXootCredSummary = (rows: XootCredLedgerRow[], now = new Da
   return {
     availableBalance: Math.max(0, Math.round(availableBalance * 100) / 100),
     pendingBalance: Math.max(0, Math.round(pendingBalance * 100) / 100),
-    monthlyCredit: Math.max(0, Math.round(monthlyCredit * 100) / 100),
-    monthlyCreditExpiresAt,
+    welcomeCredit: Math.max(0, Math.round(welcomeCredit * 100) / 100),
+    welcomeCreditExpiresAt,
     entries,
   };
 };
@@ -124,8 +130,8 @@ export const calculateXootCredSummary = (rows: XootCredLedgerRow[], now = new Da
 const emptySummary: XootCredSummary = {
   availableBalance: 0,
   pendingBalance: 0,
-  monthlyCredit: 0,
-  monthlyCreditExpiresAt: null,
+  welcomeCredit: 0,
+  welcomeCreditExpiresAt: null,
   entries: [],
 };
 

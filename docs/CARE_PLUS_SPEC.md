@@ -31,7 +31,7 @@ Use `join Care+` or `become a Care+ member`. Do not use `subscribe` in user-faci
 4. Priority Replacement Support: prioritised replacement matching when a Xooter cancels or becomes unavailable. Do not say guaranteed replacement unless backend and operations support it.
 5. One-Tap Rebook: repeat previous bookings using saved home, service, schedule, and preferred Xooter data.
 6. XootCred Boost: earn 1.5x XootCred on completed bookings.
-7. Monthly Add-On Credit: R30 monthly add-on credit usable only with a completed booking. It expires monthly and cannot be withdrawn.
+7. Welcome Add-On Credit: R30, usable only with a completed booking, granted **once**, when membership starts, and only if the member did not arrive through the onboarding free trial. It is **not** recurring. It expires and cannot be withdrawn.
 8. Smart Home Reminders: AI-style prompts based on real booking patterns, home profile data, and availability.
 9. Property Profiles: save multiple homes, access notes, turnover instructions, room priorities, and cleaning history.
 10. Priority Support: faster handling for booking issues, cancellations, and service concerns.
@@ -65,7 +65,7 @@ Smart reminders must be based on real source-of-truth data in production. If dat
 - Favourite Xooter creates emotional continuity and repeat usage.
 - One-tap rebook turns completed bookings into the next action.
 - XootCred boost keeps value inside the Xoot ecosystem.
-- Monthly add-on credit makes R99/month feel tangible without discounting core service value.
+- The welcome add-on credit makes the first month feel tangible without discounting core service value. It is one-time, so it cannot be presented as an ongoing offset against the R99.
 - Smart reminders convert once-off customers into recurring customers.
 - Property profiles make Xoot operational infrastructure for hosts, landlords, and offices.
 
@@ -84,7 +84,7 @@ Smart reminders must be based on real source-of-truth data in production. If dat
 - Care+ does not guarantee contractor availability unless future backend and operations support a specific guarantee.
 - Care+ does not guarantee replacement unless approved replacement logic and operational capacity exist.
 - Care+ credits cannot be withdrawn as cash.
-- Monthly add-on credit expires monthly and applies only to completed bookings.
+- The welcome add-on credit expires and applies only to completed bookings. One grant per member, not one per month.
 - Sensitive Home Memory fields must be encrypted, access-controlled, and never sent in push, SMS, WhatsApp, or email.
 - Priority support means faster handling and escalation, not guaranteed outcome.
 - Avoid public competitor mentions or unsupported claims.
