@@ -1,8 +1,8 @@
+import { COLOR, hsl, alpha, Colors, Spacing } from '@/constants/theme';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 
-import { Colors, Spacing } from '@/constants/theme';
 import { mobileEnv } from '@/lib/env';
 
 const center: [number, number] = [28.0473, -26.108];
@@ -57,7 +57,7 @@ export function ServiceAreaMap() {
               circleColor: Colors.dark.accent,
               circleOpacity: 0.92,
               circleRadius: 8,
-              circleStrokeColor: '#ffffff',
+              circleStrokeColor: hsl(COLOR.dark.foreground),
               circleStrokeWidth: 2,
             }}
           />
@@ -66,7 +66,7 @@ export function ServiceAreaMap() {
             style={{
               textColor: Colors.dark.text,
               textField: ['get', 'name'],
-              textHaloColor: '#0f1711',
+              textHaloColor: hsl(COLOR.dark.background),
               textHaloWidth: 1.5,
               textOffset: [0, 1.25],
               textSize: 12,
@@ -84,7 +84,7 @@ export function ServiceAreaMap() {
 
 const styles = StyleSheet.create({
   shell: {
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: alpha('dark', 'foreground', 0.14),
     borderRadius: 24,
     borderWidth: 1,
     height: 260,
@@ -94,24 +94,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   overlay: {
-    backgroundColor: 'rgba(15,23,17,0.72)',
-    borderColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: alpha('dark', 'background', 0.72),
+    borderColor: alpha('dark', 'foreground', 0.16),
     borderRadius: 20,
     borderWidth: 1,
-    bottom: Spacing.three,
-    left: Spacing.three,
-    padding: Spacing.three,
+    bottom: Spacing.lg,
+    left: Spacing.lg,
+    padding: Spacing.lg,
     position: 'absolute',
-    right: Spacing.three,
+    right: Spacing.lg,
   },
   fallback: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: alpha('dark', 'foreground', 0.06),
+    borderColor: alpha('dark', 'foreground', 0.14),
     borderRadius: 24,
     borderWidth: 1,
-    gap: Spacing.two,
+    gap: Spacing.sm,
     minHeight: 220,
-    padding: Spacing.four,
+    padding: Spacing.xl,
   },
   kicker: {
     color: Colors.dark.accent,

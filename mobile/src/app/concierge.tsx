@@ -3,7 +3,7 @@ import { type Href, useRouter } from 'expo-router';
 import { AccessibilityInfo, Animated, Easing, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Spacing, alpha } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { redactConciergeClientText } from '@/lib/concierge-privacy';
 import { invokeXootFunction } from '@/lib/edge-functions';
@@ -250,7 +250,7 @@ export default function ConciergeScreen() {
                     styles.messageBubble,
                     {
                       backgroundColor:
-                        item.role === 'user' ? theme.accent : item.role === 'system' ? 'rgba(181, 71, 71, 0.18)' : theme.backgroundElement,
+                        item.role === 'user' ? theme.accent : item.role === 'system' ? alpha('dark', 'destructive', 0.18) : theme.backgroundElement,
                       borderColor: item.role === 'system' ? theme.danger : theme.border,
                     },
                   ]}>
@@ -258,7 +258,7 @@ export default function ConciergeScreen() {
                     {item.body}
                   </Text>
                   {item.source ? (
-                    <Text style={[styles.messageMeta, { color: item.role === 'user' ? 'rgba(7, 16, 10, 0.68)' : theme.textSecondary }]}>
+                    <Text style={[styles.messageMeta, { color: item.role === 'user' ? alpha('dark', 'background', 0.68) : theme.textSecondary }]}>
                       {item.source.replace(/_/g, ' ')}
                       {item.escalated ? ' - human review' : ''}
                     </Text>
@@ -336,16 +336,16 @@ const styles = StyleSheet.create({
   heroRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: Spacing.three,
+    gap: Spacing.lg,
   },
   heroCopy: {
     flex: 1,
-    gap: Spacing.two,
+    gap: Spacing.sm,
   },
   starWrap: {
     alignItems: 'center',
-    backgroundColor: 'rgba(216, 178, 110, 0.18)',
-    borderColor: 'rgba(255, 248, 236, 0.42)',
+    backgroundColor: alpha('dark', 'accent', 0.18),
+    borderColor: alpha('dark', 'foreground', 0.42),
     borderCurve: 'continuous',
     borderRadius: 30,
     borderWidth: 1,
@@ -392,8 +392,8 @@ const styles = StyleSheet.create({
   },
   starFace: {
     alignItems: 'center',
-    backgroundColor: 'rgba(7, 16, 10, 0.86)',
-    borderColor: 'rgba(255, 248, 236, 0.34)',
+    backgroundColor: alpha('dark', 'background', 0.86),
+    borderColor: alpha('dark', 'foreground', 0.34),
     borderRadius: 16,
     borderWidth: 1,
     gap: 5,
@@ -412,13 +412,13 @@ const styles = StyleSheet.create({
     width: 4,
   },
   starMouth: {
-    backgroundColor: 'rgba(216, 178, 110, 0.82)',
+    backgroundColor: alpha('dark', 'accent', 0.82),
     borderRadius: 999,
     height: 3,
     width: 13,
   },
   messageList: {
-    gap: Spacing.two,
+    gap: Spacing.sm,
   },
   messageRow: {
     flexDirection: 'row',
@@ -433,8 +433,8 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     borderWidth: 1,
     maxWidth: '88%',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
   messageText: {
     fontSize: 15,
@@ -449,20 +449,20 @@ const styles = StyleSheet.create({
   },
   messageActions: {
     alignItems: 'flex-start',
-    gap: Spacing.two,
-    marginTop: Spacing.two,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
   },
   messageActionButton: {
     alignSelf: 'flex-start',
     minHeight: 38,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
   typingBubble: {
     opacity: 0.84,
   },
   quickPrompts: {
-    gap: Spacing.two,
+    gap: Spacing.sm,
   },
   quickPrompt: {
     alignItems: 'flex-start',
@@ -476,13 +476,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   inputActions: {
-    gap: Spacing.three,
+    gap: Spacing.lg,
   },
   supportNote: {
-    borderColor: 'rgba(255, 250, 242, 0.14)',
+    borderColor: alpha('dark', 'foreground', 0.14),
     borderRadius: 18,
     borderWidth: 1,
-    padding: Spacing.three,
+    padding: Spacing.lg,
   },
   supportNoteText: {
     color: Colors.dark.textSecondary,

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, Text, View } from 'react-native';
 
 import { Body, Eyebrow, PrimaryButton, SecondaryButton, StatusPill, Title } from '@/components/zoot-ui';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Spacing, alpha } from '@/constants/theme';
 import { getNativeLaunchMode, nativeLaunchAssets, type NativeLaunchModeInput } from '@/lib/native-launch';
 
 type NativeLaunchExperienceProps = {
@@ -116,16 +116,16 @@ export const getNativeLaunchVisualMode = (input: NativeLaunchModeInput) => getNa
 
 const styles = StyleSheet.create({
   shell: {
-    backgroundColor: 'rgba(12, 22, 14, 0.9)',
-    borderColor: 'rgba(255, 250, 242, 0.18)',
+    backgroundColor: alpha('dark', 'card', 0.9),
+    borderColor: alpha('dark', 'foreground', 0.18),
     borderRadius: 32,
     borderWidth: 1,
-    gap: Spacing.four,
+    gap: Spacing.xl,
     overflow: 'hidden',
-    padding: Spacing.four,
+    padding: Spacing.xl,
   },
   depthBackdrop: {
-    backgroundColor: 'rgba(216, 178, 110, 0.1)',
+    backgroundColor: alpha('dark', 'accent', 0.1),
     borderRadius: 999,
     height: 280,
     position: 'absolute',
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     width: 280,
   },
   privacyVeil: {
-    backgroundColor: 'rgba(7, 16, 10, 0.66)',
+    backgroundColor: alpha('dark', 'background', 0.66),
     bottom: 0,
     left: 0,
     position: 'absolute',
@@ -144,8 +144,8 @@ const styles = StyleSheet.create({
   heroOrb: {
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: alpha('dark', 'foreground', 0.08),
+    borderColor: alpha('dark', 'foreground', 0.5),
     borderCurve: 'continuous',
     borderRadius: 48,
     borderWidth: 1,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     width: 96,
   },
   innerOrb: {
-    backgroundColor: 'rgba(216, 178, 110, 0.3)',
+    backgroundColor: alpha('dark', 'accent', 0.3),
     borderRadius: 999,
     height: 74,
     position: 'absolute',
@@ -184,17 +184,17 @@ const styles = StyleSheet.create({
     width: 46,
   },
   copy: {
-    gap: Spacing.three,
+    gap: Spacing.lg,
   },
   actions: {
-    gap: Spacing.two,
+    gap: Spacing.sm,
   },
   guardRail: {
-    borderColor: 'rgba(255, 250, 242, 0.12)',
+    borderColor: alpha('dark', 'foreground', 0.12),
     borderRadius: 999,
     borderWidth: 1,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
   guardRailText: {
     color: Colors.dark.textSecondary,

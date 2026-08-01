@@ -2,7 +2,7 @@ import { GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect';
 import { Pressable, ScrollView, StyleSheet, Text, type PressableProps, View, type ViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Colors, MaxContentWidth, Spacing, alpha , COLOR, hsl } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export function XootScreen({ children }: { children: React.ReactNode }) {
@@ -29,7 +29,7 @@ export function LiquidCard({ children, style }: ViewProps) {
         <GlassView
           colorScheme="dark"
           glassEffectStyle="clear"
-          tintColor="rgba(216, 178, 110, 0.18)"
+          tintColor={alpha('dark', 'accent', 0.18)}
           style={StyleSheet.absoluteFill}
           isInteractive
         />
@@ -119,9 +119,9 @@ const styles = StyleSheet.create({
   },
   content: {
     alignSelf: 'center',
-    gap: Spacing.four,
+    gap: Spacing.xl,
     maxWidth: MaxContentWidth,
-    padding: Spacing.four,
+    padding: Spacing.xl,
     paddingBottom: 112,
     width: '100%',
   },
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 1,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: hsl(COLOR.dark.background),
     shadowOpacity: 0.34,
     shadowRadius: 30,
     shadowOffset: { width: 0, height: 18 },
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    backgroundColor: alpha('dark', 'foreground', 0.18),
   },
   glassEdgeLight: {
     position: 'absolute',
@@ -150,15 +150,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     borderRadius: 28,
-    borderTopColor: 'rgba(255, 255, 255, 0.48)',
-    borderRightColor: 'rgba(255, 255, 255, 0.34)',
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.14)',
+    borderTopColor: alpha('dark', 'foreground', 0.48),
+    borderRightColor: alpha('dark', 'foreground', 0.34),
+    borderBottomColor: alpha('dark', 'foreground', 0.08),
+    borderLeftColor: alpha('dark', 'foreground', 0.14),
     borderWidth: 1,
   },
   cardContent: {
-    gap: Spacing.three,
-    padding: Spacing.four,
+    gap: Spacing.lg,
+    padding: Spacing.xl,
     zIndex: 1,
   },
   eyebrow: {
@@ -184,8 +184,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     minHeight: 52,
     justifyContent: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.three,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
   },
   primaryButtonText: {
     fontSize: 16,
@@ -199,8 +199,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     minHeight: 52,
     justifyContent: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.three,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
   },
   secondaryButtonText: {
     fontSize: 16,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     width: 104,
     height: 104,
     borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    backgroundColor: alpha('dark', 'foreground', 0.22),
   },
   buttonGlint: {
     position: 'absolute',
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 18,
     borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    backgroundColor: alpha('dark', 'foreground', 0.22),
     opacity: 0.42,
     transform: [{ rotate: '-12deg' }],
   },
@@ -238,8 +238,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     borderRadius: 999,
     borderWidth: 1,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
   pillText: {
     fontSize: 12,

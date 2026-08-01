@@ -22,7 +22,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const MODULES = ["splash-choreography.ts", "zoey-geometry.ts"];
+const MODULES = ["splash-choreography.ts", "zoey-geometry.ts", "design-tokens.ts"];
 
 // Resolved from this file, not from the working directory — mobile's `prestart` runs
 // it from `mobile/`, and the web's `shared:sync` runs it from the repo root.

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { MODULES, banner } from "../../scripts/build/sync-shared-native.mjs";
@@ -37,14 +37,29 @@ describe("shared native modules", () => {
     }
   });
 
-  it("keeps the native component off the originals", () => {
+  it("keeps native off the original paths entirely", () => {
     // An import of the source path would typecheck and then fail to bundle, which is
-    // the worst order to find out.
-    const native = readFileSync(join(root, "mobile/src/components/splash-animation.tsx"), "utf8");
-    expect(native).not.toMatch(/@shared\//);
-    expect(native).not.toMatch(/\.\.\/\.\.\/\.\.\/src\//);
+    // the worst order to find out. Checked across all of mobile/src rather than one
+    // component, because the next module to be shared will be imported somewhere else.
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((entry) => {
+        const full = join(dir, entry);
+        return statSync(full).isDirectory() ? walk(full) : /\.tsx?$/.test(full) ? [full] : [];
+      });
+
+    for (const file of walk(join(root, "mobile/src"))) {
+      const src = readFileSync(file, "utf8");
+      expect({ file, bad: /@shared\//.test(src) }).toEqual({ file, bad: false });
+      expect({ file, bad: /from ["'].*\.\.\/src\/lib\//.test(src) }).toEqual({ file, bad: false });
+    }
+  });
+
+  it("has each shared module reached through the generated copy", () => {
+    // Not "every module is imported by one component" — that was true only while the
+    // splash was the sole consumer, and broke the moment tokens joined the list.
+    const consumers = readdirSync(join(root, "mobile/src/generated"));
     for (const module of MODULES) {
-      expect(native).toMatch(new RegExp(`@/generated/${module.replace(".ts", "")}`));
+      expect({ module, present: consumers.includes(module) }).toEqual({ module, present: true });
     }
   });
 });
