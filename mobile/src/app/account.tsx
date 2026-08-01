@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
 
 import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
 import { getAuthRedirectUrl, startOAuth } from '@/lib/auth-links';
+import { isAppleSignInAvailable, isAppleSignInCancellation, signInWithApple } from '@/lib/apple-auth';
 import { supabase } from '@/lib/supabase';
 import { registerForXootPushNotifications } from '@/lib/push-notifications';
 import { useTheme } from '@/hooks/use-theme';
@@ -14,6 +15,29 @@ export default function AccountScreen() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Hidden rather than disabled where the native sheet does not exist — Android, and
+  // iOS below 13. A dead "Continue with Apple" button is worse than no button.
+  const [appleAvailable, setAppleAvailable] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    isAppleSignInAvailable()
+      .then((available) => mounted && setAppleAvailable(available))
+      .catch(() => mounted && setAppleAvailable(false));
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const continueWithApple = useCallback(async () => {
+    try {
+      await signInWithApple();
+    } catch (error) {
+      // Dismissing the sheet is a decision, not a failure.
+      if (isAppleSignInCancellation(error)) return;
+      setStatus(error instanceof Error ? error.message : 'Could not sign in with Apple.');
+    }
+  }, []);
 
   const sendMagicLink = async () => {
     setIsSubmitting(true);
@@ -89,9 +113,11 @@ export default function AccountScreen() {
         <SecondaryButton disabled={isSubmitting} onPress={() => startOAuth('google').catch((error) => setStatus(error.message))}>
           Continue with Google
         </SecondaryButton>
-        <SecondaryButton disabled={isSubmitting} onPress={() => startOAuth('apple').catch((error) => setStatus(error.message))}>
-          Continue with Apple
-        </SecondaryButton>
+        {appleAvailable ? (
+          <SecondaryButton disabled={isSubmitting} onPress={continueWithApple}>
+            Continue with Apple
+          </SecondaryButton>
+        ) : null}
         {status ? <Body>{status}</Body> : null}
       </LiquidCard>
     </XootScreen>

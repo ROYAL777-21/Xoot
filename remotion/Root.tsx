@@ -5,6 +5,8 @@ import { XootSplash } from "./XootSplash";
 
 /** Brand background, matching `--background` in `src/index.css`. */
 const CREAM = "#fff7f5";
+/** The app is pinned to dark (`userInterfaceStyle`), so native surfaces use this. */
+const INK = "#15100f";
 
 /**
  * Compositions Remotion Studio lists and `npm run splash:render` can target.
@@ -52,6 +54,6 @@ const MARKS: { id: string; props: MarkProps }[] = [
   { id: "XootSplashMark", props: { scale: 0.8, background: null } },
   // Android adaptive foreground — heavily inset for the manufacturer's crop.
   { id: "XootAdaptiveForeground", props: { scale: 0.52, background: null } },
-  { id: "XootAdaptiveBackground", props: { scale: 0, background: CREAM } },
+  { id: "XootAdaptiveBackground", props: { scale: 0, background: INK } },
   { id: "XootMonochrome", props: { scale: 0.52, background: null, silhouette: true } },
 ];
