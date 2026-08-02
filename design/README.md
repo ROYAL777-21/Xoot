@@ -24,7 +24,17 @@ for key, entry in json.loads(blob).items():
 26 assets: 7 authored app modules with readable header comments, 3 vendor bundles, and
 7 TTF fonts. 197 components across 35 screens.
 
-**Its palette is not the shipped one.** The kit is warm coral on cream (`#E64B36`,
-`#FCEEDA`, ink `#3B3430`); `src/index.css` is red on near-white (`#e42a21` / `#fff7f5`).
-That conflict is unresolved — see `docs/xoot-ios-build-prompt.md`, "Decide this before
-writing a line".
+**Its palette is not the shipped one, and the difference is not the one it looks like at
+a glance.** The kit's UI is **violet** (`--xoot-violet-500` `#7C5CFC`) for brand emphasis,
+selection and progress, with **ink** (`#151515`) as the primary commit button — the Tiimo
+pattern — on a warm neutral page (`#F5F3F2`). Red is not the UI colour: the kit reserves
+its red family for Care+ alone, and says so in a comment beside the tokens — "Care+ · the
+MEMBERSHIP red. Xoot's UI is violet; Care+ is red, always. Use only for subscription
+surfaces: badge, paywall, the '+' mark, plan savings." Coral (`#E64B36`) is one of the
+pastel tint-set colours, not the brand.
+
+`src/index.css` is currently red-primary on near-white (`#e42a21` / `#fff7f5`) and the
+native app is pinned dark. Adopting the kit therefore changes three things, not one: the
+brand colour, the primary action colour, and the default scheme (the kit is light by
+default with a `[data-theme="dark"]` opt-in that redeclares semantic aliases only). See
+`docs/xoot-ios-build-prompt.md`.

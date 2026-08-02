@@ -34,15 +34,34 @@ fact is a defect, not a design.
 
 Two consequences to act on immediately:
 
-1. **The palette changes to the kit's.** Coral on cream — `#E64B36`, `#E05B47`, `#C7503E`,
-   cream `#FCEEDA`, ink `#3B3430` — replaces the red-on-near-white currently in
-   `src/index.css` (`#e42a21` / `#fff7f5`). Make it true in `src/index.css` and nowhere
-   else: `src/lib/design-tokens.ts` mirrors it under test, `mobile/src/generated/` is
-   synced from that by `npm run shared:sync`, and `native-design-system.test.ts` fails the
-   build on any raw hex in `mobile/src`. One file changes; everything else follows or the
-   tests break. Record it in the decision log as superseding the red/white direction —
-   including the fact that `--zoey-fill` stays a separate token so the mascot can hold her
-   own red.
+1. **The palette changes to the kit's — and it is not the change it first looks like.**
+   The kit's UI colour is **violet**, `--xoot-violet-500` `#7C5CFC`, carrying brand
+   emphasis, selection and progress. The primary commit button is **ink**, `#151515`, the
+   Tiimo pattern — the kit says so beside the token: "Xoot's commit button is INK, the
+   Tiimo way; violet carries selection, progress and brand emphasis." The page is warm
+   neutral, `#F5F3F2`. Coral `#E64B36` is one of the pastel tint-set colours, not the
+   brand.
+
+   **Red is not deleted; it is scoped.** The kit keeps a full red family and reserves it
+   for one product: "Care+ · the MEMBERSHIP red. Xoot's UI is violet; Care+ is red,
+   always. Use only for subscription surfaces: badge, paywall, the '+' mark, plan
+   savings." `--xoot-careplus-500` is `#E63329`, which is within a hair of the shipped
+   `#e42a21`. So the company red survives as the membership colour, and `--zoey-fill`
+   stays a separate token so the mascot can hold her own red independently of both.
+
+   **The default scheme flips too.** The kit is light by default with a
+   `[data-theme="dark"]` opt-in that redeclares semantic aliases only, never the palette.
+   The native app is currently pinned dark (`userInterfaceStyle: 'dark'`, splash
+   `#15100f`). Moving to light-default means changing `app.config.ts`, the splash
+   background, and the generated launch screen together —
+   `src/lib/ios-build-setup.test.ts` already pins the rule that the launch screen must
+   match the scheme the app is pinned to, and it will fail if you change one without the
+   other. Re-run `npm run icons:render` afterwards.
+
+   Make all of it true in `src/index.css` and nowhere else: `src/lib/design-tokens.ts`
+   mirrors it under test, `mobile/src/generated/` is synced from that by
+   `npm run shared:sync`, and `native-design-system.test.ts` fails the build on any raw hex
+   in `mobile/src`. Record it in the decision log as superseding the red/white direction.
 2. **Any price, benefit, or availability claim rendered from the kit's example content is
    wrong until proven otherwise.** Copy the layout, not the number. Numbers come from
    `supabase/functions/_shared/pricing.ts` through the existing parity test.
@@ -61,7 +80,18 @@ Two consequences to act on immediately:
   ```
   26 assets: 7 authored app modules with readable header comments, three vendor bundles,
   and **7 embedded TTF fonts** — the real files, so nothing needs licensing or
-  substituting.
+  substituting: Newsreader Regular and Italic (`--xoot-font-display`), Plus Jakarta Sans
+  Regular and Italic (`--xoot-font-core`), DM Mono Regular and Medium
+  (`--xoot-font-mono`), and Caveat Regular (`--xoot-font-script`).
+
+  Two things follow from that list. **Newsreader is the display serif, with Georgia only
+  as its CSS fallback** — which is the right call, because Georgia is a system font that
+  cannot be embedded in an app bundle, and Newsreader is an open serif built for screen in
+  the same register. The brief records Georgia as the display face on the founder's
+  instruction; Newsreader is how that instruction survives contact with licensing. Say so
+  rather than silently substituting. And **Caveat is a cursive face**, which is the
+  typeface the deferred "Xoot written in cursive, animated as handwriting" idea needs —
+  it does not have to be sourced any more, only converted to a stroke path.
 - **Read before writing code:** `docs/xoot-master-brief.md` (product, pricing, decisions),
   `docs/implementation/decision-log.md` (ZD-001…ZD-023 and why things are as they are),
   `docs/xoot-production-readiness-prompt.md` (the data-handling bar),
@@ -162,9 +192,11 @@ rule before it needs a layout.
 For submission and for 100k users:
 
 - Every screen works at the largest Dynamic Type setting and with VoiceOver.
-- 44pt minimum tap targets (`MIN_TAP_TARGET`), WCAG AA contrast, reduced motion respected.
-  Check AA again after the palette change — coral on cream is a different contrast problem
-  from red on white, and some pairs that passed will not.
+- 44pt minimum tap targets (`MIN_TAP_TARGET`; the kit's own `--xoot-hit-min` is 48px, so
+  take the larger), WCAG AA contrast, reduced motion respected — the kit ships a
+  `@media (prefers-reduced-motion:reduce)` scope, so honour it rather than reinventing it.
+  Re-check AA after the palette change: violet-on-warm-neutral and ink-on-warm-neutral are
+  different contrast problems from red-on-white, and some pairs that passed will not.
 - Offline and slow-network states on every screen that loads data. South African mobile
   data is expensive and patchy; a spinner forever is the default failure mode.
 - No placeholder copy, no lorem, no dead links. App Review opens the least important screen
@@ -238,9 +270,17 @@ say exactly what you left out.
 **Why the palette question is now answered.** "Use the HTML file as the source of truth"
 resolves it in the kit's favour; there is no reading of source-of-truth where the app takes
 its layout from the kit and its colours from somewhere else. It does reverse the red/white
-direction recorded in the master brief, so it is called out explicitly in the prompt and in
-the decision log rather than slipped in. If that is not what was meant, it is one file to
-put back — that is the whole point of keeping colour in `src/index.css` alone.
+direction recorded in the master brief, so it is called out explicitly rather than slipped
+in. If that is not what was meant, it is one file to put back — that is the whole point of
+keeping colour in `src/index.css` alone.
+
+**The reversal is smaller than it sounds.** The kit does not throw the company red away; it
+gives it a job. Red becomes Care+ — badge, paywall, the "+" mark, plan savings — which is
+the surface where a distinct colour actually earns its keep, and `--xoot-careplus-500`
+`#E63329` is within a hair of the shipped `#e42a21`. What changes is that red stops being
+the colour of every button. Worth saying plainly when this goes back to the founder,
+because "the app is violet now" and "red is now the membership colour" land very
+differently and only the second one is accurate.
 
 **What this still cannot do.** No Mac in the environment, so nothing here runs an iOS
 simulator. `expo prebuild` and `expo export` verify configuration and bundling, not

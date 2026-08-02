@@ -167,20 +167,36 @@ projects on that date, not carried forward on trust.
 
 - **The design source of truth changed on 2026-08-02** to `design/Xoot_App.html` — the
   Claude Design UI kit, 197 components across 35 screens, unpacked per `design/README.md`.
-  Its palette is warm coral on cream (`#E64B36`, `#FCEEDA`, ink `#3B3430`); the shipped
-  tokens in `src/index.css` are red on near-white (`#e42a21` / `#fff7f5`). Treating the kit
-  as source of truth means coral/cream wins and the master brief's red/white direction is
-  superseded. **This reverses a recorded founder decision and needs an explicit yes or no**
-  — it is one file to change either way, because `design-tokens.test.ts` forces every other
-  copy to follow `src/index.css`. Nothing else in the port is blocked by it; only the
-  colour values are.
+  Adopting it changes three things at once, and **the founder needs to say yes or no to all
+  three** because together they supersede the recorded red/white direction:
+  1. **Brand colour becomes violet** (`--xoot-violet-500` `#7C5CFC`) for emphasis,
+     selection and progress, with **ink** `#151515` as the primary commit button.
+  2. **Red is scoped, not dropped.** The kit reserves its red family for Care+ alone —
+     "Xoot's UI is violet; Care+ is red, always. Use only for subscription surfaces: badge,
+     paywall, the '+' mark, plan savings." `--xoot-careplus-500` `#E63329` is within a hair
+     of the shipped `#e42a21`, so the company red becomes the membership colour rather than
+     the colour of every button. `--zoey-fill` stays separate, so the mascot is unaffected
+     either way.
+  3. **Default scheme flips to light.** The kit is light-default with a
+     `[data-theme="dark"]` opt-in; the native app is pinned dark. Changing it touches
+     `app.config.ts`, the splash background, and the generated launch screen together —
+     `ios-build-setup.test.ts` fails if one moves without the others.
+
+  Colour is the only part of the port blocked by this. It is one file to change either way
+  (`src/index.css`), because `design-tokens.test.ts` forces every other copy to follow.
 - The deferred design queue in `docs/xoot-master-brief.md` §3.7 is still open by founder
   instruction ("deal with this at a later stage"): Zoey approaching and filling the screen
   red on first onboarding; a distinct company-red splash with "Xoot" written in cursive as
   handwriting; de-glossing the mascot; keeping the mascot in a dedicated company red via the
   existing `--zoey-fill` token; and an overall UI direction the founder said they would
-  decide and communicate. The cursive splash additionally needs a single-stroke cursive
-  "Xoot" path asset before it can be animated as handwriting.
+  decide and communicate. The cursive splash no longer needs a typeface sourced — the kit
+  embeds **Caveat Regular** as `--xoot-font-script` — only the letterforms converted to a
+  stroke path so they can be drawn on.
+- The display typeface needs a founder confirmation. The brief records **Georgia** on the
+  founder's instruction; Georgia is a system font that cannot be licensed into an app
+  bundle. The kit ships **Newsreader** as `--xoot-font-display` with Georgia as the CSS
+  fallback only, which is the same register and is embeddable. Confirm Newsreader is an
+  acceptable stand-in before the port hardcodes it.
 - The Android preview APK (`114d0c10-c754-4426-9a90-9fdfeadb8a06`, versionCode 5) and the
   iOS simulator archive (`d4de44a1-d827-4045-b1a6-e427066fcd64`) were both built on
   2026-07-01 and **predate every change to `mobile/` since**: the native splash animation,
