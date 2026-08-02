@@ -3,10 +3,14 @@ import { DURATION_FRAMES, FPS } from "@/lib/splash-choreography";
 import { XootMark, type MarkProps } from "./XootMark";
 import { XootSplash } from "./XootSplash";
 
-/** Brand background, matching `--background` in `src/index.css`. */
-const CREAM = "#fff7f5";
-/** The app is pinned to dark (`userInterfaceStyle`), so native surfaces use this. */
-const INK = "#15100f";
+/** Page background, matching `--background` in `src/index.css` — the kit's `surface-page`. */
+const PAGE = "#f5f3f2";
+/**
+ * The Android adaptive-icon backplate. Deliberately ink rather than the page colour: an
+ * adaptive icon is masked and shadowed by the launcher, and a near-white plate disappears
+ * into a light wallpaper. This is the kit's `ink-900`.
+ */
+const INK = "#151515";
 
 /**
  * Compositions Remotion Studio lists and `npm run splash:render` can target.
@@ -49,7 +53,7 @@ export function RemotionRoot() {
 
 const MARKS: { id: string; props: MarkProps }[] = [
   // iOS and web app icon. Opaque: the App Store rejects an icon with an alpha channel.
-  { id: "XootIcon", props: { scale: 0.82, background: CREAM } },
+  { id: "XootIcon", props: { scale: 0.82, background: PAGE } },
   // Launch screen mark. Transparent so `expo-splash-screen`'s backgroundColor shows.
   { id: "XootSplashMark", props: { scale: 0.8, background: null } },
   // Android adaptive foreground — heavily inset for the manufacturer's crop.

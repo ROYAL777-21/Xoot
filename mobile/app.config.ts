@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'zoot',
-  userInterfaceStyle: 'dark',
+  userInterfaceStyle: 'light',
   runtimeVersion: {
     policy: 'appVersion',
   },
@@ -60,7 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config.android,
     package: bundleId,
     adaptiveIcon: {
-      backgroundColor: '#15100f',
+      backgroundColor: '#f5f3f2',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -113,27 +113,28 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         icon: './assets/images/android-icon-monochrome.png',
-        color: '#e42a21',
+        color: '#151515',
         defaultChannel: 'zoot-service-updates',
       },
     ],
     [
       'expo-splash-screen',
       {
-        // One colour, not a light/dark pair. `userInterfaceStyle: 'dark'` above pins
-        // the app to dark, and `expo prebuild` warns that combining the two stops the
-        // splash working at all: "The existing userInterfaceStyle property is
-        // preventing splash screen from working properly."
+        // One colour, not a light/dark pair. `userInterfaceStyle` above pins the app to a
+        // single scheme, and `expo prebuild` warns that combining the two stops the splash
+        // working at all: "The existing userInterfaceStyle property is preventing splash
+        // screen from working properly."
         //
-        // So this is the dark background, matching what the app actually renders and
-        // matching `--background` in the web app's `.dark` scope. If the app is ever
-        // relaxed to follow the system, add the `dark:` variant back and drop
-        // `userInterfaceStyle` in the same change — not one without the other.
-        backgroundColor: '#15100f',
+        // Light, matching the UI kit, which is light-default with a `[data-theme="dark"]`
+        // opt-in (ZD-024). The value is `--background` in `src/index.css` — the kit's
+        // `surface-page`, `#F5F3F2`. If the app is ever relaxed to follow the system, add
+        // the `dark:` variant back and drop `userInterfaceStyle` in the same change, and
+        // move this colour with it — not one without the other.
+        backgroundColor: '#f5f3f2',
         image: './assets/images/splash-icon.png',
         imageWidth: 128,
         android: {
-          backgroundColor: '#15100f',
+          backgroundColor: '#f5f3f2',
           image: './assets/images/splash-icon.png',
           imageWidth: 128,
         },
