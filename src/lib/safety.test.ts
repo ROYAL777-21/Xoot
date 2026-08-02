@@ -122,6 +122,58 @@ describe("visit recording", () => {
   });
 });
 
+describe("the cancel PIN", () => {
+  const pinSql = readFileSync(join(root, "supabase/migrations/20260802170000_safety_pin.sql"), "utf8")
+    .replace(/^\s*--.*$/gm, "")
+    .replace(/comment on [\s\S]*?';/g, "");
+
+  it("stores a hash, never the PIN", () => {
+    expect(pinSql).toMatch(/pin_hash text not null/);
+    expect(pinSql).toMatch(/gen_salt\('bf'/);
+    // A column literally holding the PIN would defeat the whole table.
+    expect(pinSql).not.toMatch(/\bpin text\b/);
+  });
+
+  it("lets nobody read the hash, including its owner", () => {
+    // Four digits is trivially crackable offline, so a readable hash is a handed-over PIN.
+    expect(pinSql).toMatch(/revoke all on public\.user_safety_pins from anon, authenticated/);
+    expect(pinSql).not.toMatch(/create policy[\s\S]*user_safety_pins/);
+  });
+
+  it("only lets the server verify, and only the owner set", () => {
+    // If a client could call verify directly it would bypass the attempt counter.
+    expect(pinSql).toMatch(
+      /revoke all on function public\.verify_safety_pin\(uuid, text\) from public, anon, authenticated/,
+    );
+    expect(pinSql).toMatch(/grant execute on function public\.verify_safety_pin\(uuid, text\) to service_role/);
+    expect(pinSql).toMatch(/grant execute on function public\.set_safety_pin\(text\) to authenticated/);
+  });
+
+  it("refuses to set a PIN without an authenticated caller", () => {
+    // A service session setting someone's PIN would destroy the property that makes it useful:
+    // that only the account holder has ever seen it.
+    expect(pinSql).toMatch(/if caller is null then[\s\S]{0,120}raise exception/);
+  });
+
+  it("locks out after repeated failures", () => {
+    expect(pinSql).toMatch(/failed_attempts \+ 1 >= 5/);
+    expect(pinSql).toMatch(/interval '15 minutes'/);
+  });
+
+  it("leaves an alert cancellable when no PIN has been set", () => {
+    // Otherwise the first accidental alert is uncancellable by the person who raised it, which
+    // is worse than the risk the PIN removes.
+    expect(pinSql).toMatch(/if not found then[\s\S]{0,60}return true/);
+  });
+
+  it("computes elapsed time server-side when deciding if the PIN is needed", () => {
+    const sos = readFileSync(join(root, "supabase/functions/raise-sos-alert/index.ts"), "utf8");
+    // A client that could assert "still counting down" could cancel without the PIN.
+    expect(sos).toMatch(/new Date\(alert\.triggered_at\)/);
+    expect(sos).not.toMatch(/body\.elapsed|body\.phase|body\.needsPin/);
+  });
+});
+
 describe("safety claims are gated", () => {
   it("cannot arm SOS before the whole path is verified", () => {
     // A button labelled SOS that does nothing is worse than no button. `canArmSos` only opens
