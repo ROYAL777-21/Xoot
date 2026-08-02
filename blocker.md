@@ -11,16 +11,57 @@ projects on that date, not carried forward on trust.
 
 ## Live security holes — fix before anything else
 
-- **Any customer can set their own booking price to zero, and any assigned Xooter can
-  raise the price of a job they are working.** The `update own bookings` and
-  `zooters update assigned bookings` policies grant UPDATE on the whole row, and RLS has
-  no column granularity, so one PATCH against the REST API changes `price` and `status`
-  with no UI involved. `supabase/migrations/20260730083000_booking_price_author_guard.sql`
-  reverts `price` and `status` changes from any client session while still allowing the
-  server path, admins, and a customer cancelling their own booking. Verified unapplied in
-  both projects on 2026-08-02. It carries a deliberately earlier timestamp than the tips
-  migration so it can go out on its own, ahead of the ZD-005 schema decision. This is the
-  single highest-priority item in this file.
+- **The client is the source of truth for facts the business is supposed to decide.**
+  Confirmed against production on 2026-08-02 by joining table GRANTs to permissive policies
+  — a write is only reachable when a role holds both. `FOR ALL USING (user_id = auth.uid())`
+  was written across the schema to mean "this row is yours"; Postgres reads it as "you may
+  write anything in this row", because RLS is row-level and has no opinion about columns.
+  Reachable by any signed-in user, today, with one PATCH and no UI:
+
+  | Table | What the client can set about itself |
+  |---|---|
+  | `zooter_applications` | `status`, all seven `*_verification_status` columns, `background_check_status`, `behavioural_screening`, plus `reviewed_by`/`reviewed_at` — self-approve **and** stamp an admin's UUID on the approval |
+  | `zooter_documents` | `status` — mark own ID documents verified |
+  | `zooter_training_completions` | `passed`, `score` — self-certify safety training |
+  | `loyalty_points` | `points`, `free_credits` — mint ZootCred, which `redeem-zootcred` spends on real services |
+  | `care_plus_applications` | `status`, `admin_fee_paid` — self-approve membership, mark the fee paid |
+  | `gift_clean_orders` | `amount`, `status`, `payment_record_id` — issue a paid gift order without paying |
+  | `booking_status_events` | insert/update/**delete**, including `actor_id` — forge or erase the booking audit trail |
+  | `booking_completion_photos`, `trust_incidents` | update/delete — destroy the evidence of an incident you are party to |
+  | `zooter_jobs` | `state` — accept a job never offered, un-decline a declined one |
+  | `post_job_reviews` | update/delete — rewrite or remove reviews after the fact |
+
+  Worst of these is `zooter_applications`: for a company whose product is sending vetted
+  people into homes, a self-assignable vetting badge is the whole trust model.
+
+  Also: **`anon` held INSERT/UPDATE/DELETE grants on roughly twenty tables**, including
+  `zooter_applications`, `loyalty_points` and `sensitive_access_logs`. RLS blocked it
+  because `auth.uid()` is null for anon — but the anon key ships inside the web bundle and
+  the app binary, so that is one permissive policy away from being live.
+
+  Fixed by `supabase/migrations/20260802120000_client_write_surface_lockdown.sql`, which
+  uses **column-level GRANTs** — unlike RLS, GRANT is column-aware and is checked before
+  any policy runs. **Applied and verified on staging 2026-08-02; NOT applied to
+  production.** Production needs a founder go-ahead because two follow-ups below will
+  break client flows that currently rely on writing these columns.
+
+- **Correction to the 2026-08-02 entry that previously headed this file.** It claimed a
+  customer could PATCH their own booking price to zero. That is **not** reachable:
+  `authenticated` holds only SELECT on `public.bookings` — no UPDATE grant — so the
+  `update own bookings` policy cannot be exercised. The same is true of
+  `zooters_update_self_or_admin`: `authenticated` has no UPDATE grant on `public.zooters`,
+  so a Xooter cannot set their own `verified` or `background_checked` flag either. Both
+  policies are still wrong and should be narrowed, but as latent hazards, not live holes —
+  they become exploitable the moment anyone grants UPDATE.
+  `20260730083000_booking_price_author_guard.sql` is still worth applying as the
+  defence-in-depth that makes the grant safe to add later.
+
+- **Two client flows will fail closed once the lockdown reaches production**, and each
+  needs an Edge Function before that happens:
+  1. **Training completion** — grading must move server-side. Until it does, no completion
+     can be recorded from the client. That is the correct failure; a false record of safety
+     training is worse than no record.
+  2. **Xooter job accept/decline** — must go through `ops-workflow` or a sibling function.
 - **Six Edge Functions are live in production with no source in this repository**:
   `sensitive-access-read`, `sensitive-access-save`, `twilio-token`, `twilio-conversation`,
   `twilio-voice-status`, `twilio-voice-twiml`. Diffed live against `supabase/functions/`
