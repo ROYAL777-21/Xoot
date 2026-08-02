@@ -11,71 +11,64 @@ projects on that date, not carried forward on trust.
 
 ## Live security holes — fix before anything else
 
-- **The client is the source of truth for facts the business is supposed to decide.**
-  Confirmed against production on 2026-08-02 by joining table GRANTs to permissive policies
-  — a write is only reachable when a role holds both. `FOR ALL USING (user_id = auth.uid())`
-  was written across the schema to mean "this row is yours"; Postgres reads it as "you may
-  write anything in this row", because RLS is row-level and has no opinion about columns.
-  Reachable by any signed-in user, today, with one PATCH and no UI:
+- **CLOSED 2026-08-02 — the client-as-source-of-truth hole.** `FOR ALL USING (user_id =
+  auth.uid())` was written across the schema to mean "this row is yours"; Postgres reads it
+  as "you may write anything in this row", because RLS is row-level and has no opinion about
+  columns. Any signed-in user could self-approve a Xooter application including stamping an
+  admin's UUID on `reviewed_by`, mark their own ID documents verified, self-certify safety
+  training, mint ZootCred that `redeem-zootcred` spends on real services, approve their own
+  Care+ and mark the fee paid, issue a paid gift order without paying, and forge or delete
+  the booking audit trail. `anon` also held write grants on ~20 tables.
 
-  | Table | What the client can set about itself |
-  |---|---|
-  | `zooter_applications` | `status`, all seven `*_verification_status` columns, `background_check_status`, `behavioural_screening`, plus `reviewed_by`/`reviewed_at` — self-approve **and** stamp an admin's UUID on the approval |
-  | `zooter_documents` | `status` — mark own ID documents verified |
-  | `zooter_training_completions` | `passed`, `score` — self-certify safety training |
-  | `loyalty_points` | `points`, `free_credits` — mint ZootCred, which `redeem-zootcred` spends on real services |
-  | `care_plus_applications` | `status`, `admin_fee_paid` — self-approve membership, mark the fee paid |
-  | `gift_clean_orders` | `amount`, `status`, `payment_record_id` — issue a paid gift order without paying |
-  | `booking_status_events` | insert/update/**delete**, including `actor_id` — forge or erase the booking audit trail |
-  | `booking_completion_photos`, `trust_incidents` | update/delete — destroy the evidence of an incident you are party to |
-  | `zooter_jobs` | `state` — accept a job never offered, un-decline a declined one |
-  | `post_job_reviews` | update/delete — rewrite or remove reviews after the fact |
+  Closed by `20260802120000_client_write_surface_lockdown.sql` using **column-level GRANTs** —
+  GRANT is column-aware and is checked before any policy runs. Applied to both projects and
+  verified against each: decision columns writable `0`, user-authored still writable `4/4`
+  sampled, answer key readable `0`, `anon` write grants one table (`analytics_events`, the
+  intended exception). `training-module` and `respond-zooter-job` were deployed to production
+  **before** the permission change, so neither flow broke. Their client callers in `src/` and
+  `mobile/src/` are **not yet repointed** — app work, not a blocker, but the old call sites
+  will error until it is done.
 
-  Worst of these is `zooter_applications`: for a company whose product is sending vetted
-  people into homes, a self-assignable vetting badge is the whole trust model.
+- **Correction to an earlier 2026-08-02 entry.** It claimed a customer could PATCH their own
+  booking price to zero. Not reachable: `authenticated` holds only SELECT on `public.bookings`.
+  The same is true of `zooters` — no UPDATE grant, so a Xooter cannot set their own `verified`
+  flag. Both policies are still wrong and should be narrowed, but as latent hazards rather
+  than live holes; they become exploitable the moment anyone grants UPDATE.
+  `20260730083000_booking_price_author_guard.sql` remains worth applying as the
+  defence-in-depth that makes such a grant safe to add later.
 
-  Also: **`anon` held INSERT/UPDATE/DELETE grants on roughly twenty tables**, including
-  `zooter_applications`, `loyalty_points` and `sensitive_access_logs`. RLS blocked it
-  because `auth.uid()` is null for anon — but the anon key ships inside the web bundle and
-  the app binary, so that is one permissive policy away from being live.
+- **Four Edge Functions are still live in production with no source in this repository**:
+  `twilio-token`, `twilio-conversation`, `twilio-voice-status`, `twilio-voice-twiml`. The
+  last two run with `verify_jwt: false`, so they are publicly invocable. Recover each with
+  `get_edge_function`, commit verbatim, review, then redeploy from the repo — or delete it
+  if it is dead. `sensitive-access-read` and `sensitive-access-save` were recovered this way
+  on 2026-08-02 and are now committed.
 
-  Fixed by `supabase/migrations/20260802120000_client_write_surface_lockdown.sql`, which
-  uses **column-level GRANTs** — unlike RLS, GRANT is column-aware and is checked before
-  any policy runs. **Applied and verified on staging 2026-08-02; NOT applied to
-  production.** Production needs a founder go-ahead because two follow-ups below will
-  break client flows that currently rely on writing these columns.
-
-- **Correction to the 2026-08-02 entry that previously headed this file.** It claimed a
-  customer could PATCH their own booking price to zero. That is **not** reachable:
-  `authenticated` holds only SELECT on `public.bookings` — no UPDATE grant — so the
-  `update own bookings` policy cannot be exercised. The same is true of
-  `zooters_update_self_or_admin`: `authenticated` has no UPDATE grant on `public.zooters`,
-  so a Xooter cannot set their own `verified` or `background_checked` flag either. Both
-  policies are still wrong and should be narrowed, but as latent hazards, not live holes —
-  they become exploitable the moment anyone grants UPDATE.
-  `20260730083000_booking_price_author_guard.sql` is still worth applying as the
-  defence-in-depth that makes the grant safe to add later.
-
-- **Two client flows will fail closed once the lockdown reaches production**, and each
-  needs an Edge Function before that happens:
-  1. **Training completion** — grading must move server-side. Until it does, no completion
-     can be recorded from the client. That is the correct failure; a false record of safety
-     training is worse than no record.
-  2. **Xooter job accept/decline** — must go through `ops-workflow` or a sibling function.
-- **Six Edge Functions are live in production with no source in this repository**:
-  `sensitive-access-read`, `sensitive-access-save`, `twilio-token`, `twilio-conversation`,
-  `twilio-voice-status`, `twilio-voice-twiml`. Diffed live against `supabase/functions/`
-  on 2026-08-02. Two of them read and write the sensitive-access table — gate codes, alarm
-  codes, access instructions — with service-role reach, and `twilio-voice-status` and
-  `twilio-voice-twiml` run with `verify_jwt: false`, so they are publicly invocable. None
-  of the six can be reviewed, diffed, rolled back, or redeployed from the repo, and if the
-  platform copy is lost the code is gone. Pull each one's source from the dashboard,
-  review it, commit it, and redeploy from the repo — or delete it if it is dead. Until
-  then, treat the production function surface as partially unaudited.
+- **The recovered sensitive-access functions carry four defects, all unfixed.** They are
+  committed verbatim so the repo copy provably matches what is deployed; the fix is a
+  separate, reviewable diff.
+  1. **`ENCRYPTION_KEY` falls back to `SUPABASE_SERVICE_ROLE_KEY`.** If unset, every gate
+     and alarm code is encrypted under a key derived from the service role key. Anyone
+     holding that key can decrypt them — and rotating it, which this file already requires
+     because one was pasted into chat, makes every stored access credential permanently
+     undecryptable. **Check whether `ENCRYPTION_KEY` is actually set in production before
+     rotating anything.** Read and save must be changed together: they are two halves of one
+     envelope.
+  2. CORS falls back to `*` when `APP_BASE_URL` is unset, unlike every other function here.
+  3. The client is built with the service role key while forwarding the caller's
+     Authorization header, so the effective identity depends on supabase-js precedence.
+  4. `sensitive-access-save` decides what to encrypt by regex-matching the *field name*, so
+     a field named "how to get in" is silently dropped and reported as
+     `no_sensitive_fields` — and the same text probably lands somewhere unencrypted.
 - Staging and production Supabase security advisors both report leaked password protection
-  disabled. Re-verified 2026-08-02: this is now the **only** security-advisor finding on
-  either project. It is one Auth-settings toggle per project. Enable it, or record an
-  explicit launch risk acceptance before public launch.
+  disabled. It is one Auth-settings toggle per project. Enable it, or record an explicit
+  launch risk acceptance before public launch.
+
+  Re-verified 2026-08-02 after the day's migrations: both projects return exactly three
+  findings and the other two are intentional — `set_safety_pin` callable by `authenticated`
+  (the account holder setting their own PIN is the point) and `user_safety_pins` with RLS and
+  no policy (deny-all by design, nobody reads a PIN hash). So this toggle is the only
+  advisor finding that represents real work.
 
 ## Supabase
 
@@ -429,6 +422,23 @@ projects on that date, not carried forward on trust.
   provider access is configured. It must pass before the production-readiness blockers can be
   closed.
 - Confirm Cloudflare WAF/rate-limit/Turnstile rules after the zone is added.
+
+## Safety features — SOS and recording
+
+- Schema, the cancel PIN, and `raise-sos-alert` exist and are applied to both projects.
+  `SAFETY_READINESS` in `src/lib/safety.ts` is `schema_pending`, so nothing is offered to a
+  user yet. Remaining before it can advance:
+  - `raise-sos-alert` is written but **not deployed** to either project.
+  - No client UI: the countdown, haptics, microphone permission, the recording indicator,
+    and the PIN-set flow are all unbuilt.
+  - `private.purge_expired_recordings()` has no scheduler attached, so unattached recordings
+    will not actually be deleted at 30 days until a cron calls it.
+  - No encrypted-upload path or storage bucket for recordings.
+  - Advance to `server_ready` only when the functions are deployed, and to `live` only when
+    dialling 112 and the ops alert have both been tested end to end on a real handset.
+- Ops has no paging route. `raise-sos-alert` writes the alert and notifies the raiser; nobody
+  at Xoot is woken. Decide the channel before the feature goes live, or an alert lands in a
+  table nobody is watching.
 
 ## Closed at review — 2026-08-02
 
