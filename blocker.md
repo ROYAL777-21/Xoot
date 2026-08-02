@@ -80,6 +80,10 @@ projects on that date, not carried forward on trust.
   and staging project `fxmxyabdjqviqbcxmvlp` with `https://staging.zoothome.co.za`. Live
   apply still requires a rotated local `SUPABASE_ACCESS_TOKEN`, target project ref, and
   explicit `-SiteUrl` so localhost is not applied to staging/production accidentally.
+- **`src/integrations/supabase/types.ts` is stale against the live schema.** Found 2026-08-02:
+  `training_modules` carries `rank_points` and `badge_label` in both projects and the
+  generated types have neither, so a correct query fails to typecheck and needs a cast.
+  Regenerate it — and expect other drift, because nothing currently forces it to stay in step.
 - Supabase MCP is configured for read-only inspection. Supabase CLI `2.108.0` is installed,
   but separate CLI auth still requires a local `SUPABASE_ACCESS_TOKEN` or secure login flow
   before live Auth config can run. Rechecked 2026-08-02: no `SUPABASE_ACCESS_TOKEN`,
@@ -428,7 +432,7 @@ projects on that date, not carried forward on trust.
 - Schema, the cancel PIN, and `raise-sos-alert` exist and are applied to both projects.
   `SAFETY_READINESS` in `src/lib/safety.ts` is `schema_pending`, so nothing is offered to a
   user yet. Remaining before it can advance:
-  - `raise-sos-alert` is written but **not deployed** to either project.
+  - `raise-sos-alert` is deployed to **production only**. Deploy to staging before testing.
   - No client UI: the countdown, haptics, microphone permission, the recording indicator,
     and the PIN-set flow are all unbuilt.
   - `private.purge_expired_recordings()` has no scheduler attached, so unattached recordings
