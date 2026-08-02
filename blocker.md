@@ -25,9 +25,11 @@ projects on that date, not carried forward on trust.
   verified against each: decision columns writable `0`, user-authored still writable `4/4`
   sampled, answer key readable `0`, `anon` write grants one table (`analytics_events`, the
   intended exception). `training-module` and `respond-zooter-job` were deployed to production
-  **before** the permission change, so neither flow broke. Their client callers in `src/` and
-  `mobile/src/` are **not yet repointed** — app work, not a blocker, but the old call sites
-  will error until it is done.
+  **before** the permission change, so neither flow broke. Client call sites audited and
+  repointed on the same day: `src/pages/zooter/Training.tsx` now fetches and submits through
+  `training-module`, the web jobs page already routed through `ops-workflow` so it was never
+  affected, `post_job_reviews` INSERT remains permitted (only DELETE was revoked), the admin
+  pages only read, and nothing in `mobile/src` writes a locked table.
 
 - **Correction to an earlier 2026-08-02 entry.** It claimed a customer could PATCH their own
   booking price to zero. Not reachable: `authenticated` holds only SELECT on `public.bookings`.
