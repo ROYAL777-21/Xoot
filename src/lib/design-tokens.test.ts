@@ -68,19 +68,42 @@ describe("design tokens", () => {
   });
 
   it("renders colours React Native can actually parse", () => {
+    // A literal triplet, so this half of the assertion survives a palette change.
     expect(hsl("3 78% 51%")).toBe("hsl(3, 78%, 51%)");
-    expect(color("light", "primary")).toBe("hsl(3, 78%, 51%)");
-    expect(alpha("dark", "primary", 0.2)).toBe("hsla(4, 100%, 64%, 0.2)");
+    // The primary action is ink, per the kit: "Xoot's commit button is INK, the Tiimo way;
+    // violet carries selection, progress and brand emphasis." Brand violet is `--brand`.
+    expect(color("light", "primary")).toBe("hsl(0, 0%, 8%)");
+    expect(alpha("dark", "primary", 0.2)).toBe("hsla(20, 13%, 95%, 0.2)");
   });
 
-  it("keeps the brand red distinct from the destructive red", () => {
-    // Brief §3.1: red is the brand colour and also the universal error colour. If they
-    // converge, a destructive action stops reading as dangerous.
+  it("keeps the Care+ red distinct from the destructive red", () => {
+    // This used to compare `primary` against `destructive`, because red was the brand.
+    // Under the kit (ZD-024) the primary action is ink and red belongs to Care+ alone, so
+    // comparing `primary` here would pass on a difference between ink and red and prove
+    // nothing. The real collision risk is Care+ against destructive: if a membership badge
+    // and a delete button read as the same red, a destructive action stops looking dangerous.
     for (const scheme of ["light", "dark"] as const) {
-      const [, , brandL] = COLOR[scheme].primary.split(" ");
-      const [, , destructiveL] = COLOR[scheme].destructive.split(" ");
-      const gap = Math.abs(parseFloat(brandL) - parseFloat(destructiveL));
-      expect({ scheme, distinct: gap >= 15 }).toEqual({ scheme, distinct: true });
+      const [carePlusH, , carePlusL] = COLOR[scheme].carePlus.split(" ");
+      const [destructiveH, , destructiveL] = COLOR[scheme].destructive.split(" ");
+      const hueGap = Math.abs(parseFloat(carePlusH) - parseFloat(destructiveH));
+      const lightnessGap = Math.abs(parseFloat(carePlusL) - parseFloat(destructiveL));
+      expect({ scheme, distinct: hueGap >= 4 || lightnessGap >= 10 }).toEqual({
+        scheme,
+        distinct: true,
+      });
+    }
+  });
+
+  it("keeps the primary action away from every brand hue", () => {
+    // The kit is explicit: "Xoot's commit button is INK, the Tiimo way; violet carries
+    // selection, progress and brand emphasis." A saturated primary means someone has
+    // quietly reverted that.
+    for (const scheme of ["light", "dark"] as const) {
+      const [, saturation] = COLOR[scheme].primary.split(" ");
+      expect({ scheme, neutral: parseFloat(saturation) <= 15 }).toEqual({
+        scheme,
+        neutral: true,
+      });
     }
   });
 

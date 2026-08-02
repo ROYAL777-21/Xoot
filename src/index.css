@@ -44,6 +44,8 @@
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
 
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
   --color-care-plus: hsl(var(--care-plus));
   --color-success: hsl(var(--success));
   --color-warning: hsl(var(--warning));
@@ -1295,33 +1297,45 @@
   box-shadow: var(--shadow-soft);
 }
 
-/* Xoot Design System - Warm Home palette: terracotta + sage + cream */
+/* Xoot Design System — the UI kit's palette (design/Xoot_App.html, ZD-024).
+   Violet carries brand emphasis, ink is the commit button, red belongs to Care+ and
+   nothing else. Superseded: terracotta/sage/cream, then red/white.
+   Every value here is mirrored in src/lib/design-tokens.ts and design-tokens.test.ts
+   fails the build on drift, so this file is the only place a colour is decided. */
 
 @layer base {
   :root {
-    --background: 13 100% 98%;
-    --foreground: 14 18% 14%;
+    --background: 20 13% 95%;
+    --foreground: 0 0% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 14 18% 14%;
+    --card-foreground: 0 0% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 14 18% 14%;
+    --popover-foreground: 0 0% 8%;
 
     /* Terracotta */
     /* 51% not 53%: at 53% white-on-red measures 4.35:1, which fails AA for body text
        and a 14px button label is body text. 51% gives 4.53:1. The two are visually
        indistinguishable side by side; only the audit tells them apart. */
-    --primary: 3 78% 51%;
+    --primary: 0 0% 8%;
     /* Care+ is a tier, not a button: richer and darker than the brand red so a
        membership surface never reads as a primary CTA. */
-    --care-plus: 3 83% 38%;
+    /* Brand emphasis: selection, progress, active state. The kit's violet, at its 600
+       weight not its 500 — white on violet-500 measures 4.38:1 and fails AA for body
+       text, which a 14px chip label is. 600 gives 6.10:1. */
+    --brand: 253 79% 58%;
+    --brand-foreground: 0 0% 100%;
+    /* Care+ is the membership red, and the only place red appears in the UI.
+       51% not the kit's 53%: white on 53% is 4.31:1, the same AA failure --primary
+       was darkened for. */
+    --care-plus: 3 79% 51%;
     /* Semantic colours, deliberately separate from the brand hue. */
-    --success: 156 68% 30%;
+    --success: 155 47% 43%;
     --success-foreground: 0 0% 100%;
-    --warning: 39 91% 50%;
+    --warning: 37 78% 56%;
     --warning-foreground: 14 18% 14%;
-    --info: 225 71% 44%;
+    --info: 211 65% 57%;
     --info-foreground: 0 0% 100%;
     /* Mascot. Zoey's fill is the brand red; the halo is a soft tint of it. */
     /* Deliberately 53%, brighter than --primary. Nothing is ever set in text on top
@@ -1329,25 +1343,25 @@
        the character reads better with the extra saturation. */
     --zoey-fill: 3 78% 53%;
     --zoey-halo: 6 100% 92%;
-    --primary-foreground: 36 40% 98%;
+    --primary-foreground: 0 0% 100%;
     --primary-glow: 4 100% 68%;
 
     /* Cream secondary */
-    --secondary: 32 35% 92%;
-    --secondary-foreground: 14 18% 18%;
+    --secondary: 30 11% 93%;
+    --secondary-foreground: 0 0% 14%;
 
-    --muted: 32 25% 94%;
-    --muted-foreground: 13 9% 38%;
+    --muted: 24 10% 90%;
+    --muted-foreground: 27 4% 47%;
 
     /* Sage accent */
-    --accent: 39 91% 50%;
+    --accent: 37 78% 56%;
     /* Dark ink on marigold, never white: white measures 2.09:1 here and is unreadable.
        Dark gives 7.56:1. This is why semantic colours each need their own foreground
        rather than inheriting one global "on-accent" value. */
     --accent-foreground: 14 18% 14%;
     --accent-soft: 39 90% 92%;
 
-    --destructive: 358 79% 31%;
+    --destructive: 7 78% 56%;
     --destructive-foreground: 36 40% 98%;
 
     --border: 28 22% 88%;
@@ -1390,32 +1404,34 @@
   }
 
   .dark {
-    --background: 10 17% 7%;
-    --foreground: 12 38% 95%;
-    --card: 8 15% 11%;
-    --card-foreground: 12 38% 95%;
-    --popover: 8 15% 11%;
-    --popover-foreground: 12 38% 95%;
-    --primary: 4 100% 64%;
+    --background: 20 13% 7%;
+    --foreground: 20 13% 95%;
+    --card: 20 8% 10%;
+    --card-foreground: 20 13% 95%;
+    --popover: 20 8% 10%;
+    --popover-foreground: 20 13% 95%;
+    --primary: 20 13% 95%;
     /* Dark mode lifts the brand red rather than reusing the light value: a mid red
        on near-black loses too much contrast to carry a CTA. */
-    --care-plus: 3 74% 52%;
-    --success: 156 55% 48%;
+    --brand: 252 87% 78%;
+    --brand-foreground: 0 0% 8%;
+    --care-plus: 3 79% 56%;
+    --success: 155 40% 62%;
     --success-foreground: 10 17% 7%;
-    --warning: 39 91% 55%;
+    --warning: 37 78% 60%;
     --warning-foreground: 10 17% 7%;
-    --info: 225 80% 66%;
+    --info: 211 65% 70%;
     --info-foreground: 10 17% 7%;
     --zoey-fill: 4 96% 58%;
     --zoey-halo: 6 40% 22%;
-    --primary-foreground: 10 17% 7%;
-    --secondary: 8 15% 16%;
-    --secondary-foreground: 12 38% 95%;
-    --muted: 8 15% 16%;
-    --muted-foreground: 11 12% 66%;
-    --accent: 39 91% 55%;
+    --primary-foreground: 0 0% 8%;
+    --secondary: 20 6% 14%;
+    --secondary-foreground: 20 13% 95%;
+    --muted: 20 6% 15%;
+    --muted-foreground: 25 7% 68%;
+    --accent: 37 78% 60%;
     --accent-foreground: 10 17% 7%;
-    --destructive: 358 70% 46%;
+    --destructive: 7 78% 62%;
     --destructive-foreground: 12 38% 95%;
     --border: 8 17% 18%;
     --input: 8 17% 18%;
