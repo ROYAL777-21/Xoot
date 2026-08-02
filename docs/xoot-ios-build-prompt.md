@@ -1,35 +1,71 @@
-# Prompt — Build the Xoot iOS app to App Store submission
+# Prompt — Build the Xoot app from the UI kit, to production
 
-Copy everything between the rules below into a fresh session. It is written to be
-handed over cold: it names the files, the decisions already made, and the things that
-will go wrong.
+Copy everything between the rules into a session. It is written to be handed over cold:
+it names the files, resolves the decisions that were open, and describes the mistakes that
+are already known so they are not made a second time.
+
+Supersedes the earlier version of this file, which asked which palette wins. That question
+is now answered — see "What source of truth means".
 
 ---
 
 ## THE PROMPT
 
-Build the Xoot iOS app in React Native (Expo SDK 56) to the point where a signed build
-can be submitted to the App Store, using the UI kit I supplied.
+`design/Xoot_App.html` is the **source of truth** for the Xoot app. Build the app from it,
+in React Native (Expo SDK 56), to a standard where a signed build can go to the App Store
+and hold up under real use by around 100,000 South African households.
+
+### What source of truth means
+
+**The kit wins on form. The brief wins on fact.**
+
+The kit is authority for everything about how the app looks and behaves as an artefact:
+screen inventory, layout, hierarchy, component anatomy, spacing, type scale, colour, radius,
+elevation, motion timing and easing, iconography, empty and loading states, copy tone.
+When the kit and the shipped code disagree about any of those, **the kit is right and the
+code changes.**
+
+The kit is not authority for anything the app has to be *true* about. It is a rendered
+happy path — it does not know the pricing ladders, that a Xooter must not see a tip before
+rating, that `bookings.price` is server-authoritative, or that the Care+ credit is one-time
+rather than monthly. For those, `docs/xoot-master-brief.md` and
+`docs/implementation/decision-log.md` win, always, and a pretty screen that states a false
+fact is a defect, not a design.
+
+Two consequences to act on immediately:
+
+1. **The palette changes to the kit's.** Coral on cream — `#E64B36`, `#E05B47`, `#C7503E`,
+   cream `#FCEEDA`, ink `#3B3430` — replaces the red-on-near-white currently in
+   `src/index.css` (`#e42a21` / `#fff7f5`). Make it true in `src/index.css` and nowhere
+   else: `src/lib/design-tokens.ts` mirrors it under test, `mobile/src/generated/` is
+   synced from that by `npm run shared:sync`, and `native-design-system.test.ts` fails the
+   build on any raw hex in `mobile/src`. One file changes; everything else follows or the
+   tests break. Record it in the decision log as superseding the red/white direction —
+   including the fact that `--zoey-fill` stays a separate token so the mascot can hold her
+   own red.
+2. **Any price, benefit, or availability claim rendered from the kit's example content is
+   wrong until proven otherwise.** Copy the layout, not the number. Numbers come from
+   `supabase/functions/_shared/pricing.ts` through the existing parity test.
 
 ### Where everything is
 
 - **Repo:** `zoot-your-local-helpers`, branch `claude/xoot-ios-build-setup-0te1sl`.
 - **Native app:** `mobile/` — Expo Router, TypeScript, Reanimated 4, react-native-svg.
-- **UI kit:** `Xoot_App.html`, a self-extracting bundle. Unpack it, do not read it whole
-  — it is 2.9 MB and the payload is one line. Each entry in the JSON asset map is
-  base64-encoded gzip:
+- **The kit:** `design/Xoot_App.html`, a self-extracting bundle. Unpack it per
+  `design/README.md`; do not read it whole, it is 2.9 MB on one line. Each entry in the
+  JSON asset map is base64-encoded gzip:
   ```python
   import base64, gzip, json
   for key, entry in json.loads(asset_map_line).items():
       raw = gzip.decompress(base64.b64decode(entry["data"]))
   ```
-  You get 26 assets: 7 authored app modules with readable header comments, three vendor
-  bundles, and **7 embedded TTF fonts** — the real font files, so nothing needs
-  licensing or substituting.
-- **Standing briefs, read before writing code:**
-  `docs/xoot-master-brief.md` (product, pricing, decisions),
-  `docs/implementation/decision-log.md` (ZD-001…ZD-023, why things are the way they
-  are), `docs/xoot-production-readiness-prompt.md` (the bar for shipping).
+  26 assets: 7 authored app modules with readable header comments, three vendor bundles,
+  and **7 embedded TTF fonts** — the real files, so nothing needs licensing or
+  substituting.
+- **Read before writing code:** `docs/xoot-master-brief.md` (product, pricing, decisions),
+  `docs/implementation/decision-log.md` (ZD-001…ZD-023 and why things are as they are),
+  `docs/xoot-production-readiness-prompt.md` (the data-handling bar),
+  `blocker.md` (what is actually blocked, verified live on 2026-08-02).
 
 ### What the kit contains
 
@@ -37,7 +73,7 @@ can be submitted to the App Store, using the UI kit I supplied.
 
 | Area | Screens |
 |---|---|
-| Home | `TodayScreen`, `CalendarScreen` — Tiimo-style: serif weekday, week strip, nudge widgets, time-of-day sections |
+| Home | `TodayScreen`, `CalendarScreen` — serif weekday, week strip, nudge widgets, time-of-day sections |
 | Booking | `BookingFlow` → service, home details, when, pro, confirm |
 | Live visit | `TrackingScreen`, `VisitScreen`, `CallScreen`, `ChatScreen`, `RateScreen` |
 | Account | `AccountScreen`, `ProfileScreen`, `HomeEditScreen`, `InvoicesScreen`, `PrivacyScreen`, `NotificationsScreen` |
@@ -47,23 +83,14 @@ can be submitted to the App Store, using the UI kit I supplied.
 | Entry | `SplashScreen`, `AuthScreen`, `OnboardingFlow`, `LoginFlow`, `PhoneFlow`, `SsoFlow` |
 | Assist | `ConciergeScreen`, `SiriScreen`, `WidgetsScreen`, `SearchScreen` |
 
-It carries its own token system — `--xoot-action-brand`, `--xoot-coral-*`,
-`--xoot-blush-*`, `--xoot-careplus-*`, a type scale, border tokens, and **motion tokens**
-(`--xoot-dur-instant|fast|base|slow|breathe|bloom|story|icon`, `--xoot-ease-out`,
-`--xoot-ease-in-out`). Port the motion tokens too — they are why the kit feels the way
-it does, and they are the first thing lost in a hand translation.
+197 components is not 197 React Native components. Build the primitives the kit is made of
+— `Button`, `Card`, `Sheet`, `ChipGrid`, `DockedCTA`, `Badge`, `Avatar`, the list rows —
+onto the token layer, and derive the rest. A flat port of 197 files is the wrong shape and
+will not be maintainable.
 
-### Decide this before writing a line
-
-**The kit's palette and the shipped tokens disagree.** The kit is warm coral on cream
-(`#E64B36`, `#E05B47`, `#C7503E`, `#FCEEDA`, ink `#3B3430`). `src/index.css` and
-`src/lib/design-tokens.ts` are red on near-white (`#e42a21` / `#fff7f5`). The kit's
-direction is close to the terracotta the master brief marked **superseded**.
-
-Ask me which wins before porting anything. Then make it true in **one place**:
-`src/index.css`, with `src/lib/design-tokens.ts` mirrored to it — `design-tokens.test.ts`
-already enforces that, and `native-design-system.test.ts` fails the build on any raw hex
-in `mobile/src`. Do not let a kit colour into a component.
+Port the **motion tokens** with the colour ones: `--xoot-dur-instant|fast|base|slow|breathe
+|bloom|story|icon`, `--xoot-ease-out`, `--xoot-ease-in-out`. They are why the kit feels the
+way it does and they are the first thing lost in a hand translation.
 
 ### The foundation that already exists — build on it, do not replace it
 
@@ -71,97 +98,136 @@ in `mobile/src`. Do not let a kit colour into a component.
   synced to `mobile/src/generated/` by `npm run shared:sync`.
 - **Splash** — `mobile/src/components/splash-animation.tsx` plays the Zoey choreography
   natively from `src/lib/splash-choreography.ts`, the same module the Remotion video and
-  the web splash use. Three renderers, one definition (ZD-022). Keep it that way.
+  the web splash read. Three renderers, one definition (ZD-022). Keep it that way. If the
+  kit's `SplashScreen` differs, change the choreography module, not one renderer.
 - **Brand assets** — `npm run icons:render` regenerates every launcher and launch-screen
-  image from the mascot. Re-run after any change to her.
-- **Native launch rules** — `mobile/src/lib/native-launch.ts` owns the deep-link bypass
-  and the Reduce Motion / Low Power gate. Route new launch behaviour through it rather
-  than adding a second opinion.
-- **Sign in with Apple** — native sheet, `mobile/src/lib/apple-auth.ts`. Required by
-  Apple Guideline 4.8 because Google sign-in is offered. Do not route it through a
-  browser.
+  image from the mascot. Re-run after any change to her or to the palette.
+- **Native launch rules** — `mobile/src/lib/native-launch.ts` owns the deep-link bypass and
+  the Reduce Motion / Low Power gate. Route new launch behaviour through it rather than
+  adding a second opinion.
+- **Sign in with Apple** — native sheet, `mobile/src/lib/apple-auth.ts`. Required by Apple
+  Guideline 4.8 because Google sign-in is offered. Never route it through a browser.
+- **Claim gating** — `src/lib/tipping.ts` shows the pattern: a readiness constant, and a
+  test that fails if the UI makes the promise before the constant says the system can keep
+  it. Use it for anything the kit shows that the backend cannot yet do.
 
 ### Rules that are not negotiable
 
 1. **No secret in the client.** `npm run security:scan` and `npm run build:artifact-scan`
-   enforce it. Never add an exception.
+   enforce it. Never add an exception. If you find a hardcoded secret, flag it — do not
+   work around it.
 2. **RLS is row-level, not column-level.** A sensitive column on a table someone can
-   already read is readable by them. This has bitten once (ZD-023). Sensitive data gets
-   its own table.
+   already read is readable by them, whatever the app shows. This has bitten once
+   (ZD-023). Sensitive data gets its own table.
 3. **Money is integer cents and server-authoritative.** The client displays a price; it
-   never determines one. `supabase/functions/_shared/pricing.ts` is the authority and a
-   parity test pins the client ladders to it.
-4. **No claim the system cannot honour.** Consumer Protection Act. The pattern is in
-   `src/lib/tipping.ts`: gate the claim behind a constant, and test that it cannot render
-   while the constant is unset.
-5. **The gate is `npm run verify` plus `npm run mobile:typecheck`.** Both green before
-   any commit. 269 tests pass today; keep them passing.
+   never determines one. Note `bookings.price` is `numeric` in rands — that mismatch is a
+   live hazard, not a style preference.
+4. **No claim the system cannot honour.** Consumer Protection Act: a price or benefit shown
+   in the app is a legal representation, not marketing.
+5. **The gate is `npm run verify` plus `npm run mobile:typecheck`.** Both green before any
+   commit. They pass today; keep them passing. If a test fails, fix it — do not wait to be
+   asked, and do not weaken the test to make it pass.
 6. **Verify by running, not by reading.** Four splash defects were only visible in a
-   rendered frame; two iOS faults only in `expo prebuild` output. `npx expo export
-   --platform ios` and `npx expo prebuild --platform ios` are the checks available
-   without a Mac.
+   rendered frame; two iOS faults only in `expo prebuild` output. Without a Mac,
+   `npx expo prebuild --platform ios` and `npx expo export --platform ios` are the checks
+   available — run both.
+7. **A duplicated definition is only safe with a test proving it is still a duplicate.**
+   See `shared-native-sync.test.ts`, `design-tokens.test.ts`.
+8. **Every tunable is a named constant at the top of its module** (ZD-021), and comments
+   explain why — especially why not the obvious alternative.
+
+### Known traps, already paid for once
+
+- `react-native-svg` has **no filter support**. The blurred glow that makes the splash
+  stars readable on cream does not port; use a `RadialGradient`. Concentric copies produce
+  a hard bullseye ring — that was tried, it looked wrong.
+- Metro cannot resolve files outside its project root. `watchFolders`, `resolveRequest`,
+  and `EXPO_USE_METRO_WORKSPACE_ROOT` all fail with "Failed to get the SHA-1". The working
+  answer is the generated-copy pattern already in place.
+- `mobile/src/generated/` must stay committed. EAS runs `npm ci` and bundles; it never runs
+  mobile's `prestart`.
+- `userInterfaceStyle` and a dark splash variant cannot both be set — `expo prebuild` warns
+  the combination stops the splash working entirely.
+- Regex-driven colour migrations break quoted strings and JSX attribute values. If you
+  rewrite colours mechanically, consume the quotes and re-add the braces.
 
 ### What "production ready" means here, specifically
 
 This app holds **gate codes, alarm details, access instructions, and the hours a house is
-empty**, plus Xooter ID documents and banking details. A breach is a home-invasion kit,
-not a leaked mailing list. Before building any screen, ask what it lets someone learn
-about when a house is empty and how to get into it — if the answer is "something", it
-needs an access rule before it needs a layout.
+empty**, plus Xooter ID documents and banking details. A breach is a home-invasion kit, not
+a leaked mailing list. Before building any screen, ask what it lets someone learn about when
+a house is empty and how to get into it — if the answer is "something", it needs an access
+rule before it needs a layout.
 
-Concretely, for submission:
+For submission and for 100k users:
 
 - Every screen works at the largest Dynamic Type setting and with VoiceOver.
-- 44pt minimum tap targets (`MIN_TAP_TARGET`), WCAG AA contrast, `prefers-reduced-motion`
-  respected.
+- 44pt minimum tap targets (`MIN_TAP_TARGET`), WCAG AA contrast, reduced motion respected.
+  Check AA again after the palette change — coral on cream is a different contrast problem
+  from red on white, and some pairs that passed will not.
 - Offline and slow-network states on every screen that loads data. South African mobile
-  data is expensive and patchy; a spinner forever is the default failure.
-- No placeholder copy, no lorem, no dead links. App Review opens the least important
-  screen you have.
-- Privacy nutrition labels answered truthfully — which needs §"blocked on me" below.
+  data is expensive and patchy; a spinner forever is the default failure mode.
+- No placeholder copy, no lorem, no dead links. App Review opens the least important screen
+  you have.
+- Privacy nutrition labels answered truthfully, which depends on the legal items in
+  `blocker.md`.
+
+### Work the blocker ledger as you go
+
+`blocker.md` was reconciled against the live projects on 2026-08-02 and is unresolved-only.
+Treat it as part of the task, not as background reading:
+
+- When something in it stops being true, remove it and note it under "Closed at review".
+- When you find something newly blocked, add it with the evidence and the date.
+- Do not mark anything closed on inference. The last review closed items only against live
+  Supabase advisor, migration, and function listings.
+
+Two items in it are yours to fix in code, not the founder's to decide:
+
+- **The booking price hole.** `20260730083000_booking_price_author_guard.sql` is written and
+  unapplied. Until it is applied, any customer can PATCH their own booking price to zero and
+  any assigned Xooter can raise the price of a job they are working. It has a deliberately
+  early timestamp so it can ship ahead of the ZD-005 schema decision.
+- **Six production Edge Functions have no source in this repo** —
+  `sensitive-access-read`, `sensitive-access-save`, `twilio-token`, `twilio-conversation`,
+  `twilio-voice-status`, `twilio-voice-twiml`. The first two touch gate and alarm codes; the
+  last two are publicly invocable. Recover the source, review it, commit it.
 
 ### Blocked on me — ask, do not guess
 
-Do not invent an answer to any of these. Ask, and if I am slow, build around them and
-say what you left out:
+Build around these and state plainly what you left out. Do not invent an answer:
 
-1. **Palette** — kit coral or shipped red (above).
-2. **Schema source of truth** (ZD-005). Staging and production histories differ. Two
-   migrations are written and unapplied behind this.
-3. **Payment provider** (PayFast / Peach / Yoco / Stripe). Gates payments, payouts and
-   tip settlement.
-4. **Legal entity and POPIA Information Officer.** Blocks the privacy policy being
-   truthful, and blocks store submission.
-5. **Apple Developer account, bundle ID, signing.** `za.co.zoothome.app` is configured;
-   I have to do the account side.
+1. **Schema source of truth** (ZD-005). Production and staging histories diverge; four
+   written migrations are queued behind it.
+2. **Payment provider.** Gates payments, payouts, and tip settlement.
+3. **Legal entity and POPIA Information Officer.** Blocks a truthful privacy policy,
+   truthful store privacy labels, and invoice fields.
+4. **Apple Developer account, bundle ID, signing.** `za.co.zoothome.app` is configured; the
+   account side is mine.
+5. **The deferred design queue**, brief §3.7 — Zoey filling the screen on first onboarding,
+   the cursive written-on splash, de-glossing the mascot, and the overall UI direction I
+   said I would decide. Remind me when you reach a point where one of them fits; do not
+   build them unprompted.
 
 ### Order of work
 
-1. Unpack the kit; inventory every screen against what `mobile/src/app/` already has.
-2. Settle the palette; make it true in `index.css` and let the mirror flow.
-3. Port the fonts — 7 TTFs, loaded via `expo-font`, wired into the `Fonts` map in
+1. Unpack the kit; inventory every screen against what `mobile/src/app/` already has, and
+   write the gap list down before writing components.
+2. Palette and tokens into `src/index.css`; let the mirror and the sync flow. Fix contrast
+   failures now, not at the end.
+3. Fonts — 7 TTFs via `expo-font`, wired into the `Fonts` map in
    `mobile/src/constants/theme.ts`.
-4. Port tokens: colour, type, spacing, radius, **and motion**.
-5. Build the primitives (`Button`, `Card`, `Sheet`, `ChipGrid`, `DockedCTA`, `Badge`,
-   `Avatar`…) onto the token layer. These are the 197 components' foundation.
+4. Motion tokens.
+5. Primitives onto the token layer.
 6. Screens in dependency order: shell → auth/onboarding → today/calendar → booking →
    visit/tracking → account → Care+ → rewards → Xooter side.
 7. Wire to Supabase behind the existing RLS. Nothing new bypasses it.
 8. Accessibility and offline pass over everything.
 9. `expo prebuild` clean, `expo export` clean, EAS production build, TestFlight.
 
-### How to work
-
-- **Comments explain why, especially why not the obvious alternative.** This codebase is
-  full of them because most were learned by getting it wrong first.
-- **A duplicated definition is only safe with a test proving it is still a duplicate.**
-  See `shared-native-sync.test.ts`, `design-tokens.test.ts`.
-- **Tests assert properties, not snapshots.**
-- **Every tunable is a named constant at the top of its module** (ZD-021).
-- **Report honestly.** If a test fails, show the output. If something was skipped, say
-  so. Do not describe intent as achievement.
-- **Do not stop between phases to ask permission to continue** — only stop for the five
-  blocked items above.
+Do not stop between phases to ask permission to continue. Stop only for the five items
+above, and if one of them blocks a phase, finish every other part of that phase first and
+say exactly what you left out.
 
 ---
 
@@ -169,15 +235,18 @@ say what you left out:
 
 ### Notes for you, not for the prompt
 
-**What this cannot do.** No Mac in the environment, so nobody can run an iOS simulator
-here. `expo prebuild` and `expo export` verify configuration and bundling; they do not
-verify the app *looks* right on a device. First run on real hardware will surface things
-— particularly frame rate during app start, and Dynamic Type at large sizes.
+**Why the palette question is now answered.** "Use the HTML file as the source of truth"
+resolves it in the kit's favour; there is no reading of source-of-truth where the app takes
+its layout from the kit and its colours from somewhere else. It does reverse the red/white
+direction recorded in the master brief, so it is called out explicitly in the prompt and in
+the decision log rather than slipped in. If that is not what was meant, it is one file to
+put back — that is the whole point of keeping colour in `src/index.css` alone.
 
-**The five blockers are yours, not mine.** Items 2–5 need decisions or accounts I cannot
-create. Item 1 needs thirty seconds. Answering the palette question unblocks roughly 80%
-of the porting work, so it is worth answering first even if the rest waits.
+**What this still cannot do.** No Mac in the environment, so nothing here runs an iOS
+simulator. `expo prebuild` and `expo export` verify configuration and bundling, not
+appearance or frame rate. First run on real hardware will surface things, particularly
+during app start and at large Dynamic Type sizes.
 
-**Realistic scope.** 197 components and 35 screens is a large port. Expect it across
-several sessions. The order above is arranged so each stage leaves the app in a
-working, shippable-if-truncated state rather than half-migrated.
+**Realistic scope.** 197 components and 35 screens is a large port; expect several sessions.
+The order above is arranged so each stage leaves the app working and shippable-if-truncated
+rather than half-migrated.
