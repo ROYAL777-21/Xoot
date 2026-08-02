@@ -55,7 +55,8 @@
     "ops:supabase:secrets:staging": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-edge-secrets.ps1",
     "ops:supabase:secrets:production": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-edge-secrets.ps1 -ProjectRef mvlrkelahhsyjrwgsxaf",
     "ops:supabase:verify:live": "powershell -ExecutionPolicy Bypass -File scripts/ops/verify-supabase-live.ps1",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "kit:tokens": "node scripts/build/extract-kit-tokens.mjs"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",

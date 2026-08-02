@@ -1,5 +1,12 @@
 @import 'tailwindcss';
 
+/* The Xoot UI kit's own tokens, generated from design/Xoot_App.html by
+   `npm run kit:tokens`. Additive on purpose: declaring them changes nothing until a
+   component asks for a --xoot-* value, so the kit's system can land ahead of the port
+   instead of in one breaking sweep. The app's own semantic tokens are still the ones
+   below; which set wins is the open palette decision in blocker.md. */
+@import './styles/kit-tokens.css';
+
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
