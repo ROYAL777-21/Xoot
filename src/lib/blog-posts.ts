@@ -26,7 +26,7 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
-    slug: "zoot-launch-first-100-homes-johannesburg",
+    slug: "xoot-launch-first-100-homes-johannesburg",
     title: "Xoot is opening for the first 100 founding homes in Johannesburg",
     seoTitle: "Xoot Launch: Premium Cleaning Services In Johannesburg",
     description:
@@ -105,7 +105,7 @@ export const blogPosts: BlogPost[] = [
     title: "Cleaning in Bryanston, Rosebank or Sandton: how to book without chasing WhatsApps",
     seoTitle: "Cleaning In Bryanston, Rosebank And Sandton | Xoot Guide",
     description:
-      "A practical guide for finding trusted cleaning in Bryanston, Rosebank, Sandton and nearby Johannesburg areas, including home, office, Airbnb and urgent cleaning needs.",
+      "A practical guide for finding trusted cleaning in Bryanston, Rosebank, Sandton and nearby Johannesburg areas, including home, office, Airbnb and.",
     excerpt:
       "If your search history says cleaning in Bryanston, cleaner in Rosebank, or quick office cleaning in Sandton, this guide is for the exact moment before things get messy.",
     publishedAt: "2026-06-08",
@@ -255,7 +255,7 @@ export const blogPosts: BlogPost[] = [
     title: "Airbnb turnover cleaning in Johannesburg: the host checklist before check-in",
     seoTitle: "Airbnb Turnover Cleaning Johannesburg | Xoot Host Checklist",
     description:
-      "A host-friendly Airbnb turnover cleaning checklist for Johannesburg apartments and homes, covering guest-ready details, saved instructions, access notes and repeatable turnovers.",
+      "A host-friendly Airbnb turnover cleaning checklist for Johannesburg apartments and homes, covering guest-ready details, saved instructions, access.",
     excerpt:
       "Checkout was at 10, check-in is at 3, and one missed detail can become a public review. Here is how to make an Airbnb turnover feel calm instead of chaotic.",
     publishedAt: "2026-06-13",
@@ -848,7 +848,7 @@ export const blogPosts: BlogPost[] = [
       "recurring cleaning service",
       "premium home cleaning South Africa",
     ],
-    areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank", "Pretoria"],
+    areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank"],
     sections: [
       {
         heading: "A home has a memory even when the service does not",
@@ -898,7 +898,7 @@ export const blogPosts: BlogPost[] = [
     ],
   },
   {
-    slug: "cleaning-services-pretoria-cape-town-expansion-what-zoot-must-get-right",
+    slug: "cleaning-services-pretoria-cape-town-expansion-what-xoot-must-get-right",
     title: "Cleaning services in Pretoria and Cape Town: what Xoot must get right before expanding",
     seoTitle: "Cleaning Services Pretoria Cape Town | Xoot Expansion Guide",
     description:
@@ -916,7 +916,7 @@ export const blogPosts: BlogPost[] = [
       "on demand cleaning South Africa",
       "premium home cleaning South Africa",
     ],
-    areas: ["Pretoria", "Cape Town", "Johannesburg", "Sandton", "Rosebank"],
+    areas: ["Johannesburg", "Sandton", "Rosebank"],
     sections: [
       {
         heading: "Expansion should be earned, not announced too early",
@@ -973,7 +973,7 @@ export const blogPosts: BlogPost[] = [
     ],
   },
   {
-    slug: "quick-office-cleaning-sandton",
+    slug: "office-cleaning-sandton-small-teams",
     title: "Quick Office Cleaning Sandton: what to fix before the client walks in",
     seoTitle: "Quick Office Cleaning Sandton | Xoot Office Reset Guide",
     description:
@@ -983,7 +983,7 @@ export const blogPosts: BlogPost[] = [
     publishedAt: "2026-06-20",
     readingTime: "5 min read",
     author: "Xoot Team",
-    primaryKeyword: "quick office cleaning Sandton",
+    primaryKeyword: "office cleaning Sandton small teams",
     secondaryKeywords: [
       "quick cleaning for my office",
       "office cleaning Sandton",
@@ -1048,9 +1048,9 @@ export const blogPosts: BlogPost[] = [
     ],
   },
   {
-    slug: "airbnb-turnover-cleaning-johannesburg",
+    slug: "airbnb-cleaning-johannesburg-same-day-turnaround",
     title: "Airbnb Turnover Cleaning Johannesburg: the guest-ready checklist hosts actually need",
-    seoTitle: "Airbnb Turnover Cleaning Johannesburg | Xoot Guest-Ready Checklist",
+    seoTitle: "Same-Day Airbnb Cleaning In Johannesburg",
     description:
       "A practical Airbnb turnover cleaning guide for Johannesburg hosts managing checkout pressure, guest-ready detail, access notes and repeat instructions.",
     excerpt:
@@ -1058,7 +1058,7 @@ export const blogPosts: BlogPost[] = [
     publishedAt: "2026-06-20",
     readingTime: "6 min read",
     author: "Xoot Team",
-    primaryKeyword: "Airbnb turnover cleaning Johannesburg",
+    primaryKeyword: "same day Airbnb cleaning Johannesburg",
     secondaryKeywords: [
       "Airbnb cleaning Johannesburg",
       "guest-ready cleaning",
@@ -1123,7 +1123,7 @@ export const blogPosts: BlogPost[] = [
     ],
   },
   {
-    slug: "is-zoot-legit-trust-first-cleaning-south-africa",
+    slug: "is-xoot-legit-trust-first-cleaning-south-africa",
     title: "Is Xoot legit? How to judge a new cleaning service before you book",
     seoTitle: "Is Xoot Legit? Trust-First Cleaning In South Africa",
     description:
@@ -1141,7 +1141,7 @@ export const blogPosts: BlogPost[] = [
       "vetted cleaners Johannesburg",
       "cleaning service trust checklist",
     ],
-    areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank", "Pretoria"],
+    areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank"],
     sections: [
       {
         heading: "The honest answer",
@@ -1216,7 +1216,7 @@ export const blogPosts: BlogPost[] = [
       "trusted cleaners South Africa",
       "premium cleaning service",
     ],
-    areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank", "Cape Town"],
+    areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank"],
     sections: [
       {
         heading: "Why people look beyond the obvious option",
@@ -1273,7 +1273,7 @@ export const blogPosts: BlogPost[] = [
     ],
   },
   {
-    slug: "sweepsouth-vs-zoot-cleaning-service-comparison",
+    slug: "sweepsouth-vs-xoot-cleaning-service-comparison",
     title: "SweepSouth vs Xoot: how to choose the right cleaning service",
     seoTitle: "SweepSouth Vs Xoot | Cleaning Service Comparison",
     description:
