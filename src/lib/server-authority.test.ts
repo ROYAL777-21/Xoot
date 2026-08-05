@@ -123,3 +123,53 @@ describe("the lockdown and its replacements stay in step", () => {
     expect(lockdown).toMatch(/revoke insert, update, delete on public\.zooter_jobs from authenticated/);
   });
 });
+
+describe("sensitive access credentials", () => {
+  const read = codeOf("supabase/functions/sensitive-access-read/index.ts");
+  const save = codeOf("supabase/functions/sensitive-access-save/index.ts");
+
+  it("never derives the encryption key from the service role key", () => {
+    // The fallback that was there on recovery meant an unset ENCRYPTION_KEY silently encrypted
+    // gate codes under the service key — so rotating that key, which blocker.md requires,
+    // would have made every stored credential permanently unreadable. Failing closed was safe
+    // to introduce while the table held 0 rows; reintroducing the fallback would not be.
+    for (const source of [read, save]) {
+      expect(source).not.toMatch(/ENCRYPTION_KEY[\s\S]{0,40}SERVICE_ROLE_KEY/);
+      expect(source).toMatch(/if \(!secret\) throw new Error/);
+    }
+  });
+
+  it("never answers with a wildcard origin", () => {
+    // A `*` on an endpoint that returns gate codes is not a default worth having.
+    for (const source of [read, save]) {
+      expect(source).not.toMatch(/"Access-Control-Allow-Origin":\s*[^,\n]*"\*"/);
+      expect(source).toMatch(/allowedOrigins\.includes\(origin\)/);
+    }
+  });
+
+  it("does not mix a service key with a forwarded caller token", () => {
+    // Doing both leaves the effective identity to supabase-js header precedence rather than to
+    // anything the code states, on the one endpoint where getting it wrong hands over a house.
+    for (const source of [read, save]) {
+      expect(source).not.toMatch(/SERVICE_ROLE_KEY[\s\S]{0,120}Authorization: authHeader/);
+    }
+  });
+
+  it("does not return raw error text to the caller", () => {
+    // With the key fallback gone, `String(err)` in the catch would tell any caller whether
+    // ENCRYPTION_KEY is configured — a free probe of server state on the one endpoint where
+    // that matters most. Comments are stripped by codeOf, so this reads the code, not the note
+    // explaining it.
+    for (const source of [read, save]) {
+      expect(source).not.toMatch(/error:\s*String\(err\)/);
+      expect(source).toMatch(/console\.error/);
+    }
+  });
+
+  it("keeps the booking-window check in front of decryption", () => {
+    const gateAt = read.indexOf("can_access_sensitive_data");
+    const decryptAt = read.indexOf("decryptJson(vault)");
+    expect(gateAt).toBeGreaterThan(-1);
+    expect(decryptAt).toBeGreaterThan(gateAt);
+  });
+});

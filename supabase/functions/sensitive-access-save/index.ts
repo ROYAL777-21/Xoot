@@ -1,71 +1,94 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 /**
- * RECOVERED FROM PRODUCTION 2026-08-02. Ran live with no source in the repository — see
- * blocker.md. Committed verbatim so it can be reviewed, diffed and redeployed; the defects
- * below are left in place so the committed copy provably matches what is deployed.
+ * Encrypts and stores the access credentials for a booking.
  *
- * Shares defects 1–3 with `sensitive-access-read` (ENCRYPTION_KEY falling back to the
- * service role key, `*` CORS fallback, ambiguous identity). Both must be fixed together:
- * they are the two halves of one envelope, and changing the key derivation on one side
- * without the other makes every stored gate code undecryptable.
+ * Recovered from production on 2026-08-02, where it had been running with no source in this
+ * repository, then fixed. Committed verbatim first so the fix could be read as a diff.
  *
- * One further defect of its own:
+ * FIXED ON RECOVERY: the same three defects as `sensitive-access-read` — the `ENCRYPTION_KEY`
+ * fallback, the `*` CORS fallback, and the ambiguous identity. The two must always be changed
+ * together: they are the two halves of one envelope, and a key derivation that differs between
+ * them makes existing ciphertext unreadable.
  *
- * 4. `sensitiveKeyPattern` decides what to encrypt by matching the *field name*. A field
- *    the customer calls "how to get in" or "notes for the cleaner" does not match, so it is
- *    silently dropped — `saved: false, reason: "no_sensitive_fields"` — and the customer is
- *    told nothing useful. Worse, the same free-text is likely to end up in an unencrypted
- *    column instead. Deciding sensitivity by key name is guesswork; the caller should
- *    declare it, or everything on this endpoint should be encrypted.
+ * STILL OPEN — `sensitiveKeyPattern` decides what to encrypt by matching the *field name*. A
+ * field a customer calls "how to get in" does not match, is silently dropped, and is reported
+ * as `no_sensitive_fields` while the same text probably lands somewhere unencrypted. Fixing it
+ * means changing the caller's contract — the client should declare sensitivity, or everything
+ * on this endpoint should be encrypted — so it is left as a deliberate follow-up rather than
+ * bundled into a security fix.
  */
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": Deno.env.get("APP_BASE_URL") ?? "*",
+/**
+ * Allowed origins, matching `_shared/action-utils.ts` rather than falling back to `*`.
+ * A wildcard on an endpoint that returns gate codes is not a default worth having.
+ */
+const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? Deno.env.get("APP_BASE_URL") ?? "https://zoothome.co.za")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const corsHeaders = (origin: string | null) => ({
+  "Access-Control-Allow-Origin": origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0],
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+  "Vary": "Origin",
+});
 
 const sensitiveKeyPattern = /(gate|alarm|lockbox|access|combination|entry|key|address|code)/i;
 const encoder = new TextEncoder();
 
-const jsonResponse = (body: Record<string, unknown>, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+const jsonResponse = (body: Record<string, unknown>, status = 200, origin: string | null = null) =>
+  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders(origin), "Content-Type": "application/json" } });
 
 const toBase64 = (bytes: Uint8Array) => btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(""));
 
-const encryptionKey = async () => {
-  const secret = Deno.env.get("ENCRYPTION_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const encryptionKey = async (usage: "encrypt" | "decrypt") => {
+  // No fallback. This used to read `ENCRYPTION_KEY ?? SUPABASE_SERVICE_ROLE_KEY`, which meant
+  // an unset variable silently derived the key from the service role key — so anyone holding
+  // that key could decrypt gate codes, and rotating it (which blocker.md requires, because one
+  // was pasted into chat) would have made every stored credential permanently unreadable.
+  //
+  // Failing closed is safe to introduce now and would not have been later:
+  // `sensitive_booking_access` held 0 rows when this was changed on 2026-08-02, so there is no
+  // ciphertext under the old derivation to migrate. Once real gate codes exist, changing this
+  // becomes a data migration rather than an edit.
+  const secret = Deno.env.get("ENCRYPTION_KEY");
   if (!secret) throw new Error("ENCRYPTION_KEY is not configured");
   const digest = await crypto.subtle.digest("SHA-256", encoder.encode(secret));
-  return crypto.subtle.importKey("raw", digest, "AES-GCM", false, ["encrypt"]);
+  return crypto.subtle.importKey("raw", digest, "AES-GCM", false, [usage]);
 };
 
 const encryptJson = async (payload: Record<string, string>) => {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const key = await encryptionKey();
+  const key = await encryptionKey("encrypt");
   const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoder.encode(JSON.stringify(payload)));
   return { ciphertext: toBase64(new Uint8Array(encrypted)), iv: toBase64(iv) };
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
+  const origin = req.headers.get("Origin");
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(origin) });
+  if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405, origin);
 
   try {
     const authHeader = req.headers.get("authorization") ?? "";
+    // Service role, used deliberately: `can_access_sensitive_data` and the vault table are not
+    // reachable by a client role, and every ownership check below is made explicitly against
+    // `user.id`. Previously this passed the caller's Authorization header alongside the service
+    // key, which left the effective identity dependent on supabase-js header precedence rather
+    // than on anything the code stated.
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
     );
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (authError || !user) return jsonResponse({ error: "Authentication required" }, 401);
+    if (authError || !user) return jsonResponse({ error: "Authentication required" }, 401, origin);
 
     const { bookingId, fields } = await req.json();
-    if (!bookingId || !fields || typeof fields !== "object") return jsonResponse({ error: "bookingId and fields required" }, 400);
+    if (!bookingId || !fields || typeof fields !== "object") return jsonResponse({ error: "bookingId and fields required" }, 400, origin);
 
     const { data: booking } = await supabase.from("bookings").select("id,user_id").eq("id", bookingId).maybeSingle();
-    if (!booking || booking.user_id !== user.id) return jsonResponse({ error: "Only the booking owner can save sensitive access details" }, 403);
+    if (!booking || booking.user_id !== user.id) return jsonResponse({ error: "Only the booking owner can save sensitive access details" }, 403, origin);
 
     const filtered = Object.fromEntries(
       Object.entries(fields as Record<string, unknown>)
@@ -73,7 +96,7 @@ Deno.serve(async (req) => {
         .map(([key, value]) => [key, String(value).trim()]),
     ) as Record<string, string>;
 
-    if (Object.keys(filtered).length === 0) return jsonResponse({ saved: false, reason: "no_sensitive_fields" });
+    if (Object.keys(filtered).length === 0) return jsonResponse({ saved: false, reason: "no_sensitive_fields" }, 200, origin);
 
     const encrypted = await encryptJson(filtered);
     const { error } = await supabase.from("sensitive_booking_access").upsert({
@@ -83,7 +106,7 @@ Deno.serve(async (req) => {
       iv: encrypted.iv,
       updated_at: new Date().toISOString(),
     });
-    if (error) return jsonResponse({ error: error.message }, 500);
+    if (error) return jsonResponse({ error: error.message }, 500, origin);
 
     await supabase.from("sensitive_access_logs").insert({
       actor_id: user.id,
@@ -93,8 +116,12 @@ Deno.serve(async (req) => {
       requested_fields: Object.keys(filtered),
     });
 
-    return jsonResponse({ saved: true, fields: Object.keys(filtered) });
+    return jsonResponse({ saved: true, fields: Object.keys(filtered) }, 200, origin);
   } catch (err) {
-    return jsonResponse({ error: String(err) }, 500);
+    // Logged, not returned. With the key fallback gone, `String(err)` would tell any caller
+    // whether ENCRYPTION_KEY is configured — a free probe of the server's state on the one
+    // endpoint where that matters most.
+    console.error("sensitive-access failure", err);
+    return jsonResponse({ error: "Request failed" }, 500, origin);
   }
 });
