@@ -46,6 +46,15 @@ Three honest ways forward, and I recommend the third:
 
 Option 3 also means the paywall has two modes, which the copy below reflects.
 
+## DECIDED 2026-08-02 — founding member price
+
+The founder chose **"R99/month, locked for as long as you stay a member."** No struck-through
+figure, no percentage, no comparison claim of any kind. A two-month free trial may be added
+later, on request only — and if it is, the CTA becomes "Start free — then R99/month" and the
+billing paragraph has to state the date the first charge lands.
+
+This closes the section below. It is kept because the reasoning is worth not relearning.
+
 ## The 50% framing — flagging before it is built
 
 An earlier instruction was to present R99/month as a 50% discount, with R198 as the original.
@@ -90,6 +99,8 @@ With founding-price framing:
 
 > ### Care+
 > **R99/month — founding member price, locked for as long as you stay.**
+
+This is the chosen header. The plain `R99/month · cancel any time` variant above is superseded.
 
 ## C. Contextual value strip (the Uber pattern, adapted)
 

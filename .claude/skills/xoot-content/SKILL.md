@@ -15,6 +15,25 @@ Composes with the generic `seo-audit`, `seo-technical`, `seo-schema` and
 `marketing-copywriting` skills. This one carries what those cannot know: the market, the
 claim rules, and the voice.
 
+## Founder decisions — 2026-08-02
+
+These are settled. Do not re-open them in a draft.
+
+- **The blog lives in this repo**, at `zoothome.co.za/blog`, as React routes — not WordPress.
+  So internal linking, schema and Core Web Vitals are all under our control, and there is no
+  separate stack to provision or harden. `blocker.md`'s WordPress section stops being a
+  blocker for the blog specifically.
+- **No prices in blog posts unless the founder asks for them.** Stronger than the CPA rule
+  below, and it makes posts durable: a post with no number in it never goes stale, never needs
+  a sweep when a ladder changes, and can never misquote one. Link to the live pricing page and
+  let that be the single place a number appears. If a post genuinely cannot work without a
+  price, ask first.
+- **All four audiences**, run as rotating campaigns rather than blended together — households,
+  Airbnb and property managers, Xooter recruitment, small offices.
+- **Care+ is the founding member price**: "R99/month, locked for as long as you stay a
+  member." No discount claim, no struck-through figure. A two-month free trial may be added
+  later, on request only.
+
 ## The hard rule, before anything else
 
 **A blog post is a representation.** The Consumer Protection Act 68 of 2008 does not treat
@@ -89,22 +108,33 @@ problem as a price that overpromises, and it is the one readers punish immediate
 - **CTA** matched to intent: an informational post earns a newsletter or a guide, not a
   booking button.
 
-## Cadence
+## Cadence — seven a week, rotated by audience
 
-Daily is only worth doing if quality holds. A sustainable week:
+The founder chose daily after being told thin daily output is what Google's helpful-content
+systems demote. The way to make seven a week survive that is **rotation**: give each day its
+own audience and intent, so no two posts compete for the same query and none is a thinner
+version of another. Seven posts serving four audiences is a content programme; seven posts
+serving one audience is cannibalisation.
 
-| Day | Type | Purpose |
+| Day | Audience | Type |
 |---|---|---|
-| Mon | Problem/how-to | Search volume, top of funnel |
-| Tue | Suburb or service page refresh | Local ranking |
-| Wed | Comparison or cost explainer | Commercial intent |
-| Thu | Seasonal or news-pegged | Freshness, links |
-| Fri | Xooter story or behind-the-scenes | Brand, trust, recruitment |
-| Sat/Sun | Short evergreen or repurpose | Low effort, keeps cadence |
+| Mon | Households | Problem / how-to — the largest search volume |
+| Tue | Airbnb & property managers | Turnover, changeover, guest-ready, linen |
+| Wed | Households | Comparison or "what's included" — commercial intent |
+| Thu | Small offices | Recurring cleans, invoicing, reliability, B2B register |
+| Fri | Xooter recruitment | Earnings, how to apply, what the work is like |
+| Sat | Households | Seasonal or news-pegged — freshness and links |
+| Sun | Any | Evergreen, or a genuine repurpose of the week's best |
 
-Two genuinely useful posts a week beat seven thin ones, and thin daily output is what Google's
-helpful-content systems demote. If the choice is daily-and-thin or thrice-weekly-and-good,
-take the second and say so.
+Rules that keep this from degrading:
+
+- **A post that has nothing new to say does not ship.** Skipping a day costs less than
+  publishing filler, because filler is scored against the whole domain, not just that URL.
+- **No two posts in a fortnight target the same primary keyword.** Keep a running list.
+- **Friday's recruitment post is not a lesser post.** It is the cheapest recruitment channel
+  in the business and it feeds the supply side, which is the constraint.
+- **Sunday's repurpose must add something** — a new angle, updated data, a different audience's
+  framing. Reposting is not repurposing.
 
 ## Research inputs
 
