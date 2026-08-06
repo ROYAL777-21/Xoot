@@ -12,6 +12,41 @@ const bannedPackagePrefixes = ["@capacitor/"];
 
 const readJson = (filePath) => JSON.parse(readFileSync(filePath, "utf8"));
 
+/**
+ * `bun.lock` is JSONC — Bun writes trailing commas, so `JSON.parse` rejects it. Strip only the
+ * commas that sit directly before a closing brace or bracket, and only when outside a string, so
+ * a comma inside a version range or an integrity hash is never touched.
+ */
+const readBunLock = (filePath) => {
+  const source = readFileSync(filePath, "utf8");
+  let out = "";
+  let inString = false;
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source[i];
+    if (inString) {
+      out += char;
+      if (char === "\\") {
+        out += source[i + 1] ?? "";
+        i += 1;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (char === '"') {
+      inString = true;
+      out += char;
+      continue;
+    }
+    if (char === ",") {
+      const next = source.slice(i + 1).match(/^\s*([}\]])/);
+      if (next) continue;
+    }
+    out += char;
+  }
+  return JSON.parse(out);
+};
+
 const dependencyNames = (manifest) => [
   ...Object.keys(manifest.dependencies ?? {}),
   ...Object.keys(manifest.devDependencies ?? {}),
@@ -74,6 +109,55 @@ for (const workspace of workspaces) {
   for (const name of lockedNames) {
     if (bannedPackagePrefixes.some((prefix) => name.startsWith(prefix))) {
       errors.push(`${workspace.name}: package-lock contains legacy Capacitor package ${name}.`);
+    }
+  }
+
+  // The check that actually matters for CI. Everything above audits package-lock.json, which the
+  // workflow never reads — it installs with `bun install --frozen-lockfile`. So this validator
+  // passed cleanly while CI failed on mobile/bun.lock missing expo-apple-authentication and
+  // react-native-svg (PR #26). A lockfile gate that ignores the lockfile CI enforces is worse
+  // than no gate, because it reads as assurance.
+  const bunLockPath = path.join(root, workspace.dir, "bun.lock");
+  if (!existsSync(bunLockPath)) {
+    errors.push(
+      `${workspace.name}: missing bun.lock at ${path.relative(root, bunLockPath)}. CI installs with bun.`,
+    );
+    continue;
+  }
+
+  let bunLock;
+  try {
+    bunLock = readBunLock(bunLockPath);
+  } catch (error) {
+    errors.push(`${workspace.name}: bun.lock could not be parsed (${error.message}).`);
+    continue;
+  }
+
+  const bunWorkspace = bunLock.workspaces?.[""];
+  if (!bunWorkspace) {
+    errors.push(`${workspace.name}: bun.lock is missing workspaces[""] metadata.`);
+    continue;
+  }
+
+  for (const section of expectedDependencySections) {
+    const expected = manifest[section] ?? {};
+    const actual = bunWorkspace[section] ?? {};
+    for (const [name, version] of Object.entries(expected)) {
+      if (actual[name] !== version) {
+        errors.push(
+          `${workspace.name}: bun.lock ${section}.${name} is out of sync with package.json ` +
+            `(lock has ${actual[name] ?? "nothing"}, package.json wants ${version}). ` +
+            `Run \`bun install\` in ${workspace.dir === "." ? "the repo root" : workspace.dir} and commit bun.lock.`,
+        );
+      }
+    }
+    for (const name of Object.keys(actual)) {
+      if (!(name in expected)) {
+        errors.push(
+          `${workspace.name}: bun.lock ${section}.${name} is no longer in package.json. ` +
+            `Run \`bun install\` in ${workspace.dir === "." ? "the repo root" : workspace.dir} and commit bun.lock.`,
+        );
+      }
     }
   }
 }

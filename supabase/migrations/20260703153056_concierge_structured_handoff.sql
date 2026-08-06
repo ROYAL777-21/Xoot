@@ -41,11 +41,19 @@ create index if not exists support_handoff_contexts_urgency_created_idx
 create index if not exists support_handoff_contexts_correlation_idx
   on public.support_handoff_contexts(correlation_id);
 
+-- `public.touch_updated_at()` is this repo's timestamp helper, created in
+-- 20260421080011 and hardened in 20260620001000 (execute revoked from anon and
+-- authenticated so it cannot be called as an RPC).
+--
+-- This trigger originally named `public.update_updated_at_column()`, which no
+-- migration creates and which does not exist in production or staging either —
+-- so the statement failed on any build from scratch and would have failed on a
+-- real apply too. Caught by the Supabase Preview branch on PR #26.
 drop trigger if exists support_handoff_contexts_touch
   on public.support_handoff_contexts;
 create trigger support_handoff_contexts_touch
   before update on public.support_handoff_contexts
-  for each row execute function public.update_updated_at_column();
+  for each row execute function public.touch_updated_at();
 
 alter table public.support_handoff_contexts enable row level security;
 revoke all on public.support_handoff_contexts from anon, authenticated;
