@@ -54,6 +54,7 @@
     "ops:supabase:repair-migrations": "powershell -ExecutionPolicy Bypass -File scripts/ops/repair-supabase-migration-history.ps1",
     "ops:supabase:secrets:staging": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-edge-secrets.ps1",
     "ops:supabase:secrets:production": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-supabase-edge-secrets.ps1 -ProjectRef mvlrkelahhsyjrwgsxaf",
+    "ops:supabase:encryption-key": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-encryption-key.ps1",
     "ops:supabase:verify:live": "powershell -ExecutionPolicy Bypass -File scripts/ops/verify-supabase-live.ps1",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "kit:tokens": "node scripts/build/extract-kit-tokens.mjs"

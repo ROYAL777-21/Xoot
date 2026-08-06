@@ -83,3 +83,62 @@ describe("recovered Twilio functions", () => {
     expect(source).not.toMatch(/configured: true, error: payload/);
   });
 });
+
+describe("twilio-voice-status callback writes", () => {
+  const source = readFunction("twilio-voice-status");
+
+  it("never builds a filter term from an absent identifier", () => {
+    // The original interpolated both SIDs unconditionally, so a call-only callback produced
+    // `provider_conference_sid.eq.,provider_call_sid.eq.CAxxxx` — an equality against the
+    // empty string. Terms are now assembled from the identifiers that are present.
+    expect(source).not.toMatch(/`provider_conference_sid\.eq\.\$\{conferenceSid\},provider_call_sid\.eq\.\$\{callSid\}`/);
+    expect(source).toMatch(/conferenceSid \? `provider_conference_sid\.eq\.\$\{conferenceSid\}` : null/);
+    expect(source).toMatch(/callSid \? `provider_call_sid\.eq\.\$\{callSid\}` : null/);
+    expect(source).toContain(".filter(Boolean).join(\",\")");
+  });
+
+  it("shape-checks both SIDs before they reach a filter", () => {
+    expect(source).toContain("isTwilioSid");
+    expect(source).toMatch(/isTwilioSid\(rawConferenceSid, "CF"\)/);
+    expect(source).toMatch(/isTwilioSid\(rawCallSid, "CA"\)/);
+  });
+
+  it("writes by primary key rather than by the match filter", () => {
+    // The original ran the UPDATE with .or() directly, so it wrote every row the filter
+    // selected. It now resolves one session and updates that id.
+    expect(source).toMatch(/\.update\(patch\)\.eq\("id", session\.id\)/);
+  });
+
+  it("only writes an identifier the callback actually carried", () => {
+    // `provider_conference_sid: conferenceSid || null` let a call-only callback erase the
+    // conference SID a previous callback had stored.
+    expect(source).not.toMatch(/provider_conference_sid: conferenceSid \|\| null/);
+    expect(source).not.toMatch(/provider_call_sid: callSid \|\| null/);
+    expect(source).toMatch(/if \(conferenceSid\) patch\.provider_conference_sid = conferenceSid/);
+    expect(source).toMatch(/if \(callSid\) patch\.provider_call_sid = callSid/);
+  });
+
+  it("never clears ended_at", () => {
+    // Twilio retries and reorders. The original wrote `ended_at: ... : null`, so one late
+    // in-progress callback after a completed one un-ended a finished call.
+    expect(source).not.toMatch(/ended_at:[^\n]*null/);
+    expect(source).toMatch(/if \(ending && !session\.ended_at\)/);
+  });
+
+  it("only writes a duration the callback actually sent", () => {
+    // `Number(form.get("CallDuration") ?? 0)` is 0 when the field is absent, and 0 is finite,
+    // so a real duration was overwritten with zero by any later callback.
+    expect(source).not.toMatch(/Number\(form\.get\("CallDuration"\) \?\? 0\)/);
+    expect(source).toContain('form.has("CallDuration")');
+  });
+
+  it("keeps terminal states terminal", () => {
+    expect(source).toContain("alreadyCompleted");
+    expect(source).toMatch(/session\.status === "completed"/);
+  });
+
+  it("does not return the raw error to an unauthenticated caller", () => {
+    expect(source).not.toContain("String(err)");
+    expect(source).toContain("console.error");
+  });
+});

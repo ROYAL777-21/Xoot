@@ -70,3 +70,18 @@ verify_jwt = false
 
 [functions.twilio-verify-webhook]
 verify_jwt = false
+
+# Recovered from production on 2026-08-02 with no source in this repository, and therefore no
+# config declaration either. Declared here on 2026-08-06 with the values read from the live
+# project, not guessed. Without these, a repo-driven `supabase functions deploy` applies the
+# default of verify_jwt = true, which would silently break twilio-voice-status: Twilio cannot
+# present a Supabase JWT, so every status callback would be rejected at the gateway before the
+# HMAC-SHA1 signature check ever ran.
+[functions.twilio-token]
+verify_jwt = true
+
+[functions.twilio-conversation]
+verify_jwt = true
+
+[functions.twilio-voice-status]
+verify_jwt = false

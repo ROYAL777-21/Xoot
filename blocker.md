@@ -67,11 +67,42 @@ projects on that date, not carried forward on trust.
   body. Guarded by `src/lib/twilio-recovered-functions.test.ts`, which asserts against the
   source with comments stripped and was verified to fail against the pre-fix files.
 
-- **A `.or()` filter in `twilio-voice-status` is built by string interpolation** and becomes an
-  equality against the empty string when Twilio sends only one of the two SIDs. This is the
-  last of the smaller defects found in the recovered set; the `String(err)` catches and
-  wildcard CORS in `twilio-token`, `twilio-conversation`, `sensitive-access-read` and
-  `sensitive-access-save` are all now fixed.
+- **CLOSED 2026-08-06 — `twilio-voice-status` callback writes.** The flagged `.or()` defect was
+  real, and reading it properly turned up three more bugs in the same UPDATE, all the same
+  shape: an unconditioned write driven by whatever an external callback happened to include.
+  The interpolated filter produced an equality against the empty string when only one SID was
+  present; `provider_conference_sid: conferenceSid || null` let a call-only callback erase a
+  conference SID stored earlier; `ended_at` was set to `null` on every non-terminal status, so
+  one late `in-progress` un-ended a finished call; and `duration_seconds` read
+  `Number(form.get("CallDuration") ?? 0)`, which is a finite `0` when the field is absent, so a
+  real duration was overwritten with zero. Terminal states are now terminal, both SIDs are
+  shape-checked before reaching a filter, and the write is by primary key rather than by the
+  match filter. `String(err)` is gone. Guarded by 8 assertions in
+  `src/lib/twilio-recovered-functions.test.ts`, verified to fail against the pre-fix file.
+
+  Wildcard CORS is left in place here on purpose and is not a defect: this is a webhook that
+  returns `{ok:true}` to a server which sends no Origin, so there is no browser to protect.
+
+- **Masked-call correlation is not wired, so `twilio-voice-status` matches no row.** Nothing
+  populates `provider_call_sid` or `provider_conference_sid` — `create-masked-call` creates a
+  Twilio Proxy session and returns `session_sid` but never persists it. The callback handler is
+  now correct, but it has nothing to correlate against. Wire this before enabling
+  `twilio.masked_voice`, and confirm from the live account which identifier Proxy actually
+  sends on the status callback rather than assuming it is `CallSid`.
+
+- **`status_callback_payload` stores Twilio's entire callback verbatim**, which is where caller
+  identifiers accumulate. It needs a POPIA retention rule before masked voice is enabled — the
+  same treatment `visit_recordings` got with `purge_after` and the nightly pg_cron job.
+
+- **Around 30 Edge Functions have no `verify_jwt` declaration in `supabase/config.toml`.** Found
+  2026-08-06 while declaring the recovered Twilio functions. Supabase defaults an undeclared
+  function to `verify_jwt = true`, which is right for most of them and wrong for webhooks —
+  a repo-driven `supabase functions deploy` would set `twilio-voice-status` and
+  `twilio-voice-twiml` to `true`, and Twilio cannot present a Supabase JWT, so every callback
+  would be rejected at the gateway before the signature check ran. `twilio-token`,
+  `twilio-conversation` and `twilio-voice-status` are now declared from values read off the
+  live project. The rest still need auditing the same way — read each live setting, then
+  declare it — rather than assuming the default is correct.
 
 - **CLOSED 2026-08-02 — the sensitive-access defects are fixed and deployed** (both functions
   at v5 in production). The `ENCRYPTION_KEY` fallback is gone, CORS resolves against an
@@ -87,24 +118,29 @@ projects on that date, not carried forward on trust.
   function deploys, but no secrets API — so there is no path to it from a Claude Code session.
   It needs the dashboard or the CLI, from a machine holding `SUPABASE_ACCESS_TOKEN`.
 
-  Generate the key locally so it never transits a chat window:
+  Use `scripts/ops/set-encryption-key.ps1`, which does the whole step in one command:
 
   ```powershell
-  # 32 random bytes, base64. Save to the password manager FIRST.
-  [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Max 256 }))
+  $env:SUPABASE_ACCESS_TOKEN = "<from supabase.com/dashboard/account/tokens>"
+  npm run ops:supabase:encryption-key -- -ProjectRef fxmxyabdjqviqbcxmvlp   # staging
+  npm run ops:supabase:encryption-key -- -ProjectRef mvlrkelahhsyjrwgsxaf   # production
   ```
 
-  Then either paste it into **Dashboard → Project → Edge Functions → Secrets** as
-  `ENCRYPTION_KEY`, or use the repo's existing hardened script, which refuses to read a secrets
-  file from inside the repository:
+  It generates the key, prints it once so it can go into the password manager, refuses to
+  continue until that is confirmed, writes it to a temp file outside the repository, sets it,
+  then overwrites and deletes the temp file. `-ProjectRef` is mandatory and has no default, so
+  the target is always a conscious choice. Run it **twice with different keys** — one per
+  project — so a staging leak cannot decrypt production gate codes.
 
-  ```powershell
-  # C:\secure\xoot-production-edge.env  -> ENCRYPTION_KEY=<the value>
-  npm run ops:supabase:secrets:production -- -EnvFile C:\secure\xoot-production-edge.env
-  ```
+  The script exists because the manual version has four silent failure modes: a non-cryptographic
+  random source, the same key on both projects, setting it without saving it, and leaving the
+  plaintext in a file or in shell history.
 
-  Do both projects — production `mvlrkelahhsyjrwgsxaf` and staging `fxmxyabdjqviqbcxmvlp` —
-  with **different** values, so a staging leak cannot decrypt production gate codes.
+  **Correction to an earlier draft of this entry**, which suggested generating the key with
+  `Get-Random`. That is a clock-seeded PRNG and is not suitable for key material — the script
+  uses `System.Security.Cryptography.RandomNumberGenerator`. Anyone who generated a key from
+  the old snippet should replace it, which is still free while `sensitive_booking_access` is
+  empty.
 
   Treat it as unrecoverable once real gate codes exist: it is the only key that can decrypt
   `sensitive_booking_access`, Supabase will not show it again after saving, and losing it means
