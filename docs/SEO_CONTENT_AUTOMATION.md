@@ -39,7 +39,7 @@ Recommended flow:
 2. Human review and edit in WordPress as drafts.
 3. Publish only approved articles.
 4. Sync approved WordPress article metadata into the Vite article registry or consume via a server-side build/import step.
-5. Keep canonical URLs on `https://zoothome.co.za/articles/<slug>` unless a deliberate WordPress-hosted URL is approved.
+5. Keep canonical URLs on `https://xoot.co.za/articles/<slug>` unless a deliberate WordPress-hosted URL is approved.
 
 ## Daily Command
 

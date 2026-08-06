@@ -48,8 +48,8 @@ Production config must include:
 - `scheme: "zoot"`
 - `ios.bundleIdentifier: "za.co.zoothome.app"`
 - `android.package: "za.co.zoothome.app"`
-- associated domains for `zoothome.co.za`
-- Android App Links for `https://zoothome.co.za/*`
+- associated domains for `xoot.co.za`
+- Android App Links for `https://xoot.co.za/*`
 - `expo-notifications` plugin
 - `expo-secure-store` plugin
 - `@rnmapbox/maps` config plugin for native Mapbox coverage/dispatch maps
@@ -106,9 +106,9 @@ Add these in Supabase Auth URL configuration:
 - `zoot://auth/callback`
 - `zoot://auth/reset`
 - `zoot://**`
-- `https://zoothome.co.za/auth/callback`
-- `https://zoothome.co.za/auth/reset`
-- `https://zoothome.co.za/**`
+- `https://xoot.co.za/auth/callback`
+- `https://xoot.co.za/auth/reset`
+- `https://xoot.co.za/**`
 - preview equivalents after the preview domain is chosen
 
 OAuth provider redirect/callback URLs must match Supabase Auth's provider instructions for Google and Apple.

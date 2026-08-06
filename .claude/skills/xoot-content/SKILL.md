@@ -19,7 +19,7 @@ claim rules, and the voice.
 
 These are settled. Do not re-open them in a draft.
 
-- **The blog lives in this repo**, at `zoothome.co.za/blog`, as React routes — not WordPress.
+- **The blog lives in this repo**, at `xoot.co.za/blog`, as React routes — not WordPress.
   So internal linking, schema and Core Web Vitals are all under our control, and there is no
   separate stack to provision or harden. `blocker.md`'s WordPress section stops being a
   blocker for the blog specifically.

@@ -60,7 +60,7 @@ Required native follow-up after Expo prebuild/EAS native project generation:
 1. Copy the shortcut XML into `android/app/src/main/res/xml/shortcuts.xml`.
 2. Add matching string resources for each shortcut label.
 3. Add the shortcuts metadata to the Android launcher activity.
-4. Ensure verified Android App Links open `https://zoothome.co.za/*`.
+4. Ensure verified Android App Links open `https://xoot.co.za/*`.
 5. Test long-press launcher shortcuts, Google Assistant/Gemini app-opening behavior, PWA shortcuts, and signed-in route protection.
 
 Current safe Android/PWA activation examples:

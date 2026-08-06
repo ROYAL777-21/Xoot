@@ -9,8 +9,8 @@ import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/govern
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  "https://zoothome.co.za",
-  "https://www.zoothome.co.za",
+  "https://xoot.co.za",
+  "https://www.xoot.co.za",
 ];
 
 const servicePrices: Record<string, number> = {

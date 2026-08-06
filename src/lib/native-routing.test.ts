@@ -32,7 +32,7 @@ describe("resolveNativeRoute", () => {
     expect(resolveNativeRoute("zoot://app/bookings/booking_456")).toBe("/app/bookings/booking_456");
     expect(resolveNativeRoute("zoot://bookings?id=booking-456")).toBe("/app/bookings/booking-456");
     expect(resolveNativeRoute("zoot://book-cleaner")).toBe("/app");
-    expect(resolveNativeRoute("https://zoothome.co.za/app?intent=book_clean")).toBe("/app?intent=book_clean");
+    expect(resolveNativeRoute("https://xoot.co.za/app?intent=book_clean")).toBe("/app?intent=book_clean");
     expect(resolveNativeRoute("zoot://book?intent=book_clean&service=office&date=2026-07-03&area=Rosebank")).toBe(
       "/app?area=Rosebank&date=2026-07-03&intent=book_clean&service=office",
     );

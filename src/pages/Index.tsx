@@ -16,10 +16,10 @@ import { ServiceAreaMap } from "@/components/zoot/ServiceAreaMap";
 const homeStructuredData = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  "@id": "https://zoothome.co.za/#org",
+  "@id": "https://xoot.co.za/#org",
   name: "Xoot",
   description: "Premium home-services marketplace for vetted cleaning, Airbnb turns, office resets, Care+, and trusted recurring home care.",
-  url: "https://zoothome.co.za/",
+  url: "https://xoot.co.za/",
   areaServed: ["Sandton", "Bryanston", "Rosebank", "Midrand", "Fourways", "Waterfall", "Hyde Park", "Parkhurst", "Melville"],
   priceRange: "R",
   serviceType: ["House cleaning", "Office cleaning", "Move-out cleaning", "Airbnb cleaning", "Premium home care"],

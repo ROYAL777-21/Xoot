@@ -174,8 +174,8 @@ projects on that date, not carried forward on trust.
   verification for local web, staging, production, Expo dev client, `zoot://auth/callback`,
   Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the
   intended redirects, and `scripts/ops/set-supabase-auth-config.ps1` dry-runs passed on
-  2026-07-01 for production project `mvlrkelahhsyjrwgsxaf` with `https://zoothome.co.za`
-  and staging project `fxmxyabdjqviqbcxmvlp` with `https://staging.zoothome.co.za`. Live
+  2026-07-01 for production project `mvlrkelahhsyjrwgsxaf` with `https://xoot.co.za`
+  and staging project `fxmxyabdjqviqbcxmvlp` with `https://staging.xoot.co.za`. Live
   apply still requires a rotated local `SUPABASE_ACCESS_TOKEN`, target project ref, and
   explicit `-SiteUrl` so localhost is not applied to staging/production accidentally.
 - **`src/integrations/supabase/types.ts` is stale against the live schema.** Found 2026-08-02:
@@ -372,17 +372,46 @@ projects on that date, not carried forward on trust.
 
 ## Domain registration
 
-- No production domain is registered yet. The founder reconfirmed this on 2026-06-30, so
-  domain-dependent setup cannot be completed without the final domain and registrar/DNS
-  access.
-- Pending until domain registration: Cloudflare zone/DNS/TLS/WAF/Turnstile restrictions,
-  production Supabase Auth redirect allowlists, Google/Apple OAuth origins and callbacks,
-  Brevo sender-domain DNS, Hostinger custom-domain SSL, WordPress production/canonical URLs,
-  Mapbox URL-restricted browser tokens, Apple AASA, Android assetlinks, privacy/support/
-  account-deletion URLs, and store listing URLs.
+- **The production domain is `xoot.co.za`**, confirmed by the founder on 2026-08-06. The repo
+  previously carried `zoothome.co.za` as a placeholder in 39 files; all were rewritten the same
+  day.
+
+  No production domain is registered *and configured* as far as this repo can verify — the
+  founder confirmed the name, not the registrar state, and nothing here can check DNS. So the
+  domain-dependent setup in the next bullet is all still open. This entry now blocks on
+  *configuration*, not on a decision. Confirm registrar and DNS control before treating any of
+  it as done.
+
+- Still pending, now that the name is settled: Cloudflare zone/DNS/TLS/WAF/Turnstile
+  restrictions, production Supabase Auth redirect allowlists, Google/Apple OAuth origins and
+  callbacks, Brevo sender-domain DNS, Hostinger custom-domain SSL, WordPress
+  production/canonical URLs, Mapbox URL-restricted browser tokens, Apple AASA, Android
+  assetlinks, privacy/support/account-deletion URLs, and store listing URLs.
+
+- **The deep-link scheme is still `zoot://`, not `xoot://`.** Left unchanged deliberately on
+  2026-08-06 rather than swept up with the domain. A URL scheme is not a string like a domain
+  is: changing it breaks every already-installed build, and it has to be changed in lockstep
+  with the Google and Apple OAuth redirect configurations, the Supabase Auth allowlist, and
+  `mobile/app.config.ts`. Decide it as its own change, before the first store submission —
+  after that it is effectively permanent. `scripts/ops/check-blocker-ledger.ps1` pins the
+  literal `zoot://auth/callback`, so that pattern has to move at the same time.
+
+- **Every deployed Edge Function still has the old origin allow-list baked in.**
+  `defaultAllowedOrigins` in `_shared/action-utils.ts` is compiled into each function at deploy
+  time, and every function currently live in production was deployed before the domain change —
+  including `twilio-token`, `twilio-conversation` and the two `sensitive-access-*` functions
+  deployed on 2026-08-06. Until this is dealt with, a browser on `https://xoot.co.za` will be
+  refused by CORS on every Edge Function.
+
+  Two ways to fix it, and the first is better: set `ALLOWED_ORIGINS` in Edge Function secrets
+  to `https://xoot.co.za,https://www.xoot.co.za` — `getAllowedOrigins()` reads that first and
+  only falls back to the compiled default. That fixes every function at once, with no deploy,
+  and means the next domain change is a secret edit rather than a redeploy of everything.
+  Otherwise, redeploy all functions after this branch merges. Do it in the same sitting as
+  `ENCRYPTION_KEY`; it is the same secrets screen.
+
 - Use localhost, staging project URLs, and Expo development URLs for preview only. Do not
-  mark production launch ready until the final domain is registered, configured, and
-  verified.
+  mark production launch ready until `xoot.co.za` is registered, configured, and verified.
 
 ## Legal and POPIA
 
@@ -432,7 +461,7 @@ projects on that date, not carried forward on trust.
 
 ## Cloudflare
 
-- The connected Cloudflare account still has no `zoothome.co.za` zone. On 2026-06-29, listing
+- The connected Cloudflare account still has no `xoot.co.za` zone. On 2026-06-29, listing
   zones returned zero matches and the create-zone attempt failed because the connected token
   lacks `com.cloudflare.api.account.zone.create`.
 - WAF, bot/rate-limit rules, Turnstile, DNS, TLS, and origin protection cannot be activated

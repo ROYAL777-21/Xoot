@@ -62,7 +62,7 @@ ZOOT_APP_LINK_PATHS=/app/*,/auth/callback*,/auth/reset*,/care-plus/*,/install,/t
 `ALLOWED_ORIGINS` should be a comma-separated allowlist such as:
 
 ```bash
-ALLOWED_ORIGINS=https://zoothome.co.za,https://www.zoothome.co.za,https://staging.zoothome.co.za
+ALLOWED_ORIGINS=https://xoot.co.za,https://www.xoot.co.za,https://staging.xoot.co.za
 ```
 
 ## Supabase Auth Setup

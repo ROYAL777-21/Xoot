@@ -4,8 +4,8 @@ export const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:4173",
-  "https://zoothome.co.za",
-  "https://www.zoothome.co.za",
+  "https://xoot.co.za",
+  "https://www.xoot.co.za",
 ];
 
 export const approvedLaunchRegions = [

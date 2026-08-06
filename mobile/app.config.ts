@@ -43,8 +43,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: false,
     usesAppleSignIn: true,
     associatedDomains: [
-      'applinks:zoothome.co.za',
-      ...(isPreview ? ['applinks:preview.zoothome.co.za'] : []),
+      'applinks:xoot.co.za',
+      ...(isPreview ? ['applinks:preview.xoot.co.za'] : []),
     ],
     config: {
       usesNonExemptEncryption: false,
@@ -72,14 +72,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         data: [
           {
             scheme: 'https',
-            host: 'zoothome.co.za',
+            host: 'xoot.co.za',
             pathPrefix: '/',
           },
           ...(isPreview
             ? [
                 {
                   scheme: 'https',
-                  host: 'preview.zoothome.co.za',
+                  host: 'preview.xoot.co.za',
                   pathPrefix: '/',
                 },
               ]

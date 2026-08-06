@@ -407,7 +407,7 @@ Supabase:
 7. Is Booking Cover preselection legally and commercially approved?
 8. Is Care+ sold in native apps as a physical-service membership outside store billing rules?
 9. What legal entity name, registration number, address and Information Officer details are approved?
-10. Which domain is authoritative: `zoothome.co.za`, `www.zoothome.co.za`, preview and staging subdomains?
+10. Which domain is authoritative: `xoot.co.za`, `www.xoot.co.za`, preview and staging subdomains?
 11. Should the current Twilio trial account be upgraded, or should staging and production subaccounts be created first?
 12. Is Brevo the only email provider, with SendGrid disabled?
 13. Which PostHog data residency and consent configuration is approved?

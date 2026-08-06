@@ -31,7 +31,7 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
     expect(androidShortcuts).toContain("zoot://book?intent=book_clean");
     expect(androidShortcuts).toContain("zoot://bookings?intent=booking_status");
     expect(androidShortcuts).toContain("zoot://zooter/jobs?intent=zooter_jobs");
-    expect(androidShortcuts).not.toContain("https://zoothome.co.za");
+    expect(androidShortcuts).not.toContain("https://xoot.co.za");
   });
 
   it("has Expo route files for every assistant shortcut destination", () => {

@@ -20,9 +20,9 @@ The React app already includes:
 
 | Setting | Local | Staging | Production |
 | --- | --- | --- | --- |
-| Site URL | `http://localhost:5173` | `https://staging.zoothome.co.za` | `https://zoothome.co.za` |
-| Callback URL | `http://localhost:5173/auth/callback` | `https://staging.zoothome.co.za/auth/callback` | `https://zoothome.co.za/auth/callback` |
-| Password reset URL | `http://localhost:5173/auth/reset` | `https://staging.zoothome.co.za/auth/reset` | `https://zoothome.co.za/auth/reset` |
+| Site URL | `http://localhost:5173` | `https://staging.xoot.co.za` | `https://xoot.co.za` |
+| Callback URL | `http://localhost:5173/auth/callback` | `https://staging.xoot.co.za/auth/callback` | `https://xoot.co.za/auth/callback` |
+| Password reset URL | `http://localhost:5173/auth/reset` | `https://staging.xoot.co.za/auth/reset` | `https://xoot.co.za/auth/reset` |
 | Native callback | `zoot://auth/callback` | `zoot://auth/callback` | `zoot://auth/callback` |
 
 Additional redirect allow-list entries:
@@ -32,8 +32,8 @@ http://127.0.0.1:5173/auth/callback
 http://127.0.0.1:5173/auth/reset
 http://127.0.0.1:4173/auth/callback
 http://127.0.0.1:4173/auth/reset
-https://www.zoothome.co.za/auth/callback
-https://www.zoothome.co.za/auth/reset
+https://www.xoot.co.za/auth/callback
+https://www.xoot.co.za/auth/reset
 zoot://auth/reset
 ```
 
@@ -72,7 +72,7 @@ npm run ops:supabase:auth-config -- -UseLocalConfig -SiteUrl "https://<registere
 | --- | --- | --- | --- | --- |
 | Web OAuth client ID | Google Cloud OAuth app | Google Cloud OAuth app | Google Cloud OAuth app | Supabase provider dashboard/config |
 | Web OAuth client secret | Google Cloud OAuth app | Google Cloud OAuth app | Google Cloud OAuth app | Supabase dashboard or backend secret store |
-| Authorized JavaScript origins | `http://localhost:5173` | `https://staging.zoothome.co.za` | `https://zoothome.co.za`, `https://www.zoothome.co.za` | Google Cloud Console |
+| Authorized JavaScript origins | `http://localhost:5173` | `https://staging.xoot.co.za` | `https://xoot.co.za`, `https://www.xoot.co.za` | Google Cloud Console |
 | Authorized redirect URIs | Supabase provider callback URL | Staging Supabase provider callback URL | Production Supabase provider callback URL | Google Cloud Console |
 | iOS client ID | Optional | Staging native | Production native | Native config if native Google auth is used |
 | Android client ID | Optional | Staging native | Production native | Native config if native Google auth is used |
@@ -114,11 +114,11 @@ zoot://auth/callback
 Recommended app links:
 
 ```text
-https://zoothome.co.za/auth/callback
-https://zoothome.co.za/auth/reset
-https://zoothome.co.za/app/*
-https://zoothome.co.za/care-plus/*
-https://zoothome.co.za/zooter/*
+https://xoot.co.za/auth/callback
+https://xoot.co.za/auth/reset
+https://xoot.co.za/app/*
+https://xoot.co.za/care-plus/*
+https://xoot.co.za/zooter/*
 ```
 
 Build-time variables:

@@ -11,7 +11,7 @@ type SEOProps = {
   jsonLd?: unknown;
 };
 
-const siteUrl = "https://zoothome.co.za";
+const siteUrl = "https://xoot.co.za";
 const defaultImage = `${siteUrl}/og-image.png`;
 
 export const SEO = ({

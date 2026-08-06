@@ -26,8 +26,8 @@ Because the Supabase token is absent, live Supabase Auth redirect configuration 
 
 ## Verified Dry Runs
 
-- Production Supabase Auth config dry-run passed for project `mvlrkelahhsyjrwgsxaf` with `-UseLocalConfig -SiteUrl https://zoothome.co.za`; no live PATCH was attempted.
-- Staging Supabase Auth config dry-run passed for project `fxmxyabdjqviqbcxmvlp` with `-UseLocalConfig -SiteUrl https://staging.zoothome.co.za`; no live PATCH was attempted.
+- Production Supabase Auth config dry-run passed for project `mvlrkelahhsyjrwgsxaf` with `-UseLocalConfig -SiteUrl https://xoot.co.za`; no live PATCH was attempted.
+- Staging Supabase Auth config dry-run passed for project `fxmxyabdjqviqbcxmvlp` with `-UseLocalConfig -SiteUrl https://staging.xoot.co.za`; no live PATCH was attempted.
 - Both dry runs resolved 12 redirect URLs from `supabase/config.toml`, including local callback/reset URLs, staging and production callback/reset URLs, `www` production callback/reset URLs, and `zoot://auth/*` native callbacks.
 - CodeRabbit CLI `0.6.4` is installed and API-key authenticated locally. `coderabbit doctor` reports 8 pass, 1 warning for browser OAuth fallback only, and `coderabbit review --type uncommitted --plain` returned no findings for the current repair-helper patch.
 - Supabase migration repair planning passed for staging and production with `npm run ops:supabase:repair-migrations -- -Environment <env> -PlanOnly`; the helper refuses known partial/split migrations and refuses `-PlanOnly -ConfirmRepair`. Staging PlanOnly was re-run on 2026-07-10 and produced the same four-version allowlist.

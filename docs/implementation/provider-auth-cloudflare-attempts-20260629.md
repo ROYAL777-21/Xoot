@@ -37,6 +37,6 @@ These checks were run without printing or storing provider secret values in the 
 
 ## Cloudflare Zone
 
-- Cloudflare API `GET /zones?name=zoothome.co.za` returned zero matching zones.
-- Cloudflare API `POST /zones` with `name: "zoothome.co.za"`, `type: "full"`, and `jump_start: true` failed because the connected token lacks `com.cloudflare.api.account.zone.create`.
+- Cloudflare API `GET /zones?name=xoot.co.za` returned zero matching zones.
+- Cloudflare API `POST /zones` with `name: "xoot.co.za"`, `type: "full"`, and `jump_start: true` failed because the connected token lacks `com.cloudflare.api.account.zone.create`.
 - The blocker is account permission scope, not repo code. Create the zone manually in the Cloudflare dashboard or provide a rotated token with account zone-create permission through an approved secret store.

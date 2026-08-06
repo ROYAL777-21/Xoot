@@ -181,7 +181,7 @@ function safeHost(value) {
 }
 
 function isProductionHost(host) {
-  return host === "zoothome.co.za" || host === "www.zoothome.co.za";
+  return host === "xoot.co.za" || host === "www.xoot.co.za";
 }
 
 function isLocalhost(host) {

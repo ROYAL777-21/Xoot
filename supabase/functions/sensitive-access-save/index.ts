@@ -23,7 +23,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
  * Allowed origins, matching `_shared/action-utils.ts` rather than falling back to `*`.
  * A wildcard on an endpoint that returns gate codes is not a default worth having.
  */
-const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? Deno.env.get("APP_BASE_URL") ?? "https://zoothome.co.za")
+const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? Deno.env.get("APP_BASE_URL") ?? "https://xoot.co.za")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);

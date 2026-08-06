@@ -37,7 +37,7 @@ Public-safe values may be visible in build logs if needed:
 
 ```env
 WORDPRESS_SITE_URL=
-WORDPRESS_PUBLIC_CANONICAL_BASE=https://zoothome.co.za/articles
+WORDPRESS_PUBLIC_CANONICAL_BASE=https://xoot.co.za/articles
 ```
 
 Server/CI-only values:

@@ -41,9 +41,9 @@ const authRoutes = new Set(["/auth/callback", "/auth/reset"]);
 const queryPreservingRoutes = new Set(["/app", "/care-plus"]);
 const allowedSafeQueryKeys = new Set(["area", "date", "intent", "service", "zootBot"]);
 const allowedWebHosts = new Set([
-  "zoothome.co.za",
-  "www.zoothome.co.za",
-  "staging.zoothome.co.za",
+  "xoot.co.za",
+  "www.xoot.co.za",
+  "staging.xoot.co.za",
   "zoot.co.za",
   "www.zoot.co.za",
 ]);

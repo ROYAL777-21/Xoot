@@ -36,7 +36,7 @@ Build/native association scripts:
 SEO CMS and publishing automation:
 
 - `WORDPRESS_SITE_URL` - public WordPress CMS URL.
-- `WORDPRESS_PUBLIC_CANONICAL_BASE` - canonical Xoot article base, normally `https://zoothome.co.za/articles`.
+- `WORDPRESS_PUBLIC_CANONICAL_BASE` - canonical Xoot article base, normally `https://xoot.co.za/articles`.
 - `WORDPRESS_REST_API_URL` - server/CI-only REST API endpoint for approved article sync.
 - `WORDPRESS_APP_USERNAME` / `WORDPRESS_APP_PASSWORD` - least-privilege WordPress application credential for server/CI sync only.
 - `WORDPRESS_WEBHOOK_SECRET` / `WORDPRESS_PREVIEW_SECRET` - server/CI-only publishing and draft-preview protection.
@@ -211,18 +211,18 @@ Baseline allowed origins:
 
 - `http://localhost:5173`
 - `http://127.0.0.1:5173`
-- `https://staging.zoothome.co.za`
-- `https://zoothome.co.za`
-- `https://www.zoothome.co.za`
+- `https://staging.xoot.co.za`
+- `https://xoot.co.za`
+- `https://www.xoot.co.za`
 
 Supabase Auth Redirect URLs should include:
 
 - `http://localhost:5173/auth/callback`
 - `http://localhost:5173/auth/reset`
-- `https://staging.zoothome.co.za/auth/callback`
-- `https://staging.zoothome.co.za/auth/reset`
-- `https://zoothome.co.za/auth/callback`
-- `https://zoothome.co.za/auth/reset`
+- `https://staging.xoot.co.za/auth/callback`
+- `https://staging.xoot.co.za/auth/reset`
+- `https://xoot.co.za/auth/callback`
+- `https://xoot.co.za/auth/reset`
 - `zoot://auth/callback` if native deep-link auth is enabled.
 
 ## Manual Dashboard Setup Needed

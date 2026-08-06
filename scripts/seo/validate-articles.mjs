@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-const siteUrl = "https://zoothome.co.za";
+const siteUrl = "https://xoot.co.za";
 const blogPostsPath = path.join(root, "src/lib/blog-posts.ts");
 const sitemapPath = path.join(root, "public/sitemap.xml");
 const queuePath = path.join(root, "content/seo/generated/daily-blog-queue.json");

@@ -376,9 +376,9 @@ Test-RepoPattern "phase-10-assistant" "src/lib/phase10-assistant-intents-readine
 $redirects = @(
   "http://127.0.0.1:5173/auth/callback",
   "http://127.0.0.1:4173/auth/callback",
-  "https://staging.zoothome.co.za/auth/callback",
-  "https://zoothome.co.za/auth/callback",
-  "https://www.zoothome.co.za/auth/callback",
+  "https://staging.xoot.co.za/auth/callback",
+  "https://xoot.co.za/auth/callback",
+  "https://www.xoot.co.za/auth/callback",
   "zoot://auth/callback"
 )
 foreach ($redirect in $redirects) {
