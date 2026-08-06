@@ -45,26 +45,33 @@ projects on that date, not carried forward on trust.
   correct because Twilio calls them, and both validate the HMAC-SHA1 signature with a
   timing-safe comparison, failing closed when the auth token is absent.
 
-- **`twilio-token` and `twilio-conversation` chain into reading another household's booking
-  chat.** Neither checks that the caller is a participant in the `bookingId` it is given —
-  they check only that the caller has an account. `twilio-conversation` returns the
-  conversation SID and both participant identities for any booking; `twilio-token` returns a
-  conversations grant to any signed-in user. Together that is read access to a stranger's
-  booking chat from an ordinary account.
+- **CLOSED 2026-08-06 — the `twilio-token` / `twilio-conversation` chain is fixed and deployed**
+  (both at v5 in production, `verify_jwt` true). Neither checked that the caller was a
+  participant in the `bookingId` it was given — only that the caller had an account. Together
+  that was read access to a stranger's booking chat from an ordinary account, and
+  `twilio-token` additionally granted `voice.outgoing.application_sid`, so the same gap would
+  have let any account originate calls billed to the Twilio account.
 
-  Neither is obviously exploitable alone, which is why the pair is written down rather than
-  the parts. Not reachable today — every Twilio control is disabled — but **fix both before
-  enabling any of them**, using the ownership pattern in `respond-zooter-job`: look the booking
-  up, confirm the caller is the customer or the assigned Xooter, and respond identically when
-  they are not.
+  Both now resolve the booking and call `assertBookingParticipant` from
+  `_shared/action-utils.ts` — the helper `create-masked-call` already used, rather than a
+  second implementation of the same check. One 404 covers both "no such booking" and "not a
+  participant", so neither endpoint can be used to enumerate booking ids. In
+  `twilio-conversation` the gate sits *before* the unconfigured branch, which writes a
+  `masked_conversation_sessions` row and an approval-gated outbox event keyed to the booking;
+  gating only the provider call would still have let an outsider queue support work against
+  someone else's booking with Twilio switched off entirely.
 
-  `twilio-token` additionally grants `voice.outgoing.application_sid`, so the same gap would
-  let any account originate calls billed to the Twilio account.
+  Also fixed in both: wildcard CORS, `String(err)` responses that disclosed which Twilio
+  secrets were configured, and service clients that forwarded the caller's Authorization
+  header alongside the service key. `twilio-conversation` no longer returns Twilio's raw error
+  body. Guarded by `src/lib/twilio-recovered-functions.test.ts`, which asserts against the
+  source with comments stripped and was verified to fail against the pre-fix files.
 
-- **Smaller defects in the same recovered set**, all documented in the file headers: `String(err)`
-  returned from catches, `*` CORS on endpoints returning credentials or identities, and a
-  `.or()` filter in `twilio-voice-status` built by string interpolation that becomes an
-  equality against the empty string when Twilio sends only one of the two SIDs.
+- **A `.or()` filter in `twilio-voice-status` is built by string interpolation** and becomes an
+  equality against the empty string when Twilio sends only one of the two SIDs. This is the
+  last of the smaller defects found in the recovered set; the `String(err)` catches and
+  wildcard CORS in `twilio-token`, `twilio-conversation`, `sensitive-access-read` and
+  `sensitive-access-save` are all now fixed.
 
 - **CLOSED 2026-08-02 — the sensitive-access defects are fixed and deployed** (both functions
   at v5 in production). The `ENCRYPTION_KEY` fallback is gone, CORS resolves against an
@@ -76,6 +83,34 @@ projects on that date, not carried forward on trust.
   is the intended behaviour and nothing regressed — `sensitive_booking_access` held 0 rows, so
   no save had ever succeeded — but the feature cannot work until the secret exists.
 
+  **This one cannot be done by an agent.** The Supabase MCP server exposes SQL, migrations and
+  function deploys, but no secrets API — so there is no path to it from a Claude Code session.
+  It needs the dashboard or the CLI, from a machine holding `SUPABASE_ACCESS_TOKEN`.
+
+  Generate the key locally so it never transits a chat window:
+
+  ```powershell
+  # 32 random bytes, base64. Save to the password manager FIRST.
+  [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Max 256 }))
+  ```
+
+  Then either paste it into **Dashboard → Project → Edge Functions → Secrets** as
+  `ENCRYPTION_KEY`, or use the repo's existing hardened script, which refuses to read a secrets
+  file from inside the repository:
+
+  ```powershell
+  # C:\secure\xoot-production-edge.env  -> ENCRYPTION_KEY=<the value>
+  npm run ops:supabase:secrets:production -- -EnvFile C:\secure\xoot-production-edge.env
+  ```
+
+  Do both projects — production `mvlrkelahhsyjrwgsxaf` and staging `fxmxyabdjqviqbcxmvlp` —
+  with **different** values, so a staging leak cannot decrypt production gate codes.
+
+  Treat it as unrecoverable once real gate codes exist: it is the only key that can decrypt
+  `sensitive_booking_access`, Supabase will not show it again after saving, and losing it means
+  losing the plaintext. Setting it today is free precisely because that table is still empty;
+  changing it later is a data migration.
+
   Still open, deliberately separate because it changes the caller's contract:
   `sensitive-access-save` decides what to encrypt by regex-matching the *field name*, so a field
   a customer calls "how to get in" is silently dropped and reported as `no_sensitive_fields`
@@ -85,11 +120,17 @@ projects on that date, not carried forward on trust.
   disabled. It is one Auth-settings toggle per project. Enable it, or record an explicit
   launch risk acceptance before public launch.
 
-  Re-verified 2026-08-02 after the day's migrations: both projects return exactly three
-  findings and the other two are intentional — `set_safety_pin` callable by `authenticated`
-  (the account holder setting their own PIN is the point) and `user_safety_pins` with RLS and
-  no policy (deny-all by design, nobody reads a PIN hash). So this toggle is the only
-  advisor finding that represents real work.
+  Re-verified 2026-08-06: both projects still return exactly three findings, identical to each
+  other, and the other two are intentional — `set_safety_pin` callable by `authenticated` (the
+  account holder setting their own PIN is the point) and `user_safety_pins` with RLS and no
+  policy (deny-all by design, nobody reads a PIN hash). So this toggle is the only advisor
+  finding that represents real work.
+
+  `set_safety_pin` was re-read from the live catalogue rather than trusted from memory: it
+  derives the caller from `auth.uid()`, raises if that is null, rejects anything but 4–8
+  digits, and upserts only the caller's own row. Revoking EXECUTE, which is what the advisor
+  suggests, would break the feature and fix nothing. Both findings should be dismissed in the
+  dashboard rather than re-investigated each time the advisor runs.
 
 ## Supabase
 
