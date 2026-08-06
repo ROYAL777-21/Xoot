@@ -66,22 +66,21 @@ projects on that date, not carried forward on trust.
   `.or()` filter in `twilio-voice-status` built by string interpolation that becomes an
   equality against the empty string when Twilio sends only one of the two SIDs.
 
-- **The recovered sensitive-access functions carry four defects, all unfixed.** They are
-  committed verbatim so the repo copy provably matches what is deployed; the fix is a
-  separate, reviewable diff.
-  1. **`ENCRYPTION_KEY` falls back to `SUPABASE_SERVICE_ROLE_KEY`.** If unset, every gate
-     and alarm code is encrypted under a key derived from the service role key. Anyone
-     holding that key can decrypt them — and rotating it, which this file already requires
-     because one was pasted into chat, makes every stored access credential permanently
-     undecryptable. **Check whether `ENCRYPTION_KEY` is actually set in production before
-     rotating anything.** Read and save must be changed together: they are two halves of one
-     envelope.
-  2. CORS falls back to `*` when `APP_BASE_URL` is unset, unlike every other function here.
-  3. The client is built with the service role key while forwarding the caller's
-     Authorization header, so the effective identity depends on supabase-js precedence.
-  4. `sensitive-access-save` decides what to encrypt by regex-matching the *field name*, so
-     a field named "how to get in" is silently dropped and reported as
-     `no_sensitive_fields` — and the same text probably lands somewhere unencrypted.
+- **CLOSED 2026-08-02 — the sensitive-access defects are fixed and deployed** (both functions
+  at v5 in production). The `ENCRYPTION_KEY` fallback is gone, CORS resolves against an
+  allow-list, the service client no longer forwards the caller's token, and the catch no longer
+  echoes whether the key is configured.
+
+  **ACTION REQUIRED: set `ENCRYPTION_KEY` in Edge Function secrets.** Until it is set, saving a
+  gate code fails rather than encrypting it under a key derived from the service role key. That
+  is the intended behaviour and nothing regressed — `sensitive_booking_access` held 0 rows, so
+  no save had ever succeeded — but the feature cannot work until the secret exists.
+
+  Still open, deliberately separate because it changes the caller's contract:
+  `sensitive-access-save` decides what to encrypt by regex-matching the *field name*, so a field
+  a customer calls "how to get in" is silently dropped and reported as `no_sensitive_fields`
+  while the same text probably lands somewhere unencrypted.
+
 - Staging and production Supabase security advisors both report leaked password protection
   disabled. It is one Auth-settings toggle per project. Enable it, or record an explicit
   launch risk acceptance before public launch.
