@@ -39,12 +39,32 @@ projects on that date, not carried forward on trust.
   `20260730083000_booking_price_author_guard.sql` remains worth applying as the
   defence-in-depth that makes such a grant safe to add later.
 
-- **Four Edge Functions are still live in production with no source in this repository**:
-  `twilio-token`, `twilio-conversation`, `twilio-voice-status`, `twilio-voice-twiml`. The
-  last two run with `verify_jwt: false`, so they are publicly invocable. Recover each with
-  `get_edge_function`, commit verbatim, review, then redeploy from the repo — or delete it
-  if it is dead. `sensitive-access-read` and `sensitive-access-save` were recovered this way
-  on 2026-08-02 and are now committed.
+- **CLOSED 2026-08-02 — no production Edge Function is unsourced any more.** All six were
+  recovered with `get_edge_function` and committed verbatim. The two webhook functions
+  (`twilio-voice-status`, `twilio-voice-twiml`) turned out to be sound: `verify_jwt: false` is
+  correct because Twilio calls them, and both validate the HMAC-SHA1 signature with a
+  timing-safe comparison, failing closed when the auth token is absent.
+
+- **`twilio-token` and `twilio-conversation` chain into reading another household's booking
+  chat.** Neither checks that the caller is a participant in the `bookingId` it is given —
+  they check only that the caller has an account. `twilio-conversation` returns the
+  conversation SID and both participant identities for any booking; `twilio-token` returns a
+  conversations grant to any signed-in user. Together that is read access to a stranger's
+  booking chat from an ordinary account.
+
+  Neither is obviously exploitable alone, which is why the pair is written down rather than
+  the parts. Not reachable today — every Twilio control is disabled — but **fix both before
+  enabling any of them**, using the ownership pattern in `respond-zooter-job`: look the booking
+  up, confirm the caller is the customer or the assigned Xooter, and respond identically when
+  they are not.
+
+  `twilio-token` additionally grants `voice.outgoing.application_sid`, so the same gap would
+  let any account originate calls billed to the Twilio account.
+
+- **Smaller defects in the same recovered set**, all documented in the file headers: `String(err)`
+  returned from catches, `*` CORS on endpoints returning credentials or identities, and a
+  `.or()` filter in `twilio-voice-status` built by string interpolation that becomes an
+  equality against the empty string when Twilio sends only one of the two SIDs.
 
 - **The recovered sensitive-access functions carry four defects, all unfixed.** They are
   committed verbatim so the repo copy provably matches what is deployed; the fix is a
