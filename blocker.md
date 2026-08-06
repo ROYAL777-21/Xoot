@@ -94,15 +94,21 @@ projects on that date, not carried forward on trust.
   identifiers accumulate. It needs a POPIA retention rule before masked voice is enabled — the
   same treatment `visit_recordings` got with `purge_after` and the nightly pg_cron job.
 
-- **Around 30 Edge Functions have no `verify_jwt` declaration in `supabase/config.toml`.** Found
-  2026-08-06 while declaring the recovered Twilio functions. Supabase defaults an undeclared
-  function to `verify_jwt = true`, which is right for most of them and wrong for webhooks —
-  a repo-driven `supabase functions deploy` would set `twilio-voice-status` and
-  `twilio-voice-twiml` to `true`, and Twilio cannot present a Supabase JWT, so every callback
-  would be rejected at the gateway before the signature check ran. `twilio-token`,
-  `twilio-conversation` and `twilio-voice-status` are now declared from values read off the
-  live project. The rest still need auditing the same way — read each live setting, then
-  declare it — rather than assuming the default is correct.
+- **CLOSED 2026-08-06 — every deployed Edge Function now declares `verify_jwt`.** All 42 live
+  functions were read off production with `list_edge_functions` and compared against
+  `supabase/config.toml`. 21 were already declared and **all 21 matched live** — no drift. The
+  remaining 25 were appended from the live values.
+
+  One of them was the real hazard: **`twilio-voice-twiml` is `verify_jwt = false` live and was
+  undeclared.** Supabase defaults an undeclared function to `true`, so a repo-driven
+  `supabase functions deploy` would have flipped it — and Twilio cannot present a Supabase JWT,
+  so the gateway would have rejected every voice webhook before the HMAC signature check ran.
+  Silent, and only visible once voice was switched on.
+
+  Four functions are declared but not deployed — `create-concierge-handoff`,
+  `generate-booking-invoice`, `report-concierge-answer`, `resend-booking-invoice`. That is the
+  safe direction (declared-not-deployed, rather than deployed-undeclared) and is expected while
+  those flows are still gated.
 
 - **CLOSED 2026-08-02 — the sensitive-access defects are fixed and deployed** (both functions
   at v5 in production). The `ENCRYPTION_KEY` fallback is gone, CORS resolves against an

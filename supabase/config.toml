@@ -85,3 +85,85 @@ verify_jwt = true
 
 [functions.twilio-voice-status]
 verify_jwt = false
+
+# Declared 2026-08-06 from values read off the live production project, not guessed and not
+# defaulted. Supabase treats an undeclared function as verify_jwt = true, which is right for most
+# of these and wrong for twilio-voice-twiml: Twilio cannot present a Supabase JWT, so a
+# repo-driven `supabase functions deploy` would have had the gateway reject every voice webhook
+# before the HMAC signature check ever ran. The 21 declarations above were checked against live
+# at the same time and all matched.
+
+[functions.twilio-voice-twiml]
+verify_jwt = false
+
+[functions.activate-care-plus]
+verify_jwt = true
+
+[functions.admin-confirm-payment]
+verify_jwt = true
+
+[functions.admin-control-management]
+verify_jwt = true
+
+[functions.admin-escalate-support]
+verify_jwt = true
+
+[functions.admin-mark-outbox]
+verify_jwt = true
+
+[functions.admin-reject-zooter]
+verify_jwt = true
+
+[functions.admin-resolve-review]
+verify_jwt = true
+
+[functions.ai-match]
+verify_jwt = true
+
+[functions.approve-zooter]
+verify_jwt = true
+
+[functions.cancel-booking]
+verify_jwt = true
+
+[functions.care-plus-membership]
+verify_jwt = true
+
+[functions.create-booking]
+verify_jwt = true
+
+[functions.create-booking-request]
+verify_jwt = true
+
+[functions.create-support-case]
+verify_jwt = true
+
+[functions.get-zooter-job-cards]
+verify_jwt = true
+
+[functions.raise-sos-alert]
+verify_jwt = true
+
+[functions.redeem-zootcred]
+verify_jwt = true
+
+[functions.request-replacement]
+verify_jwt = true
+
+[functions.respond-zooter-job]
+verify_jwt = true
+
+[functions.revoke-sensitive-access]
+verify_jwt = true
+
+[functions.sensitive-access-read]
+verify_jwt = true
+
+[functions.sensitive-access-save]
+verify_jwt = true
+
+[functions.submit-zooter-application]
+verify_jwt = true
+
+[functions.training-module]
+verify_jwt = true
