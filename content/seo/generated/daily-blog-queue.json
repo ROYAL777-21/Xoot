@@ -4,7 +4,7 @@
     {
       "date": "2026-06-20",
       "slot": 1,
-      "slug": "quick-office-cleaning-sandton",
+      "slug": "office-cleaning-sandton-small-teams",
       "title": "Quick Office Cleaning Sandton",
       "primaryKeyword": "quick office cleaning Sandton",
       "secondaryKeywords": [
@@ -40,12 +40,12 @@
       ],
       "callToAction": "Book an office reset or create a recurring business cleaning rhythm.",
       "status": "published",
-      "publishedUrl": "/articles/quick-office-cleaning-sandton"
+      "publishedUrl": "/articles/office-cleaning-sandton-small-teams"
     },
     {
       "date": "2026-06-20",
       "slot": 2,
-      "slug": "airbnb-turnover-cleaning-johannesburg",
+      "slug": "airbnb-cleaning-johannesburg-same-day-turnaround",
       "title": "Airbnb Turnover Cleaning Johannesburg",
       "primaryKeyword": "Airbnb turnover cleaning Johannesburg",
       "secondaryKeywords": [
@@ -82,12 +82,12 @@
       ],
       "callToAction": "Book an Airbnb turnover clean and save host instructions in Xoot.",
       "status": "published",
-      "publishedUrl": "/articles/airbnb-turnover-cleaning-johannesburg"
+      "publishedUrl": "/articles/airbnb-cleaning-johannesburg-same-day-turnaround"
     },
     {
       "date": "2026-07-10",
       "slot": 1,
-      "slug": "is-zoot-legit-trust-first-cleaning-south-africa",
+      "slug": "is-xoot-legit-trust-first-cleaning-south-africa",
       "title": "Is Xoot legit?",
       "primaryKeyword": "is Xoot legit",
       "secondaryKeywords": [
@@ -122,7 +122,7 @@
       ],
       "callToAction": "Use the official Xoot app or website and check live service-area availability before booking.",
       "status": "published",
-      "publishedUrl": "/articles/is-zoot-legit-trust-first-cleaning-south-africa"
+      "publishedUrl": "/articles/is-xoot-legit-trust-first-cleaning-south-africa"
     },
     {
       "date": "2026-07-10",
@@ -167,7 +167,7 @@
     {
       "date": "2026-07-10",
       "slot": 3,
-      "slug": "sweepsouth-vs-zoot-cleaning-service-comparison",
+      "slug": "sweepsouth-vs-xoot-cleaning-service-comparison",
       "title": "SweepSouth vs Xoot",
       "primaryKeyword": "SweepSouth vs Xoot",
       "secondaryKeywords": [
@@ -202,7 +202,7 @@
       ],
       "callToAction": "Choose Xoot where the launch area is active and a managed, trust-first experience matters most.",
       "status": "published",
-      "publishedUrl": "/articles/sweepsouth-vs-zoot-cleaning-service-comparison"
+      "publishedUrl": "/articles/sweepsouth-vs-xoot-cleaning-service-comparison"
     }
   ]
 }

@@ -262,9 +262,11 @@ projects on that date, not carried forward on trust.
   the design-token rewrite, the Apple Sign-In module, and the two iOS build fixes. They no
   longer verify the current app. Rebuild before any device testing and do not cite the old
   artifacts as evidence.
-- Physical iOS preview install readiness is still blocked because EAS has no
-  internal-distribution iOS credentials suitable for non-interactive preview builds. iOS
-  device verification is still required for normal launch, reduced-motion static launch,
+- Device testing is still outstanding on both platforms. A real Android-device install and
+  smoke test needs only an authorised handset with USB debugging enabled — `adb` is installed
+  and the artifact check passes. A physical iOS install is blocked further back: EAS has no
+  internal-distribution iOS credentials suitable for non-interactive preview builds. Either
+  way, device verification is still required for normal launch, reduced-motion static launch,
   urgent route bypass, and safe Siri/Gemini deep links.
 - No Mac is available in any current working environment, so nothing here can run an iOS
   simulator. `expo prebuild --platform ios` and `expo export --platform ios` verify
@@ -380,7 +382,7 @@ projects on that date, not carried forward on trust.
   privacy/data-safety answers, account deletion URLs, support URLs, and legal review are
   complete.
 
-## Admin access
+## Admin Access
 
 - There are no shared admin sign-in credentials in the repo, app, or env templates. Admin
   access is granted by a Supabase Auth account plus an `admin` role in `public.user_roles`.
@@ -402,8 +404,8 @@ projects on that date, not carried forward on trust.
 
 - Netlify project `zoot-home-care` exists, but dashboard/build readback is still required
   before treating Netlify environment configuration as production-verified.
-- Hostinger production deployment credentials and final domain wiring still need dashboard
-  verification.
+- Hostinger production deployment credentials and final domain wiring still need
+  dashboard verification.
 
 ## Verification still needed
 

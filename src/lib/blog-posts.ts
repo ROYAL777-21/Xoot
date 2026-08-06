@@ -33,7 +33,7 @@ export const blogPosts: BlogPost[] = [
       "The first objection to booking a cleaner in South Africa is safety, and it deserves a straight answer rather than reassuring noise.",
     excerpt:
       "It is the first thing most women think and the last thing anyone puts in an advert. So let us put it first.",
-    publishedAt: "2026-08-08",
+    publishedAt: "2026-08-02",
     readingTime: "6 min read",
     author: "The Xoot team",
     primaryKeyword: "home cleaning safety South Africa",
@@ -99,7 +99,7 @@ export const blogPosts: BlogPost[] = [
       "Late winter dust in Johannesburg undoes a clean within a day. What is actually happening, and the order of work that helps.",
     excerpt:
       "You cleaned on Saturday. By Sunday afternoon the sills are grey again. You are not imagining it.",
-    publishedAt: "2026-08-09",
+    publishedAt: "2026-08-03",
     readingTime: "4 min read",
     author: "The Xoot team",
     primaryKeyword: "Highveld dust house cleaning Johannesburg",
@@ -131,6 +131,13 @@ export const blogPosts: BlogPost[] = [
           "Then a shorter recurring clean holds it, rather than a monthly heroic effort that is undone by the following weekend.",
         ],
       },
+      {
+        heading: "The things that actually help between cleans",
+        body: [
+          "Door seals and window gaps do more than any amount of wiping. A draught excluder on the worst door is a smaller job than it sounds and it changes how fast sills grey over.",
+          "Beyond that: keep windows shut on the windiest afternoons even when it is warm, and give entrance mats a proper shake outside weekly. Most Highveld dust arrives through the front door on shoes, not through the air.",
+        ],
+      },
     ],
     faqs: [
       {
@@ -158,7 +165,7 @@ export const blogPosts: BlogPost[] = [
       "Deep clean means different things to different companies, which is how people end up disappointed. Here is a straight list.",
     excerpt:
       "The word deep is doing a lot of unpaid work in this industry. Here is what it should mean.",
-    publishedAt: "2026-08-10",
+    publishedAt: "2026-08-04",
     readingTime: "5 min read",
     author: "The Xoot team",
     primaryKeyword: "what is included in a deep clean",
@@ -190,6 +197,13 @@ export const blogPosts: BlogPost[] = [
           "None of those are unreasonable to want. They are just different jobs, and a company that quietly implies they are included is setting up a disappointment on the day.",
         ],
       },
+      {
+        heading: "How to brief one so you get what you wanted",
+        body: [
+          "Name the two or three things that would make you feel it was worth it, and put them in the notes before the day. Almost nobody does this, and it is the single biggest difference between a clean that lands and one that disappoints.",
+          "Be specific about what to leave alone as well. A shelf you would rather nobody rearranged, a cupboard that is private. Saying so is not fussy \u2014 it is the information that lets someone do the job confidently.",
+        ],
+      },
     ],
     faqs: [
       {
@@ -217,7 +231,7 @@ export const blogPosts: BlogPost[] = [
       "Deposits are withheld on things that photograph badly, not on things that are dirty. What inspections actually check.",
     excerpt:
       "Deposits are not lost on dust. They are lost on the four things an agent photographs.",
-    publishedAt: "2026-08-11",
+    publishedAt: "2026-08-05",
     readingTime: "5 min read",
     author: "The Xoot team",
     primaryKeyword: "move out cleaning deposit Johannesburg",
@@ -249,6 +263,13 @@ export const blogPosts: BlogPost[] = [
           "That is the whole trick, and it costs ten minutes. Under the Rental Housing Act the outgoing inspection matters; your own record of it is what makes an argument possible.",
         ],
       },
+      {
+        heading: "If the deposit is withheld anyway",
+        body: [
+          "Ask for the deduction in writing, itemised. A landlord or agent should be able to say which item, what it cost, and why it was not fair wear and tear.",
+          "The Rental Housing Act gives you a route: each province has a Rental Housing Tribunal, it is free, and it hears deposit disputes. Your dated photographs are what make that hearing short. This is general information rather than legal advice, but the tribunal exists and most tenants do not know it.",
+        ],
+      },
     ],
     faqs: [
       {
@@ -276,7 +297,7 @@ export const blogPosts: BlogPost[] = [
       "Employing a domestic worker carries legal duties that booking a service does not. An honest comparison, without steering you.",
     excerpt:
       "These are not two versions of the same thing. They are different relationships with different obligations, and most people find that out late.",
-    publishedAt: "2026-08-12",
+    publishedAt: "2026-08-06",
     readingTime: "6 min read",
     author: "The Xoot team",
     primaryKeyword: "employing a domestic worker vs booking a cleaner",
@@ -309,6 +330,13 @@ export const blogPosts: BlogPost[] = [
           "This is general information rather than legal advice. If you are employing someone, a short conversation with a labour advisor is cheaper than getting it wrong.",
         ],
       },
+      {
+        heading: "If you already employ someone",
+        body: [
+          "Discovering these obligations late is common and it is fixable. Registering for UIF, putting a written contract in place and sorting COIDA are all done retrospectively far more often than they are done on day one.",
+          "Doing it now costs administration. Not doing it costs more, and it lands at the worst moment \u2014 an injury, a dispute, or a departure. If that is where you are, a short conversation with a labour advisor is the cheapest hour you will spend this year.",
+        ],
+      },
     ],
     faqs: [
       {
@@ -336,7 +364,7 @@ export const blogPosts: BlogPost[] = [
       "The exhausting part of a household is not the cleaning. It is holding the list. Here is what that costs, and what actually puts it down.",
     excerpt:
       "Nobody thanks you for remembering that the bathroom cupboard is out of bleach. But that remembering is most of the work.",
-    publishedAt: "2026-08-03",
+    publishedAt: "2026-07-28",
     readingTime: "6 min read",
     author: "The Xoot team",
     primaryKeyword: "mental load running a home",
@@ -368,6 +396,13 @@ export const blogPosts: BlogPost[] = [
           "Then it is knowing it is happening \u2014 who is coming, when she arrived, when it is done \u2014 without you having to check. The relief people describe is rarely about a clean floor. It is walking in on a Thursday and finding that a thing you were carrying has already been dealt with.",
         ],
       },
+      {
+        heading: "Handing over the list without handing over control",
+        body: [
+          "The fear people name when they finally delegate is that explaining it will cost more than doing it. For one visit, that is true. Across a year it is nonsense \u2014 you explain once.",
+          "Write the standing notes down rather than saying them: the shelf not to touch, the dog\u2019s name, which room matters most on a bad week. Then stop repeating them. If you are still briefing in month three, the arrangement is not working and that is worth saying out loud rather than absorbing.",
+        ],
+      },
     ],
     faqs: [
       {
@@ -395,7 +430,7 @@ export const blogPosts: BlogPost[] = [
       "The strongest moment in a cleaning service is not the cleaning. It is the door at six o'clock. Here is what people actually describe.",
     excerpt:
       "Everyone describes the same moment, almost word for word. It is not the floors. It is the walking in.",
-    publishedAt: "2026-08-04",
+    publishedAt: "2026-07-29",
     readingTime: "4 min read",
     author: "The Xoot team",
     primaryKeyword: "coming home to a clean house",
@@ -427,6 +462,13 @@ export const blogPosts: BlogPost[] = [
           "And be specific about the two rooms that matter most to you. Everyone has two. Naming them is worth more than a longer list nobody can finish.",
         ],
       },
+      {
+        heading: "What it does not fix, honestly",
+        body: [
+          "A clean house does not make a hard week easier, and anyone selling it that way is overreaching. It removes one recurring thing from a list that has plenty left on it.",
+          "That is still worth something. But the households happiest with this are the ones who bought back a specific afternoon and used it for something, not the ones who expected the house to change how they felt.",
+        ],
+      },
     ],
     faqs: [
       {
@@ -454,7 +496,7 @@ export const blogPosts: BlogPost[] = [
       "For solo hosts the changeover is the constraint on everything. What a reliable turnover actually needs, and where most go wrong.",
     excerpt:
       "Most solo hosts do not lose money on the listing. They lose it in the four hours between a checkout and a check-in.",
-    publishedAt: "2026-08-05",
+    publishedAt: "2026-07-30",
     readingTime: "5 min read",
     author: "The Xoot team",
     primaryKeyword: "Airbnb turnover help Johannesburg",
@@ -486,6 +528,13 @@ export const blogPosts: BlogPost[] = [
           "Continuity is what turns a changeover from a scramble into a process. That is the difference between hosting one property and being able to host three.",
         ],
       },
+      {
+        heading: "Scaling past one property",
+        body: [
+          "The moment a second listing appears, the changeover stops being a task and becomes a schedule. Two checkouts on the same morning is not twice the work \u2014 it is a routing problem.",
+          "What makes it survivable is that each property has its own written notes and its own regular person, so neither turnover depends on you being available to explain. Hosts who skip that step end up personally involved in every changeover forever, which is the ceiling most solo hosts hit.",
+        ],
+      },
     ],
     faqs: [
       {
@@ -513,7 +562,7 @@ export const blogPosts: BlogPost[] = [
       "Office cleaning becomes visible only when it fails. What office managers actually need from a supplier, and the questions to ask before signing.",
     excerpt:
       "No office manager has ever been thanked for a clean office. They only hear about it when it did not happen.",
-    publishedAt: "2026-08-06",
+    publishedAt: "2026-07-31",
     readingTime: "5 min read",
     author: "The Xoot team",
     primaryKeyword: "office cleaning Sandton reliability",
@@ -545,6 +594,13 @@ export const blogPosts: BlogPost[] = [
           "A supplier who answers those four crisply is telling you they have thought about the failure modes. One who talks only about standards has not.",
         ],
       },
+      {
+        heading: "What to check in the first month",
+        body: [
+          "Reliability is only visible over time, so decide in advance what you are watching. Did the same person come? Were you told before a change rather than after? Did the invoice match the booking without a phone call?",
+          "Three months of that is a real answer. One good week is not, and the trap is that suppliers are most attentive in exactly the period you are judging them.",
+        ],
+      },
     ],
     faqs: [
       {
@@ -572,7 +628,7 @@ export const blogPosts: BlogPost[] = [
       "An honest account of what Xooter work involves, how you choose your own hours, and what the vetting actually asks of you.",
     excerpt:
       "This is not a recruitment advert. It is what the work involves, including the parts that are hard.",
-    publishedAt: "2026-08-07",
+    publishedAt: "2026-08-01",
     readingTime: "6 min read",
     author: "The Xoot team",
     primaryKeyword: "become a Xooter cleaning work Johannesburg",
@@ -604,6 +660,13 @@ export const blogPosts: BlogPost[] = [
           "What makes it work is repeat clients \u2014 the same homes, week after week, where you already know the house and the pay is predictable. Everything in how Xoot is built pushes towards that, because it is better for you and better for her.",
         ],
       },
+      {
+        heading: "Building a book that holds",
+        body: [
+          "The Xooters who make this work treat the first month as recruitment, not as shifts. A client who books you again is worth more than three who book once, so the effort goes into being the person a household wants back.",
+          "Concretely: turn up when you said, say something before a problem becomes a surprise, and learn one thing about each home that means the next visit needs no briefing. That is what converts a booking into a standing arrangement, and a standing arrangement is what makes the income predictable.",
+        ],
+      },
     ],
     faqs: [
       {
@@ -631,7 +694,7 @@ export const blogPosts: BlogPost[] = [
       "Xoot is now taking bookings across Johannesburg. Vetted Xooters, the same person every time, and a company built around the women on both sides of the booking.",
     excerpt:
       "We are open. Not with a countdown or a launch party, but with a small number of Xooters we know by name and a promise we can actually keep.",
-    publishedAt: "2026-08-02",
+    publishedAt: "2026-07-27",
     readingTime: "5 min read",
     author: "The Xoot team",
     primaryKeyword: "Xoot home cleaning Johannesburg launch",
