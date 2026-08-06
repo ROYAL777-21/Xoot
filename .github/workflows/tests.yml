@@ -18,6 +18,20 @@ concurrency:
   group: tests-${{ github.ref }}
   cancel-in-progress: true
 
+# `npm run build` runs `prebuild` -> `config:check`, and validate-public-env.mjs hard-fails
+# when CI is set but VITE_APP_ENV is not. The Build step had therefore never once succeeded
+# in this workflow — earlier lockfile failures aborted the job before it was reached.
+#
+# Pinned to development rather than `vars.VITE_APP_ENV || 'development'` (the pattern in
+# web-preview.yml), deliberately. This workflow gates every PR and every push to claude/**
+# and codex/**, so it has to be hermetic. Inheriting the repo variable would mean that
+# setting it to staging or production for a deploy silently makes this gate demand real
+# Supabase credentials — validate-public-env.mjs requires them for those two values — and
+# every PR would start failing on configuration nobody changed. A build gate should not
+# depend on deploy secrets; web-preview.yml already covers the deploy-config path.
+env:
+  VITE_APP_ENV: development
+
 jobs:
   test:
     name: Lint, build and unit tests
