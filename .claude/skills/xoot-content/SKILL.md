@@ -34,6 +34,64 @@ These are settled. Do not re-open them in a draft.
   member." No discount claim, no struck-through figure. A two-month free trial may be added
   later, on request only.
 
+## Who this is written for, and the line not to cross
+
+The founder asked for content specific to women. That is the right call and it is not a
+guess: in South Africa both sides of this market are overwhelmingly women — most Xooters are
+women, and in most households the person who books, briefs and worries about cleaning is a
+woman. Writing to a neutral "homeowner" is writing to nobody.
+
+**The line.** There is a version of this that damages the brand badly, and it is the obvious
+version: content that treats cleaning as women's natural duty. "Tips for the busy housewife",
+"how to keep your husband's home tidy", anything implying the mess is her failing. For a
+company whose workers are women, that is not just distasteful — it tells every Xooter what
+Xoot thinks she is.
+
+Write to her as **the person who decides**, not the person who should be scrubbing:
+
+| Write this | Never this |
+|---|---|
+| The one who carries the mental load and is choosing to put it down | The one whose job it was all along |
+| A professional buying back her Saturday | A wife keeping house |
+| A mother deciding what her weekend is for | A mother who should be doing more |
+| A Xooter running her own book of clients, skilled and paid for it | A "girl", a "maid", "help" |
+| "Your home" | "His home", "the family home" |
+
+Two more, specific to this market:
+
+- **Never imply the reader employs a domestic worker in the old sense.** Xoot is a booking
+  between two adults, one of whom is running a business. The language of employment — "your
+  girl", "the help", "staff" — is a different relationship with a different history.
+- **Safety content is written for a woman who has thought about it.** A stranger in your home
+  is not a hypothetical concern for most South African women; it is the first objection. Do
+  not talk around it, and do not be breezy about it. Say what the vetting actually is.
+
+## Emotive, meaning something specific
+
+"Emotive" is not adjectives. It is naming a feeling the reader already has and has not seen
+written down. Four that are real here:
+
+1. **The mental load.** Not the cleaning — the remembering. Who is coming, what needs doing,
+   whether the cupboard has bleach. The relief Xoot sells is mostly the relief of not holding
+   that list.
+2. **The specific guilt of a house you have not got to.** Everybody has stood in a doorway at
+   9pm and decided to deal with it tomorrow. Naming that without judgement earns more trust
+   than any feature.
+3. **Coming home to it done.** The single strongest moment in this product. Write the moment,
+   not the service: the door, the light, the smell, the not-having-to.
+4. **On the Xooter side — being trusted with someone's home, and what the work pays for.**
+   Pride and independence, not gratitude. She is not lucky to be there.
+
+How to do it without slipping into brochure:
+
+- **One concrete detail beats three adjectives.** "The corner of the kitchen counter where the
+  post piles up" lands; "immaculate, sparkling, pristine" does not.
+- **Second person, and specific.** "You" once per paragraph is plenty.
+- **Earn the feeling before you use it.** The emotional line goes after the useful information,
+  never instead of it.
+- **No manufactured anxiety.** Do not invent a fear to sell the fix — the real ones are
+  sufficient, and inventing them is the same s41 problem in a softer register.
+
 ## The hard rule, before anything else
 
 **A blog post is a representation.** The Consumer Protection Act 68 of 2008 does not treat

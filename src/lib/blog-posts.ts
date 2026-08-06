@@ -26,6 +26,681 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "stranger-in-your-home-safety-women-south-africa",
+    title: "A stranger in your home: the objection nobody wants to say out loud",
+    seoTitle: "Home Cleaning Safety For Women | Xoot",
+    description:
+      "The first objection to booking a cleaner in South Africa is safety, and it deserves a straight answer rather than reassuring noise.",
+    excerpt:
+      "It is the first thing most women think and the last thing anyone puts in an advert. So let us put it first.",
+    publishedAt: "2026-08-08",
+    readingTime: "6 min read",
+    author: "The Xoot team",
+    primaryKeyword: "home cleaning safety South Africa",
+    secondaryKeywords: [
+      "is it safe to book a cleaner",
+      "vetted cleaner Johannesburg",
+      "background checked cleaner South Africa",
+    ],
+    areas: ["Johannesburg", "Sandton", "Bryanston", "Bedfordview"],
+    sections: [
+      {
+        heading: "Say the quiet part",
+        body: [
+          "Letting someone you have never met into your home, often while you are not there, is not a small thing in this country. Treating that as an irrational worry to be soothed away is insulting.",
+          "It is the correct first question. What follows is what we actually do about it, stated plainly enough that you can check it.",
+        ],
+      },
+      {
+        heading: "What verification actually means here",
+        body: [
+          "Identity verified against the national population register, not a photograph of a document. A liveness check, so the person who applied is the person who arrives \u2014 that gap is the real vulnerability in this industry and almost nobody closes it.",
+          "Background clearance as part of activation. And the part that matters most: a Xooter cannot record her own verification result. The system refuses the write. A badge you can award yourself is not a badge.",
+        ],
+      },
+      {
+        heading: "Your access details are not in a WhatsApp thread",
+        body: [
+          "Gate codes, alarm codes and entry instructions are encrypted, released only inside the booking window, and every access is logged.",
+          "That is a deliberately narrow design. The point is that even inside Xoot, this information is not casually browsable \u2014 because the realistic risk to a household is not a leaked mailing list.",
+        ],
+      },
+      {
+        heading: "What to do on your side",
+        body: [
+          "Use the in-app record if you want one; both parties are told. Keep access details in the app rather than in a message thread, so they expire with the booking instead of living in someone\u2019s phone.",
+          "And if anything feels wrong, say so through the app rather than only to the Xooter. A report that exists in a thread nobody reads is not a report.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Are Xooters background checked?",
+        answer:
+          "Background clearance is part of activation, and the result is written by the verification provider rather than by the Xooter. She cannot mark her own check as passed.",
+      },
+      {
+        question: "Who can see my gate code?",
+        answer:
+          "It is encrypted and released only within your booking window, and each access is logged. It is not visible to staff browsing a table.",
+      },
+      {
+        question: "What happens if I report a problem?",
+        answer:
+          "It is recorded against the booking and reviewed. Reports cannot be edited or deleted by the person they are about \u2014 that is enforced by the database, not by policy.",
+      },
+    ],
+  },
+  {
+    slug: "august-highveld-dust-house-cleaning-johannesburg",
+    title: "August on the Highveld: why your house feels dirty a day after cleaning",
+    seoTitle: "Highveld Dust And Your Home In August | Xoot",
+    description:
+      "Late winter dust in Johannesburg undoes a clean within a day. What is actually happening, and the order of work that helps.",
+    excerpt:
+      "You cleaned on Saturday. By Sunday afternoon the sills are grey again. You are not imagining it.",
+    publishedAt: "2026-08-09",
+    readingTime: "4 min read",
+    author: "The Xoot team",
+    primaryKeyword: "Highveld dust house cleaning Johannesburg",
+    secondaryKeywords: [
+      "Johannesburg dust season",
+      "winter cleaning Johannesburg",
+      "spring clean Sandton",
+    ],
+    areas: ["Johannesburg", "Sandton", "Midrand", "Fourways"],
+    sections: [
+      {
+        heading: "It is not you",
+        body: [
+          "Late winter on the Highveld is dry, windy and pre-rain. Dust travels, gets in through gaps you cannot see, and settles fastest on exactly the surfaces you look at most.",
+          "Which is why August is the month people conclude they are bad at housekeeping. They are not. The conditions changed.",
+        ],
+      },
+      {
+        heading: "The order that actually helps",
+        body: [
+          "Top down, always, and leave floors last \u2014 anything else means doing floors twice. Sills, skirtings and door frames before surfaces, because that is where it accumulates before it redistributes.",
+          "Damp cloth, not dry. A dry cloth lifts Highveld dust into the air and puts it back down twenty minutes later.",
+        ],
+      },
+      {
+        heading: "What to book, and when",
+        body: [
+          "This is the month a deep clean earns its keep more than in December, when everyone books one. Getting into the places dust settles unseen resets the baseline for spring.",
+          "Then a shorter recurring clean holds it, rather than a monthly heroic effort that is undone by the following weekend.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Is a deep clean worth it in winter?",
+        answer:
+          "Late winter is arguably the best time on the Highveld, because it resets the accumulation before spring rather than after it.",
+      },
+      {
+        question: "How often should I clean during dust season?",
+        answer:
+          "More frequent and shorter beats occasional and exhaustive, simply because the dust returns on a schedule of its own.",
+      },
+      {
+        question: "Do you bring your own cloths?",
+        answer:
+          "What is supplied is set out at booking, so there is no assumption either way on the day.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-included-in-a-deep-clean-johannesburg",
+    title: "What is actually in a deep clean, and what is not",
+    seoTitle: "What A Deep Clean Includes | Xoot Johannesburg",
+    description:
+      "Deep clean means different things to different companies, which is how people end up disappointed. Here is a straight list.",
+    excerpt:
+      "The word deep is doing a lot of unpaid work in this industry. Here is what it should mean.",
+    publishedAt: "2026-08-10",
+    readingTime: "5 min read",
+    author: "The Xoot team",
+    primaryKeyword: "what is included in a deep clean",
+    secondaryKeywords: [
+      "deep clean vs standard clean",
+      "deep cleaning Johannesburg",
+      "spring cleaning checklist South Africa",
+    ],
+    areas: ["Johannesburg", "Rosebank", "Bryanston", "Melville"],
+    sections: [
+      {
+        heading: "Why the word is unreliable",
+        body: [
+          "Deep clean is not a defined standard. One company means inside the oven and behind the fridge; another means the same clean with more time.",
+          "So the useful question is never is this deep. It is what is on the list, and what is not.",
+        ],
+      },
+      {
+        heading: "What it should include",
+        body: [
+          "Inside appliances \u2014 oven, fridge, microwave. Behind and under what can be moved safely. Skirtings, door frames, light switches, the tops of things nobody looks at.",
+          "Bathroom descaling rather than wiping. Interior windows and sills. Cupboard interiors if they are empty enough to reach.",
+        ],
+      },
+      {
+        heading: "What it usually does not, and should be said",
+        body: [
+          "Exterior windows above ground floor, anything needing a ladder, carpet extraction, upholstery, and moving heavy furniture alone.",
+          "None of those are unreasonable to want. They are just different jobs, and a company that quietly implies they are included is setting up a disappointment on the day.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "How long does a deep clean take?",
+        answer:
+          "Considerably longer than a standard clean, and the hours are shown before you confirm rather than discovered afterwards.",
+      },
+      {
+        question: "Should I book a deep clean or a regular one?",
+        answer:
+          "A deep clean resets a baseline; a regular clean holds it. Most homes want one of the first and then a rhythm of the second.",
+      },
+      {
+        question: "Can I add specific tasks?",
+        answer:
+          "Yes, in your booking notes. Specific beats comprehensive \u2014 two named jobs done properly is a better instruction than a long list.",
+      },
+    ],
+  },
+  {
+    slug: "moving-out-deposit-clean-johannesburg-women-renters",
+    title: "The move-out clean that actually gets your deposit back",
+    seoTitle: "Move-Out Cleaning And Your Deposit | Johannesburg",
+    description:
+      "Deposits are withheld on things that photograph badly, not on things that are dirty. What inspections actually check.",
+    excerpt:
+      "Deposits are not lost on dust. They are lost on the four things an agent photographs.",
+    publishedAt: "2026-08-11",
+    readingTime: "5 min read",
+    author: "The Xoot team",
+    primaryKeyword: "move out cleaning deposit Johannesburg",
+    secondaryKeywords: [
+      "end of lease cleaning Johannesburg",
+      "deposit back cleaning",
+      "rental inspection checklist South Africa",
+    ],
+    areas: ["Johannesburg", "Rosebank", "Braamfontein", "Melville"],
+    sections: [
+      {
+        heading: "What an inspection is actually looking for",
+        body: [
+          "An agent walking an empty flat is not assessing cleanliness in general. They are looking for a short list of things that photograph as damage or neglect: oven interior, extractor filter, bathroom grout and seals, marks on walls, and the state of the floors in corners.",
+          "Everything else is noise. Those five decide the outcome.",
+        ],
+      },
+      {
+        heading: "The order that saves a day",
+        body: [
+          "Empty first, entirely. A move-out clean around boxes is a clean you will do twice, and it is the single most common reason the day runs over.",
+          "Then oven and bathroom, because they take the longest and are the least forgiving. Floors genuinely last.",
+        ],
+      },
+      {
+        heading: "Photograph everything, at the end",
+        body: [
+          "Photograph the finished state, dated, room by room \u2014 including inside the oven and the bathroom seals. Disputes about deposits are settled weeks later on evidence, and the tenant almost never has any.",
+          "That is the whole trick, and it costs ten minutes. Under the Rental Housing Act the outgoing inspection matters; your own record of it is what makes an argument possible.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "When should I book the move-out clean?",
+        answer:
+          "After the flat is empty and before the outgoing inspection. Around boxes is a clean done twice.",
+      },
+      {
+        question: "Does a move-out clean guarantee my deposit back?",
+        answer:
+          "Nothing can guarantee that \u2014 it depends on the property's condition and your lease. What a proper clean and dated photographs do is remove the easy reasons to withhold it.",
+      },
+      {
+        question: "Do you clean inside the oven?",
+        answer:
+          "On a deep or move-out clean, yes. It is one of the few things an inspection reliably checks.",
+      },
+    ],
+  },
+  {
+    slug: "hiring-cleaner-vs-booking-service-south-africa",
+    title: "Employing someone yourself, or booking: the difference nobody explains",
+    seoTitle: "Employing A Cleaner Vs Booking | South Africa",
+    description:
+      "Employing a domestic worker carries legal duties that booking a service does not. An honest comparison, without steering you.",
+    excerpt:
+      "These are not two versions of the same thing. They are different relationships with different obligations, and most people find that out late.",
+    publishedAt: "2026-08-12",
+    readingTime: "6 min read",
+    author: "The Xoot team",
+    primaryKeyword: "employing a domestic worker vs booking a cleaner",
+    secondaryKeywords: [
+      "domestic worker employer duties South Africa",
+      "UIF domestic worker",
+      "booking a cleaning service",
+    ],
+    areas: ["Johannesburg", "South Africa"],
+    sections: [
+      {
+        heading: "What employing actually commits you to",
+        body: [
+          "If you employ someone directly in your home, you are an employer under South African law. That brings real duties: a written contract, UIF registration and contributions, compliance with the Basic Conditions of Employment Act and the sectoral determination covering domestic work, leave, notice, and \u2014 since domestic workers were brought into COIDA \u2014 registration for workplace injury cover.",
+          "None of that is exotic or unusual. It is simply not optional, and many households discover it only when something goes wrong.",
+        ],
+      },
+      {
+        heading: "What booking is instead",
+        body: [
+          "Booking a service is a transaction for work, not an employment relationship. There is no UIF registration for you to run, no leave to administer, no notice period to calculate.",
+          "It is a genuinely different arrangement and it suits different situations \u2014 not because it is better, but because it is a different set of commitments.",
+        ],
+      },
+      {
+        heading: "Which suits you",
+        body: [
+          "Employing tends to suit a household wanting someone several days a week, over years, where continuity and a direct relationship are the point and the administration is worth it.",
+          "Booking tends to suit irregular or weekly needs, a home nobody is in during the day, or anyone who would rather not run a small payroll. Neither is the responsible choice and the other the lazy one.",
+          "This is general information rather than legal advice. If you are employing someone, a short conversation with a labour advisor is cheaper than getting it wrong.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Do I need to register for UIF for a domestic worker?",
+        answer:
+          "If you employ someone directly in your home, UIF registration and contributions are a legal requirement. Booking a service is not an employment relationship, so it does not arise.",
+      },
+      {
+        question: "Is a Xooter my employee?",
+        answer:
+          "No. A Xooter is an independent contractor running her own book of clients, choosing her own availability and the work she takes.",
+      },
+      {
+        question: "Can I book the same Xooter every week?",
+        answer:
+          "Yes, and most people do. Continuity is the default \u2014 that gives you consistency without the administration of employing someone.",
+      },
+    ],
+  },
+  {
+    slug: "mental-load-of-running-a-home-johannesburg",
+    title: "The part of running a home nobody counts: the remembering",
+    seoTitle: "The Mental Load Of Running A Home | Xoot",
+    description:
+      "The exhausting part of a household is not the cleaning. It is holding the list. Here is what that costs, and what actually puts it down.",
+    excerpt:
+      "Nobody thanks you for remembering that the bathroom cupboard is out of bleach. But that remembering is most of the work.",
+    publishedAt: "2026-08-03",
+    readingTime: "6 min read",
+    author: "The Xoot team",
+    primaryKeyword: "mental load running a home",
+    secondaryKeywords: [
+      "household mental load South Africa",
+      "who does the housework",
+      "invisible labour at home",
+    ],
+    areas: ["Johannesburg", "Sandton", "Bryanston"],
+    sections: [
+      {
+        heading: "The list you did not agree to hold",
+        body: [
+          "Ask most women what takes the energy and it is not the scrubbing. It is knowing that the guest room needs doing before Friday, that the dog blanket has been on the chair for a week, that nobody has looked behind the fridge since March.",
+          "That list does not appear on anyone else\u2019s. It runs quietly in the background of a working day and it does not stop when you sit down.",
+        ],
+      },
+      {
+        heading: "Why outsourcing the task does not always lift it",
+        body: [
+          "Booking a cleaner can leave the list exactly where it was. A different person every time means you brief a stranger from scratch, explain where things live, worry whether it will happen at all. You have swapped doing the work for managing the work.",
+          "That is the difference between a cleaning service and having something handled. One takes the mop off you. The other takes the remembering.",
+        ],
+      },
+      {
+        heading: "What actually puts it down",
+        body: [
+          "Continuity is the whole mechanism. The same person, who already knows the cupboard sticks and the dog is loud, does not need briefing. Nothing gets explained twice.",
+          "Then it is knowing it is happening \u2014 who is coming, when she arrived, when it is done \u2014 without you having to check. The relief people describe is rarely about a clean floor. It is walking in on a Thursday and finding that a thing you were carrying has already been dealt with.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Is it normal to feel guilty about getting help with the house?",
+        answer:
+          "Extremely, and it is worth saying plainly: the guilt is not evidence you should be doing it yourself. It is evidence you have been carrying an invisible job that nobody costed.",
+      },
+      {
+        question: "Does the same Xooter come each time?",
+        answer:
+          "Yes. Booking the same person again is the default, not a premium feature, because re-explaining your home is the part people actually dread.",
+      },
+      {
+        question: "What if my Xooter is unavailable one week?",
+        answer:
+          "You are told before the day, not on it, and offered a replacement with your home notes already attached rather than a stranger with nothing.",
+      },
+    ],
+  },
+  {
+    slug: "coming-home-to-a-clean-house-what-changes",
+    title: "What actually changes when you come home to it done",
+    seoTitle: "Coming Home To A Clean House | Xoot Johannesburg",
+    description:
+      "The strongest moment in a cleaning service is not the cleaning. It is the door at six o'clock. Here is what people actually describe.",
+    excerpt:
+      "Everyone describes the same moment, almost word for word. It is not the floors. It is the walking in.",
+    publishedAt: "2026-08-04",
+    readingTime: "4 min read",
+    author: "The Xoot team",
+    primaryKeyword: "coming home to a clean house",
+    secondaryKeywords: [
+      "clean house feeling",
+      "home cleaning Johannesburg",
+      "house cleaning service Sandton",
+    ],
+    areas: ["Johannesburg", "Rosebank", "Parkhurst"],
+    sections: [
+      {
+        heading: "The doorway",
+        body: [
+          "Ask people what they liked and almost nobody starts with the floors. They start with the door. The light through a kitchen with nothing on the counter. The smell of a room that has had the windows open.",
+          "And the thing underneath it: not having to. No mental note about the bathroom. Nothing waiting.",
+        ],
+      },
+      {
+        heading: "Why the evening is the part that matters",
+        body: [
+          "A house you have not got to sits in the back of your mind all day. It is not urgent and it is never finished, which is exactly what makes it heavy.",
+          "Removing it does not give you a cleaner house so much as a quieter Thursday. That is the thing worth buying, and it is why a service that turns up unpredictably is worth almost nothing \u2014 you carry the wondering instead.",
+        ],
+      },
+      {
+        heading: "Make it land more often",
+        body: [
+          "Book the same day each week or fortnight, so the evening is predictable rather than a surprise. Leave the notes in your home profile rather than a message each time \u2014 pets, the cupboard that sticks, the shelf not to touch.",
+          "And be specific about the two rooms that matter most to you. Everyone has two. Naming them is worth more than a longer list nobody can finish.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "How long does a standard clean take?",
+        answer:
+          "It depends on the size of the home and what you have asked for. The booking page shows the hours before you confirm, so nothing is a surprise on the day.",
+      },
+      {
+        question: "Can I ask for specific rooms only?",
+        answer:
+          "Yes, and it is usually the better instruction. Two rooms done properly beats a whole house rushed.",
+      },
+      {
+        question: "Do I need to be home?",
+        answer:
+          "No. Most people are not. Arrival and completion are both recorded, so you know what happened without being there.",
+      },
+    ],
+  },
+  {
+    slug: "airbnb-turnover-women-hosts-johannesburg",
+    title: "Running an Airbnb alone: the turnover is the whole business",
+    seoTitle: "Airbnb Turnover Help For Hosts | Johannesburg",
+    description:
+      "For solo hosts the changeover is the constraint on everything. What a reliable turnover actually needs, and where most go wrong.",
+    excerpt:
+      "Most solo hosts do not lose money on the listing. They lose it in the four hours between a checkout and a check-in.",
+    publishedAt: "2026-08-05",
+    readingTime: "5 min read",
+    author: "The Xoot team",
+    primaryKeyword: "Airbnb turnover help Johannesburg",
+    secondaryKeywords: [
+      "Airbnb changeover cleaning",
+      "solo Airbnb host South Africa",
+      "short stay turnover Johannesburg",
+    ],
+    areas: ["Johannesburg", "Sandton", "Rosebank", "Midrand"],
+    sections: [
+      {
+        heading: "The four hours that decide the review",
+        body: [
+          "Checkout at ten, check-in at two. Everything the guest will write about happens in between, and if you are hosting alone it happens to you \u2014 usually while you are meant to be somewhere else.",
+          "Hosts who do this well are not working harder. They have made the changeover the same every time, so it does not need their attention.",
+        ],
+      },
+      {
+        heading: "What a turnover needs that a house clean does not",
+        body: [
+          "A guest-ready reset is a checklist, not a standard of cleanliness. Linen swapped and counted. Consumables restocked to a set list. Photographs of the finished state, because a dispute two weeks later is decided by what you can show.",
+          "And damage flagged immediately rather than discovered by the next guest. The value of a turnover is largely in what it tells you before someone else finds it.",
+        ],
+      },
+      {
+        heading: "Why the same person matters more here than anywhere",
+        body: [
+          "A house clean survives a new person learning your home. A turnover does not \u2014 there is no slack in the schedule to explain where the spare linen is kept.",
+          "Continuity is what turns a changeover from a scramble into a process. That is the difference between hosting one property and being able to host three.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Can Xoot do same-day turnovers?",
+        answer:
+          "Turnaround depends on availability in your suburb. The booking page shows real slots rather than an aspirational promise.",
+      },
+      {
+        question: "Do Xooters handle linen?",
+        answer:
+          "Linen handling is arranged per booking. Set it in your home notes once and it becomes part of the routine rather than a request each time.",
+      },
+      {
+        question: "What happens if a guest has damaged something?",
+        answer:
+          "It is flagged and photographed at the turnover rather than discovered later, which is what gives you a case while the claim window is still open.",
+      },
+    ],
+  },
+  {
+    slug: "office-manager-cleaning-reliability-sandton",
+    title: "The office clean nobody notices is the one that is working",
+    seoTitle: "Reliable Office Cleaning In Sandton | Xoot",
+    description:
+      "Office cleaning becomes visible only when it fails. What office managers actually need from a supplier, and the questions to ask before signing.",
+    excerpt:
+      "No office manager has ever been thanked for a clean office. They only hear about it when it did not happen.",
+    publishedAt: "2026-08-06",
+    readingTime: "5 min read",
+    author: "The Xoot team",
+    primaryKeyword: "office cleaning Sandton reliability",
+    secondaryKeywords: [
+      "office cleaning services Sandton",
+      "commercial cleaning Johannesburg",
+      "small office cleaning",
+    ],
+    areas: ["Sandton", "Rosebank", "Bryanston", "Midrand"],
+    sections: [
+      {
+        heading: "A thankless brief, honestly stated",
+        body: [
+          "Office cleaning is judged entirely by exceptions. Fifty invisible weeks and one Monday where the bins were not done, and the one Monday is the whole conversation.",
+          "So the thing to buy is not quality on a good day. It is a low variance.",
+        ],
+      },
+      {
+        heading: "What actually goes wrong",
+        body: [
+          "Almost never the standard of work. It is a substitution nobody told you about, an invoice that does not match what was agreed, a person who cannot get in because the access arrangement was in someone\u2019s head.",
+          "Each of those is a process failure rather than a cleaning failure, which is why asking to see the process matters more than asking to see references.",
+        ],
+      },
+      {
+        heading: "Questions worth asking any supplier",
+        body: [
+          "Who exactly is coming, and what happens when she cannot? How am I told, and how far ahead? What does the invoice itemise? Who holds the access arrangement, and where is it written down?",
+          "A supplier who answers those four crisply is telling you they have thought about the failure modes. One who talks only about standards has not.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Can Xoot do after-hours office cleaning?",
+        answer:
+          "Availability depends on the suburb and the slot. What is bookable is what is shown \u2014 there is no waiting list dressed up as a yes.",
+      },
+      {
+        question: "Do we get the same person each week?",
+        answer:
+          "Yes, that is the default. For an office it matters more than for a home, because access and layout are learned once.",
+      },
+      {
+        question: "How is access handled?",
+        answer:
+          "Access details are stored encrypted and released only inside the booking window, and every access is logged. It is not kept in a WhatsApp thread.",
+      },
+    ],
+  },
+  {
+    slug: "becoming-a-xooter-what-the-work-is-really-like",
+    title: "What the work is really like, from the women already doing it",
+    seoTitle: "Becoming A Xooter | Work With Xoot",
+    description:
+      "An honest account of what Xooter work involves, how you choose your own hours, and what the vetting actually asks of you.",
+    excerpt:
+      "This is not a recruitment advert. It is what the work involves, including the parts that are hard.",
+    publishedAt: "2026-08-07",
+    readingTime: "6 min read",
+    author: "The Xoot team",
+    primaryKeyword: "become a Xooter cleaning work Johannesburg",
+    secondaryKeywords: [
+      "cleaning jobs Johannesburg",
+      "flexible cleaning work South Africa",
+      "apply to be a Xooter",
+    ],
+    areas: ["Johannesburg", "Midrand", "Sandton", "Fourways"],
+    sections: [
+      {
+        heading: "You are not applying for a job",
+        body: [
+          "You are building a book of clients. You choose which work you take, you set when you are available, and you decline what does not fit without explaining yourself.",
+          "That freedom is real and it cuts both ways: nobody hands you a full week. The Xooters doing best are the ones who treat the first few bookings as the start of a client list rather than a shift.",
+        ],
+      },
+      {
+        heading: "The vetting, and why it is strict",
+        body: [
+          "Identity verification, a liveness check, and background clearance. It takes longer than signing up somewhere that asks for nothing.",
+          "It is strict because it is the reason a woman lets you into her home while she is at work. The badge is worth something precisely because it cannot be self-awarded \u2014 on our system a Xooter cannot mark her own checks as passed. That protects you as much as her: nobody can claim your standard without meeting it.",
+        ],
+      },
+      {
+        heading: "The parts that are hard",
+        body: [
+          "Some homes are further than they look, and travel is time you are not paid for. Some clients brief badly. Some weeks are quiet.",
+          "What makes it work is repeat clients \u2014 the same homes, week after week, where you already know the house and the pay is predictable. Everything in how Xoot is built pushes towards that, because it is better for you and better for her.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Do I need my own equipment?",
+        answer:
+          "Requirements are set out during application, and the answer differs by service. Nothing is assumed.",
+      },
+      {
+        question: "How much can I earn?",
+        answer:
+          "It depends on how many bookings you take and where. We do not publish a figure, because a number that is not true for you is worse than no number.",
+      },
+      {
+        question: "Can I work only certain days?",
+        answer:
+          "Yes. You set your availability and change it. Declining a job has no penalty attached.",
+      },
+    ],
+  },
+  {
+    slug: "xoot-is-open-johannesburg-founding-homes",
+    title: "Xoot is open. Here is what we built, and who we built it for.",
+    seoTitle: "Xoot Is Live In Johannesburg | Home Cleaning",
+    description:
+      "Xoot is now taking bookings across Johannesburg. Vetted Xooters, the same person every time, and a company built around the women on both sides of the booking.",
+    excerpt:
+      "We are open. Not with a countdown or a launch party, but with a small number of Xooters we know by name and a promise we can actually keep.",
+    publishedAt: "2026-08-02",
+    readingTime: "5 min read",
+    author: "The Xoot team",
+    primaryKeyword: "Xoot home cleaning Johannesburg launch",
+    secondaryKeywords: [
+      "vetted cleaning service Johannesburg",
+      "trusted home cleaning Sandton",
+      "book a cleaner Johannesburg",
+    ],
+    areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank", "Midrand", "Fourways"],
+    sections: [
+      {
+        heading: "We are open",
+        body: [
+          "Xoot is taking bookings across Johannesburg from today. Not everywhere, and not at any volume we cannot stand behind \u2014 a set of suburbs, and a small number of Xooters we know by name.",
+          "That is deliberate. The easy way to launch a marketplace is to sign up everyone who applies and let the ratings sort it out afterwards. That works for food delivery. It does not work when the product is a person in your home while you are at work.",
+        ],
+      },
+      {
+        heading: "The problem nobody puts in the marketing",
+        body: [
+          "Ask a woman in Johannesburg what makes booking a cleaner hard and she will not say the price first. She will say she does not know who is coming.",
+          "Then, if you keep listening: that she has explained her home four times to four different people. That the last one did not come and nobody told her. That she took the morning off work for it.",
+          "None of that is a cleaning problem. It is a trust and logistics problem wearing a cleaning problem\u2019s clothes, and it is the reason most people give up and go back to asking a neighbour for a number.",
+        ],
+      },
+      {
+        heading: "What we actually built",
+        body: [
+          "Every Xooter is identity-verified before she takes a booking, and background clearance is part of activation rather than a badge she can award herself. That last part sounds like a technicality. It is the whole thing: on our system, a Xooter cannot mark her own checks as passed, because the database will not let her.",
+          "You get the same Xooter back. Your home is not a fresh briefing every time \u2014 where the mop lives, which door sticks, that the dog is friendly but loud.",
+          "And you know when she is coming, and you know when she has arrived. No morning off work to wait.",
+        ],
+      },
+      {
+        heading: "Who Xoot is for, on both sides",
+        body: [
+          "Most of the people booking are women, and most of the Xooters are women. We did not set out to build a company for women. We built one honestly, in this market, and that is who was on both sides of it.",
+          "So we have been careful about the language. A Xooter is not help, and she is not a girl. She runs her own book of clients, sets her availability, and is paid for skilled work. The woman booking is not falling short of some standard by not doing it herself \u2014 she is deciding what her Saturday is for.",
+          "Those two sentences are the company. Everything else is scheduling.",
+        ],
+      },
+      {
+        heading: "What we are not saying yet",
+        body: [
+          "We are in a set of Johannesburg suburbs, not the whole city and not the whole country. When we reach you, we will say so on the booking page rather than in an advert.",
+          "Some things are still being built \u2014 and we would rather tell you that than let a feature list imply otherwise. When something is ready, it appears. Until then it does not exist here.",
+          "If you are in one of the suburbs we cover, you can book today. If you are a Xooter, you can apply today. Both take a few minutes.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Which areas of Johannesburg does Xoot cover?",
+        answer:
+          "We are live in a set of northern and central Johannesburg suburbs, including Sandton, Bryanston, Rosebank, Midrand and Fourways. The booking page shows exactly what we cover \u2014 if your suburb is not there yet, we are not pretending otherwise.",
+      },
+      {
+        question: "How are Xooters vetted?",
+        answer:
+          "Identity verification against the national population register, a liveness check so the person applying is the person who arrives, and background clearance as part of activation. A Xooter cannot record her own verification result \u2014 that is enforced by the system, not by policy.",
+      },
+      {
+        question: "Can I get the same person each time?",
+        answer:
+          "Yes. Booking the same Xooter is the default rather than a premium feature, because re-explaining your home every visit is the thing people actually hate.",
+      },
+    ],
+  },
+  {
     slug: "xoot-launch-first-100-homes-johannesburg",
     title: "Xoot is opening for the first 100 founding homes in Johannesburg",
     seoTitle: "Xoot Launch: Premium Cleaning Services In Johannesburg",
