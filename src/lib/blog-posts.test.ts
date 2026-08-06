@@ -96,6 +96,41 @@ describe("blog posts", () => {
     expect(overlaps).toEqual([]);
   });
 
+  it("claim no feature that is still gated", () => {
+    // Tips, SOS and visit recording are behind readiness constants precisely so a promise
+    // cannot ship before the thing it promises. A blog post is the easiest place for that
+    // discipline to leak, because posts outlive the sprint that wrote them.
+    const gated: [RegExp, string][] = [
+      [/\btip(s|ping)?\b/i, "tipping (TIP_READINESS)"],
+      [/\bSOS\b|emergency button|panic button/i, "SOS (SAFETY_READINESS)"],
+      [/record(ing)? (your|the) (visit|clean)/i, "visit recording (SAFETY_READINESS)"],
+    ];
+    for (const post of blogPosts) {
+      const text = textOf(post);
+      for (const [pattern, feature] of gated) {
+        expect({ slug: post.slug, feature, claimed: pattern.test(text) }).toEqual({
+          slug: post.slug,
+          feature,
+          claimed: false,
+        });
+      }
+    }
+  });
+
+  it("attribute competitor claims rather than asserting them", () => {
+    // Comparative advertising is lawful in South Africa when every claim is substantiated.
+    // The way to stay inside that is to describe a competitor only as they describe
+    // themselves, and to tell the reader to check — which these posts do. This keeps it true
+    // as they are edited.
+    for (const post of blogPosts) {
+      const text = textOf(post);
+      if (!/sweep\s?south/i.test(text)) continue;
+      const attributes =
+        /publicly positions|its own service pages|their own|check .{0,30}current|describe/i.test(text);
+      expect({ slug: post.slug, attributes }).toEqual({ slug: post.slug, attributes: true });
+    }
+  });
+
   it("have the metadata a search result needs", () => {
     for (const post of blogPosts) {
       // Google truncates around these lengths; over is not an error but it is wasted.

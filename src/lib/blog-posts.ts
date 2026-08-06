@@ -1896,7 +1896,7 @@ export const blogPosts: BlogPost[] = [
       {
         heading: "Why people look beyond the obvious option",
         body: [
-          "SweepSouth is an established South African home-services platform with web and app booking, home cleaning, office cleaning, outdoor services and other household support categories. For many people, it is the first name they search.",
+          "SweepSouth\u2019s own service pages describe an established South African home-services platform with web and app booking, covering home cleaning, office cleaning, outdoor services and other household support categories. For many people it is the first name they search, and its current coverage and pricing are worth checking directly rather than taken from a comparison page \u2014 including this one.",
           "But looking for SweepSouth alternatives does not always mean someone had a bad experience. It can mean they want a different style of service: more home memory, more premium support, a Johannesburg-focused launch, property-manager workflows, Airbnb turnovers, in-app communication or a clearer repeat-cleaning rhythm.",
         ],
       },
