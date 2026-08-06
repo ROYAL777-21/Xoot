@@ -1,36 +1,35 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  assertBookingParticipant,
+  handlePreflight,
+  json,
+  readJson,
+  requireAuth,
+} from "../_shared/action-utils.ts";
 
 /**
  * Creates (or re-uses) a Twilio Conversation for a booking's masked chat.
  *
- * RECOVERED FROM PRODUCTION 2026-08-02, where it ran with no source in this repository.
- * Committed verbatim so the fix reads as a diff.
+ * Recovered from production on 2026-08-02, where it ran with no source in this repository, then
+ * committed verbatim so this fix reads as a diff.
  *
- * DEFECT — no participation check, the same as `twilio-token`. It confirms the caller has a
- * session, then creates a conversation for whatever `bookingId` it is given and returns the
- * conversation SID along with `client_identity` and `contractor_identity`.
+ * FIXED — the participation check, which is the half of a chained hole that made the other half
+ * matter. This function used to confirm the caller had a session, then create a conversation for
+ * whatever `bookingId` it was handed and return the conversation SID. `twilio-token` would hand
+ * the same caller a conversations grant for the service. Together that was read access to another
+ * household's booking chat from an ordinary account, once Twilio was enabled — neither function
+ * obviously exploitable alone, which is exactly why the pair was worth writing down. Both ends
+ * now resolve the booking and require the caller to be a participant.
  *
- * THESE TWO CHAIN. `twilio-conversation` hands any signed-in user the conversation SID and the
- * participant identities for any booking; `twilio-token` hands the same user a conversations
- * grant. Together that is read access to another household's booking chat, from an ordinary
- * account, once Twilio is enabled. Neither function is exploitable alone in an obvious way,
- * which is exactly why the pair is worth writing down.
+ * ALSO FIXED: CORS resolves against the shared allow-list instead of `*`, and the catch logs
+ * rather than returning `String(err)`.
  *
- * Fix both together, with the ownership pattern from `respond-zooter-job`: look the booking up,
- * confirm the caller is the customer or the assigned Xooter, and respond identically when they
- * are not.
+ * The unconfigured path is kept as written. It records a session, queues an approval-gated
+ * outbox event and tells the caller to stay on in-app chat, which is the right behaviour — but
+ * it now sits behind the participation check too, since it writes a row keyed to a booking and
+ * would otherwise let any account queue support work against someone else's.
  *
- * DEFECT — the catch returns `String(err)`, and `*` CORS on an endpoint returning identities.
- *
- * Not currently reachable: the Twilio controls are disabled (blocker.md). The unconfigured
- * path below is well behaved — it records a session, queues an approval-gated outbox event,
- * and tells the caller to stay on in-app chat. That part is worth keeping as written.
+ * Not currently reachable: the Twilio controls are disabled (blocker.md).
  */
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 const requiredSecrets = ["TWILIO_ACCOUNT_SID", "TWILIO_API_KEY_SID", "TWILIO_API_KEY_SECRET", "TWILIO_CONVERSATIONS_SERVICE_SID"] as const;
 
@@ -40,35 +39,40 @@ const authHeader = () => {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const origin = req.headers.get("Origin");
+  const preflight = handlePreflight(req, origin);
+  if (preflight) return preflight;
 
   try {
-    const requestAuth = req.headers.get("authorization") ?? "";
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { global: { headers: { Authorization: requestAuth } } },
-    );
-    const { data: { user }, error } = await supabase.auth.getUser(requestAuth.replace("Bearer ", ""));
-    if (error || !user) {
-      return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+    const { response: authFailure, user, supa } = await requireAuth(req, origin);
+    if (authFailure || !user || !supa) return authFailure ?? json({ error: "Authentication required" }, 401, origin);
 
-    const { bookingId } = await req.json();
-    if (!bookingId) {
-      return new Response(JSON.stringify({ error: "bookingId required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+    const { bookingId } = await readJson(req);
+    if (!bookingId) return json({ error: "bookingId required" }, 400, origin);
+
+    // Same response for "no such booking" and "not yours", so this cannot be used to probe
+    // which booking ids exist. Placed before the secrets branch deliberately: the unconfigured
+    // path still writes rows keyed to the booking.
+    const { data: booking } = await supa
+      .from("bookings")
+      .select("id,user_id,zooter_id")
+      .eq("id", bookingId)
+      .maybeSingle();
+    const { participant } = booking
+      ? await assertBookingParticipant(supa, booking, user.id)
+      : { participant: false };
+    if (!participant) return json({ error: "Booking not found" }, 404, origin);
 
     const missing = requiredSecrets.filter((key) => !Deno.env.get(key));
     if (missing.length > 0) {
-      const { data: session } = await supabase.from("masked_conversation_sessions").insert({
+      const { data: session } = await supa.from("masked_conversation_sessions").insert({
         booking_id: bookingId,
         requester_id: user.id,
         status: "setup_required",
         failure_reason: `Missing Twilio secrets: ${missing.join(", ")}`,
       }).select("id").single();
 
-      await supabase.from("integration_outbox").insert({
+      await supa.from("integration_outbox").insert({
         source_table: "masked_conversation_sessions",
         source_id: session?.id,
         event_type: "masked_conversation_requested",
@@ -82,9 +86,7 @@ Deno.serve(async (req) => {
         created_by: user.id,
       });
 
-      return new Response(JSON.stringify({ configured: false, status: "setup_required", missing, sessionId: session?.id }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ configured: false, status: "setup_required", missing, sessionId: session?.id }, 200, origin);
     }
 
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID")!;
@@ -101,11 +103,14 @@ Deno.serve(async (req) => {
     });
     const payload = await twilioRes.json();
     if (!twilioRes.ok && payload?.code !== 50353) {
-      return new Response(JSON.stringify({ configured: true, error: payload }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      // Twilio's error body can carry account detail. Log it, tell the caller the provider
+      // rejected the request, and let the outbox and logs carry the diagnosis.
+      console.error("twilio-conversation provider error", payload);
+      return json({ configured: true, error: "Conversation provider rejected the request" }, 502, origin);
     }
 
     const conversationSid = payload.sid;
-    const { data: session } = await supabase.from("masked_conversation_sessions").insert({
+    const { data: session } = await supa.from("masked_conversation_sessions").insert({
       booking_id: bookingId,
       requester_id: user.id,
       status: "active",
@@ -115,10 +120,9 @@ Deno.serve(async (req) => {
       started_at: new Date().toISOString(),
     }).select("id").single();
 
-    return new Response(JSON.stringify({ configured: true, status: "active", conversationSid, accountSid, sessionId: session?.id }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ configured: true, status: "active", conversationSid, accountSid, sessionId: session?.id }, 200, origin);
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    console.error("twilio-conversation failure", err);
+    return json({ error: "Request failed" }, 500, origin);
   }
 });

@@ -1,38 +1,41 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  assertBookingParticipant,
+  handlePreflight,
+  json,
+  readJson,
+  requireAuth,
+} from "../_shared/action-utils.ts";
 
 /**
  * Mints a short-lived Twilio access token for in-app voice or chat.
  *
- * RECOVERED FROM PRODUCTION 2026-08-02, where it ran with no source in this repository.
- * Committed verbatim, defects intact, so the repo copy provably matches what is deployed and
- * the fix reads as a diff rather than a rewrite of unknown code.
+ * Recovered from production on 2026-08-02, where it ran with no source in this repository. It
+ * was committed verbatim first, defects intact, so the repo copy provably matched what was
+ * deployed and this fix reads as a diff rather than a rewrite of unknown code.
  *
- * DEFECT 1 — no authorisation beyond "is signed in". This is the serious one.
+ * FIXED:
+ * 1. Authorisation. The handler used to confirm only that the caller had a session, then mint
+ *    a token — `bookingId` was never checked and never used, so it was decorative. Any signed-in
+ *    Xoot account could obtain a voice grant carrying `outgoing.application_sid` and originate
+ *    calls billed to the Twilio account, or a conversations grant for the whole chat service.
+ *    It now resolves the booking and requires the caller to be a participant.
+ * 2. CORS resolves against the shared allow-list instead of `*`. This endpoint returns a
+ *    credential; a wildcard is not a default worth having on one.
+ * 3. The catch logs instead of returning `String(err)`, which echoed configuration detail —
+ *    including which secrets are set — to any caller.
+ * 4. The service client no longer forwards the caller's Authorization header. `requireAuth`
+ *    verifies the JWT with the anon key and hands back a clean service client, so the effective
+ *    identity is stated by the code rather than decided by supabase-js header precedence.
  *
- * The handler takes a `bookingId`, confirms the caller has a session, and mints a token. It
- * never checks that the caller is a participant in that booking. `bookingId` is not even used
- * in the token — the identity is derived from the user id alone, so the parameter is
- * decorative. Any signed-in Xoot account can therefore obtain a voice grant carrying
- * `outgoing.application_sid` and originate calls billed to the Twilio account, or obtain a
- * conversations grant for the chat service.
+ * ON ADMINS: `assertBookingParticipant` counts an admin as a participant, and that is correct
+ * here. The Twilio identity is derived from the caller's own user id, not from the booking, so
+ * an admin receives an identity that is distinguishably theirs — this endpoint cannot be used
+ * to impersonate a household. Support joining a call is a real workflow; impersonating a party
+ * is what would not be.
  *
- * The fix is the pattern already in `respond-zooter-job`: look the booking up, confirm the
- * caller is the customer or the assigned Xooter, and return the same response either way when
- * they are not. Until then this endpoint is gated only by having an account.
- *
- * DEFECT 2 — the catch returns `String(err)`, echoing configuration detail to a caller.
- * DEFECT 3 — `Access-Control-Allow-Origin: *` on an endpoint that returns a credential.
- * DEFECT 4 — the service-role client forwards the caller's Authorization header, so the
- * effective identity depends on supabase-js header precedence rather than on the code.
- *
- * Not currently reachable through a live feature: `twilio.masked_voice` and the other Twilio
- * controls are disabled (blocker.md). Fix this before enabling any of them.
+ * Still gated: `twilio.masked_voice` and the other Twilio controls are disabled (blocker.md).
+ * This function is now safe to enable, but enabling it is a separate decision.
  */
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 const requiredSecrets = [
   "TWILIO_ACCOUNT_SID",
@@ -59,36 +62,34 @@ const signJwt = async (payload: Record<string, unknown>, secret: string) => {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const origin = req.headers.get("Origin");
+  const preflight = handlePreflight(req, origin);
+  if (preflight) return preflight;
 
   try {
-    const authHeader = req.headers.get("authorization") ?? "";
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
-    const { data: { user }, error } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (error || !user) {
-      return new Response(JSON.stringify({ error: "Authentication required" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const { response: authFailure, user, supa } = await requireAuth(req, origin);
+    if (authFailure || !user || !supa) return authFailure ?? json({ error: "Authentication required" }, 401, origin);
+
+    const { bookingId, capability } = await readJson(req);
+    if (!bookingId || !["voice", "conversations"].includes(capability)) {
+      return json({ error: "bookingId and valid capability required" }, 400, origin);
     }
 
-    const { bookingId, capability } = await req.json();
-    if (!bookingId || !["voice", "conversations"].includes(capability)) {
-      return new Response(JSON.stringify({ error: "bookingId and valid capability required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // The check this endpoint never had. One response for "no such booking" and for "not
+    // yours", so the endpoint cannot be used to test which booking ids exist.
+    const { data: booking } = await supa
+      .from("bookings")
+      .select("id,user_id,zooter_id")
+      .eq("id", bookingId)
+      .maybeSingle();
+    const { participant } = booking
+      ? await assertBookingParticipant(supa, booking, user.id)
+      : { participant: false };
+    if (!participant) return json({ error: "Booking not found" }, 404, origin);
 
     const missing = requiredSecrets.filter((key) => !Deno.env.get(key));
     if (missing.length > 0) {
-      return new Response(JSON.stringify({ configured: false, ttlSeconds: 0, missing }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ configured: false, ttlSeconds: 0, missing }, 200, origin);
     }
 
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID")!;
@@ -117,13 +118,11 @@ Deno.serve(async (req) => {
       grants,
     }, apiKeySecret);
 
-    return new Response(JSON.stringify({ configured: true, token, identity, ttlSeconds }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ configured: true, token, identity, ttlSeconds }, 200, origin);
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Logged, not returned. `String(err)` here told the caller which Twilio secrets were
+    // configured — a free read of the server's state on the endpoint that mints credentials.
+    console.error("twilio-token failure", err);
+    return json({ error: "Request failed" }, 500, origin);
   }
 });
