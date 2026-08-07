@@ -93,7 +93,7 @@ export default function BookingConfirm() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-secondary">
-      <SEO title="Confirm your booking" description="Everything is set from your profile — confirm and you're done." canonical="/book/confirm" noIndex />
+      <SEO title="Your estimate" description="What your clean would cost, based on your profile. Nothing is booked yet." canonical="/book/confirm" noIndex />
 
       <header className="flex items-center gap-3 px-5 py-4">
         <button
@@ -338,8 +338,20 @@ export default function BookingConfirm() {
               navigate("/app");
             }}
           >
-            {revealed ? "Confirm booking" : "See the price"}
+            {revealed ? "Pick a date and time" : "See the price"}
           </Button>
+          {/* This screen cannot create a booking and never could: the onboarding draft holds
+              suburb, cadence and home size, while create-booking requires a date, a time and
+              a full address it validates against launch coverage. The button used to read
+              "Confirm booking" and then call navigate("/app"), so anyone who completed this
+              flow believed they had booked. Navigating on is correct — Book.tsx is where the
+              missing details get collected — so the label was the only thing that had to
+              change, not the behaviour. */}
+          {revealed ? (
+            <p className="mt-2 text-center text-[0.65rem] text-muted-foreground">
+              This is an estimate. Nothing is booked until you choose a date and time.
+            </p>
+          ) : null}
           {bounds && !bounds.confirmed ? (
             <p className="mt-2 text-center text-[0.65rem] text-muted-foreground">
               Indicative only — this service&rsquo;s pricing is still being confirmed.

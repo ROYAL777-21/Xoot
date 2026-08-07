@@ -270,14 +270,21 @@ projects on that date, not carried forward on trust.
   is available in the working shell. Migration repair can instead use the guarded
   `-PromptDatabasePassword` mode after the matching rotated database password is entered
   locally.
-- **`BookingConfirm`'s "Confirm booking" button creates no booking.** Found 2026-08-07 while
-  wiring multi-Xooter. `src/pages/BookingConfirm.tsx` reads the onboarding draft, prices it,
-  reveals the total — and its primary button calls `navigate("/app")`. Nothing is persisted:
-  not the hours, not the add-ons, not Booking Cover. The only path that creates a booking is
-  `src/pages/app/Book.tsx` -> `create-booking`. So the screen that asks for the sale is a quote
-  preview whose button is misnamed, and a customer who completes it believes they have booked.
-  Either wire it to `create-booking` or rename the button to what it does; leaving it is the
-  worst of the three.
+- **CLOSED 2026-08-07 — `BookingConfirm` no longer claims to book anything.** Its button read
+  "Confirm booking" and called `navigate("/app")`, so anyone completing the onboarding flow
+  believed they had booked and had not.
+
+  Investigated before fixing, and the finding changed the fix: **the screen cannot create a
+  booking and never could.** The onboarding draft holds `suburb`, `cadence` and home size;
+  `create-booking` requires a `date`, a `time` and a full `address` it validates against launch
+  coverage. None of the three exist at that point in the flow. So this was never a missing
+  wire-up — it is an estimate screen whose label promised something the data cannot support.
+
+  Navigating on is the correct behaviour, because `Book.tsx` is where the date, time and
+  address are collected. Only the claims changed: the button now reads "Pick a date and time",
+  the page title is "Your estimate", and a line under the total says nothing is booked until a
+  date and time are chosen. Behaviour untouched.
+
 - **Client and server pricing can still diverge on any dimension the parity test does not
   model.** `pricing-parity.test.ts` compares ladder rungs by reading the server file as text,
   which is good, but it only knows about rungs. On 2026-08-07 the client shipped a multi-Xooter
