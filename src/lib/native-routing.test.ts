@@ -1,17 +1,19 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { resolveNativeRoute } from "./native-routing";
 
 describe("resolveNativeRoute", () => {
   it("keeps supported app paths and strips non-auth query data", () => {
-    expect(resolveNativeRoute("https://zoot.co.za/app/bookings/booking-123?gate_code=1234#details")).toBe(
+    expect(resolveNativeRoute("https://xoot.co.za/app/bookings/booking-123?gate_code=1234#details")).toBe(
       "/app/bookings/booking-123",
     );
     expect(resolveNativeRoute("/app/support/case-789?private_note=hidden")).toBe("/app/support");
   });
 
   it("preserves auth callback parameters needed for email verification and reset flows", () => {
-    expect(resolveNativeRoute("https://zoot.co.za/auth/callback?code=abc&type=signup")).toBe(
+    expect(resolveNativeRoute("https://xoot.co.za/auth/callback?code=abc&type=signup")).toBe(
       "/auth/callback?code=abc&type=signup",
     );
     expect(resolveNativeRoute("zoot://callback?code=abc&next=%2Fapp")).toBe(
@@ -76,5 +78,28 @@ describe("resolveNativeRoute", () => {
     expect(resolveNativeRoute("/admin/ops")).toBeNull();
     expect(resolveNativeRoute("zoot://app/bookings/../../support")).toBeNull();
     expect(resolveNativeRoute({ bookingId: "booking/with/slash" })).toBeNull();
+  });
+});
+
+/**
+ * The allow-list is a trust boundary: anything on it can turn a URL into an in-app route.
+ * A host Xoot does not control — a lapsed domain someone else re-registers — is a deep-link
+ * injection route, so the list must name only live Xoot hosts.
+ */
+describe("the deep-link host allow-list", () => {
+  const source = readFileSync(join(process.cwd(), "src/lib/native-routing.ts"), "utf8");
+
+  it("names no domain outside xoot.co.za", () => {
+    const list = /const allowedWebHosts = new Set\(\[([^\]]*)\]\)/.exec(source);
+    expect(list, "could not find allowedWebHosts").toBeTruthy();
+    const hosts = [...list![1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    expect(hosts.length).toBeGreaterThan(0);
+    for (const host of hosts) {
+      expect(host === "xoot.co.za" || host.endsWith(".xoot.co.za"), `${host} is not a Xoot host`).toBe(true);
+    }
+  });
+
+  it("rejects a link from the retired domain", () => {
+    expect(resolveNativeRoute("https://zoot.co.za/app/bookings")).toBeNull();
   });
 });

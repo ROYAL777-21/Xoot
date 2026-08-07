@@ -40,12 +40,23 @@ const staticRoutes = new Set([
 const authRoutes = new Set(["/auth/callback", "/auth/reset"]);
 const queryPreservingRoutes = new Set(["/app", "/care-plus"]);
 const allowedSafeQueryKeys = new Set(["area", "date", "intent", "service", "zootBot"]);
+/**
+ * Hosts whose links this app will open as in-app routes.
+ *
+ * `zoot.co.za` and `www.zoot.co.za` were removed 2026-08-07. They were rename debris — the
+ * company-wide Zoot→Xoot sweep missed this list, and they appeared nowhere else in the repo:
+ * no DNS, no config, no deploy surface, not even the old `zoothome.co.za` placeholder.
+ *
+ * They are removed rather than left harmless because this list is a trust boundary, not a
+ * convenience. Anything on it can hand a URL straight to an in-app route, so a domain Xoot
+ * does not demonstrably control — one that lapses and is re-registered by someone else — is a
+ * deep-link injection route into the app. An unused entry is the easiest kind to leave in and
+ * the cheapest kind to take out.
+ */
 const allowedWebHosts = new Set([
   "xoot.co.za",
   "www.xoot.co.za",
   "staging.xoot.co.za",
-  "zoot.co.za",
-  "www.zoot.co.za",
 ]);
 
 const screenRoutes = new Map<string, string>([
