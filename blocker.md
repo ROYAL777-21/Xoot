@@ -267,6 +267,28 @@ from a session is the proxy, not the function.
 
 ## Live security holes — fix before anything else
 
+- **DEPLOYED TO PRODUCTION 2026-08-07.** Two of the three functions carrying fixes are live:
+
+  | function | was | now | carries |
+  |---|---|---|---|
+  | `raise-sos-alert` | v4 | v5 | post-dispatch PIN fix + `xoot.co.za` CORS |
+  | `get-sensitive-access` | v6 | v7 | household-profile scoping + `xoot.co.za` CORS |
+
+  `raise-sos-alert` was verified by fetching the deployed source back and comparing: it
+  contains `alert.state === "dispatched" || elapsedSeconds >= COUNTDOWN_SECONDS`, and its
+  bundled `_shared/action-utils.ts` carries `https://xoot.co.za` with no trace of
+  `zoothome.co.za`. `get-sensitive-access` used the identical mechanism and content read the
+  same way; its `ezbr_sha256` and version both changed.
+
+  **Both now serve the correct domain without `ALLOWED_ORIGINS`** — a redeploy compiles the
+  current `defaultAllowedOrigins` in. The other 40 still need the secret, which stays the
+  cheaper fix for them: no deploy, no repricing risk.
+
+  Still to deploy: **`create-booking`**, now mandatory rather than optional (see the repricing
+  entry). It is the largest function and the only one where a transcription slip would misprice
+  a booking, so it wants `supabase functions deploy create-booking --project-ref
+  mvlrkelahhsyjrwgsxaf` from a machine with the repo.
+
 - **CLOSED IN REPO 2026-08-07, still open in production — another household's gate code.**
   Found while closing the `household_profile_id` gap that was noted in `server-authority.test.ts`
   when the property-account check went in. It turned out to be considerably worse than the
