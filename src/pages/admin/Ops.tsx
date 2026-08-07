@@ -56,14 +56,14 @@ const Ops = () => {
       bookingRows,
       qualityRows,
     ] = await Promise.all([
-      (supabase as any).from("payment_records").select("*").order("created_at", { ascending: false }).limit(12),
-      (supabase as any).from("integration_outbox").select("*").order("created_at", { ascending: false }).limit(12),
-      (supabase as any).from("admin_review_queue").select("*").order("created_at", { ascending: false }).limit(12),
-      (supabase as any).from("support_tickets").select("*").order("created_at", { ascending: false }).limit(12),
-      (supabase as any).from("zooter_applications").select("id,full_name,email,service_category,status,reviewer_notes,updated_at,created_at").order("updated_at", { ascending: false }).limit(12),
-      (supabase as any).from("admin_audit_log").select("id,admin_id,action,target_table,target_id,reason,changes,created_at").order("created_at", { ascending: false }).limit(20),
-      (supabase as any).from("analytics_booking_summary").select("*").order("day", { ascending: false }).limit(8),
-      (supabase as any).from("analytics_contractor_quality").select("*").order("reliability_score", { ascending: true }).limit(8),
+      supabase.from("payment_records").select("*").order("created_at", { ascending: false }).limit(12),
+      supabase.from("integration_outbox").select("*").order("created_at", { ascending: false }).limit(12),
+      supabase.from("admin_review_queue").select("*").order("created_at", { ascending: false }).limit(12),
+      supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(12),
+      supabase.from("zooter_applications").select("id,full_name,email,service_category,status,reviewer_notes,updated_at,created_at").order("updated_at", { ascending: false }).limit(12),
+      supabase.from("admin_audit_log").select("id,admin_id,action,target_table,target_id,reason,changes,created_at").order("created_at", { ascending: false }).limit(20),
+      supabase.from("analytics_booking_summary").select("*").order("day", { ascending: false }).limit(8),
+      supabase.from("analytics_contractor_quality").select("*").order("reliability_score", { ascending: true }).limit(8),
     ]);
     setPayments(paymentRows.data ?? []);
     setOutbox(outboxRows.data ?? []);

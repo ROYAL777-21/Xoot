@@ -8,11 +8,25 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
+/**
+ * `favorite_type` and `repeat_count` are the live column names. This page previously
+ * queried `favorite_kind`, `repeat_bookings_count` and `last_booked_at`, which come from
+ * `20260508225000_trust_safety_retention.sql` — a migration that was never applied. Only
+ * `zooter_id` of the four columns existed, so PostgREST rejected every select and this
+ * page showed "No favorites yet" to everyone, including users who had saved Xooters.
+ *
+ * The failure was invisible because `load()` destructured `data` and dropped `error`.
+ * It is checked now.
+ *
+ * `favorite_type` is free text live — no check constraint — so these three values are
+ * stored as-is.
+ */
+type FavoriteType = "favorite" | "preferred_team" | "recurring_favorite";
+
 type FavoriteRow = {
   zooter_id: string;
-  favorite_kind?: "favorite" | "preferred_team" | "recurring_favorite";
-  repeat_bookings_count?: number;
-  last_booked_at?: string | null;
+  favorite_type?: FavoriteType;
+  repeat_count?: number;
   zooters: Xooter | null;
 };
 
@@ -24,15 +38,23 @@ const Favorites = () => {
 
   const load = useCallback(async () => {
     if (!user) return;
-    const { data } = await (supabase as any)
+    const { data, error } = await supabase
       .from("favorites")
-      .select("zooter_id, favorite_kind, repeat_bookings_count, last_booked_at")
+      .select("zooter_id, favorite_type, repeat_count")
       .eq("user_id", user.id);
+
+    if (error) {
+      // Surfaced rather than swallowed: an empty list and a failed query look identical
+      // on screen, and that is what hid this for as long as it did.
+      toast.error("Your saved Xooters could not be loaded.");
+      setLoading(false);
+      return;
+    }
 
     const favorites = (data ?? []) as Array<Omit<FavoriteRow, "zooters">>;
     const zooterIds = favorites.map((row) => row.zooter_id).filter(Boolean);
     const { data: zooters } = zooterIds.length
-      ? await (supabase as any).from("zooters_public").select("*").in("id", zooterIds)
+      ? await supabase.from("zooters_public").select("*").in("id", zooterIds)
       : { data: [] };
     const zootersById = new Map(((zooters ?? []) as Xooter[]).map((zooter) => [zooter.id, zooter]));
 
@@ -46,15 +68,15 @@ const Favorites = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const markKind = async (zooterId: string, favoriteKind: FavoriteRow["favorite_kind"]) => {
+  const markKind = async (zooterId: string, favoriteType: FavoriteType) => {
     if (!user) return;
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("favorites")
-      .update({ favorite_kind: favoriteKind })
+      .update({ favorite_type: favoriteType })
       .eq("user_id", user.id)
       .eq("zooter_id", zooterId);
     if (error) return toast.error(error.message);
-    toast.success(favoriteKind === "preferred_team" ? "Added to your preferred team" : "Marked as recurring favourite");
+    toast.success(favoriteType === "preferred_team" ? "Added to your preferred team" : "Marked as recurring favourite");
     load();
   };
 
@@ -62,9 +84,9 @@ const Favorites = () => {
     navigate(`/app?zooter=${zooter.id}`);
   };
 
-  const preferredCount = list.filter((row) => row.favorite_kind === "preferred_team").length;
-  const recurringCount = list.filter((row) => row.favorite_kind === "recurring_favorite").length;
-  const repeatCount = list.reduce((sum, row) => sum + (row.repeat_bookings_count ?? row.zooters?.repeat_client_count ?? 0), 0);
+  const preferredCount = list.filter((row) => row.favorite_type === "preferred_team").length;
+  const recurringCount = list.filter((row) => row.favorite_type === "recurring_favorite").length;
+  const repeatCount = list.reduce((sum, row) => sum + (row.repeat_count ?? row.zooters?.repeat_client_count ?? 0), 0);
 
   return (
     <div className="container py-8 lg:py-12 max-w-7xl">
@@ -108,7 +130,7 @@ const Favorites = () => {
             const firstName = z.name.split(" ")[0];
             return (
               <div key={z.id} className="space-y-2">
-                <XooterCard z={{ ...z, repeat_client_count: z.repeat_client_count ?? row.repeat_bookings_count }} onBook={() => bookAgain(z)} actionLabel={`Book ${firstName} Again`} />
+                <XooterCard z={{ ...z, repeat_client_count: z.repeat_client_count ?? row.repeat_count }} onBook={() => bookAgain(z)} actionLabel={`Book ${firstName} Again`} />
                 <div className="grid grid-cols-2 gap-2">
                   <Button variant="outline" size="sm" className="rounded-xl" onClick={() => bookAgain(z)}>Book {firstName} Again</Button>
                   <Button variant="outline" size="sm" className="rounded-xl" onClick={() => markKind(z.id, "preferred_team")}>Preferred Team</Button>

@@ -54,7 +54,7 @@ const Profile = () => {
       languages_spoken: splitList(languagesInput),
       airbnb_specialist: !!zooter.airbnb_specialist,
     };
-    const { error } = await (supabase as any).from("zooters").update(payload).eq("id", zooter.id);
+    const { error } = await supabase.from("zooters").update(payload).eq("id", zooter.id);
     setSaving(false);
     if (error) toast.error(error.message); else toast.success("Profile saved");
   };

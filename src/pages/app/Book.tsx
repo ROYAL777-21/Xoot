@@ -153,7 +153,7 @@ const Book = () => {
   useEffect(() => {
     if (!user) return;
     Promise.all([
-      (supabase as any).from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
+      supabase.from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
       supabase.from("bookings").select("scheduled_at").eq("user_id", user.id).order("scheduled_at", { ascending: false }).limit(6),
     ]).then(([homeResult, bookingResult]) => {
       const home = homeResult.data;
@@ -179,7 +179,7 @@ const Book = () => {
   useEffect(() => {
     if (step !== 2) return;
     setLoadingXooters(true);
-    (supabase as any).from("zooters_public").select("*").limit(30).then(({ data }) => {
+    supabase.from("zooters_public").select("*").limit(30).then(({ data }) => {
       const ranked = sortXootersForMarketplace((data ?? []) as Xooter[]);
       const preferred = preferredXooterId ? ranked.find((z) => z.id === preferredXooterId) : null;
       setXooters(ranked);

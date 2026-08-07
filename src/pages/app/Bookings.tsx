@@ -79,7 +79,7 @@ const Bookings = () => {
     const bookings = (data ?? []) as Array<Omit<Booking, "zooter">>;
     const bookingIds = bookings.map((booking) => booking.id);
     const { data: zooters } = bookingIds.length
-      ? await (supabase as any)
+      ? await supabase
         .from("booking_zooter_profiles")
         .select("booking_id,id,name,photo_url,rating,role")
         .in("booking_id", bookingIds)

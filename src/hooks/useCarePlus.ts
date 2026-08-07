@@ -31,9 +31,7 @@ type PaymentRecordRow = {
 
 type FavouriteRow = {
   zooter_id: string;
-  favorite_kind?: string | null;
   favorite_type?: string | null;
-  last_booked_at?: string | null;
   created_at?: string | null;
 };
 
@@ -105,7 +103,7 @@ const mapFavourite = (zooter: PublicXooterRow, favourite?: FavouriteRow | null):
   name: zooter.name,
   rating: toNumber(zooter.rating, 0),
   specialties: zooter.tags?.length ? zooter.tags : [zooter.role ?? "Cleaning"],
-  lastBookedAt: favourite?.last_booked_at ?? favourite?.created_at ?? "",
+  lastBookedAt: favourite?.created_at ?? "",
   nextAvailableAt: "",
   preferredFor: zooter.jobs_completed ? `${zooter.jobs_completed} completed jobs` : "Saved in My Xooters",
 });
@@ -231,7 +229,7 @@ export const useCarePlus = () => {
         propertiesResult,
         bookingResult,
       ] = await Promise.all([
-        (supabase as any)
+        supabase
           .from("user_subscriptions")
           .select("*")
           .eq("user_id", user.id)
@@ -239,7 +237,7 @@ export const useCarePlus = () => {
           .order("started_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
-        (supabase as any)
+        supabase
           .from("property_accounts")
           .select("*")
           .eq("user_id", user.id)
@@ -263,7 +261,7 @@ export const useCarePlus = () => {
         if (!subscription) {
           setState({ status: "not_member", plan: activePlan });
         } else if (subscription.status === "pending_payment") {
-          const { data: payment } = await (supabase as any)
+          const { data: payment } = await supabase
             .from("payment_records")
             .select("id,meta")
             .eq("user_id", user.id)
@@ -338,7 +336,7 @@ const resolveFavouriteXooter = async (userId: string, favouriteXooterId: string 
   let zooterId = favouriteXooterId;
 
   if (!zooterId) {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("favorites")
       .select("zooter_id,created_at")
       .eq("user_id", userId)
@@ -351,7 +349,7 @@ const resolveFavouriteXooter = async (userId: string, favouriteXooterId: string 
 
   if (!zooterId) return null;
 
-  const { data: zooter } = await (supabase as any)
+  const { data: zooter } = await supabase
     .from("zooters_public")
     .select("id,name,rating,tags,role,jobs_completed")
     .eq("id", zooterId)

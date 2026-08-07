@@ -127,11 +127,11 @@ const BookingDetail = () => {
     if (!user || !id) return;
     const [{ data }, { data: zooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
       supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
-      (supabase as any).from("booking_zooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
+      supabase.from("booking_zooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
       supabase.from("messages").select("*").eq("booking_id", id).order("created_at"),
-      (supabase as any).from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
-      (supabase as any).from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
-      (supabase as any).from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
+      supabase.from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
+      supabase.from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
+      supabase.from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
     ]);
     if (!data) { navigate("/app/bookings"); return; }
     setBooking({ ...data, zooter: zooter ?? null });
@@ -325,7 +325,7 @@ const BookingDetail = () => {
 
   const submitReview = async () => {
     if (!user || !id || !booking?.zooter_id) return;
-    const { data: savedReview, error } = await (supabase as any).from("post_job_reviews").insert({
+    const { data: savedReview, error } = await supabase.from("post_job_reviews").insert({
       booking_id: id,
       user_id: user.id,
       zooter_id: booking.zooter_id,
@@ -382,7 +382,7 @@ const BookingDetail = () => {
     const path = `${id}/${photoType}-${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("booking-completion-photos").upload(path, file, { upsert: true });
     if (error) { setUploading(null); toast.error(error.message); return; }
-    const { error: insertError } = await (supabase as any).from("booking_completion_photos").insert({ booking_id: id, zooter_id: booking.zooter_id, photo_type: photoType, storage_path: path });
+    const { error: insertError } = await supabase.from("booking_completion_photos").insert({ booking_id: id, zooter_id: booking.zooter_id, photo_type: photoType, storage_path: path });
     setUploading(null);
     if (insertError) return toast.error(insertError.message);
     toast.success(`${photoType} photo uploaded`);

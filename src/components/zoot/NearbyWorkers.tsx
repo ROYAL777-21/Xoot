@@ -20,7 +20,7 @@ export const NearbyWorkers = () => {
     }
 
     let mounted = true;
-    (supabase as any)
+    supabase
       .from("zooters_public")
       .select("*")
       .order("rating", { ascending: false })

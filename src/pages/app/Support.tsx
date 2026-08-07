@@ -52,7 +52,7 @@ const requestSupportAssistantReply = async (
   subject: string,
   body: string,
 ): Promise<SupportAssistantReply | null> => {
-  const functionsClient = (supabase as any).functions;
+  const functionsClient = supabase.functions;
   if (!functionsClient?.invoke) return null;
 
   const { data, error } = await functionsClient.invoke("support-respond", {

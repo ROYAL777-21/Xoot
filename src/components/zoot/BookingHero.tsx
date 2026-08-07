@@ -28,7 +28,7 @@ export const BookingHero = () => {
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
-    (supabase as any).from("zooters_public").select("id", { count: "exact", head: true }).then(({ count }) => {
+    supabase.from("zooters_public").select("id", { count: "exact", head: true }).then(({ count }) => {
       setActiveXooters(count ?? 0);
     });
   }, []);

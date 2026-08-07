@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { getBookingChatSafety } from "@/lib/booking-chat-safety";
 import {
   decryptChatMessage,
@@ -89,11 +90,15 @@ export const BookingChat = ({ bookingId, booking, zooter, messages, currentUserI
       try {
         const deviceKey = await getOrCreateStoredDeviceKeyPair(currentUserId);
         const now = new Date().toISOString();
-        const { error: publishError } = await (supabase as any).from("user_encryption_keys").upsert(
+        const { error: publishError } = await supabase.from("user_encryption_keys").upsert(
           {
             user_id: currentUserId,
             device_id: deviceKey.deviceId,
-            public_jwk: deviceKey.publicJwk,
+            // `JsonWebKey` is a plain interface with no index signature, so it does not
+            // structurally satisfy `Json` even though every field it carries is JSON. The
+            // cast is on this value alone rather than on the client, so the other five
+            // columns in this upsert stay type-checked.
+            public_jwk: deviceKey.publicJwk as unknown as Json,
             key_version: deviceKey.keyVersion,
             last_seen_at: now,
             revoked_at: null,

@@ -50,7 +50,7 @@ const Profile = () => {
     if (!user) return;
     Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-      (supabase as any).from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
+      supabase.from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
     ]).then(([profileResult, householdResult]) => {
       if (profileResult.data) setProfile(profileResult.data);
       if (householdResult.data) setHousehold({ ...defaultHousehold, ...householdResult.data });
@@ -96,7 +96,7 @@ const Profile = () => {
       updated_at: new Date().toISOString(),
     };
 
-    const query = (supabase as any).from("household_profiles");
+    const query = supabase.from("household_profiles");
     const { data, error } = household.id
       ? await query.update(payload).eq("id", household.id).select("*").single()
       : await query.insert(payload).select("*").single();

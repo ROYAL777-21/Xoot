@@ -202,6 +202,40 @@ projects on that date, not carried forward on trust.
   **Nothing forces this to stay in step.** It drifted this far unnoticed because regeneration is
   manual and no check compares the two. Worth a CI step that regenerates and fails on a diff,
   before it silently rots again.
+- **CLOSED 2026-08-07 — "My Xooters" was broken in production, found by the regenerated types.**
+  Removing the `(supabase as any)` casts made TypeScript compare queries to the schema for the
+  first time, and it immediately failed on `favorites`. `src/pages/app/Favorites.tsx` and
+  `src/hooks/useHouseholdOperatingLayer.ts` selected `favorite_kind`, `repeat_bookings_count`
+  and `last_booked_at`. **None of those three columns exist.** They come from
+  `20260508225000_trust_safety_retention.sql`, which was never applied; the live table has
+  `favorite_type` and `repeat_count`, and no equivalent of `last_booked_at` at all. Confirmed
+  directly against production, not inferred from the types file.
+
+  PostgREST rejects the whole select on the first unknown column, so of the four columns
+  requested only `zooter_id` existed and every query failed. `/app/favorites` is a live routed
+  page behind auth: it showed **"No favorites yet" to every user, including ones with saved
+  Xooters**, and both "Preferred Team" and "Recurring Favourite" errored. The household
+  operating layer set an error banner on every load and reported an empty circle.
+
+  It stayed invisible because `load()` destructured `data` and dropped `error` — a failed query
+  and an empty list render identically. The error is checked now.
+
+  Fixed to the live column names. Safe to do: `favorites` holds 0 rows, `favorite_type` is free
+  text with no check constraint, and `authenticated` already holds column-level UPDATE on
+  `favorite_type` and `repeat_count`. `favorites_update_own` carries a WITH CHECK on `user_id`,
+  so the UPDATE grant on `user_id`/`zooter_id` is not a cross-user write path and was left alone.
+
+  Also fixed, same root cause: mobile's push-token upsert never set `last_seen_at`, whose
+  default only applies on INSERT and whose table trigger touches `updated_at` only — so on
+  every conflicting upsert the column recorded *first* seen. There is an index on
+  `(user_id, last_seen_at desc)` for picking a user's most recent device, and the web path
+  already set it.
+
+  Guarded by `src/lib/supabase-schema-contract.test.ts`: every table reached via `.from()` in
+  `src/` must be in the generated types, and a typed table may not be cast away with `as any`.
+  Both assertions were verified to fail against the reintroduced bugs before being kept.
+  44 of the 45 casts are gone; the one on `booking_tips` is legitimate and carries its reason.
+  This narrows the blast radius — it still **cannot** tell whether the types match live.
 - Supabase MCP is configured for read-only inspection. Supabase CLI `2.108.0` is installed,
   but separate CLI auth still requires a local `SUPABASE_ACCESS_TOKEN` or secure login flow
   before live Auth config can run. Rechecked 2026-08-02: no `SUPABASE_ACCESS_TOKEN`,

@@ -67,7 +67,7 @@ const Plans = () => {
     const { data: p } = await supabase.from("subscription_plans").select("*").order("monthly_price").limit(1).maybeSingle();
     setPlan(p as Plan | null);
     if (user) {
-      const { data: s } = await (supabase as any).from("user_subscriptions").select("id, plan_id, status").eq("user_id", user.id).in("status", ["active", "pending_payment"]).maybeSingle();
+      const { data: s } = await supabase.from("user_subscriptions").select("id, plan_id, status").eq("user_id", user.id).in("status", ["active", "pending_payment"]).maybeSingle();
       setActiveId(s?.plan_id ?? null);
       setSubscriptionStatus(s?.status ?? null);
     } else {

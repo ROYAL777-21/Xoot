@@ -37,11 +37,23 @@ type BookingRow = {
   zooter_id?: string | null;
 };
 
+/**
+ * Mirrors `public.favorites` as it exists live: user_id, zooter_id, favorite_type,
+ * repeat_count, recurring_locked, notes, created_at.
+ *
+ * This previously named three columns that do not exist — `favorite_kind`,
+ * `repeat_bookings_count` and `last_booked_at`. They come from
+ * `20260508225000_trust_safety_retention.sql`, which was never applied; the live table
+ * came from a different lineage and uses `favorite_type` and `repeat_count` instead.
+ * PostgREST rejects the whole select on the first unknown column, so this query returned
+ * an error every time and the household circle was permanently empty.
+ *
+ * There is no live equivalent of `last_booked_at`, so ordering uses `created_at`.
+ */
 type FavouriteRow = {
   zooter_id: string;
-  favorite_kind?: string | null;
-  repeat_bookings_count?: number | null;
-  last_booked_at?: string | null;
+  favorite_type?: string | null;
+  repeat_count?: number | null;
   created_at?: string | null;
 };
 
@@ -218,9 +230,9 @@ const mapFavourite = (zooter: PublicXooterRow, favourite?: FavouriteRow | null):
   name: zooter.name,
   rating: toNumber(zooter.rating, 0),
   specialties: zooter.tags?.length ? zooter.tags : [zooter.role ?? "Cleaning"],
-  lastBookedAt: favourite?.last_booked_at ?? favourite?.created_at ?? "",
+  lastBookedAt: favourite?.created_at ?? "",
   nextAvailableAt: "",
-  preferredFor: favourite?.favorite_kind === "recurring_favorite"
+  preferredFor: favourite?.favorite_type === "recurring_favorite"
     ? "Recurring favourite"
     : zooter.jobs_completed
       ? `${zooter.jobs_completed} completed jobs`
@@ -384,7 +396,7 @@ const resolveXooters = async (favorites: FavouriteRow[]) => {
   const zooterIds = [...new Set(favorites.map((favorite) => favorite.zooter_id).filter(Boolean))];
   if (zooterIds.length === 0) return [];
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from("zooters_public")
     .select("id,name,rating,tags,role,jobs_completed")
     .in("id", zooterIds);
@@ -417,7 +429,7 @@ export const useHouseholdOperatingLayer = () => {
 
     try {
       const [householdResult, propertyResult, bookingResult, favoriteResult, supportResult] = await Promise.all([
-        (supabase as any)
+        supabase
           .from("household_profiles")
           .select("id,label,pet_notes,parking_instructions,cleaning_preferences,fragile_areas,favourite_products,access_notes,is_default,updated_at")
           .eq("user_id", user.id)
@@ -425,25 +437,25 @@ export const useHouseholdOperatingLayer = () => {
           .order("updated_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
-        (supabase as any)
+        supabase
           .from("property_accounts")
           .select("id,account_type,name,default_service_type,preferred_days,notes,status,created_at,updated_at")
           .eq("user_id", user.id)
           .eq("status", "active")
           .order("updated_at", { ascending: false }),
-        (supabase as any)
+        supabase
           .from("bookings")
           .select("id,scheduled_at,status,service,duration_hours,zooter_id")
           .eq("user_id", user.id)
           .order("scheduled_at", { ascending: false })
           .limit(20),
-        (supabase as any)
+        supabase
           .from("favorites")
-          .select("zooter_id,favorite_kind,repeat_bookings_count,last_booked_at,created_at")
+          .select("zooter_id,favorite_type,repeat_count,created_at")
           .eq("user_id", user.id)
-          .order("last_booked_at", { ascending: false, nullsFirst: false })
+          .order("created_at", { ascending: false, nullsFirst: false })
           .limit(6),
-        (supabase as any)
+        supabase
           .from("support_tickets")
           .select("id,subject,status,created_at")
           .eq("user_id", user.id)
@@ -474,7 +486,7 @@ export const useHouseholdOperatingLayer = () => {
           favourite: zooters[0] ?? null,
           backupXooters: zooters.slice(1, 4),
           savedCount: favorites.length,
-          recurringCount: favorites.filter((favorite) => favorite.favorite_kind === "recurring_favorite").length,
+          recurringCount: favorites.filter((favorite) => favorite.favorite_type === "recurring_favorite").length,
         },
         readyModes: buildReadyModes(homeMemory, properties, bookings),
         recentBookings: bookings,
