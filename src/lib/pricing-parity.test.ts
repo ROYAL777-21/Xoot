@@ -75,4 +75,30 @@ describe("client/server pricing parity", () => {
     // Booking cover moved R21 -> R22 (ZD-020).
     expect(fn).not.toMatch(/bookingCoverOptIn === false \? 0 : 21/);
   });
+
+  /**
+   * The one fee the client does not model.
+   *
+   * `create-booking` adds ONE_TIME_SERVICE_FEE_CENTS to the total when frequency is
+   * "one_time"; `quote()` has no concept of it, so the client under-quotes a one-time
+   * booking by that amount. The module header already warns that the server wins on
+   * anything charging money, but a total revealed to a customer and then exceeded is a
+   * different problem from an internal disagreement.
+   *
+   * This asserts the divergence deliberately rather than hiding it: if someone adds the
+   * fee to the client, this fails and points them at wiring it into `quote()` and closing
+   * the blocker.md entry. If the server changes the amount, it fails too.
+   */
+  it("records the one-time service fee as a known client/server divergence", () => {
+    const match = /export const ONE_TIME_SERVICE_FEE_CENTS = r\((\d+)\)/.exec(serverSrc);
+    expect(match, "server no longer defines ONE_TIME_SERVICE_FEE_CENTS").toBeTruthy();
+    expect(Number(match![1]) * 100).toBe(3900);
+
+    // The client total is exactly base + add-ons + linen + cover. No service fee.
+    const priced = quote({ service: "regular", hours: 6, addOns: 1, bookingCover: true });
+    if (!isPriced(priced)) throw new Error("expected a price");
+    expect(priced.totalCents).toBe(
+      priced.baseCents + priced.addOnsCents + priced.linenCents + priced.coverCents,
+    );
+  });
 });

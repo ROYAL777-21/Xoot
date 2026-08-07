@@ -284,8 +284,20 @@ projects on that date, not carried forward on trust.
   model that contradicted `create-booking` outright — split the hours rather than multiply the
   price — and parity passed the whole time because multi-Xooter is not a rung.
   `multi-xooter.test.ts` now reads the threshold, rate, cap and service set out of the server
-  the same way, so that dimension is covered. Add-ons, Booking Cover, the high-demand premium,
-  the one-time service fee and the Care+ discount rate are **not** covered on either side.
+  the same way, so that dimension is covered.
+
+  Correcting an overstatement in the first version of this entry: add-ons, Booking Cover and
+  the linen option **are** asserted by the parity test. What is genuinely uncovered is the
+  high-demand premium and the Care+ discount rate.
+
+  And one real divergence found while checking: **`create-booking` charges
+  `ONE_TIME_SERVICE_FEE_CENTS` (R39) on one-time bookings and `quote()` does not model it at
+  all**, so the client under-quotes a one-time booking by R39. The module header does warn the
+  server wins on money, but a total shown to a customer and then exceeded at charge time is a
+  different matter from an internal disagreement — and one-time is the likely default for a
+  first booking. Deliberately not "fixed" by adding R39 to the displayed price: that raises
+  every quoted one-time total and is a commercial call. `pricing-parity.test.ts` now asserts
+  the divergence so it is visible rather than surprising.
 - **Schema source of truth is undecided (ZD-005).** Production and staging migration
   histories still diverge: re-listed 2026-08-02, production starts from the 2026-05-19
   launch squash (33 recorded migrations) while staging follows the local chain from
