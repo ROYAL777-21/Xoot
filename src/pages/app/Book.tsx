@@ -14,6 +14,7 @@ import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortXootersForMarketplace } from "@/lib/trust";
 import { calculateBookingQuote, isApprovedLaunchRegion } from "@/lib/operations";
+import { SERVICE_ALIASES, isPriced, quote as priceQuote, resolveHours } from "@/lib/xoot-pricing";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sanitiseSearchParam } from "@/lib/sanitise";
 import { BookingInput } from "@/lib/validators";
@@ -131,10 +132,51 @@ const Book = () => {
   const size = HOME_SIZES.find((s) => s.id === homeSize) ?? HOME_SIZES[0];
   const length = SERVICE_LENGTHS.find((option) => option.id === serviceLength) ?? SERVICE_LENGTHS[1];
   const totalWorkers = Math.max(1, workerCount);
-  const serviceBasePrice = Math.round(size.price * length.priceFactor * (serviceMultiplier[active] ?? 1));
-  const estHours = length.hours + extras.size * EXTRA_HOURS;
-  const discount = totalWorkers >= 3 ? 0.1 : 0;
-  const discountedBase = Math.round(serviceBasePrice * (1 - discount)) * totalWorkers;
+
+  /**
+   * Priced off the ZD-020 hour ladder, via the same translation the server does.
+   *
+   * This screen used to compute `size.price x length.priceFactor x serviceMultiplier` off
+   * `270 / 315 / 390` — the superseded model, which `pricing-parity.test.ts` forbids in the
+   * server and which the booking screen kept its own copy of. It agreed with *deployed*
+   * production and disagreed with the repo, so the two were consistent only by accident.
+   *
+   * Now there is one source: `quote()` applies the ladder, the multi-Xooter discount and the
+   * per-Xooter multiplication, all of which are already held against `create-booking` by
+   * `multi-xooter.test.ts`. The rule is no longer duplicated here, so it can no longer drift
+   * here.
+   *
+   * **This makes deploying `create-booking` mandatory, not optional.** Until it is deployed,
+   * production still charges the old model and this screen shows the new one. Production holds
+   * no bookings, so nobody is affected today — but the gap closes only on deploy.
+   */
+  /**
+   * The base shown against each service-length option, off the ladder rather than off
+   * `size.price x priceFactor`. Home size no longer moves the price at all — it only supplies
+   * a default duration — so this quotes the option's own hours.
+   */
+  const optionBase = (lengthId: string) => {
+    const hours = resolveHours({ serviceLengthId: lengthId }) ?? 0;
+    const q = priceQuote({ service: SERVICE_ALIASES[active] ?? "regular", hours, bookingCover: false });
+    return isPriced(q) ? formatZAR(Math.round(q.baseCents / 100)) : "—";
+  };
+
+  const bookedHours = resolveHours({ serviceLengthId: serviceLength, homeSizeId: homeSize }) ?? 0;
+  const priced = priceQuote({
+    service: SERVICE_ALIASES[active] ?? "regular",
+    hours: bookedHours,
+    xooterCount: totalWorkers,
+    // Add-ons and cover are added by `calculateBookingQuote` below, which also applies the
+    // high-demand premium and the one-time service fee. Asking for them here would double them.
+    addOns: 0,
+    bookingCover: false,
+  });
+  const serviceBasePrice = isPriced(priced) ? Math.round(priced.baseCents / totalWorkers / 100) : 0;
+  const estHours = bookedHours + extras.size * EXTRA_HOURS;
+  const discountedBase = isPriced(priced) ? Math.round(priced.baseCents / 100) : 0;
+  // Read back from the quote rather than recomputed, so the line item cannot claim a
+  // discount the price did not actually apply.
+  const discount = isPriced(priced) ? priced.discountRate : 0;
   const quote = calculateBookingQuote({
     basePrice: discountedBase,
     addOnCount: extras.size,
@@ -397,7 +439,7 @@ const Book = () => {
                     </div>
                     <div className="mt-4 flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold text-foreground">{option.hours} reserved hours</p>
-                      <p className="text-xs text-muted-foreground">{formatZAR(Math.round(size.price * option.priceFactor))} base</p>
+                      <p className="text-xs text-muted-foreground">{optionBase(option.id)} base</p>
                     </div>
                   </button>
                 );

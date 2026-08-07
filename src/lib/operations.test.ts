@@ -35,8 +35,8 @@ describe("Xoot operating rules", () => {
       addOnsTotal: 60,
       highDemandPremium: 50,
       serviceFee: 39,
-      bookingCover: 21,
-      total: 440,
+      bookingCover: 22,
+      total: 441,
       estimatedAddOnHours: 2,
     });
   });

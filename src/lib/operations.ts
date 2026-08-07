@@ -148,7 +148,7 @@ export const LAUNDRY_IRONING_PRICES: PriceRule[] = [
   { id: "ironing-1", label: "Ironing, 1 load", estimatedHours: 3.5, priceZar: 296 },
 ];
 
-export const BOOKING_COVER_PRICE_ZAR = 21;
+export const BOOKING_COVER_PRICE_ZAR = 22;
 export const ONE_TIME_SERVICE_FEE_ZAR = 39;
 export const ADD_ON_PRICE_ZAR = 30;
 export const HIGH_DEMAND_SLOT_RATE = 0.15;

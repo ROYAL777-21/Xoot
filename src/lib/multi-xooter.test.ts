@@ -120,30 +120,41 @@ describe("multi-Xooter pricing agrees with the server", () => {
   });
 
   /**
-   * The rule exists in THREE places, and this is the third.
+   * The rule now exists in TWO places, not three, and that is the improvement.
    *
-   * `create-booking` charges it, `xoot-pricing.ts` quotes it on the estimate screen, and
-   * `Book.tsx` — the real booking flow — computes its own copy to show the customer a total
-   * before submitting. All three agreed when this was written. Nothing but this test keeps
-   * them agreeing, and the client/server pair already diverged once.
+   * `create-booking` charges it and `xoot-pricing.ts` quotes it. `Book.tsx` used to compute a
+   * third copy — its own threshold, its own cap, its own rounding — alongside a base price off
+   * the superseded `size.price x priceFactor x serviceMultiplier` model. It now calls
+   * `quote()`, so the discount, the cap and the rounding order all come from the module this
+   * file already holds against the server.
+   *
+   * A copy that does not exist cannot drift, so what is asserted here is the delegation
+   * itself: the screen must not grow its own arithmetic back.
    */
-  it("Book.tsx computes the same discount and cap as the server", () => {
+  it("Book.tsx delegates to the shared quote rather than recomputing the rule", () => {
+    const book = readFileSync(join(process.cwd(), "src/pages/app/Book.tsx"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "");
+
+    // The base, the discount and the multiply all come from quote().
+    expect(book).toMatch(/priceQuote\(\{/);
+    expect(book).toMatch(/xooterCount:\s*totalWorkers/);
+    // The discount rate shown to the customer is read back from the quote, never recomputed —
+    // otherwise the line item could claim a discount the price did not apply.
+    expect(book).toMatch(/priced\.discountRate/);
+
+    // And the private copies are gone: no threshold, no cap, no rounding of its own.
+    expect(book).not.toMatch(/totalWorkers\s*>=\s*3\s*\?/);
+    expect(book).not.toMatch(/serviceBasePrice\s*\*\s*\(1\s*-\s*discount\)/);
+    expect(book).not.toMatch(/size\.price/);
+  });
+
+  /** The stepper must still not offer more Xooters than the server accepts. */
+  it("caps the Xooter stepper at the server's maximum", () => {
     const book = readFileSync(join(process.cwd(), "src/pages/app/Book.tsx"), "utf8");
-
-    // const discount = totalWorkers >= 3 ? 0.1 : 0;
-    const clientRule = /totalWorkers\s*>=\s*(\d+)\s*\?\s*([\d.]+)\s*:\s*0/.exec(book);
-    expect(clientRule, "could not find the multi-worker discount in Book.tsx").toBeTruthy();
-    const serverRule = /selectedXooterIds\.length\s*>=\s*(\d+)\s*\?\s*([\d.]+)\s*:\s*0/.exec(serverSrc);
-    expect(clientRule![1]).toBe(serverRule![1]);
-    expect(clientRule![2]).toBe(serverRule![2]);
-
-    // The stepper must not offer more Xooters than the server will accept.
     const clientCap = /setWorkerCount\(Math\.min\((\d+),/.exec(book);
     expect(clientCap, "could not find the worker-count cap in Book.tsx").toBeTruthy();
     expect(Number(clientCap![1])).toBe(MAX_XOOTERS);
-
-    // And it must round before multiplying, as the server does, or the cents drift.
-    expect(book).toMatch(/Math\.round\(\s*serviceBasePrice\s*\*\s*\(1\s*-\s*discount\)\s*\)\s*\*\s*totalWorkers/);
   });
 
   it("keeps add-ons and cover per booking, not per Xooter", () => {

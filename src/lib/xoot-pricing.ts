@@ -255,6 +255,62 @@ export function quote(input: QuoteInput): Quote {
   };
 }
 
+/**
+ * The legacy booking vocabulary, mirrored from `supabase/functions/_shared/pricing.ts`.
+ *
+ * The booking flow still speaks in service *types* (`residential`, `deep`, `premium`) and in
+ * home sizes and service lengths. The ladder speaks in five priced services and a number of
+ * hours. The server translates between the two; the client has to translate identically or it
+ * quotes one thing and gets charged another.
+ *
+ * Duplicated rather than imported because Edge Functions run on Deno and cannot import from
+ * `src/`. `pricing-parity.test.ts` reads the server file as text and fails if these drift.
+ *
+ * Note `deep` and `premium` both price as `regular`: they are presentation, not a price tier.
+ */
+export const SERVICE_ALIASES: Record<string, ServiceId> = {
+  residential: "regular",
+  regular: "regular",
+  deep: "regular",
+  premium: "regular",
+  express: "express",
+  airbnb: "airbnb",
+  office: "office",
+  moving: "moving",
+};
+
+/** Default hours implied by the home-size vocabulary. */
+export const HOME_SIZE_HOURS: Record<string, number> = { small: 4, medium: 5.5, large: 8 };
+
+/** Default hours implied by the service-length vocabulary. */
+export const SERVICE_LENGTH_HOURS: Record<string, number> = {
+  refresh: 3.5,
+  standard: 4.5,
+  extended: 6,
+  full_day: 8,
+};
+
+/**
+ * Which hours a booking is priced on, in the server's precedence order.
+ *
+ * Explicit hours win, then service length, then home size. Home size is last on purpose: it
+ * sets a *default* duration and never a price of its own, which is the whole point of ZD-020.
+ */
+export function resolveHours(input: {
+  hours?: number;
+  serviceLengthId?: string;
+  homeSizeId?: string;
+}): number | null {
+  if (typeof input.hours === "number" && Number.isFinite(input.hours)) return input.hours;
+  if (input.serviceLengthId && SERVICE_LENGTH_HOURS[input.serviceLengthId] !== undefined) {
+    return SERVICE_LENGTH_HOURS[input.serviceLengthId];
+  }
+  if (input.homeSizeId && HOME_SIZE_HOURS[input.homeSizeId] !== undefined) {
+    return HOME_SIZE_HOURS[input.homeSizeId];
+  }
+  return null;
+}
+
 /** Selectable hours for a service, in the half-hour steps the ladder is defined on. */
 export function hoursFor(service: ServiceId): number[] {
   const spec = SERVICES[service];

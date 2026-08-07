@@ -22,7 +22,8 @@ needs an account, a dashboard, a device, or a decision.
    `npm run ops:supabase:encryption-key -- -ProjectRef <ref>`. Gate codes cannot be stored
    until this exists. Reported done 2026-08-07 but unverifiable from an agent session, because
    Supabase never reads a secret value back.
-2. `ALLOWED_ORIGINS` on both projects — **now one command:**
+2. `ALLOWED_ORIGINS` on both projects — **now one command**, and the founder confirmed
+   2026-08-07 that `https://xoot.co.za` is the correct domain:
 
        SUPABASE_ACCESS_TOKEN=... npm run ops:supabase:allowed-origins -- both
 
@@ -146,22 +147,35 @@ Consequences worth stating separately:
   onto the ZD-020 ladder in one step, changing what every customer is charged. It must not be
   done as a side effect of fixing CORS or anything else. Staging first, compare real quotes
   old against new, then production, with the founder signing off the numbers.
-- **`Book.tsx` must be converted in the same change as that deploy.** Found 2026-08-07. The
-  booking screen — the one a customer actually pays from — never imports `xoot-pricing.ts`. It
-  computes its own base as `size.price x length.priceFactor x serviceMultiplier` off
-  `price: 270 / 315 / 390`, with a `serviceMultiplier` byte-identical to the deployed function's.
-  So the estate splits two-and-two rather than client-versus-server:
+- **`Book.tsx` CONVERTED 2026-08-07 — deploying `create-booking` is now MANDATORY, not
+  optional.** The founder signed off the prices ("use the claude design pricing as source of
+  truth... use the cheapest option") and the booking screen now prices off the ZD-020 ladder
+  through `quote()`, translating service and hours with the same `SERVICE_ALIASES` /
+  `resolveHours` the server uses. It no longer holds any copy of the model: the superseded
+  `size.price x priceFactor x serviceMultiplier` off `270 / 315 / 390` is gone from live code,
+  and so is its private multi-Xooter arithmetic.
 
-      xoot-pricing.ts + repo create-booking       ZD-020 ladder
-      Book.tsx        + DEPLOYED create-booking   old multiplier model
+  **This reverses the risk direction.** Before, screen and production agreed on the old model.
+  Now the screen quotes the ladder and production still charges the old model, so a customer
+  would be charged MORE than they were shown. Production holds 0 bookings so nobody is affected
+  today, but this must not meet real traffic. `create-booking` has to be deployed before launch.
 
-  Each pair is self-consistent, which is why nobody is mischarged today: the screen shows R315
-  for a medium standard clean and production charges R315. Deploying `create-booking` alone
-  drops the server to R266 while the screen still says R315. Converting `Book.tsx` first is
-  worse — it would quote R266 and let production charge R315, billing more than was shown.
-  Neither side may move alone. Guarded by `pricing-parity.test.ts` → "records that the booking
-  screen still runs the superseded model", which fails the moment one does; when they move
-  together, delete that test rather than weakening it.
+  What the screen now quotes, mirroring the server's precedence (service length beats home
+  size, and home size only ever implies a duration):
+
+      small  + refresh    3.5h   R236
+      medium + standard   4.5h   R266
+      large  + full_day   8h     R370
+      medium alone        5.5h   R296
+
+  These are the cheapest reading, as instructed: the design document's R280/R325/R400 tiers are
+  the same ladder plus a R30 add-on, and no add-on is preselected. Also fixed in the same pass:
+  `src/lib/operations.ts` moved `BOOKING_COVER_PRICE_ZAR` 21 → 22, so server, `xoot-pricing.ts`
+  and `operations.ts` finally agree on booking cover.
+
+  The tripwire that held the two sides together was deleted rather than weakened, per its own
+  instruction, and replaced by guards that the screen must keep delegating — verified to fail
+  against a reintroduced private copy.
 
 **Nothing was deployed.** The founder asked for a redeploy to fix `ALLOWED_ORIGINS`; that was
 stopped once the live source was read. Set the `ALLOWED_ORIGINS` secret instead — it fixes
