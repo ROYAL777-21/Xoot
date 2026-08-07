@@ -188,14 +188,30 @@ runs: `raise-sos-alert`, `respond-zooter-job`, `sensitive-access-read`, `sensiti
 "Test the new prices on staging first" therefore requires bringing staging up to date as its
 own step — do not treat staging agreement as evidence about production until that is done.
 
-### Method, so this is repeatable
+### Method, now a script rather than a one-off
 
-Deployment timestamps from `list_edge_functions` compared against `git log` per function
-directory **and against every `_shared/*.ts` the function imports** — the shared-module step is
-what turned "5 look fine" into the correct "0 are in step", and omitting it is how this drift
-stayed invisible. Live source spot-checked with `get_edge_function` to confirm the dates were
-telling the truth. Direct CORS probing was not possible: org egress policy blocks
-`*.supabase.co`, so a `403` seen from a session is the proxy, not the function.
+`npm run ops:supabase:deployed-drift` (add `-- --staging` for the other project). It compares
+deployment timestamps against `git log` per function directory **and against every `_shared/*.ts`
+the function imports, followed transitively**. The shared-module step is what turned "5 look
+fine" into the correct "0 are in step", and omitting it is how this drift stayed invisible for
+six weeks; it is the first thing `src/lib/deployed-drift.test.ts` pins. Exits 1 on drift, so CI
+can hold it.
+
+Needs `SUPABASE_ACCESS_TOKEN`. Where `api.supabase.com` is unreachable — as it is from an agent
+session, org egress policy blocks it — pass `--from-json <file>` with the same shape the
+Management API returns. The comparison is identical; only the source of the list differs. It was
+verified that way against the real 42-function production list and reproduces the audit above
+exactly.
+
+**A clean run is a weaker claim than it looks, and the script says so in its own output.**
+Timestamps prove a deployment *cannot* contain current code; they cannot prove it does. Anything
+deployed from another branch or hand-edited in the dashboard reads as current. Only fetching the
+live source and diffing settles it — worth doing for anything that touches money or auth, which
+is how the `create-booking` repricing was found.
+
+Live source was spot-checked with `get_edge_function` to confirm the dates were telling the
+truth. Direct CORS probing was not possible: `*.supabase.co` is blocked too, so a `403` seen
+from a session is the proxy, not the function.
 
 ## Live security holes — fix before anything else
 
