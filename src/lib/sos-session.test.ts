@@ -231,6 +231,29 @@ describe("the SOS control", () => {
     expect(button).toMatch(/timeout: \d/);
   });
 
+  /**
+   * A control nothing renders is a control nobody has.
+   *
+   * The gate means this ships invisible, which makes it exactly the kind of thing that gets
+   * built and then never wired up — and the omission would only surface on the day readiness
+   * flips to "live" and still nothing appears.
+   */
+  it("is actually on the screen where a visit happens", () => {
+    const detail = readFileSync(join(process.cwd(), "src/pages/app/BookingDetail.tsx"), "utf8");
+    expect(detail).toMatch(/import \{ SosButton \}/);
+    expect(detail).toMatch(/<SosButton bookingId=\{id\}/);
+
+    // Above the grid, not buried under the map and the timeline. Anything that has to be
+    // scrolled to is not an emergency control.
+    const sosAt = detail.indexOf("<SosButton");
+    const gridAt = detail.indexOf('className="grid lg:grid-cols-[1fr_400px]');
+    expect(sosAt).toBeGreaterThan(-1);
+    expect(sosAt).toBeLessThan(gridAt);
+
+    // And only while someone is on the way to, or inside, the home.
+    expect(detail).toMatch(/const activeVisit = Boolean\(canonicalStatus && \["en_route", "in_progress"\]/);
+  });
+
   it("asks for the PIN only where the server would", () => {
     // The stand-down form belongs to `dispatched`, which is exactly where the server now
     // requires the PIN. Offering it during the countdown would teach the wrong habit.

@@ -9,6 +9,7 @@ import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCh
 import { resolvePhoto } from "@/components/zoot/XooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { BookingChat } from "@/components/zoot/BookingChat";
+import { SosButton } from "@/components/zoot/SosButton";
 import { TipCard } from "@/components/zoot/TipCard";
 import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
 import { canAccessSensitiveBookingData } from "@/lib/operations";
@@ -409,6 +410,18 @@ const BookingDetail = () => {
   const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
   const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
   const isAssignedXooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
+  /**
+   * The window where someone is on their way to, or inside, the home.
+   *
+   * The same window masked calling uses, and for the same reason. Deliberately not gated on
+   * role: `raise-sos-alert` derives customer-or-Xooter from the session, and a Xooter alone in
+   * a stranger's house needs this at least as much as the customer does.
+   *
+   * Renders nothing until `canArmSos()` is true — see `SosButton`. It is placed now so that
+   * advancing readiness is the only step left, rather than readiness plus remembering to put
+   * the control on a screen.
+   */
+  const activeVisit = Boolean(canonicalStatus && ["en_route", "in_progress"].includes(canonicalStatus));
   const maskedCallAvailable = Boolean(canonicalStatus && ["en_route", "in_progress"].includes(canonicalStatus) && canAccessSensitiveBookingData({
     scheduledAt: booking.scheduled_at,
     status: booking.status,
@@ -420,6 +433,10 @@ const BookingDetail = () => {
   return (
     <div className="container py-6 lg:py-10 max-w-5xl">
       <Button variant="ghost" onClick={() => navigate("/app/bookings")} className="mb-4 -ml-2"><ArrowLeft className="h-4 w-4 mr-1" /> All bookings</Button>
+
+      {/* Above the fold, before the map and the timeline. Anything that has to be scrolled to
+          is not an emergency control. */}
+      {activeVisit && <SosButton bookingId={id} className="mb-5" />}
 
       <div className="grid lg:grid-cols-[1fr_400px] gap-5">
         <div className="space-y-5">
