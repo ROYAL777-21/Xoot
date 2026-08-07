@@ -114,13 +114,9 @@ Deno.serve(async (req) => {
 
     const workerCount = Math.max(selectedXooterIds.length, 1);
 
-    // A property account is a client-supplied foreign key, so ownership is proven here
-    // rather than trusted. Without this an Airbnb host could file a booking against another
-    // customer's property, which would corrupt that customer's per-property history and
-    // anything later built on it (invoicing, repeat-book).
-    //
-    // Note `household_profile_id` a few lines below is NOT checked this way. That predates
-    // this change and is recorded in blocker.md; it is a real gap, not a precedent to copy.
+    // Both of these are client-supplied foreign keys, so ownership is proven here rather than
+    // trusted. Each uses one message for "no such row" and for "not yours", so neither can be
+    // used to test which ids exist.
     if (propertyAccountId) {
       const { data: property } = await supa
         .from("property_accounts")
@@ -128,9 +124,37 @@ Deno.serve(async (req) => {
         .eq("id", propertyAccountId)
         .eq("user_id", user.id)
         .maybeSingle();
-      // One message for "no such property" and "not yours", so the endpoint cannot be used
-      // to test whether a given property id exists.
       if (!property) return fail("property account not found", origin, 404);
+    }
+
+    /**
+     * `household_profile_id` matters more than the property one, because it is the row that
+     * holds `gate_code`, `alarm_code` and `access_instructions`.
+     *
+     * Unchecked, it was a path to another household's keys, not merely to muddled history:
+     * `get-sensitive-access` authorises the caller as the booking's assigned Xooter and then
+     * reads `household_profiles` by `booking.household_profile_id` without tying that profile
+     * to the booking's customer. `can_access_sensitive_data` does not close it either — the
+     * live definition checks the booking/Xooter link, revocation, status and time window, and
+     * says nothing about whose profile it is.
+     *
+     * So a user who is also an active Xooter could file a booking naming themselves as the
+     * Xooter and someone else's household profile, wait for the access window they chose, and
+     * read that household's gate code.
+     *
+     * Not exploited: production holds 0 bookings, 0 household profiles and 0 Xooters — the
+     * platform has no live data yet. This is closed before there is anything to take, which
+     * is the only comfortable time to close it. `get-sensitive-access` is fixed in the same
+     * change so the disclosure point is guarded too, not just the write.
+     */
+    if (householdProfileId) {
+      const { data: household } = await supa
+        .from("household_profiles")
+        .select("id")
+        .eq("id", householdProfileId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!household) return fail("household profile not found", origin, 404);
     }
 
     const bookedHours = resolveHours({ hours: body?.hours, serviceLengthId, homeSizeId });

@@ -253,6 +253,36 @@ from a session is the proxy, not the function.
 
 ## Live security holes — fix before anything else
 
+- **CLOSED IN REPO 2026-08-07, still open in production — another household's gate code.**
+  Found while closing the `household_profile_id` gap that was noted in `server-authority.test.ts`
+  when the property-account check went in. It turned out to be considerably worse than the
+  "muddled history" that note assumed.
+
+  `create-booking` took `householdProfileId` straight from the request body. `get-sensitive-access`
+  then authorises the caller as the booking's assigned Xooter and reads `household_profiles` by
+  `booking.household_profile_id` — **without tying that profile to the booking's customer**.
+  `can_access_sensitive_data` does not close it either: the **live** definition (read from
+  production, and note its signature is `(p_zooter_id, p_booking_id)`, not the
+  `(p_booking_id, p_actor_id)` the repo migrations declare) checks the booking/Xooter link,
+  revocation, status and time window, and says nothing about whose profile it is.
+
+  So a user who is also an active Xooter could file a booking naming themselves as the Xooter
+  and **someone else's household profile**, wait for the window they chose, and read that
+  household's `gate_code`, `alarm_code` and `access_instructions`.
+
+  **Not exploited, and it could not have been:** production holds 0 bookings, 0 household
+  profiles, 0 Xooters and 0 property accounts — there is no live data at all yet. This is a
+  pre-launch hole closed before there is anything to take, which is the only comfortable time
+  to close one.
+
+  Fixed with two locks, both guarded in `server-authority.test.ts` and each verified to fail
+  against a planted regression: `create-booking` proves the caller owns the profile before
+  writing it, and `get-sensitive-access` scopes the credential read with
+  `.eq("user_id", booking.user_id)` so a booking written by any other path still cannot
+  disclose the wrong household.
+
+  **Production still has the old code.** Both functions are in the 37 non-pricing redeploys.
+
 - **OPEN IN PRODUCTION 2026-08-07 — an SOS alert can be cancelled without the PIN for five
   seconds after it dispatches.** Fixed in repo, **not deployed**.
 

@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
 
     const { data: booking, error: bookingError } = await supa
       .from("bookings")
-      .select("id,zooter_id,household_profile_id,status")
+      .select("id,user_id,zooter_id,household_profile_id,status")
       .eq("id", bookingId)
       .maybeSingle();
 
@@ -97,10 +97,26 @@ Deno.serve(async (req) => {
       return fail("sensitive access is locked for this booking window", origin, 403);
     }
 
+    /**
+     * The profile must belong to the customer on this booking.
+     *
+     * Everything above authorises the *caller* — they are the assigned Xooter, inside the
+     * window, on a booking that has not been revoked. None of it says the profile being read
+     * is the one belonging to that booking's customer, and `can_access_sensitive_data` does
+     * not check it either (verified against the live definition, which only covers the
+     * booking/Xooter link, revocation, status and time).
+     *
+     * Without `.eq("user_id", booking.user_id)`, filing a booking that names someone else's
+     * household profile hands over their gate and alarm codes. `create-booking` now refuses
+     * to write such a booking; this is the second lock, on the door rather than the key, so a
+     * row written by any other path — an older booking, a future import, an admin tool —
+     * still cannot disclose the wrong household.
+     */
     const { data: access, error: accessViewError } = await supa
       .from("household_profiles")
       .select("gate_code,alarm_code,access_instructions,parking_instructions,pet_notes")
       .eq("id", booking.household_profile_id)
+      .eq("user_id", booking.user_id)
       .maybeSingle();
 
     if (accessViewError || !access) return fail("sensitive access details unavailable", origin, 404);

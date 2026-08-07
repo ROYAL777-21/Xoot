@@ -180,8 +180,7 @@ describe("sensitive access credentials", () => {
    * customer's per-property history and anything later built on it.
    *
    * This is the exact shape of the bug the client-write lockdown was written to close, so it
-   * is asserted rather than left to review. Note `household_profile_id` in the same function
-   * is NOT checked this way — see blocker.md; it is a known gap, not a pattern to copy.
+   * is asserted rather than left to review.
    */
   it("proves the caller owns a property account before filing a booking against it", () => {
     const createBooking = codeOf("supabase/functions/create-booking/index.ts");
@@ -201,5 +200,61 @@ describe("sensitive access credentials", () => {
     // One message for both "no such property" and "not yours", so the endpoint cannot be
     // used to probe which property ids exist.
     expect(createBooking).toMatch(/property account not found/);
+  });
+});
+
+/**
+ * The household profile is the row that holds the keys — `gate_code`, `alarm_code`,
+ * `access_instructions`. Two locks guard it, and both are asserted here.
+ *
+ * The hole these close, found 2026-08-07: `create-booking` took `householdProfileId` straight
+ * from the request body, and `get-sensitive-access` then authorised the caller as the booking's
+ * assigned Xooter and read `household_profiles` by that id without tying the profile to the
+ * booking's customer. `can_access_sensitive_data` does not close it either — the live
+ * definition covers the booking/Xooter link, revocation, status and time window, and says
+ * nothing about whose profile it is. A user who is also an active Xooter could therefore file
+ * a booking naming themselves and someone else's profile, and read that household's gate code.
+ *
+ * Never exploited: production held 0 bookings, 0 household profiles and 0 Xooters when this
+ * was found.
+ */
+describe("a household profile can only be read by the household it belongs to", () => {
+  const createBooking = codeOf("supabase/functions/create-booking/index.ts");
+  const sensitive = codeOf("supabase/functions/get-sensitive-access/index.ts");
+
+  it("refuses to file a booking against someone else's household profile", () => {
+    const checkAt = createBooking.indexOf('.from("household_profiles")');
+    const insertAt = createBooking.indexOf('.from("bookings").insert');
+    expect(checkAt, "create-booking no longer looks the household profile up").toBeGreaterThan(-1);
+
+    const lookup = createBooking.slice(checkAt, checkAt + 400);
+    expect(lookup).toMatch(/\.eq\("id",\s*householdProfileId\)/);
+    expect(lookup, "the household lookup is not scoped to the caller").toMatch(
+      /\.eq\("user_id",\s*user\.id\)/,
+    );
+
+    // Before the write, or it guards nothing.
+    expect(checkAt).toBeLessThan(insertAt);
+
+    // One message for "no such profile" and "not yours", so ids cannot be probed.
+    expect(createBooking).toMatch(/household profile not found/);
+  });
+
+  it("scopes the credential read to the booking's own customer", () => {
+    // The second lock, on the door rather than the key: a booking written by any other path
+    // still cannot disclose a profile belonging to someone else.
+    const readAt = sensitive.indexOf('.from("household_profiles")');
+    expect(readAt).toBeGreaterThan(-1);
+    const read = sensitive.slice(readAt, readAt + 400);
+    expect(read).toMatch(/\.eq\("id",\s*booking\.household_profile_id\)/);
+    expect(read, "the credential read is not scoped to the booking's customer").toMatch(
+      /\.eq\("user_id",\s*booking\.user_id\)/,
+    );
+
+    // And the booking select must actually fetch user_id, or the filter above is undefined —
+    // which PostgREST would treat as matching nothing, failing closed but for the wrong reason.
+    const select = /\.from\("bookings"\)\s*\.select\("([^"]+)"\)/.exec(sensitive);
+    expect(select, "could not find the booking select").toBeTruthy();
+    expect(select![1].split(",")).toContain("user_id");
   });
 });
