@@ -69,6 +69,50 @@ Siri intents. Simulators are not sufficient for any of them.
 
 ---
 
+## Production is charging prices nobody approved
+
+Found 2026-08-07 by reading the deployed function rather than the repository, while checking
+whether Edge Functions could be redeployed to fix CORS. **This is the most consequential
+finding in this file and it was invisible from the repo.**
+
+`create-booking` in production (v6) and `supabase/functions/create-booking/index.ts` are not
+the same program. Live runs the superseded model:
+
+    homeSizes        = { small: R270, medium: R315, large: R390 }
+    serviceMultiplier = { residential: 1, express: 0.85, airbnb: 1.15, office: 1.2,
+                          deep: 1.35, moving: 1.4, premium: 1.55 }
+    basePrice        = size.price x length.priceFactor x serviceMultiplier
+    bookingCover     = 21
+
+Those are exactly the values `src/lib/pricing-parity.test.ts` asserts must never reappear
+(lines 72-76: `serviceMultiplier`, `priceFactor`, `price: 270|315|390`, cover `21`). The test
+passes because it reads the **repo** file, which was correctly migrated to the approved
+ZD-020 ladder. Nothing compares the repo against what is deployed, so the guard has been
+green while production charged the old numbers.
+
+Consequences worth stating separately:
+
+- **The R39 one-time service fee gap is live.** Live also computes `serviceFee = 39` and adds
+  it to the total, so the client under-quote recorded elsewhere in this file is real in
+  production today, on top of a base price nobody signed off.
+- **"The server is the authority on money" is only true of the deployed server, and the
+  deployed server is wrong.** That phrase appears in the header of `xoot-pricing.ts` and was
+  used during this session to justify aligning the client to `create-booking`. The
+  multi-Xooter alignment itself still holds — `multiWorkerDiscount >= 3 ? 0.1` and
+  `* workerCount` are identical live and in repo — but the reasoning was built on an
+  unverified premise.
+- **Redeploying `create-booking` is a repricing, not an ops task.** It would switch production
+  onto the ZD-020 ladder in one step, changing what every customer is charged. It must not be
+  done as a side effect of fixing CORS or anything else. Staging first, compare real quotes
+  old against new, then production, with the founder signing off the numbers.
+
+**Nothing was deployed.** The founder asked for a redeploy to fix `ALLOWED_ORIGINS`; that was
+stopped once the live source was read. Set the `ALLOWED_ORIGINS` secret instead — it fixes
+CORS on all 42 functions with no code change and no pricing risk.
+
+Unknown and worth checking before any deploy: how many *other* deployed functions differ from
+their repo source. Only `create-booking` has been compared so far.
+
 ## Live security holes — fix before anything else
 
 - **CLOSED 2026-08-02 — the client-as-source-of-truth hole.** `FOR ALL USING (user_id =
