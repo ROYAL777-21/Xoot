@@ -48,8 +48,21 @@ iOS and Android verification of the native launch experience, Live Activities, w
 Siri intents. Simulators are not sufficient for any of them.
 
 ### Still to build, and not blocked on anything
-- Safety SOS and recording **client UI** — the schema, the Edge Function and the nightly purge
-  are all live; nothing in the app raises an alert yet.
+- **SOS client UI — built 2026-08-07, ships dark on purpose.** `src/lib/sos-session.ts` (the
+  lifecycle as a pure state machine) and `src/components/zoot/SosButton.tsx`. It renders
+  nothing until `canArmSos()` is true, which needs `SAFETY_READINESS === "live"`, and the
+  value is still `schema_pending` — `safety.test.ts:181` pins it deliberately.
+
+  **Advancing it is a founder step, not a code change**, and it is the rule `safety.ts` sets:
+  no safety promise may be shown before the thing it promises works. To reach `"live"`:
+  redeploy `raise-sos-alert` (it currently carries the PIN hole above), dial 112 from a real
+  handset and confirm it connects, and confirm an ops person actually receives the alert.
+  Only then change the constant and the test that pins it. Nothing else in the app is
+  blocked by leaving it dark.
+
+  Recording UI is still unbuilt. It opens at `server_ready` rather than `live`, but turning
+  it on needs the both-party notice wording settled first (RICA s4 / POPIA), which is a
+  decision, not a build.
 - **Property allocation — step one built 2026-08-07 (`0ce6dbf`), in repo, not deployed.**
   The founder chose "link bookings to a property" out of three readings. `create-booking` now
   accepts `propertyAccountId`, proves the caller owns it (`.eq("user_id", user.id)`, one
@@ -185,6 +198,31 @@ telling the truth. Direct CORS probing was not possible: org egress policy block
 `*.supabase.co`, so a `403` seen from a session is the proxy, not the function.
 
 ## Live security holes — fix before anything else
+
+- **OPEN IN PRODUCTION 2026-08-07 — an SOS alert can be cancelled without the PIN for five
+  seconds after it dispatches.** Fixed in repo, **not deployed**.
+
+  `raise-sos-alert` decided whether the cancel PIN was required with
+  `needsPin = elapsedSeconds >= 5`, measured from `safety_sos_alerts.triggered_at`. That rule
+  was written for a design where the row is created when the countdown *starts*. The function
+  does not do that — it inserts only at dispatch, and `triggered_at` defaults to `now()`
+  (confirmed in the migration and against the live column). So elapsed was ~0 at dispatch and
+  stayed under five seconds for five seconds *afterwards*, leaving a free, PIN-less cancel in
+  exactly the window the PIN exists to close. `safety.ts` states the threat model plainly:
+  once dispatched, the person most motivated to cancel may be the person the alert is about —
+  and they are holding the phone.
+
+  Confirmed `raise-sos-alert` is the only writer and only ever inserts `state: "dispatched"`,
+  so no `armed` row is ever created and the window was always open, not an edge case.
+
+  Fixed by `needsPin = alert.state === "dispatched" || elapsedSeconds >= COUNTDOWN_SECONDS`.
+  The elapsed branch is kept for a future arm-then-dispatch path. Guarded by
+  `safety.test.ts` → "requires the PIN for any dispatched alert, whatever the clock says",
+  verified to fail against the old rule.
+
+  **The deployed copy still has the hole.** `raise-sos-alert` is a non-pricing function, so
+  redeploying it carries none of the `create-booking` risk — it is the strongest single reason
+  to green-light the non-pricing redeploys.
 
 - **CLOSED 2026-08-02 — the client-as-source-of-truth hole.** `FOR ALL USING (user_id =
   auth.uid())` was written across the schema to mean "this row is yours"; Postgres reads it

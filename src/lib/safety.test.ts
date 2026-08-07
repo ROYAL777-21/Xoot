@@ -172,6 +172,29 @@ describe("the cancel PIN", () => {
     expect(sos).toMatch(/new Date\(alert\.triggered_at\)/);
     expect(sos).not.toMatch(/body\.elapsed|body\.phase|body\.needsPin/);
   });
+
+  /**
+   * The five-second grace belongs to the countdown, which happens BEFORE the row exists.
+   *
+   * `raise-sos-alert` inserts only at dispatch and `triggered_at` defaults to `now()`, so
+   * deriving `needsPin` from elapsed time alone left it false for five seconds after dispatch
+   * — a free cancel for whoever was holding the phone, in the one window the PIN is for.
+   * Found 2026-08-07 while building the client UI; the deployed copy still has it.
+   */
+  it("requires the PIN for any dispatched alert, whatever the clock says", () => {
+    const sos = readFileSync(join(root, "supabase/functions/raise-sos-alert/index.ts"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "");
+
+    const needsPin = /const needsPin = ([^;]+);/.exec(sos);
+    expect(needsPin, "could not find the needsPin decision").toBeTruthy();
+    // State, not just elapsed time. An elapsed-only rule is the bug this closes.
+    expect(needsPin![1]).toMatch(/alert\.state === "dispatched"/);
+
+    // And the row this function creates must be the state that rule catches, or the two
+    // halves agree in the source and still miss each other at runtime.
+    expect(sos).toMatch(/state: "dispatched"/);
+  });
 });
 
 describe("safety claims are gated", () => {

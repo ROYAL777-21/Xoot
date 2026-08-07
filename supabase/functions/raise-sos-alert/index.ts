@@ -136,7 +136,21 @@ Deno.serve(async (req) => {
       // Elapsed time is computed from the stored trigger, not from anything the client sends.
       // A client that could assert "still in the countdown" could cancel without the PIN.
       const elapsedSeconds = (Date.now() - new Date(alert.triggered_at).getTime()) / 1000;
-      const needsPin = elapsedSeconds >= COUNTDOWN_SECONDS;
+
+      // A `dispatched` row is past the countdown by definition, whatever the clock says.
+      //
+      // The elapsed check alone was written for a design where the row is created when the
+      // countdown STARTS and dispatches five seconds later. This function does not do that:
+      // it inserts only at dispatch, and `triggered_at` defaults to `now()`, so elapsed was
+      // ~0 at the moment of dispatch and stayed under five seconds for five seconds AFTER
+      // it. That handed a free, PIN-less cancel to whoever held the phone in precisely the
+      // window the PIN exists to close — `safety.ts` puts it plainly: once dispatched, the
+      // person most motivated to cancel may be the person the alert is about.
+      //
+      // The elapsed branch is kept rather than replaced: nothing creates `armed` rows today,
+      // but the table still defaults to that state, and if a future arm-then-dispatch path
+      // does create them the countdown grace is correct for those.
+      const needsPin = alert.state === "dispatched" || elapsedSeconds >= COUNTDOWN_SECONDS;
 
       if (needsPin) {
         const pin = cleanText(body.pin, 12);
