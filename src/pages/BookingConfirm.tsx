@@ -168,7 +168,7 @@ export default function BookingConfirm() {
                 How many Xooters
               </h2>
               <span className="text-xs text-muted-foreground">
-                {priced ? `done in about ${priced.elapsedHours}h` : null}
+                {priced && priced.discountRate > 0 ? `${priced.discountRate * 100}% off` : null}
               </span>
             </div>
 
@@ -197,10 +197,13 @@ export default function BookingConfirm() {
 
             {/* Says the quiet part out loud. Customers reasonably assume a second person
                 doubles the bill, and left unsaid that assumption stops them selecting it. */}
+            {/* States the cost plainly. Each Xooter works the full visit and is charged
+                for, so the price rises with the count — saying otherwise here would be a
+                surprise at the total. */}
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
               {xooterCount === 1
-                ? `One Xooter, ${hours} hours. Adding a second splits the same ${hours} hours between them — same price, half the time.`
-                : `${xooterCount} Xooters share the same ${hours} hours, ${priced?.hoursPerXooter}h each. The price does not change.`}
+                ? `One Xooter for the full ${hours} hours.`
+                : `${xooterCount} Xooters, each for the full ${hours} hours${priced && priced.discountRate > 0 ? `, with ${priced.discountRate * 100}% off for booking ${xooterCount}` : ""}.`}
             </p>
           </section>
         ) : null}
@@ -304,7 +307,7 @@ export default function BookingConfirm() {
                 label={
                   priced.xooterCount === 1
                     ? `${hours} hours`
-                    : `${hours} hours · ${priced.xooterCount} Xooters, ${priced.hoursPerXooter}h each`
+                    : `${hours} hours × ${priced.xooterCount} Xooters`
                 }
                 value={formatRand(priced.baseCents)}
               />

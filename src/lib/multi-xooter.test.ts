@@ -1,89 +1,112 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { MAX_XOOTERS, MIN_HOURS_PER_XOOTER, isPriced, quote, xooterOptionsFor } from "./xoot-pricing";
+import {
+  MAX_XOOTERS,
+  MULTI_XOOTER_SERVICES,
+  isPriced,
+  multiXooterDiscountRate,
+  quote,
+  xooterOptionsFor,
+} from "./xoot-pricing";
 
 /**
- * Multi-Xooter booking, the part that decides money.
+ * Multi-Xooter booking, checked against the server rather than against an opinion.
  *
- * The rule under test: **hours on the ladder are labour hours.** Adding a Xooter splits the
- * same work and finishes sooner for the same price. It does not multiply the bill.
+ * `supabase/functions/create-booking/index.ts` has implemented per-Xooter pricing all
+ * along: each Xooter works the full booked duration, the base is multiplied by the count,
+ * and 3+ Xooters take 10% off. The client only has to agree with that.
  *
- * These assertions exist to stop that quietly becoming per-Xooter pricing, which would raise
- * a 6-hour regular clean from R310 to R620 without anyone approving R620. That is exactly the
- * kind of change someone makes on the reasonable-sounding assumption that two cleaners must
- * cost twice as much. If the founder decides otherwise, these should fail loudly and be
- * rewritten deliberately — not deleted quietly.
+ * This file exists because it originally did not. The client shipped the opposite model —
+ * same price, work split, job finishes sooner — and `pricing-parity.test.ts` did not notice
+ * because it compares ladder rungs and multi-Xooter is a different dimension. So the rules
+ * below are read out of the server source as text, the same technique that file uses, and
+ * a change to one side without the other fails here.
  */
-describe("multi-Xooter pricing", () => {
-  const priced = (hours: number, xooterCount?: number) => {
-    const result = quote({ service: "regular", hours, xooterCount, bookingCover: false });
-    if (!isPriced(result)) throw new Error(`expected a price, got: ${result.reason}`);
-    return result;
-  };
+const serverSrc = readFileSync(
+  join(process.cwd(), "supabase/functions/create-booking/index.ts"),
+  "utf8",
+);
 
-  it("charges the same regardless of how many Xooters share the job", () => {
-    const solo = priced(6, 1);
-    expect(priced(6, 2).baseCents).toBe(solo.baseCents);
-    expect(priced(6, 3).baseCents).toBe(solo.baseCents);
-    expect(solo.baseCents).toBe(31000); // R310, the approved ZD-020 rung
+describe("multi-Xooter pricing agrees with the server", () => {
+  it("uses the same discount threshold and rate as create-booking", () => {
+    // const multiWorkerDiscount = selectedXooterIds.length >= 3 ? 0.1 : 0;
+    const match = /selectedXooterIds\.length\s*>=\s*(\d+)\s*\?\s*([\d.]+)\s*:\s*0/.exec(serverSrc);
+    expect(match, "could not find the multi-worker discount in create-booking").toBeTruthy();
+    const [, threshold, rate] = match!;
+
+    expect(multiXooterDiscountRate(Number(threshold))).toBe(Number(rate));
+    expect(multiXooterDiscountRate(Number(threshold) - 1)).toBe(0);
   });
 
-  it("is not per-Xooter multiplication", () => {
-    // The specific wrong answer this guards against.
-    expect(priced(6, 2).totalCents).not.toBe(priced(6, 1).totalCents * 2);
+  it("caps at the same worker count as the server", () => {
+    // Math.min(Math.max(requestedWorkerCount || 1, 1), 5)
+    const match = /Math\.min\(Math\.max\(requestedWorkerCount \|\| 1, 1\), (\d+)\)/.exec(serverSrc);
+    expect(match, "could not find the worker cap in create-booking").toBeTruthy();
+    expect(MAX_XOOTERS).toBe(Number(match![1]));
   });
 
-  it("shortens the job instead of raising the price", () => {
-    expect(priced(6, 1).elapsedHours).toBe(6);
-    expect(priced(6, 2).elapsedHours).toBe(3);
-    expect(priced(6, 3).elapsedHours).toBe(2);
-    expect(priced(6, 4).elapsedHours).toBe(1.5);
+  it("enables multi-Xooter on exactly the services the server does", () => {
+    const match = /const multiWorkerServices = new Set\(\[([^\]]*)\]\)/.exec(serverSrc);
+    expect(match, "could not find multiWorkerServices in create-booking").toBeTruthy();
+    const serverSet = new Set([...match![1].matchAll(/"([a-z]+)"/g)].map((m) => m[1]));
+
+    // Every client multi-Xooter service must be one the server accepts.
+    for (const service of MULTI_XOOTER_SERVICES) {
+      expect(serverSet.has(service), `server does not allow multi-worker ${service}`).toBe(true);
+    }
+    // And regular home cleaning must stay single-Xooter on both sides.
+    expect(serverSet.has("regular")).toBe(false);
+    expect(MULTI_XOOTER_SERVICES.has("regular")).toBe(false);
   });
 
-  it("reports the per-Xooter shift, which is what a payout is owed on", () => {
-    const pair = priced(8, 2);
-    expect(pair.hoursPerXooter).toBe(4);
-    // Labour hours are conserved: nobody is paid for time that was not sold.
-    expect(pair.hoursPerXooter * pair.xooterCount).toBe(8);
+  it("multiplies the base by the Xooter count, rounding before the multiply", () => {
+    // Office 6h is R504. Two Xooters, no discount yet: 2 x R504.
+    const solo = quote({ service: "office", hours: 6, bookingCover: false });
+    const pair = quote({ service: "office", hours: 6, xooterCount: 2, bookingCover: false });
+    if (!isPriced(solo) || !isPriced(pair)) throw new Error("expected prices");
+
+    expect(solo.baseCents).toBe(50400);
+    expect(pair.baseCents).toBe(solo.baseCents * 2);
+    expect(pair.discountRate).toBe(0);
   });
 
-  it("defaults to one Xooter when the caller says nothing", () => {
-    const result = priced(6);
-    expect(result.xooterCount).toBe(1);
-    expect(result.elapsedHours).toBe(6);
+  it("applies the 10% discount from the third Xooter, matching the server's rounding order", () => {
+    const trio = quote({ service: "office", hours: 6, xooterCount: 3, bookingCover: false });
+    if (!isPriced(trio)) throw new Error("expected a price");
+
+    // round(50400 * 0.9) * 3 — rounded before multiplying, exactly as create-booking does.
+    expect(trio.baseCents).toBe(Math.round(50400 * 0.9) * 3);
+    expect(trio.discountRate).toBe(0.1);
+    // Cheaper per Xooter than two, but still more in total. It is not a split.
+    expect(trio.baseCents).toBeGreaterThan(50400 * 2);
   });
 
-  it("refuses a split that would send someone out for less than the minimum shift", () => {
-    // 4 hours across 4 Xooters is 1 hour each, under MIN_HOURS_PER_XOOTER.
-    const result = quote({ service: "regular", hours: 4, xooterCount: 4 });
-    expect(isPriced(result)).toBe(false);
-    if (!isPriced(result)) expect(result.reason).toContain(String(MIN_HOURS_PER_XOOTER));
+  it("is not a labour-hour split — the price rises with the count", () => {
+    // The specific wrong model this file was written to correct.
+    const solo = quote({ service: "office", hours: 6, bookingCover: false });
+    const pair = quote({ service: "office", hours: 6, xooterCount: 2, bookingCover: false });
+    if (!isPriced(solo) || !isPriced(pair)) throw new Error("expected prices");
+    expect(pair.baseCents).not.toBe(solo.baseCents);
   });
 
-  it("refuses a split that does not land on a half-hour step", () => {
-    // 3.5 across 2 is 1h45 — not schedulable, so 3.5 stays a one-Xooter job.
-    const result = quote({ service: "regular", hours: 3.5, xooterCount: 2 });
-    expect(isPriced(result)).toBe(false);
-    if (!isPriced(result)) expect(result.reason).toContain("half-hour");
+  it("refuses more than one Xooter on a single-Xooter service", () => {
+    for (const service of ["regular", "express"] as const) {
+      const result = quote({ service, hours: service === "express" ? 2 : 6, xooterCount: 2 });
+      expect(isPriced(result), `${service} should be single-Xooter`).toBe(false);
+    }
   });
 
   it("rejects nonsense counts rather than coercing them", () => {
-    for (const count of [0, -1, 1.5]) {
-      expect(isPriced(quote({ service: "regular", hours: 6, xooterCount: count }))).toBe(false);
+    for (const count of [0, -1, 1.5, MAX_XOOTERS + 1]) {
+      expect(isPriced(quote({ service: "office", hours: 6, xooterCount: count }))).toBe(false);
     }
-    expect(isPriced(quote({ service: "regular", hours: 6, xooterCount: MAX_XOOTERS + 1 }))).toBe(false);
-  });
-
-  it("reports an off-ladder hour count as a ladder problem, not a split problem", () => {
-    // 6.25 is not on the ladder at all; the message must say so rather than blame the split.
-    const result = quote({ service: "regular", hours: 6.25, xooterCount: 2 });
-    expect(isPriced(result)).toBe(false);
-    if (!isPriced(result)) expect(result.reason).toContain("ladder");
   });
 
   it("offers only bookable counts to the selector", () => {
-    expect(xooterOptionsFor("regular", 6)).toEqual([1, 2, 3, 4]);
-    // 3.5 is the shortest regular clean and cannot be shared.
-    expect(xooterOptionsFor("regular", 3.5)).toEqual([1]);
+    expect(xooterOptionsFor("office", 6)).toEqual([1, 2, 3, 4, 5]);
+    expect(xooterOptionsFor("regular", 6)).toEqual([1]);
+    expect(xooterOptionsFor("express", 2)).toEqual([1]);
   });
 
   it("never offers a count that would fail to price", () => {
@@ -97,12 +120,10 @@ describe("multi-Xooter pricing", () => {
   });
 
   it("keeps add-ons and cover per booking, not per Xooter", () => {
-    // Two Xooters do not mean two Booking Covers or two add-on charges.
-    const solo = quote({ service: "regular", hours: 6, addOns: 2, bookingCover: true });
-    const pair = quote({ service: "regular", hours: 6, xooterCount: 2, addOns: 2, bookingCover: true });
+    const solo = quote({ service: "office", hours: 6, addOns: 2, bookingCover: true });
+    const pair = quote({ service: "office", hours: 6, xooterCount: 2, addOns: 2, bookingCover: true });
     if (!isPriced(solo) || !isPriced(pair)) throw new Error("expected prices");
     expect(pair.addOnsCents).toBe(solo.addOnsCents);
     expect(pair.coverCents).toBe(solo.coverCents);
-    expect(pair.totalCents).toBe(solo.totalCents);
   });
 });

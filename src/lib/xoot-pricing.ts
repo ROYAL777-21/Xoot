@@ -24,31 +24,41 @@ export const LINEN_ON_SITE_CENTS = 2000;
 export const BOOKING_COVER_CENTS = 2200;
 
 /**
- * Multi-Xooter booking (master brief §1: "Customers can book more than one Xooter per job").
+ * Multi-Xooter booking.
  *
- * **The hours on the ladder are labour hours, not elapsed time.** Booking two Xooters splits
- * the same work between them: 6 hours becomes two 3-hour shifts, the customer still pays
- * R310, and the job is done in half the time. It does not multiply the price.
+ * **This mirrors `supabase/functions/create-booking/index.ts`. The server is the authority
+ * on anything that charges money; this module only has to agree with it.**
  *
- * That is the norm here (SweepSouth, Handy) and, more importantly, it is the only reading
- * that leaves the approved ZD-020 ladder untouched. Charging per Xooter would multiply an
- * already bulk-discounted rate — 2 x R310 = R620 for 12 labour hours, when the ladder prices
- * 10 hours at R430 — which is a price nobody approved. Pricing is a founder decision, so the
- * code takes the option that invents nothing.
+ * The model is per-Xooter, not a split: each Xooter works the full booked duration and is
+ * charged for, with a 10% discount once three or more are on the job. Three Xooters on a
+ * 6-hour office clean is 18 labour hours, priced as 3 x R504 less 10%.
  *
- * DECIDED BY ME, NOT BY THE FOUNDER, on 2026-08-07. The brief records "multi-Xooter booking"
- * as a closed decision but never says what happens to the price; the founder was asked and
- * did not answer. If per-Xooter multiplication was the intent, this is the only place that
- * changes, and `multi-xooter.test.ts` will fail loudly rather than drift.
+ * That is a real product for the services it is enabled on — an office or a moving clean
+ * genuinely needs several people for the whole visit, not one person for three times as
+ * long. It is NOT enabled for regular home cleaning, which stays single-Xooter.
+ *
+ * Corrected 2026-08-07. This module first shipped the opposite model (same price, work
+ * split, job finishes sooner) chosen on the reasoning that it left the approved ladder
+ * untouched. That was wrong: `create-booking` already implemented per-Xooter pricing and
+ * had done all along, so the "undecided" question had in fact been answered in the server.
+ * `pricing-parity.test.ts` did not catch the divergence because it compared ladder rungs
+ * only, and multi-Xooter is a dimension it did not cover. It covers it now.
  */
-export const MAX_XOOTERS = 4;
+const MULTI_XOOTER_DISCOUNT_THRESHOLD = 3;
+const MULTI_XOOTER_DISCOUNT_RATE = 0.1;
+
+/** Server caps at 5 (`Math.min(..., 5)` in create-booking). */
+export const MAX_XOOTERS = 5;
 
 /**
- * No Xooter is dispatched for less than this. Travelling across Johannesburg for a 45-minute
- * shift does not pay for itself, and a split that fine is not schedulable against a ladder
- * that moves in half-hour steps.
+ * Only these take more than one Xooter, matching `multiWorkerServices` in the server.
+ * The server set also lists "deep" and "premium", which are not client `ServiceId`s.
  */
-export const MIN_HOURS_PER_XOOTER = 1.5;
+export const MULTI_XOOTER_SERVICES: ReadonlySet<ServiceId> = new Set(["airbnb", "office", "moving"]);
+
+/** The discount rate applied at a given Xooter count. 0 below the threshold. */
+export const multiXooterDiscountRate = (xooterCount: number) =>
+  xooterCount >= MULTI_XOOTER_DISCOUNT_THRESHOLD ? MULTI_XOOTER_DISCOUNT_RATE : 0;
 
 type Ladder = Record<string, number>;
 
@@ -127,9 +137,9 @@ const SERVICES: Record<ServiceId, ServiceSpec> = {
 
 export type QuoteInput = {
   service: ServiceId;
-  /** Labour hours — the unit the ladder is priced in. Split across `xooterCount`. */
+  /** Booked duration. Every Xooter works all of it. */
   hours: number;
-  /** How many Xooters share the job. Defaults to 1. Does not change the price. */
+  /** How many Xooters attend. Defaults to 1. Multiplies the base price. */
   xooterCount?: number;
   addOns?: number;
   /** Airbnb wash/dry/repack on-site. R20, the one add-on that is not R30. */
@@ -144,10 +154,8 @@ export type PricedQuote = {
   caveat?: string;
   /** Echoed back so callers never re-derive what was actually priced. */
   xooterCount: number;
-  /** Wall-clock hours the customer commits to: labour hours / Xooters. */
-  elapsedHours: number;
-  /** Hours each Xooter works, and what their payout is owed on. */
-  hoursPerXooter: number;
+  /** 0, or the multi-Xooter discount rate once the threshold is reached. */
+  discountRate: number;
   baseCents: number;
   addOnsCents: number;
   linenCents: number;
@@ -169,37 +177,23 @@ export type Quote = PricedQuote | UnavailableQuote;
 export const isPriced = (q: Quote): q is PricedQuote => q.ok;
 
 /**
- * Why a split is not bookable, or null when it is fine.
- *
- * Two rules, both falling out of things that already exist rather than invented policy: the
- * shift must be worth travelling for (`MIN_HOURS_PER_XOOTER`), and it must land on the
- * half-hour step the ladder and the scheduler both work in. 3.5 hours across 2 Xooters is
- * 1h45 each — not a step, not schedulable — so 3.5 hours stays a one-Xooter job.
+ * Why a Xooter count is not bookable, or null when it is fine. Mirrors the server's
+ * `multiWorkerServices` gate and its cap of 5.
  */
-const splitReason = (hours: number, xooterCount: number): string | null => {
+const xooterCountReason = (service: ServiceId, xooterCount: number): string | null => {
   if (!Number.isInteger(xooterCount) || xooterCount < 1) {
     return "Number of Xooters must be a whole number, 1 or more.";
   }
-  if (xooterCount > MAX_XOOTERS) {
-    return `Up to ${MAX_XOOTERS} Xooters can share one job.`;
-  }
   if (xooterCount === 1) return null;
-
-  const each = hours / xooterCount;
-  if (each < MIN_HOURS_PER_XOOTER) {
-    return `${xooterCount} Xooters would work ${each} hours each. The minimum is ${MIN_HOURS_PER_XOOTER} hours per Xooter.`;
+  if (!MULTI_XOOTER_SERVICES.has(service)) {
+    return `${service} is booked with one Xooter.`;
   }
-  // Compared in half-hour units so binary floating point never decides a booking.
-  if (!Number.isInteger(each * 2)) {
-    return `${hours} hours does not divide evenly between ${xooterCount} Xooters. Shifts move in half-hour steps.`;
+  if (xooterCount > MAX_XOOTERS) {
+    return `Up to ${MAX_XOOTERS} Xooters can work one job.`;
   }
   return null;
 };
 
-/**
- * The Xooter counts actually bookable for a service and hour count, for driving the
- * selector. Contains at least 1 whenever the hours are on the ladder.
- */
 export function xooterOptionsFor(service: ServiceId, hours: number): number[] {
   const options: number[] = [];
   for (let count = 1; count <= MAX_XOOTERS; count += 1) {
@@ -228,16 +222,20 @@ export function quote(input: QuoteInput): Quote {
     return { ok: false, reason: `${input.service} is booked between ${spec.min} and ${spec.max} hours.` };
   }
 
-  const baseCents = spec.ladder[String(input.hours)];
-  if (baseCents === undefined) {
+  const ladderCents = spec.ladder[String(input.hours)];
+  if (ladderCents === undefined) {
     return { ok: false, reason: `${input.hours} hours is not on the ${input.service} ladder. Hours move in half-hour steps.` };
   }
 
   // Checked after the ladder lookup so an off-ladder hour count reports the ladder problem
   // rather than a confusing split problem derived from it.
   const xooterCount = input.xooterCount ?? 1;
-  const splitFailure = splitReason(input.hours, xooterCount);
-  if (splitFailure) return { ok: false, reason: splitFailure };
+  const countFailure = xooterCountReason(input.service, xooterCount);
+  if (countFailure) return { ok: false, reason: countFailure };
+
+  // Rounded BEFORE multiplying, exactly as create-booking does, so the cents agree.
+  const discountRate = multiXooterDiscountRate(xooterCount);
+  const baseCents = Math.round(ladderCents * (1 - discountRate)) * xooterCount;
 
   const addOnsCents = Math.max(0, input.addOns ?? 0) * ADD_ON_CENTS;
   const linenCents = input.linenOnSite ? LINEN_ON_SITE_CENTS : 0;
@@ -248,9 +246,7 @@ export function quote(input: QuoteInput): Quote {
     confirmed: spec.confirmed,
     caveat: spec.caveat,
     xooterCount,
-    // Same money either way — only the clock changes.
-    elapsedHours: input.hours / xooterCount,
-    hoursPerXooter: input.hours / xooterCount,
+    discountRate,
     baseCents,
     addOnsCents,
     linenCents,
