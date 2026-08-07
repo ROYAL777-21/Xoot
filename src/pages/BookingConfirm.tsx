@@ -5,8 +5,8 @@ import { SEO } from "@/components/SEO";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { defaultHours, readDraft, type OnboardingAnswers } from "@/lib/onboarding";
-import { formatRand, hoursFor, isPriced, quote, serviceBounds, type ServiceId } from "@/lib/xoot-pricing";
-import { AlertTriangle, ArrowLeft, Check, Clock, ShieldCheck, Zap } from "lucide-react";
+import { formatRand, hoursFor, isPriced, quote, serviceBounds, xooterOptionsFor, type ServiceId } from "@/lib/xoot-pricing";
+import { AlertTriangle, ArrowLeft, Check, Clock, ShieldCheck, Users, Zap } from "lucide-react";
 
 /**
  * Booking confirmation — the end of the flow, and the first and only place a price
@@ -47,6 +47,7 @@ export default function BookingConfirm() {
   const recommended = answers ? defaultHours(answers) : 5.5;
 
   const [hours, setHours] = useState(recommended);
+  const [xooterChoice, setXooterChoice] = useState(1);
   const [selected, setSelected] = useState<string[]>(ADD_ONS.filter((a) => a.preselected).map((a) => a.id));
   const [cover, setCover] = useState(true);
   const [askingCover, setAskingCover] = useState(false);
@@ -55,9 +56,17 @@ export default function BookingConfirm() {
   const options = hoursFor(service);
   const belowRecommended = hours < recommended;
 
+  // Which Xooter counts this hour count can actually be split into. Changing the hours
+  // changes this set, so the choice is *derived* rather than synced: a stale selection
+  // falls back to 1 instead of being carried into a quote that would then fail. No effect,
+  // nothing to keep in step.
+  const xooterOptions = xooterOptionsFor(service, hours);
+  const xooterCount = xooterOptions.includes(xooterChoice) ? xooterChoice : 1;
+
   const raw = quote({
     service,
     hours,
+    xooterCount,
     addOns: selected.length,
     linenOnSite: answers?.type === "airbnb" && answers.linenHandling === "wash-dry-repack",
     bookingCover: cover,
@@ -147,6 +156,54 @@ export default function BookingConfirm() {
             </p>
           ) : null}
         </section>
+
+        {/* How many Xooters. Hidden entirely when the hours cannot be split — an option
+            with one choice is not a choice, and showing a disabled control invites the
+            question "why can't I?" on the screen that is trying to close the booking. */}
+        {xooterOptions.length > 1 ? (
+          <section>
+            <div className="flex items-baseline justify-between">
+              <h2 className="flex items-center gap-1.5 text-sm font-bold">
+                <Users className="size-4" aria-hidden="true" />
+                How many Xooters
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                {priced ? `done in about ${priced.elapsedHours}h` : null}
+              </span>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {xooterOptions.map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  onClick={() => {
+                    haptic("selection");
+                    setXooterChoice(count);
+                  }}
+                  aria-pressed={xooterCount === count}
+                  className={cn(
+                    "min-w-12 rounded-full border px-3 py-2 text-xs font-semibold transition-colors",
+                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                    xooterCount === count
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border text-foreground",
+                  )}
+                >
+                  {count}
+                </button>
+              ))}
+            </div>
+
+            {/* Says the quiet part out loud. Customers reasonably assume a second person
+                doubles the bill, and left unsaid that assumption stops them selecting it. */}
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+              {xooterCount === 1
+                ? `One Xooter, ${hours} hours. Adding a second splits the same ${hours} hours between them — same price, half the time.`
+                : `${xooterCount} Xooters share the same ${hours} hours, ${priced?.hoursPerXooter}h each. The price does not change.`}
+            </p>
+          </section>
+        ) : null}
 
         {/* Add-ons */}
         <section>
@@ -240,7 +297,17 @@ export default function BookingConfirm() {
         <div className="mt-auto pt-4">
           {priced && revealed ? (
             <dl className="mb-3 flex flex-col gap-1.5 text-xs">
-              <Row label={`${hours} hours`} value={formatRand(priced.baseCents)} />
+              {/* One line, still one price. Naming the split here rather than adding a
+                  second row keeps the total from reading as if the Xooters were charged
+                  separately. */}
+              <Row
+                label={
+                  priced.xooterCount === 1
+                    ? `${hours} hours`
+                    : `${hours} hours · ${priced.xooterCount} Xooters, ${priced.hoursPerXooter}h each`
+                }
+                value={formatRand(priced.baseCents)}
+              />
               {priced.addOnsCents > 0 ? <Row label={`${selected.length} add-on${selected.length === 1 ? "" : "s"}`} value={formatRand(priced.addOnsCents)} /> : null}
               {priced.linenCents > 0 ? <Row label="Linen washed on-site" value={formatRand(priced.linenCents)} /> : null}
               {priced.coverCents > 0 ? <Row label="Booking Cover" value={formatRand(priced.coverCents)} /> : null}
