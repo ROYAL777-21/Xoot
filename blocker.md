@@ -22,12 +22,34 @@ needs an account, a dashboard, a device, or a decision.
    `npm run ops:supabase:encryption-key -- -ProjectRef <ref>`. Gate codes cannot be stored
    until this exists. Reported done 2026-08-07 but unverifiable from an agent session, because
    Supabase never reads a secret value back.
-2. `ALLOWED_ORIGINS = https://xoot.co.za,https://www.xoot.co.za` on both projects. **Verified
-   2026-08-07 against deployed source, not inferred:** all 42 production functions have
-   `zoothome.co.za` compiled in as their fallback, because the domain change landed four hours
-   after the last deployment. Until this secret is set, every browser call from `xoot.co.za`
-   is answered `403 origin not allowed`. One `supabase secrets set`, no redeploy needed, and
-   it is the *safe* fix — redeploying to solve the same problem drags in a repricing.
+2. `ALLOWED_ORIGINS` on both projects — **now one command:**
+
+       SUPABASE_ACCESS_TOKEN=... npm run ops:supabase:allowed-origins -- both
+
+   Add `-- both --print` first to see the exact values without changing anything.
+
+   **Verified 2026-08-07 against deployed source, not inferred:** all 42 production functions
+   have `zoothome.co.za` compiled in as their fallback, because the domain change landed four
+   hours after the last deployment. Until this is set, every browser call from `xoot.co.za` is
+   answered `403 origin not allowed`. No redeploy needed, and it is the *safe* fix —
+   redeploying to solve the same problem drags in the `create-booking` repricing.
+
+   The value is **derived from `defaultAllowedOrigins`**, not retyped: production gets the
+   `https://` entries (`https://xoot.co.za,https://www.xoot.co.za`), staging keeps loopback and
+   swaps in `staging.xoot.co.za`. A fourth hand-written copy of the domain is precisely how the
+   deployed functions ended up on the old one. Pinned by `src/lib/allowed-origins.test.ts`,
+   which also refuses to let a loopback origin reach the production list — setting this
+   variable *replaces* the fallback rather than extending it, so anything in it is something
+   production will accept from a browser.
+
+   Why a new script rather than `ops:supabase:secrets:*`: that one is Windows-only (`npx.cmd`)
+   and, correctly for service keys, refuses to read anything inside the repo — it wants a
+   secrets file kept elsewhere. `ALLOWED_ORIGINS` is a list of public domain names, not a
+   secret, so there is no file to assemble and nothing to keep out of git.
+
+   **This still needs a machine that can reach `api.supabase.com`.** Org egress policy blocks
+   it from an agent session (re-confirmed 2026-08-07: connect fails outright), and the Supabase
+   MCP server exposes no secrets API, so it cannot be set from here by any route.
 3. Dismiss two by-design Supabase advisor findings (`set_safety_pin`, `user_safety_pins`).
 4. Leaked-password protection — deliberately deferred, still off.
 
