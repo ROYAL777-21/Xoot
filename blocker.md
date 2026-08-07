@@ -270,6 +270,22 @@ projects on that date, not carried forward on trust.
   is available in the working shell. Migration repair can instead use the guarded
   `-PromptDatabasePassword` mode after the matching rotated database password is entered
   locally.
+- **`BookingConfirm`'s "Confirm booking" button creates no booking.** Found 2026-08-07 while
+  wiring multi-Xooter. `src/pages/BookingConfirm.tsx` reads the onboarding draft, prices it,
+  reveals the total — and its primary button calls `navigate("/app")`. Nothing is persisted:
+  not the hours, not the add-ons, not Booking Cover. The only path that creates a booking is
+  `src/pages/app/Book.tsx` -> `create-booking`. So the screen that asks for the sale is a quote
+  preview whose button is misnamed, and a customer who completes it believes they have booked.
+  Either wire it to `create-booking` or rename the button to what it does; leaving it is the
+  worst of the three.
+- **Client and server pricing can still diverge on any dimension the parity test does not
+  model.** `pricing-parity.test.ts` compares ladder rungs by reading the server file as text,
+  which is good, but it only knows about rungs. On 2026-08-07 the client shipped a multi-Xooter
+  model that contradicted `create-booking` outright — split the hours rather than multiply the
+  price — and parity passed the whole time because multi-Xooter is not a rung.
+  `multi-xooter.test.ts` now reads the threshold, rate, cap and service set out of the server
+  the same way, so that dimension is covered. Add-ons, Booking Cover, the high-demand premium,
+  the one-time service fee and the Care+ discount rate are **not** covered on either side.
 - **Schema source of truth is undecided (ZD-005).** Production and staging migration
   histories still diverge: re-listed 2026-08-02, production starts from the 2026-05-19
   launch squash (33 recorded migrations) while staging follows the local chain from
