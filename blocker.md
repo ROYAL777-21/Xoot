@@ -9,6 +9,50 @@ listed once under "Closed at review" at the foot of the file, then dropped.
 Everything dated 2026-08-02 in this file was re-verified live against both Supabase
 projects on that date, not carried forward on trust.
 
+## What is actually left, and who can move it
+
+Added 2026-08-07. The sections below are the detail; this is the triage, because 98 entries
+interleaved with closed history make it hard to see what is genuinely outstanding.
+
+**Nothing here is blocked on writing code that nobody has written.** Almost everything left
+needs an account, a dashboard, a device, or a decision.
+
+### You, roughly ten minutes each, and everything else waits on the first two
+1. `ENCRYPTION_KEY` on both projects, **different values** —
+   `npm run ops:supabase:encryption-key -- -ProjectRef <ref>`. Gate codes cannot be stored
+   until this exists. Reported done 2026-08-07 but unverifiable from an agent session, because
+   Supabase never reads a secret value back.
+2. `ALLOWED_ORIGINS = https://xoot.co.za,https://www.xoot.co.za` on both projects. Every
+   deployed function still has the old domain compiled in as its fallback, so the live site
+   is refused on CORS until this is set. One `supabase secrets set`, no redeploy needed.
+3. Dismiss two by-design Supabase advisor findings (`set_safety_pin`, `user_safety_pins`).
+4. Leaked-password protection — deliberately deferred, still off.
+
+### Decisions only you can make
+- **ZD-005, the schema source of truth.** Four written migrations are unapplied behind it.
+- **The `zoot://` deep-link scheme.** Must change before first store submission or not at all;
+  it cannot move independently of Google/Apple OAuth config.
+- **The R39 one-time service fee.** The server charges it, the price screen does not show it.
+  Closing the gap raises every quoted one-time total, which is a commercial call.
+
+### Blocked on an external account, not on us
+Twilio (masked voice, WhatsApp sender, the two items at the top of this file), Mapbox,
+Cloudflare, Apple/Google/Expo and the stores, WordPress, Hostinger/Netlify, and the payment
+provider. Each section below says what specifically is needed.
+
+### Blocked on a physical device
+iOS and Android verification of the native launch experience, Live Activities, widgets and
+Siri intents. Simulators are not sufficient for any of them.
+
+### Still to build, and not blocked on anything
+- Safety SOS and recording **client UI** — the schema, the Edge Function and the nightly purge
+  are all live; nothing in the app raises an alert yet.
+- Property allocation for Airbnb and office accounts.
+- Multi-Xooter: the pricing and selector are done; `xooterCount` still needs wiring through
+  `Book.tsx` to `create-booking`, which already accepts `workerCount`.
+
+---
+
 ## Live security holes — fix before anything else
 
 - **CLOSED 2026-08-02 — the client-as-source-of-truth hole.** `FOR ALL USING (user_id =
