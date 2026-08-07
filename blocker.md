@@ -184,10 +184,24 @@ projects on that date, not carried forward on trust.
   and staging project `fxmxyabdjqviqbcxmvlp` with `https://staging.xoot.co.za`. Live
   apply still requires a rotated local `SUPABASE_ACCESS_TOKEN`, target project ref, and
   explicit `-SiteUrl` so localhost is not applied to staging/production accidentally.
-- **`src/integrations/supabase/types.ts` is stale against the live schema.** Found 2026-08-02:
-  `training_modules` carries `rank_points` and `badge_label` in both projects and the
-  generated types have neither, so a correct query fails to typecheck and needs a cast.
-  Regenerate it — and expect other drift, because nothing currently forces it to stay in step.
+- **CLOSED 2026-08-07 — `src/integrations/supabase/types.ts` regenerated from production.**
+  It was far more stale than the original entry suggested: **28 tables typed against 78 live**,
+  so 50 tables had no types at all — including every table from the 2026-08-02 safety work
+  (`safety_sos_alerts`, `visit_recordings`, `user_safety_pins`). 1,208 lines to 5,199.
+
+  The enums were not merely incomplete but *wrong*, which is worse: `subscription_status` was
+  missing `pending_payment` and `past_due`, and the booking status enum was missing
+  `replacement_offered`. Code narrowing on those unions would have compiled while being unable
+  to represent states the database can actually hold.
+
+  Verified after regenerating: web typecheck, mobile typecheck, and the full `verify` chain all
+  pass, so nothing depended on the stale shape. `booking_tips` and `support_handoff_contexts`
+  are absent from the output, and that is correct — they are exactly the two migrations known
+  to be unapplied, so the generated types agree with live reality rather than with the repo.
+
+  **Nothing forces this to stay in step.** It drifted this far unnoticed because regeneration is
+  manual and no check compares the two. Worth a CI step that regenerates and fails on a diff,
+  before it silently rots again.
 - Supabase MCP is configured for read-only inspection. Supabase CLI `2.108.0` is installed,
   but separate CLI auth still requires a local `SUPABASE_ACCESS_TOKEN` or secure login flow
   before live Auth config can run. Rechecked 2026-08-02: no `SUPABASE_ACCESS_TOKEN`,
