@@ -257,4 +257,29 @@ describe("a household profile can only be read by the household it belongs to", 
     expect(select, "could not find the booking select").toBeTruthy();
     expect(select![1].split(",")).toContain("user_id");
   });
+
+  /**
+   * Both locks above are useless if the column they turn on is never written.
+   *
+   * `create-booking` validated `householdProfileId` and then dropped it: the value reached
+   * `recurring_schedules` but never `bookings`. So every booking carried a null
+   * `household_profile_id`, and `get-sensitive-access` refused all of them with "booking is
+   * not assigned" — the gate-code feature could not work for anyone. Fail-closed, so never a
+   * disclosure risk, but dead.
+   *
+   * Pinning the write here rather than in the pricing suite because what makes it safe is the
+   * ownership proof next to it, not the money.
+   */
+  it("persists the household profile it just proved the caller owns", () => {
+    const insertAt = createBooking.indexOf('.from("bookings").insert');
+    expect(insertAt, "create-booking no longer inserts a booking").toBeGreaterThan(-1);
+    const insert = createBooking.slice(insertAt, createBooking.indexOf('.select("id")', insertAt));
+
+    expect(insert, "the validated household profile is dropped before the insert").toMatch(
+      /household_profile_id:\s*householdProfileId/,
+    );
+
+    // The column get-sensitive-access reads must be the column create-booking writes.
+    expect(sensitive).toMatch(/booking\.household_profile_id/);
+  });
 });

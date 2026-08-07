@@ -218,6 +218,12 @@ Deno.serve(async (req) => {
         payment_status: "pending",
         frequency,
         property_account_id: propertyAccountId,
+        // Persisted, not merely validated. `get-sensitive-access` finds the household by
+        // `booking.household_profile_id`, so while this stayed null every gate-code request
+        // failed "booking is not assigned" and the feature could not work at all. Safe to
+        // store now that two independent locks hold: ownership is proven above, and the
+        // credential read is itself scoped to `booking.user_id`.
+        household_profile_id: householdProfileId,
         launch_region: launchRegion,
         duration_hours: estHours,
         notes: instructions || null,

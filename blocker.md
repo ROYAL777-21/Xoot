@@ -30,10 +30,15 @@ needs an account, a dashboard, a device, or a decision.
    Add `-- both --print` first to see the exact values without changing anything.
 
    **Verified 2026-08-07 against deployed source, not inferred:** all 42 production functions
-   have `zoothome.co.za` compiled in as their fallback, because the domain change landed four
+   had `zoothome.co.za` compiled in as their fallback, because the domain change landed four
    hours after the last deployment. Until this is set, every browser call from `xoot.co.za` is
-   answered `403 origin not allowed`. No redeploy needed, and it is the *safe* fix —
-   redeploying to solve the same problem drags in the `create-booking` repricing.
+   answered `403 origin not allowed`. No redeploy needed, and it stays the *safe* fix for the
+   39 that remain — a redeploy would drag in whatever else that function has accumulated.
+
+   **Three are already correct without the secret**: `raise-sos-alert`, `get-sensitive-access`
+   and `create-booking` were redeployed on 2026-08-07 carrying security and pricing fixes, and a
+   redeploy compiles the current `defaultAllowedOrigins` in. Setting the secret is still worth
+   doing — it is what fixes the other 39 — and it is harmless to the three.
 
    The value is **derived from `defaultAllowedOrigins`**, not retyped: production gets the
    `https://` entries (`https://xoot.co.za,https://www.xoot.co.za`), staging keeps loopback and
@@ -86,7 +91,7 @@ Siri intents. Simulators are not sufficient for any of them.
   Recording UI is still unbuilt. It opens at `server_ready` rather than `live`, but turning
   it on needs the both-party notice wording settled first (RICA s4 / POPIA), which is a
   decision, not a build.
-- **Property allocation — step one built 2026-08-07 (`0ce6dbf`), in repo, not deployed.**
+- **Property allocation — step one built 2026-08-07 (`0ce6dbf`), deployed the same day.**
   The founder chose "link bookings to a property" out of three readings. `create-booking` now
   accepts `propertyAccountId`, proves the caller owns it (`.eq("user_id", user.id)`, one
   `property account not found` message for both "no such property" and "not yours", checked
@@ -94,9 +99,9 @@ Siri intents. Simulators are not sufficient for any of them.
   `src/lib/server-authority.test.ts` guards the ownership check and fails if the caller scope
   is removed.
 
-  **It changes nothing for customers until `create-booking` is deployed, and that deployment
-  is the repricing** — the same function carries the ZD-020 ladder. Until then the column
-  still never holds a value in production.
+  **Live as of the v7 deploy**, which carried the ZD-020 ladder in the same push. The column
+  now holds a value in production. So does `bookings.household_profile_id`, which this same
+  function had been validating and then discarding — see the gate-code entry.
 
   Not built, and still unspecified: preferred Xooter per property, per-property schedules and
   preferences. The brief covers curated onboarding by customer type (§5.1b) and says nothing
@@ -155,10 +160,11 @@ Consequences worth stating separately:
   `size.price x priceFactor x serviceMultiplier` off `270 / 315 / 390` is gone from live code,
   and so is its private multi-Xooter arithmetic.
 
-  **This reverses the risk direction.** Before, screen and production agreed on the old model.
-  Now the screen quotes the ladder and production still charges the old model, so a customer
-  would be charged MORE than they were shown. Production holds 0 bookings so nobody is affected
-  today, but this must not meet real traffic. `create-booking` has to be deployed before launch.
+  **This reversed the risk direction, and that window is now closed.** For a few hours the screen
+  quoted the ladder while production still charged the old model, so a customer would have been
+  charged MORE than they were shown. Production held 0 bookings throughout, so nobody was ever
+  affected. **`create-booking` was deployed to production on 2026-08-07 (v6 → v7)** and the two
+  sides now agree — see "The deploys that closed this" below.
 
   What the screen now quotes, mirroring the server's precedence (service length beats home
   size, and home size only ever implies a duration):
@@ -177,9 +183,13 @@ Consequences worth stating separately:
   instruction, and replaced by guards that the screen must keep delegating — verified to fail
   against a reintroduced private copy.
 
-**Nothing was deployed.** The founder asked for a redeploy to fix `ALLOWED_ORIGINS`; that was
-stopped once the live source was read. Set the `ALLOWED_ORIGINS` secret instead — it fixes
-CORS on all 42 functions with no code change and no pricing risk.
+**Nothing was deployed at the time this was written.** The founder asked for a redeploy to fix
+`ALLOWED_ORIGINS`; that was stopped once the live source was read. Setting the `ALLOWED_ORIGINS`
+secret remains the right fix for the other 39 functions — it fixes CORS with no code change and
+no pricing risk.
+
+Three functions have since been deployed deliberately, each verified by fetching the live source
+back and comparing it against the repo. See "The deploys that closed this".
 
 How many *other* deployed functions differ from their repo source was open when this was
 written. It has since been answered in full — see the next section.
@@ -199,7 +209,7 @@ That sounds worse than it is, and the distinction matters for deciding what to r
 
 | Function | Deployed | What the repo has since | Risk of deploying |
 | --- | --- | --- | --- |
-| `create-booking` | 2026-06-20 | `eb5401e` ZD-020 ladder, `0ce6dbf` property link | **Repricing.** See above. Founder sign-off. |
+| `create-booking` | ~~2026-06-20~~ **DEPLOYED v7 2026-08-07** | `eb5401e` ZD-020 ladder, `0ce6dbf` property link | **Was a repricing.** Founder signed off; deployed and verified. |
 | `support-respond` | 2026-06-27 | `e34774f` Concierge governance and knowledge boundaries | Tightens Concierge. Safe, wants a smoke test. |
 | `twilio-voice-status` | 2026-08-06 10:48 | `d26d838` callback write fix, committed 10:50 — two minutes later | Safe. Missed the deploy by minutes. |
 | `twilio-voice-twiml` | 2026-05-19 | `44c2d0a` credential fixes | Safe. Oldest deployment in the estate. |
@@ -267,12 +277,14 @@ from a session is the proxy, not the function.
 
 ## Live security holes — fix before anything else
 
-- **DEPLOYED TO PRODUCTION 2026-08-07.** Two of the three functions carrying fixes are live:
+- **The deploys that closed this — DEPLOYED TO PRODUCTION 2026-08-07.** All three functions
+  carrying fixes are live:
 
   | function | was | now | carries |
   |---|---|---|---|
   | `raise-sos-alert` | v4 | v5 | post-dispatch PIN fix + `xoot.co.za` CORS |
   | `get-sensitive-access` | v6 | v7 | household-profile scoping + `xoot.co.za` CORS |
+  | `create-booking` | v6 | v7 | ZD-020 ladder, ownership checks, `xoot.co.za` CORS |
 
   `raise-sos-alert` was verified by fetching the deployed source back and comparing: it
   contains `alert.state === "dispatched" || elapsedSeconds >= COUNTDOWN_SECONDS`, and its
@@ -280,14 +292,21 @@ from a session is the proxy, not the function.
   `zoothome.co.za`. `get-sensitive-access` used the identical mechanism and content read the
   same way; its `ezbr_sha256` and version both changed.
 
-  **Both now serve the correct domain without `ALLOWED_ORIGINS`** — a redeploy compiles the
-  current `defaultAllowedOrigins` in. The other 40 still need the secret, which stays the
+  **All three now serve the correct domain without `ALLOWED_ORIGINS`** — a redeploy compiles the
+  current `defaultAllowedOrigins` in. The other 39 still need the secret, which stays the
   cheaper fix for them: no deploy, no repricing risk.
 
-  Still to deploy: **`create-booking`**, now mandatory rather than optional (see the repricing
-  entry). It is the largest function and the only one where a transcription slip would misprice
-  a booking, so it wants `supabase functions deploy create-booking --project-ref
-  mvlrkelahhsyjrwgsxaf` from a machine with the repo.
+  `create-booking` was the one where a transcription slip would misprice a real booking rather
+  than fail visibly, so it was verified harder than the other two. Its `_shared/pricing.ts` — the
+  file holding every rung customers are charged — was fetched back from production, written to
+  disk and diffed against the repo: **identical, matching SHA-256
+  `35d7537f…60be2dd`.** The entrypoint and `_shared/action-utils.ts` were compared the same way.
+  Note that v6 did not bundle `pricing.ts` at all; production had no ladder before this.
+
+  Deploying by hand was earlier called the wrong tool, on the grounds that reconstructing
+  production code by hand is what caused this whole class of problem. That reasoning omitted the
+  thing that removes the risk: **deployed source can be fetched back and diffed.** Transcription
+  error is only a hazard when it is unverifiable.
 
 - **CLOSED IN REPO 2026-08-07, still open in production — another household's gate code.**
   Found while closing the `household_profile_id` gap that was noted in `server-authority.test.ts`
@@ -317,10 +336,28 @@ from a session is the proxy, not the function.
   `.eq("user_id", booking.user_id)` so a booking written by any other path still cannot
   disclose the wrong household.
 
-  **Production still has the old code.** Both functions are in the 37 non-pricing redeploys.
+  **CLOSED IN PRODUCTION 2026-08-07.** Both functions are deployed; the live `create-booking`
+  proves ownership before writing and the live `get-sensitive-access` scopes the credential read.
 
-- **OPEN IN PRODUCTION 2026-08-07 — an SOS alert can be cancelled without the PIN for five
-  seconds after it dispatches.** Fixed in repo, **not deployed**.
+  **A third gap, found while deploying: the column both locks turn on was never written.**
+  `create-booking` validated `householdProfileId` and then dropped it — the value reached
+  `recurring_schedules` but never `bookings`. So every booking carried a null
+  `household_profile_id` and `get-sensitive-access` refused all of them with "booking is not
+  assigned". Fail-closed, so never a disclosure risk, but the gate-code feature could not work
+  for anyone. Now persisted, which is safe precisely because both locks above already hold.
+  Guarded by "persists the household profile it just proved the caller owns" in
+  `server-authority.test.ts`, verified to fail against a planted regression.
+
+  **Still open, lower severity: `create-booking-request` does not check ownership at all.** It
+  takes `householdProfileId` from the body and writes it to `recurring_schedules` with no
+  `user_id` check. That table is not a credential path — `get-sensitive-access` reads
+  `bookings`, not `recurring_schedules` — so this is data integrity rather than disclosure: your
+  recurring schedule could point at someone else's profile. Left alone deliberately; it is a
+  separate function with its own deploy, and folding an untested change into a verified
+  repricing deploy is how drift starts.
+
+- **CLOSED IN PRODUCTION 2026-08-07 — an SOS alert could be cancelled without the PIN for five
+  seconds after it dispatched.** Fixed in repo and **deployed (v4 → v5)**.
 
   `raise-sos-alert` decided whether the cancel PIN was required with
   `needsPin = elapsedSeconds >= 5`, measured from `safety_sos_alerts.triggered_at`. That rule
@@ -340,9 +377,9 @@ from a session is the proxy, not the function.
   `safety.test.ts` → "requires the PIN for any dispatched alert, whatever the clock says",
   verified to fail against the old rule.
 
-  **The deployed copy still has the hole.** `raise-sos-alert` is a non-pricing function, so
-  redeploying it carries none of the `create-booking` risk — it is the strongest single reason
-  to green-light the non-pricing redeploys.
+  **The deployed copy no longer has the hole.** Verified by fetching the live source back: it
+  contains the state-based rule, and its bundled `_shared/action-utils.ts` carries
+  `https://xoot.co.za` with no trace of the retired domain.
 
 - **CLOSED 2026-08-02 — the client-as-source-of-truth hole.** `FOR ALL USING (user_id =
   auth.uid())` was written across the schema to mean "this row is yours"; Postgres reads it
