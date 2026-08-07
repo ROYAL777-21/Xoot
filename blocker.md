@@ -47,7 +47,20 @@ Siri intents. Simulators are not sufficient for any of them.
 ### Still to build, and not blocked on anything
 - Safety SOS and recording **client UI** — the schema, the Edge Function and the nightly purge
   are all live; nothing in the app raises an alert yet.
-- Property allocation for Airbnb and office accounts.
+- **Property allocation for Airbnb and office accounts — unbuilt AND unspecified.** Checked
+  2026-08-07. What exists: `property_accounts` with a working create/list screen at
+  `/app/properties`, and a `bookings.property_account_id` column in the live schema. What does
+  not exist: anything that sets that column. `create-booking` and `create-booking-request` do
+  not accept a property account id at all, so bookings and properties are entirely unlinked,
+  and the column has never held a value. The only reference anywhere is `ops-workflow` putting
+  the id into an outbox payload.
+
+  There is also **no recorded requirement** for what "allocation" means. The brief covers
+  curated onboarding by customer type (§5.1b) but says nothing about linking bookings to
+  properties or dedicating Xooters to them. The readings differ enough to change the work
+  substantially — link a booking to a property, versus keep a preferred Xooter per property,
+  versus per-property schedules and preferences — so this needs a founder decision before
+  anything is built. Do not infer it from the unused column.
 - ~~Multi-Xooter~~ — **already built, corrected 2026-08-07.** `Book.tsx` has had the whole
   feature all along: a capped "How many Xooters?" stepper, multi-select, the 10% discount at
   3+, and it sends `workerCount` and `zooterIds` to `create-booking`. It was listed here as
