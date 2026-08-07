@@ -22,9 +22,12 @@ needs an account, a dashboard, a device, or a decision.
    `npm run ops:supabase:encryption-key -- -ProjectRef <ref>`. Gate codes cannot be stored
    until this exists. Reported done 2026-08-07 but unverifiable from an agent session, because
    Supabase never reads a secret value back.
-2. `ALLOWED_ORIGINS = https://xoot.co.za,https://www.xoot.co.za` on both projects. Every
-   deployed function still has the old domain compiled in as its fallback, so the live site
-   is refused on CORS until this is set. One `supabase secrets set`, no redeploy needed.
+2. `ALLOWED_ORIGINS = https://xoot.co.za,https://www.xoot.co.za` on both projects. **Verified
+   2026-08-07 against deployed source, not inferred:** all 42 production functions have
+   `zoothome.co.za` compiled in as their fallback, because the domain change landed four hours
+   after the last deployment. Until this secret is set, every browser call from `xoot.co.za`
+   is answered `403 origin not allowed`. One `supabase secrets set`, no redeploy needed, and
+   it is the *safe* fix — redeploying to solve the same problem drags in a repricing.
 3. Dismiss two by-design Supabase advisor findings (`set_safety_pin`, `user_safety_pins`).
 4. Leaked-password protection — deliberately deferred, still off.
 
@@ -47,20 +50,23 @@ Siri intents. Simulators are not sufficient for any of them.
 ### Still to build, and not blocked on anything
 - Safety SOS and recording **client UI** — the schema, the Edge Function and the nightly purge
   are all live; nothing in the app raises an alert yet.
-- **Property allocation for Airbnb and office accounts — unbuilt AND unspecified.** Checked
-  2026-08-07. What exists: `property_accounts` with a working create/list screen at
-  `/app/properties`, and a `bookings.property_account_id` column in the live schema. What does
-  not exist: anything that sets that column. `create-booking` and `create-booking-request` do
-  not accept a property account id at all, so bookings and properties are entirely unlinked,
-  and the column has never held a value. The only reference anywhere is `ops-workflow` putting
-  the id into an outbox payload.
+- **Property allocation — step one built 2026-08-07 (`0ce6dbf`), in repo, not deployed.**
+  The founder chose "link bookings to a property" out of three readings. `create-booking` now
+  accepts `propertyAccountId`, proves the caller owns it (`.eq("user_id", user.id)`, one
+  `property account not found` message for both "no such property" and "not yours", checked
+  before the insert), and writes `bookings.property_account_id`. `Book.tsx` has the picker;
+  `src/lib/server-authority.test.ts` guards the ownership check and fails if the caller scope
+  is removed.
 
-  There is also **no recorded requirement** for what "allocation" means. The brief covers
-  curated onboarding by customer type (§5.1b) but says nothing about linking bookings to
-  properties or dedicating Xooters to them. The readings differ enough to change the work
-  substantially — link a booking to a property, versus keep a preferred Xooter per property,
-  versus per-property schedules and preferences — so this needs a founder decision before
-  anything is built. Do not infer it from the unused column.
+  **It changes nothing for customers until `create-booking` is deployed, and that deployment
+  is the repricing** — the same function carries the ZD-020 ladder. Until then the column
+  still never holds a value in production.
+
+  Not built, and still unspecified: preferred Xooter per property, per-property schedules and
+  preferences. The brief covers curated onboarding by customer type (§5.1b) and says nothing
+  about either. Do not infer them from the column.
+- `create-booking-request` still does not accept a property account id. Left alone
+  deliberately — it is the pre-booking enquiry path, and widening it was not asked for.
 - ~~Multi-Xooter~~ — **already built, corrected 2026-08-07.** `Book.tsx` has had the whole
   feature all along: a capped "How many Xooters?" stepper, multi-select, the 10% discount at
   3+, and it sends `workerCount` and `zooterIds` to `create-booking`. It was listed here as
@@ -110,8 +116,73 @@ Consequences worth stating separately:
 stopped once the live source was read. Set the `ALLOWED_ORIGINS` secret instead — it fixes
 CORS on all 42 functions with no code change and no pricing risk.
 
-Unknown and worth checking before any deploy: how many *other* deployed functions differ from
-their repo source. Only `create-booking` has been compared so far.
+How many *other* deployed functions differ from their repo source was open when this was
+written. It has since been answered in full — see the next section.
+
+---
+
+## Every deployed function is stale. Only four differ in ways that change behaviour
+
+Audited 2026-08-07, all 42 production and 33 staging functions, after the `create-booking`
+finding above made "how widespread is this?" the obvious next question.
+
+**Result: 42 of 42 production functions are behind the repository. None is in step.**
+
+That sounds worse than it is, and the distinction matters for deciding what to redeploy.
+
+### The four with real logic drift
+
+| Function | Deployed | What the repo has since | Risk of deploying |
+| --- | --- | --- | --- |
+| `create-booking` | 2026-06-20 | `eb5401e` ZD-020 ladder, `0ce6dbf` property link | **Repricing.** See above. Founder sign-off. |
+| `support-respond` | 2026-06-27 | `e34774f` Concierge governance and knowledge boundaries | Tightens Concierge. Safe, wants a smoke test. |
+| `twilio-voice-status` | 2026-08-06 10:48 | `d26d838` callback write fix, committed 10:50 — two minutes later | Safe. Missed the deploy by minutes. |
+| `twilio-voice-twiml` | 2026-05-19 | `44c2d0a` credential fixes | Safe. Oldest deployment in the estate. |
+
+### The other 38 are stale for one shared reason
+
+`supabase/functions/_shared/action-utils.ts` is bundled into 33 of them at deploy time, and it
+last changed at **2026-08-06 15:13 UTC** (`ed8d9e0`). The newest deployment in either project
+is `twilio-voice-status` at **2026-08-06 10:48 UTC** — four and a half hours earlier. No
+deployed function can carry that change, and the change is the production domain:
+
+    deployed today:   "https://zoothome.co.za",  "https://www.zoothome.co.za"
+    repository:       "https://xoot.co.za",      "https://www.xoot.co.za"
+
+Verified by reading the deployed bundle of `twilio-token` from the live project, not inferred
+from dates. Its own handler is byte-identical to the repo; only the vendored `_shared` copy is
+old. The remaining 5 (`twilio-*-webhook` family) are stale on `_shared/twilio-webhook.ts` from
+`2026-07-29`, same shape of problem.
+
+**This is what makes `ALLOWED_ORIGINS` load-bearing rather than tidy-up.** `getAllowedOrigins()`
+reads the env var *first* and only falls back to the compiled list, so setting the secret
+corrects all 42 functions at once, with no deploy and no pricing risk. Leaving it unset means
+`handlePreflight` answers `403 origin not allowed` to every browser call from `xoot.co.za`.
+
+### Also true, and separate
+
+The Zoot→Xoot rename (`4f9ca8c`, 2026-07-29) never reached production either. Live functions
+still send email with `subject: "Confirm your Zoot account"` and similar across the playbook.
+Customer-visible, not dangerous, fixed by the same redeploy — which is worth doing for the 37
+non-pricing functions once `create-booking` is decided separately.
+
+### Staging cannot validate the repricing as it stands
+
+Staging has **33 functions, newest deployed 2026-06-30**, and is missing nine that production
+runs: `raise-sos-alert`, `respond-zooter-job`, `sensitive-access-read`, `sensitive-access-save`,
+`training-module`, `twilio-conversation`, `twilio-token`, `twilio-voice-status`,
+`twilio-voice-twiml`. It is not a mirror of production and has not been one for over a month.
+"Test the new prices on staging first" therefore requires bringing staging up to date as its
+own step — do not treat staging agreement as evidence about production until that is done.
+
+### Method, so this is repeatable
+
+Deployment timestamps from `list_edge_functions` compared against `git log` per function
+directory **and against every `_shared/*.ts` the function imports** — the shared-module step is
+what turned "5 look fine" into the correct "0 are in step", and omitting it is how this drift
+stayed invisible. Live source spot-checked with `get_edge_function` to confirm the dates were
+telling the truth. Direct CORS probing was not possible: org egress policy blocks
+`*.supabase.co`, so a `403` seen from a session is the proxy, not the function.
 
 ## Live security holes — fix before anything else
 
