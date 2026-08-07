@@ -172,4 +172,34 @@ describe("sensitive access credentials", () => {
     expect(gateAt).toBeGreaterThan(-1);
     expect(decryptAt).toBeGreaterThan(gateAt);
   });
+
+  /**
+   * `property_account_id` is a foreign key supplied by the client, so create-booking has to
+   * prove the caller owns it rather than trust the payload. Without the ownership filter an
+   * Airbnb host could file a booking against another customer's property, corrupting that
+   * customer's per-property history and anything later built on it.
+   *
+   * This is the exact shape of the bug the client-write lockdown was written to close, so it
+   * is asserted rather than left to review. Note `household_profile_id` in the same function
+   * is NOT checked this way — see blocker.md; it is a known gap, not a pattern to copy.
+   */
+  it("proves the caller owns a property account before filing a booking against it", () => {
+    const createBooking = codeOf("supabase/functions/create-booking/index.ts");
+
+    const checkAt = createBooking.indexOf('.from("property_accounts")');
+    const insertAt = createBooking.indexOf('.from("bookings").insert');
+    expect(checkAt, "create-booking no longer looks up the property account").toBeGreaterThan(-1);
+
+    // The lookup must be scoped to the caller, not just to the id.
+    const lookup = createBooking.slice(checkAt, checkAt + 400);
+    expect(lookup).toMatch(/\.eq\("id",\s*propertyAccountId\)/);
+    expect(lookup, "the property lookup is not scoped to the caller").toMatch(/\.eq\("user_id",\s*user\.id\)/);
+
+    // And it must happen before the booking is written, or the check protects nothing.
+    expect(checkAt).toBeLessThan(insertAt);
+
+    // One message for both "no such property" and "not yours", so the endpoint cannot be
+    // used to probe which property ids exist.
+    expect(createBooking).toMatch(/property account not found/);
+  });
 });

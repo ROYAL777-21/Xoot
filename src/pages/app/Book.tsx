@@ -112,6 +112,8 @@ const Book = () => {
   const [instructions, setInstructions] = useState("");
   const [householdNotes, setHouseholdNotes] = useState("");
   const [householdId, setHouseholdId] = useState<string | null>(null);
+  const [properties, setProperties] = useState<{ id: string; name: string; account_type: string }[]>([]);
+  const [propertyId, setPropertyId] = useState<string | null>(null);
   const [smartSuggestion, setSmartSuggestion] = useState("");
   const [bookingCoverOptIn, setBookingCoverOptIn] = useState(true);
   const [workerCount, setWorkerCount] = useState(1);
@@ -155,7 +157,10 @@ const Book = () => {
     Promise.all([
       supabase.from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
       supabase.from("bookings").select("scheduled_at").eq("user_id", user.id).order("scheduled_at", { ascending: false }).limit(6),
-    ]).then(([homeResult, bookingResult]) => {
+      // Only active accounts: a closed property should not still be bookable against.
+      supabase.from("property_accounts").select("id,name,account_type").eq("user_id", user.id).eq("status", "active").order("created_at"),
+    ]).then(([homeResult, bookingResult, propertyResult]) => {
+      setProperties(propertyResult.data ?? []);
       const home = homeResult.data;
       if (home) {
         setHouseholdId(home.id ?? null);
@@ -245,6 +250,7 @@ const Book = () => {
         address: safeBooking.address,
         instructions,
         householdProfileId: householdId,
+        propertyAccountId: propertyId,
         workerCount: totalWorkers,
         zooterIds: picked.map((z) => z.id),
         addOns: safeBooking.extras,
@@ -334,6 +340,17 @@ const Book = () => {
             </div>
             {smartSuggestion && <p className="mt-3 rounded-2xl bg-primary/10 px-4 py-3 text-sm text-primary flex items-start gap-2"><Repeat className="h-4 w-4 mt-0.5" />{smartSuggestion}</p>}
           </div>
+          {/* Only shown when the customer actually has property accounts, so a household
+              customer never sees it. "Personal" is an explicit choice rather than a blank,
+              because for an Airbnb host with three listings, silently defaulting to no
+              property is how a booking ends up filed against nothing. */}
+          {properties.length > 0 && <div><h2 className="font-display text-xl font-bold mb-2">Which property?</h2><div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setPropertyId(null)} aria-pressed={propertyId === null} className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${propertyId === null ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>Personal</button>
+            {properties.map((property) => (
+              <button key={property.id} type="button" onClick={() => setPropertyId(property.id)} aria-pressed={propertyId === property.id} className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${propertyId === property.id ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{property.name}</button>
+            ))}
+          </div></div>}
+
           {allowsMultipleWorkers(active) && <div><h2 className="font-display text-xl font-bold mb-2">How many Xooters?</h2><div className="flex items-center gap-3"><button onClick={() => setWorkerCount(Math.max(1, workerCount - 1))} className="h-9 w-9 rounded-full border grid place-items-center"><Minus className="h-4 w-4" /></button><span className="font-display text-2xl font-bold w-8 text-center">{workerCount}</span><button onClick={() => setWorkerCount(Math.min(5, workerCount + 1))} className="h-9 w-9 rounded-full border grid place-items-center"><Plus className="h-4 w-4" /></button></div></div>}
           <Button onClick={() => setStep(1)} className="w-full rounded-2xl h-12 gradient-warm font-semibold">Next <ArrowRight className="h-4 w-4 ml-1" /></Button>
         </div>

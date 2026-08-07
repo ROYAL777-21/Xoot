@@ -82,6 +82,7 @@ Deno.serve(async (req) => {
     const address = cleanText(body.address, 240);
     const instructions = cleanText(body.instructions ?? body.notes, 1200);
     const householdProfileId = cleanText(body.householdProfileId ?? body.household_profile_id, 80) || null;
+    const propertyAccountId = cleanText(body.propertyAccountId ?? body.property_account_id, 80) || null;
     const requestedWorkerCount = toNumber(body.workerCount ?? body.worker_count, 1);
     const zooterIds = cleanArray(body.zooterIds ?? body.zooter_ids ?? (body.zooter_id ? [body.zooter_id] : []), 5, 80);
     const addOns = cleanArray(body.addOns ?? body.extras, 12, 80);
@@ -112,6 +113,25 @@ Deno.serve(async (req) => {
     }
 
     const workerCount = Math.max(selectedXooterIds.length, 1);
+
+    // A property account is a client-supplied foreign key, so ownership is proven here
+    // rather than trusted. Without this an Airbnb host could file a booking against another
+    // customer's property, which would corrupt that customer's per-property history and
+    // anything later built on it (invoicing, repeat-book).
+    //
+    // Note `household_profile_id` a few lines below is NOT checked this way. That predates
+    // this change and is recorded in blocker.md; it is a real gap, not a precedent to copy.
+    if (propertyAccountId) {
+      const { data: property } = await supa
+        .from("property_accounts")
+        .select("id")
+        .eq("id", propertyAccountId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      // One message for "no such property" and "not yours", so the endpoint cannot be used
+      // to test whether a given property id exists.
+      if (!property) return fail("property account not found", origin, 404);
+    }
 
     const bookedHours = resolveHours({ hours: body?.hours, serviceLengthId, homeSizeId });
     if (bookedHours === null) return fail("booked hours are required", origin, 400);
@@ -173,6 +193,7 @@ Deno.serve(async (req) => {
         status: "draft",
         payment_status: "pending",
         frequency,
+        property_account_id: propertyAccountId,
         launch_region: launchRegion,
         duration_hours: estHours,
         notes: instructions || null,
