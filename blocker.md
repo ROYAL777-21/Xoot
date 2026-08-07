@@ -236,6 +236,33 @@ projects on that date, not carried forward on trust.
   Both assertions were verified to fail against the reintroduced bugs before being kept.
   44 of the 45 casts are gone; the one on `booking_tips` is legitimate and carries its reason.
   This narrows the blast radius — it still **cannot** tell whether the types match live.
+- **CLOSED 2026-08-07 — Edge Functions swept for the same defect; they are clean.**
+  The web app had no compile-time check on its queries, so the obvious question was whether the
+  Deno functions — which have no generated types at all and run with the service role on the
+  booking and payment paths — carried the same bug. Every `.from()` chain in
+  `supabase/functions` was checked against the **live** production schema: 47 tables
+  referenced, 46 exist, and all select columns, filter/order columns and insert/update/upsert
+  payload keys match. `favorites` was the only instance of this class, not the tip of an
+  iceberg.
+
+  Two false-positive rounds preceded that result and are worth recording, because both would
+  have been reported as bugs by a less sceptical pass: a fixed-size scan window attributed one
+  statement's write columns to the previous statement's table (286 phantom findings), and a
+  key-matching rule that read the middle branch of a ternary — `status: x >= 4 ? "escalated" :
+  "open"` — as a column named `escalated` (11 more). The checker was only trusted after it was
+  shown to catch a deliberately planted bad column.
+
+  The 47th table, `support_handoff_contexts`, does not exist in production. It is **not** a
+  live fault: `create-concierge-handoff` is undeployed in both projects, re-verified against
+  live on 2026-08-07. It is a **deployment-ordering hazard** — that function inserts the
+  `support_tickets` row and only then inserts the handoff context, throwing if it fails. Deploy
+  it before applying `20260703153056_concierge_structured_handoff.sql` and every handoff
+  commits a support ticket, then aborts before the follow-up and review-queue rows, orphaning a
+  ticket nobody is routed. **Apply the migration first.**
+
+  The guard now covers Edge Functions too, checking them against the generated types rather
+  than live, since CI has no database credentials. That substitution was justified before it
+  was relied on: the types matched live exactly, table for table, for all 46 tables involved.
 - Supabase MCP is configured for read-only inspection. Supabase CLI `2.108.0` is installed,
   but separate CLI auth still requires a local `SUPABASE_ACCESS_TOKEN` or secure login flow
   before live Auth config can run. Rechecked 2026-08-02: no `SUPABASE_ACCESS_TOKEN`,
