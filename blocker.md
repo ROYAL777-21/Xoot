@@ -48,8 +48,11 @@ Siri intents. Simulators are not sufficient for any of them.
 - Safety SOS and recording **client UI** — the schema, the Edge Function and the nightly purge
   are all live; nothing in the app raises an alert yet.
 - Property allocation for Airbnb and office accounts.
-- Multi-Xooter: the pricing and selector are done; `xooterCount` still needs wiring through
-  `Book.tsx` to `create-booking`, which already accepts `workerCount`.
+- ~~Multi-Xooter~~ — **already built, corrected 2026-08-07.** `Book.tsx` has had the whole
+  feature all along: a capped "How many Xooters?" stepper, multi-select, the 10% discount at
+  3+, and it sends `workerCount` and `zooterIds` to `create-booking`. It was listed here as
+  outstanding in error. What this session actually added is the estimate screen's own copy
+  plus a guard holding all three implementations of the discount rule together.
 
 ---
 
