@@ -124,6 +124,22 @@ Consequences worth stating separately:
   onto the ZD-020 ladder in one step, changing what every customer is charged. It must not be
   done as a side effect of fixing CORS or anything else. Staging first, compare real quotes
   old against new, then production, with the founder signing off the numbers.
+- **`Book.tsx` must be converted in the same change as that deploy.** Found 2026-08-07. The
+  booking screen — the one a customer actually pays from — never imports `xoot-pricing.ts`. It
+  computes its own base as `size.price x length.priceFactor x serviceMultiplier` off
+  `price: 270 / 315 / 390`, with a `serviceMultiplier` byte-identical to the deployed function's.
+  So the estate splits two-and-two rather than client-versus-server:
+
+      xoot-pricing.ts + repo create-booking       ZD-020 ladder
+      Book.tsx        + DEPLOYED create-booking   old multiplier model
+
+  Each pair is self-consistent, which is why nobody is mischarged today: the screen shows R315
+  for a medium standard clean and production charges R315. Deploying `create-booking` alone
+  drops the server to R266 while the screen still says R315. Converting `Book.tsx` first is
+  worse — it would quote R266 and let production charge R315, billing more than was shown.
+  Neither side may move alone. Guarded by `pricing-parity.test.ts` → "records that the booking
+  screen still runs the superseded model", which fails the moment one does; when they move
+  together, delete that test rather than weakening it.
 
 **Nothing was deployed.** The founder asked for a redeploy to fix `ALLOWED_ORIGINS`; that was
 stopped once the live source was read. Set the `ALLOWED_ORIGINS` secret instead — it fixes
@@ -523,8 +539,19 @@ from a session is the proxy, not the function.
   the same way, so that dimension is covered.
 
   Correcting an overstatement in the first version of this entry: add-ons, Booking Cover and
-  the linen option **are** asserted by the parity test. What is genuinely uncovered is the
-  high-demand premium and the Care+ discount rate.
+  the linen option **are** asserted by the parity test. What was genuinely uncovered was the
+  high-demand premium and the Care+ discount rate — **both covered 2026-08-07.** The 15% rate,
+  the 16:00 threshold, and the fact that each is charged on the *subtotal* so neither touches
+  booking cover, are now pinned against the server. The client models the premium in
+  `src/lib/operations.ts` and agrees; it models no Care+ discount, so that one pins the server
+  figure only. Every assertion was verified to fail against a planted drift before being kept.
+
+  Extending that coverage is what surfaced the `Book.tsx` finding at the top of this file, and
+  one more lagging figure: **`src/lib/operations.ts` still has `BOOKING_COVER_PRICE_ZAR = 21`**,
+  the pre-ZD-020 amount, where the repo server and `xoot-pricing.ts` both say R22. Left at 21
+  deliberately — it is what production charges today, and like `Book.tsx` it moves with the
+  `create-booking` deploy rather than before it. Pinned by the same test so it cannot drift
+  unnoticed in either direction.
 
   And one real divergence found while checking: **`create-booking` charges
   `ONE_TIME_SERVICE_FEE_CENTS` (R39) on one-time bookings and `quote()` does not model it at

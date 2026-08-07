@@ -89,6 +89,96 @@ describe("client/server pricing parity", () => {
    * fee to the client, this fails and points them at wiring it into `quote()` and closing
    * the blocker.md entry. If the server changes the amount, it fails too.
    */
+  /**
+   * The booking screen does not use any of the above.
+   *
+   * Found 2026-08-07 while extending this file to cover the high-demand premium. `Book.tsx` —
+   * the real booking flow, the screen a customer actually pays from — never imports
+   * `xoot-pricing.ts`. It computes its own base with `size.price x length.priceFactor x
+   * serviceMultiplier` off `price: 270 / 315 / 390`: the superseded model, byte-identical to
+   * the one still deployed in production, and the exact thing the guard above forbids in
+   * `create-booking`.
+   *
+   * So the estate splits two-and-two rather than client-versus-server:
+   *
+   *     xoot-pricing.ts + repo create-booking   ZD-020 ladder
+   *     Book.tsx        + DEPLOYED create-booking   old multiplier model
+   *
+   * Today those pairs are self-consistent, so nobody is mischarged: the screen shows R315 for
+   * a medium standard clean and production charges R315. **The danger is the repricing.**
+   * Deploying `create-booking` alone switches the server to the ladder — R266 for that same
+   * booking — while `Book.tsx` keeps showing R315. Worse in the other direction too: converting
+   * `Book.tsx` first would show R266 and let production charge R315, billing a customer more
+   * than they were quoted.
+   *
+   * Hence a tripwire rather than a fix. **`Book.tsx` and the `create-booking` deploy must move
+   * in the same change.** When they do, delete this test — do not weaken it to keep it passing.
+   */
+  it("records that the booking screen still runs the superseded model", () => {
+    const book = readFileSync(join(process.cwd(), "src/pages/app/Book.tsx"), "utf8");
+
+    // The figures this file forbids in the server are still live in the client.
+    for (const price of [270, 315, 390]) {
+      expect(book, `Book.tsx no longer carries price: ${price}`).toMatch(new RegExp(`price:\\s*${price}\\b`));
+    }
+    expect(book).toMatch(/size\.price \* length\.priceFactor \* \(serviceMultiplier\[active\] \?\? 1\)/);
+
+    // And it reaches the approved ladder by no route at all.
+    expect(book).not.toMatch(/xoot-pricing/);
+
+    // The multipliers match the deployed function exactly — that is why the pair is currently
+    // self-consistent, and why moving one side alone breaks it.
+    const multipliers = /const serviceMultiplier: Record<string, number> = \{([^}]*)\}/.exec(book);
+    expect(multipliers, "serviceMultiplier is gone from Book.tsx").toBeTruthy();
+    expect(Object.fromEntries(
+      [...multipliers![1].matchAll(/(\w+):\s*([\d.]+)/g)].map((m) => [m[1], Number(m[2])]),
+    )).toEqual({
+      residential: 1, express: 0.85, airbnb: 1.15, office: 1.2, deep: 1.35, moving: 1.4, premium: 1.55,
+    });
+  });
+
+  /**
+   * The high-demand premium and the R21/R22 cover, both in `src/lib/operations.ts`.
+   *
+   * `calculateBookingQuote` is the other half of what `Book.tsx` shows, and it agrees with the
+   * server on the 15% premium and the 16:00 threshold — worth pinning, since those were
+   * previously uncovered. It disagrees on booking cover: R21, the pre-ZD-020 figure this file
+   * already forbids in `create-booking`, where both the repo server and `xoot-pricing.ts` say
+   * R22.
+   *
+   * Left as R21 deliberately, same reasoning as above: it matches what production charges
+   * today. It moves with the deploy, not before it.
+   */
+  it("pins the high-demand premium against the server, and the cover figure that lags it", () => {
+    const fn = readFileSync(join(process.cwd(), "supabase/functions/create-booking/index.ts"), "utf8");
+    const ops = readFileSync(join(process.cwd(), "src/lib/operations.ts"), "utf8");
+
+    // Rate and threshold must agree across client and server.
+    const serverRate = /isHighDemandSlot\(time\) \? Math\.round\(subtotalCents \* ([\d.]+)\)/.exec(fn);
+    const clientRate = /HIGH_DEMAND_SLOT_RATE = ([\d.]+)/.exec(ops);
+    expect(serverRate, "server no longer computes a high-demand premium").toBeTruthy();
+    expect(clientRate, "client no longer defines HIGH_DEMAND_SLOT_RATE").toBeTruthy();
+    expect(clientRate![1]).toBe(serverRate![1]);
+
+    const hourOf = (src: string) => /hour >= (\d+)|\[0\] \?\? 0\) >= (\d+)/.exec(src);
+    expect(hourOf(fn)![2] ?? hourOf(fn)![1]).toBe(hourOf(ops)![1] ?? hourOf(ops)![2]);
+
+    // Charged on the subtotal, so the premium never applies to booking cover on either side.
+    expect(fn).toMatch(/Math\.round\(subtotalCents \* [\d.]+\)/);
+    expect(ops).toMatch(/Math\.round\(subtotal \* HIGH_DEMAND_RATE\)/);
+
+    // The Care+ discount is likewise a rate on the subtotal. The client models no equivalent,
+    // so this only pins the server's figure against silent change.
+    const carePlus = /if \(data\.next_billing_at[\s\S]{0,120}return ([\d.]+);/.exec(fn);
+    expect(carePlus, "server no longer returns a Care+ discount rate").toBeTruthy();
+    expect(Number(carePlus![1])).toBe(0.1);
+    expect(fn).toMatch(/carePlusDiscount = Math\.round\(subtotal \* carePlusDiscountRate\)/);
+
+    // The lagging figure, recorded rather than fixed.
+    expect(/BOOKING_COVER_PRICE_ZAR = (\d+)/.exec(ops)![1]).toBe("21");
+    expect(BOOKING_COVER_CENTS).toBe(2200);
+  });
+
   it("records the one-time service fee as a known client/server divergence", () => {
     const match = /export const ONE_TIME_SERVICE_FEE_CENTS = r\((\d+)\)/.exec(serverSrc);
     expect(match, "server no longer defines ONE_TIME_SERVICE_FEE_CENTS").toBeTruthy();
