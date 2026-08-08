@@ -307,3 +307,62 @@ describe("a household profile can only be read by the household it belongs to", 
     expect(sensitive).toMatch(/booking\.household_profile_id/);
   });
 });
+
+/**
+ * Governance RPCs must be reachable, and reachable only by the service role.
+ *
+ * `governance-utils.ts` called `supa.schema("private").rpc(...)` for months. That goes over
+ * PostgREST, and `private` is deliberately invisible to PostgREST — so every call threw and
+ * `public.rate_limit_events` held 0 rows when this was measured on 2026-08-08. Rate limiting had
+ * never run for any of its six callers, including the public `support-respond`.
+ *
+ * Pinning both halves: the client must not reach for the unexposed schema, and the migration
+ * that made the call possible must keep `anon` and `authenticated` out.
+ */
+describe("governance RPCs are reachable without being exposed", () => {
+  const governance = codeOf("supabase/functions/_shared/governance-utils.ts");
+  const migration = readFileSync(
+    join(root, "supabase/migrations/20260808100000_public_governance_rpc_wrappers.sql"),
+    "utf8",
+  );
+
+  it("does not call the schema PostgREST cannot see", () => {
+    expect(governance).not.toMatch(/\.schema\(\s*["']private["']\s*\)/);
+    expect(governance).toMatch(/supa\.rpc\(fn, args\)/);
+  });
+
+  it("keeps anon and authenticated off every wrapper", () => {
+    for (const fn of ["consume_rate_limit", "claim_provider_event", "mark_provider_event_processed"]) {
+      const revoke = new RegExp(`revoke all on function public\\.${fn}\\([^)]*\\)\\s*\\n?\\s*from public, anon, authenticated;`);
+      const grant = new RegExp(`grant execute on function public\\.${fn}\\([^)]*\\)\\s*\\n?\\s*to service_role;`);
+      expect(migration, `${fn} is not revoked from anon/authenticated`).toMatch(revoke);
+      expect(migration, `${fn} is not granted to service_role`).toMatch(grant);
+    }
+  });
+
+  /**
+   * The wrappers live in `public`, so they are exposed at `/rest/v1/rpc/<name>`. A SECURITY
+   * DEFINER function there is precisely what `20260802180000_trigger_functions_not_rpc.sql` was
+   * written to clean up. These forward to functions that are already definer, so invoker is
+   * enough and leaves two independent barriers instead of one.
+   */
+  it("adds no new SECURITY DEFINER surface in public", () => {
+    // Comments stripped first: this migration *explains* why it avoids SECURITY DEFINER, and a
+    // guard that trips on its own rationale is a guard nobody can keep.
+    const sql = migration.replace(/^\s*--.*$/gm, "");
+    expect(sql).toMatch(/security invoker/);
+    expect(sql).not.toMatch(/security definer/i);
+  });
+
+  it("no longer swallows the error that hid this", () => {
+    const support = codeOf("supabase/functions/support-respond/index.ts");
+    // Scoped to the outer handler. `buildOpenAiSupportResponse` also uses a bare `catch`, but it
+    // logs and returns null by design — a model timeout is expected, not a defect. What mattered
+    // was the top-level one, which returned a generic 500 having printed nothing.
+    const failureAt = support.indexOf('"support response failed"');
+    expect(failureAt, "the outer failure branch is gone").toBeGreaterThan(-1);
+    const outerCatch = support.slice(Math.max(0, failureAt - 400), failureAt);
+    expect(outerCatch, "the outer catch takes no error argument").toMatch(/catch \(error\)/);
+    expect(outerCatch).toMatch(/console\.error\("support-respond failed"/);
+  });
+});

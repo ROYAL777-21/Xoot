@@ -56,7 +56,26 @@ they carry booking status changes, XootCred and booking chat.
 On `support-respond`, which is `verify_jwt: false` and therefore public, the guest limit of 20
 per 5 minutes has never applied.
 
-**Recommended fix, not applied — it is a production schema change and an architectural call.**
+**FIX APPLIED 2026-08-08 (migration + code), NOT YET LIVE — the seven functions must be redeployed.**
+`20260808100000_public_governance_rpc_wrappers.sql` is applied to production and
+`governance-utils.ts` now calls the public wrapper. Grants verified live: `anon` false,
+`authenticated` false, `service_role` true, `security_definer` false on all three.
+
+The wrappers are **SECURITY INVOKER**, which is better than what was first sketched here. The
+`private` functions are already SECURITY DEFINER and `service_role` already held EXECUTE on them,
+so an invoker wrapper is enough — leaving two independent barriers rather than one, and adding no
+definer surface in `public`. `support-respond`'s bare `catch` now logs.
+
+**Production is still broken until the redeploys.** Deployed functions carry their own bundled
+copy of `_shared`, so the code change reaches nothing until each is redeployed:
+`support-respond`, `create-concierge-handoff`, `create-masked-call`, `ops-workflow`,
+`report-concierge-answer`, `send-booking-message`, `confirm-payment`.
+
+**Measurement, replacing the earlier inference.** `public.rate_limit_events` held **0 rows** —
+not few, none. `consume_rate_limit` had never executed once, for any of the six callers. That is
+now measured rather than argued, and it covers all of them at once.
+
+**Superseded — the original recommendation, kept for the reasoning.**
 Add `public` SECURITY DEFINER wrappers for the three helpers with `EXECUTE` revoked from `anon`
 and `authenticated` and granted only to `service_role`. That keeps the property the `private`
 schema was created for — users cannot call them — while letting the service role reach them over

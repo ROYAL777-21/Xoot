@@ -354,7 +354,16 @@ Deno.serve(async (req) => {
       200,
       origin,
     );
-  } catch {
+  } catch (error) {
+    // Logged, not swallowed. This `catch` took no argument and printed nothing, so when every
+    // governance RPC began throwing — `supa.schema("private")` cannot work, see
+    // governance-utils.ts — the Concierge returned this generic 500 to every real question and
+    // left no trace of why. A caught error nobody can read is indistinguishable from no error.
+    // The message stays out of the response body: this endpoint is `verify_jwt: false`, so
+    // anything returned here is readable by anyone who can reach the URL.
+    console.error("support-respond failed", {
+      message: error instanceof Error ? error.message : String(error),
+    });
     return json({ error: "support response failed" }, 500, origin);
   }
 });
