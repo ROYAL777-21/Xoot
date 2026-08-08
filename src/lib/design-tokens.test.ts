@@ -35,6 +35,35 @@ const SCHEMES = [
   ["dark", "  .dark {"],
 ] as const;
 
+/**
+ * Colours in `index.css` that are deliberately absent from the native mirror, each with the
+ * reason. Same idea as `UNTYPED_BY_DESIGN` in `supabase-schema-contract.test.ts`: a gap written
+ * down and justified is a decision, a gap nobody listed is a bug waiting to be found by a user.
+ *
+ * Anything not on this list and not mirrored fails the check below. Remove an entry when the
+ * token is mirrored — do not add one to silence a failure without a reason worth reading.
+ */
+const UNMIRRORED_BY_DESIGN: Record<string, string> = {
+  popover:
+    "Semantic and should be mirrored. Native has no popover primitive yet, so mirroring it now " +
+    "would add a colour nothing consumes. Mirror it with the first native popover.",
+  "popover-foreground": "Pairs with popover, above.",
+  info:
+    "Semantic and should be mirrored — the migration table maps it to mist-500. Left out when " +
+    "the palette landed, alongside --brand. Mirror when a native surface needs it.",
+  "info-foreground": "Pairs with info, above.",
+  "primary-glow":
+    "Web-only. Feeds the radial gradients in the hero and card treatments; React Native has no " +
+    "equivalent and the native app does not render them.",
+  "accent-soft": "Web-only tint used for hover and wash backgrounds behind accent surfaces.",
+  terracotta: "Legacy from the red palette, still consumed by blog and marketing surfaces.",
+  "terracotta-light": "Pairs with terracotta, above.",
+  sage: "Legacy alias; the mirrored role is `success`, which carries the same value.",
+  "sage-deep": "Legacy alias used by marketing copy accents.",
+  cream: "Legacy from the red palette's warm page treatment.",
+  ink: "Legacy alias; the mirrored role is `foreground`, which carries the same value.",
+};
+
 describe("design tokens", () => {
   it.each(SCHEMES)("%s colours match index.css exactly", (scheme, selector) => {
     const declared = tokensIn(selector);
@@ -65,6 +94,33 @@ describe("design tokens", () => {
     // A role present in one scheme and not the other is a component that renders in
     // light and throws in dark, found by a user rather than by this.
     expect(Object.keys(COLOR.light).sort()).toEqual(Object.keys(COLOR.dark).sort());
+  });
+
+  /**
+   * The direction the test above cannot see.
+   *
+   * "Every role here matches the CSS" says nothing about a colour that exists in the CSS and
+   * never made it into this file — and that is not hypothetical. `--brand` and
+   * `--brand-foreground` were added to `index.css` by the palette migration and left out of the
+   * mirror entirely, so the web had the new brand violet and the native app had no brand colour
+   * at all. Nothing failed, because nothing was looking this way.
+   *
+   * `--zoey-*` and the gradient/shadow tokens are deliberately excluded: they are web-only
+   * decoration with no React Native equivalent, and mirroring them would mean inventing values
+   * the native app cannot use.
+   */
+  it.each(SCHEMES)("%s mirrors every colour token index.css declares", (scheme, selector) => {
+    const webOnly = /^(zoey|gradient|shadow|sidebar|chart|radius)/;
+    const mirrored = new Set(Object.keys(COLOR[scheme]).map(cssName));
+    const declared = tokensIn(selector);
+
+    const missing = Object.keys(declared)
+      .filter((name) => !webOnly.test(name) && !mirrored.has(name))
+      // Bare `--foo` colour roles only; anything with a unit or a var() is not a colour.
+      .filter((name) => /^\d+(\.\d+)? \d+(\.\d+)?% \d+(\.\d+)?%$/.test(declared[name]))
+      .filter((name) => !(name in UNMIRRORED_BY_DESIGN));
+
+    expect(missing, `these colours exist in ${selector} but not in design-tokens.ts`).toEqual([]);
   });
 
   it("renders colours React Native can actually parse", () => {

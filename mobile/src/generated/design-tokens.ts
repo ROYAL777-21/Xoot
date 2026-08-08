@@ -38,6 +38,17 @@ export const COLOR = {
     cardForeground: "0 0% 8%",
     primary: "0 0% 8%",
     primaryForeground: "0 0% 100%",
+    /**
+     * The kit's brand violet, carrying emphasis, selection and progress — never the commit
+     * button, which is ink. Added to the mirror 2026-08-08: it had been in `index.css` since the
+     * palette migration but never here, so the native app had no brand colour at all while the
+     * web had one. The old mirror test could not catch it, because it only checked that roles
+     * present in this file match the CSS, never that the CSS is fully covered.
+     *
+     * Held at violet-600, not the kit's nominal violet-500. See `design-contrast.test.ts`.
+     */
+    brand: "253 79% 58%",
+    brandForeground: "0 0% 100%",
     secondary: "30 11% 93%",
     secondaryForeground: "0 0% 14%",
     muted: "24 10% 90%",
@@ -62,6 +73,9 @@ export const COLOR = {
     cardForeground: "20 13% 95%",
     primary: "20 13% 95%",
     primaryForeground: "0 0% 8%",
+    /** Lifted to violet-300 in dark so it reads against the near-black page, with ink on top. */
+    brand: "252 87% 78%",
+    brandForeground: "0 0% 8%",
     secondary: "20 6% 14%",
     secondaryForeground: "20 13% 95%",
     muted: "20 6% 15%",

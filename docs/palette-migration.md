@@ -108,7 +108,46 @@ kit's nearest equivalent and keeps existing usages reading the same.
 5. Re-run the contrast audit over every foreground/background pair actually used, not just the
    ten above.
 
-## Not yet done
+## Status, corrected 2026-08-08
 
-Steps 1–5. The values are computed and the traps are named; what remains is the edit itself
-and verifying no component reads a token in a way this mapping changes unintentionally.
+This section used to read "Not yet done: steps 1–5". That was stale by a wide margin and would
+have sent the next person to redo finished work.
+
+**Done:** steps 1, 2 and 4. The light `:root` and `.dark` blocks in `src/index.css` carry the
+mapped values (landed in `037558d`), `src/lib/design-tokens.ts` mirrors them, and
+`mobile/app.config.ts` is `userInterfaceStyle: 'light'` with `#f5f3f2` splash and adaptive-icon
+backgrounds — the dark pinning is gone.
+
+**Step 5 is now done** and was the one nothing enforced: `src/lib/design-contrast.test.ts` asserts
+every foreground/background pair actually rendered, in both schemes, and pins `--brand` at
+violet-600 with the failing violet-500 asserted as failing so the number in the table above is
+verifiable rather than trusted.
+
+**Step 3 is still open** — `npm run shared:sync` and `npm run icons:render`. The launcher and
+launch-screen images are generated against the background colour and were last touched in
+`ed8d9e0`, before this palette landed, so they are probably stale.
+
+### Two things the audit above missed
+
+**The mirror was incomplete, and nothing checked.** `--brand` and `--brand-foreground` were in
+`index.css` from the migration and absent from `design-tokens.ts` entirely — so the web had the new
+brand violet and the native app had no brand colour at all. `design-tokens.test.ts` only ever
+proved that roles *present* in the mirror match the CSS, never that the CSS is fully covered. It
+now checks both directions, with an `UNMIRRORED_BY_DESIGN` ledger for the eleven remaining
+web-only or legacy tokens. `info` and `popover` are on that list as genuinely-should-be-mirrored.
+
+**`--destructive` fails AA, and in dark it fails the UI floor.** Measured:
+
+| Pair | Ratio | Verdict |
+|---|---|---|
+| light `destructive-foreground` on `destructive` | **3.70** | below 4.5 body |
+| dark `destructive-foreground` on `destructive` | **2.88** | below **3.0 UI** |
+
+The light figure being a known consequence of mapping `coral-500` is fine. The dark one is not:
+2.88 is under the minimum for a UI component of any size, so a destructive button in dark mode is
+below the floor for its border and its label alike. Fixing it means changing an approved palette
+value, so it is recorded for a decision rather than taken unilaterally.
+
+Note also that the table at the top of this file is **optimistic by a small margin** wherever the
+foreground is not pure white: it measured white on `coral-500` at 3.87, but the pair actually
+rendered uses the off-white `--destructive-foreground` and comes out at 3.70.
