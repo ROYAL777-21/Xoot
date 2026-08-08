@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS } from "./xoot-pricing";
+import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, ONE_TIME_SERVICE_FEE_CENTS } from "./xoot-pricing";
 
 /**
  * The client ladders (src/lib/xoot-pricing.ts) and the server ladders
@@ -165,28 +165,52 @@ describe("client/server pricing parity", () => {
   });
 
   /**
-   * The one fee the client does not model.
+   * The fee the client used to omit, now closed.
    *
-   * `create-booking` adds ONE_TIME_SERVICE_FEE_CENTS to the total when frequency is
-   * "one_time"; `quote()` has no concept of it, so the client under-quotes a one-time
-   * booking by that amount. The module header already warns that the server wins on
-   * anything charging money, but a total revealed to a customer and then exceeded is a
-   * different problem from an internal disagreement.
+   * This assertion used to record a deliberate divergence: `create-booking` added
+   * ONE_TIME_SERVICE_FEE_CENTS on one-time bookings and `quote()` had no concept of it, so the
+   * client under-quoted by R39. That was not an internal disagreement — `BookingConfirm.tsx`
+   * prices from `quote()`, so it was the last screen before payment showing a total the server
+   * would then exceed. Under the Consumer Protection Act the displayed price is the price.
    *
-   * This asserts the divergence deliberately rather than hiding it: if someone adds the
-   * fee to the client, this fails and points them at wiring it into `quote()` and closing
-   * the blocker.md entry. If the server changes the amount, it fails too.
+   * The old test said it would fail the moment someone wired the fee in, and pointed at this
+   * work. It did exactly that. Kept as an equality check so the two implementations cannot
+   * drift apart again, in either direction.
    */
-  it("records the one-time service fee as a known client/server divergence", () => {
+  it("charges the one-time service fee identically on client and server", () => {
     const match = /export const ONE_TIME_SERVICE_FEE_CENTS = r\((\d+)\)/.exec(serverSrc);
     expect(match, "server no longer defines ONE_TIME_SERVICE_FEE_CENTS").toBeTruthy();
-    expect(Number(match![1]) * 100).toBe(3900);
+    expect(Number(match![1]) * 100).toBe(ONE_TIME_SERVICE_FEE_CENTS);
+    expect(ONE_TIME_SERVICE_FEE_CENTS).toBe(3900);
 
-    // The client total is exactly base + add-ons + linen + cover. No service fee.
-    const priced = quote({ service: "regular", hours: 6, addOns: 1, bookingCover: true });
-    if (!isPriced(priced)) throw new Error("expected a price");
-    expect(priced.totalCents).toBe(
-      priced.baseCents + priced.addOnsCents + priced.linenCents + priced.coverCents,
+    // One-time: the fee is charged, and it is part of the total the customer is shown.
+    const oneTime = quote({ service: "regular", hours: 6, addOns: 1, bookingCover: true });
+    if (!isPriced(oneTime)) throw new Error("expected a price");
+    expect(oneTime.serviceFeeCents).toBe(ONE_TIME_SERVICE_FEE_CENTS);
+    expect(oneTime.totalCents).toBe(
+      oneTime.baseCents + oneTime.addOnsCents + oneTime.linenCents + oneTime.coverCents +
+        ONE_TIME_SERVICE_FEE_CENTS,
     );
+
+    // Recurring: waived, matching `frequency === "one_time" ? fee : 0` on the server.
+    const repeat = quote({ service: "regular", hours: 6, addOns: 1, bookingCover: true, frequency: "repeat" });
+    if (!isPriced(repeat)) throw new Error("expected a price");
+    expect(repeat.serviceFeeCents).toBe(0);
+    expect(repeat.totalCents).toBe(oneTime.totalCents - ONE_TIME_SERVICE_FEE_CENTS);
+  });
+
+  /**
+   * Omitting `frequency` must not under-quote.
+   *
+   * The default is the whole safety property here: a caller that forgets the field over-states by
+   * R39 rather than under-stating, and only one of those shows a customer a total they are later
+   * charged past.
+   */
+  it("defaults to charging the fee when frequency is not supplied", () => {
+    const implicit = quote({ service: "regular", hours: 6 });
+    const explicit = quote({ service: "regular", hours: 6, frequency: "one_time" });
+    if (!isPriced(implicit) || !isPriced(explicit)) throw new Error("expected a price");
+    expect(implicit.totalCents).toBe(explicit.totalCents);
+    expect(implicit.serviceFeeCents).toBe(ONE_TIME_SERVICE_FEE_CENTS);
   });
 });

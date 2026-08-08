@@ -314,6 +314,13 @@ export default function BookingConfirm() {
               {priced.addOnsCents > 0 ? <Row label={`${selected.length} add-on${selected.length === 1 ? "" : "s"}`} value={formatRand(priced.addOnsCents)} /> : null}
               {priced.linenCents > 0 ? <Row label="Linen washed on-site" value={formatRand(priced.linenCents)} /> : null}
               {priced.coverCents > 0 ? <Row label="Booking Cover" value={formatRand(priced.coverCents)} /> : null}
+              {/*
+                Shown, not folded silently into the total. The server has always charged this on
+                one-time bookings; `quote()` did not model it, so this screen — the last one before
+                payment — used to under-state the total by R39. Under the CPA the displayed price is
+                the price, so it is a line the customer can see rather than a gap they discover.
+              */}
+              {priced.serviceFeeCents > 0 ? <Row label="Service fee" value={formatRand(priced.serviceFeeCents)} /> : null}
               <div className="mt-1 flex items-baseline justify-between border-t border-border pt-2">
                 <dt className="text-sm font-bold">Total</dt>
                 <dd className="font-display text-2xl font-bold">{formatRand(priced.totalCents)}</dd>

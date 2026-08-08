@@ -36,14 +36,36 @@ describe("finding the shared modules a function actually deploys with", () => {
   });
 
   it("follows shared modules that import other shared modules", () => {
-    // Nothing does this today. The day something does, stopping at one level would under-report
-    // drift, which is the exact failure mode this file exists to prevent.
     const closure = sharedClosure('import "../_shared/a.ts";', {
       "a.ts": 'import "./b.ts"; import "../_shared/b.ts";',
       "b.ts": 'import "../_shared/c.ts";',
       "c.ts": "export const x = 1;",
     });
     expect([...closure].sort()).toEqual(["a.ts", "b.ts", "c.ts"]);
+  });
+
+  it("follows a shared module that imports a sibling by its bare path", () => {
+    // The case the test above could not catch, because its fixture wrote `b.ts` both ways and so
+    // passed on the `_shared/` spelling alone. Real code only ever writes the sibling form:
+    // `twilio-webhook.ts` says `from "./governance-utils.ts"`, and `admin-action-utils.ts` says
+    // `from "./action-utils.ts"`. Neither contains `_shared/`, so both were invisible until
+    // 2026-08-08 — the five twilio webhooks were never reported stale when `governance-utils.ts`
+    // changed, and the seven `admin-*` functions had the same hole via `action-utils.ts`.
+    const closure = sharedClosure('import { handle } from "../_shared/twilio-webhook.ts";', {
+      "twilio-webhook.ts": 'import { claimProviderEvent } from "./governance-utils.ts";',
+      "governance-utils.ts": "export const claimProviderEvent = () => {};",
+    });
+    expect([...closure].sort()).toEqual(["governance-utils.ts", "twilio-webhook.ts"]);
+  });
+
+  it("does not mistake a function's own sibling file for a shared module", () => {
+    // `./helpers.ts` next to `functions/<slug>/index.ts` is that function's own file, not
+    // `_shared/helpers.ts`. Only sources already inside `_shared` get the sibling treatment;
+    // widening it to entry files would invent dependencies that do not exist.
+    const closure = sharedClosure('import { x } from "./helpers.ts";', {
+      "helpers.ts": "export const x = 1;",
+    });
+    expect(closure.size).toBe(0);
   });
 
   it("does not loop forever on a cycle", () => {
