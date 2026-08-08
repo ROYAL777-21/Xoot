@@ -9,7 +9,114 @@ listed once under "Closed at review" at the foot of the file, then dropped.
 Everything dated 2026-08-02 in this file was re-verified live against both Supabase
 projects on that date, not carried forward on trust.
 
-## OPEN 2026-08-08 — the Concierge answers 500 to every real question, on both projects
+## OPEN 2026-08-08 — the seven `admin-*` functions have never been drift-checked correctly
+
+Found while fixing the checker, not by the checker. `sharedClosure` matched only `_shared/x.ts`,
+but shared modules import each other as bare siblings, and two do:
+`_shared/twilio-webhook.ts` → `./governance-utils.ts`, and
+`_shared/admin-action-utils.ts` → `./action-utils.ts`. Neither string contains `_shared/`.
+
+The twilio half is dealt with — those five are redeployed. The `admin-*` half is not. These seven
+import `admin-action-utils`, so any change to `action-utils.ts` has been invisible to the drift
+report for them: `admin-confirm-payment`, `admin-control-management`, `admin-escalate-support`,
+`admin-mark-outbox`, `admin-reject-zooter`, `admin-resolve-review`, `approve-zooter`.
+
+All seven are still on version 8 from 2026-06, and `action-utils.ts` has changed since (the
+`xoot.co.za` domain adoption at minimum), so they are very likely stale — but that is inference.
+`scripts/ops/lib/deployed-drift.mjs` now follows sibling imports, so
+`node scripts/ops/check-deployed-drift.mjs` will finally say which, and that should be run and
+acted on rather than assumed.
+
+## OPEN 2026-08-08 — masked calling is reachable now, but four of five gates are still shut
+
+The RPC half is fixed (`20260808120000`, and both callers redeployed except `ops-workflow`), so
+masked calls no longer die before Twilio is reached. They still will not connect. Measured today:
+
+- `twilio.masked_voice` — **false**
+- `twilio.operational_messages` — **false** (the code requires *both* for `providerAllowed`)
+- `profiles` with a phone number — **0**, of 0 profiles
+- `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_PROXY_SERVICE_SID`
+  — unknowable from a session; Supabase never reads a secret value back. Any one missing returns
+  `{configured: false}` and the session stays `queued`.
+
+A Twilio Proxy Service with a number pool also has to exist. Recording and transcription are
+hard-coded `false` in both callers, which is the right default to keep under POPIA/RICA — do not
+switch them on without a consent flow.
+
+**Worth confirming before spending on this:** the implementation is built on the Twilio **Proxy**
+API, which Twilio has signalled end-of-life for. I could not verify its current status from here.
+If it is retired, Uber-style masking needs rebuilding on Voice + TwiML dial-out against a
+caller-ID pool, and that is a design decision, not a config change.
+
+## OPEN 2026-08-08 — `ops-workflow` is the last function still running the broken build
+
+Everything else in the governance-RPC story is now live on production. This one is not, and it was
+left undone deliberately rather than missed.
+
+`ops-workflow/index.ts` is 902 lines and contains a `servicePrices` table. The only way to deploy
+from an agent session is to retype the whole file into a `deploy_edge_function` call, because the
+Supabase MCP takes file contents inline and there is no CLI or access token here. A single wrong
+digit in `servicePrices` would be silent, and it is the exact failure this repo has already had
+once — see "production is charging unapproved prices". Normally the smoke test would catch it;
+here it cannot, because **the agent proxy denies `mvlrkelahhsyjrwgsxaf.supabase.co` by policy**
+(`connect_rejected`, gateway 403 to CONNECT), and `pg_net`/`http` are not installed, so the
+function cannot be invoked from SQL either. Deploying blind was the worse of the two risks with
+zero live bookings.
+
+**What it needs:** upload from disk, where the bytes are not retyped —
+`supabase functions deploy ops-workflow --project-ref mvlrkelahhsyjrwgsxaf` with
+`SUPABASE_ACCESS_TOKEN` set — then smoke-test. The repo source is correct and committed; only the
+deploy is missing. Until then production runs the June build: rate limiting throws, masked-call
+eligibility throws, and the CORS fallback still names the retired domain.
+
+**Everything it depends on is already live**, so the deploy alone finishes it: both wrapper
+migrations are applied, and the repo copy already calls `public.can_create_masked_call`.
+
+## CLOSED 2026-08-08 — the Concierge answers 500 to every real question, on both projects
+
+**Closed on production.** The eleven deploys below are done and the fix is live in the deployed
+bytes, confirmed by reading `support-respond` v12 back: it now ships
+`governanceRpc` calling `supa.rpc(...)`, where v11 shipped `supa.schema("private").rpc(...)`.
+
+**The evidence is a number that had never moved.** `public.rate_limit_events` held 0 rows for the
+life of the project. After calling `public.consume_rate_limit(...)` through the new wrapper it
+holds 1. `private.consume_rate_limit` had never executed once before today.
+
+**Deployed to production 2026-08-08**, `verify_jwt` preserved from `config.toml` on every one:
+`support-respond` v11→v12, `confirm-payment` v8→v9, `send-booking-message` v5→v6,
+`create-masked-call` v7→v8, and the five twilio webhooks v9→v10
+(`twilio-message-webhook`, `twilio-whatsapp-webhook`, `twilio-status-callback`,
+`twilio-voice-webhook`, `twilio-verify-webhook`). Plus `report-concierge-answer` at v1 — see below.
+`ops-workflow` is the one exception, and has its own entry above.
+
+**Still unverified end-to-end, and worth stating plainly.** No deployed function was called over
+HTTP from this session, because the proxy denies the Supabase host by policy. What is proven is
+that the wrapper executes and records, that the deployed bundles carry the new code, and that
+every bundle resolved its imports at deploy time. What is *not* proven is a live 200 from
+`support-respond` where it used to answer 500. That check still wants running from somewhere with
+network access to the project.
+
+**Two corrections to what this entry used to say.**
+
+`create-concierge-handoff` was on the redeploy list and should not have been: it is not deployed
+to production at all, so it could not be carrying a stale bundle. It stays undeployed —
+`20260703153056_concierge_structured_handoff.sql` is unapplied, and per
+`src/lib/supabase-schema-contract.test.ts` deploying first "orphans a ticket per handoff with no
+follow-up and no review-queue entry".
+
+`report-concierge-answer` was also on that list and was likewise never deployed — but unlike the
+handoff it is called by shipped clients (`XootSupportBot.tsx:115` and
+`mobile/src/app/concierge.tsx:142`), so every "report this answer" tap has been a 404 and users
+saw the "could not record that report" fallback. Its table `zoot_concierge_feedback` exists, so it
+works on arrival. **Deployed 2026-08-08 at v1**, `verify_jwt: false` per `config.toml`, and
+deliberately last — after the rate limiter it depends on was proven, since it is a public
+unauthenticated write whose only abuse guard is that limiter.
+
+**Staging is deliberately untouched and is still broken.** It has the three `private` functions and
+**zero** public wrappers. Apply both wrapper migrations there *before* deploying the new
+`governance-utils` to staging, or staging breaks in a new way instead of the current one.
+
+## Superseded detail, kept for the reasoning
 
 Found by the smoke test that `support-respond`'s ledger entry had been asking for. Deploying it
 was the occasion, not the cause: **this is pre-existing and I did not introduce it.**
@@ -56,7 +163,7 @@ they carry booking status changes, XootCred and booking chat.
 On `support-respond`, which is `verify_jwt: false` and therefore public, the guest limit of 20
 per 5 minutes has never applied.
 
-**FIX APPLIED 2026-08-08 (migration + code), NOT YET LIVE — the seven functions must be redeployed.**
+**FIX APPLIED 2026-08-08 (migration + code); the redeploys are now done — see the closed entry above.**
 `20260808100000_public_governance_rpc_wrappers.sql` is applied to production and
 `governance-utils.ts` now calls the public wrapper. Grants verified live: `anon` false,
 `authenticated` false, `service_role` true, `security_definer` false on all three.
@@ -66,10 +173,14 @@ The wrappers are **SECURITY INVOKER**, which is better than what was first sketc
 so an invoker wrapper is enough — leaving two independent barriers rather than one, and adding no
 definer surface in `public`. `support-respond`'s bare `catch` now logs.
 
-**Production is still broken until the redeploys.** Deployed functions carry their own bundled
-copy of `_shared`, so the code change reaches nothing until each is redeployed:
-`support-respond`, `create-concierge-handoff`, `create-masked-call`, `ops-workflow`,
-`report-concierge-answer`, `send-booking-message`, `confirm-payment`.
+**Deployed functions carry their own bundled copy of `_shared`**, which is why the code change
+reached nothing until each was redeployed. That is now done for all but `ops-workflow`.
+
+The list of seven here was wrong in two ways, both corrected in the closed entry above: it counted
+`create-concierge-handoff` and `report-concierge-answer`, neither of which was deployed at all, and
+it missed the five twilio webhooks, which bundle `governance-utils` transitively through
+`_shared/twilio-webhook.ts`. The drift checker could not see that import either — same blind spot,
+fixed in `scripts/ops/lib/deployed-drift.mjs`.
 
 **Measurement, replacing the earlier inference.** `public.rate_limit_events` held **0 rows** —
 not few, none. `consume_rate_limit` had never executed once, for any of the six callers. That is
