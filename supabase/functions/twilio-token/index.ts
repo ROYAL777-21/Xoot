@@ -5,6 +5,7 @@ import {
   readJson,
   requireAuth,
 } from "../_shared/action-utils.ts";
+import { consumeRateLimit } from "../_shared/governance-utils.ts";
 
 /**
  * Mints a short-lived Twilio access token for in-app voice or chat.
@@ -86,6 +87,32 @@ Deno.serve(async (req) => {
       ? await assertBookingParticipant(supa, booking, user.id)
       : { participant: false };
     if (!participant) return json({ error: "Booking not found" }, 404, origin);
+
+    /*
+     * This endpoint had no rate limit at all, which mattered more once the in-app call button
+     * shipped: every tap mints a credential carrying `outgoing.application_sid`, and a signed-in
+     * participant could previously ask for them without bound.
+     *
+     * Placed after the participant check on purpose. Rate-limiting before authorisation would let
+     * anyone with a session burn a stranger's budget by guessing booking ids, turning a limiter
+     * into a denial-of-service tool against the person it protects.
+     *
+     * Deliberately generous — 30 per 10 minutes, per user per booking. A token lasts an hour, so
+     * ordinary use needs one; this only stops a loop. It is not the call limit, which lives in
+     * `create-masked-call`: this is the credential-minting limit, and being throttled out of a
+     * *token* is a worse failure than being throttled out of a call, because the UI cannot
+     * distinguish it from the feature being broken.
+     */
+    const rateLimit = await consumeRateLimit(supa, {
+      bucket: "twilio.token",
+      actor: `twilio-token:${user.id}:${bookingId}`,
+      action: capability,
+      limitCount: 30,
+      windowSeconds: 600,
+    });
+    if (!rateLimit.allowed) {
+      return json({ error: "Too many call setup attempts. Please wait a moment." }, 429, origin);
+    }
 
     const missing = requiredSecrets.filter((key) => !Deno.env.get(key));
     if (missing.length > 0) {
