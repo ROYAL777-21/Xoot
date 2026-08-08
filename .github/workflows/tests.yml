@@ -69,3 +69,30 @@ jobs:
 
       - name: Build
         run: bun run build
+
+      # Does what is deployed still match what is in this repository?
+      #
+      # Nothing asked that question until 2026-08-07, and the answer was "no, not one of the 42
+      # production functions" — production had been charging a superseded pricing model and
+      # serving a retired domain for weeks. Every step above was green throughout, because every
+      # step above reads the repo file, and the repo file was correct.
+      #
+      # Deliberately advisory, not a gate. It needs a live function list to say anything true, and
+      # a build workflow must not fail because a deploy is pending or a token is absent — that
+      # would train people to ignore it. It reports; a human decides. Exit 1 means drift, exit 2
+      # means it could not tell, and both are printed rather than thrown.
+      #
+      # With no token set the script exits 2 and says so, which `continue-on-error` absorbs — so
+      # this is a no-op until SUPABASE_ACCESS_TOKEN exists as a repository secret.
+      #
+      # The token is deliberately scoped to this one step rather than the workflow `env` block.
+      # It is a Supabase *management* credential, and every earlier step runs third-party install
+      # scripts; a workflow-level secret would be readable by all of them. It also cannot be
+      # tested with a step-level `if`, because the `secrets` context is not available there and
+      # `env` set on a step is not visible to that same step's `if` — hence letting the script
+      # decide instead of guarding the step.
+      - name: Deployed-vs-repo drift (advisory)
+        continue-on-error: true
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/ops/check-deployed-drift.mjs
