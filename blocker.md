@@ -9,6 +9,28 @@ listed once under "Closed at review" at the foot of the file, then dropped.
 Everything dated 2026-08-02 in this file was re-verified live against both Supabase
 projects on that date, not carried forward on trust.
 
+## The open work now lives in GitHub issues, not here
+
+Added 2026-08-08. This file had grown to 81KB and was doing an issue tracker's job while the
+repository had **zero** issues. Anything still outstanding is now filed, each with the exact command
+or console step and who can move it. Track them there; this file keeps the reasoning and the history.
+
+| # | What | Who |
+|---|---|---|
+| [#28](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/28) | `ENCRYPTION_KEY` on both projects — gate codes blocked until it exists | founder |
+| [#29](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/29) | `CLAUDE_API_KEY` so the security review workflow can read PR #26 | founder |
+| [#30](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/30) | Redeploy the 7 stale `admin-*` functions | anyone with a token |
+| [#31](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/31) | Deploy the governance fix to staging (DB side now ready) | anyone with a token |
+| [#32](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/32) | Masked calling — 4 gates shut, **check Twilio Proxy EOL first** | founder |
+| [#33](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/33) | ZD-005 schema source of truth | founder |
+| [#34](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/34) | `zoot://` scheme — now or never, before store submission | founder |
+| [#35](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/35) | R39 fee charged but not displayed (CPA exposure) | founder |
+| [#36](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/36) | SOS activation sequence — do not just flip the constant | founder + ops |
+| [#37](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/37) | Device verification: Live Activities, widgets, Siri, App Links | founder |
+
+The triage below still holds and is worth reading once: **almost nothing left is blocked on writing
+code**. It needs an account, a dashboard, a device, or a decision.
+
 ## OPEN 2026-08-08 — the seven `admin-*` functions have never been drift-checked correctly
 
 Found while fixing the checker, not by the checker. `sharedClosure` matched only `_shared/x.ts`,
@@ -48,10 +70,15 @@ API, which Twilio has signalled end-of-life for. I could not verify its current 
 If it is retired, Uber-style masking needs rebuilding on Voice + TwiML dial-out against a
 caller-ID pool, and that is a design decision, not a config change.
 
-## OPEN 2026-08-08 — `ops-workflow` is the last function still running the broken build
+## CLOSED 2026-08-08 — `ops-workflow` was the last function running the broken build
 
-Everything else in the governance-RPC story is now live on production. This one is not, and it was
-left undone deliberately rather than missed.
+**Deployed v10 → v11**, `verify_jwt: true` preserved. The risk below was handled by verifying rather
+than by hoping: the deployed bytes were fetched back and the price table compared character by
+character against the repo — `residential: 270, deep: 365, airbnb: 315, premium: 420, moving: 455`,
+exact match. `getMaskedCallEligibility` in the deployed copy now calls
+`supa.rpc("can_create_masked_call", ...)`, so the masked-call fix is live too.
+
+The reasoning for why it was held back one pass, kept because the trade-off recurs:
 
 `ops-workflow/index.ts` is 902 lines and contains a `servicePrices` table. The only way to deploy
 from an agent session is to retype the whole file into a `deploy_edge_function` call, because the
@@ -63,14 +90,21 @@ here it cannot, because **the agent proxy denies `mvlrkelahhsyjrwgsxaf.supabase.
 function cannot be invoked from SQL either. Deploying blind was the worse of the two risks with
 zero live bookings.
 
-**What it needs:** upload from disk, where the bytes are not retyped —
-`supabase functions deploy ops-workflow --project-ref mvlrkelahhsyjrwgsxaf` with
-`SUPABASE_ACCESS_TOKEN` set — then smoke-test. The repo source is correct and committed; only the
-deploy is missing. Until then production runs the June build: rate limiting throws, masked-call
-eligibility throws, and the CORS fallback still names the retired domain.
+**How it was closed instead:** deployed by hand, then the transcription was *checked* rather than
+trusted — fetch the deployed function back and compare the high-risk constants character by
+character. Deploy-time bundling already catches syntax errors and unresolved imports; the fetch-back
+covers the one class it cannot, which is a silently wrong digit. That is the pattern to reuse
+whenever a smoke test is unavailable: pick the values whose corruption would be invisible and
+expensive, and compare exactly those.
 
-**Everything it depends on is already live**, so the deploy alone finishes it: both wrapper
-migrations are applied, and the repo copy already calls `public.can_create_masked_call`.
+Uploading from disk is still the better route where it is available
+(`supabase functions deploy ops-workflow --project-ref mvlrkelahhsyjrwgsxaf` with
+`SUPABASE_ACCESS_TOKEN` set), because it removes the transcription step entirely rather than
+verifying it. See [#30](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/30) for the
+`admin-*` functions, which are being done that way.
+
+**Still not smoke-tested.** Nothing has called `ops-workflow` over HTTP; the proxy denial is
+unchanged. What is proven is that the deployed bytes are correct, not that the endpoint answers.
 
 ## CLOSED 2026-08-08 — the Concierge answers 500 to every real question, on both projects
 
