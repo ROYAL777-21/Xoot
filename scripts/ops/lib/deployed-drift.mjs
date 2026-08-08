@@ -20,11 +20,27 @@ export const sharedImportsOf = (source) =>
   new Set([...String(source ?? "").matchAll(/_shared\/([\w.-]+\.ts)/g)].map((match) => match[1]));
 
 /**
+ * Shared modules a file *inside* `_shared` imports, which it writes as plain siblings.
+ *
+ * `twilio-webhook.ts` imports `./governance-utils.ts`, not `../_shared/governance-utils.ts` —
+ * there is no `_shared/` in that string for `sharedImportsOf` to match. Only correct for sources
+ * that live in `_shared`: in `functions/<slug>/index.ts` a `./x.ts` is a sibling of *that*
+ * function, not a shared module, so the two scanners must stay separate.
+ */
+export const siblingImportsOf = (source) =>
+  new Set([...String(source ?? "").matchAll(/from\s+["']\.\/([\w.-]+\.ts)["']/g)].map((match) => match[1]));
+
+/**
  * Every `_shared` module a function pulls in, following shared-to-shared imports.
  *
- * Nothing in `_shared` imports another shared module today. It is followed anyway: the day
- * one does, a checker that stopped at one level would go quietly wrong in exactly the
- * direction that hides drift, which is the failure this file exists to prevent.
+ * Two such imports exist — `twilio-webhook.ts` -> `./governance-utils.ts` and
+ * `admin-action-utils.ts` -> `./action-utils.ts` — and until 2026-08-08 neither was followed,
+ * because both are written as siblings and the entry-file regex cannot see them. That hid real
+ * staleness in exactly the direction this file exists to prevent: when `governance-utils.ts`
+ * changed, the five twilio webhooks were not reported stale, and the same blind spot covered the
+ * seven `admin-*` functions via `action-utils.ts`. It also understated the deploy bundle, which is
+ * worse than a bad report — deploying a twilio webhook from the old closure ships
+ * `twilio-webhook.ts` without `governance-utils.ts`, a bundle that cannot resolve its imports.
  */
 export function sharedClosure(entrySource, sharedSources) {
   const seen = new Set();
@@ -35,7 +51,9 @@ export function sharedClosure(entrySource, sharedSources) {
     // Cycle-safe: a shared module importing back into the graph must not loop forever.
     if (seen.has(name)) continue;
     seen.add(name);
-    for (const next of sharedImportsOf(sharedSources[name])) {
+    const source = sharedSources[name];
+    // Both spellings, because this source is itself in `_shared`.
+    for (const next of [...sharedImportsOf(source), ...siblingImportsOf(source)]) {
       if (!seen.has(next)) queue.push(next);
     }
   }

@@ -12,11 +12,6 @@ import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/govern
 
 const basicAuth = (username: string, password: string) => `Basic ${btoa(`${username}:${password}`)}`;
 
-const privateRpc = (supa: any, fn: string, args: Record<string, unknown>) => {
-  if (typeof supa.schema === "function") return supa.schema("private").rpc(fn, args);
-  return supa.rpc(fn, args);
-};
-
 const getUserPhone = async (supa: any, userId: string) => {
   const { data } = await supa.from("profiles").select("phone").eq("id", userId).maybeSingle();
   return data?.phone ?? null;
@@ -70,8 +65,20 @@ const createTwilioProxySession = async (bookingId: string, clientPhone: string, 
   };
 };
 
+/**
+ * Calls the `public` wrapper, which forwards to `private.can_create_masked_call`.
+ *
+ * This used to go through a local `privateRpc` helper doing `supa.schema("private").rpc(...)` —
+ * the same defect `_shared/governance-utils.ts` documents, duplicated here and in `ops-workflow`
+ * rather than shared, which is why the earlier governance fix did not reach it. The call goes over
+ * PostgREST and `private` is invisible to PostgREST, so it always threw, and the bare `catch` at
+ * the bottom of this handler turned that into a generic 500. Masked calls have never worked.
+ *
+ * `20260808120000_public_masked_call_eligibility_wrapper.sql` adds the SECURITY INVOKER wrapper,
+ * EXECUTE revoked from anon and authenticated, granted only to service_role.
+ */
 const getMaskedCallEligibility = async (supa: any, bookingId: string, actorId: string) => {
-  const { data, error } = await privateRpc(supa, "can_create_masked_call", {
+  const { data, error } = await supa.rpc("can_create_masked_call", {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
