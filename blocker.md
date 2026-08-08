@@ -208,7 +208,7 @@ That sounds worse than it is, and the distinction matters for deciding what to r
 | `create-booking` | ~~2026-06-20~~ **DEPLOYED v7 2026-08-07** | `eb5401e` ZD-020 ladder, `0ce6dbf` property link | **Was a repricing.** Founder signed off; deployed and verified. |
 | `support-respond` | 2026-06-27 | `e34774f` Concierge governance and knowledge boundaries | Tightens Concierge. Safe, wants a smoke test. |
 | `twilio-voice-status` | ~~2026-08-06 10:48~~ **DEPLOYED v10 2026-08-08** | `d26d838` callback write fix, committed 10:50 — two minutes later | Deployed. Verified live: fails closed 403 on absent and on bogus signature, `verify_jwt` still false. |
-| `twilio-voice-twiml` | 2026-05-19 | `44c2d0a` credential fixes | Safe. Oldest deployment in the estate. |
+| `twilio-voice-twiml` | ~~2026-05-19~~ **DEPLOYED v9 2026-08-08** | `44c2d0a` credential fixes | Deployed. Was the oldest in the estate. Verified live: 403 on POST/GET, unsigned and bogus-signed, emitting no TwiML. |
 
 ### The other 38 are stale for one shared reason
 
