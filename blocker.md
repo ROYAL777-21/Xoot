@@ -346,13 +346,35 @@ from a session is the proxy, not the function.
   Guarded by "persists the household profile it just proved the caller owns" in
   `server-authority.test.ts`, verified to fail against a planted regression.
 
-  **Still open, lower severity: `create-booking-request` does not check ownership at all.** It
-  takes `householdProfileId` from the body and writes it to `recurring_schedules` with no
-  `user_id` check. That table is not a credential path — `get-sensitive-access` reads
-  `bookings`, not `recurring_schedules` — so this is data integrity rather than disclosure: your
-  recurring schedule could point at someone else's profile. Left alone deliberately; it is a
-  separate function with its own deploy, and folding an untested change into a verified
-  repricing deploy is how drift starts.
+  **CLOSED 2026-08-08 — `create-booking-request`, and it was worse than the ownership gap.**
+  Deferred from the previous change as "lower severity: takes `householdProfileId` unchecked".
+  That was true and is now fixed, but reading the function properly found the bigger thing.
+
+  **It was a second live pricing path still running the superseded model.** Its own private
+  `homeSizes` R270/R315/R390 times a `serviceMultiplier`, cover R21, entirely separate from
+  `create-booking`'s, and it inserts real `bookings` rows with a `price`. It survived the ZD-020
+  repricing because it imports no shared pricing and **no client code calls it** — `Book.tsx`
+  invokes `create-booking` — so no test, no type error and no customer could have surfaced it.
+  The docs still describe it as the booking path, which is likely why nobody revisited it.
+
+  Deployed and authenticated the whole time (v7, ACTIVE, `verify_jwt` true), so any signed-in
+  user posting to it directly would have created bookings at figures nobody approved. Nothing
+  happened: production holds 0 bookings.
+
+  **Fixed and deployed v7 → v8**, verified by fetching the live source back: it prices off
+  `_shared/pricing.ts`, and the household lookup is scoped with `.eq("user_id",
+  authData.user.id)` ahead of every write, with one message for "no such profile" and "not
+  yours" so ids cannot be probed.
+
+  The guard was widened rather than duplicated. `pricing-parity.test.ts` now runs the
+  superseded-model assertions over a **list of booking writers** instead of naming
+  `create-booking` — a guard aimed at one file is precisely what let this survive — and also
+  requires each to import the shared ladder. Both new guards verified against planted
+  regressions.
+
+  **Open question for the founder, not a defect:** should this function exist at all? It has no
+  callers and `create-booking` supersedes it. Repricing it was the safe move because retiring a
+  deployed endpoint is a product decision. Retiring it later costs nothing now.
 
 - **CLOSED IN PRODUCTION 2026-08-07 — an SOS alert could be cancelled without the PIN for five
   seconds after it dispatched.** Fixed in repo and **deployed (v4 → v5)**.
