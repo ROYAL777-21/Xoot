@@ -55,6 +55,8 @@ supabase/.temp/
 .claude/skills/*
 !.claude/skills/xoot-authz-audit/
 !.claude/skills/xoot-content/
+!.claude/skills/xoot-supabase-ops/
+!.claude/skills/evidence-before-claims/
 !.claude/skills/VENDORED-EXTERNAL.md
 .codeartsdoer/
 .codebuddy/
