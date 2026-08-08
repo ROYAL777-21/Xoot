@@ -22,40 +22,34 @@ needs an account, a dashboard, a device, or a decision.
    `npm run ops:supabase:encryption-key -- -ProjectRef <ref>`. Gate codes cannot be stored
    until this exists. Reported done 2026-08-07 but unverifiable from an agent session, because
    Supabase never reads a secret value back.
-2. `ALLOWED_ORIGINS` on both projects — **now one command**, and the founder confirmed
-   2026-08-07 that `https://xoot.co.za` is the correct domain:
+2. ~~`ALLOWED_ORIGINS` on both projects.~~ **DONE 2026-08-07, and verified live rather than
+   reported.** The founder set it on both projects; the network policy was opened in the same
+   pass, so for the first time this could be confirmed from a session instead of trusted.
 
-       SUPABASE_ACCESS_TOKEN=... npm run ops:supabase:allowed-origins -- both
+   Probed by CORS preflight against production `mvlrkelahhsyjrwgsxaf`:
 
-   Add `-- both --print` first to see the exact values without changing anything.
+       https://xoot.co.za          echoed  -> allowed
+       https://www.xoot.co.za      echoed  -> allowed
+       http://localhost:5173       not echoed -> browser blocks
+       https://zoothome.co.za      not echoed -> browser blocks
+       https://evil.example        not echoed -> browser blocks
 
-   **Verified 2026-08-07 against deployed source, not inferred:** all 42 production functions
-   had `zoothome.co.za` compiled in as their fallback, because the domain change landed four
-   hours after the last deployment. Until this is set, every browser call from `xoot.co.za` is
-   answered `403 origin not allowed`. No redeploy needed, and it stays the *safe* fix for the
-   39 that remain — a redeploy would drag in whatever else that function has accumulated.
+   The proof it is the *variable* doing this, not the redeploys: `get-zooter-job-cards`,
+   `support-respond` and `confirm-payment` have never been redeployed, so `zoothome.co.za` is
+   still compiled into them as the fallback — and all three now answer `https://xoot.co.za`.
 
-   **Three are already correct without the secret**: `raise-sos-alert`, `get-sensitive-access`
-   and `create-booking` were redeployed on 2026-08-07 carrying security and pricing fixes, and a
-   redeploy compiles the current `defaultAllowedOrigins` in. Setting the secret is still worth
-   doing — it is what fixes the other 39 — and it is harmless to the three.
+   Staging `fxmxyabdjqviqbcxmvlp` verified the same way and is correctly *different*: loopback
+   and `staging.xoot.co.za` are allowed, `https://xoot.co.za` and arbitrary origins are not.
 
-   The value is **derived from `defaultAllowedOrigins`**, not retyped: production gets the
-   `https://` entries (`https://xoot.co.za,https://www.xoot.co.za`), staging keeps loopback and
-   swaps in `staging.xoot.co.za`. A fourth hand-written copy of the domain is precisely how the
-   deployed functions ended up on the old one. Pinned by `src/lib/allowed-origins.test.ts`,
-   which also refuses to let a loopback origin reach the production list — setting this
-   variable *replaces* the fallback rather than extending it, so anything in it is something
-   production will accept from a browser.
+   **Read the `Access-Control-Allow-Origin` header, not the status code**, if re-testing.
+   `handlePreflight` answers `OPTIONS` with `204` before it checks the origin, so the status is
+   `204` either way; what decides the browser's behaviour is whether the header echoes the
+   requesting origin. A `POST` from a disallowed origin returns the gateway's `401` first when
+   `verify_jwt` is on, so the function's own `403 origin not allowed` is not observable without
+   a valid JWT.
 
-   Why a new script rather than `ops:supabase:secrets:*`: that one is Windows-only (`npx.cmd`)
-   and, correctly for service keys, refuses to read anything inside the repo — it wants a
-   secrets file kept elsewhere. `ALLOWED_ORIGINS` is a list of public domain names, not a
-   secret, so there is no file to assemble and nothing to keep out of git.
-
-   **This still needs a machine that can reach `api.supabase.com`.** Org egress policy blocks
-   it from an agent session (re-confirmed 2026-08-07: connect fails outright), and the Supabase
-   MCP server exposes no secrets API, so it cannot be set from here by any route.
+   No redeploy was needed, and none of the 39 stale functions had to move — which was the whole
+   point of preferring the variable over redeploying.
 3. Dismiss two by-design Supabase advisor findings (`set_safety_pin`, `user_safety_pins`).
 4. Leaked-password protection — deliberately deferred, still off.
 
@@ -185,8 +179,10 @@ Consequences worth stating separately:
 
 **Nothing was deployed at the time this was written.** The founder asked for a redeploy to fix
 `ALLOWED_ORIGINS`; that was stopped once the live source was read. Setting the `ALLOWED_ORIGINS`
-secret remains the right fix for the other 39 functions — it fixes CORS with no code change and
-no pricing risk.
+secret was the right fix for the other 39 functions — no code change, no pricing risk — and it
+**has since been set and verified live on both projects** (see item 2 of the triage at the top).
+The 39 stale functions now answer `xoot.co.za` correctly without any of them being redeployed,
+which is exactly the outcome that choice was made for.
 
 Three functions have since been deployed deliberately, each verified by fetching the live source
 back and comparing it against the repo. See "The deploys that closed this".
@@ -229,10 +225,12 @@ from dates. Its own handler is byte-identical to the repo; only the vendored `_s
 old. The remaining 5 (`twilio-*-webhook` family) are stale on `_shared/twilio-webhook.ts` from
 `2026-07-29`, same shape of problem.
 
-**This is what makes `ALLOWED_ORIGINS` load-bearing rather than tidy-up.** `getAllowedOrigins()`
-reads the env var *first* and only falls back to the compiled list, so setting the secret
-corrects all 42 functions at once, with no deploy and no pricing risk. Leaving it unset means
-`handlePreflight` answers `403 origin not allowed` to every browser call from `xoot.co.za`.
+**This is what made `ALLOWED_ORIGINS` load-bearing rather than tidy-up.** `getAllowedOrigins()`
+reads the env var *first* and only falls back to the compiled list, so setting it corrected all
+42 functions at once, with no deploy and no pricing risk. Unset, `handlePreflight` answered
+`403 origin not allowed` to every browser call from `xoot.co.za`. **Set and verified live
+2026-08-07** — including against functions that are still stale, which is what proves the
+mechanism rather than the redeploys.
 
 ### Also true, and separate
 
@@ -292,9 +290,9 @@ from a session is the proxy, not the function.
   `zoothome.co.za`. `get-sensitive-access` used the identical mechanism and content read the
   same way; its `ezbr_sha256` and version both changed.
 
-  **All three now serve the correct domain without `ALLOWED_ORIGINS`** — a redeploy compiles the
-  current `defaultAllowedOrigins` in. The other 39 still need the secret, which stays the
-  cheaper fix for them: no deploy, no repricing risk.
+  **All three serve the correct domain without `ALLOWED_ORIGINS`** — a redeploy compiles the
+  current `defaultAllowedOrigins` in. The other 39 were fixed by the secret instead, which was
+  the cheaper route for them: no deploy, no repricing risk. Both halves are now verified live.
 
   `create-booking` was the one where a transcription slip would misprice a real booking rather
   than fail visibly, so it was verified harder than the other two. Its `_shared/pricing.ts` — the
