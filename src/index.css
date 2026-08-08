@@ -1401,6 +1401,56 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /*
+     * Motion, ported from the design kit 2026-08-08.
+     *
+     * `docs/xoot-ios-build-prompt.md` warns that these are "why the kit feels the way it does
+     * and they are the first thing lost in a hand translation" — and they had been: before this,
+     * `index.css` declared not one of them while the kit's components referenced twelve.
+     *
+     * Values are the kit's own, read out of `design/Xoot_App.html`, not invented to look
+     * plausible. Two of the easings — `settle` and `spring` — are used by the kit but missing
+     * from the list in the build prompt, so that doc undercounts by two.
+     *
+     * Scheme-independent on purpose: durations and curves do not change between light and dark,
+     * so unlike the colour roles these are declared once and not repeated in `.dark`.
+     */
+    --xoot-dur-instant: 90ms;
+    --xoot-dur-fast: 170ms;
+    --xoot-dur-base: 280ms;
+    --xoot-dur-slow: 440ms;
+    --xoot-dur-story: 760ms;
+    --xoot-dur-bloom: 1200ms;
+    /* Ambient loops — a breathing surface and a looping icon. Long by intent, not by accident. */
+    --xoot-dur-breathe: 4600ms;
+    --xoot-dur-icon: 2600ms;
+
+    --xoot-ease-out: cubic-bezier(0.22, 0.9, 0.28, 1);
+    --xoot-ease-in-out: cubic-bezier(0.6, 0.05, 0.3, 0.95);
+    --xoot-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+    /* Overshoots past 1 — the only curve here that does. Reserve it for arrivals, not exits. */
+    --xoot-ease-spring: cubic-bezier(0.34, 1.42, 0.5, 1);
+  }
+
+  /*
+   * The kit ships this and it would have been easy to drop. Zeroing the durations rather than
+   * disabling animations individually means every consumer keeps working — a transition still
+   * fires and still completes, it just takes no time — so nothing has to branch on the media
+   * query. Easing curves are deliberately left alone: with a zero duration they have no effect,
+   * and removing them would make the reduced-motion path diverge from the normal one for no gain.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --xoot-dur-instant: 0ms;
+      --xoot-dur-fast: 0ms;
+      --xoot-dur-base: 0ms;
+      --xoot-dur-slow: 0ms;
+      --xoot-dur-story: 0ms;
+      --xoot-dur-bloom: 0ms;
+      --xoot-dur-breathe: 0ms;
+      --xoot-dur-icon: 0ms;
+    }
   }
 
   .dark {

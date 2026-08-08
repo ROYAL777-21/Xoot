@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { COLOR, MIN_TAP_TARGET, RADIUS, SPACE, TYPE, alpha, color, hsl } from "./design-tokens";
+import { COLOR, DURATION, EASING, MIN_TAP_TARGET, RADIUS, SPACE, TYPE, alpha, color, durationFor, hsl } from "./design-tokens";
 
 /**
  * `design-tokens.ts` is a mirror of `src/index.css`, kept because React Native cannot
@@ -88,6 +88,48 @@ describe("design tokens", () => {
         });
       }
     }
+  });
+
+  /**
+   * Motion has to be mirrored as literally as colour, and for a sharper reason: the durations
+   * are the difference between the kit's feel and a hand translation of it, and nothing about a
+   * screenshot reveals that they drifted. `index.css` writes `280ms`; this file writes `280`.
+   */
+  it("mirrors every duration from index.css, in milliseconds", () => {
+    const root = tokensIn("  :root {");
+    for (const [key, ms] of Object.entries(DURATION)) {
+      const declared = root[`xoot-dur-${key}`];
+      expect({ key, declared }, `--xoot-dur-${key} missing from :root`).toEqual({
+        key,
+        declared: `${ms}ms`,
+      });
+    }
+  });
+
+  it("mirrors every easing curve from index.css, as control points", () => {
+    const root = tokensIn("  :root {");
+    const cssName = { out: "out", inOut: "in-out", settle: "settle", spring: "spring" } as const;
+    for (const [key, points] of Object.entries(EASING)) {
+      const declared = root[`xoot-ease-${cssName[key as keyof typeof cssName]}`];
+      const parsed = declared?.match(/cubic-bezier\(([^)]*)\)/)?.[1]
+        .split(",")
+        .map((n) => Number(n.trim()));
+      expect({ key, parsed }).toEqual({ key, parsed: [...points] });
+    }
+  });
+
+  /**
+   * The reduced-motion block is easy to drop in a port and impossible to notice missing unless
+   * you have the OS setting on. Asserted as a block rather than a flag so removing it fails.
+   */
+  it("zeroes every duration under prefers-reduced-motion", () => {
+    const reduced = tokensIn("  @media (prefers-reduced-motion: reduce) {\n    :root {");
+    for (const key of Object.keys(DURATION)) {
+      expect({ key, value: reduced[`xoot-dur-${key}`] }).toEqual({ key, value: "0ms" });
+    }
+    // The rule, not just the values: durationFor is what native consumes.
+    expect(durationFor("base", true)).toBe(0);
+    expect(durationFor("base", false)).toBe(DURATION.base);
   });
 
   it("covers both schemes with the same roles", () => {

@@ -178,3 +178,54 @@ export type TypeRole = keyof typeof TYPE;
  * it happens.
  */
 export const MIN_TAP_TARGET = 44;
+
+/**
+ * Motion, mirrored from `index.css`.
+ *
+ * Milliseconds as plain numbers rather than the CSS `280ms` strings: React Native's Animated
+ * and Reanimated both take numbers, and a mirror that needs parsing at the call site is a
+ * mirror that will be parsed differently in two places.
+ *
+ * `docs/xoot-ios-build-prompt.md` calls these "the first thing lost in a hand translation",
+ * which is what had happened — the kit referenced twelve tokens and this codebase declared none.
+ *
+ * Not split by scheme: durations and curves are the same in light and dark, so unlike `COLOR`
+ * there is one set.
+ */
+export const DURATION = {
+  instant: 90,
+  fast: 170,
+  base: 280,
+  slow: 440,
+  story: 760,
+  bloom: 1200,
+  /** Ambient loops. Long by intent — a breathing surface, a looping icon. */
+  breathe: 4600,
+  icon: 2600,
+} as const;
+
+/**
+ * Easing curves as their four control points.
+ *
+ * Kept as tuples rather than CSS strings so native can hand them straight to `Easing.bezier`.
+ * `spring` is the only one that overshoots past 1 — reserve it for arrivals, never exits, or
+ * things appear to bounce on their way out.
+ */
+export const EASING = {
+  out: [0.22, 0.9, 0.28, 1],
+  inOut: [0.6, 0.05, 0.3, 0.95],
+  settle: [0.16, 1, 0.3, 1],
+  spring: [0.34, 1.42, 0.5, 1],
+} as const;
+
+/**
+ * Honour the OS reduced-motion setting by zeroing durations, matching what `index.css` does
+ * under `@media (prefers-reduced-motion: reduce)`.
+ *
+ * Zeroing rather than skipping animations keeps every call site working unchanged: the
+ * animation still runs and still completes, it just takes no time. Native reads the setting
+ * from `AccessibilityInfo.isReduceMotionEnabled()`; this function exists so the *rule* lives in
+ * one place rather than being re-decided per screen.
+ */
+export const durationFor = (key: keyof typeof DURATION, reduceMotion: boolean) =>
+  reduceMotion ? 0 : DURATION[key];
