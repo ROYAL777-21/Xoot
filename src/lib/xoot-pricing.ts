@@ -24,6 +24,21 @@ export const LINEN_ON_SITE_CENTS = 2000;
 export const BOOKING_COVER_CENTS = 2200;
 
 /**
+ * R39, charged by `create-booking` on one-time bookings only, waived on recurring.
+ *
+ * This used to exist on the server and nowhere here, and `pricing-parity.test.ts` asserted the
+ * gap deliberately rather than hiding it. The gap was not academic: `BookingConfirm.tsx` prices
+ * from `quote()`, so the total a customer confirmed on the last screen before paying was R39
+ * under what they were then charged. Under the Consumer Protection Act the displayed price is
+ * the price, so this was the wrong side of a line, not untidiness.
+ *
+ * Mirrored from `ONE_TIME_SERVICE_FEE_CENTS` in `supabase/functions/_shared/pricing.ts`, which
+ * the server applies as `frequency === "one_time" ? fee : 0`. The parity test reads that file as
+ * text and fails if the two drift.
+ */
+export const ONE_TIME_SERVICE_FEE_CENTS = 3900;
+
+/**
  * Multi-Xooter booking.
  *
  * **This mirrors `supabase/functions/create-booking/index.ts`. The server is the authority
@@ -146,6 +161,15 @@ export type QuoteInput = {
   linenOnSite?: boolean;
   /** Preselected; deselecting requires a confirmation banner (§4.1). */
   bookingCover?: boolean;
+  /**
+   * One-time bookings carry the R39 service fee; recurring ones have it waived.
+   *
+   * Defaults to `"one_time"` deliberately. A caller that forgets to pass it then over-states the
+   * price by R39 rather than under-stating it, and only one of those two mistakes shows a
+   * customer a total they will later be charged past. `Book.tsx` defaults its own frequency
+   * state the same way.
+   */
+  frequency?: "one_time" | "repeat";
 };
 
 export type PricedQuote = {
@@ -160,6 +184,8 @@ export type PricedQuote = {
   addOnsCents: number;
   linenCents: number;
   coverCents: number;
+  /** R39 on one-time bookings, 0 on recurring. Included in `totalCents`. */
+  serviceFeeCents: number;
   totalCents: number;
 };
 
@@ -240,6 +266,8 @@ export function quote(input: QuoteInput): Quote {
   const addOnsCents = Math.max(0, input.addOns ?? 0) * ADD_ON_CENTS;
   const linenCents = input.linenOnSite ? LINEN_ON_SITE_CENTS : 0;
   const coverCents = input.bookingCover === false ? 0 : BOOKING_COVER_CENTS;
+  // Mirrors `create-booking`: `frequency === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0`.
+  const serviceFeeCents = (input.frequency ?? "one_time") === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0;
 
   return {
     ok: true,
@@ -251,7 +279,8 @@ export function quote(input: QuoteInput): Quote {
     addOnsCents,
     linenCents,
     coverCents,
-    totalCents: baseCents + addOnsCents + linenCents + coverCents,
+    serviceFeeCents,
+    totalCents: baseCents + addOnsCents + linenCents + coverCents + serviceFeeCents,
   };
 }
 

@@ -50,7 +50,10 @@ describe("xoot pricing", () => {
     const q = ok(quote({ service: "regular", hours: 4, addOns: 3 }));
     expect(q.addOnsCents).toBe(3 * ADD_ON_CENTS);
     expect(q.coverCents).toBe(BOOKING_COVER_CENTS);
-    expect(q.totalCents).toBe(q.baseCents + q.addOnsCents + q.coverCents);
+    // The one-time service fee is part of the total now; it was not when this line was written,
+    // and the R3900 gap it left was visible to customers on the confirm screen. See
+    // pricing-parity.test.ts for the client/server equality that keeps it honest.
+    expect(q.totalCents).toBe(q.baseCents + q.addOnsCents + q.coverCents + q.serviceFeeCents);
 
     // The one add-on in the product that is not R30.
     const air = ok(quote({ service: "airbnb", hours: 5, linenOnSite: true, bookingCover: false }));
