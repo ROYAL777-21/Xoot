@@ -64,16 +64,34 @@ describe("client/server pricing parity", () => {
     expect(serverConst("LINEN_ON_SITE_CENTS")).toBe(LINEN_ON_SITE_CENTS);
   });
 
-  it("has removed the superseded multiplier model from the booking function", () => {
-    const fn = readFileSync(join(process.cwd(), "supabase/functions/create-booking/index.ts"), "utf8");
+  /**
+   * Every function that writes a `bookings` row, not just the one the app happens to call.
+   *
+   * This originally checked `create-booking` alone and passed for a day while
+   * `create-booking-request` — deployed, authenticated, and writing real bookings — still ran
+   * its own private copy of `homeSizes R270/R315/R390 x serviceMultiplier` with cover R21. It
+   * survived the ZD-020 repricing because it imports no shared pricing and no client code calls
+   * it, so nothing anywhere failed. A guard aimed at one file cannot catch that; the list is
+   * what matters.
+   */
+  const BOOKING_WRITERS = [
+    "supabase/functions/create-booking/index.ts",
+    "supabase/functions/create-booking-request/index.ts",
+  ];
+
+  it.each(BOOKING_WRITERS)("%s has no superseded multiplier model", (path) => {
+    const fn = readFileSync(join(process.cwd(), path), "utf8");
     // The old model and its unapproved figures must not come back. Matching on *usage*
     // rather than the bare word, so the comment explaining what was removed does not
     // trip its own guard.
-    expect(fn).not.toMatch(/serviceMultiplier\s*[[:=]/);
+    expect(fn).not.toMatch(/serviceMultiplier\[/);
     expect(fn).not.toMatch(/priceFactor\s*[:.]/);
     expect(fn).not.toMatch(/price:\s*270|price:\s*315|price:\s*390/);
     // Booking cover moved R21 -> R22 (ZD-020).
     expect(fn).not.toMatch(/bookingCoverOptIn === false \? 0 : 21/);
+    // And it must price off the shared ladder rather than anything of its own.
+    expect(fn).toMatch(/from "\.\.\/_shared\/pricing\.ts"/);
+    expect(fn).toMatch(/basePrice\(serviceType,/);
   });
 
   /**

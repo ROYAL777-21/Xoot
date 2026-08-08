@@ -270,6 +270,30 @@ describe("a household profile can only be read by the household it belongs to", 
    * Pinning the write here rather than in the pricing suite because what makes it safe is the
    * ownership proof next to it, not the money.
    */
+  /**
+   * The other function that takes a household profile id from the body.
+   *
+   * `create-booking-request` is deployed and authenticated but has no callers in the app, so it
+   * kept taking `householdProfileId` on trust long after the booking path stopped. It writes to
+   * `recurring_schedules` rather than `bookings`, which is why this is integrity rather than
+   * disclosure — but "no code calls it" is not an access control.
+   */
+  it("proves ownership in the request path too, not just the booking path", () => {
+    const request = codeOf("supabase/functions/create-booking-request/index.ts");
+    const checkAt = request.indexOf('.from("household_profiles")');
+    expect(checkAt, "create-booking-request no longer checks the household profile").toBeGreaterThan(-1);
+
+    const lookup = request.slice(checkAt, checkAt + 400);
+    expect(lookup).toMatch(/\.eq\("id",\s*householdProfileId\)/);
+    expect(lookup, "the household lookup is not scoped to the caller").toMatch(
+      /\.eq\("user_id",\s*authData\.user\.id\)/,
+    );
+
+    // Before any write, or it guards nothing.
+    expect(checkAt).toBeLessThan(request.indexOf('.from("bookings").insert'));
+    expect(request).toMatch(/household profile not found/);
+  });
+
   it("persists the household profile it just proved the caller owns", () => {
     const insertAt = createBooking.indexOf('.from("bookings").insert');
     expect(insertAt, "create-booking no longer inserts a booking").toBeGreaterThan(-1);
