@@ -9,6 +9,7 @@ import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCh
 import { resolvePhoto } from "@/components/zoot/XooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { BookingChat } from "@/components/zoot/BookingChat";
+import { VoiceCallPanel } from "@/components/zoot/VoiceCallPanel";
 import { SosButton } from "@/components/zoot/SosButton";
 import { TipCard } from "@/components/zoot/TipCard";
 import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
@@ -476,10 +477,18 @@ const BookingDetail = () => {
               {maskedCallAvailable && (
                 <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2">
                   {requestingCall ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Phone className="h-4 w-4 mr-1" />}
-                  Request masked call
+                  Call by phone instead
                 </Button>
               )}
             </div>
+            {/*
+              In-app calling sits above the phone route, not beside it, because they are not equal
+              options: this one needs no number pool, costs nothing to provision and works on wifi,
+              while the masked-PSTN path rents numbers and carries the Twilio Proxy end-of-life
+              question. Same eligibility for both — `maskedCallAvailable` is passed in rather than
+              recomputed, so the two transports cannot drift into disagreeing about who may call.
+            */}
+            {id && <VoiceCallPanel bookingId={id} available={maskedCallAvailable} />}
             {maskedCall?.proxy_numbers && (
               <div className="mx-5 mb-5 rounded-2xl border border-border bg-muted/35 p-3 text-sm">
                 <p className="mb-2 font-semibold">Masked call proxy numbers</p>
