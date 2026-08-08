@@ -9,6 +9,61 @@ listed once under "Closed at review" at the foot of the file, then dropped.
 Everything dated 2026-08-02 in this file was re-verified live against both Supabase
 projects on that date, not carried forward on trust.
 
+## OPEN 2026-08-08 — the Concierge answers 500 to every real question, on both projects
+
+Found by the smoke test that `support-respond`'s ledger entry had been asking for. Deploying it
+was the occasion, not the cause: **this is pre-existing and I did not introduce it.**
+
+Verified by A/B against **staging**, which I never deployed to. Both projects behave identically:
+
+    POST support-respond {"subject":"What is Xoot","body":"who are you..."}
+      production  -> 500 {"error":"support response failed"}
+      staging     -> 500 {"error":"support response failed"}
+    POST support-respond {"subject":"hi"}            -> 400 (correct)
+    POST from a disallowed Origin                    -> 403 (correct)
+
+The 400 and 403 are correct because they return *before* the failing call. Anything that reaches
+the body of the handler dies.
+
+**Root cause: a design contradiction, not a typo.** `_shared/governance-utils.ts` calls its
+helpers with `supa.schema("private").rpc(...)`, which goes over PostgREST. Those functions live
+in the `private` schema **precisely so PostgREST cannot see them** —
+`20260621000000_helper_function_hardening.sql` says so in its own words: "privileged table reads
+live in the unexposed private schema." So the call cannot succeed by construction. The throw is
+then swallowed by a bare `catch` that returns a generic 500 without logging, which is why nothing
+surfaced it until someone called the endpoint.
+
+`privateRpc` looks like it has a fallback:
+
+    if (typeof supa.schema === "function") return supa.schema("private").rpc(fn, args);
+    if (typeof supa.rpc === "function") return supa.rpc(fn, args);
+
+It is dead code. `supa.schema` always exists in supabase-js v2, so the first branch always wins.
+
+**Blast radius — 7 functions import `governance-utils`:** `support-respond`,
+`create-concierge-handoff`, `create-masked-call`, `ops-workflow`, `report-concierge-answer`,
+`send-booking-message` (all `consumeRateLimit`), and `confirm-payment`
+(`claimProviderEvent` / `markProviderEventProcessed`).
+
+**Verified failing: `support-respond` only**, on both projects. The others call the same helper
+so the same throw occurs, but whether it surfaces as a 500 or is caught depends on each
+function's error handling — that is inference, not measurement, and should be measured before
+anyone acts on it. `ops-workflow` and `send-booking-message` are the ones worth measuring first:
+they carry booking status changes, XootCred and booking chat.
+
+**Second-order consequence worth stating plainly: rate limiting is not running.** Every
+`consumeRateLimit` call throws rather than returning a decision, so no bucket is ever consumed.
+On `support-respond`, which is `verify_jwt: false` and therefore public, the guest limit of 20
+per 5 minutes has never applied.
+
+**Recommended fix, not applied — it is a production schema change and an architectural call.**
+Add `public` SECURITY DEFINER wrappers for the three helpers with `EXECUTE` revoked from `anon`
+and `authenticated` and granted only to `service_role`. That keeps the property the `private`
+schema was created for — users cannot call them — while letting the service role reach them over
+PostgREST. Exposing `private` to PostgREST would work too and is the wrong fix: it discards the
+reason the schema exists. Whichever is chosen, the bare `catch` in `support-respond` should log
+the error, because a swallowed message is what let this sit undiscovered.
+
 ## What is actually left, and who can move it
 
 Added 2026-08-07. The sections below are the detail; this is the triage, because 98 entries
@@ -206,7 +261,7 @@ That sounds worse than it is, and the distinction matters for deciding what to r
 | Function | Deployed | What the repo has since | Risk of deploying |
 | --- | --- | --- | --- |
 | `create-booking` | ~~2026-06-20~~ **DEPLOYED v7 2026-08-07** | `eb5401e` ZD-020 ladder, `0ce6dbf` property link | **Was a repricing.** Founder signed off; deployed and verified. |
-| `support-respond` | 2026-06-27 | `e34774f` Concierge governance and knowledge boundaries | Tightens Concierge. Safe, wants a smoke test. |
+| `support-respond` | ~~2026-06-27~~ **DEPLOYED v11 2026-08-08** | `e34774f` Concierge governance and knowledge boundaries | Deployed. The smoke test it wanted found a pre-existing defect — see "The Concierge answers 500". |
 | `twilio-voice-status` | ~~2026-08-06 10:48~~ **DEPLOYED v10 2026-08-08** | `d26d838` callback write fix, committed 10:50 — two minutes later | Deployed. Verified live: fails closed 403 on absent and on bogus signature, `verify_jwt` still false. |
 | `twilio-voice-twiml` | ~~2026-05-19~~ **DEPLOYED v9 2026-08-08** | `44c2d0a` credential fixes | Deployed. Was the oldest in the estate. Verified live: 403 on POST/GET, unsigned and bogus-signed, emitting no TwiML. |
 
