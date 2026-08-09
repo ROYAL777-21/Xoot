@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { XooterCard, Xooter } from "@/components/zoot/XooterCard";
+import { ChipGrid } from "@/components/kit";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -243,7 +244,6 @@ const Book = () => {
     return () => { supabase.removeChannel(channel); };
   }, [bookingId]);
 
-  const toggleExtra = (e: string) => setExtras((prev) => { const n = new Set(prev); n.has(e) ? n.delete(e) : n.add(e); return n; });
 
   const validateStep = () => {
     if (step === 1 && !address.trim()) { toast.error("Please enter your address"); return false; }
@@ -494,20 +494,21 @@ const Book = () => {
             </div>
           </div>
 
+          {/*
+            The kit's ChipGrid, in place of the hand-rolled one that was here. Same behaviour,
+            two things gained: the chips now carry `aria-pressed`, so a screen reader can say
+            which extras are chosen rather than reading four identical buttons, and they render
+            from `--xoot-*` so they follow the kit rather than diverging from it the next time
+            either is touched.
+          */}
           <section>
             <h3 className="font-semibold mb-2">Extra tasks</h3>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {EXTRAS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => toggleExtra(e)}
-                  className={`rounded-xl border px-3 py-2 text-sm transition ${extras.has(e) ? "border-foreground bg-foreground text-background" : "border-border bg-muted/35 hover:bg-muted"}`}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
+            <ChipGrid
+              label="Extra tasks"
+              options={EXTRAS}
+              value={Array.from(extras)}
+              onChange={(next) => setExtras(new Set(next))}
+            />
           </section>
           <div className="grid gap-3">
             <Label>Your address</Label>

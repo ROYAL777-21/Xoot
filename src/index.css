@@ -1453,6 +1453,29 @@
     }
   }
 
+  /*
+   * The kit's confirmation pop, copied out of `design/Xoot_App.html` verbatim.
+   *
+   * It is the whole reason a check mark reads as *landing* rather than appearing: 0.82 → 1.12 →
+   * 1, with `--xoot-ease-spring` carrying the overshoot. `ChoiceRow` names it, and referencing a
+   * keyframe that does not exist fails silently — the element simply renders with no animation,
+   * which looks like a design choice rather than a missing rule.
+   *
+   * Not repeated under `prefers-reduced-motion`: the duration tokens above already go to 0ms
+   * there, so the animation completes instantly and the scale never leaves 1.
+   */
+  @keyframes xoot-pop {
+    0% {
+      transform: scale(0.82);
+    }
+    62% {
+      transform: scale(1.12);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
   .dark {
     --background: 20 13% 7%;
     --foreground: 20 13% 95%;
