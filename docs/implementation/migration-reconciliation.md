@@ -61,6 +61,30 @@ Not a tidiness problem. Each is a control that the repo believes exists and the 
 function`, or an `insert` of control rows. That is what makes them safe to apply — and it is the
 reason to apply them deliberately rather than let `db push` discover them.
 
+## Step 1 is done (2026-08-09)
+
+**The ledgers are realigned on both projects.** Matched by name — every name in the repo is unique,
+checked — and preceded by a collision query proving no target version was already occupied by a
+different migration. **26 rows on staging, 29 on production.** Metadata only: no schema object was
+created, altered or dropped.
+
+`booking_commission_rate` (20260809120000) and `xooter_commission_boosts` (20260809210000) are now
+applied to **both** projects, each realigned to its filename version immediately after
+`apply_migration` stamped its own.
+
+What that leaves:
+
+| | staging | production |
+|---|---|---|
+| ledger matches filenames | ✅ | ✅ |
+| four unapplied migrations | still unapplied | still unapplied |
+| three superseded | still recorded under other names | same |
+
+So **step 2 (record the superseded three) and step 3 (apply the four) remain.** `db push` is closer
+to safe but is not there yet: it would still try to run the three superseded migrations, whose
+statements are all `if not exists` / `or replace` and would therefore succeed as no-ops while
+recording versions that overlap what is already there.
+
 ## Recommended order, once the CLI is available
 
 `supabase db push` is **not** safe today: it reads the ledger, and the ledger is wrong in both
