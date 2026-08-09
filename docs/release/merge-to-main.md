@@ -35,7 +35,32 @@ Settings → Secrets and variables → Actions → New repository secret. The va
 key enabled for **both** the Claude API and Claude Code usage; a plain API key is not enough.
 `.github/workflows/claude-security-review.yml` says so in its own header.
 
-Without this, nothing automated has read #26.
+Without this, nothing automated has read #26. This is now optional rather than blocking:
+`.github/workflows/semgrep.yml` reads every diff with no key at all, and its repo-local rules are a
+blocking check. `CLAUDE_API_KEY` buys a second opinion of a different kind — a model reading intent
+rather than a pattern matcher reading shapes — not the coverage itself.
+
+**Already done, 2026-08-09:** `SUPABASE_ACCESS_TOKEN` is set as a repository secret. That is the
+right home for it — see the next note for why it does not do anything yet.
+
+### 1b. Why the deploy workflow is waiting on this merge
+
+`.github/workflows/deploy-edge-functions.yml` deploys every Edge Function from disk with the
+Supabase CLI, which is what clears the 26-function backlog in #30 in one dispatch.
+
+**It cannot be triggered until it exists on `main`.** Measured 2026-08-09: dispatching it against
+`claude/session-continuation-3upt0l` returns
+
+```
+POST /repos/.../actions/workflows/deploy-edge-functions.yml/dispatches → 404 Not Found
+```
+
+GitHub resolves a `workflow_dispatch` workflow from the **default branch** only; the `ref` input
+chooses which branch's *code* runs, not which branch the workflow is *found* on. So the deploy
+path and the merge are the same task — there is no way to do one before the other.
+
+If you would rather not wait for the whole 452-file stack, cherry-picking that single file onto
+`main` is enough to make the workflow dispatchable, and it deploys nothing on its own.
 
 ### 2. **YOU** — re-run the security workflow on #26 and read the output
 
@@ -62,11 +87,25 @@ Let `tests.yml` run on `main`. Only once it is green should either branch be del
 
 ## After main is green
 
-- **#30** — redeploy the 7 stale `admin-*` Edge Functions (deployed 20/27 June; source moved 2 Aug).
-  Do it from disk with the Supabase CLI, not by retyping files.
-- **#31** — deploy the governance fix to staging. Its DB side is ready: both wrapper migrations are
-  applied and verified there.
-- **#28** — `ENCRYPTION_KEY`. Ten minutes, and gate codes stay unstorable until it exists.
+- **#30 — the deploy, which is now one dispatch.** Actions → *Deploy Edge Functions* → Run workflow.
+  **Re-measured 2026-08-09: 27 functions are stale, not the 7 this line used to claim** — 22 of them
+  only because they bundle their own copy of `_shared/action-utils.ts`, which moved on 6 August.
+  Three more (`create-concierge-handoff`, `generate-booking-invoice`, `resend-booking-invoice`) have
+  never been deployed at all, so any UI path calling one gets a 404 today.
+
+  Run it **staging first**, with two function names typed into the `functions` box, and read the
+  drift table it prints. Then staging with the box blank. Then production, which makes you type
+  `mvlrkelahhsyjrwgsxaf` to confirm. The workflow re-checks `supabase/config.toml` before it
+  uploads anything, because a missing `verify_jwt = false` on a Twilio webhook is a 401 at the
+  gateway with nothing in the function's logs to explain it.
+
+- **#31** — staging. Its DB side is already at parity: both wrapper migrations are applied and
+  verified there. Its functions are on June and July builds, so the same dispatch fixes it.
+
+- **#28** — `ENCRYPTION_KEY`, in **Supabase → Edge Functions → Secrets**, not GitHub. It is read by
+  `Deno.env.get` inside `sensitive-access-read` and `sensitive-access-save`, and nothing in CI ever
+  reads it. Ten minutes, and gate codes stay unstorable until it exists. `docs/SECRETS_INVENTORY.md`
+  now opens with the rule for deciding this: ask who reads the value at the moment it is needed.
 
 ## Why `main` was left behind this long
 

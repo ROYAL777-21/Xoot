@@ -34,6 +34,13 @@ name: Deploy Edge Functions
 # it deploys anything, because a config regression is exactly the thing you want caught *before*
 # the upload rather than after.
 
+# DISPATCHABLE ONLY ONCE THIS FILE IS ON THE DEFAULT BRANCH.
+#
+# Measured 2026-08-09: dispatching this against `claude/session-continuation-3upt0l` returns
+# `404 Not Found`. GitHub resolves a `workflow_dispatch` workflow from `main` only — the `ref`
+# input picks which branch's *code* runs, not which branch the workflow is *found* on. So this
+# file has to land on `main` before it can deploy anything, even though the token is already set.
+# `docs/release/merge-to-main.md` says the same thing where someone merging will read it.
 on:
   workflow_dispatch:
     inputs:
