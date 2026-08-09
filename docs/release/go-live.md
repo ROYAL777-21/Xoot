@@ -90,8 +90,20 @@ only needed for the masked-PSTN fallback.
 | `TWILIO_CONVERSATIONS_SERVICE_SID` | Conversations → Services. Starts `IS`. |
 | `TWILIO_VOICE_APP_SID` | Voice → TwiML Apps → create one, Voice URL → `twilio-voice-twiml`. Starts `AP`. |
 | `TWILIO_CALLER_ID` | A verified number on the account, E.164 (`+27…`). |
-| `TWILIO_WEBHOOK_AUTH_TOKEN` | Console home, next to the Account SID. This is what every webhook's HMAC-SHA1 check validates against. |
+| `TWILIO_WEBHOOK_AUTH_TOKEN` | Console home, next to the Account SID. The account Auth Token. |
 | `TWILIO_PROXY_SERVICE_SID` | Proxy → Services. **Optional** — masked PSTN only. |
+
+> **Corrected 2026-08-09.** This table used to say of `TWILIO_WEBHOOK_AUTH_TOKEN`: *"This is what
+> every webhook's HMAC-SHA1 check validates against."* That was false. Five of the seven webhooks
+> — message, WhatsApp, status-callback, verify and voice — validate through
+> `_shared/twilio-webhook.ts`, which read `TWILIO_AUTH_TOKEN`, a name this page never mentioned.
+> Following the old instructions set one name and left those five rejecting every inbound Twilio
+> request, silently: signature validation fails closed and the 403 carries no log line saying a
+> secret is absent.
+>
+> Both names are now accepted everywhere, so **either one alone works**. Setting both, as below, is
+> belt and braces and costs nothing. `twilio-secrets-contract.test.ts` fails if this table and the
+> code ever disagree again.
 
 ```bash
 supabase secrets set \
@@ -101,7 +113,8 @@ supabase secrets set \
   TWILIO_CONVERSATIONS_SERVICE_SID=IS... \
   TWILIO_VOICE_APP_SID=AP... \
   TWILIO_CALLER_ID=+27... \
-  TWILIO_WEBHOOK_AUTH_TOKEN=... \
+  TWILIO_WEBHOOK_AUTH_TOKEN=<account auth token> \
+  TWILIO_AUTH_TOKEN=<the same value> \
   --project-ref mvlrkelahhsyjrwgsxaf
 ```
 
@@ -111,13 +124,52 @@ check silently. Set it to the exact URL configured in the TwiML App.
 
 ### 2b. Then, and only then, the two switches
 
+**What they actually gate, corrected 2026-08-09.** `providerAllowed = twilioAccountReady &&
+maskedVoiceReady` is read in **`create-masked-call`** and **`ops-workflow`** only — the **masked
+PSTN** path. `twilio-token`, which mints the WebRTC token for the in-app data call, never reads
+them; it gates on the seven secrets alone.
+
+So the in-app call needs the secrets. **These two switches turn on the phone-number fallback.**
+Separate gates, and worth knowing which one you are opening.
+
+**Step 1 — preconditions, all three.** The seven secrets in (§2c gate 1 returns
+`configured: true`); `TWILIO_PROXY_SERVICE_SID` set, or the masked call cannot dial whatever these
+say; and a data call already connected once.
+
+**Step 2 — read the current state.** Supabase Dashboard → **production** project → SQL Editor:
+
 ```sql
--- Production. Both are required by the code; enabling one alone changes nothing.
+select control_key, environment, enabled, description
+  from public.operational_controls
+ where control_key like 'twilio.%'
+ order by control_key;
+```
+
+Expect both `false`, `environment = 'all'`. A **missing row** means the control seed never ran, and
+`isOperationalControlEnabled` catches to `false` — the feature stays dark whatever you set. Stop and
+fix the seed first.
+
+**Step 3 — flip both in one statement.** Not two:
+
+```sql
 update public.operational_controls
    set enabled = true
  where control_key in ('twilio.operational_messages', 'twilio.masked_voice')
    and environment = 'all';
 ```
+
+The code requires **both**. Enabling one alone changes nothing and leaves you debugging a feature
+that is, correctly, still off. One statement makes a half-flip impossible.
+
+**Step 4 — confirm.** Re-run Step 2; two rows, both `true`. `UPDATE 0` means `environment` is not
+`'all'` — check rather than assume.
+
+**Step 5 — test.** A masked call also needs **both parties to have phone numbers on file**
+(`clientPhone && zooterPhone`). Missing either, the function still records a session but returns
+`configured: false` and the outbox row carries `missing_phone: true`.
+
+**Step 6 — rollback is the same statement with `false`.** No deploy, no restart. That is the point
+of a kill switch, and why these stay off until the moment you need them on.
 
 **The order is the point.** These are kill switches, and a kill switch flipped before the thing
 behind it works is not a feature flag, it is a promise the product cannot keep. With the secrets

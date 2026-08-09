@@ -38,14 +38,27 @@ import { consumeRateLimit } from "../_shared/governance-utils.ts";
  * This function is now safe to enable, but enabling it is a separate decision.
  */
 
+/**
+ * The seven this function will not mint a token without. `TWILIO_PROXY_SERVICE_SID` is an eighth,
+ * needed only by the masked-PSTN fallback in `create-masked-call`, so it is deliberately absent.
+ *
+ * Each entry is a list of accepted names, checked in order. Only the account Auth Token has more
+ * than one: this repo reads it as `TWILIO_AUTH_TOKEN` in `_shared/twilio-webhook.ts` and as
+ * `TWILIO_WEBHOOK_AUTH_TOKEN` in the two voice webhooks. Both are accepted everywhere now, so
+ * this gate must accept both as well — otherwise setting the other name reports a secret missing
+ * that is, in fact, present and working, which is a worse lie than no check at all.
+ *
+ * `missing` reports the **first** name of each unsatisfied group, so the message a caller sees
+ * names one thing to go and set rather than a choice to reason about.
+ */
 const requiredSecrets = [
-  "TWILIO_ACCOUNT_SID",
-  "TWILIO_API_KEY_SID",
-  "TWILIO_API_KEY_SECRET",
-  "TWILIO_CONVERSATIONS_SERVICE_SID",
-  "TWILIO_VOICE_APP_SID",
-  "TWILIO_CALLER_ID",
-  "TWILIO_WEBHOOK_AUTH_TOKEN",
+  ["TWILIO_ACCOUNT_SID"],
+  ["TWILIO_API_KEY_SID"],
+  ["TWILIO_API_KEY_SECRET"],
+  ["TWILIO_CONVERSATIONS_SERVICE_SID"],
+  ["TWILIO_VOICE_APP_SID"],
+  ["TWILIO_CALLER_ID"],
+  ["TWILIO_WEBHOOK_AUTH_TOKEN", "TWILIO_AUTH_TOKEN"],
 ] as const;
 
 const base64Url = (input: Uint8Array | string) => {
@@ -114,7 +127,9 @@ Deno.serve(async (req) => {
       return json({ error: "Too many call setup attempts. Please wait a moment." }, 429, origin);
     }
 
-    const missing = requiredSecrets.filter((key) => !Deno.env.get(key));
+    const missing = requiredSecrets
+      .filter((names) => !names.some((name) => Deno.env.get(name)))
+      .map((names) => names[0]);
     if (missing.length > 0) {
       return json({ configured: false, ttlSeconds: 0, missing }, 200, origin);
     }

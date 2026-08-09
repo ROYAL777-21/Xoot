@@ -52,7 +52,10 @@ const signTwilioPayload = async (authToken: string, value: string) => {
 };
 
 const validateTwilioWebhook = async (req: Request, form: FormData) => {
-  const authToken = Deno.env.get("TWILIO_WEBHOOK_AUTH_TOKEN");
+  // Either name for the one account Auth Token. See `_shared/twilio-webhook.ts` for why both
+  // exist and what setting only one used to break. Not imported from there because this function
+  // deliberately carries its own minimal signature check.
+  const authToken = Deno.env.get("TWILIO_WEBHOOK_AUTH_TOKEN") ?? Deno.env.get("TWILIO_AUTH_TOKEN");
   if (!authToken) return false;
   const received = req.headers.get("x-twilio-signature") ?? "";
   if (!received) return false;
