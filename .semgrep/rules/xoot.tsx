@@ -93,6 +93,39 @@ const transcriptionOn = { provider: "twilio_proxy", transcription_enabled: true 
 // ok: xoot-call-recording-enabled-without-notice
 const held = { recording_enabled: false, transcription_enabled: false };
 
+// ── xoot-pricing-from-user-spend-history ──────────────────────────────────────────────────
+declare const customer: any;
+declare const subtotal: number;
+declare const slotTime: string;
+
+// ruleid: xoot-pricing-from-user-spend-history
+const surcharge = Math.round(subtotal * customer.lifetimeValue * 0.01);
+
+// ruleid: xoot-pricing-from-user-spend-history
+const personalRate = affluenceBand(customer.suburb) * 0.05;
+
+// ruleid: xoot-pricing-from-user-spend-history
+let priceMultiplier = customer.totalSpent > 500000 ? 1.15 : 1;
+
+// The near-misses, and they are the point of this block. Every legitimate Xoot mechanism
+// varies a price, and none of them may trip the rule.
+
+// Slot scarcity — a fact about the job.
+// ok: xoot-pricing-from-user-spend-history
+const highDemandRate = isHighDemandSlot(slotTime) ? 0.15 : 0;
+
+// Committed volume, chosen by the customer and available to anyone who chooses it.
+// ok: xoot-pricing-from-user-spend-history
+const cadenceDiscount = CADENCE_DISCOUNT[cadence] ?? 0;
+
+// Supply quality on the pay side, which is a fact about the Xooter and not the customer.
+// ok: xoot-pricing-from-user-spend-history
+const commissionRate = commissionRateBps({ reliabilityScore, completedJobs });
+
+// Reading a customer's spend for a report is fine. Only pricing off it is not.
+// ok: xoot-pricing-from-user-spend-history
+const reportedLifetimeValue = customer.lifetimeValue;
+
 // ── xoot-html-injection-sink ──────────────────────────────────────────────────────────────
 // Annotations are `//` comments at statement level, not JSX `{/* … */}` comments — semgrep's
 // test reader does not see the latter, so an annotation inside a JSX tree is silently ignored

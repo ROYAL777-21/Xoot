@@ -138,6 +138,34 @@ rules:
           - pattern: "{..., transcription_enabled: true}"
 
   # ---------------------------------------------------------------------------------------
+  - id: xoot-pricing-from-user-spend-history
+    languages: [typescript, javascript]
+    severity: ERROR
+    paths:
+      # The policy document quotes the forbidden identifiers to explain them, and this rule's own
+      # fixture exists to make it fire. Neither is a pricing implementation.
+      exclude:
+        - "*.test.ts"
+        - "*.test.tsx"
+    message: >-
+      A price, rate or surcharge computed from a customer's spend history, lifetime value or an
+      affluence proxy. This is willingness-to-pay discrimination: two customers quoted different
+      amounts for an identical clean, on grounds neither can see or contest. It is very hard to
+      defend under the Consumer Protection Act, POPIA s71 constrains automated decisions with a
+      substantial effect on the data subject, and in a domestic-work marketplace it is a story
+      that writes itself. Price the job instead — slot scarcity, lead time, travel distance,
+      committed volume. `docs/dynamic-pricing-policy.md` has the line: rewarding frequency with a
+      better rate is fine, surcharging perceived affluence is not.
+    patterns:
+      - pattern: $PRICE = $EXPR
+      - metavariable-regex:
+          metavariable: $PRICE
+          regex: (?i).*(price|rate|surcharge|premium|multiplier|markup|quote|fee|discount).*
+      - metavariable-regex:
+          metavariable: $EXPR
+          regex: (?i).*(spend_?history|spendHistory|historical_?spend|historicalSpend|lifetime_?value|lifetimeValue|\bltv\b|total_?spent|totalSpent|avg_?order|avgOrder|affluence|willingness_?to_?pay|willingnessToPay|income_?band|incomeBand).*
+
+  # ---------------------------------------------------------------------------------------
   - id: xoot-html-injection-sink
     languages: [typescript, javascript]
     severity: ERROR
