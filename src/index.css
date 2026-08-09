@@ -1436,6 +1436,50 @@
     --xoot-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
     /* Overshoots past 1 — the only curve here that does. Reserve it for arrivals, not exits. */
     --xoot-ease-spring: cubic-bezier(0.34, 1.42, 0.5, 1);
+
+    /*
+     * Section-label slot fills, and why they are not `--xoot-*`.
+     *
+     * `SectionLabel` originally read the kit's palette directly for its four non-time slots —
+     * `--xoot-violet-50`, `--xoot-honey-wash`, `--xoot-mist-wash`, `--xoot-neutral-100`. The
+     * kit's dark scope re-declares **semantic aliases only** and never the palette (a rule
+     * `kit-tokens.test.ts` enforces from the token side), so those four rendered as pale pills
+     * on a near-black page while the `--xoot-time-*` slots beside them adapted correctly.
+     *
+     * Nothing caught it: `kit-primitives.test.tsx` checked that every token named is *declared*,
+     * which they are, and jsdom neither resolves a custom property nor paints. It took the dark
+     * screenshot from `scripts/dev/shoot-kit.mjs` to see it.
+     *
+     * `kit-tokens.css` is generated from the design export and must not be hand-edited, so the
+     * missing aliases live here instead. No `--xoot-` prefix, deliberately: these are app tokens
+     * layered on the kit, and a name in that namespace would collide the next time the kit is
+     * re-extracted. Each is a pair — fill and ink — chosen against each other, following the
+     * kit's own `--xoot-time-*` pattern of a translucent tint over the page in dark.
+     */
+    --slot-high: var(--xoot-violet-50);
+    --slot-high-ink: var(--xoot-violet-700);
+    --slot-medium: var(--xoot-honey-wash);
+    --slot-medium-ink: var(--xoot-honey-ink);
+    --slot-low: var(--xoot-mist-wash);
+    --slot-low-ink: var(--xoot-mist-ink);
+    --slot-plain: var(--xoot-neutral-100);
+    --slot-plain-ink: var(--xoot-text-secondary);
+  }
+
+  /*
+   * Matches `[data-theme="dark"]` rather than `.dark`, because that is the scope the kit's own
+   * dark tokens use and these sit beside them. Tints are the palette colour at ~20% over the
+   * page, inks are the light tints — the same construction as `--xoot-time-morning` and its ink.
+   */
+  [data-theme="dark"] {
+    --slot-high: rgb(124 92 252 / 0.22);
+    --slot-high-ink: #C6B9FA;
+    --slot-medium: rgb(231 163 56 / 0.2);
+    --slot-medium-ink: #F2D3A0;
+    --slot-low: rgb(74 143 216 / 0.2);
+    --slot-low-ink: #B5D0EC;
+    --slot-plain: rgb(255 255 255 / 0.07);
+    --slot-plain-ink: var(--xoot-text-secondary);
   }
 
   /*

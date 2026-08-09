@@ -36,10 +36,14 @@ const SLOTS: Record<SectionSlot, SlotStyle> = {
   morning: { icon: Sunrise, bg: "var(--xoot-time-morning)", fg: "var(--xoot-time-morning-ink)" },
   afternoon: { icon: Sun, bg: "var(--xoot-time-afternoon)", fg: "var(--xoot-time-afternoon-ink)" },
   evening: { icon: Moon, bg: "var(--xoot-time-evening)", fg: "var(--xoot-time-evening-ink)" },
-  high: { icon: Triangle, bg: "var(--xoot-violet-50)", fg: "var(--xoot-violet-700)" },
-  medium: { icon: Circle, bg: "var(--xoot-honey-wash)", fg: "var(--xoot-honey-ink)" },
-  low: { icon: ChevronDown, bg: "var(--xoot-mist-wash)", fg: "var(--xoot-mist-ink)" },
-  plain: { icon: null, bg: "var(--xoot-neutral-100)", fg: "var(--xoot-text-secondary)" },
+  // `--slot-*`, not the kit palette. These four used to read `--xoot-violet-50`,
+  // `--xoot-honey-wash`, `--xoot-mist-wash` and `--xoot-neutral-100` directly, which are palette
+  // entries the kit's dark scope never re-declares — so they stayed pale on a near-black page
+  // while the `--xoot-time-*` slots above adapted. `src/index.css` declares the missing pairs.
+  high: { icon: Triangle, bg: "var(--slot-high)", fg: "var(--slot-high-ink)" },
+  medium: { icon: Circle, bg: "var(--slot-medium)", fg: "var(--slot-medium-ink)" },
+  low: { icon: ChevronDown, bg: "var(--slot-low)", fg: "var(--slot-low-ink)" },
+  plain: { icon: null, bg: "var(--slot-plain)", fg: "var(--slot-plain-ink)" },
 };
 
 export type SectionLabelProps = {
@@ -119,8 +123,10 @@ export function SectionLabel({
             border: "none",
             borderRadius: "50%",
             cursor: "pointer",
-            background: "var(--xoot-neutral-100)",
-            color: "var(--xoot-text-secondary)",
+            // Same pair as the `plain` slot, and for the same reason: `--xoot-neutral-100` is a
+            // palette entry, so a raw reference here left a white disc on a black page.
+            background: "var(--slot-plain)",
+            color: "var(--slot-plain-ink)",
           }}
         >
           <Plus size={13} strokeWidth={2.2} />

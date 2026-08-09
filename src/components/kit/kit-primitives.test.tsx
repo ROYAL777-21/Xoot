@@ -56,16 +56,9 @@ describe("kit primitives — tokens", () => {
       "--xoot-violet-400",
       // ServiceRow selected ring and the default icon accent, which is passed to color-mix.
       "--xoot-violet-500",
-      // SectionLabel slot fills, each paired with its own -ink foreground in the same row.
-      "--xoot-violet-50",
-      "--xoot-honey-wash",
-      "--xoot-honey-ink",
-      "--xoot-mist-wash",
-      "--xoot-mist-ink",
       // Neutrals used as hairlines, tile grounds and disc fills.
       "--xoot-neutral-0",
       "--xoot-neutral-50",
-      "--xoot-neutral-100",
       "--xoot-neutral-300",
       "--xoot-neutral-400",
       // ChoiceRow's selected ring on dark.
@@ -91,6 +84,42 @@ describe("kit primitives — tokens", () => {
     const timings = [...src.matchAll(/(transition|animation):\s*"([^"]+)"/g)].map((m) => m[2]);
     for (const timing of timings) {
       expect({ timing, literal: /\d+m?s\b/.test(timing) }).toEqual({ timing, literal: false });
+    }
+  });
+
+  /**
+   * The direction the token check above cannot see, and the one that actually broke.
+   *
+   * `SectionLabel` used to read `--xoot-violet-50`, `--xoot-honey-wash`, `--xoot-mist-wash` and
+   * `--xoot-neutral-100` for its four non-time slots. Every one is declared, so the check above
+   * passed — but they are **palette** entries, and the kit's dark scope re-declares semantic
+   * aliases only. In dark those four rendered as pale pills on a near-black page while the
+   * `--xoot-time-*` slots beside them adapted. jsdom neither resolves a custom property nor
+   * paints, so nothing here could see it; the dark screenshot could.
+   *
+   * The replacements live in `src/index.css` as `--slot-*`, outside the `--xoot-` namespace so a
+   * kit re-extraction cannot collide with them. This asserts each is declared in **both** scopes,
+   * which is the property that was missing.
+   */
+  it("declares every --slot-* token in both schemes", () => {
+    const index = readFileSync(join(root, "src/index.css"), "utf8");
+    const used = new Set(
+      sources.flatMap(([, src]) => [...src.matchAll(/var\((--slot-[a-z-]+)\)/g)].map((m) => m[1])),
+    );
+    expect(used.size).toBeGreaterThan(0);
+
+    const scopeOf = (marker: string) => {
+      const start = index.indexOf(marker);
+      expect(start, `${marker} not found in index.css`).toBeGreaterThan(-1);
+      return index.slice(start, index.indexOf("\n  }", start));
+    };
+    // The light values sit in the same `:root` block as the motion tokens; dark has its own.
+    const light = scopeOf("--xoot-ease-spring:");
+    const dark = scopeOf('[data-theme="dark"] {');
+
+    for (const token of [...used].sort()) {
+      expect({ token, light: light.includes(`${token}:`) }).toEqual({ token, light: true });
+      expect({ token, dark: dark.includes(`${token}:`) }).toEqual({ token, dark: true });
     }
   });
 
