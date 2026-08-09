@@ -15,7 +15,13 @@ import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortXootersForMarketplace } from "@/lib/trust";
 import { calculateBookingQuote, isApprovedLaunchRegion } from "@/lib/operations";
-import { SERVICE_ALIASES, isPriced, quote as priceQuote, resolveHours } from "@/lib/xoot-pricing";
+import {
+  SERVICE_ALIASES,
+  isPriced,
+  quote as priceQuote,
+  resolveHours,
+  serviceAllowsMultipleXooters,
+} from "@/lib/xoot-pricing";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sanitiseSearchParam } from "@/lib/sanitise";
 import { BookingInput } from "@/lib/validators";
@@ -79,7 +85,15 @@ const TIME_GROUPS = [
   { label: "Midday", slots: TIME_SLOTS.filter((slot) => Number(slot.split(":")[0]) >= 12 && Number(slot.split(":")[0]) < 15) },
   { label: "Late day", slots: TIME_SLOTS.filter((slot) => Number(slot.split(":")[0]) >= 15) },
 ] as const;
-const allowsMultipleWorkers = (s: string) => ["airbnb", "office", "deep", "moving", "premium"].includes(s);
+/**
+ * Answered by the pricing module, not by a list kept here.
+ *
+ * The list this replaced included "deep" and "premium", so the Xooter stepper appeared on two
+ * services that alias to `regular` — which `quote()` refuses to price with a second Xooter. The
+ * refusal fell through to `discountedBase = 0`, and a Deep clean with three Xooters displayed
+ * R61 against a server charge of R860. `pricing-parity.test.ts` now pins this against the server.
+ */
+const allowsMultipleWorkers = serviceAllowsMultipleXooters;
 const isSafeDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00`).getTime());
 const serviceMultiplier: Record<string, number> = {
   residential: 1,

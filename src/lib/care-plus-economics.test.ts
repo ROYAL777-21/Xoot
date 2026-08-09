@@ -138,14 +138,20 @@ describe("Care+ unit economics", () => {
     expect(doc).toContain("It leaves fortnightly untouched at exactly 10%");
   });
 
-  it("names the floor and the rank mix as the missing inputs, not the rate", () => {
-    // The old caveat — "commission rate, unconfirmed" — is answered and must not linger, or the
-    // page reads as though nothing was learned. What replaced it is what actually moves the answer.
+  it("names rank mix as the remaining unknown, with both ends of the ladder confirmed", () => {
+    // Every caveat this page has carried about commission is now answered, and an answered
+    // caveat that lingers is as misleading as a missing one — it reads as though nothing was
+    // learned. "Commission rate (c)" went when the founder gave the rule; "the commission floor"
+    // went when they confirmed 20%. What is left is a measurement, not a decision.
     expect(doc).not.toContain("Commission rate (c).");
-    expect(doc).toContain("**The commission floor.**");
+    expect(doc).not.toContain("**The commission floor.**");
     expect(doc).toContain("**Rank mix.**");
+    expect(doc).toContain("Both ends are founder-confirmed: **35% start, 20% floor**");
     // And the retired warning is described as retired rather than quietly deleted.
     expect(doc).toContain("is retired. The floor is 20%.");
+    // The doc's claim must match the ladder it describes.
+    expect(FLOOR_RATE_BPS).toBe(2000);
+    expect(STARTING_RATE_BPS).toBe(3500);
   });
 
   it("keeps the pay-floor conflict on the page while it is still live", () => {

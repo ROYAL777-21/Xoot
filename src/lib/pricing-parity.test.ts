@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, ONE_TIME_SERVICE_FEE_CENTS } from "./xoot-pricing";
+import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, ONE_TIME_SERVICE_FEE_CENTS, MULTI_XOOTER_SERVICES, serviceAllowsMultipleXooters } from "./xoot-pricing";
 import { CADENCE_DISCOUNT } from "./care-plus";
 import { GRADED_SLOT_PRICING, SLOT_PREMIUM_CURVE } from "./operations";
 import {
@@ -255,6 +255,78 @@ describe("client/server pricing parity", () => {
     expect(serverSrc).toMatch(
       /isCarePlusMember \|\| frequency !== "one_time" \? 0 : ONE_TIME_SERVICE_FEE_CENTS/,
     );
+  });
+
+  /**
+   * Which services take more than one Xooter — the same question in three places.
+   *
+   * Until 2026-08-09 there were three answers. `xoot-pricing.ts` said `{airbnb, office, moving}`,
+   * and `create-booking` and `Book.tsx` both said `{airbnb, office, deep, moving, premium}`.
+   * `deep` and `premium` alias to `regular`, which is single-Xooter, so `quote()` refused, the
+   * booking screen's `discountedBase` fell to 0, and a 5.5-hour Deep clean with three Xooters
+   * displayed **R61** while the server charged **R860**.
+   *
+   * That is the third time this codebase has shown one price and charged another, and under the
+   * Consumer Protection Act the displayed price is the price. So all three are pinned here, and
+   * `Book.tsx` is asserted to hold no list of its own — a matching copy is still a copy, and the
+   * copies are what drifted.
+   */
+  it("agrees on which services take more than one Xooter", () => {
+    const fn = readFileSync(
+      join(process.cwd(), "supabase/functions/create-booking/index.ts"),
+      "utf8",
+    );
+
+    const serverSet = /const multiWorkerServices = new Set\(\[([^\]]*)\]\)/.exec(fn);
+    expect(serverSet, "server no longer defines multiWorkerServices").toBeTruthy();
+    const serverServices = [...serverSet![1].matchAll(/"(\w+)"/g)].map((m) => m[1]).sort();
+
+    expect(serverServices).toEqual([...MULTI_XOOTER_SERVICES].sort());
+
+    // The alias layer is what made the old divergence look harmless, so it is asserted too:
+    // every service the server accepts must survive aliasing into a multi-Xooter ServiceId.
+    for (const service of serverServices) {
+      expect({ service, multi: serviceAllowsMultipleXooters(service) }).toEqual({
+        service,
+        multi: true,
+      });
+    }
+
+    // And the two that caused it must answer false through the raw vocabulary the UI uses.
+    for (const service of ["deep", "premium", "residential", "regular", "express"]) {
+      expect({ service, multi: serviceAllowsMultipleXooters(service) }).toEqual({
+        service,
+        multi: false,
+      });
+    }
+  });
+
+  it("keeps Book.tsx asking the pricing module instead of keeping its own list", () => {
+    const book = readFileSync(join(process.cwd(), "src/pages/app/Book.tsx"), "utf8");
+    expect(book).toMatch(/allowsMultipleWorkers = serviceAllowsMultipleXooters/);
+    // The literal list that caused the R799 gap must not come back, here or anywhere in the file.
+    expect(book).not.toMatch(/\["airbnb",\s*"office",\s*"deep"/);
+  });
+
+  /**
+   * The screen and the server must agree on the total for a multi-Xooter booking, not just on
+   * who is eligible. This is the assertion that would have caught the R61-versus-R860 gap.
+   */
+  it("prices a multi-Xooter booking the same way the server does", () => {
+    // Server: base x (1 - 10% at 3+) x workerCount, on the aliased ladder.
+    const hours = 6;
+    const workers = 3;
+    const q = quote({ service: "office", hours, xooterCount: workers, bookingCover: false, addOns: 0 });
+    if (!isPriced(q)) throw new Error("client refused a booking the server accepts");
+
+    const rung = serverLadder("OFFICE")[String(hours)];
+    const serverBaseCents = Math.round(rung * 0.9) * workers;
+    expect(q.baseCents).toBe(serverBaseCents);
+    expect(q.discountRate).toBe(0.1);
+
+    // And a service the server refuses must be refused here too, rather than priced at zero.
+    const refused = quote({ service: "regular", hours, xooterCount: workers });
+    expect(isPriced(refused)).toBe(false);
   });
 
   /**

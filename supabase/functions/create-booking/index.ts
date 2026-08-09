@@ -31,7 +31,18 @@ const services = new Set(["residential", "express", "airbnb", "office", "deep", 
 // Home size and service length now only imply DEFAULT HOURS; hours alone set the price.
 
 const allowedTimes = new Set(["07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "14:00", "15:00", "16:00", "17:00"]);
-const multiWorkerServices = new Set(["airbnb", "office", "deep", "moving", "premium"]);
+/*
+ * Which services take more than one Xooter.
+ *
+ * ⚠️ KEEP IN SYNC with `MULTI_XOOTER_SERVICES` in `src/lib/xoot-pricing.ts`, via the aliases:
+ * `deep` and `premium` both price as `regular`, and `regular` is single-Xooter.
+ *
+ * This set previously included "deep" and "premium". `Book.tsx` matched it, so a customer could
+ * select a Deep clean with three Xooters — but the client price ladder aliases both to `regular`
+ * and refuses to quote a second Xooter, so the screen showed R61 while this function charged
+ * R860. Measured 2026-08-09. `pricing-parity.test.ts` now fails if the two sets drift again.
+ */
+const multiWorkerServices = new Set(["airbnb", "office", "moving"]);
 const photoProofServices = new Set(["airbnb", "deep", "moving"]);
 
 const isHighDemandSlot = (time: string) => Number(time.split(":")[0] ?? 0) >= 16;
@@ -155,7 +166,23 @@ Deno.serve(async (req) => {
       return fail("booking time must be in the future", origin, 400);
     }
 
-    const maxWorkers = multiWorkerServices.has(serviceType) ? Math.min(Math.max(requestedWorkerCount || 1, 1), 5) : 1;
+    /*
+     * Refuse rather than silently slice.
+     *
+     * This used to cap `maxWorkers` at 1 for a single-Xooter service and then
+     * `zooterIds.slice(0, maxWorkers)`, so a request naming three Xooters for a residential
+     * clean booked one and charged for one — while the caller believed it had booked three.
+     * Quietly delivering something other than what was asked for is the same failure as quietly
+     * charging something other than what was shown; both end with a customer and an invoice
+     * that disagree. The client no longer offers this combination, so anything reaching here is
+     * a hand-built request and deserves an answer, not a silent correction.
+     */
+    const serviceMaxWorkers = multiWorkerServices.has(serviceType) ? 5 : 1;
+    const requestedWorkers = Math.min(Math.max(requestedWorkerCount || 1, 1), 5);
+    if (requestedWorkers > serviceMaxWorkers || zooterIds.length > serviceMaxWorkers) {
+      return fail(`${serviceType} is booked with one Xooter`, origin, 400);
+    }
+    const maxWorkers = Math.min(requestedWorkers, serviceMaxWorkers);
     const selectedXooterIds = zooterIds.slice(0, maxWorkers);
     if (selectedXooterIds.length > 0) {
       const { data: zooters } = await supa

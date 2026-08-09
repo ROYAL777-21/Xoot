@@ -28,6 +28,10 @@ Commission starts at **35%** for a new Xooter and **falls as they rank higher** 
 | Gold | ≥ 93 | 75 | 25% |
 | Platinum | ≥ 97 | 200 | 20% |
 
+Both ends are founder-confirmed: **35% start, 20% floor** (2026-08-09). The three bands between are
+a schedule sized so the stated 35–30% range covers a Xooter's unproven period, and they are the part
+meant to be tuned.
+
 So "what does a Care+ member contribute" has no single answer — **it depends on who cleans their
 home.** Every table below is solved at both ends.
 
@@ -196,11 +200,9 @@ Every number on this page uses the flat 10%, because that is what a member is ac
 
 Stated rather than glossed, because a unit-economics page that hides its gaps is worse than none:
 
-- **The commission floor.** 20% is an assumption, not a founder figure. It is now the single largest
-  input, because it is what the mature marketplace pays.
 - **Rank mix.** How Care+ bookings distribute across the ladder decides where in the R472–R279 range we
-  actually land, and nothing measures it. This replaces "commission rate" as the unknown that moves
-  the answer most.
+  actually land, and nothing measures it. With the floor now confirmed, this is the single largest
+  remaining unknown — and unlike the floor it is a measurement problem, not a decision.
 - **Servicing cost per member.** Support contacts, replacement handling, priority matching. Care+
   promises priority support, a real cost that scales with members and not with spend — so it hurts
   low-cadence members' contribution more than this table shows.

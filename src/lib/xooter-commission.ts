@@ -25,11 +25,16 @@
  * decides whether the band has been **earned**. `xooter-commission.test.ts` asserts the
  * exact row `approve-zooter` writes resolves to 35%.
  *
- * ⚠️ CONFIRM: the **floor** (20%) is the number the founder has not given, and it is the one
- * that sets long-run marketplace margin — at maturity most Care+ bookings will be served by
- * ranked Xooters and will pay it. `docs/care-plus-unit-economics.md` solves the membership
- * at both ends of the ladder for exactly this reason. The 35% start is stated; everything
- * between is a schedule, and a schedule is meant to be tuned.
+ * ── The floor is confirmed ───────────────────────────────────────────────────────
+ * **20%, founder decision 2026-08-09.** This is the number that sets long-run marketplace
+ * margin: at maturity most Care+ bookings will be served by ranked Xooters and will pay it,
+ * which is why `docs/care-plus-unit-economics.md` solves the membership at both ends of the
+ * ladder rather than at an average.
+ *
+ * The 35% start and the 20% floor are both stated. The three bands between them are a schedule
+ * — sized so the founder's 35–30% range covers a Xooter's unproven period — and a schedule is
+ * meant to be tuned. Changing one is five characters here plus the same in
+ * `_shared/pricing.ts`; `pricing-parity.test.ts` fails if only one moves.
  */
 
 /** Basis points, not a float. This decides what a person is paid; 0.325 is not exact. */
