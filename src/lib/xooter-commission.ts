@@ -158,6 +158,78 @@ export const commissionRateBpsFor = (inputs: XooterRankInputs): Bps =>
 /** For copy and admin surfaces: `3250` → `"32.5%"`. */
 export const formatRate = (rateBps: Bps): string => `${(rateBps / 100).toFixed(1).replace(/\.0$/, "")}%`;
 
+/* ── The earnings boost ───────────────────────────────────────────────────────────
+ * "You keep 5% more of every job for the next 14 days." A reward for doing well, awarded to
+ * selected Xooters rather than computed for everyone.
+ *
+ * ON THE COPY, because the number matters. The founder's phrasing was "revenue boosted by 5%",
+ * which *understates* it. Going 35% → 30% moves a Xooter's share of a R296 clean from R192.40 to
+ * R207.20: five percentage points more of the job, which is a **7.7%** rise in what they earn.
+ * "You keep 5% more of every job" is exactly true and is the sentence a Xooter can check against
+ * their own payout. `xooter-commission.test.ts` pins both figures so the copy cannot drift from
+ * the arithmetic.
+ *
+ * The boost lives in `xooter_commission_boosts`, time-boxed so it expires itself — a reward
+ * switched on and forgotten would become a permanent rate change nobody remembers making.
+ */
+
+/** The standard award. Five percentage points, for fourteen days. */
+export const BOOST_BPS = 500;
+export const BOOST_DAYS = 14;
+
+/**
+ * Apply a boost to a resolved rate, clamped at the floor.
+ *
+ * **The clamp is the founder decision (2026-08-09): 20% is an absolute floor on what Xoot keeps.**
+ * A Platinum Xooter already at 20% therefore gains nothing here, and that is deliberate rather
+ * than an oversight — `boostIsWorthGranting` exists so the grant path can say so out loud instead
+ * of issuing a reward worth zero.
+ */
+export const applyBoost = (rateBps: Bps, boostBps: Bps = BOOST_BPS): Bps =>
+  Math.max(FLOOR_RATE_BPS, rateBps - Math.max(0, boostBps));
+
+/**
+ * Whether a boost would actually change this Xooter's rate.
+ *
+ * Ops needs to be told "this Xooter is already at the floor" rather than granting something that
+ * does nothing — a reward the recipient cannot detect is worse than no reward, because they were
+ * told they had one.
+ */
+export const boostIsWorthGranting = (rateBps: Bps, boostBps: Bps = BOOST_BPS): boolean =>
+  applyBoost(rateBps, boostBps) < rateBps;
+
+/** Is a boost window open at this moment? Half-open: starts inclusive, ends exclusive. */
+export const boostIsActive = (
+  boost: { startsAt: string | Date; endsAt: string | Date } | null | undefined,
+  now: Date = new Date(),
+): boolean => {
+  if (!boost) return false;
+  const start = new Date(boost.startsAt).getTime();
+  const end = new Date(boost.endsAt).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return false;
+  const at = now.getTime();
+  return at >= start && at < end;
+};
+
+/**
+ * What a boost is worth to the Xooter on a given job, for the surface that announces it.
+ *
+ * Returns both the percentage-point difference (5) and the actual earnings increase (7.7%), so a
+ * screen can quote whichever it means and neither can be invented at the call site.
+ */
+export function boostValueFor(subtotalCents: number, rateBps: Bps, boostBps: Bps = BOOST_BPS) {
+  const before = xooterPayoutFor(subtotalCents, rateBps).xooterPayCents;
+  const after = xooterPayoutFor(subtotalCents, applyBoost(rateBps, boostBps)).xooterPayCents;
+  const extraCents = after - before;
+  return {
+    extraCents,
+    /** Percentage points of the job kept, e.g. 5. */
+    pointsOfJob: (rateBps - applyBoost(rateBps, boostBps)) / 100,
+    /** The real rise in earnings, e.g. 7.7. Always ≥ pointsOfJob. */
+    earningsPercent: before > 0 ? Number(((extraCents / before) * 100).toFixed(1)) : 0,
+  };
+}
+
 export type Payout = {
   rateBps: Bps;
   /** What Xoot keeps. */

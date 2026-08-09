@@ -5,7 +5,9 @@ import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_
 import { CADENCE_DISCOUNT } from "./care-plus";
 import { GRADED_SLOT_PRICING, SLOT_PREMIUM_CURVE } from "./operations";
 import {
+  BOOST_BPS,
   COMMISSION_BANDS,
+  FLOOR_RATE_BPS,
   HYSTERESIS_POINTS,
   IN_TROUBLE_SCORE,
   STARTING_RATE_BPS,
@@ -401,6 +403,46 @@ describe("client/server pricing parity", () => {
         rateBps,
       })),
     );
+  });
+
+  /**
+   * The boost, and the clamp that makes the 20% floor mean something.
+   *
+   * Client and server both reduce a rate and both clamp. If only one clamped, a boosted Platinum
+   * Xooter would be paid at 15% by whichever side forgot — and since the rate is stamped by the
+   * server, the client would be showing a number the booking does not carry.
+   */
+  it("agrees on the earnings boost and its floor clamp", () => {
+    const serverNum = (name: string) => {
+      const m = serverSrc.match(new RegExp(`export const ${name} = (\\d+)`));
+      if (!m) throw new Error(`server constant ${name} not found`);
+      return Number(m[1]);
+    };
+    expect(serverNum("BOOST_BPS")).toBe(BOOST_BPS);
+    expect(serverNum("FLOOR_RATE_BPS")).toBe(FLOOR_RATE_BPS);
+
+    // Both sides clamp at the floor, in the same shape.
+    expect(serverSrc).toMatch(
+      /Math\.max\(FLOOR_RATE_BPS, rateBps - Math\.max\(0, boostBps\)\)/,
+    );
+
+    // And the boost window is filtered in SQL, so an expired boost cannot be applied by a caller
+    // that forgot to check the dates.
+    expect(serverSrc).toMatch(/\.lte\("starts_at", nowIso\)/);
+    expect(serverSrc).toMatch(/\.gt\("ends_at", nowIso\)/);
+  });
+
+  it("applies the boost at both points where a rate is struck", () => {
+    for (const path of [
+      "supabase/functions/create-booking/index.ts",
+      "supabase/functions/respond-zooter-job/index.ts",
+    ]) {
+      const src = readFileSync(join(process.cwd(), path), "utf8");
+      expect(src, `${path} does not read an active boost`).toMatch(/activeBoostBpsFor\(supa,/);
+      expect(src, `${path} does not apply the boost`).toMatch(
+        /boost > 0 \? applyBoost\(earned, boost\) : earned/,
+      );
+    }
   });
 
   it("agrees on the commission thresholds that are not in the band table", () => {

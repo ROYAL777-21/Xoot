@@ -3,11 +3,17 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  BOOST_BPS,
+  BOOST_DAYS,
   COMMISSION_BANDS,
   FLOOR_RATE_BPS,
   HYSTERESIS_POINTS,
   IN_TROUBLE_SCORE,
   STARTING_RATE_BPS,
+  applyBoost,
+  boostIsActive,
+  boostIsWorthGranting,
+  boostValueFor,
   commissionBandFor,
   commissionRateBpsFor,
   formatRate,
@@ -273,6 +279,77 @@ describe("payout", () => {
     // And the claim is still on screen, so this is not a stale worry.
     const apply = readFileSync(join(process.cwd(), "src/pages/care/CarePlusApply.tsx"), "utf8");
     expect(apply).toContain("Minimum pay enforced: R220 (half) / R300 (full)");
+  });
+});
+
+describe("the 14-day earnings boost", () => {
+  const MEDIUM_CLEAN_CENTS = 29600;
+
+  it("takes a new Xooter from 35% to 30%", () => {
+    expect(BOOST_BPS).toBe(500);
+    expect(BOOST_DAYS).toBe(14);
+    expect(applyBoost(STARTING_RATE_BPS)).toBe(3000);
+  });
+
+  it("keeps the copy honest: 5 points of the job, 7.7% more earned", () => {
+    // The founder's phrasing was "revenue boosted by 5%", which understates it. Both numbers are
+    // pinned here so the announcement copy cannot drift from what a Xooter actually receives.
+    const value = boostValueFor(MEDIUM_CLEAN_CENTS, STARTING_RATE_BPS);
+    expect(value.pointsOfJob).toBe(5);
+    expect(value.earningsPercent).toBe(7.7);
+    expect(value.extraCents).toBe(1480); // R192.40 -> R207.20
+
+    // The claim that is exactly true is the one about the job, not the one about earnings.
+    expect(value.earningsPercent).toBeGreaterThan(value.pointsOfJob);
+  });
+
+  it("never takes Xoot below the confirmed 20% floor", () => {
+    // The founder decision. A Platinum Xooter is already at the floor and gains nothing.
+    expect(applyBoost(FLOOR_RATE_BPS)).toBe(FLOOR_RATE_BPS);
+    expect(applyBoost(2500)).toBe(2000);
+    // Even an oversized boost cannot breach it.
+    expect(applyBoost(STARTING_RATE_BPS, 9999)).toBe(FLOOR_RATE_BPS);
+    for (const band of COMMISSION_BANDS) {
+      expect(applyBoost(band.rateBps)).toBeGreaterThanOrEqual(FLOOR_RATE_BPS);
+    }
+  });
+
+  it("tells ops when a boost would be worth nothing", () => {
+    // Granting a reward the recipient cannot detect is worse than granting none, because they
+    // were told they had one.
+    expect(boostIsWorthGranting(STARTING_RATE_BPS)).toBe(true);
+    expect(boostIsWorthGranting(2500)).toBe(true);
+    expect(boostIsWorthGranting(FLOOR_RATE_BPS)).toBe(false);
+  });
+
+  it("opens and closes on its own window", () => {
+    const startsAt = "2026-08-09T00:00:00Z";
+    const endsAt = "2026-08-23T00:00:00Z"; // 14 days
+    const boost = { startsAt, endsAt };
+
+    expect(boostIsActive(boost, new Date("2026-08-08T23:59:59Z"))).toBe(false);
+    expect(boostIsActive(boost, new Date(startsAt))).toBe(true);
+    expect(boostIsActive(boost, new Date("2026-08-16T12:00:00Z"))).toBe(true);
+    // Half-open: the instant it ends, it is over. No off-by-one day of free boost.
+    expect(boostIsActive(boost, new Date(endsAt))).toBe(false);
+    expect(boostIsActive(null)).toBe(false);
+    expect(boostIsActive({ startsAt: "nonsense", endsAt })).toBe(false);
+
+    const days = (new Date(endsAt).getTime() - new Date(startsAt).getTime()) / 86400000;
+    expect(days).toBe(BOOST_DAYS);
+  });
+
+  it("is time-boxed in the migration, so it expires without anyone remembering", () => {
+    const migration = readFileSync(
+      join(process.cwd(), "supabase/migrations/20260809210000_xooter_commission_boosts.sql"),
+      "utf8",
+    );
+    expect(migration).toMatch(/ends_at timestamptz not null default \(now\(\) \+ interval '14 days'\)/);
+    expect(migration).toMatch(/bps integer not null default 500/);
+    // A reason is required: a reward with no stated reason is indistinguishable from a mistake.
+    expect(migration).toMatch(/reason text not null/);
+    // And no client may write its own pay.
+    expect(migration).toMatch(/revoke insert, update, delete on public\.xooter_commission_boosts/);
   });
 });
 

@@ -165,6 +165,41 @@ export function commissionRateBps(input: {
 }
 
 /**
+ * The 14-day earnings boost: a Xooter keeps 5% more of every job.
+ *
+ * ⚠️ KEEP IN SYNC with `src/lib/xooter-commission.ts`. Clamped at the floor — 20% is the confirmed
+ * absolute floor on Xoot's take, so a Platinum Xooter's boost is worth nothing and the grant path
+ * says so rather than issuing it silently.
+ */
+export const BOOST_BPS = 500;
+export const FLOOR_RATE_BPS = 2000;
+
+export const applyBoost = (rateBps: number, boostBps: number = BOOST_BPS): number =>
+  Math.max(FLOOR_RATE_BPS, rateBps - Math.max(0, boostBps));
+
+/**
+ * The boost rate active for a Xooter right now, or 0.
+ *
+ * Reads the row rather than trusting a flag, and filters on the window in SQL so an expired boost
+ * cannot be applied by a caller that forgot to check. A boost applies to bookings struck inside
+ * its window and never retroactively, because the rate is stamped once at assignment.
+ */
+export async function activeBoostBpsFor(supa: any, zooterId: string): Promise<number> {
+  if (!zooterId) return 0;
+  const nowIso = new Date().toISOString();
+  const { data } = await supa
+    .from("xooter_commission_boosts")
+    .select("bps")
+    .eq("zooter_id", zooterId)
+    .lte("starts_at", nowIso)
+    .gt("ends_at", nowIso)
+    .order("bps", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return Number(data?.bps ?? 0);
+}
+
+/**
  * Split a booking's **subtotal** between Xoot and the Xooter.
  *
  * The base is the subtotal, never the total: booking cover is a passed-through premium and the

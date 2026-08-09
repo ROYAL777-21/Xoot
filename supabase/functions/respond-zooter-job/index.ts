@@ -8,7 +8,7 @@ import {
   readJson,
   requireAuth,
 } from "../_shared/action-utils.ts";
-import { commissionRateBps } from "../_shared/pricing.ts";
+import { activeBoostBpsFor, applyBoost, commissionRateBps } from "../_shared/pricing.ts";
 
 /**
  * Accept or decline an offered job.
@@ -122,14 +122,15 @@ Deno.serve(async (req) => {
      * paid at a rate that changed after they agreed the job.
      */
     if (nextState === "accepted") {
+      const earned = commissionRateBps({
+        reliabilityScore: zooter.reliability_score,
+        completedJobs: zooter.jobs_completed,
+      });
+      // An active 14-day boost lowers the rate struck here, clamped at the 20% floor.
+      const boost = await activeBoostBpsFor(supa, zooter.id);
       await supa
         .from("bookings")
-        .update({
-          commission_rate_bps: commissionRateBps({
-            reliabilityScore: zooter.reliability_score,
-            completedJobs: zooter.jobs_completed,
-          }),
-        })
+        .update({ commission_rate_bps: boost > 0 ? applyBoost(earned, boost) : earned })
         .eq("id", job.booking_id)
         .is("commission_rate_bps", null);
     }

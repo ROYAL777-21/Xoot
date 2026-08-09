@@ -207,9 +207,20 @@ column, so deploying those two functions against a table without the column does
 gracefully — every booking insert fails and booking creation is down until the migration lands. The
 opposite order is harmless: apply the migration and the column sits null until the functions ship.
 
-Apply it, then regenerate `src/integrations/supabase/types.ts` from the live schema. The column was
-added to that file by hand so the schema-contract test could pass ahead of the migration; a real
-regeneration replaces the hand edit and confirms the live database agrees.
+**Two migrations now, same rule for both:**
+
+| migration | adds | written by |
+|---|---|---|
+| `20260809120000_booking_commission_rate.sql` | `bookings.commission_rate_bps` | `create-booking`, `respond-zooter-job` |
+| `20260809210000_xooter_commission_boosts.sql` | `xooter_commission_boosts` table | read by both, via `activeBoostBpsFor` |
+
+The boost table is the more dangerous of the two to get out of order, because a **missing table**
+makes the whole PostgREST request fail rather than one column: deploy the functions first and every
+booking insert fails, at both the create and accept paths.
+
+Apply both, then regenerate `src/integrations/supabase/types.ts` from the live schema. The column and
+the table were added to that file by hand so the schema-contract test could pass ahead of the
+migrations; a real regeneration replaces the hand edits and confirms the live database agrees.
 
 **Set "Use workflow from" to the release branch, not `main`.** `main` is where GitHub finds the
 workflow; the ref decides which branch's code and config get deployed. `main`'s `config.toml`

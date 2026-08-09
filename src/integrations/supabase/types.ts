@@ -4833,6 +4833,39 @@ export type Database = {
         }
         Relationships: []
       }
+      xooter_commission_boosts: {
+        Row: {
+          bps: number
+          created_at: string
+          ends_at: string
+          granted_by: string | null
+          id: string
+          reason: string
+          starts_at: string
+          zooter_id: string
+        }
+        Insert: {
+          bps?: number
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          reason: string
+          starts_at?: string
+          zooter_id: string
+        }
+        Update: {
+          bps?: number
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          reason?: string
+          starts_at?: string
+          zooter_id?: string
+        }
+        Relationships: []
+      }
       zooters_public: {
         Row: {
           airbnb_specialist: boolean | null

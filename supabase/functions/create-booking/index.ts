@@ -19,6 +19,8 @@ import {
   HOME_SIZE_HOURS,
   SERVICE_LENGTH_HOURS,
   ONE_TIME_SERVICE_FEE_CENTS,
+  activeBoostBpsFor,
+  applyBoost,
   basePrice,
   commissionRateBps,
   resolveHours,
@@ -101,13 +103,14 @@ const getCommissionRates = async (supa: any, zooterIds: string[]) => {
     .select("id,reliability_score,jobs_completed")
     .in("id", zooterIds);
   for (const row of data ?? []) {
-    rates.set(
-      row.id,
-      commissionRateBps({
-        reliabilityScore: row.reliability_score,
-        completedJobs: row.jobs_completed,
-      }),
-    );
+    const earned = commissionRateBps({
+      reliabilityScore: row.reliability_score,
+      completedJobs: row.jobs_completed,
+    });
+    // An active 14-day boost lowers the rate this booking is struck at, clamped at the floor.
+    // Read per Xooter because each is rewarded separately.
+    const boost = await activeBoostBpsFor(supa, row.id);
+    rates.set(row.id, boost > 0 ? applyBoost(earned, boost) : earned);
   }
   return rates;
 };
