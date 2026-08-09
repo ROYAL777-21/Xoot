@@ -119,9 +119,15 @@ export function splitDiscount(
 /**
  * Recurring-booking discount by cadence.
  *
- * ⚠️ CONFIRM before this charges anyone: the percentages are sized to make the
- * membership wash out at weekly cadence, not derived from a known take rate. If Xoot's
- * commission is below ~15% these are margin-negative on every weekly member.
+ * The percentages are sized to make the membership wash out at weekly cadence rather than
+ * derived from a take rate. That used to carry a warning that they might be margin-negative
+ * "if Xoot's commission is below ~15%" — **answered and retired.** The ladder in
+ * `xooter-commission.ts` runs 35% down to a 20% floor, so Care+ is positive at every cadence
+ * and every rank. `docs/care-plus-unit-economics.md` solves it at both ends.
+ *
+ * What replaced that worry is not about margin at all: the continuity promise routes Care+
+ * volume to high-ranked Xooters, who are by design our lowest take rate. Size the membership
+ * against the floor, not the average.
  */
 export const CADENCE_DISCOUNT: Record<string, number> = {
   weekly: 0.15,

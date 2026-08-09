@@ -7,39 +7,43 @@ import {
   XOOTER_SHARE_OF_DISCOUNT,
   savingsFor,
 } from "./care-plus";
+import { FLOOR_RATE_BPS, STARTING_RATE_BPS, xooterPayoutFor } from "./xooter-commission";
 
 /**
  * Keeps `docs/care-plus-unit-economics.md` from becoming a document that describes what someone
  * once believed.
  *
  * That page answers a founder question — are fortnightly members our least profitable — with
- * specific rands. Every one of those figures is derived from constants in `care-plus.ts` and from
- * the flat rate `create-booking` applies. Change any of them and the page silently starts lying,
- * which is exactly how `palette-migration.md` came to claim work was undone weeks after it shipped
- * and `blocker.md` came to list functions for redeployment that had never been deployed.
+ * specific rands. Every one of those figures is derived from constants in `care-plus.ts`, the
+ * commission ladder in `xooter-commission.ts`, and the flat rate `create-booking` applies. Change
+ * any of them and the page silently starts lying, which is exactly how `palette-migration.md` came
+ * to claim work was undone weeks after it shipped and `blocker.md` came to list functions for
+ * redeployment that had never been deployed.
  *
  * So the numbers are recomputed here and matched against the text. When an input moves, this fails
  * and names the paragraph to rewrite.
+ *
+ * The commission rate is no longer a local constant standing in for a number nobody had. It is read
+ * from the ladder, at both ends, because "what does a member contribute" now depends on who cleans
+ * their home and the page has to say so.
  */
 
 const doc = readFileSync(join(process.cwd(), "docs/care-plus-unit-economics.md"), "utf8");
 
 /** The rate the server actually applies — flat, cadence-ignored. See the divergence note. */
 const SERVER_RATE = 0.1;
-/** The illustrative commission the page solves at. Not an established figure; that is the point. */
-const ILLUSTRATIVE_COMMISSION = 0.15;
 const MEDIUM_CLEAN_CENTS = 29600;
 
 const rands = (cents: number) => Math.round(cents / 100);
 
-/** Xoot's contribution per member per month, in rands, at a given cadence. */
-function contribution(cadence: string) {
+/** Xoot's contribution per member per month, in rands, at a given cadence and commission rate. */
+function contribution(cadence: string, rateBps: number) {
   const { spendCents } = savingsFor(cadence, MEDIUM_CLEAN_CENTS, "standard");
   const returnedCents = Math.round(spendCents * SERVER_RATE);
   // `splitDiscount` caps the Xooter's share at the pay floor per booking; at the aggregate level
   // the page uses the nominal split, which is the more conservative direction for Xoot.
   const absorbedCents = Math.round(returnedCents * (1 - XOOTER_SHARE_OF_DISCOUNT));
-  const commissionCents = Math.round(spendCents * ILLUSTRATIVE_COMMISSION);
+  const { commissionCents } = xooterPayoutFor(spendCents, rateBps);
   return rands(CARE_PLUS_MONTHLY_CENTS + commissionCents - absorbedCents);
 }
 
@@ -50,21 +54,47 @@ function memberPosition(cadence: string) {
 }
 
 describe("Care+ unit economics", () => {
-  it("still ranks monthly below fortnightly below weekly on contribution", () => {
+  it("still ranks monthly below fortnightly below weekly, at both ends of the ladder", () => {
     // The document's headline answer. If this order ever inverts, the answer to the founder's
-    // question changes and the page has to be rewritten, not patched.
-    expect(contribution("weekly")).toBeGreaterThan(contribution("biweekly"));
-    expect(contribution("biweekly")).toBeGreaterThan(contribution("monthly"));
+    // question changes and the page has to be rewritten, not patched. Checked at both rates,
+    // because a rank-dependent commission could in principle reorder them and does not.
+    for (const rateBps of [STARTING_RATE_BPS, FLOOR_RATE_BPS]) {
+      expect(contribution("weekly", rateBps)).toBeGreaterThan(contribution("biweekly", rateBps));
+      expect(contribution("biweekly", rateBps)).toBeGreaterThan(contribution("monthly", rateBps));
+    }
   });
 
   it("matches the contribution figures printed in the document", () => {
-    expect({ weekly: contribution("weekly") }).toEqual({ weekly: 215 });
-    expect({ fortnightly: contribution("biweekly") }).toEqual({ fortnightly: 157 });
-    expect({ monthly: contribution("monthly") }).toEqual({ monthly: 126 });
+    const start = STARTING_RATE_BPS;
+    const floor = FLOOR_RATE_BPS;
 
-    expect(doc).toContain("| Weekly | **R215** |");
-    expect(doc).toContain("| Fortnightly | **R157** |");
-    expect(doc).toContain("| Monthly | **R126** |");
+    expect({
+      weekly: contribution("weekly", start),
+      fortnightly: contribution("biweekly", start),
+      monthly: contribution("monthly", start),
+    }).toEqual({ weekly: 472, fortnightly: 286, monthly: 185 });
+
+    expect({
+      weekly: contribution("weekly", floor),
+      fortnightly: contribution("biweekly", floor),
+      monthly: contribution("monthly", floor),
+    }).toEqual({ weekly: 279, fortnightly: 189, monthly: 140 });
+
+    expect(doc).toContain("| Weekly | **R472** | **R279** |");
+    expect(doc).toContain("| Fortnightly | **R286** | **R189** |");
+    expect(doc).toContain("| Monthly | **R185** | **R140** |");
+  });
+
+  it("keeps the plan-on-the-floor advice pointed at the right column", () => {
+    // The page tells the founder to size Care+ against the floor, and quotes that column back.
+    // If the floor moves, the sentence has to move with it.
+    expect(doc).toContain("Size Care+ against the floor, not the average.");
+    expect(doc).toContain("The R279 / R189 / R140 column is the one to plan on.");
+    // And the worst cell it reassures about is genuinely the worst cell.
+    const worst = contribution("monthly", FLOOR_RATE_BPS);
+    expect(worst).toBe(140);
+    expect(doc).toContain(`the worst cell in the table is R${worst} a month`);
+    expect(worst * 100).toBeGreaterThan(CARE_PLUS_MONTHLY_CENTS);
   });
 
   it("matches the member's own position, including the sign", () => {
@@ -77,6 +107,17 @@ describe("Care+ unit economics", () => {
     expect(doc).toContain("+R30 ahead");
     expect(doc).toContain("−R35 down");
     expect(doc).toContain("−R69 down");
+  });
+
+  it("holds the claim that the member's position is unmoved by commission", () => {
+    // The page rests the fortnightly argument on this: commission changed our margin and not the
+    // member's arithmetic, which is why the churn case survived the repricing intact.
+    const { spendCents } = savingsFor("biweekly", MEDIUM_CLEAN_CENTS, "standard");
+    for (const rateBps of [STARTING_RATE_BPS, FLOOR_RATE_BPS]) {
+      // Commission touches what Xoot keeps, never what the member is returned.
+      expect(xooterPayoutFor(spendCents, rateBps).commissionCents).toBeGreaterThan(0);
+    }
+    expect(doc).toContain("The member's own position does not move with commission at all");
   });
 
   it("keeps the paywall's shortfall sentence true for fortnightly", () => {
@@ -94,12 +135,26 @@ describe("Care+ unit economics", () => {
     // changes with it.
     const { discountRate } = savingsFor("biweekly", MEDIUM_CLEAN_CENTS, "standard");
     expect(discountRate).toBe(SERVER_RATE);
-    expect(doc).toContain("It leaves fortnightly untouched at");
+    expect(doc).toContain("It leaves fortnightly untouched at exactly 10%");
   });
 
-  it("keeps naming the commission rate as the missing input", () => {
-    // A unit-economics page that quietly drops its own caveat is worse than one with no numbers.
-    expect(doc).toMatch(/commission rate.*is not\s*\n?established/s);
-    expect(doc).toContain("Commission rate (c).");
+  it("names the floor and the rank mix as the missing inputs, not the rate", () => {
+    // The old caveat — "commission rate, unconfirmed" — is answered and must not linger, or the
+    // page reads as though nothing was learned. What replaced it is what actually moves the answer.
+    expect(doc).not.toContain("Commission rate (c).");
+    expect(doc).toContain("**The commission floor.**");
+    expect(doc).toContain("**Rank mix.**");
+    // And the retired warning is described as retired rather than quietly deleted.
+    expect(doc).toContain("is retired. The floor is 20%.");
+  });
+
+  it("keeps the pay-floor conflict on the page while it is still live", () => {
+    // Founder decision pending. The page must carry it until the conflict is resolved, because a
+    // unit-economics doc that omits "we pay below our own stated minimum" is worse than none.
+    const newcomerPay = xooterPayoutFor(MEDIUM_CLEAN_CENTS, STARTING_RATE_BPS).xooterPayCents;
+    expect(newcomerPay).toBe(19240);
+    expect(doc).toContain("R192.40");
+    expect(doc).toContain("Minimum pay enforced: R220 (half) / R300 (full)");
+    expect(doc).toContain("Founder decision required.");
   });
 });
