@@ -64,6 +64,19 @@ describe("the migrated palette clears WCAG AA where it must", () => {
       ["secondaryForeground on secondary", c.secondaryForeground, c.secondary],
       ["accentForeground on accent", c.accentForeground, c.accent],
       ["brandForeground on brand", c.brandForeground, c.brand],
+      // Added 2026-08-09. These three were absent, and absence here is not neutral: the list
+      // *is* the definition of what gets checked, so a role missing from it is a role nobody
+      // is measuring. Two were failing when they were added.
+      //
+      //   success   white on `155 47% 43%`  3.20  — fixed by darkening the fill to 35% (4.62)
+      //   carePlus  had no foreground token at all — added, 4.50 light / 4.66 dark
+      //
+      // Neither had a live consumer, which is exactly why they had gone unnoticed: `--success`
+      // renders only as a 1.5px decorative dot and `--care-plus` renders nowhere. A latent
+      // failure in a semantic role is a defect with a delay on it, not a non-defect.
+      ["successForeground on success", c.successForeground, c.success],
+      ["warningForeground on warning", c.warningForeground, c.warning],
+      ["carePlusForeground on carePlus", c.carePlusForeground, c.carePlus],
     ] as const;
   };
 
@@ -140,6 +153,35 @@ describe("the migrated palette clears WCAG AA where it must", () => {
           .toBeGreaterThanOrEqual(AA_LARGE);
         expect(contrast(c.destructive, c.background), `${scheme} destructive on page`)
           .toBeGreaterThanOrEqual(AA_LARGE);
+      });
+
+      /**
+       * `warning`, recorded rather than asserted green — the same treatment `destructive` used to
+       * get, and for a reason that has not gone away.
+       *
+       * An **opaque** warning fill measures 2.17 against a white card in light, under the 3.0 UI
+       * floor. But nothing renders one. `BookingConfirm.tsx` uses `bg-warning/10` and
+       * `bg-warning/15` behind `text-warning-foreground`, and the ink-on-amber label measures
+       * 7.30 — the only thing on screen is comfortably readable.
+       *
+       * Fixing it means darkening amber far enough to separate from white, at which point it
+       * stops reading as amber and starts reading as brown. That is a palette decision with no
+       * current beneficiary, so it is measured here and left alone.
+       *
+       * Pinned both ways: it cannot drift worse, and it cannot quietly reach the floor without
+       * someone deleting this test and saying why.
+       */
+      it("records warning's fill separation, which is below the UI floor in light", () => {
+        const c = COLOR[scheme];
+        const measured = contrast(c.warning, c.card);
+        if (scheme === "light") {
+          expect(measured, "light warning on card").toBeGreaterThanOrEqual(2.16);
+          expect(measured, "light warning must not reach the UI floor without the decision")
+            .toBeLessThan(AA_LARGE);
+        } else {
+          // Dark has no such problem — amber on a near-black card is 8.69.
+          expect(measured, "dark warning on card").toBeGreaterThanOrEqual(AA_LARGE);
+        }
       });
     });
   }

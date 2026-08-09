@@ -47,6 +47,7 @@
   --color-brand: hsl(var(--brand));
   --color-brand-foreground: hsl(var(--brand-foreground));
   --color-care-plus: hsl(var(--care-plus));
+  --color-care-plus-foreground: hsl(var(--care-plus-foreground));
   --color-success: hsl(var(--success));
   --color-warning: hsl(var(--warning));
   --color-info: hsl(var(--info));
@@ -1330,9 +1331,25 @@
        51% not the kit's 53%: white on 53% is 4.31:1, the same AA failure --primary
        was darkened for. */
     --care-plus: 3 79% 51%;
+    /* Care+ had a fill and no foreground — declared, exposed to Tailwind as
+       `--color-care-plus`, and with nothing saying what text may sit on it. The first
+       membership badge to want a label would have picked whatever it inherited. White measures
+       4.50 here, which is exactly AA and no more; that is the reason 51% must not drift lighter.
+       Added 2026-08-09 alongside the success fix below. */
+    --care-plus-foreground: 0 0% 100%;
     /* Semantic colours, deliberately separate from the brand hue. */
-    --success: 155 47% 43%;
+    /* 35%, not 43%. White on 43% measures 3.20 — a success button's label is body text, and 3.20
+       fails AA the same way --primary at 53% and --destructive at 56% did. Nothing renders an
+       opaque success fill today (the only use is a 1.5px decorative dot in Welcome.tsx), so this
+       costs nothing now and stops the first success badge shipping unreadable. 35% gives 4.62. */
+    --success: 155 47% 35%;
     --success-foreground: 0 0% 100%;
+    /* Left at 56% deliberately. An opaque warning fill measures only 2.17 against a white card —
+       below the 3.0 UI floor — but nothing renders one: BookingConfirm.tsx uses `bg-warning/10`
+       and `/15` behind `text-warning-foreground`, and the ink label on amber is 7.30. Darkening
+       amber far enough to separate from white would stop it reading as amber. Recorded in
+       design-contrast.test.ts rather than silently fixed; revisit when something wants a solid
+       warning chip. */
     --warning: 37 78% 56%;
     --warning-foreground: 14 18% 14%;
     --info: 211 65% 57%;
@@ -1538,6 +1555,9 @@
     --brand: 252 87% 78%;
     --brand-foreground: 0 0% 8%;
     --care-plus: 3 79% 56%;
+    /* Ink, not white. White on this fill measures 4.06 and fails; ink gives 4.66. Same shape as
+       the destructive fix — every bright fill in this scheme takes an ink label. */
+    --care-plus-foreground: 10 17% 7%;
     --success: 155 40% 62%;
     --success-foreground: 10 17% 7%;
     --warning: 37 78% 60%;

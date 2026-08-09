@@ -58,7 +58,7 @@ export const COLOR = {
     /** 48%, not 56%: at 56% the off-white label measured 3.70 and a button label is body text. */
     destructive: "7 78% 48%",
     destructiveForeground: "36 40% 98%",
-    success: "155 47% 43%",
+    success: "155 47% 35%",
     successForeground: "0 0% 100%",
     warning: "37 78% 56%",
     warningForeground: "14 18% 14%",
@@ -66,6 +66,8 @@ export const COLOR = {
     input: "28 22% 88%",
     ring: "14 51% 53%",
     carePlus: "3 79% 51%",
+    /** White is exactly AA (4.50) on Care+ red, which is why the fill must not drift lighter. */
+    carePlusForeground: "0 0% 100%",
   },
   dark: {
     background: "20 13% 7%",
@@ -95,6 +97,8 @@ export const COLOR = {
     input: "8 17% 18%",
     ring: "4 100% 64%",
     carePlus: "3 79% 56%",
+    /** Ink: white on this fill is 4.06 and fails. 4.66 with ink. */
+    carePlusForeground: "10 17% 7%",
   },
 } as const;
 
