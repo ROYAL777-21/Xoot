@@ -118,12 +118,20 @@ jobs:
           case "$SUPABASE_ACCESS_TOKEN" in
             sbp_*) echo "Token present and correctly shaped." ;;
             eyJ*)
-              echo "::error::SUPABASE_ACCESS_TOKEN holds a JWT (it starts 'eyJ'). That is a project anon or service-role key, which cannot deploy."
-              echo "::error::You need a personal access token from https://supabase.com/dashboard/account/tokens — it starts with 'sbp_'."
+              echo "::error::That is a JWT (starts 'eyJ') — the legacy anon or service-role key. Project keys cannot deploy."
+              echo "::error::Get a personal access token: https://supabase.com/dashboard/account/tokens (starts 'sbp_')."
+              exit 1 ;;
+            sb_publishable_*|sb_secret_*|sb_*)
+              echo "::error::That is a project API key in Supabase's newer format (starts 'sb_'). It authenticates against ONE project's data; deploying is an account-level action."
+              echo "::error::Get a personal access token: https://supabase.com/dashboard/account/tokens (Account -> Access Tokens, NOT Project Settings -> API). It starts 'sbp_'."
+              exit 1 ;;
+            mvlrkelahhsyjrwgsxaf|fxmxyabdjqviqbcxmvlp)
+              echo "::error::That is a project ref, not a token. The workflow already knows the refs; it needs a credential."
+              echo "::error::Get one at https://supabase.com/dashboard/account/tokens (starts 'sbp_')."
               exit 1 ;;
             *)
-              echo "::error::SUPABASE_ACCESS_TOKEN is not a Supabase personal access token. Those start with 'sbp_'."
-              echo "::error::Create one at https://supabase.com/dashboard/account/tokens and replace the repository secret."
+              echo "::error::Not a Supabase personal access token. Those start with 'sbp_' and are 40+ characters."
+              echo "::error::Account -> Access Tokens (https://supabase.com/dashboard/account/tokens), NOT Project Settings -> API — those are project keys and cannot deploy."
               exit 1 ;;
           esac
 
