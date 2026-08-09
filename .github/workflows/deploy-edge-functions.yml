@@ -1,0 +1,200 @@
+name: Deploy Edge Functions
+
+# Deploys Edge Functions from this repository, using the Supabase CLI.
+#
+# WHY THIS EXISTS
+# ---------------
+# Measured 2026-08-09 against the live function list: **28 of 43 deployed functions were behind
+# the repository**, some by seven weeks. Twenty-two of them only because they bundle their own
+# copy of `_shared/action-utils.ts`, which moved on 2026-08-06 — a deployed function carries the
+# `_shared` it was built with, so changing a shared module reaches nothing until every importer
+# is redeployed. Nothing in CI could fix that, because the only deploy path available was pasting
+# file contents through an MCP tool one function at a time.
+#
+# `supabase functions deploy` uploads from disk. With `SUPABASE_ACCESS_TOKEN` set as a repository
+# secret, the whole backlog is one dispatch instead of a week of transcription.
+#
+# WHY IT IS MANUAL
+# ----------------
+# `workflow_dispatch` only, and production requires typing the project ref to confirm. This
+# deploys code that takes payments, issues credentials and reads gate codes; it should be an act
+# someone performs, not a side effect of merging. `tests.yml` already gates the code itself.
+#
+# THE TRAP THIS AVOIDS
+# --------------------
+# Supabase treats a function with no `[functions.<name>]` block in `supabase/config.toml` as
+# `verify_jwt = true`. Ten functions here must stay open — Twilio, Stitch/Ozow and the public
+# support form cannot present a Supabase JWT, and their real authentication is an HMAC signature
+# the function checks itself. Deploying them with the default on would have the gateway reject
+# every call *before* that check runs: a 401 at the edge, nothing in the function's logs, on
+# webhooks nobody watches.
+#
+# All 46 functions are declared, and `src/lib/edge-function-config.test.ts` fails the build if
+# that stops being true or if one of the ten flips closed. This workflow re-runs that test before
+# it deploys anything, because a config regression is exactly the thing you want caught *before*
+# the upload rather than after.
+
+# WHICH BRANCH TO DISPATCH FROM — read this before the first run.
+#
+# This file lives on `main` so it can be dispatched at all: GitHub resolves a `workflow_dispatch`
+# workflow from the default branch, and dispatching it against a feature branch alone returns
+# `404 Not Found` (measured 2026-08-09, against `claude/session-continuation-3upt0l`).
+#
+# But the `ref` you choose in the "Use workflow from" dropdown decides which branch's **code and
+# config** get deployed, and those are not the same question. Set it to the branch carrying the
+# functions you want live — normally the release branch, not `main`, until the stack has merged.
+#
+# `main` at 54e7cfa declares 18 functions in `supabase/config.toml` and there are 46 on disk, so
+# dispatching from `main` today would be actively wrong. The guard below refuses that rather than
+# trusting whoever is at the dropdown.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which project to deploy to
+        required: true
+        default: staging
+        type: choice
+        options: [staging, production]
+      functions:
+        description: >-
+          Space-separated function names, or blank for all of them. Start with a couple by name
+          if you have not run this before.
+        required: false
+        type: string
+      confirm_project_ref:
+        description: >-
+          Required for production only. Type the project ref exactly — mvlrkelahhsyjrwgsxaf.
+          Leave blank for staging.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  # Never two deploys into the same project at once. A half-finished deploy is worse than a late
+  # one, and the CLI gives no transactional guarantee across functions.
+  group: deploy-functions-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The confirmation is checked in its own step, before checkout matters and before any
+      # credential is used. A typo in the ref stops the run here rather than mid-upload.
+      - name: Confirm production
+        if: inputs.environment == 'production'
+        env:
+          TYPED: ${{ inputs.confirm_project_ref }}
+        run: |
+          if [ "$TYPED" != "mvlrkelahhsyjrwgsxaf" ]; then
+            echo "::error::Production deploys require confirm_project_ref = mvlrkelahhsyjrwgsxaf. Got: '${TYPED}'"
+            exit 1
+          fi
+
+      - name: Refuse to deploy without the token
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN is not set. Add it as a repository secret (Settings -> Secrets and variables -> Actions)."
+            exit 1
+          fi
+          echo "Token present."
+
+      # SELF-CONTAINED GUARD. Runs before anything is installed and depends on no repo file other
+      # than the two it compares, so it survives being dispatched against a ref that does not have
+      # the test suite.
+      #
+      # That is not hypothetical. `main` at 54e7cfa declares **18** functions; there are 46 on
+      # disk. Dispatching from a ref like that would deploy the ten webhooks with the default
+      # `verify_jwt = true` and take every Twilio, Stitch and Ozow callback offline behind a 401 at
+      # the gateway — with nothing in any function's logs to explain it.
+      #
+      # Fails closed, and names the functions rather than just the count.
+      - name: Every function on disk must declare verify_jwt
+        run: |
+          set -euo pipefail
+          missing=""
+          for dir in supabase/functions/*/; do
+            fn="$(basename "$dir")"
+            [ "$fn" = "_shared" ] && continue
+            grep -q "^\[functions\.${fn}\]" supabase/config.toml || missing="$missing $fn"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::supabase/config.toml does not declare verify_jwt for:$missing"
+            echo "::error::Deploying now would default them to verify_jwt = true. Dispatch from a ref whose config.toml is complete."
+            exit 1
+          fi
+          echo "All $(ls -d supabase/functions/*/ | grep -cv '_shared/$') functions declared."
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # The richer version of the guard above: it also checks the ten that must stay *open*, and
+      # that nothing else is. Skipped when the test file is absent, which is the case on any ref
+      # predating it — the shell guard has already covered the dangerous direction by then.
+      - name: Verify verify_jwt values, not just their presence
+        run: |
+          if [ -f src/lib/edge-function-config.test.ts ]; then
+            bunx vitest run src/lib/edge-function-config.test.ts
+          else
+            echo "::warning::src/lib/edge-function-config.test.ts not on this ref; relying on the shell guard above."
+          fi
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Timestamps only — it cannot prove the bytes match, and says so. Printed before and after
+      # so the run's own log carries the evidence that something changed.
+      - name: Drift before
+        continue-on-error: true
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          node scripts/ops/check-deployed-drift.mjs \
+            ${{ inputs.environment == 'staging' && '--staging' || '' }} \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: ${{ inputs.environment == 'production' && 'mvlrkelahhsyjrwgsxaf' || 'fxmxyabdjqviqbcxmvlp' }}
+          FUNCTIONS: ${{ inputs.functions }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FUNCTIONS// }" ]; then
+            echo "Deploying every function in supabase/functions/ to $PROJECT_REF"
+            supabase functions deploy --project-ref "$PROJECT_REF"
+          else
+            # Deployed one at a time rather than in one command, so a failure names the function
+            # it failed on and the ones before it are already live.
+            for fn in $FUNCTIONS; do
+              echo "::group::$fn"
+              supabase functions deploy "$fn" --project-ref "$PROJECT_REF"
+              echo "::endgroup::"
+            done
+          fi
+
+      # Advisory for the same reason the "before" step is, plus one specific to this workflow:
+      # the checker exits 1 whenever anything is stale, and a deliberate two-function deploy
+      # leaves the other 44 stale by design. A red X there would mean "you did not deploy
+      # everything", which is not a failure. Read the table, not the tick.
+      - name: Drift after
+        continue-on-error: true
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          node scripts/ops/check-deployed-drift.mjs \
+            ${{ inputs.environment == 'staging' && '--staging' || '' }} \
+            | tee -a "$GITHUB_STEP_SUMMARY"
