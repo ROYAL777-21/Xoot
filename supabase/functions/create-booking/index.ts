@@ -20,6 +20,7 @@ import {
   SERVICE_LENGTH_HOURS,
   ONE_TIME_SERVICE_FEE_CENTS,
   basePrice,
+  commissionRateBps,
   resolveHours,
 } from "../_shared/pricing.ts";
 
@@ -45,6 +46,36 @@ const getCarePlusDiscount = async (supa: any, userId: string) => {
   if (!data?.id) return 0;
   if (data.next_billing_at && new Date(data.next_billing_at).getTime() <= Date.now()) return 0;
   return 0.1;
+};
+
+/**
+ * The commission rate to strike each booking at, keyed by Xooter id.
+ *
+ * One query for the whole request rather than one per booking: a multi-Xooter job inserts a
+ * booking per Xooter and each carries its own rate, since each Xooter is ranked separately.
+ *
+ * A Xooter that cannot be read falls to the starting rate via `commissionRateBps`, which
+ * treats a missing score as unproven rather than guessing. That is the loud failure — a Xooter
+ * on an unexpected 35% reports it the same day; one silently granted the 20% floor is a
+ * revenue leak nobody notices.
+ */
+const getCommissionRates = async (supa: any, zooterIds: string[]) => {
+  const rates = new Map<string, number>();
+  if (!zooterIds.length) return rates;
+  const { data } = await supa
+    .from("zooters")
+    .select("id,reliability_score,jobs_completed")
+    .in("id", zooterIds);
+  for (const row of data ?? []) {
+    rates.set(
+      row.id,
+      commissionRateBps({
+        reliabilityScore: row.reliability_score,
+        completedJobs: row.jobs_completed,
+      }),
+    );
+  }
+  return rates;
 };
 
 const getAvailableXootCred = async (supa: any, userId: string) => {
@@ -211,6 +242,10 @@ Deno.serve(async (req) => {
     const estHours = priced.hours + addOns.length;
     const launchRegion = resolveLaunchRegion(address);
     const bookingTargets = selectedXooterIds.length ? selectedXooterIds : [null];
+    // Struck once, here, and never recomputed at payout — see the migration
+    // `20260809120000_booking_commission_rate.sql` for why a rank that moves must not change
+    // what a Xooter is paid for work already agreed.
+    const commissionRates = await getCommissionRates(supa, selectedXooterIds);
 
     const bookingIds: string[] = [];
     const paymentRecordIds: string[] = [];
@@ -242,6 +277,9 @@ Deno.serve(async (req) => {
         service_fee: perBookingServiceFee,
         booking_cover_amount: perBookingCover,
         high_demand_premium: perBookingHighDemand,
+        // Null while nobody is assigned. An absence reads as pending; a default would read as
+        // an agreement that was never struck.
+        commission_rate_bps: zooterId ? commissionRates.get(zooterId) ?? null : null,
       }).select("id").single();
       if (bookingError || !booking?.id) throw new Error("booking insert failed");
       bookingIds.push(booking.id);

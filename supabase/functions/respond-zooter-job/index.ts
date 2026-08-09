@@ -8,6 +8,7 @@ import {
   readJson,
   requireAuth,
 } from "../_shared/action-utils.ts";
+import { commissionRateBps } from "../_shared/pricing.ts";
 
 /**
  * Accept or decline an offered job.
@@ -61,7 +62,7 @@ Deno.serve(async (req) => {
     // someone else's zooter_id.
     const { data: zooter } = await supa
       .from("zooters")
-      .select("id")
+      .select("id,reliability_score,jobs_completed")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -108,6 +109,30 @@ Deno.serve(async (req) => {
 
     if (updateError) return fail("could not update job", origin, 500);
     if (!updated?.id) return fail("job is no longer open", origin, 409, { state: job.state });
+
+    /*
+     * Strike the commission rate on acceptance, if it was not struck at booking time.
+     *
+     * `create-booking` records the rate when the customer chose a Xooter up front. When nobody
+     * was chosen it inserts `commission_rate_bps` null, and this is the moment the Xooter
+     * becomes known — so this is where the rate is agreed.
+     *
+     * Conditional on the column still being null, so a rate struck at booking time is never
+     * overwritten here. That guard is the whole point: a rank moves, and a Xooter must not be
+     * paid at a rate that changed after they agreed the job.
+     */
+    if (nextState === "accepted") {
+      await supa
+        .from("bookings")
+        .update({
+          commission_rate_bps: commissionRateBps({
+            reliabilityScore: zooter.reliability_score,
+            completedJobs: zooter.jobs_completed,
+          }),
+        })
+        .eq("id", job.booking_id)
+        .is("commission_rate_bps", null);
+    }
 
     // The booking's own trail, not the admin audit log — this is a participant acting on their
     // own job, and `admin_audit_log.admin_id` would misdescribe them as an admin. The

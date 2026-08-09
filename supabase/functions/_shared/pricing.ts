@@ -91,6 +91,95 @@ export const SERVICE_LENGTH_HOURS: Record<string, number> = {
   full_day: 8,
 };
 
+/* ── Commission ──────────────────────────────────────────────────────────────────
+ * What Xoot keeps, and what the Xooter is paid.
+ *
+ * Commission starts at 35% for a new Xooter and falls as they rank higher on
+ * `zooters.reliability_score` — ratings, punctuality, quality of work. The score decides
+ * which band; `minCompletedJobs` decides whether the band has been earned.
+ *
+ * ⚠️ KEEP IN SYNC with `src/lib/xooter-commission.ts`, which carries the full reasoning
+ * (including why a freshly approved Xooter scoring a perfect 100 must NOT get the floor).
+ * `pricing-parity.test.ts` fails if the two tables drift.
+ */
+
+export type CommissionBand = {
+  rank: string;
+  minScore: number;
+  minCompletedJobs: number;
+  rateBps: number;
+};
+
+export const COMMISSION_BANDS: CommissionBand[] = [
+  { rank: "new", minScore: 0, minCompletedJobs: 0, rateBps: 3500 },
+  { rank: "bronze", minScore: 80, minCompletedJobs: 10, rateBps: 3250 },
+  { rank: "silver", minScore: 88, minCompletedJobs: 25, rateBps: 3000 },
+  { rank: "gold", minScore: 93, minCompletedJobs: 75, rateBps: 2500 },
+  { rank: "platinum", minScore: 97, minCompletedJobs: 200, rateBps: 2000 },
+];
+
+export const STARTING_RATE_BPS = 3500;
+export const HYSTERESIS_POINTS = 3;
+/** Same 75 as `shouldDeprioritizeXooter` — one threshold, one meaning. */
+export const IN_TROUBLE_SCORE = 75;
+
+/**
+ * Resolve a Xooter's commission rate in basis points.
+ *
+ * Returns the starting rate on missing or non-numeric data rather than guessing: a Xooter on
+ * an unexpected 35% reports it the same day, whereas silently granting the 20% floor is a
+ * revenue leak nobody notices.
+ */
+export function commissionRateBps(input: {
+  reliabilityScore?: number | null;
+  completedJobs?: number | null;
+  currentRateBps?: number | null;
+}): number {
+  const { reliabilityScore, completedJobs, currentRateBps } = input;
+  if (typeof reliabilityScore !== "number" || !Number.isFinite(reliabilityScore)) {
+    return STARTING_RATE_BPS;
+  }
+  const score = Math.max(0, Math.min(100, reliabilityScore));
+  const jobs =
+    typeof completedJobs === "number" && Number.isFinite(completedJobs)
+      ? Math.max(0, Math.floor(completedJobs))
+      : 0;
+
+  if (score < IN_TROUBLE_SCORE) return STARTING_RATE_BPS;
+
+  let earned = COMMISSION_BANDS[0];
+  for (const band of COMMISSION_BANDS) {
+    if (jobs >= band.minCompletedJobs && score >= band.minScore) earned = band;
+  }
+
+  const held = COMMISSION_BANDS.find((b) => b.rateBps === currentRateBps) ?? null;
+  if (
+    held &&
+    held.rateBps < earned.rateBps &&
+    jobs >= held.minCompletedJobs &&
+    score >= held.minScore - HYSTERESIS_POINTS
+  ) {
+    return held.rateBps;
+  }
+  return earned.rateBps;
+}
+
+/**
+ * Split a booking's **subtotal** between Xoot and the Xooter.
+ *
+ * The base is the subtotal, never the total: booking cover is a passed-through premium and the
+ * R39 service fee is Xoot's own charge for arranging the booking. Commissioning either would
+ * move a Xooter's pay because a customer ticked a box unrelated to the work.
+ */
+export function xooterPayout(subtotalCents: number, rateBps: number): {
+  commissionCents: number;
+  xooterPayCents: number;
+} {
+  const base = Math.max(0, Math.round(subtotalCents));
+  const commissionCents = Math.round((base * rateBps) / 10000);
+  return { commissionCents, xooterPayCents: base - commissionCents };
+}
+
 export type PriceResult =
   | { ok: true; hours: number; baseCents: number }
   | { ok: false; reason: string };

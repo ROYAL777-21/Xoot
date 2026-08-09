@@ -863,6 +863,7 @@ export type Database = {
           cancellation_fee: number
           cancelled_at: string | null
           cancelled_by: string | null
+          commission_rate_bps: number | null
           completed_at: string | null
           completion_photo_required: boolean
           created_at: string
@@ -908,6 +909,7 @@ export type Database = {
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
+          commission_rate_bps?: number | null
           completed_at?: string | null
           completion_photo_required?: boolean
           created_at?: string
@@ -953,6 +955,7 @@ export type Database = {
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
+          commission_rate_bps?: number | null
           completed_at?: string | null
           completion_photo_required?: boolean
           created_at?: string

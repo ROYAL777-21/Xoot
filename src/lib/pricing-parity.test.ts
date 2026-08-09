@@ -3,6 +3,12 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, ONE_TIME_SERVICE_FEE_CENTS } from "./xoot-pricing";
 import { CADENCE_DISCOUNT } from "./care-plus";
+import {
+  COMMISSION_BANDS,
+  HYSTERESIS_POINTS,
+  IN_TROUBLE_SCORE,
+  STARTING_RATE_BPS,
+} from "./xooter-commission";
 
 /**
  * The client ladders (src/lib/xoot-pricing.ts) and the server ladders
@@ -248,6 +254,128 @@ describe("client/server pricing parity", () => {
     expect(serverSrc).toMatch(
       /isCarePlusMember \|\| frequency !== "one_time" \? 0 : ONE_TIME_SERVICE_FEE_CENTS/,
     );
+  });
+
+  /**
+   * The commission ladder, which decides what a person is paid.
+   *
+   * This is the newest duplicated table and the one with the worst failure mode. A drifted price
+   * ladder shows a customer the wrong number; a drifted commission ladder pays a Xooter the wrong
+   * amount, and they have no way to check it. So the whole band table is compared row by row
+   * rather than spot-checked, and the behavioural rules are asserted against the server's own
+   * resolver rather than a description of it.
+   */
+  it("agrees on every commission band between client and server", () => {
+    const start = serverSrc.indexOf("export const COMMISSION_BANDS");
+    expect(start, "server no longer defines COMMISSION_BANDS").toBeGreaterThan(-1);
+    const body = serverSrc.slice(start, serverSrc.indexOf("];", start));
+
+    const serverBands = [...body.matchAll(
+      /\{\s*rank:\s*"(\w+)",\s*minScore:\s*(\d+),\s*minCompletedJobs:\s*(\d+),\s*rateBps:\s*(\d+)\s*\}/g,
+    )].map((m) => ({
+      rank: m[1],
+      minScore: Number(m[2]),
+      minCompletedJobs: Number(m[3]),
+      rateBps: Number(m[4]),
+    }));
+
+    expect(serverBands).toEqual(
+      COMMISSION_BANDS.map(({ rank, minScore, minCompletedJobs, rateBps }) => ({
+        rank,
+        minScore,
+        minCompletedJobs,
+        rateBps,
+      })),
+    );
+  });
+
+  it("agrees on the commission thresholds that are not in the band table", () => {
+    const serverNum = (name: string) => {
+      const m = serverSrc.match(new RegExp(`export const ${name} = (\\d+)`));
+      if (!m) throw new Error(`server constant ${name} not found`);
+      return Number(m[1]);
+    };
+    expect(serverNum("STARTING_RATE_BPS")).toBe(STARTING_RATE_BPS);
+    expect(serverNum("HYSTERESIS_POINTS")).toBe(HYSTERESIS_POINTS);
+    expect(serverNum("IN_TROUBLE_SCORE")).toBe(IN_TROUBLE_SCORE);
+  });
+
+  /**
+   * The rules, not just the numbers.
+   *
+   * A band table can match while the code reading it disagrees — the day-one trap is exactly
+   * that shape, since it lives in the resolver and not in any constant. These assert the three
+   * behaviours that decide pay, read out of the server source.
+   */
+  it("keeps the server resolver's three pay rules intact", () => {
+    // 1. Missing score falls to the starting rate, not to a guess.
+    expect(serverSrc).toMatch(
+      /if \(typeof reliabilityScore !== "number"[\s\S]{0,80}return STARTING_RATE_BPS;/,
+    );
+    // 2. Below the in-trouble threshold is the starting rate, with no hysteresis reprieve.
+    expect(serverSrc).toMatch(/if \(score < IN_TROUBLE_SCORE\) return STARTING_RATE_BPS;/);
+    // 3. A band requires the job count as well as the score — the day-one trap.
+    expect(serverSrc).toMatch(/jobs >= band\.minCompletedJobs && score >= band\.minScore/);
+    // And commission is charged on the subtotal, never the total.
+    expect(serverSrc).toMatch(/xooterPayout\(subtotalCents: number/);
+  });
+
+  /**
+   * The rate is struck once and stored, never recomputed at payout.
+   *
+   * This is the property that makes the ladder trustworthy rather than arbitrary. A rank moves;
+   * a Xooter who accepted a job at 30% and picked up a late arrival the following week must not
+   * be paid at 35% for work already agreed and already done. On a R296 clean the two ends of
+   * the ladder are R44.40 apart, and the Xooter has no way to audit a number that changed after
+   * the fact.
+   *
+   * Both stamping points are asserted, because a booking can be created with a Xooter chosen or
+   * with nobody chosen, and only one of those two paths is obvious.
+   */
+  it("strikes the commission rate once, at whichever point the Xooter becomes known", () => {
+    const create = readFileSync(
+      join(process.cwd(), "supabase/functions/create-booking/index.ts"),
+      "utf8",
+    );
+    const respond = readFileSync(
+      join(process.cwd(), "supabase/functions/respond-zooter-job/index.ts"),
+      "utf8",
+    );
+
+    // Booking time: the rate comes from the assigned Xooter's own rank, per booking row, and is
+    // null when nobody is assigned rather than defaulted to something that reads as agreed.
+    expect(create).toMatch(/commission_rate_bps: zooterId \? commissionRates\.get\(zooterId\)/);
+    expect(create).toMatch(/reliabilityScore: row\.reliability_score/);
+    expect(create).toMatch(/completedJobs: row\.jobs_completed/);
+
+    // Acceptance time: only when the booking was created unassigned. The `.is(..., null)` guard
+    // is what stops an accept from overwriting a rate already struck at booking time.
+    expect(respond).toMatch(/if \(nextState === "accepted"\)/);
+    expect(respond).toMatch(/\.is\("commission_rate_bps", null\)/);
+    expect(respond).toMatch(/select\("id,reliability_score,jobs_completed"\)/);
+
+    // Neither may reach for the schedule directly; both go through the shared resolver.
+    for (const src of [create, respond]) {
+      expect(src).toMatch(/commissionRateBps/);
+      expect(src).not.toMatch(/rateBps:\s*3500/);
+    }
+  });
+
+  it("keeps the migration's stored-rate column honest about being nullable", () => {
+    const migration = readFileSync(
+      join(process.cwd(), "supabase/migrations/20260809120000_booking_commission_rate.sql"),
+      "utf8",
+    );
+    // No default and no NOT NULL: an absence means "no Xooter has accepted yet", and that is a
+    // state the schema has to be able to express.
+    expect(migration).toMatch(/add column if not exists commission_rate_bps integer;/);
+    expect(migration).not.toMatch(/commission_rate_bps integer[^;]*(not null|default)/i);
+    // A typo of 35 or 3500000 still fails loudly, while tuning the schedule needs no migration.
+    expect(migration).toMatch(/between 500 and 5000/);
+    for (const band of COMMISSION_BANDS) {
+      expect(band.rateBps).toBeGreaterThanOrEqual(500);
+      expect(band.rateBps).toBeLessThanOrEqual(5000);
+    }
   });
 
   /**

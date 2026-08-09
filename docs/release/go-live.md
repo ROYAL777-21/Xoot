@@ -145,6 +145,20 @@ other. Until that has happened once, voice calling is code that has never run.
 
 After section 0. Actions → **Deploy Edge Functions** → Run workflow.
 
+### 3a. ⚠️ Apply the commission migration FIRST
+
+`supabase/migrations/20260809120000_booking_commission_rate.sql` adds `bookings.commission_rate_bps`,
+and `create-booking` and `respond-zooter-job` now write it.
+
+**This ordering is not a preference.** PostgREST rejects an entire statement on the first unknown
+column, so deploying those two functions against a table without the column does not degrade
+gracefully — every booking insert fails and booking creation is down until the migration lands. The
+opposite order is harmless: apply the migration and the column sits null until the functions ship.
+
+Apply it, then regenerate `src/integrations/supabase/types.ts` from the live schema. The column was
+added to that file by hand so the schema-contract test could pass ahead of the migration; a real
+regeneration replaces the hand edit and confirms the live database agrees.
+
 **Set "Use workflow from" to the release branch, not `main`.** `main` is where GitHub finds the
 workflow; the ref decides which branch's code and config get deployed. `main`'s `config.toml`
 declares 18 of 46 functions, and a deploy from there would give the ten webhook functions the
