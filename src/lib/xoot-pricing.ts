@@ -170,6 +170,16 @@ export type QuoteInput = {
    * state the same way.
    */
   frequency?: "one_time" | "repeat";
+  /**
+   * Care+ members never pay the service fee, at any frequency — the founder's 2026-08-09 pricing
+   * decision, alongside R99/month and one month free.
+   *
+   * Defaults to `false` for the same reason `frequency` defaults to `"one_time"`: a caller who
+   * forgets to pass it over-states the price rather than under-stating it. Showing a member R39
+   * they will not be charged is a bad quote; showing a non-member R0 they *will* be charged is
+   * the defect this repo already shipped once on `BookingConfirm`.
+   */
+  carePlusMember?: boolean;
 };
 
 export type PricedQuote = {
@@ -266,8 +276,12 @@ export function quote(input: QuoteInput): Quote {
   const addOnsCents = Math.max(0, input.addOns ?? 0) * ADD_ON_CENTS;
   const linenCents = input.linenOnSite ? LINEN_ON_SITE_CENTS : 0;
   const coverCents = input.bookingCover === false ? 0 : BOOKING_COVER_CENTS;
-  // Mirrors `create-booking`: `frequency === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0`.
-  const serviceFeeCents = (input.frequency ?? "one_time") === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0;
+  // Mirrors `create-booking` exactly, including the order of the two waivers. Membership wins
+  // first, then frequency — a member booking one-off still pays nothing.
+  const serviceFeeCents =
+    input.carePlusMember || (input.frequency ?? "one_time") !== "one_time"
+      ? 0
+      : ONE_TIME_SERVICE_FEE_CENTS;
 
   return {
     ok: true,

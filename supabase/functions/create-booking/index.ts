@@ -170,7 +170,19 @@ Deno.serve(async (req) => {
     const addOnsCents = addOns.length * ADD_ON_CENTS;
     const subtotalCents = discountedBaseCents + addOnsCents;
     const highDemandCents = isHighDemandSlot(time) ? Math.round(subtotalCents * 0.15) : 0;
-    const serviceFeeCents = frequency === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0;
+    /*
+     * Care+ members pay no booking fee, at any frequency (founder decision 2026-08-09, alongside
+     * R99/month and one month free). Membership is read from the same lookup that decides the
+     * discount, so a member cannot get the discount and still be charged the fee.
+     *
+     * Mirrored in `src/lib/xoot-pricing.ts` as `carePlusMember`, and held there by
+     * `pricing-parity.test.ts`. The two must agree: a client showing R0 against a server charging
+     * R39 is the defect this codebase already shipped once.
+     */
+    const carePlusDiscountRate = await getCarePlusDiscount(supa, user.id);
+    const isCarePlusMember = carePlusDiscountRate > 0;
+    const serviceFeeCents =
+      isCarePlusMember || frequency !== "one_time" ? 0 : ONE_TIME_SERVICE_FEE_CENTS;
     const bookingCoverCents = bookingCoverOptIn === false ? 0 : BOOKING_COVER_CENTS;
 
     const toRands = (cents: number) => Math.round(cents / 100);
@@ -178,7 +190,6 @@ Deno.serve(async (req) => {
     const highDemandPremium = toRands(highDemandCents);
     const serviceFee = toRands(serviceFeeCents);
     const bookingCover = toRands(bookingCoverCents);
-    const carePlusDiscountRate = await getCarePlusDiscount(supa, user.id);
     const carePlusDiscount = Math.round(subtotal * carePlusDiscountRate);
     const grossTotal = subtotal + highDemandPremium + serviceFee + bookingCover - carePlusDiscount;
 

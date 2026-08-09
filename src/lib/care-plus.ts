@@ -1,37 +1,72 @@
 /**
  * Care+ membership pricing, the recurring-booking discount, and the win-back offer.
  *
- * ── Why R199 is an outcome tier, not a discount tier ─────────────────────────────
- * A membership is only rational when monthly savings exceed the fee. On a R296 clean:
+ * ── One tier, R99, everything in it (founder decision 2026-08-09) ────────────────
+ * Care+ is a single membership at **R99/month**, with no booking fee and every outcome
+ * included, opening with **one month free**. The two-tier R99/R199 split is retired from
+ * the live product and kept below as a future A/B arm.
  *
- *   Weekly (4.3/mo, R1286 spend)   15% saves R193 — roughly break-even at R199
- *   Fortnightly (2.2/mo, R643)     15% saves  R96 — R103 down every month
- *   Monthly (1/mo, R296)           15% saves  R44 — R155 down every month
+ * ── The arithmetic, redone at R99 ────────────────────────────────────────────────
+ * A membership is only rational when what it saves exceeds what it costs. On a R296 clean,
+ * with the cadence discounts below and the R39 one-time booking fee waived:
  *
- * So R199 cannot be sold on savings to anyone who books less than weekly; they would
- * churn, correctly. It is sold on the outcomes instead — the same Xooter every time,
- * the slot you actually want, a home that is remembered — with the discount sized so a
- * weekly member's fee washes out rather than pretending to be the reason to join.
+ *   Weekly (4.3/mo, R1286 spend)   15% saves R193 — R94 ahead every month
+ *   Fortnightly (2.2/mo, R643)     10% saves  R64 — R35 down
+ *   Monthly (1/mo, R296)            5% saves  R15 — R84 down
  *
- * The win-back tier exists for exactly the people the maths excludes.
+ * R99 changes the shape of the honest pitch but not its substance. A weekly booker is now
+ * genuinely ahead on money alone, which R199 never delivered. Everyone else is still buying
+ * the outcomes — the same Xooter every time, the slot you actually want, a home that is
+ * remembered — and the copy must keep saying so rather than implying the discount pays for
+ * the fee at every cadence. Claiming savings a fortnightly member does not get is a false
+ * price representation under the Consumer Protection Act, and it is also just untrue.
+ *
+ * ⚠️ KNOWN DIVERGENCE, not fixed here. `create-booking` applies a **flat 10%** to every
+ * active member (`getCarePlusDiscount` returns 0 or 0.1) and ignores cadence entirely, so
+ * the server does not implement `CADENCE_DISCOUNT` below. Any surface quoting 15% for weekly
+ * would be quoting a discount the server does not give. Fixing it means changing what members
+ * are charged, so it is written down rather than taken silently — see `pricing-parity.test.ts`.
  */
 
-export const STANDARD_MONTHLY_CENTS = 9900;
-export const PREMIUM_MONTHLY_CENTS = 19900;
+/** The live membership price. One tier, everything included. */
+export const CARE_PLUS_MONTHLY_CENTS = 9900;
 
 /**
- * The win-back price is the standard tier, unchanged — R99.
- *
- * It is presented as half price, and that claim is anchored to **Premium**, which is a
- * real tier at a real R199. R99 is exactly half of R199, so the comparison is true and
- * checkable.
- *
- * It is deliberately NOT written as an unqualified "50% off". An unqualified discount
- * claim implies the item's own former price, and R99 has never been higher — that would
- * be a false price representation under the Consumer Protection Act and would fail
- * App Store review. Every surface must name what the 50% is measured against.
+ * Free months at signup. The CTA is "Join Care+ for free", and that sentence is only true
+ * while this is above zero — if it ever goes to 0, the button copy has to change in the same
+ * commit. The cleans themselves are still charged during the free month; only the membership
+ * is free, and the paywall must say so.
  */
-export const WIN_BACK_MONTHLY_CENTS = STANDARD_MONTHLY_CENTS;
+export const FREE_MONTHS_AT_SIGNUP = 1;
+
+/**
+ * Members do not pay the R39 one-time booking fee. Mirrored server-side in
+ * `supabase/functions/_shared/pricing.ts`; `pricing-parity.test.ts` holds the two together,
+ * because a client that shows R0 and a server that charges R39 is the exact defect this repo
+ * already shipped once on `BookingConfirm`.
+ */
+export const MEMBER_PAYS_BOOKING_FEE = false;
+
+/** @deprecated Use `CARE_PLUS_MONTHLY_CENTS`. Kept so older imports keep compiling. */
+export const STANDARD_MONTHLY_CENTS = CARE_PLUS_MONTHLY_CENTS;
+
+/**
+ * The R199 arm, retained for a future A/B test and **not live**.
+ *
+ * Nothing user-facing may price against it while Care+ is one tier at R99. In particular the
+ * win-back offer must not be described as "half price" any more: that claim was anchored to
+ * Premium being a real tier at a real R199, and with R199 unsold there is nothing for the half
+ * to be measured against. An unqualified discount claim implies the item's own former price,
+ * and R99 has never been higher — a false price representation under the CPA and an App Store
+ * review failure.
+ */
+export const PREMIUM_MONTHLY_CENTS_AB_ARM = 19900;
+
+/** @deprecated The A/B arm, not a live price. Use `PREMIUM_MONTHLY_CENTS_AB_ARM` knowingly. */
+export const PREMIUM_MONTHLY_CENTS = PREMIUM_MONTHLY_CENTS_AB_ARM;
+
+/** The win-back price is the membership price. There is no cheaper tier to fall back to. */
+export const WIN_BACK_MONTHLY_CENTS = CARE_PLUS_MONTHLY_CENTS;
 
 export type Tier = "premium" | "standard";
 
@@ -112,7 +147,9 @@ export type Savings = {
 export function savingsFor(cadence: string, baseBookingCents: number, tier: Tier): Savings {
   const bookingsPerMonth = PER_MONTH[cadence] ?? 0;
   const discountRate = CADENCE_DISCOUNT[cadence] ?? 0;
-  const feeCents = tier === "premium" ? PREMIUM_MONTHLY_CENTS : STANDARD_MONTHLY_CENTS;
+  // `tier` survives for the A/B arm. While Care+ is one tier, "premium" and "standard" are
+  // the same R99 unless a caller deliberately asks for the unsold arm.
+  const feeCents = tier === "premium" ? CARE_PLUS_MONTHLY_CENTS : CARE_PLUS_MONTHLY_CENTS;
   const spendCents = Math.round(baseBookingCents * bookingsPerMonth);
   const savedCents = Math.round(spendCents * discountRate);
   return { bookingsPerMonth, discountRate, spendCents, savedCents, feeCents, netCents: savedCents - feeCents };

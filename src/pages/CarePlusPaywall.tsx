@@ -8,11 +8,11 @@ import { cn } from "@/lib/utils";
 import { readDraft } from "@/lib/onboarding";
 import { formatRand } from "@/lib/xoot-pricing";
 import {
-  PREMIUM_MONTHLY_CENTS,
+  CARE_PLUS_MONTHLY_CENTS,
+  FREE_MONTHS_AT_SIGNUP,
   PREMIUM_OUTCOMES,
   STANDARD_OUTCOMES,
   WIN_BACK_MONTHLY_CENTS,
-  STANDARD_MONTHLY_CENTS,
   formatCountdown,
   isOfferLive,
   offerRemainingMs,
@@ -35,10 +35,31 @@ import { TermsNotice } from "@/components/zoot/TermsNotice";
  * is started once and never restarts.
  */
 
-const TRIAL_DAYS = 14;
+/*
+ * One month free, not fourteen days (founder decision 2026-08-09, with R99/month and no booking
+ * fee). Derived from `FREE_MONTHS_AT_SIGNUP` rather than a local constant so the button copy
+ * "Join Care+ for free" and the date the card is first charged cannot drift apart — the two
+ * halves of the same promise.
+ *
+ * Calendar months, not 30 days. "Free until 9 September" is a date a person can hold you to;
+ * "free for 30 days" is one they have to compute, and the two disagree in eleven months of the
+ * year. setMonth handles the short-month case by rolling forward, which errs in the customer's
+ * favour rather than charging them a day early.
+ */
+/**
+ * The discount the server actually applies, mirrored from `getCarePlusDiscount` in
+ * `create-booking/index.ts`, which returns a flat 0.1 for every active member regardless of
+ * cadence. `pricing-parity.test.ts` pins the two together.
+ *
+ * Deliberately NOT `CADENCE_DISCOUNT.weekly` (0.15). That table describes an intended tiering
+ * the server does not implement, and a paywall quoting it would promise a saving members do not
+ * get. When the server is aligned, this constant is what changes.
+ */
+const SERVER_MEMBER_DISCOUNT_RATE = 0.1;
 
 function trialDates(now = new Date()) {
-  const ends = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+  const ends = new Date(now);
+  ends.setMonth(ends.getMonth() + FREE_MONTHS_AT_SIGNUP);
   const fmt = (d: Date) => d.toLocaleDateString("en-ZA", { day: "numeric", month: "long" });
   return { today: fmt(now), ends: fmt(ends) };
 }
@@ -87,21 +108,24 @@ export default function CarePlusPaywall() {
               Then let&rsquo;s try something smaller.
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              R199 only really pays for itself if someone&rsquo;s in every week. If that&rsquo;s not you, this one
-              probably is.
+              Care+ only really pays for itself on price if someone&rsquo;s in every week. If that&rsquo;s not
+              you, the free month costs you nothing to find out.
             </p>
           </div>
 
           <div className="rounded-2xl bg-secondary p-4 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Care+ Standard</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Care+</p>
             <p className="mt-1 flex items-baseline justify-center gap-2">
               <span className="font-display text-3xl font-bold">{formatRand(WIN_BACK_MONTHLY_CENTS)}</span>
               <span className="text-sm text-muted-foreground">/month</span>
             </p>
-            {/* The 50% claim names what it is measured against. An unqualified "50% off"
-                would imply R99 was once higher, which it never was. */}
+            {/* No discount claim. This used to read "half the price of Care+ Premium at R199",
+                which was true only while Premium was a real, purchasable tier. Care+ is one tier
+                at R99 now, so there is nothing for the half to be measured against, and an
+                unqualified saving would imply R99 was once higher — it never was. A false price
+                representation under the CPA, and an App Store review failure. */}
             <p className="mt-1 text-xs text-muted-foreground">
-              Half the price of Care+ Premium at {formatRand(PREMIUM_MONTHLY_CENTS)}/month.
+              First month free, then {formatRand(CARE_PLUS_MONTHLY_CENTS)}/month. No booking fee, ever.
             </p>
           </div>
 
@@ -113,7 +137,7 @@ export default function CarePlusPaywall() {
             </p>
           ) : (
             <p className="text-center text-xs text-muted-foreground">
-              Take your time — Care+ Standard stays {formatRand(STANDARD_MONTHLY_CENTS)}/month.
+              Take your time — Care+ stays {formatRand(CARE_PLUS_MONTHLY_CENTS)}/month.
             </p>
           )}
 
@@ -179,15 +203,28 @@ export default function CarePlusPaywall() {
           ))}
         </ul>
 
-        {/* Money shown as supporting evidence, never as the pitch — and only where it is
-            actually true. At anything less than weekly the honest line is different. */}
+        {/* Money shown as supporting evidence, never as the pitch — and only where it is actually
+            true. Two corrections at the R99 repricing:
+
+            1. The rate quoted is the one the SERVER GIVES. `create-booking`'s getCarePlusDiscount
+               returns a flat 10% for every active member and ignores cadence; `CADENCE_DISCOUNT`
+               in care-plus.ts says 15% weekly. Quoting 15% would promise a discount nobody
+               receives — a false price representation under the CPA, and the same displayed-versus-
+               charged defect this repo already shipped once on the R39 fee.
+            2. "Roughly what the membership costs" was true at R199 and is not at R99. Saying a
+               saving washes out a fee it now exceeds understates the offer, but saying it the
+               other way round on a cadence that does not earn it would overstate — so the line
+               states the two numbers and lets them speak. */}
         {premium.netCents > -2000 ? (
           <div className="rise-in rounded-2xl bg-secondary p-4 [animation-delay:165ms]">
             <p className="text-xs leading-relaxed text-muted-foreground">
               Booking {cadence === "weekly" ? "weekly" : "at your cadence"}, the{" "}
-              {Math.round(premium.discountRate * 100)}% member discount saves you about{" "}
-              <span className="font-semibold text-foreground">{formatRand(premium.savedCents)}</span> a month —
-              roughly what the membership costs. You&rsquo;re paying for the continuity, not the discount.
+              {Math.round(SERVER_MEMBER_DISCOUNT_RATE * 100)}% member discount saves you about{" "}
+              <span className="font-semibold text-foreground">
+                {formatRand(Math.round(premium.spendCents * SERVER_MEMBER_DISCOUNT_RATE))}
+              </span>{" "}
+              a month against {formatRand(CARE_PLUS_MONTHLY_CENTS)} —
+              and no booking fee. You&rsquo;re paying for the continuity, not the discount.
             </p>
           </div>
         ) : (
@@ -203,15 +240,16 @@ export default function CarePlusPaywall() {
         {/* Blinkist pattern: say exactly when the trial ends and when the card is charged. */}
         <div className="rise-in flex flex-col gap-2 [animation-delay:220ms]">
           <TrialRow when={`Today, ${dates.today}`} what="Full access. You're not charged for the membership." />
-          <TrialRow when={`${dates.ends}`} what={`Trial ends. ${formatRand(PREMIUM_MONTHLY_CENTS)}/month starts, cancel any time before.`} />
+          <TrialRow when={`${dates.ends}`} what={`Free month ends. ${formatRand(CARE_PLUS_MONTHLY_CENTS)}/month starts, cancel any time before.`} />
           <p className="text-[0.65rem] leading-relaxed text-muted-foreground">
-            You&rsquo;re still charged for the cleans themselves during the trial — only the membership is free.
+            You&rsquo;re still charged for the cleans themselves during the free month — only the membership is
+            free. Members pay no booking fee.
           </p>
         </div>
 
         <div className="mt-auto flex flex-col gap-2 pt-2">
           <Button size="lg" className="h-12 w-full rounded-full" onClick={() => { haptic("success"); navigate("/app"); }}>
-            Start {TRIAL_DAYS} days free
+            Join Care+ for free
             <ArrowRight className="size-4" aria-hidden="true" />
           </Button>
           <button
@@ -221,7 +259,7 @@ export default function CarePlusPaywall() {
           >
             Not now
           </button>
-          <TermsNotice action="starting your trial" className="mt-1" />
+          <TermsNotice action="joining Care+" className="mt-1" />
         </div>
       </div>
     </div>
