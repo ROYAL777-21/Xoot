@@ -147,6 +147,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     './plugins/withXootAssistantIntents.cjs',
+    // Microphone string, VoIP + audio background modes, and the seven Android call permissions.
+    // Makes a dev build *capable* of in-app calling; it does not switch calling on. The feature
+    // stays gated on `twilio.masked_voice` until someone has placed a real call on a device.
+    './plugins/withXootVoiceCalling.cjs',
     ...(sentryUploadPlugin ? [sentryUploadPlugin] : []),
   ],
   extra: {
