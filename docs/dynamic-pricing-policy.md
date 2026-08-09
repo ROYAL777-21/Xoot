@@ -85,11 +85,22 @@ geography to compute it. This is a genuine cost difference, which is exactly wha
 — and it is *not* suburb-affluence pricing, which uses the same input for the opposite purpose. The
 test is whether the surcharge tracks distance or tracks postcode wealth. It must track distance.
 
-**3. A demand curve on the slot, replacing the 16:00 cliff.** Today `isHighDemandSlot` is binary:
-`hour >= 16`. A booking at 15:59 and one at 16:01 are priced 15% apart for no reason a customer would
-accept if they noticed, and `SURGE_SLOT_RATE_RANGE` (0.10–0.15) already hints that a range was
-intended. Grading the premium across the afternoon is fairer, easier to explain, and strictly closer
-to the actual scarcity.
+**3. A demand curve on the slot, replacing the 16:00 cliff. — built, switched off.** Today
+`isHighDemandSlot` is binary: `hour >= 16`, 15% or nothing. On the actual bookable grid the nearest
+pair is 15:00 and 16:00 — an hour apart, 0% against 15% — so there is no 15:59/16:01 absurdity, but
+there is still a single step carrying the entire premium, and no explanation available to a customer
+who notices beyond "that is where we drew the line". `SURGE_SLOT_RATE_RANGE` (0.10–0.15) has sat in
+`operations.ts` since it was written with nothing reading it, which looks like a range that was
+intended and never built.
+
+`SLOT_PREMIUM_CURVE` now grades it — 5% at 15:00, 10% at 16:00, 15% at 17:00 — leaving the latest
+slot exactly where it is and splitting the one big step into two smaller ones.
+
+**`GRADED_SLOT_PRICING` is `false`, so no price has changed.** `slot-pricing.test.ts` proves the
+flag-off path is identical to the old rule at every bookable slot, in rands and not just in rates.
+Turning it on changes what customers are charged, which is a founder decision rather than a side
+effect of a refactor — it is one boolean in `src/lib/operations.ts` and one in `create-booking`, held
+together by `pricing-parity.test.ts`.
 
 ## The guard
 

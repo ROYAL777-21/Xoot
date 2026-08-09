@@ -36,6 +36,29 @@ const photoProofServices = new Set(["airbnb", "deep", "moving"]);
 
 const isHighDemandSlot = (time: string) => Number(time.split(":")[0] ?? 0) >= 16;
 
+/*
+ * Graded slot pricing — built, and OFF.
+ *
+ * ⚠️ KEEP IN SYNC with `src/lib/operations.ts`, which carries the reasoning.
+ * `pricing-parity.test.ts` fails if the flag or the curve drifts between the two.
+ *
+ * With `GRADED_SLOT_PRICING` false every slot is priced exactly as before. Turning it on
+ * changes what customers are charged, so it is one boolean on each side and a founder decision,
+ * not a refactor.
+ */
+const GRADED_SLOT_PRICING = false;
+const HIGH_DEMAND_SLOT_RATE = 0.15;
+const SLOT_PREMIUM_CURVE: Record<string, number> = {
+  "15:00": 0.05,
+  "16:00": 0.1,
+  "17:00": 0.15,
+};
+
+const slotPremiumRate = (time: string): number => {
+  if (GRADED_SLOT_PRICING) return SLOT_PREMIUM_CURVE[time] ?? 0;
+  return isHighDemandSlot(time) ? HIGH_DEMAND_SLOT_RATE : 0;
+};
+
 const getCarePlusDiscount = async (supa: any, userId: string) => {
   const { data } = await supa
     .from("user_subscriptions")
@@ -200,7 +223,7 @@ Deno.serve(async (req) => {
     const discountedBaseCents = Math.round(priced.baseCents * (1 - multiWorkerDiscount)) * workerCount;
     const addOnsCents = addOns.length * ADD_ON_CENTS;
     const subtotalCents = discountedBaseCents + addOnsCents;
-    const highDemandCents = isHighDemandSlot(time) ? Math.round(subtotalCents * 0.15) : 0;
+    const highDemandCents = Math.round(subtotalCents * slotPremiumRate(time));
     /*
      * Care+ members pay no booking fee, at any frequency (founder decision 2026-08-09, alongside
      * R99/month and one month free). Membership is read from the same lookup that decides the

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, ONE_TIME_SERVICE_FEE_CENTS } from "./xoot-pricing";
 import { CADENCE_DISCOUNT } from "./care-plus";
+import { GRADED_SLOT_PRICING, SLOT_PREMIUM_CURVE } from "./operations";
 import {
   COMMISSION_BANDS,
   HYSTERESIS_POINTS,
@@ -143,9 +144,9 @@ describe("client/server pricing parity", () => {
     const ops = readFileSync(join(process.cwd(), "src/lib/operations.ts"), "utf8");
 
     // Rate and threshold must agree across client and server.
-    const serverRate = /isHighDemandSlot\(time\) \? Math\.round\(subtotalCents \* ([\d.]+)\)/.exec(fn);
+    const serverRate = /const HIGH_DEMAND_SLOT_RATE = ([\d.]+)/.exec(fn);
     const clientRate = /HIGH_DEMAND_SLOT_RATE = ([\d.]+)/.exec(ops);
-    expect(serverRate, "server no longer computes a high-demand premium").toBeTruthy();
+    expect(serverRate, "server no longer defines HIGH_DEMAND_SLOT_RATE").toBeTruthy();
     expect(clientRate, "client no longer defines HIGH_DEMAND_SLOT_RATE").toBeTruthy();
     expect(clientRate![1]).toBe(serverRate![1]);
 
@@ -153,8 +154,8 @@ describe("client/server pricing parity", () => {
     expect(hourOf(fn)![2] ?? hourOf(fn)![1]).toBe(hourOf(ops)![1] ?? hourOf(ops)![2]);
 
     // Charged on the subtotal, so the premium never applies to booking cover on either side.
-    expect(fn).toMatch(/Math\.round\(subtotalCents \* [\d.]+\)/);
-    expect(ops).toMatch(/Math\.round\(subtotal \* HIGH_DEMAND_RATE\)/);
+    expect(fn).toMatch(/Math\.round\(subtotalCents \* slotPremiumRate\(time\)\)/);
+    expect(ops).toMatch(/Math\.round\(subtotal \* slotPremiumRate\(time\)\)/);
 
     // The Care+ discount is likewise a rate on the subtotal. The client models no equivalent,
     // so this only pins the server's figure against silent change.
@@ -254,6 +255,47 @@ describe("client/server pricing parity", () => {
     expect(serverSrc).toMatch(
       /isCarePlusMember \|\| frequency !== "one_time" \? 0 : ONE_TIME_SERVICE_FEE_CENTS/,
     );
+  });
+
+  /**
+   * Graded slot pricing, and the flag holding it off.
+   *
+   * The flag is the dangerous part. A pricing model half-enabled — live on the server, off in the
+   * quote — charges a customer past a total they agreed, which is the defect this repo already
+   * shipped once with the R39 fee. So the boolean and the curve are both pinned across the two
+   * files, and the flag's value is asserted rather than merely compared: turning it on is a
+   * founder decision, and this test is where that decision has to be made explicitly.
+   */
+  it("holds graded slot pricing off, identically on client and server", () => {
+    const fn = readFileSync(
+      join(process.cwd(), "supabase/functions/create-booking/index.ts"),
+      "utf8",
+    );
+    const ops = readFileSync(join(process.cwd(), "src/lib/operations.ts"), "utf8");
+
+    const flagOf = (src: string) => /GRADED_SLOT_PRICING = (true|false)/.exec(src)?.[1];
+    expect(flagOf(fn), "server no longer defines GRADED_SLOT_PRICING").toBeTruthy();
+    expect(flagOf(ops)).toBe(flagOf(fn));
+    // If this fails because someone enabled the curve, that is the intended conversation: update
+    // this expectation in the same commit, deliberately.
+    expect(flagOf(ops)).toBe("false");
+    expect(GRADED_SLOT_PRICING).toBe(false);
+
+    const curveOf = (src: string) => {
+      const start = src.indexOf("SLOT_PREMIUM_CURVE");
+      const body = src.slice(start, src.indexOf("};", start));
+      return Object.fromEntries(
+        [...body.matchAll(/"(\d\d:\d\d)":\s*([\d.]+)/g)].map((m) => [m[1], Number(m[2])]),
+      );
+    };
+    expect(curveOf(fn)).toEqual(curveOf(ops));
+    expect(curveOf(ops)).toEqual(SLOT_PREMIUM_CURVE);
+
+    // Both sides choose the model in one function, so the flag cannot be honoured in the quote
+    // and forgotten in the receipt.
+    for (const src of [fn, ops]) {
+      expect(src).toMatch(/if \(GRADED_SLOT_PRICING\) return SLOT_PREMIUM_CURVE\[time\] \?\? 0;/);
+    }
   });
 
   /**
