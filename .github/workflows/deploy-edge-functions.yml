@@ -101,6 +101,32 @@ jobs:
           fi
           echo "Token present."
 
+      # SELF-CONTAINED GUARD. Runs before anything is installed and depends on no repo file other
+      # than the two it compares, so it survives being dispatched against a ref that does not have
+      # the test suite.
+      #
+      # That is not hypothetical. `main` at 54e7cfa declares **18** functions; there are 46 on
+      # disk. Dispatching from a ref like that would deploy the ten webhooks with the default
+      # `verify_jwt = true` and take every Twilio, Stitch and Ozow callback offline behind a 401 at
+      # the gateway — with nothing in any function's logs to explain it.
+      #
+      # Fails closed, and names the functions rather than just the count.
+      - name: Every function on disk must declare verify_jwt
+        run: |
+          set -euo pipefail
+          missing=""
+          for dir in supabase/functions/*/; do
+            fn="$(basename "$dir")"
+            [ "$fn" = "_shared" ] && continue
+            grep -q "^\[functions\.${fn}\]" supabase/config.toml || missing="$missing $fn"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::supabase/config.toml does not declare verify_jwt for:$missing"
+            echo "::error::Deploying now would default them to verify_jwt = true. Dispatch from a ref whose config.toml is complete."
+            exit 1
+          fi
+          echo "All $(ls -d supabase/functions/*/ | grep -cv '_shared/$') functions declared."
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -108,10 +134,16 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # The gate described in the header. Cheap, and it is the difference between a deploy and an
-      # outage on the webhooks.
-      - name: Verify config.toml declares verify_jwt for every function
-        run: bunx vitest run src/lib/edge-function-config.test.ts
+      # The richer version of the guard above: it also checks the ten that must stay *open*, and
+      # that nothing else is. Skipped when the test file is absent, which is the case on any ref
+      # predating it — the shell guard has already covered the dangerous direction by then.
+      - name: Verify verify_jwt values, not just their presence
+        run: |
+          if [ -f src/lib/edge-function-config.test.ts ]; then
+            bunx vitest run src/lib/edge-function-config.test.ts
+          else
+            echo "::warning::src/lib/edge-function-config.test.ts not on this ref; relying on the shell guard above."
+          fi
 
       - uses: supabase/setup-cli@v1
         with:
