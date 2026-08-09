@@ -55,7 +55,8 @@ export const COLOR = {
     mutedForeground: "27 4% 47%",
     accent: "37 78% 56%",
     accentForeground: "14 18% 14%",
-    destructive: "7 78% 56%",
+    /** 48%, not 56%: at 56% the off-white label measured 3.70 and a button label is body text. */
+    destructive: "7 78% 48%",
     destructiveForeground: "36 40% 98%",
     success: "155 47% 43%",
     successForeground: "0 0% 100%",
@@ -83,7 +84,9 @@ export const COLOR = {
     accent: "37 78% 60%",
     accentForeground: "10 17% 7%",
     destructive: "7 78% 62%",
-    destructiveForeground: "12 38% 95%",
+    /** Ink, matching accent/success/warning. Off-white on this fill measured 2.88 — under the
+     *  3.0 UI floor, so the button was below minimum for its border and its label alike. */
+    destructiveForeground: "10 17% 7%",
     success: "155 40% 62%",
     successForeground: "10 17% 7%",
     warning: "37 78% 60%",

@@ -1361,7 +1361,12 @@
     --accent-foreground: 14 18% 14%;
     --accent-soft: 39 90% 92%;
 
-    --destructive: 7 78% 56%;
+    /* 48%, not the 56% the migration mapped.
+       At 56% the off-white label measured 3.70:1 — below the 4.5 body threshold, and a
+       destructive button's label is body text. Same finding, same fix as --primary going
+       53% -> 51% for the old red. 48% gives 4.55 on the label, 4.73 against a card and 4.23
+       against the page. Issue #38. */
+    --destructive: 7 78% 48%;
     --destructive-foreground: 36 40% 98%;
 
     --border: 28 22% 88%;
@@ -1504,8 +1509,17 @@
     --muted-foreground: 25 7% 68%;
     --accent: 37 78% 60%;
     --accent-foreground: 10 17% 7%;
+    /* Ink on coral, not off-white — and this was the only exception in the whole dark scheme.
+       accent, success and warning all pair a bright fill with `10 17% 7%`; destructive alone
+       kept a near-white label, carried over from the old red palette where the fill was dark.
+       At 62% fill, off-white measured 2.88:1 — under 3.0, so a destructive button in dark was
+       below the floor for its border AND its label. Ink gives 5.79 on the label while the fill
+       keeps 5.37 against a card.
+       Darkening the fill to 46% was the alternative; it reaches exactly 4.50 on the label and
+       drops fill-vs-card to 3.45. Less headroom on both, and it would make destructive the one
+       dark-mode fill that is dark. Issue #38. */
     --destructive: 7 78% 62%;
-    --destructive-foreground: 12 38% 95%;
+    --destructive-foreground: 10 17% 7%;
     --border: 8 17% 18%;
     --input: 8 17% 18%;
     --ring: 4 100% 64%;

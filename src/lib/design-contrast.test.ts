@@ -87,37 +87,59 @@ describe("the migrated palette clears WCAG AA where it must", () => {
       });
 
       /**
-       * `destructive` does not clear AA, and in dark it does not clear even the UI floor.
-       * Measured here rather than asserted green, because asserting green would launder a defect
-       * the founder has not been asked about.
+       * `destructive` used to fail, and this test used to record the failure rather than assert
+       * a pass — deliberately, because fixing it meant editing a founder-approved palette value.
+       * Fixed 2026-08-09 (#38). The history is kept because the numbers explain the fix.
        *
-       *   light  destructiveForeground on destructive  3.70  — below 4.5 body
-       *   dark   destructiveForeground on destructive  2.88  — below 3.0 UI
+       *   before  light  off-white on `7 78% 56%`   3.70  — below 4.5 body
+       *   before  dark   off-white on `7 78% 62%`   2.88  — below the 3.0 UI floor
+       *   after   light  off-white on `7 78% 48%`   4.55
+       *   after   dark   ink       on `7 78% 62%`   5.79
        *
-       * Note the light figure is 3.70, not the 3.87 in `palette-migration.md`. The doc measured
-       * pure white on `coral-500`; the token pair actually rendered is the off-white
-       * `destructive-foreground` (`36 40% 98%`), which is slightly worse. Worth knowing that the
-       * audit table is optimistic by a small margin wherever a foreground is not pure white.
+       * Two different fixes because the two schemes fail for different reasons.
        *
-       * `palette-migration.md` classifies `coral-500` as "UI only", so the light figure is a
-       * known consequence of the approved mapping. **The dark figure is not** — 2.88 is
-       * under the minimum for a UI component of any size, which means a destructive button in
-       * dark mode is below the floor for its border and its label alike.
+       * **Light** was a fill too pale for a near-white label, so the fill darkened 56% → 48%.
+       * `palette-migration.md` classifies `coral-500` as "UI only", which would excuse 3.70 if a
+       * destructive button carried no text — it carries a label, and a 14px label is body text.
+       * Exactly the finding that moved `--primary` from 53% to 51% for the old red.
        *
-       * This is the same finding this repo already acted on once for red, where `--primary` moved
-       * from 53% to 51% because "a 14px button label is body text". Fixing it means darkening
-       * coral or lightening its foreground — a change to an approved palette value, so it is
-       * recorded for a decision rather than taken here. See the ledger entry.
+       * **Dark** was a foreground that should never have been light. Every other bright fill in
+       * the dark scheme pairs with ink `10 17% 7%` — accent, success, warning — and destructive
+       * alone kept an off-white label, carried over from the red palette where its fill was dark.
+       * So the dark fix is not a new decision, it is the existing rule applied to the one token
+       * that escaped it.
        *
-       * Pinned to the measured values so neither can drift further without this failing.
+       * Note the light "before" figure is 3.70, not the 3.87 in `palette-migration.md`. The doc
+       * measured pure white on `coral-500`; the pair actually rendered uses the off-white
+       * `destructive-foreground`, which is slightly worse. The audit table is optimistic by a
+       * small margin wherever a foreground is not pure white.
        */
-      it("records destructive's contrast, which is below AA and in dark below the UI floor", () => {
+      it("destructive clears AA for its label", () => {
         const c = COLOR[scheme];
-        const measured = contrast(c.destructiveForeground, c.destructive);
-        const floor = scheme === "light" ? 3.69 : 2.87;
-        expect(measured, `${scheme} destructive contrast`).toBeGreaterThanOrEqual(floor);
-        expect(measured, `${scheme} destructive must not silently reach AA without the decision`)
-          .toBeLessThan(AA_BODY);
+        expect(
+          contrast(c.destructiveForeground, c.destructive),
+          `${scheme} destructive label`,
+        ).toBeGreaterThanOrEqual(AA_BODY);
+      });
+
+      /**
+       * The half a label-contrast fix can quietly break.
+       *
+       * Contrast against the label and contrast against the surface pull in opposite directions:
+       * darkening a fill to make a white label readable also merges the fill into a dark page.
+       * In dark mode that trade is unavoidable, which is why the fix there was the foreground and
+       * not the fill — darkening the fill to 46% would have reached exactly 4.50 on the label and
+       * dropped the button to 3.45 against a card.
+       *
+       * A destructive button nobody can find is a different failure from one nobody can read, and
+       * only this assertion notices it.
+       */
+      it("destructive stays visible against the surfaces it sits on", () => {
+        const c = COLOR[scheme];
+        expect(contrast(c.destructive, c.card), `${scheme} destructive on card`)
+          .toBeGreaterThanOrEqual(AA_LARGE);
+        expect(contrast(c.destructive, c.background), `${scheme} destructive on page`)
+          .toBeGreaterThanOrEqual(AA_LARGE);
       });
     });
   }
