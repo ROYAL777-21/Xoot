@@ -74,6 +74,16 @@ export default function CarePlusPaywall() {
 
   const dates = trialDates();
   const premium = savingsFor(cadence, 29600, "premium");
+  /*
+   * What a member is actually returned at this cadence, at the rate the server actually applies.
+   *
+   * `premium.savedCents` uses CADENCE_DISCOUNT, which the server does not implement — so it is
+   * used for nothing user-facing here. Both the number shown AND the decision to show it come
+   * from `SERVER_MEMBER_DISCOUNT_RATE`, because a box gated on one rate and filled with another
+   * can appear on a cadence where the honest figure is negative.
+   */
+  const memberReturnCents = Math.round(premium.spendCents * SERVER_MEMBER_DISCOUNT_RATE);
+  const memberIsAhead = memberReturnCents > CARE_PLUS_MONTHLY_CENTS;
   const winBack = savingsFor(cadence, 29600, "standard");
 
   // Tick only while a live countdown is on screen.
@@ -206,33 +216,38 @@ export default function CarePlusPaywall() {
         {/* Money shown as supporting evidence, never as the pitch — and only where it is actually
             true. Two corrections at the R99 repricing:
 
-            1. The rate quoted is the one the SERVER GIVES. `create-booking`'s getCarePlusDiscount
+            1. The figure is the one the SERVER GIVES. `create-booking`'s getCarePlusDiscount
                returns a flat 10% for every active member and ignores cadence; `CADENCE_DISCOUNT`
-               in care-plus.ts says 15% weekly. Quoting 15% would promise a discount nobody
-               receives — a false price representation under the CPA, and the same displayed-versus-
-               charged defect this repo already shipped once on the R39 fee.
-            2. "Roughly what the membership costs" was true at R199 and is not at R99. Saying a
-               saving washes out a fee it now exceeds understates the offer, but saying it the
-               other way round on a cadence that does not earn it would overstate — so the line
-               states the two numbers and lets them speak. */}
-        {premium.netCents > -2000 ? (
+               in care-plus.ts says 15% weekly. Quoting 15% would promise a return nobody receives
+               — a false price representation under the CPA, and the same displayed-versus-charged
+               defect this repo already shipped once on the R39 fee.
+            2. "Roughly what the membership costs" was true at R199 and is not at R99. The line
+               now states both numbers and lets them speak rather than characterising them.
+            3. The word "discount" is gone. BRAND_GUIDE.md forbids it in user-facing copy and says
+               plainly that "Care+ is not a discount plan. It is the household reliability, memory,
+               priority, and loyalty layer" — so the money reads as supporting evidence and the
+               sentence ends on the reason to join. */}
+        {memberIsAhead ? (
           <div className="rise-in rounded-2xl bg-secondary p-4 [animation-delay:165ms]">
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Booking {cadence === "weekly" ? "weekly" : "at your cadence"}, the{" "}
-              {Math.round(SERVER_MEMBER_DISCOUNT_RATE * 100)}% member discount saves you about{" "}
-              <span className="font-semibold text-foreground">
-                {formatRand(Math.round(premium.spendCents * SERVER_MEMBER_DISCOUNT_RATE))}
-              </span>{" "}
-              a month against {formatRand(CARE_PLUS_MONTHLY_CENTS)} —
-              and no booking fee. You&rsquo;re paying for the continuity, not the discount.
+              Booking {cadence === "weekly" ? "weekly" : "at your cadence"}, the member rate returns
+              about <span className="font-semibold text-foreground">{formatRand(memberReturnCents)}</span> a
+              month against {formatRand(CARE_PLUS_MONTHLY_CENTS)}, and no booking fee. The reason to join is
+              the continuity, not the arithmetic.
             </p>
           </div>
         ) : (
           <div className="rise-in rounded-2xl bg-secondary p-4 [animation-delay:165ms]">
+            {/* The fortnightly and monthly branch, and the one worth writing carefully.
+                Fortnightly is where the numbers nearly work and do not — about R64 back against
+                R99 — which makes it the cadence most likely to feel misled later. So it is said
+                first and said plainly, before the reason to join. Company voice: outcomes and
+                relief, never price; "member rate", never "discount". */}
             <p className="text-xs leading-relaxed text-muted-foreground">
-              At your current cadence the {Math.round(premium.discountRate * 100)}% discount saves about{" "}
-              <span className="font-semibold text-foreground">{formatRand(premium.savedCents)}</span> a month, so this
-              tier won&rsquo;t pay for itself on price alone. It&rsquo;s worth it if the continuity is.
+              At your cadence the member rate returns about{" "}
+              <span className="font-semibold text-foreground">{formatRand(memberReturnCents)}</span> a month, so
+              Care+ won&rsquo;t cover itself on price. It covers itself the day someone walks in already
+              knowing your home — and the first month is free either way.
             </p>
           </div>
         )}
