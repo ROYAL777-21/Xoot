@@ -432,6 +432,21 @@ describe("client/server pricing parity", () => {
     expect(serverSrc).toMatch(/\.gt\("ends_at", nowIso\)/);
   });
 
+  /**
+   * The boost lookup must fail loudly, not just safely.
+   *
+   * Returning 0 when the table is unreachable is the right fallback — a booking is struck at the
+   * earned rate rather than an invented one. But if the functions ship before the migration, every
+   * boost silently does nothing and a Xooter promised 5% more does not get it. That combination —
+   * a real failure, a reasonable fallback, and no signal — is exactly how rate limiting stayed
+   * broken for the life of this project.
+   */
+  it("logs when the boost lookup fails instead of swallowing it", () => {
+    expect(serverSrc).toMatch(/const \{ data, error \} = await supa\s*\n?\s*\.from\("xooter_commission_boosts"\)/);
+    expect(serverSrc).toMatch(/if \(error\) \{[\s\S]{0,200}console\.error\(/);
+    expect(serverSrc).toMatch(/treating as no boost/);
+  });
+
   it("applies the boost at both points where a rate is struck", () => {
     for (const path of [
       "supabase/functions/create-booking/index.ts",

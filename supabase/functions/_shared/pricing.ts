@@ -187,7 +187,7 @@ export const applyBoost = (rateBps: number, boostBps: number = BOOST_BPS): numbe
 export async function activeBoostBpsFor(supa: any, zooterId: string): Promise<number> {
   if (!zooterId) return 0;
   const nowIso = new Date().toISOString();
-  const { data } = await supa
+  const { data, error } = await supa
     .from("xooter_commission_boosts")
     .select("bps")
     .eq("zooter_id", zooterId)
@@ -196,6 +196,26 @@ export async function activeBoostBpsFor(supa: any, zooterId: string): Promise<nu
     .order("bps", { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  /*
+   * Degrade to "no boost", loudly.
+   *
+   * Returning 0 is the safe direction — a booking is struck at the earned rate rather than an
+   * invented one, and booking creation never fails because a reward table is unreachable. But
+   * silence is not safe. If this function is deployed before
+   * `20260809210000_xooter_commission_boosts.sql` is applied, every lookup errors and every boost
+   * quietly does nothing; a Xooter told they keep 5% more would not, and no one would find out.
+   *
+   * That is precisely how rate limiting stayed broken for the life of this project: the failure
+   * was real, the fallback was reasonable, and nothing ever said so. So it says so.
+   */
+  if (error) {
+    console.error("activeBoostBpsFor lookup failed; treating as no boost", {
+      zooterId,
+      message: error.message ?? String(error),
+    });
+    return 0;
+  }
   return Number(data?.bps ?? 0);
 }
 
