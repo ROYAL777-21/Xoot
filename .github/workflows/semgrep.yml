@@ -27,16 +27,25 @@ name: Semgrep
 # exclusions are individually justified, and it was measured at **0 findings across 396 files**
 # before being made blocking — so a red result means a new occurrence, not a backlog.
 #
-# `registry` is advisory. The rule packs are fetched from semgrep.dev and nobody here has yet seen
-# what they say about this repository; making them blocking before reading their output once would
-# be the same mistake as a green tick that read nothing, pointed the other way. Promote it to
-# blocking after someone has triaged a run.
+# `registry` is advisory. First run triaged 2026-08-09: **145 rules across 717 files, 14 findings**
+# — the visible ones are unpinned GitHub Actions (`actions/checkout@v5` rather than a commit SHA),
+# which is supply-chain hardening advice and a judgement call, not a defect. Nothing in that run
+# justified blocking a merge, and 14 unread findings is exactly the backlog that teaches people to
+# ignore a scanner.
+#
+# Promote a *specific pack* rather than the whole job when one earns it. `p/secrets` is the
+# candidate: a committed key is never a judgement call. Findings are uploaded as a SARIF artifact
+# on every run, so the triage does not require re-running anything.
 
+# Matches tests.yml deliberately. Listing `claude/**` under both `push` and `pull_request` made
+# every run happen twice — measured on the first run of this workflow, 2026-08-09: four Semgrep
+# check runs on one commit, because a PR from a claude/** branch onto a claude/** branch fires
+# both triggers. Push covers the working branches; pull_request covers merges into main.
 on:
   push:
     branches: [main, "claude/**", "codex/**"]
   pull_request:
-    branches: [main, "claude/**"]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
