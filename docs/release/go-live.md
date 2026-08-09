@@ -12,21 +12,31 @@ Nothing here can be done from an agent session. Supabase never reads a secret ba
 
 ## 0. Fix `SUPABASE_ACCESS_TOKEN` — blocks everything in section 3
 
-The secret currently in the repository is a project API key, not a personal access token. Measured
-on the first deploy run:
+The secret currently in the repository is a **project key**, not a **personal access token**.
+
+Two runs measured it. The first died inside the CLI after two minutes:
 
 ```
 Invalid access token format. Must be like `sbp_0102...1920`.
 ```
 
-Both are called "a Supabase key" and live in the same dashboard; only one can deploy.
+The second, with the shape guard in place, failed in six seconds — and narrowed it: the value is
+neither `sbp_…` nor a legacy `eyJ…` service-role JWT. That leaves Supabase's newer
+**`sb_publishable_…` / `sb_secret_…`** keys, which is an entirely reasonable thing to have reached
+for, because they are what **Project Settings → API** shows and that is the page you go to looking
+for "the Supabase key".
 
-1. https://supabase.com/dashboard/account/tokens → **Generate new token**. Name it
-   `github-actions-deploy`. The value starts `sbp_`.
+**No project key of any generation can deploy.** A project key authenticates against *one project's
+data*; deploying a function is an *account-level* action. Different page, different credential:
+
+1. **Account → Access Tokens** — https://supabase.com/dashboard/account/tokens →
+   **Generate new token**. Name it `github-actions-deploy`. The value starts `sbp_`.
+   *Not* Project Settings → API.
 2. GitHub → Settings → Secrets and variables → Actions → `SUPABASE_ACCESS_TOKEN` → **Update**.
 
-The workflow now checks the shape at step 3 and tells you which mistake you made, so a wrong value
-fails in ten seconds rather than two minutes.
+The workflow checks the shape at step 4 and names the specific mistake — legacy JWT, newer `sb_`
+project key, a project ref pasted by accident, or something else entirely — so a wrong value costs
+six seconds and tells you where to go.
 
 ---
 
