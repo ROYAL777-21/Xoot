@@ -34,13 +34,19 @@ name: Deploy Edge Functions
 # it deploys anything, because a config regression is exactly the thing you want caught *before*
 # the upload rather than after.
 
-# DISPATCHABLE ONLY ONCE THIS FILE IS ON THE DEFAULT BRANCH.
+# WHICH BRANCH TO DISPATCH FROM — read this before the first run.
 #
-# Measured 2026-08-09: dispatching this against `claude/session-continuation-3upt0l` returns
-# `404 Not Found`. GitHub resolves a `workflow_dispatch` workflow from `main` only — the `ref`
-# input picks which branch's *code* runs, not which branch the workflow is *found* on. So this
-# file has to land on `main` before it can deploy anything, even though the token is already set.
-# `docs/release/merge-to-main.md` says the same thing where someone merging will read it.
+# This file lives on `main` so it can be dispatched at all: GitHub resolves a `workflow_dispatch`
+# workflow from the default branch, and dispatching it against a feature branch alone returns
+# `404 Not Found` (measured 2026-08-09, against `claude/session-continuation-3upt0l`).
+#
+# But the `ref` you choose in the "Use workflow from" dropdown decides which branch's **code and
+# config** get deployed, and those are not the same question. Set it to the branch carrying the
+# functions you want live — normally the release branch, not `main`, until the stack has merged.
+#
+# `main` at 54e7cfa declares 18 functions in `supabase/config.toml` and there are 46 on disk, so
+# dispatching from `main` today would be actively wrong. The guard below refuses that rather than
+# trusting whoever is at the dropdown.
 on:
   workflow_dispatch:
     inputs:
