@@ -1,0 +1,155 @@
+# Xoot's own Semgrep rules.
+#
+# WHY THESE EXIST AND NOT A VENDOR SCANNER
+# ----------------------------------------
+# Measured on PR #39, 2026-08-08: four review mechanisms are wired to this repository and not
+# one of them read the diff. CodeRabbit is disabled for non-`main` base branches. Codex replied
+# "you have reached your usage limits". `security-review` completed in **four seconds** and
+# reported success, because `CLAUDE_API_KEY` is not set and the workflow guards on it. Only
+# `tests.yml` read anything.
+#
+# These rules need no key, no quota, no vendor account and no network. They live in the repo,
+# run on every PR, and can be read by the person they will one day block.
+#
+# WHAT THEY ENCODE
+# ----------------
+# Not generic OWASP advice — the registry packs in `.github/workflows/semgrep.yml` cover that.
+# These are defects this codebase has actually shipped, written down so they cannot ship twice.
+# Every rule carries the incident it came from, and `xoot.tsx` beside this file proves each one
+# fires — a rule nobody has watched go red is decoration, not coverage.
+#
+# DELIBERATELY NOT HERE
+# ---------------------
+# A "no raw hex colours, use design tokens" rule. Measured 2026-08-08: 200 occurrences under
+# `src/` and 145 under `mobile/src/`. A rule that is red 345 times on day one is a rule people
+# learn to ignore, which is worse than no rule. `design-tokens.test.ts` already guards the
+# direction that matters — the CSS and the native mirror agreeing.
+#
+# PATH SCOPING
+# ------------
+# Two rules carry a path filter and both use `exclude`, never `include` — an include list would
+# also exclude this directory's fixture, and a rule that cannot see its own test is a rule nobody
+# has watched work. Exclude patterns are written root-anchored (`/supabase/functions/`) because
+# Semgrepignore v2 will interpret an unanchored pattern as `**/...` and warns about the
+# ambiguity now. The other four rules are wrong wherever they appear and are not scoped at all.
+#
+# Repository-wide exclusions live in `.semgrepignore`, so a local run and a CI run see the same
+# tree.
+
+rules:
+  # ---------------------------------------------------------------------------------------
+  - id: xoot-private-schema-over-postgrest
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      `.schema("private")` cannot work over PostgREST. The `private` schema is deliberately not
+      exposed, so supabase-js sends a request PostgREST rejects and the call throws — usually
+      into a bare catch that turns it into a generic 500. This exact line disabled every
+      governance check in production (rate limits, kill switches, masked-call eligibility) and
+      nothing noticed, because the failure looked like an ordinary server error. Call a SECURITY
+      INVOKER wrapper in `public` that forwards to the private function instead, with EXECUTE
+      revoked from anon and authenticated. See `supabase/functions/_shared/governance-utils.ts`.
+    patterns:
+      - pattern: $CLIENT.schema("private")
+
+  # ---------------------------------------------------------------------------------------
+  - id: xoot-error-detail-returned-to-caller
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      An Edge Function must not return the raw error to the caller. `twilio-token` used to end
+      its catch with `String(err)`, which told anyone who could reach the endpoint which Twilio
+      secrets were configured — a free read of server state from the function that mints
+      credentials. `sensitive-access-save` leaked the same way. Log it and return a fixed
+      message instead: `console.error("<fn> failure", err); return json({ error: "Request
+      failed" }, 500, origin);`
+    patterns:
+      - pattern-either:
+          - pattern: "json({..., error: String($E)}, ...)"
+          - pattern: "json({..., error: $E.message}, ...)"
+          - pattern: "fail(String($E), ...)"
+          - pattern: "fail($E.message, ...)"
+          - pattern: "ok({..., error: String($E)}, ...)"
+          - pattern: "new Response(String($E), ...)"
+
+  # ---------------------------------------------------------------------------------------
+  - id: xoot-cors-wildcard-on-edge-function
+    languages: [typescript, javascript]
+    severity: ERROR
+    paths:
+      # The two Twilio webhooks, and only those two. Both carry a wildcard deliberately, and both
+      # already say why in their own header comments: Twilio is not a browser, sends no Origin,
+      # and each request is authenticated by an HMAC-SHA1 signature compared in constant time —
+      # so CORS is not what is protecting them and never was. `twilio-voice-twiml` returns TwiML,
+      # not user data.
+      #
+      # Listed one by one rather than as `twilio-*`, on purpose. `twilio-token` is also a
+      # `twilio-` function and is the exact opposite case: it is called from the browser and it
+      # returns a credential. A glob would have quietly removed the guard from the endpoint that
+      # needs it most. A new webhook added later will trip this rule and someone will have to
+      # decide — which is the correct amount of friction.
+      exclude:
+        - /supabase/functions/twilio-voice-twiml/
+        - /supabase/functions/twilio-voice-status/
+    message: >-
+      `Access-Control-Allow-Origin: *` on an endpoint that returns a credential or acts on a
+      booking. Resolve the origin against the shared allow-list — `handlePreflight` and `json`
+      in `_shared/action-utils.ts` already do this and take `origin` as an argument. A wildcard
+      is not a default worth having on the function that mints Twilio grants.
+    patterns:
+      - pattern-either:
+          - pattern: '{..., "Access-Control-Allow-Origin": "*"}'
+          - pattern: '$H.set("Access-Control-Allow-Origin", "*")'
+          - pattern: '$H.append("Access-Control-Allow-Origin", "*")'
+
+  # ---------------------------------------------------------------------------------------
+  - id: xoot-service-role-key-in-client-code
+    languages: [typescript, javascript]
+    severity: ERROR
+    paths:
+      # Legitimate in Edge Functions and in Node-side ops scripts — those never reach a device.
+      exclude:
+        - /supabase/functions/
+        - /scripts/
+        - /mobile/scripts/
+        - "*.test.ts"
+        - "*.test.tsx"
+    message: >-
+      The service-role key bypasses every RLS policy in the database, so it belongs in Edge
+      Functions only. Anything under `src/` or `mobile/src/` ships to the user's device, which
+      means a reference here puts the key in a bundle someone can read. Call an Edge Function
+      instead. `mobile/src/lib/env.ts` and `mobile/scripts/validate-env.ts` already refuse to
+      load env vars matching this name, for exactly this reason.
+    pattern-regex: SUPABASE_SERVICE_ROLE_KEY
+
+  # ---------------------------------------------------------------------------------------
+  - id: xoot-call-recording-enabled-without-notice
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: >-
+      Call recording and transcription are held `false` on purpose, in every masked-call payload
+      and audit entry. Under RICA s4 a call may only be recorded with the consent of a party to
+      it, and POPIA requires the parties to be told what is collected and why. Flipping this
+      needs both-party notice wording in the UI and in the terms first — it is not just a
+      boolean. When that work ships, delete this rule in the same commit as the wording.
+    patterns:
+      - pattern-either:
+          - pattern: "{..., recording_enabled: true}"
+          - pattern: "{..., transcription_enabled: true}"
+
+  # ---------------------------------------------------------------------------------------
+  - id: xoot-html-injection-sink
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      A raw HTML or code-execution sink. There are currently zero of these in the codebase
+      (measured 2026-08-08), and the surfaces most likely to want one — blog posts, support
+      replies, concierge answers — are exactly the ones carrying text other people wrote. Render
+      it as text, or sanitise on the server and name the sanitiser in a comment.
+    patterns:
+      - pattern-either:
+          - pattern: <$EL dangerouslySetInnerHTML={...} />
+          - pattern: $EL.innerHTML = $X
+          - pattern: $EL.outerHTML = $X
+          - pattern: eval(...)
+          - pattern: new Function(...)

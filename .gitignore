@@ -57,6 +57,7 @@ supabase/.temp/
 !.claude/skills/xoot-content/
 !.claude/skills/xoot-supabase-ops/
 !.claude/skills/evidence-before-claims/
+!.claude/skills/plan-before-executing/
 !.claude/skills/VENDORED-EXTERNAL.md
 .codeartsdoer/
 .codebuddy/
