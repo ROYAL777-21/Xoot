@@ -85,6 +85,33 @@ to safe but is not there yet: it would still try to run the three superseded mig
 statements are all `if not exists` / `or replace` and would therefore succeed as no-ops while
 recording versions that overlap what is already there.
 
+## Step 3, partially done (2026-08-10): the security one first
+
+**`booking_price_author_guard` is applied to both projects**, version realigned, trigger present and
+enabled (`tgenabled = 'O'`).
+
+It went first because it is the only one of the four that closes a live hole rather than filling a
+gap. `update own bookings` and `zooters update assigned bookings` both grant UPDATE on the **whole**
+`bookings` row with no column restriction — so a customer could PATCH their own booking's price to
+zero, and an assigned Xooter could raise the price of a job they were working, neither needing a UI.
+The trigger reverts rather than raising, so a legitimate update carrying the old price along is
+unaffected, and `auth.uid() is null` (the service-role path) is untouched.
+
+Checked before applying: `public.has_role` exists, the `booking_status` enum exists, and no trigger
+of that name was already present on either project.
+
+### The remaining three, and what each needs
+
+| migration | state | note |
+|---|---|---|
+| `booking_tips` | ready | Creates `booking_tips` + widens `payment_records.payment_kind` to include `'tip'`. Verified safe: **both projects have zero `payment_records` rows**, so the `add constraint` cannot fail on existing data. Applying it does not turn tipping on — `TIP_READINESS` in `src/lib/tipping.ts` still gates that. |
+| `concierge_structured_handoff` | ready | Creates `support_handoff_contexts`, which `create-concierge-handoff` inserts into. |
+| `concierge_governance_controls` | ready, and **inert** | Seeds 18 `concierge.*` flags. Grepped: **no code reads any of them.** Four seed `true`, but since nothing consults them this changes no behaviour — the Concierge launcher already renders unconditionally. Worth knowing before anyone assumes these are load-bearing switches. |
+
+All three are `create table if not exists` / `or replace` / `on conflict do update`, and every `drop`
+in them is a `drop ... if exists` immediately followed by the recreate — idempotency guards, not
+data loss. They are queued rather than blocked.
+
 ## Recommended order, once the CLI is available
 
 `supabase db push` is **not** safe today: it reads the ledger, and the ledger is wrong in both
