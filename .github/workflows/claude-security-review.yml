@@ -17,6 +17,22 @@ name: Claude Security Review
 # reported success. That is the guard step below skipping, not a review. A real run reads the
 # diff and takes minutes. A green tick here means nothing until that number changes.
 #
+# ── AND A SECOND WAY IT PASSES WITHOUT READING ANYTHING, found 2026-08-10 ──────────────────
+# The key was set. The run took 16 seconds and was still green, and the log said:
+#
+#   ClaudeCode has already run on PR #39 (found marker file), forcing disable to avoid false
+#   positives
+#   ClaudeCode is disabled for this run
+#
+# The action caches a per-PR marker (`claudecode-<repo>-pr-<n>-<sha>`) and, with
+# `run-every-commit` false, reviews a PR **once**. The marker had been written by one of the
+# earlier keyless runs, so the first run that could actually review was told not to.
+#
+# `run-every-commit: true` below is the fix. It costs a review per push on a long-lived branch,
+# which is the right trade: this repo's whole problem with this check has been green ticks that
+# read nothing, twice over now. If the cost ever bites, narrow the trigger — do not re-introduce
+# "review once and trust the marker".
+#
 # The gate that does not depend on any of this is `.github/workflows/semgrep.yml`: no key, no
 # quota, no vendor, and its rules live in `.semgrep/rules/` where they can be read. This
 # workflow is kept because a language model reading a diff finds a different class of defect
@@ -68,4 +84,8 @@ jobs:
         with:
           claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
           comment-pr: true
+          # Review every push, not once per PR. See the marker-file note in the header: the
+          # default made the first key-enabled run skip itself because an earlier keyless run had
+          # already written the marker.
+          run-every-commit: true
           exclude-directories: 'node_modules,dist,build,.claude/skills,ios/Pods,android'
