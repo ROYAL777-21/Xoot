@@ -5,8 +5,7 @@ import {
   CADENCE_DISCOUNT,
   CARE_PLUS_MONTHLY_CENTS,
   FREE_MONTHS_AT_SIGNUP,
-  MIN_XOOTER_PAY_FULL_DAY_CENTS,
-  MIN_XOOTER_PAY_HALF_DAY_CENTS,
+  MIN_XOOTER_HOURLY_CENTS,
   OFFER_WINDOW_MS,
   PREMIUM_MONTHLY_CENTS,
   STANDARD_MONTHLY_CENTS,
@@ -86,22 +85,53 @@ describe("care+ pricing", () => {
     expect(CADENCE_DISCOUNT.biweekly).toBeGreaterThan(CADENCE_DISCOUNT.monthly);
   });
 
-  it("never pushes a Xooter below the documented minimum pay", () => {
-    // Shared funding is the short-term setting, so this floor is load-bearing.
+  it("floors a booking by the hour, not by a placement day rate", () => {
+    // Rewritten 2026-08-10. This used to floor at R220/R300 — the day rates `CarePlusApply`
+    // enforces on a household hiring a domestic worker for standing days. Mapped onto a clean via
+    // `hours >= 6 ? full : half`, a 5.5-hour job was treated as half a day and had to clear R220.
+    // At the founder's 35% commission a R296 clean pays R192.40, so the floor sat above the
+    // standard job and never fired — a guard that could not do its job.
     const discount = 4440; // 15% of R296
-    const tight = splitDiscount(discount, MIN_XOOTER_PAY_HALF_DAY_CENTS + 500, 4);
+    const fourHourFloor = 4 * MIN_XOOTER_HOURLY_CENTS; // R140
+
+    const tight = splitDiscount(discount, fourHourFloor + 500, 4);
     expect(tight.xooterCents).toBeLessThanOrEqual(500);
     expect(tight.xootCents + tight.xooterCents).toBe(discount);
 
     // Already at the floor: the Xooter absorbs nothing and Xoot takes all of it.
-    const atFloor = splitDiscount(discount, MIN_XOOTER_PAY_HALF_DAY_CENTS, 4);
+    const atFloor = splitDiscount(discount, fourHourFloor, 4);
     expect(atFloor.xooterCents).toBe(0);
     expect(atFloor.xootCents).toBe(discount);
     expect(atFloor.flooredBy).toBeGreaterThan(0);
 
-    // Full-day work uses the higher floor.
-    const fullDay = splitDiscount(discount, MIN_XOOTER_PAY_FULL_DAY_CENTS, 8);
-    expect(fullDay.xooterCents).toBe(0);
+    // The floor scales with the booking rather than stepping at 6 hours.
+    expect(splitDiscount(discount, 8 * MIN_XOOTER_HOURLY_CENTS, 8).xooterCents).toBe(0);
+    // And there is no cliff either side of the old 6-hour boundary.
+    for (const hours of [5.5, 6, 6.5]) {
+      const justAbove = splitDiscount(discount, hours * MIN_XOOTER_HOURLY_CENTS + 1000, hours);
+      expect({ hours, floored: justAbove.xooterCents === 0 }).toEqual({ hours, floored: false });
+    }
+  });
+
+  /**
+   * ⚠️ The compliance question this floor cannot answer, kept visible.
+   *
+   * The price ladder is sub-linear in hours — R296 for 5.5h but R430 for 10h — so pay per hour
+   * falls as bookings lengthen. At 35% commission a 10-hour regular clean returns R27.95/h, and
+   * even at the 20% floor it is R34.40/h. Whether R27.95 clears South Africa's national minimum
+   * wage for domestic work is a question about the ladder, and the figure changes every March.
+   *
+   * This test does not assert a legal threshold — it would be guessing. It asserts the number, so
+   * that a ladder change moves it here and someone has to look again.
+   */
+  it("records the worst hourly pay the ladder produces, for the minimum-wage check", () => {
+    const worstRegular = Math.round((43000 * 0.65) / 10); // 10h at R430, 35% commission
+    expect(worstRegular).toBe(2795);
+    expect(worstRegular).toBeLessThan(MIN_XOOTER_HOURLY_CENTS);
+
+    const atFloorRate = Math.round((43000 * 0.8) / 10);
+    expect(atFloorRate).toBe(3440);
+    expect(atFloorRate).toBeLessThan(MIN_XOOTER_HOURLY_CENTS);
   });
 
   it("splits the discount without ever losing or inventing cents", () => {

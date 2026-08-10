@@ -90,12 +90,52 @@ export const DISCOUNT_FUNDING: DiscountFunding = "shared";
 export const XOOTER_SHARE_OF_DISCOUNT = 0.4;
 
 /**
- * Documented minimum pay for dignified work, from `CarePlusApply`: R220 half-day,
- * R300 full-day. Treated as a hard floor — a discount may never push a Xooter below it,
- * whatever the funding split says.
+ * ⚠️ THESE ARE PLACEMENT DAY RATES, NOT PER-BOOKING FLOORS. Do not use them to floor a clean.
+ *
+ * R220 half-day / R300 full-day come from `CarePlusApply`, which is a **household hiring a
+ * domestic worker for standing days** (07:00–16:00, chosen weekdays) at a `daily_pay_rate`. They
+ * are the minimum that form will accept, and they are correct for that product.
+ *
+ * They were also wired into `splitDiscount` as a per-booking floor, via
+ * `hours >= 6 ? full : half` — which quietly treats a 5.5-hour clean as "half a day" and demands
+ * R220 for it. That never held: at the founder's 35% commission a R296 medium clean pays the
+ * Xooter R192.40, so the floor was unreachable on the standard job and the guard did nothing.
+ *
+ * **Resolved 2026-08-10: the founder keeps 35% commission**, so the placement figures are the
+ * thing that was misfiled. They stay here, correctly labelled, for `CarePlusApply` to cite — and
+ * per-booking work gets an hourly floor instead, below.
  */
-export const MIN_XOOTER_PAY_HALF_DAY_CENTS = 22000;
-export const MIN_XOOTER_PAY_FULL_DAY_CENTS = 30000;
+export const PLACEMENT_MIN_HALF_DAY_CENTS = 22000;
+export const PLACEMENT_MIN_FULL_DAY_CENTS = 30000;
+
+/** @deprecated Placement day rates. Use `MIN_XOOTER_HOURLY_CENTS` to floor a booking. */
+export const MIN_XOOTER_PAY_HALF_DAY_CENTS = PLACEMENT_MIN_HALF_DAY_CENTS;
+/** @deprecated Placement day rates. Use `MIN_XOOTER_HOURLY_CENTS` to floor a booking. */
+export const MIN_XOOTER_PAY_FULL_DAY_CENTS = PLACEMENT_MIN_FULL_DAY_CENTS;
+
+/**
+ * The per-booking floor: **R35 per booked hour.**
+ *
+ * A booking is priced by the hour, so its floor is hourly. R35 is not invented — it is the
+ * `hourly_rate` `approve-zooter` writes onto every Xooter it activates, and at 35% commission it
+ * is exactly what a 5.5-hour R296 clean returns (R192.40 ÷ 5.5 = R35.00).
+ *
+ * ⚠️ WHAT MEASURING THIS EXPOSED, and it needs the founder rather than this file.
+ * The price ladder is **sub-linear in hours** — R296 for 5.5h but only R430 for 10h — so pay per
+ * hour falls as bookings get longer. At 35% commission the worst cell on each ladder is:
+ *
+ *   regular  R27.95/h (10h)      airbnb  R34.54/h (7h)      moving  R31.07/h (10h)
+ *   office   R42.90/h (10h)      express R47.67/h (3h)
+ *
+ * Even at the 20% floor, a 10-hour regular clean returns R34.40/h. **R27.95/h is close enough to
+ * South Africa's national minimum wage for domestic work that it has to be checked against the
+ * current figure, which changes every March.** That is a compliance question about the ladder, not
+ * about this constant, and it is flagged rather than guessed at here.
+ *
+ * The floor still does its job in the meantime: where a Xooter is already at or under it,
+ * `splitDiscount` takes nothing from them and Xoot absorbs the whole Care+ discount.
+ */
+export const MIN_XOOTER_HOURLY_CENTS = 3500;
 
 /**
  * Split one booking's discount between Xoot and the Xooter, respecting the pay floor.
@@ -109,7 +149,10 @@ export function splitDiscount(
   if (DISCOUNT_FUNDING === "commission") {
     return { xootCents: discountCents, xooterCents: 0, flooredBy: 0 };
   }
-  const floor = hours >= 6 ? MIN_XOOTER_PAY_FULL_DAY_CENTS : MIN_XOOTER_PAY_HALF_DAY_CENTS;
+  // Hourly, because a booking is priced by the hour. The old `hours >= 6 ? full : half` mapped a
+  // 5.5-hour clean onto a placement half-day and demanded R220 for it — a floor the standard job
+  // never reached, so it never fired.
+  const floor = Math.round(Math.max(0, hours) * MIN_XOOTER_HOURLY_CENTS);
   const wanted = Math.round(discountCents * XOOTER_SHARE_OF_DISCOUNT);
   // Never take a Xooter below the floor; Xoot absorbs whatever the cap refuses.
   const allowed = Math.max(0, Math.min(wanted, xooterPayBeforeCents - floor));

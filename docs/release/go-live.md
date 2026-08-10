@@ -76,7 +76,39 @@ server state.
 
 ## 2. Twilio — eight secrets, then two switches, in that order (#32)
 
-### 2a. The secrets
+### 2a. The secrets — how to get each one, in order
+
+Do them in this order; three of them can only be created after another exists.
+
+**Before you start:** decide which Twilio account you are using for staging. The rule in
+`SECRETS_INVENTORY.md` is that staging and production never share credentials — so either a second
+Twilio account or a **subaccount**. Do production first and repeat.
+
+1. **`TWILIO_ACCOUNT_SID`** — Console home page, top left. Starts `AC`. Copy it.
+2. **`TWILIO_WEBHOOK_AUTH_TOKEN`** and **`TWILIO_AUTH_TOKEN`** — the **same value**, the Auth Token
+   shown next to the Account SID. Click to reveal. (Two names because two parts of this codebase
+   ask for it differently; either alone now works, setting both costs nothing.)
+3. **`TWILIO_API_KEY_SID`** and **`TWILIO_API_KEY_SECRET`** — Account → **API keys & tokens** →
+   *Create API key*. Name it `xoot-production`. Type: **Standard**.
+   ⚠️ **The secret is shown exactly once.** Copy both before closing the dialog. If you miss it,
+   delete the key and make another — there is no way to see it again.
+4. **`TWILIO_CONVERSATIONS_SERVICE_SID`** — Explore products → **Conversations** → Services →
+   *Create a service*, name it `xoot`. Starts `IS`.
+5. **`TWILIO_VOICE_APP_SID`** — Voice → **TwiML Apps** → *Create new TwiML App*, name it `xoot-voice`.
+   Set its **Voice Request URL** to:
+   `https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml` (POST)
+   and **Status Callback** to `.../twilio-voice-status`. Save. The SID starts `AP`.
+6. **`TWILIO_CALLER_ID`** — a number Twilio has verified for the account, in E.164 (`+27…`). Buy a
+   number under Phone Numbers, or verify one you own under Verified Caller IDs.
+7. **`TWILIO_PROXY_SERVICE_SID`** *(optional, eighth)* — only if you want the masked-PSTN fallback.
+   Explore products → Proxy → Services. Starts `KS`.
+
+Then set them all in one command (the block below), and run §2c gate 1 to confirm.
+
+**If a later step fails**, gate 1 names the exact secret that is missing — you never have to guess
+which of the eight it was.
+
+### 2a-ii. Reference table and the command
 
 Seven are required by `twilio-token` before it will mint anything; it returns
 `{ configured: false, missing: [...] }` rather than a token until all seven exist. The eighth is
@@ -185,11 +217,37 @@ select control_key, enabled from public.operational_controls
  where control_key like 'twilio.%' order by control_key;
 ```
 
-### 2c. The test that actually proves it
+### 2c. The tests that actually prove it
 
-**No call has been placed on any surface, ever.** Two browsers, two accounts that are both
-participants on the same booking, booking status `en_route` or `in_progress`. Both should hear each
-other. Until that has happened once, voice calling is code that has never run.
+**No call has been placed on any surface, ever.** Three gates, cheapest first.
+
+**Gate 1 — did the secrets land? 30 seconds, no second person.** Sign in, open a booking you are on,
+and in the browser console:
+
+```js
+const { data } = await window.supabase.functions.invoke("twilio-token",
+  { body: { bookingId: "<a booking id you are a participant on>", capability: "voice" } });
+console.log(data);
+```
+
+- `{ configured: false, missing: ["TWILIO_VOICE_APP_SID", …] }` — the function naming exactly which
+  secrets are absent. Set those and run it again.
+- `{ configured: true, token: "ey…" }` — all seven are in.
+
+This is the single most useful command in this document: it turns "something is wrong with Twilio"
+into a list.
+
+**Gate 2 — does the webhook signature check pass?** This is the one the two-Auth-Token-names bug
+broke. In the Twilio Console: Monitor → Logs → **Errors**. A `403` from `twilio-voice-twiml` with no
+matching function log means the Auth Token is wrong or absent. Nothing else produces that pattern.
+
+**Gate 3 — a real two-party call.** Two browsers, two accounts that are both participants on the
+same booking, booking status `en_route` or `in_progress`. Both should hear each other. Until that
+has happened once, voice calling is code that has never run.
+
+**What I cannot do:** none of these, from a session. The agent proxy denies `*.supabase.co`, and
+`pg_net`/`http` are not installed, so an Edge Function cannot be invoked from here at all. Paste me
+the output of gate 1 and I will tell you what is missing.
 
 ---
 
@@ -242,16 +300,75 @@ limit (8 per 10 minutes) and `ops-workflow` still has its own copy at 3.
 
 ---
 
-## 4. SOS (#36)
+## 4. SOS (#36) — step by step
 
-`SAFETY_READINESS` stays false until an actual emergency call has been placed and received.
+`SAFETY_READINESS` is a **three-state gate in code**, not a database flag: `schema_pending` →
+`server_ready` → `live`, in `src/lib/safety.ts`. It sits at `schema_pending` today, so
+`canArmSos()` is false and no SOS button is offered anywhere.
 
-The test is not a code review. Dial 112 from a real handset, on the network the app will run on, and
-have an ops person confirm the alert arrived with the right booking, address and contact. Then flip
-the flag.
+Each step is a real-world proof, not a code review. Shipping the button early means shipping
+something that promises help and does not fetch it, to a person having the worst moment the product
+will ever be part of.
 
-Shipping the button before that means shipping something that promises help and does not fetch it —
-to a person who is, by definition, having the worst moment the product will ever be part of.
+### 4a. Move to `server_ready` — 10 minutes, no emergency services involved
+
+This only claims "the functions are live and the app may arm SOS and record". It is now true: the
+safety functions deployed with the rest in section 3.
+
+1. Confirm the SOS tables exist on production:
+   ```sql
+   select to_regclass('public.sos_alerts') is not null as alerts,
+          to_regclass('public.user_safety_pins') is not null as pins;
+   ```
+2. Change one line in `src/lib/safety.ts`:
+   ```ts
+   export const SAFETY_READINESS: SafetyReadiness = "server_ready";
+   ```
+3. `bun run test` — `safety.test.ts` exercises every state, so it will tell you if anything else
+   assumed `schema_pending`.
+
+At `server_ready`, visit recording becomes available and SOS still does not. That is deliberate:
+`canArmSos` requires `live`.
+
+### 4b. Move to `live` — the part only you can do
+
+**What you need:** a real handset, on the mobile network the app will actually run on (not wifi,
+not a simulator), a test booking in `en_route` or `in_progress`, and a second person at a computer
+watching the ops queue.
+
+**Do not dial 112 to test the alert.** Dialling emergency services for a test is a real call to a
+real dispatcher. Split the test in two:
+
+**Step 1 — prove the alert path, without calling anyone.** Trigger SOS from the handset. The
+person watching runs:
+```sql
+select id, booking_id, created_at, status, payload
+  from public.sos_alerts order by created_at desc limit 5;
+```
+Confirm the newest row carries **the right booking, the right address, and a contact number that
+is correct and reachable**. That is the whole test — an alert with a wrong address is worse than no
+alert, because someone will act on it.
+
+**Step 2 — prove the dialler, once.** From the same handset, confirm the SOS action actually opens
+the native dialler pre-filled with **112**, and then *cancel before it connects*. You are testing
+that the intent fires and the number is right, not that South Africa's emergency service answers.
+
+**Step 3 — flip it.**
+```ts
+export const SAFETY_READINESS: SafetyReadiness = "live";
+```
+Commit that with the alert id from step 1 in the message, so the evidence and the flag ship
+together and anyone can find what proved it.
+
+**If step 1 shows a wrong address or an unreachable number, stop.** That is a bug, not a
+configuration problem, and it is the exact bug that makes an SOS feature dangerous rather than
+merely broken.
+
+### 4c. What I cannot do here, and why
+
+I cannot invoke an Edge Function from a session — the agent proxy denies `*.supabase.co`, and
+`pg_net`/`http` are not installed so it cannot be called from SQL either. I can read `sos_alerts`
+afterwards and tell you whether the row looks right, which is worth doing: send me the alert id.
 
 ---
 

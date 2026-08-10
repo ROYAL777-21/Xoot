@@ -20,7 +20,7 @@ import {
   xooterPayoutFor,
 } from "./xooter-commission";
 import { calculateReliabilityScore, shouldDeprioritizeXooter } from "./trust";
-import { MIN_XOOTER_PAY_HALF_DAY_CENTS, splitDiscount } from "./care-plus";
+import { MIN_XOOTER_HOURLY_CENTS, splitDiscount } from "./care-plus";
 
 describe("commission bands", () => {
   it("starts at 35% and floors at 20%, falling monotonically with rank", () => {
@@ -205,78 +205,64 @@ describe("payout", () => {
     }
   });
 
-  it("lets a ranked Xooter absorb the Care+ share without breaching the pay floor", () => {
-    // The interaction nobody had looked at, because commission was not in the code. A ranked
-    // Xooter earns enough per job that the Care+ discount share can be taken in full.
+  it("keeps every band clear of the hourly floor on the standard clean", () => {
+    // Rewritten 2026-08-10, when the floor became hourly. On a 5.5-hour R296 clean the floor is
+    // 5.5 x R35 = R192.50, and the Care+ share is R11.84. Even a new Xooter at 35% (R192.40) is
+    // within ten cents of the floor, so the guard does what it is for: it takes nothing from them
+    // and Xoot absorbs the whole discount.
     const subtotal = 29600;
+    const hours = 5.5;
     const discountCents = Math.round(subtotal * 0.1);
+    const floor = Math.round(hours * MIN_XOOTER_HOURLY_CENTS);
 
     const platinum = xooterPayoutFor(subtotal, FLOOR_RATE_BPS);
-    const split = splitDiscount(discountCents, platinum.xooterPayCents, 5);
+    const split = splitDiscount(discountCents, platinum.xooterPayCents, hours);
     expect(split.flooredBy).toBe(0);
-    expect(platinum.xooterPayCents - split.xooterCents).toBeGreaterThanOrEqual(
-      MIN_XOOTER_PAY_HALF_DAY_CENTS,
-    );
+    expect(platinum.xooterPayCents - split.xooterCents).toBeGreaterThanOrEqual(floor);
     expect(split.xootCents + split.xooterCents).toBe(discountCents);
 
-    // At Gold the floor starts to bite: only R2 of the R11.84 share can be taken, and Xoot
-    // carries the rest. This is the direction the economics page has to account for.
-    const gold = xooterPayoutFor(subtotal, 2500);
-    const goldSplit = splitDiscount(discountCents, gold.xooterPayCents, 5);
-    expect(goldSplit.flooredBy).toBeGreaterThan(0);
-    expect(gold.xooterPayCents - goldSplit.xooterCents).toBe(MIN_XOOTER_PAY_HALF_DAY_CENTS);
+    // A new Xooter is already below the hourly floor by ten cents, so nothing is taken from them.
+    const newcomer = xooterPayoutFor(subtotal, STARTING_RATE_BPS);
+    expect(newcomer.xooterPayCents).toBe(19240);
+    expect(newcomer.xooterPayCents).toBeLessThan(floor);
+    const newSplit = splitDiscount(discountCents, newcomer.xooterPayCents, hours);
+    expect(newSplit.xooterCents).toBe(0);
+    expect(newSplit.xootCents).toBe(discountCents);
   });
 
   /**
-   * ⚠️ A CONFLICT THIS FILE FOUND AND CANNOT RESOLVE. Founder decision required.
+   * The conflict this file found, and how the founder resolved it (2026-08-10).
    *
-   * `CarePlusApply.tsx` tells households, in writing: *"Minimum pay enforced: R220 (half) /
-   * R300 (full) for dignified work."* `care-plus.ts` imported those two numbers into
-   * `splitDiscount` as a per-booking floor.
+   * `CarePlusApply` tells households "Minimum pay enforced: R220 (half) / R300 (full)", and
+   * `care-plus.ts` had imported those into `splitDiscount` as a per-booking floor. They never held:
+   * on the standard R296 clean a new Xooter earns R192.40 at 35%, so the floor sat above the
+   * ordinary job and the guard never fired.
    *
-   * They do not survive contact with the commission ladder. On the standard R296 medium clean
-   * (5.5h regular), a Xooter earns R192.40 at the 35% starting rate — below the R220 the
-   * product calls a minimum, **before any Care+ discount is applied at all**. `splitDiscount`
-   * degrades safely (it takes nothing rather than going further below), so nothing is broken;
-   * the floor is simply unreachable at the bottom of the ladder.
+   * **The founder kept 35% commission.** So the placement figures were the thing misfiled — they
+   * are day rates for a household hiring a domestic worker for standing days, not a floor for a
+   * 5.5-hour clean — and the per-booking floor became hourly: R35/h, the same `hourly_rate`
+   * `approve-zooter` writes onto every Xooter it activates.
    *
-   * Two readings, and they lead to different fixes:
-   *
-   * 1. **The floor is a placement figure, misfiled.** `CarePlusApply` is a *household hiring a
-   *    domestic worker* for standing days (07:00–16:00, chosen weekdays) at a `daily_pay_rate`.
-   *    A full working day is not a 5.5-hour clean, and `hours >= 6 ? full : half` maps one onto
-   *    the other. On this reading, per-booking work needs its own floor and R220/R300 should
-   *    stop being cited here.
-   * 2. **The floor is real for all Xoot work.** Then 35% is incompatible with the regular
-   *    ladder, and either the ladder rises or the starting band falls.
-   *
-   * Note the corroboration for reading 1: `approve-zooter` writes `hourly_rate: 35`, and 65% of
-   * R296 over 5.5 hours is exactly R35/hour. The 35% band and the hourly rate already in the
-   * database agree with each other. It is the R220 that is the outlier.
-   *
-   * Pinned rather than papered over, so the day someone changes a rate or a ladder rung, this
-   * says what it does to the pay floor.
+   * What that decision does NOT settle is kept in `care-plus.test.ts`: the ladder is sub-linear in
+   * hours, so a 10-hour regular clean returns R27.95/h at 35% and R34.40/h even at the floor.
    */
-  it("records that the R220 floor is unreachable below Gold on the standard clean", () => {
+  it("records the resolved floor, and that the placement figures are no longer cited for bookings", () => {
     const MEDIUM_CLEAN_CENTS = 29600;
+    const HOURS = 5.5;
     const payAt = (rateBps: number) => xooterPayoutFor(MEDIUM_CLEAN_CENTS, rateBps).xooterPayCents;
 
-    // Below the floor at the two bands most Xooters start in.
-    expect(payAt(3500)).toBe(19240);
-    expect(payAt(3000)).toBe(20720);
-    expect(payAt(3500)).toBeLessThan(MIN_XOOTER_PAY_HALF_DAY_CENTS);
-    expect(payAt(3000)).toBeLessThan(MIN_XOOTER_PAY_HALF_DAY_CENTS);
+    // The hourly floor for the standard clean, and where each band sits against it.
+    const floor = Math.round(HOURS * MIN_XOOTER_HOURLY_CENTS);
+    expect(floor).toBe(19250);
+    expect(payAt(3500)).toBe(19240); // ten cents under, at the starting rate
+    expect(payAt(2000)).toBe(23680); // comfortably over at the ladder floor
 
-    // Clear only once the ladder has been climbed.
-    expect(payAt(2500)).toBeGreaterThanOrEqual(MIN_XOOTER_PAY_HALF_DAY_CENTS);
-    expect(payAt(2000)).toBeGreaterThanOrEqual(MIN_XOOTER_PAY_HALF_DAY_CENTS);
+    // The placement day rates must no longer be used to floor a booking.
+    const carePlus = readFileSync(join(process.cwd(), "src/lib/care-plus.ts"), "utf8");
+    expect(carePlus).toMatch(/const floor = Math\.round\(Math\.max\(0, hours\) \* MIN_XOOTER_HOURLY_CENTS\)/);
+    expect(carePlus).not.toMatch(/hours >= 6 \? MIN_XOOTER_PAY_FULL_DAY_CENTS/);
 
-    // The exact break-even, so a ladder or rate change moves a number here rather than passing
-    // quietly: R220 on a R296 clean needs the commission at or under 25.67%.
-    const breakEvenBps = (1 - MIN_XOOTER_PAY_HALF_DAY_CENTS / MEDIUM_CLEAN_CENTS) * 10000;
-    expect(Math.round(breakEvenBps)).toBe(2568);
-
-    // And the claim is still on screen, so this is not a stale worry.
+    // And the household-facing claim still stands where it belongs — on the placement form.
     const apply = readFileSync(join(process.cwd(), "src/pages/care/CarePlusApply.tsx"), "utf8");
     expect(apply).toContain("Minimum pay enforced: R220 (half) / R300 (full)");
   });
