@@ -84,7 +84,27 @@ export type Tier = "premium" | "standard";
  */
 export type DiscountFunding = "commission" | "shared";
 
-export const DISCOUNT_FUNDING: DiscountFunding = "shared";
+/**
+ * **`"commission"` since 2026-08-10.** Xoot funds the whole Care+ discount.
+ *
+ * ── Why it changed ───────────────────────────────────────────────────────────────
+ * `"shared"` took 40% of every Care+ discount out of the Xooter's pay, on top of commission. It was
+ * the least visible deduction in the product: it appeared on no screen, in no payout breakdown, and
+ * a Xooter could only have found it by reconciling two numbers nobody shows them. Invisible
+ * deductions are not resented when they are levied — they are resented when they are discovered.
+ *
+ * ── Why it was free to change ────────────────────────────────────────────────────
+ * `splitDiscount` is called from **no production code**, only tests. Grepped 2026-08-10. The
+ * deduction has never actually run, so this disarms a landmine rather than absorbing a new cost —
+ * and it does so before there is any Xooter to explain it to.
+ *
+ * ── The condition on ever turning it back on ─────────────────────────────────────
+ * The setting stays, and so does `XOOTER_SHARE_OF_DISCOUNT`, because moving to shared funding once
+ * volume justifies it was always the plan. But **re-enabling it must ship in the same commit as a
+ * line on the earnings screen showing the amount deducted per job.** A Xooter who can see it can
+ * decide whether Care+ work is worth taking; one who cannot will conclude the platform is skimming.
+ */
+export const DISCOUNT_FUNDING: DiscountFunding = "commission";
 
 /** Fraction of the discount borne by the Xooter when funding is "shared". */
 export const XOOTER_SHARE_OF_DISCOUNT = 0.4;

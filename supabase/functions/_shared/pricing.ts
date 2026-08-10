@@ -112,10 +112,10 @@ export type CommissionBand = {
 
 export const COMMISSION_BANDS: CommissionBand[] = [
   { rank: "new", minScore: 0, minCompletedJobs: 0, rateBps: 3500 },
-  { rank: "bronze", minScore: 80, minCompletedJobs: 10, rateBps: 3250 },
-  { rank: "silver", minScore: 88, minCompletedJobs: 25, rateBps: 3000 },
-  { rank: "gold", minScore: 93, minCompletedJobs: 75, rateBps: 2500 },
-  { rank: "platinum", minScore: 97, minCompletedJobs: 200, rateBps: 2000 },
+  { rank: "bronze", minScore: 85, minCompletedJobs: 5, rateBps: 3250 },
+  { rank: "silver", minScore: 88, minCompletedJobs: 15, rateBps: 3000 },
+  { rank: "gold", minScore: 93, minCompletedJobs: 50, rateBps: 2500 },
+  { rank: "platinum", minScore: 97, minCompletedJobs: 120, rateBps: 2000 },
 ];
 
 export const STARTING_RATE_BPS = 3500;

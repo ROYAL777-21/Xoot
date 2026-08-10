@@ -39,13 +39,33 @@ describe("commission bands", () => {
     }
   });
 
-  it("stays inside the founder's 35–30% range until a band is genuinely earned", () => {
-    // The stated range is the unproven end of the ladder. Anything below 30% has to be worked for.
-    const unproven = COMMISSION_BANDS.filter((b) => b.minCompletedJobs < 75);
-    for (const band of unproven) {
+  it("keeps the founder's 35–30% range as the first three bands", () => {
+    // Re-expressed 2026-08-10 against band identity rather than a job-count threshold. It used to
+    // read `minCompletedJobs < 75`, which quietly encoded the old schedule: compressing the ladder
+    // moved Gold to 50 jobs and the assertion started failing on a change it was never about.
+    const stated = COMMISSION_BANDS.filter((b) => ["new", "bronze", "silver"].includes(b.rank));
+    expect(stated).toHaveLength(3);
+    for (const band of stated) {
       expect(band.rateBps).toBeGreaterThanOrEqual(3000);
       expect(band.rateBps).toBeLessThanOrEqual(3500);
     }
+    // And everything past that range is genuinely below it.
+    for (const band of COMMISSION_BANDS.filter((b) => ["gold", "platinum"].includes(b.rank))) {
+      expect(band.rateBps).toBeLessThan(3000);
+    }
+  });
+
+  it("puts the first drop within reach — 5 jobs, not 10", () => {
+    // The founder's decision, and the point of the compression: 30% should be weeks away, not
+    // years. At two jobs a week Bronze lands in ~2.5 weeks and Silver in ~2 months.
+    const byRank = Object.fromEntries(COMMISSION_BANDS.map((b) => [b.rank, b]));
+    expect(byRank.bronze.minCompletedJobs).toBe(5);
+    expect(byRank.silver.minCompletedJobs).toBe(15);
+    // The ends are unchanged — only the distance between them moved.
+    expect(byRank.new.rateBps).toBe(3500);
+    expect(byRank.platinum.rateBps).toBe(2000);
+    // Reaching the floor should be a year of steady work, not two.
+    expect(byRank.platinum.minCompletedJobs).toBeLessThanOrEqual(120);
   });
 });
 
@@ -81,19 +101,19 @@ describe("the day-one trap", () => {
 
   it("holds a perfect score at each band until the job count catches up", () => {
     const at = (completedJobs: number) => commissionBandFor({ reliabilityScore: 100, completedJobs }).rank;
-    expect(at(9)).toBe("new");
-    expect(at(10)).toBe("bronze");
-    expect(at(24)).toBe("bronze");
-    expect(at(25)).toBe("silver");
-    expect(at(74)).toBe("silver");
-    expect(at(75)).toBe("gold");
-    expect(at(199)).toBe("gold");
-    expect(at(200)).toBe("platinum");
+    expect(at(4)).toBe("new");
+    expect(at(5)).toBe("bronze");
+    expect(at(14)).toBe("bronze");
+    expect(at(15)).toBe("silver");
+    expect(at(49)).toBe("silver");
+    expect(at(50)).toBe("gold");
+    expect(at(119)).toBe("gold");
+    expect(at(120)).toBe("platinum");
   });
 
   it("holds a long-serving Xooter at the band their score supports", () => {
     // Volume alone earns nothing. 500 jobs at a Bronze score is a Bronze rate.
-    expect(commissionBandFor({ reliabilityScore: 81, completedJobs: 500 }).rank).toBe("bronze");
+    expect(commissionBandFor({ reliabilityScore: 86, completedJobs: 500 }).rank).toBe("bronze");
     expect(commissionBandFor({ reliabilityScore: 94, completedJobs: 500 }).rank).toBe("gold");
   });
 });
@@ -103,10 +123,11 @@ describe("slipping", () => {
     const held = { reliabilityScore: 88 - HYSTERESIS_POINTS, completedJobs: 40, currentRateBps: 3000 };
     expect(commissionBandFor(held).rank).toBe("silver");
 
-    // One point further and the band is genuinely lost.
+    // One point further and the band is genuinely lost. 84 is below Bronze's 85 gate too, so the
+    // Xooter lands on New — which is the honest answer: the score no longer supports any band.
     expect(
       commissionBandFor({ ...held, reliabilityScore: 88 - HYSTERESIS_POINTS - 1 }).rank,
-    ).toBe("bronze");
+    ).toBe("new");
   });
 
   it("does not let hysteresis delay a promotion", () => {
@@ -118,7 +139,7 @@ describe("slipping", () => {
   it("ignores a claimed band the Xooter cannot support at all", () => {
     // A stale or wrong `currentRateBps` is not authority to keep a band. 5 jobs is below every
     // gate above New, whatever rate the row happens to carry.
-    expect(commissionBandFor({ reliabilityScore: 99, completedJobs: 5, currentRateBps: 2000 }).rank)
+    expect(commissionBandFor({ reliabilityScore: 99, completedJobs: 4, currentRateBps: 2000 }).rank)
       .toBe("new");
   });
 

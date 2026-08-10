@@ -59,13 +59,34 @@ export type CommissionBand = {
  *
  * The founder's stated 35–30% range is the first three rows: that is where a Xooter lives
  * until they have proven something. Everything below 30% is earned.
+ *
+ * ── Compressed 2026-08-10, and why the distance mattered more than the start ──────
+ * The first schedule reached the 20% floor at **200 completed jobs** — roughly two years at two
+ * jobs a week, nearly four at one. So "commission starts at 35% and falls as you rank higher" was,
+ * for most Xooters most of the time, simply 35%. A rate that falls is a different proposition from
+ * a rate that is merely high; if the fall is invisible in practice you are running a flat rate with
+ * extra explanation, and the ladder is the main thing that makes 35% defensible.
+ *
+ * Founder decision: **the first drop comes after 5 jobs completed to our standards.** The floor
+ * (20%) and the start (35%) are unchanged — only the distance between them.
+ *
+ *   Bronze   5 jobs   ≈ 2.5 weeks at two jobs a week
+ *   Silver  15 jobs   ≈ 2 months      ← 30%, the one the founder wanted reachable
+ *   Gold    50 jobs   ≈ 6 months
+ *   Platinum 120 jobs ≈ 14 months
+ *
+ * **"To our standards" is the score gate, not the job count.** Bronze asks for ≥ 85, and because
+ * `calculateReliabilityScore` starts at 100 and subtracts (a late arrival −3, a cancellation −8, a
+ * complaint −10, an escalation −12), 85 means roughly "no complaint, no escalation, at most a
+ * couple of late arrivals" across those first five jobs. A genuinely good Xooter clears it without
+ * noticing; a careless one does not. That is the number to move if it proves too loose or too tight.
  */
 export const COMMISSION_BANDS: readonly CommissionBand[] = [
   { rank: "new", label: "New", minScore: 0, minCompletedJobs: 0, rateBps: 3500 },
-  { rank: "bronze", label: "Bronze", minScore: 80, minCompletedJobs: 10, rateBps: 3250 },
-  { rank: "silver", label: "Silver", minScore: 88, minCompletedJobs: 25, rateBps: 3000 },
-  { rank: "gold", label: "Gold", minScore: 93, minCompletedJobs: 75, rateBps: 2500 },
-  { rank: "platinum", label: "Platinum", minScore: 97, minCompletedJobs: 200, rateBps: 2000 },
+  { rank: "bronze", label: "Bronze", minScore: 85, minCompletedJobs: 5, rateBps: 3250 },
+  { rank: "silver", label: "Silver", minScore: 88, minCompletedJobs: 15, rateBps: 3000 },
+  { rank: "gold", label: "Gold", minScore: 93, minCompletedJobs: 50, rateBps: 2500 },
+  { rank: "platinum", label: "Platinum", minScore: 97, minCompletedJobs: 120, rateBps: 2000 },
 ];
 
 export const STARTING_BAND = COMMISSION_BANDS[0];

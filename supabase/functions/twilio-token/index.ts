@@ -39,27 +39,46 @@ import { consumeRateLimit } from "../_shared/governance-utils.ts";
  */
 
 /**
- * The seven this function will not mint a token without. `TWILIO_PROXY_SERVICE_SID` is an eighth,
- * needed only by the masked-PSTN fallback in `create-masked-call`, so it is deliberately absent.
+ * What each capability actually needs, rather than one list for both.
  *
  * Each entry is a list of accepted names, checked in order. Only the account Auth Token has more
  * than one: this repo reads it as `TWILIO_AUTH_TOKEN` in `_shared/twilio-webhook.ts` and as
- * `TWILIO_WEBHOOK_AUTH_TOKEN` in the two voice webhooks. Both are accepted everywhere now, so
- * this gate must accept both as well — otherwise setting the other name reports a secret missing
- * that is, in fact, present and working, which is a worse lie than no check at all.
+ * `TWILIO_WEBHOOK_AUTH_TOKEN` in the two voice webhooks. Both are accepted everywhere, so this
+ * gate must accept both — otherwise setting the other name reports a secret missing that is, in
+ * fact, present and working, which is a worse lie than no check at all.
  *
- * `missing` reports the **first** name of each unsatisfied group, so the message a caller sees
- * names one thing to go and set rather than a choice to reason about.
+ * `missing` reports the **first** name of each unsatisfied group, so a caller is told one thing to
+ * go and set rather than a choice to reason about.
+ *
+ * ── Scoped per capability 2026-08-10, and why it matters commercially ────────────
+ * `TWILIO_CALLER_ID` used to sit in a single blanket list, so an **in-app data call** refused to
+ * mint a token without a verified phone number — despite nothing in this codebase reading that
+ * secret at all. Grepped: it appeared only in this gate and the two `.env` examples.
+ *
+ * That is not a tidiness problem. `twilio-voice-twiml` answers with `<Dial><Conference>` — both
+ * parties join a named room over data, with no PSTN leg and **no phone number anywhere**. Phone
+ * numbers are needed only by `create-masked-call`, which masks via Twilio Proxy by allocating from
+ * a pool you pay for. Gating the free, private path on a secret belonging to the paid one made the
+ * cheap option look unavailable, and would have led to buying numbers that were never required.
  */
-const requiredSecrets = [
-  ["TWILIO_ACCOUNT_SID"],
-  ["TWILIO_API_KEY_SID"],
-  ["TWILIO_API_KEY_SECRET"],
-  ["TWILIO_CONVERSATIONS_SERVICE_SID"],
-  ["TWILIO_VOICE_APP_SID"],
-  ["TWILIO_CALLER_ID"],
-  ["TWILIO_WEBHOOK_AUTH_TOKEN", "TWILIO_AUTH_TOKEN"],
-] as const;
+const CAPABILITY_SECRETS = {
+  /** WebRTC conference. No phone numbers, no caller ID, no Proxy. */
+  voice: [
+    ["TWILIO_ACCOUNT_SID"],
+    ["TWILIO_API_KEY_SID"],
+    ["TWILIO_API_KEY_SECRET"],
+    ["TWILIO_VOICE_APP_SID"],
+    ["TWILIO_WEBHOOK_AUTH_TOKEN", "TWILIO_AUTH_TOKEN"],
+  ],
+  /** In-booking chat. Needs the Conversations service, not the voice app. */
+  conversations: [
+    ["TWILIO_ACCOUNT_SID"],
+    ["TWILIO_API_KEY_SID"],
+    ["TWILIO_API_KEY_SECRET"],
+    ["TWILIO_CONVERSATIONS_SERVICE_SID"],
+    ["TWILIO_WEBHOOK_AUTH_TOKEN", "TWILIO_AUTH_TOKEN"],
+  ],
+} as const satisfies Record<string, readonly (readonly string[])[]>;
 
 const base64Url = (input: Uint8Array | string) => {
   const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
@@ -127,7 +146,7 @@ Deno.serve(async (req) => {
       return json({ error: "Too many call setup attempts. Please wait a moment." }, 429, origin);
     }
 
-    const missing = requiredSecrets
+    const missing = (CAPABILITY_SECRETS[capability as keyof typeof CAPABILITY_SECRETS] ?? [])
       .filter((names) => !names.some((name) => Deno.env.get(name)))
       .map((names) => names[0]);
     if (missing.length > 0) {

@@ -32,7 +32,10 @@ const runbook = read("docs/release/go-live.md");
 const envExample = read("supabase/functions/.env.example");
 const envStaging = read("supabase/functions/.env.staging.example");
 
-/** The seven `twilio-token` gates on, by their primary name. */
+/**
+ * The seven the runbook documents. `TWILIO_CALLER_ID` stays documented because the masked-PSTN
+ * fallback will need it, but it no longer gates either token capability — see the scoping test.
+ */
 const REQUIRED = [
   "TWILIO_ACCOUNT_SID",
   "TWILIO_API_KEY_SID",
@@ -57,23 +60,67 @@ const FALLBACK_BACKED = [
 ];
 
 describe("Twilio secrets contract", () => {
-  it("twilio-token still gates on exactly these seven", () => {
+  /**
+   * Scoped per capability on 2026-08-10, and the scoping is the assertion.
+   *
+   * `TWILIO_CALLER_ID` used to gate both capabilities, so an **in-app data call** refused to mint a
+   * token without a verified phone number that nothing in this codebase reads. That made the free
+   * path look unavailable and would have led to buying numbers Twilio Proxy needs and WebRTC does
+   * not: `twilio-voice-twiml` answers `<Dial><Conference>`, which has no PSTN leg at all.
+   */
+  it("asks each capability only for the secrets it actually uses", () => {
     const block = tokenFn.slice(
-      tokenFn.indexOf("const requiredSecrets"),
-      tokenFn.indexOf("] as const", tokenFn.indexOf("const requiredSecrets")),
+      tokenFn.indexOf("const CAPABILITY_SECRETS"),
+      tokenFn.indexOf("} as const satisfies"),
     );
-    const names = [...block.matchAll(/"(TWILIO_[A-Z_]+)"/g)].map((m) => m[1]);
-    // The first name of each group is the one reported as missing and documented.
-    const primary = [...block.matchAll(/\["(TWILIO_[A-Z_]+)"/g)].map((m) => m[1]);
+    // Slice to the close of the capability's own array — `\n  ],` — not the first `],`, which
+    // would be the end of the first inner name group and match only one secret.
+    const section = (name: string) => {
+      const start = block.indexOf(`${name}: [`);
+      return block.slice(start, block.indexOf("\n  ],", start));
+    };
+    const primaries = (name: string) =>
+      [...section(name).matchAll(/\["(TWILIO_[A-Z_]+)"/g)].map((m) => m[1]);
 
-    expect(primary).toEqual(REQUIRED);
-    // The Auth Token group accepts both spellings; nothing else has an alternative.
-    expect(names).toContain("TWILIO_AUTH_TOKEN");
-    expect(names.length).toBe(REQUIRED.length + 1);
+    expect(primaries("voice")).toEqual([
+      "TWILIO_ACCOUNT_SID",
+      "TWILIO_API_KEY_SID",
+      "TWILIO_API_KEY_SECRET",
+      "TWILIO_VOICE_APP_SID",
+      "TWILIO_WEBHOOK_AUTH_TOKEN",
+    ]);
+    expect(primaries("conversations")).toEqual([
+      "TWILIO_ACCOUNT_SID",
+      "TWILIO_API_KEY_SID",
+      "TWILIO_API_KEY_SECRET",
+      "TWILIO_CONVERSATIONS_SERVICE_SID",
+      "TWILIO_WEBHOOK_AUTH_TOKEN",
+    ]);
 
-    // The eighth must stay out: gating token minting on the PSTN-only secret would make the
-    // in-app data call impossible to enable without Proxy, which is backwards.
-    expect(primary).not.toContain(OPTIONAL_EIGHTH);
+    // Neither capability may require a phone number. This is the regression that costs money.
+    for (const capability of ["voice", "conversations"]) {
+      expect(primaries(capability)).not.toContain("TWILIO_CALLER_ID");
+      expect(primaries(capability)).not.toContain(OPTIONAL_EIGHTH);
+    }
+
+    // The Auth Token still accepts either spelling, in both capabilities.
+    expect(section("voice")).toContain("TWILIO_AUTH_TOKEN");
+    expect(section("conversations")).toContain("TWILIO_AUTH_TOKEN");
+
+    // And the gate is evaluated per capability rather than as one blanket list.
+    expect(tokenFn).toMatch(/CAPABILITY_SECRETS\[capability as keyof typeof CAPABILITY_SECRETS\]/);
+  });
+
+  it("keeps the data call free of phone numbers, which is why none need buying", () => {
+    // The commercial fact this whole scoping rests on, asserted rather than remembered.
+    const twiml = read("supabase/functions/twilio-voice-twiml/index.ts");
+    expect(twiml).toMatch(/<Conference/);
+    expect(twiml).not.toMatch(/<Number>/);
+
+    // Proxy — and only Proxy — allocates numbers from a pool you pay for.
+    const masked = read("supabase/functions/create-masked-call/index.ts");
+    expect(masked).toMatch(/proxy\.twilio\.com/);
+    expect(masked).toMatch(/TWILIO_PROXY_SERVICE_SID/);
   });
 
   it("accepts either name for the one account Auth Token, everywhere it is checked", () => {

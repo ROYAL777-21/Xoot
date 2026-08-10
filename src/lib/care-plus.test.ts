@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   CADENCE_DISCOUNT,
+  DISCOUNT_FUNDING,
   CARE_PLUS_MONTHLY_CENTS,
   FREE_MONTHS_AT_SIGNUP,
   MIN_XOOTER_HOURLY_CENTS,
@@ -85,32 +86,39 @@ describe("care+ pricing", () => {
     expect(CADENCE_DISCOUNT.biweekly).toBeGreaterThan(CADENCE_DISCOUNT.monthly);
   });
 
-  it("floors a booking by the hour, not by a placement day rate", () => {
-    // Rewritten 2026-08-10. This used to floor at R220/R300 — the day rates `CarePlusApply`
-    // enforces on a household hiring a domestic worker for standing days. Mapped onto a clean via
-    // `hours >= 6 ? full : half`, a 5.5-hour job was treated as half a day and had to clear R220.
-    // At the founder's 35% commission a R296 clean pays R192.40, so the floor sat above the
-    // standard job and never fired — a guard that could not do its job.
+  it("takes nothing from the Xooter, because Xoot funds the whole discount", () => {
+    // `DISCOUNT_FUNDING` moved to "commission" on 2026-08-10. The 40% share was the least visible
+    // deduction in the product — on no screen, in no payout breakdown — and invisible deductions
+    // are resented when discovered rather than when levied. It was free to remove: `splitDiscount`
+    // is called from no production code, so the deduction had never actually run.
+    expect(DISCOUNT_FUNDING).toBe("commission");
+
     const discount = 4440; // 15% of R296
-    const fourHourFloor = 4 * MIN_XOOTER_HOURLY_CENTS; // R140
-
-    const tight = splitDiscount(discount, fourHourFloor + 500, 4);
-    expect(tight.xooterCents).toBeLessThanOrEqual(500);
-    expect(tight.xootCents + tight.xooterCents).toBe(discount);
-
-    // Already at the floor: the Xooter absorbs nothing and Xoot takes all of it.
-    const atFloor = splitDiscount(discount, fourHourFloor, 4);
-    expect(atFloor.xooterCents).toBe(0);
-    expect(atFloor.xootCents).toBe(discount);
-    expect(atFloor.flooredBy).toBeGreaterThan(0);
-
-    // The floor scales with the booking rather than stepping at 6 hours.
-    expect(splitDiscount(discount, 8 * MIN_XOOTER_HOURLY_CENTS, 8).xooterCents).toBe(0);
-    // And there is no cliff either side of the old 6-hour boundary.
-    for (const hours of [5.5, 6, 6.5]) {
-      const justAbove = splitDiscount(discount, hours * MIN_XOOTER_HOURLY_CENTS + 1000, hours);
-      expect({ hours, floored: justAbove.xooterCents === 0 }).toEqual({ hours, floored: false });
+    for (const pay of [10000, 19240, 23680, 45000]) {
+      for (const hours of [1, 4, 5.5, 8, 10]) {
+        const split = splitDiscount(discount, pay, hours);
+        expect({ pay, hours, xooter: split.xooterCents }).toEqual({ pay, hours, xooter: 0 });
+        expect(split.xootCents).toBe(discount);
+      }
     }
+  });
+
+  it("keeps the hourly floor correct for the day shared funding returns", () => {
+    // The floor is dormant, not deleted: moving back to shared funding once volume justifies it was
+    // always the plan, and the arithmetic must still be right when it does. Asserted at the source
+    // level because `splitDiscount` reads the module constant and short-circuits before the floor.
+    //
+    // What it must never go back to is the placement day rate. R220/R300 come from
+    // `CarePlusApply` — a household hiring a domestic worker for standing days — and mapping a
+    // 5.5-hour clean onto them via `hours >= 6 ? full : half` put the floor above the standard job,
+    // where it could never fire.
+    expect(MIN_XOOTER_HOURLY_CENTS).toBe(3500);
+    const carePlus = readFileSync(join(process.cwd(), "src/lib/care-plus.ts"), "utf8");
+    expect(carePlus).toMatch(/const floor = Math\.round\(Math\.max\(0, hours\) \* MIN_XOOTER_HOURLY_CENTS\)/);
+    expect(carePlus).not.toMatch(/hours >= 6 \? MIN_XOOTER_PAY_FULL_DAY_CENTS/);
+
+    // And re-enabling shared funding must ship with the deduction shown to the Xooter.
+    expect(carePlus).toMatch(/same commit as a\n \* line on the earnings screen showing the amount deducted/);
   });
 
   /**
