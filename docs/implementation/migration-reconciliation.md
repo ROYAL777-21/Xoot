@@ -1,10 +1,15 @@
 # Migration reconciliation: repo vs staging vs production
 
-Measured 2026-08-09 against both live projects. Supersedes any count derived from version strings.
+Measured 2026-08-09 against both live projects, acted on 2026-08-10. Supersedes any count derived
+from version strings.
 
-**Headline: four migrations are genuinely unapplied, three are superseded, and one is mine from
-today.** Issue #33's title already said "four written migrations blocked behind it", and that turns
-out to be exactly right — this page is the evidence for which four.
+**Original finding: four migrations genuinely unapplied, three superseded, one new.** Issue #33's
+title already said "four written migrations blocked behind it", and that turned out to be exactly
+right — this page is the evidence for which four.
+
+**Status now: all four are applied to both projects and both ledgers are realigned.** One
+bookkeeping step remains — see the end of this page. The classification tables below are kept as
+written, because the reasoning is the point; the "Step" sections record what was then done.
 
 ---
 
@@ -85,7 +90,32 @@ to safe but is not there yet: it would still try to run the three superseded mig
 statements are all `if not exists` / `or replace` and would therefore succeed as no-ops while
 recording versions that overlap what is already there.
 
-## Step 3, partially done (2026-08-10): the security one first
+## Step 3 is done (2026-08-10): all four applied to both projects
+
+| migration | version | what it was |
+|---|---|---|
+| `concierge_governance_controls` | `20260703150828` | 18 `concierge.*` flags + an agent contract. **Inert** — no code reads any of them. |
+| `concierge_structured_handoff` | `20260703153056` | `support_handoff_contexts`, which the now-deployed `create-concierge-handoff` inserts into. It would have failed at runtime. |
+| `booking_price_author_guard` | `20260730083000` | Closed a live hole. See below. |
+| `booking_tips` | `20260730090000` | The tipping table `src/lib/tipping.ts` was already tested against. |
+
+Every one realigned to its filename version immediately after `apply_migration` stamped its own, and
+each realign preceded by a collision check — the version column is the primary key, so a clash aborts
+the statement rather than half-applying.
+
+Verified by reading the schema, not by trusting tool success: both new tables present on both
+projects, RLS on, `booking_tips` carrying 5 policies and its settlement-guard trigger, and
+`authenticated` holding **no INSERT** on `support_handoff_contexts` (service-role only).
+
+**`booking_tips` does not turn tipping on** — `TIP_READINESS` in `src/lib/tipping.ts` still gates
+that. It closes the gap where tested client code wrote to a table that did not exist.
+
+**`concierge_governance_controls` changed no behaviour.** Four of its flags seed `true`, but grepping
+the codebase finds nothing reading any `concierge.*` control — the launcher already renders
+unconditionally, which is why it once overlapped the consent notice. Worth knowing before anyone
+treats those as live switches.
+
+### The one that mattered
 
 **`booking_price_author_guard` is applied to both projects**, version realigned, trigger present and
 enabled (`tgenabled = 'O'`).
@@ -100,37 +130,29 @@ unaffected, and `auth.uid() is null` (the service-role path) is untouched.
 Checked before applying: `public.has_role` exists, the `booking_status` enum exists, and no trigger
 of that name was already present on either project.
 
-### The remaining three, and what each needs
+`booking_tips` also widened `payment_records.payment_kind` to include `'tip'`. That is the one
+statement here that could have failed on existing data — `add constraint` rejects any row outside
+the new list. Checked first: **both projects hold zero `payment_records` rows.**
 
-| migration | state | note |
-|---|---|---|
-| `booking_tips` | ready | Creates `booking_tips` + widens `payment_records.payment_kind` to include `'tip'`. Verified safe: **both projects have zero `payment_records` rows**, so the `add constraint` cannot fail on existing data. Applying it does not turn tipping on — `TIP_READINESS` in `src/lib/tipping.ts` still gates that. |
-| `concierge_structured_handoff` | ready | Creates `support_handoff_contexts`, which `create-concierge-handoff` inserts into. |
-| `concierge_governance_controls` | ready, and **inert** | Seeds 18 `concierge.*` flags. Grepped: **no code reads any of them.** Four seed `true`, but since nothing consults them this changes no behaviour — the Concierge launcher already renders unconditionally. Worth knowing before anyone assumes these are load-bearing switches. |
+## What is left: one step of four
 
-All three are `create table if not exists` / `or replace` / `on conflict do update`, and every `drop`
-in them is a `drop ... if exists` immediately followed by the recreate — idempotency guards, not
-data loss. They are queued rather than blocked.
+Steps 1 and 3 are done. **Only step 2 remains**, and it is bookkeeping rather than schema.
 
-## Recommended order, once the CLI is available
+1. ~~Repair the ledger.~~ **Done 2026-08-09** — 26 rows on staging, 29 on production.
+2. **Record the three superseded ones as applied, rather than running them.**
+   `completed_booking_invoices`, `connector_safe_invoice_zoot_black_schema` and
+   `phase6_zoot_black_foundation` have their objects in place via the `connector_safe_*`
+   consolidations, but the ledger has no row under the repo's filename versions. Until it does,
+   `db push` will try them. Every statement in all three is `if not exists` / `or replace`, so
+   running them would succeed as a no-op — which is precisely why it is better to insert the
+   ledger rows deliberately than to let push discover them and record whatever version it likes.
+3. ~~Apply the four unapplied ones.~~ **Done 2026-08-10** — see above.
+4. **Then `db push` becomes meaningful**, and stays meaningful, because the CLI takes the version
+   from the filename and does not have the renaming bug.
 
-`supabase db push` is **not** safe today: it reads the ledger, and the ledger is wrong in both
-directions — it under-reports (safety_pin) and over-reports (34 phantom missing). Push would
-re-run migrations whose objects already exist and would renumber the record again.
-
-1. **Repair the ledger first.** For every migration whose objects exist but whose version does not
-   match the filename, realign:
-   ```sql
-   update supabase_migrations.schema_migrations
-      set version = '<filename version>'
-    where version = '<wall-clock version>' and name = '<name>';
-   ```
-   Do it on **both** projects. This is metadata only and changes no schema.
-2. **Record the three superseded ones** as applied, rather than running them.
-3. **Apply the four unapplied ones** in filename order, each verified by re-probing its objects
-   afterwards.
-4. **Then, and only then, `db push` becomes meaningful** — and stays meaningful, because the CLI
-   takes the version from the filename and does not have the renaming bug.
+`db push` also still needs `SUPABASE_DB_PASSWORD`, which is not set. `SUPABASE_ACCESS_TOKEN` alone
+authorises Edge Function deploys, not a direct Postgres connection — worth knowing before anyone
+assumes the working deploy workflow means migrations can run the same way.
 
 ## Standing rule
 
