@@ -121,6 +121,14 @@ describe("Twilio secrets contract", () => {
     const masked = read("supabase/functions/create-masked-call/index.ts");
     expect(masked).toMatch(/proxy\.twilio\.com/);
     expect(masked).toMatch(/TWILIO_PROXY_SERVICE_SID/);
+
+    // And the runbook answers the question in those terms, because it is the one that keeps being
+    // asked and the wrong answer costs money every month. If the code above ever changes, this
+    // fails alongside it rather than leaving the doc confidently wrong.
+    expect(runbook).toContain('"Do I have to buy phone numbers?" — No.');
+    expect(runbook).toContain("**So the in-app call needs steps 1–5: five secrets, no phone number, nothing to buy.**");
+    // The runbook must not send anyone to buy a number for the caller ID.
+    expect(runbook).not.toMatch(/Buy a\n\s*number under Phone Numbers/);
   });
 
   it("accepts either name for the one account Auth Token, everywhere it is checked", () => {

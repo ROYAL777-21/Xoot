@@ -76,6 +76,33 @@ server state.
 
 ## 2. Twilio — eight secrets, then two switches, in that order (#32)
 
+### 2a-0. "Do I have to buy phone numbers?" — No.
+
+Answered head-on because it is the question that keeps coming back, and the wrong answer costs money
+every month. Read out of the code, not assumed:
+
+| What you want | What it uses | Numbers to buy |
+| --- | --- | --- |
+| **The in-app call** (built, and the primary path) | `twilio-voice-twiml` answers `<Dial><Conference>` — both parties join a named room over data | **none** |
+| In-app chat | Twilio Conversations | **none** |
+| Masked phone fallback *(optional)* | `create-masked-call` → Twilio Proxy, which masks by allocating from a pool **you own** | one per concurrent session, paid monthly |
+
+`<Conference>` has no PSTN leg — grep the function, there is no `<Number>` anywhere in it. So the
+free path is also the private one, and `twilio-secrets-contract.test.ts` asserts both facts so this
+answer cannot quietly stop being true.
+
+**On "can we just use their real number instead?"** — that is not a cheaper form of masking, it is
+the absence of masking. The Xooter sees the customer's mobile and the customer sees the Xooter's,
+permanently, after one job. In a business where a stranger comes to someone's home that is a safety
+decision before it is a cost one, and it is the exact thing masking exists to prevent.
+**Recommendation: ship the data call, leave Proxy off, buy no numbers.**
+
+> **Fixed 2026-08-10, and it was making this worse.** `TWILIO_CALLER_ID` used to sit in
+> `twilio-token`'s blanket required list, so the **in-app data call** refused to mint a token without
+> a verified phone number — despite nothing in this codebase reading that secret. The cheap option
+> looked unavailable, which is how someone ends up buying numbers they never needed. The gate is now
+> scoped per capability.
+
 ### 2a. The secrets — how to get each one, in order
 
 Do them in this order; three of them can only be created after another exists.
@@ -98,10 +125,14 @@ Twilio account or a **subaccount**. Do production first and repeat.
    Set its **Voice Request URL** to:
    `https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml` (POST)
    and **Status Callback** to `.../twilio-voice-status`. Save. The SID starts `AP`.
-6. **`TWILIO_CALLER_ID`** — a number Twilio has verified for the account, in E.164 (`+27…`). Buy a
-   number under Phone Numbers, or verify one you own under Verified Caller IDs.
+6. **`TWILIO_CALLER_ID`** *(optional — skip it unless you want the phone fallback)* — a number
+   Twilio has verified for the account, in E.164 (`+27…`). Verify one you already own under Verified
+   Caller IDs rather than buying one. **Not needed for the in-app call**; see §2a-0.
 7. **`TWILIO_PROXY_SERVICE_SID`** *(optional, eighth)* — only if you want the masked-PSTN fallback.
-   Explore products → Proxy → Services. Starts `KS`.
+   Explore products → Proxy → Services. Starts `KS`. This is the one that requires a bought number
+   pool.
+
+**So the in-app call needs steps 1–5: five secrets, no phone number, nothing to buy.**
 
 Then set them all in one command (the block below), and run §2c gate 1 to confirm.
 
@@ -110,9 +141,17 @@ which of the eight it was.
 
 ### 2a-ii. Reference table and the command
 
-Seven are required by `twilio-token` before it will mint anything; it returns
-`{ configured: false, missing: [...] }` rather than a token until all seven exist. The eighth is
-only needed for the masked-PSTN fallback.
+`twilio-token` returns `{ configured: false, missing: [...] }` rather than a token until the secrets
+for the **requested capability** are all present — and it asks each capability only for what that
+capability uses:
+
+| capability | needs |
+| --- | --- |
+| `voice` (the in-app call) | account SID, API key SID + secret, `TWILIO_VOICE_APP_SID`, the Auth Token |
+| `conversations` (in-app chat) | account SID, API key SID + secret, `TWILIO_CONVERSATIONS_SERVICE_SID`, the Auth Token |
+
+**Neither asks for a phone number.** `TWILIO_CALLER_ID` and `TWILIO_PROXY_SERVICE_SID` belong to the
+masked-PSTN fallback alone, and both are optional.
 
 | Secret | Where it comes from |
 | --- | --- |
