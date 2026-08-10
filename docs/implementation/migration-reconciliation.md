@@ -134,21 +134,82 @@ of that name was already present on either project.
 statement here that could have failed on existing data — `add constraint` rejects any row outside
 the new list. Checked first: **both projects hold zero `payment_records` rows.**
 
-## What is left: one step of four
+## What is left
 
-Steps 1 and 3 are done. **Only step 2 remains**, and it is bookkeeping rather than schema.
+Steps 1–3 are done. Step 4 is not, and the reason is worth writing down rather than discovering.
 
 1. ~~Repair the ledger.~~ **Done 2026-08-09** — 26 rows on staging, 29 on production.
-2. **Record the three superseded ones as applied, rather than running them.**
+2. ~~Record the three superseded ones as applied, rather than running them.~~ **Done 2026-08-10.**
    `completed_booking_invoices`, `connector_safe_invoice_zoot_black_schema` and
    `phase6_zoot_black_foundation` have their objects in place via the `connector_safe_*`
-   consolidations, but the ledger has no row under the repo's filename versions. Until it does,
-   `db push` will try them. Every statement in all three is `if not exists` / `or replace`, so
-   running them would succeed as a no-op — which is precisely why it is better to insert the
-   ledger rows deliberately than to let push discover them and record whatever version it likes.
+   consolidations, but the ledger had no row under the repo's filename versions, so `db push` would
+   have tried them. Every statement in all three is `if not exists` / `or replace`, so running them
+   would have succeeded as a no-op — which is precisely why inserting the rows deliberately beats
+   letting push discover them and record whatever version it likes. Inserted with
+   `on conflict (version) do nothing` on both projects; both returned **3 rows**.
 3. ~~Apply the four unapplied ones.~~ **Done 2026-08-10** — see above.
-4. **Then `db push` becomes meaningful**, and stays meaningful, because the CLI takes the version
-   from the filename and does not have the renaming bug.
+4. **`db push` is still not safe to run.** Not for the reasons above — those are closed — but for
+   the one below, which the full sweep turned up and which nobody had measured before.
+
+## The full sweep: production's ledger is missing 23 of the repo's 65 versions
+
+The checks above were all name-driven, and each one asked about a specific migration. The last check
+asked the other question — *every* repo filename version against production's ledger — and the answer
+is not the small remainder the earlier steps implied:
+
+```
+repo_total: 65, missing_from_ledger: 23
+```
+
+All 23 exist as files in `supabase/migrations/`. They fall into two groups, and **the distinction is
+the whole point**, because one group is harmless and the other is a `db push` hazard:
+
+| group | versions | what it means |
+|---|---|---|
+| **Ledger gap — objects exist** | `20260802170000_safety_pin` is the confirmed one | The migration ran, or its objects arrived by another route, and the ledger never recorded it. `db push` would re-run it. |
+| **Unclassified** | the other 22 | Could be either. Not yet checked object-by-object. |
+
+**`safety_pin` is the proven case and it is proven the expensive way.** Earlier in this same session
+production was read directly and `user_safety_pins`, `set_safety_pin` and `verify_safety_pin` were
+**all confirmed present** — while production's ledger has no row for `20260802170000`. So on this
+project the ledger is wrong in *both* directions: it has carried rows whose version did not match the
+filename, and it is missing rows for objects that demonstrably exist.
+
+That is the finding that matters. **A ledger you cannot trust in either direction cannot gate a
+`db push`**, and the failure is asymmetric: a missing row makes push re-run a migration, and re-running
+one that is not idempotent is how a reconciliation turns into an outage.
+
+### Why 23 is not automatically 23 problems
+
+Production has a genuinely divergent history — it carries `zoot_launch_*` migrations that staging has
+never had. So some of these 23 are expected absences, where production reached the same schema by a
+different path and the repo file was never its route. Seven of the 23 are the early Lovable-generated
+UUID-named files (`20260421`–`20260424`), which is exactly where that divergence would live.
+
+**But "some are fine" is not a classification, and it must not be recorded as one.** The rule this
+document has followed throughout is that a migration is classified by checking whether its objects
+exist, not by inferring from its name — and that check has been run for exactly one of the 23.
+
+### Blocked mid-check, and stated rather than papered over
+
+The remaining 22 were not classified because **the Supabase MCP connector dropped its authorisation**
+partway through this step, and re-authorising it needs an interactive session. The same check was
+never run against staging at all.
+
+So the honest status is: **the four known-unapplied migrations are applied and the three superseded
+ones are recorded — but the ledgers are not proven complete on either project, and one confirmed gap
+exists on production.** Anyone reading only the sections above would conclude this was finished. It
+is not.
+
+### To finish it
+
+1. Re-authorise the Supabase connector (claude.ai connector settings, or `/mcp` interactively).
+2. For each of the 22 unclassified versions, check whether its objects exist on production —
+   `information_schema` / `pg_proc`, per migration — and classify as **ledger gap** (insert the row)
+   or **genuine absence** (leave it; production reached that schema another way, or never needed it).
+3. Run the identical sweep against staging, which has not been done.
+4. Only then is `db push` meaningful — and by then `SUPABASE_DB_PASSWORD` needs setting too, which is
+   founder-only.
 
 `db push` also still needs `SUPABASE_DB_PASSWORD`, which is not set. `SUPABASE_ACCESS_TOKEN` alone
 authorises Edge Function deploys, not a direct Postgres connection — worth knowing before anyone

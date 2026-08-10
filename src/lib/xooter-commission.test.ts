@@ -17,6 +17,8 @@ import {
   commissionBandFor,
   commissionRateBpsFor,
   formatRate,
+  impliedSubtotalCents,
+  nextBandValueFor,
   xooterPayoutFor,
 } from "./xooter-commission";
 import { calculateReliabilityScore, shouldDeprioritizeXooter } from "./trust";
@@ -357,6 +359,82 @@ describe("the 14-day earnings boost", () => {
     expect(migration).toMatch(/reason text not null/);
     // And no client may write its own pay.
     expect(migration).toMatch(/revoke insert, update, delete on public\.xooter_commission_boosts/);
+  });
+});
+
+describe("what the next band is worth in rands", () => {
+  it("reverses a payout back to the subtotal it came from, to within a cent or two", () => {
+    // This is what lets the Earnings page quote a real figure instead of inventing a typical week.
+    //
+    // ⚠️ It is NOT exact, and the test says so rather than asserting a lie it would have to keep
+    // massaging. `xooterPayoutFor` rounds the commission to whole cents and subtracts, so the pay
+    // figure has already lost the fraction — R799 at 32.5% pays 53932c, and 53932 reverses to
+    // 79899c, one cent short. The error is bounded by 1/(1 − rate) cents, so at most ~2c per row.
+    //
+    // Harmless here and worth being precise about why: the page reverses a **month's** aggregate
+    // and quotes the result to the nearest rand, so a 2-cent basis error cannot move the number
+    // shown. It would matter if this were ever used to reconcile an individual payout, which is
+    // what this comment exists to stop someone doing.
+    for (const rateBps of COMMISSION_BANDS.map((b) => b.rateBps)) {
+      for (const subtotal of [29600, 43000, 79900, 120000]) {
+        const pay = xooterPayoutFor(subtotal, rateBps).xooterPayCents;
+        expect(Math.abs(impliedSubtotalCents(pay, rateBps) - subtotal)).toBeLessThanOrEqual(2);
+      }
+    }
+  });
+
+  it("refuses to invent a basis it does not have", () => {
+    // A Xooter with nothing in the window gets no figure at all. Zero in, zero out — never a
+    // projection dressed as a measurement, which is the defect the fake 96% tier was made of.
+    expect(impliedSubtotalCents(0, 3500)).toBe(0);
+    expect(impliedSubtotalCents(-100, 3500)).toBe(0);
+    expect(impliedSubtotalCents(Number.NaN, 3500)).toBe(0);
+    // A 100% rate has no inverse. Not reachable through the ladder, but the guard is cheap.
+    expect(impliedSubtotalCents(10000, 10000)).toBe(0);
+  });
+
+  it("prices New → Bronze on a month of standard cleans", () => {
+    // Eight R296 cleans in 30 days — roughly two a week, the pace the ladder was compressed for.
+    const monthlySubtotal = 29600 * 8;
+    const gain = nextBandValueFor(monthlySubtotal, 3500, 3250);
+
+    // 2.5 points of R2,368 of work.
+    expect(gain.extraCents).toBe(5920);
+    expect(gain.pointsOfJob).toBe(2.5);
+    // And the rise in what they actually take home is larger than the points, always.
+    expect(gain.earningsPercent).toBeGreaterThan(gain.pointsOfJob);
+    expect(gain.earningsPercent).toBe(3.8);
+  });
+
+  it("is the same arithmetic as a boost, because they are the same operation", () => {
+    // Two implementations of "what does a better rate pay" would eventually disagree about a rand.
+    const subtotal = 29600 * 8;
+    expect(nextBandValueFor(subtotal, 3500, 3000)).toEqual(boostValueFor(subtotal, 3500, BOOST_BPS));
+  });
+
+  it("never quotes a negative reward", () => {
+    // "Reach Gold and lose R44" is not a sentence this surface exists to produce. A caller passing
+    // a worse or equal rate gets nothing, not a minus sign.
+    expect(nextBandValueFor(100000, 2500, 3500).extraCents).toBe(0);
+    expect(nextBandValueFor(100000, 2000, 2000).extraCents).toBe(0);
+  });
+
+  it("shows Platinum nothing, because there is nothing above it", () => {
+    // The Earnings page finds the next band by rate; at the floor there is none, and the figure
+    // must not fall back to something invented.
+    const platinum = COMMISSION_BANDS[COMMISSION_BANDS.length - 1];
+    expect(platinum.rateBps).toBe(FLOOR_RATE_BPS);
+    expect(COMMISSION_BANDS.find((b) => b.rateBps < platinum.rateBps)).toBeUndefined();
+  });
+
+  it("the Earnings page reverses at the band rate, not the boosted one", () => {
+    // A boost is temporary and most of the history was struck without it, so reversing at the
+    // boosted rate would overstate the subtotal — and the reward quoted on top of it.
+    const page = readFileSync(join(process.cwd(), "src/pages/zooter/Earnings.tsx"), "utf8");
+    expect(page).toMatch(/impliedSubtotalCents\(last30NetCents, band\.rateBps\)/);
+    expect(page).not.toMatch(/impliedSubtotalCents\(last30NetCents, effectiveRateBps\)/);
+    // And it renders nothing when there is no basis.
+    expect(page).toMatch(/nextBandGainCents > 0 &&/);
   });
 });
 

@@ -251,6 +251,54 @@ export function boostValueFor(subtotalCents: number, rateBps: Bps, boostBps: Bps
   };
 }
 
+/* ── What the next band is worth, in rands ────────────────────────────────────────
+ * "Reach Silver and keep R44 more a month" motivates in a way "30% instead of 32.5%" does not.
+ * Percentages are the mechanism; rands are the reward, and only one of the two is what a Xooter
+ * is actually deciding about when they choose to turn up on time.
+ *
+ * The hard part is not the arithmetic — it is finding an honest basis to quote it against. A made-up
+ * "typical week" would be a number the platform invented about a person's own earnings, which is
+ * exactly the kind of claim this codebase keeps having to remove (the fake 96% tier, the R39 that
+ * was not on the confirm screen). So the basis is the Xooter's **own** completed work, worked
+ * backwards from what they were actually paid.
+ */
+
+/**
+ * Reverse a payout back to the booking subtotal it came from.
+ *
+ * A Xooter's earnings row records net pay, not the subtotal — but pay is `subtotal × (1 − rate)`,
+ * so the subtotal is recoverable. This is what lets the next band be quoted against real work
+ * rather than an invented average.
+ *
+ * **Accurate to a cent or two, not exact.** `xooterPayoutFor` rounds the commission to whole cents
+ * before subtracting, so the fraction is already gone by the time this sees the pay figure — the
+ * residual is bounded by `1 / (1 − rate)` cents. Fine for aggregating a month and quoting it to the
+ * nearest rand, which is the only thing this is for. **Do not use it to reconcile an individual
+ * payout**; for that, read the booking's stamped `commission_rate_bps` and recompute forwards.
+ *
+ * Returns 0 for a non-positive input, and for a rate of 100% or more, which has no inverse.
+ */
+export function impliedSubtotalCents(netPayCents: number, rateBps: Bps): number {
+  if (!Number.isFinite(netPayCents) || netPayCents <= 0) return 0;
+  const keptBps = 10000 - rateBps;
+  if (keptBps <= 0) return 0;
+  return Math.round((netPayCents * 10000) / keptBps);
+}
+
+/**
+ * What moving from one band to the next is worth on a given amount of work.
+ *
+ * Deliberately the same arithmetic as `boostValueFor` — a band change and a boost are the same
+ * operation on the rate, and two implementations would eventually disagree about the same rand.
+ * `nextRateBps` must be the better (lower) rate; a non-improvement returns zero rather than a
+ * negative, because "you would lose R44" is not what this surface is for.
+ */
+export function nextBandValueFor(subtotalCents: number, currentRateBps: Bps, nextRateBps: Bps) {
+  const improvementBps = currentRateBps - nextRateBps;
+  if (improvementBps <= 0) return { extraCents: 0, pointsOfJob: 0, earningsPercent: 0 };
+  return boostValueFor(subtotalCents, currentRateBps, improvementBps);
+}
+
 export type Payout = {
   rateBps: Bps;
   /** What Xoot keeps. */

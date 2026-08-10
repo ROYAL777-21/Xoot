@@ -6,7 +6,14 @@ import { Wallet, Loader2, TrendingUp, Star, Trophy, Target } from "lucide-react"
 import { Progress } from "@/components/ui/progress";
 import { formatZAR, formatZARDecimal } from "@/lib/format";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar, CartesianGrid } from "recharts";
-import { COMMISSION_BANDS, applyBoost, boostIsActive, commissionBandFor } from "@/lib/xooter-commission";
+import {
+  COMMISSION_BANDS,
+  applyBoost,
+  boostIsActive,
+  commissionBandFor,
+  impliedSubtotalCents,
+  nextBandValueFor,
+} from "@/lib/xooter-commission";
 import { BoostCelebration } from "@/components/zooter/BoostCelebration";
 import type { XooterBoost } from "@/lib/xooter-boost-announcement";
 
@@ -91,6 +98,32 @@ const Earnings = () => {
     ? Math.min(100, (completedJobs / Math.max(1, nextBand.minCompletedJobs)) * 100)
     : 100;
 
+  /*
+   * What the next band is worth in rands, quoted against this Xooter's *own* last 30 days.
+   *
+   * "Reach Silver and keep R44 more a month" is the sentence that motivates; "30% instead of 32.5%"
+   * is the mechanism behind it. But the basis has to be real work, not an invented typical week —
+   * a platform quoting someone a made-up figure about their own earnings is the same defect class
+   * as the 96% tier this screen used to promise.
+   *
+   * So: sum the last 30 days of net pay, reverse it to the subtotal it came from, and price the
+   * band change on that. A Xooter with nothing in the window gets **no figure at all** rather than
+   * a fabricated one — which is the correct outcome for someone who has not worked yet, since any
+   * number would be a guess dressed as a projection.
+   */
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const last30NetCents = Math.round(
+    items
+      .filter((e) => new Date(e.created_at).getTime() >= thirtyDaysAgo)
+      .reduce((s, e) => s + Number(e.net_amount), 0) * 100,
+  );
+  // Reversed at the band rate, not the boosted one: a boost is temporary and the history was
+  // mostly struck without it, so using it here would overstate the subtotal and the reward with it.
+  const last30SubtotalCents = impliedSubtotalCents(last30NetCents, band.rateBps);
+  const nextBandGainCents = nextBand
+    ? nextBandValueFor(last30SubtotalCents, band.rateBps, nextBand.rateBps).extraCents
+    : 0;
+
   // Chart data — last 8 weeks
   const weekly: { week: string; earnings: number }[] = [];
   const now = new Date();
@@ -149,6 +182,11 @@ const Earnings = () => {
                 {scoreToNext !== null && scoreToNext > 0 ? `, and ${scoreToNext} more reliability points` : ""}
                 {" to "}{nextBand.label}
               </p>
+              {nextBandGainCents > 0 && (
+                <p className="text-xs font-semibold text-sage-deep mt-1">
+                  Worth about {formatZAR(nextBandGainCents / 100)} more a month at your current pace.
+                </p>
+              )}
             </>
           )}
         </Card>
