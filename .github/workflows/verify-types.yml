@@ -114,5 +114,16 @@ jobs:
             echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          echo "::error::Committed types.ts does not match $PROJECT_REF — see the job summary."
+          # Also to the log, not only the step summary. The first run of this workflow reported
+          # "does not match — see the job summary", and the summary is not readable from the API,
+          # so the one thing needed to act on the failure was the one thing not in the log. Same
+          # lesson as `verify-secrets.yml`: a check that reports a verdict without the evidence
+          # makes someone go and find the evidence by hand.
+          #
+          # Safe to print: `types.ts` is generated schema shape — table and column names, already
+          # in the repository. It carries no data, no credential and no row.
+          echo "----- diff (first 300 lines) -----"
+          head -n 300 /tmp/types.diff
+          echo "----- end diff -----"
+          echo "::error::Committed types.ts does not match $PROJECT_REF — see the diff above."
           exit 1
