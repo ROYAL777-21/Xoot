@@ -26,6 +26,11 @@ verify_jwt = false
 [functions.report-concierge-answer]
 verify_jwt = false
 
+# Public: the Concierge launcher renders before anyone signs in, so the client must be able to ask
+# whether it is switched on without a session. Returns capability booleans only.
+[functions.concierge-config]
+verify_jwt = false
+
 [functions.get-booking-public-keys]
 verify_jwt = true
 

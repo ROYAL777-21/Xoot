@@ -13,6 +13,7 @@ import { AppLaunch } from "@/components/zoot/AppLaunch";
 import { AppShell } from "@/components/zoot/AppShell";
 import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
 import { XootSupportBot } from "@/components/zoot/XootSupportBot";
+import { ConciergeProvider } from "@/contexts/ConciergeContext";
 import { XooterShell } from "@/components/zooter/XooterShell";
 import { RequireRole } from "@/components/RequireRole";
 import { XootAnalyticsProvider } from "@/lib/analytics";
@@ -146,6 +147,9 @@ const App = () => (
               <PreloadCoreRoutes />
               <ScrollToTop />
               <AuthProvider>
+                {/* Wraps the routes AND the launcher, so the omnibox inside AppShell and the
+                    Concierge panel at the root share one open state. */}
+                <ConciergeProvider>
                 <Suspense fallback={<RouteLoading />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
@@ -212,6 +216,7 @@ const App = () => (
                 </Routes>
                 </Suspense>
                 <XootSupportBot />
+                </ConciergeProvider>
               </AuthProvider>
             </BrowserRouter>
           </ErrorBoundary>

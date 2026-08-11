@@ -11,6 +11,8 @@ import { haptic } from "@/lib/haptics";
 import { getLocalXootConciergeReply } from "@/lib/zoot-concierge-fallback";
 import { captureAnalyticsEvent } from "@/lib/analytics";
 import { redactConciergeClientText } from "@/lib/concierge-privacy";
+import { useConciergeConfig } from "@/hooks/useConciergeConfig";
+import { useConcierge } from "@/contexts/ConciergeContext";
 
 type BotMessage = {
   id: string;
@@ -71,7 +73,13 @@ const RoboticStarIcon = (props: SVGProps<SVGSVGElement>) => (
 export const XootSupportBot = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const [open, setOpen] = useState(false);
+  const { webEnabled } = useConciergeConfig();
+  const concierge = useConcierge();
+  // Shared state when a provider is present, so the omnibox can open this panel and hand it a
+  // question. Local state otherwise, so the launcher still works on routes outside the provider.
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = concierge ? concierge.open : localOpen;
+  const setOpen = concierge ? concierge.setOpen : setLocalOpen;
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<BotMessage[]>(initialMessages);
@@ -84,12 +92,21 @@ export const XootSupportBot = () => {
     if (params.get("zootBot") === "open" || params.get("assistant") === "open") {
       setOpen(true);
     }
-  }, [location.search]);
+  }, [location.search, setOpen]);
 
   useEffect(() => {
     if (!open) return;
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [open, messages]);
+
+  // A question handed over by the omnibox lands in the composer rather than being sent. The person
+  // gets to read it, edit it, and decide — which also means the redaction warning still has a
+  // chance to fire before anything leaves the browser.
+  useEffect(() => {
+    if (!open || !concierge?.prefill) return;
+    const pending = concierge.consumePrefill();
+    if (pending) setBody(pending);
+  }, [open, concierge]);
 
   const appendMessage = (message: Omit<BotMessage, "id">) => {
     setMessages((current) => [...current, { id: createMessageId(), ...message }]);
@@ -240,6 +257,20 @@ export const XootSupportBot = () => {
       setSending(false);
     }
   };
+
+  /*
+   * Nothing rendered when the Concierge is switched off.
+   *
+   * `concierge.enabled`, `concierge.web.enabled` and `concierge.kill.global` finally reach a
+   * surface here. Before this, all three governed nothing on the client and the launcher rendered
+   * regardless — so flipping the global kill switch left a button that opened a panel whose every
+   * message the server would refuse.
+   *
+   * Rendering nothing is the same rule `safety.ts` and `VoiceCallPanel` follow: do not offer a
+   * capability before the thing behind it works. All three controls are `true` live, so this
+   * changes nothing today.
+   */
+  if (!webEnabled) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-50 sm:bottom-5 sm:right-5">
