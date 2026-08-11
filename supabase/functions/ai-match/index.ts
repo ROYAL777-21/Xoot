@@ -55,8 +55,18 @@ Deno.serve(async (req) => {
     if (authError || !authData.user) return json({ error: "authentication required" }, 401, origin);
 
     const body = await req.json();
+    /*
+     * `service` is optional as of 2026-08-12, and that is a deliberate widening.
+     *
+     * It used to be required, and the function filtered `role = service`. Meanwhile the booking
+     * page — `Book.tsx` — queried `zooters_public` directly with no role filter at all, and never
+     * called this function. Wiring the page to a version that required a role would have silently
+     * shown **fewer** Xooters than before, or none, if any role string failed to line up. Ranking
+     * more people is recoverable; showing a customer an empty list is not.
+     *
+     * Absent means "rank everyone active", which is exactly what the page does today.
+     */
     const safeService = sanitiseService(body?.service);
-    if (!safeService) return json({ error: "service required" }, 400, origin);
     // Where the job is. Optional, because a customer browsing before they have typed an address
     // still deserves a ranked list — it just cannot be ranked on travel.
     const address = typeof body?.address === "string" ? body.address.slice(0, 400) : "";
@@ -66,7 +76,8 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const { data: zooters } = await supa.from("zooters").select("*").eq("role", safeService).eq("active", true);
+    const query = supa.from("zooters").select("*").eq("active", true);
+    const { data: zooters } = await (safeService ? query.eq("role", safeService) : query);
     if (!zooters || zooters.length === 0) {
       return json({ ranked: [] }, 200, origin);
     }

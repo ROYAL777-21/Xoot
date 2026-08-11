@@ -238,17 +238,60 @@ const Book = () => {
     });
   }, [user, requestedAddress]);
 
+  /*
+   * Rank Xooters by how far they actually are from this booking.
+   *
+   * ── What this replaced, and why it mattered ─────────────────────────────────
+   * This queried `zooters_public` directly with `.limit(30)`, no ordering by anything to do with
+   * the customer, and **ignored the address typed one step earlier**. `ai-match` existed and
+   * nothing in the app called it — so "matched with Xooters near you" was not a weak feature, it
+   * was an absent one.
+   *
+   * ── The fallback is not decoration ──────────────────────────────────────────
+   * If matching fails for any reason — the function is not deployed yet on this project, the
+   * address resolves to no known suburb, a network blip — this falls back to the old direct query.
+   * An empty Xooter list is indistinguishable to a customer from "Xoot has nobody", and losing a
+   * booking is a far worse outcome than losing the distance ordering.
+   */
   useEffect(() => {
     if (step !== 2) return;
+    let mounted = true;
     setLoadingXooters(true);
-    supabase.from("zooters_public").select("*").limit(30).then(({ data }) => {
-      const ranked = sortXootersForMarketplace((data ?? []) as Xooter[]);
-      const preferred = preferredXooterId ? ranked.find((z) => z.id === preferredXooterId) : null;
-      setXooters(ranked);
+
+    const applyResults = (rows: Xooter[]) => {
+      if (!mounted) return;
+      const preferred = preferredXooterId ? rows.find((z) => z.id === preferredXooterId) : null;
+      setXooters(rows);
       if (preferred) setPicked((current) => current.some((z) => z.id === preferred.id) ? current : [preferred]);
       setLoadingXooters(false);
-    });
-  }, [step, preferredXooterId]);
+    };
+
+    const fallback = async () => {
+      const { data } = await supabase.from("zooters_public").select("*").limit(30);
+      applyResults(sortXootersForMarketplace((data ?? []) as Xooter[]));
+    };
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("ai-match", {
+          // The address is what makes this proximity matching rather than a sort. It is the same
+          // value validated against the launch regions in step 1.
+          body: { address },
+        });
+        if (error) throw error;
+        const ranked = (data as { ranked?: Xooter[] } | null)?.ranked;
+        if (!ranked?.length) throw new Error("no ranked results");
+        applyResults(ranked);
+      } catch (err) {
+        console.warn("proximity matching unavailable; falling back to the plain roster", err);
+        await fallback();
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [step, preferredXooterId, address]);
 
   useEffect(() => {
     if (!bookingId) return;
