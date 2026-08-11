@@ -77,6 +77,41 @@ export function organiserShareCents(totalCents: number, otherShares: readonly nu
   return remainder >= 0 ? remainder : null;
 }
 
+/**
+ * One-tap ratios for the two-person case, as the organiser's percentage.
+ *
+ * ── Why presets and not a slider ────────────────────────────────────────────────
+ * A slider cannot land on an exact rand. The value here is money, so someone wanting their
+ * housemate to pay R148.00 exactly will fight a drag control to get there, and the number they
+ * finally land on is the one the other person is invoiced for. Three chips cover the cases people
+ * actually ask for and each is a single tap.
+ *
+ * ── Why only for two people ─────────────────────────────────────────────────────
+ * A "ratio" of three people is not a ratio — it is three numbers, and expressing it as one is how
+ * a UI ends up lying about what it is doing. Three or more keeps the per-person amount fields.
+ *
+ * 50 first because it is the overwhelmingly common case and the default.
+ */
+export const RATIO_PRESETS = [50, 60, 75] as const;
+
+/**
+ * Split a total between two people at a given percentage for the first.
+ *
+ * Built on `splitEvenly`'s remainder discipline rather than a second rounding: the first share is
+ * rounded and the second is **the remainder**, so the two always sum to exactly the total at every
+ * percentage. Computing both independently would lose or invent a cent at any ratio that does not
+ * divide cleanly — which is most of them.
+ *
+ * Returns an empty array for a percentage outside 0–100, rather than a negative share.
+ */
+export function splitByRatio(totalCents: number, organiserPercent: number): number[] {
+  if (!Number.isFinite(totalCents) || !Number.isFinite(organiserPercent)) return [];
+  if (organiserPercent < 0 || organiserPercent > 100) return [];
+  const total = Math.max(0, Math.round(totalCents));
+  const first = Math.round((total * organiserPercent) / 100);
+  return [first, total - first];
+}
+
 /** Lowest share a person can be asked for: R10. */
 export const MIN_SHARE_CENTS = 1000;
 

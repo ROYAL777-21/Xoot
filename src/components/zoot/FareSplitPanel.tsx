@@ -9,7 +9,9 @@ import { formatZARDecimal } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import {
   MAX_SPLIT_PARTIES,
+  RATIO_PRESETS,
   organiserShareCents,
+  splitByRatio,
   splitEvenly,
   validateSplit,
   type FareShare,
@@ -184,6 +186,46 @@ export const FareSplitPanel = ({ bookingId, totalRands, paymentStatus }: Props) 
           </div>
         ))}
       </div>
+
+      {/*
+        Ratio chips, only when the party is exactly two.
+
+        A "ratio" of three people is not a ratio — it is three numbers, and expressing it as one
+        percentage is how a UI ends up describing something it is not doing. Three or more keeps
+        the amount fields above.
+
+        Presets rather than a slider because the value is money: a drag control cannot land on
+        R148.00, and the number someone finally lands on is what the other person is invoiced.
+      */}
+      {emails.length === 1 && (
+        <div className="mt-3 flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">You pay</span>
+          {RATIO_PRESETS.map((percent) => {
+            const [organiser, other] = splitByRatio(totalCents, percent);
+            const selected = organiserCents === organiser && resolvedAmounts[0] === other;
+            return (
+              <button
+                key={percent}
+                type="button"
+                onClick={() => {
+                  haptic("selection");
+                  // Set the *other* person's share; the organiser's is always the remainder, so
+                  // the split cannot stop summing however the chips are tapped.
+                  setAmounts([other]);
+                }}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                  selected
+                    ? "bg-primary text-primary-foreground shadow-card"
+                    : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                }`}
+                aria-pressed={selected}
+              >
+                {percent}%
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {emails.length + 1 < MAX_SPLIT_PARTIES && (
         <Button variant="ghost" size="sm" className="mt-2 rounded-full" onClick={addPerson}>

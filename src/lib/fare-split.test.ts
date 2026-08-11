@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   MAX_SPLIT_PARTIES,
   MIN_SHARE_CENTS,
+  RATIO_PRESETS,
   organiserShareCents,
   sharesAreExact,
+  splitByRatio,
   splitEvenly,
   validateSplit,
 } from "./fare-split";
@@ -58,6 +60,54 @@ describe("splitting a fare", () => {
     // Fractional cents are not a thing money can be.
     expect(sharesAreExact([14800.5, 14799.5], 29600)).toBe(false);
     expect(sharesAreExact([-100, 29700], 29600)).toBe(false);
+  });
+});
+
+describe("ratio presets", () => {
+  it("sums to exactly the total at every preset, across many totals", () => {
+    // The same property the even split holds, and the reason `splitByRatio` derives the second
+    // share as the remainder instead of rounding both: at 60/40 of R296.01, two independent
+    // roundings disagree with the total by a cent, and that cent is somebody's invoice.
+    for (const percent of RATIO_PRESETS) {
+      for (const total of [1, 99, 100, 3333, 29600, 29601, 43000, 79900, 100001, 999999]) {
+        const shares = splitByRatio(total, percent);
+        expect(shares, `${percent}% of ${total}`).toHaveLength(2);
+        expect(
+          shares[0] + shares[1],
+          `${percent}% of ${total} did not sum to the total`,
+        ).toBe(total);
+        expect(shares.every(Number.isInteger)).toBe(true);
+        expect(shares.every((amount) => amount >= 0)).toBe(true);
+      }
+    }
+  });
+
+  it("gives the organiser the percentage asked for", () => {
+    expect(splitByRatio(29600, 50)).toEqual([14800, 14800]);
+    expect(splitByRatio(29600, 60)).toEqual([17760, 11840]);
+    expect(splitByRatio(29600, 75)).toEqual([22200, 7400]);
+  });
+
+  it("holds the sum even where the percentage does not divide cleanly", () => {
+    // 60% of R296.01 is 17760.6c. Rounding each side separately gives 17761 + 11840 = 29601 by
+    // luck here, but 75% of 33.33 does not — the remainder approach is right at every input, not
+    // at the ones that happen to work.
+    for (let total = 1; total <= 400; total += 1) {
+      for (const percent of RATIO_PRESETS) {
+        const [a, b] = splitByRatio(total, percent);
+        expect(a + b, `${percent}% of ${total}`).toBe(total);
+      }
+    }
+  });
+
+  it("refuses a percentage outside 0-100 rather than inventing a negative share", () => {
+    expect(splitByRatio(29600, -10)).toEqual([]);
+    expect(splitByRatio(29600, 140)).toEqual([]);
+    expect(splitByRatio(29600, Number.NaN)).toEqual([]);
+  });
+
+  it("leads with 50, which is the default and the common case", () => {
+    expect(RATIO_PRESETS[0]).toBe(50);
   });
 });
 
