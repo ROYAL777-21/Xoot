@@ -354,10 +354,13 @@ const BookingDetail = () => {
       // on the booking would be readable by the assigned Xooter immediately, which is
       // exactly what the founder ruled against. See the migration for the full reason.
       //
-      // `as any` because the table is not in the generated types yet: the migration is
-      // written and unapplied (ZD-003, ZD-005), which is also why `canOfferTip()` gates
-      // this. The cast goes away when the schema and its types are regenerated.
-      const { error: tipError } = await (supabase as any).from("booking_tips").insert(tipRow);
+      // The `as any` that used to be here is gone: the migration is applied on both projects and
+      // the table is in the generated types, so the cast would now hide real column mismatches
+      // rather than work around a missing type.
+      //
+      // `canOfferTip()` still gates this — the schema existing is not the same as tipping being
+      // switched on, and `TIP_READINESS` remains the switch for that.
+      const { error: tipError } = await supabase.from("booking_tips").insert(tipRow);
       if (tipError) {
         toast.warning("Review saved. The tip did not go through — you have not been charged.");
       } else {

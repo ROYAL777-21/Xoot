@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_audit_log: {
@@ -849,6 +874,86 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_tips: {
+        Row: {
+          amount_cents: number
+          booking_id: string
+          created_at: string
+          settled_at: string | null
+          updated_at: string
+          user_id: string
+          zooter_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          booking_id: string
+          created_at?: string
+          settled_at?: string | null
+          updated_at?: string
+          user_id: string
+          zooter_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          booking_id?: string
+          created_at?: string
+          settled_at?: string | null
+          updated_at?: string
+          user_id?: string
+          zooter_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_tips_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_tips_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_tips_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_tips_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_contractor_quality"
+            referencedColumns: ["zooter_id"]
+          },
+          {
+            foreignKeyName: "booking_tips_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_tips_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_tips_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2993,6 +3098,92 @@ export type Database = {
           },
         ]
       }
+      support_handoff_contexts: {
+        Row: {
+          booking_id: string | null
+          consent_to_share_context: boolean
+          correlation_id: string
+          created_at: string
+          customer_stated_issue: string
+          id: string
+          intent_category: string
+          recommended_owner: string
+          recommended_queue: string
+          requested_action: string
+          role_type: string
+          safe_context: Json
+          ticket_id: string
+          updated_at: string
+          urgency_level: number
+          user_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          consent_to_share_context?: boolean
+          correlation_id?: string
+          created_at?: string
+          customer_stated_issue: string
+          id?: string
+          intent_category?: string
+          recommended_owner?: string
+          recommended_queue?: string
+          requested_action?: string
+          role_type?: string
+          safe_context?: Json
+          ticket_id: string
+          updated_at?: string
+          urgency_level?: number
+          user_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          consent_to_share_context?: boolean
+          correlation_id?: string
+          created_at?: string
+          customer_stated_issue?: string
+          id?: string
+          intent_category?: string
+          recommended_owner?: string
+          recommended_queue?: string
+          requested_action?: string
+          role_type?: string
+          safe_context?: Json
+          ticket_id?: string
+          updated_at?: string
+          urgency_level?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_handoff_contexts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "support_handoff_contexts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "support_handoff_contexts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_handoff_contexts_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           ai_response: string | null
@@ -3476,6 +3667,68 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      xooter_commission_boosts: {
+        Row: {
+          bps: number
+          created_at: string
+          ends_at: string
+          granted_by: string | null
+          id: string
+          reason: string
+          starts_at: string
+          zooter_id: string
+        }
+        Insert: {
+          bps?: number
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          reason: string
+          starts_at?: string
+          zooter_id: string
+        }
+        Update: {
+          bps?: number
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          reason?: string
+          starts_at?: string
+          zooter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_contractor_quality"
+            referencedColumns: ["zooter_id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4832,68 +5085,6 @@ export type Database = {
           years_experience: number | null
         }
         Relationships: []
-      }
-      xooter_commission_boosts: {
-        Row: {
-          bps: number
-          created_at: string
-          ends_at: string
-          granted_by: string | null
-          id: string
-          reason: string
-          starts_at: string
-          zooter_id: string
-        }
-        Insert: {
-          bps?: number
-          created_at?: string
-          ends_at?: string
-          granted_by?: string | null
-          id?: string
-          reason: string
-          starts_at?: string
-          zooter_id: string
-        }
-        Update: {
-          bps?: number
-          created_at?: string
-          ends_at?: string
-          granted_by?: string | null
-          id?: string
-          reason?: string
-          starts_at?: string
-          zooter_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
-            columns: ["zooter_id"]
-            isOneToOne: false
-            referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
-          },
-          {
-            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
-            columns: ["zooter_id"]
-            isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
-            columns: ["zooter_id"]
-            isOneToOne: false
-            referencedRelation: "zooters"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
-            columns: ["zooter_id"]
-            isOneToOne: false
-            referencedRelation: "zooters_public"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       zooters_public: {
         Row: {

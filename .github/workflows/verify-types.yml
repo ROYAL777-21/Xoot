@@ -122,8 +122,12 @@ jobs:
           #
           # Safe to print: `types.ts` is generated schema shape — table and column names, already
           # in the repository. It carries no data, no credential and no row.
-          echo "----- diff (first 300 lines) -----"
-          head -n 300 /tmp/types.diff
+          # 1200 rather than 300: the first real failure had five hunks and the 300-line cut landed
+          # mid-way through the last one, so the diff had to be read twice to see all of it. A
+          # truncated diff invites fixing only the visible half and calling it done.
+          echo "----- diff (first 1200 lines) -----"
+          head -n 1200 /tmp/types.diff
           echo "----- end diff -----"
+          echo "diff is $(wc -l < /tmp/types.diff) lines total"
           echo "::error::Committed types.ts does not match $PROJECT_REF — see the diff above."
           exit 1

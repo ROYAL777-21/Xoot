@@ -40,19 +40,19 @@ const SRC = join(process.cwd(), "src");
  * Tables deliberately queried without being in the generated types, each with the reason
  * it is absent. Anything not on this list must be typed.
  */
-const UNTYPED_BY_DESIGN: Record<string, string> = {
-  booking_tips:
-    "20260730090000_booking_tips.sql is written but unapplied (gated on ZD-003/ZD-005). " +
-    "TIP_READINESS is 'schema_pending' and canOfferTip() is false, so the insert is " +
-    "unreachable. Remove this entry when the migration is applied and types regenerated.",
-  support_handoff_contexts:
-    "20260703153056_concierge_structured_handoff.sql is written but unapplied, gated on " +
-    "the ZD-005 schema-source decision. Unreachable today because create-concierge-handoff " +
-    "is not deployed to either project (re-verified against live 2026-08-07). Apply the " +
-    "migration BEFORE deploying that function: it inserts the support_tickets row first " +
-    "and throws on the handoff insert, so deploying first orphans a ticket per handoff " +
-    "with no follow-up and no review-queue entry. Remove when the migration is applied.",
-};
+/**
+ * Tables a client file may query while absent from the generated types, each with the reason.
+ *
+ * **Empty as of 2026-08-11, and that is the goal state.** Both former entries —
+ * `booking_tips` and `support_handoff_contexts` — said "written but unapplied". Both migrations
+ * are now applied to staging and production, and both tables are in the regenerated types, so
+ * the entries described a world that had stopped existing.
+ *
+ * That is the hazard this list carries: an escape hatch whose justification has expired reads
+ * exactly like one that is still valid. The "keeps the list honest" test below is what forces the
+ * entry out when the reason stops being true, and it is the test that caught these two.
+ */
+const UNTYPED_BY_DESIGN: Record<string, string> = {};
 
 const walk = (dir: string): string[] =>
   readdirSync(dir).flatMap((entry) => {
