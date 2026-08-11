@@ -5177,8 +5177,42 @@ export type Database = {
         Args: { p_environment?: string; p_provider: string }
         Returns: boolean
       }
+      can_create_masked_call: {
+        Args: { p_actor_id: string; p_booking_id: string }
+        Returns: {
+          allowed: boolean
+          eligible_until: string
+          participant_role: string
+          reason: string
+        }[]
+      }
       can_release_zooter_payout: {
         Args: { p_booking_id?: string; p_zooter_id: string }
+        Returns: boolean
+      }
+      claim_provider_event: {
+        Args: {
+          p_event_id: string
+          p_event_type: string
+          p_metadata: Json
+          p_payload_hash: string
+          p_provider: string
+          p_subject_id: string
+          p_subject_table: string
+        }
+        Returns: {
+          already_seen: boolean
+          provider_event_id: string
+        }[]
+      }
+      consume_rate_limit: {
+        Args: {
+          p_action: string
+          p_actor_hash: string
+          p_bucket: string
+          p_limit_count: number
+          p_window_seconds: number
+        }
         Returns: boolean
       }
       get_accepted_zooter_job_destinations: {
@@ -5257,6 +5291,14 @@ export type Database = {
       is_zoot_black_eligible: {
         Args: { p_area_key?: string; p_zooter_id: string }
         Returns: boolean
+      }
+      mark_provider_event_processed: {
+        Args: {
+          p_error_message: string
+          p_provider_event_id: string
+          p_status: string
+        }
+        Returns: undefined
       }
       set_safety_pin: { Args: { new_pin: string }; Returns: boolean }
       verify_safety_pin: {
@@ -5420,6 +5462,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "user", "zooter"],
