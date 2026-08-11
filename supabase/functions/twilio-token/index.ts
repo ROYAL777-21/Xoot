@@ -5,6 +5,7 @@ import {
   readJson,
   requireAuth,
 } from "../_shared/action-utils.ts";
+import { consumeRateLimit } from "../_shared/governance-utils.ts";
 
 /**
  * Mints a short-lived Twilio access token for in-app voice or chat.
@@ -37,15 +38,47 @@ import {
  * This function is now safe to enable, but enabling it is a separate decision.
  */
 
-const requiredSecrets = [
-  "TWILIO_ACCOUNT_SID",
-  "TWILIO_API_KEY_SID",
-  "TWILIO_API_KEY_SECRET",
-  "TWILIO_CONVERSATIONS_SERVICE_SID",
-  "TWILIO_VOICE_APP_SID",
-  "TWILIO_CALLER_ID",
-  "TWILIO_WEBHOOK_AUTH_TOKEN",
-] as const;
+/**
+ * What each capability actually needs, rather than one list for both.
+ *
+ * Each entry is a list of accepted names, checked in order. Only the account Auth Token has more
+ * than one: this repo reads it as `TWILIO_AUTH_TOKEN` in `_shared/twilio-webhook.ts` and as
+ * `TWILIO_WEBHOOK_AUTH_TOKEN` in the two voice webhooks. Both are accepted everywhere, so this
+ * gate must accept both — otherwise setting the other name reports a secret missing that is, in
+ * fact, present and working, which is a worse lie than no check at all.
+ *
+ * `missing` reports the **first** name of each unsatisfied group, so a caller is told one thing to
+ * go and set rather than a choice to reason about.
+ *
+ * ── Scoped per capability 2026-08-10, and why it matters commercially ────────────
+ * `TWILIO_CALLER_ID` used to sit in a single blanket list, so an **in-app data call** refused to
+ * mint a token without a verified phone number — despite nothing in this codebase reading that
+ * secret at all. Grepped: it appeared only in this gate and the two `.env` examples.
+ *
+ * That is not a tidiness problem. `twilio-voice-twiml` answers with `<Dial><Conference>` — both
+ * parties join a named room over data, with no PSTN leg and **no phone number anywhere**. Phone
+ * numbers are needed only by `create-masked-call`, which masks via Twilio Proxy by allocating from
+ * a pool you pay for. Gating the free, private path on a secret belonging to the paid one made the
+ * cheap option look unavailable, and would have led to buying numbers that were never required.
+ */
+const CAPABILITY_SECRETS = {
+  /** WebRTC conference. No phone numbers, no caller ID, no Proxy. */
+  voice: [
+    ["TWILIO_ACCOUNT_SID"],
+    ["TWILIO_API_KEY_SID"],
+    ["TWILIO_API_KEY_SECRET"],
+    ["TWILIO_VOICE_APP_SID"],
+    ["TWILIO_WEBHOOK_AUTH_TOKEN", "TWILIO_AUTH_TOKEN"],
+  ],
+  /** In-booking chat. Needs the Conversations service, not the voice app. */
+  conversations: [
+    ["TWILIO_ACCOUNT_SID"],
+    ["TWILIO_API_KEY_SID"],
+    ["TWILIO_API_KEY_SECRET"],
+    ["TWILIO_CONVERSATIONS_SERVICE_SID"],
+    ["TWILIO_WEBHOOK_AUTH_TOKEN", "TWILIO_AUTH_TOKEN"],
+  ],
+} as const satisfies Record<string, readonly (readonly string[])[]>;
 
 const base64Url = (input: Uint8Array | string) => {
   const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
@@ -87,7 +120,35 @@ Deno.serve(async (req) => {
       : { participant: false };
     if (!participant) return json({ error: "Booking not found" }, 404, origin);
 
-    const missing = requiredSecrets.filter((key) => !Deno.env.get(key));
+    /*
+     * This endpoint had no rate limit at all, which mattered more once the in-app call button
+     * shipped: every tap mints a credential carrying `outgoing.application_sid`, and a signed-in
+     * participant could previously ask for them without bound.
+     *
+     * Placed after the participant check on purpose. Rate-limiting before authorisation would let
+     * anyone with a session burn a stranger's budget by guessing booking ids, turning a limiter
+     * into a denial-of-service tool against the person it protects.
+     *
+     * Deliberately generous — 30 per 10 minutes, per user per booking. A token lasts an hour, so
+     * ordinary use needs one; this only stops a loop. It is not the call limit, which lives in
+     * `create-masked-call`: this is the credential-minting limit, and being throttled out of a
+     * *token* is a worse failure than being throttled out of a call, because the UI cannot
+     * distinguish it from the feature being broken.
+     */
+    const rateLimit = await consumeRateLimit(supa, {
+      bucket: "twilio.token",
+      actor: `twilio-token:${user.id}:${bookingId}`,
+      action: capability,
+      limitCount: 30,
+      windowSeconds: 600,
+    });
+    if (!rateLimit.allowed) {
+      return json({ error: "Too many call setup attempts. Please wait a moment." }, 429, origin);
+    }
+
+    const missing = (CAPABILITY_SECRETS[capability as keyof typeof CAPABILITY_SECRETS] ?? [])
+      .filter((names) => !names.some((name) => Deno.env.get(name)))
+      .map((names) => names[0]);
     if (missing.length > 0) {
       return json({ configured: false, ttlSeconds: 0, missing }, 200, origin);
     }

@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
+import { getConciergeCapabilities } from "../_shared/concierge-controls.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
 import { getXootKnowledgeReply, redactSupportText, sanitiseSupportText, zootKnowledgeContext, zootKnowledgeVersion } from "../_shared/zoot-knowledge.ts";
 
@@ -298,16 +299,63 @@ Deno.serve(async (req) => {
       );
     }
 
+    /*
+     * The Concierge's own governance controls, which until now governed nothing.
+     *
+     * 20 `concierge.*` controls are registered across two migrations, and before this change the
+     * only function reading any of them was `create-concierge-handoff`. This function — the one
+     * every Concierge message goes through — read `support.*` and nothing else, so
+     * `concierge.kill.global` was a kill switch attached to no wire.
+     *
+     * Deliberately a no-op against current live state: `concierge.enabled`, `web.enabled` and
+     * `safe_static_fallback` are all `true`, and `model_answers` is `false` alongside
+     * `support.openai_fallback`, which is also `false`. If answers change after this ships, the
+     * wiring is wrong. It only starts mattering when someone flips a switch, which is the entire
+     * point of a switch.
+     */
+    const concierge = await getConciergeCapabilities(adminClient);
+
+    if (!concierge.enabled || concierge.killed) {
+      // No model call, no knowledge lookup. A disabled Concierge must not do the work and then
+      // discard it — the switch exists to stop the work happening.
+      return json(
+        {
+          response: signedIn
+            ? "Xoot Concierge is switched off right now. Open Support and a human reviewer will pick this up in the app."
+            : "Xoot Concierge is switched off right now. Please sign in and open Support, and a human reviewer will help.",
+          escalated: true,
+          source: "human_escalation",
+          knowledge_version: zootKnowledgeVersion,
+        },
+        200,
+        origin,
+      );
+    }
+
     const userRole: UserRole = requestBody.role === "zooter" ? "zooter" : "user";
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
-    const knowledgeAssistant = escalated ? null : getXootKnowledgeReply(`${safeSubject} ${safeBody}`, signedIn);
-    const openAiAllowed = adminClient
+    // `safe_static_fallback` governs the approved-knowledge answer. It is `true` live, so this
+    // reads exactly as it did before.
+    const knowledgeAssistant =
+      escalated || !concierge.staticFallback
+        ? null
+        : getXootKnowledgeReply(`${safeSubject} ${safeBody}`, signedIn);
+    /*
+     * Both switches must agree before a model answers.
+     *
+     * `support.openai_fallback` is the support-wide switch; `concierge.model_answers` is the
+     * Concierge-specific one and `concierge.kill.model_answers` overrides it. Requiring both
+     * narrows, never widens — turning the Concierge flag on cannot enable a model that the
+     * support-wide flag has switched off.
+     */
+    const supportOpenAiAllowed = adminClient
       ? await isOperationalControlEnabled(adminClient, "support.openai_fallback").catch((error) => {
           console.warn("support OpenAI gate lookup failed", { error: error instanceof Error ? error.message : String(error) });
           return false;
         })
       : false;
+    const openAiAllowed = supportOpenAiAllowed && concierge.modelAnswers;
     const openAiAssistant = escalated
       ? null
       : knowledgeAssistant ?? (openAiAllowed ? await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole, signedIn }) : null);

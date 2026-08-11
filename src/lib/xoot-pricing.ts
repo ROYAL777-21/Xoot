@@ -66,10 +66,31 @@ const MULTI_XOOTER_DISCOUNT_RATE = 0.1;
 export const MAX_XOOTERS = 5;
 
 /**
- * Only these take more than one Xooter, matching `multiWorkerServices` in the server.
- * The server set also lists "deep" and "premium", which are not client `ServiceId`s.
+ * Only these take more than one Xooter.
+ *
+ * `regular` is absent on purpose: there is no multi-worker ladder for a residential clean, and
+ * `deep` and `premium` both alias to `regular`, so neither can be priced with a second Xooter.
+ *
+ * ── The divergence this replaced, and what it cost ────────────────────────────────
+ * This set used to carry a note saying the server "also lists deep and premium, which are not
+ * client ServiceIds", as though that were a harmless naming difference. It was not. `Book.tsx`
+ * kept a *third* private list — `["airbnb","office","deep","moving","premium"]` — and used it to
+ * decide whether to show the "How many Xooters?" stepper. So a customer could pick a Deep clean
+ * and three Xooters. `quote()` then refused (regular is single-Xooter), `isPriced` came back
+ * false, `discountedBase` fell to 0, and the screen showed **R61** — the service fee and cover,
+ * with the entire clean priced at nothing. `create-booking` meanwhile charged the regular ladder
+ * times three with the multi-Xooter discount: **R860**.
+ *
+ * Measured 2026-08-09 on a 5.5-hour Deep clean. A R799 gap on a path a customer could reach in
+ * four taps, and the third time this codebase has shown one price and charged another.
+ *
+ * The lesson is the one `pricing-parity.test.ts` already encodes: a duplicated money rule drifts,
+ * and a comment acknowledging the duplication is not a control. `serviceAllowsMultipleXooters`
+ * below is now the only answer to the question, and the parity test pins it against the server.
  */
 export const MULTI_XOOTER_SERVICES: ReadonlySet<ServiceId> = new Set(["airbnb", "office", "moving"]);
+
+/** See `serviceAllowsMultipleXooters`, declared below `SERVICE_ALIASES` which it reads. */
 
 /** The discount rate applied at a given Xooter count. 0 below the threshold. */
 export const multiXooterDiscountRate = (xooterCount: number) =>
@@ -170,6 +191,16 @@ export type QuoteInput = {
    * state the same way.
    */
   frequency?: "one_time" | "repeat";
+  /**
+   * Care+ members never pay the service fee, at any frequency — the founder's 2026-08-09 pricing
+   * decision, alongside R99/month and one month free.
+   *
+   * Defaults to `false` for the same reason `frequency` defaults to `"one_time"`: a caller who
+   * forgets to pass it over-states the price rather than under-stating it. Showing a member R39
+   * they will not be charged is a bad quote; showing a non-member R0 they *will* be charged is
+   * the defect this repo already shipped once on `BookingConfirm`.
+   */
+  carePlusMember?: boolean;
 };
 
 export type PricedQuote = {
@@ -266,8 +297,12 @@ export function quote(input: QuoteInput): Quote {
   const addOnsCents = Math.max(0, input.addOns ?? 0) * ADD_ON_CENTS;
   const linenCents = input.linenOnSite ? LINEN_ON_SITE_CENTS : 0;
   const coverCents = input.bookingCover === false ? 0 : BOOKING_COVER_CENTS;
-  // Mirrors `create-booking`: `frequency === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0`.
-  const serviceFeeCents = (input.frequency ?? "one_time") === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0;
+  // Mirrors `create-booking` exactly, including the order of the two waivers. Membership wins
+  // first, then frequency — a member booking one-off still pays nothing.
+  const serviceFeeCents =
+    input.carePlusMember || (input.frequency ?? "one_time") !== "one_time"
+      ? 0
+      : ONE_TIME_SERVICE_FEE_CENTS;
 
   return {
     ok: true,
@@ -306,6 +341,20 @@ export const SERVICE_ALIASES: Record<string, ServiceId> = {
   airbnb: "airbnb",
   office: "office",
   moving: "moving",
+};
+
+/**
+ * Whether a service may be booked with more than one Xooter, answered from the **raw request
+ * vocabulary** rather than the priced `ServiceId`.
+ *
+ * Callers like `Book.tsx` hold the customer's chosen service (`"deep"`, `"premium"`, …) and not
+ * the aliased one, which is exactly why that screen grew its own list and why the two disagreed.
+ * Aliasing here means no caller has to keep one: `deep` and `premium` resolve to `regular` and
+ * correctly answer false, so the Xooter stepper never appears on a service that cannot price it.
+ */
+export const serviceAllowsMultipleXooters = (rawService: string): boolean => {
+  const service = SERVICE_ALIASES[rawService];
+  return service ? MULTI_XOOTER_SERVICES.has(service) : false;
 };
 
 /** Default hours implied by the home-size vocabulary. */

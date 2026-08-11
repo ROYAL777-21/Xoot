@@ -1,0 +1,34 @@
+# Paths Semgrep must not scan.
+#
+# Read automatically by every `semgrep scan`, so it applies to the registry packs in
+# `.github/workflows/semgrep.yml` as well as to `.semgrep/rules/`. Keeping the list here rather
+# than in CLI flags means a local run and a CI run see the same repository.
+
+# Build output and dependencies.
+node_modules/
+mobile/node_modules/
+dist/
+dist-ssr/
+build/
+.expo/
+ios/Pods/
+android/
+
+# Vendored third-party agent skills — installed by `npx skills add`, not authored here.
+# Measured 2026-08-08: 43 of 45 findings on the first full run came from this one directory,
+# almost all of them `innerHTML` inside `skills/impeccable/scripts/live-browser.js`, a bundled
+# browser-automation harness. Scanning code we do not maintain produces findings nobody can act
+# on, which is the fastest way to teach a team to ignore a scanner. `.claude/skills/VENDORED-EXTERNAL.md`
+# draws the same line for the same reason.
+skills/
+
+# The Claude Design export. One HTML file of base64-gzipped assets; there is no source to review.
+design/
+
+# Semgrep's own fixture. `.semgrep/rules/xoot.tsx` exists to make every rule fire, so scanning it
+# would report six findings by design. `semgrep --test` passes the file explicitly and is not
+# affected by this list.
+.semgrep/
+
+# Generated Supabase types.
+src/integrations/supabase/types.ts

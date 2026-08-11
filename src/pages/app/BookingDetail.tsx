@@ -9,6 +9,8 @@ import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCh
 import { resolvePhoto } from "@/components/zoot/XooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { BookingChat } from "@/components/zoot/BookingChat";
+import { VoiceCallPanel } from "@/components/zoot/VoiceCallPanel";
+import { FareSplitPanel } from "@/components/zoot/FareSplitPanel";
 import { SosButton } from "@/components/zoot/SosButton";
 import { TipCard } from "@/components/zoot/TipCard";
 import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
@@ -353,10 +355,13 @@ const BookingDetail = () => {
       // on the booking would be readable by the assigned Xooter immediately, which is
       // exactly what the founder ruled against. See the migration for the full reason.
       //
-      // `as any` because the table is not in the generated types yet: the migration is
-      // written and unapplied (ZD-003, ZD-005), which is also why `canOfferTip()` gates
-      // this. The cast goes away when the schema and its types are regenerated.
-      const { error: tipError } = await (supabase as any).from("booking_tips").insert(tipRow);
+      // The `as any` that used to be here is gone: the migration is applied on both projects and
+      // the table is in the generated types, so the cast would now hide real column mismatches
+      // rather than work around a missing type.
+      //
+      // `canOfferTip()` still gates this — the schema existing is not the same as tipping being
+      // switched on, and `TIP_READINESS` remains the switch for that.
+      const { error: tipError } = await supabase.from("booking_tips").insert(tipRow);
       if (tipError) {
         toast.warning("Review saved. The tip did not go through — you have not been charged.");
       } else {
@@ -476,10 +481,18 @@ const BookingDetail = () => {
               {maskedCallAvailable && (
                 <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2">
                   {requestingCall ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Phone className="h-4 w-4 mr-1" />}
-                  Request masked call
+                  Call by phone instead
                 </Button>
               )}
             </div>
+            {/*
+              In-app calling sits above the phone route, not beside it, because they are not equal
+              options: this one needs no number pool, costs nothing to provision and works on wifi,
+              while the masked-PSTN path rents numbers and carries the Twilio Proxy end-of-life
+              question. Same eligibility for both — `maskedCallAvailable` is passed in rather than
+              recomputed, so the two transports cannot drift into disagreeing about who may call.
+            */}
+            {id && <VoiceCallPanel bookingId={id} available={maskedCallAvailable} />}
             {maskedCall?.proxy_numbers && (
               <div className="mx-5 mb-5 rounded-2xl border border-border bg-muted/35 p-3 text-sm">
                 <p className="mb-2 font-semibold">Masked call proxy numbers</p>
@@ -496,6 +509,16 @@ const BookingDetail = () => {
               </div>
             )}
           </Card>
+
+          {/* Splitting is a payment relationship, not an access grant — the panel hides itself
+              once the booking is being paid, since there is then nothing left to divide. */}
+          {id && booking && (
+            <FareSplitPanel
+              bookingId={id}
+              totalRands={Number(booking.price ?? 0)}
+              paymentStatus={booking.payment_status}
+            />
+          )}
 
           <Card className="rounded-3xl p-5">
             <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Arrival tracking</h2>

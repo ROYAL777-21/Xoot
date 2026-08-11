@@ -11,6 +11,41 @@ Status values:
 - `Dashboard` - configured in third-party dashboard, not stored in repo.
 - `Manual` - requires founder/operator setup.
 
+## Which home does a secret go in?
+
+Three stores, and putting a secret in the wrong one is silent — nothing errors, the thing that
+needed it simply keeps behaving as if it were unset. Both of the questions asked so far had the
+same shape, so the rule is written down rather than answered again.
+
+**Ask who reads the value at the moment it is needed.**
+
+| Reader | Home | How to tell |
+| --- | --- | --- |
+| An **Edge Function**, at request time | **Supabase → Edge Functions → Secrets** | The code says `Deno.env.get("NAME")` inside `supabase/functions/` |
+| A **GitHub Actions runner**, during CI | **GitHub → Settings → Secrets and variables → Actions** | The workflow YAML says `${{ secrets.NAME }}` |
+| The **mobile build**, on EAS | **EAS secrets** (`eas secret:create`) | `app.config.ts` or `eas.json` reads it |
+
+Worked examples, both from real confusion:
+
+- **`ENCRYPTION_KEY` → Supabase.** `sensitive-access-read/index.ts:54` and
+  `sensitive-access-save/index.ts:55` call `Deno.env.get("ENCRYPTION_KEY")` and throw when it is
+  absent. Nothing in CI ever reads it. Put it in GitHub and gate codes stay unstorable, with no
+  error anywhere to say why. There is deliberately **no fallback** — it used to read
+  `ENCRYPTION_KEY ?? SUPABASE_SERVICE_ROLE_KEY`, which meant an unset key silently encrypted
+  every gate code with a value that also grants full database access.
+- **`SUPABASE_ACCESS_TOKEN` → GitHub.** It is a Supabase *management* credential, but the only
+  thing that uses it is a workflow: `tests.yml` reads it for the advisory drift step and
+  `deploy-edge-functions.yml` for the deploy itself. Putting it in Supabase's own secrets does
+  nothing — an Edge Function has no reason to redeploy itself. The Supabase CLI reads the same
+  name from your shell for local use; that is a convenience, not a second home.
+- **`CLAUDE_API_KEY` → GitHub.** `claude-security-review.yml` reads
+  `${{ secrets.CLAUDE_API_KEY }}`. It is not a Supabase secret and cannot be an OpenAI or
+  OpenRouter key: the action calls the Claude API directly and exposes no base-URL input.
+
+A secret can legitimately live in two homes when two different readers need it — the service-role
+key is in Supabase for functions and in EAS for nothing, but the Supabase *URL* is in all three.
+Duplication is fine; guessing is not.
+
 ## Security Rules
 
 - `VITE_` variables are public only.
@@ -43,6 +78,17 @@ Status values:
 | Edge Function OpenAI key | `OPENAI_API_KEY` | Supabase Edge Function secret | Referenced | Used only by support bot when available. |
 | Support model | `OPENAI_SUPPORT_MODEL` | Supabase Edge Function secret | Referenced | Defaults to `gpt-4.1-mini` in code. |
 | Supabase webhooks | Provider-specific callback URLs | Supabase Functions or provider dashboards | Template | Payment and comms callbacks are planned; must be server-side. |
+| Gate-code encryption key | `ENCRYPTION_KEY` | Supabase Edge Function secret | Referenced | Read by `sensitive-access-read` and `sensitive-access-save`. **No fallback** — both throw when it is absent, so gate codes cannot be stored until it is set. Never read back by Supabase, so its presence cannot be confirmed from a session; the only proof is a successful save. Issue #28. |
+
+## CI And Automation
+
+These are read by GitHub Actions runners, never by an Edge Function. See "Which home does a
+secret go in?" above — this is the section most often filed in the wrong place.
+
+| Item | Variable or dashboard field | Storage location | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Supabase management token | `SUPABASE_ACCESS_TOKEN` | GitHub Actions repository secret | Referenced | Read by `tests.yml` (advisory drift step, scoped to that one step so third-party install scripts in earlier steps cannot see it) and by `deploy-edge-functions.yml`. Grants management access to every project on the account — rotate if it ever appears in a log. |
+| Claude security review key | `CLAUDE_API_KEY` | GitHub Actions repository secret | Manual | Read by `claude-security-review.yml`. Must be an Anthropic key — the action calls the Claude API with no base-URL input, so OpenAI or OpenRouter cannot drive it. While unset the workflow guards and reports success in ~4 seconds; the duration is how you tell. Issue #29. |
 
 ## Payments: Stitch
 

@@ -4,6 +4,7 @@ import { Calendar, Crown, Gift, Heart, Home, LifeBuoy, LogOut, ShieldCheck, User
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { ConciergeOmnibox } from "@/components/zoot/ConciergeOmnibox";
 import { haptic } from "@/lib/haptics";
 
 const nav = [
@@ -109,7 +110,15 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
         </div>
       </nav>
 
-      <main className="flex-1 pb-28 lg:pb-0 min-w-0">{children}</main>
+      <main className="flex-1 pb-28 lg:pb-0 min-w-0">
+        {/* One search field for the whole app — it navigates, and hands anything it cannot place
+            to the Concierge. Constrained to the same max width the pages use so it lines up with
+            the content rather than floating over it. */}
+        <div className="container max-w-6xl pt-4 lg:pt-6">
+          <ConciergeOmnibox />
+        </div>
+        {children}
+      </main>
     </div>
   );
 };

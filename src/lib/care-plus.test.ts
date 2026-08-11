@@ -3,8 +3,10 @@ import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   CADENCE_DISCOUNT,
-  MIN_XOOTER_PAY_FULL_DAY_CENTS,
-  MIN_XOOTER_PAY_HALF_DAY_CENTS,
+  DISCOUNT_FUNDING,
+  CARE_PLUS_MONTHLY_CENTS,
+  FREE_MONTHS_AT_SIGNUP,
+  MIN_XOOTER_HOURLY_CENTS,
   OFFER_WINDOW_MS,
   PREMIUM_MONTHLY_CENTS,
   STANDARD_MONTHLY_CENTS,
@@ -23,33 +25,58 @@ const MEDIUM = 29600; // 5.5h regular clean, base before add-ons
 describe("care+ pricing", () => {
   beforeEach(() => window.localStorage.clear());
 
-  it("prices the tiers and the half-price win-back", () => {
-    expect(PREMIUM_MONTHLY_CENTS).toBe(19900);
-    expect(STANDARD_MONTHLY_CENTS).toBe(9900);
-    // The win-back price IS the standard tier, unchanged.
-    expect(WIN_BACK_MONTHLY_CENTS).toBe(STANDARD_MONTHLY_CENTS);
-    // Its "half the price of Premium" claim must never overstate the saving. R99 is
-    // 49.75% of R199 — slightly BETTER than half — so the claim is conservative and
-    // true. If Premium ever drops below double the standard tier, the copy becomes a
-    // false price representation and this fails.
-    expect(WIN_BACK_MONTHLY_CENTS * 2).toBeLessThanOrEqual(PREMIUM_MONTHLY_CENTS);
+  /** The paywall with comments removed, so a note about deleted copy is not read as the copy. */
+  const livePaywallSource = () =>
+    readFileSync(join(process.cwd(), "src/pages/CarePlusPaywall.tsx"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "");
+
+  it("prices one live tier at R99, with the R199 arm unsold", () => {
+    expect(CARE_PLUS_MONTHLY_CENTS).toBe(9900);
+    // Nothing to fall back to: the win-back price IS the membership price now.
+    expect(WIN_BACK_MONTHLY_CENTS).toBe(CARE_PLUS_MONTHLY_CENTS);
+    // The R199 arm is retained for a future A/B test and is not a live price. It used to
+    // anchor a "half the price of Premium" claim on the decline screen; with Premium unsold
+    // there is nothing for the half to be measured against, so that copy is gone. An
+    // unqualified saving would imply R99 was once higher, which it never was — a false price
+    // representation under the CPA. This asserts the claim's absence, not its arithmetic.
+    // Comments stripped first. The paywall carries a note explaining what was removed and why,
+    // and matching the raw file made that note trip its own guard — the same trap
+    // `pricing-parity.test.ts` documents for `Book.tsx`. A guard that fails on its own
+    // explanation teaches people to delete the explanation.
+    expect(livePaywallSource()).not.toMatch(/Half the price/i);
+    expect(livePaywallSource()).not.toMatch(/PREMIUM_MONTHLY_CENTS/);
   });
 
-  it("shows R199 is only rational at weekly cadence", () => {
-    // This is the arithmetic that decided the paywall is outcome-led rather than
-    // discount-led. If someone later softens the discounts, this fails loudly.
-    expect(savingsFor("weekly", MEDIUM, "premium").netCents).toBeGreaterThan(-2000);
-    expect(savingsFor("biweekly", MEDIUM, "premium").netCents).toBeLessThan(-9000);
-    expect(savingsFor("monthly", MEDIUM, "premium").netCents).toBeLessThan(-14000);
+  it("opens with a free month, and the CTA only says so while that is true", () => {
+    // "Join Care+ for free" is a promise with a condition. If the free period ever goes to
+    // zero the button has to change in the same commit, and this is what makes that fail
+    // rather than ship a button that lies.
+    expect(FREE_MONTHS_AT_SIGNUP).toBeGreaterThan(0);
+    const paywall = readFileSync(join(process.cwd(), "src/pages/CarePlusPaywall.tsx"), "utf8");
+    expect(paywall).toMatch(/Join Care\+ for free/);
+    // And the qualifier stays with it: the cleans are still charged during the free month.
+    expect(paywall).toMatch(/still charged for the cleans/);
   });
 
-  it("makes the win-back tier positive where R199 was not", () => {
-    // The whole point of the second offer: it serves the people the maths excludes.
-    // At R99 a fortnightly member is close to break-even rather than R103 down.
-    const biweeklyPremium = savingsFor("biweekly", MEDIUM, "premium").netCents;
-    const biweeklyStandard = savingsFor("biweekly", MEDIUM, "standard").netCents;
-    expect(biweeklyStandard).toBeGreaterThan(biweeklyPremium);
+  it("is only ahead on money at weekly cadence, even at R99", () => {
+    // The arithmetic that keeps the paywall outcome-led rather than discount-led. R99 moved
+    // weekly from break-even to genuinely ahead, and that is the only cadence it did. A
+    // fortnightly member is still down every month, and the copy must not imply otherwise —
+    // claiming a saving someone does not get is a false price representation under the CPA.
     expect(savingsFor("weekly", MEDIUM, "standard").netCents).toBeGreaterThan(0);
+    expect(savingsFor("biweekly", MEDIUM, "standard").netCents).toBeLessThan(0);
+    expect(savingsFor("monthly", MEDIUM, "standard").netCents).toBeLessThan(0);
+  });
+
+  it("charges the same whichever tier name a caller passes, while there is one tier", () => {
+    // `Tier` survives for the A/B arm, so "premium" is still a valid argument. Until that arm
+    // is live it must not quietly cost more than the price on the paywall.
+    for (const cadence of ["weekly", "biweekly", "monthly"]) {
+      expect(savingsFor(cadence, MEDIUM, "premium").feeCents)
+        .toBe(savingsFor(cadence, MEDIUM, "standard").feeCents);
+      expect(savingsFor(cadence, MEDIUM, "premium").feeCents).toBe(CARE_PLUS_MONTHLY_CENTS);
+    }
   });
 
   it("discounts a booking by cadence", () => {
@@ -59,22 +86,60 @@ describe("care+ pricing", () => {
     expect(CADENCE_DISCOUNT.biweekly).toBeGreaterThan(CADENCE_DISCOUNT.monthly);
   });
 
-  it("never pushes a Xooter below the documented minimum pay", () => {
-    // Shared funding is the short-term setting, so this floor is load-bearing.
+  it("takes nothing from the Xooter, because Xoot funds the whole discount", () => {
+    // `DISCOUNT_FUNDING` moved to "commission" on 2026-08-10. The 40% share was the least visible
+    // deduction in the product — on no screen, in no payout breakdown — and invisible deductions
+    // are resented when discovered rather than when levied. It was free to remove: `splitDiscount`
+    // is called from no production code, so the deduction had never actually run.
+    expect(DISCOUNT_FUNDING).toBe("commission");
+
     const discount = 4440; // 15% of R296
-    const tight = splitDiscount(discount, MIN_XOOTER_PAY_HALF_DAY_CENTS + 500, 4);
-    expect(tight.xooterCents).toBeLessThanOrEqual(500);
-    expect(tight.xootCents + tight.xooterCents).toBe(discount);
+    for (const pay of [10000, 19240, 23680, 45000]) {
+      for (const hours of [1, 4, 5.5, 8, 10]) {
+        const split = splitDiscount(discount, pay, hours);
+        expect({ pay, hours, xooter: split.xooterCents }).toEqual({ pay, hours, xooter: 0 });
+        expect(split.xootCents).toBe(discount);
+      }
+    }
+  });
 
-    // Already at the floor: the Xooter absorbs nothing and Xoot takes all of it.
-    const atFloor = splitDiscount(discount, MIN_XOOTER_PAY_HALF_DAY_CENTS, 4);
-    expect(atFloor.xooterCents).toBe(0);
-    expect(atFloor.xootCents).toBe(discount);
-    expect(atFloor.flooredBy).toBeGreaterThan(0);
+  it("keeps the hourly floor correct for the day shared funding returns", () => {
+    // The floor is dormant, not deleted: moving back to shared funding once volume justifies it was
+    // always the plan, and the arithmetic must still be right when it does. Asserted at the source
+    // level because `splitDiscount` reads the module constant and short-circuits before the floor.
+    //
+    // What it must never go back to is the placement day rate. R220/R300 come from
+    // `CarePlusApply` — a household hiring a domestic worker for standing days — and mapping a
+    // 5.5-hour clean onto them via `hours >= 6 ? full : half` put the floor above the standard job,
+    // where it could never fire.
+    expect(MIN_XOOTER_HOURLY_CENTS).toBe(3500);
+    const carePlus = readFileSync(join(process.cwd(), "src/lib/care-plus.ts"), "utf8");
+    expect(carePlus).toMatch(/const floor = Math\.round\(Math\.max\(0, hours\) \* MIN_XOOTER_HOURLY_CENTS\)/);
+    expect(carePlus).not.toMatch(/hours >= 6 \? MIN_XOOTER_PAY_FULL_DAY_CENTS/);
 
-    // Full-day work uses the higher floor.
-    const fullDay = splitDiscount(discount, MIN_XOOTER_PAY_FULL_DAY_CENTS, 8);
-    expect(fullDay.xooterCents).toBe(0);
+    // And re-enabling shared funding must ship with the deduction shown to the Xooter.
+    expect(carePlus).toMatch(/same commit as a\n \* line on the earnings screen showing the amount deducted/);
+  });
+
+  /**
+   * ⚠️ The compliance question this floor cannot answer, kept visible.
+   *
+   * The price ladder is sub-linear in hours — R296 for 5.5h but R430 for 10h — so pay per hour
+   * falls as bookings lengthen. At 35% commission a 10-hour regular clean returns R27.95/h, and
+   * even at the 20% floor it is R34.40/h. Whether R27.95 clears South Africa's national minimum
+   * wage for domestic work is a question about the ladder, and the figure changes every March.
+   *
+   * This test does not assert a legal threshold — it would be guessing. It asserts the number, so
+   * that a ladder change moves it here and someone has to look again.
+   */
+  it("records the worst hourly pay the ladder produces, for the minimum-wage check", () => {
+    const worstRegular = Math.round((43000 * 0.65) / 10); // 10h at R430, 35% commission
+    expect(worstRegular).toBe(2795);
+    expect(worstRegular).toBeLessThan(MIN_XOOTER_HOURLY_CENTS);
+
+    const atFloorRate = Math.round((43000 * 0.8) / 10);
+    expect(atFloorRate).toBe(3440);
+    expect(atFloorRate).toBeLessThan(MIN_XOOTER_HOURLY_CENTS);
   });
 
   it("splits the discount without ever losing or inventing cents", () => {

@@ -91,6 +91,150 @@ export const SERVICE_LENGTH_HOURS: Record<string, number> = {
   full_day: 8,
 };
 
+/* ── Commission ──────────────────────────────────────────────────────────────────
+ * What Xoot keeps, and what the Xooter is paid.
+ *
+ * Commission starts at 35% for a new Xooter and falls as they rank higher on
+ * `zooters.reliability_score` — ratings, punctuality, quality of work. The score decides
+ * which band; `minCompletedJobs` decides whether the band has been earned.
+ *
+ * ⚠️ KEEP IN SYNC with `src/lib/xooter-commission.ts`, which carries the full reasoning
+ * (including why a freshly approved Xooter scoring a perfect 100 must NOT get the floor).
+ * `pricing-parity.test.ts` fails if the two tables drift.
+ */
+
+export type CommissionBand = {
+  rank: string;
+  minScore: number;
+  minCompletedJobs: number;
+  rateBps: number;
+};
+
+export const COMMISSION_BANDS: CommissionBand[] = [
+  { rank: "new", minScore: 0, minCompletedJobs: 0, rateBps: 3500 },
+  { rank: "bronze", minScore: 85, minCompletedJobs: 5, rateBps: 3250 },
+  { rank: "silver", minScore: 88, minCompletedJobs: 15, rateBps: 3000 },
+  { rank: "gold", minScore: 93, minCompletedJobs: 50, rateBps: 2500 },
+  { rank: "platinum", minScore: 97, minCompletedJobs: 120, rateBps: 2000 },
+];
+
+export const STARTING_RATE_BPS = 3500;
+export const HYSTERESIS_POINTS = 3;
+/** Same 75 as `shouldDeprioritizeXooter` — one threshold, one meaning. */
+export const IN_TROUBLE_SCORE = 75;
+
+/**
+ * Resolve a Xooter's commission rate in basis points.
+ *
+ * Returns the starting rate on missing or non-numeric data rather than guessing: a Xooter on
+ * an unexpected 35% reports it the same day, whereas silently granting the 20% floor is a
+ * revenue leak nobody notices.
+ */
+export function commissionRateBps(input: {
+  reliabilityScore?: number | null;
+  completedJobs?: number | null;
+  currentRateBps?: number | null;
+}): number {
+  const { reliabilityScore, completedJobs, currentRateBps } = input;
+  if (typeof reliabilityScore !== "number" || !Number.isFinite(reliabilityScore)) {
+    return STARTING_RATE_BPS;
+  }
+  const score = Math.max(0, Math.min(100, reliabilityScore));
+  const jobs =
+    typeof completedJobs === "number" && Number.isFinite(completedJobs)
+      ? Math.max(0, Math.floor(completedJobs))
+      : 0;
+
+  if (score < IN_TROUBLE_SCORE) return STARTING_RATE_BPS;
+
+  let earned = COMMISSION_BANDS[0];
+  for (const band of COMMISSION_BANDS) {
+    if (jobs >= band.minCompletedJobs && score >= band.minScore) earned = band;
+  }
+
+  const held = COMMISSION_BANDS.find((b) => b.rateBps === currentRateBps) ?? null;
+  if (
+    held &&
+    held.rateBps < earned.rateBps &&
+    jobs >= held.minCompletedJobs &&
+    score >= held.minScore - HYSTERESIS_POINTS
+  ) {
+    return held.rateBps;
+  }
+  return earned.rateBps;
+}
+
+/**
+ * The 14-day earnings boost: a Xooter keeps 5% more of every job.
+ *
+ * ⚠️ KEEP IN SYNC with `src/lib/xooter-commission.ts`. Clamped at the floor — 20% is the confirmed
+ * absolute floor on Xoot's take, so a Platinum Xooter's boost is worth nothing and the grant path
+ * says so rather than issuing it silently.
+ */
+export const BOOST_BPS = 500;
+export const FLOOR_RATE_BPS = 2000;
+
+export const applyBoost = (rateBps: number, boostBps: number = BOOST_BPS): number =>
+  Math.max(FLOOR_RATE_BPS, rateBps - Math.max(0, boostBps));
+
+/**
+ * The boost rate active for a Xooter right now, or 0.
+ *
+ * Reads the row rather than trusting a flag, and filters on the window in SQL so an expired boost
+ * cannot be applied by a caller that forgot to check. A boost applies to bookings struck inside
+ * its window and never retroactively, because the rate is stamped once at assignment.
+ */
+export async function activeBoostBpsFor(supa: any, zooterId: string): Promise<number> {
+  if (!zooterId) return 0;
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supa
+    .from("xooter_commission_boosts")
+    .select("bps")
+    .eq("zooter_id", zooterId)
+    .lte("starts_at", nowIso)
+    .gt("ends_at", nowIso)
+    .order("bps", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  /*
+   * Degrade to "no boost", loudly.
+   *
+   * Returning 0 is the safe direction — a booking is struck at the earned rate rather than an
+   * invented one, and booking creation never fails because a reward table is unreachable. But
+   * silence is not safe. If this function is deployed before
+   * `20260809210000_xooter_commission_boosts.sql` is applied, every lookup errors and every boost
+   * quietly does nothing; a Xooter told they keep 5% more would not, and no one would find out.
+   *
+   * That is precisely how rate limiting stayed broken for the life of this project: the failure
+   * was real, the fallback was reasonable, and nothing ever said so. So it says so.
+   */
+  if (error) {
+    console.error("activeBoostBpsFor lookup failed; treating as no boost", {
+      zooterId,
+      message: error.message ?? String(error),
+    });
+    return 0;
+  }
+  return Number(data?.bps ?? 0);
+}
+
+/**
+ * Split a booking's **subtotal** between Xoot and the Xooter.
+ *
+ * The base is the subtotal, never the total: booking cover is a passed-through premium and the
+ * R39 service fee is Xoot's own charge for arranging the booking. Commissioning either would
+ * move a Xooter's pay because a customer ticked a box unrelated to the work.
+ */
+export function xooterPayout(subtotalCents: number, rateBps: number): {
+  commissionCents: number;
+  xooterPayCents: number;
+} {
+  const base = Math.max(0, Math.round(subtotalCents));
+  const commissionCents = Math.round((base * rateBps) / 10000);
+  return { commissionCents, xooterPayCents: base - commissionCents };
+}
+
 export type PriceResult =
   | { ok: true; hours: number; baseCents: number }
   | { ok: false; reason: string };

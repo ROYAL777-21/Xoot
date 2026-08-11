@@ -34,15 +34,27 @@ export const COLOR = {
     cardForeground: "0 0% 8%",
     primary: "0 0% 8%",
     primaryForeground: "0 0% 100%",
+    /**
+     * The kit's brand violet, carrying emphasis, selection and progress — never the commit
+     * button, which is ink. Added to the mirror 2026-08-08: it had been in `index.css` since the
+     * palette migration but never here, so the native app had no brand colour at all while the
+     * web had one. The old mirror test could not catch it, because it only checked that roles
+     * present in this file match the CSS, never that the CSS is fully covered.
+     *
+     * Held at violet-600, not the kit's nominal violet-500. See `design-contrast.test.ts`.
+     */
+    brand: "253 79% 58%",
+    brandForeground: "0 0% 100%",
     secondary: "30 11% 93%",
     secondaryForeground: "0 0% 14%",
     muted: "24 10% 90%",
     mutedForeground: "27 4% 47%",
     accent: "37 78% 56%",
     accentForeground: "14 18% 14%",
-    destructive: "7 78% 56%",
+    /** 48%, not 56%: at 56% the off-white label measured 3.70 and a button label is body text. */
+    destructive: "7 78% 48%",
     destructiveForeground: "36 40% 98%",
-    success: "155 47% 43%",
+    success: "155 47% 35%",
     successForeground: "0 0% 100%",
     warning: "37 78% 56%",
     warningForeground: "14 18% 14%",
@@ -50,6 +62,8 @@ export const COLOR = {
     input: "28 22% 88%",
     ring: "14 51% 53%",
     carePlus: "3 79% 51%",
+    /** White is exactly AA (4.50) on Care+ red, which is why the fill must not drift lighter. */
+    carePlusForeground: "0 0% 100%",
   },
   dark: {
     background: "20 13% 7%",
@@ -58,6 +72,9 @@ export const COLOR = {
     cardForeground: "20 13% 95%",
     primary: "20 13% 95%",
     primaryForeground: "0 0% 8%",
+    /** Lifted to violet-300 in dark so it reads against the near-black page, with ink on top. */
+    brand: "252 87% 78%",
+    brandForeground: "0 0% 8%",
     secondary: "20 6% 14%",
     secondaryForeground: "20 13% 95%",
     muted: "20 6% 15%",
@@ -65,7 +82,9 @@ export const COLOR = {
     accent: "37 78% 60%",
     accentForeground: "10 17% 7%",
     destructive: "7 78% 62%",
-    destructiveForeground: "12 38% 95%",
+    /** Ink, matching accent/success/warning. Off-white on this fill measured 2.88 — under the
+     *  3.0 UI floor, so the button was below minimum for its border and its label alike. */
+    destructiveForeground: "10 17% 7%",
     success: "155 40% 62%",
     successForeground: "10 17% 7%",
     warning: "37 78% 60%",
@@ -74,6 +93,8 @@ export const COLOR = {
     input: "8 17% 18%",
     ring: "4 100% 64%",
     carePlus: "3 79% 56%",
+    /** Ink: white on this fill is 4.06 and fails. 4.66 with ink. */
+    carePlusForeground: "10 17% 7%",
   },
 } as const;
 
@@ -160,3 +181,54 @@ export type TypeRole = keyof typeof TYPE;
  * it happens.
  */
 export const MIN_TAP_TARGET = 44;
+
+/**
+ * Motion, mirrored from `index.css`.
+ *
+ * Milliseconds as plain numbers rather than the CSS `280ms` strings: React Native's Animated
+ * and Reanimated both take numbers, and a mirror that needs parsing at the call site is a
+ * mirror that will be parsed differently in two places.
+ *
+ * `docs/xoot-ios-build-prompt.md` calls these "the first thing lost in a hand translation",
+ * which is what had happened — the kit referenced twelve tokens and this codebase declared none.
+ *
+ * Not split by scheme: durations and curves are the same in light and dark, so unlike `COLOR`
+ * there is one set.
+ */
+export const DURATION = {
+  instant: 90,
+  fast: 170,
+  base: 280,
+  slow: 440,
+  story: 760,
+  bloom: 1200,
+  /** Ambient loops. Long by intent — a breathing surface, a looping icon. */
+  breathe: 4600,
+  icon: 2600,
+} as const;
+
+/**
+ * Easing curves as their four control points.
+ *
+ * Kept as tuples rather than CSS strings so native can hand them straight to `Easing.bezier`.
+ * `spring` is the only one that overshoots past 1 — reserve it for arrivals, never exits, or
+ * things appear to bounce on their way out.
+ */
+export const EASING = {
+  out: [0.22, 0.9, 0.28, 1],
+  inOut: [0.6, 0.05, 0.3, 0.95],
+  settle: [0.16, 1, 0.3, 1],
+  spring: [0.34, 1.42, 0.5, 1],
+} as const;
+
+/**
+ * Honour the OS reduced-motion setting by zeroing durations, matching what `index.css` does
+ * under `@media (prefers-reduced-motion: reduce)`.
+ *
+ * Zeroing rather than skipping animations keeps every call site working unchanged: the
+ * animation still runs and still completes, it just takes no time. Native reads the setting
+ * from `AccessibilityInfo.isReduceMotionEnabled()`; this function exists so the *rule* lives in
+ * one place rather than being re-decided per screen.
+ */
+export const durationFor = (key: keyof typeof DURATION, reduceMotion: boolean) =>
+  reduceMotion ? 0 : DURATION[key];

@@ -1,0 +1,118 @@
+name: Semgrep
+
+# Static analysis that actually runs.
+#
+# WHY THIS EXISTS
+# ---------------
+# Measured on PR #39 (2026-08-08): four review mechanisms are wired to this repository and not one
+# of them read the diff.
+#
+#   - `security-review`  success in 4 seconds — `CLAUDE_API_KEY` is unset and the workflow guards
+#                        on it, so it short-circuits and still reports green.
+#   - CodeRabbit         absent; reviews are disabled for non-`main` base branches.
+#   - Codex              commented "you have reached your Codex usage limits for code reviews".
+#   - Supabase Preview   skipped; no `supabase/` changes in that PR, which is correct behaviour.
+#
+# Only `tests.yml` read anything. Three of those fail silently and one shows a green tick while
+# doing it, which is worse than no check at all — `.claude/skills/evidence-before-claims/SKILL.md`
+# is about exactly this class of signal.
+#
+# Semgrep OSS needs no API key, no vendor account and no quota. The rules that matter most here
+# live in `.semgrep/rules/` and are version-controlled next to the code they guard, so a reviewer
+# can read the rule that blocked them.
+#
+# WHY TWO JOBS
+# ------------
+# `xoot-rules` is a gate. Its rules encode defects this codebase has already shipped, its
+# exclusions are individually justified, and it was measured at **0 findings across 396 files**
+# before being made blocking — so a red result means a new occurrence, not a backlog.
+#
+# `registry` is advisory. First run triaged 2026-08-09: **145 rules across 717 files, 14 findings**
+# — the visible ones are unpinned GitHub Actions (`actions/checkout@v5` rather than a commit SHA),
+# which is supply-chain hardening advice and a judgement call, not a defect. Nothing in that run
+# justified blocking a merge, and 14 unread findings is exactly the backlog that teaches people to
+# ignore a scanner.
+#
+# Promote a *specific pack* rather than the whole job when one earns it. `p/secrets` is the
+# candidate: a committed key is never a judgement call. Findings are uploaded as a SARIF artifact
+# on every run, so the triage does not require re-running anything.
+
+# Matches tests.yml deliberately. Listing `claude/**` under both `push` and `pull_request` made
+# every run happen twice — measured on the first run of this workflow, 2026-08-09: four Semgrep
+# check runs on one commit, because a PR from a claude/** branch onto a claude/** branch fires
+# both triggers. Push covers the working branches; pull_request covers merges into main.
+on:
+  push:
+    branches: [main, "claude/**", "codex/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: semgrep-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  xoot-rules:
+    name: Xoot rules (blocking)
+    runs-on: ubuntu-latest
+    # Pinned to the version the rules were authored and verified against. `latest` would mean a
+    # pattern-syntax change upstream could turn this gate red on a PR that touched nothing.
+    container:
+      image: semgrep/semgrep:1.172.0
+    steps:
+      - uses: actions/checkout@v5
+
+      # The rules test themselves before they are trusted to judge anything.
+      #
+      # `.semgrep/rules/xoot.tsx` is a fixture where every rule has a line it must flag and a
+      # near-miss it must not — the correct spelling of the same call. Without this the rules
+      # could silently stop matching (a pattern typo, a parser change) and the gate would go green
+      # forever. `design-tokens.test.ts` shipped exactly that failure once: a fixture that wrote
+      # the dependency both ways and therefore could not fail.
+      - name: Prove the rules still fire
+        run: semgrep --test --config .semgrep/rules .semgrep/rules --metrics=off
+
+      # `--error` sets a non-zero exit on findings. Exclusions come from `.semgrepignore` so this
+      # command is identical to the one a developer runs locally.
+      - name: Scan
+        run: semgrep scan --config .semgrep/rules --error --metrics=off
+
+  registry:
+    name: Semgrep registry packs (advisory)
+    runs-on: ubuntu-latest
+    # Advisory until someone has read one run's output. It also depends on semgrep.dev being
+    # reachable, and a network failure must not block a merge.
+    continue-on-error: true
+    container:
+      image: semgrep/semgrep:1.172.0
+    steps:
+      - uses: actions/checkout@v5
+
+      # No `--error`: findings are reported, not enforced. `p/secrets` is the one most likely to
+      # earn promotion to the blocking job — a committed key is never a judgement call.
+      - name: Scan with community rule packs
+        run: |
+          semgrep scan \
+            --config p/typescript \
+            --config p/react \
+            --config p/secrets \
+            --config p/owasp-top-ten \
+            --metrics=off \
+            --sarif --output semgrep.sarif || true
+          semgrep scan \
+            --config p/typescript \
+            --config p/react \
+            --config p/secrets \
+            --config p/owasp-top-ten \
+            --metrics=off
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-registry-sarif
+          path: semgrep.sarif
+          if-no-files-found: ignore

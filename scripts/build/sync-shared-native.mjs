@@ -30,6 +30,12 @@ const MODULES = [
   // Generated from design/Xoot_App.html. The native app needs the same token values as the
   // web app, and it cannot read the CSS copy, so the TypeScript one crosses the root here.
   "kit-tokens.ts",
+  // The in-app call lifecycle. Shared for the same reason `safety.ts` is: the rules about when
+  // a call may start, when it is live, and which late events to ignore are identical on both
+  // surfaces, and two copies would answer "did that call connect?" differently on the day it
+  // matters. The transport differs — @twilio/voice-sdk on web, @twilio/voice-react-native-sdk
+  // on device — but the transport is what the hook wraps, not what this decides.
+  "voice-call.ts",
 ];
 
 // Resolved from this file, not from the working directory — mobile's `prestart` runs

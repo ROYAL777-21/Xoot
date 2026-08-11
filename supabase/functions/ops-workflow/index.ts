@@ -594,11 +594,14 @@ Deno.serve(async (req) => {
       const participant = await isBookingParticipant(supa, booking, userId);
       if (!participant.participant) return json({ error: "booking access denied" }, 403, origin);
 
+      // Raised from 3 with `create-masked-call`, and for the same reason: three attempts during
+      // an active booking is two dropped calls away from a ten-minute lockout at the moment
+      // contact matters most. Per user and per booking, so this is not a platform-wide budget.
       const rateLimit = await consumeRateLimit(supa, {
         bucket: "twilio.masked_voice",
         actor: `ops-masked-call:${userId}:${booking.id}`,
         action: "create",
-        limitCount: 3,
+        limitCount: 8,
         windowSeconds: 600,
       });
       if (!rateLimit.allowed) return json({ error: "too many masked call requests" }, 429, origin);

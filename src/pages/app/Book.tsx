@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { XooterCard, Xooter } from "@/components/zoot/XooterCard";
+import { ChipGrid } from "@/components/kit";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,13 @@ import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortXootersForMarketplace } from "@/lib/trust";
 import { calculateBookingQuote, isApprovedLaunchRegion } from "@/lib/operations";
-import { SERVICE_ALIASES, isPriced, quote as priceQuote, resolveHours } from "@/lib/xoot-pricing";
+import {
+  SERVICE_ALIASES,
+  isPriced,
+  quote as priceQuote,
+  resolveHours,
+  serviceAllowsMultipleXooters,
+} from "@/lib/xoot-pricing";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sanitiseSearchParam } from "@/lib/sanitise";
 import { BookingInput } from "@/lib/validators";
@@ -78,7 +85,15 @@ const TIME_GROUPS = [
   { label: "Midday", slots: TIME_SLOTS.filter((slot) => Number(slot.split(":")[0]) >= 12 && Number(slot.split(":")[0]) < 15) },
   { label: "Late day", slots: TIME_SLOTS.filter((slot) => Number(slot.split(":")[0]) >= 15) },
 ] as const;
-const allowsMultipleWorkers = (s: string) => ["airbnb", "office", "deep", "moving", "premium"].includes(s);
+/**
+ * Answered by the pricing module, not by a list kept here.
+ *
+ * The list this replaced included "deep" and "premium", so the Xooter stepper appeared on two
+ * services that alias to `regular` — which `quote()` refuses to price with a second Xooter. The
+ * refusal fell through to `discountedBase = 0`, and a Deep clean with three Xooters displayed
+ * R61 against a server charge of R860. `pricing-parity.test.ts` now pins this against the server.
+ */
+const allowsMultipleWorkers = serviceAllowsMultipleXooters;
 const isSafeDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00`).getTime());
 const serviceMultiplier: Record<string, number> = {
   residential: 1,
@@ -223,17 +238,60 @@ const Book = () => {
     });
   }, [user, requestedAddress]);
 
+  /*
+   * Rank Xooters by how far they actually are from this booking.
+   *
+   * ── What this replaced, and why it mattered ─────────────────────────────────
+   * This queried `zooters_public` directly with `.limit(30)`, no ordering by anything to do with
+   * the customer, and **ignored the address typed one step earlier**. `ai-match` existed and
+   * nothing in the app called it — so "matched with Xooters near you" was not a weak feature, it
+   * was an absent one.
+   *
+   * ── The fallback is not decoration ──────────────────────────────────────────
+   * If matching fails for any reason — the function is not deployed yet on this project, the
+   * address resolves to no known suburb, a network blip — this falls back to the old direct query.
+   * An empty Xooter list is indistinguishable to a customer from "Xoot has nobody", and losing a
+   * booking is a far worse outcome than losing the distance ordering.
+   */
   useEffect(() => {
     if (step !== 2) return;
+    let mounted = true;
     setLoadingXooters(true);
-    supabase.from("zooters_public").select("*").limit(30).then(({ data }) => {
-      const ranked = sortXootersForMarketplace((data ?? []) as Xooter[]);
-      const preferred = preferredXooterId ? ranked.find((z) => z.id === preferredXooterId) : null;
-      setXooters(ranked);
+
+    const applyResults = (rows: Xooter[]) => {
+      if (!mounted) return;
+      const preferred = preferredXooterId ? rows.find((z) => z.id === preferredXooterId) : null;
+      setXooters(rows);
       if (preferred) setPicked((current) => current.some((z) => z.id === preferred.id) ? current : [preferred]);
       setLoadingXooters(false);
-    });
-  }, [step, preferredXooterId]);
+    };
+
+    const fallback = async () => {
+      const { data } = await supabase.from("zooters_public").select("*").limit(30);
+      applyResults(sortXootersForMarketplace((data ?? []) as Xooter[]));
+    };
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("ai-match", {
+          // The address is what makes this proximity matching rather than a sort. It is the same
+          // value validated against the launch regions in step 1.
+          body: { address },
+        });
+        if (error) throw error;
+        const ranked = (data as { ranked?: Xooter[] } | null)?.ranked;
+        if (!ranked?.length) throw new Error("no ranked results");
+        applyResults(ranked);
+      } catch (err) {
+        console.warn("proximity matching unavailable; falling back to the plain roster", err);
+        await fallback();
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [step, preferredXooterId, address]);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -243,7 +301,6 @@ const Book = () => {
     return () => { supabase.removeChannel(channel); };
   }, [bookingId]);
 
-  const toggleExtra = (e: string) => setExtras((prev) => { const n = new Set(prev); n.has(e) ? n.delete(e) : n.add(e); return n; });
 
   const validateStep = () => {
     if (step === 1 && !address.trim()) { toast.error("Please enter your address"); return false; }
@@ -494,20 +551,21 @@ const Book = () => {
             </div>
           </div>
 
+          {/*
+            The kit's ChipGrid, in place of the hand-rolled one that was here. Same behaviour,
+            two things gained: the chips now carry `aria-pressed`, so a screen reader can say
+            which extras are chosen rather than reading four identical buttons, and they render
+            from `--xoot-*` so they follow the kit rather than diverging from it the next time
+            either is touched.
+          */}
           <section>
             <h3 className="font-semibold mb-2">Extra tasks</h3>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {EXTRAS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => toggleExtra(e)}
-                  className={`rounded-xl border px-3 py-2 text-sm transition ${extras.has(e) ? "border-foreground bg-foreground text-background" : "border-border bg-muted/35 hover:bg-muted"}`}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
+            <ChipGrid
+              label="Extra tasks"
+              options={EXTRAS}
+              value={Array.from(extras)}
+              onChange={(next) => setExtras(new Set(next))}
+            />
           </section>
           <div className="grid gap-3">
             <Label>Your address</Label>

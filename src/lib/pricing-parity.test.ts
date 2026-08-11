@@ -1,7 +1,17 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, ONE_TIME_SERVICE_FEE_CENTS } from "./xoot-pricing";
+import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, ONE_TIME_SERVICE_FEE_CENTS, MULTI_XOOTER_SERVICES, serviceAllowsMultipleXooters } from "./xoot-pricing";
+import { CADENCE_DISCOUNT } from "./care-plus";
+import { GRADED_SLOT_PRICING, SLOT_PREMIUM_CURVE } from "./operations";
+import {
+  BOOST_BPS,
+  COMMISSION_BANDS,
+  FLOOR_RATE_BPS,
+  HYSTERESIS_POINTS,
+  IN_TROUBLE_SCORE,
+  STARTING_RATE_BPS,
+} from "./xooter-commission";
 
 /**
  * The client ladders (src/lib/xoot-pricing.ts) and the server ladders
@@ -136,9 +146,9 @@ describe("client/server pricing parity", () => {
     const ops = readFileSync(join(process.cwd(), "src/lib/operations.ts"), "utf8");
 
     // Rate and threshold must agree across client and server.
-    const serverRate = /isHighDemandSlot\(time\) \? Math\.round\(subtotalCents \* ([\d.]+)\)/.exec(fn);
+    const serverRate = /const HIGH_DEMAND_SLOT_RATE = ([\d.]+)/.exec(fn);
     const clientRate = /HIGH_DEMAND_SLOT_RATE = ([\d.]+)/.exec(ops);
-    expect(serverRate, "server no longer computes a high-demand premium").toBeTruthy();
+    expect(serverRate, "server no longer defines HIGH_DEMAND_SLOT_RATE").toBeTruthy();
     expect(clientRate, "client no longer defines HIGH_DEMAND_SLOT_RATE").toBeTruthy();
     expect(clientRate![1]).toBe(serverRate![1]);
 
@@ -146,8 +156,8 @@ describe("client/server pricing parity", () => {
     expect(hourOf(fn)![2] ?? hourOf(fn)![1]).toBe(hourOf(ops)![1] ?? hourOf(ops)![2]);
 
     // Charged on the subtotal, so the premium never applies to booking cover on either side.
-    expect(fn).toMatch(/Math\.round\(subtotalCents \* [\d.]+\)/);
-    expect(ops).toMatch(/Math\.round\(subtotal \* HIGH_DEMAND_RATE\)/);
+    expect(fn).toMatch(/Math\.round\(subtotalCents \* slotPremiumRate\(time\)\)/);
+    expect(ops).toMatch(/Math\.round\(subtotal \* slotPremiumRate\(time\)\)/);
 
     // The Care+ discount is likewise a rate on the subtotal. The client models no equivalent,
     // so this only pins the server's figure against silent change.
@@ -212,5 +222,350 @@ describe("client/server pricing parity", () => {
     if (!isPriced(implicit) || !isPriced(explicit)) throw new Error("expected a price");
     expect(implicit.totalCents).toBe(explicit.totalCents);
     expect(implicit.serviceFeeCents).toBe(ONE_TIME_SERVICE_FEE_CENTS);
+  });
+
+  /**
+   * Care+ members pay no booking fee — founder decision 2026-08-09, alongside R99/month and one
+   * month free.
+   *
+   * This is the half of that decision that can go wrong quietly. The paywall now promises "no
+   * booking fee, ever" in writing; if `create-booking` still adds R39, the promise is a false
+   * price representation under the CPA and the customer is charged past a total they agreed to.
+   * That is the same defect this repo already shipped once, when `quote()` had no concept of the
+   * fee and `BookingConfirm` under-stated by R39.
+   *
+   * Asserted against the server source, not a copy of the rule, so the two cannot drift.
+   */
+  it("waives the fee for Care+ members, and the server agrees", () => {
+    const member = quote({ service: "regular", hours: 6, frequency: "one_time", carePlusMember: true });
+    const nonMember = quote({ service: "regular", hours: 6, frequency: "one_time" });
+    if (!isPriced(member) || !isPriced(nonMember)) throw new Error("expected a price");
+
+    expect(member.serviceFeeCents).toBe(0);
+    expect(member.totalCents).toBe(nonMember.totalCents - ONE_TIME_SERVICE_FEE_CENTS);
+
+    // A member booking recurring pays nothing either — membership wins before frequency.
+    const recurringMember = quote({ service: "regular", hours: 6, frequency: "repeat", carePlusMember: true });
+    if (!isPriced(recurringMember)) throw new Error("expected a price");
+    expect(recurringMember.serviceFeeCents).toBe(0);
+
+    // The server's rule, read from its source. `isCarePlusMember` comes from the same lookup
+    // that decides the discount, so a member cannot receive the discount and still be charged
+    // the fee — the combination that would be hardest to spot in a receipt.
+    const serverSrc = readFileSync(join(process.cwd(), "supabase/functions/create-booking/index.ts"), "utf8");
+    expect(serverSrc).toMatch(/const isCarePlusMember = carePlusDiscountRate > 0;/);
+    expect(serverSrc).toMatch(
+      /isCarePlusMember \|\| frequency !== "one_time" \? 0 : ONE_TIME_SERVICE_FEE_CENTS/,
+    );
+  });
+
+  /**
+   * Which services take more than one Xooter — the same question in three places.
+   *
+   * Until 2026-08-09 there were three answers. `xoot-pricing.ts` said `{airbnb, office, moving}`,
+   * and `create-booking` and `Book.tsx` both said `{airbnb, office, deep, moving, premium}`.
+   * `deep` and `premium` alias to `regular`, which is single-Xooter, so `quote()` refused, the
+   * booking screen's `discountedBase` fell to 0, and a 5.5-hour Deep clean with three Xooters
+   * displayed **R61** while the server charged **R860**.
+   *
+   * That is the third time this codebase has shown one price and charged another, and under the
+   * Consumer Protection Act the displayed price is the price. So all three are pinned here, and
+   * `Book.tsx` is asserted to hold no list of its own — a matching copy is still a copy, and the
+   * copies are what drifted.
+   */
+  it("agrees on which services take more than one Xooter", () => {
+    const fn = readFileSync(
+      join(process.cwd(), "supabase/functions/create-booking/index.ts"),
+      "utf8",
+    );
+
+    const serverSet = /const multiWorkerServices = new Set\(\[([^\]]*)\]\)/.exec(fn);
+    expect(serverSet, "server no longer defines multiWorkerServices").toBeTruthy();
+    const serverServices = [...serverSet![1].matchAll(/"(\w+)"/g)].map((m) => m[1]).sort();
+
+    expect(serverServices).toEqual([...MULTI_XOOTER_SERVICES].sort());
+
+    // The alias layer is what made the old divergence look harmless, so it is asserted too:
+    // every service the server accepts must survive aliasing into a multi-Xooter ServiceId.
+    for (const service of serverServices) {
+      expect({ service, multi: serviceAllowsMultipleXooters(service) }).toEqual({
+        service,
+        multi: true,
+      });
+    }
+
+    // And the two that caused it must answer false through the raw vocabulary the UI uses.
+    for (const service of ["deep", "premium", "residential", "regular", "express"]) {
+      expect({ service, multi: serviceAllowsMultipleXooters(service) }).toEqual({
+        service,
+        multi: false,
+      });
+    }
+  });
+
+  it("keeps Book.tsx asking the pricing module instead of keeping its own list", () => {
+    const book = readFileSync(join(process.cwd(), "src/pages/app/Book.tsx"), "utf8");
+    expect(book).toMatch(/allowsMultipleWorkers = serviceAllowsMultipleXooters/);
+    // The literal list that caused the R799 gap must not come back, here or anywhere in the file.
+    expect(book).not.toMatch(/\["airbnb",\s*"office",\s*"deep"/);
+  });
+
+  /**
+   * The screen and the server must agree on the total for a multi-Xooter booking, not just on
+   * who is eligible. This is the assertion that would have caught the R61-versus-R860 gap.
+   */
+  it("prices a multi-Xooter booking the same way the server does", () => {
+    // Server: base x (1 - 10% at 3+) x workerCount, on the aliased ladder.
+    const hours = 6;
+    const workers = 3;
+    const q = quote({ service: "office", hours, xooterCount: workers, bookingCover: false, addOns: 0 });
+    if (!isPriced(q)) throw new Error("client refused a booking the server accepts");
+
+    const rung = serverLadder("OFFICE")[String(hours)];
+    const serverBaseCents = Math.round(rung * 0.9) * workers;
+    expect(q.baseCents).toBe(serverBaseCents);
+    expect(q.discountRate).toBe(0.1);
+
+    // And a service the server refuses must be refused here too, rather than priced at zero.
+    const refused = quote({ service: "regular", hours, xooterCount: workers });
+    expect(isPriced(refused)).toBe(false);
+  });
+
+  /**
+   * Graded slot pricing, and the flag holding it off.
+   *
+   * The flag is the dangerous part. A pricing model half-enabled — live on the server, off in the
+   * quote — charges a customer past a total they agreed, which is the defect this repo already
+   * shipped once with the R39 fee. So the boolean and the curve are both pinned across the two
+   * files, and the flag's value is asserted rather than merely compared: turning it on is a
+   * founder decision, and this test is where that decision has to be made explicitly.
+   */
+  it("holds graded slot pricing off, identically on client and server", () => {
+    const fn = readFileSync(
+      join(process.cwd(), "supabase/functions/create-booking/index.ts"),
+      "utf8",
+    );
+    const ops = readFileSync(join(process.cwd(), "src/lib/operations.ts"), "utf8");
+
+    const flagOf = (src: string) => /GRADED_SLOT_PRICING = (true|false)/.exec(src)?.[1];
+    expect(flagOf(fn), "server no longer defines GRADED_SLOT_PRICING").toBeTruthy();
+    expect(flagOf(ops)).toBe(flagOf(fn));
+    // If this fails because someone enabled the curve, that is the intended conversation: update
+    // this expectation in the same commit, deliberately.
+    expect(flagOf(ops)).toBe("false");
+    expect(GRADED_SLOT_PRICING).toBe(false);
+
+    const curveOf = (src: string) => {
+      const start = src.indexOf("SLOT_PREMIUM_CURVE");
+      const body = src.slice(start, src.indexOf("};", start));
+      return Object.fromEntries(
+        [...body.matchAll(/"(\d\d:\d\d)":\s*([\d.]+)/g)].map((m) => [m[1], Number(m[2])]),
+      );
+    };
+    expect(curveOf(fn)).toEqual(curveOf(ops));
+    expect(curveOf(ops)).toEqual(SLOT_PREMIUM_CURVE);
+
+    // Both sides choose the model in one function, so the flag cannot be honoured in the quote
+    // and forgotten in the receipt.
+    for (const src of [fn, ops]) {
+      expect(src).toMatch(/if \(GRADED_SLOT_PRICING\) return SLOT_PREMIUM_CURVE\[time\] \?\? 0;/);
+    }
+  });
+
+  /**
+   * The commission ladder, which decides what a person is paid.
+   *
+   * This is the newest duplicated table and the one with the worst failure mode. A drifted price
+   * ladder shows a customer the wrong number; a drifted commission ladder pays a Xooter the wrong
+   * amount, and they have no way to check it. So the whole band table is compared row by row
+   * rather than spot-checked, and the behavioural rules are asserted against the server's own
+   * resolver rather than a description of it.
+   */
+  it("agrees on every commission band between client and server", () => {
+    const start = serverSrc.indexOf("export const COMMISSION_BANDS");
+    expect(start, "server no longer defines COMMISSION_BANDS").toBeGreaterThan(-1);
+    const body = serverSrc.slice(start, serverSrc.indexOf("];", start));
+
+    const serverBands = [...body.matchAll(
+      /\{\s*rank:\s*"(\w+)",\s*minScore:\s*(\d+),\s*minCompletedJobs:\s*(\d+),\s*rateBps:\s*(\d+)\s*\}/g,
+    )].map((m) => ({
+      rank: m[1],
+      minScore: Number(m[2]),
+      minCompletedJobs: Number(m[3]),
+      rateBps: Number(m[4]),
+    }));
+
+    expect(serverBands).toEqual(
+      COMMISSION_BANDS.map(({ rank, minScore, minCompletedJobs, rateBps }) => ({
+        rank,
+        minScore,
+        minCompletedJobs,
+        rateBps,
+      })),
+    );
+  });
+
+  /**
+   * The boost, and the clamp that makes the 20% floor mean something.
+   *
+   * Client and server both reduce a rate and both clamp. If only one clamped, a boosted Platinum
+   * Xooter would be paid at 15% by whichever side forgot — and since the rate is stamped by the
+   * server, the client would be showing a number the booking does not carry.
+   */
+  it("agrees on the earnings boost and its floor clamp", () => {
+    const serverNum = (name: string) => {
+      const m = serverSrc.match(new RegExp(`export const ${name} = (\\d+)`));
+      if (!m) throw new Error(`server constant ${name} not found`);
+      return Number(m[1]);
+    };
+    expect(serverNum("BOOST_BPS")).toBe(BOOST_BPS);
+    expect(serverNum("FLOOR_RATE_BPS")).toBe(FLOOR_RATE_BPS);
+
+    // Both sides clamp at the floor, in the same shape.
+    expect(serverSrc).toMatch(
+      /Math\.max\(FLOOR_RATE_BPS, rateBps - Math\.max\(0, boostBps\)\)/,
+    );
+
+    // And the boost window is filtered in SQL, so an expired boost cannot be applied by a caller
+    // that forgot to check the dates.
+    expect(serverSrc).toMatch(/\.lte\("starts_at", nowIso\)/);
+    expect(serverSrc).toMatch(/\.gt\("ends_at", nowIso\)/);
+  });
+
+  /**
+   * The boost lookup must fail loudly, not just safely.
+   *
+   * Returning 0 when the table is unreachable is the right fallback — a booking is struck at the
+   * earned rate rather than an invented one. But if the functions ship before the migration, every
+   * boost silently does nothing and a Xooter promised 5% more does not get it. That combination —
+   * a real failure, a reasonable fallback, and no signal — is exactly how rate limiting stayed
+   * broken for the life of this project.
+   */
+  it("logs when the boost lookup fails instead of swallowing it", () => {
+    expect(serverSrc).toMatch(/const \{ data, error \} = await supa\s*\n?\s*\.from\("xooter_commission_boosts"\)/);
+    expect(serverSrc).toMatch(/if \(error\) \{[\s\S]{0,200}console\.error\(/);
+    expect(serverSrc).toMatch(/treating as no boost/);
+  });
+
+  it("applies the boost at both points where a rate is struck", () => {
+    for (const path of [
+      "supabase/functions/create-booking/index.ts",
+      "supabase/functions/respond-zooter-job/index.ts",
+    ]) {
+      const src = readFileSync(join(process.cwd(), path), "utf8");
+      expect(src, `${path} does not read an active boost`).toMatch(/activeBoostBpsFor\(supa,/);
+      expect(src, `${path} does not apply the boost`).toMatch(
+        /boost > 0 \? applyBoost\(earned, boost\) : earned/,
+      );
+    }
+  });
+
+  it("agrees on the commission thresholds that are not in the band table", () => {
+    const serverNum = (name: string) => {
+      const m = serverSrc.match(new RegExp(`export const ${name} = (\\d+)`));
+      if (!m) throw new Error(`server constant ${name} not found`);
+      return Number(m[1]);
+    };
+    expect(serverNum("STARTING_RATE_BPS")).toBe(STARTING_RATE_BPS);
+    expect(serverNum("HYSTERESIS_POINTS")).toBe(HYSTERESIS_POINTS);
+    expect(serverNum("IN_TROUBLE_SCORE")).toBe(IN_TROUBLE_SCORE);
+  });
+
+  /**
+   * The rules, not just the numbers.
+   *
+   * A band table can match while the code reading it disagrees — the day-one trap is exactly
+   * that shape, since it lives in the resolver and not in any constant. These assert the three
+   * behaviours that decide pay, read out of the server source.
+   */
+  it("keeps the server resolver's three pay rules intact", () => {
+    // 1. Missing score falls to the starting rate, not to a guess.
+    expect(serverSrc).toMatch(
+      /if \(typeof reliabilityScore !== "number"[\s\S]{0,80}return STARTING_RATE_BPS;/,
+    );
+    // 2. Below the in-trouble threshold is the starting rate, with no hysteresis reprieve.
+    expect(serverSrc).toMatch(/if \(score < IN_TROUBLE_SCORE\) return STARTING_RATE_BPS;/);
+    // 3. A band requires the job count as well as the score — the day-one trap.
+    expect(serverSrc).toMatch(/jobs >= band\.minCompletedJobs && score >= band\.minScore/);
+    // And commission is charged on the subtotal, never the total.
+    expect(serverSrc).toMatch(/xooterPayout\(subtotalCents: number/);
+  });
+
+  /**
+   * The rate is struck once and stored, never recomputed at payout.
+   *
+   * This is the property that makes the ladder trustworthy rather than arbitrary. A rank moves;
+   * a Xooter who accepted a job at 30% and picked up a late arrival the following week must not
+   * be paid at 35% for work already agreed and already done. On a R296 clean the two ends of
+   * the ladder are R44.40 apart, and the Xooter has no way to audit a number that changed after
+   * the fact.
+   *
+   * Both stamping points are asserted, because a booking can be created with a Xooter chosen or
+   * with nobody chosen, and only one of those two paths is obvious.
+   */
+  it("strikes the commission rate once, at whichever point the Xooter becomes known", () => {
+    const create = readFileSync(
+      join(process.cwd(), "supabase/functions/create-booking/index.ts"),
+      "utf8",
+    );
+    const respond = readFileSync(
+      join(process.cwd(), "supabase/functions/respond-zooter-job/index.ts"),
+      "utf8",
+    );
+
+    // Booking time: the rate comes from the assigned Xooter's own rank, per booking row, and is
+    // null when nobody is assigned rather than defaulted to something that reads as agreed.
+    expect(create).toMatch(/commission_rate_bps: zooterId \? commissionRates\.get\(zooterId\)/);
+    expect(create).toMatch(/reliabilityScore: row\.reliability_score/);
+    expect(create).toMatch(/completedJobs: row\.jobs_completed/);
+
+    // Acceptance time: only when the booking was created unassigned. The `.is(..., null)` guard
+    // is what stops an accept from overwriting a rate already struck at booking time.
+    expect(respond).toMatch(/if \(nextState === "accepted"\)/);
+    expect(respond).toMatch(/\.is\("commission_rate_bps", null\)/);
+    expect(respond).toMatch(/select\("id,reliability_score,jobs_completed"\)/);
+
+    // Neither may reach for the schedule directly; both go through the shared resolver.
+    for (const src of [create, respond]) {
+      expect(src).toMatch(/commissionRateBps/);
+      expect(src).not.toMatch(/rateBps:\s*3500/);
+    }
+  });
+
+  it("keeps the migration's stored-rate column honest about being nullable", () => {
+    const migration = readFileSync(
+      join(process.cwd(), "supabase/migrations/20260809120000_booking_commission_rate.sql"),
+      "utf8",
+    );
+    // No default and no NOT NULL: an absence means "no Xooter has accepted yet", and that is a
+    // state the schema has to be able to express.
+    expect(migration).toMatch(/add column if not exists commission_rate_bps integer;/);
+    expect(migration).not.toMatch(/commission_rate_bps integer[^;]*(not null|default)/i);
+    // A typo of 35 or 3500000 still fails loudly, while tuning the schedule needs no migration.
+    expect(migration).toMatch(/between 500 and 5000/);
+    for (const band of COMMISSION_BANDS) {
+      expect(band.rateBps).toBeGreaterThanOrEqual(500);
+      expect(band.rateBps).toBeLessThanOrEqual(5000);
+    }
+  });
+
+  /**
+   * The divergence this change did NOT fix, recorded so it is not mistaken for agreement.
+   *
+   * `care-plus.ts` describes cadence-tiered discounts — 15% weekly, 10% fortnightly, 5% monthly —
+   * and `create-booking`'s `getCarePlusDiscount` returns a flat **0.1** for every active member,
+   * ignoring cadence entirely. Any surface quoting 15% to a weekly member would be quoting a
+   * discount the server does not give.
+   *
+   * Not fixed here because it changes what members are charged, which is the founder's call and
+   * not a side effect of a copy change. Pinned so the day someone aligns them, this test tells
+   * them the client half exists.
+   */
+  it("records that the server discount is flat, not cadence-tiered", () => {
+    const serverSrc = readFileSync(join(process.cwd(), "supabase/functions/create-booking/index.ts"), "utf8");
+    expect(serverSrc, "server no longer returns a flat Care+ rate — align CADENCE_DISCOUNT")
+      .toMatch(/const getCarePlusDiscount[\s\S]{0,400}return 0\.1;/);
+    expect(CADENCE_DISCOUNT.weekly).toBe(0.15);
+    expect(CADENCE_DISCOUNT.weekly).not.toBe(0.1);
   });
 });

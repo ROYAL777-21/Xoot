@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_audit_log: {
@@ -512,6 +537,77 @@ export type Database = {
           },
         ]
       }
+      booking_fare_splits: {
+        Row: {
+          accepted_at: string | null
+          amount_cents: number
+          booking_id: string
+          created_at: string
+          id: string
+          invited_by: string
+          invited_email: string
+          payer_user_id: string | null
+          payment_record_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          amount_cents: number
+          booking_id: string
+          created_at?: string
+          id?: string
+          invited_by: string
+          invited_email: string
+          payer_user_id?: string | null
+          payment_record_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          amount_cents?: number
+          booking_id?: string
+          created_at?: string
+          id?: string
+          invited_by?: string
+          invited_email?: string
+          payer_user_id?: string | null
+          payment_record_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_fare_splits_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_fare_splits_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_fare_splits_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_fare_splits_payment_record_id_fkey"
+            columns: ["payment_record_id"]
+            isOneToOne: false
+            referencedRelation: "payment_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_invoices: {
         Row: {
           booking_id: string
@@ -853,6 +949,86 @@ export type Database = {
           },
         ]
       }
+      booking_tips: {
+        Row: {
+          amount_cents: number
+          booking_id: string
+          created_at: string
+          settled_at: string | null
+          updated_at: string
+          user_id: string
+          zooter_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          booking_id: string
+          created_at?: string
+          settled_at?: string | null
+          updated_at?: string
+          user_id: string
+          zooter_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          booking_id?: string
+          created_at?: string
+          settled_at?: string | null
+          updated_at?: string
+          user_id?: string
+          zooter_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_tips_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_tips_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_tips_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_tips_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_contractor_quality"
+            referencedColumns: ["zooter_id"]
+          },
+          {
+            foreignKeyName: "booking_tips_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_tips_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_tips_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           address: string | null
@@ -863,6 +1039,7 @@ export type Database = {
           cancellation_fee: number
           cancelled_at: string | null
           cancelled_by: string | null
+          commission_rate_bps: number | null
           completed_at: string | null
           completion_photo_required: boolean
           created_at: string
@@ -908,6 +1085,7 @@ export type Database = {
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
+          commission_rate_bps?: number | null
           completed_at?: string | null
           completion_photo_required?: boolean
           created_at?: string
@@ -953,6 +1131,7 @@ export type Database = {
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
+          commission_rate_bps?: number | null
           completed_at?: string | null
           completion_photo_required?: boolean
           created_at?: string
@@ -2919,6 +3098,33 @@ export type Database = {
         }
         Relationships: []
       }
+      suburb_centroids: {
+        Row: {
+          active: boolean
+          created_at: string
+          latitude: number
+          longitude: number
+          region: string
+          suburb: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          latitude: number
+          longitude: number
+          region: string
+          suburb: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          latitude?: number
+          longitude?: number
+          region?: string
+          suburb?: string
+        }
+        Relationships: []
+      }
       support_followups: {
         Row: {
           booking_id: string | null
@@ -2983,6 +3189,92 @@ export type Database = {
           },
           {
             foreignKeyName: "support_followups_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_handoff_contexts: {
+        Row: {
+          booking_id: string | null
+          consent_to_share_context: boolean
+          correlation_id: string
+          created_at: string
+          customer_stated_issue: string
+          id: string
+          intent_category: string
+          recommended_owner: string
+          recommended_queue: string
+          requested_action: string
+          role_type: string
+          safe_context: Json
+          ticket_id: string
+          updated_at: string
+          urgency_level: number
+          user_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          consent_to_share_context?: boolean
+          correlation_id?: string
+          created_at?: string
+          customer_stated_issue: string
+          id?: string
+          intent_category?: string
+          recommended_owner?: string
+          recommended_queue?: string
+          requested_action?: string
+          role_type?: string
+          safe_context?: Json
+          ticket_id: string
+          updated_at?: string
+          urgency_level?: number
+          user_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          consent_to_share_context?: boolean
+          correlation_id?: string
+          created_at?: string
+          customer_stated_issue?: string
+          id?: string
+          intent_category?: string
+          recommended_owner?: string
+          recommended_queue?: string
+          requested_action?: string
+          role_type?: string
+          safe_context?: Json
+          ticket_id?: string
+          updated_at?: string
+          urgency_level?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_handoff_contexts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "support_handoff_contexts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "support_handoff_contexts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_handoff_contexts_ticket_id_fkey"
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "support_tickets"
@@ -3473,6 +3765,68 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      xooter_commission_boosts: {
+        Row: {
+          bps: number
+          created_at: string
+          ends_at: string
+          granted_by: string | null
+          id: string
+          reason: string
+          starts_at: string
+          zooter_id: string
+        }
+        Insert: {
+          bps?: number
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          reason: string
+          starts_at?: string
+          zooter_id: string
+        }
+        Update: {
+          bps?: number
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          reason?: string
+          starts_at?: string
+          zooter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_contractor_quality"
+            referencedColumns: ["zooter_id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4921,8 +5275,42 @@ export type Database = {
         Args: { p_environment?: string; p_provider: string }
         Returns: boolean
       }
+      can_create_masked_call: {
+        Args: { p_actor_id: string; p_booking_id: string }
+        Returns: {
+          allowed: boolean
+          eligible_until: string
+          participant_role: string
+          reason: string
+        }[]
+      }
       can_release_zooter_payout: {
         Args: { p_booking_id?: string; p_zooter_id: string }
+        Returns: boolean
+      }
+      claim_provider_event: {
+        Args: {
+          p_event_id: string
+          p_event_type: string
+          p_metadata: Json
+          p_payload_hash: string
+          p_provider: string
+          p_subject_id: string
+          p_subject_table: string
+        }
+        Returns: {
+          already_seen: boolean
+          provider_event_id: string
+        }[]
+      }
+      consume_rate_limit: {
+        Args: {
+          p_action: string
+          p_actor_hash: string
+          p_bucket: string
+          p_limit_count: number
+          p_window_seconds: number
+        }
         Returns: boolean
       }
       get_accepted_zooter_job_destinations: {
@@ -5001,6 +5389,14 @@ export type Database = {
       is_zoot_black_eligible: {
         Args: { p_area_key?: string; p_zooter_id: string }
         Returns: boolean
+      }
+      mark_provider_event_processed: {
+        Args: {
+          p_error_message: string
+          p_provider_event_id: string
+          p_status: string
+        }
+        Returns: undefined
       }
       set_safety_pin: { Args: { new_pin: string }; Returns: boolean }
       verify_safety_pin: {
@@ -5164,6 +5560,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "user", "zooter"],

@@ -116,11 +116,24 @@ Deno.serve(async (req) => {
     const participant = await assertBookingParticipant(supa, booking, user.id);
     if (!participant.participant) return fail("booking access denied", origin, 403);
 
+    /*
+     * 3 per 10 minutes was too tight, and tight in the worst place.
+     *
+     * A masked call is only offered during an active booking window — someone is en route or at
+     * the door. That is exactly when a call drops on mobile data and gets retried, and three
+     * attempts is two drops away from a ten-minute lockout at the moment contact matters most.
+     *
+     * 8 still stops the abuse this guards against: each attempt provisions a Twilio Proxy
+     * session, and the actor key is per user *and* per booking, so this is eight per person per
+     * booking rather than eight across the platform. It is also no longer a cliff — the window
+     * became a sliding one in 20260808140000, so allowance decays back smoothly instead of
+     * resetting at a boundary the user cannot see.
+     */
     const rateLimit = await consumeRateLimit(supa, {
       bucket: "twilio.masked_voice",
       actor: `masked-call:${user.id}:${bookingId}`,
       action: "create",
-      limitCount: 3,
+      limitCount: 8,
       windowSeconds: 600,
     });
     if (!rateLimit.allowed) return fail("too many masked call requests", origin, 429);

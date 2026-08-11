@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { MAX_TRAVEL_KM, distanceKmToCoverage, type SuburbCentroid } from "../_shared/geo.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -53,16 +54,30 @@ Deno.serve(async (req) => {
     const { data: authData, error: authError } = await authClient.auth.getUser();
     if (authError || !authData.user) return json({ error: "authentication required" }, 401, origin);
 
-    const { service } = await req.json();
-    const safeService = sanitiseService(service);
-    if (!safeService) return json({ error: "service required" }, 400, origin);
+    const body = await req.json();
+    /*
+     * `service` is optional as of 2026-08-12, and that is a deliberate widening.
+     *
+     * It used to be required, and the function filtered `role = service`. Meanwhile the booking
+     * page — `Book.tsx` — queried `zooters_public` directly with no role filter at all, and never
+     * called this function. Wiring the page to a version that required a role would have silently
+     * shown **fewer** Xooters than before, or none, if any role string failed to line up. Ranking
+     * more people is recoverable; showing a customer an empty list is not.
+     *
+     * Absent means "rank everyone active", which is exactly what the page does today.
+     */
+    const safeService = sanitiseService(body?.service);
+    // Where the job is. Optional, because a customer browsing before they have typed an address
+    // still deserves a ranked list — it just cannot be ranked on travel.
+    const address = typeof body?.address === "string" ? body.address.slice(0, 400) : "";
 
     const supa = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const { data: zooters } = await supa.from("zooters").select("*").eq("role", safeService).eq("active", true);
+    const query = supa.from("zooters").select("*").eq("active", true);
+    const { data: zooters } = await (safeService ? query.eq("role", safeService) : query);
     if (!zooters || zooters.length === 0) {
       return json({ ranked: [] }, 200, origin);
     }
@@ -70,14 +85,65 @@ Deno.serve(async (req) => {
     const { data: favs } = await supa.from("favorites").select("zooter_id").eq("user_id", authData.user.id);
     const favIds = (favs ?? []).map((f) => f.zooter_id);
 
-    const ranked = zooters.map((z) => {
-      let score = Number(z.rating) * 20;
-      score += Math.min(z.jobs_completed, 500) / 25;
-      score -= Number(z.distance_mi) * 3;
-      if (z.is_zotm) score += 8;
-      if (favIds.includes(z.id)) score += 25;
-      return { ...z, match_score: Math.round(score * 10) / 10 };
-    }).sort((a, b) => b.match_score - a.match_score);
+    const { data: centroids } = await supa
+      .from("suburb_centroids")
+      .select("suburb,region,latitude,longitude")
+      .eq("active", true);
+    const suburbs = (centroids ?? []) as SuburbCentroid[];
+
+    /*
+     * Travel distance, computed from the booking address to the Xooter's nearest covered suburb.
+     *
+     * ── What this replaced ──────────────────────────────────────────────────────
+     * `score -= Number(z.distance_mi) * 3`. `distance_mi` is a **static seeded column** — the same
+     * number for every customer in the country — so the "distance" term ranked nobody by distance.
+     * It looked like proximity matching and was decoration.
+     *
+     * ── Why distance is weighted the way it is ──────────────────────────────────
+     * 1.6 points per km, against 20 points per rating star. So a Xooter 5 km closer beats one half
+     * a star better, and a Xooter a full star better wins back about 12 km. That is the trade the
+     * marketplace wants: convenience matters, quality matters more, and neither erases the other.
+     *
+     * A favourite is worth 25 points — deliberately more than 15 km of travel — because a
+     * household asking for the same person again is a stronger signal than either.
+     */
+    const distanceFor = (z: Record<string, unknown>): number | null =>
+      address ? distanceKmToCoverage(address, z.suburb_coverage as string[] | null, suburbs) : null;
+
+    const withDistance = zooters.map((z) => ({ zooter: z, distanceKm: distanceFor(z) }));
+
+    /*
+     * Beyond the radius, exclude rather than rank last.
+     *
+     * Ranking a 40 km Xooter bottom is a slower way of saying no: they appear available, a customer
+     * picks them, and the job is declined or driven resentfully. Excluding them shows the customer
+     * people who will actually come.
+     *
+     * `distanceKm === null` is **unknown, not far** — an unlisted suburb, or a Xooter whose
+     * coverage is unset. Those stay in the list and rank on quality alone, so an address outside
+     * the seeded suburbs degrades to the old behaviour instead of returning nobody.
+     */
+    const inRange = withDistance.filter(({ distanceKm }) => distanceKm === null || distanceKm <= MAX_TRAVEL_KM);
+    // If the radius excluded everyone, fall back to the unfiltered list. An empty result reads to
+    // a customer as "Xoot has no cleaners", which is a worse answer than "here is someone further
+    // away" — and the distance is returned, so the UI can be honest about the trip.
+    const candidates = inRange.length > 0 ? inRange : withDistance;
+
+    const ranked = candidates
+      .map(({ zooter: z, distanceKm }) => {
+        let score = Number(z.rating) * 20;
+        score += Math.min(z.jobs_completed, 500) / 25;
+        if (distanceKm !== null) score -= distanceKm * 1.6;
+        if (z.is_zotm) score += 8;
+        if (favIds.includes(z.id)) score += 25;
+        return {
+          ...z,
+          // Returned so the UI can show a real distance instead of the seeded one.
+          distance_km: distanceKm === null ? null : Math.round(distanceKm * 10) / 10,
+          match_score: Math.round(score * 10) / 10,
+        };
+      })
+      .sort((a, b) => b.match_score - a.match_score);
 
     return json({ ranked }, 200, origin);
   } catch {

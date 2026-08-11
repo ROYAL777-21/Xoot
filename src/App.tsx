@@ -13,12 +13,26 @@ import { AppLaunch } from "@/components/zoot/AppLaunch";
 import { AppShell } from "@/components/zoot/AppShell";
 import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
 import { XootSupportBot } from "@/components/zoot/XootSupportBot";
+import { ConciergeProvider } from "@/contexts/ConciergeContext";
 import { XooterShell } from "@/components/zooter/XooterShell";
 import { RequireRole } from "@/components/RequireRole";
 import { XootAnalyticsProvider } from "@/lib/analytics";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+/**
+ * The kit gallery, dev-only.
+ *
+ * The guard is on the `lazy()` call, not just on the `<Route>`. Guarding only the route left the
+ * `import()` reachable at module scope, and a production build still emitted
+ * `dist/assets/KitGallery-*.js` — unreachable through the router but downloadable by anyone who
+ * reads the assets directory. Measured, not assumed: the first version shipped that chunk.
+ *
+ * With the ternary here `import.meta.env.DEV` folds to `false`, the arrow becomes unreachable,
+ * and Rollup drops the chunk entirely. A design workshop on a live marketplace is unfinished
+ * work on display, not a feature.
+ */
+const KitGallery = import.meta.env.DEV ? lazy(() => import("./pages/dev/KitGallery")) : null;
 const Auth = lazy(() => import("./pages/Auth"));
 const Welcome = lazy(() => import("./pages/Welcome"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -133,6 +147,9 @@ const App = () => (
               <PreloadCoreRoutes />
               <ScrollToTop />
               <AuthProvider>
+                {/* Wraps the routes AND the launcher, so the omnibox inside AppShell and the
+                    Concierge panel at the root share one open state. */}
+                <ConciergeProvider>
                 <Suspense fallback={<RouteLoading />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
@@ -190,11 +207,16 @@ const App = () => (
                   <Route path="/admin/kyc" element={<RequireRole role="admin"><AdminKyc /></RequireRole>} />
                   <Route path="/admin/ops" element={<RequireRole role="admin"><AdminOps /></RequireRole>} />
 
+                  {/* Dev only — see the note beside the import. Falls through to NotFound in
+                      production, which is what a stranger typing /dev/kit should get. */}
+                  {KitGallery ? <Route path="/dev/kit" element={<KitGallery />} /> : null}
+
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 </Suspense>
                 <XootSupportBot />
+                </ConciergeProvider>
               </AuthProvider>
             </BrowserRouter>
           </ErrorBoundary>

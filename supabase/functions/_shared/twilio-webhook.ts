@@ -155,8 +155,28 @@ const signatureUrlCandidates = (url: string) => {
   return Array.from(new Set([url, withoutPort.toString(), withPort]));
 };
 
+/**
+ * The Twilio account Auth Token, under either name this codebase has used for it.
+ *
+ * ── The trap this closes ─────────────────────────────────────────────────────────
+ * Twilio issues **one** Auth Token per account. This repo read it under two names:
+ * `TWILIO_AUTH_TOKEN` here (covering the message, WhatsApp, status-callback, verify and voice
+ * webhooks) and `TWILIO_WEBHOOK_AUTH_TOKEN` in `twilio-voice-twiml` and `twilio-voice-status`.
+ *
+ * `docs/release/go-live.md` listed only the second and described it as "what every webhook's
+ * HMAC-SHA1 check validates against". Following that runbook exactly would set one name, leaving
+ * five webhooks rejecting every inbound Twilio request — silently, because signature validation
+ * fails closed and the 403 carries no log line saying a secret is missing. On inbound webhooks
+ * nobody watches, that is invisible until someone asks why no message ever arrived.
+ *
+ * Accepting either name means one value works everywhere and the trap cannot be stepped in.
+ * `twilio-secrets-contract.test.ts` pins the docs and the `.env` examples to what the code reads.
+ */
+export const getTwilioAuthToken = () =>
+  Deno.env.get("TWILIO_AUTH_TOKEN") ?? Deno.env.get("TWILIO_WEBHOOK_AUTH_TOKEN");
+
 export const validateTwilioSignature = async (req: Request, params: URLSearchParams) => {
-  const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+  const authToken = getTwilioAuthToken();
   if (!authToken) return { configured: false, valid: false };
 
   const providedSignature = req.headers.get("X-Twilio-Signature") ?? "";

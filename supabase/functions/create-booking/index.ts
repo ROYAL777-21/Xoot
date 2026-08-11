@@ -19,7 +19,10 @@ import {
   HOME_SIZE_HOURS,
   SERVICE_LENGTH_HOURS,
   ONE_TIME_SERVICE_FEE_CENTS,
+  activeBoostBpsFor,
+  applyBoost,
   basePrice,
+  commissionRateBps,
   resolveHours,
 } from "../_shared/pricing.ts";
 
@@ -30,10 +33,44 @@ const services = new Set(["residential", "express", "airbnb", "office", "deep", 
 // Home size and service length now only imply DEFAULT HOURS; hours alone set the price.
 
 const allowedTimes = new Set(["07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "14:00", "15:00", "16:00", "17:00"]);
-const multiWorkerServices = new Set(["airbnb", "office", "deep", "moving", "premium"]);
+/*
+ * Which services take more than one Xooter.
+ *
+ * ⚠️ KEEP IN SYNC with `MULTI_XOOTER_SERVICES` in `src/lib/xoot-pricing.ts`, via the aliases:
+ * `deep` and `premium` both price as `regular`, and `regular` is single-Xooter.
+ *
+ * This set previously included "deep" and "premium". `Book.tsx` matched it, so a customer could
+ * select a Deep clean with three Xooters — but the client price ladder aliases both to `regular`
+ * and refuses to quote a second Xooter, so the screen showed R61 while this function charged
+ * R860. Measured 2026-08-09. `pricing-parity.test.ts` now fails if the two sets drift again.
+ */
+const multiWorkerServices = new Set(["airbnb", "office", "moving"]);
 const photoProofServices = new Set(["airbnb", "deep", "moving"]);
 
 const isHighDemandSlot = (time: string) => Number(time.split(":")[0] ?? 0) >= 16;
+
+/*
+ * Graded slot pricing — built, and OFF.
+ *
+ * ⚠️ KEEP IN SYNC with `src/lib/operations.ts`, which carries the reasoning.
+ * `pricing-parity.test.ts` fails if the flag or the curve drifts between the two.
+ *
+ * With `GRADED_SLOT_PRICING` false every slot is priced exactly as before. Turning it on
+ * changes what customers are charged, so it is one boolean on each side and a founder decision,
+ * not a refactor.
+ */
+const GRADED_SLOT_PRICING = false;
+const HIGH_DEMAND_SLOT_RATE = 0.15;
+const SLOT_PREMIUM_CURVE: Record<string, number> = {
+  "15:00": 0.05,
+  "16:00": 0.1,
+  "17:00": 0.15,
+};
+
+const slotPremiumRate = (time: string): number => {
+  if (GRADED_SLOT_PRICING) return SLOT_PREMIUM_CURVE[time] ?? 0;
+  return isHighDemandSlot(time) ? HIGH_DEMAND_SLOT_RATE : 0;
+};
 
 const getCarePlusDiscount = async (supa: any, userId: string) => {
   const { data } = await supa
@@ -45,6 +82,37 @@ const getCarePlusDiscount = async (supa: any, userId: string) => {
   if (!data?.id) return 0;
   if (data.next_billing_at && new Date(data.next_billing_at).getTime() <= Date.now()) return 0;
   return 0.1;
+};
+
+/**
+ * The commission rate to strike each booking at, keyed by Xooter id.
+ *
+ * One query for the whole request rather than one per booking: a multi-Xooter job inserts a
+ * booking per Xooter and each carries its own rate, since each Xooter is ranked separately.
+ *
+ * A Xooter that cannot be read falls to the starting rate via `commissionRateBps`, which
+ * treats a missing score as unproven rather than guessing. That is the loud failure — a Xooter
+ * on an unexpected 35% reports it the same day; one silently granted the 20% floor is a
+ * revenue leak nobody notices.
+ */
+const getCommissionRates = async (supa: any, zooterIds: string[]) => {
+  const rates = new Map<string, number>();
+  if (!zooterIds.length) return rates;
+  const { data } = await supa
+    .from("zooters")
+    .select("id,reliability_score,jobs_completed")
+    .in("id", zooterIds);
+  for (const row of data ?? []) {
+    const earned = commissionRateBps({
+      reliabilityScore: row.reliability_score,
+      completedJobs: row.jobs_completed,
+    });
+    // An active 14-day boost lowers the rate this booking is struck at, clamped at the floor.
+    // Read per Xooter because each is rewarded separately.
+    const boost = await activeBoostBpsFor(supa, row.id);
+    rates.set(row.id, boost > 0 ? applyBoost(earned, boost) : earned);
+  }
+  return rates;
 };
 
 const getAvailableXootCred = async (supa: any, userId: string) => {
@@ -101,7 +169,23 @@ Deno.serve(async (req) => {
       return fail("booking time must be in the future", origin, 400);
     }
 
-    const maxWorkers = multiWorkerServices.has(serviceType) ? Math.min(Math.max(requestedWorkerCount || 1, 1), 5) : 1;
+    /*
+     * Refuse rather than silently slice.
+     *
+     * This used to cap `maxWorkers` at 1 for a single-Xooter service and then
+     * `zooterIds.slice(0, maxWorkers)`, so a request naming three Xooters for a residential
+     * clean booked one and charged for one — while the caller believed it had booked three.
+     * Quietly delivering something other than what was asked for is the same failure as quietly
+     * charging something other than what was shown; both end with a customer and an invoice
+     * that disagree. The client no longer offers this combination, so anything reaching here is
+     * a hand-built request and deserves an answer, not a silent correction.
+     */
+    const serviceMaxWorkers = multiWorkerServices.has(serviceType) ? 5 : 1;
+    const requestedWorkers = Math.min(Math.max(requestedWorkerCount || 1, 1), 5);
+    if (requestedWorkers > serviceMaxWorkers || zooterIds.length > serviceMaxWorkers) {
+      return fail(`${serviceType} is booked with one Xooter`, origin, 400);
+    }
+    const maxWorkers = Math.min(requestedWorkers, serviceMaxWorkers);
     const selectedXooterIds = zooterIds.slice(0, maxWorkers);
     if (selectedXooterIds.length > 0) {
       const { data: zooters } = await supa
@@ -169,8 +253,20 @@ Deno.serve(async (req) => {
     const discountedBaseCents = Math.round(priced.baseCents * (1 - multiWorkerDiscount)) * workerCount;
     const addOnsCents = addOns.length * ADD_ON_CENTS;
     const subtotalCents = discountedBaseCents + addOnsCents;
-    const highDemandCents = isHighDemandSlot(time) ? Math.round(subtotalCents * 0.15) : 0;
-    const serviceFeeCents = frequency === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0;
+    const highDemandCents = Math.round(subtotalCents * slotPremiumRate(time));
+    /*
+     * Care+ members pay no booking fee, at any frequency (founder decision 2026-08-09, alongside
+     * R99/month and one month free). Membership is read from the same lookup that decides the
+     * discount, so a member cannot get the discount and still be charged the fee.
+     *
+     * Mirrored in `src/lib/xoot-pricing.ts` as `carePlusMember`, and held there by
+     * `pricing-parity.test.ts`. The two must agree: a client showing R0 against a server charging
+     * R39 is the defect this codebase already shipped once.
+     */
+    const carePlusDiscountRate = await getCarePlusDiscount(supa, user.id);
+    const isCarePlusMember = carePlusDiscountRate > 0;
+    const serviceFeeCents =
+      isCarePlusMember || frequency !== "one_time" ? 0 : ONE_TIME_SERVICE_FEE_CENTS;
     const bookingCoverCents = bookingCoverOptIn === false ? 0 : BOOKING_COVER_CENTS;
 
     const toRands = (cents: number) => Math.round(cents / 100);
@@ -178,7 +274,6 @@ Deno.serve(async (req) => {
     const highDemandPremium = toRands(highDemandCents);
     const serviceFee = toRands(serviceFeeCents);
     const bookingCover = toRands(bookingCoverCents);
-    const carePlusDiscountRate = await getCarePlusDiscount(supa, user.id);
     const carePlusDiscount = Math.round(subtotal * carePlusDiscountRate);
     const grossTotal = subtotal + highDemandPremium + serviceFee + bookingCover - carePlusDiscount;
 
@@ -200,6 +295,10 @@ Deno.serve(async (req) => {
     const estHours = priced.hours + addOns.length;
     const launchRegion = resolveLaunchRegion(address);
     const bookingTargets = selectedXooterIds.length ? selectedXooterIds : [null];
+    // Struck once, here, and never recomputed at payout — see the migration
+    // `20260809120000_booking_commission_rate.sql` for why a rank that moves must not change
+    // what a Xooter is paid for work already agreed.
+    const commissionRates = await getCommissionRates(supa, selectedXooterIds);
 
     const bookingIds: string[] = [];
     const paymentRecordIds: string[] = [];
@@ -231,6 +330,9 @@ Deno.serve(async (req) => {
         service_fee: perBookingServiceFee,
         booking_cover_amount: perBookingCover,
         high_demand_premium: perBookingHighDemand,
+        // Null while nobody is assigned. An absence reads as pending; a default would read as
+        // an agreement that was never struck.
+        commission_rate_bps: zooterId ? commissionRates.get(zooterId) ?? null : null,
       }).select("id").single();
       if (bookingError || !booking?.id) throw new Error("booking insert failed");
       bookingIds.push(booking.id);

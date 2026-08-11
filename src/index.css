@@ -47,6 +47,7 @@
   --color-brand: hsl(var(--brand));
   --color-brand-foreground: hsl(var(--brand-foreground));
   --color-care-plus: hsl(var(--care-plus));
+  --color-care-plus-foreground: hsl(var(--care-plus-foreground));
   --color-success: hsl(var(--success));
   --color-warning: hsl(var(--warning));
   --color-info: hsl(var(--info));
@@ -1330,9 +1331,25 @@
        51% not the kit's 53%: white on 53% is 4.31:1, the same AA failure --primary
        was darkened for. */
     --care-plus: 3 79% 51%;
+    /* Care+ had a fill and no foreground — declared, exposed to Tailwind as
+       `--color-care-plus`, and with nothing saying what text may sit on it. The first
+       membership badge to want a label would have picked whatever it inherited. White measures
+       4.50 here, which is exactly AA and no more; that is the reason 51% must not drift lighter.
+       Added 2026-08-09 alongside the success fix below. */
+    --care-plus-foreground: 0 0% 100%;
     /* Semantic colours, deliberately separate from the brand hue. */
-    --success: 155 47% 43%;
+    /* 35%, not 43%. White on 43% measures 3.20 — a success button's label is body text, and 3.20
+       fails AA the same way --primary at 53% and --destructive at 56% did. Nothing renders an
+       opaque success fill today (the only use is a 1.5px decorative dot in Welcome.tsx), so this
+       costs nothing now and stops the first success badge shipping unreadable. 35% gives 4.62. */
+    --success: 155 47% 35%;
     --success-foreground: 0 0% 100%;
+    /* Left at 56% deliberately. An opaque warning fill measures only 2.17 against a white card —
+       below the 3.0 UI floor — but nothing renders one: BookingConfirm.tsx uses `bg-warning/10`
+       and `/15` behind `text-warning-foreground`, and the ink label on amber is 7.30. Darkening
+       amber far enough to separate from white would stop it reading as amber. Recorded in
+       design-contrast.test.ts rather than silently fixed; revisit when something wants a solid
+       warning chip. */
     --warning: 37 78% 56%;
     --warning-foreground: 14 18% 14%;
     --info: 211 65% 57%;
@@ -1361,7 +1378,12 @@
     --accent-foreground: 14 18% 14%;
     --accent-soft: 39 90% 92%;
 
-    --destructive: 7 78% 56%;
+    /* 48%, not the 56% the migration mapped.
+       At 56% the off-white label measured 3.70:1 — below the 4.5 body threshold, and a
+       destructive button's label is body text. Same finding, same fix as --primary going
+       53% -> 51% for the old red. 48% gives 4.55 on the label, 4.73 against a card and 4.23
+       against the page. Issue #38. */
+    --destructive: 7 78% 48%;
     --destructive-foreground: 36 40% 98%;
 
     --border: 28 22% 88%;
@@ -1401,6 +1423,123 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /*
+     * Motion, ported from the design kit 2026-08-08.
+     *
+     * `docs/xoot-ios-build-prompt.md` warns that these are "why the kit feels the way it does
+     * and they are the first thing lost in a hand translation" — and they had been: before this,
+     * `index.css` declared not one of them while the kit's components referenced twelve.
+     *
+     * Values are the kit's own, read out of `design/Xoot_App.html`, not invented to look
+     * plausible. Two of the easings — `settle` and `spring` — are used by the kit but missing
+     * from the list in the build prompt, so that doc undercounts by two.
+     *
+     * Scheme-independent on purpose: durations and curves do not change between light and dark,
+     * so unlike the colour roles these are declared once and not repeated in `.dark`.
+     */
+    --xoot-dur-instant: 90ms;
+    --xoot-dur-fast: 170ms;
+    --xoot-dur-base: 280ms;
+    --xoot-dur-slow: 440ms;
+    --xoot-dur-story: 760ms;
+    --xoot-dur-bloom: 1200ms;
+    /* Ambient loops — a breathing surface and a looping icon. Long by intent, not by accident. */
+    --xoot-dur-breathe: 4600ms;
+    --xoot-dur-icon: 2600ms;
+
+    --xoot-ease-out: cubic-bezier(0.22, 0.9, 0.28, 1);
+    --xoot-ease-in-out: cubic-bezier(0.6, 0.05, 0.3, 0.95);
+    --xoot-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+    /* Overshoots past 1 — the only curve here that does. Reserve it for arrivals, not exits. */
+    --xoot-ease-spring: cubic-bezier(0.34, 1.42, 0.5, 1);
+
+    /*
+     * Section-label slot fills, and why they are not `--xoot-*`.
+     *
+     * `SectionLabel` originally read the kit's palette directly for its four non-time slots —
+     * `--xoot-violet-50`, `--xoot-honey-wash`, `--xoot-mist-wash`, `--xoot-neutral-100`. The
+     * kit's dark scope re-declares **semantic aliases only** and never the palette (a rule
+     * `kit-tokens.test.ts` enforces from the token side), so those four rendered as pale pills
+     * on a near-black page while the `--xoot-time-*` slots beside them adapted correctly.
+     *
+     * Nothing caught it: `kit-primitives.test.tsx` checked that every token named is *declared*,
+     * which they are, and jsdom neither resolves a custom property nor paints. It took the dark
+     * screenshot from `scripts/dev/shoot-kit.mjs` to see it.
+     *
+     * `kit-tokens.css` is generated from the design export and must not be hand-edited, so the
+     * missing aliases live here instead. No `--xoot-` prefix, deliberately: these are app tokens
+     * layered on the kit, and a name in that namespace would collide the next time the kit is
+     * re-extracted. Each is a pair — fill and ink — chosen against each other, following the
+     * kit's own `--xoot-time-*` pattern of a translucent tint over the page in dark.
+     */
+    --slot-high: var(--xoot-violet-50);
+    --slot-high-ink: var(--xoot-violet-700);
+    --slot-medium: var(--xoot-honey-wash);
+    --slot-medium-ink: var(--xoot-honey-ink);
+    --slot-low: var(--xoot-mist-wash);
+    --slot-low-ink: var(--xoot-mist-ink);
+    --slot-plain: var(--xoot-neutral-100);
+    --slot-plain-ink: var(--xoot-text-secondary);
+  }
+
+  /*
+   * Matches `[data-theme="dark"]` rather than `.dark`, because that is the scope the kit's own
+   * dark tokens use and these sit beside them. Tints are the palette colour at ~20% over the
+   * page, inks are the light tints — the same construction as `--xoot-time-morning` and its ink.
+   */
+  [data-theme="dark"] {
+    --slot-high: rgb(124 92 252 / 0.22);
+    --slot-high-ink: #C6B9FA;
+    --slot-medium: rgb(231 163 56 / 0.2);
+    --slot-medium-ink: #F2D3A0;
+    --slot-low: rgb(74 143 216 / 0.2);
+    --slot-low-ink: #B5D0EC;
+    --slot-plain: rgb(255 255 255 / 0.07);
+    --slot-plain-ink: var(--xoot-text-secondary);
+  }
+
+  /*
+   * The kit ships this and it would have been easy to drop. Zeroing the durations rather than
+   * disabling animations individually means every consumer keeps working — a transition still
+   * fires and still completes, it just takes no time — so nothing has to branch on the media
+   * query. Easing curves are deliberately left alone: with a zero duration they have no effect,
+   * and removing them would make the reduced-motion path diverge from the normal one for no gain.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --xoot-dur-instant: 0ms;
+      --xoot-dur-fast: 0ms;
+      --xoot-dur-base: 0ms;
+      --xoot-dur-slow: 0ms;
+      --xoot-dur-story: 0ms;
+      --xoot-dur-bloom: 0ms;
+      --xoot-dur-breathe: 0ms;
+      --xoot-dur-icon: 0ms;
+    }
+  }
+
+  /*
+   * The kit's confirmation pop, copied out of `design/Xoot_App.html` verbatim.
+   *
+   * It is the whole reason a check mark reads as *landing* rather than appearing: 0.82 → 1.12 →
+   * 1, with `--xoot-ease-spring` carrying the overshoot. `ChoiceRow` names it, and referencing a
+   * keyframe that does not exist fails silently — the element simply renders with no animation,
+   * which looks like a design choice rather than a missing rule.
+   *
+   * Not repeated under `prefers-reduced-motion`: the duration tokens above already go to 0ms
+   * there, so the animation completes instantly and the scale never leaves 1.
+   */
+  @keyframes xoot-pop {
+    0% {
+      transform: scale(0.82);
+    }
+    62% {
+      transform: scale(1.12);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
   .dark {
@@ -1416,6 +1555,9 @@
     --brand: 252 87% 78%;
     --brand-foreground: 0 0% 8%;
     --care-plus: 3 79% 56%;
+    /* Ink, not white. White on this fill measures 4.06 and fails; ink gives 4.66. Same shape as
+       the destructive fix — every bright fill in this scheme takes an ink label. */
+    --care-plus-foreground: 10 17% 7%;
     --success: 155 40% 62%;
     --success-foreground: 10 17% 7%;
     --warning: 37 78% 60%;
@@ -1431,8 +1573,17 @@
     --muted-foreground: 25 7% 68%;
     --accent: 37 78% 60%;
     --accent-foreground: 10 17% 7%;
+    /* Ink on coral, not off-white — and this was the only exception in the whole dark scheme.
+       accent, success and warning all pair a bright fill with `10 17% 7%`; destructive alone
+       kept a near-white label, carried over from the old red palette where the fill was dark.
+       At 62% fill, off-white measured 2.88:1 — under 3.0, so a destructive button in dark was
+       below the floor for its border AND its label. Ink gives 5.79 on the label while the fill
+       keeps 5.37 against a card.
+       Darkening the fill to 46% was the alternative; it reaches exactly 4.50 on the label and
+       drops fill-vs-card to 3.45. Less headroom on both, and it would make destructive the one
+       dark-mode fill that is dark. Issue #38. */
     --destructive: 7 78% 62%;
-    --destructive-foreground: 12 38% 95%;
+    --destructive-foreground: 10 17% 7%;
     --border: 8 17% 18%;
     --input: 8 17% 18%;
     --ring: 4 100% 64%;

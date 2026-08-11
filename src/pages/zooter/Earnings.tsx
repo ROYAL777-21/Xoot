@@ -6,14 +6,44 @@ import { Wallet, Loader2, TrendingUp, Star, Trophy, Target } from "lucide-react"
 import { Progress } from "@/components/ui/progress";
 import { formatZAR, formatZARDecimal } from "@/lib/format";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar, CartesianGrid } from "recharts";
+import {
+  COMMISSION_BANDS,
+  applyBoost,
+  boostIsActive,
+  commissionBandFor,
+  impliedSubtotalCents,
+  nextBandValueFor,
+} from "@/lib/xooter-commission";
+import { BoostCelebration } from "@/components/zooter/BoostCelebration";
+import type { XooterBoost } from "@/lib/xooter-boost-announcement";
 
-const TIER_THRESHOLDS = { new: 0, established: 25, veteran: 100 };
-const TIER_SHARE: Record<string, number> = { new: 65, established: 80, veteran: 96 };
+/** The best active boost right now, in bps, or 0. */
+const activeBoostBps = (boosts: XooterBoost[]) =>
+  boosts.filter((b) => boostIsActive(b)).reduce((best, b) => Math.max(best, b.bps), 0);
+
+/*
+ * ⚠️ REMOVED 2026-08-10: a private tier table that promised pay the platform does not give.
+ *
+ *   const TIER_THRESHOLDS = { new: 0, established: 25, veteran: 100 };
+ *   const TIER_SHARE = { new: 65, established: 80, veteran: 96 };
+ *
+ * This screen told a Xooter "You currently keep {tierShare}% of every booking", so at 100 jobs it
+ * promised **96%** — a 4% commission, against a confirmed 20% floor. The real ladder gives 75% at
+ * 75 jobs and 80% at 200. A Xooter who reached 100 jobs expecting 96% would have found 75%.
+ *
+ * It also progressed on job count alone, while the ladder the founder specified turns on
+ * `reliability_score` — ratings, punctuality, quality of work — with job count only as a minimum
+ * sample. So the screen was coaching people toward the wrong behaviour as well as the wrong number.
+ *
+ * The rank, the share and the next step now all come from `xooter-commission.ts`, which is the
+ * same module `create-booking` uses to strike the rate. One answer, and the one that pays.
+ */
 
 const Earnings = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [zooter, setXooter] = useState<any>(null);
+  const [boosts, setBoosts] = useState<XooterBoost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +54,19 @@ const Earnings = () => {
       if (z) {
         const { data } = await supabase.from("zooter_earnings").select("*").eq("zooter_id", z.id).order("created_at", { ascending: false });
         setItems(data ?? []);
+
+        // Boosts are readable by their own Xooter under RLS. A failure here must not take the
+        // earnings page down — the boost is good news, not load-bearing.
+        const { data: boostRows, error: boostError } = await supabase
+          .from("xooter_commission_boosts")
+          .select("id,bps,starts_at,ends_at,reason")
+          .eq("zooter_id", z.id);
+        if (boostError) console.warn("boost lookup failed", boostError.message);
+        setBoosts(
+          (boostRows ?? []).map((b: any) => ({
+            id: b.id, bps: b.bps, startsAt: b.starts_at, endsAt: b.ends_at, reason: b.reason,
+          })),
+        );
       }
       setLoading(false);
     })();
@@ -33,12 +76,53 @@ const Earnings = () => {
 
   const total = items.reduce((s, e) => s + Number(e.net_amount), 0);
   const pending = items.filter((e) => e.status === "pending").reduce((s, e) => s + Number(e.net_amount), 0);
-  const tier = (zooter?.tier ?? "new") as keyof typeof TIER_SHARE;
-  const tierShare = TIER_SHARE[tier] ?? 65;
-  const completedJobs = items.length;
-  const nextTier = tier === "new" ? "established" : tier === "established" ? "veteran" : null;
-  const nextTierTarget = nextTier ? TIER_THRESHOLDS[nextTier] : null;
-  const tierProgress = nextTierTarget ? Math.min(100, (completedJobs / nextTierTarget) * 100) : 100;
+  // Prefer the Xooter's own recorded job count over the length of the earnings list, which only
+  // covers rows this page happened to load.
+  const completedJobs = Number(zooter?.jobs_completed ?? items.length);
+  const reliabilityScore = zooter?.reliability_score ?? null;
+
+  const band = commissionBandFor({ reliabilityScore, completedJobs });
+  const boostBps = activeBoostBps(boosts);
+  const effectiveRateBps = boostBps > 0 ? applyBoost(band.rateBps, boostBps) : band.rateBps;
+  // What they keep, which is the number this page is actually about.
+  const tierShare = (10000 - effectiveRateBps) / 100;
+  const tier = band.label;
+
+  const nextBand = COMMISSION_BANDS.find((b) => b.rateBps < band.rateBps) ?? null;
+  const jobsToNext = nextBand ? Math.max(0, nextBand.minCompletedJobs - completedJobs) : 0;
+  const scoreToNext =
+    nextBand && typeof reliabilityScore === "number"
+      ? Math.max(0, nextBand.minScore - reliabilityScore)
+      : null;
+  const tierProgress = nextBand
+    ? Math.min(100, (completedJobs / Math.max(1, nextBand.minCompletedJobs)) * 100)
+    : 100;
+
+  /*
+   * What the next band is worth in rands, quoted against this Xooter's *own* last 30 days.
+   *
+   * "Reach Silver and keep R44 more a month" is the sentence that motivates; "30% instead of 32.5%"
+   * is the mechanism behind it. But the basis has to be real work, not an invented typical week —
+   * a platform quoting someone a made-up figure about their own earnings is the same defect class
+   * as the 96% tier this screen used to promise.
+   *
+   * So: sum the last 30 days of net pay, reverse it to the subtotal it came from, and price the
+   * band change on that. A Xooter with nothing in the window gets **no figure at all** rather than
+   * a fabricated one — which is the correct outcome for someone who has not worked yet, since any
+   * number would be a guess dressed as a projection.
+   */
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const last30NetCents = Math.round(
+    items
+      .filter((e) => new Date(e.created_at).getTime() >= thirtyDaysAgo)
+      .reduce((s, e) => s + Number(e.net_amount), 0) * 100,
+  );
+  // Reversed at the band rate, not the boosted one: a boost is temporary and the history was
+  // mostly struck without it, so using it here would overstate the subtotal and the reward with it.
+  const last30SubtotalCents = impliedSubtotalCents(last30NetCents, band.rateBps);
+  const nextBandGainCents = nextBand
+    ? nextBandValueFor(last30SubtotalCents, band.rateBps, nextBand.rateBps).extraCents
+    : 0;
 
   // Chart data — last 8 weeks
   const weekly: { week: string; earnings: number }[] = [];
@@ -64,8 +148,14 @@ const Earnings = () => {
 
   return (
     <div className="container py-8 lg:py-12 max-w-6xl">
+      <BoostCelebration boosts={boosts} currentRateBps={band.rateBps} />
       <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">Earnings</h1>
-      <p className="text-muted-foreground mb-8">You currently keep <span className="font-bold text-foreground">{tierShare}%</span> of every booking. Complete more jobs and pass training to unlock the next tier.</p>
+      <p className="text-muted-foreground mb-8">
+        You currently keep <span className="font-bold text-foreground">{tierShare}%</span> of every booking
+        {boostBps > 0 && <span className="font-semibold text-primary"> — boosted</span>}.
+        {" "}Your rate improves as your reliability score does: ratings, turning up on time, and the
+        quality of the work.
+      </p>
 
       {/* Hero stat row */}
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
@@ -84,10 +174,19 @@ const Earnings = () => {
           <Trophy className="h-6 w-6 mb-3 text-primary" />
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Tier</p>
           <p className="font-display text-4xl font-bold mt-1 capitalize">{tier}</p>
-          {nextTier && (
+          {nextBand && (
             <>
               <Progress value={tierProgress} className="h-1.5 mt-3" />
-              <p className="text-xs text-muted-foreground mt-1.5">{Math.max(0, (nextTierTarget ?? 0) - completedJobs)} jobs to {nextTier}</p>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                {jobsToNext > 0 ? `${jobsToNext} more jobs` : "Job count reached"}
+                {scoreToNext !== null && scoreToNext > 0 ? `, and ${scoreToNext} more reliability points` : ""}
+                {" to "}{nextBand.label}
+              </p>
+              {nextBandGainCents > 0 && (
+                <p className="text-xs font-semibold text-sage-deep mt-1">
+                  Worth about {formatZAR(nextBandGainCents / 100)} more a month at your current pace.
+                </p>
+              )}
             </>
           )}
         </Card>
