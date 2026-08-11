@@ -151,7 +151,65 @@ Steps 1–3 are done. Step 4 is not, and the reason is worth writing down rather
 4. **`db push` is still not safe to run.** Not for the reasons above — those are closed — but for
    the one below, which the full sweep turned up and which nobody had measured before.
 
-## The full sweep: production's ledger is missing 23 of the repo's 65 versions
+## ✅ Settled 2026-08-11: both ledgers are complete
+
+The section below records how it was diagnosed. The outcome, read back after the repair:
+
+| project | repo versions present | ledger rows | verdict |
+|---|---|---|---|
+| **staging** `fxmxyabdjqviqbcxmvlp` | **65 / 65** | 68 | complete before this pass; nothing to do |
+| **production** `mvlrkelahhsyjrwgsxaf` | **65 / 65** | 73 | 23 rows inserted, re-read at 0 missing |
+
+**The 23 were ledger gaps, not absences**, and that was established by checking objects rather than
+inferring from names: 18 of 19 checkable tables are present on production, and the alter-only
+migrations check out too — the `booking_status` enum carries `draft`/`en_route`/`in_progress`,
+`has_role` is `search_path`-hardened, and `native_push_subscriptions.token_type` has both its
+`'expo_push'` default and its check constraint. Production reached the same schema through the
+`zoot_launch_*` path and never recorded the repo's version numbers.
+
+The single `false` is `zootcred_wallets`, and it is correct: production uses `zootcred_ledger`,
+which exists. That migration was superseded, not skipped.
+
+### A wrong probe, recorded because it nearly became a finding
+
+The first check for `expo_push_token_type` queried `push_tokens.token_type`. It came back absent and
+briefly looked like a genuine gap — but that migration alters **`native_push_subscriptions`**, not
+`push_tokens`. Re-run against the right table, it is applied.
+
+Evidence aimed at the wrong object is not evidence, and it fails in the most dangerous direction:
+it produces a confident, specific, wrong conclusion rather than an obvious error. Had it gone
+unchecked, the repair would have "fixed" a migration that was never broken.
+
+### Still open: eight migrations with no source in this repo
+
+| migration | where |
+|---|---|
+| `connector_safe_booking_invoice_public_schema` | both projects, **different version stamps on each** |
+| `connector_safe_zoot_black_core_schema` | both projects, different stamps |
+| `connector_safe_zoot_black_certificate_schema` | both projects, different stamps |
+| `zoot_launch_schema_core`, `zoot_launch_rls_functions_indexes`, `zoot_launch_api_grants`, `security_advisor_hardening`, `phase_10_push_tokens` | production only |
+
+The repo holds exactly one `connector_safe_*` file. Same class as `twilio-token`, which ran in
+production with no source until it was recovered.
+
+**These are documented rather than reconstructed, and that is a deliberate choice.** Writing repo
+files for them would mean inventing SQL for migrations whose originals nobody has — and because the
+three `connector_safe_*` ones carry *different version stamps on each project*, any single repo file
+would match neither. Both projects would then see it as unapplied and `db push` would run invented
+SQL against a live database. Naming the gap is worse-looking and considerably safer.
+
+Worth recording alongside: the three migrations named `zoot_black` left **no `zoot_black` schema** on
+production. Only `public` (81 tables) and `private` (functions only) exist. Whatever they built was
+later dropped or never landed, which is a further reason not to reconstruct them from their names.
+
+### `db push` is now meaningful — and should be run by a human first
+
+Both ledgers agree with the repo, and `SUPABASE_DB_PASSWORD` is set. The first push after a
+reconciliation is the one worth watching, so it has not been run from a session.
+
+---
+
+## How it was diagnosed: production's ledger was missing 23 of the repo's 65 versions
 
 The checks above were all name-driven, and each one asked about a specific migration. The last check
 asked the other question — *every* repo filename version against production's ledger — and the answer
@@ -190,26 +248,17 @@ UUID-named files (`20260421`–`20260424`), which is exactly where that divergen
 document has followed throughout is that a migration is classified by checking whether its objects
 exist, not by inferring from its name — and that check has been run for exactly one of the 23.
 
-### Blocked mid-check, and stated rather than papered over
+### Blocked mid-check on 2026-08-10, finished on 2026-08-11
 
-The remaining 22 were not classified because **the Supabase MCP connector dropped its authorisation**
-partway through this step, and re-authorising it needs an interactive session. The same check was
-never run against staging at all.
+The classification stalled when the Supabase connector dropped its authorisation, and this document
+said so at the time rather than implying the phase had landed. With the connector back, all 22
+remaining versions were classified by object existence, staging was swept for the first time, and
+the repair was applied and read back. See the outcome section at the top.
 
-So the honest status is: **the four known-unapplied migrations are applied and the three superseded
-ones are recorded — but the ledgers are not proven complete on either project, and one confirmed gap
-exists on production.** Anyone reading only the sections above would conclude this was finished. It
-is not.
-
-### To finish it
-
-1. Re-authorise the Supabase connector (claude.ai connector settings, or `/mcp` interactively).
-2. For each of the 22 unclassified versions, check whether its objects exist on production —
-   `information_schema` / `pg_proc`, per migration — and classify as **ledger gap** (insert the row)
-   or **genuine absence** (leave it; production reached that schema another way, or never needed it).
-3. Run the identical sweep against staging, which has not been done.
-4. Only then is `db push` meaningful — and by then `SUPABASE_DB_PASSWORD` needs setting too, which is
-   founder-only.
+The reason that interim state was worth writing down: every section above it described real,
+finished work, and a reader stopping there would have concluded the whole thing was done. An
+unfinished item stated plainly is a working relationship; an unfinished item omitted is a defect
+someone else discovers later.
 
 `db push` also still needs `SUPABASE_DB_PASSWORD`, which is not set. `SUPABASE_ACCESS_TOKEN` alone
 authorises Edge Function deploys, not a direct Postgres connection — worth knowing before anyone

@@ -4864,7 +4864,36 @@ export type Database = {
           starts_at?: string
           zooter_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_contractor_quality"
+            referencedColumns: ["zooter_id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
+            columns: ["zooter_id"]
+            isOneToOne: false
+            referencedRelation: "zooters_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       zooters_public: {
         Row: {
