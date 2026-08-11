@@ -40,7 +40,7 @@ Reviewed: 2026-07-01 12:43 SAST
 - Branch: `codex/full-zoot-iphone-pwa-auth-security`
 - Environment: EAS iOS preview simulator
 - Command: `npx eas-cli@20.5.0 build -p ios --profile preview-simulator --non-interactive --no-wait`
-- First root-cause error: Xcode expected `ios/ZootAppIntents.swift`, but the plugin copied the Swift source into the generated app subfolder.
+- First root-cause error: Xcode expected `ios/XootAppIntents.swift`, but the plugin copied the Swift source into the generated app subfolder.
 - Affected surface: iOS simulator preview build and Siri/App Intents native source inclusion.
 - Severity: medium
 - Fix status: fixed in commit `d007189` by copying the Swift source to the generated iOS project root, matching the Xcode source reference.

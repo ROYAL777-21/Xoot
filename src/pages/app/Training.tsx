@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Crown, GraduationCap, Loader2, Star } from "lucide-react";
-import { resolvePhoto } from "@/components/zoot/ZooterCard";
+import { resolvePhoto } from "@/components/zoot/XooterCard";
 
 const Training = () => {
   const [modules, setModules] = useState<any[]>([]);
@@ -13,7 +13,7 @@ const Training = () => {
   useEffect(() => {
     Promise.all([
       supabase.from("training_modules").select("*").order("category"),
-      (supabase as any).from("zooters_public").select("*").eq("is_zotm", true).maybeSingle(),
+      supabase.from("zooters_public").select("*").eq("is_zotm", true).maybeSingle(),
     ]).then(([m, z]) => {
       setModules(m.data ?? []); setZotm(z.data); setLoading(false);
     });
@@ -28,15 +28,15 @@ const Training = () => {
           <GraduationCap className="h-3 w-3 text-sage-deep" />
           <span className="text-xs font-medium text-sage-deep">Quality you can feel</span>
         </div>
-        <h1 className="font-display text-4xl md:text-5xl font-bold">Zooter training & recognition</h1>
-        <p className="text-muted-foreground mt-2 max-w-xl">Every Zooter completes our standards programme. Top performers earn Zooter of the Month.</p>
+        <h1 className="font-display text-4xl md:text-5xl font-bold">Xooter training & recognition</h1>
+        <p className="text-muted-foreground mt-2 max-w-xl">Every Xooter completes our standards programme. Top performers earn Xooter of the Month.</p>
       </div>
 
       {zotm && (
         <Card className="p-6 rounded-3xl gradient-warm text-primary-foreground border-0 mb-8 flex items-center gap-5 shadow-warm">
           <img src={resolvePhoto(zotm.photo_url)} alt={zotm.name} className="h-20 w-20 rounded-2xl object-cover border-2 border-background" />
           <div className="flex-1">
-            <div className="inline-flex items-center gap-1 rounded-full bg-background/20 backdrop-blur px-2.5 py-1 text-xs font-bold mb-1">
+            <div className="inline-flex items-center gap-1 rounded-full bg-background/20 backdrop-blur-sm px-2.5 py-1 text-xs font-bold mb-1">
               <Crown className="h-3 w-3" /> ZOOTER OF THE MONTH
             </div>
             <p className="font-display text-2xl font-bold">{zotm.name}</p>

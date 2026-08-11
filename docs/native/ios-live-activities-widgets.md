@@ -1,6 +1,6 @@
 # iOS Live Activities, Dynamic Island, and Widgets
 
-This repo is currently a React/Vite web app. There is no checked-in Xcode project, so the production iOS app still needs a native target before App Store submission. The files under `native/ios/ZootLiveActivities` are a ready-to-drop Swift package for that target.
+This repo is currently a React/Vite web app. There is no checked-in Xcode project, so the production iOS app still needs a native target before App Store submission. The files under `native/ios/XootLiveActivities` are a ready-to-drop Swift package for that target.
 
 Primary Apple references reviewed on 2026-05-28:
 
@@ -13,7 +13,7 @@ Primary Apple references reviewed on 2026-05-28:
 
 Design and motion preview reviewed on 2026-07-02:
 
-- Zoot Native Widgets - Liquid Glass Motion Preview: https://www.figma.com/design/2M0vWKGmiLApMcB980WYC4
+- Xoot Native Widgets - Liquid Glass Motion Preview: https://www.figma.com/design/2M0vWKGmiLApMcB980WYC4
 
 ## Native iOS Experience Goals
 
@@ -24,15 +24,15 @@ Design and motion preview reviewed on 2026-07-02:
 
 ## Live Activity Scope
 
-A Zoot booking Live Activity should start only after a booking is confirmed or when a Zooter is assigned. It should update for:
+A Xoot booking Live Activity should start only after a booking is confirmed or when a Xooter is assigned. It should update for:
 
 - Booking confirmed
-- Zooter on the way
-- Zooter arrived
+- Xooter on the way
+- Xooter arrived
 - Job started
 - Job completed
 - Booking cancelled
-- Zooter reassigned or replacement matching in progress
+- Xooter reassigned or replacement matching in progress
 - Priority support escalation
 
 Dynamic Island copy must stay glanceable and non-sensitive. Good examples:
@@ -52,13 +52,13 @@ The web app includes `src/lib/native-live-activity.ts`. A native shell can liste
 
 - `window.webkit.messageHandlers.zootLiveActivity.postMessage(payload)` for WKWebView iOS shells
 - `window.ReactNativeWebView.postMessage(...)` for React Native shells
-- `window.ZootNative.updateBookingLiveActivity(payload)` for custom bridges
+- `window.XootNative.updateBookingLiveActivity(payload)` for custom bridges
 - `zoot:booking-live-activity` browser events for local testing
 
 Payload shape:
 
 ```ts
-interface ZootBookingLiveActivityPayload {
+interface XootBookingLiveActivityPayload {
   bookingId: string;
   status: "confirmed" | "enroute" | "arrived" | "in_progress" | "completed" | "cancelled" | "reassigned" | "pending";
   statusLabel: string;
@@ -88,11 +88,11 @@ For production-grade Live Activities, the backend should support ActivityKit pus
 
 User-created widgets should be configurable using WidgetKit and App Intents:
 
-- `Next Booking`: next date/time, service type, Zooter first name, and status.
+- `Next Booking`: next date/time, service type, Xooter first name, and status.
 - `Care+ Home Readiness`: readiness score, Home Memory completeness, next prompt.
-- `ZootCred`: available ZootCred, pending ZootCred, monthly add-on credit expiry.
-- `Favourite Zooter`: preferred Zooter and deep link to rebook.
-- `Accepted Zooter Job`: accepted job prompt and deep link to the authenticated Zooter job screen.
+- `XootCred`: available XootCred, pending XootCred, welcome add-on credit expiry.
+- `Favourite Xooter`: preferred Xooter and deep link to rebook.
+- `Accepted Xooter Job`: accepted job prompt and deep link to the authenticated Xooter job screen.
 
 Widget content should use cached, non-sensitive summaries. Tapping a widget should deep-link into the authenticated app.
 
@@ -104,7 +104,7 @@ Add to the iOS app target:
 - Background Modes where APNs/booking updates require it
 - App Groups if sharing cached widget data between app and extension
 - `NSSupportsLiveActivities = YES`
-- `NSSupportsLiveActivitiesFrequentUpdates = YES` only if Zoot truly needs and can responsibly support frequent updates
+- `NSSupportsLiveActivitiesFrequentUpdates = YES` only if Xoot truly needs and can responsibly support frequent updates
 
 ## App Review Notes
 

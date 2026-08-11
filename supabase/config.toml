@@ -7,12 +7,12 @@ additional_redirect_urls = [
   "http://127.0.0.1:5173/auth/reset",
   "http://127.0.0.1:4173/auth/callback",
   "http://127.0.0.1:4173/auth/reset",
-  "https://staging.zoothome.co.za/auth/callback",
-  "https://staging.zoothome.co.za/auth/reset",
-  "https://zoothome.co.za/auth/callback",
-  "https://zoothome.co.za/auth/reset",
-  "https://www.zoothome.co.za/auth/callback",
-  "https://www.zoothome.co.za/auth/reset",
+  "https://staging.xoot.co.za/auth/callback",
+  "https://staging.xoot.co.za/auth/reset",
+  "https://xoot.co.za/auth/callback",
+  "https://xoot.co.za/auth/reset",
+  "https://www.xoot.co.za/auth/callback",
+  "https://www.xoot.co.za/auth/reset",
   "zoot://auth/callback",
   "zoot://auth/reset",
 ]
@@ -24,6 +24,11 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.report-concierge-answer]
+verify_jwt = false
+
+# Public: the Concierge launcher renders before anyone signs in, so the client must be able to ask
+# whether it is switched on without a session. Returns capability booleans only.
+[functions.concierge-config]
 verify_jwt = false
 
 [functions.get-booking-public-keys]
@@ -70,3 +75,110 @@ verify_jwt = false
 
 [functions.twilio-verify-webhook]
 verify_jwt = false
+
+# Recovered from production on 2026-08-02 with no source in this repository, and therefore no
+# config declaration either. Declared here on 2026-08-06 with the values read from the live
+# project, not guessed. Without these, a repo-driven `supabase functions deploy` applies the
+# default of verify_jwt = true, which would silently break twilio-voice-status: Twilio cannot
+# present a Supabase JWT, so every status callback would be rejected at the gateway before the
+# HMAC-SHA1 signature check ever ran.
+[functions.twilio-token]
+verify_jwt = true
+
+[functions.twilio-conversation]
+verify_jwt = true
+
+[functions.twilio-voice-status]
+verify_jwt = false
+
+# Declared 2026-08-06 from values read off the live production project, not guessed and not
+# defaulted. Supabase treats an undeclared function as verify_jwt = true, which is right for most
+# of these and wrong for twilio-voice-twiml: Twilio cannot present a Supabase JWT, so a
+# repo-driven `supabase functions deploy` would have had the gateway reject every voice webhook
+# before the HMAC signature check ever ran. The 21 declarations above were checked against live
+# at the same time and all matched.
+
+[functions.twilio-voice-twiml]
+verify_jwt = false
+
+[functions.activate-care-plus]
+verify_jwt = true
+
+[functions.admin-confirm-payment]
+verify_jwt = true
+
+[functions.admin-control-management]
+verify_jwt = true
+
+[functions.admin-escalate-support]
+verify_jwt = true
+
+[functions.admin-mark-outbox]
+verify_jwt = true
+
+[functions.admin-reject-zooter]
+verify_jwt = true
+
+[functions.admin-resolve-review]
+verify_jwt = true
+
+[functions.ai-match]
+verify_jwt = true
+
+[functions.approve-zooter]
+verify_jwt = true
+
+[functions.cancel-booking]
+verify_jwt = true
+
+[functions.care-plus-membership]
+verify_jwt = true
+
+[functions.create-booking]
+verify_jwt = true
+
+# Closed. Creating a split needs the booking owner; accepting one needs the invited person signed
+# in as the invited address, which is not checkable without a verified session.
+[functions.split-booking-fare]
+verify_jwt = true
+
+# Closed, and admin-only inside the handler too. Reports which Twilio SIDs exist and which URLs are
+# configured — not dangerous, but not a customer's business either.
+[functions.twilio-selftest]
+verify_jwt = true
+
+[functions.create-booking-request]
+verify_jwt = true
+
+[functions.create-support-case]
+verify_jwt = true
+
+[functions.get-zooter-job-cards]
+verify_jwt = true
+
+[functions.raise-sos-alert]
+verify_jwt = true
+
+[functions.redeem-zootcred]
+verify_jwt = true
+
+[functions.request-replacement]
+verify_jwt = true
+
+[functions.respond-zooter-job]
+verify_jwt = true
+
+[functions.revoke-sensitive-access]
+verify_jwt = true
+
+[functions.sensitive-access-read]
+verify_jwt = true
+
+[functions.sensitive-access-save]
+verify_jwt = true
+
+[functions.submit-zooter-application]
+verify_jwt = true
+
+[functions.training-module]
+verify_jwt = true

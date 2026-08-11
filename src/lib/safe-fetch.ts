@@ -22,6 +22,6 @@ export function isAllowedUrl(url: string): boolean {
 }
 
 export async function safeFetch(url: string, options?: RequestInit): Promise<Response> {
-  if (!isAllowedUrl(url)) throw new Error(`[Zoot] Blocked request to disallowed URL: ${url}`);
+  if (!isAllowedUrl(url)) throw new Error(`[Xoot] Blocked request to disallowed URL: ${url}`);
   return fetch(url, options);
 }

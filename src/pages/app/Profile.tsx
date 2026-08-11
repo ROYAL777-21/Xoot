@@ -50,7 +50,7 @@ const Profile = () => {
     if (!user) return;
     Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-      (supabase as any).from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
+      supabase.from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
     ]).then(([profileResult, householdResult]) => {
       if (profileResult.data) setProfile(profileResult.data);
       if (householdResult.data) setHousehold({ ...defaultHousehold, ...householdResult.data });
@@ -96,7 +96,7 @@ const Profile = () => {
       updated_at: new Date().toISOString(),
     };
 
-    const query = (supabase as any).from("household_profiles");
+    const query = supabase.from("household_profiles");
     const { data, error } = household.id
       ? await query.update(payload).eq("id", household.id).select("*").single()
       : await query.insert(payload).select("*").single();
@@ -154,14 +154,14 @@ const Profile = () => {
           <CreditCard className="h-5 w-5 text-primary" />
           <h2 className="font-display text-xl font-bold">Payment methods</h2>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">Card, Apple Pay, Google Pay and Link will be available once payments are connected. We never charge before a Zooter accepts.</p>
+        <p className="text-sm text-muted-foreground mb-4">Card, Apple Pay, Google Pay and Link will be available once payments are connected. We never charge before a Xooter accepts.</p>
         <Button variant="outline" disabled>Connect payment method (coming soon)</Button>
       </Card>
 
       <Card className="p-6 rounded-3xl mb-6">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="h-5 w-5 text-sage-deep" />
-          <h2 className="font-display text-xl font-bold">Become a Zooter</h2>
+          <h2 className="font-display text-xl font-bold">Become a Xooter</h2>
         </div>
         <p className="text-sm text-muted-foreground mb-4">Earn predictable income from recurring clients, premium homes, fair pay rules, fast support, and stronger vetting.</p>
         <Button asChild variant="outline"><Link to="/zooter/apply">Apply now</Link></Button>

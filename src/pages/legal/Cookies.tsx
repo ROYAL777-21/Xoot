@@ -2,12 +2,12 @@ import { LegalLayout, LegalList, LegalSection } from "./LegalLayout";
 
 const Cookies = () => (
   <LegalLayout
-    title="Zoot Cookie Policy"
-    description="How Zoot uses cookies, local storage, analytics, crash monitoring, authentication storage, and app-like browser storage across the website and web app."
+    title="Xoot Cookie Policy"
+    description="How Xoot uses cookies, local storage, analytics, crash monitoring, authentication storage, and app-like browser storage across the website and web app."
     canonical="/legal/cookies"
     eyebrow="Cookies"
   >
-    <LegalSection title="What Zoot may store on your device">
+    <LegalSection title="What Xoot may store on your device">
       <LegalList>
         <li>Authentication/session state needed to keep signed-in users connected securely.</li>
         <li>Preference state such as theme, install mode, dismissed notices, and device-safe UI settings.</li>
@@ -16,9 +16,9 @@ const Cookies = () => (
       </LegalList>
     </LegalSection>
 
-    <LegalSection title="What Zoot should not store in browser cookies">
+    <LegalSection title="What Xoot should not store in browser cookies">
       <p>
-        Zoot must not store service-role keys, payment secrets, provider API keys, gate codes, alarm codes, lockbox codes, full card details, identity documents, or private support records in public browser storage.
+        Xoot must not store service-role keys, payment secrets, provider API keys, gate codes, alarm codes, lockbox codes, full card details, identity documents, or private support records in public browser storage.
       </p>
     </LegalSection>
 

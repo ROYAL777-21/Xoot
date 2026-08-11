@@ -4,6 +4,7 @@ import { Calendar, Crown, Gift, Heart, Home, LifeBuoy, LogOut, ShieldCheck, User
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { ConciergeOmnibox } from "@/components/zoot/ConciergeOmnibox";
 import { haptic } from "@/lib/haptics";
 
 const nav = [
@@ -11,7 +12,7 @@ const nav = [
   { to: "/app/bookings", label: "Bookings", icon: Calendar },
   { to: "/app/plans", label: "Care+", icon: Crown },
   { to: "/app/properties", label: "Properties", icon: Building2 },
-  { to: "/app/favorites", label: "My Zooters", icon: Heart },
+  { to: "/app/favorites", label: "My Xooters", icon: Heart },
   { to: "/app/loyalty", label: "Rewards", icon: Gift },
   { to: "/app/gifts", label: "Gift Clean", icon: Gift },
   { to: "/app/profile", label: "Profile", icon: User },
@@ -36,14 +37,14 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
     <div className="min-h-screen flex bg-background">
       <aside
         data-scrolled={scrolled ? "true" : "false"}
-        className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-[2rem] p-4 sticky top-3 h-[calc(100vh-1.5rem)]"
+        className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-4xl p-4 sticky top-3 h-[calc(100vh-1.5rem)]"
       >
         <div className="liquid-glass-readable flex items-center justify-between mb-8">
           <NavLink to="/" className="flex items-center gap-2 interactive-press" onClick={() => haptic("selection")}>
             <span className="grid h-10 w-10 place-items-center rounded-2xl gradient-warm shadow-warm">
-              <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
+              <span className="font-display text-lg font-bold text-primary-foreground">X</span>
             </span>
-            <span className="font-display text-2xl font-bold tracking-tight text-foreground">Zoot</span>
+            <span className="font-display text-2xl font-bold tracking-tight text-foreground">Xoot</span>
           </NavLink>
           <NotificationBell />
         </div>
@@ -109,7 +110,15 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
         </div>
       </nav>
 
-      <main className="flex-1 pb-28 lg:pb-0 min-w-0">{children}</main>
+      <main className="flex-1 pb-28 lg:pb-0 min-w-0">
+        {/* One search field for the whole app — it navigates, and hands anything it cannot place
+            to the Concierge. Constrained to the same max width the pages use so it lines up with
+            the content rather than floating over it. */}
+        <div className="container max-w-6xl pt-4 lg:pt-6">
+          <ConciergeOmnibox />
+        </div>
+        {children}
+      </main>
     </div>
   );
 };

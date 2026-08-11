@@ -122,7 +122,7 @@ const CarePlusApply = () => {
           <p className="text-xs text-muted-foreground mt-2">Step {step} of {totalSteps}</p>
         </div>
 
-        <div className="liquid-glass-shell zoot-concierge-panel rounded-[2rem] p-6 shadow-warm md:p-8">
+        <div className="liquid-glass-shell zoot-concierge-panel rounded-4xl p-6 shadow-warm md:p-8">
           <div className="liquid-glass-readable space-y-5">
           {step === 1 && (
             <>

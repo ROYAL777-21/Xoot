@@ -1,0 +1,29 @@
+# CodeRabbit configuration.
+#
+# `review_status: false` silences the "Review skipped — too many files" comment. It has fired on
+# every push to PR #26 (25+ times), each one a full-page repost of the same 714-file list, which
+# buries real review comments and makes the PR timeline unreadable.
+#
+# This silences the *notice*, not a review. CodeRabbit still cannot review this PR: 714 files
+# against a 150-file limit on the free plan. Nothing has given this diff a line-by-line read, and
+# that remains true — see the PR description, which says so plainly rather than implying coverage
+# that does not exist.
+#
+# The real fix is smaller PRs. This repo's own history is the argument: the 87-commit PR that
+# needed review most is the one no tool would look at.
+reviews:
+  review_status: false
+
+  # Keep the walkthrough — it is the one thing CodeRabbit still produces on the free plan for an
+  # oversized PR, and it is genuinely useful for a diff nothing else summarises.
+  high_level_summary: true
+
+  path_filters:
+    # Vendored skill packs are third-party and not ours to review.
+    - "!skills/**"
+    - "!.claude/skills/**"
+    # Generated artefacts: reviewing them reviews the generator's output, not a decision.
+    - "!**/generated/**"
+    - "!src/integrations/supabase/types.ts"
+    # The design bundle is a 2.9MB single-line base64 payload; see design/README.md.
+    - "!design/Xoot_App.html"

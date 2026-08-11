@@ -9,8 +9,8 @@ import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/govern
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  "https://zoothome.co.za",
-  "https://www.zoothome.co.za",
+  "https://xoot.co.za",
+  "https://www.xoot.co.za",
 ];
 
 const servicePrices: Record<string, number> = {
@@ -25,18 +25,18 @@ const bookingStatusLabels: Record<string, string> = {
   draft: "Setting up your booking",
   pending_payment: "Payment required",
   payment_confirmed: "Payment received",
-  awaiting_assignment: "Finding your Zooter",
-  assigned: "Zooter assigned",
-  contractor_accepted: "Zooter confirmed",
+  awaiting_assignment: "Finding your Xooter",
+  assigned: "Xooter assigned",
+  contractor_accepted: "Xooter confirmed",
   en_route: "On the way",
   arrived: "Arrived",
   in_progress: "Job started",
   completed: "Job completed",
   rated: "Thank you for your review",
   cancelled: "Cancelled",
-  replacement_required: "Finding a replacement Zooter",
-  replacement_offered: "Replacement Zooter found",
-  reassigned: "New Zooter assigned",
+  replacement_required: "Finding a replacement Xooter",
+  replacement_offered: "Replacement Xooter found",
+  reassigned: "New Xooter assigned",
 };
 
 const bookingEventTypes: Record<string, string> = {
@@ -175,13 +175,19 @@ const isBookingParticipant = async (supa: any, booking: Record<string, any>, use
   return { participant: false, role: null };
 };
 
-const privateRpc = (supa: any, fn: string, args: Record<string, unknown>) => {
-  if (typeof supa.schema === "function") return supa.schema("private").rpc(fn, args);
-  return supa.rpc(fn, args);
-};
-
+/**
+ * Calls the `public` wrapper, which forwards to `private.can_create_masked_call`.
+ *
+ * This used to go through a local `privateRpc` helper doing `supa.schema("private").rpc(...)` —
+ * the same defect `_shared/governance-utils.ts` documents, copied into this file and into
+ * `create-masked-call` rather than shared, which is why the earlier governance fix did not reach
+ * it. The call goes over PostgREST and `private` is invisible to PostgREST, so it always threw.
+ *
+ * `20260808120000_public_masked_call_eligibility_wrapper.sql` adds the SECURITY INVOKER wrapper,
+ * EXECUTE revoked from anon and authenticated, granted only to service_role.
+ */
 const getMaskedCallEligibility = async (supa: any, bookingId: string, actorId: string) => {
-  const { data, error } = await privateRpc(supa, "can_create_masked_call", {
+  const { data, error } = await supa.rpc("can_create_masked_call", {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -297,7 +303,7 @@ Deno.serve(async (req) => {
         event_type: "support_opened",
         channel,
         owner: "Customer Support Agent",
-        stack_tool: "Zoot in-app notification",
+        stack_tool: "Xoot in-app notification",
         payload: {
           ticket_id: ticket.id,
           subject: cleanText(ticket.subject, 240),
@@ -389,7 +395,7 @@ Deno.serve(async (req) => {
           event_type: "gift_clean_invoice_created",
           channel,
           owner: "Retention & Loyalty Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
+          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Xoot in-app notification",
           payload: { gift_clean_order_id: order.id, amount },
           status: "queued",
           approval_required: false,
@@ -441,7 +447,7 @@ Deno.serve(async (req) => {
         event_type: "zootcred_update",
         channel,
         owner: "Retention & Loyalty Agent",
-        stack_tool: "Zoot in-app notification",
+        stack_tool: "Xoot in-app notification",
         payload: { redemption_type: "free_clean_credit" },
         created_by: userId,
       })));
@@ -502,7 +508,7 @@ Deno.serve(async (req) => {
           event_type: eventType,
           channel,
           owner: channel === "whatsapp_urgent" ? "Scheduling & Allocation Agent" : "Customer Support Agent",
-          stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
+          stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Xoot in-app notification",
           payload: { booking_id: booking.id, status, scheduled_at: booking.scheduled_at },
           created_by: userId,
         })));
@@ -568,7 +574,7 @@ Deno.serve(async (req) => {
         event_type: "booking_reschedule_requested",
         channel,
         owner: "Scheduling & Allocation Agent",
-        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
+        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Xoot in-app notification",
         payload: { booking_id: booking.id, previous_scheduled_at: booking.scheduled_at, scheduled_at: nextScheduledAt },
         created_by: userId,
       })));
@@ -588,11 +594,14 @@ Deno.serve(async (req) => {
       const participant = await isBookingParticipant(supa, booking, userId);
       if (!participant.participant) return json({ error: "booking access denied" }, 403, origin);
 
+      // Raised from 3 with `create-masked-call`, and for the same reason: three attempts during
+      // an active booking is two dropped calls away from a ten-minute lockout at the moment
+      // contact matters most. Per user and per booking, so this is not a platform-wide budget.
       const rateLimit = await consumeRateLimit(supa, {
         bucket: "twilio.masked_voice",
         actor: `ops-masked-call:${userId}:${booking.id}`,
         action: "create",
-        limitCount: 3,
+        limitCount: 8,
         windowSeconds: 600,
       });
       if (!rateLimit.allowed) return json({ error: "too many masked call requests" }, 429, origin);
@@ -690,7 +699,7 @@ Deno.serve(async (req) => {
         event_type: "critical_trust_safety_alert",
         channel,
         owner: "Trust & Safety Agent",
-        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Zoot in-app notification",
+        stack_tool: channel === "whatsapp_urgent" ? "WhatsApp urgent queue" : "Xoot in-app notification",
         payload: { booking_id: booking.id, incident_type: incidentType },
         created_by: userId,
       })));
@@ -764,7 +773,7 @@ Deno.serve(async (req) => {
         subject_id: application.id,
         user_id: userId,
         priority: "normal",
-        summary: `KYC review for ${cleanText(application.full_name, 120) || "Zooter applicant"}`,
+        summary: `KYC review for ${cleanText(application.full_name, 120) || "Xooter applicant"}`,
       });
       await insertOutbox(supa, [
         {
@@ -790,7 +799,7 @@ Deno.serve(async (req) => {
           event_type: "trust_verification_update",
           channel,
           owner: channel === "brevo_email" ? "Contractor Success Agent" : "Trust & Safety Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
+          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Xoot in-app notification",
           payload: { application_id: application.id, status: "submitted" },
           status: "queued",
           approval_required: false,
@@ -870,7 +879,7 @@ Deno.serve(async (req) => {
           event_type: "contractor_assigned",
           channel,
           owner: "Scheduling & Allocation Agent",
-          stack_tool: "Zoot in-app notification",
+          stack_tool: "Xoot in-app notification",
           payload: { booking_id: job.booking_id, zooter_id: zooter.id },
           created_by: userId,
         })));

@@ -6,14 +6,14 @@ These checks verify the Phase 1 role boundary and the Phase 2 booking-chat actio
 
 ## What It Tests
 
-- Client, admin, and Zooter staging-only auth users can sign in.
+- Client, admin, and Xooter staging-only auth users can sign in.
 - Client users cannot read admin-only operational controls.
 - Admin users can read operational controls.
-- Client users cannot receive Zooter job cards.
-- Assigned Zooters can see the accepted job destination after accepting the job.
-- Clients cannot reveal Zooter-only sensitive household access.
-- Assigned Zooters can reveal approved sensitive access only through `get-sensitive-access`.
-- Zooters receive the `sensitive_access_available` notification for the accepted job window.
+- Client users cannot receive Xooter job cards.
+- Assigned Xooters can see the accepted job destination after accepting the job.
+- Clients cannot reveal Xooter-only sensitive household access.
+- Assigned Xooters can reveal approved sensitive access only through `get-sensitive-access`.
+- Xooters receive the `sensitive_access_available` notification for the accepted job window.
 - Booking participants can send encrypted chat only through `send-booking-message`.
 - Direct client inserts into `public.messages` are denied after Phase 2 hardening.
 - Booking participants can mark messages read through `mark-booking-message-read`.
@@ -21,7 +21,7 @@ These checks verify the Phase 1 role boundary and the Phase 2 booking-chat actio
 
 ## Current Staging State
 
-On 2026-06-28, staging had zero auth users, zero profiles, zero admin roles, zero Zooter roles, zero bookings, and zero Zooter jobs. Real role smoke tests therefore cannot be run honestly until staging smoke users and fixtures are created.
+On 2026-06-28, staging had zero auth users, zero profiles, zero admin roles, zero Xooter roles, zero bookings, and zero Xooter jobs. Real role smoke tests therefore cannot be run honestly until staging smoke users and fixtures are created.
 
 ## Safe Local Setup
 

@@ -18,7 +18,7 @@ Move these into a shared package later:
 - booking state machine
 - public env validation patterns
 - input validators
-- sanitized support/Zoot knowledge constraints
+- sanitized support/Xoot knowledge constraints
 - Edge Function response types
 - formatting helpers
 - generated Supabase database types
@@ -37,13 +37,13 @@ These web surfaces need native React Native implementations:
 
 - booking form and booking detail
 - Care+ membership state screen
-- ZootCred ledger
-- Zoot Concierge chat
+- XootCred ledger
+- Xoot Concierge chat
 - support tickets
-- Zooter onboarding and KYC uploads
-- Zooter jobs and sensitive access reveal
+- Xooter onboarding and KYC uploads
+- Xooter jobs and sensitive access reveal
 - admin ops, if admins are allowed on mobile
-- maps/Zooter tracking
+- maps/Xooter tracking
 - in-app client-contractor chat
 - payment checkout return/status screens
 
@@ -69,7 +69,7 @@ These web surfaces need native React Native implementations:
   - `ozow-create-payment`
   - `ozow-notify`
 - Push sender function for Expo Push Service.
-- Real staging users for client, admin, and Zooter flows.
+- Real staging users for client, admin, and Xooter flows.
 
 ## Required Mobile Security Controls
 

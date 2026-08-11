@@ -12,7 +12,7 @@ Reviewed: 2026-07-02
 | Supabase runtime schema is safe | Live verification SQL and advisors | `npm run ops:supabase:verify:live`, Supabase advisors | Staging/prod deploy |
 | Auth redirect allowlists are correct | Dry-run and live config readback | `npm run ops:supabase:auth-config` with approved args | Auth/OAuth launch |
 | Migration metadata repair is safe | Plan-only output and guarded live run | `npm run ops:supabase:repair-migrations -- -PlanOnly` then explicit repair | Closing Supabase migration blocker |
-| Sensitive access window holds | Unit, Edge, and role smoke tests | `npm test`, `get-sensitive-access` staging smoke | Zooter launch |
+| Sensitive access window holds | Unit, Edge, and role smoke tests | `npm test`, `get-sensitive-access` staging smoke | Xooter launch |
 | Booking state cannot skip states | Unit and Edge tests | `src/lib/booking-state-machine.test.ts`, function smoke | Booking launch |
 | Provider webhooks reject forgery | Signed/unsigned smoke tests | Provider-specific smoke records | Provider activation |
 | Concierge avoids fake actions | Unit/fallback and live smoke | Fallback tests, `support-respond` staging smoke | Public support launch |

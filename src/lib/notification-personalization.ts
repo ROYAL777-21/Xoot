@@ -1,6 +1,6 @@
 import { resolveNotificationLink } from "./notification-routing";
 
-export type ZootNotificationCategory =
+export type XootNotificationCategory =
   | "booking"
   | "support"
   | "care_plus"
@@ -10,7 +10,7 @@ export type ZootNotificationCategory =
   | "sensitive_access"
   | "marketing";
 
-export type ZootNotificationChannel =
+export type XootNotificationChannel =
   | "in_app"
   | "expo_push"
   | "brevo_email"
@@ -18,9 +18,9 @@ export type ZootNotificationChannel =
   | "sms_fallback"
   | "twilio_voice";
 
-export type ZootNotificationUrgency = "low" | "normal" | "high" | "urgent";
+export type XootNotificationUrgency = "low" | "normal" | "high" | "urgent";
 
-export type ZootNotificationBehaviorSignal =
+export type XootNotificationBehaviorSignal =
   | "new_user"
   | "booking_started"
   | "service_selected"
@@ -51,14 +51,14 @@ export type NotificationPersonalizationProfile = {
   role: "guest" | "customer" | "zooter" | "admin" | "support";
   timezone?: string;
   localHour?: number;
-  behaviorSignals?: ZootNotificationBehaviorSignal[];
-  preferredChannels?: ZootNotificationChannel[];
-  mutedCategories?: ZootNotificationCategory[];
+  behaviorSignals?: XootNotificationBehaviorSignal[];
+  preferredChannels?: XootNotificationChannel[];
+  mutedCategories?: XootNotificationCategory[];
   marketingConsent?: boolean;
   dailySentCount?: number;
   weeklySentCount?: number;
   recentlyOpenedRoutes?: string[];
-  channelFatigue?: Partial<Record<ZootNotificationChannel, number>>;
+  channelFatigue?: Partial<Record<XootNotificationChannel, number>>;
   quietHours?: {
     startHour: number;
     endHour: number;
@@ -66,8 +66,8 @@ export type NotificationPersonalizationProfile = {
 };
 
 export type NotificationDecisionInput = {
-  category: ZootNotificationCategory;
-  urgency?: ZootNotificationUrgency;
+  category: XootNotificationCategory;
+  urgency?: XootNotificationUrgency;
   title: string;
   body?: string | null;
   route?: string | null;
@@ -77,7 +77,7 @@ export type NotificationDecisionInput = {
 
 export type NotificationDecision = {
   status: "send" | "suppress" | "route_only";
-  channels: ZootNotificationChannel[];
+  channels: XootNotificationChannel[];
   title: string;
   body: string | null;
   route: string | null;
@@ -85,8 +85,8 @@ export type NotificationDecision = {
   personalizationTags: string[];
 };
 
-const DEFAULT_CHANNELS: ZootNotificationChannel[] = ["in_app", "expo_push"];
-const EXTERNAL_CHANNELS = new Set<ZootNotificationChannel>(["brevo_email", "whatsapp_urgent", "sms_fallback", "twilio_voice"]);
+const DEFAULT_CHANNELS: XootNotificationChannel[] = ["in_app", "expo_push"];
+const EXTERNAL_CHANNELS = new Set<XootNotificationChannel>(["brevo_email", "whatsapp_urgent", "sms_fallback", "twilio_voice"]);
 const SENSITIVE_PATTERNS = [
   /\b(gate|alarm|lockbox|door|entry)\s*(code|pin|password)\b/i,
   /\b(otp|one[-\s]?time\s?pin|cvv|cvc|card number|bank account)\b/i,
@@ -117,7 +117,7 @@ export const sanitizeNotificationText = (value: string | null | undefined, maxLe
   const text = normalizeText(value ?? "", maxLength);
   if (!text) return "";
   if (!containsSensitiveNotificationText(text)) return text;
-  return "Open Zoot to view this securely.";
+  return "Open Xoot to view this securely.";
 };
 
 export const isWithinQuietHours = (profile: NotificationPersonalizationProfile, now = new Date()) => {
@@ -131,14 +131,14 @@ export const isWithinQuietHours = (profile: NotificationPersonalizationProfile, 
   return hour >= start || hour < end;
 };
 
-const roleAllowsCategory = (role: NotificationPersonalizationProfile["role"], category: ZootNotificationCategory) => {
+const roleAllowsCategory = (role: NotificationPersonalizationProfile["role"], category: XootNotificationCategory) => {
   if (role === "guest") return category === "marketing";
   if (role === "zooter") return category === "zooter_jobs" || category === "support" || category === "security" || category === "sensitive_access";
   if (role === "admin" || role === "support") return category === "support" || category === "security";
   return category !== "zooter_jobs";
 };
 
-const TIME_SENSITIVE_SIGNALS = new Set<ZootNotificationBehaviorSignal>([
+const TIME_SENSITIVE_SIGNALS = new Set<XootNotificationBehaviorSignal>([
   "payment_pending",
   "booking_assigned",
   "booking_accepted",
@@ -153,9 +153,9 @@ const TIME_SENSITIVE_SIGNALS = new Set<ZootNotificationBehaviorSignal>([
   "zooter_sensitive_access_ready",
 ]);
 
-const behaviorBoostsPush = (signals: ZootNotificationBehaviorSignal[] = []) => signals.some((signal) => TIME_SENSITIVE_SIGNALS.has(signal));
+const behaviorBoostsPush = (signals: XootNotificationBehaviorSignal[] = []) => signals.some((signal) => TIME_SENSITIVE_SIGNALS.has(signal));
 
-const getPersonalizationTags = (signals: ZootNotificationBehaviorSignal[] = []) => {
+const getPersonalizationTags = (signals: XootNotificationBehaviorSignal[] = []) => {
   const tags = new Set<string>();
 
   if (signals.some((signal) => ["booking_started", "service_selected", "abandoned_booking_15m", "abandoned_booking_24h"].includes(signal))) {
@@ -180,9 +180,9 @@ const getPersonalizationTags = (signals: ZootNotificationBehaviorSignal[] = []) 
 };
 
 const applyChannelFatigue = (
-  channels: ZootNotificationChannel[],
+  channels: XootNotificationChannel[],
   profile: NotificationPersonalizationProfile,
-  urgency: ZootNotificationUrgency,
+  urgency: XootNotificationUrgency,
   reasonCodes: string[],
 ) => {
   if (urgency === "urgent") return channels;
@@ -210,7 +210,7 @@ export const buildPersonalizedNotificationDecision = (input: NotificationDecisio
   const urgency = input.urgency ?? "normal";
   const reasonCodes: string[] = [];
   const personalizationTags = getPersonalizationTags(input.profile.behaviorSignals);
-  const safeTitle = sanitizeNotificationText(input.title, 80) || "Zoot update";
+  const safeTitle = sanitizeNotificationText(input.title, 80) || "Xoot update";
   const safeBody = sanitizeNotificationText(input.body, 180) || null;
   const route = resolveNotificationLink(input.route);
 
@@ -238,7 +238,7 @@ export const buildPersonalizedNotificationDecision = (input: NotificationDecisio
     return { status: "route_only", channels: ["in_app"], title: safeTitle, body: safeBody, route, reasonCodes: ["recent_route_opened"], personalizationTags };
   }
 
-  let channels: ZootNotificationChannel[] = getCandidateChannels(input);
+  let channels: XootNotificationChannel[] = getCandidateChannels(input);
 
   if (input.profile.behaviorSignals?.includes("inactive_14d") && urgency === "low") {
     channels = channels.filter((channel) => channel === "in_app" || channel === "brevo_email");

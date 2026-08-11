@@ -1,6 +1,144 @@
 {
   "version": 1,
   "skills": {
+    "brandkit": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/brandkit/SKILL.md",
+      "computedHash": "b0c4837e1bd140ca816ae54948754ddd2ac1e2a4d3619363777a80caf00b2ede"
+    },
+    "huashu-design": {
+      "source": "alchaincyf/huashu-design",
+      "sourceType": "github",
+      "skillPath": "skills/huashu-design/SKILL.md",
+      "computedHash": "db1c782b7f32afcf7119d758b12fa6c97e3c2ba327c394b190f63a08e48799c4"
+    },
+    "humanizer": {
+      "source": "blader/humanizer",
+      "sourceType": "github",
+      "skillPath": "skills/humanizer/SKILL.md",
+      "computedHash": "70938f3cce25970e1ded5fdd194b755c03f1e4e4fa76820958ce78f86b677b1a"
+    },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": "skills/impeccable/SKILL.md",
+      "computedHash": "eeffd5227a147cd7f1a627f06cb69ee7ce5f13af99be5913e5627d03ab74f572"
+    },
+    "learn-codebase": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "skills/learn-codebase/SKILL.md",
+      "computedHash": "7dece1f0742473515d009d9aa5255305fcec326cabdebb4792d38c5dfb5a71c6"
+    },
+    "marketing-ab-testing": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/marketing-ab-testing/SKILL.md",
+      "computedHash": "4ce76c382435d19a539f60e3662b7bc357f61648ccde5d78b9b167ee1181fa72"
+    },
+    "marketing-copywriting": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/marketing-copywriting/SKILL.md",
+      "computedHash": "58516df516de05f0b44682163a57270355b53a458ce06eb90ff200d3cd7b00dc"
+    },
+    "marketing-cro": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/marketing-cro/SKILL.md",
+      "computedHash": "40f23f479a00f38dbe4e6257a62a33ade3f7d6b8194340f34e9a35f3439c042c"
+    },
+    "marketing-onboarding": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/marketing-onboarding/SKILL.md",
+      "computedHash": "5eb86c411ca0a6029d2134150e62c7a0f1f7d39cc41f8e8e74b78be7f90aacf2"
+    },
+    "marketing-paywalls": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/marketing-paywalls/SKILL.md",
+      "computedHash": "cbed2b509a66d52d349f804991cb6a1e3aa659339929a1f72e8fc16bfa755539"
+    },
+    "marketing-pricing": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/marketing-pricing/SKILL.md",
+      "computedHash": "9a8cd10f37f22d40907465e38cadea8a102915ffecdaec099181c0e4b66ed120"
+    },
+    "mem-search": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "skills/mem-search/SKILL.md",
+      "computedHash": "73c810cf6b08e67c253b1fcdf370d391a5ad2ccf63211f478426b977a5c1e694"
+    },
+    "ponytail": {
+      "source": "DietrichGebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail/SKILL.md",
+      "computedHash": "1316a2f3f95741d2300b116fe0c2d81ce4a9568656ed0a62643f54aaf09957f2"
+    },
+    "ponytail-audit": {
+      "source": "DietrichGebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail-audit/SKILL.md",
+      "computedHash": "5560b8e383dbe2ddfddc873a1e2bf2e586e23e0cd7d995537482b2315331f6d1"
+    },
+    "ponytail-debt": {
+      "source": "DietrichGebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail-debt/SKILL.md",
+      "computedHash": "c84fba75f0ca12bfe83f9a78ea02fd125c5dd3f1fbb18124105a489937f284e6"
+    },
+    "ponytail-gain": {
+      "source": "DietrichGebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail-gain/SKILL.md",
+      "computedHash": "24e01d1c9715cb136ba1c4f1e52a95940c0193558b876828e537736480d6408b"
+    },
+    "ponytail-help": {
+      "source": "DietrichGebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail-help/SKILL.md",
+      "computedHash": "2264d1615117b02b0fd5a69ec84cd2757006471a78e4d6c22eed6d581c1d37a4"
+    },
+    "ponytail-review": {
+      "source": "DietrichGebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail-review/SKILL.md",
+      "computedHash": "40df33b58fc6ef889b93585733feb9566b76e9586efa7f376785c1e995197ac0"
+    },
+    "resolve-agent-reviews": {
+      "source": "pbakaus/agent-reviews",
+      "sourceType": "github",
+      "skillPath": "skills/resolve-agent-reviews/SKILL.md",
+      "computedHash": "879216f084b165466d1594e7ba6728d0b5a2463e3608d22ddeaa464ef6e4798e"
+    },
+    "resolve-reviews": {
+      "source": "pbakaus/agent-reviews",
+      "sourceType": "github",
+      "skillPath": "skills/resolve-reviews/SKILL.md",
+      "computedHash": "482b0321a14c1d355a5c39e1f1cb4af5e2e4c198b071589b241050a94541c441"
+    },
+    "seo-audit": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "skillPath": "skills/seo-audit/SKILL.md",
+      "computedHash": "78ea9c87c38527051f903d4ea8f91db7db05028c97bc2aa95f9ba08a0ef69e85"
+    },
+    "seo-schema": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "skillPath": "skills/seo-schema/SKILL.md",
+      "computedHash": "96c6b7965f712f2f6286a841bc962c8bee1a2430f1f9a93347e635117b58f00f"
+    },
+    "seo-technical": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "skillPath": "skills/seo-technical/SKILL.md",
+      "computedHash": "a5eb76b4f1a99cf0322c38ea188c27e0820ecde773a7b359f8350c16fc42df9b"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
@@ -12,6 +150,30 @@
       "sourceType": "github",
       "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
       "computedHash": "3639bed1f40b3fbadae79fee631c42c89b2d1f5c30b05d5aa3cca06422a6bbbc"
+    },
+    "systematic-debugging": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/systematic-debugging/SKILL.md",
+      "computedHash": "808fc5717aa88ad65efff312b11c186294d3e6ee301afb584e2f86599b137787"
+    },
+    "test-driven-development": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/test-driven-development/SKILL.md",
+      "computedHash": "bf1b8216e523851a411e91d429a7c1c2a173e79d88957bc78e348218d50edd54"
+    },
+    "verification-before-completion": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/verification-before-completion/SKILL.md",
+      "computedHash": "2befe7fc55bcadaa3d97dd9e8efeb633d2561c0ebe74c5a8b17c4d9e7e4520b3"
+    },
+    "writing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/writing-plans/SKILL.md",
+      "computedHash": "72190c88b2b5a67a96b91d66aa72b9161913e10e8769da3f28a226f4cc7b99d0"
     }
   }
 }

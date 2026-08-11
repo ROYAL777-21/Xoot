@@ -1,4 +1,4 @@
-export type ZootNativeBookingAction = "directions" | "masked_call" | "share_eta";
+export type XootNativeBookingAction = "directions" | "masked_call" | "share_eta";
 
 export interface NativeBookingActionInput {
   bookingId: string;
@@ -14,9 +14,9 @@ export interface NativeBookingActionInput {
   updatedAt?: string;
 }
 
-export interface ZootNativeBookingActionPayload {
+export interface XootNativeBookingActionPayload {
   type: "zoot.bookingAction";
-  action: ZootNativeBookingAction;
+  action: XootNativeBookingAction;
   bookingId: string;
   route: string;
   status?: string;
@@ -34,11 +34,11 @@ export interface ZootNativeBookingActionPayload {
 type BookingActionWindow = Window & {
   webkit?: {
     messageHandlers?: {
-      zootBookingAction?: { postMessage: (payload: ZootNativeBookingActionPayload) => void };
+      zootBookingAction?: { postMessage: (payload: XootNativeBookingActionPayload) => void };
     };
   };
   ReactNativeWebView?: { postMessage: (message: string) => void };
-  ZootNative?: { performBookingAction?: (payload: ZootNativeBookingActionPayload) => void };
+  XootNative?: { performBookingAction?: (payload: XootNativeBookingActionPayload) => void };
 };
 
 const stripUnsafeText = (value: string) =>
@@ -99,9 +99,9 @@ export const buildBookingDirectionsUrl = (input: NativeBookingActionInput) => {
 };
 
 export const createNativeBookingActionPayload = (
-  action: ZootNativeBookingAction,
+  action: XootNativeBookingAction,
   input: NativeBookingActionInput,
-): ZootNativeBookingActionPayload => {
+): XootNativeBookingActionPayload => {
   const bookingId = safeBookingSegment(input.bookingId) ?? "booking";
   const status = textValue(input.status, 40);
   const statusLabel = textValue(input.statusLabel, 80);
@@ -138,7 +138,7 @@ const tryBridge = (callback: () => void) => {
   }
 };
 
-export const sendNativeBookingAction = (payload: ZootNativeBookingActionPayload) => {
+export const sendNativeBookingAction = (payload: XootNativeBookingActionPayload) => {
   if (typeof window === "undefined") return false;
 
   const nativeWindow = window as BookingActionWindow;
@@ -148,7 +148,7 @@ export const sendNativeBookingAction = (payload: ZootNativeBookingActionPayload)
   const webkitBridge = nativeWindow.webkit?.messageHandlers?.zootBookingAction;
   if (webkitBridge) delivered = tryBridge(() => webkitBridge.postMessage(payload)) || delivered;
 
-  const nativeBridge = nativeWindow.ZootNative?.performBookingAction;
+  const nativeBridge = nativeWindow.XootNative?.performBookingAction;
   if (nativeBridge) delivered = tryBridge(() => nativeBridge(payload)) || delivered;
 
   const reactNativeBridge = nativeWindow.ReactNativeWebView;
@@ -172,9 +172,9 @@ export const openBookingDirections = (input: NativeBookingActionInput) => {
   return { delivered, fallbackUrl, payload };
 };
 
-export const buildBookingEtaShareText = (payload: ZootNativeBookingActionPayload) => {
+export const buildBookingEtaShareText = (payload: XootNativeBookingActionPayload) => {
   const parts = unique([
-    "Zoot booking update",
+    "Xoot booking update",
     payload.statusLabel ?? payload.status,
     payload.etaMinutes !== undefined ? `ETA ${payload.etaMinutes} min` : undefined,
     payload.zooterName ? `${payload.zooterName} assigned` : undefined,

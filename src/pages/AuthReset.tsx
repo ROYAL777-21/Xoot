@@ -83,7 +83,7 @@ const AuthReset = () => {
 
       await supabase.auth.signOut();
       haptic("success");
-      toast.success("Your Zoot password has been updated. Sign in again to continue.");
+      toast.success("Your Xoot password has been updated. Sign in again to continue.");
       navigate("/auth", { replace: true });
     } catch {
       haptic("warning");
@@ -96,17 +96,17 @@ const AuthReset = () => {
   return (
     <div className="min-h-screen gradient-hero grid place-items-center p-6">
       <SEO
-        title="Reset your Zoot password"
-        description="Update your Zoot password from a secure reset link."
+        title="Reset your Xoot password"
+        description="Update your Xoot password from a secure reset link."
         canonical="/auth/reset"
         noIndex
       />
       <Card className="w-full max-w-md rounded-3xl border-border p-8 shadow-warm">
-        <Link to="/" className="mb-6 flex items-center gap-2" aria-label="Back to Zoot home">
+        <Link to="/" className="mb-6 flex items-center gap-2" aria-label="Back to Xoot home">
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm shadow-warm">
-            <span className="font-display text-lg font-bold text-primary-foreground">Z</span>
+            <span className="font-display text-lg font-bold text-primary-foreground">X</span>
           </span>
-          <span className="font-display text-2xl font-bold tracking-tight">zoot</span>
+          <span className="font-display text-2xl font-bold tracking-tight">xoot</span>
         </Link>
 
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
@@ -116,7 +116,7 @@ const AuthReset = () => {
 
         <h1 className="mb-2 font-display text-3xl font-bold">Create a new password</h1>
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-          Use a strong password that you do not use anywhere else. Zoot will never ask for it in chat, WhatsApp, phone calls or email.
+          Use a strong password that you do not use anywhere else. Xoot will never ask for it in chat, WhatsApp, phone calls or email.
         </p>
 
         {checkingLink && (

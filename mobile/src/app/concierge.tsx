@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { type Href, useRouter } from 'expo-router';
 import { AccessibilityInfo, Animated, Easing, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
-import { Colors, Spacing } from '@/constants/theme';
+import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
+import { Colors, Spacing, alpha } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { redactConciergeClientText } from '@/lib/concierge-privacy';
-import { invokeZootFunction } from '@/lib/edge-functions';
-import { getLocalZootConciergeReply } from '@/lib/zoot-concierge-fallback';
+import { invokeXootFunction } from '@/lib/edge-functions';
+import { getLocalXootConciergeReply } from '@/lib/zoot-concierge-fallback';
 import { useAuth } from '@/providers/auth-provider';
 
 type SupportResponse = {
@@ -37,15 +37,15 @@ const secretLikePattern =
 const quickPrompts = [
   'How do I book a cleaner?',
   'How long should I book for?',
-  'Can Zoot help my office?',
-  'What should I prepare before a Zooter arrives?',
+  'Can Xoot help my office?',
+  'What should I prepare before a Xooter arrives?',
   'What does Care+ include?',
 ];
 
 const firstMessage: ConciergeMessage = {
   id: 'welcome',
   role: 'assistant',
-  body: 'Hi, I am Zoot Concierge. Ask me about cleaning, booking prep, Care+, ZootCred, launch areas, office resets, Airbnb turnovers or becoming a Zooter. Keep private booking, payment, address and access details inside the signed-in app.',
+  body: 'Hi, I am Xoot Concierge. Ask me about cleaning, booking prep, Care+, XootCred, launch areas, office resets, Airbnb turnovers or becoming a Xooter. Keep private booking, payment, address and access details inside the signed-in app.',
   source: 'local_knowledge',
 };
 
@@ -139,7 +139,7 @@ export default function ConciergeScreen() {
       .join('\n');
 
     try {
-      await invokeZootFunction('report-concierge-answer', {
+      await invokeXootFunction('report-concierge-answer', {
         reason: 'User reported this Concierge answer',
         role: 'user',
         source: assistantMessage.source ?? 'unknown',
@@ -151,7 +151,7 @@ export default function ConciergeScreen() {
       appendMessage({
         role: 'system',
         body: user
-          ? 'Thanks. Zoot can review that Concierge answer through the approved support channel. The bot will not change bookings, payments, refunds or account state.'
+          ? 'Thanks. Xoot can review that Concierge answer through the approved support channel. The bot will not change bookings, payments, refunds or account state.'
           : 'Thanks. Sign in and open Support for account-protected review. Do not paste private booking, payment, address or access-code details into public chat.',
         source: 'local_knowledge',
       });
@@ -184,7 +184,7 @@ export default function ConciergeScreen() {
 
     setIsSubmitting(true);
     try {
-      const response = await invokeZootFunction<SupportResponse>('support-respond', {
+      const response = await invokeXootFunction<SupportResponse>('support-respond', {
         subject: 'Mobile concierge question',
         body: trimmedMessage,
         role: 'user',
@@ -206,10 +206,10 @@ export default function ConciergeScreen() {
         });
       }
     } catch {
-      const localReply = getLocalZootConciergeReply(trimmedMessage, Boolean(user));
+      const localReply = getLocalXootConciergeReply(trimmedMessage, Boolean(user));
       appendMessage({
         role: 'assistant',
-        body: `${localReply?.response ?? 'I can help with general Zoot questions, but I cannot reach live support right now.'} Live support is not reachable in this session, so I cannot perform account, booking, payment or admin actions here.`,
+        body: `${localReply?.response ?? 'I can help with general Xoot questions, but I cannot reach live support right now.'} Live support is not reachable in this session, so I cannot perform account, booking, payment or admin actions here.`,
         source: localReply?.source ?? 'local_knowledge',
         escalated: localReply?.escalated ?? true,
         cta: localReply?.cta,
@@ -223,7 +223,7 @@ export default function ConciergeScreen() {
   const starGlow = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.28, 0.72] });
 
   return (
-    <ZootScreen>
+    <XootScreen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <LiquidCard style={styles.heroCard}>
           <View style={styles.heroRow}>
@@ -231,7 +231,7 @@ export default function ConciergeScreen() {
               <RoboticStarMark />
             </Animated.View>
             <View style={styles.heroCopy}>
-              <Eyebrow>Zoot Concierge</Eyebrow>
+              <Eyebrow>Xoot Concierge</Eyebrow>
               <Title>Ask before you book.</Title>
             </View>
           </View>
@@ -250,7 +250,7 @@ export default function ConciergeScreen() {
                     styles.messageBubble,
                     {
                       backgroundColor:
-                        item.role === 'user' ? theme.accent : item.role === 'system' ? 'rgba(181, 71, 71, 0.18)' : theme.backgroundElement,
+                        item.role === 'user' ? theme.accent : item.role === 'system' ? alpha('dark', 'destructive', 0.18) : theme.backgroundElement,
                       borderColor: item.role === 'system' ? theme.danger : theme.border,
                     },
                   ]}>
@@ -258,7 +258,7 @@ export default function ConciergeScreen() {
                     {item.body}
                   </Text>
                   {item.source ? (
-                    <Text style={[styles.messageMeta, { color: item.role === 'user' ? 'rgba(7, 16, 10, 0.68)' : theme.textSecondary }]}>
+                    <Text style={[styles.messageMeta, { color: item.role === 'user' ? alpha('dark', 'background', 0.68) : theme.textSecondary }]}>
                       {item.source.replace(/_/g, ' ')}
                       {item.escalated ? ' - human review' : ''}
                     </Text>
@@ -283,7 +283,7 @@ export default function ConciergeScreen() {
             {isSubmitting ? (
               <View style={styles.assistantRow}>
                 <View style={[styles.messageBubble, styles.typingBubble, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
-                  <Text style={[styles.messageText, { color: theme.textSecondary }]}>Checking Zoot's playbook...</Text>
+                  <Text style={[styles.messageText, { color: theme.textSecondary }]}>Checking Xoot's playbook...</Text>
                 </View>
               </View>
             ) : null}
@@ -325,7 +325,7 @@ export default function ConciergeScreen() {
           </Text>
         </View>
       </KeyboardAvoidingView>
-    </ZootScreen>
+    </XootScreen>
   );
 }
 
@@ -336,16 +336,16 @@ const styles = StyleSheet.create({
   heroRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: Spacing.three,
+    gap: Spacing.lg,
   },
   heroCopy: {
     flex: 1,
-    gap: Spacing.two,
+    gap: Spacing.sm,
   },
   starWrap: {
     alignItems: 'center',
-    backgroundColor: 'rgba(216, 178, 110, 0.18)',
-    borderColor: 'rgba(255, 248, 236, 0.42)',
+    backgroundColor: alpha('dark', 'accent', 0.18),
+    borderColor: alpha('dark', 'foreground', 0.42),
     borderCurve: 'continuous',
     borderRadius: 30,
     borderWidth: 1,
@@ -392,8 +392,8 @@ const styles = StyleSheet.create({
   },
   starFace: {
     alignItems: 'center',
-    backgroundColor: 'rgba(7, 16, 10, 0.86)',
-    borderColor: 'rgba(255, 248, 236, 0.34)',
+    backgroundColor: alpha('dark', 'background', 0.86),
+    borderColor: alpha('dark', 'foreground', 0.34),
     borderRadius: 16,
     borderWidth: 1,
     gap: 5,
@@ -412,13 +412,13 @@ const styles = StyleSheet.create({
     width: 4,
   },
   starMouth: {
-    backgroundColor: 'rgba(216, 178, 110, 0.82)',
+    backgroundColor: alpha('dark', 'accent', 0.82),
     borderRadius: 999,
     height: 3,
     width: 13,
   },
   messageList: {
-    gap: Spacing.two,
+    gap: Spacing.sm,
   },
   messageRow: {
     flexDirection: 'row',
@@ -433,8 +433,8 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     borderWidth: 1,
     maxWidth: '88%',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
   messageText: {
     fontSize: 15,
@@ -449,20 +449,20 @@ const styles = StyleSheet.create({
   },
   messageActions: {
     alignItems: 'flex-start',
-    gap: Spacing.two,
-    marginTop: Spacing.two,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
   },
   messageActionButton: {
     alignSelf: 'flex-start',
     minHeight: 38,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
   typingBubble: {
     opacity: 0.84,
   },
   quickPrompts: {
-    gap: Spacing.two,
+    gap: Spacing.sm,
   },
   quickPrompt: {
     alignItems: 'flex-start',
@@ -476,13 +476,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   inputActions: {
-    gap: Spacing.three,
+    gap: Spacing.lg,
   },
   supportNote: {
-    borderColor: 'rgba(255, 250, 242, 0.14)',
+    borderColor: alpha('dark', 'foreground', 0.14),
     borderRadius: 18,
     borderWidth: 1,
-    padding: Spacing.three,
+    padding: Spacing.lg,
   },
   supportNoteText: {
     color: Colors.dark.textSecondary,

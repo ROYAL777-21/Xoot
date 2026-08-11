@@ -1,8 +1,8 @@
-# Zoot Admin Access
+# Xoot Admin Access
 
 Reviewed: 2026-06-30
 
-Zoot does not have universal admin sign-in credentials in the website, app, repository, or env templates. Admin access is role-based:
+Xoot does not have universal admin sign-in credentials in the website, app, repository, or env templates. Admin access is role-based:
 
 1. A person signs in through the normal Supabase Auth flow.
 2. The account must have an `admin` role in `public.user_roles`.

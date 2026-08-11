@@ -1,4 +1,4 @@
-# Zoot Master Discovery Report
+# Xoot Master Discovery Report
 
 Reviewed: 2026-06-24
 Phase: 0 - Repository Discovery, Baseline and Governance
@@ -6,7 +6,7 @@ Branch: `codex/full-zoot-iphone-pwa-auth-security`
 
 ## Executive Finding
 
-Zoot has a substantial React/Vite website, a separate Expo mobile application, two Supabase environments, and a broad Edge Function action layer. It is not ready for provider activation or store submission.
+Xoot has a substantial React/Vite website, a separate Expo mobile application, two Supabase environments, and a broad Edge Function action layer. It is not ready for provider activation or store submission.
 
 The main blocker is schema and policy divergence:
 
@@ -46,7 +46,7 @@ The web app remains independent from the Expo app. They share Supabase types and
 The web app includes:
 
 - public home, Care+, trust, blog and legal routes;
-- authenticated client, Zooter and admin routes;
+- authenticated client, Xooter and admin routes;
 - route-level lazy loading;
 - fail-loud Supabase configuration checks;
 - no production mock fallback;
@@ -54,14 +54,14 @@ The web app includes:
 - Mapbox GL JS integration when a restricted public token is configured;
 - Content Security Policy and static security headers;
 - PWA manifests and native association-file generation;
-- Zoot Concierge deterministic knowledge and optional server-side OpenAI fallback.
+- Xoot Concierge deterministic knowledge and optional server-side OpenAI fallback.
 
 Regression-sensitive areas:
 
 - auth callbacks and password reset routes;
 - booking pricing and state transitions;
 - Care+ activation and billing;
-- ZootCred ledger writes;
+- XootCred ledger writes;
 - sensitive household access;
 - admin and integration outbox writes;
 - public support bot rate limiting and redaction;
@@ -121,7 +121,7 @@ This configuration is not release-ready.
 Major public tables include:
 
 - Identity and roles: `profiles`, `user_roles`
-- Zooters: `zooters`, `zooter_applications`, `zooter_documents`, `zooter_jobs`, `zooter_earnings`
+- Xooters: `zooters`, `zooter_applications`, `zooter_documents`, `zooter_jobs`, `zooter_earnings`
 - Training and quality: `training_modules`, `zooter_training_progress`, `zooter_training_completions`, `zooter_reliability_metrics`
 - Bookings: `bookings`, `booking_status_events`, `booking_completion_photos`, `recurring_schedules`
 - Household data: `household_profiles`, `saved_addresses`, `property_accounts`
@@ -183,7 +183,7 @@ Intended source:
 - `user_subscriptions` for membership status;
 - `subscription_plans` for server-owned plan configuration;
 - verified `payment_records` for activation;
-- `zootcred_ledger` for the R30 monthly credit.
+- `zootcred_ledger` for the R30 welcome credit — one row per member at activation, not a recurring grant.
 
 Duplicate functionality:
 
@@ -193,7 +193,7 @@ Duplicate functionality:
 
 The duplicate activation paths must be consolidated before Care+ is enabled.
 
-## ZootCred Source Of Truth
+## XootCred Source Of Truth
 
 The intended source is the append-only `zootcred_ledger`.
 
@@ -324,7 +324,7 @@ Required token separation:
 
 ### Cloudflare
 
-The connected account contains no zones. DNS proxying, TLS, WAF, rate limiting, Turnstile and origin protection cannot be configured until the Zoot domain is added.
+The connected account contains no zones. DNS proxying, TLS, WAF, rate limiting, Turnstile and origin protection cannot be configured until the Xoot domain is added.
 
 ### Expo And EAS
 
@@ -407,7 +407,7 @@ Supabase:
 7. Is Booking Cover preselection legally and commercially approved?
 8. Is Care+ sold in native apps as a physical-service membership outside store billing rules?
 9. What legal entity name, registration number, address and Information Officer details are approved?
-10. Which domain is authoritative: `zoothome.co.za`, `www.zoothome.co.za`, preview and staging subdomains?
+10. Which domain is authoritative: `xoot.co.za`, `www.xoot.co.za`, preview and staging subdomains?
 11. Should the current Twilio trial account be upgraded, or should staging and production subaccounts be created first?
 12. Is Brevo the only email provider, with SendGrid disabled?
 13. Which PostHog data residency and consent configuration is approved?

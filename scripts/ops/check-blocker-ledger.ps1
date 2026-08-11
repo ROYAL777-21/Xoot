@@ -69,7 +69,7 @@ $requiredBlockers = @(
   [pscustomobject]@{
     id = "cloudflare-zone"
     description = "Cloudflare zone, WAF, rate limit and Turnstile"
-    patterns = @("Cloudflare", "zoothome.co.za", "Turnstile")
+    patterns = @("Cloudflare", "xoot.co.za", "Turnstile")
   },
   [pscustomobject]@{
     id = "domain-registration"

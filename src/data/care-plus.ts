@@ -2,28 +2,28 @@ import type {
   CarePlusBenefit,
   CarePlusMembership,
   CarePlusPlan,
-  FavouriteZooter,
+  FavouriteXooter,
   HomeMemoryProfile,
   PropertyProfile,
   SmartReminder,
-  ZootCredBalance,
+  XootCredBalance,
 } from "@/types/care-plus";
 
 export const carePlusPlan: CarePlusPlan = {
   id: "zoot-care-plus",
-  name: "Zoot Care+",
+  name: "Xoot Care+",
   audience: "For busy households and professionals.",
   priceZar: 99,
   billingCadence: "monthly",
   futureTierReady: true,
   benefits: [
     "Home Memory",
-    "Favourite Zooter priority",
+    "Favourite Xooter priority",
     "Priority booking windows",
     "Priority replacement support",
     "One-tap rebook",
-    "1.5x ZootCred",
-    "R30 monthly add-on credit",
+    "1.5x XootCred",
+    "R30 welcome add-on credit, once",
     "Smart home reminders",
     "Property profiles",
     "Priority support",
@@ -44,10 +44,10 @@ export const carePlusShowcaseMembership: CarePlusMembership = {
   addOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
   zootCredMultiplier: 1.5,
   homeReadinessScore: 86,
-  favouriteZooterId: "nomsa-showcase",
+  favouriteXooterId: "nomsa-showcase",
 };
 
-export const carePlusShowcaseFavouriteZooter: FavouriteZooter = {
+export const carePlusShowcaseFavouriteXooter: FavouriteXooter = {
   id: "nomsa-showcase",
   name: "Nomsa",
   rating: 4.96,
@@ -57,14 +57,14 @@ export const carePlusShowcaseFavouriteZooter: FavouriteZooter = {
   preferredFor: "Kitchen detail, pet notes, linen reset",
 };
 
-export const carePlusShowcaseZootCredBalance: ZootCredBalance = {
+export const carePlusShowcaseXootCredBalance: XootCredBalance = {
   userId: "care-plus-showcase-user",
   availableZar: 185,
   pendingZar: 45,
   multiplier: 1.5,
   projectedNextBookingZar: 38,
-  monthlyAddOnCreditZar: 30,
-  monthlyAddOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
+  welcomeAddOnCreditZar: 30,
+  welcomeAddOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
 };
 
 export const carePlusShowcasePropertyProfiles: PropertyProfile[] = [
@@ -127,8 +127,8 @@ export const carePlusBenefits: CarePlusBenefit[] = [
   },
   {
     id: "favourite-zooter",
-    title: "Favourite Zooter",
-    summary: "Save and rebook your preferred Zooter with a personal CTA like Book Nomsa again.",
+    title: "Favourite Xooter",
+    summary: "Save and rebook your preferred Xooter with a personal CTA like Book Nomsa again.",
     customerValue: "very_high",
     zootCost: "medium",
     memberProof: "Continuity makes repeat bookings feel safer and calmer.",
@@ -144,7 +144,7 @@ export const carePlusBenefits: CarePlusBenefit[] = [
   {
     id: "priority-replacement",
     title: "Priority Replacement Support",
-    summary: "If a Zooter cancels or becomes unavailable, Care+ members are prioritised for replacement matching.",
+    summary: "If a Xooter cancels or becomes unavailable, Care+ members are prioritised for replacement matching.",
     customerValue: "very_high",
     zootCost: "operational",
     memberProof: "Reduces the anxiety of disrupted home-care plans.",
@@ -159,16 +159,16 @@ export const carePlusBenefits: CarePlusBenefit[] = [
   },
   {
     id: "zootcred-boost",
-    title: "ZootCred Boost",
-    summary: "Earn 1.5x ZootCred on completed bookings.",
+    title: "XootCred Boost",
+    summary: "Earn 1.5x XootCred on completed bookings.",
     customerValue: "high",
     zootCost: "controlled",
     memberProof: "Repeat bookings quietly build loyalty value.",
   },
   {
-    id: "monthly-credit",
-    title: "R30 Monthly Add-On Credit",
-    summary: "A booking-only add-on credit that expires monthly and cannot be withdrawn.",
+    id: "welcome-credit",
+    title: "R30 Welcome Add-On Credit",
+    summary: "A one-time booking-only add-on credit, granted when membership starts. It expires and cannot be withdrawn.",
     customerValue: "high",
     zootCost: "controlled",
     memberProof: "Makes the R99/month membership easier to justify.",
@@ -251,10 +251,10 @@ export const smartReminders: SmartReminder[] = [
 
 export const comparisonRows = [
   { feature: "Home preferences", standard: "Per-booking notes", carePlus: "Saved Home Memory" },
-  { feature: "Favourite Zooter", standard: "Book from available Zooters", carePlus: "Save and rebook a preferred Zooter" },
+  { feature: "Favourite Xooter", standard: "Book from available Xooters", carePlus: "Save and rebook a preferred Xooter" },
   { feature: "High-demand slots", standard: "Standard availability", carePlus: "Earlier access to peak windows" },
   { feature: "Replacement support", standard: "Normal matching queue", carePlus: "Prioritised replacement matching" },
-  { feature: "Rewards", standard: "Base ZootCred", carePlus: "1.5x ZootCred on completed bookings" },
-  { feature: "Add-ons", standard: "Pay as needed", carePlus: "R30 monthly add-on credit" },
+  { feature: "Rewards", standard: "Base XootCred", carePlus: "1.5x XootCred on completed bookings" },
+  { feature: "Add-ons", standard: "Pay as needed", carePlus: "R30 welcome add-on credit, once" },
   { feature: "Support", standard: "Standard support handling", carePlus: "Priority support for booking issues" },
 ];

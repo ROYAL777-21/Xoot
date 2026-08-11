@@ -17,10 +17,10 @@ The live query verified:
 - canonical `public.bookings.status` constraint and default;
 - sensitive-access notification column, audit tables, helper functions, and execution privileges;
 - `integration_outbox` channel compatibility for native Expo push delivery;
-- safe Zooter job-card and accepted-destination RPC boundaries;
+- safe Xooter job-card and accepted-destination RPC boundaries;
 - Phase 1 governance tables, provider-event idempotency helpers, rate-limit helpers, default-disabled provider controls, and governance indexes;
 - RLS policy hardening indicators, including no raw `auth.uid()` predicates in public policies;
-- public Zooter table/view exposure boundary;
+- public Xooter table/view exposure boundary;
 - duplicate-index and public foreign-key covering-index checks.
 
 ## Remaining Live Work

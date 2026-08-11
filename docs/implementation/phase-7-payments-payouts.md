@@ -6,7 +6,7 @@ Reviewed: 2026-06-30
 
 Implemented locally as an inactive foundation.
 
-This phase does not enable live customer checkout, payment success, Zooter payout release, Stitch, Ozow, or payout provider calls. Activation remains blocked until provider credentials, signed webhook tests, finance approval, legal approval, dashboard callback configuration, and staging smoke tests are complete.
+This phase does not enable live customer checkout, payment success, Xooter payout release, Stitch, Ozow, or payout provider calls. Activation remains blocked until provider credentials, signed webhook tests, finance approval, legal approval, dashboard callback configuration, and staging smoke tests are complete.
 
 ## What Was Added
 
@@ -21,7 +21,7 @@ This phase does not enable live customer checkout, payment success, Zooter payou
 - `src/lib/operations.ts`
   - `canCreateProviderCheckout`
   - `buildPaymentReconciliationReference`
-  - `canReleaseZooterPayout`
+  - `canReleaseXooterPayout`
 - `src/lib/operations.test.ts`
   - Hosted checkout stays blocked unless every provider gate is proven.
   - Reconciliation references are non-secret and deterministic.
@@ -69,7 +69,7 @@ Before enabling this phase in production:
 2. Confirm legal and refund/cancellation policies are reviewed.
 3. Confirm finance reconciliation owners and daily runbook.
 4. Confirm payout hold period and dispute handling policy.
-5. Confirm Zooter payout account verification workflow.
+5. Confirm Xooter payout account verification workflow.
 6. Enable provider controls only after founder, finance, legal and provider approval.
 
 ## Rollback

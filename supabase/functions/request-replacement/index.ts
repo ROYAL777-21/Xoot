@@ -12,9 +12,22 @@ import {
   writeAuditLog,
 } from "../_shared/action-utils.ts";
 import { canTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
+import { MAX_TRAVEL_KM, distanceKmToCoverage, type SuburbCentroid } from "../_shared/geo.ts";
 
+/**
+ * Find someone to take over a job.
+ *
+ * ── Now shares one definition of "near" with `ai-match` ─────────────────────────
+ * This used to do its own substring test — `address.includes(suburb)` — which had two problems the
+ * shared helper fixes. It matched shortest-first, so an address in Hyde Park could be satisfied by
+ * a Xooter covering Parkhurst; and it was binary, so among ten Xooters who all covered the suburb
+ * it could not tell which was closest and fell back to reliability alone.
+ *
+ * A replacement is needed when something has already gone wrong, so the person who can actually get
+ * there soonest matters more here than anywhere else in the product.
+ */
 const findReplacement = async (supa: any, booking: any) => {
-  const address = String(booking.address ?? booking.launch_region ?? "").toLowerCase();
+  const address = String(booking.address ?? booking.launch_region ?? "");
   const { data } = await supa
     .from("zooters")
     .select("id,name,user_id,reliability_score,suburb_coverage,active,role")
@@ -22,14 +35,28 @@ const findReplacement = async (supa: any, booking: any) => {
     .neq("id", booking.zooter_id ?? "00000000-0000-0000-0000-000000000000")
     .limit(25);
 
+  const { data: centroids } = await supa
+    .from("suburb_centroids")
+    .select("suburb,region,latitude,longitude")
+    .eq("active", true);
+  const suburbs = (centroids ?? []) as SuburbCentroid[];
+
   const candidates = (data ?? [])
-    .map((zooter: any) => {
-      const coverage = Array.isArray(zooter.suburb_coverage) ? zooter.suburb_coverage : [];
-      const coverageMatch = coverage.some((suburb: string) => address.includes(String(suburb).toLowerCase()));
-      return { ...zooter, coverageMatch };
-    })
-    .filter((zooter: any) => zooter.coverageMatch || !address)
-    .sort((a: any, b: any) => Number(b.reliability_score ?? 0) - Number(a.reliability_score ?? 0));
+    .map((zooter: any) => ({
+      ...zooter,
+      distanceKm: address ? distanceKmToCoverage(address, zooter.suburb_coverage, suburbs) : null,
+    }))
+    // Unknown distance stays in — an unlisted suburb must not leave a stranded customer with no
+    // replacement at all. Only a Xooter provably too far is dropped.
+    .filter((zooter: any) => zooter.distanceKm === null || zooter.distanceKm <= MAX_TRAVEL_KM)
+    .sort((a: any, b: any) => {
+      // Closest first, then most reliable. A known distance beats an unknown one, because
+      // "definitely nearby" is worth more than "might be anywhere" when a job is already late.
+      const aKm = a.distanceKm ?? Number.POSITIVE_INFINITY;
+      const bKm = b.distanceKm ?? Number.POSITIVE_INFINITY;
+      if (aKm !== bKm) return aKm - bKm;
+      return Number(b.reliability_score ?? 0) - Number(a.reliability_score ?? 0);
+    });
 
   return candidates[0] ?? null;
 };
@@ -75,7 +102,7 @@ Deno.serve(async (req) => {
       booking_id: booking.id,
       actor_id: user.id,
       status: "replacement_required",
-      label: "Finding a replacement Zooter",
+      label: "Finding a replacement Xooter",
       meta: { reason, previous_status: currentStatus },
     });
 
@@ -93,15 +120,15 @@ Deno.serve(async (req) => {
         booking_id: booking.id,
         actor_id: user.id,
         status: "replacement_offered",
-        label: "Replacement Zooter found",
+        label: "Replacement Xooter found",
         meta: { replacement_zooter_id: replacement.id },
       });
       await supa.from("zooter_jobs").insert({ booking_id: booking.id, zooter_id: replacement.id, state: "offered" });
       await insertNotification(supa, {
         userId: booking.user_id,
         kind: "replacement_offered",
-        title: "Replacement Zooter found",
-        body: `${replacement.name ?? "A verified Zooter"} is available as a replacement for your booking.`,
+        title: "Replacement Xooter found",
+        body: `${replacement.name ?? "A verified Xooter"} is available as a replacement for your booking.`,
         link: `/app/bookings/${booking.id}`,
       });
       if (replacement.user_id) {
@@ -135,13 +162,13 @@ Deno.serve(async (req) => {
         zooterId: booking.zooter_id,
         bookingId: booking.id,
         priority: "high",
-        summary: "Replacement search found no available Zooter; reschedule support required",
+        summary: "Replacement search found no available Xooter; reschedule support required",
       });
       await insertNotification(supa, {
         userId: booking.user_id,
         kind: "replacement_unavailable",
         title: "Replacement support needed",
-        body: "We could not find a replacement immediately. Support will help reschedule and R30 ZootCred has been queued.",
+        body: "We could not find a replacement immediately. Support will help reschedule and R30 XootCred has been queued.",
         link: `/app/support`,
       });
     }

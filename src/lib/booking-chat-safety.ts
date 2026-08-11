@@ -8,17 +8,17 @@ const rules: Array<{ flag: string; pattern: RegExp; message: string }> = [
   {
     flag: "phone_number",
     pattern: /(?:\+?\d[\s().-]*){8,}/,
-    message: "Keep phone numbers inside Zoot's protected contact and masked-calling flows.",
+    message: "Keep phone numbers inside Xoot's protected contact and masked-calling flows.",
   },
   {
     flag: "email_address",
     pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i,
-    message: "Keep email addresses inside your Zoot profile and support flows.",
+    message: "Keep email addresses inside your Xoot profile and support flows.",
   },
   {
     flag: "off_platform",
     pattern: /\b(whatsapp|telegram|signal|instagram|facebook|dm me|call me directly|pay me direct|cash|eft)\b/i,
-    message: "Keep booking communication and payments on Zoot for safety and support.",
+    message: "Keep booking communication and payments on Xoot for safety and support.",
   },
   {
     flag: "access_code",

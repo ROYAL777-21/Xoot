@@ -5,7 +5,7 @@ import {
   requireAuth,
 } from "../_shared/action-utils.ts";
 
-type ZooterJobCardRow = {
+type XooterJobCardRow = {
   job_id: string;
   booking_id: string;
   zooter_id: string;
@@ -45,5 +45,5 @@ Deno.serve(async (req) => {
     return fail("zooter jobs unavailable", origin, 500);
   }
 
-  return ok({ jobs: (data ?? []) as ZooterJobCardRow[] }, origin);
+  return ok({ jobs: (data ?? []) as XooterJobCardRow[] }, origin);
 });

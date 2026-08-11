@@ -1,7 +1,7 @@
-# Zoot Master Phase Plan
+# Xoot Master Phase Plan
 
 Reviewed: 2026-06-24
-Source: Zoot Master Phased Implementation Program
+Source: Xoot Master Phased Implementation Program
 
 ## Execution Rule
 
@@ -48,7 +48,7 @@ Required implementation:
 5. Rate-limit helper and Turnstile verification boundary.
 6. Sentry PII scrubbing and PostHog privacy event contract.
 7. Production/staging migration reconciliation.
-8. Server-only writes for payments, subscriptions, ZootCred and outbox.
+8. Server-only writes for payments, subscriptions, XootCred and outbox.
 9. Kill switches listed by the master program.
 10. Provider configuration manifests that remain inactive until approval.
 
@@ -93,14 +93,14 @@ Consolidate existing Care+ functions and tables first.
 Required:
 
 - real Home Memory;
-- favourite and backup Zooter rules;
+- favourite and backup Xooter rules;
 - household dashboard and ready modes;
 - household circle;
 - service recovery;
 - evidence-based lifecycle triggers;
 - Host+ data groundwork only.
 
-No specific Zooter guarantee.
+No specific Xooter guarantee.
 
 ## Phase 4 - Completed Booking Invoices
 
@@ -116,7 +116,7 @@ Required:
 - resend of the original PDF;
 - legal/VAT configuration gate.
 
-## Phase 5 - Zoot Concierge
+## Phase 5 - Xoot Concierge
 
 Consolidate the current deterministic and OpenAI paths.
 
@@ -130,7 +130,7 @@ Required:
 - report/feedback path;
 - no booking, payment, refund or claims tools.
 
-## Phase 6 - Zoot Black
+## Phase 6 - Xoot Black
 
 Feature flags default off.
 
@@ -157,7 +157,7 @@ Required:
 - exact Stitch/Ozow signature verification;
 - idempotency and reconciliation;
 - safe payment method references only;
-- verified Zooter payout account;
+- verified Xooter payout account;
 - step-up verification for payout changes;
 - configurable payout hold.
 
@@ -204,7 +204,7 @@ Required:
 
 Use existing safe App Intent source.
 
-Foundation status: implemented locally through the Expo config plugin `mobile/plugins/withZootAssistantIntents.cjs`; development-build device verification remains required before release use.
+Foundation status: implemented locally through the Expo config plugin `mobile/plugins/withXootAssistantIntents.cjs`; development-build device verification remains required before release use.
 
 Required:
 

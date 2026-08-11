@@ -47,7 +47,7 @@ const Properties = () => {
 
   const refresh = useCallback(async () => {
     if (!user) return;
-    const { data } = await (supabase as any).from("property_accounts").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("property_accounts").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     setAccounts(data ?? []);
     setLoading(false);
   }, [user]);
@@ -59,7 +59,7 @@ const Properties = () => {
     if (!user) return;
     haptic("impact");
     setSubmitting(true);
-    const { data: account, error } = await (supabase as any).from("property_accounts").insert({
+    const { data: account, error } = await supabase.from("property_accounts").insert({
       user_id: user.id,
       account_type: form.account_type,
       name: form.name,

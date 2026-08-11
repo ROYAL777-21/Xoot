@@ -9,15 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Upload, ShieldCheck, Star, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
-import { resolvePhoto } from "@/components/zoot/ZooterCard";
-import { deriveZooterBadges } from "@/lib/trust";
+import { resolvePhoto } from "@/components/zoot/XooterCard";
+import { deriveXooterBadges } from "@/lib/trust";
 
 const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
 const joinList = (value?: string[] | null) => (value ?? []).join(", ");
 
 const Profile = () => {
   const { user } = useAuth();
-  const [zooter, setZooter] = useState<any>(null);
+  const [zooter, setXooter] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [tagsInput, setTagsInput] = useState("");
@@ -29,7 +29,7 @@ const Profile = () => {
     if (!user) return;
     supabase.from("zooters").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => {
       const d: any = data;
-      setZooter(d);
+      setXooter(d);
       setTagsInput((d?.tags ?? []).join(", "));
       setSuburbsInput(joinList(d?.suburb_coverage));
       setSuppliesInput(joinList(d?.supplies_owned));
@@ -54,7 +54,7 @@ const Profile = () => {
       languages_spoken: splitList(languagesInput),
       airbnb_specialist: !!zooter.airbnb_specialist,
     };
-    const { error } = await (supabase as any).from("zooters").update(payload).eq("id", zooter.id);
+    const { error } = await supabase.from("zooters").update(payload).eq("id", zooter.id);
     setSaving(false);
     if (error) toast.error(error.message); else toast.success("Profile saved");
   };
@@ -66,7 +66,7 @@ const Profile = () => {
     if (error) { toast.error(error.message); return; }
     const { data: url } = supabase.storage.from("zooter-avatars").getPublicUrl(path);
     await supabase.from("zooters").update({ photo_url: url.publicUrl }).eq("id", zooter.id);
-    setZooter({ ...zooter, photo_url: url.publicUrl });
+    setXooter({ ...zooter, photo_url: url.publicUrl });
     toast.success("Photo updated");
   };
 
@@ -74,11 +74,11 @@ const Profile = () => {
 
   if (!zooter) return <div className="container py-12 max-w-3xl"><Card className="p-8 rounded-3xl text-center"><p className="font-display text-2xl font-bold mb-1">No active profile yet</p><p className="text-muted-foreground">Get verified first. Once approved, your trust profile becomes editable.</p></Card></div>;
 
-  const badges = deriveZooterBadges(zooter);
+  const badges = deriveXooterBadges(zooter);
 
   return (
     <div className="container py-8 lg:py-12 max-w-4xl">
-      <h1 className="font-display text-4xl md:text-5xl font-bold mb-8">Your Zooter profile</h1>
+      <h1 className="font-display text-4xl md:text-5xl font-bold mb-8">Your Xooter profile</h1>
 
       <div className="grid lg:grid-cols-[280px_1fr] gap-6">
         <Card className="p-6 rounded-3xl h-fit">
@@ -95,15 +95,15 @@ const Profile = () => {
 
         <Card className="p-6 rounded-3xl">
           <div className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4"><div><Label>Display name</Label><Input value={zooter.name ?? ""} onChange={(e) => setZooter({ ...zooter, name: e.target.value })} /></div><div><Label>Hourly rate (R)</Label><Input type="number" value={zooter.hourly_rate ?? 0} onChange={(e) => setZooter({ ...zooter, hourly_rate: e.target.value })} /></div></div>
-            <div><Label>Bio</Label><Textarea rows={4} value={zooter.bio ?? ""} onChange={(e) => setZooter({ ...zooter, bio: e.target.value })} placeholder="Premium homes, Airbnb turnovers, pet friendly, fragile item care..." /></div>
-            <div className="grid sm:grid-cols-2 gap-4"><div><Label>Years of experience</Label><Input type="number" value={zooter.years_experience ?? 0} onChange={(e) => setZooter({ ...zooter, years_experience: e.target.value })} /></div><div><Label>Transport</Label><Input value={zooter.transport ?? ""} onChange={(e) => setZooter({ ...zooter, transport: e.target.value })} placeholder="Own transport, taxi, lift club" /></div></div>
+            <div className="grid sm:grid-cols-2 gap-4"><div><Label>Display name</Label><Input value={zooter.name ?? ""} onChange={(e) => setXooter({ ...zooter, name: e.target.value })} /></div><div><Label>Hourly rate (R)</Label><Input type="number" value={zooter.hourly_rate ?? 0} onChange={(e) => setXooter({ ...zooter, hourly_rate: e.target.value })} /></div></div>
+            <div><Label>Bio</Label><Textarea rows={4} value={zooter.bio ?? ""} onChange={(e) => setXooter({ ...zooter, bio: e.target.value })} placeholder="Premium homes, Airbnb turnovers, pet friendly, fragile item care..." /></div>
+            <div className="grid sm:grid-cols-2 gap-4"><div><Label>Years of experience</Label><Input type="number" value={zooter.years_experience ?? 0} onChange={(e) => setXooter({ ...zooter, years_experience: e.target.value })} /></div><div><Label>Transport</Label><Input value={zooter.transport ?? ""} onChange={(e) => setXooter({ ...zooter, transport: e.target.value })} placeholder="Own transport, taxi, lift club" /></div></div>
             <div><Label>Suburb coverage</Label><Input value={suburbsInput} onChange={(e) => setSuburbsInput(e.target.value)} placeholder="Sandton, Rosebank, Parkhurst" /></div>
             <div><Label>Supplies owned</Label><Input value={suppliesInput} onChange={(e) => setSuppliesInput(e.target.value)} placeholder="Vacuum, mop, eco products" /></div>
             <div><Label>Languages spoken</Label><Input value={languagesInput} onChange={(e) => setLanguagesInput(e.target.value)} placeholder="English, isiZulu, Afrikaans" /></div>
             <div><Label>Skill tags</Label><Input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="eco-friendly, pet-safe, deep-clean" /></div>
-            <div><Label>Pet comfort</Label><Input value={zooter.pet_comfort ?? ""} onChange={(e) => setZooter({ ...zooter, pet_comfort: e.target.value })} placeholder="Comfortable with dogs and cats" /></div>
-            <label className="flex items-center gap-3 rounded-2xl border border-border p-3 cursor-pointer"><input type="checkbox" checked={!!zooter.airbnb_specialist} onChange={(e) => setZooter({ ...zooter, airbnb_specialist: e.target.checked })} className="accent-primary" /><span className="text-sm font-medium">Airbnb turnover specialist</span></label>
+            <div><Label>Pet comfort</Label><Input value={zooter.pet_comfort ?? ""} onChange={(e) => setXooter({ ...zooter, pet_comfort: e.target.value })} placeholder="Comfortable with dogs and cats" /></div>
+            <label className="flex items-center gap-3 rounded-2xl border border-border p-3 cursor-pointer"><input type="checkbox" checked={!!zooter.airbnb_specialist} onChange={(e) => setXooter({ ...zooter, airbnb_specialist: e.target.checked })} className="accent-primary" /><span className="text-sm font-medium">Airbnb turnover specialist</span></label>
           </div>
           <Button onClick={save} disabled={saving} className="mt-6 gradient-warm">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}</Button>
         </Card>

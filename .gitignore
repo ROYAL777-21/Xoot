@@ -42,7 +42,24 @@ supabase/.temp/
 .augment/
 .autohand/
 .bob/
-.claude/
+# Local Claude config stays out, except the skills authored for this repo. Those are project
+# assets: xoot-authz-audit encodes the authorization audit method, xoot-content carries the
+# claim rules that keep a blog post out of CPA s41 trouble. Losing them with the container
+# would mean rediscovering both.
+#
+# Vendored third-party skills stay ignored -- they are installed, not authored here, and one of
+# them ships several megabytes of audio. Re-including a path needs its parent re-included
+# first, hence the directory-by-directory form rather than a single negation.
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/xoot-authz-audit/
+!.claude/skills/xoot-content/
+!.claude/skills/xoot-supabase-ops/
+!.claude/skills/evidence-before-claims/
+!.claude/skills/plan-before-executing/
+!.claude/skills/finish-what-you-started/
+!.claude/skills/VENDORED-EXTERNAL.md
 .codeartsdoer/
 .codebuddy/
 .codemaker/

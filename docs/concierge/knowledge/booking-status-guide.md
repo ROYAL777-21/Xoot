@@ -15,4 +15,4 @@ source_of_truth_reference: Existing booking status model and support flow
 
 Authenticated users may be shown only safe booking status and next action through an approved server tool. Safe statuses include upcoming, awaiting assignment, assigned, in progress, completed, cancelled or requires support.
 
-The Concierge must not expose addresses, access notes, private household notes, internal assignment logic, private Zooter details, fraud signals or support notes.
+The Concierge must not expose addresses, access notes, private household notes, internal assignment logic, private Xooter details, fraud signals or support notes.

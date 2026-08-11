@@ -42,9 +42,9 @@ const ZOOT_ANDROID_NOTIFICATION_CHANNELS: Array<{
   },
   {
     id: 'zoot-zooter-jobs',
-    name: 'Zooter jobs',
+    name: 'Xooter jobs',
     importance: Notifications.AndroidImportance.HIGH,
-    description: 'Accepted job, job-day, and sensitive-access availability prompts that require opening Zoot.',
+    description: 'Accepted job, job-day, and sensitive-access availability prompts that require opening Xoot.',
     visibility: Notifications.AndroidNotificationVisibility.PRIVATE,
   },
 ];
@@ -65,7 +65,7 @@ const configureAndroidNotificationChannels = async () => {
   );
 };
 
-export async function registerForZootPushNotifications(userId: string) {
+export async function registerForXootPushNotifications(userId: string) {
   if (!Device.isDevice) {
     throw new Error('Push notifications require a physical device.');
   }
@@ -103,6 +103,13 @@ export async function registerForZootPushNotifications(userId: string) {
       token_type: 'expo_push',
       permission_status: 'granted',
       app_version: Constants.expoConfig?.version ?? null,
+      // Set explicitly: the column defaults to now() on INSERT only, and the table's
+      // touch trigger refreshes updated_at and nothing else. Without this, an upsert
+      // that conflicts leaves last_seen_at at its original value, so the column records
+      // first-seen rather than last-seen. There is an index on
+      // (user_id, last_seen_at desc) for picking a user's most recent device, and the
+      // web path in src/lib/native-notifications.ts already sets it.
+      last_seen_at: new Date().toISOString(),
       revoked_at: null,
     },
     { onConflict: 'user_id,device_id' },

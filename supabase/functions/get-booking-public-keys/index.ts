@@ -53,8 +53,8 @@ Deno.serve(async (req) => {
     }
 
     const isClient = booking.user_id === user.id;
-    const isAssignedZooter = zooterUserId === user.id;
-    if (!isClient && !isAssignedZooter) return fail("booking access denied", origin, 403);
+    const isAssignedXooter = zooterUserId === user.id;
+    if (!isClient && !isAssignedXooter) return fail("booking access denied", origin, 403);
 
     const participantIds = unique([booking.user_id, zooterUserId]);
     const { data: keys, error: keysError } = await supa

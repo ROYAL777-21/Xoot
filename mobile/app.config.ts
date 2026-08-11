@@ -19,7 +19,7 @@ const sentryUploadPlugin: NonNullable<ExpoConfig['plugins']>[number] | null =
     : null;
 
 const bundleId = isProduction ? 'za.co.zoothome.app' : 'za.co.zoothome.app.preview';
-const appName = isProduction ? 'Zoot' : 'Zoot Preview';
+const appName = isProduction ? 'Xoot' : 'Xoot Preview';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'zoot',
-  userInterfaceStyle: 'dark',
+  userInterfaceStyle: 'light',
   runtimeVersion: {
     policy: 'appVersion',
   },
@@ -43,24 +43,24 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: false,
     usesAppleSignIn: true,
     associatedDomains: [
-      'applinks:zoothome.co.za',
-      ...(isPreview ? ['applinks:preview.zoothome.co.za'] : []),
+      'applinks:xoot.co.za',
+      ...(isPreview ? ['applinks:preview.xoot.co.za'] : []),
     ],
     config: {
       usesNonExemptEncryption: false,
     },
     infoPlist: {
-      NSCameraUsageDescription: 'Zoot uses the camera only when you choose to upload service or verification photos.',
-      NSPhotoLibraryUsageDescription: 'Zoot uses your photo library only when you choose to upload service or verification photos.',
+      NSCameraUsageDescription: 'Xoot uses the camera only when you choose to upload service or verification photos.',
+      NSPhotoLibraryUsageDescription: 'Xoot uses your photo library only when you choose to upload service or verification photos.',
       NSLocationWhenInUseUsageDescription:
-        'Zoot uses your location only when you choose location-assisted address or arrival features.',
+        'Xoot uses your location only when you choose location-assisted address or arrival features.',
     },
   },
   android: {
     ...config.android,
     package: bundleId,
     adaptiveIcon: {
-      backgroundColor: '#0f1711',
+      backgroundColor: '#f5f3f2',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -72,14 +72,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         data: [
           {
             scheme: 'https',
-            host: 'zoothome.co.za',
+            host: 'xoot.co.za',
             pathPrefix: '/',
           },
           ...(isPreview
             ? [
                 {
                   scheme: 'https',
-                  host: 'preview.zoothome.co.za',
+                  host: 'preview.xoot.co.za',
                   pathPrefix: '/',
                 },
               ]
@@ -113,19 +113,30 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         icon: './assets/images/android-icon-monochrome.png',
-        color: '#d8b26e',
+        color: '#151515',
         defaultChannel: 'zoot-service-updates',
       },
     ],
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#0f1711',
+        // One colour, not a light/dark pair. `userInterfaceStyle` above pins the app to a
+        // single scheme, and `expo prebuild` warns that combining the two stops the splash
+        // working at all: "The existing userInterfaceStyle property is preventing splash
+        // screen from working properly."
+        //
+        // Light, matching the UI kit, which is light-default with a `[data-theme="dark"]`
+        // opt-in (ZD-024). The value is `--background` in `src/index.css` — the kit's
+        // `surface-page`, `#F5F3F2`. If the app is ever relaxed to follow the system, add
+        // the `dark:` variant back and drop `userInterfaceStyle` in the same change, and
+        // move this colour with it — not one without the other.
+        backgroundColor: '#f5f3f2',
         image: './assets/images/splash-icon.png',
-        imageWidth: 88,
+        imageWidth: 128,
         android: {
+          backgroundColor: '#f5f3f2',
           image: './assets/images/splash-icon.png',
-          imageWidth: 88,
+          imageWidth: 128,
         },
       },
     ],
@@ -135,7 +146,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         RNMapboxMapsVersion: '11.20.1',
       },
     ],
-    './plugins/withZootAssistantIntents.cjs',
+    './plugins/withXootAssistantIntents.cjs',
+    // Microphone string, VoIP + audio background modes, and the seven Android call permissions.
+    // Makes a dev build *capable* of in-app calling; it does not switch calling on. The feature
+    // stays gated on `twilio.masked_voice` until someone has placed a real call on a device.
+    './plugins/withXootVoiceCalling.cjs',
     ...(sentryUploadPlugin ? [sentryUploadPlugin] : []),
   ],
   extra: {

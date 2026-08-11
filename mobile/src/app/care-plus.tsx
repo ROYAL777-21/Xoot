@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
-import { invokeZootFunction } from '@/lib/edge-functions';
+import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
+import { invokeXootFunction } from '@/lib/edge-functions';
 import { useAuth } from '@/providers/auth-provider';
 
 type CarePlusResponse = {
@@ -25,7 +25,7 @@ export default function CarePlusScreen() {
     setIsSubmitting(true);
     setStatus(null);
     try {
-      const response = await invokeZootFunction<CarePlusResponse>('care-plus-membership', {
+      const response = await invokeXootFunction<CarePlusResponse>('care-plus-membership', {
         action: 'request_membership',
         planId: 'zoot-care-plus',
       });
@@ -42,12 +42,12 @@ export default function CarePlusScreen() {
   };
 
   return (
-    <ZootScreen>
+    <XootScreen>
       <LiquidCard>
         <Eyebrow>Care+</Eyebrow>
         <Title>A calmer home-care rhythm for R99/month.</Title>
         <Body muted>
-          Care+ is designed around Home Memory, favourite Zooter preference, priority support, and monthly ZootCred where available.
+          Care+ is designed around Home Memory, favourite Xooter preference, priority support, and monthly XootCred where available.
         </Body>
         <StatusPill tone={user ? 'success' : 'neutral'}>{user ? 'Account connected' : 'Guest preview'}</StatusPill>
         <PrimaryButton disabled={isSubmitting} onPress={requestMembership}>
@@ -62,9 +62,9 @@ export default function CarePlusScreen() {
       <LiquidCard>
         <Eyebrow>Member experience</Eyebrow>
         <Body>
-          The mobile UI should show real membership, ZootCred ledger, favourite Zooter, and property profiles from Supabase only. No production mock data.
+          The mobile UI should show real membership, XootCred ledger, favourite Xooter, and property profiles from Supabase only. No production mock data.
         </Body>
       </LiquidCard>
-    </ZootScreen>
+    </XootScreen>
   );
 }

@@ -2,12 +2,12 @@
 
 Reviewed: 2026-07-09
 
-Zoot notifications are behavior-aware, privacy-first, and server-owned. The product goal is to feel personal without exposing private household, payment, support, or account data on lock screens, email previews, SMS, WhatsApp, analytics, logs, or widgets.
+Xoot notifications are behavior-aware, privacy-first, and server-owned. The product goal is to feel personal without exposing private household, payment, support, or account data on lock screens, email previews, SMS, WhatsApp, analytics, logs, or widgets.
 
 ## Source Of Truth
 
 - Primary channel: in-app notifications.
-- Native push: safe prompts that route users back into Zoot.
+- Native push: safe prompts that route users back into Xoot.
 - Email: receipts, records, and longer lifecycle updates through Brevo.
 - WhatsApp/SMS/voice: urgent operational fallback only after provider, consent, regulatory, webhook, and smoke-test gates are complete.
 - Delivery authority: Supabase Edge Functions and `integration_outbox`, never direct frontend provider calls.
@@ -25,8 +25,8 @@ The personalization model may use privacy-safe signals only:
 | `abandoned_booking_24h` | Booking recovery window is longer | Conservative re-entry prompt, no pressure copy |
 | `booking_change_requested` | User has requested or needs a booking update | Booking operations route only |
 | `payment_pending` | Backend/provider says payment is pending | High-priority app route to payment status |
-| `booking_assigned` | Backend says a Zooter is assigned | Booking route prompt, no address in push |
-| `booking_accepted` | Assigned Zooter accepted | Customer and Zooter route prompts |
+| `booking_assigned` | Backend says a Xooter is assigned | Booking route prompt, no address in push |
+| `booking_accepted` | Assigned Xooter accepted | Customer and Xooter route prompts |
 | `job_day` | Booking is close enough to need attention | Push allowed outside quiet-hours suppression |
 | `invoice_ready` | Backend says an invoice route is available | Route to invoice view, no invoice reference in preview |
 | `service_feedback_due` | Completed booking is ready for feedback | In-app or normal push, no complaint assumptions |
@@ -37,14 +37,14 @@ The personalization model may use privacy-safe signals only:
 | `zootcred_earned` | Backend says future-use credit is available | Route to wallet, no raw balance in preview |
 | `support_waiting` | Support case has safe status update | Route to support, no complaint content in push |
 | `security_reauth_required` | Account needs a safe security step | High-priority app route, no account-existence leakage |
-| `zooter_job_offer` | Zooter has a safe job opportunity prompt | Job route, no full client address in preview |
-| `zooter_active_today` | Zooter has an accepted job today | Job checklist prompt |
-| `zooter_eta_required` | Zooter should update ETA in app | Time-sensitive job route |
-| `zooter_check_in_due` | Zooter should open the job screen near start | Time-sensitive job route |
+| `zooter_job_offer` | Xooter has a safe job opportunity prompt | Job route, no full client address in preview |
+| `zooter_active_today` | Xooter has an accepted job today | Job checklist prompt |
+| `zooter_eta_required` | Xooter should update ETA in app | Time-sensitive job route |
+| `zooter_check_in_due` | Xooter should open the job screen near start | Time-sensitive job route |
 | `zooter_sensitive_access_ready` | Approved sensitive access window is open | App-only route, no access details in preview |
 | `inactive_14d` | User has been quiet for retention window | In-app or consented email only |
 
-Do not use raw chat text, access notes, full addresses, payment references, support allegations, fraud signals, ID documents, bank details, or private Zooter/client identifiers as notification personalization inputs.
+Do not use raw chat text, access notes, full addresses, payment references, support allegations, fraud signals, ID documents, bank details, or private Xooter/client identifiers as notification personalization inputs.
 
 ## Channel Rules
 
@@ -53,10 +53,10 @@ Do not use raw chat text, access notes, full addresses, payment references, supp
 | Booking | `in_app`, `expo_push` | Email only for records/receipts; no WhatsApp unless urgent operational flow is approved |
 | Support | `in_app`, `expo_push` | WhatsApp/SMS only for urgent approved support after Twilio compliance and signed webhook smoke tests |
 | Care+ | `in_app`, `expo_push` | Email only with consent or transactional membership context |
-| ZootCred | `in_app`, `expo_push` | Do not expose balances in push body |
+| XootCred | `in_app`, `expo_push` | Do not expose balances in push body |
 | Security | `in_app`, `expo_push`, email | No OTPs or account-existence disclosure |
-| Zooter jobs | `in_app`, `expo_push` | No client address, access note, gate code, or private phone number in previews |
-| Sensitive access | `in_app`, `expo_push` | Push text must say only that details are available inside Zoot |
+| Xooter jobs | `in_app`, `expo_push` | No client address, access note, gate code, or private phone number in previews |
+| Sensitive access | `in_app`, `expo_push` | Push text must say only that details are available inside Xoot |
 | Marketing | `in_app` and consented email | No WhatsApp/SMS marketing without explicit approved programme |
 
 ## Frequency And Timing
@@ -79,12 +79,12 @@ Notification title/body must never include:
 - card, CVV, bank, payout, invoice, or provider references;
 - raw support complaint details;
 - harassment, theft, safety, medical, legal, or police-report details;
-- private client/Zooter phone numbers or emails;
+- private client/Xooter phone numbers or emails;
 - internal trust, fraud, reliability, or screening reasons.
 
 If sensitive text is detected, replace the preview with:
 
-`Open Zoot to view this securely.`
+`Open Xoot to view this securely.`
 
 ## Implementation Anchors
 

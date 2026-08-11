@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar, Loader2, MapPin, MessageSquare, Repeat, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { resolvePhoto } from "@/components/zoot/ZooterCard";
+import { resolvePhoto } from "@/components/zoot/XooterCard";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 import { getClientVisibleStatus, normaliseBookingStatus } from "@/lib/booking-state-machine";
 
@@ -79,7 +79,7 @@ const Bookings = () => {
     const bookings = (data ?? []) as Array<Omit<Booking, "zooter">>;
     const bookingIds = bookings.map((booking) => booking.id);
     const { data: zooters } = bookingIds.length
-      ? await (supabase as any)
+      ? await supabase
         .from("booking_zooter_profiles")
         .select("booking_id,id,name,photo_url,rating,role")
         .in("booking_id", bookingIds)

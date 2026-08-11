@@ -9,10 +9,19 @@ import { Award, BadgeCheck, CheckCircle2, Crown, Flame, GraduationCap, Loader2, 
 import { toast } from "sonner";
 import { captureAnalyticsEvent } from "@/lib/analytics";
 
+/**
+ * A question as the server hands it over: no `correct`.
+ *
+ * `training_modules.quiz_questions` used to be world-readable, answer key included, so this
+ * page could grade locally. It cannot any more, and that is the point — a Xooter who can read
+ * the key does not need to cheat the score, they can just answer correctly.
+ * `20260802140000_training_answer_key_and_job_state.sql` revoked the column and the
+ * `training-module` function serves and grades instead.
+ */
 type QuizQuestion = {
+  index: number;
   q: string;
   a: string[];
-  correct: number;
 };
 
 type TrainingModule = {
@@ -22,7 +31,6 @@ type TrainingModule = {
   duration_min: number;
   category: string;
   badge_color?: string | null;
-  quiz_questions?: QuizQuestion[] | null;
   required?: boolean | null;
   pass_score?: number | null;
   rank_points?: number | null;
@@ -44,9 +52,6 @@ const tiers = [
   { name: "Signature", min: 480 },
 ];
 
-const getQuestions = (module?: TrainingModule | null): QuizQuestion[] =>
-  Array.isArray(module?.quiz_questions) ? module.quiz_questions : [];
-
 const getRankPoints = (module: TrainingModule) => Number(module.rank_points ?? (module.required ? 40 : 25));
 
 const getTierProgress = (points: number) => {
@@ -64,14 +69,21 @@ const Training = () => {
   const [done, setDone] = useState<Record<string, Completion>>({});
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<TrainingModule | null>(null);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [answers, setAnswers] = useState<number[]>([]);
+  const [opening, setOpening] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const load = useCallback(async () => {
     const [{ data: mods }, { data: comps }] = await Promise.all([
-      supabase.from("training_modules").select("*").order("required", { ascending: false }).order("category"),
+      supabase.from("training_modules").select("id,title,description,duration_min,category,badge_color,required,pass_score,rank_points,badge_label").order("required", { ascending: false }).order("category"),
       user ? supabase.from("zooter_training_completions").select("*").eq("user_id", user.id) : Promise.resolve({ data: [] as Completion[] }),
     ]);
-    setModules((mods ?? []) as TrainingModule[]);
+    // Cast through `unknown` because `src/integrations/supabase/types.ts` is stale: the live
+    // schema has `rank_points` and `badge_label` on `training_modules` and the generated types
+    // do not. Regenerating is tracked in blocker.md; until then a narrow cast here beats
+    // selecting `*`, which now fails outright because `quiz_questions` is revoked.
+    setModules((mods ?? []) as unknown as TrainingModule[]);
     const completionMap: Record<string, Completion> = {};
     ((comps ?? []) as Completion[]).forEach((completion) => {
       completionMap[completion.module_id] = completion;
@@ -84,26 +96,51 @@ const Training = () => {
     if (user) load();
   }, [load, user]);
 
-  const open = (module: TrainingModule) => {
+  const open = async (module: TrainingModule) => {
+    setOpening(true);
+    const { data, error } = await supabase.functions.invoke("training-module", {
+      body: { action: "questions", moduleId: module.id },
+    });
+    setOpening(false);
+
+    // Fail closed rather than opening an empty quiz: a module that renders with no questions
+    // would submit an empty attempt and burn one of the five daily tries.
+    if (error || !data?.data?.questions?.length) {
+      toast.error("Could not load this module. Try again in a moment.");
+      return;
+    }
+
+    const loaded = data.data.questions as QuizQuestion[];
     setActive(module);
-    setAnswers(new Array(getQuestions(module).length).fill(-1));
+    setQuestions(loaded);
+    setAnswers(new Array(loaded.length).fill(-1));
   };
 
   const submit = async () => {
     if (!active || !user) return;
-    const questions = getQuestions(active);
-    const correct = questions.reduce((sum, question, index) => sum + (answers[index] === question.correct ? 1 : 0), 0);
-    const score = questions.length ? Math.round((correct / questions.length) * 100) : 100;
-    const passScore = active.pass_score ?? 80;
-    const passed = score >= passScore;
+    setSubmitting(true);
 
-    await supabase.from("zooter_training_completions").upsert({
-      user_id: user.id,
-      module_id: active.id,
-      score,
-      passed,
-      completed_at: new Date().toISOString(),
-    }, { onConflict: "user_id,module_id" });
+    // The server grades and writes. This page no longer knows the answers and no longer
+    // decides whether the attempt passed — it only reports what came back.
+    const { data, error } = await supabase.functions.invoke("training-module", {
+      body: { action: "submit", moduleId: active.id, answers },
+    });
+    setSubmitting(false);
+
+    if (error || !data?.data) {
+      toast.error(
+        error?.message?.includes("429")
+          ? "You have used today's attempts on this module. Try again tomorrow."
+          : "Could not submit your attempt. Try again in a moment.",
+      );
+      return;
+    }
+
+    const { passed, score, passScore } = data.data as {
+      passed: boolean;
+      score: number;
+      passScore: number;
+    };
 
     if (passed) {
       captureAnalyticsEvent("zooter_training_module_completed", {
@@ -116,6 +153,7 @@ const Training = () => {
       toast.error(`${score}% - try again; you need ${passScore}%.`);
     }
     setActive(null);
+    setQuestions([]);
     load();
   };
 
@@ -154,7 +192,7 @@ const Training = () => {
 
   const requiredReady = progress.requiredModules.length > 0 && progress.requiredDone === progress.requiredModules.length;
   const unlockedBadges = progress.completedModules.map((module) => module.badge_label).filter(Boolean).slice(0, 4);
-  const activeQuestions = getQuestions(active);
+  const activeQuestions = questions;
 
   return (
     <div className="container py-8 lg:py-12 max-w-6xl">
@@ -172,12 +210,12 @@ const Training = () => {
       <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-4 mb-8">
         <Card className="p-5 rounded-3xl gradient-sage text-primary-foreground border-0 shadow-warm">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-background/20 backdrop-blur">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-background/20 backdrop-blur-sm">
               <Trophy className="h-7 w-7" />
             </div>
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-display text-2xl font-bold">{progress.tier.current.name} Zooter</p>
+                <p className="font-display text-2xl font-bold">{progress.tier.current.name} Xooter</p>
                 {requiredReady && <span className="rounded-full bg-background/20 px-2.5 py-1 text-[10px] font-bold uppercase">Activation ready</span>}
               </div>
               <p className="text-sm opacity-90">
@@ -234,12 +272,12 @@ const Training = () => {
         <Card className="p-8 rounded-3xl text-center text-muted-foreground">Training modules will appear here after setup.</Card>
       ) : (
         <div className="space-y-8">
-          <ModuleSection title="Required activation modules" subtitle="These modules keep the marketplace consistent and safe." modules={progress.requiredModules} done={done} onOpen={open} />
-          <ModuleSection title="Optional ranking boosters" subtitle="These are not mandatory, but they help Zoot match you to higher-intent clients and specialised jobs." modules={progress.optionalModules} done={done} onOpen={open} />
+          <ModuleSection title="Required activation modules" subtitle="These modules keep the marketplace consistent and safe." modules={progress.requiredModules} done={done} onOpen={open} busy={opening} />
+          <ModuleSection title="Optional ranking boosters" subtitle="These are not mandatory, but they help Xoot match you to higher-intent clients and specialised jobs." modules={progress.optionalModules} done={done} onOpen={open} busy={opening} />
         </div>
       )}
 
-      <Dialog open={!!active} onOpenChange={(openDialog) => !openDialog && setActive(null)}>
+      <Dialog open={!!active} onOpenChange={(openDialog) => { if (!openDialog) { setActive(null); setQuestions([]); } }}>
         <DialogContent className="rounded-3xl max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl">{active?.title}</DialogTitle>
@@ -274,7 +312,7 @@ const Training = () => {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setActive(null)}>Cancel</Button>
-            <Button onClick={submit} disabled={answers.some((answer) => answer === -1)} className="gradient-warm">Submit answers</Button>
+            <Button onClick={submit} disabled={submitting || answers.some((answer) => answer === -1)} className="gradient-warm">{submitting ? "Marking…" : "Submit answers"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -296,12 +334,15 @@ const ModuleSection = ({
   modules,
   done,
   onOpen,
+  busy,
 }: {
   title: string;
   subtitle: string;
   modules: TrainingModule[];
   done: Record<string, Completion>;
   onOpen: (module: TrainingModule) => void;
+  /** Questions are fetched on open, so the card has to say something while that happens. */
+  busy: boolean;
 }) => {
   if (modules.length === 0) return null;
 
@@ -313,7 +354,7 @@ const ModuleSection = ({
       </div>
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
         {modules.map((module) => (
-          <ModuleCard key={module.id} module={module} completion={done[module.id]} onOpen={onOpen} />
+          <ModuleCard key={module.id} module={module} completion={done[module.id]} onOpen={onOpen} busy={busy} />
         ))}
       </div>
     </section>
@@ -324,10 +365,12 @@ const ModuleCard = ({
   module,
   completion,
   onOpen,
+  busy,
 }: {
   module: TrainingModule;
   completion?: Completion;
   onOpen: (module: TrainingModule) => void;
+  busy: boolean;
 }) => {
   const passed = completion?.passed;
   const rankPoints = getRankPoints(module);
@@ -373,7 +416,7 @@ const ModuleCard = ({
         ) : (
           <span className="text-xs text-muted-foreground">Not completed</span>
         )}
-        <Button size="sm" variant={passed ? "outline" : "default"} className="rounded-full" onClick={() => onOpen(module)}>
+        <Button size="sm" variant={passed ? "outline" : "default"} className="rounded-full" onClick={() => onOpen(module)} disabled={busy}>
           {passed ? "Retake" : "Start"}
         </Button>
       </div>

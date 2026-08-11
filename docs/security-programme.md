@@ -1,6 +1,6 @@
-# Zoot 60-Point Security Programme
+# Xoot 60-Point Security Programme
 
-Zoot's security goal is to prevent account takeover, data leakage, payment abuse, fake bookings, contractor/client impersonation, off-platform manipulation, and operational disruption. This programme is grouped by urgency and should be reviewed before every major release.
+Xoot's security goal is to prevent account takeover, data leakage, payment abuse, fake bookings, contractor/client impersonation, off-platform manipulation, and operational disruption. This programme is grouped by urgency and should be reviewed before every major release.
 
 ## Critical Controls
 
@@ -39,11 +39,11 @@ Zoot's security goal is to prevent account takeover, data leakage, payment abuse
 30. CSRF protection: protect state-changing cookie-auth routes such as bookings, profile updates, password changes, support messages, payments, and Care+ changes.
 31. Email and domain protection: configure SPF, DKIM, and DMARC; separate transactional and marketing sending where possible.
 32. Anti-phishing and brand impersonation monitoring: reserve official domains/handles and tell users payments happen only in-app.
-33. Referral and ZootCred abuse prevention: block self-referrals, disposable identities, duplicate-device abuse, reversals, suspicious clusters, and abnormal spikes.
+33. Referral and XootCred abuse prevention: block self-referrals, disposable identities, duplicate-device abuse, reversals, suspicious clusters, and abnormal spikes.
 34. Review and rating integrity: prevent fake reviews, self-reviews, hidden score tampering, and pressure patterns; keep reliability changes auditable.
 35. Contractor reliability engine protection: restrict punctuality, cancellation, complaint, completion, and score edits to audited support/admin flows.
 36. Coupon and promotional-code controls: validate discounts server-side with expiry, service, suburb, campaign, user, device, and stacking rules.
-37. Secure pricing and checkout calculations: calculate final price, fees, cover, high-demand slot pricing, Care+ benefits, ZootCred, referral credits, and taxes server-side.
+37. Secure pricing and checkout calculations: calculate final price, fees, cover, high-demand slot pricing, Care+ benefits, XootCred, referral credits, and taxes server-side.
 38. Secure cancellation and replacement logic: enforce cancellation windows, refunds, replacement priority, contractor penalties, status, timing, and payment state server-side.
 39. Secure notifications: keep sensitive data out of push, SMS, WhatsApp, and email; direct users back into the authenticated app.
 40. Secure search and analytics dashboards: aggregate where possible and separate founder, ops, support, marketing, finance, product, contractor, and client views by role.
@@ -51,7 +51,7 @@ Zoot's security goal is to prevent account takeover, data leakage, payment abuse
 ## Medium-Priority Controls
 
 41. Device and session management: let users see/log out sessions and flag unusual device/location/impossible-travel patterns.
-42. Admin approval workflows: require dual approval for large refunds, payout changes, bans, background-check overrides, manual ZootCred changes, and data exports.
+42. Admin approval workflows: require dual approval for large refunds, payout changes, bans, background-check overrides, manual XootCred changes, and data exports.
 43. Data export controls: restrict CSV exports, log every export, and mask sensitive fields by default.
 44. Secure contractor payout changes: verify bank changes, add waiting periods or review, and alert on suspicious account takeover patterns.
 45. Secure customer property access flow: show access notes inside a time window, log every view, and redact after completion unless required for recurring bookings.
@@ -63,13 +63,13 @@ Zoot's security goal is to prevent account takeover, data leakage, payment abuse
 
 ## Later Hardening
 
-51. Responsible disclosure page: publish a safe reporting path when Zoot has traction.
+51. Responsible disclosure page: publish a safe reporting path when Xoot has traction.
 52. Security awareness training: train staff against phishing, data exports, API key leaks, and suspicious refund/payout requests.
 53. Internal security checklist for every feature: document data involved, access, abuse cases, logs, and failure mode.
 54. Privacy-by-design UX: explain why sensitive data is collected in context, especially contractor documents and home access notes.
-55. Security status page: publish uptime/incident status when B2B clients, hosts, and offices depend on Zoot.
+55. Security status page: publish uptime/incident status when B2B clients, hosts, and offices depend on Xoot.
 56. Data minimisation reviews: quarterly review and delete/archive old documents, support attachments, gate codes, and verification files no longer needed.
 57. Tabletop incident exercises: practise leaked key, fake contractor, payment webhook abuse, DDoS, support leak, and malicious upload scenarios.
 58. Vendor risk review: review each vendor's security, reliability, pricing, data role, and export options.
 59. Legal review of claims: review claims like insurance, screening, replacement, safety, and guarantees before publishing.
-60. Brand trust monitoring: monitor reviews, social channels, and support tickets for impersonation, off-platform requests, payment scams, no-shows, fake Zooters, and suspicious messages.
+60. Brand trust monitoring: monitor reviews, social channels, and support tickets for impersonation, off-platform requests, payment scams, no-shows, fake Xooters, and suspicious messages.

@@ -1,4 +1,4 @@
-# Zoot Webhooks And Callbacks
+# Xoot Webhooks And Callbacks
 
 Reviewed: 2026-06-30
 
@@ -7,7 +7,7 @@ This document maps every callback class needed for staging and production. Value
 ## Rules
 
 - A frontend success page is never proof that a payment succeeded.
-- Booking, Care+, ZootCred, referral, assignment, refund, and contractor-verification state changes must happen server-side.
+- Booking, Care+, XootCred, referral, assignment, refund, and contractor-verification state changes must happen server-side.
 - Every supported provider webhook must verify signatures, shared secrets, or hashes before mutating data.
 - Every webhook must be idempotent by provider event ID and internal payment/reference ID.
 - Webhooks must log enough metadata for reconciliation without storing full card, bank login, OTP, access-code, private phone, or private key data.
@@ -16,26 +16,26 @@ This document maps every callback class needed for staging and production. Value
 
 | Function | Current endpoint shape | Purpose | Env required | Status |
 | --- | --- | --- | --- | --- |
-| `ai-match` | `https://<project-ref>.functions.supabase.co/ai-match` | Authenticated Zooter matching/ranking | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
+| `ai-match` | `https://<project-ref>.functions.supabase.co/ai-match` | Authenticated Xooter matching/ranking | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `create-booking-request` | `https://<project-ref>.functions.supabase.co/create-booking-request` | Backend-priced booking request creation, payment record creation, notification queue | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `care-plus-membership` | `https://<project-ref>.functions.supabase.co/care-plus-membership` | Care+ membership request/cancellation action layer, payment record creation, admin queue, notification queue | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
-| `ops-workflow` | `https://<project-ref>.functions.supabase.co/ops-workflow` | Authenticated action layer for support routing, property account ops routing, Gift Clean payment requests, ZootCred redemption, booking status changes, masked call requests, trust incidents, low-rating follow-up, Zooter application submission, Zooter job response, and typed admin queue/KYC actions | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
+| `ops-workflow` | `https://<project-ref>.functions.supabase.co/ops-workflow` | Authenticated action layer for support routing, property account ops routing, Gift Clean payment requests, XootCred redemption, booking status changes, masked call requests, trust incidents, low-rating follow-up, Xooter application submission, Xooter job response, and typed admin queue/KYC actions | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 | `support-respond` | `https://<project-ref>.functions.supabase.co/support-respond` | Support bot response and escalation | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, `OPENAI_SUPPORT_MODEL`, `ALLOWED_ORIGINS` | Implemented |
 | `get-booking-public-keys` | `https://<project-ref>.functions.supabase.co/get-booking-public-keys` | Authenticated booking chat public-key lookup for verified booking participants only | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
-| `get-sensitive-access` | `https://<project-ref>.functions.supabase.co/get-sensitive-access` | Authenticated Zooter sensitive field reveal with booking-window checks and reveal logging | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
+| `get-sensitive-access` | `https://<project-ref>.functions.supabase.co/get-sensitive-access` | Authenticated Xooter sensitive field reveal with booking-window checks and reveal logging | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS` | Implemented |
 
 ## Supabase Auth Callbacks
 
 | Callback | Local | Staging | Production | Notes |
 | --- | --- | --- | --- | --- |
-| OAuth/email callback | `http://localhost:5173/auth/callback` | `https://staging.zoothome.co.za/auth/callback` | `https://zoothome.co.za/auth/callback` | Must be allow-listed in Supabase Auth. |
-| Password reset | `http://localhost:5173/auth/reset` | `https://staging.zoothome.co.za/auth/reset` | `https://zoothome.co.za/auth/reset` | Must be allow-listed in Supabase Auth. |
+| OAuth/email callback | `http://localhost:5173/auth/callback` | `https://staging.xoot.co.za/auth/callback` | `https://xoot.co.za/auth/callback` | Must be allow-listed in Supabase Auth. |
+| Password reset | `http://localhost:5173/auth/reset` | `https://staging.xoot.co.za/auth/reset` | `https://xoot.co.za/auth/reset` | Must be allow-listed in Supabase Auth. |
 | Native auth callback | `zoot://auth/callback` | `zoot://auth/callback` | `zoot://auth/callback` | Only enable once native auth is wired and tested. |
 
 Supabase Auth Site URL:
 
-- Staging: `https://staging.zoothome.co.za`
-- Production: `https://zoothome.co.za`
+- Staging: `https://staging.xoot.co.za`
+- Production: `https://xoot.co.za`
 
 ## Stitch Payments
 
@@ -45,9 +45,9 @@ Planned server endpoints:
 | --- | --- | --- | --- |
 | Checkout/session create | `https://<project-ref>.functions.supabase.co/stitch-create-checkout` | Authenticated user request | User JWT, backend quote, internal booking/payment record. |
 | Webhook | `https://<project-ref>.functions.supabase.co/stitch-webhook` | Provider request | Provider signature or webhook secret, event idempotency. |
-| Callback/return | `https://zoothome.co.za/payments/stitch/return` | Display only | Must fetch backend payment status after return. |
-| Success URL | `https://zoothome.co.za/payments/success` | Display only | Never confirms booking by itself. |
-| Failure URL | `https://zoothome.co.za/payments/failed` | Display only | Never cancels booking by itself. |
+| Callback/return | `https://xoot.co.za/payments/stitch/return` | Display only | Must fetch backend payment status after return. |
+| Success URL | `https://xoot.co.za/payments/success` | Display only | Never confirms booking by itself. |
+| Failure URL | `https://xoot.co.za/payments/failed` | Display only | Never cancels booking by itself. |
 
 Reconciliation reference format:
 
@@ -72,9 +72,9 @@ Planned server endpoints:
 | --- | --- | --- | --- |
 | Payment request create | `https://<project-ref>.functions.supabase.co/ozow-create-payment` | Authenticated user request | User JWT, backend quote, internal booking/payment record. |
 | Notification/webhook URL | `https://<project-ref>.functions.supabase.co/ozow-notify` | Provider request | Provider hash/signature validation and idempotency. |
-| Success URL | `https://zoothome.co.za/payments/ozow/success` | Display only | Must fetch backend status. |
-| Cancel URL | `https://zoothome.co.za/payments/ozow/cancel` | Display only | Must not mutate booking alone. |
-| Error URL | `https://zoothome.co.za/payments/ozow/error` | Display only | Must not mutate booking alone. |
+| Success URL | `https://xoot.co.za/payments/ozow/success` | Display only | Must fetch backend status. |
+| Cancel URL | `https://xoot.co.za/payments/ozow/cancel` | Display only | Must not mutate booking alone. |
+| Error URL | `https://xoot.co.za/payments/ozow/error` | Display only | Must not mutate booking alone. |
 
 Required checks before confirming payment:
 
@@ -83,7 +83,7 @@ Required checks before confirming payment:
 - Amount and currency match backend-calculated invoice.
 - Booking is still in a payment-confirmable state.
 - Care+ activates only after a verified successful payment event.
-- ZootCred is awarded only after a completed paid booking meets anti-fraud rules.
+- XootCred is awarded only after a completed paid booking meets anti-fraud rules.
 
 ## Twilio
 
@@ -104,8 +104,8 @@ Masked calling notes:
 - Masked-call provider traffic requires both `twilio.operational_messages` and `twilio.masked_voice` controls.
 - Masked-call sessions are allowed only for booking participants in accepted/active booking states and within the approved booking contact window.
 - Browser/mobile clients cannot insert or update `public.masked_call_sessions` directly.
-- Browser/mobile payloads must never contain user or Zooter phone numbers.
-- Zoot masked voice must not record or transcribe calls.
+- Browser/mobile payloads must never contain user or Xooter phone numbers.
+- Xoot masked voice must not record or transcribe calls.
 - Use Twilio API keys for production outbound calls when possible.
 - Keep Auth Token available only where signature validation requires it.
 - Deploy `supabase/migrations/20260621001000_twilio_webhook_events.sql` before enabling callbacks.
@@ -164,8 +164,8 @@ Generated by `scripts/build/write-native-association-files.mjs`:
 
 | File | URL | Purpose |
 | --- | --- | --- |
-| Apple AASA | `https://zoothome.co.za/.well-known/apple-app-site-association` | Universal Links for iOS. |
-| Android assetlinks | `https://zoothome.co.za/.well-known/assetlinks.json` | Android App Links. |
+| Apple AASA | `https://xoot.co.za/.well-known/apple-app-site-association` | Universal Links for iOS. |
+| Android assetlinks | `https://xoot.co.za/.well-known/assetlinks.json` | Android App Links. |
 
 Required app link paths:
 
@@ -182,7 +182,7 @@ Required app link paths:
 Edge Functions currently use `ALLOWED_ORIGINS` plus safe defaults. Production must set:
 
 ```text
-https://zoothome.co.za,https://www.zoothome.co.za,https://staging.zoothome.co.za,http://localhost:5173,http://127.0.0.1:5173
+https://xoot.co.za,https://www.xoot.co.za,https://staging.xoot.co.za,http://localhost:5173,http://127.0.0.1:5173
 ```
 
 Do not use `*` for authenticated or payment-related functions.

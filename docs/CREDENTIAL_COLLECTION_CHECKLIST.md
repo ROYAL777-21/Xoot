@@ -1,4 +1,4 @@
-# Zoot Credential Collection Checklist
+# Xoot Credential Collection Checklist
 
 Reviewed: 2026-07-09
 
@@ -21,7 +21,7 @@ Do not paste secret values into chat. Do not commit real secrets. Do not create 
 | Supabase project ref | Present in `supabase/config.toml`: `mvlrkelahhsyjrwgsxaf` |
 | Supabase API URL | Confirmed by connector: `https://mvlrkelahhsyjrwgsxaf.supabase.co` |
 | Supabase publishable key | Confirmed by connector; value intentionally not written to repo/docs/chat |
-| Separate Supabase staging project | Created: `Zoot Staging`, project ref `fxmxyabdjqviqbcxmvlp`, URL `https://fxmxyabdjqviqbcxmvlp.supabase.co`; schema/functions/secrets still pending |
+| Separate Supabase staging project | Created: `Xoot Staging`, project ref `fxmxyabdjqviqbcxmvlp`, URL `https://fxmxyabdjqviqbcxmvlp.supabase.co`; schema/functions/secrets still pending |
 | Expo EAS project ID | Created: `@don-pacho777/zoot`, project ID `b4c6e0b8-e2e7-40c5-b259-3b34c79be30b` |
 | EAS public env | Baseline exists, but each environment must be rechecked before builds so `EXPO_PUBLIC_SUPABASE_PROJECT_ID` matches the project ref in `EXPO_PUBLIC_SUPABASE_URL`. |
 | GitHub public env | Required Vite Supabase variables are present and consistent. Public site URL, EAS project ID, and PostHog public variables are present; optional Mapbox/Sentry/OAuth/Turnstile/WordPress public values still wait on provider setup. |
@@ -32,7 +32,7 @@ The Supabase URL is public project metadata. Publishable keys are public-safe bu
 
 ## Domain-Dependent Items
 
-Zoot does not have a registered domain yet. Do not force or fake domain-dependent setup. Record these as pending until the final domain is registered and pointed to the selected DNS provider:
+Xoot does not have a registered domain yet. Do not force or fake domain-dependent setup. Record these as pending until the final domain is registered and pointed to the selected DNS provider:
 
 - Cloudflare zone creation, DNS, TLS, WAF, bot/rate-limit rules, Turnstile origin restrictions, R2 custom domains, and Access policies.
 - Production OAuth origins and redirect URLs for Supabase Auth, Google, Apple, Expo deep links, and app links.
@@ -85,8 +85,8 @@ Set these with Supabase dashboard or CLI secrets for each environment.
 | Production client ID | Stitch merchant dashboard | Supabase Edge secrets |
 | Production client secret/API key | Stitch merchant dashboard | Supabase Edge secrets |
 | Webhook/signing secret | Stitch dashboard | Supabase Edge secrets |
-| Payment callback URL | Zoot Edge Function URL | Stitch dashboard |
-| Success/failure return URLs | Zoot app/web display routes | Stitch dashboard |
+| Payment callback URL | Xoot Edge Function URL | Stitch dashboard |
+| Success/failure return URLs | Xoot app/web display routes | Stitch dashboard |
 
 Required backend before production:
 
@@ -105,7 +105,7 @@ Required backend before production:
 | Production site code/merchant ID | Ozow merchant dashboard | Supabase Edge secrets |
 | Production private key/API key | Ozow dashboard | Supabase Edge secrets |
 | Webhook/notification secret/hash config | Ozow dashboard | Supabase Edge secrets |
-| Notify/success/cancel/error URLs | Zoot Edge/web routes | Ozow dashboard |
+| Notify/success/cancel/error URLs | Xoot Edge/web routes | Ozow dashboard |
 
 Required backend before production:
 
@@ -125,14 +125,14 @@ Required backend before production:
 | Twilio Verify Service SID | Twilio Verify | Supabase Edge secrets |
 | TwiML App SID | Twilio Voice | Supabase Edge secrets |
 | Twilio caller ID/numbers | Twilio Console | Supabase Edge secrets/provider dashboard |
-| Twilio webhook base URL/hash salt | Zoot deployment domains + generated salt | Supabase Edge secrets |
+| Twilio webhook base URL/hash salt | Xoot deployment domains + generated salt | Supabase Edge secrets |
 | Brevo API key | Brevo dashboard | Supabase Edge secrets |
 | Brevo sender email/domain | Brevo dashboard + DNS | Supabase Edge secrets/provider dashboard |
 | Brevo template/list IDs | Brevo dashboard | Supabase Edge secrets |
 
 Rules:
 
-- Keep client-contractor chat inside Zoot.
+- Keep client-contractor chat inside Xoot.
 - Do not use WhatsApp for routine communication.
 - SMS/voice are for OTP, masked calls, and critical operational flows only.
 - Emails must not contain OTPs, access codes, gate codes, alarm codes, lockbox codes, private phone numbers, or full sensitive household data.
@@ -205,7 +205,7 @@ The App Store Connect API key environment names used by EAS CLI are `EXPO_ASC_AP
 
 - Keep GitHub repo variables limited to public-safe values. Required Vite Supabase variables are set; add optional Mapbox/Sentry/OAuth/Turnstile/WordPress public variables only after the provider dashboards issue restricted public values.
 - Decide whether to upgrade Supabase to Pro for leaked password protection now, or use strong password rules plus OTP/OAuth until launch risk justifies the upgrade.
-- Apply the repo schema/migrations to the `Zoot Staging` Supabase project after migration history is reconciled. Use `npm run ops:supabase:deploy:staging` once local Supabase auth/DB credentials are available.
+- Apply the repo schema/migrations to the `Xoot Staging` Supabase project after migration history is reconciled. Use `npm run ops:supabase:deploy:staging` once local Supabase auth/DB credentials are available.
 - Apply approved production migrations only after staging passes. Use `npm run ops:supabase:deploy:production -- -DryRun` first, then `npm run ops:supabase:deploy:production -- -VerifyLive` with production database credentials set locally.
 - Set Supabase Edge Function secrets for production and staging. Use `npm run ops:supabase:secrets:staging -- -EnvFile <outside-repo-file>` for staging and `npm run ops:supabase:secrets:production -- -EnvFile <outside-repo-file>` for production.
 - Configure Supabase Auth Site URL and redirect allowlists with `npm run ops:supabase:auth-config -- -UseLocalConfig -SiteUrl "https://<target-domain>"` after `SUPABASE_ACCESS_TOKEN`, the project ref, and approved local/staging/production/native URLs are available locally. Run it first without `-Apply`; live apply requires an explicit target Site URL so localhost from `supabase/config.toml` cannot be applied to production accidentally.
@@ -216,11 +216,11 @@ The App Store Connect API key environment names used by EAS CLI are `EXPO_ASC_AP
 - Configure EAS iOS and Android credentials.
 - Create App Store Connect and Play Console app records.
 - Create Sentry mobile project and source-map upload token.
-- Create separate restricted Mapbox tokens: one public browser token restricted to Zoot web origins, one public Expo/mobile token restricted as far as Mapbox supports for native use, and one private downloads token stored only in EAS/CI. Rotate any `sk.` token pasted into chat before production.
+- Create separate restricted Mapbox tokens: one public browser token restricted to Xoot web origins, one public Expo/mobile token restricted as far as Mapbox supports for native use, and one private downloads token stored only in EAS/CI. Rotate any `sk.` token pasted into chat before production.
 - Configure Cloudflare DNS, app links, AASA, assetlinks, and production SSL.
 - After the final domain is registered, create its Cloudflare zone with `POST /zones` using the registered domain name, `type: "full"`, and `jump_start: true`, or add it manually in the Cloudflare dashboard. The API token must include account-level zone creation permission (`com.cloudflare.api.account.zone.create`); DNS edit alone is not enough.
 - Create restricted Cloudflare Turnstile widgets for web and Expo/mobile, then store the public site keys in public env and the secret key only in Edge/server secrets.
-- Configure WordPress as the SEO editorial CMS with draft-first publishing, protected previews, no-index drafts, approved media only, and canonical article URLs on the Zoot website.
+- Configure WordPress as the SEO editorial CMS with draft-first publishing, protected previews, no-index drafts, approved media only, and canonical article URLs on the Xoot website.
 
 ## Local CLI Authentication Notes
 
@@ -230,7 +230,7 @@ These methods were verified from the local CLI help output and should be used in
 | --- | --- | --- |
 | Supabase CLI | Set `SUPABASE_ACCESS_TOKEN` in the local shell, then run `supabase login --token $env:SUPABASE_ACCESS_TOKEN --name zoot-local`. | `supabase login --no-browser` is also available for browserless flows. Keep the token in the password manager or shell profile, not repo files. `npm run ops:provider-auth:check` reports current status without printing tokens. |
 | GitHub CLI | Current machine is authenticated as `ROYAL777-21`. If it expires, run `gh auth login --web --hostname github.com --git-protocol https`. | Do not paste GitHub PATs into chat. |
-| CodeRabbit CLI | Set `CODERABBIT_API_KEY` locally, then run `coderabbit auth login --api-key $env:CODERABBIT_API_KEY`. | If Zoot later has a self-hosted CodeRabbit URL, run `coderabbit auth login --self-hosted` or `npm run ops:provider-auth:setup -- -CodeRabbit -CodeRabbitSelfHosted`. The official GitHub App remains the safest production option. |
+| CodeRabbit CLI | Set `CODERABBIT_API_KEY` locally, then run `coderabbit auth login --api-key $env:CODERABBIT_API_KEY`. | If Xoot later has a self-hosted CodeRabbit URL, run `coderabbit auth login --self-hosted` or `npm run ops:provider-auth:setup -- -CodeRabbit -CodeRabbitSelfHosted`. The official GitHub App remains the safest production option. |
 
 Current status on 2026-07-09 14:38 SAST: GitHub CLI is authenticated as `ROYAL777-21`; CodeRabbit CLI is installed and authenticated through its local credential store; Supabase CLI is installed but no local `SUPABASE_ACCESS_TOKEN` or Supabase database URL is available in this shell.
 

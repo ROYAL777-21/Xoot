@@ -14,14 +14,14 @@ const BlogPost = () => {
     return (
       <div className="min-h-screen bg-background">
         <SEO
-          title="Zoot Articles - Post not found"
-          description="The requested Zoot article could not be found."
+          title="Xoot Articles - Post not found"
+          description="The requested Xoot article could not be found."
           canonical="/articles"
           noIndex
         />
         <Navbar />
         <main className="mx-auto max-w-3xl px-4 py-32 text-center sm:px-6 lg:px-8">
-          <p className="text-sm font-semibold text-primary">Zoot Articles</p>
+          <p className="text-sm font-semibold text-primary">Xoot Articles</p>
           <h1 className="mt-3 font-display text-3xl font-bold">Post not found</h1>
           <p className="mt-3 text-muted-foreground">This guide may have moved or is not published yet.</p>
           <Link to="/articles" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary">
@@ -42,8 +42,8 @@ const BlogPost = () => {
       description: post.description,
       datePublished: post.publishedAt,
       author: { "@type": "Organization", name: post.author },
-      publisher: { "@type": "Organization", name: "Zoot", url: "https://zoothome.co.za" },
-      mainEntityOfPage: `https://zoothome.co.za/articles/${post.slug}`,
+      publisher: { "@type": "Organization", name: "Xoot", url: "https://xoot.co.za" },
+      mainEntityOfPage: `https://xoot.co.za/articles/${post.slug}`,
       keywords: [post.primaryKeyword, ...post.secondaryKeywords].join(", "),
       areaServed: post.areas,
     },
@@ -72,7 +72,7 @@ const BlogPost = () => {
         <article className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:px-8">
           <Link to="/articles" className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-smooth hover:gap-3">
             <ArrowLeft className="h-4 w-4" />
-            Back to Zoot Articles
+            Back to Xoot Articles
           </Link>
 
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent-soft px-3 py-1 text-xs font-semibold text-sage-deep">
@@ -130,7 +130,7 @@ const BlogPost = () => {
           </section>
 
           <section className="mt-10 rounded-2xl border border-primary/20 bg-accent-soft p-5 sm:p-6">
-            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Ready for Zoot?</h2>
+            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Ready for Xoot?</h2>
             <p className="mt-3 text-sm leading-7 text-muted-foreground">
               Book trusted home care, save your preferences, and keep booking details inside the app.
             </p>

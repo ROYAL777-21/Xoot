@@ -8,7 +8,7 @@ import { ArrowRight, Briefcase, GraduationCap, Loader2, ShieldCheck, Sparkles, S
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [zooter, setZooter] = useState<any>(null);
+  const [zooter, setXooter] = useState<any>(null);
   const [app, setApp] = useState<any>(null);
   const [stats, setStats] = useState({ open_jobs: 0, week_earnings: 0, completion_rate: 100 });
   const [trainingSummary, setTrainingSummary] = useState({ points: 0, passed: 0, available: 0 });
@@ -21,7 +21,7 @@ const Dashboard = () => {
         supabase.from("zooters").select("*").eq("user_id", user.id).maybeSingle(),
         supabase.from("zooter_applications").select("*").eq("user_id", user.id).maybeSingle(),
       ]);
-      setZooter(z);
+      setXooter(z);
       setApp(a);
 
       const [{ data: modules }, { data: completions }] = await Promise.all([
@@ -52,7 +52,7 @@ const Dashboard = () => {
   const statusBadge: Record<string, { text: string; cls: string }> = {
     draft: { text: "Application incomplete", cls: "bg-muted text-muted-foreground" },
     submitted: { text: "Under review", cls: "bg-primary/15 text-primary" },
-    approved: { text: "Verified Zooter", cls: "bg-accent/15 text-sage-deep" },
+    approved: { text: "Verified Xooter", cls: "bg-accent/15 text-sage-deep" },
     rejected: { text: "Application rejected", cls: "bg-destructive/15 text-destructive" },
   };
 
@@ -88,7 +88,7 @@ const Dashboard = () => {
         <Stat icon={Star} label="Rating" value={zooter ? Number(zooter.rating).toFixed(2) : "-"} accent="primary" />
       </div>
 
-      <h2 className="font-display text-2xl font-bold mb-4">Get the most out of Zoot</h2>
+      <h2 className="font-display text-2xl font-bold mb-4">Get the most out of Xoot</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Tile to="/zooter/jobs" icon={Briefcase} title="Browse jobs" body="Accept the matches that fit your schedule." />
         <Tile to="/zooter/training" icon={GraduationCap} title="Training" body={`${trainingSummary.passed}/${trainingSummary.available} modules passed. Optional badges help with premium matching.`} />

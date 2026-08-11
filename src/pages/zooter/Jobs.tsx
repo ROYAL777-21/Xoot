@@ -8,19 +8,19 @@ import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
-import { getAcceptedZooterJobAddress, getSensitiveAccessAvailability } from "@/lib/operations";
+import { getAcceptedXooterJobAddress, getSensitiveAccessAvailability } from "@/lib/operations";
 import { SensitiveFieldReveal } from "@/components/zoot/SensitiveFieldReveal";
 
 const Jobs = () => {
   const { user } = useAuth();
-  const [zooterId, setZooterId] = useState<string | null>(null);
+  const [zooterId, setXooterId] = useState<string | null>(null);
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     const { data, error } = await supabase.functions.invoke("get-zooter-job-cards");
     if (error) {
-      console.warn("Zooter jobs lookup failed", error.message);
+      console.warn("Xooter jobs lookup failed", error.message);
       setJobs([]);
       return;
     }
@@ -56,7 +56,7 @@ const Jobs = () => {
     if (!user) return;
     (async () => {
       const { data: z } = await supabase.from("zooters").select("id").eq("user_id", user.id).maybeSingle();
-      if (z) { setZooterId(z.id); await load(); }
+      if (z) { setXooterId(z.id); await load(); }
       setLoading(false);
     })();
   }, [user]);
@@ -134,7 +134,7 @@ const Section = ({ title, jobs, respond, actions = false, revealAccess = false }
           const accessState = getSensitiveAccessState(b);
           const withinWindow = accessState.state === "available";
           const canShowReveal = revealAccess && j.state !== "declined" && j.state !== "expired";
-          const acceptedAddress = getAcceptedZooterJobAddress({
+          const acceptedAddress = getAcceptedXooterJobAddress({
             jobState: j.state,
             address: j.destination_address,
           });

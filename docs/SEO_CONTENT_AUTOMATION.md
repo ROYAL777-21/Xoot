@@ -2,7 +2,7 @@
 
 Reviewed: 2026-06-20
 
-This workflow creates 1 to 2 review-ready blog briefs and article drafts per day for Zoot's launch-area SEO. It does not publish unreviewed AI content. The goal is to turn search intent, local service-area relevance, and human-quality editorial rules into a repeatable queue without accidentally shipping unsupported claims.
+This workflow creates 1 to 2 review-ready blog briefs and article drafts per day for Xoot's launch-area SEO. It does not publish unreviewed AI content. The goal is to turn search intent, local service-area relevance, and human-quality editorial rules into a repeatable queue without accidentally shipping unsupported claims.
 
 ## Sources Used
 
@@ -10,15 +10,15 @@ This workflow creates 1 to 2 review-ready blog briefs and article drafts per day
 - Google SEO Starter Guide: crawlable pages, clear titles/descriptions, useful content, and realistic expectations.
 - Google Business Profile guidelines: accurate service areas, real-world business representation, and no private/confidential content.
 - Google structured data guidance: JSON-LD for maintainable structured data.
-- Zoot internal docs: brand guide, project context, and `docs/SEO_BLOG_PLAN.md`.
-- Zoot marketing operating prompt: `docs/SEO_MARKETING_OPERATING_PROMPT.md`.
+- Xoot internal docs: brand guide, project context, and `docs/SEO_BLOG_PLAN.md`.
+- Xoot marketing operating prompt: `docs/SEO_MARKETING_OPERATING_PROMPT.md`.
 - WordPress editorial CMS: review, authoring, scheduled publishing, canonical SEO metadata, and content governance. WordPress is not a source for application secrets or authenticated app data.
 
 Semrush MCP access is not available on the active plan. When access is enabled, export keyword rows with volume, difficulty, intent, and SERP notes into `content/seo/keyword-intent-map.json` before generating the queue.
 
 ## WordPress SEO CMS Role
 
-WordPress is part of the Zoot SEO stack as a headless/editorial CMS, not as the app runtime. The React/Vite website remains the public rendering layer for speed, security headers, Liquid Glass UI, app routes, and conversion flows.
+WordPress is part of the Xoot SEO stack as a headless/editorial CMS, not as the app runtime. The React/Vite website remains the public rendering layer for speed, security headers, Liquid Glass UI, app routes, and conversion flows.
 
 Use WordPress for:
 
@@ -29,7 +29,7 @@ Use WordPress for:
 
 Do not use WordPress for:
 
-- booking, payment, account, Zooter, household, support, or sensitive operational data;
+- booking, payment, account, Xooter, household, support, or sensitive operational data;
 - storing Supabase service-role, Twilio, payment, OpenAI, KIE, Brevo, Mapbox secret, Apple, Google, Cloudflare, Hostinger, or EAS credentials;
 - unreviewed AI auto-publishing.
 
@@ -39,7 +39,7 @@ Recommended flow:
 2. Human review and edit in WordPress as drafts.
 3. Publish only approved articles.
 4. Sync approved WordPress article metadata into the Vite article registry or consume via a server-side build/import step.
-5. Keep canonical URLs on `https://zoothome.co.za/articles/<slug>` unless a deliberate WordPress-hosted URL is approved.
+5. Keep canonical URLs on `https://xoot.co.za/articles/<slug>` unless a deliberate WordPress-hosted URL is approved.
 
 ## Daily Command
 
@@ -78,7 +78,7 @@ Use this structure to keep content readable and human:
 1. Name the moment: the meeting, guest check-in, tenant handover, family visit, or weekly home reset.
 2. Name the tension: time pressure, trust, reputation, privacy, repeat admin, or uncertainty.
 3. Give control: a checklist, decision rule, or "what to ask before booking" section.
-4. Connect Zoot calmly: vetted Zooters, saved preferences, in-app communication, support routing, Care+ continuity.
+4. Connect Xoot calmly: vetted Xooters, saved preferences, in-app communication, support routing, Care+ continuity.
 5. Invite action: one direct CTA without pressure.
 
 ## Measurement

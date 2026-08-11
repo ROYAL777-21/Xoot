@@ -1,8 +1,8 @@
-# Zoot Concierge Governance
+# Xoot Concierge Governance
 
-Zoot Concierge is a controlled support and guidance layer, not a general-purpose chatbot. It may answer from approved Zoot knowledge, guide users to protected product flows, summarize safe authenticated status through approved server tools, and create structured human handoff requests where configured.
+Xoot Concierge is a controlled support and guidance layer, not a general-purpose chatbot. It may answer from approved Xoot knowledge, guide users to protected product flows, summarize safe authenticated status through approved server tools, and create structured human handoff requests where configured.
 
-It must not approve bookings, refunds, payments, Booking Cover claims, Care+ changes, ZootCred changes, payouts, contractor actions, sensitive household access, legal decisions, safety conclusions, or admin decisions.
+It must not approve bookings, refunds, payments, Booking Cover claims, Care+ changes, XootCred changes, payouts, contractor actions, sensitive household access, legal decisions, safety conclusions, or admin decisions.
 
 Production use requires:
 

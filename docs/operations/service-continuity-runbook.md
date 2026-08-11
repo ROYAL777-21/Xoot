@@ -2,7 +2,7 @@
 
 Reviewed: 2026-07-02
 
-This runbook defines how Zoot keeps core operations safe during provider, deployment, database, or automation failures.
+This runbook defines how Xoot keeps core operations safe during provider, deployment, database, or automation failures.
 
 ## Core Principles
 

@@ -85,7 +85,7 @@ export const buildBookingInvoiceSnapshot = ({
     : totalAmount;
   const vatAmount = roundMoney(totalAmount - subtotalAmount);
   const duration = roundMoney(booking.duration_hours ?? 1);
-  const serviceLabel = cleanText(booking.service_type ?? booking.service ?? "Zoot cleaning", 80) || "Zoot cleaning";
+  const serviceLabel = cleanText(booking.service_type ?? booking.service ?? "Xoot cleaning", 80) || "Xoot cleaning";
 
   const lineItems: InvoiceLineItem[] = [{
     label: `${serviceLabel.replace(/_/g, " ")} service`,
@@ -145,7 +145,7 @@ export const renderBookingInvoicePdf = (invoice: {
   snapshot: Record<string, any>;
 }) => {
   const lines = [
-    "Zoot invoice",
+    "Xoot invoice",
     `Invoice: ${invoice.invoice_number}`,
     `Issued: ${invoice.generated_at ?? invoice.created_at ?? new Date().toISOString()}`,
     `Supplier: ${invoice.legal_entity_name}`,
@@ -165,7 +165,7 @@ export const renderBookingInvoicePdf = (invoice: {
     `VAT: ${formatMoney(invoice.vat_amount, invoice.currency)}`,
     `Total paid: ${formatMoney(invoice.total_amount, invoice.currency)}`,
     "",
-    "Thank you for choosing Zoot.",
+    "Thank you for choosing Xoot.",
   ].filter((line) => line.length > 0);
 
   const textCommands = lines

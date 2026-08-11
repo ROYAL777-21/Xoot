@@ -21,7 +21,7 @@ Knowledge owners:
 
 - Product and Engineering: product behaviour and technical flows;
 - Customer Continuity: support wording and service recovery;
-- Finance: payments, invoices and ZootCred;
+- Finance: payments, invoices and XootCred;
 - Trust and Safety: safety, fraud, privacy and escalation;
 - Growth and Partnerships: partnerships, referrals and public communication;
 - Founder: commercial policy, pricing, Care+, Booking Cover and material policy changes.

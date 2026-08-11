@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
       userId: application.user_id,
       kind: "zooter_application_approved",
       title: "You are approved",
-      body: "Your Zoot contractor profile is active. You can now receive eligible booking offers.",
+      body: "Your Xoot contractor profile is active. You can now receive eligible booking offers.",
       link: "/zooter",
     });
     await insertOutbox(supa, {

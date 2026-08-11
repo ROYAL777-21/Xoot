@@ -1,4 +1,4 @@
--- Zoot production-readiness live database checks.
+-- Xoot production-readiness live database checks.
 -- Run only against staging/prod from an authenticated ops shell.
 -- This query reads catalog metadata only and does not expose secret values.
 
@@ -257,7 +257,7 @@ checks as (
 
   union all
   select
-    'Zoot Black controls default disabled',
+    'Xoot Black controls default disabled',
     exists (
       select 1
       from public.operational_controls
@@ -280,43 +280,43 @@ checks as (
 
   union all
   select
-    'Zoot Black selected area table exists',
+    'Xoot Black selected area table exists',
     to_regclass('public.zoot_black_area_pilots') is not null,
     'public.zoot_black_area_pilots'
 
   union all
   select
-    'Zoot Black equipment evidence table exists',
+    'Xoot Black equipment evidence table exists',
     to_regclass('public.zoot_black_equipment_evidence') is not null,
     'public.zoot_black_equipment_evidence'
 
   union all
   select
-    'Zoot Black status history table exists',
+    'Xoot Black status history table exists',
     to_regclass('public.zoot_black_status_history') is not null,
     'public.zoot_black_status_history'
 
   union all
   select
-    'Zoot Black training requirements table exists',
+    'Xoot Black training requirements table exists',
     to_regclass('public.zoot_black_training_requirements') is not null,
     'public.zoot_black_training_requirements'
 
   union all
   select
-    'Zoot Black explicit line items table exists',
+    'Xoot Black explicit line items table exists',
     to_regclass('public.booking_service_line_items') is not null,
     'public.booking_service_line_items'
 
   union all
   select
-    'Zoot Black completion certificates table exists',
+    'Xoot Black completion certificates table exists',
     to_regclass('public.zoot_black_completion_certificates') is not null,
     'public.zoot_black_completion_certificates'
 
   union all
   select
-    'Zoot Black certificate private bucket exists',
+    'Xoot Black certificate private bucket exists',
     exists (
       select 1
       from storage.buckets
@@ -327,7 +327,7 @@ checks as (
 
   union all
   select
-    'Zoot Black eligibility helper not client executable',
+    'Xoot Black eligibility helper not client executable',
     to_regprocedure('public.is_zoot_black_eligible(uuid,text)') is not null
       and not has_function_privilege('anon', 'public.is_zoot_black_eligible(uuid,text)', 'EXECUTE')
       and not has_function_privilege('authenticated', 'public.is_zoot_black_eligible(uuid,text)', 'EXECUTE'),

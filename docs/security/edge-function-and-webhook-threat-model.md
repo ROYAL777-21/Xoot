@@ -4,9 +4,9 @@ Reviewed: 2026-07-02
 
 ## Surfaces
 
-- Authenticated app functions: booking creation, booking chat, sensitive access, Care+, ZootCred, admin actions, masked calls, invoice generation.
+- Authenticated app functions: booking creation, booking chat, sensitive access, Care+, XootCred, admin actions, masked calls, invoice generation.
 - Anonymous or provider-facing functions: `support-respond`, Concierge reports, Twilio webhooks, future payment webhooks.
-- Shared libraries: action utilities, admin utilities, Twilio webhook verification, Turnstile verification, invoice helpers, Zoot knowledge.
+- Shared libraries: action utilities, admin utilities, Twilio webhook verification, Turnstile verification, invoice helpers, Xoot knowledge.
 
 ## Threats
 
@@ -31,5 +31,5 @@ Reviewed: 2026-07-02
 
 - Signed and unsigned webhook smoke tests for each provider.
 - Unit tests for shared verification helpers.
-- Edge smoke tests with client, Zooter, admin, and anonymous actors.
+- Edge smoke tests with client, Xooter, admin, and anonymous actors.
 - Security scan for direct frontend writes and committed secrets.

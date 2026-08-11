@@ -91,8 +91,8 @@ const AuthCallback = () => {
   return (
     <div className="min-h-screen gradient-hero grid place-items-center p-6">
       <SEO
-        title="Finishing Zoot sign-in"
-        description="Zoot is completing a secure authentication callback."
+        title="Finishing Xoot sign-in"
+        description="Xoot is completing a secure authentication callback."
         canonical="/auth/callback"
         noIndex
       />
@@ -105,7 +105,7 @@ const AuthCallback = () => {
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           {status === "loading"
-            ? "We are confirming your Zoot session and returning you to the right place."
+            ? "We are confirming your Xoot session and returning you to the right place."
             : "The sign-in link could not be completed. Start again from the secure sign-in page."}
         </p>
         {status === "error" && (

@@ -24,7 +24,7 @@ import { CarePlusBenefitCard, CarePlusComparisonTable, CarePlusSupportPromise } 
 import { carePlusBenefits, carePlusMoatBenefits } from "@/data/care-plus";
 import { useCarePlus } from "@/hooks/useCarePlus";
 import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
-import { useZootCred } from "@/hooks/useZootCred";
+import { useXootCred } from "@/hooks/useXootCred";
 import { formatZAR } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import { captureAnalyticsEvent, getAnalyticsDeviceType } from "@/lib/analytics";
@@ -37,7 +37,7 @@ const pillars = [
   },
   {
     title: "Continuity",
-    body: "Keep a preferred Zooter close to repeat bookings when availability allows.",
+    body: "Keep a preferred Xooter close to repeat bookings when availability allows.",
     icon: Heart,
   },
   {
@@ -47,7 +47,7 @@ const pillars = [
   },
   {
     title: "Loyalty",
-    body: "Track ZootCred from the ledger and use monthly add-on credit before it expires.",
+    body: "Track XootCred from the ledger and use your welcome add-on credit before it expires.",
     icon: WalletCards,
   },
 ];
@@ -65,7 +65,7 @@ const formatDate = (value?: string | null) =>
 const CarePlus = () => {
   const carePlus = useCarePlus();
   const household = useHouseholdOperatingLayer();
-  const zootCred = useZootCred();
+  const zootCred = useXootCred();
 
   const joinCarePlus = async () => {
     try {
@@ -91,8 +91,8 @@ const CarePlus = () => {
   return (
     <div className="dark min-h-screen bg-background text-foreground">
       <SEO
-        title="Zoot Care+ - Premium recurring home care and ZootCred"
-        description="Join Zoot Care+ for saved home memory, preferred Zooter continuity, priority support and ledger-backed ZootCred add-on credit."
+        title="Xoot Care+ - Premium recurring home care and XootCred"
+        description="Join Xoot Care+ for saved home memory, preferred Xooter continuity, priority support and ledger-backed XootCred add-on credit."
         canonical="/care-plus"
       />
       <Navbar />
@@ -108,7 +108,7 @@ const CarePlus = () => {
                 <CarePlusMark /> keeps your home ready.
               </h1>
               <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg md:text-xl">
-                A real membership layer for repeat households: saved home memory, priority support, favourite Zooter continuity and ledger-backed ZootCred.
+                A real membership layer for repeat households: saved home memory, priority support, favourite Xooter continuity and ledger-backed XootCred.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 {state.status === "unauthenticated" ? (
@@ -189,7 +189,7 @@ const CarePlus = () => {
             <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
                 <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">Compare</p>
-                <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Standard Zoot vs <CarePlusMark /></h2>
+                <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Standard Xoot vs <CarePlusMark /></h2>
               </div>
               <p className="max-w-md text-sm text-muted-foreground">Care+ adds continuity, priority handling and ledger-backed rewards to ordinary cleaning workflows.</p>
             </div>
@@ -226,10 +226,10 @@ const CarePlus = () => {
 
         <section className="bg-background py-20 md:py-28">
           <div className="container grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div className="rounded-[2rem] gradient-sage p-6 text-primary-foreground shadow-warm sm:p-8 md:p-12">
+            <div className="rounded-4xl gradient-sage p-6 text-primary-foreground shadow-warm sm:p-8 md:p-12">
               <Sparkles className="mb-5 h-8 w-8" />
               <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Home care should not reset every time.</h2>
-              <p className="mt-4 max-w-2xl text-base opacity-90 sm:text-lg">Care+ keeps the useful context in the app: household notes, favourite people, ZootCred, property profiles and support handoff history.</p>
+              <p className="mt-4 max-w-2xl text-base opacity-90 sm:text-lg">Care+ keeps the useful context in the app: household notes, favourite people, XootCred, property profiles and support handoff history.</p>
               <Button asChild size="lg" variant="secondary" className="mt-8 h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => haptic("success")}>
                 <Link to={state.status === "unauthenticated" ? "/auth" : "/app/plans"}>{state.status === "active" ? "Manage Care+" : "Join Care+ membership"}</Link>
               </Button>
@@ -250,9 +250,9 @@ const CarePlus = () => {
 
 type CarePlusHook = ReturnType<typeof useCarePlus>;
 type HouseholdHook = ReturnType<typeof useHouseholdOperatingLayer>;
-type ZootCredHook = ReturnType<typeof useZootCred>;
+type XootCredHook = ReturnType<typeof useXootCred>;
 
-const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlus: CarePlusHook; household: HouseholdHook; zootCred: ZootCredHook; onJoin: () => Promise<void> }) => {
+const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlus: CarePlusHook; household: HouseholdHook; zootCred: XootCredHook; onJoin: () => Promise<void> }) => {
   const state = carePlus.state;
 
   if (state.status === "unauthenticated") {
@@ -285,7 +285,7 @@ const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlu
       <Card className="rounded-3xl border-destructive/25 bg-destructive/10 p-6 shadow-card">
         <ShieldCheck className="mb-5 h-8 w-8 text-destructive" />
         <h2 className="font-display text-3xl font-bold">Payment update needed</h2>
-        <p className="mt-3 text-sm text-muted-foreground">Care+ is past due. Update payment to restore priority handling and monthly add-on credit.</p>
+        <p className="mt-3 text-sm text-muted-foreground">Care+ is past due. Update payment to restore priority handling and your remaining add-on credit.</p>
         <p className="mt-4 text-sm font-semibold">Last renewal date: {formatDate(state.membership.renewsAt)}</p>
         <Button asChild className="mt-6 rounded-full">
           <Link to="/app/support">Contact support</Link>
@@ -312,15 +312,15 @@ const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlu
         </div>
         <div className="grid gap-3 text-center sm:grid-cols-3">
           <Metric label="Renews" value={formatDate(state.membership.renewsAt)} />
-          <Metric label="ZootCred" value={zootCred.loading ? "..." : formatZAR(zootCred.availableBalance)} />
-          <Metric label="Monthly credit" value={zootCred.loading ? "..." : formatZAR(zootCred.monthlyCredit)} />
+          <Metric label="XootCred" value={zootCred.loading ? "..." : formatZAR(zootCred.availableBalance)} />
+          <Metric label="Welcome credit" value={zootCred.loading ? "..." : formatZAR(zootCred.welcomeCredit)} />
         </div>
-        <p className="mt-4 text-xs text-background/70">Monthly credit expiry: {formatDate(zootCred.monthlyCreditExpiresAt)}</p>
+        <p className="mt-4 text-xs text-background/70">Welcome credit expires: {formatDate(zootCred.welcomeCreditExpiresAt)}</p>
       </Card>
 
       <div className="grid gap-5 md:grid-cols-2">
         <Card className="rounded-3xl border-border/70 bg-card/90 p-5 shadow-card">
-          <p className="text-sm font-semibold text-sage-deep">Favourite Zooter</p>
+          <p className="text-sm font-semibold text-sage-deep">Favourite Xooter</p>
           {state.favourite ? (
             <>
               <h3 className="mt-2 font-display text-2xl font-bold">{state.favourite.name}</h3>
@@ -330,7 +330,7 @@ const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlu
               </div>
             </>
           ) : (
-            <p className="mt-2 text-sm text-muted-foreground">Save a Zooter from My Zooters to make repeat bookings easier.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Save a Xooter from My Xooters to make repeat bookings easier.</p>
           )}
         </Card>
 
@@ -409,13 +409,13 @@ const CarePlusSignupPass = ({
         : "Your Care+ pass is ready";
   const body =
     mode === "guest"
-      ? "Create your account to start Care+ setup with Home Memory, priority support, favourite Zooter continuity and member ZootCred."
+      ? "Create your account to start Care+ setup with Home Memory, priority support, favourite Xooter continuity and member XootCred."
       : mode === "rejoin"
         ? `Your previous membership ended on ${formatDate(cancelledAt)}. Rejoin to restore Home Memory, priority context and member add-on credit.`
         : "Join to make repeat cleaning feel remembered, protected and easier to rebook.";
 
   return (
-    <div className="liquid-glass-shell zoot-concierge-panel rounded-[2rem] p-5 shadow-warm sm:p-6">
+    <div className="liquid-glass-shell zoot-concierge-panel rounded-4xl p-5 shadow-warm sm:p-6">
       <div className="liquid-glass-readable">
         <div className="rounded-[1.6rem] border border-white/20 bg-foreground p-5 text-background shadow-warm sm:p-6">
           <div className="flex items-start justify-between gap-4">
@@ -430,7 +430,7 @@ const CarePlusSignupPass = ({
           </div>
 
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
-            {["Home Memory", "Priority support", "R30 monthly credit", "Favourite Zooter"].map((item) => (
+            {["Home Memory", "Priority support", "R30 welcome credit", "Favourite Xooter"].map((item) => (
               <div key={item} className="rounded-2xl bg-background/10 px-3 py-2 text-sm font-semibold">
                 {item}
               </div>

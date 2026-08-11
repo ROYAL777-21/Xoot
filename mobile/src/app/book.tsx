@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { ServiceAreaMap } from '@/components/service-area-map';
-import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
+import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function BookScreen() {
@@ -12,14 +12,14 @@ export default function BookScreen() {
   const assistantStarted = params.intent === 'book_clean' || Boolean(params.service || requestedDate || params.area);
 
   return (
-    <ZootScreen>
+    <XootScreen>
       {assistantStarted ? (
         <LiquidCard>
           <Eyebrow>Siri / Gemini handoff</Eyebrow>
           <Title>Voice booking started.</Title>
           <Body muted>
-            Zoot opened a {serviceLabel} request{requestedDate ? ` for ${requestedDate}` : ''}. Confirm your address,
-            arrival time, Zooter and payment inside the app so private household and payment data stay protected.
+            Xoot opened a {serviceLabel} request{requestedDate ? ` for ${requestedDate}` : ''}. Confirm your address,
+            arrival time, Xooter and payment inside the app so private household and payment data stay protected.
           </Body>
           <StatusPill tone="success">Safe app confirmation required</StatusPill>
         </LiquidCard>
@@ -55,7 +55,7 @@ export default function BookScreen() {
         </Body>
         <ServiceAreaMap />
       </LiquidCard>
-    </ZootScreen>
+    </XootScreen>
   );
 }
 

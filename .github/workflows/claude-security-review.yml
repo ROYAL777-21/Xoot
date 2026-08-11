@@ -1,0 +1,91 @@
+name: Claude Security Review
+
+# Anthropic's claude-code-security-review action (§9 of docs/xoot-master-brief.md).
+# This is a GitHub Action, not a Claude Code skill — it lives here, not in .claude/skills/.
+#
+# PREREQUISITE: CLAUDE_API_KEY must be set as a **GitHub Actions repository secret** —
+# Settings → Secrets and variables → Actions → New repository secret. Not a Supabase secret,
+# and not an environment variable on any Supabase project: `secrets.*` below reads only from
+# GitHub. Setting it anywhere else leaves this workflow exactly as it is now.
+#
+# It must also be an Anthropic key. `anthropics/claude-code-security-review` calls the Claude
+# API directly, so an OpenAI or OpenRouter key cannot drive it — there is no base-URL input to
+# point it elsewhere.
+#
+# HOW TO TELL IT IS STILL UNSET, WITHOUT LOOKING AT SETTINGS: read the duration. Measured on
+# PR #39, 2026-08-08 — `security-review` completed in **4 seconds** (17:45:40 → 17:45:44) and
+# reported success. That is the guard step below skipping, not a review. A real run reads the
+# diff and takes minutes. A green tick here means nothing until that number changes.
+#
+# ── AND A SECOND WAY IT PASSES WITHOUT READING ANYTHING, found 2026-08-10 ──────────────────
+# The key was set. The run took 16 seconds and was still green, and the log said:
+#
+#   ClaudeCode has already run on PR #39 (found marker file), forcing disable to avoid false
+#   positives
+#   ClaudeCode is disabled for this run
+#
+# The action caches a per-PR marker (`claudecode-<repo>-pr-<n>-<sha>`) and, with
+# `run-every-commit` false, reviews a PR **once**. The marker had been written by one of the
+# earlier keyless runs, so the first run that could actually review was told not to.
+#
+# `run-every-commit: true` below is the fix. It costs a review per push on a long-lived branch,
+# which is the right trade: this repo's whole problem with this check has been green ticks that
+# read nothing, twice over now. If the cost ever bites, narrow the trigger — do not re-introduce
+# "review once and trust the marker".
+#
+# The gate that does not depend on any of this is `.github/workflows/semgrep.yml`: no key, no
+# quota, no vendor, and its rules live in `.semgrep/rules/` where they can be read. This
+# workflow is kept because a language model reading a diff finds a different class of defect
+# than a pattern matcher does — but it is a bonus, not the coverage.
+#
+# The upstream action is explicitly NOT hardened against prompt injection, so this only
+# runs on same-repo PRs. Fork PRs are skipped: they carry untrusted diffs and would not
+# receive the secret anyway.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: claude-security-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  security-review:
+    # Skip forks (untrusted diff + no secret access) and skip when the key is absent,
+    # so a missing secret does not show up as a red check on every PR.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for API key
+        id: guard
+        env:
+          KEY: ${{ secrets.CLAUDE_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "CLAUDE_API_KEY not set — skipping security review." >> "$GITHUB_STEP_SUMMARY"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.run == 'true'
+        with:
+          fetch-depth: 0
+
+      # Pinned to a commit rather than @main: this action runs with pull-requests: write.
+      - uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda
+        if: steps.guard.outputs.run == 'true'
+        with:
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          comment-pr: true
+          # Review every push, not once per PR. See the marker-file note in the header: the
+          # default made the first key-enabled run skip itself because an earlier keyless run had
+          # already written the marker.
+          run-every-commit: true
+          exclude-directories: 'node_modules,dist,build,.claude/skills,ios/Pods,android'

@@ -22,4 +22,4 @@ Disallow: /zooter/profile
 Disallow: /zooter/training
 Allow: /zooter/apply
 
-Sitemap: https://zoothome.co.za/sitemap.xml
+Sitemap: https://xoot.co.za/sitemap.xml

@@ -20,7 +20,7 @@ export const Services = () => (
           Specialists in cleaning the spaces you live, host and work in.
         </h2>
         <p className="text-lg text-muted-foreground mt-4">
-          Homes, offices and Airbnbs in the current Zoot launch area, with vetting, ratings, arrival tracking and completion proof where required.
+          Homes, offices and Airbnbs in the current Xoot launch area, with vetting, ratings, arrival tracking and completion proof where required.
         </p>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">

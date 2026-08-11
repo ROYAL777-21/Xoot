@@ -57,7 +57,7 @@ export const captureAnalyticsEvent = (name: AnalyticsEventName, properties: Anal
   posthog.capture(name, sanitiseProperties(name, properties));
 };
 
-export function ZootAnalyticsProvider({ children }: { children: ReactNode }) {
+export function XootAnalyticsProvider({ children }: { children: ReactNode }) {
   if (!isPostHogEnabled) return <>{children}</>;
 
   return (

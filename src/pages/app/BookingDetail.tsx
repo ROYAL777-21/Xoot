@@ -6,12 +6,16 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle, Navigation, Share2 } from "lucide-react";
-import { resolvePhoto } from "@/components/zoot/ZooterCard";
+import { resolvePhoto } from "@/components/zoot/XooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { BookingChat } from "@/components/zoot/BookingChat";
-import { deriveZooterBadges, requiresCompletionPhotos } from "@/lib/trust";
+import { VoiceCallPanel } from "@/components/zoot/VoiceCallPanel";
+import { FareSplitPanel } from "@/components/zoot/FareSplitPanel";
+import { SosButton } from "@/components/zoot/SosButton";
+import { TipCard } from "@/components/zoot/TipCard";
+import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
 import { canAccessSensitiveBookingData } from "@/lib/operations";
-import { notifyBookingLiveActivity, type ZootBookingLiveActivityStatus } from "@/lib/native-live-activity";
+import { notifyBookingLiveActivity, type XootBookingLiveActivityStatus } from "@/lib/native-live-activity";
 import {
   buildBookingEtaShareText,
   createNativeBookingActionPayload,
@@ -20,6 +24,8 @@ import {
   type NativeBookingActionInput,
 } from "@/lib/native-booking-actions";
 import { haptic } from "@/lib/haptics";
+import { buildTipRow, canOfferTip } from "@/lib/tipping";
+import { formatRand } from "@/lib/xoot-pricing";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 import { isOptionalNativePlatform } from "@/lib/optional-capacitor";
 import { getClientVisibleStatus, normaliseBookingStatus, type BookingStatus } from "@/lib/booking-state-machine";
@@ -40,7 +46,7 @@ type MaskedCallDetails = {
 };
 
 const statusSteps = [
-  { keys: ["contractor_accepted", "confirmed"], label: "Zooter confirmed" },
+  { keys: ["contractor_accepted", "confirmed"], label: "Xooter confirmed" },
   { keys: ["en_route", "enroute"], label: "On the way" },
   { keys: ["arrived"], label: "Arrived" },
   { keys: ["in_progress"], label: "Job started" },
@@ -48,8 +54,8 @@ const statusSteps = [
 ];
 
 const statusLabel: Record<string, string> = {
-  confirmed: "Zooter confirmed",
-  contractor_accepted: "Zooter confirmed",
+  confirmed: "Xooter confirmed",
+  contractor_accepted: "Xooter confirmed",
   enroute: "On the way",
   en_route: "On the way",
   arrived: "Arrived",
@@ -60,7 +66,7 @@ const statusLabel: Record<string, string> = {
   pending: "Pending confirmation",
 };
 
-const liveActivityStatuses: ZootBookingLiveActivityStatus[] = [
+const liveActivityStatuses: XootBookingLiveActivityStatus[] = [
   "confirmed",
   "enroute",
   "arrived",
@@ -71,13 +77,13 @@ const liveActivityStatuses: ZootBookingLiveActivityStatus[] = [
   "pending",
 ];
 
-const toLiveActivityStatus = (status: string): ZootBookingLiveActivityStatus =>
+const toLiveActivityStatus = (status: string): XootBookingLiveActivityStatus =>
   status === "en_route"
     ? "enroute"
     : status === "contractor_accepted" || status === "assigned"
       ? "confirmed"
-      : liveActivityStatuses.includes(status as ZootBookingLiveActivityStatus)
-        ? (status as ZootBookingLiveActivityStatus)
+      : liveActivityStatuses.includes(status as XootBookingLiveActivityStatus)
+        ? (status as XootBookingLiveActivityStatus)
         : "pending";
 
 const getCanonicalStatus = (status: unknown): BookingStatus | null => normaliseBookingStatus(status);
@@ -87,10 +93,10 @@ const getVisibleStatusLabel = (status: unknown) => {
   return canonical ? getClientVisibleStatus(canonical) : statusLabel[String(status)] ?? "Pending confirmation";
 };
 
-const liveActivityNextStep: Record<ZootBookingLiveActivityStatus, string> = {
+const liveActivityNextStep: Record<XootBookingLiveActivityStatus, string> = {
   confirmed: "We will keep your booking ready and protected.",
-  enroute: "Your Zooter is on the way. Access notes stay inside the app.",
-  arrived: "Your Zooter has arrived and is preparing to begin.",
+  enroute: "Your Xooter is on the way. Access notes stay inside the app.",
+  arrived: "Your Xooter has arrived and is preparing to begin.",
   in_progress: "Your home-care visit is in progress.",
   completed: "Your booking is complete. Review and photo proof are available in-app.",
   cancelled: "Support can help review the next available option.",
@@ -111,6 +117,7 @@ const BookingDetail = () => {
   const [review, setReview] = useState<Review | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [tipCents, setTipCents] = useState<number | null>(null);
   const [incidentType, setIncidentType] = useState("poor_quality");
   const [incidentNotes, setIncidentNotes] = useState("");
   const [loading, setLoading] = useState(true);
@@ -123,11 +130,11 @@ const BookingDetail = () => {
     if (!user || !id) return;
     const [{ data }, { data: zooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
       supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
-      (supabase as any).from("booking_zooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
+      supabase.from("booking_zooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
       supabase.from("messages").select("*").eq("booking_id", id).order("created_at"),
-      (supabase as any).from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
-      (supabase as any).from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
-      (supabase as any).from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
+      supabase.from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
+      supabase.from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
+      supabase.from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
     ]);
     if (!data) { navigate("/app/bookings"); return; }
     setBooking({ ...data, zooter: zooter ?? null });
@@ -199,7 +206,7 @@ const BookingDetail = () => {
 
     try {
       if (typeof navigatorWithShare.share === "function") {
-        await navigatorWithShare.share({ title: "Zoot booking update", text: shareText, url: shareUrl });
+        await navigatorWithShare.share({ title: "Xoot booking update", text: shareText, url: shareUrl });
         toast.success("ETA shared");
         return;
       }
@@ -242,7 +249,7 @@ const BookingDetail = () => {
       statusLabel: statusLabel[status] ?? status,
       serviceName: serviceNameForBooking(booking),
       zooterName: booking.zooter?.name,
-      propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Zoot home",
+      propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Xoot home",
       suburb: booking.suburb,
       scheduledAt: booking.scheduled_at,
       etaMinutes: liveStatus === "enroute" ? eta : undefined,
@@ -321,7 +328,7 @@ const BookingDetail = () => {
 
   const submitReview = async () => {
     if (!user || !id || !booking?.zooter_id) return;
-    const { data: savedReview, error } = await (supabase as any).from("post_job_reviews").insert({
+    const { data: savedReview, error } = await supabase.from("post_job_reviews").insert({
       booking_id: id,
       user_id: user.id,
       zooter_id: booking.zooter_id,
@@ -333,6 +340,35 @@ const BookingDetail = () => {
     }).select("id, rating, notes").single();
     if (error) return toast.error(error.message);
     setReview(savedReview as Review);
+
+    // The tip is a second write, and deliberately not allowed to undo the first. The
+    // rating is the record that matters for trust and safety; losing it because a tip
+    // failed would be the worse outcome, so this reports and carries on rather than
+    // rolling back or blocking the follow-up routing below.
+    const tipRow =
+      canOfferTip() && booking
+        ? buildTipRow({ bookingId: id, userId: user.id, zooterId: booking.zooter_id ?? null, cents: tipCents })
+        : null;
+
+    if (tipRow) {
+      // `booking_tips`, not a column on `bookings` — RLS is row-level, so a tip stored
+      // on the booking would be readable by the assigned Xooter immediately, which is
+      // exactly what the founder ruled against. See the migration for the full reason.
+      //
+      // The `as any` that used to be here is gone: the migration is applied on both projects and
+      // the table is in the generated types, so the cast would now hide real column mismatches
+      // rather than work around a missing type.
+      //
+      // `canOfferTip()` still gates this — the schema existing is not the same as tipping being
+      // switched on, and `TIP_READINESS` remains the switch for that.
+      const { error: tipError } = await supabase.from("booking_tips").insert(tipRow);
+      if (tipError) {
+        toast.warning("Review saved. The tip did not go through — you have not been charged.");
+      } else {
+        haptic("success");
+      }
+    }
+
     if (reviewRating <= 2) {
       try {
         await invokeOpsWorkflow({
@@ -352,7 +388,7 @@ const BookingDetail = () => {
     const path = `${id}/${photoType}-${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("booking-completion-photos").upload(path, file, { upsert: true });
     if (error) { setUploading(null); toast.error(error.message); return; }
-    const { error: insertError } = await (supabase as any).from("booking_completion_photos").insert({ booking_id: id, zooter_id: booking.zooter_id, photo_type: photoType, storage_path: path });
+    const { error: insertError } = await supabase.from("booking_completion_photos").insert({ booking_id: id, zooter_id: booking.zooter_id, photo_type: photoType, storage_path: path });
     setUploading(null);
     if (insertError) return toast.error(insertError.message);
     toast.success(`${photoType} photo uploaded`);
@@ -378,7 +414,19 @@ const BookingDetail = () => {
   const timeline = events.length ? events : [{ id: "current", status: canonicalStatus ?? booking.status, label: visibleStatus, created_at: booking.updated_at }];
   const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
   const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
-  const isAssignedZooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
+  const isAssignedXooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
+  /**
+   * The window where someone is on their way to, or inside, the home.
+   *
+   * The same window masked calling uses, and for the same reason. Deliberately not gated on
+   * role: `raise-sos-alert` derives customer-or-Xooter from the session, and a Xooter alone in
+   * a stranger's house needs this at least as much as the customer does.
+   *
+   * Renders nothing until `canArmSos()` is true — see `SosButton`. It is placed now so that
+   * advancing readiness is the only step left, rather than readiness plus remembering to put
+   * the control on a screen.
+   */
+  const activeVisit = Boolean(canonicalStatus && ["en_route", "in_progress"].includes(canonicalStatus));
   const maskedCallAvailable = Boolean(canonicalStatus && ["en_route", "in_progress"].includes(canonicalStatus) && canAccessSensitiveBookingData({
     scheduledAt: booking.scheduled_at,
     status: booking.status,
@@ -391,10 +439,14 @@ const BookingDetail = () => {
     <div className="container py-6 lg:py-10 max-w-5xl">
       <Button variant="ghost" onClick={() => navigate("/app/bookings")} className="mb-4 -ml-2"><ArrowLeft className="h-4 w-4 mr-1" /> All bookings</Button>
 
+      {/* Above the fold, before the map and the timeline. Anything that has to be scrolled to
+          is not an emergency control. */}
+      {activeVisit && <SosButton bookingId={id} className="mb-5" />}
+
       <div className="grid lg:grid-cols-[1fr_400px] gap-5">
         <div className="space-y-5">
           <Card className="rounded-3xl overflow-hidden border-border">
-            <div className="relative h-64 bg-gradient-to-br from-sage/20 via-accent-soft to-cream">
+            <div className="relative h-64 bg-linear-to-br from-sage/20 via-accent-soft to-cream">
               <svg className="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 400 250">
                 <path d="M0 120 Q100 80 200 130 T400 110" stroke="hsl(var(--sage-deep))" strokeWidth="2" fill="none" />
                 <path d="M50 0 L120 250" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.4" />
@@ -403,10 +455,10 @@ const BookingDetail = () => {
               <div className="absolute top-1/3 left-1/4 grid place-items-center h-10 w-10 rounded-full bg-primary text-primary-foreground shadow-warm animate-pulse"><MapPin className="h-5 w-5" /></div>
               <div className="absolute bottom-1/4 right-1/3 grid place-items-center h-10 w-10 rounded-full bg-foreground text-background shadow-warm"><span className="text-xs font-bold">YOU</span></div>
               <div className="absolute top-3 left-3 right-3 flex justify-between">
-                <div className="rounded-full bg-background/95 backdrop-blur px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-card">
+                <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-card">
                   <span className="h-2 w-2 rounded-full bg-sage animate-pulse" />{canonicalStatus === "en_route" ? `Arriving in ${eta} min` : visibleStatus}
                 </div>
-                <div className="rounded-full bg-background/95 backdrop-blur px-3 py-1.5 text-xs font-bold shadow-card">R{Number(booking.price).toFixed(0)}</div>
+                <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold shadow-card">R{Number(booking.price).toFixed(0)}</div>
               </div>
             </div>
 
@@ -416,23 +468,31 @@ const BookingDetail = () => {
                 <div className="flex-1 min-w-0">
                   <p className="font-display font-bold text-lg">{z.name}</p>
                   <p className="text-sm text-muted-foreground capitalize flex items-center gap-2">{z.role}<span className="flex items-center gap-1"><Star className="h-3 w-3 fill-primary text-primary" /> {Number(z.rating).toFixed(2)}</span></p>
-                  <div className="mt-2"><TrustBadges badges={deriveZooterBadges(z)} limit={4} /></div>
+                  <div className="mt-2"><TrustBadges badges={deriveXooterBadges(z)} limit={4} /></div>
                 </div>
               </div>
             )}
 
             <div className="px-5 pb-5 grid grid-cols-2 gap-2">
-              {isAssignedZooter && canonicalStatus === "contractor_accepted" && <Button onClick={() => setStatus("en_route")} variant="outline" className="rounded-xl">On the way</Button>}
-              {isAssignedZooter && canonicalStatus === "en_route" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
-              {isAssignedZooter && canonicalStatus === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
-              {isAssignedZooter && canonicalStatus === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
+              {isAssignedXooter && canonicalStatus === "contractor_accepted" && <Button onClick={() => setStatus("en_route")} variant="outline" className="rounded-xl">On the way</Button>}
+              {isAssignedXooter && canonicalStatus === "en_route" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
+              {isAssignedXooter && canonicalStatus === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
+              {isAssignedXooter && canonicalStatus === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl gradient-warm col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
               {maskedCallAvailable && (
                 <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2">
                   {requestingCall ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Phone className="h-4 w-4 mr-1" />}
-                  Request masked call
+                  Call by phone instead
                 </Button>
               )}
             </div>
+            {/*
+              In-app calling sits above the phone route, not beside it, because they are not equal
+              options: this one needs no number pool, costs nothing to provision and works on wifi,
+              while the masked-PSTN path rents numbers and carries the Twilio Proxy end-of-life
+              question. Same eligibility for both — `maskedCallAvailable` is passed in rather than
+              recomputed, so the two transports cannot drift into disagreeing about who may call.
+            */}
+            {id && <VoiceCallPanel bookingId={id} available={maskedCallAvailable} />}
             {maskedCall?.proxy_numbers && (
               <div className="mx-5 mb-5 rounded-2xl border border-border bg-muted/35 p-3 text-sm">
                 <p className="mb-2 font-semibold">Masked call proxy numbers</p>
@@ -442,13 +502,23 @@ const BookingDetail = () => {
                     <p className="font-medium">{maskedCall.proxy_numbers.client ?? "Pending Twilio assignment"}</p>
                   </div>
                   <div className="rounded-xl bg-background/75 p-2">
-                    <p className="text-xs text-muted-foreground">Zooter proxy</p>
+                    <p className="text-xs text-muted-foreground">Xooter proxy</p>
                     <p className="font-medium">{maskedCall.proxy_numbers.zooter ?? "Pending Twilio assignment"}</p>
                   </div>
                 </div>
               </div>
             )}
           </Card>
+
+          {/* Splitting is a payment relationship, not an access grant — the panel hides itself
+              once the booking is being paid, since there is then nothing left to divide. */}
+          {id && booking && (
+            <FareSplitPanel
+              bookingId={id}
+              totalRands={Number(booking.price ?? 0)}
+              paymentStatus={booking.payment_status}
+            />
+          )}
 
           <Card className="rounded-3xl p-5">
             <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Arrival tracking</h2>
@@ -502,7 +572,10 @@ const BookingDetail = () => {
                     </select>
                   </div>
                   <Input value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} placeholder="Anything the team should know?" />
-                  <Button onClick={submitReview} className="rounded-xl gradient-warm">Submit review</Button>
+                  <TipCard value={tipCents} onChange={setTipCents} className="pt-1" />
+                  <Button onClick={submitReview} className="rounded-xl gradient-warm">
+                    {tipCents === null ? "Submit review" : `Submit review and tip ${formatRand(tipCents)}`}
+                  </Button>
                 </div>
               )}
             </Card>

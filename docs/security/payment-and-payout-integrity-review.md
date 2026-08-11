@@ -8,7 +8,7 @@ Reviewed: 2026-07-02
 - Payment status changes require provider confirmation or verified provider webhook.
 - Refunds, payouts, manual payment confirmation, and payout-account changes require audited admin actions and human approval.
 - Provider events must be idempotent, signed, replay-aware where possible, and reconciled.
-- ZootCred debits must not create a negative available balance.
+- XootCred debits must not create a negative available balance.
 
 ## Current State
 

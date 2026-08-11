@@ -6,7 +6,7 @@
 - [ ] Feature flags and kill switches exist.
 - [ ] RLS and role tests pass.
 - [ ] Sensitive household access is not exposed.
-- [ ] No booking, payment, refund, Care+, ZootCred, Booking Cover or payout action is possible through chat.
+- [ ] No booking, payment, refund, Care+, XootCred, Booking Cover or payout action is possible through chat.
 - [ ] Human handoff is tested.
 - [ ] `support_handoff_contexts` migration and `create-concierge-handoff` Edge Function are deployed to staging.
 - [ ] Handoff controls are enabled in staging only after support owner approval.

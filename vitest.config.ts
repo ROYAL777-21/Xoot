@@ -4,6 +4,11 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  // NOTE: `src/lib/mobile-*.test.ts` import shared helpers from `mobile/src/lib`.
+  // Vite's oxc transform resolves the nearest tsconfig per file, so those files use
+  // mobile/tsconfig.json, which extends `expo/tsconfig.base`. That means the full
+  // suite requires `bun install` in ./mobile as well as at the root — without it,
+  // both files fail to transform and 8 tests silently do not run.
   test: {
     environment: "jsdom",
     globals: true,

@@ -15,4 +15,4 @@ source_of_truth_reference: docs/agents/source-of-truth/care-plus-policy.md
 
 Care+ guidance must come from `docs/agents/source-of-truth/care-plus-policy.md` once that policy is approved.
 
-Until approval, the Concierge may route users to Care+ and support, but must not promise pricing, benefits, preferred Zooter availability, credits, billing outcomes or cancellation outcomes.
+Until approval, the Concierge may route users to Care+ and support, but must not promise pricing, benefits, preferred Xooter availability, credits, billing outcomes or cancellation outcomes.

@@ -9,16 +9,35 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RequireAuth } from "@/components/RequireAuth";
+import { AppLaunch } from "@/components/zoot/AppLaunch";
 import { AppShell } from "@/components/zoot/AppShell";
 import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
-import { ZootSupportBot } from "@/components/zoot/ZootSupportBot";
-import { ZooterShell } from "@/components/zooter/ZooterShell";
+import { XootSupportBot } from "@/components/zoot/XootSupportBot";
+import { ConciergeProvider } from "@/contexts/ConciergeContext";
+import { XooterShell } from "@/components/zooter/XooterShell";
 import { RequireRole } from "@/components/RequireRole";
-import { ZootAnalyticsProvider } from "@/lib/analytics";
+import { XootAnalyticsProvider } from "@/lib/analytics";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+/**
+ * The kit gallery, dev-only.
+ *
+ * The guard is on the `lazy()` call, not just on the `<Route>`. Guarding only the route left the
+ * `import()` reachable at module scope, and a production build still emitted
+ * `dist/assets/KitGallery-*.js` — unreachable through the router but downloadable by anyone who
+ * reads the assets directory. Measured, not assumed: the first version shipped that chunk.
+ *
+ * With the ternary here `import.meta.env.DEV` folds to `false`, the arrow becomes unreachable,
+ * and Rollup drops the chunk entirely. A design workshop on a live marketplace is unfinished
+ * work on display, not a feature.
+ */
+const KitGallery = import.meta.env.DEV ? lazy(() => import("./pages/dev/KitGallery")) : null;
 const Auth = lazy(() => import("./pages/Auth"));
+const Welcome = lazy(() => import("./pages/Welcome"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const BookingConfirm = lazy(() => import("./pages/BookingConfirm"));
+const CarePlusPaywall = lazy(() => import("./pages/CarePlusPaywall"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const AuthReset = lazy(() => import("./pages/AuthReset"));
 const Blog = lazy(() => import("./pages/Blog"));
@@ -50,14 +69,14 @@ const Cookies = lazy(() => import("./pages/legal/Cookies"));
 const AcceptableUse = lazy(() => import("./pages/legal/AcceptableUse"));
 const AiConciergeNotice = lazy(() => import("./pages/legal/AiConciergeNotice"));
 const CarePlusTerms = lazy(() => import("./pages/legal/CarePlusTerms"));
-const ZooterTerms = lazy(() => import("./pages/legal/ZooterTerms"));
-const ZooterApply = lazy(() => import("./pages/zooter/Apply"));
-const ZooterDashboard = lazy(() => import("./pages/zooter/Dashboard"));
-const ZooterJobs = lazy(() => import("./pages/zooter/Jobs"));
-const ZooterTraining = lazy(() => import("./pages/zooter/Training"));
-const ZooterEarnings = lazy(() => import("./pages/zooter/Earnings"));
-const ZooterKyc = lazy(() => import("./pages/zooter/Kyc"));
-const ZooterProfile = lazy(() => import("./pages/zooter/Profile"));
+const XooterTerms = lazy(() => import("./pages/legal/XooterTerms"));
+const XooterApply = lazy(() => import("./pages/zooter/Apply"));
+const XooterDashboard = lazy(() => import("./pages/zooter/Dashboard"));
+const XooterJobs = lazy(() => import("./pages/zooter/Jobs"));
+const XooterTraining = lazy(() => import("./pages/zooter/Training"));
+const XooterEarnings = lazy(() => import("./pages/zooter/Earnings"));
+const XooterKyc = lazy(() => import("./pages/zooter/Kyc"));
+const XooterProfile = lazy(() => import("./pages/zooter/Profile"));
 const AdminKyc = lazy(() => import("./pages/admin/Kyc"));
 const AdminOps = lazy(() => import("./pages/admin/Ops"));
 
@@ -108,14 +127,14 @@ const PreloadCoreRoutes = () => {
 };
 
 const RouteLoading = () => (
-  <div className="fixed inset-x-0 top-0 z-[70] h-1 overflow-hidden bg-primary/10" aria-label="Loading Zoot route">
+  <div className="fixed inset-x-0 top-0 z-70 h-1 overflow-hidden bg-primary/10" aria-label="Loading Xoot route">
     <div className="h-full w-1/3 animate-pulse rounded-r-full bg-primary/70" />
   </div>
 );
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ZootAnalyticsProvider>
+    <XootAnalyticsProvider>
       <HelmetProvider>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange storageKey="zoot-theme">
         <TooltipProvider>
@@ -123,13 +142,21 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <AppLaunch />
               <NativeInteractionLayer />
               <PreloadCoreRoutes />
               <ScrollToTop />
               <AuthProvider>
+                {/* Wraps the routes AND the launcher, so the omnibox inside AppShell and the
+                    Concierge panel at the root share one open state. */}
+                <ConciergeProvider>
                 <Suspense fallback={<RouteLoading />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/welcome" element={<Welcome />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/book/confirm" element={<BookingConfirm />} />
+                  <Route path="/care-plus/join" element={<CarePlusPaywall />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/auth/reset" element={<AuthReset />} />
@@ -151,7 +178,7 @@ const App = () => (
                   <Route path="/legal/acceptable-use" element={<AcceptableUse />} />
                   <Route path="/legal/ai-concierge" element={<AiConciergeNotice />} />
                   <Route path="/legal/care-plus-terms" element={<CarePlusTerms />} />
-                  <Route path="/legal/zooter-terms" element={<ZooterTerms />} />
+                  <Route path="/legal/zooter-terms" element={<XooterTerms />} />
                   <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
@@ -167,31 +194,36 @@ const App = () => (
                   <Route path="/app/insurance" element={<RequireAuth><AppShell><Insurance /></AppShell></RequireAuth>} />
                   <Route path="/app/profile" element={<RequireAuth><AppShell><CustomerProfile /></AppShell></RequireAuth>} />
 
-                  {/* Zooter portal */}
-                  <Route path="/zooter/apply" element={<RequireAuth><ZooterApply /></RequireAuth>} />
-                  <Route path="/zooter" element={<RequireRole role="zooter"><ZooterShell><ZooterDashboard /></ZooterShell></RequireRole>} />
-                  <Route path="/zooter/jobs" element={<RequireRole role="zooter"><ZooterShell><ZooterJobs /></ZooterShell></RequireRole>} />
-                  <Route path="/zooter/training" element={<RequireAuth><ZooterShell><ZooterTraining /></ZooterShell></RequireAuth>} />
-                  <Route path="/zooter/earnings" element={<RequireRole role="zooter"><ZooterShell><ZooterEarnings /></ZooterShell></RequireRole>} />
-                  <Route path="/zooter/kyc" element={<RequireAuth><ZooterShell><ZooterKyc /></ZooterShell></RequireAuth>} />
-                  <Route path="/zooter/profile" element={<RequireRole role="zooter"><ZooterShell><ZooterProfile /></ZooterShell></RequireRole>} />
+                  {/* Xooter portal */}
+                  <Route path="/zooter/apply" element={<RequireAuth><XooterApply /></RequireAuth>} />
+                  <Route path="/zooter" element={<RequireRole role="zooter"><XooterShell><XooterDashboard /></XooterShell></RequireRole>} />
+                  <Route path="/zooter/jobs" element={<RequireRole role="zooter"><XooterShell><XooterJobs /></XooterShell></RequireRole>} />
+                  <Route path="/zooter/training" element={<RequireAuth><XooterShell><XooterTraining /></XooterShell></RequireAuth>} />
+                  <Route path="/zooter/earnings" element={<RequireRole role="zooter"><XooterShell><XooterEarnings /></XooterShell></RequireRole>} />
+                  <Route path="/zooter/kyc" element={<RequireAuth><XooterShell><XooterKyc /></XooterShell></RequireAuth>} />
+                  <Route path="/zooter/profile" element={<RequireRole role="zooter"><XooterShell><XooterProfile /></XooterShell></RequireRole>} />
 
                   {/* Admin */}
                   <Route path="/admin/kyc" element={<RequireRole role="admin"><AdminKyc /></RequireRole>} />
                   <Route path="/admin/ops" element={<RequireRole role="admin"><AdminOps /></RequireRole>} />
 
+                  {/* Dev only — see the note beside the import. Falls through to NotFound in
+                      production, which is what a stranger typing /dev/kit should get. */}
+                  {KitGallery ? <Route path="/dev/kit" element={<KitGallery />} /> : null}
+
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 </Suspense>
-                <ZootSupportBot />
+                <XootSupportBot />
+                </ConciergeProvider>
               </AuthProvider>
             </BrowserRouter>
           </ErrorBoundary>
         </TooltipProvider>
         </ThemeProvider>
       </HelmetProvider>
-    </ZootAnalyticsProvider>
+    </XootAnalyticsProvider>
   </QueryClientProvider>
 );
 

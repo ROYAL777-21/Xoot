@@ -105,7 +105,7 @@ describe("native booking action helpers", () => {
       updatedAt: "2026-06-08T12:00:00.000Z",
     });
 
-    expect(buildBookingEtaShareText(payload)).toBe("Zoot booking update - On the way - ETA 12 min - Nomsa assigned");
+    expect(buildBookingEtaShareText(payload)).toBe("Xoot booking update - On the way - ETA 12 min - Nomsa assigned");
     expect(buildBookingEtaShareText(payload)).not.toContain("Bath Avenue");
   });
 });

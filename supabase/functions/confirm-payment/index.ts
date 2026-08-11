@@ -189,7 +189,7 @@ Deno.serve(async (req) => {
         userId: payment.user_id,
         kind: "payment_confirmed",
         title: "Payment confirmed",
-        body: "Your Zoot payment is confirmed. We are now finalising the booking assignment.",
+        body: "Your Xoot payment is confirmed. We are now finalising the booking assignment.",
         link: `/app/bookings/${payment.booking_id}`,
       });
 
@@ -199,7 +199,7 @@ Deno.serve(async (req) => {
         event_type: "payment_confirmed_assignment_search",
         channel: "in_app",
         owner: "Scheduling & Allocation Agent",
-        stack_tool: "Zoot assignment queue",
+        stack_tool: "Xoot assignment queue",
         payload: { booking_id: payment.booking_id, payment_record_id: payment.id },
         status: "queued",
         approval_required: false,

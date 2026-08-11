@@ -2,22 +2,22 @@ import { LegalLayout, LegalList, LegalSection } from "./LegalLayout";
 
 const AcceptableUse = () => (
   <LegalLayout
-    title="Zoot Acceptable Use Policy"
-    description="Rules for safe, lawful, respectful use of Zoot bookings, support, Concierge, Zooter onboarding, reviews, communication, and property workflows."
+    title="Xoot Acceptable Use Policy"
+    description="Rules for safe, lawful, respectful use of Xoot bookings, support, Concierge, Xooter onboarding, reviews, communication, and property workflows."
     canonical="/legal/acceptable-use"
     eyebrow="Platform rules"
   >
-    <LegalSection title="Use Zoot honestly">
+    <LegalSection title="Use Xoot honestly">
       <LegalList>
-        <li>Provide accurate identity, contact, address, booking, payment, and Zooter application information.</li>
+        <li>Provide accurate identity, contact, address, booking, payment, and Xooter application information.</li>
         <li>Do not create fake accounts, fake bookings, fake reviews, fake referrals, or misleading support claims.</li>
-        <li>Do not attempt to bypass platform payments, safety checks, Zooter onboarding, or support workflows.</li>
+        <li>Do not attempt to bypass platform payments, safety checks, Xooter onboarding, or support workflows.</li>
       </LegalList>
     </LegalSection>
 
     <LegalSection title="Keep people safe">
       <LegalList>
-        <li>No harassment, threats, discrimination, intimidation, stalking, or unsafe conduct toward clients, Zooters, staff, or support reviewers.</li>
+        <li>No harassment, threats, discrimination, intimidation, stalking, or unsafe conduct toward clients, Xooters, staff, or support reviewers.</li>
         <li>No instructions that create unsafe work, illegal entry, unlawful surveillance, or unauthorised handling of private property.</li>
         <li>Report damage, theft concerns, safety incidents, harassment, and access-code issues through protected Support for human review.</li>
       </LegalList>

@@ -4,8 +4,8 @@ slug: "quick-office-cleaning-sandton"
 date: "2026-06-20"
 primaryKeyword: "quick office cleaning Sandton"
 secondaryKeywords: "quick cleaning for my office, office cleaning Sandton, on demand cleaning services for business"
-metaTitle: "Quick Office Cleaning Sandton | Zoot"
-metaDescription: "Decision checklist for offices, studios, salons, clinics, and small teams for Sandton, Rosebank and Hyde Park. A practical Zoot guide for quick office cleaning Sandton without fake claims or pressure tactics."
+metaTitle: "Quick Office Cleaning Sandton | Xoot"
+metaDescription: "Decision checklist for offices, studios, salons, clinics, and small teams for Sandton, Rosebank and Hyde Park. A practical Xoot guide for quick office cleaning Sandton without fake claims or pressure tactics."
 status: "published"
 publishedUrl: "/articles/quick-office-cleaning-sandton"
 ---
@@ -14,7 +14,7 @@ publishedUrl: "/articles/quick-office-cleaning-sandton"
 
 A client meeting is in two hours and the boardroom still looks like yesterday. That is the moment behind the search for quick office cleaning Sandton. The person searching does not want another admin task. They want the space handled, the timing respected, and the outcome to feel calm enough that they can move on with the day.
 
-Zoot's job is to make that easier without pretending every clean is the same. In Sandton, Rosebank and Hyde Park, the difference between a good booking and a stressful one is usually clarity: what matters most, who needs access, what must stay private, and what would make the client feel that the space is ready again.
+Xoot's job is to make that easier without pretending every clean is the same. In Sandton, Rosebank and Hyde Park, the difference between a good booking and a stressful one is usually clarity: what matters most, who needs access, what must stay private, and what would make the client feel that the space is ready again.
 
 ## Start with the pressure, not the keyword
 
@@ -30,27 +30,27 @@ Use this simple rule: if the detail affects trust, timing, safety, or repeat qua
 
 Relevant searches such as quick cleaning for my office, office cleaning Sandton, on demand cleaning services for business are different expressions of the same intent: someone wants a clean that fits a real scenario. The article should answer that scenario with practical guidance, not generic cleaning tips.
 
-## Where Zoot fits
+## Where Xoot fits
 
-Zoot is built around vetted Zooters, in-app communication, saved home or property notes, support routing, booking state visibility, Care+ continuity, and safer handling of sensitive details. Those product choices matter because cleaning is high-trust work. It happens inside homes, guest spaces, offices and private properties.
+Xoot is built around vetted Xooters, in-app communication, saved home or property notes, support routing, booking state visibility, Care+ continuity, and safer handling of sensitive details. Those product choices matter because cleaning is high-trust work. It happens inside homes, guest spaces, offices and private properties.
 
-For repeat clients, Care+ can reduce repeated planning by remembering practical preferences and supporting favourite Zooter workflows where live availability allows it. For hosts and property operators, saved profiles can make the next clean start with context instead of another round of instructions.
+For repeat clients, Care+ can reduce repeated planning by remembering practical preferences and supporting favourite Xooter workflows where live availability allows it. For hosts and property operators, saved profiles can make the next clean start with context instead of another round of instructions.
 
 ## What to ask before you book
 
 Ask: What should the space feel like when the clean is done? Which areas carry the most reputational risk? Are there access notes that need time-limited handling? Is this a once-off reset or the start of a recurring rhythm? Is the requested timing honest for the scope?
 
-Those questions help the client book with confidence and help the Zooter do the right work. They also keep the content useful for people, which is the standard this automation must protect before anything gets published.
+Those questions help the client book with confidence and help the Xooter do the right work. They also keep the content useful for people, which is the standard this automation must protect before anything gets published.
 
 ## Next step
 
-Book an office reset or create a recurring business cleaning rhythm. Keep the booking clear, keep sensitive details protected, and use Zoot to make the next clean easier than the last one.
+Book an office reset or create a recurring business cleaning rhythm. Keep the booking clear, keep sensitive details protected, and use Xoot to make the next clean easier than the last one.
 
 ## FAQ
 
 ### Is quick office cleaning Sandton available in every area?
 
-Availability depends on live Zoot coverage and approved Zooters. Use the app or official launch updates for current coverage rather than assuming every suburb is active.
+Availability depends on live Xoot coverage and approved Xooters. Use the app or official launch updates for current coverage rather than assuming every suburb is active.
 
 ### What should I include in the booking notes?
 
@@ -64,26 +64,26 @@ Choose once-off for a specific moment. Choose recurring or Care+ when the same h
 ---
 
 ---
-title: "Is Zoot Legit? How To Judge A New Cleaning Service Before You Book"
+title: "Is Xoot Legit? How To Judge A New Cleaning Service Before You Book"
 slug: "is-zoot-legit-trust-first-cleaning-south-africa"
 date: "2026-07-10"
-primaryKeyword: "is Zoot legit"
-secondaryKeywords: "Zoot cleaning app, trusted cleaning service South Africa, safe home cleaning app, vetted cleaners Johannesburg"
-metaTitle: "Is Zoot Legit? Trust-First Cleaning In South Africa"
-metaDescription: "A practical trust guide for checking whether Zoot is legit, how bookings should work, and what to verify before using any cleaning app."
+primaryKeyword: "is Xoot legit"
+secondaryKeywords: "Xoot cleaning app, trusted cleaning service South Africa, safe home cleaning app, vetted cleaners Johannesburg"
+metaTitle: "Is Xoot Legit? Trust-First Cleaning In South Africa"
+metaDescription: "A practical trust guide for checking whether Xoot is legit, how bookings should work, and what to verify before using any cleaning app."
 status: "published"
 publishedUrl: "/articles/is-zoot-legit-trust-first-cleaning-south-africa"
 ---
 
-# Is Zoot Legit? How To Judge A New Cleaning Service Before You Book
+# Is Xoot Legit? How To Judge A New Cleaning Service Before You Book
 
-If you are going to let a cleaner into your home, asking whether Zoot is legit is not rude. It is the right question. Home cleaning is not a low-trust purchase. It touches keys, gates, pets, private rooms, payment details, service quality, and the feeling of being safe in your own space.
+If you are going to let a cleaner into your home, asking whether Xoot is legit is not rude. It is the right question. Home cleaning is not a low-trust purchase. It touches keys, gates, pets, private rooms, payment details, service quality, and the feeling of being safe in your own space.
 
-Zoot is being built as a trust-first South African home-care platform. The right way to judge it is not by hype, logos, or a perfect landing page. It is by the operating controls around bookings, payments, Zooter screening, support, privacy, and what happens when something goes wrong.
+Xoot is being built as a trust-first South African home-care platform. The right way to judge it is not by hype, logos, or a perfect landing page. It is by the operating controls around bookings, payments, Xooter screening, support, privacy, and what happens when something goes wrong.
 
 ## The honest answer
 
-Zoot should be treated as a careful new platform rather than a mature national utility. That means you should expect clear service areas, protected account access, honest availability, backend-confirmed payments, in-app communication, and no casual handling of private home details.
+Xoot should be treated as a careful new platform rather than a mature national utility. That means you should expect clear service areas, protected account access, honest availability, backend-confirmed payments, in-app communication, and no casual handling of private home details.
 
 A legitimate cleaning service should tell you what it can do, what it cannot promise yet, how support works, and how your private information is protected. It should not ask for gate codes in public chat, mark payments successful from the frontend, or promise the same person before availability is confirmed.
 
@@ -91,17 +91,17 @@ A legitimate cleaning service should tell you what it can do, what it cannot pro
 
 Before using any cleaning app, check five things: the official website or app route, the service area, the payment path, the support route, and the privacy boundary.
 
-If a service asks you to move routine communication to WhatsApp, pay outside the app, or share sensitive access notes loosely, treat that as a warning sign. Zoot is designed to keep client-Zooter communication inside the app, route support through structured workflows, and keep sensitive details away from push notifications, public pages, and loose messages.
+If a service asks you to move routine communication to WhatsApp, pay outside the app, or share sensitive access notes loosely, treat that as a warning sign. Xoot is designed to keep client-Xooter communication inside the app, route support through structured workflows, and keep sensitive details away from push notifications, public pages, and loose messages.
 
-## What Zoot should never pretend
+## What Xoot should never pretend
 
-Zoot should not pretend that every area is live, every preferred Zooter is available, every payment is confirmed, or every support outcome can be decided by a bot. Those are exactly the kinds of claims that damage trust.
+Xoot should not pretend that every area is live, every preferred Xooter is available, every payment is confirmed, or every support outcome can be decided by a bot. Those are exactly the kinds of claims that damage trust.
 
-If availability, pricing, refunds, Booking Cover, Care+ membership state, or account data cannot be verified live, Zoot should say so and guide you to the approved app flow or a human support route.
+If availability, pricing, refunds, Booking Cover, Care+ membership state, or account data cannot be verified live, Xoot should say so and guide you to the approved app flow or a human support route.
 
 ## Next step
 
-Use the official Zoot website or app, check whether your area is active, avoid off-platform payment or support shortcuts, and keep private household access information inside the approved Zoot flow.
+Use the official Xoot website or app, check whether your area is active, avoid off-platform payment or support shortcuts, and keep private household access information inside the approved Xoot flow.
 
 
 ---
@@ -112,7 +112,7 @@ slug: "sweepsouth-alternatives-south-africa-trust-first-cleaning"
 date: "2026-07-10"
 primaryKeyword: "SweepSouth alternatives South Africa"
 secondaryKeywords: "SweepSouth alternative, cleaning app South Africa, home cleaning Johannesburg, trusted cleaners South Africa"
-metaTitle: "SweepSouth Alternatives South Africa | Zoot Cleaning Guide"
+metaTitle: "SweepSouth Alternatives South Africa | Xoot Cleaning Guide"
 metaDescription: "A fair guide to SweepSouth alternatives in South Africa, with a trust checklist for homes, hosts, offices and property managers."
 status: "published"
 publishedUrl: "/articles/sweepsouth-alternatives-south-africa-trust-first-cleaning"
@@ -130,9 +130,9 @@ Looking for SweepSouth alternatives does not always mean someone had a bad exper
 
 If your problem is a once-off clean, compare availability and service scope. If your problem is a recurring home, compare how preferences, favourite cleaners, and support history are handled. If your problem is an Airbnb, compare turnover notes, photos, access handling, and repeatability.
 
-## Where Zoot is different
+## Where Xoot is different
 
-Zoot is positioning itself as a premium, trust-first home-care operating system rather than a cheap generic marketplace. The product direction focuses on vetted Zooters, Care+ Home Memory, favourite Zooter continuity where available, safer in-app communication, protected access details, ZootCred, Concierge support, and property workflows.
+Xoot is positioning itself as a premium, trust-first home-care operating system rather than a cheap generic marketplace. The product direction focuses on vetted Xooters, Care+ Home Memory, favourite Xooter continuity where available, safer in-app communication, protected access details, XootCred, Concierge support, and property workflows.
 
 That difference matters if you care less about the broadest catalogue and more about a managed, repeatable experience for one home, a set of Airbnb units, a small office, or a property handover.
 
@@ -144,26 +144,26 @@ Do not choose only on price. A low-friction booking is useful, but the expensive
 
 ## Next step
 
-Compare live coverage and choose Zoot where a premium, trust-first workflow fits the job.
+Compare live coverage and choose Xoot where a premium, trust-first workflow fits the job.
 
 
 ---
 
 ---
-title: "SweepSouth Vs Zoot"
+title: "SweepSouth Vs Xoot"
 slug: "sweepsouth-vs-zoot-cleaning-service-comparison"
 date: "2026-07-10"
-primaryKeyword: "SweepSouth vs Zoot"
-secondaryKeywords: "Zoot vs SweepSouth, cleaning service comparison South Africa, home cleaning app comparison, premium cleaning Johannesburg"
-metaTitle: "SweepSouth Vs Zoot | Cleaning Service Comparison"
-metaDescription: "A fair SweepSouth vs Zoot comparison for South African homes, offices, hosts and property managers choosing a cleaning service."
+primaryKeyword: "SweepSouth vs Xoot"
+secondaryKeywords: "Xoot vs SweepSouth, cleaning service comparison South Africa, home cleaning app comparison, premium cleaning Johannesburg"
+metaTitle: "SweepSouth Vs Xoot | Cleaning Service Comparison"
+metaDescription: "A fair SweepSouth vs Xoot comparison for South African homes, offices, hosts and property managers choosing a cleaning service."
 status: "published"
 publishedUrl: "/articles/sweepsouth-vs-zoot-cleaning-service-comparison"
 ---
 
-# SweepSouth Vs Zoot
+# SweepSouth Vs Xoot
 
-SweepSouth and Zoot should not be judged by the same checklist alone. The better choice depends on what you need the cleaning service to remember, protect, and solve.
+SweepSouth and Xoot should not be judged by the same checklist alone. The better choice depends on what you need the cleaning service to remember, protect, and solve.
 
 A fair comparison starts with the job. Are you booking a one-time clean, looking for recurring help, managing an Airbnb turnover, preparing an office, or trying to build a trusted rhythm for one household?
 
@@ -173,11 +173,11 @@ SweepSouth may suit someone who wants a familiar South African platform, broad s
 
 If your priority is immediate access to a mature, established marketplace, check SweepSouth's current service area and booking flow directly before deciding.
 
-## Where Zoot may suit you
+## Where Xoot may suit you
 
-Zoot may suit someone who wants a premium, carefully launched product with saved home or property context, structured support, protected access notes, favourite Zooter continuity where available, Care+ membership value, and a Concierge layer that routes safely rather than guessing.
+Xoot may suit someone who wants a premium, carefully launched product with saved home or property context, structured support, protected access notes, favourite Xooter continuity where available, Care+ membership value, and a Concierge layer that routes safely rather than guessing.
 
-Zoot should be especially relevant for busy homes, Airbnb hosts, small offices, property managers, and people who want the service to become easier every time instead of restarting from zero.
+Xoot should be especially relevant for busy homes, Airbnb hosts, small offices, property managers, and people who want the service to become easier every time instead of restarting from zero.
 
 ## The privacy and support question
 
@@ -187,7 +187,7 @@ When comparing any platform, ask where access notes live, whether push notificat
 
 ## Next step
 
-Choose SweepSouth if its live coverage, service categories, and booking model fit the immediate job. Choose Zoot if your area is active and you want a more trust-dense, premium, repeatable home-care experience with stronger memory and in-app support direction.
+Choose SweepSouth if its live coverage, service categories, and booking model fit the immediate job. Choose Xoot if your area is active and you want a more trust-dense, premium, repeatable home-care experience with stronger memory and in-app support direction.
 
 
 ---
@@ -198,8 +198,8 @@ slug: "airbnb-turnover-cleaning-johannesburg"
 date: "2026-06-20"
 primaryKeyword: "Airbnb turnover cleaning Johannesburg"
 secondaryKeywords: "Airbnb cleaning Johannesburg, guest-ready cleaning, same day Airbnb turnover cleaning"
-metaTitle: "Airbnb Turnover Cleaning Johannesburg | Zoot"
-metaDescription: "Turnover checklist, access notes, linen, photos, and repeat instructions for Rosebank, Sandton, Parkhurst and Melville. A practical Zoot guide for Airbnb turnover cleaning Johannesburg without fake claims or pressure tactics."
+metaTitle: "Airbnb Turnover Cleaning Johannesburg | Xoot"
+metaDescription: "Turnover checklist, access notes, linen, photos, and repeat instructions for Rosebank, Sandton, Parkhurst and Melville. A practical Xoot guide for Airbnb turnover cleaning Johannesburg without fake claims or pressure tactics."
 status: "published"
 publishedUrl: "/articles/airbnb-turnover-cleaning-johannesburg"
 ---
@@ -208,7 +208,7 @@ publishedUrl: "/articles/airbnb-turnover-cleaning-johannesburg"
 
 Checkout was at 10, check-in is at 3, and one missed detail becomes a public review. That is the moment behind the search for Airbnb turnover cleaning Johannesburg. The person searching does not want another admin task. They want the space handled, the timing respected, and the outcome to feel calm enough that they can move on with the day.
 
-Zoot's job is to make that easier without pretending every clean is the same. In Rosebank, Sandton, Parkhurst and Melville, the difference between a good booking and a stressful one is usually clarity: what matters most, who needs access, what must stay private, and what would make the client feel that the space is ready again.
+Xoot's job is to make that easier without pretending every clean is the same. In Rosebank, Sandton, Parkhurst and Melville, the difference between a good booking and a stressful one is usually clarity: what matters most, who needs access, what must stay private, and what would make the client feel that the space is ready again.
 
 ## Start with the pressure, not the keyword
 
@@ -224,27 +224,27 @@ Use this simple rule: if the detail affects trust, timing, safety, or repeat qua
 
 Relevant searches such as Airbnb cleaning Johannesburg, guest-ready cleaning, same day Airbnb turnover cleaning are different expressions of the same intent: someone wants a clean that fits a real scenario. The article should answer that scenario with practical guidance, not generic cleaning tips.
 
-## Where Zoot fits
+## Where Xoot fits
 
-Zoot is built around vetted Zooters, in-app communication, saved home or property notes, support routing, booking state visibility, Care+ continuity, and safer handling of sensitive details. Those product choices matter because cleaning is high-trust work. It happens inside homes, guest spaces, offices and private properties.
+Xoot is built around vetted Xooters, in-app communication, saved home or property notes, support routing, booking state visibility, Care+ continuity, and safer handling of sensitive details. Those product choices matter because cleaning is high-trust work. It happens inside homes, guest spaces, offices and private properties.
 
-For repeat clients, Care+ can reduce repeated planning by remembering practical preferences and supporting favourite Zooter workflows where live availability allows it. For hosts and property operators, saved profiles can make the next clean start with context instead of another round of instructions.
+For repeat clients, Care+ can reduce repeated planning by remembering practical preferences and supporting favourite Xooter workflows where live availability allows it. For hosts and property operators, saved profiles can make the next clean start with context instead of another round of instructions.
 
 ## What to ask before you book
 
 Ask: What should the space feel like when the clean is done? Which areas carry the most reputational risk? Are there access notes that need time-limited handling? Is this a once-off reset or the start of a recurring rhythm? Is the requested timing honest for the scope?
 
-Those questions help the client book with confidence and help the Zooter do the right work. They also keep the content useful for people, which is the standard this automation must protect before anything gets published.
+Those questions help the client book with confidence and help the Xooter do the right work. They also keep the content useful for people, which is the standard this automation must protect before anything gets published.
 
 ## Next step
 
-Book an Airbnb turnover clean and save host instructions in Zoot. Keep the booking clear, keep sensitive details protected, and use Zoot to make the next clean easier than the last one.
+Book an Airbnb turnover clean and save host instructions in Xoot. Keep the booking clear, keep sensitive details protected, and use Xoot to make the next clean easier than the last one.
 
 ## FAQ
 
 ### Is Airbnb turnover cleaning Johannesburg available in every area?
 
-Availability depends on live Zoot coverage and approved Zooters. Use the app or official launch updates for current coverage rather than assuming every suburb is active.
+Availability depends on live Xoot coverage and approved Xooters. Use the app or official launch updates for current coverage rather than assuming every suburb is active.
 
 ### What should I include in the booking notes?
 

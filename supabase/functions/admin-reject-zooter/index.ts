@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
         userId: application.user_id,
         kind: "zooter_application_rejected",
         title: "Application update",
-        body: "Your Zoot contractor application needs attention. Open onboarding for the reviewer notes and next steps.",
+        body: "Your Xoot contractor application needs attention. Open onboarding for the reviewer notes and next steps.",
         link: "/zooter/apply",
       });
     }

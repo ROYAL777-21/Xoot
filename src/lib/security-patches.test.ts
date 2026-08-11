@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { checkRateLimit, resetRateLimitsForTests } from "./rate-limit";
 import { sanitiseInput, sanitiseSearchParam } from "./sanitise";
-import { BookingInput, ProfileUpdateInput, SupportCaseInput, ZooterApplicationInput } from "./validators";
+import { BookingInput, ProfileUpdateInput, SupportCaseInput, XooterApplicationInput } from "./validators";
 
 describe("phase 5 security helpers", () => {
   it("sanitises text and URL params before rendering", () => {
@@ -23,7 +23,7 @@ describe("phase 5 security helpers", () => {
   it("validates critical form payloads", () => {
     expect(BookingInput.safeParse({ service_type: "residential", home_size: "small", address: "12 Long Street, Rosebank", date: "2026-06-14", time: "08:00", extras: [] }).success).toBe(true);
     expect(SupportCaseInput.safeParse({ category: "Booking", description: "Please help me with a booking issue that needs review.", booking_id: "" }).success).toBe(true);
-    const zooterApplication = ZooterApplicationInput.safeParse({ full_name: "Nomsa Dlamini", phone: "+27 82 123 4567", suburb: "Rosebank", years_experience: 5 });
+    const zooterApplication = XooterApplicationInput.safeParse({ full_name: "Nomsa Dlamini", phone: "+27 82 123 4567", suburb: "Rosebank", years_experience: 5 });
     expect(zooterApplication.success).toBe(true);
     expect(zooterApplication.success ? zooterApplication.data.phone : "").toBe("+27821234567");
     const profileUpdate = ProfileUpdateInput.safeParse({ full_name: "Nomsa Dlamini", phone: "082 123 4567", address: "8 Oxford Road, Rosebank" });

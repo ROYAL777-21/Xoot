@@ -129,7 +129,7 @@ export const SensitiveFieldReveal = ({
       <div className="flex items-center gap-2">
         <div className="min-h-10 flex-1 rounded-xl border border-border/70 bg-muted/40 px-3 py-2 text-sm">
           {value ? (
-            <span className="break-words font-semibold text-foreground">{value}</span>
+            <span className="wrap-break-word font-semibold text-foreground">{value}</span>
           ) : (
             <span className="select-none font-display tracking-[0.24em] text-muted-foreground blur-[1px]">••••••</span>
           )}

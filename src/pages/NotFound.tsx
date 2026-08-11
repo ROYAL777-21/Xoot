@@ -12,8 +12,8 @@ const NotFound = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted">
       <SEO
-        title="Page not found - Zoot"
-        description="This Zoot page could not be found."
+        title="Page not found - Xoot"
+        description="This Xoot page could not be found."
         canonical="/"
         noIndex
       />

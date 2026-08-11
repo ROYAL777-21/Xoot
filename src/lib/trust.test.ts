@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateReliabilityScore,
-  deriveZooterBadges,
+  deriveXooterBadges,
   getSmartRecurringSuggestion,
   requiresCompletionPhotos,
-  shouldDeprioritizeZooter,
-  sortZootersForMarketplace,
+  shouldDeprioritizeXooter,
+  sortXootersForMarketplace,
 } from "./trust";
 
 describe("trust helpers", () => {
   it("calculates reliability score with weighted penalties and positive boosts", () => {
     expect(calculateReliabilityScore({ lateArrivals: 2, cancellations: 1, complaints: 1, escalations: 1, qualityAverage: 4.5, repeatBookings: 4 })).toBe(68);
-    expect(shouldDeprioritizeZooter(68)).toBe(true);
+    expect(shouldDeprioritizeXooter(68)).toBe(true);
   });
 
   it("sorts low reliability contractors below stronger marketplace options", () => {
-    const ranked = sortZootersForMarketplace([
+    const ranked = sortXootersForMarketplace([
       { name: "Low", reliability_score: 60, rating: 5, jobs_completed: 300 },
       { name: "Strong", reliability_score: 92, rating: 4.7, jobs_completed: 80 },
       { name: "Best", reliability_score: 98, rating: 4.8, jobs_completed: 30 },
@@ -25,7 +25,7 @@ describe("trust helpers", () => {
   });
 
   it("derives all visible trust badges from contractor signals", () => {
-    expect(deriveZooterBadges({
+    expect(deriveXooterBadges({
       verified: true,
       background_check_status: "approved",
       rating: 4.91,

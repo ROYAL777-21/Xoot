@@ -37,7 +37,7 @@ describe("booking invoice helpers", () => {
         provider_reference: "provider-ref",
       },
       issuedAt: new Date("2026-06-29T10:00:00.000Z"),
-      legalEntityName: "Zoot",
+      legalEntityName: "Xoot",
       legalEntityRegistration: null,
       vatNumber: "VAT-123",
       vatRate: 0.15,
@@ -55,7 +55,7 @@ describe("booking invoice helpers", () => {
     const bytes = renderBookingInvoicePdf({
       invoice_number: "ZOOT-20260629-BOOKING",
       generated_at: "2026-06-29T10:00:00.000Z",
-      legal_entity_name: "Zoot <script>",
+      legal_entity_name: "Xoot <script>",
       currency: "ZAR",
       subtotal_amount: 300,
       vat_amount: 45,

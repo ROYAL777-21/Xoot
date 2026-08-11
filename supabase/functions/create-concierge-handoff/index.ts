@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
       userId: user.id,
       kind: "concierge_handoff_created",
       title: urgencyLevel >= 4 ? "Urgent support request sent" : "Support request sent",
-      body: "Your request was sent to the Zoot support team for review through the approved support channel.",
+      body: "Your request was sent to the Xoot support team for review through the approved support channel.",
       link: "/app/support",
     });
 
@@ -240,7 +240,7 @@ Deno.serve(async (req) => {
       event_type: "concierge_handoff_created",
       channel: "in_app",
       owner: "Customer Support Agent",
-      stack_tool: "Zoot Concierge handoff",
+      stack_tool: "Xoot Concierge handoff",
       payload: {
         ticket_id: ticket.id,
         handoff_id: handoff.id,
@@ -278,7 +278,7 @@ Deno.serve(async (req) => {
         intent_category: intentCategory,
         urgency_level: urgencyLevel,
         support_route: "/app/support",
-        next_message: "I have sent this to the Zoot support team for review through the approved support channel.",
+        next_message: "I have sent this to the Xoot support team for review through the approved support channel.",
       },
       origin,
       201,

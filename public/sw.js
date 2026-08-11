@@ -55,11 +55,11 @@ self.addEventListener("push", (event) => {
   try {
     payload = event.data?.json() ?? {};
   } catch {
-    payload = { title: "Zoot update", body: event.data?.text() };
+    payload = { title: "Xoot update", body: event.data?.text() };
   }
-  const title = safeNotificationText(payload.title, "Zoot booking update");
+  const title = safeNotificationText(payload.title, "Xoot booking update");
   const options = {
-    body: safeNotificationText(payload.body, "Open Zoot for the latest booking update."),
+    body: safeNotificationText(payload.body, "Open Xoot for the latest booking update."),
     icon: "/icon-192.png",
     badge: "/icon-192.png",
     data: { url: safeNotificationUrl(payload.url) },

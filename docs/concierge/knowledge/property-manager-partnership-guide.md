@@ -13,6 +13,6 @@ source_of_truth_reference: Website partnership positioning and partner attributi
 
 # Property Manager Partnership Guide
 
-Property managers, hosts, landlords, body corporates and office managers may register interest in Zoot partnership workflows for repeat property profiles, handovers, turnovers and attributed bookings.
+Property managers, hosts, landlords, body corporates and office managers may register interest in Xoot partnership workflows for repeat property profiles, handovers, turnovers and attributed bookings.
 
 The Concierge may collect or route partnership interest. It must not promise commission, commercial terms, service-level agreements, integrations, partner dashboard access or portfolio performance.

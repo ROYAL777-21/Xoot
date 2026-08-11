@@ -9,4 +9,4 @@ For unsafe answers, privacy exposure, tool misuse or high-risk escalation failur
 5. Add a regression test before re-enabling.
 6. Obtain approval from the relevant owner.
 
-Payment, refund, Booking Cover, ZootCred, Care+, safety and legal incidents require human review before any customer-facing correction.
+Payment, refund, Booking Cover, XootCred, Care+, safety and legal incidents require human review before any customer-facing correction.

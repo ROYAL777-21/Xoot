@@ -13,36 +13,64 @@ import {
   toNumber,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import {
+  ADD_ON_CENTS,
+  BOOKING_COVER_CENTS,
+  HOME_SIZE_HOURS,
+  SERVICE_LENGTH_HOURS,
+  ONE_TIME_SERVICE_FEE_CENTS,
+  activeBoostBpsFor,
+  applyBoost,
+  basePrice,
+  commissionRateBps,
+  resolveHours,
+} from "../_shared/pricing.ts";
 
 const services = new Set(["residential", "express", "airbnb", "office", "deep", "moving", "premium"]);
-const serviceMultiplier: Record<string, number> = {
-  residential: 1,
-  express: 0.85,
-  airbnb: 1.15,
-  office: 1.2,
-  deep: 1.35,
-  moving: 1.4,
-  premium: 1.55,
-};
-
-const homeSizes: Record<string, { hours: number; price: number }> = {
-  small: { hours: 4, price: 270 },
-  medium: { hours: 5.5, price: 315 },
-  large: { hours: 8, price: 390 },
-};
-
-const serviceLengths: Record<string, { hours: number; priceFactor: number }> = {
-  refresh: { hours: 3, priceFactor: 0.82 },
-  standard: { hours: 4.5, priceFactor: 1 },
-  extended: { hours: 6, priceFactor: 1.28 },
-  full_day: { hours: 8, priceFactor: 1.62 },
-};
+// Pricing tables now live in ../_shared/pricing.ts. The multiplier model they replaced
+// (homeSize.price x serviceLength.priceFactor x serviceMultiplier) double-counted
+// duration and used R270/R315/R390, figures the locked commercial facts never approved.
+// Home size and service length now only imply DEFAULT HOURS; hours alone set the price.
 
 const allowedTimes = new Set(["07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "14:00", "15:00", "16:00", "17:00"]);
-const multiWorkerServices = new Set(["airbnb", "office", "deep", "moving", "premium"]);
+/*
+ * Which services take more than one Xooter.
+ *
+ * ⚠️ KEEP IN SYNC with `MULTI_XOOTER_SERVICES` in `src/lib/xoot-pricing.ts`, via the aliases:
+ * `deep` and `premium` both price as `regular`, and `regular` is single-Xooter.
+ *
+ * This set previously included "deep" and "premium". `Book.tsx` matched it, so a customer could
+ * select a Deep clean with three Xooters — but the client price ladder aliases both to `regular`
+ * and refuses to quote a second Xooter, so the screen showed R61 while this function charged
+ * R860. Measured 2026-08-09. `pricing-parity.test.ts` now fails if the two sets drift again.
+ */
+const multiWorkerServices = new Set(["airbnb", "office", "moving"]);
 const photoProofServices = new Set(["airbnb", "deep", "moving"]);
 
 const isHighDemandSlot = (time: string) => Number(time.split(":")[0] ?? 0) >= 16;
+
+/*
+ * Graded slot pricing — built, and OFF.
+ *
+ * ⚠️ KEEP IN SYNC with `src/lib/operations.ts`, which carries the reasoning.
+ * `pricing-parity.test.ts` fails if the flag or the curve drifts between the two.
+ *
+ * With `GRADED_SLOT_PRICING` false every slot is priced exactly as before. Turning it on
+ * changes what customers are charged, so it is one boolean on each side and a founder decision,
+ * not a refactor.
+ */
+const GRADED_SLOT_PRICING = false;
+const HIGH_DEMAND_SLOT_RATE = 0.15;
+const SLOT_PREMIUM_CURVE: Record<string, number> = {
+  "15:00": 0.05,
+  "16:00": 0.1,
+  "17:00": 0.15,
+};
+
+const slotPremiumRate = (time: string): number => {
+  if (GRADED_SLOT_PRICING) return SLOT_PREMIUM_CURVE[time] ?? 0;
+  return isHighDemandSlot(time) ? HIGH_DEMAND_SLOT_RATE : 0;
+};
 
 const getCarePlusDiscount = async (supa: any, userId: string) => {
   const { data } = await supa
@@ -56,7 +84,38 @@ const getCarePlusDiscount = async (supa: any, userId: string) => {
   return 0.1;
 };
 
-const getAvailableZootCred = async (supa: any, userId: string) => {
+/**
+ * The commission rate to strike each booking at, keyed by Xooter id.
+ *
+ * One query for the whole request rather than one per booking: a multi-Xooter job inserts a
+ * booking per Xooter and each carries its own rate, since each Xooter is ranked separately.
+ *
+ * A Xooter that cannot be read falls to the starting rate via `commissionRateBps`, which
+ * treats a missing score as unproven rather than guessing. That is the loud failure — a Xooter
+ * on an unexpected 35% reports it the same day; one silently granted the 20% floor is a
+ * revenue leak nobody notices.
+ */
+const getCommissionRates = async (supa: any, zooterIds: string[]) => {
+  const rates = new Map<string, number>();
+  if (!zooterIds.length) return rates;
+  const { data } = await supa
+    .from("zooters")
+    .select("id,reliability_score,jobs_completed")
+    .in("id", zooterIds);
+  for (const row of data ?? []) {
+    const earned = commissionRateBps({
+      reliabilityScore: row.reliability_score,
+      completedJobs: row.jobs_completed,
+    });
+    // An active 14-day boost lowers the rate this booking is struck at, clamped at the floor.
+    // Read per Xooter because each is rewarded separately.
+    const boost = await activeBoostBpsFor(supa, row.id);
+    rates.set(row.id, boost > 0 ? applyBoost(earned, boost) : earned);
+  }
+  return rates;
+};
+
+const getAvailableXootCred = async (supa: any, userId: string) => {
   const { data } = await supa
     .from("zootcred_ledger")
     .select("amount,direction,status,expires_at")
@@ -91,6 +150,7 @@ Deno.serve(async (req) => {
     const address = cleanText(body.address, 240);
     const instructions = cleanText(body.instructions ?? body.notes, 1200);
     const householdProfileId = cleanText(body.householdProfileId ?? body.household_profile_id, 80) || null;
+    const propertyAccountId = cleanText(body.propertyAccountId ?? body.property_account_id, 80) || null;
     const requestedWorkerCount = toNumber(body.workerCount ?? body.worker_count, 1);
     const zooterIds = cleanArray(body.zooterIds ?? body.zooter_ids ?? (body.zooter_id ? [body.zooter_id] : []), 5, 80);
     const addOns = cleanArray(body.addOns ?? body.extras, 12, 80);
@@ -98,8 +158,8 @@ Deno.serve(async (req) => {
     const requestedRedemption = Math.max(0, toNumber(body.zootcredRedemption ?? body.zootcred_redemption, 0));
 
     if (!services.has(serviceType)) return fail("unsupported service", origin, 400);
-    if (!homeSizes[homeSizeId]) return fail("unsupported home size", origin, 400);
-    if (!serviceLengths[serviceLengthId]) return fail("unsupported service length", origin, 400);
+    if (HOME_SIZE_HOURS[homeSizeId] === undefined) return fail("unsupported home size", origin, 400);
+    if (SERVICE_LENGTH_HOURS[serviceLengthId] === undefined) return fail("unsupported service length", origin, 400);
     if (!allowedTimes.has(time)) return fail("unsupported time", origin, 400);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail("invalid date", origin, 400);
     if (!address || !isApprovedLaunchRegion(address)) return fail("outside launch coverage", origin, 400);
@@ -109,35 +169,117 @@ Deno.serve(async (req) => {
       return fail("booking time must be in the future", origin, 400);
     }
 
-    const maxWorkers = multiWorkerServices.has(serviceType) ? Math.min(Math.max(requestedWorkerCount || 1, 1), 5) : 1;
-    const selectedZooterIds = zooterIds.slice(0, maxWorkers);
-    if (selectedZooterIds.length > 0) {
+    /*
+     * Refuse rather than silently slice.
+     *
+     * This used to cap `maxWorkers` at 1 for a single-Xooter service and then
+     * `zooterIds.slice(0, maxWorkers)`, so a request naming three Xooters for a residential
+     * clean booked one and charged for one — while the caller believed it had booked three.
+     * Quietly delivering something other than what was asked for is the same failure as quietly
+     * charging something other than what was shown; both end with a customer and an invoice
+     * that disagree. The client no longer offers this combination, so anything reaching here is
+     * a hand-built request and deserves an answer, not a silent correction.
+     */
+    const serviceMaxWorkers = multiWorkerServices.has(serviceType) ? 5 : 1;
+    const requestedWorkers = Math.min(Math.max(requestedWorkerCount || 1, 1), 5);
+    if (requestedWorkers > serviceMaxWorkers || zooterIds.length > serviceMaxWorkers) {
+      return fail(`${serviceType} is booked with one Xooter`, origin, 400);
+    }
+    const maxWorkers = Math.min(requestedWorkers, serviceMaxWorkers);
+    const selectedXooterIds = zooterIds.slice(0, maxWorkers);
+    if (selectedXooterIds.length > 0) {
       const { data: zooters } = await supa
         .from("zooters")
         .select("id,name,active")
-        .in("id", selectedZooterIds)
+        .in("id", selectedXooterIds)
         .eq("active", true);
-      if (!zooters || zooters.length !== selectedZooterIds.length) return fail("selected Zooter is unavailable", origin, 409);
+      if (!zooters || zooters.length !== selectedXooterIds.length) return fail("selected Xooter is unavailable", origin, 409);
     }
 
-    const size = homeSizes[homeSizeId];
-    const length = serviceLengths[serviceLengthId];
-    const workerCount = Math.max(selectedZooterIds.length, 1);
-    const basePrice = Math.round(size.price * length.priceFactor * (serviceMultiplier[serviceType] ?? 1));
-    const multiWorkerDiscount = selectedZooterIds.length >= 3 ? 0.1 : 0;
-    const discountedBase = Math.round(basePrice * (1 - multiWorkerDiscount)) * workerCount;
-    const addOnsTotal = addOns.length * 30;
-    const subtotal = discountedBase + addOnsTotal;
-    const highDemandPremium = isHighDemandSlot(time) ? Math.round(subtotal * 0.15) : 0;
-    const serviceFee = frequency === "one_time" ? 39 : 0;
-    const bookingCover = bookingCoverOptIn === false ? 0 : 21;
+    const workerCount = Math.max(selectedXooterIds.length, 1);
+
+    // Both of these are client-supplied foreign keys, so ownership is proven here rather than
+    // trusted. Each uses one message for "no such row" and for "not yours", so neither can be
+    // used to test which ids exist.
+    if (propertyAccountId) {
+      const { data: property } = await supa
+        .from("property_accounts")
+        .select("id")
+        .eq("id", propertyAccountId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!property) return fail("property account not found", origin, 404);
+    }
+
+    /**
+     * `household_profile_id` matters more than the property one, because it is the row that
+     * holds `gate_code`, `alarm_code` and `access_instructions`.
+     *
+     * Unchecked, it was a path to another household's keys, not merely to muddled history:
+     * `get-sensitive-access` authorises the caller as the booking's assigned Xooter and then
+     * reads `household_profiles` by `booking.household_profile_id` without tying that profile
+     * to the booking's customer. `can_access_sensitive_data` does not close it either — the
+     * live definition checks the booking/Xooter link, revocation, status and time window, and
+     * says nothing about whose profile it is.
+     *
+     * So a user who is also an active Xooter could file a booking naming themselves as the
+     * Xooter and someone else's household profile, wait for the access window they chose, and
+     * read that household's gate code.
+     *
+     * Not exploited: production holds 0 bookings, 0 household profiles and 0 Xooters — the
+     * platform has no live data yet. This is closed before there is anything to take, which
+     * is the only comfortable time to close it. `get-sensitive-access` is fixed in the same
+     * change so the disclosure point is guarded too, not just the write.
+     */
+    if (householdProfileId) {
+      const { data: household } = await supa
+        .from("household_profiles")
+        .select("id")
+        .eq("id", householdProfileId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!household) return fail("household profile not found", origin, 404);
+    }
+
+    const bookedHours = resolveHours({ hours: body?.hours, serviceLengthId, homeSizeId });
+    if (bookedHours === null) return fail("booked hours are required", origin, 400);
+
+    const priced = basePrice(serviceType, bookedHours);
+    if (!priced.ok) return fail(priced.reason, origin, 400);
+
+    // Cents internally; converted back to rands at the boundary so stored columns and
+    // the response keep the shape every existing caller already expects.
+    const multiWorkerDiscount = selectedXooterIds.length >= 3 ? 0.1 : 0;
+    const discountedBaseCents = Math.round(priced.baseCents * (1 - multiWorkerDiscount)) * workerCount;
+    const addOnsCents = addOns.length * ADD_ON_CENTS;
+    const subtotalCents = discountedBaseCents + addOnsCents;
+    const highDemandCents = Math.round(subtotalCents * slotPremiumRate(time));
+    /*
+     * Care+ members pay no booking fee, at any frequency (founder decision 2026-08-09, alongside
+     * R99/month and one month free). Membership is read from the same lookup that decides the
+     * discount, so a member cannot get the discount and still be charged the fee.
+     *
+     * Mirrored in `src/lib/xoot-pricing.ts` as `carePlusMember`, and held there by
+     * `pricing-parity.test.ts`. The two must agree: a client showing R0 against a server charging
+     * R39 is the defect this codebase already shipped once.
+     */
     const carePlusDiscountRate = await getCarePlusDiscount(supa, user.id);
+    const isCarePlusMember = carePlusDiscountRate > 0;
+    const serviceFeeCents =
+      isCarePlusMember || frequency !== "one_time" ? 0 : ONE_TIME_SERVICE_FEE_CENTS;
+    const bookingCoverCents = bookingCoverOptIn === false ? 0 : BOOKING_COVER_CENTS;
+
+    const toRands = (cents: number) => Math.round(cents / 100);
+    const subtotal = toRands(subtotalCents);
+    const highDemandPremium = toRands(highDemandCents);
+    const serviceFee = toRands(serviceFeeCents);
+    const bookingCover = toRands(bookingCoverCents);
     const carePlusDiscount = Math.round(subtotal * carePlusDiscountRate);
     const grossTotal = subtotal + highDemandPremium + serviceFee + bookingCover - carePlusDiscount;
 
     let zootcredRedemption = 0;
     if (requestedRedemption > 0) {
-      const available = await getAvailableZootCred(supa, user.id);
+      const available = await getAvailableXootCred(supa, user.id);
       zootcredRedemption = Math.min(requestedRedemption, available, Math.max(0, grossTotal - 50));
       if (zootcredRedemption <= 0) return fail("zootcred cannot reduce this booking below R50", origin, 409);
     }
@@ -149,9 +291,14 @@ Deno.serve(async (req) => {
     const perBookingCover = Math.round(bookingCover / workerCount);
     const perBookingHighDemand = Math.round(highDemandPremium / workerCount);
     const perBookingDiscount = Math.round(carePlusDiscount / workerCount);
-    const estHours = length.hours + addOns.length;
+    // Add-ons extend the visit; the booked hours are the priced duration.
+    const estHours = priced.hours + addOns.length;
     const launchRegion = resolveLaunchRegion(address);
-    const bookingTargets = selectedZooterIds.length ? selectedZooterIds : [null];
+    const bookingTargets = selectedXooterIds.length ? selectedXooterIds : [null];
+    // Struck once, here, and never recomputed at payout — see the migration
+    // `20260809120000_booking_commission_rate.sql` for why a rank that moves must not change
+    // what a Xooter is paid for work already agreed.
+    const commissionRates = await getCommissionRates(supa, selectedXooterIds);
 
     const bookingIds: string[] = [];
     const paymentRecordIds: string[] = [];
@@ -169,6 +316,13 @@ Deno.serve(async (req) => {
         status: "draft",
         payment_status: "pending",
         frequency,
+        property_account_id: propertyAccountId,
+        // Persisted, not merely validated. `get-sensitive-access` finds the household by
+        // `booking.household_profile_id`, so while this stayed null every gate-code request
+        // failed "booking is not assigned" and the feature could not work at all. Safe to
+        // store now that two independent locks hold: ownership is proven above, and the
+        // credential read is itself scoped to `booking.user_id`.
+        household_profile_id: householdProfileId,
         launch_region: launchRegion,
         duration_hours: estHours,
         notes: instructions || null,
@@ -176,6 +330,9 @@ Deno.serve(async (req) => {
         service_fee: perBookingServiceFee,
         booking_cover_amount: perBookingCover,
         high_demand_premium: perBookingHighDemand,
+        // Null while nobody is assigned. An absence reads as pending; a default would read as
+        // an agreement that was never struck.
+        commission_rate_bps: zooterId ? commissionRates.get(zooterId) ?? null : null,
       }).select("id").single();
       if (bookingError || !booking?.id) throw new Error("booking insert failed");
       bookingIds.push(booking.id);
@@ -251,7 +408,7 @@ Deno.serve(async (req) => {
     if (frequency === "repeat" && bookingIds[0]) {
       await supa.from("recurring_schedules").insert({
         user_id: user.id,
-        zooter_id: selectedZooterIds[0] ?? null,
+        zooter_id: selectedXooterIds[0] ?? null,
         household_profile_id: householdProfileId,
         cadence_days: 14,
         preferred_day: scheduledAt.toLocaleDateString("en-ZA", { weekday: "long" }),

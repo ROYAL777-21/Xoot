@@ -35,12 +35,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <div className="mx-auto mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-destructive/10 text-destructive">
             <AlertTriangle className="h-6 w-6" />
           </div>
-          <h1 className="font-display text-3xl font-bold">Zoot needs a quick refresh</h1>
+          <h1 className="font-display text-3xl font-bold">Xoot needs a quick refresh</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Something interrupted this screen. Your Zoot account, bookings and saved home details remain protected.
+            Something interrupted this screen. Your Xoot account, bookings and saved home details remain protected.
           </p>
           <Button className="mt-6 rounded-full gradient-warm" onClick={() => window.location.reload()}>
-            <RotateCw className="mr-2 h-4 w-4" /> Refresh Zoot
+            <RotateCw className="mr-2 h-4 w-4" /> Refresh Xoot
           </Button>
         </Card>
       </div>

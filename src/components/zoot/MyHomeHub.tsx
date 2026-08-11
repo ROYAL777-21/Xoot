@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 const features = [
-  { icon: Wallet, title: "You set the pay", desc: "Decide your worker's daily rate. They get 100% — Zoot never deducts." },
-  { icon: Smartphone, title: "Manage in the Zooter App", desc: "Schedule, payments, attendance and payslips — all in one place." },
+  { icon: Wallet, title: "You set the pay", desc: "Decide your worker's daily rate. They get 100% — Xoot never deducts." },
+  { icon: Smartphone, title: "Manage in the Xooter App", desc: "Schedule, payments, attendance and payslips — all in one place." },
   { icon: ShieldCheck, title: "We handle compliance", desc: "Vetted workers, UIF guidance and dispute mediation when you need it." },
   { icon: Headphones, title: "Expert support", desc: "Real humans on call when you have questions about your worker or the app." },
 ];
@@ -17,7 +17,7 @@ export const MyHomeHub = () => {
           <div>
             <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">MyHome Hub</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-5">
-              Manage your private domestic worker via the Zooter App.
+              Manage your private domestic worker via the Xooter App.
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl mb-8">
               With MyHome Hub, you set your own pay, your worker gets the full amount,

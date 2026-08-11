@@ -32,10 +32,10 @@ export function assertProductionEnv() {
     import.meta.env.VITE_ENABLE_DEMO_MODE !== "true";
 
   if (localStaticPreview) {
-    console.warn(`[Zoot] Local static preview is running without live Supabase config. Backend/auth actions remain disabled. ${issue}`);
+    console.warn(`[Xoot] Local static preview is running without live Supabase config. Backend/auth actions remain disabled. ${issue}`);
     return;
   }
 
   renderFatalConfigError();
-  throw new Error(`[Zoot] FATAL: ${issue}`);
+  throw new Error(`[Xoot] FATAL: ${issue}`);
 }

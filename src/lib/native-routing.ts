@@ -40,12 +40,23 @@ const staticRoutes = new Set([
 const authRoutes = new Set(["/auth/callback", "/auth/reset"]);
 const queryPreservingRoutes = new Set(["/app", "/care-plus"]);
 const allowedSafeQueryKeys = new Set(["area", "date", "intent", "service", "zootBot"]);
+/**
+ * Hosts whose links this app will open as in-app routes.
+ *
+ * `zoot.co.za` and `www.zoot.co.za` were removed 2026-08-07. They were rename debris — the
+ * company-wide Zoot→Xoot sweep missed this list, and they appeared nowhere else in the repo:
+ * no DNS, no config, no deploy surface, not even the old `zoothome.co.za` placeholder.
+ *
+ * They are removed rather than left harmless because this list is a trust boundary, not a
+ * convenience. Anything on it can hand a URL straight to an in-app route, so a domain Xoot
+ * does not demonstrably control — one that lapses and is re-registered by someone else — is a
+ * deep-link injection route into the app. An unused entry is the easiest kind to leave in and
+ * the cheapest kind to take out.
+ */
 const allowedWebHosts = new Set([
-  "zoothome.co.za",
-  "www.zoothome.co.za",
-  "staging.zoothome.co.za",
-  "zoot.co.za",
-  "www.zoot.co.za",
+  "xoot.co.za",
+  "www.xoot.co.za",
+  "staging.xoot.co.za",
 ]);
 
 const screenRoutes = new Map<string, string>([
@@ -209,7 +220,7 @@ const toSafeRoute = (candidate: string) => {
 const bookingQueryParam = (url: URL) =>
   url.searchParams.get("bookingId") ?? url.searchParams.get("booking_id") ?? url.searchParams.get("id");
 
-const routeFromZootUrl = (url: URL) => {
+const routeFromXootUrl = (url: URL) => {
   const host = normalizeKey(url.hostname);
   const pathname = url.pathname === "/" ? "" : url.pathname;
   const bookingIdParam = bookingQueryParam(url);
@@ -245,7 +256,7 @@ const routeFromUrl = (candidate: string) => {
   try {
     const url = new URL(value);
     if (url.protocol === "zoot:" || url.protocol === "za.co.zoothome.app:" || url.protocol === "za.co.zoot.app:") {
-      return routeFromZootUrl(url);
+      return routeFromXootUrl(url);
     }
     if (url.protocol === "https:" || url.protocol === "http:") return isAllowedWebUrl(url) ? routeForUrl(url) : null;
   } catch {

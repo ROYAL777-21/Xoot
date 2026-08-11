@@ -13,7 +13,7 @@ const operatorSegments = [
 ];
 
 const articleLinks = [
-  "How Zoot verifies Zooters",
+  "How Xoot verifies Xooters",
   "Care+ and Home Memory",
   "Airbnb turnover checklists",
 ];
@@ -28,7 +28,7 @@ export const HomeExpansion = () => (
           </div>
           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Designed for the people who cannot afford messy handovers.</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Zoot is being shaped around real cleaning operations for property managers, short-term rental hosts, landlords, offices and homes. These are target operator groups, not unsupported partnership or customer-logo claims.
+            Xoot is being shaped around real cleaning operations for property managers, short-term rental hosts, landlords, offices and homes. These are target operator groups, not unsupported partnership or customer-logo claims.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -59,7 +59,7 @@ export const HomeExpansion = () => (
           <Link key={title} to="/articles" className="group rounded-3xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-1 hover:shadow-card">
             <Sparkles className="mb-4 h-5 w-5 text-primary" />
             <h3 className="font-display text-xl font-bold">{title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Read the practical Zoot guide.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Read the practical Xoot guide.</p>
             <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary">Open <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
           </Link>
         ))}

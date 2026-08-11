@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ZooterCard, Zooter } from "@/components/zoot/ZooterCard";
+import { XooterCard, Xooter } from "@/components/zoot/XooterCard";
+import { ChipGrid } from "@/components/kit";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,8 +13,15 @@ import { Home as HomeIcon, Building2, BedDouble, Sparkles, ArrowRight, ArrowLeft
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortZootersForMarketplace } from "@/lib/trust";
+import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortXootersForMarketplace } from "@/lib/trust";
 import { calculateBookingQuote, isApprovedLaunchRegion } from "@/lib/operations";
+import {
+  SERVICE_ALIASES,
+  isPriced,
+  quote as priceQuote,
+  resolveHours,
+  serviceAllowsMultipleXooters,
+} from "@/lib/xoot-pricing";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sanitiseSearchParam } from "@/lib/sanitise";
 import { BookingInput } from "@/lib/validators";
@@ -77,7 +85,15 @@ const TIME_GROUPS = [
   { label: "Midday", slots: TIME_SLOTS.filter((slot) => Number(slot.split(":")[0]) >= 12 && Number(slot.split(":")[0]) < 15) },
   { label: "Late day", slots: TIME_SLOTS.filter((slot) => Number(slot.split(":")[0]) >= 15) },
 ] as const;
-const allowsMultipleWorkers = (s: string) => ["airbnb", "office", "deep", "moving", "premium"].includes(s);
+/**
+ * Answered by the pricing module, not by a list kept here.
+ *
+ * The list this replaced included "deep" and "premium", so the Xooter stepper appeared on two
+ * services that alias to `regular` — which `quote()` refuses to price with a second Xooter. The
+ * refusal fell through to `discountedBase = 0`, and a Deep clean with three Xooters displayed
+ * R61 against a server charge of R860. `pricing-parity.test.ts` now pins this against the server.
+ */
+const allowsMultipleWorkers = serviceAllowsMultipleXooters;
 const isSafeDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00`).getTime());
 const serviceMultiplier: Record<string, number> = {
   residential: 1,
@@ -92,7 +108,7 @@ const serviceMultiplier: Record<string, number> = {
 const Book = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const preferredZooterId = sanitiseSearchParam(searchParams.get("zooter"));
+  const preferredXooterId = sanitiseSearchParam(searchParams.get("zooter"));
   const requestedService = sanitiseSearchParam(searchParams.get("service"));
   const requestedAddress = sanitiseSearchParam(searchParams.get("address")) || sanitiseSearchParam(searchParams.get("area"));
   const requestedDate = sanitiseSearchParam(searchParams.get("date"));
@@ -112,12 +128,14 @@ const Book = () => {
   const [instructions, setInstructions] = useState("");
   const [householdNotes, setHouseholdNotes] = useState("");
   const [householdId, setHouseholdId] = useState<string | null>(null);
+  const [properties, setProperties] = useState<{ id: string; name: string; account_type: string }[]>([]);
+  const [propertyId, setPropertyId] = useState<string | null>(null);
   const [smartSuggestion, setSmartSuggestion] = useState("");
   const [bookingCoverOptIn, setBookingCoverOptIn] = useState(true);
   const [workerCount, setWorkerCount] = useState(1);
-  const [zooters, setZooters] = useState<Zooter[]>([]);
-  const [loadingZooters, setLoadingZooters] = useState(false);
-  const [picked, setPicked] = useState<Zooter[]>([]);
+  const [zooters, setXooters] = useState<Xooter[]>([]);
+  const [loadingXooters, setLoadingXooters] = useState(false);
+  const [picked, setPicked] = useState<Xooter[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [bookingStatus, setBookingStatus] = useState<string | null>(null);
@@ -129,10 +147,51 @@ const Book = () => {
   const size = HOME_SIZES.find((s) => s.id === homeSize) ?? HOME_SIZES[0];
   const length = SERVICE_LENGTHS.find((option) => option.id === serviceLength) ?? SERVICE_LENGTHS[1];
   const totalWorkers = Math.max(1, workerCount);
-  const serviceBasePrice = Math.round(size.price * length.priceFactor * (serviceMultiplier[active] ?? 1));
-  const estHours = length.hours + extras.size * EXTRA_HOURS;
-  const discount = totalWorkers >= 3 ? 0.1 : 0;
-  const discountedBase = Math.round(serviceBasePrice * (1 - discount)) * totalWorkers;
+
+  /**
+   * Priced off the ZD-020 hour ladder, via the same translation the server does.
+   *
+   * This screen used to compute `size.price x length.priceFactor x serviceMultiplier` off
+   * `270 / 315 / 390` — the superseded model, which `pricing-parity.test.ts` forbids in the
+   * server and which the booking screen kept its own copy of. It agreed with *deployed*
+   * production and disagreed with the repo, so the two were consistent only by accident.
+   *
+   * Now there is one source: `quote()` applies the ladder, the multi-Xooter discount and the
+   * per-Xooter multiplication, all of which are already held against `create-booking` by
+   * `multi-xooter.test.ts`. The rule is no longer duplicated here, so it can no longer drift
+   * here.
+   *
+   * **This makes deploying `create-booking` mandatory, not optional.** Until it is deployed,
+   * production still charges the old model and this screen shows the new one. Production holds
+   * no bookings, so nobody is affected today — but the gap closes only on deploy.
+   */
+  /**
+   * The base shown against each service-length option, off the ladder rather than off
+   * `size.price x priceFactor`. Home size no longer moves the price at all — it only supplies
+   * a default duration — so this quotes the option's own hours.
+   */
+  const optionBase = (lengthId: string) => {
+    const hours = resolveHours({ serviceLengthId: lengthId }) ?? 0;
+    const q = priceQuote({ service: SERVICE_ALIASES[active] ?? "regular", hours, bookingCover: false });
+    return isPriced(q) ? formatZAR(Math.round(q.baseCents / 100)) : "—";
+  };
+
+  const bookedHours = resolveHours({ serviceLengthId: serviceLength, homeSizeId: homeSize }) ?? 0;
+  const priced = priceQuote({
+    service: SERVICE_ALIASES[active] ?? "regular",
+    hours: bookedHours,
+    xooterCount: totalWorkers,
+    // Add-ons and cover are added by `calculateBookingQuote` below, which also applies the
+    // high-demand premium and the one-time service fee. Asking for them here would double them.
+    addOns: 0,
+    bookingCover: false,
+  });
+  const serviceBasePrice = isPriced(priced) ? Math.round(priced.baseCents / totalWorkers / 100) : 0;
+  const estHours = bookedHours + extras.size * EXTRA_HOURS;
+  const discountedBase = isPriced(priced) ? Math.round(priced.baseCents / 100) : 0;
+  // Read back from the quote rather than recomputed, so the line item cannot claim a
+  // discount the price did not actually apply.
+  const discount = isPriced(priced) ? priced.discountRate : 0;
   const quote = calculateBookingQuote({
     basePrice: discountedBase,
     addOnCount: extras.size,
@@ -153,9 +212,12 @@ const Book = () => {
   useEffect(() => {
     if (!user) return;
     Promise.all([
-      (supabase as any).from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
+      supabase.from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
       supabase.from("bookings").select("scheduled_at").eq("user_id", user.id).order("scheduled_at", { ascending: false }).limit(6),
-    ]).then(([homeResult, bookingResult]) => {
+      // Only active accounts: a closed property should not still be bookable against.
+      supabase.from("property_accounts").select("id,name,account_type").eq("user_id", user.id).eq("status", "active").order("created_at"),
+    ]).then(([homeResult, bookingResult, propertyResult]) => {
+      setProperties(propertyResult.data ?? []);
       const home = homeResult.data;
       if (home) {
         setHouseholdId(home.id ?? null);
@@ -176,17 +238,60 @@ const Book = () => {
     });
   }, [user, requestedAddress]);
 
+  /*
+   * Rank Xooters by how far they actually are from this booking.
+   *
+   * ── What this replaced, and why it mattered ─────────────────────────────────
+   * This queried `zooters_public` directly with `.limit(30)`, no ordering by anything to do with
+   * the customer, and **ignored the address typed one step earlier**. `ai-match` existed and
+   * nothing in the app called it — so "matched with Xooters near you" was not a weak feature, it
+   * was an absent one.
+   *
+   * ── The fallback is not decoration ──────────────────────────────────────────
+   * If matching fails for any reason — the function is not deployed yet on this project, the
+   * address resolves to no known suburb, a network blip — this falls back to the old direct query.
+   * An empty Xooter list is indistinguishable to a customer from "Xoot has nobody", and losing a
+   * booking is a far worse outcome than losing the distance ordering.
+   */
   useEffect(() => {
     if (step !== 2) return;
-    setLoadingZooters(true);
-    (supabase as any).from("zooters_public").select("*").limit(30).then(({ data }) => {
-      const ranked = sortZootersForMarketplace((data ?? []) as Zooter[]);
-      const preferred = preferredZooterId ? ranked.find((z) => z.id === preferredZooterId) : null;
-      setZooters(ranked);
+    let mounted = true;
+    setLoadingXooters(true);
+
+    const applyResults = (rows: Xooter[]) => {
+      if (!mounted) return;
+      const preferred = preferredXooterId ? rows.find((z) => z.id === preferredXooterId) : null;
+      setXooters(rows);
       if (preferred) setPicked((current) => current.some((z) => z.id === preferred.id) ? current : [preferred]);
-      setLoadingZooters(false);
-    });
-  }, [step, preferredZooterId]);
+      setLoadingXooters(false);
+    };
+
+    const fallback = async () => {
+      const { data } = await supabase.from("zooters_public").select("*").limit(30);
+      applyResults(sortXootersForMarketplace((data ?? []) as Xooter[]));
+    };
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("ai-match", {
+          // The address is what makes this proximity matching rather than a sort. It is the same
+          // value validated against the launch regions in step 1.
+          body: { address },
+        });
+        if (error) throw error;
+        const ranked = (data as { ranked?: Xooter[] } | null)?.ranked;
+        if (!ranked?.length) throw new Error("no ranked results");
+        applyResults(ranked);
+      } catch (err) {
+        console.warn("proximity matching unavailable; falling back to the plain roster", err);
+        await fallback();
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [step, preferredXooterId, address]);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -196,16 +301,15 @@ const Book = () => {
     return () => { supabase.removeChannel(channel); };
   }, [bookingId]);
 
-  const toggleExtra = (e: string) => setExtras((prev) => { const n = new Set(prev); n.has(e) ? n.delete(e) : n.add(e); return n; });
 
   const validateStep = () => {
     if (step === 1 && !address.trim()) { toast.error("Please enter your address"); return false; }
-    if (step === 1 && !isApprovedLaunchRegion(address)) { toast.error("Zoot is currently available in the approved launch suburbs only."); return false; }
-    if (step === 2 && picked.length === 0) { toast.error("Select at least one Zooter"); return false; }
+    if (step === 1 && !isApprovedLaunchRegion(address)) { toast.error("Xoot is currently available in the approved launch suburbs only."); return false; }
+    if (step === 2 && picked.length === 0) { toast.error("Select at least one Xooter"); return false; }
     return true;
   };
 
-  const selectWorker = (z: Zooter) => {
+  const selectWorker = (z: Xooter) => {
     const maxPick = allowsMultipleWorkers(active) ? workerCount : 1;
     if (picked.find((p) => p.id === z.id)) setPicked(picked.filter((p) => p.id !== z.id));
     else if (picked.length < maxPick) setPicked([...picked, z]);
@@ -245,6 +349,7 @@ const Book = () => {
         address: safeBooking.address,
         instructions,
         householdProfileId: householdId,
+        propertyAccountId: propertyId,
         workerCount: totalWorkers,
         zooterIds: picked.map((z) => z.id),
         addOns: safeBooking.extras,
@@ -285,7 +390,7 @@ const Book = () => {
             <span className="text-xs font-medium text-sage-deep">Book a clean · takes under a minute</span>
           </div>
           <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Your home, handled.</h1>
-          <p className="mt-1 text-sm text-muted-foreground hidden sm:block">Four calm steps. Vetted Zooter. Price you see is the price you pay.</p>
+          <p className="mt-1 text-sm text-muted-foreground hidden sm:block">Four calm steps. Vetted Xooter. Price you see is the price you pay.</p>
         </div>
         <div className="lg:block hidden"><NotificationBell /></div>
       </div>
@@ -296,7 +401,7 @@ const Book = () => {
             <div>
               <p className="font-display text-lg font-bold text-foreground">Voice booking started</p>
               <p className="mt-1 text-muted-foreground">
-                Zoot heard a request for {activeServiceLabel.toLowerCase()}
+                Xoot heard a request for {activeServiceLabel.toLowerCase()}
                 {safeRequestedDate ? ` on ${new Date(`${safeRequestedDate}T00:00:00`).toLocaleDateString("en-ZA")}` : ""}.
                 Confirm the address, time and payment inside the app for safety.
               </p>
@@ -334,7 +439,18 @@ const Book = () => {
             </div>
             {smartSuggestion && <p className="mt-3 rounded-2xl bg-primary/10 px-4 py-3 text-sm text-primary flex items-start gap-2"><Repeat className="h-4 w-4 mt-0.5" />{smartSuggestion}</p>}
           </div>
-          {allowsMultipleWorkers(active) && <div><h2 className="font-display text-xl font-bold mb-2">How many Zooters?</h2><div className="flex items-center gap-3"><button onClick={() => setWorkerCount(Math.max(1, workerCount - 1))} className="h-9 w-9 rounded-full border grid place-items-center"><Minus className="h-4 w-4" /></button><span className="font-display text-2xl font-bold w-8 text-center">{workerCount}</span><button onClick={() => setWorkerCount(Math.min(5, workerCount + 1))} className="h-9 w-9 rounded-full border grid place-items-center"><Plus className="h-4 w-4" /></button></div></div>}
+          {/* Only shown when the customer actually has property accounts, so a household
+              customer never sees it. "Personal" is an explicit choice rather than a blank,
+              because for an Airbnb host with three listings, silently defaulting to no
+              property is how a booking ends up filed against nothing. */}
+          {properties.length > 0 && <div><h2 className="font-display text-xl font-bold mb-2">Which property?</h2><div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setPropertyId(null)} aria-pressed={propertyId === null} className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${propertyId === null ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>Personal</button>
+            {properties.map((property) => (
+              <button key={property.id} type="button" onClick={() => setPropertyId(property.id)} aria-pressed={propertyId === property.id} className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${propertyId === property.id ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{property.name}</button>
+            ))}
+          </div></div>}
+
+          {allowsMultipleWorkers(active) && <div><h2 className="font-display text-xl font-bold mb-2">How many Xooters?</h2><div className="flex items-center gap-3"><button onClick={() => setWorkerCount(Math.max(1, workerCount - 1))} className="h-9 w-9 rounded-full border grid place-items-center"><Minus className="h-4 w-4" /></button><span className="font-display text-2xl font-bold w-8 text-center">{workerCount}</span><button onClick={() => setWorkerCount(Math.min(5, workerCount + 1))} className="h-9 w-9 rounded-full border grid place-items-center"><Plus className="h-4 w-4" /></button></div></div>}
           <Button onClick={() => setStep(1)} className="w-full rounded-2xl h-12 gradient-warm font-semibold">Next <ArrowRight className="h-4 w-4 ml-1" /></Button>
         </div>
       )}
@@ -380,7 +496,7 @@ const Book = () => {
                     </div>
                     <div className="mt-4 flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold text-foreground">{option.hours} reserved hours</p>
-                      <p className="text-xs text-muted-foreground">{formatZAR(Math.round(size.price * option.priceFactor))} base</p>
+                      <p className="text-xs text-muted-foreground">{optionBase(option.id)} base</p>
                     </div>
                   </button>
                 );
@@ -435,20 +551,21 @@ const Book = () => {
             </div>
           </div>
 
+          {/*
+            The kit's ChipGrid, in place of the hand-rolled one that was here. Same behaviour,
+            two things gained: the chips now carry `aria-pressed`, so a screen reader can say
+            which extras are chosen rather than reading four identical buttons, and they render
+            from `--xoot-*` so they follow the kit rather than diverging from it the next time
+            either is touched.
+          */}
           <section>
             <h3 className="font-semibold mb-2">Extra tasks</h3>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {EXTRAS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => toggleExtra(e)}
-                  className={`rounded-xl border px-3 py-2 text-sm transition ${extras.has(e) ? "border-foreground bg-foreground text-background" : "border-border bg-muted/35 hover:bg-muted"}`}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
+            <ChipGrid
+              label="Extra tasks"
+              options={EXTRAS}
+              value={Array.from(extras)}
+              onChange={(next) => setExtras(new Set(next))}
+            />
           </section>
           <div className="grid gap-3">
             <Label>Your address</Label>
@@ -467,8 +584,8 @@ const Book = () => {
                   <p className="text-xs text-muted-foreground">
                     {address.trim()
                       ? inLaunchRegion
-                        ? "Zoot can use this area context for calmer arrival planning once live Mapbox routing is configured."
-                        : "Use one of the approved launch suburbs so Zoot can match the right nearby Zooter."
+                        ? "Xoot can use this area context for calmer arrival planning once live Mapbox routing is configured."
+                        : "Use one of the approved launch suburbs so Xoot can match the right nearby Xooter."
                       : "Add the address now; routing and ETA features stay server-gated until restricted Mapbox tokens are available."}
                   </p>
                 </div>
@@ -477,25 +594,25 @@ const Book = () => {
           </div>
           {householdNotes && <div className="rounded-2xl bg-accent-soft border border-accent/20 p-4 text-xs text-muted-foreground"><p className="font-semibold text-foreground mb-1">Household profile applied</p><pre className="whitespace-pre-wrap font-sans">{householdNotes}</pre></div>}
           <div><Label>Specific instructions</Label><Textarea rows={4} value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="Keys, dogs, product preferences, fragile areas" /></div>
-          <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(0)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={() => validateStep() && setStep(2)} className="flex-1 rounded-2xl h-12 gradient-warm font-semibold">Choose a Zooter <ArrowRight className="h-4 w-4 ml-1" /></Button></div>
+          <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(0)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={() => validateStep() && setStep(2)} className="flex-1 rounded-2xl h-12 gradient-warm font-semibold">Choose a Xooter <ArrowRight className="h-4 w-4 ml-1" /></Button></div>
         </div>
       )}
 
       {step === 2 && (
         <div className="space-y-5">
-          <div><h2 className="font-display text-2xl font-bold">Choose your Zooter{maxPick > 1 ? "s" : ""}</h2><p className="text-sm text-muted-foreground">{picked.length}/{maxPick} selected - low reliability contractors are automatically ranked lower</p></div>
-          {loadingZooters ? (
+          <div><h2 className="font-display text-2xl font-bold">Choose your Xooter{maxPick > 1 ? "s" : ""}</h2><p className="text-sm text-muted-foreground">{picked.length}/{maxPick} selected - low reliability contractors are automatically ranked lower</p></div>
+          {loadingXooters ? (
             <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
           ) : zooters.length === 0 ? (
             <Card className="rounded-3xl p-8 text-center">
               <ShieldCheck className="h-8 w-8 text-sage-deep mx-auto mb-3" />
-              <h3 className="font-display text-xl font-bold mb-2">No approved Zooters available yet</h3>
+              <h3 className="font-display text-xl font-bold mb-2">No approved Xooters available yet</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                Zooters appear here only after verification, training, and activation. Please try another time or contact support for launch-area availability.
+                Xooters appear here only after verification, training, and activation. Please try another time or contact support for launch-area availability.
               </p>
             </Card>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{zooters.map((z) => <div key={z.id} className={picked.some((p) => p.id === z.id) ? "ring-2 ring-primary rounded-3xl" : ""}><ZooterCard z={z} onBook={() => selectWorker(z)} /></div>)}</div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{zooters.map((z) => <div key={z.id} className={picked.some((p) => p.id === z.id) ? "ring-2 ring-primary rounded-3xl" : ""}><XooterCard z={z} onBook={() => selectWorker(z)} /></div>)}</div>
           )}
           <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(1)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={() => validateStep() && setStep(3)} disabled={picked.length === 0} className="flex-1 rounded-2xl h-12 gradient-warm font-semibold">Review & Pay <ArrowRight className="h-4 w-4 ml-1" /></Button></div>
         </div>
@@ -510,13 +627,13 @@ const Book = () => {
             <p className="text-xs text-muted-foreground">Keeps a support record and admin queue available for booking issues. Payment stays pending until confirmed.</p>
           </button>
           {photoRequired && <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4 flex items-start gap-3"><ShieldCheck className="h-5 w-5 text-primary mt-0.5" /><p className="text-sm">This service requires before and after completion photos to reduce disputes and verify quality.</p></div>}
-          <div className="rounded-2xl bg-muted/40 p-4 text-sm space-y-1"><p><span className="text-muted-foreground">Service:</span> <span className="capitalize font-medium">{active}</span></p><p><span className="text-muted-foreground">Length:</span> {length.label} - {estHours}h reserved</p><p><span className="text-muted-foreground">Date:</span> {new Date(date).toLocaleDateString("en-ZA")} at {time}</p><p><span className="text-muted-foreground">Zooter:</span> {picked.map((z) => z.name).join(", ")}</p></div>
+          <div className="rounded-2xl bg-muted/40 p-4 text-sm space-y-1"><p><span className="text-muted-foreground">Service:</span> <span className="capitalize font-medium">{active}</span></p><p><span className="text-muted-foreground">Length:</span> {length.label} - {estHours}h reserved</p><p><span className="text-muted-foreground">Date:</span> {new Date(date).toLocaleDateString("en-ZA")} at {time}</p><p><span className="text-muted-foreground">Xooter:</span> {picked.map((z) => z.name).join(", ")}</p></div>
           <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(2)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={handleBook} disabled={submitting} className="flex-1 rounded-2xl h-12 gradient-warm font-semibold">{submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Confirm booking <ArrowRight className="h-4 w-4 ml-1" /></>}</Button></div>
         </div>
       )}
 
       {step === 4 && (
-        <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5"><div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div><h2 className="font-display text-3xl font-bold">Booking draft created</h2><p className="text-muted-foreground max-w-md mx-auto">Your server-priced booking draft is ready. Zoot confirms payment from the provider webhook before assignment is finalised.</p>{bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus}</span></div>}<div className="flex flex-col sm:flex-row gap-2 justify-center"><Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); }} variant="outline" className="rounded-full">Book another</Button><Button asChild className="rounded-full gradient-warm"><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button></div></div>
+        <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5"><div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div><h2 className="font-display text-3xl font-bold">Booking draft created</h2><p className="text-muted-foreground max-w-md mx-auto">Your server-priced booking draft is ready. Xoot confirms payment from the provider webhook before assignment is finalised.</p>{bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus}</span></div>}<div className="flex flex-col sm:flex-row gap-2 justify-center"><Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); }} variant="outline" className="rounded-full">Book another</Button><Button asChild className="rounded-full gradient-warm"><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button></div></div>
       )}
 
       {step < 3 && (

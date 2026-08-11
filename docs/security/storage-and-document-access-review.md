@@ -7,7 +7,7 @@ Reviewed: 2026-07-02
 | Class | Examples | Access model |
 | --- | --- | --- |
 | Public marketing | Approved blog/marketing images | Public read, controlled write |
-| User private | Zooter ID/selfie, screening documents, bank evidence | Private, owner/admin/trust-scoped |
+| User private | Xooter ID/selfie, screening documents, bank evidence | Private, owner/admin/trust-scoped |
 | Support private | Attachments, incident evidence | Private, support/admin/trust-scoped |
 | Booking private | Invoice PDFs, completion proof, access-related assets | Private, owner/admin or assigned role as appropriate |
 | Generated drafts | Article/media drafts, KIE outputs | Private until editorial approval |

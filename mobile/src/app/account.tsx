@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
 
-import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, ZootScreen } from '@/components/zoot-ui';
+import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
 import { getAuthRedirectUrl, startOAuth } from '@/lib/auth-links';
+import { isAppleSignInAvailable, isAppleSignInCancellation, signInWithApple } from '@/lib/apple-auth';
 import { supabase } from '@/lib/supabase';
-import { registerForZootPushNotifications } from '@/lib/push-notifications';
+import { registerForXootPushNotifications } from '@/lib/push-notifications';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -14,6 +15,29 @@ export default function AccountScreen() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Hidden rather than disabled where the native sheet does not exist — Android, and
+  // iOS below 13. A dead "Continue with Apple" button is worse than no button.
+  const [appleAvailable, setAppleAvailable] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    isAppleSignInAvailable()
+      .then((available) => mounted && setAppleAvailable(available))
+      .catch(() => mounted && setAppleAvailable(false));
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const continueWithApple = useCallback(async () => {
+    try {
+      await signInWithApple();
+    } catch (error) {
+      // Dismissing the sheet is a decision, not a failure.
+      if (isAppleSignInCancellation(error)) return;
+      setStatus(error instanceof Error ? error.message : 'Could not sign in with Apple.');
+    }
+  }, []);
 
   const sendMagicLink = async () => {
     setIsSubmitting(true);
@@ -27,7 +51,7 @@ export default function AccountScreen() {
         },
       });
       if (error) throw error;
-      setStatus('Check your email to finish signing in to Zoot.');
+      setStatus('Check your email to finish signing in to Xoot.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Could not send sign-in email.');
     } finally {
@@ -40,8 +64,8 @@ export default function AccountScreen() {
     setIsSubmitting(true);
     setStatus(null);
     try {
-      await registerForZootPushNotifications(user.id);
-      setStatus('Push notifications are connected for safe Zoot service updates.');
+      await registerForXootPushNotifications(user.id);
+      setStatus('Push notifications are connected for safe Xoot service updates.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Push setup failed.');
     } finally {
@@ -51,25 +75,25 @@ export default function AccountScreen() {
 
   if (user) {
     return (
-      <ZootScreen>
+      <XootScreen>
         <LiquidCard>
           <Eyebrow>Account</Eyebrow>
-          <Title>Your Zoot session is active.</Title>
+          <Title>Your Xoot session is active.</Title>
           <Body muted>{user.email ?? user.id}</Body>
           <StatusPill tone="success">Secure session storage enabled</StatusPill>
           <PrimaryButton disabled={isSubmitting} onPress={enablePush}>Enable service notifications</PrimaryButton>
           <SecondaryButton onPress={signOut}>Sign out</SecondaryButton>
           {status ? <Body>{status}</Body> : null}
         </LiquidCard>
-      </ZootScreen>
+      </XootScreen>
     );
   }
 
   return (
-    <ZootScreen>
+    <XootScreen>
       <LiquidCard>
         <Eyebrow>Sign in</Eyebrow>
-        <Title>Use Zoot with protected account access.</Title>
+        <Title>Use Xoot with protected account access.</Title>
         <Body muted>
           General Concierge questions work for guests. Bookings, Care+, payment status, support tickets, and saved home details require sign-in.
         </Body>
@@ -89,12 +113,14 @@ export default function AccountScreen() {
         <SecondaryButton disabled={isSubmitting} onPress={() => startOAuth('google').catch((error) => setStatus(error.message))}>
           Continue with Google
         </SecondaryButton>
-        <SecondaryButton disabled={isSubmitting} onPress={() => startOAuth('apple').catch((error) => setStatus(error.message))}>
-          Continue with Apple
-        </SecondaryButton>
+        {appleAvailable ? (
+          <SecondaryButton disabled={isSubmitting} onPress={continueWithApple}>
+            Continue with Apple
+          </SecondaryButton>
+        ) : null}
         {status ? <Body>{status}</Body> : null}
       </LiquidCard>
-    </ZootScreen>
+    </XootScreen>
   );
 }
 

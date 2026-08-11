@@ -35,8 +35,8 @@ export function calculateCancellationFee(price: number, ctx: CancellationContext
 }
 
 export function describeFee(pct: number): string {
-  if (pct >= 50) return "Your Zooter is already on the way or working — full inconvenience fee applies.";
-  if (pct >= 40) return "Your Zooter is very close and has prepared for the visit.";
+  if (pct >= 50) return "Your Xooter is already on the way or working — full inconvenience fee applies.";
+  if (pct >= 40) return "Your Xooter is very close and has prepared for the visit.";
   if (pct >= 25) return "Less than 24 hours notice — partial fee applies.";
   return "Thanks for the early notice — minimum fee applies.";
 }

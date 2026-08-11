@@ -1,8 +1,8 @@
-# Zoot Expo Mobile App Build Path
+# Xoot Expo Mobile App Build Path
 
 Reviewed: 2026-07-01
 
-Zoot's production mobile path is Expo, not Capacitor. The React/Vite website remains in the repo root. Native iOS and Android work now belongs in `/mobile`.
+Xoot's production mobile path is Expo, not Capacitor. The React/Vite website remains in the repo root. Native iOS and Android work now belongs in `/mobile`.
 
 ## What Exists
 
@@ -28,7 +28,7 @@ Set real public-safe Supabase and EAS values in `.env.local` for local developme
 
 ## Expo Go Versus Development Builds
 
-Zoot cannot be fully tested in Expo Go. It includes custom native code through `@rnmapbox/maps` and the Zoot assistant-intents config plugin. Expo Go cannot load native code that is not compiled into the Expo Go client.
+Xoot cannot be fully tested in Expo Go. It includes custom native code through `@rnmapbox/maps` and the Xoot assistant-intents config plugin. Expo Go cannot load native code that is not compiled into the Expo Go client.
 
 Use one of these paths:
 
@@ -39,7 +39,7 @@ Use one of these paths:
    - Build the `development` EAS profile for the target device.
    - Install that development client.
    - Start Metro with `npm run mobile:start:dev-client`.
-   - Open the installed Zoot development client and connect to the Metro URL or QR code.
+   - Open the installed Xoot development client and connect to the Metro URL or QR code.
 
 The first native build must be rebuilt whenever native dependencies, config plugins, permissions or app identifiers change. JavaScript-only changes can then be tested through Metro without rebuilding the native client.
 
@@ -123,8 +123,8 @@ Required before Play internal testing:
 ## Native Experience Rules
 
 - Use SecureStore for sessions.
-- Do not rely on Expo Go for full Zoot testing. The app uses native modules such as Mapbox and Liquid Glass support, so preview/development builds are the real test targets.
-- Keep client-contractor chat inside Zoot.
+- Do not rely on Expo Go for full Xoot testing. The app uses native modules such as Mapbox and Liquid Glass support, so preview/development builds are the real test targets.
+- Keep client-contractor chat inside Xoot.
 - Do not use WhatsApp for routine communication.
 - Route sensitive actions through Supabase Edge Functions.
 - Never expose household access details in push notifications, widgets, logs, screenshots, Live Activities, or lock-screen surfaces.

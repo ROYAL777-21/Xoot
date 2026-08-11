@@ -2,9 +2,9 @@
 
 Reviewed: 2026-07-02
 
-This matrix is informed by OWASP ASVS control themes, adapted to Zoot's architecture. It is not a certification claim and does not replace an external penetration test.
+This matrix is informed by OWASP ASVS control themes, adapted to Xoot's architecture. It is not a certification claim and does not replace an external penetration test.
 
-| Control area | Zoot implementation location | Test reference | Automated status | Manual review status | Risk | Owner | Known gap | Mitigation | Review date |
+| Control area | Xoot implementation location | Test reference | Automated status | Manual review status | Risk | Owner | Known gap | Mitigation | Review date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Architecture and trust boundaries | `docs/security/trust-boundary-map.md`, `docs/security/master-threat-model-index.md` | Readiness guard and launch review | Partial | Required before launch | High | Engineering | External provider settings not all configured | Keep provider controls disabled until signed smoke tests pass | 2026-07-02 |
 | Authentication | `src/pages/Auth.tsx`, `src/pages/AuthReset.tsx`, `supabase/config.toml` | `npm run config:check`, Auth redirect live verification | Partial | Required | High | Engineering | Live Supabase redirect allowlists and leaked-password protection pending | Configure through guarded script/dashboard and verify readback | 2026-07-02 |

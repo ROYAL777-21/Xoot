@@ -65,7 +65,7 @@ export type LedgerEntry = {
   direction: "credit" | "debit";
 };
 
-export type ZootBlackEligibilityInput = {
+export type XootBlackEligibilityInput = {
   featureEnabled: boolean;
   explicitOptIn: boolean;
   zooterTier?: string | null;
@@ -75,9 +75,9 @@ export type ZootBlackEligibilityInput = {
   legalApproved: boolean;
 };
 
-export type ZootBlackLineItem = {
+export type XootBlackLineItem = {
   item_key: "zoot_black_service";
-  label: "Zoot Black service";
+  label: "Xoot Black service";
   quantity: 1;
   unit_amount: number;
   total_amount: number;
@@ -148,11 +148,42 @@ export const LAUNDRY_IRONING_PRICES: PriceRule[] = [
   { id: "ironing-1", label: "Ironing, 1 load", estimatedHours: 3.5, priceZar: 296 },
 ];
 
-export const BOOKING_COVER_PRICE_ZAR = 21;
+export const BOOKING_COVER_PRICE_ZAR = 22;
 export const ONE_TIME_SERVICE_FEE_ZAR = 39;
 export const ADD_ON_PRICE_ZAR = 30;
 export const HIGH_DEMAND_SLOT_RATE = 0.15;
 export const SURGE_SLOT_RATE_RANGE = { min: 0.1, max: 0.15 } as const;
+
+/**
+ * Graded slot pricing — built, and **off**.
+ *
+ * `isHighDemandSlot` is binary: `hour >= 16`, 15% or nothing. On the bookable grid that means
+ * 15:00 costs nothing extra and 16:00 costs 15%, an hour apart, and a customer who notices has
+ * no explanation available beyond "that is where we drew the line". `SURGE_SLOT_RATE_RANGE` has
+ * carried 0.10–0.15 since it was written and nothing has ever read it, which reads like a range
+ * that was intended and never built.
+ *
+ * The curve below prices the actual shape of the scarcity: late afternoon is harder to staff
+ * than mid-afternoon, which is harder than morning. It leaves 17:00 exactly where it is, lowers
+ * 16:00, and puts a small premium on 15:00.
+ *
+ * ⚠️ **`GRADED_SLOT_PRICING` is false, so nothing has changed.** With the flag off, every slot
+ * is priced exactly as it was — `slot-pricing.test.ts` asserts that byte for byte across the
+ * whole bookable grid, so this can sit here indefinitely without touching a single quote.
+ *
+ * Turning it on changes what customers are charged, and that is the founder's call rather than
+ * a side effect of a refactor. It is one boolean, on both sides, held together by
+ * `pricing-parity.test.ts`. See `docs/dynamic-pricing-policy.md` for why this is the kind of
+ * dynamic pricing Xoot will do and spend-history pricing is not.
+ */
+export const GRADED_SLOT_PRICING = false;
+
+/** Premium by bookable slot when the curve is live. Absent means no premium. */
+export const SLOT_PREMIUM_CURVE: Record<string, number> = {
+  "15:00": 0.05,
+  "16:00": 0.1,
+  "17:00": 0.15,
+};
 
 const ADD_ON_PRICE = ADD_ON_PRICE_ZAR;
 const BOOKING_COVER = BOOKING_COVER_PRICE_ZAR;
@@ -169,6 +200,18 @@ export const isHighDemandSlot = (time: string) => {
   return hour >= 16;
 };
 
+/**
+ * The premium rate for a slot. The single place either pricing model is chosen.
+ *
+ * Kept as one function rather than a branch at each call site, so the flag cannot be honoured in
+ * the quote and forgotten in the receipt — which is the shape of every pricing defect this repo
+ * has already shipped.
+ */
+export const slotPremiumRate = (time: string): number => {
+  if (GRADED_SLOT_PRICING) return SLOT_PREMIUM_CURVE[time] ?? 0;
+  return isHighDemandSlot(time) ? HIGH_DEMAND_SLOT_RATE : 0;
+};
+
 export const calculateBookingQuote = ({
   basePrice,
   addOnCount,
@@ -178,7 +221,7 @@ export const calculateBookingQuote = ({
 }: BookingQuoteInput): BookingQuote => {
   const addOnsTotal = addOnCount * ADD_ON_PRICE;
   const subtotal = basePrice + addOnsTotal;
-  const highDemandPremium = isHighDemandSlot(time) ? Math.round(subtotal * HIGH_DEMAND_RATE) : 0;
+  const highDemandPremium = Math.round(subtotal * slotPremiumRate(time));
   const serviceFee = frequency === "one_time" ? ONE_TIME_SERVICE_FEE : 0;
   const bookingCover = bookingCoverOptIn ? BOOKING_COVER : 0;
 
@@ -281,7 +324,7 @@ export type SensitiveAccessAvailability =
   | { state: "available"; opensAt: string; minutesUntilOpen: 0 }
   | { state: "closed"; opensAt: string | null; minutesUntilOpen: 0 };
 
-export const getAcceptedZooterJobAddress = ({
+export const getAcceptedXooterJobAddress = ({
   jobState,
   address,
 }: {
@@ -352,7 +395,7 @@ export const getSensitiveAccessAvailability = ({
   return { state: "closed", opensAt, minutesUntilOpen: 0 };
 };
 
-export const canOfferZootBlack = ({
+export const canOfferXootBlack = ({
   featureEnabled,
   explicitOptIn,
   zooterTier,
@@ -360,7 +403,7 @@ export const canOfferZootBlack = ({
   equipmentEvidenceApproved,
   areaPilotApproved,
   legalApproved,
-}: ZootBlackEligibilityInput) => {
+}: XootBlackEligibilityInput) => {
   const eliteTier = ["elite", "elite_verified", "black"].includes((zooterTier ?? "").toLowerCase());
   return Boolean(
     featureEnabled
@@ -373,13 +416,13 @@ export const canOfferZootBlack = ({
   );
 };
 
-export const buildZootBlackLineItem = (amount: number): ZootBlackLineItem | null => {
+export const buildXootBlackLineItem = (amount: number): XootBlackLineItem | null => {
   if (!Number.isFinite(amount) || amount <= 0) return null;
 
   const roundedAmount = Math.round(amount * 100) / 100;
   return {
     item_key: "zoot_black_service",
-    label: "Zoot Black service",
+    label: "Xoot Black service",
     quantity: 1,
     unit_amount: roundedAmount,
     total_amount: roundedAmount,
@@ -423,7 +466,7 @@ export const buildPaymentReconciliationReference = ({
   return `ZOOT-${provider.toUpperCase()}-${bookingPart}-${paymentPart}`;
 };
 
-export const canReleaseZooterPayout = ({
+export const canReleaseXooterPayout = ({
   payoutsEnabled,
   verifiedPayoutAccount,
   stepUpRequiredForAccountChanges,
@@ -461,7 +504,7 @@ export const buildPendingPaymentRecord = ({
   payment_kind: kind,
 });
 
-export const applyZootCredLedger = (entries: LedgerEntry[]) => {
+export const applyXootCredLedger = (entries: LedgerEntry[]) => {
   return entries.reduce((balance, entry) => {
     return entry.direction === "credit" ? balance + entry.amount : balance - entry.amount;
   }, 0);

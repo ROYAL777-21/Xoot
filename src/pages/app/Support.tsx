@@ -21,29 +21,29 @@ type SupportAssistantReply = {
 
 const quickSupportPrompts = [
   {
-    label: "Late Zooter",
-    subject: "My Zooter is late",
-    body: "My Zooter has not arrived yet. Please check the booking and help me understand the next step.",
+    label: "Late Xooter",
+    subject: "My Xooter is late",
+    body: "My Xooter has not arrived yet. Please check the booking and help me understand the next step.",
   },
   {
     label: "Replacement",
-    subject: "I need a replacement Zooter",
+    subject: "I need a replacement Xooter",
     body: "I need help with a replacement for my booking. Please review the safest option for this job.",
   },
   {
     label: "Quality review",
     subject: "I need help after a clean",
-    body: "I would like Zoot to review a service concern and advise what can be done next.",
+    body: "I would like Xoot to review a service concern and advise what can be done next.",
   },
   {
-    label: "Join Zoot",
-    subject: "I need help with Zooter onboarding",
-    body: "I am applying to become a Zooter and need help with onboarding, document uploads, training, or trust review.",
+    label: "Join Xoot",
+    subject: "I need help with Xooter onboarding",
+    body: "I am applying to become a Xooter and need help with onboarding, document uploads, training, or trust review.",
   },
   {
     label: "Care+",
     subject: "I have a Care+ question",
-    body: "I want to understand Care+ benefits, Home Memory, Favourite Zooter rebooking, ZootCred, or priority support.",
+    body: "I want to understand Care+ benefits, Home Memory, Favourite Xooter rebooking, XootCred, or priority support.",
   },
 ];
 
@@ -52,7 +52,7 @@ const requestSupportAssistantReply = async (
   subject: string,
   body: string,
 ): Promise<SupportAssistantReply | null> => {
-  const functionsClient = (supabase as any).functions;
+  const functionsClient = supabase.functions;
   if (!functionsClient?.invoke) return null;
 
   const { data, error } = await functionsClient.invoke("support-respond", {
@@ -129,7 +129,7 @@ const Support = () => {
     if (assistantReply?.escalated) {
       toast.success("We've flagged this for human support review in the app.");
     } else if (assistantReply?.response) {
-      toast.success("Zoot Assistant replied and support has your ticket.");
+      toast.success("Xoot Assistant replied and support has your ticket.");
     } else {
       toast.success("We've got your message. Support will review it in the app.");
     }
@@ -190,7 +190,7 @@ const Support = () => {
                   <Bot className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-display text-xl font-bold">Zoot bot</p>
+                  <p className="font-display text-xl font-bold">Xoot bot</p>
                   <p className="text-xs text-muted-foreground">Fast triage with human backup</p>
                 </div>
               </div>
@@ -260,7 +260,7 @@ const Support = () => {
                 <div className="liquid-glass-shell rounded-2xl p-3 text-sm">
                   <div className="liquid-glass-readable">
                     <p className="flex items-center gap-1 text-xs font-bold text-sage-deep uppercase mb-1">
-                      <Sparkles className="h-3 w-3" /> Zoot Assistant
+                      <Sparkles className="h-3 w-3" /> Xoot Assistant
                     </p>
                     <p className="text-sm leading-6 text-foreground">{t.ai_response}</p>
                   </div>

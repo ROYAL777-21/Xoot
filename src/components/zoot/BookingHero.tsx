@@ -22,18 +22,18 @@ const services = [
 export const BookingHero = () => {
   const [active, setActive] = useState("residential");
   const [address, setAddress] = useState("");
-  const [activeZooters, setActiveZooters] = useState(0);
+  const [activeXooters, setActiveXooters] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
-    (supabase as any).from("zooters_public").select("id", { count: "exact", head: true }).then(({ count }) => {
-      setActiveZooters(count ?? 0);
+    supabase.from("zooters_public").select("id", { count: "exact", head: true }).then(({ count }) => {
+      setActiveXooters(count ?? 0);
     });
   }, []);
 
-  const liveZooterLabel = isSupabaseConfigured ? String(activeZooters) : "Live roster";
+  const liveXooterLabel = isSupabaseConfigured ? String(activeXooters) : "Live roster";
 
   const startBooking = () => {
     captureAnalyticsEvent("booking_flow_started", {
@@ -62,10 +62,10 @@ export const BookingHero = () => {
             Premium home care,<br />
             <span className="relative inline-block">
               <span className="relative z-10 text-primary">built on trust</span>
-              <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/15 -z-0" />
+              <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/15 z-0" />
             </span>
           </h1>
-          <p className="mt-4 lg:mt-5 text-base sm:text-lg text-muted-foreground max-w-md">Book vetted independent Zooters for homes, Airbnb turnovers, office workspaces, moving cleans and premium resets. Zoot verifies your address and confirms availability before final dispatch.</p>
+          <p className="mt-4 lg:mt-5 text-base sm:text-lg text-muted-foreground max-w-md">Book vetted independent Xooters for homes, Airbnb turnovers, office workspaces, moving cleans and premium resets. Xoot verifies your address and confirms availability before final dispatch.</p>
 
           <div className="mt-6 lg:mt-8 rounded-3xl bg-card border border-border shadow-soft p-4 sm:p-5 md:p-6">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -79,7 +79,7 @@ export const BookingHero = () => {
                     className={`flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-2xl px-3 py-2 text-center text-sm font-semibold leading-tight transition-all duration-300 ${isActive ? "bg-foreground text-background shadow-warm" : "bg-muted/60 text-muted-foreground hover:bg-muted"}`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    <span className="min-w-0 break-words">{s.label}</span>
+                    <span className="min-w-0 wrap-break-word">{s.label}</span>
                   </button>
                 );
               })}
@@ -131,19 +131,19 @@ export const BookingHero = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <span><span className="font-semibold text-foreground">{liveZooterLabel}</span> {isSupabaseConfigured ? "approved Zooters currently live" : "loads from Supabase when configured"}</span>
+            <span><span className="font-semibold text-foreground">{liveXooterLabel}</span> {isSupabaseConfigured ? "approved Xooters currently live" : "loads from Supabase when configured"}</span>
             <span><span className="font-semibold text-foreground">MIE-ready</span> trust workflow</span>
           </div>
         </div>
 
         <div className="relative animate-scale-in hidden md:block">
-          <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-warm">
-            <img src={heroImg} alt="Friendly Zoot cleaner finishing a residential clean" className="h-full w-full object-cover" width={1280} height={1600} />
-            <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-transparent to-transparent" />
+          <div className="relative aspect-4/5 rounded-4xl overflow-hidden shadow-warm">
+            <img src={heroImg} alt="Friendly Xoot cleaner finishing a residential clean" className="h-full w-full object-cover" width={1280} height={1600} />
+            <div className="absolute inset-0 bg-linear-to-t from-foreground/40 via-transparent to-transparent" />
             <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
               <div className="liquid-glass-shell rounded-2xl p-3 shadow-card flex items-center gap-3 animate-fade-in">
-                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{isSupabaseConfigured ? activeZooters : "Z"}</span></div>
-                <div className="liquid-glass-readable"><p className="text-xs text-muted-foreground">Live Zooters</p><p className="text-sm font-semibold">{isSupabaseConfigured ? "After verification" : "Supabase-backed"}</p></div>
+                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{isSupabaseConfigured ? activeXooters : "Z"}</span></div>
+                <div className="liquid-glass-readable"><p className="text-xs text-muted-foreground">Live Xooters</p><p className="text-sm font-semibold">{isSupabaseConfigured ? "After verification" : "Supabase-backed"}</p></div>
               </div>
             </div>
             <div className="absolute bottom-6 left-6 right-6">

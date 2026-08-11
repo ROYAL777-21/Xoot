@@ -1,29 +1,27 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildEmailPayload } from "../_shared/email-playbook.ts";
+import {
+  ADD_ON_CENTS,
+  BOOKING_COVER_CENTS,
+  HOME_SIZE_HOURS,
+  ONE_TIME_SERVICE_FEE_CENTS,
+  basePrice,
+  resolveHours,
+} from "../_shared/pricing.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  "https://zoothome.co.za",
-  "https://www.zoothome.co.za",
+  "https://xoot.co.za",
+  "https://www.xoot.co.za",
 ];
 
 const services = new Set(["residential", "express", "airbnb", "office", "deep", "moving", "premium"]);
-const serviceMultiplier: Record<string, number> = {
-  residential: 1,
-  express: 0.85,
-  airbnb: 1.15,
-  office: 1.2,
-  deep: 1.35,
-  moving: 1.4,
-  premium: 1.55,
-};
-
-const homeSizes: Record<string, { hours: number; price: number }> = {
-  small: { hours: 4, price: 270 },
-  medium: { hours: 5.5, price: 315 },
-  large: { hours: 8, price: 390 },
-};
+// This function carried its OWN copy of the superseded model — homeSizes R270/R315/R390 times a
+// serviceMultiplier, cover R21 — entirely separate from create-booking's. The ZD-020 repricing
+// missed it because it imports no shared pricing and no client code calls it, so nothing failed.
+// It is deployed and authenticated, though, so it was a live second path charging figures nobody
+// approved. It now prices off ../_shared/pricing.ts like every other path.
 
 const approvedLaunchRegions = [
   "midrand",
@@ -131,30 +129,42 @@ Deno.serve(async (req) => {
     const addOns = Array.isArray(body.addOns) ? body.addOns.slice(0, 12) : [];
 
     if (!services.has(serviceType)) return json({ error: "unsupported service" }, 400, origin);
-    if (!homeSizes[homeSizeId]) return json({ error: "unsupported home size" }, 400, origin);
+    if (HOME_SIZE_HOURS[homeSizeId] === undefined) return json({ error: "unsupported home size" }, 400, origin);
     if (!allowedTimes.has(time)) return json({ error: "unsupported time" }, 400, origin);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return json({ error: "invalid date" }, 400, origin);
     if (!address || !isApprovedLaunchRegion(address)) return json({ error: "outside launch coverage" }, 400, origin);
-    if (zooterIds.length === 0) return json({ error: "select at least one Zooter" }, 400, origin);
+    if (zooterIds.length === 0) return json({ error: "select at least one Xooter" }, 400, origin);
 
     const maxWorkers = multiWorkerServices.has(serviceType) ? Math.min(Math.max(requestedWorkerCount || 1, 1), 5) : 1;
-    const selectedZooterIds = zooterIds.slice(0, maxWorkers);
-    const size = homeSizes[homeSizeId];
-    const basePrice = Math.round(size.price * (serviceMultiplier[serviceType] ?? 1));
+    const selectedXooterIds = zooterIds.slice(0, maxWorkers);
+    const bookedHours = resolveHours({ hours: body?.hours, homeSizeId });
+    if (bookedHours === null) return json({ error: "booked hours are required" }, 400, origin);
+
+    const priced = basePrice(serviceType, bookedHours);
+    if (!priced.ok) return json({ error: priced.reason }, 400, origin);
+
+    // Cents internally, rands at the boundary, so the stored columns keep the shape every
+    // existing reader expects. Mirrors create-booking deliberately: two booking paths that
+    // round money differently is the same class of bug as two ladders.
     const discount = maxWorkers >= 3 ? 0.1 : 0;
-    const discountedBase = Math.round(basePrice * (1 - discount)) * selectedZooterIds.length;
-    const addOnsTotal = addOns.length * 30;
-    const subtotal = discountedBase + addOnsTotal;
-    const highDemandPremium = isHighDemandSlot(time) ? Math.round(subtotal * 0.15) : 0;
-    const serviceFee = frequency === "one_time" ? 39 : 0;
-    const bookingCover = body.bookingCoverOptIn === false ? 0 : 21;
+    const discountedBaseCents = Math.round(priced.baseCents * (1 - discount)) * selectedXooterIds.length;
+    const subtotalCents = discountedBaseCents + addOns.length * ADD_ON_CENTS;
+    const highDemandCents = isHighDemandSlot(time) ? Math.round(subtotalCents * 0.15) : 0;
+    const serviceFeeCents = frequency === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0;
+    const bookingCoverCents = body.bookingCoverOptIn === false ? 0 : BOOKING_COVER_CENTS;
+
+    const toRands = (cents: number) => Math.round(cents / 100);
+    const subtotal = toRands(subtotalCents);
+    const highDemandPremium = toRands(highDemandCents);
+    const serviceFee = toRands(serviceFeeCents);
+    const bookingCover = toRands(bookingCoverCents);
     const bookingTotal = subtotal + highDemandPremium + serviceFee + bookingCover;
-    const estHours = size.hours + addOns.length;
-    const perBookingTotal = Math.max(1, Math.round(bookingTotal / selectedZooterIds.length));
-    const perBookingPrice = Math.max(1, Math.round(subtotal / selectedZooterIds.length));
-    const perBookingServiceFee = Math.round(serviceFee / selectedZooterIds.length);
-    const perBookingCover = Math.round(bookingCover / selectedZooterIds.length);
-    const perBookingHighDemand = Math.round(highDemandPremium / selectedZooterIds.length);
+    const estHours = priced.hours + addOns.length;
+    const perBookingTotal = Math.max(1, Math.round(bookingTotal / selectedXooterIds.length));
+    const perBookingPrice = Math.max(1, Math.round(subtotal / selectedXooterIds.length));
+    const perBookingServiceFee = Math.round(serviceFee / selectedXooterIds.length);
+    const perBookingCover = Math.round(bookingCover / selectedXooterIds.length);
+    const perBookingHighDemand = Math.round(highDemandPremium / selectedXooterIds.length);
     const scheduledAt = `${date}T${time}:00+02:00`;
     const launchRegion = approvedLaunchRegions.find((region) => address.toLowerCase().includes(region)) ?? address;
 
@@ -162,15 +172,31 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+    // `householdProfileId` arrives from the request body and was previously written to
+    // `recurring_schedules` unchecked, so a caller could attach their schedule to someone else's
+    // household. Not a credential path — `get-sensitive-access` reads `bookings`, not
+    // `recurring_schedules` — but the same missing proof that made the booking path a real hole,
+    // and there is no reason for the two to disagree. One message for "no such profile" and for
+    // "not yours", so ids cannot be probed.
+    if (householdProfileId) {
+      const { data: household } = await supa
+        .from("household_profiles")
+        .select("id")
+        .eq("id", householdProfileId)
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+      if (!household) return json({ error: "household profile not found" }, 404, origin);
+    }
+
     const { data: zooters } = await supa
       .from("zooters")
       .select("id,name,active")
-      .in("id", selectedZooterIds)
+      .in("id", selectedXooterIds)
       .eq("active", true);
-    if (!zooters || zooters.length !== selectedZooterIds.length) return json({ error: "selected Zooter is unavailable" }, 409, origin);
+    if (!zooters || zooters.length !== selectedXooterIds.length) return json({ error: "selected Xooter is unavailable" }, 409, origin);
 
     const bookingIds: string[] = [];
-    for (const zooterId of selectedZooterIds) {
+    for (const zooterId of selectedXooterIds) {
       const { data: booking, error: bookingError } = await supa.from("bookings").insert({
         user_id: authData.user.id,
         zooter_id: zooterId,
@@ -227,7 +253,7 @@ Deno.serve(async (req) => {
           event_type: "booking_confirmed",
           channel,
           owner: channel === "brevo_email" ? "Retention & Loyalty Agent" : "Customer Support Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Zoot in-app notification",
+          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Xoot in-app notification",
           payload: channel === "brevo_email"
             ? buildEmailPayload("booking_confirmed", { booking_id: booking.id, service_type: serviceType, scheduled_at: scheduledAt })
             : { booking_id: booking.id, service_type: serviceType, scheduled_at: scheduledAt },
@@ -261,7 +287,7 @@ Deno.serve(async (req) => {
       const firstBookingDate = new Date(scheduledAt);
       await supa.from("recurring_schedules").insert({
         user_id: authData.user.id,
-        zooter_id: selectedZooterIds[0],
+        zooter_id: selectedXooterIds[0],
         household_profile_id: householdProfileId,
         cadence_days: 14,
         preferred_day: firstBookingDate.toLocaleDateString("en-ZA", { weekday: "long" }),

@@ -2,7 +2,7 @@
 
 Reviewed: 2026-07-10 00:53 SAST
 
-This document defines how Zoot prevents source, release, database, article, and provider metadata from drifting away from the actual product state.
+This document defines how Xoot prevents source, release, database, article, and provider metadata from drifting away from the actual product state.
 
 ## Sources Of Truth
 
@@ -60,8 +60,8 @@ Do not use broad `supabase db push`, direct edits to `supabase_migrations`, or u
 
 1. A post is considered published only when the article registry, queue state, and sitemap all agree.
 2. Publish dates must use real release dates, not draft dates.
-3. Comparison articles must stay factual, non-defamatory, and grounded in approved Zoot source-of-truth content.
-4. WordPress may become the editorial CMS, but canonical published website URLs remain controlled by the Zoot web app until a different strategy is approved.
+3. Comparison articles must stay factual, non-defamatory, and grounded in approved Xoot source-of-truth content.
+4. WordPress may become the editorial CMS, but canonical published website URLs remain controlled by the Xoot web app until a different strategy is approved.
 5. When articles are released with a website deployment, sync article registry dates, queue dates, generated draft-ledger dates, and sitemap `lastmod` with the South Africa release date before running validation:
 
 ```powershell
@@ -71,7 +71,7 @@ npm run seo:validate
 
 Use `--dry-run` first if you only want to confirm which published articles would change.
 
-The SEO validator uses the Zoot market timezone, `Africa/Johannesburg`, so a SAST release date is not misclassified as future by UTC CI runners.
+The SEO validator uses the Xoot market timezone, `Africa/Johannesburg`, so a SAST release date is not misclassified as future by UTC CI runners.
 
 ## Provider And Environment Rules
 

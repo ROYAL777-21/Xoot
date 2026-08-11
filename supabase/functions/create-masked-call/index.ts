@@ -12,11 +12,6 @@ import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/govern
 
 const basicAuth = (username: string, password: string) => `Basic ${btoa(`${username}:${password}`)}`;
 
-const privateRpc = (supa: any, fn: string, args: Record<string, unknown>) => {
-  if (typeof supa.schema === "function") return supa.schema("private").rpc(fn, args);
-  return supa.rpc(fn, args);
-};
-
 const getUserPhone = async (supa: any, userId: string) => {
   const { data } = await supa.from("profiles").select("phone").eq("id", userId).maybeSingle();
   return data?.phone ?? null;
@@ -70,8 +65,20 @@ const createTwilioProxySession = async (bookingId: string, clientPhone: string, 
   };
 };
 
+/**
+ * Calls the `public` wrapper, which forwards to `private.can_create_masked_call`.
+ *
+ * This used to go through a local `privateRpc` helper doing `supa.schema("private").rpc(...)` —
+ * the same defect `_shared/governance-utils.ts` documents, duplicated here and in `ops-workflow`
+ * rather than shared, which is why the earlier governance fix did not reach it. The call goes over
+ * PostgREST and `private` is invisible to PostgREST, so it always threw, and the bare `catch` at
+ * the bottom of this handler turned that into a generic 500. Masked calls have never worked.
+ *
+ * `20260808120000_public_masked_call_eligibility_wrapper.sql` adds the SECURITY INVOKER wrapper,
+ * EXECUTE revoked from anon and authenticated, granted only to service_role.
+ */
 const getMaskedCallEligibility = async (supa: any, bookingId: string, actorId: string) => {
-  const { data, error } = await privateRpc(supa, "can_create_masked_call", {
+  const { data, error } = await supa.rpc("can_create_masked_call", {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -109,11 +116,24 @@ Deno.serve(async (req) => {
     const participant = await assertBookingParticipant(supa, booking, user.id);
     if (!participant.participant) return fail("booking access denied", origin, 403);
 
+    /*
+     * 3 per 10 minutes was too tight, and tight in the worst place.
+     *
+     * A masked call is only offered during an active booking window — someone is en route or at
+     * the door. That is exactly when a call drops on mobile data and gets retried, and three
+     * attempts is two drops away from a ten-minute lockout at the moment contact matters most.
+     *
+     * 8 still stops the abuse this guards against: each attempt provisions a Twilio Proxy
+     * session, and the actor key is per user *and* per booking, so this is eight per person per
+     * booking rather than eight across the platform. It is also no longer a cliff — the window
+     * became a sliding one in 20260808140000, so allowance decays back smoothly instead of
+     * resetting at a boundary the user cannot see.
+     */
     const rateLimit = await consumeRateLimit(supa, {
       bucket: "twilio.masked_voice",
       actor: `masked-call:${user.id}:${bookingId}`,
       action: "create",
-      limitCount: 3,
+      limitCount: 8,
       windowSeconds: 600,
     });
     if (!rateLimit.allowed) return fail("too many masked call requests", origin, 429);
@@ -125,10 +145,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!booking.zooter_id) return fail("booking has no assigned Zooter", origin, 409);
+    if (!booking.zooter_id) return fail("booking has no assigned Xooter", origin, 409);
 
     const { data: zooter } = await supa.from("zooters").select("user_id").eq("id", booking.zooter_id).maybeSingle();
-    if (!zooter?.user_id) return fail("assigned Zooter account not found", origin, 404);
+    if (!zooter?.user_id) return fail("assigned Xooter account not found", origin, 404);
 
     const clientPhone = await getUserPhone(supa, booking.user_id);
     const zooterPhone = await getUserPhone(supa, zooter.user_id);

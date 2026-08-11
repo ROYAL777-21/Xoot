@@ -10,7 +10,7 @@ const Insurance = () => {
           <span className="text-xs font-medium text-sage-deep">Trust policy</span>
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-bold">Booking protection workflow</h1>
-        <p className="text-muted-foreground mt-2 max-w-xl">Zoot is launch-ready with trust records, admin queues and audit logs. Live insurance or legal cover claims should only be added after approved policy documents are connected.</p>
+        <p className="text-muted-foreground mt-2 max-w-xl">Xoot is launch-ready with trust records, admin queues and audit logs. Live insurance or legal cover claims should only be added after approved policy documents are connected.</p>
       </div>
 
       <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-sage-deep" /> What is active in the app</h2>

@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { captureOrSelectImage } from "@/lib/mobile-upload";
-import { ZooterApplicationInput } from "@/lib/validators";
+import { XooterApplicationInput } from "@/lib/validators";
 
 type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
 
@@ -288,7 +288,7 @@ const Apply = () => {
   const submit = async () => {
     if (!user) return;
     if (!form.background_check_consent) { haptic("warning"); toast.error("Background check consent is required"); return; }
-    const applicationInput = ZooterApplicationInput.safeParse({
+    const applicationInput = XooterApplicationInput.safeParse({
       full_name: form.full_name,
       phone: form.phone,
       suburb: form.suburb,
@@ -329,8 +329,8 @@ const Apply = () => {
   return (
     <div className="min-h-screen gradient-hero py-10 px-6">
       <div className="max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-3 border border-accent/20"><Sparkles className="h-3 w-3 text-sage-deep" /><span className="text-xs font-medium text-sage-deep">Become a Zooter</span></div>
-        <h1 className="font-display text-4xl font-bold mb-2">Join Zoot</h1>
+        <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-3 border border-accent/20"><Sparkles className="h-3 w-3 text-sage-deep" /><span className="text-xs font-medium text-sage-deep">Become a Xooter</span></div>
+        <h1 className="font-display text-4xl font-bold mb-2">Join Xoot</h1>
         <p className="text-muted-foreground mb-6">Build predictable income with recurring clients, premium homes, fast support, strong vetting and visible trust badges.</p>
         <div className="mb-4"><div className="flex justify-between text-xs text-muted-foreground mb-1.5"><span>Step {step + 1} of {steps.length} - {steps[step]}</span><span>{Math.round(progress)}%</span></div><Progress value={progress} /></div>
 
@@ -344,7 +344,7 @@ const Apply = () => {
 
           {step === 3 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">Banking for payouts</h2><p className="text-sm text-muted-foreground">Banking is manually reviewed before first payout.</p><F label="Bank name" name="bank_name"><Input value={form.bank_name ?? ""} onChange={(e) => setForm({ ...form, bank_name: e.target.value })} /></F><div className="grid sm:grid-cols-2 gap-3"><F label="Account number" name="bank_account_number"><Input value={form.bank_account_number ?? ""} onChange={(e) => setForm({ ...form, bank_account_number: e.target.value })} /></F><F label="Branch code" name="bank_branch_code"><Input value={form.bank_branch_code ?? ""} onChange={(e) => setForm({ ...form, bank_branch_code: e.target.value })} /></F></div></div>}
 
-          {step === 4 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> References & emergency contact</h2><p className="text-sm text-muted-foreground">References help us keep marketplace quality high before a Zooter goes live.</p><div className="grid sm:grid-cols-2 gap-3"><F label="Emergency contact name" name="emergency_contact_name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} /></F><F label="Emergency contact phone" name="emergency_contact_phone"><Input value={form.emergency_contact_phone ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} /></F><F label="Reference 1 name" name="reference_1_name"><Input value={form.reference_1_name ?? ""} onChange={(e) => setForm({ ...form, reference_1_name: e.target.value })} /></F><F label="Reference 1 phone" name="reference_1_phone"><Input value={form.reference_1_phone ?? ""} onChange={(e) => setForm({ ...form, reference_1_phone: e.target.value })} /></F><F label="Reference 2 name" name="reference_2_name"><Input value={form.reference_2_name ?? ""} onChange={(e) => setForm({ ...form, reference_2_name: e.target.value })} /></F><F label="Reference 2 phone" name="reference_2_phone"><Input value={form.reference_2_phone ?? ""} onChange={(e) => setForm({ ...form, reference_2_phone: e.target.value })} /></F></div></div>}
+          {step === 4 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> References & emergency contact</h2><p className="text-sm text-muted-foreground">References help us keep marketplace quality high before a Xooter goes live.</p><div className="grid sm:grid-cols-2 gap-3"><F label="Emergency contact name" name="emergency_contact_name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} /></F><F label="Emergency contact phone" name="emergency_contact_phone"><Input value={form.emergency_contact_phone ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} /></F><F label="Reference 1 name" name="reference_1_name"><Input value={form.reference_1_name ?? ""} onChange={(e) => setForm({ ...form, reference_1_name: e.target.value })} /></F><F label="Reference 1 phone" name="reference_1_phone"><Input value={form.reference_1_phone ?? ""} onChange={(e) => setForm({ ...form, reference_1_phone: e.target.value })} /></F><F label="Reference 2 name" name="reference_2_name"><Input value={form.reference_2_name ?? ""} onChange={(e) => setForm({ ...form, reference_2_name: e.target.value })} /></F><F label="Reference 2 phone" name="reference_2_phone"><Input value={form.reference_2_phone ?? ""} onChange={(e) => setForm({ ...form, reference_2_phone: e.target.value })} /></F></div></div>}
 
           {step === 5 && (
             <div className="space-y-3">
@@ -395,7 +395,7 @@ const Apply = () => {
             </div>
           )}
 
-          {step === 6 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Trust review consent</h2><div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2"><p className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> By submitting you authorise Zoot to verify identity, selfie, address, banking details, references, and criminal background status.</p><p>No live third-party check is run in this version. Admin reviewers classify each verification area before activation.</p></div><label className="flex items-start gap-3 cursor-pointer"><Checkbox checked={form.background_check_consent} onCheckedChange={(v) => setField("background_check_consent", !!v)} /><span className="text-sm">I consent to the Zoot trust review and background-check process.</span></label></div>}
+          {step === 6 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Trust review consent</h2><div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2"><p className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> By submitting you authorise Xoot to verify identity, selfie, address, banking details, references, and criminal background status.</p><p>No live third-party check is run in this version. Admin reviewers classify each verification area before activation.</p></div><label className="flex items-start gap-3 cursor-pointer"><Checkbox checked={form.background_check_consent} onCheckedChange={(v) => setField("background_check_consent", !!v)} /><span className="text-sm">I consent to the Xoot trust review and background-check process.</span></label></div>}
 
           <div className="flex justify-between mt-8 pt-4 border-t border-border"><Button variant="ghost" onClick={() => { haptic("selection"); setStep(Math.max(step - 1, 0)); }} disabled={step === 0}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>{step < steps.length - 1 ? <Button onClick={next} className="gradient-warm">Save & continue <ArrowRight className="h-4 w-4 ml-1" /></Button> : <Button onClick={submit} disabled={submitting || !form.background_check_consent} className="gradient-warm">{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Submit application <ArrowRight className="h-4 w-4 ml-1" /></>}</Button>}</div>
         </Card>

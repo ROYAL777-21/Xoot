@@ -1,38 +1,1389 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-/* Zoot Design System - Warm Home palette: terracotta + sage + cream */
+/* The Xoot UI kit's own tokens, generated from design/Xoot_App.html by
+   `npm run kit:tokens`. Additive on purpose: declaring them changes nothing until a
+   component asks for a --xoot-* value, so the kit's system can land ahead of the port
+   instead of in one breaking sweep. The app's own semantic tokens are still the ones
+   below; which set wins is the open palette decision in blocker.md. */
+@import './styles/kit-tokens.css';
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+@theme inline {
+  /* Georgia for display and for anything the user types — identified by the founder
+     from Tiimo's register, and it ships on iOS, macOS, Windows and Android, so there
+     is no webfont to download and no flash of unstyled text.
+     Body UI is the OS rounded face: SF Pro Rounded on Apple platforms. */
+  --font-display: Georgia, 'Times New Roman', ui-serif, serif;
+  --font-serif: Georgia, 'Times New Roman', ui-serif, serif;
+  --font-sans: ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-glow: hsl(var(--primary-glow));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
+  --color-care-plus: hsl(var(--care-plus));
+  --color-care-plus-foreground: hsl(var(--care-plus-foreground));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-info: hsl(var(--info));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info-foreground: hsl(var(--info-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-soft: hsl(var(--accent-soft));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-terracotta: hsl(var(--terracotta));
+  --color-sage: hsl(var(--sage));
+  --color-sage-deep: hsl(var(--sage-deep));
+  --color-cream: hsl(var(--cream));
+  --color-ink: hsl(var(--ink));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 8px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.5s ease-out both;
+  --animate-scale-in: scale-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  --animate-float: float 4s ease-in-out infinite;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  @keyframes fade-up {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes scale-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+/* ── Motion utilities ────────────────────────────────────────────────────────
+   Ported from the app-iteration design layer. `rise-in` is the staggered card
+   entrance used throughout onboarding: apply it to siblings and offset each with
+   an animation-delay in 55ms steps. Both respect prefers-reduced-motion, which
+   for an entrance means showing the final state immediately rather than nothing. */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50%      { transform: rotate(3deg); }
+}
+
+@utility rise-in {
+  opacity: 0;
+  animation: rise-in 0.62s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in { opacity: 1; transform: none; animation: none; }
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility gradient-warm {
+  background: var(--gradient-warm);
+}
+
+@utility gradient-sage {
+  background: var(--gradient-sage);
+}
+
+@utility gradient-hero {
+  background: var(--gradient-hero);
+}
+
+@utility shadow-warm {
+  box-shadow: var(--shadow-warm);
+}
+
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@utility keyboard-safe {
+  padding-bottom: calc(var(--keyboard-offset) + env(safe-area-inset-bottom));
+}
+
+@utility safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
+}
+
+@utility native-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-padding-bottom: calc(var(--keyboard-offset) + 96px);
+}
+
+@utility liquid-glass-content {
+  position: relative;
+  z-index: 1;
+  color: hsl(var(--foreground));
+  isolation: isolate;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  @supports (-webkit-backdrop-filter: blur(1px)) {
+    html[data-native-platform='apple'] & {
+      text-shadow: none;
+      transform: none;
+    }
+  }
+}
+
+@utility liquid-glass-readable {
+  position: relative;
+  z-index: 1;
+  color: hsl(var(--foreground));
+  isolation: isolate;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  @supports (-webkit-backdrop-filter: blur(1px)) {
+    html[data-native-platform='apple'] & {
+      text-shadow: none;
+      transform: none;
+    }
+  }
+}
+
+@utility liquid-glass-shell {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+      radial-gradient(
+        circle at 92% 4%,
+        hsl(0 0% 100% / 0.92),
+        hsl(0 0% 100% / 0.18) 12%,
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 76% 18%,
+        hsl(var(--primary-glow) / 0.34),
+        transparent 30%
+      ),
+      radial-gradient(
+        circle at 18% 96%,
+        hsl(var(--accent) / 0.22),
+        transparent 42%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(var(--card) / 0.46),
+        hsl(var(--background) / 0.3) 44%,
+        hsl(var(--secondary) / 0.42)
+      );
+    backdrop-filter: saturate(190%) contrast(122%) brightness(1.08);
+    -webkit-backdrop-filter: saturate(190%) contrast(122%) brightness(1.08);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+      linear-gradient(205deg, hsl(0 0% 100% / 0.82), transparent 22%),
+      radial-gradient(
+        circle at 100% 0%,
+        hsl(0 0% 100% / 0.88),
+        transparent 18%
+      ),
+      radial-gradient(
+        circle at 50% 120%,
+        hsl(var(--foreground) / 0.1),
+        transparent 36%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(0 0% 100% / 0.16),
+        hsl(var(--background) / 0.54) 54%,
+        hsl(var(--foreground) / 0.06)
+      );
+    border: 1px solid hsl(0 0% 100% / 0.42);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.78),
+      inset -1px -1px 0 hsl(var(--foreground) / 0.1),
+      inset 0 0 0 999px hsl(var(--background) / 0.64),
+      0 18px 52px -34px hsl(var(--foreground) / 0.52);
+  }
+
+  .dark &::before {
+    background:
+      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.34), transparent 26%),
+      radial-gradient(
+        circle at 72% 18%,
+        hsl(var(--primary) / 0.28),
+        transparent 32%
+      ),
+      radial-gradient(
+        circle at 14% 92%,
+        hsl(var(--accent) / 0.18),
+        transparent 40%
+      ),
+      linear-gradient(145deg, hsl(20 25% 7% / 0.64), hsl(20 18% 13% / 0.48));
+    backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
+    -webkit-backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
+  }
+
+  .dark &::after {
+    border-color: hsl(0 0% 100% / 0.26);
+    background:
+      linear-gradient(205deg, hsl(0 0% 100% / 0.42), transparent 24%),
+      radial-gradient(
+        circle at 100% 0%,
+        hsl(0 0% 100% / 0.52),
+        transparent 18%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(0 0% 100% / 0.08),
+        hsl(20 25% 7% / 0.7) 55%,
+        hsl(0 0% 0% / 0.2)
+      );
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.42),
+      inset 0 -1px 0 hsl(0 0% 100% / 0.06),
+      inset 0 0 0 999px hsl(20 25% 7% / 0.72),
+      0 24px 70px -38px hsl(0 0% 0% / 0.82);
+  }
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  & :where(p, span, h1, h2, h3, h4, h5, h6, a, button, label, input, textarea) {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  &:active::after {
+    animation: zoot-glass-shell-glint 620ms var(--ease-native) both;
+  }
+
+  html[data-installable-mode='standalone'] &::before {
+    backdrop-filter: saturate(220%) contrast(128%);
+    -webkit-backdrop-filter: saturate(220%) contrast(128%);
+  }
+
+  @supports (-webkit-backdrop-filter: blur(1px)) {
+    html[data-native-platform='apple'] &::before {
+      background:
+        radial-gradient(
+          circle at 94% 2%,
+          hsl(0 0% 100% / 0.94),
+          hsl(0 0% 100% / 0.2) 12%,
+          transparent 34%
+        ),
+        radial-gradient(
+          circle at 78% 18%,
+          hsl(var(--primary-glow) / 0.34),
+          transparent 32%
+        ),
+        radial-gradient(
+          circle at 12% 92%,
+          hsl(var(--accent) / 0.2),
+          transparent 42%
+        ),
+        linear-gradient(
+          145deg,
+          hsl(var(--card) / 0.44),
+          hsl(var(--background) / 0.28)
+        );
+      backdrop-filter: saturate(215%) contrast(126%) brightness(1.06);
+      -webkit-backdrop-filter: saturate(215%) contrast(126%) brightness(1.06);
+    }
+
+    html[data-native-platform='apple'] &::after {
+      border-color: hsl(0 0% 100% / 0.38);
+      box-shadow:
+        inset 0 1px 0 hsl(0 0% 100% / 0.66),
+        inset 0 -1px 0 hsl(var(--foreground) / 0.08),
+        inset 0 0 0 999px hsl(var(--background) / 0.66),
+        0 18px 42px -30px hsl(var(--foreground) / 0.42);
+    }
+  }
+}
+
+@utility liquid-glass-nav {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: visible;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+      radial-gradient(
+        circle at 92% 4%,
+        hsl(0 0% 100% / 0.92),
+        hsl(0 0% 100% / 0.18) 12%,
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 76% 18%,
+        hsl(var(--primary-glow) / 0.34),
+        transparent 30%
+      ),
+      radial-gradient(
+        circle at 18% 96%,
+        hsl(var(--accent) / 0.22),
+        transparent 42%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(var(--card) / 0.46),
+        hsl(var(--background) / 0.3) 44%,
+        hsl(var(--secondary) / 0.42)
+      );
+    backdrop-filter: saturate(190%) contrast(122%) brightness(1.08);
+    -webkit-backdrop-filter: saturate(190%) contrast(122%) brightness(1.08);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+      linear-gradient(205deg, hsl(0 0% 100% / 0.82), transparent 22%),
+      radial-gradient(
+        circle at 100% 0%,
+        hsl(0 0% 100% / 0.88),
+        transparent 18%
+      ),
+      radial-gradient(
+        circle at 50% 120%,
+        hsl(var(--foreground) / 0.1),
+        transparent 36%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(0 0% 100% / 0.16),
+        hsl(var(--background) / 0.54) 54%,
+        hsl(var(--foreground) / 0.06)
+      );
+    border: 1px solid hsl(0 0% 100% / 0.42);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.78),
+      inset -1px -1px 0 hsl(var(--foreground) / 0.1),
+      inset 0 0 0 999px hsl(var(--background) / 0.64),
+      0 18px 52px -34px hsl(var(--foreground) / 0.52);
+  }
+
+  .dark &::before {
+    background:
+      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.34), transparent 26%),
+      radial-gradient(
+        circle at 72% 18%,
+        hsl(var(--primary) / 0.28),
+        transparent 32%
+      ),
+      radial-gradient(
+        circle at 14% 92%,
+        hsl(var(--accent) / 0.18),
+        transparent 40%
+      ),
+      linear-gradient(145deg, hsl(20 25% 7% / 0.64), hsl(20 18% 13% / 0.48));
+    backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
+    -webkit-backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
+  }
+
+  .dark &::after {
+    border-color: hsl(0 0% 100% / 0.26);
+    background:
+      linear-gradient(205deg, hsl(0 0% 100% / 0.42), transparent 24%),
+      radial-gradient(
+        circle at 100% 0%,
+        hsl(0 0% 100% / 0.52),
+        transparent 18%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(0 0% 100% / 0.08),
+        hsl(20 25% 7% / 0.7) 55%,
+        hsl(0 0% 0% / 0.2)
+      );
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.42),
+      inset 0 -1px 0 hsl(0 0% 100% / 0.06),
+      inset 0 0 0 999px hsl(20 25% 7% / 0.72),
+      0 24px 70px -38px hsl(0 0% 0% / 0.82);
+  }
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  & :where(p, span, h1, h2, h3, h4, h5, h6, a, button, label) {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  &:active::after {
+    animation: zoot-glass-shell-glint 620ms var(--ease-native) both;
+  }
+
+  &[data-scrolled='true']::before {
+    background:
+      linear-gradient(
+        135deg,
+        hsl(var(--card) / 0.96),
+        hsl(var(--secondary) / 0.82)
+      ),
+      radial-gradient(
+        circle at 18% 0%,
+        hsl(var(--primary) / 0.2),
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 88% 18%,
+        hsl(var(--accent) / 0.18),
+        transparent 36%
+      );
+    backdrop-filter: saturate(210%) contrast(124%);
+    -webkit-backdrop-filter: saturate(210%) contrast(124%);
+  }
+
+  &[data-scrolled='true']::after {
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.52),
+      inset 0 -1px 0 hsl(var(--foreground) / 0.08),
+      0 18px 46px -28px hsl(var(--foreground) / 0.46);
+  }
+
+  html[data-installable-mode='standalone'] &::before {
+    backdrop-filter: saturate(220%) contrast(128%);
+    -webkit-backdrop-filter: saturate(220%) contrast(128%);
+  }
+
+  @supports (-webkit-backdrop-filter: blur(1px)) {
+    html[data-native-platform='apple'] &::before {
+      background:
+        radial-gradient(
+          circle at 94% 2%,
+          hsl(0 0% 100% / 0.94),
+          hsl(0 0% 100% / 0.2) 12%,
+          transparent 34%
+        ),
+        radial-gradient(
+          circle at 78% 18%,
+          hsl(var(--primary-glow) / 0.34),
+          transparent 32%
+        ),
+        radial-gradient(
+          circle at 12% 92%,
+          hsl(var(--accent) / 0.2),
+          transparent 42%
+        ),
+        linear-gradient(
+          145deg,
+          hsl(var(--card) / 0.44),
+          hsl(var(--background) / 0.28)
+        );
+      backdrop-filter: saturate(215%) contrast(126%) brightness(1.06);
+      -webkit-backdrop-filter: saturate(215%) contrast(126%) brightness(1.06);
+    }
+
+    html[data-native-platform='apple'] &::after {
+      border-color: hsl(0 0% 100% / 0.38);
+      box-shadow:
+        inset 0 1px 0 hsl(0 0% 100% / 0.66),
+        inset 0 -1px 0 hsl(var(--foreground) / 0.08),
+        inset 0 0 0 999px hsl(var(--background) / 0.66),
+        0 18px 42px -30px hsl(var(--foreground) / 0.42);
+    }
+  }
+}
+
+@utility zoot-top-nav {
+  transform: translateZ(0);
+
+  &::before {
+    background:
+      radial-gradient(
+        circle at 94% 0%,
+        hsl(0 0% 100% / 0.96),
+        hsl(0 0% 100% / 0.18) 12%,
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 82% 16%,
+        hsl(var(--primary-glow) / 0.3),
+        transparent 34%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(var(--card) / 0.42),
+        hsl(var(--secondary) / 0.34)
+      );
+  }
+
+  &::after {
+    border-color: hsl(0 0% 100% / 0.34);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.7),
+      inset 0 -1px 0 hsl(var(--foreground) / 0.08),
+      inset 0 0 0 999px hsl(var(--background) / 0.74),
+      0 24px 64px -38px hsl(var(--foreground) / 0.5);
+  }
+}
+
+@utility dark {
+  & .liquid-glass-shell::before {
+    background:
+      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.34), transparent 26%),
+      radial-gradient(
+        circle at 72% 18%,
+        hsl(var(--primary) / 0.28),
+        transparent 32%
+      ),
+      radial-gradient(
+        circle at 14% 92%,
+        hsl(var(--accent) / 0.18),
+        transparent 40%
+      ),
+      linear-gradient(145deg, hsl(20 25% 7% / 0.64), hsl(20 18% 13% / 0.48));
+    backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
+    -webkit-backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
+  }
+
+  & .liquid-glass-nav::before {
+    background:
+      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.34), transparent 26%),
+      radial-gradient(
+        circle at 72% 18%,
+        hsl(var(--primary) / 0.28),
+        transparent 32%
+      ),
+      radial-gradient(
+        circle at 14% 92%,
+        hsl(var(--accent) / 0.18),
+        transparent 40%
+      ),
+      linear-gradient(145deg, hsl(20 25% 7% / 0.64), hsl(20 18% 13% / 0.48));
+    backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
+    -webkit-backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
+  }
+
+  & .liquid-glass-shell::after {
+    border-color: hsl(0 0% 100% / 0.26);
+    background:
+      linear-gradient(205deg, hsl(0 0% 100% / 0.42), transparent 24%),
+      radial-gradient(
+        circle at 100% 0%,
+        hsl(0 0% 100% / 0.52),
+        transparent 18%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(0 0% 100% / 0.08),
+        hsl(20 25% 7% / 0.7) 55%,
+        hsl(0 0% 0% / 0.2)
+      );
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.42),
+      inset 0 -1px 0 hsl(0 0% 100% / 0.06),
+      inset 0 0 0 999px hsl(20 25% 7% / 0.72),
+      0 24px 70px -38px hsl(0 0% 0% / 0.82);
+  }
+
+  & .liquid-glass-nav::after {
+    border-color: hsl(0 0% 100% / 0.26);
+    background:
+      linear-gradient(205deg, hsl(0 0% 100% / 0.42), transparent 24%),
+      radial-gradient(
+        circle at 100% 0%,
+        hsl(0 0% 100% / 0.52),
+        transparent 18%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(0 0% 100% / 0.08),
+        hsl(20 25% 7% / 0.7) 55%,
+        hsl(0 0% 0% / 0.2)
+      );
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.42),
+      inset 0 -1px 0 hsl(0 0% 100% / 0.06),
+      inset 0 0 0 999px hsl(20 25% 7% / 0.72),
+      0 24px 70px -38px hsl(0 0% 0% / 0.82);
+  }
+}
+
+@utility liquid-glass-interactive {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid transparent;
+  transform: translateZ(0);
+  will-change: transform, box-shadow;
+  transition:
+    transform 180ms var(--ease-spring),
+    box-shadow 220ms var(--ease-native),
+    border-color 180ms var(--ease-native),
+    color 180ms var(--ease-native);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      radial-gradient(
+        circle at 88% 10%,
+        hsl(0 0% 100% / 0.82),
+        transparent 18%
+      ),
+      radial-gradient(
+        circle at 70% 22%,
+        hsl(var(--primary-glow) / 0.34),
+        transparent 38%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(0 0% 100% / 0.28),
+        hsl(var(--background) / 0.12)
+      );
+    transition:
+      opacity 180ms var(--ease-native),
+      transform 180ms var(--ease-spring);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -65%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 82% 18%, hsl(0 0% 100% / 0.95), transparent 7%),
+      radial-gradient(circle at 72% 25%, hsl(0 0% 100% / 0.4), transparent 13%),
+      conic-gradient(
+        from 215deg at 82% 16%,
+        transparent 0 20deg,
+        hsl(0 0% 100% / 0.64) 34deg,
+        transparent 58deg 360deg
+      );
+    transform: translate3d(18%, -18%, 0) scale(0.72) rotate(8deg);
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  &:focus-visible::before {
+    opacity: 1;
+  }
+
+  &[aria-current='page']::before {
+    opacity: 1;
+  }
+
+  &[aria-pressed='true']::before {
+    opacity: 1;
+  }
+
+  &[data-state='selected']::before {
+    opacity: 1;
+  }
+
+  &:hover {
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.44),
+      inset -1px -1px 0 hsl(var(--foreground) / 0.05),
+      0 12px 28px -22px hsl(var(--foreground) / 0.55);
+  }
+
+  &:focus-visible {
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.44),
+      inset -1px -1px 0 hsl(var(--foreground) / 0.05),
+      0 12px 28px -22px hsl(var(--foreground) / 0.55);
+  }
+
+  &:hover::after {
+    opacity: 0.72;
+  }
+
+  &:focus-visible::after {
+    opacity: 0.72;
+  }
+
+  &[aria-current='page']::after {
+    opacity: 0.72;
+  }
+
+  &[aria-pressed='true']::after {
+    opacity: 0.72;
+  }
+
+  &[data-state='selected']::after {
+    opacity: 0.72;
+  }
+
+  &[aria-current='page']::after {
+    animation: zoot-glass-glisten 1.35s var(--ease-native) both;
+  }
+
+  &[aria-pressed='true']::after {
+    animation: zoot-glass-glisten 1.35s var(--ease-native) both;
+  }
+
+  &[data-state='selected']::after {
+    animation: zoot-glass-glisten 1.35s var(--ease-native) both;
+  }
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  &:active::before {
+    opacity: 1;
+    animation: zoot-glass-bubble 520ms var(--ease-spring) both;
+  }
+
+  &:active::after {
+    animation: zoot-glass-glisten 560ms var(--ease-native) both;
+  }
+
+  &:active {
+    border-color: hsl(0 0% 100% / 0.42);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.58),
+      inset 0 0 28px hsl(0 0% 100% / 0.16),
+      0 10px 24px -20px hsl(var(--foreground) / 0.5);
+  }
+
+  @supports (-webkit-backdrop-filter: blur(1px)) {
+    html[data-native-platform='apple'] & {
+      border-color: hsl(0 0% 100% / 0.22);
+      box-shadow:
+        inset 0 1px 0 hsl(0 0% 100% / 0.28),
+        inset 0 -1px 0 hsl(var(--foreground) / 0.035);
+    }
+
+    html[data-native-platform='apple'] &::before {
+      backdrop-filter: saturate(180%) contrast(108%);
+      -webkit-backdrop-filter: saturate(180%) contrast(108%);
+    }
+
+    html[data-native-platform='apple'] &[aria-current='page'] {
+      border-color: hsl(var(--primary) / 0.22);
+    }
+  }
+}
+
+@utility zoot-liquid-nav-item {
+  overflow: hidden;
+
+  &[aria-current='page'] {
+    color: hsl(var(--foreground));
+    border-color: hsl(0 0% 100% / 0.36);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.52),
+      inset 0 0 22px hsl(var(--primary-glow) / 0.14),
+      0 16px 36px -28px hsl(var(--foreground) / 0.52);
+  }
+
+  &[data-active='true'] {
+    color: hsl(var(--foreground));
+    border-color: hsl(0 0% 100% / 0.36);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.52),
+      inset 0 0 22px hsl(var(--primary-glow) / 0.14),
+      0 16px 36px -28px hsl(var(--foreground) / 0.52);
+  }
+
+  &[aria-current='page']::before {
+    transform: scale(1.02);
+  }
+
+  &[data-active='true']::before {
+    transform: scale(1.02);
+  }
+
+  &:active {
+    animation: zoot-nav-bubble 480ms var(--ease-spring) both;
+  }
+}
+
+@utility zoot-concierge-panel {
+  border: 1px solid hsl(0 0% 100% / 0.32);
+
+  &::before {
+    background:
+      radial-gradient(
+        circle at 92% 4%,
+        hsl(0 0% 100% / 0.88),
+        hsl(0 0% 100% / 0.14) 13%,
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 78% 18%,
+        hsl(var(--primary-glow) / 0.34),
+        transparent 32%
+      ),
+      radial-gradient(
+        circle at 8% 92%,
+        hsl(var(--accent) / 0.2),
+        transparent 42%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(var(--card) / 0.42),
+        hsl(var(--background) / 0.3)
+      );
+    backdrop-filter: saturate(215%) contrast(128%) brightness(1.04);
+    -webkit-backdrop-filter: saturate(215%) contrast(128%) brightness(1.04);
+  }
+
+  &::after {
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.68),
+      inset 0 -1px 0 hsl(var(--foreground) / 0.08),
+      inset 0 0 0 999px hsl(var(--background) / 0.72),
+      0 26px 70px -34px hsl(var(--foreground) / 0.54);
+  }
+
+  &[data-open='true'] {
+    transform-origin: bottom right;
+    animation: zoot-concierge-morph 360ms var(--ease-spring) both;
+  }
+}
+
+@utility zoot-concierge-launcher {
+  overflow: hidden;
+
+  & svg {
+    transition:
+      transform 240ms var(--ease-spring),
+      filter 220ms var(--ease-native);
+  }
+
+  &:hover svg {
+    filter: drop-shadow(0 0 12px hsl(var(--primary-glow) / 0.48));
+    transform: rotate(8deg) scale(1.08);
+  }
+
+  &:focus-visible svg {
+    filter: drop-shadow(0 0 12px hsl(var(--primary-glow) / 0.48));
+    transform: rotate(8deg) scale(1.08);
+  }
+
+  &[data-open='true'] svg {
+    filter: drop-shadow(0 0 12px hsl(var(--primary-glow) / 0.48));
+    transform: rotate(8deg) scale(1.08);
+  }
+}
+
+@utility liquid-glass-conversation {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0.55rem;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 1.5rem;
+    background:
+      radial-gradient(circle at 92% 0%, hsl(0 0% 100% / 0.38), transparent 20%),
+      linear-gradient(
+        145deg,
+        hsl(var(--background) / 0.24),
+        hsl(var(--card) / 0.18)
+      );
+    border: 1px solid hsl(0 0% 100% / 0.2);
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.26);
+  }
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@utility liquid-glass-message {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 92% 8%, hsl(0 0% 100% / 0.48), transparent 22%),
+      linear-gradient(145deg, hsl(0 0% 100% / 0.18), transparent 58%);
+  }
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@utility zoot-message-enter {
+  animation: zoot-message-enter 260ms var(--ease-native) both;
+}
+
+@utility zoot-typing-shimmer {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-105%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.34),
+      transparent
+    );
+    animation: zoot-typing-glide 1.15s var(--ease-native) infinite;
+  }
+}
+
+@utility zoot-duration-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+
+@utility zoot-duration-card {
+  min-height: 9.5rem;
+  background:
+    radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.56), transparent 20%),
+    linear-gradient(
+      145deg,
+      hsl(var(--card) / 0.78),
+      hsl(var(--secondary) / 0.48)
+    );
+
+  &[data-selected='true'] {
+    border-color: hsl(var(--foreground) / 0.72);
+    color: hsl(var(--foreground));
+    background:
+      radial-gradient(circle at 90% 2%, hsl(0 0% 100% / 0.88), transparent 18%),
+      radial-gradient(
+        circle at 82% 18%,
+        hsl(var(--primary-glow) / 0.32),
+        transparent 38%
+      ),
+      linear-gradient(
+        145deg,
+        hsl(var(--primary) / 0.18),
+        hsl(var(--card) / 0.86)
+      );
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.58),
+      inset 0 0 32px hsl(var(--primary-glow) / 0.12),
+      0 22px 44px -34px hsl(var(--foreground) / 0.62);
+  }
+
+  &[data-selected='true']::after {
+    opacity: 0.62;
+    animation: zoot-glass-glisten 1.2s var(--ease-native) both;
+  }
+}
+
+@utility zoot-map-context {
+  background:
+    radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.5), transparent 24%),
+    linear-gradient(
+      145deg,
+      hsl(var(--secondary) / 0.44),
+      hsl(var(--card) / 0.76)
+    );
+}
+
+@utility interactive-press {
+  transform-origin: center;
+  will-change: transform, box-shadow;
+  transition:
+    transform 180ms var(--ease-spring),
+    box-shadow 220ms var(--ease-native),
+    background-color 180ms var(--ease-native),
+    border-color 180ms var(--ease-native),
+    color 180ms var(--ease-native),
+    opacity 180ms var(--ease-native);
+
+  &:active:not(:disabled):not([aria-disabled='true']) {
+    transform: scale(var(--press-scale));
+  }
+
+  &[data-pressed='true'] {
+    transform: scale(var(--press-scale));
+  }
+}
+
+@utility interactive-lift {
+  transition:
+    transform 220ms var(--ease-native),
+    box-shadow 220ms var(--ease-native),
+    border-color 180ms var(--ease-native),
+    background-color 180ms var(--ease-native);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+  }
+}
+
+@utility interactive-toggle {
+  transition:
+    background-color 180ms var(--ease-native),
+    box-shadow 220ms var(--ease-native),
+    transform 180ms var(--ease-spring);
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+@utility native-input {
+  min-height: 44px;
+  font-size: 16px;
+  transition:
+    border-color 180ms var(--ease-native),
+    box-shadow 180ms var(--ease-native),
+    background-color 180ms var(--ease-native),
+    transform 180ms var(--ease-spring);
+
+  &:focus {
+    transform: translateY(-1px);
+  }
+}
+
+@utility native-textarea {
+  transition:
+    height 180ms var(--ease-native),
+    border-color 180ms var(--ease-native),
+    box-shadow 180ms var(--ease-native),
+    background-color 180ms var(--ease-native);
+}
+
+@utility fade-in-soft {
+  animation: zoot-fade-in 220ms var(--ease-native) both;
+}
+
+@utility slide-up-soft {
+  animation: zoot-slide-up 260ms var(--ease-native) both;
+}
+
+@utility scale-in-soft {
+  animation: zoot-scale-in 220ms var(--ease-spring) both;
+}
+
+@utility cross-fade {
+  animation: zoot-cross-fade 180ms var(--ease-native) both;
+}
+
+@utility skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--muted));
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--background) / 0.58),
+      transparent
+    );
+    animation: zoot-shimmer 1.5s var(--ease-native) infinite;
+  }
+}
+
+@utility permission-primer {
+  border: 1px solid hsl(var(--border));
+  background: linear-gradient(
+    180deg,
+    hsl(var(--card)) 0%,
+    hsl(var(--secondary) / 0.46) 100%
+  );
+  box-shadow: var(--shadow-soft);
+}
+
+/* Xoot Design System — the UI kit's palette (design/Xoot_App.html, ZD-024).
+   Violet carries brand emphasis, ink is the commit button, red belongs to Care+ and
+   nothing else. Superseded: terracotta/sage/cream, then red/white.
+   Every value here is mirrored in src/lib/design-tokens.ts and design-tokens.test.ts
+   fails the build on drift, so this file is the only place a colour is decided. */
 
 @layer base {
   :root {
-    --background: 36 33% 97%;
-    --foreground: 20 30% 12%;
+    --background: 20 13% 95%;
+    --foreground: 0 0% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 20 30% 12%;
+    --card-foreground: 0 0% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 30% 12%;
+    --popover-foreground: 0 0% 8%;
 
     /* Terracotta */
-    --primary: 14 51% 53%;
-    --primary-foreground: 36 40% 98%;
-    --primary-glow: 22 65% 68%;
+    /* 51% not 53%: at 53% white-on-red measures 4.35:1, which fails AA for body text
+       and a 14px button label is body text. 51% gives 4.53:1. The two are visually
+       indistinguishable side by side; only the audit tells them apart. */
+    --primary: 0 0% 8%;
+    /* Care+ is a tier, not a button: richer and darker than the brand red so a
+       membership surface never reads as a primary CTA. */
+    /* Brand emphasis: selection, progress, active state. The kit's violet, at its 600
+       weight not its 500 — white on violet-500 measures 4.38:1 and fails AA for body
+       text, which a 14px chip label is. 600 gives 6.10:1. */
+    --brand: 253 79% 58%;
+    --brand-foreground: 0 0% 100%;
+    /* Care+ is the membership red, and the only place red appears in the UI.
+       51% not the kit's 53%: white on 53% is 4.31:1, the same AA failure --primary
+       was darkened for. */
+    --care-plus: 3 79% 51%;
+    /* Care+ had a fill and no foreground — declared, exposed to Tailwind as
+       `--color-care-plus`, and with nothing saying what text may sit on it. The first
+       membership badge to want a label would have picked whatever it inherited. White measures
+       4.50 here, which is exactly AA and no more; that is the reason 51% must not drift lighter.
+       Added 2026-08-09 alongside the success fix below. */
+    --care-plus-foreground: 0 0% 100%;
+    /* Semantic colours, deliberately separate from the brand hue. */
+    /* 35%, not 43%. White on 43% measures 3.20 — a success button's label is body text, and 3.20
+       fails AA the same way --primary at 53% and --destructive at 56% did. Nothing renders an
+       opaque success fill today (the only use is a 1.5px decorative dot in Welcome.tsx), so this
+       costs nothing now and stops the first success badge shipping unreadable. 35% gives 4.62. */
+    --success: 155 47% 35%;
+    --success-foreground: 0 0% 100%;
+    /* Left at 56% deliberately. An opaque warning fill measures only 2.17 against a white card —
+       below the 3.0 UI floor — but nothing renders one: BookingConfirm.tsx uses `bg-warning/10`
+       and `/15` behind `text-warning-foreground`, and the ink label on amber is 7.30. Darkening
+       amber far enough to separate from white would stop it reading as amber. Recorded in
+       design-contrast.test.ts rather than silently fixed; revisit when something wants a solid
+       warning chip. */
+    --warning: 37 78% 56%;
+    --warning-foreground: 14 18% 14%;
+    --info: 211 65% 57%;
+    --info-foreground: 0 0% 100%;
+    /* Mascot. Zoey's fill is the brand red; the halo is a soft tint of it. */
+    /* Deliberately 53%, brighter than --primary. Nothing is ever set in text on top
+       of Zoey, so the AA constraint that darkens the button red does not apply, and
+       the character reads better with the extra saturation. */
+    --zoey-fill: 3 78% 53%;
+    --zoey-halo: 6 100% 92%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 4 100% 68%;
 
     /* Cream secondary */
-    --secondary: 32 35% 92%;
-    --secondary-foreground: 20 30% 18%;
+    --secondary: 30 11% 93%;
+    --secondary-foreground: 0 0% 14%;
 
-    --muted: 32 25% 94%;
-    --muted-foreground: 20 14% 40%;
+    --muted: 24 10% 90%;
+    --muted-foreground: 27 4% 47%;
 
     /* Sage accent */
-    --accent: 105 20% 56%;
-    --accent-foreground: 36 40% 98%;
-    --accent-soft: 95 22% 88%;
+    --accent: 37 78% 56%;
+    /* Dark ink on marigold, never white: white measures 2.09:1 here and is unreadable.
+       Dark gives 7.56:1. This is why semantic colours each need their own foreground
+       rather than inheriting one global "on-accent" value. */
+    --accent-foreground: 14 18% 14%;
+    --accent-soft: 39 90% 92%;
 
-    --destructive: 0 72% 51%;
+    /* 48%, not the 56% the migration mapped.
+       At 56% the off-white label measured 3.70:1 — below the 4.5 body threshold, and a
+       destructive button's label is body text. Same finding, same fix as --primary going
+       53% -> 51% for the old red. 48% gives 4.55 on the label, 4.73 against a card and 4.23
+       against the page. Issue #38. */
+    --destructive: 7 78% 48%;
     --destructive-foreground: 36 40% 98%;
 
     --border: 28 22% 88%;
@@ -72,29 +1423,171 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /*
+     * Motion, ported from the design kit 2026-08-08.
+     *
+     * `docs/xoot-ios-build-prompt.md` warns that these are "why the kit feels the way it does
+     * and they are the first thing lost in a hand translation" — and they had been: before this,
+     * `index.css` declared not one of them while the kit's components referenced twelve.
+     *
+     * Values are the kit's own, read out of `design/Xoot_App.html`, not invented to look
+     * plausible. Two of the easings — `settle` and `spring` — are used by the kit but missing
+     * from the list in the build prompt, so that doc undercounts by two.
+     *
+     * Scheme-independent on purpose: durations and curves do not change between light and dark,
+     * so unlike the colour roles these are declared once and not repeated in `.dark`.
+     */
+    --xoot-dur-instant: 90ms;
+    --xoot-dur-fast: 170ms;
+    --xoot-dur-base: 280ms;
+    --xoot-dur-slow: 440ms;
+    --xoot-dur-story: 760ms;
+    --xoot-dur-bloom: 1200ms;
+    /* Ambient loops — a breathing surface and a looping icon. Long by intent, not by accident. */
+    --xoot-dur-breathe: 4600ms;
+    --xoot-dur-icon: 2600ms;
+
+    --xoot-ease-out: cubic-bezier(0.22, 0.9, 0.28, 1);
+    --xoot-ease-in-out: cubic-bezier(0.6, 0.05, 0.3, 0.95);
+    --xoot-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+    /* Overshoots past 1 — the only curve here that does. Reserve it for arrivals, not exits. */
+    --xoot-ease-spring: cubic-bezier(0.34, 1.42, 0.5, 1);
+
+    /*
+     * Section-label slot fills, and why they are not `--xoot-*`.
+     *
+     * `SectionLabel` originally read the kit's palette directly for its four non-time slots —
+     * `--xoot-violet-50`, `--xoot-honey-wash`, `--xoot-mist-wash`, `--xoot-neutral-100`. The
+     * kit's dark scope re-declares **semantic aliases only** and never the palette (a rule
+     * `kit-tokens.test.ts` enforces from the token side), so those four rendered as pale pills
+     * on a near-black page while the `--xoot-time-*` slots beside them adapted correctly.
+     *
+     * Nothing caught it: `kit-primitives.test.tsx` checked that every token named is *declared*,
+     * which they are, and jsdom neither resolves a custom property nor paints. It took the dark
+     * screenshot from `scripts/dev/shoot-kit.mjs` to see it.
+     *
+     * `kit-tokens.css` is generated from the design export and must not be hand-edited, so the
+     * missing aliases live here instead. No `--xoot-` prefix, deliberately: these are app tokens
+     * layered on the kit, and a name in that namespace would collide the next time the kit is
+     * re-extracted. Each is a pair — fill and ink — chosen against each other, following the
+     * kit's own `--xoot-time-*` pattern of a translucent tint over the page in dark.
+     */
+    --slot-high: var(--xoot-violet-50);
+    --slot-high-ink: var(--xoot-violet-700);
+    --slot-medium: var(--xoot-honey-wash);
+    --slot-medium-ink: var(--xoot-honey-ink);
+    --slot-low: var(--xoot-mist-wash);
+    --slot-low-ink: var(--xoot-mist-ink);
+    --slot-plain: var(--xoot-neutral-100);
+    --slot-plain-ink: var(--xoot-text-secondary);
+  }
+
+  /*
+   * Matches `[data-theme="dark"]` rather than `.dark`, because that is the scope the kit's own
+   * dark tokens use and these sit beside them. Tints are the palette colour at ~20% over the
+   * page, inks are the light tints — the same construction as `--xoot-time-morning` and its ink.
+   */
+  [data-theme="dark"] {
+    --slot-high: rgb(124 92 252 / 0.22);
+    --slot-high-ink: #C6B9FA;
+    --slot-medium: rgb(231 163 56 / 0.2);
+    --slot-medium-ink: #F2D3A0;
+    --slot-low: rgb(74 143 216 / 0.2);
+    --slot-low-ink: #B5D0EC;
+    --slot-plain: rgb(255 255 255 / 0.07);
+    --slot-plain-ink: var(--xoot-text-secondary);
+  }
+
+  /*
+   * The kit ships this and it would have been easy to drop. Zeroing the durations rather than
+   * disabling animations individually means every consumer keeps working — a transition still
+   * fires and still completes, it just takes no time — so nothing has to branch on the media
+   * query. Easing curves are deliberately left alone: with a zero duration they have no effect,
+   * and removing them would make the reduced-motion path diverge from the normal one for no gain.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --xoot-dur-instant: 0ms;
+      --xoot-dur-fast: 0ms;
+      --xoot-dur-base: 0ms;
+      --xoot-dur-slow: 0ms;
+      --xoot-dur-story: 0ms;
+      --xoot-dur-bloom: 0ms;
+      --xoot-dur-breathe: 0ms;
+      --xoot-dur-icon: 0ms;
+    }
+  }
+
+  /*
+   * The kit's confirmation pop, copied out of `design/Xoot_App.html` verbatim.
+   *
+   * It is the whole reason a check mark reads as *landing* rather than appearing: 0.82 → 1.12 →
+   * 1, with `--xoot-ease-spring` carrying the overshoot. `ChoiceRow` names it, and referencing a
+   * keyframe that does not exist fails silently — the element simply renders with no animation,
+   * which looks like a design choice rather than a missing rule.
+   *
+   * Not repeated under `prefers-reduced-motion`: the duration tokens above already go to 0ms
+   * there, so the animation completes instantly and the scale never leaves 1.
+   */
+  @keyframes xoot-pop {
+    0% {
+      transform: scale(0.82);
+    }
+    62% {
+      transform: scale(1.12);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
   .dark {
-    --background: 20 25% 8%;
-    --foreground: 36 33% 96%;
-    --card: 20 22% 11%;
-    --card-foreground: 36 33% 96%;
-    --popover: 20 22% 11%;
-    --popover-foreground: 36 33% 96%;
-    --primary: 22 65% 60%;
-    --primary-foreground: 20 30% 10%;
-    --secondary: 20 18% 16%;
-    --secondary-foreground: 36 33% 96%;
-    --muted: 20 18% 16%;
-    --muted-foreground: 32 15% 65%;
-    --accent: 105 20% 50%;
-    --accent-foreground: 36 33% 96%;
-    --destructive: 0 62.8% 45%;
-    --destructive-foreground: 36 33% 96%;
-    --border: 20 18% 18%;
-    --input: 20 18% 18%;
-    --ring: 22 65% 60%;
-    --gradient-hero: linear-gradient(180deg, hsl(20 25% 8%) 0%, hsl(20 22% 11%) 100%);
+    --background: 20 13% 7%;
+    --foreground: 20 13% 95%;
+    --card: 20 8% 10%;
+    --card-foreground: 20 13% 95%;
+    --popover: 20 8% 10%;
+    --popover-foreground: 20 13% 95%;
+    --primary: 20 13% 95%;
+    /* Dark mode lifts the brand red rather than reusing the light value: a mid red
+       on near-black loses too much contrast to carry a CTA. */
+    --brand: 252 87% 78%;
+    --brand-foreground: 0 0% 8%;
+    --care-plus: 3 79% 56%;
+    /* Ink, not white. White on this fill measures 4.06 and fails; ink gives 4.66. Same shape as
+       the destructive fix — every bright fill in this scheme takes an ink label. */
+    --care-plus-foreground: 10 17% 7%;
+    --success: 155 40% 62%;
+    --success-foreground: 10 17% 7%;
+    --warning: 37 78% 60%;
+    --warning-foreground: 10 17% 7%;
+    --info: 211 65% 70%;
+    --info-foreground: 10 17% 7%;
+    --zoey-fill: 4 96% 58%;
+    --zoey-halo: 6 40% 22%;
+    --primary-foreground: 0 0% 8%;
+    --secondary: 20 6% 14%;
+    --secondary-foreground: 20 13% 95%;
+    --muted: 20 6% 15%;
+    --muted-foreground: 25 7% 68%;
+    --accent: 37 78% 60%;
+    --accent-foreground: 10 17% 7%;
+    /* Ink on coral, not off-white — and this was the only exception in the whole dark scheme.
+       accent, success and warning all pair a bright fill with `10 17% 7%`; destructive alone
+       kept a near-white label, carried over from the old red palette where the fill was dark.
+       At 62% fill, off-white measured 2.88:1 — under 3.0, so a destructive button in dark was
+       below the floor for its border AND its label. Ink gives 5.79 on the label while the fill
+       keeps 5.37 against a card.
+       Darkening the fill to 46% was the alternative; it reaches exactly 4.50 on the label and
+       drops fill-vs-card to 3.45. Less headroom on both, and it would make destructive the one
+       dark-mode fill that is dark. Issue #38. */
+    --destructive: 7 78% 62%;
+    --destructive-foreground: 10 17% 7%;
+    --border: 8 17% 18%;
+    --input: 8 17% 18%;
+    --ring: 4 100% 64%;
+    --gradient-hero: linear-gradient(180deg, hsl(10 17% 7%) 0%, hsl(8 15% 11%) 100%);
   }
 }
 
@@ -147,612 +1640,7 @@
   }
 }
 
-@layer utilities {
-  .gradient-warm {
-    background: var(--gradient-warm);
-  }
-  .gradient-sage {
-    background: var(--gradient-sage);
-  }
-  .gradient-hero {
-    background: var(--gradient-hero);
-  }
-  .shadow-warm {
-    box-shadow: var(--shadow-warm);
-  }
-  .shadow-soft {
-    box-shadow: var(--shadow-soft);
-  }
-  .shadow-card {
-    box-shadow: var(--shadow-card);
-  }
-  .text-balance {
-    text-wrap: balance;
-  }
-  .tap-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  .keyboard-safe {
-    padding-bottom: calc(var(--keyboard-offset) + env(safe-area-inset-bottom));
-  }
-  .safe-bottom {
-    padding-bottom: max(env(safe-area-inset-bottom), 16px);
-  }
-  .native-scroll {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    scroll-padding-bottom: calc(var(--keyboard-offset) + 96px);
-  }
-  .liquid-glass-content,
-  .liquid-glass-readable {
-    position: relative;
-    z-index: 1;
-    color: hsl(var(--foreground));
-    isolation: isolate;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    filter: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    transform: none;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-}
-
 @layer components {
-  .liquid-glass-shell,
-  .liquid-glass-nav {
-    position: relative;
-    isolation: isolate;
-    background: transparent;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  .liquid-glass-shell {
-    overflow: hidden;
-  }
-
-  .liquid-glass-nav {
-    overflow: visible;
-  }
-
-  .zoot-top-nav {
-    transform: translateZ(0);
-  }
-
-  .liquid-glass-shell::before,
-  .liquid-glass-nav::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    background:
-      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.92), hsl(0 0% 100% / 0.18) 12%, transparent 34%),
-      radial-gradient(circle at 76% 18%, hsl(var(--primary-glow) / 0.34), transparent 30%),
-      radial-gradient(circle at 18% 96%, hsl(var(--accent) / 0.22), transparent 42%),
-      linear-gradient(145deg, hsl(var(--card) / 0.46), hsl(var(--background) / 0.30) 44%, hsl(var(--secondary) / 0.42));
-    backdrop-filter: saturate(190%) contrast(122%) brightness(1.08);
-    -webkit-backdrop-filter: saturate(190%) contrast(122%) brightness(1.08);
-  }
-
-  .liquid-glass-shell::after,
-  .liquid-glass-nav::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    background:
-      linear-gradient(205deg, hsl(0 0% 100% / 0.82), transparent 22%),
-      radial-gradient(circle at 100% 0%, hsl(0 0% 100% / 0.88), transparent 18%),
-      radial-gradient(circle at 50% 120%, hsl(var(--foreground) / 0.10), transparent 36%),
-      linear-gradient(145deg, hsl(0 0% 100% / 0.16), hsl(var(--background) / 0.54) 54%, hsl(var(--foreground) / 0.06));
-    border: 1px solid hsl(0 0% 100% / 0.42);
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.78),
-      inset -1px -1px 0 hsl(var(--foreground) / 0.10),
-      inset 0 0 0 999px hsl(var(--background) / 0.64),
-      0 18px 52px -34px hsl(var(--foreground) / 0.52);
-  }
-
-  .dark .liquid-glass-shell::before,
-  .dark .liquid-glass-nav::before {
-    background:
-      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.34), transparent 26%),
-      radial-gradient(circle at 72% 18%, hsl(var(--primary) / 0.28), transparent 32%),
-      radial-gradient(circle at 14% 92%, hsl(var(--accent) / 0.18), transparent 40%),
-      linear-gradient(145deg, hsl(20 25% 7% / 0.64), hsl(20 18% 13% / 0.48));
-    backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
-    -webkit-backdrop-filter: saturate(210%) contrast(126%) brightness(0.98);
-  }
-
-  .dark .liquid-glass-shell::after,
-  .dark .liquid-glass-nav::after {
-    border-color: hsl(0 0% 100% / 0.26);
-    background:
-      linear-gradient(205deg, hsl(0 0% 100% / 0.42), transparent 24%),
-      radial-gradient(circle at 100% 0%, hsl(0 0% 100% / 0.52), transparent 18%),
-      linear-gradient(145deg, hsl(0 0% 100% / 0.08), hsl(20 25% 7% / 0.70) 55%, hsl(0 0% 0% / 0.20));
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.42),
-      inset 0 -1px 0 hsl(0 0% 100% / 0.06),
-      inset 0 0 0 999px hsl(20 25% 7% / 0.72),
-      0 24px 70px -38px hsl(0 0% 0% / 0.82);
-  }
-
-  .zoot-top-nav::before {
-    background:
-      radial-gradient(circle at 94% 0%, hsl(0 0% 100% / 0.96), hsl(0 0% 100% / 0.18) 12%, transparent 34%),
-      radial-gradient(circle at 82% 16%, hsl(var(--primary-glow) / 0.30), transparent 34%),
-      linear-gradient(145deg, hsl(var(--card) / 0.42), hsl(var(--secondary) / 0.34));
-  }
-
-  .zoot-top-nav::after {
-    border-color: hsl(0 0% 100% / 0.34);
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.7),
-      inset 0 -1px 0 hsl(var(--foreground) / 0.08),
-      inset 0 0 0 999px hsl(var(--background) / 0.74),
-      0 24px 64px -38px hsl(var(--foreground) / 0.5);
-  }
-
-  .liquid-glass-shell > *,
-  .liquid-glass-nav > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .liquid-glass-shell :where(p, span, h1, h2, h3, h4, h5, h6, a, button, label, input, textarea),
-  .liquid-glass-nav :where(p, span, h1, h2, h3, h4, h5, h6, a, button, label) {
-    filter: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  .liquid-glass-interactive {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    border: 1px solid transparent;
-    transform: translateZ(0);
-    will-change: transform, box-shadow;
-    transition:
-      transform 180ms var(--ease-spring),
-      box-shadow 220ms var(--ease-native),
-      border-color 180ms var(--ease-native),
-      color 180ms var(--ease-native);
-  }
-
-  .liquid-glass-interactive::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0;
-    background:
-      radial-gradient(circle at 88% 10%, hsl(0 0% 100% / 0.82), transparent 18%),
-      radial-gradient(circle at 70% 22%, hsl(var(--primary-glow) / 0.34), transparent 38%),
-      linear-gradient(145deg, hsl(0 0% 100% / 0.28), hsl(var(--background) / 0.12));
-    transition:
-      opacity 180ms var(--ease-native),
-      transform 180ms var(--ease-spring);
-  }
-
-  .liquid-glass-interactive::after {
-    content: "";
-    position: absolute;
-    inset: -65%;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0;
-    border-radius: inherit;
-    background:
-      radial-gradient(circle at 82% 18%, hsl(0 0% 100% / 0.95), transparent 7%),
-      radial-gradient(circle at 72% 25%, hsl(0 0% 100% / 0.40), transparent 13%),
-      conic-gradient(from 215deg at 82% 16%, transparent 0 20deg, hsl(0 0% 100% / 0.64) 34deg, transparent 58deg 360deg);
-    transform: translate3d(18%, -18%, 0) scale(0.72) rotate(8deg);
-  }
-
-  .liquid-glass-interactive:hover::before,
-  .liquid-glass-interactive:focus-visible::before,
-  .liquid-glass-interactive[aria-current="page"]::before,
-  .liquid-glass-interactive[aria-pressed="true"]::before,
-  .liquid-glass-interactive[data-state="selected"]::before {
-    opacity: 1;
-  }
-
-  .liquid-glass-interactive:hover,
-  .liquid-glass-interactive:focus-visible {
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.44),
-      inset -1px -1px 0 hsl(var(--foreground) / 0.05),
-      0 12px 28px -22px hsl(var(--foreground) / 0.55);
-  }
-
-  .liquid-glass-interactive:hover::after,
-  .liquid-glass-interactive:focus-visible::after,
-  .liquid-glass-interactive[aria-current="page"]::after,
-  .liquid-glass-interactive[aria-pressed="true"]::after,
-  .liquid-glass-interactive[data-state="selected"]::after {
-    opacity: 0.72;
-  }
-
-  .liquid-glass-interactive[aria-current="page"]::after,
-  .liquid-glass-interactive[aria-pressed="true"]::after,
-  .liquid-glass-interactive[data-state="selected"]::after {
-    animation: zoot-glass-glisten 1.35s var(--ease-native) both;
-  }
-
-  .liquid-glass-interactive > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .liquid-glass-interactive:active::before {
-    opacity: 1;
-    animation: zoot-glass-bubble 520ms var(--ease-spring) both;
-  }
-
-  .liquid-glass-interactive:active::after {
-    animation: zoot-glass-glisten 560ms var(--ease-native) both;
-  }
-
-  .liquid-glass-interactive:active {
-    border-color: hsl(0 0% 100% / 0.42);
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.58),
-      inset 0 0 28px hsl(0 0% 100% / 0.16),
-      0 10px 24px -20px hsl(var(--foreground) / 0.5);
-  }
-
-  .zoot-liquid-nav-item {
-    overflow: hidden;
-  }
-
-  .zoot-liquid-nav-item[aria-current="page"],
-  .zoot-liquid-nav-item[data-active="true"] {
-    color: hsl(var(--foreground));
-    border-color: hsl(0 0% 100% / 0.36);
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.52),
-      inset 0 0 22px hsl(var(--primary-glow) / 0.14),
-      0 16px 36px -28px hsl(var(--foreground) / 0.52);
-  }
-
-  .zoot-liquid-nav-item[aria-current="page"]::before,
-  .zoot-liquid-nav-item[data-active="true"]::before {
-    transform: scale(1.02);
-  }
-
-  .zoot-liquid-nav-item:active {
-    animation: zoot-nav-bubble 480ms var(--ease-spring) both;
-  }
-
-  .liquid-glass-shell:active::after,
-  .liquid-glass-nav:active::after {
-    animation: zoot-glass-shell-glint 620ms var(--ease-native) both;
-  }
-
-  .liquid-glass-nav[data-scrolled="true"]::before {
-    background:
-      linear-gradient(135deg, hsl(var(--card) / 0.96), hsl(var(--secondary) / 0.82)),
-      radial-gradient(circle at 18% 0%, hsl(var(--primary) / 0.2), transparent 34%),
-      radial-gradient(circle at 88% 18%, hsl(var(--accent) / 0.18), transparent 36%);
-    backdrop-filter: saturate(210%) contrast(124%);
-    -webkit-backdrop-filter: saturate(210%) contrast(124%);
-  }
-
-  .liquid-glass-nav[data-scrolled="true"]::after {
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.52),
-      inset 0 -1px 0 hsl(var(--foreground) / 0.08),
-      0 18px 46px -28px hsl(var(--foreground) / 0.46);
-  }
-
-  html[data-installable-mode="standalone"] .liquid-glass-nav::before,
-  html[data-installable-mode="standalone"] .liquid-glass-shell::before {
-    backdrop-filter: saturate(220%) contrast(128%);
-    -webkit-backdrop-filter: saturate(220%) contrast(128%);
-  }
-
-  .zoot-concierge-panel {
-    border: 1px solid hsl(0 0% 100% / 0.32);
-  }
-
-  .zoot-concierge-panel::before {
-    background:
-      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.88), hsl(0 0% 100% / 0.14) 13%, transparent 34%),
-      radial-gradient(circle at 78% 18%, hsl(var(--primary-glow) / 0.34), transparent 32%),
-      radial-gradient(circle at 8% 92%, hsl(var(--accent) / 0.20), transparent 42%),
-      linear-gradient(145deg, hsl(var(--card) / 0.42), hsl(var(--background) / 0.30));
-    backdrop-filter: saturate(215%) contrast(128%) brightness(1.04);
-    -webkit-backdrop-filter: saturate(215%) contrast(128%) brightness(1.04);
-  }
-
-  .zoot-concierge-panel::after {
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.68),
-      inset 0 -1px 0 hsl(var(--foreground) / 0.08),
-      inset 0 0 0 999px hsl(var(--background) / 0.72),
-      0 26px 70px -34px hsl(var(--foreground) / 0.54);
-  }
-
-  .zoot-concierge-panel[data-open="true"] {
-    transform-origin: bottom right;
-    animation: zoot-concierge-morph 360ms var(--ease-spring) both;
-  }
-
-  .zoot-concierge-launcher {
-    overflow: hidden;
-  }
-
-  .zoot-concierge-launcher svg {
-    transition:
-      transform 240ms var(--ease-spring),
-      filter 220ms var(--ease-native);
-  }
-
-  .zoot-concierge-launcher:hover svg,
-  .zoot-concierge-launcher:focus-visible svg,
-  .zoot-concierge-launcher[data-open="true"] svg {
-    filter: drop-shadow(0 0 12px hsl(var(--primary-glow) / 0.48));
-    transform: rotate(8deg) scale(1.08);
-  }
-
-  .liquid-glass-conversation {
-    position: relative;
-    isolation: isolate;
-  }
-
-  .liquid-glass-conversation::before {
-    content: "";
-    position: absolute;
-    inset: 0.55rem;
-    z-index: 0;
-    pointer-events: none;
-    border-radius: 1.5rem;
-    background:
-      radial-gradient(circle at 92% 0%, hsl(0 0% 100% / 0.38), transparent 20%),
-      linear-gradient(145deg, hsl(var(--background) / 0.24), hsl(var(--card) / 0.18));
-    border: 1px solid hsl(0 0% 100% / 0.20);
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.26);
-  }
-
-  .liquid-glass-conversation > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .liquid-glass-message {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .liquid-glass-message::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    background:
-      radial-gradient(circle at 92% 8%, hsl(0 0% 100% / 0.48), transparent 22%),
-      linear-gradient(145deg, hsl(0 0% 100% / 0.18), transparent 58%);
-  }
-
-  .liquid-glass-message > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .zoot-message-enter {
-    animation: zoot-message-enter 260ms var(--ease-native) both;
-  }
-
-  .zoot-typing-shimmer {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .zoot-typing-shimmer::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    transform: translateX(-105%);
-    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.34), transparent);
-    animation: zoot-typing-glide 1.15s var(--ease-native) infinite;
-  }
-
-  .zoot-duration-grid {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-  }
-
-  .zoot-duration-card {
-    min-height: 9.5rem;
-    background:
-      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.56), transparent 20%),
-      linear-gradient(145deg, hsl(var(--card) / 0.78), hsl(var(--secondary) / 0.48));
-  }
-
-  .zoot-duration-card[data-selected="true"] {
-    border-color: hsl(var(--foreground) / 0.72);
-    color: hsl(var(--foreground));
-    background:
-      radial-gradient(circle at 90% 2%, hsl(0 0% 100% / 0.88), transparent 18%),
-      radial-gradient(circle at 82% 18%, hsl(var(--primary-glow) / 0.32), transparent 38%),
-      linear-gradient(145deg, hsl(var(--primary) / 0.18), hsl(var(--card) / 0.86));
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.58),
-      inset 0 0 32px hsl(var(--primary-glow) / 0.12),
-      0 22px 44px -34px hsl(var(--foreground) / 0.62);
-  }
-
-  .zoot-duration-card[data-selected="true"]::after {
-    opacity: 0.62;
-    animation: zoot-glass-glisten 1.2s var(--ease-native) both;
-  }
-
-  .zoot-map-context {
-    background:
-      radial-gradient(circle at 92% 4%, hsl(0 0% 100% / 0.50), transparent 24%),
-      linear-gradient(145deg, hsl(var(--secondary) / 0.44), hsl(var(--card) / 0.76));
-  }
-
-  @supports (-webkit-backdrop-filter: blur(1px)) {
-    html[data-native-platform="apple"] .liquid-glass-shell::before,
-    html[data-native-platform="apple"] .liquid-glass-nav::before {
-      background:
-        radial-gradient(circle at 94% 2%, hsl(0 0% 100% / 0.94), hsl(0 0% 100% / 0.20) 12%, transparent 34%),
-        radial-gradient(circle at 78% 18%, hsl(var(--primary-glow) / 0.34), transparent 32%),
-        radial-gradient(circle at 12% 92%, hsl(var(--accent) / 0.20), transparent 42%),
-        linear-gradient(145deg, hsl(var(--card) / 0.44), hsl(var(--background) / 0.28));
-      backdrop-filter: saturate(215%) contrast(126%) brightness(1.06);
-      -webkit-backdrop-filter: saturate(215%) contrast(126%) brightness(1.06);
-    }
-
-    html[data-native-platform="apple"] .liquid-glass-shell::after,
-    html[data-native-platform="apple"] .liquid-glass-nav::after {
-      border-color: hsl(0 0% 100% / 0.38);
-      box-shadow:
-        inset 0 1px 0 hsl(0 0% 100% / 0.66),
-        inset 0 -1px 0 hsl(var(--foreground) / 0.08),
-        inset 0 0 0 999px hsl(var(--background) / 0.66),
-        0 18px 42px -30px hsl(var(--foreground) / 0.42);
-    }
-
-    html[data-native-platform="apple"] .liquid-glass-content,
-    html[data-native-platform="apple"] .liquid-glass-readable {
-      text-shadow: none;
-      transform: none;
-    }
-
-    html[data-native-platform="apple"] .liquid-glass-interactive {
-      border-color: hsl(0 0% 100% / 0.22);
-      box-shadow:
-        inset 0 1px 0 hsl(0 0% 100% / 0.28),
-        inset 0 -1px 0 hsl(var(--foreground) / 0.035);
-    }
-
-    html[data-native-platform="apple"] .liquid-glass-interactive::before {
-      backdrop-filter: saturate(180%) contrast(108%);
-      -webkit-backdrop-filter: saturate(180%) contrast(108%);
-    }
-
-    html[data-native-platform="apple"] .liquid-glass-interactive[aria-current="page"] {
-      border-color: hsl(var(--primary) / 0.22);
-    }
-  }
-
-  .interactive-press {
-    transform-origin: center;
-    will-change: transform, box-shadow;
-    transition:
-      transform 180ms var(--ease-spring),
-      box-shadow 220ms var(--ease-native),
-      background-color 180ms var(--ease-native),
-      border-color 180ms var(--ease-native),
-      color 180ms var(--ease-native),
-      opacity 180ms var(--ease-native);
-  }
-
-  .interactive-press:active:not(:disabled):not([aria-disabled="true"]),
-  .interactive-press[data-pressed="true"] {
-    transform: scale(var(--press-scale));
-  }
-
-  .interactive-lift {
-    transition:
-      transform 220ms var(--ease-native),
-      box-shadow 220ms var(--ease-native),
-      border-color 180ms var(--ease-native),
-      background-color 180ms var(--ease-native);
-  }
-
-  .interactive-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-card);
-  }
-
-  .interactive-toggle {
-    transition:
-      background-color 180ms var(--ease-native),
-      box-shadow 220ms var(--ease-native),
-      transform 180ms var(--ease-spring);
-  }
-
-  .interactive-toggle:active {
-    transform: scale(0.97);
-  }
-
-  .native-input {
-    min-height: 44px;
-    font-size: 16px;
-    transition:
-      border-color 180ms var(--ease-native),
-      box-shadow 180ms var(--ease-native),
-      background-color 180ms var(--ease-native),
-      transform 180ms var(--ease-spring);
-  }
-
-  .native-input:focus {
-    transform: translateY(-1px);
-  }
-
-  .native-textarea {
-    transition:
-      height 180ms var(--ease-native),
-      border-color 180ms var(--ease-native),
-      box-shadow 180ms var(--ease-native),
-      background-color 180ms var(--ease-native);
-  }
-
-  .fade-in-soft {
-    animation: zoot-fade-in 220ms var(--ease-native) both;
-  }
-
-  .slide-up-soft {
-    animation: zoot-slide-up 260ms var(--ease-native) both;
-  }
-
-  .scale-in-soft {
-    animation: zoot-scale-in 220ms var(--ease-spring) both;
-  }
-
-  .cross-fade {
-    animation: zoot-cross-fade 180ms var(--ease-native) both;
-  }
-
-  .skeleton-shimmer {
-    position: relative;
-    overflow: hidden;
-    background: hsl(var(--muted));
-  }
-
-  .skeleton-shimmer::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, hsl(var(--background) / 0.58), transparent);
-    animation: zoot-shimmer 1.5s var(--ease-native) infinite;
-  }
-
-  .permission-primer {
-    border: 1px solid hsl(var(--border));
-    background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--secondary) / 0.46) 100%);
-    box-shadow: var(--shadow-soft);
-  }
-
   [aria-busy="true"] {
     cursor: progress;
   }

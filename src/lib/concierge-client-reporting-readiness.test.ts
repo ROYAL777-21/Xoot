@@ -7,7 +7,7 @@ const readRepoFile = (path: string) => readFileSync(join(repoRoot, path), "utf8"
 
 describe("Concierge client reporting readiness", () => {
   it("redacts web Concierge answer reports before invoking the feedback function", () => {
-    const bot = readRepoFile("src/components/zoot/ZootSupportBot.tsx");
+    const bot = readRepoFile("src/components/zoot/XootSupportBot.tsx");
 
     expect(bot).toContain("redactConciergeClientText");
     expect(bot).toContain('supabase.functions.invoke("report-concierge-answer"');

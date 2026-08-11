@@ -86,7 +86,7 @@ if ($CodeRabbit) {
     Write-Host "Do not paste CodeRabbit API keys or session tokens into chat."
     & coderabbit auth login --self-hosted
   } else {
-    throw "CodeRabbit is not authenticated. Set CODERABBIT_API_KEY locally, rerun with -CodeRabbitSelfHosted if Zoot has a self-hosted CodeRabbit URL, or install the CodeRabbit GitHub App. Do not paste the key into chat."
+    throw "CodeRabbit is not authenticated. Set CODERABBIT_API_KEY locally, rerun with -CodeRabbitSelfHosted if Xoot has a self-hosted CodeRabbit URL, or install the CodeRabbit GitHub App. Do not paste the key into chat."
   }
 }
 

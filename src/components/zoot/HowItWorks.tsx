@@ -10,7 +10,7 @@ const steps = [
   {
     n: "02",
     icon: UserCheck,
-    title: "Choose a vetted Zooter",
+    title: "Choose a vetted Xooter",
     desc: "Review profiles, trust badges, reliability score, ratings and prices before sending a request.",
   },
   {
@@ -28,13 +28,13 @@ export const HowItWorks = () => {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           <div className="lg:sticky lg:top-24">
             <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
-              How Zoot works
+              How Xoot works
             </p>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-5">
               Book with the details that protect quality.
             </h2>
             <p className="text-lg text-muted-foreground max-w-md">
-              Zoot keeps service details, household preferences, payment status, contractor updates and support follow-ups in one place.
+              Xoot keeps service details, household preferences, payment status, contractor updates and support follow-ups in one place.
             </p>
           </div>
 
@@ -47,7 +47,7 @@ export const HowItWorks = () => {
                   className="group relative rounded-3xl bg-card border border-border p-6 md:p-7 shadow-card hover:shadow-warm transition-all duration-500"
                 >
                   <div className="flex gap-5 items-start">
-                    <div className="relative flex-shrink-0">
+                    <div className="relative shrink-0">
                       <div className="grid place-items-center h-14 w-14 rounded-2xl gradient-warm shadow-warm">
                         <Icon className="h-6 w-6 text-primary-foreground" />
                       </div>

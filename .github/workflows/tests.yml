@@ -1,0 +1,98 @@
+name: Tests
+
+# The vitest suite was not run by any workflow before this file existed, so the two
+# mobile-* suites had been failing to transform without anything reporting it.
+# Lint, build and unit tests now gate every PR.
+
+on:
+  push:
+    branches: [main, "claude/**", "codex/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+# `npm run build` runs `prebuild` -> `config:check`, and validate-public-env.mjs hard-fails
+# when CI is set but VITE_APP_ENV is not. The Build step had therefore never once succeeded
+# in this workflow — earlier lockfile failures aborted the job before it was reached.
+#
+# Pinned to development rather than `vars.VITE_APP_ENV || 'development'` (the pattern in
+# web-preview.yml), deliberately. This workflow gates every PR and every push to claude/**
+# and codex/**, so it has to be hermetic. Inheriting the repo variable would mean that
+# setting it to staging or production for a deploy silently makes this gate demand real
+# Supabase credentials — validate-public-env.mjs requires them for those two values — and
+# every PR would start failing on configuration nobody changed. A build gate should not
+# depend on deploy secrets; web-preview.yml already covers the deploy-config path.
+env:
+  VITE_APP_ENV: development
+
+jobs:
+  test:
+    name: Lint, build and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install root dependencies
+        run: bun install --frozen-lockfile
+
+      # Required, not optional. src/lib/mobile-*.test.ts import from mobile/src/lib,
+      # and Vite's oxc transform resolves the nearest tsconfig per file — which for
+      # those is mobile/tsconfig.json, extending `expo/tsconfig.base`. Without this
+      # step both suites fail to transform and 8 tests silently do not run.
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      # Not redundant with the build. Vite does not typecheck, so this is the only
+      # step that catches type regressions — it is what caught the Tailwind v4
+      # codemod rewriting Button `variant="outline"` props to `"outline-solid"`,
+      # which linted and built clean.
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Unit tests
+        run: bun run test
+
+      - name: Build
+        run: bun run build
+
+      # Does what is deployed still match what is in this repository?
+      #
+      # Nothing asked that question until 2026-08-07, and the answer was "no, not one of the 42
+      # production functions" — production had been charging a superseded pricing model and
+      # serving a retired domain for weeks. Every step above was green throughout, because every
+      # step above reads the repo file, and the repo file was correct.
+      #
+      # Deliberately advisory, not a gate. It needs a live function list to say anything true, and
+      # a build workflow must not fail because a deploy is pending or a token is absent — that
+      # would train people to ignore it. It reports; a human decides. Exit 1 means drift, exit 2
+      # means it could not tell, and both are printed rather than thrown.
+      #
+      # With no token set the script exits 2 and says so, which `continue-on-error` absorbs — so
+      # this is a no-op until SUPABASE_ACCESS_TOKEN exists as a repository secret.
+      #
+      # The token is deliberately scoped to this one step rather than the workflow `env` block.
+      # It is a Supabase *management* credential, and every earlier step runs third-party install
+      # scripts; a workflow-level secret would be readable by all of them. It also cannot be
+      # tested with a step-level `if`, because the `secrets` context is not available there and
+      # `env` set on a step is not visible to that same step's `if` — hence letting the script
+      # decide instead of guarding the step.
+      - name: Deployed-vs-repo drift (advisory)
+        continue-on-error: true
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/ops/check-deployed-drift.mjs

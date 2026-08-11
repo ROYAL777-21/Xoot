@@ -8,18 +8,18 @@ import { SEO } from "@/components/SEO";
 import { haptic } from "@/lib/haptics";
 
 const installSteps = [
-  { title: "Open Zoot in Safari", detail: "Use the live Zoot link on your iPhone.", icon: Smartphone },
+  { title: "Open Xoot in Safari", detail: "Use the live Xoot link on your iPhone.", icon: Smartphone },
   { title: "Tap Share", detail: "The iOS share button sits at the bottom of Safari.", icon: Share },
-  { title: "Add to Home Screen", detail: "Choose Add to Home Screen, then confirm the Zoot icon.", icon: Plus },
-  { title: "Launch Zoot", detail: "Open Zoot from your Home Screen for the app-style experience.", icon: Home },
+  { title: "Add to Home Screen", detail: "Choose Add to Home Screen, then confirm the Xoot icon.", icon: Plus },
+  { title: "Launch Xoot", detail: "Open Xoot from your Home Screen for the app-style experience.", icon: Home },
 ];
 
 const PwaInstall = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Install Zoot on iPhone - Home Screen app access"
-        description="Add Zoot to your iPhone Home Screen for app-style access to booking, Care+, support and home-care workflows."
+        title="Install Xoot on iPhone - Home Screen app access"
+        description="Add Xoot to your iPhone Home Screen for app-style access to booking, Care+, support and home-care workflows."
         canonical="/install"
       />
       <Navbar />
@@ -32,10 +32,10 @@ const PwaInstall = () => {
                 <span className="text-xs font-medium text-sage-deep">iPhone app access</span>
               </div>
               <h1 className="font-display text-5xl font-bold leading-[1.03] tracking-tight md:text-6xl">
-                Put Zoot on your iPhone Home Screen.
+                Put Xoot on your iPhone Home Screen.
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                Use Zoot as an installable iPhone web app while the native TestFlight build waits for Apple Developer access and final bundle IDs.
+                Use Xoot as an installable iPhone web app while the native TestFlight build waits for Apple Developer access and final bundle IDs.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button asChild size="lg" className="h-14 rounded-full gradient-warm px-7" onClick={() => haptic("impact")}>
@@ -73,7 +73,7 @@ const PwaInstall = () => {
           <div className="container">
             <div className="mb-10 max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">Install steps</p>
-              <h2 className="mt-3 font-display text-4xl font-bold tracking-tight">Four taps from browser to app-like Zoot.</h2>
+              <h2 className="mt-3 font-display text-4xl font-bold tracking-tight">Four taps from browser to app-like Xoot.</h2>
             </div>
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               {installSteps.map((step, index) => {

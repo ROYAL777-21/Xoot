@@ -1,20 +1,20 @@
-# Zoot Staging Backend Deployment
+# Xoot Staging Backend Deployment
 
 Reviewed: 2026-06-30
 
 ## Current State
 
-- Staging project: `Zoot Staging` / `fxmxyabdjqviqbcxmvlp`.
+- Staging project: `Xoot Staging` / `fxmxyabdjqviqbcxmvlp`.
 - The repository contains the application migration chain, storage policies, helper-function hardening, training modules, and Twilio webhook audit schema.
-- Live staging and production application must still be verified with authenticated client/admin/Zooter smoke flows before these items can be treated as release-ready.
-- Phase 4 invoice public schema and Phase 6 Zoot Black public schema were applied to staging and production through connector-safe live migrations on 2026-06-30. The remaining database deployment gap is owner-only private `storage.objects` policies for generated invoice PDFs and Zoot Black certificate PDFs. The `zoot_black.*` operational controls must remain disabled until founder, operations, supplier and legal approvals are complete.
+- Live staging and production application must still be verified with authenticated client/admin/Xooter smoke flows before these items can be treated as release-ready.
+- Phase 4 invoice public schema and Phase 6 Xoot Black public schema were applied to staging and production through connector-safe live migrations on 2026-06-30. The remaining database deployment gap is owner-only private `storage.objects` policies for generated invoice PDFs and Xoot Black certificate PDFs. The `zoot_black.*` operational controls must remain disabled until founder, operations, supplier and legal approvals are complete.
 - Supabase Branching is unavailable on the current plan, so staging is a separate free project.
 - Production migration history still differs from the local migration file list and must remain reconciled before broad migration pushes.
-- The local migration chain contains legacy prototype seed data; `20260619001000_remove_demo_seed_data.sql` removes the hardcoded demo Zooters after those migrations run.
-- Production and staging live histories now include the Zooter optional training gamification prerequisite, expanded training module migration, storage policies, Twilio webhook audit schema, convergence migrations, booking policy, sensitive-access notification scheduler, policy performance hardening, accepted-job destination hardening, governance controls, zooter-job-card service-boundary, duplicate-index cleanup, legacy RLS policy convergence, booking chat public schema, Concierge public schema, invoice public schema, Zoot Black public schema, payment readiness schema, Twilio readiness schema, and `live_schema_convergence_app_runtime`.
-- The app-runtime convergence migration fixes the live objects currently used by the web app and Edge Functions: `booking_zooter_profiles`, saved-address city/postal code fields, Care+ placement fields, Zooter onboarding compatibility fields, booking event metadata, and the Zooter application `user_id` uniqueness constraint.
+- The local migration chain contains legacy prototype seed data; `20260619001000_remove_demo_seed_data.sql` removes the hardcoded demo Xooters after those migrations run.
+- Production and staging live histories now include the Xooter optional training gamification prerequisite, expanded training module migration, storage policies, Twilio webhook audit schema, convergence migrations, booking policy, sensitive-access notification scheduler, policy performance hardening, accepted-job destination hardening, governance controls, zooter-job-card service-boundary, duplicate-index cleanup, legacy RLS policy convergence, booking chat public schema, Concierge public schema, invoice public schema, Xoot Black public schema, payment readiness schema, Twilio readiness schema, and `live_schema_convergence_app_runtime`.
+- The app-runtime convergence migration fixes the live objects currently used by the web app and Edge Functions: `booking_zooter_profiles`, saved-address city/postal code fields, Care+ placement fields, Xooter onboarding compatibility fields, booking event metadata, and the Xooter application `user_id` uniqueness constraint.
 - The production dashboard still reports `MIGRATIONS_FAILED` at branch metadata level because production uses squashed historical migrations and later connector-applied migrations have Supabase-generated timestamps. The live catalog contains the applied app schema, but migration history repair must be done narrowly. See `docs/implementation/supabase-migration-status-repair-20260630.md`.
-- The accepted-job destination hardening migration creates `get_zooter_job_cards()` and returns `destination_address` only after a Zooter accepts the assigned job. Real role-based smoke tests with staging client/admin/Zooter users are still required.
+- The accepted-job destination hardening migration creates `get_zooter_job_cards()` and returns `destination_address` only after a Xooter accepts the assigned job. Real role-based smoke tests with staging client/admin/Xooter users are still required.
 - Production needed the accepted-job migration to repair drift in `public.zooter_jobs` by adding the optional response columns before creating the job-card RPC. Keep that idempotent compatibility step in the migration.
 - Production's remaining security-advisor warning is leaked-password protection. Enable it when the selected Supabase plan exposes the control.
 - Duplicate generated production indexes were removed with `20260627105044_drop_duplicate_production_indexes` in staging and `20260627105059_drop_duplicate_production_indexes` in production. Direct catalog checks now report zero duplicate public index groups in both projects.
@@ -133,7 +133,7 @@ Then check Supabase:
 - authenticated clients cannot directly read active `user_encryption_keys` rows for unrelated users
 - `get-booking-public-keys` returns active public keys only for verified booking participants
 - direct authenticated RPC execution of `can_access_sensitive_data` is denied, while `get-sensitive-access` works through service role
-- real staging client/admin/Zooter users can complete smoke flows
+- real staging client/admin/Xooter users can complete smoke flows
 
 Live metadata verification can be run after staging and production deployment:
 
@@ -156,10 +156,10 @@ Required buckets:
 
 | Bucket | Public | Purpose |
 | --- | --- | --- |
-| `kyc-docs` | No | Zooter identity and onboarding documents. |
-| `zooter-avatars` | Yes | Public Zooter profile photos only. |
+| `kyc-docs` | No | Xooter identity and onboarding documents. |
+| `zooter-avatars` | Yes | Public Xooter profile photos only. |
 | `booking-completion-photos` | No | Booking proof/completion photos for participants and admins. |
-| `support-attachments` | No | Client/Zooter support case attachments. |
+| `support-attachments` | No | Client/Xooter support case attachments. |
 | `kie-prompts` | No | KIE prompt payload records for approved admin use. |
 | `kie-outputs` | No | KIE generated output artifacts for approved admin use. |
 | `marketing-assets` | Yes | Public approved brand, blog, and SEO media. |
@@ -177,12 +177,12 @@ http://127.0.0.1:5173/auth/callback
 http://127.0.0.1:5173/auth/reset
 http://127.0.0.1:4173/auth/callback
 http://127.0.0.1:4173/auth/reset
-https://staging.zoothome.co.za/auth/callback
-https://staging.zoothome.co.za/auth/reset
-https://zoothome.co.za/auth/callback
-https://zoothome.co.za/auth/reset
-https://www.zoothome.co.za/auth/callback
-https://www.zoothome.co.za/auth/reset
+https://staging.xoot.co.za/auth/callback
+https://staging.xoot.co.za/auth/reset
+https://xoot.co.za/auth/callback
+https://xoot.co.za/auth/reset
+https://www.xoot.co.za/auth/callback
+https://www.xoot.co.za/auth/reset
 zoot://auth/callback
 zoot://auth/reset
 ```

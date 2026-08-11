@@ -22,8 +22,8 @@ permissions:
 
 env:
   VITE_APP_ENV: ${{ vars.VITE_APP_ENV || 'development' }}
-  VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://zoothome.co.za' }}
-  VITE_SITE_URL: ${{ vars.VITE_SITE_URL || vars.VITE_PUBLIC_SITE_URL || 'https://zoothome.co.za' }}
+  VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://xoot.co.za' }}
+  VITE_SITE_URL: ${{ vars.VITE_SITE_URL || vars.VITE_PUBLIC_SITE_URL || 'https://xoot.co.za' }}
   VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
   VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
   VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}

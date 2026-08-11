@@ -27,15 +27,15 @@ This roadmap is ordered for execution. Each stage should leave the product more 
 
 ## 4. Booking Flow And Pricing Authority
 
-- Keep booking flow guided and concierge-like: service, property type, add-ons, estimate, slot, Zooter match, confidence layer, confirmation.
-- Move final price, fees, add-ons, Care+, ZootCred, referral credits, booking cover, and high-demand slot pricing to backend or Supabase Edge Functions.
-- Add one-tap rebook for completed bookings using the actual preferred Zooter name.
-- Ensure `Book [Zooter Name] again` appears only when availability is valid or likely.
+- Keep booking flow guided and concierge-like: service, property type, add-ons, estimate, slot, Xooter match, confidence layer, confirmation.
+- Move final price, fees, add-ons, Care+, XootCred, referral credits, booking cover, and high-demand slot pricing to backend or Supabase Edge Functions.
+- Add one-tap rebook for completed bookings using the actual preferred Xooter name.
+- Ensure `Book [Xooter Name] again` appears only when availability is valid or likely.
 - Add booking confidence signals above confirmation actions.
 
-## 5. Trust, Zooter Quality, And Sensitive Access
+## 5. Trust, Xooter Quality, And Sensitive Access
 
-- Show verification timelines and real reliability numbers on customer-facing Zooter profiles.
+- Show verification timelines and real reliability numbers on customer-facing Xooter profiles.
 - Build contractor-facing reliability dashboards and milestone progression.
 - Enforce sensitive access-note windows at the API/RLS level.
 - Add access reveal audit logs and masked display for gate codes, lockbox codes, parking codes, and sensitive pet/access notes.
@@ -44,14 +44,14 @@ This roadmap is ordered for execution. Each stage should leave the product more 
 ## 6. Care+, Household Memory, And Retention
 
 - Keep `/care-plus` premium and not discount-led.
-- Implement Home Memory, favourite Zooter, smart reminders, priority support, priority replacement support, monthly add-on credit, and ZootCred boost as reusable typed components.
+- Implement Home Memory, favourite Xooter, smart reminders, priority support, priority replacement support, the welcome add-on credit, and XootCred boost as reusable typed components.
 - Add Care+ onboarding prompts and lifecycle reminders through in-app and email channels only where appropriate.
 - Keep Care+ exclusions clear: no guaranteed replacement unless backend and operations support it.
 
 ## 7. Property And Office Infrastructure
 
 - Give Airbnb hosts, landlords, property managers, and small offices dedicated dashboards.
-- Support property profiles, access notes, cleaning history, invoices, Zooter assignments, recurring schedules, photo proof, and turnover deadlines.
+- Support property profiles, access notes, cleaning history, invoices, Xooter assignments, recurring schedules, photo proof, and turnover deadlines.
 - Add Guest-Ready Mode and office-readiness views using mock data only where backend support is incomplete.
 - Keep sensitive access notes encrypted and role/time-scoped.
 
@@ -63,10 +63,10 @@ This roadmap is ordered for execution. Each stage should leave the product more 
 - Use Twilio voice only for masked active-booking calls.
 - Add support queues, escalation paths, cancellation playbooks, replacement matching, and admin review workflows.
 
-## 9. Payments, ZootCred, Referrals, And Abuse Controls
+## 9. Payments, XootCred, Referrals, And Abuse Controls
 
 - Complete Stitch/Ozow webhook verification and payment reconciliation.
-- Add referral and ZootCred abuse detection.
+- Add referral and XootCred abuse detection.
 - Confirm Care+ credits and boosts are server-side and audited.
 - Keep all meaningful credit issuance tied to completed qualifying bookings.
 - Prevent frontend tampering with prices, credits, and cancellation/refund outcomes.

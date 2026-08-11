@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { carePlusPlan as fallbackCarePlusPlan } from "@/data/care-plus";
-import type { CarePlusMembership, CarePlusPlan, FavouriteZooter, PropertyProfile, SmartReminder } from "@/types/care-plus";
+import type { CarePlusMembership, CarePlusPlan, FavouriteXooter, PropertyProfile, SmartReminder } from "@/types/care-plus";
 
 type SubscriptionRow = {
   id: string;
@@ -31,13 +31,11 @@ type PaymentRecordRow = {
 
 type FavouriteRow = {
   zooter_id: string;
-  favorite_kind?: string | null;
   favorite_type?: string | null;
-  last_booked_at?: string | null;
   created_at?: string | null;
 };
 
-type PublicZooterRow = {
+type PublicXooterRow = {
   id: string;
   name: string;
   rating?: number | null;
@@ -67,7 +65,7 @@ export type CarePlusState =
   | { status: "unauthenticated" }
   | { status: "not_member"; plan: CarePlusPlan }
   | { status: "pending_payment"; checkout_url: string }
-  | { status: "active"; membership: CarePlusMembership; favourite: FavouriteZooter | null }
+  | { status: "active"; membership: CarePlusMembership; favourite: FavouriteXooter | null }
   | { status: "past_due"; membership: CarePlusMembership }
   | { status: "cancelled"; cancelled_at: string };
 
@@ -97,17 +95,17 @@ const mapMembership = (subscription: SubscriptionRow, plan: CarePlusPlan): CareP
   addOnCreditExpiresAt: subscription.next_billing_at,
   zootCredMultiplier: 1.5,
   homeReadinessScore: 0,
-  favouriteZooterId: subscription.favourite_zooter_id ?? undefined,
+  favouriteXooterId: subscription.favourite_zooter_id ?? undefined,
 });
 
-const mapFavourite = (zooter: PublicZooterRow, favourite?: FavouriteRow | null): FavouriteZooter => ({
+const mapFavourite = (zooter: PublicXooterRow, favourite?: FavouriteRow | null): FavouriteXooter => ({
   id: zooter.id,
   name: zooter.name,
   rating: toNumber(zooter.rating, 0),
   specialties: zooter.tags?.length ? zooter.tags : [zooter.role ?? "Cleaning"],
-  lastBookedAt: favourite?.last_booked_at ?? favourite?.created_at ?? "",
+  lastBookedAt: favourite?.created_at ?? "",
   nextAvailableAt: "",
-  preferredFor: zooter.jobs_completed ? `${zooter.jobs_completed} completed jobs` : "Saved in My Zooters",
+  preferredFor: zooter.jobs_completed ? `${zooter.jobs_completed} completed jobs` : "Saved in My Xooters",
 });
 
 const accountTypeMap: Record<string, PropertyProfile["type"]> = {
@@ -231,7 +229,7 @@ export const useCarePlus = () => {
         propertiesResult,
         bookingResult,
       ] = await Promise.all([
-        (supabase as any)
+        supabase
           .from("user_subscriptions")
           .select("*")
           .eq("user_id", user.id)
@@ -239,7 +237,7 @@ export const useCarePlus = () => {
           .order("started_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
-        (supabase as any)
+        supabase
           .from("property_accounts")
           .select("*")
           .eq("user_id", user.id)
@@ -263,7 +261,7 @@ export const useCarePlus = () => {
         if (!subscription) {
           setState({ status: "not_member", plan: activePlan });
         } else if (subscription.status === "pending_payment") {
-          const { data: payment } = await (supabase as any)
+          const { data: payment } = await supabase
             .from("payment_records")
             .select("id,meta")
             .eq("user_id", user.id)
@@ -282,7 +280,7 @@ export const useCarePlus = () => {
           if (isPastDue) {
             setState({ status: "past_due", membership });
           } else {
-            const favourite = await resolveFavouriteZooter(user.id, subscription.favourite_zooter_id ?? null);
+            const favourite = await resolveFavouriteXooter(user.id, subscription.favourite_zooter_id ?? null);
             setState({ status: "active", membership, favourite });
           }
         }
@@ -333,12 +331,12 @@ export const useCarePlus = () => {
   };
 };
 
-const resolveFavouriteZooter = async (userId: string, favouriteZooterId: string | null): Promise<FavouriteZooter | null> => {
+const resolveFavouriteXooter = async (userId: string, favouriteXooterId: string | null): Promise<FavouriteXooter | null> => {
   let favourite: FavouriteRow | null = null;
-  let zooterId = favouriteZooterId;
+  let zooterId = favouriteXooterId;
 
   if (!zooterId) {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("favorites")
       .select("zooter_id,created_at")
       .eq("user_id", userId)
@@ -351,11 +349,11 @@ const resolveFavouriteZooter = async (userId: string, favouriteZooterId: string 
 
   if (!zooterId) return null;
 
-  const { data: zooter } = await (supabase as any)
+  const { data: zooter } = await supabase
     .from("zooters_public")
     .select("id,name,rating,tags,role,jobs_completed")
     .eq("id", zooterId)
     .maybeSingle();
 
-  return zooter ? mapFavourite(zooter as PublicZooterRow, favourite) : null;
+  return zooter ? mapFavourite(zooter as PublicXooterRow, favourite) : null;
 };
