@@ -878,6 +878,77 @@ export type Database = {
           },
         ]
       }
+      booking_fare_splits: {
+        Row: {
+          accepted_at: string | null
+          amount_cents: number
+          booking_id: string
+          created_at: string
+          id: string
+          invited_by: string
+          invited_email: string
+          payer_user_id: string | null
+          payment_record_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          amount_cents: number
+          booking_id: string
+          created_at?: string
+          id?: string
+          invited_by: string
+          invited_email: string
+          payer_user_id?: string | null
+          payment_record_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          amount_cents?: number
+          booking_id?: string
+          created_at?: string
+          id?: string
+          invited_by?: string
+          invited_email?: string
+          payer_user_id?: string | null
+          payment_record_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_fare_splits_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_fare_splits_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_zooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_fare_splits_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_fare_splits_payment_record_id_fkey"
+            columns: ["payment_record_id"]
+            isOneToOne: false
+            referencedRelation: "payment_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_tips: {
         Row: {
           amount_cents: number

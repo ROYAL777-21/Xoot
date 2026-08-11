@@ -81,7 +81,7 @@ describe("validating a split before it is written", () => {
     emails.map((email, index) => ({ email, amountCents: amounts[index] }));
 
   it("accepts a well-formed split", () => {
-    expect(validateSplit(ok(["a@b.com", "c@d.com"], [14800, 14800]), 29600)).toEqual({ ok: true });
+    expect(validateSplit(ok(["a@b.com", "c@d.com"], [14800, 14800]), 29600)).toEqual({ ok: true, reason: null });
   });
 
   it("rejects a split that does not add up", () => {

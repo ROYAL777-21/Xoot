@@ -88,7 +88,19 @@ export const MIN_SHARE_CENTS = 1000;
  */
 export const MAX_SPLIT_PARTIES = 6;
 
-export type SplitValidation = { ok: true } | { ok: false; reason: string };
+/**
+ * Flat, not a discriminated union, and that is forced by the repo's TypeScript config.
+ *
+ * The natural shape here is `{ ok: true } | { ok: false; reason: string }`. It does not work:
+ * `tsconfig.app.json` sets `"strict": false`, which turns off `strictNullChecks`, and without
+ * that TypeScript will not narrow a union on a boolean-literal discriminant. Every read of
+ * `.reason` then fails with "does not exist on type `{ ok: true }`" — including inside an
+ * `if (result.ok) return null;` guard, which is what makes the cause hard to spot.
+ *
+ * Turning `strict` on repo-wide is the real fix and is not this module's call to make. So the
+ * shape accommodates the config instead: `reason` is always present and null when valid.
+ */
+export type SplitValidation = { ok: boolean; reason: string | null };
 
 /**
  * Everything the server checks before a split is written, in one place so the UI can run the
@@ -116,5 +128,5 @@ export function validateSplit(shares: readonly FareShare[], totalCents: number):
     return { ok: false, reason: "The shares must add up to exactly the booking total." };
   }
 
-  return { ok: true };
+  return { ok: true, reason: null };
 }

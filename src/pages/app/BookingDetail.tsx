@@ -10,6 +10,7 @@ import { resolvePhoto } from "@/components/zoot/XooterCard";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import { BookingChat } from "@/components/zoot/BookingChat";
 import { VoiceCallPanel } from "@/components/zoot/VoiceCallPanel";
+import { FareSplitPanel } from "@/components/zoot/FareSplitPanel";
 import { SosButton } from "@/components/zoot/SosButton";
 import { TipCard } from "@/components/zoot/TipCard";
 import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
@@ -508,6 +509,16 @@ const BookingDetail = () => {
               </div>
             )}
           </Card>
+
+          {/* Splitting is a payment relationship, not an access grant — the panel hides itself
+              once the booking is being paid, since there is then nothing left to divide. */}
+          {id && booking && (
+            <FareSplitPanel
+              bookingId={id}
+              totalRands={Number(booking.price ?? 0)}
+              paymentStatus={booking.payment_status}
+            />
+          )}
 
           <Card className="rounded-3xl p-5">
             <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Arrival tracking</h2>

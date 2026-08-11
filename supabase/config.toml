@@ -137,6 +137,11 @@ verify_jwt = true
 [functions.create-booking]
 verify_jwt = true
 
+# Closed. Creating a split needs the booking owner; accepting one needs the invited person signed
+# in as the invited address, which is not checkable without a verified session.
+[functions.split-booking-fare]
+verify_jwt = true
+
 [functions.create-booking-request]
 verify_jwt = true
 
