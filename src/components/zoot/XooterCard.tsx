@@ -2,6 +2,7 @@ import { Star, MapPin, BadgeCheck, Heart, Crown, ShieldCheck, RotateCcw } from "
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
 import { formatZAR } from "@/lib/format";
+import { formatDistanceKm } from "@/lib/geo";
 import { deriveXooterBadges, shouldFlagXooterForReview } from "@/lib/trust";
 import { TrustBadges } from "@/components/zoot/TrustBadges";
 import w1 from "@/assets/worker-1.jpg";
@@ -18,7 +19,12 @@ export type Xooter = {
   hourly_rate: number;
   photo_url: string | null;
   tags: string[];
-  distance_mi: number;
+  /**
+   * Kilometres from the booking address to this Xooter's nearest covered suburb, computed by
+   * `ai-match`. Null when the address or the coverage could not be resolved — which means
+   * "unknown", never "far", and the card shows coverage instead.
+   */
+  distance_km?: number | null;
   is_zotm: boolean;
   verified?: boolean | null;
   background_checked?: boolean | null;
@@ -96,7 +102,18 @@ export const XooterCard = ({ z, onBook, actionLabel }: { z: Xooter; onBook?: (z:
         </div>
 
         <div className="grid grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
-          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{z.suburb_coverage?.slice(0, 2).join(", ") || `${z.distance_mi} km`}</span>
+          {/*
+            Real distance when `ai-match` computed one, coverage when it did not.
+
+            The fallback used to be `${z.distance_mi} km` — a static seeded column, the same value
+            for every customer in the country. It read as a promise about this Xooter's travel to
+            *your* home, and it was not one. A fabricated distance is worse than no distance: it is
+            a specific, checkable claim that happens to be false.
+          */}
+          <span className="flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {formatDistanceKm(z.distance_km ?? null) ?? z.suburb_coverage?.slice(0, 2).join(", ") ?? "Coverage on request"}
+          </span>
           <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3" />{z.transport || "Own transport"}</span>
           <span>{z.languages_spoken?.slice(0, 2).join(", ") || "English"}</span>
           <span>{z.pet_comfort || "Pet friendly"}</span>

@@ -3098,6 +3098,33 @@ export type Database = {
         }
         Relationships: []
       }
+      suburb_centroids: {
+        Row: {
+          active: boolean
+          created_at: string
+          latitude: number
+          longitude: number
+          region: string
+          suburb: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          latitude: number
+          longitude: number
+          region: string
+          suburb: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          latitude?: number
+          longitude?: number
+          region?: string
+          suburb?: string
+        }
+        Relationships: []
+      }
       support_followups: {
         Row: {
           booking_id: string | null
