@@ -112,11 +112,21 @@ for (const workspace of workspaces) {
     }
   }
 
-  // The check that actually matters for CI. Everything above audits package-lock.json, which the
-  // workflow never reads — it installs with `bun install --frozen-lockfile`. So this validator
-  // passed cleanly while CI failed on mobile/bun.lock missing expo-apple-authentication and
-  // react-native-svg (PR #26). A lockfile gate that ignores the lockfile CI enforces is worse
-  // than no gate, because it reads as assurance.
+  // The check that catches the failures `tests.yml` hits. That workflow installs with
+  // `bun install --frozen-lockfile`, so this validator once passed cleanly while CI failed on
+  // mobile/bun.lock missing expo-apple-authentication and react-native-svg (PR #26). A lockfile
+  // gate that ignores the lockfile a workflow enforces is worse than no gate, because it reads as
+  // assurance.
+  //
+  // ⚠️ CORRECTED 2026-08-12. This comment used to say package-lock.json is a file "the workflow
+  // never reads", and that was wrong in a way that nearly cost something: **`web-preview.yml` runs
+  // `npm ci`**, which reads package-lock.json and fails outright when it disagrees with
+  // package.json. When that job failed on `@twilio/voice-sdk` and `playwright` being out of sync,
+  // the note above made "relax the package-lock checks" look like the obvious fix — it would have
+  // silenced the gate and left `npm ci` broken.
+  //
+  // Both lockfiles are real. `bun.lock` gates tests and deploys; `package-lock.json` gates the
+  // Pages preview build. Neither section below is decoration.
   const bunLockPath = path.join(root, workspace.dir, "bun.lock");
   if (!existsSync(bunLockPath)) {
     errors.push(
