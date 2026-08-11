@@ -1,0 +1,128 @@
+name: Database migration push
+
+# Runs `supabase db push`, with a dry run first.
+#
+# WHY THIS EXISTS AND WHY IT DEFAULTS TO DRY RUN
+# ----------------------------------------------
+# `db push` applies every migration the remote ledger does not have. Until 2026-08-11 that was
+# unsafe on this project for a specific reason: production's ledger was missing 23 of the repo's
+# 65 versions — not because those migrations had not run, but because production reached the same
+# schema through a different path and never recorded the repo's version numbers. A push then would
+# have re-run 23 migrations against a live database.
+#
+# That is fixed. Both ledgers now carry all 65, verified by reading them back. But the first push
+# after a reconciliation is exactly the one worth watching, so this defaults to `dry_run: true` and
+# will not apply anything until someone deliberately says otherwise.
+#
+# WHY IT IS A WORKFLOW AND NOT SOMETHING A SESSION RUNS
+# -----------------------------------------------------
+# `db push` needs a direct Postgres connection, so it needs `SUPABASE_DB_PASSWORD` — which lives in
+# Actions secrets and is not available to an agent session. This is the only route, and that is a
+# feature: the thing that writes to a production database should leave a run log with a name on it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which project to push to
+        required: true
+        default: staging
+        type: choice
+        options: [staging, production]
+      dry_run:
+        description: Print the plan without applying it
+        required: true
+        default: true
+        type: boolean
+      confirm_project_ref:
+        description: >-
+          To APPLY to production, type mvlrkelahhsyjrwgsxaf. Ignored for dry runs and staging.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  # Two pushes to one database at once is how a half-applied migration happens.
+  group: db-push-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  push:
+    name: ${{ inputs.dry_run && 'Dry run' || 'APPLY' }} on ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Same shape as the deploy workflow: an applying run against production must be typed out in
+      # full, so it cannot happen by clicking through a form with defaults.
+      - name: Require an explicit confirmation to apply to production
+        if: inputs.environment == 'production' && !inputs.dry_run
+        env:
+          TYPED: ${{ inputs.confirm_project_ref }}
+        run: |
+          if [ "$TYPED" != "mvlrkelahhsyjrwgsxaf" ]; then
+            echo "::error::Applying to production requires confirm_project_ref = mvlrkelahhsyjrwgsxaf. Got: '${TYPED}'"
+            exit 1
+          fi
+
+      - name: Refuse to run without the credentials this needs
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          case "$SUPABASE_ACCESS_TOKEN" in
+            sbp_*) : ;;
+            "") echo "::error::SUPABASE_ACCESS_TOKEN is not set."; exit 1 ;;
+            *) echo "::error::Not a personal access token. Account -> Access Tokens; starts 'sbp_'."; exit 1 ;;
+          esac
+          if [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            echo "::error::SUPABASE_DB_PASSWORD is not set. db push needs a direct Postgres connection."
+            exit 1
+          fi
+          echo "Credentials present."
+
+      # Pinned for the same reason as the other workflows: resolving `latest` calls the GitHub
+      # releases API and a production deploy already failed once on its rate limit.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.113.0
+
+      - name: Link and push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PROJECT_REF: ${{ inputs.environment == 'production' && 'mvlrkelahhsyjrwgsxaf' || 'fxmxyabdjqviqbcxmvlp' }}
+        run: |
+          set -uo pipefail
+          supabase link --project-ref "$PROJECT_REF"
+
+          echo "## \`db push\` on \`$PROJECT_REF\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Always print what the remote already has. A push that surprises someone is usually a
+          # push against a ledger they had not looked at.
+          echo "### Migrations the remote already records" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          supabase migration list --linked 2>&1 | tail -80 >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Dry run — nothing was applied" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            supabase db push --dry-run 2>&1 | tee /tmp/push.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            echo ""
+            echo "Dry run complete. Read the plan above, then re-run with dry_run unchecked to apply."
+            exit 0
+          fi
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Applying" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          supabase db push 2>&1 | tee /tmp/push.log >> "$GITHUB_STEP_SUMMARY"
+          status=${PIPESTATUS[0]}
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
