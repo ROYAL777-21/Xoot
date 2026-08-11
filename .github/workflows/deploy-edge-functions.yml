@@ -179,9 +179,14 @@ jobs:
             echo "::warning::src/lib/edge-function-config.test.ts not on this ref; relying on the shell guard above."
           fi
 
+      # Pinned, not `latest`. Resolving `latest` makes `setup-cli` call the GitHub releases API,
+      # which is rate-limited on shared runners — a production deploy failed on
+      # "Failed to resolve latest Supabase CLI release: rate limit exceeded" before it had done
+      # anything. A pinned version needs no lookup, so the deploy no longer depends on someone
+      # else's API quota. Bump deliberately.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.113.0
 
       # Timestamps only — it cannot prove the bytes match, and says so. Printed before and after
       # so the run's own log carries the evidence that something changed.

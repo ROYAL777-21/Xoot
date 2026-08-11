@@ -258,7 +258,35 @@ select control_key, enabled from public.operational_controls
 
 ### 2c. The tests that actually prove it
 
-**No call has been placed on any surface, ever.** Three gates, cheapest first.
+**No call has been placed on any surface, ever.** Four gates, cheapest first.
+
+**Gate 0 — is the Twilio configuration actually right? 10 seconds, admin account.**
+
+New as of 2026-08-12, and it is now the first thing to run because it catches the failure the other
+gates cannot. Sign in as an admin and, in the browser console:
+
+```js
+const { data } = await window.supabase.functions.invoke("twilio-selftest", { body: {} });
+console.table(data.checks); console.log(data.summary, data.accountSid);
+```
+
+This asks **Twilio** — not the secret store — whether the account credentials are a valid pair, the
+API key belongs to that account, the TwiML App exists **with its Voice Request URL set and pointing
+at `twilio-voice-twiml`**, and the Conversations service exists.
+
+**Why it goes before gate 1.** Gate 1 proves the secrets are present and well-formed enough to mint
+a token. It cannot detect a TwiML App whose Voice URL was never filled in — that mints a token
+happily, shows the call button, and then dies silently at the moment two people are trying to speak.
+Gate 0 names it: *"TwiML App exists but its Voice Request URL is EMPTY."*
+
+Reading the output:
+- `ok: true` — working. `ok: false` — broken, and the `detail` says how.
+- **`ok: null` is not a failure.** It means not applicable: the PSTN path and the SMS/WhatsApp
+  webhooks need a phone number Xoot deliberately does not buy. Do not "fix" these.
+
+**Run it on staging too, and compare `accountSid`.** The same Account SID on both projects means
+staging and production share Twilio credentials, which `SECRETS_INVENTORY.md` forbids — a staging
+leak would then reach production.
 
 **Gate 1 — did the secrets land? 30 seconds, no second person.** Sign in, open a booking you are on,
 and in the browser console:
