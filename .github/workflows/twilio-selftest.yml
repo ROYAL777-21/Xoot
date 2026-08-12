@@ -65,6 +65,9 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           ENVIRONMENT: ${{ inputs.environment }}
+        # No `-e`, for the same reason as `db-push.yml`: a reporting workflow that dies on the
+        # first non-zero exit reports nothing, which is the failure mode it exists to prevent.
+        shell: bash
         run: |
           set -uo pipefail
 
@@ -99,6 +102,34 @@ jobs:
             if ! echo "$response" | jq -e . >/dev/null 2>&1; then
               echo "::error::$label returned a non-JSON response (the function may not be deployed)."
               echo "❌ Non-JSON response — is \`twilio-selftest\` deployed to \`$ref\`?" >> "$GITHUB_STEP_SUMMARY"
+              return 1
+            fi
+
+            # A JSON body with no `checks` array is not "Twilio has problems" — it is the function
+            # refusing, or not being deployed at all. The first run of this workflow reported
+            # `summary: none / account: unknown` and nothing else, which reads like a broken Twilio
+            # account when the real cause was that `twilio-selftest` on both projects predated the
+            # service-role auth path and was answering 401.
+            #
+            # Safe to print: this is the function's own error envelope — `{"error": "..."}` — which
+            # by design carries a message and never a credential. Truncated anyway, because an
+            # unexpected body should not be pasted wholesale into a log.
+            if [ "$(echo "$response" | jq -r 'if (.checks | type) == "array" then "yes" else "no" end')" != "yes" ]; then
+              local why
+              why=$(echo "$response" | jq -rc '{error, message, msg, code}' | head -c 400)
+              echo "::error::$label: the function did not return a checks array. Response: $why"
+              {
+                echo "❌ \`twilio-selftest\` did not return a checks array."
+                echo ""
+                echo "\`\`\`"
+                echo "$why"
+                echo "\`\`\`"
+                echo ""
+                echo "Usually one of: the function is not deployed to \`$ref\`, or the deployed copy"
+                echo "predates the service-role auth path and is rejecting this caller. Deploy it and"
+                echo "re-run."
+                echo ""
+              } >> "$GITHUB_STEP_SUMMARY"
               return 1
             fi
 

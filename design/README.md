@@ -38,3 +38,45 @@ native app is pinned dark. Adopting the kit therefore changes three things, not 
 brand colour, the primary action colour, and the default scheme (the kit is light by
 default with a `[data-theme="dark"]` opt-in that redeclares semantic aliases only). See
 `docs/xoot-ios-build-prompt.md`.
+
+---
+
+## The design operating system
+
+Salvaged from PR #25 on 2026-08-12 and rebranded. That PR was a four-week-old draft carrying an
+`apps/web` / `apps/mobile` / `apps/admin` monorepo layout this repository does not have and never
+adopted, plus edits to three workflow files and `blocker.md` that have all moved on since. The
+21 documents below were the only part still worth having, so they were taken and the rest closed.
+
+⚠️ **They predate the Zoot → Xoot rename**, and a handful still say "Zoot" — `PHASE-1-AUDIT.md`
+most of all, which is a point-in-time audit and is left as written rather than retconned. Read the
+brand name as Xoot; read the audit as a July snapshot.
+
+⚠️ **They also predate `Xoot_App.html`** above, which is the newer authority on colour. Where the
+two disagree — and on the brand colour they do — the exported kit wins. See the note above on
+violet versus red.
+
+This directory is the design authority for Zoot. It governs the React/Vite website and web app, the Expo customer and Zooter experiences, and the web operations and administration surfaces.
+
+### Product thesis
+
+Soft surfaces. Clear decisions. Confident service.
+
+### Approval rule
+
+Implementation may be inspired by Figma, but it may only claim design approval when a frame is labelled `APPROVED BY OWNER` and recorded in `approved-frames.json`. An empty registry means no redesign direction is approved.
+
+### Reading order
+
+1. `PHASE-1-AUDIT.md`
+2. `BRAND.md`
+3. `UX-PRINCIPLES.md`
+4. `DESIGN-SYSTEM.md`
+5. `GLASS-SYSTEM.md`
+6. `MOTION.md` and `HAPTICS.md`
+7. `ACCESSIBILITY.md` and `PERFORMANCE.md`
+8. `FIGMA-WORKFLOW.md`
+9. `QUALITY-GATES.md`
+10. `features/customer-sign-in-first-booking/BRIEF.md`
+
+Existing product logic, database contracts, RLS, payment verification, role boundaries, and audit trails take priority over a visual redesign.

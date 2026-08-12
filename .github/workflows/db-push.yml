@@ -94,35 +94,74 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           PROJECT_REF: ${{ inputs.environment == 'production' && 'mvlrkelahhsyjrwgsxaf' || 'fxmxyabdjqviqbcxmvlp' }}
+        # ⚠️ `shell: bash` explicitly, WITHOUT `-e`.
+        #
+        # GitHub's default for a `run:` block is `bash -e {0}`, and `-e` cannot be cleared from
+        # inside the script — `set +e` runs after the shell has already been started with it. That
+        # bit this workflow on its first real run: the step died the moment `db push --dry-run`
+        # returned non-zero, before a single line of the plan reached the log, and the whole run
+        # reported "exit code 1" with nothing to act on.
+        #
+        # Failure is handled explicitly below, by reading exit codes, which is what a workflow
+        # whose entire purpose is to REPORT a plan has to do.
+        shell: bash
         run: |
           set -uo pipefail
-          supabase link --project-ref "$PROJECT_REF"
 
-          echo "## \`db push\` on \`$PROJECT_REF\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          # Everything is written twice, on purpose: once to the step summary (readable, formatted,
+          # pasteable) and once to the log (readable from the API, which the summary is NOT).
+          #
+          # This repo has now paid for that distinction three times — `verify-secrets.yml` reported
+          # a missing-secret COUNT with the names only in the summary; `verify-types.yml` reported
+          # "does not match" with the diff only in the summary; and this workflow reported nothing
+          # at all. Each time, the one thing needed to act on the failure was the one thing not in
+          # the log.
+          #
+          # Safe to print: migration version numbers and file names. No data, no credential.
+          say() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          both() { tee -a "$GITHUB_STEP_SUMMARY"; }
+
+          if ! supabase link --project-ref "$PROJECT_REF" 2>&1 | both; then
+            echo "::error::Could not link to $PROJECT_REF. Check SUPABASE_DB_PASSWORD and the PAT's access."
+            exit 1
+          fi
+
+          say "## \`db push\` on \`$PROJECT_REF\`"
+          say ""
 
           # Always print what the remote already has. A push that surprises someone is usually a
           # push against a ledger they had not looked at.
-          echo "### Migrations the remote already records" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          supabase migration list --linked 2>&1 | tail -80 >> "$GITHUB_STEP_SUMMARY" || true
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          say "### Migrations the remote already records"
+          say '```'
+          echo "----- migration list -----"
+          supabase migration list --linked 2>&1 | tail -100 | both || true
+          say '```'
 
           if [ "${{ inputs.dry_run }}" = "true" ]; then
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "### Dry run — nothing was applied" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            supabase db push --dry-run 2>&1 | tee /tmp/push.log >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            echo ""
+            say ""
+            say "### Dry run — nothing was applied"
+            say '```'
+            echo "----- db push --dry-run -----"
+            supabase db push --dry-run 2>&1 | both
+            plan_status=${PIPESTATUS[0]}
+            say '```'
+            echo "----- end -----"
+            if [ "$plan_status" -ne 0 ]; then
+              # A dry run that cannot even produce a plan is a real failure and must not be
+              # reported as "nothing to do".
+              echo "::error::The dry run itself failed (exit $plan_status). The plan above is incomplete."
+              exit "$plan_status"
+            fi
             echo "Dry run complete. Read the plan above, then re-run with dry_run unchecked to apply."
             exit 0
           fi
 
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Applying" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          supabase db push 2>&1 | tee /tmp/push.log >> "$GITHUB_STEP_SUMMARY"
+          say ""
+          say "### Applying"
+          say '```'
+          echo "----- db push -----"
+          supabase db push 2>&1 | both
           status=${PIPESTATUS[0]}
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          say '```'
+          echo "----- end (exit $status) -----"
           exit "$status"

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Zoot B+C booking prototype</title>
+    <link rel="stylesheet" href="./selected-bc.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#prototype-screen">Skip to prototype</a>
+
+    <main class="review-layout">
+      <aside class="review-rail" aria-label="Prototype review notes">
+        <div class="review-brand">
+          <img src="../../../public/zoot-icon.svg" alt="" />
+          <div>
+            <span>Selected direction</span>
+            <strong>Zoot B+C</strong>
+          </div>
+        </div>
+
+        <div class="review-copy">
+          <p class="eyebrow">High-fidelity revision</p>
+          <h1>Guidance when useful<br />Trust when it matters</h1>
+          <p>Direction B supplies the navigation and temporary guidance</p>
+          <p>Direction C supplies the booking facts, payment boundaries and human support tone</p>
+        </div>
+
+        <nav class="review-steps" aria-label="Preview a screen">
+          <button type="button" data-jump="0" aria-current="step"><span>01</span> Service</button>
+          <button type="button" data-jump="1"><span>02</span> Scope</button>
+          <button type="button" data-jump="2"><span>03</span> Timing</button>
+          <button type="button" data-jump="3"><span>04</span> Sign in</button>
+          <button type="button" data-jump="4"><span>05</span> Review</button>
+          <button type="button" data-jump="5"><span>06</span> Status</button>
+        </nav>
+
+        <dl class="review-contract">
+          <div><dt>Shape</dt><dd>8 px maximum radius</dd></div>
+          <div><dt>Motion</dt><dd>180-260 ms with reduced-motion fallback</dd></div>
+          <div><dt>Glass</dt><dd>Navigation and temporary guidance only</dd></div>
+          <div><dt>Truth</dt><dd>No booking or payment success without backend proof</dd></div>
+        </dl>
+
+        <p class="review-gate">Pre-Figma prototype - not approved for implementation</p>
+      </aside>
+
+      <section class="device-stage" aria-label="Interactive mobile prototype">
+        <div class="device-frame">
+          <div class="device-status" aria-hidden="true">
+            <span>09:41</span>
+            <span>Johannesburg</span>
+          </div>
+
+          <div class="app-shell">
+            <header class="app-header">
+              <button class="brand-button" type="button" data-jump="0" aria-label="Return to Zoot home">
+                <span>Zoot</span>
+              </button>
+              <div class="header-context">
+                <span id="step-label">Step 1 of 5</span>
+                <div class="progress-track" aria-hidden="true"><span id="progress-value"></span></div>
+              </div>
+              <button class="account-button" type="button" data-notice="Account remains available after booking">NS</button>
+            </header>
+
+            <section id="prototype-screen" class="prototype-screen" tabindex="-1" aria-live="polite"></section>
+
+            <nav class="app-tabs" aria-label="Primary navigation">
+              <button type="button" data-tab="home" aria-current="page">Home</button>
+              <button type="button" data-tab="book">Book</button>
+              <button type="button" data-tab="care">Care+</button>
+              <button type="button" data-tab="account">Account</button>
+            </nav>
+
+            <button class="concierge-launcher" type="button" aria-haspopup="dialog" aria-controls="concierge-sheet">
+              <img src="../../../public/zoot-icon.svg" alt="" />
+              <span>Concierge</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="concierge-backdrop" class="sheet-backdrop" hidden>
+      <section id="concierge-sheet" class="concierge-sheet" role="dialog" aria-modal="true" aria-labelledby="concierge-title">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <header>
+          <div class="concierge-identity">
+            <img src="../../../public/zoot-icon.svg" alt="" />
+            <div><span>Zoot Concierge</span><small>Guidance from approved Zoot information</small></div>
+          </div>
+          <button type="button" data-close-sheet>Close</button>
+        </header>
+        <h2 id="concierge-title">What do you need</h2>
+        <div class="concierge-actions">
+          <button type="button" data-concierge-action="booking">Help with this booking</button>
+          <button type="button" data-concierge-action="payment">Explain payment</button>
+          <button type="button" data-concierge-action="person">Speak to a person</button>
+        </div>
+        <div id="concierge-response" class="concierge-response" role="status">
+          Choose an option for safe guidance
+        </div>
+      </section>
+    </div>
+
+    <div id="prototype-toast" class="prototype-toast" role="status" hidden></div>
+    <script src="./selected-bc.js"></script>
+  </body>
+</html>
