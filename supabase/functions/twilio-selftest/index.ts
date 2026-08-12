@@ -4,6 +4,7 @@ import {
   expectedFunctionUrls,
   isRoutableFunctionUrl,
   projectRefFrom,
+  sameSignatureUrl,
 } from "../_shared/function-url.ts";
 
 /**
@@ -81,6 +82,49 @@ const canonicalUrlFor = (fn: string) =>
 const describeUnroutable = (url: string, fn: string) =>
   describeUnroutableFunctionUrl(url, fn, canonicalUrlFor(fn));
 
+/**
+ * One override secret against the URL Twilio is configured to call.
+ *
+ * Three outcomes, and the middle one is the whole reason this exists:
+ *
+ *   unset      ➖ safe by construction — validation falls back to `req.url`, which is by definition
+ *                the URL Twilio just called, so it always matches.
+ *   equal      ✅ set and agreeing.
+ *   different  ❌ set and stale. The request arrives and is refused 403.
+ *
+ * `null` for unset follows this function's existing convention — not-applicable rather than broken,
+ * the same way the PSTN rows are reported. An unset override is the recommended state, not a gap.
+ */
+const signatureUrlCheck = (
+  name: string,
+  envName: string,
+  override: string,
+  configuredUrl: string,
+  consequence: string,
+): Check => {
+  if (!override) {
+    return {
+      name,
+      ok: null,
+      detail: `${envName} is not set, which is the safe default: signature validation falls back to the request URL, which always matches whatever Twilio called.`,
+    };
+  }
+  if (sameSignatureUrl(override, configuredUrl)) {
+    return { name, ok: true, detail: `${envName} matches the URL configured in Twilio.` };
+  }
+  return {
+    name,
+    ok: false,
+    // Both values in full. Neither is a secret — one is Twilio's own configuration, already printed
+    // by the check above, and the other is a URL. The exact characters are the point: a trailing
+    // slash or a query string is enough to break the HMAC, and a truncated message would hide it.
+    detail:
+      `${envName} does not match the URL configured in Twilio, so the HMAC is computed over a different string and ${consequence}. ` +
+      `Twilio calls: ${configuredUrl || "(nothing configured)"} — ${envName} is: ${override}. ` +
+      `Fix whichever is wrong; if Twilio's is now correct, run: supabase secrets set ${envName}="${configuredUrl}" --project-ref <ref>`,
+  };
+};
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
   const preflight = handlePreflight(req, origin);
@@ -135,6 +179,28 @@ Deno.serve(async (req) => {
     const voiceAppSid = Deno.env.get("TWILIO_VOICE_APP_SID") ?? "";
     const conversationsSid = Deno.env.get("TWILIO_CONVERSATIONS_SERVICE_SID") ?? "";
     const proxySid = Deno.env.get("TWILIO_PROXY_SERVICE_SID") ?? "";
+
+    /*
+     * The three signature-validation URL overrides.
+     *
+     * ⚠️ These are the reason "fix the Voice URL in the Console" can be incomplete advice. Both
+     * voice functions validate Twilio's HMAC against an override if one is set:
+     *
+     *   twilio-voice-twiml   validationUrl = TWILIO_WEBHOOK_TWIML_URL  ?? req.url
+     *   twilio-voice-status  validationUrl = TWILIO_WEBHOOK_STATUS_URL ?? req.url
+     *
+     * and the other five webhooks rebuild the URL from TWILIO_WEBHOOK_BASE_URL
+     * (`_shared/twilio-webhook.ts`). Twilio signs the URL it actually posted to. So if the Console
+     * URL is corrected and a stale override is left behind, the request now ARRIVES and is then
+     * rejected 403 — the call still dies, with a different error and no log line saying why.
+     *
+     * Unreadable from anywhere else: these are Edge Function secrets, and `verify-secrets.yml`
+     * reports names only. This function is the only place that sees the env value and Twilio's
+     * configured value at the same time, which is why the check lives here.
+     */
+    const twimlSignatureUrl = Deno.env.get("TWILIO_WEBHOOK_TWIML_URL") ?? "";
+    const statusSignatureUrl = Deno.env.get("TWILIO_WEBHOOK_STATUS_URL") ?? "";
+    const webhookBaseUrl = Deno.env.get("TWILIO_WEBHOOK_BASE_URL") ?? "";
 
     const checks: Check[] = [];
 
@@ -225,9 +291,60 @@ Deno.serve(async (req) => {
               ? `Status callback: ${statusCallback}`
               : `Status callback ${describeUnroutable(statusCallback, "twilio-voice-status")}`,
         });
+
+        /*
+         * Does each function validate against the URL Twilio will actually sign?
+         *
+         * Reported per override rather than as one row, because the two are set independently and
+         * "voice works, status events vanish" is a real and confusing half-state.
+         */
+        checks.push(signatureUrlCheck(
+          "voice TwiML signature URL",
+          "TWILIO_WEBHOOK_TWIML_URL",
+          twimlSignatureUrl,
+          voiceUrl,
+          "the call is rejected 403 before any TwiML is returned, so it dies exactly like a 404 does",
+        ));
+        checks.push(signatureUrlCheck(
+          "voice status signature URL",
+          "TWILIO_WEBHOOK_STATUS_URL",
+          statusSignatureUrl,
+          statusCallback,
+          "every call-status callback is rejected 403, so calls still connect but their events vanish",
+        ));
       }
     } else {
       checks.push({ name: "voice TwiML app", ok: false, detail: "TWILIO_VOICE_APP_SID is not set." });
+    }
+
+    /*
+     * 3b. The base URL the OTHER five webhooks validate against.
+     *
+     * `_shared/twilio-webhook.ts` rebuilds the signed URL by taking this origin and pasting the
+     * request's path onto it, for the message, WhatsApp, verify, status-callback and voice
+     * webhooks. Gate 0 has never said anything about those five, so a wrong origin here breaks all
+     * of them at once, silently, and nothing reports it.
+     *
+     * Checked by origin rather than by full URL because it is a base: the path varies per webhook.
+     */
+    if (!webhookBaseUrl) {
+      checks.push({
+        name: "webhook base URL",
+        ok: null,
+        detail: "TWILIO_WEBHOOK_BASE_URL is not set, which is the safe default: the five non-voice webhooks validate against the request URL, which always matches.",
+      });
+    } else {
+      // Reuse the routability shape check by appending a known function name — the base is correct
+      // exactly when base + "/<fn>" is a URL this project serves.
+      const probe = `${webhookBaseUrl.trim().replace(/\/+$/, "")}/twilio-message-webhook`;
+      const baseOk = isRoutableFunctionUrl(probe, "twilio-message-webhook");
+      checks.push({
+        name: "webhook base URL",
+        ok: baseOk,
+        detail: baseOk
+          ? `TWILIO_WEBHOOK_BASE_URL: ${webhookBaseUrl}`
+          : `TWILIO_WEBHOOK_BASE_URL is not this project's Functions origin: ${webhookBaseUrl}. The message, WhatsApp, verify, status-callback and voice webhooks all validate their signature against it, so every one of them returns 403. Set it to ${canonicalUrlFor("").replace(/\/$/, "")}`,
+      });
     }
 
     // 4. The Conversations service, which is all in-app chat needs — there is no webhook to set.

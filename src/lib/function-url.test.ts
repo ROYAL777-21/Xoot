@@ -5,6 +5,7 @@ import {
   isRoutableFunctionUrl,
   normaliseFunctionUrl,
   projectRefFrom,
+  sameSignatureUrl,
 } from "../../supabase/functions/_shared/function-url";
 
 /**
@@ -140,5 +141,50 @@ describe("normaliseFunctionUrl", () => {
     expect(normaliseFunctionUrl("  https://a.functions.supabase.co/fn/?x=1  ")).toBe(
       "https://a.functions.supabase.co/fn",
     );
+  });
+});
+
+/**
+ * `sameSignatureUrl` answers a different question from everything above it, and the tests that
+ * matter are the ones where the two answers disagree.
+ *
+ * Twilio's HMAC covers the full URL character for character. A trailing slash changes the digest;
+ * a query string changes the digest. `normaliseFunctionUrl` throws both away — correctly, for
+ * "will Twilio reach this" — so reusing it here would silently accept URL pairs that produce a
+ * 403. The `.not.toBe` pairs below are what stops someone merging the two helpers later.
+ */
+describe("sameSignatureUrl", () => {
+  const base = `https://${PRODUCTION_REF}.functions.supabase.co/twilio-voice-twiml`;
+
+  it("matches identical URLs", () => {
+    expect(sameSignatureUrl(base, base)).toBe(true);
+  });
+
+  it("ignores surrounding whitespace, which is a copy-paste artefact and not part of the URL", () => {
+    expect(sameSignatureUrl(`  ${base}\n`, base)).toBe(true);
+  });
+
+  it("⚠️ treats a trailing slash as a MISMATCH, unlike the routability check", () => {
+    // Routability says these are the same place...
+    expect(normaliseFunctionUrl(`${base}/`)).toBe(normaliseFunctionUrl(base));
+    // ...and the signature says they are different strings, which is what Twilio signs.
+    expect(sameSignatureUrl(`${base}/`, base)).toBe(false);
+  });
+
+  it("⚠️ treats an added query string as a MISMATCH, unlike the routability check", () => {
+    expect(normaliseFunctionUrl(`${base}?bookingId=abc`)).toBe(normaliseFunctionUrl(base));
+    expect(sameSignatureUrl(`${base}?bookingId=abc`, base)).toBe(false);
+  });
+
+  it("catches the real production case: right function name, wrong host", () => {
+    expect(sameSignatureUrl(`https://${PRODUCTION_REF}.supabase.co/twilio-voice-twiml`, base)).toBe(false);
+  });
+
+  it("never reports a match when either side is empty", () => {
+    // An unset override must not read as "agrees with nothing configured" — the caller reports
+    // unset separately, as not-applicable, and a true here would hide a real mismatch.
+    expect(sameSignatureUrl("", "")).toBe(false);
+    expect(sameSignatureUrl("   ", base)).toBe(false);
+    expect(sameSignatureUrl(base, "")).toBe(false);
   });
 });

@@ -29,6 +29,34 @@
 /** Query string and trailing slashes are not differences worth failing over. */
 export const normaliseFunctionUrl = (url: string) => url.trim().split("?")[0].replace(/\/+$/, "");
 
+/**
+ * Will Twilio's HMAC over URL `a` validate against URL `b`?
+ *
+ * ⚠️ THIS DELIBERATELY DOES NOT USE `normaliseFunctionUrl`, AND MERGING THE TWO WOULD REINTRODUCE
+ * A SILENT 403.
+ *
+ * The two functions answer different questions and disagree on purpose:
+ *
+ *   `normaliseFunctionUrl`  "will Twilio REACH this?"  → query string and trailing slash are noise
+ *   `sameSignatureUrl`      "will the HMAC MATCH?"     → query string and trailing slash are the
+ *                                                        difference between working and 403
+ *
+ * Twilio signs the full URL it posted to, character for character — see the payload construction in
+ * `twilio-webhook.ts` and the `validationUrl` reads in `twilio-voice-twiml` and `twilio-voice-status`.
+ * A trailing `/` changes the digest. An added `?x=1` changes the digest. So this compares exactly,
+ * after trimming only surrounding whitespace, which is a copy-paste artefact rather than part of
+ * the URL.
+ *
+ * Failing closed with no log line is what makes this worth a named function: the two-Auth-Token
+ * bug (see `twilio-webhook.ts`) already cost this repo a round of silent 403s from exactly this
+ * shape of mistake.
+ */
+export const sameSignatureUrl = (a: string, b: string) => {
+  const left = a.trim();
+  const right = b.trim();
+  return left.length > 0 && left === right;
+};
+
 /** `https://abc.supabase.co` → `abc`. Returns "" for anything that is not a URL. */
 export const projectRefFrom = (supabaseUrl: string) =>
   supabaseUrl.replace(/^https?:\/\//, "").split(".")[0] ?? "";
