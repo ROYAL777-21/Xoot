@@ -106,7 +106,7 @@ const AuthReset = () => {
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm shadow-warm">
             <span className="font-display text-lg font-bold text-primary-foreground">X</span>
           </span>
-          <span className="font-display text-2xl font-bold tracking-tight">xoot</span>
+          <span className="font-display text-2xl font-bold tracking-tight">Xoot</span>
         </Link>
 
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">

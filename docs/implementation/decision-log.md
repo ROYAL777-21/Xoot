@@ -411,6 +411,21 @@ const serviceFeeCents = isCarePlusMember ? 0 : BOOKING_FEE_CENTS;
 source, not merely that today's totals are right — a second term in the condition means the
 one-time rule has crept back.
 
+### `create-booking-request` is kept, not retired
+
+Asked at the same time, since ZD-026 forced the question: the function has **zero callers**, so
+"retire it" was on the table and would have removed a second thing that can drift. Founder chose
+full Care+ parity instead — keep it, and make it price members identically.
+
+Recorded because the reasoning does not survive on its own. A caller-less deployed function looks
+like dead code to the next person who finds it, and the case for deleting it is genuinely good.
+The case for keeping it is that it is authenticated, deployed and reachable by anything holding a
+JWT, so *deleting* it is the outward-facing act and *aligning* it is the reversible one. Now that
+both writers read one shared helper and the parity test asserts it, the drift argument for
+deletion is substantially weaker than it was.
+
+If it is retired later, the test's `BOOKING_WRITERS` list is the thing to shorten.
+
 ### Two pre-existing holes this closed
 
 1. **`create-booking-request` had no concept of Care+ at all.** It charged every member the fee and
