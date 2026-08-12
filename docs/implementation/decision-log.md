@@ -28,7 +28,7 @@ Reviewed: 2026-06-24
 | ZD-022 | The splash is authored once in `src/lib/splash-choreography.ts` and rendered three ways: Remotion for video, Web Animations for the browser, Reanimated + react-native-svg for native. Remotion is a devDependency and an authoring tool, never a runtime one. Launcher and launch-screen stills are generated from `ZoeyArt`. | Approved by founder 2026-07-29 ("Use remotion"), extended to native 2026-07-30 ("i also want the app to have it") | Hand-maintained copies of the same animation drift, and the drift is invisible in review. | See ZD-022 notes below. Native adds `react-native-svg`, and the shared modules are copied into `mobile/src/generated/` by a script rather than imported across roots. |
 | ZD-023 | Tips live in `public.booking_tips`, not on `bookings`, and are visible to a Xooter only once `settled_at` is set. Xoot takes no cut. Booking `price` and `status` become unwritable from any client session. | Approved by founder 2026-07-30 ("Both no") | Row-level security cannot hide a column, so a tip on `bookings` is readable by the assigned Xooter the moment it exists. | See ZD-023 notes below. The price/status guard fixes a live production hole and is currently unapplied. |
 | ZD-024 | **The long-job floor.** From 5.5 booked hours up, gross price is at least **R47 per hour**. Fixed on the price, not on commission — the 35% starting rate is unchanged. | Approved by founder 2026-08-12, revised the same day from R54 to R47 ("Dont make it too expensive for users and to keep them long on the platform") | The ZD-020 ladders were sub-linear in hours, so a 10-hour regular clean returned the Xooter **R27.95/h** — **below South Africa's national minimum wage of R30.23/h**, which domestic workers are at parity with. | Only `REGULAR` moves, and only from 8h up (8h R370→R376, 10h R430→R470). `AIRBNB`, `MOVING`, `OFFICE` and `EXPRESS` are untouched. **Expires with the March 2027 wage increase** — `care-plus.test.ts` fails on 2027-01-31 to force the review. See ZD-024 notes below. |
-| ZD-025 | **A configuration check verifies URL shape, not substrings, and cross-environment rules are enforced by CI rather than by a note.** `twilio-selftest` now rejects a Voice URL that does not route, and fails the run when staging and production report the same Twilio Account SID. | Measured 2026-08-12 by the first working run of `twilio-selftest.yml`; no founder decision required for the code, two founder actions required for the findings | The self-test went green while production held the exact failure it exists to catch — a Voice URL that answers 404 — because `includes("twilio-voice-twiml")` is true of a broken URL. | Two founder actions, both in `docs/release/go-live.md` §2c-0: fix production's TwiML App URLs in the Twilio Console, and split staging onto its own Twilio subaccount. See ZD-025 notes below. |
+| ZD-025 | **A configuration check verifies URL shape, not substrings, and cross-environment rules are enforced by CI rather than by a note.** `twilio-selftest` now rejects a Voice URL that does not route, and fails the run when staging and production report the same Twilio Account SID. | Measured 2026-08-12 by the first working run of `twilio-selftest.yml`; no founder decision required for the code, two founder actions required for the findings | The self-test went green while production held the exact failure it exists to catch — a Voice URL that answers 404 — because `includes("twilio-voice-twiml")` is true of a broken URL. | ① **fixed 2026-08-12 21:40** — production's TwiML App now serves routable URLs over POST, and both environments are green on voice. ② still open: staging needs its own Twilio subaccount (`scripts/ops/create-staging-twilio-subaccount.mjs`, walkthrough in `docs/release/go-live.md` §2c-0 ②). See ZD-025 notes below. |
 
 ## ZD-020 notes — pricing model change
 
@@ -340,6 +340,43 @@ FAIL voice status callback: … https://mvlrkelahhsyjrwgsxaf.functions.supabase.
 ```
 
 Staging passes both.
+
+#### ① resolved, and a wrong diagnosis on the way there
+
+**Resolved 2026-08-12 21:40.** Production's TwiML App `APcfd1e3028c6d183ac1a7664e0b328f60`
+("Xoot TwiML App Production") now serves
+`https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml` over POST, with a matching
+status callback. Both environments are green on voice.
+
+**The wrong diagnosis, recorded because the reasoning was seductive.** When the founder reported
+setting the URL and gate 0 still failing, I inferred from measured data that the account holds two
+TwiML Apps — same account SID, two different `voice_url` values, and one app has exactly one
+`voice_url` — and concluded the wrong app was being edited.
+
+The premise was right: there are exactly two apps, confirmed by the enumeration added in response.
+**The conclusion was wrong.** The correct app was edited, the change landed, and the run that looked
+like "still broken" was simply taken before the edit. A correct fact and a correct diagnosis are
+different things, and a deduction that is airtight about the *world* can still be wrong about the
+*sequence of events* — which is the part that actually mattered here.
+
+**What was genuinely defective, and is fixed.** The check named a wrong value without naming the
+object holding it. It said "the Voice URL does not route" in an account containing two candidate
+apps, with no environment column, no stable ordering, and names differing by a trailing space. Even
+though that was not what went wrong this time, it is unusable the moment it is — the same shape as ①
+itself, one level up: ① matched a substring instead of the thing it cared about; this identified a
+value instead of the object.
+
+**A check a person cannot act on is not finished**, and "which one?" is part of the finding rather
+than context the reader is expected to supply. Fixed by printing the app's SID and friendly name in
+every branch, and by listing every TwiML App on the account with the selected one marked:
+
+```
+⚠️ 2 TwiML Apps on this account — edit by SID, not by name or list position.
+APcfd1e30… "Xoot TwiML App Production" ← THIS PROJECT USES THIS ONE | AP2afeeb7… "Xoot TwiML App Staging "
+```
+
+Several apps is reported as informational, never as a fault. It is the expected consequence of ②,
+and flagging a correct configuration as broken is how people learn to ignore a report.
 
 #### The 403 hiding behind the 404, and why the check belongs in the self-test
 

@@ -330,58 +330,82 @@ account, and a staging leak would reach production.
 
 ---
 
-#### ⚠️ 2c-0. What the first green run found — two things only you can fix
+#### 2c-0. What gate 0 found — one fixed, one still open
 
-Gate 0 went green and then immediately reported two real defects. Neither is a code change; both
-are Twilio Console work.
+Gate 0 went green and immediately reported two real defects. ① is now **resolved**; ② is still open.
 
-**① Production's Voice Request URL does not route. This is the exact failure gate 0 exists for.**
+**① ✅ RESOLVED 2026-08-12 21:40 — production's Voice Request URL now routes.**
 
 ```
-staging     https://fxmxyabdjqviqbcxmvlp.functions.supabase.co/twilio-voice-twiml   ✅
-production  https://mvlrkelahhsyjrwgsxaf.supabase.co/twilio-voice-twiml             ❌
+✅ voice TwiML app: TwiML App "Xoot TwiML App Production" (APcfd1e3028c6d183ac1a7664e0b328f60)
+   Voice URL: https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml (POST)
+✅ voice TwiML app method: POST
+✅ voice status callback: https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-status
 ```
 
-Supabase serves an Edge Function on two URL shapes and no others:
+Production's summary now reads *"Voice and chat are configured"*. Staging is green too.
+
+<details>
+<summary>What was wrong, and what it cost — kept because the lesson outlived the bug</summary>
+
+The value was `https://mvlrkelahhsyjrwgsxaf.supabase.co/twilio-voice-twiml`. Supabase serves an Edge
+Function on two URL shapes and no others:
 
 ```
 https://<project-ref>.functions.supabase.co/<function-name>
 https://<project-ref>.supabase.co/functions/v1/<function-name>
 ```
 
-Production's value is neither — it is the REST host with the function name pasted onto the root. It
-answers 404. **A production call will connect and then die in silence**, which is precisely the
-scenario in this section's opening paragraph.
+That value was neither — the REST host with the function name pasted onto the root, answering 404,
+so a production call would connect and then die in silence. Exactly the failure gate 0 exists for,
+and **the first version of gate 0 passed it**, because it asked
+`voiceUrl.includes("twilio-voice-twiml")`. The check now verifies shape and is unit-tested with the
+real broken value as its first case (`src/lib/function-url.test.ts`).
 
-##### Fixing it — five minutes, all in the Twilio Console
+**A wrong guess worth recording.** When the fix appeared not to take, I reasoned that the account
+holds two TwiML Apps, so the wrong one was probably being edited. The account *does* hold two — that
+part is confirmed below — but that was not the cause: the correct app was edited and the change
+landed. The measurement that looked like "still broken" was simply taken before the edit. Worth
+remembering that a correct fact and a correct diagnosis are different things.
 
-**1. Open the TwiML App.** Twilio Console → **Voice** → **Manage** → **TwiML Apps** → the app whose
-SID matches `TWILIO_VOICE_APP_SID`. Gate 0 prints its friendly name, so you can confirm you are in
-the right one before changing anything.
+</details>
 
-**2. Set the Voice Request URL**, and check the method is **POST**, not GET:
+> ##### ⚠️ Still true, and worth knowing: there are two TwiML Apps in one account
+>
+> ```
+> APcfd1e3028c6d183ac1a7664e0b328f60  "Xoot TwiML App Production"  → production
+> AP2afeeb739fe2af44152e32aea6df715b  "Xoot TwiML App Staging "    → staging
+> ```
+>
+> They live in one Console list with no environment column, no reliable ordering, and names that
+> differ only by a suffix (staging's has a trailing space). **Identify by SID, never by name or
+> position.** Gate 0 prints the SID it read and lists every app on the account, marking the one each
+> project uses.
+>
+> This is defect ② showing through as a usability problem. Once staging has its own subaccount, each
+> account holds one app and the ambiguity disappears.
 
-```
-https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml
-```
+##### If either URL ever goes wrong again
 
-**3. Set the Status Callback URL** in the same form, also **POST**:
+The values, for both environments. Twilio Console → **Voice** → **Manage** → **TwiML Apps** → the
+app matching the SID gate 0 prints. Both fields are **POST**, not GET.
 
-```
-https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-status
-```
+| | production `APcfd1e30…` | staging `AP2afeeb7…` |
+|---|---|---|
+| Voice Request URL | `https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml` | `https://fxmxyabdjqviqbcxmvlp.functions.supabase.co/twilio-voice-twiml` |
+| Status Callback | `https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-status` | `https://fxmxyabdjqviqbcxmvlp.functions.supabase.co/twilio-voice-status` |
 
-**4. Save**, then re-run gate 0 (`environment: both`). Both rows should flip to ✅ and production's
-summary should read *"Voice and chat are configured"*.
+The two columns differ only by project ref, `mvlrk…` vs `fxmxy…`. **Pasting the wrong one is a
+mistake gate 0 will not catch**, because the ref is deliberately not pinned — a custom domain in
+front of the functions would otherwise read as broken. Match the ref to the environment by eye.
 
-Copy staging's *shape*, not its project ref — the difference between the two URLs is only
-`fxmxy…` vs `mvlrk…`, and pasting staging's ref into production is a mistake gate 0 will not catch,
-because the ref is deliberately not pinned (a custom domain would otherwise read as broken).
+Save, then re-run gate 0 (`environment: both`). If a row still fails, compare the SID it prints
+against the app you edited before touching the URL again.
 
-> **You do not need to change any secret.** That was worth checking rather than assuming, because
-> both voice functions validate Twilio's HMAC against an override secret if one is set, and a stale
-> override would have turned this 404 into a **403** — the call would still die, with a different
-> error and no log line saying why. Measured 20:42, production:
+> **No secret needed changing, and that was checked rather than assumed.** Both voice functions
+> validate Twilio's HMAC against an override secret when one is set, so a stale override would have
+> turned the 404 into a **403** — the call still dead, different error, no log line. Measured on
+> production:
 >
 > ```
 > ➖ voice TwiML signature URL:  TWILIO_WEBHOOK_TWIML_URL is not set
@@ -389,18 +413,10 @@ because the ref is deliberately not pinned (a custom domain would otherwise read
 > ✅ webhook base URL:          https://mvlrkelahhsyjrwgsxaf.functions.supabase.co
 > ```
 >
-> Both overrides are unset, so validation falls back to the request URL, which by definition matches
-> whatever Twilio called. **The two Console edits above are the whole fix.**
->
-> The third line is the tell for how this happened: `TWILIO_WEBHOOK_BASE_URL` holds the *correct*
-> origin. So the secret was set properly and the Console URL was typed by hand, wrongly — which also
-> means the five non-voice webhooks that validate against that base were never affected.
-
-> Worth saying plainly: **the first version of gate 0 passed this URL.** It checked
-> `voiceUrl.includes("twilio-voice-twiml")`, which the broken value satisfies. The check now
-> verifies the URL's shape and is unit-tested with production's real value as the first case
-> (`src/lib/function-url.test.ts`). A test that only catches the failure you imagined is worth
-> less than it looks.
+> Both overrides unset means validation falls back to the request URL, which by definition matches
+> whatever Twilio called. The third line also explains the original defect: `TWILIO_WEBHOOK_BASE_URL`
+> held the *correct* origin, so the secret was set properly and only the Console field was typed
+> wrongly — which is why the five non-voice webhooks were never affected.
 
 **② Staging and production share one Twilio account.** Both report Account SID `AC93de1e…` and the
 same API key, "ZOOT API KEY". `SECRETS_INVENTORY.md` forbids this, and gate 0 now fails the run on
@@ -501,9 +517,10 @@ Budget 15 minutes the first time. You need **two devices, or one device and a ph
 
 Two questions, in this order. Both have measured answers as of 2026-08-12.
 
-**Where?** → **Staging.** Its Voice URL and status callback are correct. Production's are not (2c-0
-①): Twilio POSTs a URL that 404s, so a production call rings and drops. Do not spend a second
-person's time on production until 2c-0 ① is done and gate 0 is green.
+**Where?** → **Staging.** Both environments' Twilio configuration is now correct — 2c-0 ① was fixed
+at 21:40 and gate 0 is green on voice for both. So this is no longer "production cannot connect";
+it is that a production call is a customer-facing surface and staging is where the smoke booking
+and the arming script live.
 
 **What does it cost?** → **A staging call is a live-account call.** Both projects use Twilio account
 `AC93de1e…`, so it bills production and appears in production's call logs (2c-0 ②). Cents, and fine
@@ -580,7 +597,7 @@ callee's panel offers accept/decline, and after accepting both hear each other. 
 |---|---|
 | No call button at all | **Check the window first** — `scheduled_at` more than 45 min in the future, or past `scheduled_at + duration + 30 min`, hides the button with no message. Then check status is `en_route`/`in_progress`, then that the signed-in account is a participant. Step 3. |
 | "Calling is not configured" | `twilio-token` returned `configured: false`. Gate 1 names the missing secrets. |
-| Rings, then drops immediately | The TwiML App's Voice Request URL is empty, or set to something that does not route. **Gate 0 catches this** — it is the failure the self-test exists for, and as of 2026-08-12 it is production's actual state. See 2c-0 ①. |
+| Rings, then drops immediately | The TwiML App's Voice Request URL is empty, or set to something that does not route, or set to GET instead of POST. **Gate 0 catches all three** — it is the failure the self-test exists for. This was production's state until 2026-08-12 21:40; see 2c-0 ① for the values. |
 | Connects but silence one way | Microphone permission denied on the silent side, or the OS input device is muted. Step 5. |
 | Connects but silence both ways | Media is being blocked — a corporate network or VPN dropping UDP. Retry on a mobile hotspot to confirm. |
 | `403` in the Twilio Console with no matching function log | Auth Token wrong or absent. Gate 2. |
