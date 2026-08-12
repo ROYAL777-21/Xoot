@@ -28,6 +28,7 @@ Reviewed: 2026-06-24
 | ZD-022 | The splash is authored once in `src/lib/splash-choreography.ts` and rendered three ways: Remotion for video, Web Animations for the browser, Reanimated + react-native-svg for native. Remotion is a devDependency and an authoring tool, never a runtime one. Launcher and launch-screen stills are generated from `ZoeyArt`. | Approved by founder 2026-07-29 ("Use remotion"), extended to native 2026-07-30 ("i also want the app to have it") | Hand-maintained copies of the same animation drift, and the drift is invisible in review. | See ZD-022 notes below. Native adds `react-native-svg`, and the shared modules are copied into `mobile/src/generated/` by a script rather than imported across roots. |
 | ZD-023 | Tips live in `public.booking_tips`, not on `bookings`, and are visible to a Xooter only once `settled_at` is set. Xoot takes no cut. Booking `price` and `status` become unwritable from any client session. | Approved by founder 2026-07-30 ("Both no") | Row-level security cannot hide a column, so a tip on `bookings` is readable by the assigned Xooter the moment it exists. | See ZD-023 notes below. The price/status guard fixes a live production hole and is currently unapplied. |
 | ZD-024 | **The long-job floor.** From 5.5 booked hours up, gross price is at least **R47 per hour**. Fixed on the price, not on commission — the 35% starting rate is unchanged. | Approved by founder 2026-08-12, revised the same day from R54 to R47 ("Dont make it too expensive for users and to keep them long on the platform") | The ZD-020 ladders were sub-linear in hours, so a 10-hour regular clean returned the Xooter **R27.95/h** — **below South Africa's national minimum wage of R30.23/h**, which domestic workers are at parity with. | Only `REGULAR` moves, and only from 8h up (8h R370→R376, 10h R430→R470). `AIRBNB`, `MOVING`, `OFFICE` and `EXPRESS` are untouched. **Expires with the March 2027 wage increase** — `care-plus.test.ts` fails on 2027-01-31 to force the review. See ZD-024 notes below. |
+| ZD-025 | **A configuration check verifies URL shape, not substrings, and cross-environment rules are enforced by CI rather than by a note.** `twilio-selftest` now rejects a Voice URL that does not route, and fails the run when staging and production report the same Twilio Account SID. | Measured 2026-08-12 by the first working run of `twilio-selftest.yml`; no founder decision required for the code, two founder actions required for the findings | The self-test went green while production held the exact failure it exists to catch — a Voice URL that answers 404 — because `includes("twilio-voice-twiml")` is true of a broken URL. | Two founder actions, both in `docs/release/go-live.md` §2c-0: fix production's TwiML App URLs in the Twilio Console, and split staging onto its own Twilio subaccount. See ZD-025 notes below. |
 
 ## ZD-020 notes — pricing model change
 
@@ -310,6 +311,45 @@ them and Xoot absorbs it.
 `xoot-pricing.test.ts` asserts the floor as an invariant over the ladders, that no rung fell, and
 that every rung clears R30.23 at 35%. `care-plus.test.ts` holds the legal check and the dated
 review guard.
+
+## ZD-025 notes — what the first working Twilio self-test found
+
+Recorded 2026-08-12. Not a decision so much as two measurements that change what "ready" means for
+voice, both surfaced by `twilio-selftest.yml` the moment it first authenticated.
+
+### ① Production's Voice Request URL does not route
+
+```
+staging     https://fxmxyabdjqviqbcxmvlp.functions.supabase.co/twilio-voice-twiml   routes
+production  https://mvlrkelahhsyjrwgsxaf.supabase.co/twilio-voice-twiml             404
+```
+
+Supabase serves an Edge Function on `https://<ref>.functions.supabase.co/<fn>` or
+`https://<ref>.supabase.co/functions/v1/<fn>`. Production's value is neither — the REST host with
+the function name on the root. **A production call would connect and then die in silence**, which
+is the single failure this self-test was built to catch.
+
+It is a Twilio Console change, in `docs/release/go-live.md` §2c-0. No code fix reaches it.
+
+**The check had passed this URL.** It asked `voiceUrl.includes("twilio-voice-twiml")`, which the
+broken value satisfies. The predicate now lives in `supabase/functions/_shared/function-url.ts`,
+verifies the URL's shape, and is unit-tested in `src/lib/function-url.test.ts` with production's
+real value as the first case. The generalisation worth keeping: **a check written from an imagined
+failure tends to match the imagination rather than the failure.** The empty-URL case was the one
+imagined, and the empty-URL case is the one it caught.
+
+### ② Staging and production share one Twilio account
+
+Both report Account SID `AC93de1e…` and the same API key. `SECRETS_INVENTORY.md` forbids shared
+credentials between environments, so this is a standing violation, and it is the reason gate 3 is
+not free: every staging test call bills the live account and lands in its call logs.
+
+The workflow previously printed *"compare the two Account SIDs above, they must differ"*. It now
+compares them and fails the run. A rule that only a human can enforce is a note, not a rule — and
+the first green run printed the same SID twice under a green tick.
+
+This is founder-blocked: it needs a Twilio subaccount for staging with its own API key, TwiML App
+and Conversations service. It is already item 6 in the list below.
 
 ## Pending Founder Decisions
 

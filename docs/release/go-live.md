@@ -265,42 +265,34 @@ select control_key, enabled from public.operational_controls
 Run the **Twilio self-test** workflow: Actions → *Twilio self-test* → Run workflow → environment
 `both`. It prints a ✅/❌/➖ table per project into the run summary and the log.
 
-> ### ⚠️ BLOCKED as of 2026-08-12 — one line of config away, and it needs your decision
+> ### ✅ WORKING as of 2026-08-12 19:20 — and it found two real problems on its first pass
 >
-> The workflow is built and deployed to both projects, and it does not yet work. The cause is not
-> Twilio and not the secrets — it is Supabase's API-key migration. Measured, not guessed:
+> It took six runs. What was wrong, in order, because each fix revealed the next and every one of
+> them produced a body that looked like "your credential is wrong":
 >
-> ```
-> api-keys schema: ["api_key","description","hash","id","name","prefix","type"]
-> labels: [{"name":"anon","type":"legacy"}, {"name":"service_role","type":"legacy"},
->          {"name":"default","type":"publishable"}, {"name":"default","type":"secret"}]
-> every key rejected: [eyJ… -> authentication required] [sb_… -> Invalid API key]
-> ```
+> | # | change | result |
+> |---|---|---|
+> | 1 | `verify_jwt = true` → `false` in `supabase/config.toml` | still `Invalid API key` |
+> | 2 | stopped sending the secret key in the `apikey` header | `Conflicting API keys` |
+> | 3 | matched the key *schemes* across both headers | still `Conflicting API keys` |
+> | 4 | dropped the `apikey` header entirely | still `Invalid API key` |
+> | 5 | fetched the keys with **`--reveal`** | ✅ both projects |
 >
-> Both projects have moved to the new `sb_secret_…` keys, so the Edge Function's
-> `SUPABASE_SERVICE_ROLE_KEY` env var holds the **secret key**, not the legacy JWT. That produces a
-> deadlock:
+> Two lessons worth more than the fix:
 >
-> - The **legacy `service_role` JWT** passes Supabase's gateway but no longer equals the function's
->   env value → the function answers `authentication required`.
-> - The **`sb_secret_…` key** would match, but `twilio-selftest` is `verify_jwt = true`, so the
->   gateway rejects a non-JWT credential before the function runs → `Invalid API key`.
+> - **The `apikey` and `Authorization` headers are both read as API keys**, and the gateway refuses
+>   two different ones — that is what `Conflicting API keys` means. Matching the schemes does not
+>   help. Under the new key scheme you send `Authorization: Bearer sb_secret_…` and **no `apikey`
+>   header at all**. The legacy `anon` + `service_role` pair is tolerated only because a JWT in
+>   `Authorization` is treated as a user token rather than a second key.
+> - **`supabase projects api-keys` masks `sb_secret_…` without `--reveal`**, and does *not* mask the
+>   legacy `eyJ…` values. So the modern path failed with "invalid key" while holding a placeholder,
+>   and the legacy path reached the function and was refused on merit. The two failures looked
+>   identical from outside. The workflow now prints each key's **length** for exactly this reason —
+>   a masked secret is short, a real one is not.
 >
-> **The credential that can reach the function is not the one it holds, and the one it holds cannot
-> reach it.**
->
-> **The fix, which is yours to approve.** Set `verify_jwt = false` for `twilio-selftest` in
-> `supabase/config.toml` and add it to `MUST_STAY_OPEN` in `src/lib/edge-function-config.test.ts`.
-> The function then performs its own full-string comparison against the secret key, plus the admin
-> check — the same shape the Twilio webhooks already use, where the gateway is open and the function
-> is the gate. It is not a weakening: the exact match still stands, and a wrong credential is still
-> refused.
->
-> It is written down rather than done because that test exists precisely to make opening a function
-> a deliberate act, and this one reports account configuration.
->
-> Until then, gate 0 runs from an admin browser session using the console snippet below, which is
-> unaffected — a signed-in admin never touches the service-role path.
+> `verify_jwt = false` did land and was necessary; it was simply not sufficient, and the identical
+> error body afterwards made it look like it had not landed at all.
 
 It needs no new secret. The job fetches the project's service-role key with the
 `SUPABASE_ACCESS_TOKEN` that already exists as a repository secret, calls `twilio-selftest` with it,
@@ -315,13 +307,15 @@ console.table(data.checks); console.log(data.summary, data.accountSid);
 ```
 
 This asks **Twilio** — not the secret store — whether the account credentials are a valid pair, the
-API key belongs to that account, the TwiML App exists **with its Voice Request URL set and pointing
-at `twilio-voice-twiml`**, and the Conversations service exists.
+API key belongs to that account, the TwiML App exists **with its Voice Request URL set to a URL that
+actually routes to `twilio-voice-twiml`**, and the Conversations service exists.
 
 **Why it goes before gate 1.** Gate 1 proves the secrets are present and well-formed enough to mint
-a token. It cannot detect a TwiML App whose Voice URL was never filled in — that mints a token
-happily, shows the call button, and then dies silently at the moment two people are trying to speak.
-Gate 0 names it: *"TwiML App exists but its Voice Request URL is EMPTY."*
+a token. It cannot detect a TwiML App whose Voice URL was never filled in, or filled in wrongly —
+either mints a token happily, shows the call button, and then dies silently at the moment two people
+are trying to speak. Gate 0 names both: *"its Voice Request URL is EMPTY"*, and *"is not a routable
+Edge Function URL … Twilio will POST it and get a 404"* — the second being the one production was
+actually in, see 2c-0 below.
 
 Reading the output:
 - `ok: true` — working. `ok: false` — broken, and the `detail` says how.
@@ -329,9 +323,64 @@ Reading the output:
   webhooks need a phone number Xoot deliberately does not buy. Do not "fix" these.
 
 **Run it on staging too, and compare `accountSid`.** The workflow's `both` option does this for you
-and prints the reminder. The same Account SID on both projects means staging and production share
-Twilio credentials, which `SECRETS_INVENTORY.md` forbids — a staging test call would then bill and
-log against the live account, and a staging leak would reach production.
+— it now *compares* the two rather than asking you to, and fails the run when they match. The same
+Account SID on both projects means staging and production share Twilio credentials, which
+`SECRETS_INVENTORY.md` forbids — a staging test call would then bill and log against the live
+account, and a staging leak would reach production.
+
+---
+
+### ⚠️ 2c-0. What the first green run found — two things only you can fix
+
+Gate 0 went green and then immediately reported two real defects. Neither is a code change; both
+are Twilio Console work.
+
+**① Production's Voice Request URL does not route. This is the exact failure gate 0 exists for.**
+
+```
+staging     https://fxmxyabdjqviqbcxmvlp.functions.supabase.co/twilio-voice-twiml   ✅
+production  https://mvlrkelahhsyjrwgsxaf.supabase.co/twilio-voice-twiml             ❌
+```
+
+Supabase serves an Edge Function on two URL shapes and no others:
+
+```
+https://<project-ref>.functions.supabase.co/<function-name>
+https://<project-ref>.supabase.co/functions/v1/<function-name>
+```
+
+Production's value is neither — it is the REST host with the function name pasted onto the root. It
+answers 404. **A production call will connect and then die in silence**, which is precisely the
+scenario in this section's opening paragraph.
+
+Fix it in the Twilio Console → Voice → TwiML Apps → your app → Voice Request URL:
+
+```
+https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml     (POST)
+```
+
+and the status callback alongside it:
+
+```
+https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-status    (POST)
+```
+
+Staging's is already correct — copy its shape, not its project ref.
+
+> Worth saying plainly: **the first version of gate 0 passed this URL.** It checked
+> `voiceUrl.includes("twilio-voice-twiml")`, which the broken value satisfies. The check now
+> verifies the URL's shape and is unit-tested with production's real value as the first case
+> (`src/lib/function-url.test.ts`). A test that only catches the failure you imagined is worth
+> less than it looks.
+
+**② Staging and production share one Twilio account.** Both report Account SID `AC93de1e…` and the
+same API key, "ZOOT API KEY". `SECRETS_INVENTORY.md` forbids this, and gate 0 now fails the run on
+it rather than printing a note.
+
+It matters most for gate 3: every staging test call **bills the live account and appears in its
+call logs**, and a staging credential leak is a production credential leak. The fix is a Twilio
+**subaccount** for staging, with its own API key, TwiML App and Conversations service, set as the
+staging project's secrets. Until then, treat staging voice as production voice.
 
 **Gate 1 — did the secrets land? 30 seconds, no second person.** Sign in, open a booking you are on,
 and in the browser console:
