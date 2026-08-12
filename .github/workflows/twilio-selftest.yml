@@ -106,10 +106,8 @@ jobs:
             # holds the legacy JWT. Picking one name and hoping is how that produced a failure that
             # looked like a Twilio problem.
             #
-            # So: collect the candidates, try each, stop at the first that authenticates. The
-            # function compares each in full against its own env, so a wrong one is simply
-            # rejected — trying two costs a round trip and buys immunity to which scheme a project
-            # is on.
+            # So: collect the candidates, try each, stop at the first that authenticates — but as
+            # PAIRS, not as loose keys. See the block below; that distinction is the fix.
             local raw
             raw=$(supabase projects api-keys --project-ref "$ref" --experimental -o json 2>/dev/null)
 
@@ -129,68 +127,64 @@ jobs:
             echo "  api-keys schema for $label: $(echo "$raw" | jq -rc '(.[0] // {}) | keys' 2>/dev/null)"
             echo "  api-keys labels for $label: $(echo "$raw" | jq -rc '[.[] | {name, type, id, description} | with_entries(select(.value != null))]' 2>/dev/null | head -c 300)"
 
-            local keys
-            keys=$(echo "$raw" \
-              | jq -r '.[] | select(((.name // .type // "") | ascii_downcase | test("anon|publishable")) | not)
-                           | select(((.api_key // "") | startswith("sb_publishable_")) | not)
-                           | .api_key' \
-              | grep -v '^null$' | grep -v '^$')
+            #
+            # ⚠️ BOTH HEADERS MUST COME FROM THE SAME KEY SCHEME. THIS IS THE WHOLE PROBLEM.
+            #
+            # A request to an Edge Function carries two credentials, and they are checked by two
+            # different things:
+            #
+            #   `apikey:`               → the gateway, which asks "is this a key for this project?"
+            #   `Authorization: Bearer` → this function, which compares it in full against its own
+            #                             service-role env var.
+            #
+            # These projects each carry FOUR keys — a legacy pair (`anon` / `service_role`, both
+            # `eyJ…` JWTs) and a new-scheme pair (`sb_publishable_…` / `sb_secret_…`) — and the
+            # gateway rejects a request that mixes them with `{"message":"Conflicting API keys"}`.
+            # Measured 19:13, both projects, after the previous two fixes had already landed.
+            #
+            # So the candidates are not four keys to try in some order. They are TWO PAIRS, and a
+            # pair is used whole or not at all. Every earlier attempt failed by taking one key from
+            # each side of the migration:
+            #
+            #   19:06  apikey=sb_secret       auth=sb_secret       → Invalid API key (secret is not
+            #                                                        valid in `apikey` at all)
+            #   19:13  apikey=anon (eyJ)      auth=sb_secret       → Conflicting API keys
+            #   19:13  apikey=anon (eyJ)      auth=service_role    → reached the function, which
+            #                                                        answered `authentication
+            #                                                        required` — so its env holds
+            #                                                        the NEW secret, not this JWT
+            #
+            # That last line is the useful one: it proves the platform now injects the new-scheme
+            # secret under `SUPABASE_SERVICE_ROLE_KEY`, so the new pair is the one that can work.
+            # It is tried first; the legacy pair stays as the fallback for a project that has not
+            # migrated, where `anon`/`service_role` is still the only pair that exists.
+            local pub_new sec_new pub_legacy sec_legacy
+            pub_new=$(echo "$raw" | jq -r 'first(.[] | select((.type // "") == "publishable" and (.api_key // "") != "") | .api_key) // ""')
+            sec_new=$(echo "$raw" | jq -r 'first(.[] | select((.type // "") == "secret" and (.api_key // "") != "") | .api_key) // ""')
+            pub_legacy=$(echo "$raw" | jq -r 'first(.[] | select((.name // "") == "anon" and (.api_key // "") != "") | .api_key) // ""')
+            sec_legacy=$(echo "$raw" | jq -r 'first(.[] | select((.name // "") == "service_role" and (.api_key // "") != "") | .api_key) // ""')
 
-            # ⚠️ THE `apikey` HEADER TAKES THE PUBLISHABLE KEY, NOT THE SECRET ONE.
-            #
-            # This is the detail that kept the 19:06 run failing after `verify_jwt` was already
-            # false. Supabase's gateway validates the `apikey` header against the project's keys
-            # *independently* of `verify_jwt` — turning JWT verification off does not turn that
-            # off. And under the new key scheme a `sb_secret_…` value is not valid in `apikey`;
-            # it belongs in `Authorization: Bearer`. Sending the secret in both headers, which is
-            # what the legacy service_role JWT let you get away with, is rejected as
-            # `{"message":"Invalid API key"}` before the function is ever reached.
-            #
-            # So: publishable key identifies the project, secret key authenticates the caller.
-            local apikey
-            apikey=$(echo "$raw" | jq -r '
-              [.[] | select(((.api_key // "") | startswith("sb_publishable_")) or ((.name // "") == "anon")) | .api_key]
-              | first // ""')
-            if [ -z "$apikey" ] || [ "$apikey" = "null" ]; then
-              echo "::error::Could not read a publishable/anon key for $ref to use as the apikey header."
+            local schemes=""
+            [ -n "$pub_new" ] && [ -n "$sec_new" ] && schemes="new"
+            [ -n "$pub_legacy" ] && [ -n "$sec_legacy" ] && schemes="$schemes legacy"
+
+            if [ -z "$schemes" ]; then
+              echo "::error::No complete key pair for $ref — publishable/secret and anon/service_role were both incomplete."
+              echo "❌ Could not read a usable key pair." >> "$GITHUB_STEP_SUMMARY"
               return 1
             fi
-            echo "  apikey header uses the $(printf '%s' "$apikey" | cut -c1-3)… key"
+            echo "  usable key pairs for $label:$(printf ' %s' $schemes)"
 
-            if [ -z "$keys" ]; then
-              echo "::error::Could not read any secret key for $ref. Does the PAT have access to this project?"
-              echo "❌ Could not read the project key." >> "$GITHUB_STEP_SUMMARY"
-              return 1
-            fi
-
-            # Shapes only — `eyJ…` (legacy JWT) or `sb_secret_…`. Never the value. This one line is
-            # what would have identified the mismatch above in seconds instead of a round trip.
-            echo "  key candidates for $label: $(echo "$keys" | cut -c1-3 | tr '\n' ' ')"
-
-            #
-            # ⚠️ JWT-shaped candidates FIRST, and this ordering is not cosmetic.
-            #
-            # History, because two separate causes produced the same "Invalid API key" body and
-            # the first fix alone was not enough:
-            #
-            #   1. `twilio-selftest` was `verify_jwt = true`, so the gateway validated the
-            #      credential BEFORE the function ran and a non-JWT `sb_secret_…` key could never
-            #      reach it. That is now `verify_jwt = false` (see `supabase/config.toml`) — the
-            #      function does its own full-string comparison against the secret key instead.
-            #   2. The `apikey` header was also being sent the secret key. That check is separate
-            #      from `verify_jwt` and survived the flip, which is why the 19:06 run still failed
-            #      with an identical message. It now gets `$apikey` (publishable), above.
-            #
-            # Both credentials still vary by project age: a project that has not migrated returns
-            # only legacy `eyJ…` JWTs, where `service_role` doubles as both headers. Trying the
-            # JWT-shaped candidate first keeps those working, and each candidate's outcome is
-            # reported by shape so a future failure says which one got how far instead of
-            # collapsing to the last error.
             local response="" attempt_notes=""
-            local key shape
-            for key in $(echo "$keys" | grep '^eyJ') $(echo "$keys" | grep -v '^eyJ'); do
-              [ -z "$key" ] && continue
-              shape=$(printf '%s' "$key" | cut -c1-3)
+            local scheme key apikey
+            for scheme in $schemes; do
+              case "$scheme" in
+                new)    apikey="$pub_new";    key="$sec_new" ;;
+                legacy) apikey="$pub_legacy"; key="$sec_legacy" ;;
+              esac
+              # Shapes only — never the values. This is the line that would have named the
+              # scheme-mixing in one run instead of three.
+              echo "  trying the $scheme pair: apikey=$(printf '%s' "$apikey" | cut -c1-3)… auth=$(printf '%s' "$key" | cut -c1-3)…"
               response=$(curl -sS --max-time 60 \
                 -X POST "https://${ref}.supabase.co/functions/v1/twilio-selftest" \
                 -H "Authorization: Bearer ${key}" \
@@ -198,14 +192,16 @@ jobs:
                 -H "Content-Type: application/json" \
                 -d '{}')
               if [ "$(echo "$response" | jq -r 'if (.checks | type) == "array" then "yes" else "no" end' 2>/dev/null)" = "yes" ]; then
-                echo "  authenticated with the ${shape}… key"
+                echo "  authenticated with the $scheme key pair"
                 attempt_notes=""
                 break
               fi
-              # Shape plus the platform's own message. Neither is a secret.
-              attempt_notes="${attempt_notes} [${shape}… -> $(echo "$response" | jq -rc '.message // .error // "no message"' 2>/dev/null | head -c 120)]"
+              # Scheme plus the platform's own message. Neither is a secret, and naming the pair
+              # is what separates "wrong key" from "mixed schemes" — they read identically
+              # otherwise, which is how this took three runs.
+              attempt_notes="${attempt_notes} [${scheme} pair -> $(echo "$response" | jq -rc '.message // .error // "no message"' 2>/dev/null | head -c 120)]"
             done
-            [ -n "$attempt_notes" ] && echo "  every key rejected:${attempt_notes}"
+            [ -n "$attempt_notes" ] && echo "  every key pair rejected:${attempt_notes}"
 
             # Fail loudly on a non-JSON body rather than letting jq print "null" for every field,
             # which reads like "everything is unset" instead of "the call did not land".
