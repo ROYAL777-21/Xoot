@@ -85,7 +85,22 @@ export const ADD_ON_CENTS = r(30);
 export const LINEN_ON_SITE_CENTS = r(20);
 /** R21 → R22 per ZD-020. The provider is also changing; terms are pinned. */
 export const BOOKING_COVER_CENTS = r(22);
-export const ONE_TIME_SERVICE_FEE_CENTS = r(39);
+/**
+ * R39 on every booking, waived only for Care+ members.
+ *
+ * Founder decision 2026-08-12, superseding ZD-007's "one-time fee". Membership is the *only*
+ * gate: not frequency, not first-visit-versus-later. A non-member booking fortnightly pays it
+ * every fortnight, which is what makes Care+ at R99/month pay for itself.
+ *
+ * Renamed from `ONE_TIME_SERVICE_FEE_CENTS` in the same change. The old name encoded the old
+ * rule, and a constant that misstates the rule is how this repo shipped its last two pricing
+ * defects — a reader who trusted the name would reintroduce the frequency gate.
+ *
+ * The waiver was already sold in writing before it was true here: `docs/care-plus-paywall-copy.md`
+ * promises "we waive the R39 booking fee on every booking — not just your first", which only
+ * means anything if a non-member pays it on every booking.
+ */
+export const BOOKING_FEE_CENTS = r(39);
 
 /** Legacy request vocabulary → the five priced services. */
 export const SERVICE_ALIASES: Record<string, ServiceId> = {

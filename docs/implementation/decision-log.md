@@ -29,6 +29,7 @@ Reviewed: 2026-06-24
 | ZD-023 | Tips live in `public.booking_tips`, not on `bookings`, and are visible to a Xooter only once `settled_at` is set. Xoot takes no cut. Booking `price` and `status` become unwritable from any client session. | Approved by founder 2026-07-30 ("Both no") | Row-level security cannot hide a column, so a tip on `bookings` is readable by the assigned Xooter the moment it exists. | See ZD-023 notes below. The price/status guard fixes a live production hole and is currently unapplied. |
 | ZD-024 | **The long-job floor.** From 5.5 booked hours up, gross price is at least **R47 per hour**. Fixed on the price, not on commission — the 35% starting rate is unchanged. | Approved by founder 2026-08-12, revised the same day from R54 to R47 ("Dont make it too expensive for users and to keep them long on the platform") | The ZD-020 ladders were sub-linear in hours, so a 10-hour regular clean returned the Xooter **R27.95/h** — **below South Africa's national minimum wage of R30.23/h**, which domestic workers are at parity with. | Only `REGULAR` moves, and only from 8h up (8h R370→R376, 10h R430→R470). `AIRBNB`, `MOVING`, `OFFICE` and `EXPRESS` are untouched. **Expires with the March 2027 wage increase** — `care-plus.test.ts` fails on 2027-01-31 to force the review. See ZD-024 notes below. |
 | ZD-025 | **A configuration check verifies URL shape, not substrings, and cross-environment rules are enforced by CI rather than by a note.** `twilio-selftest` now rejects a Voice URL that does not route, and fails the run when staging and production report the same Twilio Account SID. | Measured 2026-08-12 by the first working run of `twilio-selftest.yml`; no founder decision required for the code, two founder actions required for the findings | The self-test went green while production held the exact failure it exists to catch — a Voice URL that answers 404 — because `includes("twilio-voice-twiml")` is true of a broken URL. | Two founder actions, both in `docs/release/go-live.md` §2c-0: fix production's TwiML App URLs in the Twilio Console, and split staging onto its own Twilio subaccount. See ZD-025 notes below. |
+| ZD-026 | **R39 is a booking fee on every booking, not a one-time fee. Care+ membership is the only thing that waives it.** Frequency no longer affects the fee on any surface. | Approved by founder 2026-08-12 ("a booking fee for every booking made, which no apparent if the user is signed up to Care+"; clarified "booking fee is only incurred to users that aren't subscribers to Care+") | Supersedes the fee clause of ZD-007. The paywall copy already promised the new rule — `docs/care-plus-paywall-copy.md` says "on every booking, not just your first" — while the code still charged the old one, so the promise was a price representation the system did not honour. | A fortnightly non-member pays the fee **26 times a year (~R1,014)**, which is what makes Care+ at R99/month pay for itself. See ZD-026 notes below. |
 
 ## ZD-020 notes — pricing model change
 
@@ -362,6 +363,64 @@ the first green run printed the same SID twice under a green tick.
 
 This is founder-blocked: it needs a Twilio subaccount for staging with its own API key, TwiML App
 and Conversations service. It is already item 6 in the list below.
+
+## ZD-026 notes — the booking fee
+
+### The rule
+
+R39 is charged on **every** booking. Care+ membership is the only thing that waives it. Frequency
+is not a term in the calculation on any surface, and there is deliberately no "has this user
+already paid the fee on this recurring schedule" lookup — the rule has no such clause.
+
+Founder, 2026-08-12: *"R39 is not and no longer a one-time fee client-side but rather a booking fee
+for every booking made, which no apparent if the user is signed up to Care+"*, clarified when asked
+about recurring visits specifically: *"booking fee is only incurred to users that aren't subscribers
+to Care+."*
+
+### What it costs a customer, stated plainly
+
+A fortnightly non-member books 26 times a year and now pays the fee 26 times: **R1,014**. Care+ is
+R99/month with the first month free (**R1,089**) and additionally takes 10% off every booking. The
+fee is therefore the thing that makes the membership pay for itself, which is why it is charged on
+every booking rather than once.
+
+This is recorded so the consequence is on the record as *decided*, not discovered later in a
+support ticket.
+
+### The copy was already promising this
+
+`docs/care-plus-paywall-copy.md` has said *"We waive the R39 booking fee on every booking — not
+just your first"* since it was written, and `CarePlusPaywall.tsx` ships "No booking fee, ever." Both
+sentences only mean something if a non-member pays the fee on every booking. So the code was the
+half that was wrong, and under the CPA a promise to waive a charge that recurring bookings never
+carried is a representation the system did not honour.
+
+### What changed in code
+
+`ONE_TIME_SERVICE_FEE_CENTS` → `BOOKING_FEE_CENTS` (and `..._ZAR` likewise). The rename is not
+cosmetic: the old name encoded the superseded rule, and a constant that misstates the rule is how
+this repo shipped its last two pricing defects.
+
+One expression now, in five places:
+
+```ts
+const serviceFeeCents = isCarePlusMember ? 0 : BOOKING_FEE_CENTS;
+```
+
+`pricing-parity.test.ts` asserts that exact single-condition shape against both booking writers'
+source, not merely that today's totals are right — a second term in the condition means the
+one-time rule has crept back.
+
+### Two pre-existing holes this closed
+
+1. **`create-booking-request` had no concept of Care+ at all.** It charged every member the fee and
+   never applied the 10% member discount. Nothing failed because no client calls it, but it is
+   deployed and authenticated — a live second answer to "what does a member pay". Both writers now
+   read `_shared/care-plus-membership.ts`, and the parity test asserts the shared import.
+2. **Neither client price screen passed `carePlusMember` to the quote.** A member was shown R39 and
+   then charged R0. Tolerable while the fee was one-time-only; under this rule it would have
+   contradicted the paywall on every booking, on the last screen before payment. `BookingConfirm`
+   and `Book` now resolve membership through `useCarePlus` and show the waived line explicitly.
 
 ## Pending Founder Decisions
 

@@ -15,6 +15,7 @@ import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortXootersForMarketplace } from "@/lib/trust";
 import { calculateBookingQuote, isApprovedLaunchRegion } from "@/lib/operations";
+import { useCarePlus } from "@/hooks/useCarePlus";
 import {
   SERVICE_ALIASES,
   isPriced,
@@ -182,7 +183,7 @@ const Book = () => {
     hours: bookedHours,
     xooterCount: totalWorkers,
     // Add-ons and cover are added by `calculateBookingQuote` below, which also applies the
-    // high-demand premium and the one-time service fee. Asking for them here would double them.
+    // high-demand premium and the booking fee. Asking for them here would double them.
     addOns: 0,
     bookingCover: false,
   });
@@ -192,12 +193,18 @@ const Book = () => {
   // Read back from the quote rather than recomputed, so the line item cannot claim a
   // discount the price did not actually apply.
   const discount = isPriced(priced) ? priced.discountRate : 0;
+  // Membership waives the R39 booking fee, and since 2026-08-12 that is the only thing that
+  // does. Without this the screen quotes a member the fee on every booking and the server then
+  // charges R0 — the paywall promise contradicted in the place it is easiest to disbelieve.
+  const carePlus = useCarePlus();
+  const carePlusMember = carePlus.state.status === "active";
   const quote = calculateBookingQuote({
     basePrice: discountedBase,
     addOnCount: extras.size,
     frequency,
     time,
     bookingCoverOptIn,
+    carePlusMember,
   });
   const totalPrice = quote.basePrice + quote.addOnsTotal;
   const serviceFee = quote.serviceFee;
@@ -621,7 +628,7 @@ const Book = () => {
       {step === 3 && (
         <div className="rounded-3xl bg-card border border-border shadow-soft p-5 md:p-7 space-y-5">
           <h2 className="font-display text-2xl font-bold">Price breakdown</h2>
-          <div className="space-y-2 text-sm"><div className="flex justify-between"><span>Booking cost ({length.label}, {size.label}{totalWorkers > 1 ? ` x ${totalWorkers}` : ""})</span><span className="font-semibold">{formatZAR(totalPrice)}</span></div><div className="flex justify-between text-muted-foreground"><span>Reserved time</span><span>{estHours}h including add-ons</span></div>{discount > 0 && <div className="flex justify-between text-sage-deep"><span>Multi-worker discount</span><span>{Math.round(discount * 100)}%</span></div>}{highDemandPremium > 0 && <div className="flex justify-between"><span>High-demand slot premium</span><span>{formatZAR(highDemandPremium)}</span></div>}<div className="flex justify-between"><span>Booking cover</span><span>{formatZAR(bookingCover)}</span></div><div className="flex justify-between"><span>{frequency === "repeat" ? "Service fee waived for recurring" : "Service fee"}</span><span>{formatZAR(serviceFee)}</span></div><div className="h-px bg-border my-2" /><div className="flex justify-between font-display text-lg font-bold"><span>Total pending</span><span>{formatZAR(bookingTotal)}</span></div></div>
+          <div className="space-y-2 text-sm"><div className="flex justify-between"><span>Booking cost ({length.label}, {size.label}{totalWorkers > 1 ? ` x ${totalWorkers}` : ""})</span><span className="font-semibold">{formatZAR(totalPrice)}</span></div><div className="flex justify-between text-muted-foreground"><span>Reserved time</span><span>{estHours}h including add-ons</span></div>{discount > 0 && <div className="flex justify-between text-sage-deep"><span>Multi-worker discount</span><span>{Math.round(discount * 100)}%</span></div>}{highDemandPremium > 0 && <div className="flex justify-between"><span>High-demand slot premium</span><span>{formatZAR(highDemandPremium)}</span></div>}<div className="flex justify-between"><span>Booking cover</span><span>{formatZAR(bookingCover)}</span></div><div className="flex justify-between"><span>{carePlusMember ? "Booking fee — waived with Care+" : "Booking fee"}</span><span>{formatZAR(serviceFee)}</span></div><div className="h-px bg-border my-2" /><div className="flex justify-between font-display text-lg font-bold"><span>Total pending</span><span>{formatZAR(bookingTotal)}</span></div></div>
           <button type="button" onClick={() => setBookingCoverOptIn((value) => !value)} className={`w-full rounded-2xl border p-4 text-left ${bookingCoverOptIn ? "border-primary bg-primary/10" : "border-border bg-muted/40"}`}>
             <p className="font-semibold">Booking cover {bookingCoverOptIn ? "included" : "not included"}</p>
             <p className="text-xs text-muted-foreground">Keeps a support record and admin queue available for booking issues. Payment stays pending until confirmed.</p>

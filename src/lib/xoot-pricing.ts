@@ -24,19 +24,24 @@ export const LINEN_ON_SITE_CENTS = 2000;
 export const BOOKING_COVER_CENTS = 2200;
 
 /**
- * R39, charged by `create-booking` on one-time bookings only, waived on recurring.
+ * R39, charged on every booking, waived only for Care+ members.
  *
- * This used to exist on the server and nowhere here, and `pricing-parity.test.ts` asserted the
- * gap deliberately rather than hiding it. The gap was not academic: `BookingConfirm.tsx` prices
- * from `quote()`, so the total a customer confirmed on the last screen before paying was R39
- * under what they were then charged. Under the Consumer Protection Act the displayed price is
- * the price, so this was the wrong side of a line, not untidiness.
+ * Founder decision 2026-08-12, superseding the one-time rule this constant was named after.
+ * Membership is the only gate: a non-member booking fortnightly pays it every fortnight.
  *
- * Mirrored from `ONE_TIME_SERVICE_FEE_CENTS` in `supabase/functions/_shared/pricing.ts`, which
- * the server applies as `frequency === "one_time" ? fee : 0`. The parity test reads that file as
- * text and fails if the two drift.
+ * This fee used to exist on the server and nowhere here, and `pricing-parity.test.ts` asserted
+ * the gap deliberately rather than hiding it. The gap was not academic: `BookingConfirm.tsx`
+ * prices from `quote()`, so the total a customer confirmed on the last screen before paying was
+ * R39 under what they were then charged. Under the Consumer Protection Act the displayed price
+ * is the price, so this was the wrong side of a line, not untidiness. The same reasoning is why
+ * `carePlusMember` now has to reach `quote()` from the screens — a member shown R39 they will
+ * not be charged is the same defect pointing the other way.
+ *
+ * Mirrored from `BOOKING_FEE_CENTS` in `supabase/functions/_shared/pricing.ts`, which the server
+ * applies as `isCarePlusMember ? 0 : fee`. The parity test reads that file as text and fails if
+ * the two drift.
  */
-export const ONE_TIME_SERVICE_FEE_CENTS = 3900;
+export const BOOKING_FEE_CENTS = 3900;
 
 /**
  * Multi-Xooter booking.
@@ -241,22 +246,23 @@ export type QuoteInput = {
   /** Preselected; deselecting requires a confirmation banner (§4.1). */
   bookingCover?: boolean;
   /**
-   * One-time bookings carry the R39 service fee; recurring ones have it waived.
+   * Whether the booking repeats. **This no longer affects the booking fee.**
    *
-   * Defaults to `"one_time"` deliberately. A caller that forgets to pass it then over-states the
-   * price by R39 rather than under-stating it, and only one of those two mistakes shows a
-   * customer a total they will later be charged past. `Book.tsx` defaults its own frequency
-   * state the same way.
+   * Until 2026-08-12 the fee was charged on one-time bookings and waived on recurring ones, and
+   * this field was how that was decided. The founder's rule is now that R39 is charged on every
+   * booking and waived only for Care+ members, so nothing in `quote()` reads this. Kept because
+   * it still describes the booking, callers already pass it, and a silent removal would leave
+   * the next reader deriving the old rule from a stale field.
    */
   frequency?: "one_time" | "repeat";
   /**
-   * Care+ members never pay the service fee, at any frequency — the founder's 2026-08-09 pricing
-   * decision, alongside R99/month and one month free.
+   * Care+ members pay no booking fee. This is now the *only* thing that waives it.
    *
-   * Defaults to `false` for the same reason `frequency` defaults to `"one_time"`: a caller who
-   * forgets to pass it over-states the price rather than under-stating it. Showing a member R39
-   * they will not be charged is a bad quote; showing a non-member R0 they *will* be charged is
-   * the defect this repo already shipped once on `BookingConfirm`.
+   * Defaults to `false` deliberately: a caller that forgets to pass it over-states the price by
+   * R39 rather than under-stating it, and only one of those two mistakes shows a customer a
+   * total they will later be charged past. Showing a member R39 they will not be charged is a
+   * bad quote; showing a non-member R0 they *will* be charged is the defect this repo already
+   * shipped once on `BookingConfirm`.
    */
   carePlusMember?: boolean;
 };
@@ -273,7 +279,7 @@ export type PricedQuote = {
   addOnsCents: number;
   linenCents: number;
   coverCents: number;
-  /** R39 on one-time bookings, 0 on recurring. Included in `totalCents`. */
+  /** R39 on every booking, 0 for Care+ members. Included in `totalCents`. */
   serviceFeeCents: number;
   totalCents: number;
 };
@@ -355,12 +361,9 @@ export function quote(input: QuoteInput): Quote {
   const addOnsCents = Math.max(0, input.addOns ?? 0) * ADD_ON_CENTS;
   const linenCents = input.linenOnSite ? LINEN_ON_SITE_CENTS : 0;
   const coverCents = input.bookingCover === false ? 0 : BOOKING_COVER_CENTS;
-  // Mirrors `create-booking` exactly, including the order of the two waivers. Membership wins
-  // first, then frequency — a member booking one-off still pays nothing.
-  const serviceFeeCents =
-    input.carePlusMember || (input.frequency ?? "one_time") !== "one_time"
-      ? 0
-      : ONE_TIME_SERVICE_FEE_CENTS;
+  // Mirrors `create-booking` exactly: membership is the only gate. `frequency` is deliberately
+  // absent — if it reappears here, the superseded one-time rule has crept back.
+  const serviceFeeCents = input.carePlusMember ? 0 : BOOKING_FEE_CENTS;
 
   return {
     ok: true,

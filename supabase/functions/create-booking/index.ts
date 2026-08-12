@@ -16,15 +16,16 @@ import {
 import {
   ADD_ON_CENTS,
   BOOKING_COVER_CENTS,
+  BOOKING_FEE_CENTS,
   HOME_SIZE_HOURS,
   SERVICE_LENGTH_HOURS,
-  ONE_TIME_SERVICE_FEE_CENTS,
   activeBoostBpsFor,
   applyBoost,
   basePrice,
   commissionRateBps,
   resolveHours,
 } from "../_shared/pricing.ts";
+import { getCarePlusDiscount, isCarePlusMember as memberOf } from "../_shared/care-plus-membership.ts";
 
 const services = new Set(["residential", "express", "airbnb", "office", "deep", "moving", "premium"]);
 // Pricing tables now live in ../_shared/pricing.ts. The multiplier model they replaced
@@ -70,18 +71,6 @@ const SLOT_PREMIUM_CURVE: Record<string, number> = {
 const slotPremiumRate = (time: string): number => {
   if (GRADED_SLOT_PRICING) return SLOT_PREMIUM_CURVE[time] ?? 0;
   return isHighDemandSlot(time) ? HIGH_DEMAND_SLOT_RATE : 0;
-};
-
-const getCarePlusDiscount = async (supa: any, userId: string) => {
-  const { data } = await supa
-    .from("user_subscriptions")
-    .select("id,status,next_billing_at")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .maybeSingle();
-  if (!data?.id) return 0;
-  if (data.next_billing_at && new Date(data.next_billing_at).getTime() <= Date.now()) return 0;
-  return 0.1;
 };
 
 /**
@@ -255,18 +244,24 @@ Deno.serve(async (req) => {
     const subtotalCents = discountedBaseCents + addOnsCents;
     const highDemandCents = Math.round(subtotalCents * slotPremiumRate(time));
     /*
-     * Care+ members pay no booking fee, at any frequency (founder decision 2026-08-09, alongside
-     * R99/month and one month free). Membership is read from the same lookup that decides the
-     * discount, so a member cannot get the discount and still be charged the fee.
+     * The booking fee: R39 on EVERY booking, waived only for Care+ members.
      *
-     * Mirrored in `src/lib/xoot-pricing.ts` as `carePlusMember`, and held there by
-     * `pricing-parity.test.ts`. The two must agree: a client showing R0 against a server charging
-     * R39 is the defect this codebase already shipped once.
+     * Founder decision 2026-08-12, superseding the one-time rule this line used to carry
+     * (`isCarePlusMember || frequency !== "one_time"`). Membership is the only gate — a
+     * non-member booking fortnightly pays it every fortnight. `frequency` is deliberately absent
+     * from this expression; if it ever returns, the old rule has crept back, and
+     * `pricing-parity.test.ts` asserts the single-condition shape against this source to catch
+     * exactly that.
+     *
+     * Membership is read from the same lookup that decides the discount, so a member cannot get
+     * the discount and still be charged the fee.
+     *
+     * Mirrored in `src/lib/xoot-pricing.ts` as `carePlusMember`. The two must agree: a client
+     * showing R0 against a server charging R39 is the defect this codebase already shipped once.
      */
     const carePlusDiscountRate = await getCarePlusDiscount(supa, user.id);
-    const isCarePlusMember = carePlusDiscountRate > 0;
-    const serviceFeeCents =
-      isCarePlusMember || frequency !== "one_time" ? 0 : ONE_TIME_SERVICE_FEE_CENTS;
+    const isCarePlusMember = memberOf(carePlusDiscountRate);
+    const serviceFeeCents = isCarePlusMember ? 0 : BOOKING_FEE_CENTS;
     const bookingCoverCents = bookingCoverOptIn === false ? 0 : BOOKING_COVER_CENTS;
 
     const toRands = (cents: number) => Math.round(cents / 100);

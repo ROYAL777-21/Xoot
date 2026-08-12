@@ -41,14 +41,27 @@ describe("Xoot operating rules", () => {
     });
   });
 
-  it("removes one-time service fee from recurring bookings", () => {
-    expect(calculateBookingQuote({
+  /*
+   * The booking fee follows membership, not frequency (founder decision 2026-08-12).
+   *
+   * This test used to assert the opposite — that a recurring booking had the fee removed. Both
+   * halves are asserted here rather than just the member case, because the recurring-non-member
+   * total is the one that changed and the one a "tidying" edit would quietly revert.
+   */
+  it("charges the booking fee on recurring bookings and waives it for Care+ members", () => {
+    const recurring = {
       basePrice: 315,
       addOnCount: 1,
-      frequency: "repeat",
+      frequency: "repeat" as const,
       time: "09:00",
       bookingCoverOptIn: false,
-    }).total).toBe(345);
+    };
+    expect(calculateBookingQuote(recurring).serviceFee).toBe(39);
+    expect(calculateBookingQuote(recurring).total).toBe(384);
+
+    const member = calculateBookingQuote({ ...recurring, carePlusMember: true });
+    expect(member.serviceFee).toBe(0);
+    expect(member.total).toBe(345);
   });
 
   it("routes notifications through the approved channel hierarchy", () => {
