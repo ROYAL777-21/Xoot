@@ -330,7 +330,7 @@ account, and a staging leak would reach production.
 
 ---
 
-### ⚠️ 2c-0. What the first green run found — two things only you can fix
+#### ⚠️ 2c-0. What the first green run found — two things only you can fix
 
 Gate 0 went green and then immediately reported two real defects. Neither is a code change; both
 are Twilio Console work.
@@ -497,7 +497,7 @@ Written out properly below, because "two browsers" is a description, not instruc
 
 Budget 15 minutes the first time. You need **two devices, or one device and a phone** — see step 4.
 
-### First: which environment, and is it worth starting?
+##### First: which environment, and is it worth starting?
 
 Two questions, in this order. Both have measured answers as of 2026-08-12.
 
@@ -514,7 +514,7 @@ both`. Every step below assumes Twilio's side is right; if gate 0 is red for the
 picked, the steps will still "work" and the call will still fail, and you will be debugging your
 browser instead of your configuration.
 
-### Then: arm staging with one command — it does steps 1 to 3 for you
+##### Then: arm staging with one command — it does steps 1 to 3 for you
 
 ```bash
 ZOOT_STAGING_SUPABASE_URL=... ZOOT_STAGING_SERVICE_ROLE_KEY=... \
