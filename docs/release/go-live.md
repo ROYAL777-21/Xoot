@@ -265,6 +265,43 @@ select control_key, enabled from public.operational_controls
 Run the **Twilio self-test** workflow: Actions → *Twilio self-test* → Run workflow → environment
 `both`. It prints a ✅/❌/➖ table per project into the run summary and the log.
 
+> ### ⚠️ BLOCKED as of 2026-08-12 — one line of config away, and it needs your decision
+>
+> The workflow is built and deployed to both projects, and it does not yet work. The cause is not
+> Twilio and not the secrets — it is Supabase's API-key migration. Measured, not guessed:
+>
+> ```
+> api-keys schema: ["api_key","description","hash","id","name","prefix","type"]
+> labels: [{"name":"anon","type":"legacy"}, {"name":"service_role","type":"legacy"},
+>          {"name":"default","type":"publishable"}, {"name":"default","type":"secret"}]
+> every key rejected: [eyJ… -> authentication required] [sb_… -> Invalid API key]
+> ```
+>
+> Both projects have moved to the new `sb_secret_…` keys, so the Edge Function's
+> `SUPABASE_SERVICE_ROLE_KEY` env var holds the **secret key**, not the legacy JWT. That produces a
+> deadlock:
+>
+> - The **legacy `service_role` JWT** passes Supabase's gateway but no longer equals the function's
+>   env value → the function answers `authentication required`.
+> - The **`sb_secret_…` key** would match, but `twilio-selftest` is `verify_jwt = true`, so the
+>   gateway rejects a non-JWT credential before the function runs → `Invalid API key`.
+>
+> **The credential that can reach the function is not the one it holds, and the one it holds cannot
+> reach it.**
+>
+> **The fix, which is yours to approve.** Set `verify_jwt = false` for `twilio-selftest` in
+> `supabase/config.toml` and add it to `MUST_STAY_OPEN` in `src/lib/edge-function-config.test.ts`.
+> The function then performs its own full-string comparison against the secret key, plus the admin
+> check — the same shape the Twilio webhooks already use, where the gateway is open and the function
+> is the gate. It is not a weakening: the exact match still stands, and a wrong credential is still
+> refused.
+>
+> It is written down rather than done because that test exists precisely to make opening a function
+> a deliberate act, and this one reports account configuration.
+>
+> Until then, gate 0 runs from an admin browser session using the console snippet below, which is
+> unaffected — a signed-in admin never touches the service-role path.
+
 It needs no new secret. The job fetches the project's service-role key with the
 `SUPABASE_ACCESS_TOKEN` that already exists as a repository secret, calls `twilio-selftest` with it,
 and never echoes the key — it goes into a header, and the response is filtered through an explicit
