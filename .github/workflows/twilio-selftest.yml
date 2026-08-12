@@ -125,21 +125,38 @@ jobs:
             # what would have identified the mismatch above in seconds instead of a round trip.
             echo "  key candidates for $label: $(echo "$keys" | cut -c1-3 | tr '\n' ' ')"
 
-            local response=""
-            local key
-            while IFS= read -r key; do
+            #
+            # ⚠️ JWT-shaped candidates FIRST, and this ordering is not cosmetic.
+            #
+            # `twilio-selftest` is declared `verify_jwt = true`, so Supabase's gateway validates
+            # the credential BEFORE the function runs. A modern `sb_secret_…` key is not a JWT, so
+            # the gateway rejects it with `{"message":"Invalid API key"}` and the function never
+            # sees it — which is exactly what the 17:13 run reported, for both projects, having
+            # kept the last candidate's response rather than the most informative one.
+            #
+            # So the legacy `eyJ…` service-role JWT is the only credential that can reach this
+            # function at all, and each candidate's outcome is reported by shape so a future
+            # failure says which one got how far instead of collapsing to the last error.
+            local response="" attempt_notes=""
+            local key shape
+            for key in $(echo "$keys" | grep '^eyJ') $(echo "$keys" | grep -v '^eyJ'); do
               [ -z "$key" ] && continue
+              shape=$(printf '%s' "$key" | cut -c1-3)
               response=$(curl -sS --max-time 60 \
                 -X POST "https://${ref}.supabase.co/functions/v1/twilio-selftest" \
                 -H "Authorization: Bearer ${key}" \
                 -H "apikey: ${key}" \
                 -H "Content-Type: application/json" \
                 -d '{}')
-              # Stop on the first key the function actually accepts.
               if [ "$(echo "$response" | jq -r 'if (.checks | type) == "array" then "yes" else "no" end' 2>/dev/null)" = "yes" ]; then
+                echo "  authenticated with the ${shape}… key"
+                attempt_notes=""
                 break
               fi
-            done <<< "$keys"
+              # Shape plus the platform's own message. Neither is a secret.
+              attempt_notes="${attempt_notes} [${shape}… -> $(echo "$response" | jq -rc '.message // .error // "no message"' 2>/dev/null | head -c 120)]"
+            done
+            [ -n "$attempt_notes" ] && echo "  every key rejected:${attempt_notes}"
 
             # Fail loudly on a non-JSON body rather than letting jq print "null" for every field,
             # which reads like "everything is unset" instead of "the call did not land".
