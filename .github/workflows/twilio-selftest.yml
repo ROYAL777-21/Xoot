@@ -106,10 +106,31 @@ jobs:
             # holds the legacy JWT. Picking one name and hoping is how that produced a failure that
             # looked like a Twilio problem.
             #
-            # So: collect the candidates, try each, stop at the first that authenticates — but as
-            # PAIRS, not as loose keys. See the block below; that distinction is the fix.
+            # So: collect the candidates and try each. See the block below for which headers each
+            # one is allowed to occupy — that is where the real difficulty was.
+            #
+            # ⚠️ `--reveal` IS LOAD-BEARING, and its absence is why the 19:18 run failed.
+            #
+            # Without it the CLI returns the new-scheme `sb_secret_…` entry with its `api_key`
+            # field MASKED — the row is still there, still has the right `type`, still starts with
+            # the right prefix, and is simply not the key. The legacy `eyJ…` values are returned in
+            # full either way, which is what made the masking invisible: the legacy path kept
+            # reaching the function while the new-scheme path kept coming back `Invalid API key`,
+            # and that reads exactly like a rejected credential rather than a truncated one.
+            #
+            # The comment two paragraphs up has said `--reveal` since the day this was written. The
+            # command never had it. Worth stating plainly: the prose was right and unread for four
+            # runs.
+            #
+            # The fallback exists because `--reveal` is newer than some CLI builds. If it is not
+            # supported the fetch still works, secret keys are still masked, and the log says so
+            # rather than presenting the same mystery again.
             local raw
-            raw=$(supabase projects api-keys --project-ref "$ref" --experimental -o json 2>/dev/null)
+            raw=$(supabase projects api-keys --project-ref "$ref" --experimental --reveal -o json 2>/dev/null)
+            if ! echo "$raw" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
+              echo "  --reveal was rejected for $label; retrying without it (secret keys will be masked)"
+              raw=$(supabase projects api-keys --project-ref "$ref" --experimental -o json 2>/dev/null)
+            fi
 
             # ⚠️ The KEY NAMES, printed. Not the values — the names, which is exactly the thing
             # every failed attempt so far has been missing.
@@ -126,6 +147,10 @@ jobs:
             # will settle the next one. All of it is metadata; `api_key` is never echoed.
             echo "  api-keys schema for $label: $(echo "$raw" | jq -rc '(.[0] // {}) | keys' 2>/dev/null)"
             echo "  api-keys labels for $label: $(echo "$raw" | jq -rc '[.[] | {name, type, id, description} | with_entries(select(.value != null))]' 2>/dev/null | head -c 300)"
+            # Lengths, not values. A masked `sb_secret_…` is short and a real one is not, so this
+            # one field distinguishes "the key was rejected" from "that was never the key" — the
+            # question four runs could not answer.
+            echo "  api-key lengths for $label: $(echo "$raw" | jq -rc '[.[] | {((.name // "?") + "/" + (.type // "?")): ((.api_key // "") | length)}] | add' 2>/dev/null)"
 
             #
             # ⚠️ UNDER THE NEW KEY SCHEME, SEND *ONE* KEY — NOT A PAIR.
