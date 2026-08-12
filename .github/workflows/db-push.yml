@@ -39,6 +39,13 @@ on:
           To APPLY to production, type mvlrkelahhsyjrwgsxaf. Ignored for dry runs and staging.
         required: false
         type: string
+      repair_orphan_ledger_rows:
+        description: >-
+          Drop the three redundant 2026-06-30 connector_safe rows from the ledger (staging only).
+          Deletes ledger rows; touches no schema. See the block in this file for the evidence.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -128,6 +135,65 @@ jobs:
 
           say "## \`db push\` on \`$PROJECT_REF\`"
           say ""
+
+          # ── The orphan ledger rows, and why exactly these three ──────────────────────
+          #
+          # Measured 2026-08-12. The first honest dry run on staging refused outright:
+          #
+          #   Remote migration versions not found in local migrations directory.
+          #   supabase migration repair --status reverted 20260630155643 20260630155818 20260630160047
+          #
+          # Those three versions exist in STAGING's ledger and have no file in the repo. They are
+          # the `apply_migration` version-rename trap: the MCP stamps its own wall-clock version
+          # and ignores the filename, so three separate MCP calls at 15:56, 15:58 and 16:00 landed
+          # as three ledger rows, and the capture-to-file step then wrote them as ONE consolidated
+          # file — `20260630155159_connector_safe_invoice_zoot_black_schema.sql`, 674 lines.
+          #
+          # Four things were checked before writing this step, and all four have to hold:
+          #
+          #   1. PRODUCTION does not have them. Its ledger carries only `20260630155159`. So the
+          #      repo, and production, already agree; staging is the odd one out.
+          #   2. Every object the three rows create EXISTS in production — `booking_invoices`,
+          #      `booking_service_line_items`, `zoot_black_completion_certificates`, `zooters.tier`,
+          #      `bookings.zoot_black_requested` — created by the consolidated file.
+          #   3. The consolidated file contains each one: the `private` schema, both `zooters`
+          #      column adds, the three `bookings` zoot_black columns, and the line-items table
+          #      with its `item_key` format constraint.
+          #   4. The file is idempotent throughout — 42 `if not exists` / `create or replace`
+          #      guards against 33 create statements — so nothing depends on it not re-running.
+          #
+          # `--status reverted` deletes ledger rows. It runs no SQL against the schema and drops
+          # no object. The tables stay exactly where they are; only staging's claim to have applied
+          # them under three extra version numbers goes away.
+          #
+          # ⚠️ Hard-coded, not an input. A free-text "which versions to repair" box on a workflow
+          # that edits a migration ledger is a footgun with a nice label. Each orphan needs its own
+          # four-point evidence check, and the place to record that is here, in the diff, where
+          # someone has to read it before adding a fourth version to the list.
+          REPAIRABLE="20260630155643 20260630155818 20260630160047"
+
+          if [ "${{ inputs.repair_orphan_ledger_rows }}" = "true" ]; then
+            if [ "$PROJECT_REF" != "fxmxyabdjqviqbcxmvlp" ]; then
+              echo "::error::The orphan rows are a staging-only artefact. Production's ledger is already clean — refusing to repair it."
+              exit 1
+            fi
+            say "### Repairing the ledger"
+            say ""
+            say "Marking as reverted (deletes ledger rows, touches no schema):"
+            say ""
+            say '```'
+            echo "----- migration repair -----"
+            # shellcheck disable=SC2086
+            supabase migration repair --status reverted $REPAIRABLE 2>&1 | both
+            repair_status=${PIPESTATUS[0]}
+            say '```'
+            echo "----- end (exit $repair_status) -----"
+            if [ "$repair_status" -ne 0 ]; then
+              echo "::error::Ledger repair failed. Nothing was pushed."
+              exit "$repair_status"
+            fi
+            say ""
+          fi
 
           # Always print what the remote already has. A push that surprises someone is usually a
           # push against a ledger they had not looked at.
