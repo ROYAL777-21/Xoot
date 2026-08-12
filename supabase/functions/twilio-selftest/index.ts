@@ -55,6 +55,9 @@ import {
 const TWILIO_API = "https://api.twilio.com/2010-04-01";
 const CONVERSATIONS_API = "https://conversations.twilio.com/v1";
 
+/** How many TwiML Apps to enumerate. Enough to see the mismatch, capped so a public log stays readable. */
+const TWIML_APP_LIST_LIMIT = 10;
+
 type Check = {
   name: string;
   /** true = working, false = broken, null = not applicable (the feature is deliberately unused). */
@@ -267,15 +270,51 @@ Deno.serve(async (req) => {
         const voiceUrlSet = voiceUrl.length > 0;
         const voiceUrlRoutable = isRoutableFunctionUrl(voiceUrl, "twilio-voice-twiml");
 
+        /*
+         * ⚠️ NAME THE APP IN EVERY BRANCH, NOT JUST THE EMPTY-URL ONE.
+         *
+         * Measured 2026-08-12: staging and production report the SAME Twilio account and DIFFERENT
+         * `voice_url` values. A TwiML App has exactly one `voice_url`, so that is two apps in one
+         * account — which is defect ② (shared credentials) showing through as an ordinary
+         * usability problem.
+         *
+         * The first version of this check reported "the Voice URL is wrong" and named no app. With
+         * two candidates sitting in one Console list, the founder opened one, found it already
+         * correct, changed nothing that mattered, and had no way to discover why. The check was
+         * right about the defect and useless for fixing it — the same failure as the substring
+         * match it replaced, one level up.
+         *
+         * The SID is an identifier, not a credential. It is what makes the instruction actionable,
+         * because it is the only thing that distinguishes the two apps reliably: friendly names
+         * are duplicated and list order is not stable.
+         */
+        const appLabel = `TwiML App "${app.body?.friendly_name ?? "unnamed"}" (${voiceAppSid})`;
+
         checks.push({
           name: "voice TwiML app",
           ok: voiceUrlSet && voiceUrlRoutable,
           detail: !voiceUrlSet
             // The named failure this function exists for.
-            ? `TwiML App "${app.body?.friendly_name ?? voiceAppSid}" exists but its Voice Request URL is EMPTY. Calls will connect and then die silently. Set it to ${canonicalUrlFor("twilio-voice-twiml")} (POST).`
+            ? `${appLabel} exists but its Voice Request URL is EMPTY. Calls will connect and then die silently. Set it to ${canonicalUrlFor("twilio-voice-twiml")} (POST).`
             : voiceUrlRoutable
-              ? `Voice URL: ${voiceUrl} (${app.body?.voice_method ?? "?"}).`
-              : `Voice URL ${describeUnroutable(voiceUrl, "twilio-voice-twiml")}`,
+              ? `${appLabel} — Voice URL: ${voiceUrl} (${app.body?.voice_method ?? "?"}).`
+              : `${appLabel} — ⚠️ EDIT THIS APP, MATCHING THE SID ABOVE, not whichever app the Console lists first. Voice URL ${describeUnroutable(voiceUrl, "twilio-voice-twiml")}`,
+        });
+
+        /*
+         * A GET TwiML App is another silent 403.
+         *
+         * `twilio-voice-twiml` builds its signature payload from the POSTed form fields; a GET
+         * arrives with none, so the HMAC cannot match and the call dies the same quiet way. Free
+         * to check, since the app object is already here.
+         */
+        const voiceMethod = String(app.body?.voice_method ?? "").toUpperCase();
+        checks.push({
+          name: "voice TwiML app method",
+          ok: voiceMethod === "POST",
+          detail: voiceMethod === "POST"
+            ? "Voice Request URL is called with POST, which is what the signature check expects."
+            : `Voice Request URL is set to ${voiceMethod || "(unset)"}, not POST. The signature is built from POSTed form fields, so a GET arrives with none and is rejected 403 — the call dies as silently as a 404. Change the method beside the URL on ${appLabel}.`,
         });
 
         const statusRoutable = isRoutableFunctionUrl(statusCallback, "twilio-voice-status");
@@ -286,10 +325,10 @@ Deno.serve(async (req) => {
           // looks configured and is not.
           ok: statusRoutable ? true : statusCallback.length > 0 ? false : null,
           detail: !statusCallback
-            ? "No status callback set. Calls still work; call-status events will not arrive."
+            ? `${appLabel} has no status callback set. Calls still work; call-status events will not arrive.`
             : statusRoutable
-              ? `Status callback: ${statusCallback}`
-              : `Status callback ${describeUnroutable(statusCallback, "twilio-voice-status")}`,
+              ? `${appLabel} — Status callback: ${statusCallback}`
+              : `${appLabel} — ⚠️ SAME APP, SAME SID. Status callback ${describeUnroutable(statusCallback, "twilio-voice-status")}`,
         });
 
         /*
@@ -315,6 +354,49 @@ Deno.serve(async (req) => {
       }
     } else {
       checks.push({ name: "voice TwiML app", ok: false, detail: "TWILIO_VOICE_APP_SID is not set." });
+    }
+
+    /*
+     * 3a. Every TwiML App on the account, so "which one?" is answerable in one glance.
+     *
+     * This row exists because of a real dead end. Production's Voice URL was wrong; the founder
+     * opened the Console, found an app whose URLs were already correct, changed nothing, and the
+     * check kept failing. Both observations were true: the account holds more than one TwiML App,
+     * and the one being looked at was not the one `TWILIO_VOICE_APP_SID` names.
+     *
+     * Nothing in the Console makes that obvious — the apps sit in one list, and while this account
+     * is shared between staging and production there is no environment column to sort by.
+     *
+     * Several apps is NOT reported as a fault. It is the direct, expected consequence of defect ②,
+     * and calling a correct configuration broken is how a founder gets taught to ignore this
+     * report. It is `null` — informational — with the SIDs lined up so the mismatch is visible.
+     */
+    {
+      const list = await getJson(`${TWILIO_API}/Accounts/${accountSid}/Applications.json?PageSize=${TWIML_APP_LIST_LIMIT}`, auth);
+      if (list.status !== 200) {
+        checks.push({
+          name: "TwiML apps on this account",
+          ok: null,
+          detail: `Could not list the account's TwiML Apps (HTTP ${list.status}). Not fatal — the check above still names the app it read.`,
+        });
+      } else {
+        const apps = Array.isArray(list.body?.applications) ? list.body.applications : [];
+        // SIDs, names and URLs only. No credential is in a TwiML App object, and the list is capped
+        // so a large account cannot flood what is a public run log.
+        const lines = apps.slice(0, TWIML_APP_LIST_LIMIT).map((entry: any) => {
+          const mine = entry?.sid === voiceAppSid ? " ← THIS PROJECT USES THIS ONE" : "";
+          return `${entry?.sid ?? "?"} "${entry?.friendly_name ?? "unnamed"}" voice_url=${entry?.voice_url || "(empty)"}${mine}`;
+        });
+        checks.push({
+          name: "TwiML apps on this account",
+          ok: null,
+          detail: apps.length === 0
+            ? "This Twilio account has no TwiML Apps at all."
+            : apps.length === 1
+              ? `One TwiML App on this account: ${lines[0]}`
+              : `⚠️ ${apps.length} TwiML Apps on this account — edit by SID, not by name or list position. ${lines.join(" | ")}`,
+        });
+      }
     }
 
     /*
