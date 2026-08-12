@@ -302,6 +302,9 @@ There are currently **three incompatible pricing models** in play:
 
 1. **`docs/product/locked-commercial-facts.md`** — flat per home size: R280 small / R325
    medium / R400 large, + R39 one-time service fee, + **R21** Booking Cover *by Genric*.
+   *(As written at the time. Two of those figures have since moved: Booking Cover is **R22**
+   per ZD-020, and the R39 is no longer one-time — it is charged on **every** booking and
+   waived only for Care+ members, per ZD-026.)*
 2. **`supabase/functions/create-booking/index.ts`** — R270 / R315 / R390, plus service
    multipliers and a high-demand premium that the locked doc says were never approved.
 3. **`src/lib/pricing.ts`** (app-iteration) — a different model again: base price ×

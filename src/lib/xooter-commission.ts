@@ -311,7 +311,7 @@ export type Payout = {
  * Split a booking between Xoot and the Xooter.
  *
  * **The base is the subtotal, not the total.** Booking cover is an insurance premium passed
- * through, and the R39 one-time service fee is Xoot's own charge for arranging the booking —
+ * through, and the R39 booking fee is Xoot's own charge for arranging the booking —
  * commissioning either would mean a Xooter's pay moving because a customer ticked a box that
  * has nothing to do with the work. This matches how the high-demand premium is charged on
  * `subtotalCents` in `create-booking`, and how `splitDiscount` reasons about pay.

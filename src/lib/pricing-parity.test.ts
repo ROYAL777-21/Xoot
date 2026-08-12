@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, ONE_TIME_SERVICE_FEE_CENTS, MULTI_XOOTER_SERVICES, serviceAllowsMultipleXooters } from "./xoot-pricing";
+import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, BOOKING_FEE_CENTS, MULTI_XOOTER_SERVICES, serviceAllowsMultipleXooters } from "./xoot-pricing";
 import { CADENCE_DISCOUNT } from "./care-plus";
 import { GRADED_SLOT_PRICING, SLOT_PREMIUM_CURVE } from "./operations";
 import {
@@ -160,11 +160,22 @@ describe("client/server pricing parity", () => {
     expect(ops).toMatch(/Math\.round\(subtotal \* slotPremiumRate\(time\)\)/);
 
     // The Care+ discount is likewise a rate on the subtotal. The client models no equivalent,
-    // so this only pins the server's figure against silent change.
-    const carePlus = /if \(data\.next_billing_at[\s\S]{0,120}return ([\d.]+);/.exec(fn);
+    // so this only pins the server's figure against silent change. The rate now lives in
+    // `_shared/care-plus-membership.ts`, which both booking writers read.
+    const membershipSrc = readFileSync(
+      join(process.cwd(), "supabase/functions/_shared/care-plus-membership.ts"),
+      "utf8",
+    );
+    const carePlus = /if \(data\.next_billing_at[\s\S]{0,200}return ([\d.]+);/.exec(membershipSrc);
     expect(carePlus, "server no longer returns a Care+ discount rate").toBeTruthy();
     expect(Number(carePlus![1])).toBe(0.1);
-    expect(fn).toMatch(/carePlusDiscount = Math\.round\(subtotal \* carePlusDiscountRate\)/);
+    // Applied identically by both writers — same base, same rounding.
+    for (const path of BOOKING_WRITERS) {
+      const writer = readFileSync(join(process.cwd(), path), "utf8");
+      expect(writer, `${path} must apply the Care+ discount to the subtotal`).toMatch(
+        /carePlusDiscount = Math\.round\(subtotal \* carePlusDiscountRate\)/,
+      );
+    }
 
     // All three sources agree on booking cover now: server, xoot-pricing and operations.
     expect(/BOOKING_COVER_PRICE_ZAR = (\d+)/.exec(ops)![1]).toBe("22");
@@ -175,88 +186,103 @@ describe("client/server pricing parity", () => {
   });
 
   /**
-   * The fee the client used to omit, now closed.
+   * The booking fee: R39 on every booking, waived only for Care+ members.
    *
-   * This assertion used to record a deliberate divergence: `create-booking` added
-   * ONE_TIME_SERVICE_FEE_CENTS on one-time bookings and `quote()` had no concept of it, so the
-   * client under-quoted by R39. That was not an internal disagreement — `BookingConfirm.tsx`
-   * prices from `quote()`, so it was the last screen before payment showing a total the server
-   * would then exceed. Under the Consumer Protection Act the displayed price is the price.
-   *
-   * The old test said it would fail the moment someone wired the fee in, and pointed at this
-   * work. It did exactly that. Kept as an equality check so the two implementations cannot
-   * drift apart again, in either direction.
+   * Founder decision 2026-08-12, superseding ZD-007's one-time rule. This assertion has now
+   * recorded three different states of the world — first a deliberate divergence (the server
+   * charged the fee and `quote()` had no concept of it, so `BookingConfirm` under-quoted by R39
+   * on the last screen before payment), then the one-time rule agreed on both sides, and now
+   * this. Kept as an equality check so the two implementations cannot drift apart again in
+   * either direction.
    */
-  it("charges the one-time service fee identically on client and server", () => {
-    const match = /export const ONE_TIME_SERVICE_FEE_CENTS = r\((\d+)\)/.exec(serverSrc);
-    expect(match, "server no longer defines ONE_TIME_SERVICE_FEE_CENTS").toBeTruthy();
-    expect(Number(match![1]) * 100).toBe(ONE_TIME_SERVICE_FEE_CENTS);
-    expect(ONE_TIME_SERVICE_FEE_CENTS).toBe(3900);
+  it("charges the booking fee identically on client and server", () => {
+    const match = /export const BOOKING_FEE_CENTS = r\((\d+)\)/.exec(serverSrc);
+    expect(match, "server no longer defines BOOKING_FEE_CENTS").toBeTruthy();
+    expect(Number(match![1]) * 100).toBe(BOOKING_FEE_CENTS);
+    expect(BOOKING_FEE_CENTS).toBe(3900);
 
-    // One-time: the fee is charged, and it is part of the total the customer is shown.
     const oneTime = quote({ service: "regular", hours: 6, addOns: 1, bookingCover: true });
     if (!isPriced(oneTime)) throw new Error("expected a price");
-    expect(oneTime.serviceFeeCents).toBe(ONE_TIME_SERVICE_FEE_CENTS);
+    expect(oneTime.serviceFeeCents).toBe(BOOKING_FEE_CENTS);
     expect(oneTime.totalCents).toBe(
       oneTime.baseCents + oneTime.addOnsCents + oneTime.linenCents + oneTime.coverCents +
-        ONE_TIME_SERVICE_FEE_CENTS,
+        BOOKING_FEE_CENTS,
     );
 
-    // Recurring: waived, matching `frequency === "one_time" ? fee : 0` on the server.
+    /*
+     * Recurring is charged too, and this is the assertion that matters most.
+     *
+     * It would have failed under every previous version of this codebase. A fortnightly
+     * non-member now pays the fee every fortnight — 26 times a year — which is the founder's
+     * stated rule and the thing that makes Care+ at R99/month pay for itself. If someone
+     * "restores" the recurring waiver, this line is what stops it.
+     */
     const repeat = quote({ service: "regular", hours: 6, addOns: 1, bookingCover: true, frequency: "repeat" });
     if (!isPriced(repeat)) throw new Error("expected a price");
-    expect(repeat.serviceFeeCents).toBe(0);
-    expect(repeat.totalCents).toBe(oneTime.totalCents - ONE_TIME_SERVICE_FEE_CENTS);
+    expect(repeat.serviceFeeCents).toBe(BOOKING_FEE_CENTS);
+    expect(repeat.totalCents).toBe(oneTime.totalCents);
   });
 
   /**
-   * Omitting `frequency` must not under-quote.
+   * Omitting `carePlusMember` must not under-quote.
    *
    * The default is the whole safety property here: a caller that forgets the field over-states by
    * R39 rather than under-stating, and only one of those shows a customer a total they are later
-   * charged past.
+   * charged past. `BookingConfirm` and `Book` both resolve membership asynchronously, so they
+   * genuinely do render as non-member for a moment — the number can only fall from there.
    */
-  it("defaults to charging the fee when frequency is not supplied", () => {
+  it("defaults to charging the fee when membership is not supplied", () => {
     const implicit = quote({ service: "regular", hours: 6 });
-    const explicit = quote({ service: "regular", hours: 6, frequency: "one_time" });
+    const explicit = quote({ service: "regular", hours: 6, carePlusMember: false });
     if (!isPriced(implicit) || !isPriced(explicit)) throw new Error("expected a price");
     expect(implicit.totalCents).toBe(explicit.totalCents);
-    expect(implicit.serviceFeeCents).toBe(ONE_TIME_SERVICE_FEE_CENTS);
+    expect(implicit.serviceFeeCents).toBe(BOOKING_FEE_CENTS);
   });
 
   /**
-   * Care+ members pay no booking fee — founder decision 2026-08-09, alongside R99/month and one
-   * month free.
+   * Care+ members pay no booking fee — founder decision 2026-08-09, extended 2026-08-12 to cover
+   * every booking rather than only one-time ones.
    *
-   * This is the half of that decision that can go wrong quietly. The paywall now promises "no
-   * booking fee, ever" in writing; if `create-booking` still adds R39, the promise is a false
-   * price representation under the CPA and the customer is charged past a total they agreed to.
-   * That is the same defect this repo already shipped once, when `quote()` had no concept of the
-   * fee and `BookingConfirm` under-stated by R39.
+   * This is the half of that decision that can go wrong quietly. The paywall promises "no booking
+   * fee, ever" in writing, and `docs/care-plus-paywall-copy.md` goes further — "on every booking,
+   * not just your first". If a booking writer still adds R39, the promise is a false price
+   * representation under the CPA and the customer is charged past a total they agreed to.
    *
-   * Asserted against the server source, not a copy of the rule, so the two cannot drift.
+   * Asserted against both server sources, not a copy of the rule, so they cannot drift.
    */
-  it("waives the fee for Care+ members, and the server agrees", () => {
-    const member = quote({ service: "regular", hours: 6, frequency: "one_time", carePlusMember: true });
-    const nonMember = quote({ service: "regular", hours: 6, frequency: "one_time" });
+  it("waives the fee for Care+ members, and both booking writers agree", () => {
+    const member = quote({ service: "regular", hours: 6, carePlusMember: true });
+    const nonMember = quote({ service: "regular", hours: 6 });
     if (!isPriced(member) || !isPriced(nonMember)) throw new Error("expected a price");
 
     expect(member.serviceFeeCents).toBe(0);
-    expect(member.totalCents).toBe(nonMember.totalCents - ONE_TIME_SERVICE_FEE_CENTS);
+    expect(member.totalCents).toBe(nonMember.totalCents - BOOKING_FEE_CENTS);
 
-    // A member booking recurring pays nothing either — membership wins before frequency.
+    // Recurring makes no difference in either direction. Membership is the only gate.
     const recurringMember = quote({ service: "regular", hours: 6, frequency: "repeat", carePlusMember: true });
     if (!isPriced(recurringMember)) throw new Error("expected a price");
     expect(recurringMember.serviceFeeCents).toBe(0);
 
-    // The server's rule, read from its source. `isCarePlusMember` comes from the same lookup
-    // that decides the discount, so a member cannot receive the discount and still be charged
-    // the fee — the combination that would be hardest to spot in a receipt.
-    const serverSrc = readFileSync(join(process.cwd(), "supabase/functions/create-booking/index.ts"), "utf8");
-    expect(serverSrc).toMatch(/const isCarePlusMember = carePlusDiscountRate > 0;/);
-    expect(serverSrc).toMatch(
-      /isCarePlusMember \|\| frequency !== "one_time" \? 0 : ONE_TIME_SERVICE_FEE_CENTS/,
-    );
+    /*
+     * Both writers, because until 2026-08-12 only one of them knew Care+ existed.
+     * `create-booking-request` charged every member the fee and skipped the 10% discount, and
+     * nothing failed because no client calls it — it is deployed and authenticated all the same.
+     * Asserting the shared import is what stops one being fixed and the other forgotten.
+     */
+    for (const path of BOOKING_WRITERS) {
+      const src = readFileSync(join(process.cwd(), path), "utf8");
+      expect(src, `${path} must read membership from the shared helper`).toMatch(
+        /from "\.\.\/_shared\/care-plus-membership\.ts"/,
+      );
+      expect(src, `${path} must derive membership from the discount lookup`).toMatch(
+        /const isCarePlusMember = memberOf\(carePlusDiscountRate\);/,
+      );
+      // The single-condition shape is the property, not just a correct total today. A second
+      // term here means the superseded one-time rule has crept back in.
+      expect(src, `${path} must gate the fee on membership alone`).toMatch(
+        /const serviceFeeCents = isCarePlusMember \? 0 : BOOKING_FEE_CENTS;/,
+      );
+    }
   });
 
   /**
@@ -553,18 +579,22 @@ describe("client/server pricing parity", () => {
    * The divergence this change did NOT fix, recorded so it is not mistaken for agreement.
    *
    * `care-plus.ts` describes cadence-tiered discounts — 15% weekly, 10% fortnightly, 5% monthly —
-   * and `create-booking`'s `getCarePlusDiscount` returns a flat **0.1** for every active member,
+   * and the server's `getCarePlusDiscount` returns a flat **0.1** for every active member,
    * ignoring cadence entirely. Any surface quoting 15% to a weekly member would be quoting a
    * discount the server does not give.
    *
    * Not fixed here because it changes what members are charged, which is the founder's call and
    * not a side effect of a copy change. Pinned so the day someone aligns them, this test tells
    * them the client half exists.
+   *
+   * Read from `_shared/care-plus-membership.ts` since 2026-08-12: the helper was lifted out of
+   * `create-booking` so `create-booking-request` could stop pricing members as non-members. One
+   * file to align now rather than two.
    */
   it("records that the server discount is flat, not cadence-tiered", () => {
-    const serverSrc = readFileSync(join(process.cwd(), "supabase/functions/create-booking/index.ts"), "utf8");
+    const serverSrc = readFileSync(join(process.cwd(), "supabase/functions/_shared/care-plus-membership.ts"), "utf8");
     expect(serverSrc, "server no longer returns a flat Care+ rate — align CADENCE_DISCOUNT")
-      .toMatch(/const getCarePlusDiscount[\s\S]{0,400}return 0\.1;/);
+      .toMatch(/const getCarePlusDiscount[\s\S]{0,600}return 0\.1;/);
     expect(CADENCE_DISCOUNT.weekly).toBe(0.15);
     expect(CADENCE_DISCOUNT.weekly).not.toBe(0.1);
   });

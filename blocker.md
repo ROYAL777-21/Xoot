@@ -276,8 +276,12 @@ needs an account, a dashboard, a device, or a decision.
 - **ZD-005, the schema source of truth.** Four written migrations are unapplied behind it.
 - **The `zoot://` deep-link scheme.** Must change before first store submission or not at all;
   it cannot move independently of Google/Apple OAuth config.
-- **The R39 one-time service fee.** The server charges it, the price screen does not show it.
-  Closing the gap raises every quoted one-time total, which is a commercial call.
+- ~~**The R39 one-time service fee.** The server charges it, the price screen does not show it.
+  Closing the gap raises every quoted one-time total, which is a commercial call.~~
+  **Decided and closed 2026-08-12 (ZD-026).** The commercial call was made in both directions
+  at once: the screens now show the fee *and* the fee now applies to every booking, waived only
+  for Care+. `pricing-parity.test.ts` pins the single-condition rule against both booking
+  writers' source.
 
 ### Blocked on an external account, not on us
 Twilio (masked voice, WhatsApp sender, the two items at the top of this file), Mapbox,
@@ -352,9 +356,12 @@ green while production charged the old numbers.
 
 Consequences worth stating separately:
 
-- **The R39 one-time service fee gap is live.** Live also computes `serviceFee = 39` and adds
-  it to the total, so the client under-quote recorded elsewhere in this file is real in
-  production today, on top of a base price nobody signed off.
+- **The R39 fee gap is live.** Live also computes `serviceFee = 39` and adds it to the total,
+  so the client under-quote recorded elsewhere in this file is real in production today, on top
+  of a base price nobody signed off. *(The client half was closed when `quote()` learned about
+  the fee; ZD-026 then made it a per-booking fee waived only for Care+. Production still runs
+  the old rule until `create-booking` and `create-booking-request` are redeployed together —
+  `_shared` is bundled per function, so the repo being right changes nothing until then.)*
 - **"The server is the authority on money" is only true of the deployed server, and the
   deployed server is wrong.** That phrase appears in the header of `xoot-pricing.ts` and was
   used during this session to justify aligning the client to `create-booking`. The
@@ -925,6 +932,17 @@ from a session is the proxy, not the function.
   first booking. Deliberately not "fixed" by adding R39 to the displayed price: that raises
   every quoted one-time total and is a commercial call. `pricing-parity.test.ts` now asserts
   the divergence so it is visible rather than surprising.
+
+  **Resolved 2026-08-12 (ZD-026), and the commercial call went further than closing the gap.**
+  `quote()` models the fee, and the fee is now charged on *every* booking rather than one-time
+  ones, waived only for Care+ members. The constant is `BOOKING_FEE_CENTS` — the old name
+  encoded the superseded rule. Two things the parity work had not reached turned out to be
+  broken the same way and were fixed with it: `create-booking-request` had no concept of Care+
+  at all (it charged members the fee and skipped their 10% discount), and neither price screen
+  passed `carePlusMember` to the quote, so a member was shown R39 and charged R0. Both booking
+  writers now read `_shared/care-plus-membership.ts`; the test asserts the shared import and the
+  single-condition rule against both sources, and was verified to fail against a planted
+  reintroduction of the frequency gate.
 - **Schema source of truth is undecided (ZD-005).** Production and staging migration
   histories still diverge: re-listed 2026-08-02, production starts from the 2026-05-19
   launch squash (33 recorded migrations) while staging follows the local chain from

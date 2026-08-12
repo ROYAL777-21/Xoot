@@ -20,9 +20,17 @@ export type BookingFrequency = "one_time" | "repeat";
 export type BookingQuoteInput = {
   basePrice: number;
   addOnCount: number;
+  /** Still stored on the booking; no longer affects the booking fee. See `BOOKING_FEE_ZAR`. */
   frequency: BookingFrequency;
   time: string;
   bookingCoverOptIn: boolean;
+  /**
+   * The only thing that waives the R39 booking fee.
+   *
+   * Optional, defaulting to non-member, so a caller that forgets it over-states the price rather
+   * than under-stating it — the same asymmetry `quote()` in `xoot-pricing.ts` relies on.
+   */
+  carePlusMember?: boolean;
 };
 
 export type BookingQuote = {
@@ -125,9 +133,9 @@ export const HOME_CLEANING_PRICES: Record<HomeCleaningSize, PriceRule> = {
 };
 
 export const OFFICE_CLEANING_PRICES: PriceRule[] = [
-  { id: "office-2-3h", label: "Office clean", estimatedHours: 3, priceZar: 411, note: "R39 service fee applies" },
-  { id: "office-3-5h", label: "Office clean", estimatedHours: 3.5, priceZar: 480, note: "R39 service fee applies" },
-  { id: "office-4h", label: "Office clean", estimatedHours: 4, priceZar: 500, note: "R39 service fee applies" },
+  { id: "office-2-3h", label: "Office clean", estimatedHours: 3, priceZar: 411, note: "R39 booking fee applies, waived for Care+" },
+  { id: "office-3-5h", label: "Office clean", estimatedHours: 3.5, priceZar: 480, note: "R39 booking fee applies, waived for Care+" },
+  { id: "office-4h", label: "Office clean", estimatedHours: 4, priceZar: 500, note: "R39 booking fee applies, waived for Care+" },
 ];
 
 export const MOVING_CLEANING_PRICES: Record<MovingCleanSize, PriceRule> = {
@@ -149,7 +157,8 @@ export const LAUNDRY_IRONING_PRICES: PriceRule[] = [
 ];
 
 export const BOOKING_COVER_PRICE_ZAR = 22;
-export const ONE_TIME_SERVICE_FEE_ZAR = 39;
+/** R39 on every booking, waived only for Care+ members (founder decision 2026-08-12). */
+export const BOOKING_FEE_ZAR = 39;
 export const ADD_ON_PRICE_ZAR = 30;
 export const HIGH_DEMAND_SLOT_RATE = 0.15;
 export const SURGE_SLOT_RATE_RANGE = { min: 0.1, max: 0.15 } as const;
@@ -187,7 +196,7 @@ export const SLOT_PREMIUM_CURVE: Record<string, number> = {
 
 const ADD_ON_PRICE = ADD_ON_PRICE_ZAR;
 const BOOKING_COVER = BOOKING_COVER_PRICE_ZAR;
-const ONE_TIME_SERVICE_FEE = ONE_TIME_SERVICE_FEE_ZAR;
+const BOOKING_FEE = BOOKING_FEE_ZAR;
 const HIGH_DEMAND_RATE = HIGH_DEMAND_SLOT_RATE;
 
 export const isApprovedLaunchRegion = (input: string) => {
@@ -212,17 +221,21 @@ export const slotPremiumRate = (time: string): number => {
   return isHighDemandSlot(time) ? HIGH_DEMAND_SLOT_RATE : 0;
 };
 
+// `frequency` is intentionally not destructured: it is part of the input a booking carries, but
+// nothing in the quote reads it any more.
 export const calculateBookingQuote = ({
   basePrice,
   addOnCount,
-  frequency,
   time,
   bookingCoverOptIn,
+  carePlusMember = false,
 }: BookingQuoteInput): BookingQuote => {
   const addOnsTotal = addOnCount * ADD_ON_PRICE;
   const subtotal = basePrice + addOnsTotal;
   const highDemandPremium = Math.round(subtotal * slotPremiumRate(time));
-  const serviceFee = frequency === "one_time" ? ONE_TIME_SERVICE_FEE : 0;
+  // R39 on every booking, waived only for members. `frequency` no longer gates this — see
+  // `create-booking`, which is the authority, and `BOOKING_FEE_ZAR` for the decision.
+  const serviceFee = carePlusMember ? 0 : BOOKING_FEE;
   const bookingCover = bookingCoverOptIn ? BOOKING_COVER : 0;
 
   return {

@@ -6,21 +6,25 @@
  * included, opening with **one month free**. The two-tier R99/R199 split is retired from
  * the live product and kept below as a future A/B arm.
  *
- * ── The arithmetic, redone at R99 ────────────────────────────────────────────────
+ * ── The arithmetic, redone at R99 and again under ZD-026 ────────────────────────
  * A membership is only rational when what it saves exceeds what it costs. On the R297 standard
  * clean (5.5h regular — R296 until the long-job floor of 2026-08-12 moved it by a rand), with the
- * cadence discounts below and the R39 one-time booking fee waived:
+ * cadence discounts below **and the R39 booking fee waived on every booking** (ZD-026, 2026-08-12
+ * — it used to be waived only on the one-time booking a member was unlikely to be making):
  *
- *   Weekly (4.3/mo, R1290 spend)   15% saves R194 — R95 ahead every month
- *   Fortnightly (2.2/mo, R645)     10% saves  R65 — R34 down
- *   Monthly (1/mo, R297)            5% saves  R15 — R84 down
+ *                                  discount   fees saved   net vs R99
+ *   Weekly (4.3/mo, R1290 spend)   15% R194   4.3 x R39 = R168   +R263 every month
+ *   Fortnightly (2.2/mo, R645)     10%  R65   2.2 x R39 =  R86    +R52
+ *   Monthly (1/mo, R297)            5%  R15   1.0 x R39 =  R39    -R45
  *
- * R99 changes the shape of the honest pitch but not its substance. A weekly booker is now
- * genuinely ahead on money alone, which R199 never delivered. Everyone else is still buying
- * the outcomes — the same Xooter every time, the slot you actually want, a home that is
- * remembered — and the copy must keep saying so rather than implying the discount pays for
- * the fee at every cadence. Claiming savings a fortnightly member does not get is a false
- * price representation under the Consumer Protection Act, and it is also just untrue.
+ * ZD-026 is what makes the fortnightly case work. Under the old rule that customer was **R34
+ * down** every month and the honest pitch had to rest entirely on the outcomes; the fee waiver
+ * is worth R86/month to them, which turns it into R52 ahead. Weekly moves from R95 to R263.
+ *
+ * A monthly booker is still R45 down and the copy must keep saying so. They are buying the
+ * outcomes — the same Xooter every time, the slot you actually want, a home that is remembered —
+ * not a saving. Claiming savings a monthly member does not get is a false price representation
+ * under the Consumer Protection Act, and it is also just untrue.
  *
  * ⚠️ KNOWN DIVERGENCE, not fixed here. `create-booking` applies a **flat 10%** to every
  * active member (`getCarePlusDiscount` returns 0 or 0.1) and ignores cadence entirely, so
@@ -41,7 +45,7 @@ export const CARE_PLUS_MONTHLY_CENTS = 9900;
 export const FREE_MONTHS_AT_SIGNUP = 1;
 
 /**
- * Members do not pay the R39 one-time booking fee. Mirrored server-side in
+ * Members do not pay the R39 booking fee, on any booking (ZD-026). Mirrored server-side in
  * `supabase/functions/_shared/pricing.ts`; `pricing-parity.test.ts` holds the two together,
  * because a client that shows R0 and a server that charges R39 is the exact defect this repo
  * already shipped once on `BookingConfirm`.

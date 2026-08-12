@@ -6,6 +6,7 @@ import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { defaultHours, readDraft, type OnboardingAnswers } from "@/lib/onboarding";
 import { formatRand, hoursFor, isPriced, quote, serviceBounds, xooterOptionsFor, type ServiceId } from "@/lib/xoot-pricing";
+import { useCarePlus } from "@/hooks/useCarePlus";
 import { AlertTriangle, ArrowLeft, Check, Clock, ShieldCheck, Users, Zap } from "lucide-react";
 
 /**
@@ -63,6 +64,21 @@ export default function BookingConfirm() {
   const xooterOptions = xooterOptionsFor(service, hours);
   const xooterCount = xooterOptions.includes(xooterChoice) ? xooterChoice : 1;
 
+  /*
+   * Membership, because it changes the total on this screen.
+   *
+   * `quote()` waives the R39 booking fee for members and this screen never told it who the
+   * customer was, so a member saw the fee and was then charged R0. That was tolerable while the
+   * fee only applied to one-time bookings; since 2026-08-12 it applies to every booking, so the
+   * screen would have contradicted the paywall on every single visit — and this is the last
+   * screen before payment.
+   *
+   * While `loading`, `state.status` is not yet `"active"`, so an in-flight lookup quotes the fee
+   * and then removes it. That is the safe direction: the number can only fall.
+   */
+  const carePlus = useCarePlus();
+  const carePlusMember = carePlus.state.status === "active";
+
   const raw = quote({
     service,
     hours,
@@ -70,6 +86,7 @@ export default function BookingConfirm() {
     addOns: selected.length,
     linenOnSite: answers?.type === "airbnb" && answers.linenHandling === "wash-dry-repack",
     bookingCover: cover,
+    carePlusMember,
   });
   // Split once so JSX below reads plainly instead of re-narrowing in every branch.
   const priced = isPriced(raw) ? raw : null;
@@ -315,12 +332,20 @@ export default function BookingConfirm() {
               {priced.linenCents > 0 ? <Row label="Linen washed on-site" value={formatRand(priced.linenCents)} /> : null}
               {priced.coverCents > 0 ? <Row label="Booking Cover" value={formatRand(priced.coverCents)} /> : null}
               {/*
-                Shown, not folded silently into the total. The server has always charged this on
-                one-time bookings; `quote()` did not model it, so this screen — the last one before
-                payment — used to under-state the total by R39. Under the CPA the displayed price is
-                the price, so it is a line the customer can see rather than a gap they discover.
+                Shown, not folded silently into the total. `quote()` did not model this fee at all
+                once, so this screen — the last one before payment — under-stated the total by R39.
+                Under the CPA the displayed price is the price, so it is a line the customer can
+                see rather than a gap they discover.
+
+                A member gets the waived line rather than no line. Removing it would be honest but
+                silent, and the whole point of the membership is that it shows up where the money
+                is: the row is the R39 they are not paying, on the screen where they can see it.
               */}
-              {priced.serviceFeeCents > 0 ? <Row label="Service fee" value={formatRand(priced.serviceFeeCents)} /> : null}
+              {priced.serviceFeeCents > 0 ? (
+                <Row label="Booking fee" value={formatRand(priced.serviceFeeCents)} />
+              ) : carePlusMember ? (
+                <Row label="Booking fee — waived with Care+" value="R0" />
+              ) : null}
               <div className="mt-1 flex items-baseline justify-between border-t border-border pt-2">
                 <dt className="text-sm font-bold">Total</dt>
                 <dd className="font-display text-2xl font-bold">{formatRand(priced.totalCents)}</dd>

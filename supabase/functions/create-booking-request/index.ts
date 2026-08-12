@@ -3,11 +3,12 @@ import { buildEmailPayload } from "../_shared/email-playbook.ts";
 import {
   ADD_ON_CENTS,
   BOOKING_COVER_CENTS,
+  BOOKING_FEE_CENTS,
   HOME_SIZE_HOURS,
-  ONE_TIME_SERVICE_FEE_CENTS,
   basePrice,
   resolveHours,
 } from "../_shared/pricing.ts";
+import { getCarePlusDiscount, isCarePlusMember as memberOf } from "../_shared/care-plus-membership.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -143,6 +144,23 @@ Deno.serve(async (req) => {
     const priced = basePrice(serviceType, bookedHours);
     if (!priced.ok) return json({ error: priced.reason }, 400, origin);
 
+    const supa = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    /*
+     * Care+, which this function had no concept of until 2026-08-12.
+     *
+     * It priced every caller as a non-member: it charged the booking fee the paywall promises to
+     * waive, and never applied the 10% member discount `create-booking` gives. Nothing failed,
+     * because no client calls this path — but it is deployed and authenticated, so it was a live
+     * second answer to "what does a member pay". Both writers now read the same shared helper,
+     * asserted by `pricing-parity.test.ts`, so one cannot be fixed and the other forgotten.
+     */
+    const carePlusDiscountRate = await getCarePlusDiscount(supa, authData.user.id);
+    const isCarePlusMember = memberOf(carePlusDiscountRate);
+
     // Cents internally, rands at the boundary, so the stored columns keep the shape every
     // existing reader expects. Mirrors create-booking deliberately: two booking paths that
     // round money differently is the same class of bug as two ladders.
@@ -150,7 +168,9 @@ Deno.serve(async (req) => {
     const discountedBaseCents = Math.round(priced.baseCents * (1 - discount)) * selectedXooterIds.length;
     const subtotalCents = discountedBaseCents + addOns.length * ADD_ON_CENTS;
     const highDemandCents = isHighDemandSlot(time) ? Math.round(subtotalCents * 0.15) : 0;
-    const serviceFeeCents = frequency === "one_time" ? ONE_TIME_SERVICE_FEE_CENTS : 0;
+    // R39 on every booking, waived only for members. `frequency` is deliberately not a term here
+    // — see the same expression and the same reasoning in `create-booking`.
+    const serviceFeeCents = isCarePlusMember ? 0 : BOOKING_FEE_CENTS;
     const bookingCoverCents = body.bookingCoverOptIn === false ? 0 : BOOKING_COVER_CENTS;
 
     const toRands = (cents: number) => Math.round(cents / 100);
@@ -158,7 +178,9 @@ Deno.serve(async (req) => {
     const highDemandPremium = toRands(highDemandCents);
     const serviceFee = toRands(serviceFeeCents);
     const bookingCover = toRands(bookingCoverCents);
-    const bookingTotal = subtotal + highDemandPremium + serviceFee + bookingCover;
+    // Same base, same rounding, same order as `create-booking`, so the two paths agree to the cent.
+    const carePlusDiscount = Math.round(subtotal * carePlusDiscountRate);
+    const bookingTotal = subtotal + highDemandPremium + serviceFee + bookingCover - carePlusDiscount;
     const estHours = priced.hours + addOns.length;
     const perBookingTotal = Math.max(1, Math.round(bookingTotal / selectedXooterIds.length));
     const perBookingPrice = Math.max(1, Math.round(subtotal / selectedXooterIds.length));
@@ -168,10 +190,6 @@ Deno.serve(async (req) => {
     const scheduledAt = `${date}T${time}:00+02:00`;
     const launchRegion = approvedLaunchRegions.find((region) => address.toLowerCase().includes(region)) ?? address;
 
-    const supa = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
     // `householdProfileId` arrives from the request body and was previously written to
     // `recurring_schedules` unchecked, so a caller could attach their schedule to someone else's
     // household. Not a credential path — `get-sensitive-access` reads `bookings`, not

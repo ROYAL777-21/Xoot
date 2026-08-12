@@ -10,6 +10,11 @@ Authority: Xoot Master Phased Implementation Program
 > member's first month**, and only when they did not arrive via the onboarding free trial.
 > Everything else in this document (brand, positioning, recurring rules pending confirmation)
 > still stands.
+>
+> ⚠️ **THE BOOKING FEE CHANGED — see ZD-026 (2026-08-12).** R39 is no longer a one-time fee.
+> It is charged on **every** booking, and Care+ membership is the only thing that waives it.
+> The two fee rows below are updated accordingly; the recurring-rules block that gave a free
+> booking to 1-2 days per week no longer applies to the fee.
 
 These values and policies are locked. Code, copy, agents and provider configuration must not contradict them without an approved decision-log entry.
 
@@ -28,14 +33,15 @@ These values and policies are locked. Code, copy, agents and provider configurat
 | Medium home clean | R325 for 5.5 hours |
 | Large home clean | R400 for 8 hours |
 | Standard add-on | R30 |
-| One-time booking service fee | R39 |
-| Recurring booking service fee | Waived |
+| Booking fee, every booking | R39 (ZD-026) |
+| Booking fee for Care+ members | Waived, at every frequency (ZD-026) |
 | Booking Cover by Genric | R21, optional and only preselected when legally and commercially approved |
 | Care+ membership | R99 per month |
 
-Recurring rules:
+Recurring rules (**the fee clause is superseded by ZD-026** — cadence no longer waives the
+booking fee, only Care+ does; the discount tiers below still stand pending confirmation):
 
-- 1-2 days per week: no service fee.
+- 1-2 days per week: ~~no service fee~~ — the R39 booking fee applies, per ZD-026.
 - 3-4 days per week: up to 15 percent off.
 - 5 or more days per week: up to 28 percent off.
 
