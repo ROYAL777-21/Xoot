@@ -28,21 +28,24 @@ const r = (rands: number) => rands * 100;
 type Ladder = Record<string, number>;
 
 /* ── The long-job floor ──────────────────────────────────────────────────────────
- * From 5.5 hours up, gross price is at least R54 per booked hour, so a Xooter on the 35%
- * starting commission never earns under R35.10/h — the `MIN_XOOTER_HOURLY_CENTS` floor that
- * `care-plus.ts` has asserted since 2026-08-10 and that the ladders did not honour past six
- * hours (a 10-hour regular clean returned R27.95/h). The full reasoning, including why this is
- * a price change and not a commission change, is in `src/lib/xoot-pricing.ts`.
+ * From 5.5 hours up, gross price is at least R47 per booked hour, so a Xooter on the 35%
+ * starting commission never earns under R30.55/h — clear of South Africa's national minimum
+ * wage of R30.23/h (1 March 2026), which domestic workers are at parity with. Before this, a
+ * 10-hour regular clean returned R27.95/h, below the legal minimum.
  *
- * It only ever raises: `OFFICE`, `EXPRESS` and every rung below 5.5h are untouched.
+ * Only `REGULAR` moves, and only from 8h up. `AIRBNB`, `MOVING`, `OFFICE` and `EXPRESS` already
+ * clear R47/h at every rung and are untouched.
+ *
+ * ⚠️ Expires: R30.55 is 1% over the minimum, which rises each March. `care-plus.test.ts` fails
+ * on 2027-01-31 to force the review. Full reasoning in `src/lib/xoot-pricing.ts`.
  */
-export const LONG_JOB_FLOOR_CENTS_PER_HOUR = r(54);
+export const LONG_JOB_FLOOR_CENTS_PER_HOUR = r(47);
 export const LONG_JOB_FLOOR_FROM_HOURS = 5.5;
 
 const REGULAR: Ladder = {
-  "3.5": r(236), "4": r(250), "4.5": r(266), "5": r(280), "5.5": r(297),
-  "6": r(324), "6.5": r(351), "7": r(378), "7.5": r(405), "8": r(432),
-  "8.5": r(459), "9": r(486), "9.5": r(513), "10": r(540),
+  "3.5": r(236), "4": r(250), "4.5": r(266), "5": r(280), "5.5": r(296),
+  "6": r(310), "6.5": r(326), "7": r(340), "7.5": r(356), "8": r(376),
+  "8.5": r(400), "9": r(423), "9.5": r(447), "10": r(470),
 };
 
 const OFFICE: Ladder = {
@@ -54,21 +57,20 @@ const OFFICE: Ladder = {
 
 const EXPRESS: Ladder = { "1": r(220), "1.5": r(220), "2": r(220), "2.5": r(220), "3": r(220) };
 
-/** The last three rungs are the long-job floor, not the transcript (was R372/R400/R426). */
+/** Untouched by the long-job floor — every rung already clears R47/h. Transcript values. */
 const AIRBNB: Ladder = {
   "3": r(304), "3.5": r(304), "4": r(304), "4.5": r(318), "5": r(324),
-  "5.5": r(342), "6": r(362), "6.5": r(362), "7": r(378), "7.5": r(405), "8": r(432),
+  "5.5": r(342), "6": r(362), "6.5": r(362), "7": r(372), "7.5": r(400), "8": r(426),
 };
 
 /**
  * ⚠️ Reconstructed from a degraded transcript — see ZD-020. Unconfirmed.
- * The tail from 7.5h up is the long-job floor rather than the transcript: at 10 hours this
- * ladder returned R31.07/h to the Xooter, the same defect as the regular ladder's R27.95.
+ * Untouched by the long-job floor: the worst rung (10h) returns R31.07/h, above the minimum.
  */
 const MOVING: Ladder = {
   "4.5": r(320), "5": r(330), "5.5": r(344), "6": r(364), "6.5": r(376),
-  "7": r(390), "7.5": r(405), "8": r(432), "8.5": r(459), "9": r(486),
-  "9.5": r(513), "10": r(540),
+  "7": r(390), "7.5": r(404), "8": r(430), "8.5": r(448), "9": r(462),
+  "9.5": r(468), "10": r(478),
 };
 
 export const LADDERS: Record<ServiceId, { ladder: Ladder; min: number; max: number }> = {

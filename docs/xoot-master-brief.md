@@ -346,40 +346,44 @@ worth a one-line confirm.)
 
 | Hours | Price | Hours | Price |
 |---|---|---|---|
-| 3.5 | R236 | 7.0 | **R378** |
-| 4.0 | R250 | 7.5 | **R405** |
-| 4.5 | R266 | 8.0 | **R432** |
-| 5.0 | R280 | 8.5 | **R459** |
-| 5.5 | **R297** | 9.0 | **R486** |
-| 6.0 | **R324** | 9.5 | **R513** |
-| 6.5 | **R351** | 10.0 | **R540** |
+| 3.5 | R236 | 7.0 | R340 |
+| 4.0 | R250 | 7.5 | R356 |
+| 4.5 | R266 | 8.0 | **R376** |
+| 5.0 | R280 | 8.5 | **R400** |
+| 5.5 | R296 | 9.0 | **R423** |
+| 6.0 | R310 | 9.5 | **R447** |
+| 6.5 | R326 | 10.0 | **R470** |
 
 > ### ⚠️ AMENDED 2026-08-12 — the long-job floor
 >
-> The bolded rungs are new. Everything from **5.5 hours up is now priced at no less than R54 per
-> booked hour**; below that the original ladder stands untouched.
+> The four bolded rungs are new. **From 5.5 hours up, price is at least R47 per booked hour** —
+> which only bites from 8 hours, so nothing below 8h moved at all.
 >
-> **Why.** The original ladder was sub-linear in hours — R296 for 5.5h but only R430 for 10h —
-> so the price per hour fell as the job got longer. A Xooter's hours do not: at the 35% starting
-> commission a 10-hour clean returned them **R27.95/h**, against a stated per-booking pay floor of
-> R35/h and uncomfortably near South Africa's national minimum wage for domestic work. The volume
-> discount was being funded out of wages.
+> **Why.** The original ladder was sub-linear in hours — R296 for 5.5h but only R430 for 10h — so
+> the price per hour fell as the job got longer. A Xooter's hours do not: at the 35% starting
+> commission a 10-hour clean returned them **R27.95/h**, and **South Africa's national minimum wage
+> is R30.23/h from 1 March 2026**, which domestic workers are at parity with. This was a compliance
+> defect, not a generosity question.
 >
-> R54 is the rate the 5.5-hour clean already implied (R296 ÷ 5.5 = R53.82, rounded up to a whole
-> rand). At 35% it returns R35.10/h, which clears the floor at every rung for the first time.
+> At R47/h the Xooter nets **R30.55/h**, clear of the minimum on every rung.
 >
-> **This is a price change, not a commission change** — the founder's decision, 2026-08-12. Cutting
-> Xoot's take to rescue a long job would make the same booking worth less the longer it ran, and
-> commission is already a ladder that rewards reliability. Both would be doing two jobs with one
-> number.
+> **A R54/h floor was tried first and reverted the same day.** It paid R35.10/h but raised the
+> 8-hour large-home default 16.8% and the 10-hour clean 25.6% — a cost carried entirely by
+> customers on the most-booked long job. The founder chose the smallest rise that is still lawful:
+> 8h +1.6%, 10h +9.3%.
 >
-> It supersedes the ZD-007 reconciliation above for medium and large: at 8 hours the base is now
-> R432, which is **above** ZD-007's add-on-inclusive R400 rather than R30 below it. Small (4h) is
-> unchanged and still reconciles exactly.
+> **This is a price change, not a commission change.** Cutting Xoot's take to rescue a long job
+> would make the same booking worth less the longer it ran, and commission is already a ladder that
+> rewards reliability.
 >
-> Enforced by `src/lib/xoot-pricing.ts` (`LONG_JOB_FLOOR_CENTS_PER_HOUR`), mirrored in
-> `supabase/functions/_shared/pricing.ts`, and asserted as an invariant — not a rung list — in
-> `xoot-pricing.test.ts`.
+> The ZD-007 reconciliation above still holds at all three sizes: 8h is R376 against ZD-007's R400,
+> a R24 gap rather than R30 because the floor lifted that rung by R6.
+>
+> ⚠️ **Expires March 2027.** R30.55 is 1% over the minimum, which rises ~5% each March.
+> `care-plus.test.ts` fails on 2027-01-31 to force the review before the ladder becomes illegal.
+>
+> Enforced by `LONG_JOB_FLOOR_CENTS_PER_HOUR` in `src/lib/xoot-pricing.ts`, mirrored in
+> `supabase/functions/_shared/pricing.ts`, and asserted as an invariant in `xoot-pricing.test.ts`.
 
 Source said the medium and large ladders follow "the same" logic.
 
@@ -460,18 +464,17 @@ Sized by square meterage. **Medium is preselected.**
 
 | Hours | Price | Hours | Price |
 |---|---|---|---|
-| 4.5 | R320 | 7.5 | **R405** |
-| 5.0 | R330 | 8.0 | **R432** |
-| 5.5 | R344 | 8.5 | **R459** |
-| 6.0 | R364 | 9.0 | **R486** |
-| 6.5 | R376 | 9.5 | **R513** |
-| 7.0 | R390 | 10.0 | **R540** |
+| 4.5 | R320 | 7.5 | R404 |
+| 5.0 | R330 | 8.0 | R430 |
+| 5.5 | R344 | 8.5 | R448 |
+| 6.0 | R364 | 9.0 | R462 |
+| 6.5 | R376 | 9.5 | R468 |
+| 7.0 | R390 | 10.0 | R478 |
 
-> **Amended 2026-08-12 by the long-job floor** (§4.1). The bolded rungs from 7.5h up were
-> R404/R430/R448/R462/R468/R478 and are now at the R54/booked-hour floor. At 10 hours the old
-> ladder returned the Xooter R31.07/h — the same defect as the regular ladder's R27.95, and it
-> does not become acceptable because these numbers are a reconstruction. A floor only ever
-> raises, so it cannot make an unconfirmed price more wrong in the direction that matters.
+> **Unchanged by the long-job floor** (§4.1). Every rung already clears R47/h — the worst, 10h,
+> returns the Xooter R31.07/h against the R30.23 minimum. The R54 floor briefly rewrote the tail on
+> 2026-08-12; lowering it to R47 the same day reverted that, which is the better outcome: this
+> ladder is now unmodified as well as unconfirmed, so there is one thing to check rather than two.
 
 > **`CONFIRM` — this table is a reconstruction.** The transcript recited five separate
 > ladders. Tiny, small and medium came through identical to the above. The large-home ladder
@@ -497,18 +500,18 @@ Base hours: min 3h, **default 4h**, max 8h.
 |---|---|---|---|
 | 3.0 | R304 | 6.0 | R362 |
 | 3.5 | R304 | 6.5 | R362 |
-| 4.0 | R304 | 7.0 | **R378** ⚠️ |
-| 4.5 | R318 | 7.5 | **R405** |
-| 5.0 | R324 | 8.0 | **R432** |
+| 4.0 | R304 | 7.0 | R372 ⚠️ |
+| 4.5 | R318 | 7.5 | R400 |
+| 5.0 | R324 | 8.0 | R426 |
 | 5.5 | R342 | 8.5 | — (above max) |
 
 ⚠️ 7.0h was recited twice, once as R372 and once as a garbled value that decodes closer to
 R388. **`CONFIRM` the 7-hour price.**
 
-> **Amended 2026-08-12 by the long-job floor** (§4.1). The last three rungs were R372/R400/R426.
-> Note what this does to the open `CONFIRM`: the floor lifts the 7-hour price to **R378**, which
-> sits between the two readings the transcript gave. It does not settle the question — but it no
-> longer settles it downward, and the 7-hour job no longer returns the Xooter R34.54/h.
+> **Unchanged by the long-job floor** (§4.1). Every rung already clears R47/h — the 7-hour job
+> returns R34.54/h against the R30.23 minimum. The R54 floor briefly moved these three to
+> R378/R405/R432 on 2026-08-12; lowering it to R47 reverted them, so **the 7-hour `CONFIRM` above
+> is open on exactly the terms it was**, against the transcript's own R372.
 
 **Linen handling — required, single-select, four options:**
 

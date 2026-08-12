@@ -21,35 +21,45 @@ describe("xoot pricing", () => {
   it("prices regular cleaning off the shared hour ladder", () => {
     expect(ok(quote({ service: "regular", hours: 3.5, bookingCover: false })).baseCents).toBe(23600);
     expect(ok(quote({ service: "regular", hours: 4, bookingCover: false })).baseCents).toBe(25000);
-    expect(ok(quote({ service: "regular", hours: 5.5, bookingCover: false })).baseCents).toBe(29700);
-    expect(ok(quote({ service: "regular", hours: 8, bookingCover: false })).baseCents).toBe(43200);
-    expect(ok(quote({ service: "regular", hours: 10, bookingCover: false })).baseCents).toBe(54000);
+    expect(ok(quote({ service: "regular", hours: 5.5, bookingCover: false })).baseCents).toBe(29600);
+    expect(ok(quote({ service: "regular", hours: 8, bookingCover: false })).baseCents).toBe(37600);
+    expect(ok(quote({ service: "regular", hours: 10, bookingCover: false })).baseCents).toBe(47000);
   });
 
   it("reconciles with the superseded ZD-007 prices once their bundled add-on is removed", () => {
-    // ZD-007 quoted add-on-inclusive prices. The gap at each size's default hours was exactly one
-    // R30 add-on, which is what proved ZD-020 was not a price cut.
+    // ZD-007 quoted add-on-inclusive prices. The gap at each size's default hours was one R30
+    // add-on, which is what proved ZD-020 was not a price cut.
     //
-    // ⚠️ NARROWED 2026-08-12. The reconciliation now only holds below the long-job floor, and it
-    // has to: the floor deliberately RAISES long jobs past what ZD-007 quoted. Medium (5.5h) is
-    // R297 against ZD-007's R325 — a R28 gap rather than R30 — and large (8h) is R432 against
-    // R400, which is R32 *above* it. Loosening the bounds to keep all three cases would have
-    // turned a proof into a tautology, so the cases that the floor supersedes are asserted as
-    // superseded instead, below.
-    const cases: [number, number][] = [
-      [4, 28000], // small, ZD-007 R280 — below the floor, untouched
+    // ⚠️ NARROWED, THEN RESTORED, both on 2026-08-12. The R54 floor broke this outright: it put
+    // the 8h clean at R432, *above* ZD-007's R400, so the reconciliation had to be scoped down to
+    // the 4h case and the other two asserted as superseded. Lowering the floor to R47 the same day
+    // moved 8h to R376 and the original argument holds again at all three sizes — with the large
+    // gap now R24 rather than R30, because the floor lifted that rung by R6.
+    //
+    // The bounds are per-case rather than one loosened range. Widening a single range to swallow
+    // R24 would also have swallowed a future R25 drift at 4h, which is the tautology this test
+    // exists to avoid.
+    const cases: [number, number, number, number][] = [
+      // hours, ZD-007 cents, min gap, max gap
+      [4, 28000, 2900, 3000], // small
+      [5.5, 32500, 2900, 3000], // medium — R29, rounding in the original R325, flagged in ZD-020
+      [8, 40000, 2400, 2400], // large — exactly R24: R30 add-on less the R6 the floor added
     ];
-    for (const [hours, legacyCents] of cases) {
+    for (const [hours, legacyCents, minGap, maxGap] of cases) {
       const base = ok(quote({ service: "regular", hours, bookingCover: false })).baseCents;
-      expect(legacyCents - base).toBeGreaterThanOrEqual(2900);
-      expect(legacyCents - base).toBeLessThanOrEqual(3000);
+      const gap = legacyCents - base;
+      expect({ hours, withinBounds: gap >= minGap && gap <= maxGap }).toEqual({
+        hours,
+        withinBounds: true,
+      });
     }
 
-    // Medium and large are now set by the floor, not by ZD-007. Recorded so the change is a fact
-    // in the suite rather than a hole in it.
-    expect(ok(quote({ service: "regular", hours: 5.5, bookingCover: false })).baseCents).toBe(29700);
-    expect(ok(quote({ service: "regular", hours: 8, bookingCover: false })).baseCents).toBe(43200);
-    expect(43200).toBeGreaterThan(40000); // large is above ZD-007's R400, on purpose
+    // Still below ZD-007 at every size, so "do not add the old numbers on top of the ladder"
+    // remains true — which is the instruction the reconciliation exists to protect.
+    for (const [hours, legacyCents] of [[4, 28000], [5.5, 32500], [8, 40000]] as const) {
+      expect(ok(quote({ service: "regular", hours, bookingCover: false })).baseCents)
+        .toBeLessThan(legacyCents);
+    }
   });
 
   it("keeps express flat across its whole range", () => {
@@ -133,7 +143,7 @@ describe("xoot pricing", () => {
 describe("the long-job floor", () => {
   const SERVICES = ["regular", "office", "express", "airbnb", "moving"] as const;
 
-  it("never charges under R54 per booked hour from 5.5 hours up", () => {
+  it("never charges under R47 per booked hour from 5.5 hours up", () => {
     for (const service of SERVICES) {
       for (const hours of hoursFor(service)) {
         if (hours < LONG_JOB_FLOOR_FROM_HOURS) continue;
@@ -182,15 +192,20 @@ describe("the long-job floor", () => {
     expect(hoursFor("express").every((h) => h < LONG_JOB_FLOOR_FROM_HOURS)).toBe(true);
   });
 
-  it("clears the R35/h Xooter pay floor at the worst commission rate on every ladder", () => {
-    // The whole point of the change. 35% is the STARTING rate — the worst any Xooter is on — so
-    // if it clears here it clears everywhere.
-    const MIN_XOOTER_HOURLY_CENTS = 3500;
+  it("clears the national minimum wage at the worst commission rate on every ladder", () => {
+    // The whole point of the change, and it is a LEGAL bar rather than a preference: R30.23/h from
+    // 1 March 2026, which domestic workers are at parity with. 35% is the STARTING commission —
+    // the worst rate any Xooter is on — so if it clears here it clears everywhere.
+    //
+    // Deliberately NOT Xoot's own R35 `MIN_XOOTER_HOURLY_CENTS`, which is a stricter internal rule
+    // about who may co-fund a Care+ discount. Three ladders now sit below that and above this,
+    // which is expected and explained in `care-plus.ts`.
+    const NATIONAL_MINIMUM_WAGE_CENTS = 3023;
     for (const service of SERVICES) {
       for (const hours of hoursFor(service)) {
         const base = ok(quote({ service, hours, bookingCover: false })).baseCents;
         const netPerHour = Math.round((base * 0.65) / hours);
-        expect({ service, hours, clears: netPerHour >= MIN_XOOTER_HOURLY_CENTS }).toEqual({
+        expect({ service, hours, clears: netPerHour >= NATIONAL_MINIMUM_WAGE_CENTS }).toEqual({
           service,
           hours,
           clears: true,

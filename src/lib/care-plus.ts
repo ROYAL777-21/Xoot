@@ -135,36 +135,57 @@ export const MIN_XOOTER_PAY_HALF_DAY_CENTS = PLACEMENT_MIN_HALF_DAY_CENTS;
 export const MIN_XOOTER_PAY_FULL_DAY_CENTS = PLACEMENT_MIN_FULL_DAY_CENTS;
 
 /**
- * The per-booking floor: **R35 per booked hour.**
+ * South Africa's **national minimum wage: R30.23 per ordinary hour, from 1 March 2026.**
  *
- * A booking is priced by the hour, so its floor is hourly. R35 is not invented — it is the
- * `hourly_rate` `approve-zooter` writes onto every Xooter it activates.
+ * Domestic workers have been at parity with the national minimum wage since 2024, so this is the
+ * rate that applies to a Xooter. It is the **legal** bar — the one the price ladder must clear —
+ * and it is deliberately a different number from `MIN_XOOTER_HOURLY_CENTS` below, which is Xoot's
+ * own, stricter, internal rule about Care+ discounts. Conflating the two is how a compliance
+ * question turns into a product preference and stops being checked.
  *
- * ── The ladder now honours it. It did not until 2026-08-12. ──────────────────────
- * This constant used to be an intention the prices contradicted. Every ladder was **sub-linear
- * in hours** — R296 for 5.5h but only R430 for 10h — so pay per hour fell as bookings got
- * longer, and the worst cell on each ladder at the 35% starting commission was:
+ * ⚠️ **THIS NUMBER EXPIRES EVERY MARCH.** It has risen about 5% a year. `care-plus.test.ts`
+ * fails on `NMW_REVIEW_BY` below rather than letting it quietly go stale — see the note there,
+ * because the current ladder has only 1% of headroom over it.
  *
- *   regular  R27.95/h (10h)      airbnb  R34.54/h (7h)      moving  R31.07/h (10h)
+ * Source: national minimum wage increase effective 1 March 2026 (R28.79 → R30.23).
+ */
+export const NATIONAL_MINIMUM_WAGE_CENTS = 3023;
+export const NATIONAL_MINIMUM_WAGE_EFFECTIVE_FROM = "2026-03-01";
+
+/**
+ * The date CI starts failing until someone re-checks the minimum wage.
+ *
+ * A month before the March increase, so there is time to reprice while the ladder is still legal.
+ * A test that fails on a calendar date is normally hostile; here it is the whole point — see
+ * `care-plus.test.ts` for why 1% of headroom makes silence the more expensive option.
+ */
+export const NMW_REVIEW_BY = "2027-01-31";
+
+/**
+ * Xoot's own per-booking floor for **Care+ discount sharing**: R35 per booked hour.
+ *
+ * ⚠️ This is NOT the legal minimum, and since 2026-08-12 it is no longer claimed to be what the
+ * price ladder clears. Two different numbers, two different jobs:
+ *
+ *   `NATIONAL_MINIMUM_WAGE_CENTS`  R30.23/h  — the law. The ladder must clear it, and does.
+ *   `MIN_XOOTER_HOURLY_CENTS`      R35.00/h  — Xoot's rule for who can be asked to fund a discount.
+ *
+ * Its actual job is the one `splitDiscount` uses it for: where a Xooter is at or under R35/h,
+ * take nothing from them and let Xoot absorb the whole Care+ discount. That works precisely
+ * *because* it sits above the legal minimum — it protects the lowest-paid bookings from carrying
+ * a marketing cost. R35 is not invented either: it is the `hourly_rate` `approve-zooter` writes
+ * onto every Xooter it activates.
+ *
+ * ── What the ladder actually pays, measured ─────────────────────────────────────
+ * At the 35% starting commission, which is the worst rate any Xooter is on, the cheapest hour on
+ * each ladder after the 2026-08-12 R47/h floor:
+ *
+ *   regular  R30.55/h (8h–10h)   airbnb  R34.54/h (7h)      moving  R31.07/h (10h)
  *   office   R42.90/h (10h)      express R47.67/h (3h)
  *
- * Three of the five sat under this floor, and the longest, hardest jobs sat furthest under it.
- * R27.95/h was close enough to South Africa's national minimum wage for domestic work — a figure
- * that changes every March — that it could not be left to a comment.
- *
- * **Fixed on the price, not the commission.** `xoot-pricing.ts` now floors gross at R54 per
- * booked hour from 5.5 hours up, which returns R35.10/h at 35%. The worst cell on every ladder
- * is now:
- *
- *   regular  R35.10/h            airbnb  R35.10/h            moving  R35.10/h
- *   office   R42.90/h (10h)      express R47.67/h (3h)
- *
- * — all at or above this floor, at the *starting* commission, which is the worst case a Xooter
- * can be on. Every rank above `new` earns more. The reasoning for choosing R54, and for fixing
- * the price rather than bending the commission ladder, is in `xoot-pricing.ts`.
- *
- * The floor still does its second job: where a Xooter is at or under it, `splitDiscount` takes
- * nothing from them and Xoot absorbs the whole Care+ discount.
+ * All above R30.23. **Three of the five are below R35**, and that is expected and fine — a Xooter
+ * on a long regular clean simply never co-funds a Care+ discount. Before the floor, `regular` sat
+ * at R27.95/h, which was below the legal minimum, not merely below this constant.
  */
 export const MIN_XOOTER_HOURLY_CENTS = 3500;
 

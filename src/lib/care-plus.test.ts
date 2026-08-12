@@ -7,6 +7,9 @@ import {
   CARE_PLUS_MONTHLY_CENTS,
   FREE_MONTHS_AT_SIGNUP,
   MIN_XOOTER_HOURLY_CENTS,
+  NATIONAL_MINIMUM_WAGE_CENTS,
+  NATIONAL_MINIMUM_WAGE_EFFECTIVE_FROM,
+  NMW_REVIEW_BY,
   OFFER_WINDOW_MS,
   PREMIUM_MONTHLY_CENTS,
   STANDARD_MONTHLY_CENTS,
@@ -134,47 +137,86 @@ describe("care+ pricing", () => {
   });
 
   /**
-   * The minimum-wage check, which this test exists to force someone to do again on any ladder
-   * change. It does not assert a legal threshold — that would be guessing at a figure that moves
-   * every March. It asserts the worst number the ladders actually produce.
+   * ⚖️ THE LEGAL FLOOR. Every rung of every ladder must pay at least the national minimum wage.
    *
-   * ── What it used to record, and what changed ────────────────────────────────────
-   * Until 2026-08-12 the worst cell was **R27.95/h**: a 10-hour regular clean at R430 on the 35%
-   * starting commission. The ladders were sub-linear in hours, so the longest jobs paid the least
-   * per hour, and three of the five ladders finished under `MIN_XOOTER_HOURLY_CENTS`.
+   * Until 2026-08-12 the worst cell was **R27.95/h** — a 10-hour regular clean at R430 on the 35%
+   * starting commission — and the national minimum wage has been **R30.23/h since 1 March 2026**,
+   * with domestic workers at parity since 2024. So that ladder was not merely ungenerous, it was
+   * **paying below the legal minimum**, and this test previously recorded the number without ever
+   * comparing it to anything.
    *
-   * `xoot-pricing.ts` now floors gross at R54/booked hour from 5.5h up. The worst cell is R35.10/h
-   * and it is no longer service-specific — regular, airbnb and moving all bottom out on the floor
-   * itself. This is computed from the ladder rather than transcribed, so re-flattening the tail of
-   * any ladder fails here.
+   * `xoot-pricing.ts` now floors gross at R47/booked hour from 5.5h up, which returns R30.55/h.
+   * Computed from the ladder rather than transcribed, so re-flattening any tail fails here.
    */
-  it("records the worst hourly pay the ladder produces, for the minimum-wage check", () => {
+  it("pays at least the national minimum wage on every rung of every ladder", () => {
     /** Cents per booked hour a Xooter keeps, at a given commission rate. */
     const netPerHour = (service: ServiceId, hours: number, keepFraction: number) => {
       const q = quote({ service, hours, bookingCover: false });
       if (!isPriced(q)) throw new Error(`${service} refused at ${hours}h`);
       return Math.round((q.baseCents * keepFraction) / hours);
     };
-    const worstOn = (service: ServiceId, keepFraction: number) =>
-      Math.min(...hoursFor(service).map((h) => netPerHour(service, h, keepFraction)));
 
-    // At the STARTING commission — the worst rate any Xooter can be on, so the binding case.
-    expect(worstOn("regular", 0.65)).toBe(3510);
-    expect(worstOn("airbnb", 0.65)).toBe(3510);
-    expect(worstOn("moving", 0.65)).toBe(3510);
-    expect(worstOn("office", 0.65)).toBe(4290);
-    expect(worstOn("express", 0.65)).toBe(4767);
-
-    // The floor holds across every priced service, which is the claim `care-plus.ts` makes.
+    // 0.65 = the STARTING commission of 35%, the worst rate any Xooter can be on. Every rank above
+    // `new` keeps more, so if this clears, all of them clear.
     for (const service of ["regular", "office", "express", "airbnb", "moving"] as const) {
-      expect({ service, worst: worstOn(service, 0.65) >= MIN_XOOTER_HOURLY_CENTS }).toEqual({
-        service,
-        worst: true,
-      });
+      for (const hours of hoursFor(service)) {
+        const net = netPerHour(service, hours, 0.65);
+        expect(
+          { service, hours, legal: net >= NATIONAL_MINIMUM_WAGE_CENTS },
+          `${service} at ${hours}h pays ${net}c/h, under the R30.23 minimum wage`,
+        ).toEqual({ service, hours, legal: true });
+      }
     }
 
-    // And the specific number that used to fail this check is unreachable now.
-    expect(worstOn("regular", 0.65)).toBeGreaterThan(2795);
+    // The worst cell on each ladder, recorded so a change has to move a number here.
+    const worstOn = (service: ServiceId) =>
+      Math.min(...hoursFor(service).map((h) => netPerHour(service, h, 0.65)));
+    expect(worstOn("regular")).toBe(3055);
+    expect(worstOn("airbnb")).toBe(3454);
+    expect(worstOn("moving")).toBe(3107);
+    expect(worstOn("office")).toBe(4290);
+    expect(worstOn("express")).toBe(4767);
+
+    // The number that used to be illegal is unreachable.
+    expect(worstOn("regular")).toBeGreaterThan(2795);
+  });
+
+  /**
+   * ⏰ A DELIBERATE TIME BOMB, and the reasoning for it.
+   *
+   * The founder chose R47/h on 2026-08-12 — the cheapest floor that is still lawful — to keep the
+   * price rise off customers (a R54 floor raised the 8-hour default 16.8%). The trade is that
+   * **R30.55 is 1% above the R30.23 minimum**, and the minimum has risen about 5% every March.
+   * The March 2027 increase will put this ladder below the legal minimum.
+   *
+   * A test that fails on a calendar date is normally hostile — it breaks CI on a day nobody chose,
+   * for a reason unrelated to the commit. It is right here anyway, because the alternative is
+   * *silently paying below minimum wage* and the only thing standing between the two is somebody
+   * remembering. CI going red in January, a month before the increase and while the ladder is
+   * still legal, is the cheapest possible warning.
+   *
+   * To fix it when it fires: look up the new national minimum wage, update
+   * `NATIONAL_MINIMUM_WAGE_CENTS` and `NMW_REVIEW_BY`, and raise
+   * `LONG_JOB_FLOOR_CENTS_PER_HOUR` in `xoot-pricing.ts` until the test above passes again.
+   * Do NOT simply push the review date out.
+   */
+  it("forces a minimum-wage review before the next March increase", () => {
+    const reviewBy = new Date(`${NMW_REVIEW_BY}T00:00:00.000Z`).getTime();
+    expect(Number.isFinite(reviewBy)).toBe(true);
+
+    const overdue = Date.now() > reviewBy;
+    expect(
+      { reviewBy: NMW_REVIEW_BY, overdue },
+      `The national minimum wage review is overdue. The ladder pays R30.55/h against a minimum ` +
+        `that was R30.23 on ${NATIONAL_MINIMUM_WAGE_EFFECTIVE_FROM} and rises ~5% each March — it ` +
+        `is probably illegal now. Look up the current rate, update NATIONAL_MINIMUM_WAGE_CENTS ` +
+        `and NMW_REVIEW_BY, and raise LONG_JOB_FLOOR_CENTS_PER_HOUR until the ladder clears it. ` +
+        `Do not just move the date.`,
+    ).toEqual({ reviewBy: NMW_REVIEW_BY, overdue: false });
+
+    // The review date must actually precede a March increase, or it buys nothing.
+    expect(NMW_REVIEW_BY < "2027-03-01").toBe(true);
+    expect(NMW_REVIEW_BY > NATIONAL_MINIMUM_WAGE_EFFECTIVE_FROM).toBe(true);
   });
 
   it("splits the discount without ever losing or inventing cents", () => {
