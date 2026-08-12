@@ -116,15 +116,16 @@ jobs:
             # ⚠️ The KEY NAMES, printed. Not the values — the names, which is exactly the thing
             # every failed attempt so far has been missing.
             #
-            # Measured 17:15: `[eyJ… -> authentication required] [sb_… -> Invalid API key]`. The
-            # `eyJ` key PASSED Supabase's gateway (so it is a valid API key for the project) and
-            # was then rejected by the function (so it is not the service-role key) — i.e. it is
-            # the **anon** JWT, which the `select(.name != "anon")` filter below was supposed to
-            # exclude and evidently did not. `.name` is not the field this CLI version returns.
+            # Measured 17:15: `[eyJ… -> authentication required] [sb_… -> Invalid API key]`, which
+            # was read at the time as the filter below leaking the **anon** JWT because `.name` was
+            # the wrong field. ⚠️ THAT READING WAS WRONG, and it is left recorded here because it
+            # cost a round trip: the schema this step prints shows `.name` IS the field, and the
+            # `eyJ` candidate IS `service_role`. `authentication required` came from the gateway
+            # rejecting a legacy JWT under `verify_jwt = true`, not from the wrong key being
+            # picked. The filter was never the bug.
             #
-            # Rather than guess at the field name a third time, this prints the object keys and
-            # each entry's identifying labels so the next run states the schema outright. All of
-            # it is metadata; `api_key` is never echoed.
+            # The printout stays anyway — it is what settled the question, and it is the line that
+            # will settle the next one. All of it is metadata; `api_key` is never echoed.
             echo "  api-keys schema for $label: $(echo "$raw" | jq -rc '(.[0] // {}) | keys' 2>/dev/null)"
             echo "  api-keys labels for $label: $(echo "$raw" | jq -rc '[.[] | {name, type, id, description} | with_entries(select(.value != null))]' 2>/dev/null | head -c 300)"
 
@@ -134,6 +135,27 @@ jobs:
                            | select(((.api_key // "") | startswith("sb_publishable_")) | not)
                            | .api_key' \
               | grep -v '^null$' | grep -v '^$')
+
+            # ⚠️ THE `apikey` HEADER TAKES THE PUBLISHABLE KEY, NOT THE SECRET ONE.
+            #
+            # This is the detail that kept the 19:06 run failing after `verify_jwt` was already
+            # false. Supabase's gateway validates the `apikey` header against the project's keys
+            # *independently* of `verify_jwt` — turning JWT verification off does not turn that
+            # off. And under the new key scheme a `sb_secret_…` value is not valid in `apikey`;
+            # it belongs in `Authorization: Bearer`. Sending the secret in both headers, which is
+            # what the legacy service_role JWT let you get away with, is rejected as
+            # `{"message":"Invalid API key"}` before the function is ever reached.
+            #
+            # So: publishable key identifies the project, secret key authenticates the caller.
+            local apikey
+            apikey=$(echo "$raw" | jq -r '
+              [.[] | select(((.api_key // "") | startswith("sb_publishable_")) or ((.name // "") == "anon")) | .api_key]
+              | first // ""')
+            if [ -z "$apikey" ] || [ "$apikey" = "null" ]; then
+              echo "::error::Could not read a publishable/anon key for $ref to use as the apikey header."
+              return 1
+            fi
+            echo "  apikey header uses the $(printf '%s' "$apikey" | cut -c1-3)… key"
 
             if [ -z "$keys" ]; then
               echo "::error::Could not read any secret key for $ref. Does the PAT have access to this project?"
@@ -148,15 +170,22 @@ jobs:
             #
             # ⚠️ JWT-shaped candidates FIRST, and this ordering is not cosmetic.
             #
-            # `twilio-selftest` is declared `verify_jwt = true`, so Supabase's gateway validates
-            # the credential BEFORE the function runs. A modern `sb_secret_…` key is not a JWT, so
-            # the gateway rejects it with `{"message":"Invalid API key"}` and the function never
-            # sees it — which is exactly what the 17:13 run reported, for both projects, having
-            # kept the last candidate's response rather than the most informative one.
+            # History, because two separate causes produced the same "Invalid API key" body and
+            # the first fix alone was not enough:
             #
-            # So the legacy `eyJ…` service-role JWT is the only credential that can reach this
-            # function at all, and each candidate's outcome is reported by shape so a future
-            # failure says which one got how far instead of collapsing to the last error.
+            #   1. `twilio-selftest` was `verify_jwt = true`, so the gateway validated the
+            #      credential BEFORE the function ran and a non-JWT `sb_secret_…` key could never
+            #      reach it. That is now `verify_jwt = false` (see `supabase/config.toml`) — the
+            #      function does its own full-string comparison against the secret key instead.
+            #   2. The `apikey` header was also being sent the secret key. That check is separate
+            #      from `verify_jwt` and survived the flip, which is why the 19:06 run still failed
+            #      with an identical message. It now gets `$apikey` (publishable), above.
+            #
+            # Both credentials still vary by project age: a project that has not migrated returns
+            # only legacy `eyJ…` JWTs, where `service_role` doubles as both headers. Trying the
+            # JWT-shaped candidate first keeps those working, and each candidate's outcome is
+            # reported by shape so a future failure says which one got how far instead of
+            # collapsing to the last error.
             local response="" attempt_notes=""
             local key shape
             for key in $(echo "$keys" | grep '^eyJ') $(echo "$keys" | grep -v '^eyJ'); do
@@ -165,7 +194,7 @@ jobs:
               response=$(curl -sS --max-time 60 \
                 -X POST "https://${ref}.supabase.co/functions/v1/twilio-selftest" \
                 -H "Authorization: Bearer ${key}" \
-                -H "apikey: ${key}" \
+                -H "apikey: ${apikey}" \
                 -H "Content-Type: application/json" \
                 -d '{}')
               if [ "$(echo "$response" | jq -r 'if (.checks | type) == "array" then "yes" else "no" end' 2>/dev/null)" = "yes" ]; then
