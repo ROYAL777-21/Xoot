@@ -42,11 +42,17 @@ name: Deploy Edge Functions
 #
 # But the `ref` you choose in the "Use workflow from" dropdown decides which branch's **code and
 # config** get deployed, and those are not the same question. Set it to the branch carrying the
-# functions you want live — normally the release branch, not `main`, until the stack has merged.
+# functions you want live.
 #
-# `main` at 54e7cfa declares 18 functions in `supabase/config.toml` and there are 46 on disk, so
-# dispatching from `main` today would be actively wrong. The guard below refuses that rather than
-# trusting whoever is at the dropdown.
+# ✅ UPDATED 2026-08-12: `main` is now the right answer. This note used to say `main` declared 18
+# functions against 46 on disk and that dispatching from it "would be actively wrong" — true when
+# written, and false since the release stack merged. `main` now declares **50 of 50**, checked
+# rather than assumed.
+#
+# The line is corrected rather than deleted because a stale warning is worse than no warning: it
+# sends someone to a release branch that no longer exists, and it teaches them to distrust the
+# guard below — which is the thing that actually enforces this, and which refuses on the real
+# count instead of on anyone's recollection of it.
 on:
   workflow_dispatch:
     inputs:

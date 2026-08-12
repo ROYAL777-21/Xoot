@@ -41,8 +41,8 @@ on:
         type: string
       repair_orphan_ledger_rows:
         description: >-
-          Drop the three redundant 2026-06-30 connector_safe rows from the ledger (staging only).
-          Deletes ledger rows; touches no schema. See the block in this file for the evidence.
+          Drop this project's redundant ledger rows (3 on staging, 8 on production) so db push can
+          run. Deletes ledger rows; touches no schema. Evidence is in the block in this file.
         required: false
         default: false
         type: boolean
@@ -136,45 +136,77 @@ jobs:
           say "## \`db push\` on \`$PROJECT_REF\`"
           say ""
 
-          # ── The orphan ledger rows, and why exactly these three ──────────────────────
+          # ── The orphan ledger rows ───────────────────────────────────────────────────
           #
-          # Measured 2026-08-12. The first honest dry run on staging refused outright:
+          # Measured 2026-08-12. The first honest dry run refused before planning anything:
           #
           #   Remote migration versions not found in local migrations directory.
-          #   supabase migration repair --status reverted 20260630155643 20260630155818 20260630160047
+          #   supabase migration repair --status reverted <versions>
           #
-          # Those three versions exist in STAGING's ledger and have no file in the repo. They are
-          # the `apply_migration` version-rename trap: the MCP stamps its own wall-clock version
-          # and ignores the filename, so three separate MCP calls at 15:56, 15:58 and 16:00 landed
-          # as three ledger rows, and the capture-to-file step then wrote them as ONE consolidated
-          # file — `20260630155159_connector_safe_invoice_zoot_black_schema.sql`, 674 lines.
+          # `db push` refuses outright when the remote ledger claims a version the local directory
+          # has no file for. Both projects had such rows. They are all the same class of artefact —
+          # a migration that WAS applied, whose file was then written under a different version
+          # number — and in every case the object it created still exists and its definition lives
+          # in a repo file under that other number.
           #
-          # Four things were checked before writing this step, and all four have to hold:
+          # STAGING — 3 rows, all the `apply_migration` version-rename trap. The MCP stamps its own
+          # wall-clock version and ignores the filename, so three MCP calls at 15:56/15:58/16:00
+          # became three ledger rows, and the capture-to-file step wrote them as ONE consolidated
+          # 674-line file, `20260630155159_connector_safe_invoice_zoot_black_schema.sql`.
           #
-          #   1. PRODUCTION does not have them. Its ledger carries only `20260630155159`. So the
-          #      repo, and production, already agree; staging is the odd one out.
-          #   2. Every object the three rows create EXISTS in production — `booking_invoices`,
-          #      `booking_service_line_items`, `zoot_black_completion_certificates`, `zooters.tier`,
-          #      `bookings.zoot_black_requested` — created by the consolidated file.
-          #   3. The consolidated file contains each one: the `private` schema, both `zooters`
-          #      column adds, the three `bookings` zoot_black columns, and the line-items table
-          #      with its `item_key` format constraint.
-          #   4. The file is idempotent throughout — 42 `if not exists` / `create or replace`
-          #      guards against 33 create statements — so nothing depends on it not re-running.
+          #   20260630155643  connector_safe_booking_invoice_public_schema
+          #   20260630155818  connector_safe_zoot_black_core_schema
+          #   20260630160047  connector_safe_zoot_black_certificate_schema
           #
-          # `--status reverted` deletes ledger rows. It runs no SQL against the schema and drops
-          # no object. The tables stay exactly where they are; only staging's claim to have applied
-          # them under three extra version numbers goes away.
+          # PRODUCTION — 8 rows, in three groups.
           #
-          # ⚠️ Hard-coded, not an input. A free-text "which versions to repair" box on a workflow
-          # that edits a migration ledger is a footgun with a nice label. Each orphan needs its own
-          # four-point evidence check, and the place to record that is here, in the diff, where
-          # someone has to read it before adding a fourth version to the list.
-          REPAIRABLE="20260630155643 20260630155818 20260630160047"
+          #   The same trio, at different wall-clock stamps (the MCP timed each project separately,
+          #   which is itself a good illustration of why filename-derived versions matter):
+          #     20260630155714  connector_safe_booking_invoice_public_schema
+          #     20260630155930  connector_safe_zoot_black_core_schema
+          #     20260630160205  connector_safe_zoot_black_certificate_schema
+          #
+          #   The May launch schema, re-applied onto production after the project was created. Its
+          #   objects are the repo's canonical history under 20260421080011 (the `app_role` and
+          #   `booking_status` enums, `has_role`, `touch_updated_at`) and 20260621000000 (the
+          #   `private` schema and the `has_role` hardening):
+          #     20260519115337  zoot_launch_schema_core
+          #     20260519115514  zoot_launch_rls_functions_indexes
+          #     20260519115624  zoot_launch_api_grants
+          #     20260519121041  security_advisor_hardening
+          #
+          #   And one duplicate of a table the repo creates at 20260605000000_push_tokens.sql:
+          #     20260615010317  phase_10_push_tokens
+          #
+          # CHECKED BEFORE WRITING THIS, on production, by querying the database:
+          #
+          #   app_role ✅  booking_status ✅  has_role ✅  touch_updated_at ✅  schema private ✅
+          #   push_tokens ✅  booking_invoices ✅  booking_service_line_items ✅
+          #   zoot_black_completion_certificates ✅
+          #
+          # Every object these rows claim to have created exists. So marking them reverted removes
+          # a duplicate CLAIM, not a real piece of history — and the arithmetic closes exactly:
+          # production has 75 ledger rows, the repo has 68 files, 75 − 8 = 67 = 68 − 1 pending.
+          #
+          # `--status reverted` deletes ledger rows. It runs no SQL against the schema and drops no
+          # object. Every table stays exactly where it is.
+          #
+          # ⚠️ Hard-coded per project, not a free-text input. A "which versions to repair" box on a
+          # workflow that edits a migration ledger is a footgun with a nice label. Each orphan needs
+          # its own evidence, and the place to record that is here, in the diff, where someone has
+          # to read it before adding to the list.
+          case "$PROJECT_REF" in
+            fxmxyabdjqviqbcxmvlp)
+              REPAIRABLE="20260630155643 20260630155818 20260630160047" ;;
+            mvlrkelahhsyjrwgsxaf)
+              REPAIRABLE="20260519115337 20260519115514 20260519115624 20260519121041 20260615010317 20260630155714 20260630155930 20260630160205" ;;
+            *)
+              REPAIRABLE="" ;;
+          esac
 
           if [ "${{ inputs.repair_orphan_ledger_rows }}" = "true" ]; then
-            if [ "$PROJECT_REF" != "fxmxyabdjqviqbcxmvlp" ]; then
-              echo "::error::The orphan rows are a staging-only artefact. Production's ledger is already clean — refusing to repair it."
+            if [ -z "$REPAIRABLE" ]; then
+              echo "::error::No evidenced orphan list for $PROJECT_REF. Refusing to guess at a migration ledger."
               exit 1
             fi
             say "### Repairing the ledger"
