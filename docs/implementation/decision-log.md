@@ -27,6 +27,7 @@ Reviewed: 2026-06-24
 | ZD-021 | Terms are accepted implicitly at sign-up with a visible linked notice. Post-deploy editing is code-and-deploy, not database-editable config. Care+ discount funding is `shared` short-term, switching to `commission` later. | Approved by founder 2026-07-29 | Founder chose lowest-friction consent, the most secure editing model, and early-frequency discount funding. | See ZD-021 notes below. |
 | ZD-022 | The splash is authored once in `src/lib/splash-choreography.ts` and rendered three ways: Remotion for video, Web Animations for the browser, Reanimated + react-native-svg for native. Remotion is a devDependency and an authoring tool, never a runtime one. Launcher and launch-screen stills are generated from `ZoeyArt`. | Approved by founder 2026-07-29 ("Use remotion"), extended to native 2026-07-30 ("i also want the app to have it") | Hand-maintained copies of the same animation drift, and the drift is invisible in review. | See ZD-022 notes below. Native adds `react-native-svg`, and the shared modules are copied into `mobile/src/generated/` by a script rather than imported across roots. |
 | ZD-023 | Tips live in `public.booking_tips`, not on `bookings`, and are visible to a Xooter only once `settled_at` is set. Xoot takes no cut. Booking `price` and `status` become unwritable from any client session. | Approved by founder 2026-07-30 ("Both no") | Row-level security cannot hide a column, so a tip on `bookings` is readable by the assigned Xooter the moment it exists. | See ZD-023 notes below. The price/status guard fixes a live production hole and is currently unapplied. |
+| ZD-024 | **The long-job floor.** From 5.5 booked hours up, gross price is at least **R54 per hour** on every ladder. Fixed on the price, not on commission — the 35% starting rate is unchanged. | Approved by founder 2026-08-12 ("Fix the pricing to make it fairer … by repricing long jobs rather than cutting commission") | The ZD-020 ladders were sub-linear in hours, so a 10-hour regular clean returned the Xooter **R27.95/h** at the starting commission — under the stated R35/h per-booking pay floor and near the national minimum wage for domestic work. | Supersedes the ZD-007 reconciliation for medium and large regular cleans (8h is now R432, above ZD-007's R400). Amends `docs/xoot-master-brief.md` §4.1, §4.5 and §4.6. See ZD-024 notes below. |
 
 ## ZD-020 notes — pricing model change
 
@@ -228,6 +229,64 @@ legitimate update carrying the old values along does not fail.
 and can sit; the price guard is protecting money in production today. It needs to be
 split out and prioritised on its own.
 
+
+## ZD-024 notes — the long-job floor
+
+### What was measured
+
+At the 35% starting commission — the worst rate any Xooter can be on — the cheapest hour on each
+ZD-020 ladder, before this change:
+
+| service | worst rung | gross/h | Xooter keeps |
+|---|---|---|---|
+| regular | 10h at R430 | R43.00 | **R27.95/h** |
+| moving | 10h at R478 | R47.80 | **R31.07/h** |
+| airbnb | 7h at R372 | R53.14 | **R34.54/h** |
+| office | 10h at R660 | R66.00 | R42.90/h |
+| express | 3h at R220 | R73.33 | R47.67/h |
+
+Three of the five finished under `MIN_XOOTER_HOURLY_CENTS` (R35/h), which `src/lib/care-plus.ts`
+has asserted as the per-booking pay floor since 2026-08-10. The floor was an intention the prices
+contradicted, and the longest, hardest jobs contradicted it hardest.
+
+### The rule
+
+**From 5.5 hours up, gross is at least R54 per booked hour.** It only ever raises a price, so
+`OFFICE`, `EXPRESS` and every rung below 5.5h are untouched. Changed rungs:
+
+- **regular** — 5.5h R296→R297, then 6h→R324, 6.5→R351, 7→R378, 7.5→R405, 8→R432, 8.5→R459,
+  9→R486, 9.5→R513, 10→R540.
+- **airbnb** — 7h R372→R378, 7.5h R400→R405, 8h R426→R432.
+- **moving** — 7.5h R404→R405, 8h R430→R432, 8.5→R459, 9→R486, 9.5→R513, 10→R540.
+
+At 35% this returns **R35.10/h** at every floored rung, and the worst cell on any ladder is now
+R35.10 (regular/airbnb/moving) or better.
+
+### Why R54, and why not commission
+
+R54 is not chosen — it is what the 5.5-hour regular clean, the most-booked job and the rung the
+rest of the ladder was set relative to, already charged: R296 ÷ 5.5 = R53.82, rounded up so the
+floor is a whole rand and the invariant is exact. The R1 that rounding adds to the 5.5h rung is
+what moves a new Xooter from ten cents *under* the R192.50 hourly floor on that job to 55c clear
+of it.
+
+Cutting commission instead was considered and rejected. It would make the same booking worth less
+to Xoot the longer it ran, which is backwards; and commission is already a ladder that rewards
+reliability, so bending it for duration would mean two unrelated things moving one number.
+
+### What enforces it
+
+`LONG_JOB_FLOOR_CENTS_PER_HOUR` in `src/lib/xoot-pricing.ts`, mirrored in
+`supabase/functions/_shared/pricing.ts` and pinned by `pricing-parity.test.ts`.
+`xoot-pricing.test.ts` asserts the invariant over the ladders rather than a list of rungs, plus
+that no rung fell and that every rung clears R35/h at 35%. `care-plus.test.ts` keeps the
+minimum-wage check, now computed from the ladder rather than transcribed.
+
+### Still open
+
+Whether R35.10/h clears the current national minimum wage for domestic work. That figure changes
+every March and is not asserted anywhere in this repo — deliberately, because guessing at a legal
+threshold is worse than flagging it. It is a founder/legal check, not a code change.
 
 ## Pending Founder Decisions
 

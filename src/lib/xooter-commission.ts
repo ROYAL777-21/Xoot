@@ -184,8 +184,8 @@ export const formatRate = (rateBps: Bps): string => `${(rateBps / 100).toFixed(1
  * selected Xooters rather than computed for everyone.
  *
  * ON THE COPY, because the number matters. The founder's phrasing was "revenue boosted by 5%",
- * which *understates* it. Going 35% → 30% moves a Xooter's share of a R296 clean from R192.40 to
- * R207.20: five percentage points more of the job, which is a **7.7%** rise in what they earn.
+ * which *understates* it. Going 35% → 30% moves a Xooter's share of the R297 standard clean from
+ * R193.05 to R207.90: five percentage points more of the job, which is a **7.7%** rise in earnings.
  * "You keep 5% more of every job" is exactly true and is the sentence a Xooter can check against
  * their own payout. `xooter-commission.test.ts` pins both figures so the copy cannot drift from
  * the arithmetic.

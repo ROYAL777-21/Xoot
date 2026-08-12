@@ -101,10 +101,46 @@ type Ladder = Record<string, number>;
 /** Rand → cents, so no float ever touches a money value. */
 const r = (rands: number) => rands * 100;
 
+/* ── The long-job floor ──────────────────────────────────────────────────────────
+ *
+ * **The volume discount stops at a half day.** Every ladder below is sub-linear in hours —
+ * an extra hour costs the customer less than the one before it — which is a defensible way
+ * to price a short job and an indefensible way to price a long one, because a Xooter's hours
+ * are linear. They do not get tired more slowly on hour nine.
+ *
+ * Measured 2026-08-12, at the 35% starting commission, before this change:
+ *
+ *   regular  R27.95/h at 10h      moving  R31.07/h at 10h      airbnb  R34.54/h at 7h
+ *
+ * `care-plus.ts` has carried `MIN_XOOTER_HOURLY_CENTS = 3500` — R35/h — as the per-booking
+ * pay floor since 2026-08-10, and the ladder simply did not honour it past about six hours.
+ * The floor was a statement of intent that the prices contradicted.
+ *
+ * The fix is on the price, not the commission. Cutting Xoot's take to rescue a long job would
+ * make the same booking worth less to the company the longer it ran, which is backwards; and
+ * commission is already a ladder that rewards reliability, so bending it for duration would
+ * mean two unrelated things moving one number.
+ *
+ * So: **from 5.5 hours up, gross price is at least R54 per booked hour.** At 35% that returns
+ * R35.10/h, which clears `MIN_XOOTER_HOURLY_CENTS` at every rung for the first time. R54 is not
+ * an invented number — it is what the 5.5-hour regular clean, the most-booked job on the
+ * platform and the rung every other price was set relative to, already charged (R296/5.5 =
+ * R53.82, rounded up by 18c so the floor is a whole rand and the invariant is exact).
+ *
+ * The floor only ever raises a price. Rungs already above it are untouched — the whole of
+ * `OFFICE`, the whole of `EXPRESS`, and everything below 5.5h — so this is not a repricing of
+ * the platform, it is the removal of the part of the curve that was paid for out of wages.
+ *
+ * `xoot-pricing.test.ts` asserts the invariant directly rather than trusting the tables below,
+ * and `pricing-parity.test.ts` pins them against the server copy.
+ */
+export const LONG_JOB_FLOOR_CENTS_PER_HOUR = r(54);
+export const LONG_JOB_FLOOR_FROM_HOURS = 5.5;
+
 const REGULAR: Ladder = {
-  "3.5": r(236), "4": r(250), "4.5": r(266), "5": r(280), "5.5": r(296),
-  "6": r(310), "6.5": r(326), "7": r(340), "7.5": r(356), "8": r(370),
-  "8.5": r(386), "9": r(400), "9.5": r(416), "10": r(430),
+  "3.5": r(236), "4": r(250), "4.5": r(266), "5": r(280), "5.5": r(297),
+  "6": r(324), "6.5": r(351), "7": r(378), "7.5": r(405), "8": r(432),
+  "8.5": r(459), "9": r(486), "9.5": r(513), "10": r(540),
 };
 
 const OFFICE: Ladder = {
@@ -117,9 +153,17 @@ const OFFICE: Ladder = {
 /** Flat across the whole 1–3h range. */
 const EXPRESS: Ladder = { "1": r(220), "1.5": r(220), "2": r(220), "2.5": r(220), "3": r(220) };
 
+/**
+ * The last three rungs are the long-job floor, not the transcript: 7h/7.5h/8h were R372/R400/R426
+ * and are now R378/R405/R432.
+ *
+ * Worth noting for the caveat below — the floor lifts the 7-hour price to R378, which sits between
+ * the two readings the source gave (R372 and something decoding closer to R388). It does not
+ * resolve the ambiguity, but it no longer resolves it downward.
+ */
 const AIRBNB: Ladder = {
   "3": r(304), "3.5": r(304), "4": r(304), "4.5": r(318), "5": r(324),
-  "5.5": r(342), "6": r(362), "6.5": r(362), "7": r(372), "7.5": r(400), "8": r(426),
+  "5.5": r(342), "6": r(362), "6.5": r(362), "7": r(378), "7.5": r(405), "8": r(432),
 };
 
 /**
@@ -127,11 +171,18 @@ const AIRBNB: Ladder = {
  * moving cleaning; three matched this exactly and two had a contiguous run reading R100
  * low before re-converging at both ends — the signature of speech-to-text dropping a
  * leading syllable, not of real pricing. Marked unconfirmed until the founder confirms.
+ *
+ * The tail from 7.5h up is now the long-job floor rather than the transcript (R404/R430/R448/
+ * R462/R468/R478 → R405/R432/R459/R486/R513/R540). Applying the floor to an unconfirmed ladder
+ * is deliberate: at 10 hours this ladder returned R31.07/h to the Xooter, which is the same
+ * defect as the regular ladder's R27.95 and does not become acceptable because the source of the
+ * number is uncertain. A floor only ever raises, so it cannot make an unconfirmed price
+ * *more* wrong in the direction that matters.
  */
 const MOVING: Ladder = {
   "4.5": r(320), "5": r(330), "5.5": r(344), "6": r(364), "6.5": r(376),
-  "7": r(390), "7.5": r(404), "8": r(430), "8.5": r(448), "9": r(462),
-  "9.5": r(468), "10": r(478),
+  "7": r(390), "7.5": r(405), "8": r(432), "8.5": r(459), "9": r(486),
+  "9.5": r(513), "10": r(540),
 };
 
 type ServiceSpec = {

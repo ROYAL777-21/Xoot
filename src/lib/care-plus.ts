@@ -7,12 +7,13 @@
  * the live product and kept below as a future A/B arm.
  *
  * ── The arithmetic, redone at R99 ────────────────────────────────────────────────
- * A membership is only rational when what it saves exceeds what it costs. On a R296 clean,
- * with the cadence discounts below and the R39 one-time booking fee waived:
+ * A membership is only rational when what it saves exceeds what it costs. On the R297 standard
+ * clean (5.5h regular — R296 until the long-job floor of 2026-08-12 moved it by a rand), with the
+ * cadence discounts below and the R39 one-time booking fee waived:
  *
- *   Weekly (4.3/mo, R1286 spend)   15% saves R193 — R94 ahead every month
- *   Fortnightly (2.2/mo, R643)     10% saves  R64 — R35 down
- *   Monthly (1/mo, R296)            5% saves  R15 — R84 down
+ *   Weekly (4.3/mo, R1290 spend)   15% saves R194 — R95 ahead every month
+ *   Fortnightly (2.2/mo, R645)     10% saves  R65 — R34 down
+ *   Monthly (1/mo, R297)            5% saves  R15 — R84 down
  *
  * R99 changes the shape of the honest pitch but not its substance. A weekly booker is now
  * genuinely ahead on money alone, which R199 never delivered. Everyone else is still buying
@@ -118,8 +119,8 @@ export const XOOTER_SHARE_OF_DISCOUNT = 0.4;
  *
  * They were also wired into `splitDiscount` as a per-booking floor, via
  * `hours >= 6 ? full : half` — which quietly treats a 5.5-hour clean as "half a day" and demands
- * R220 for it. That never held: at the founder's 35% commission a R296 medium clean pays the
- * Xooter R192.40, so the floor was unreachable on the standard job and the guard did nothing.
+ * R220 for it. That never held: at the founder's 35% commission the medium clean paid the Xooter
+ * R192.40, so the floor was unreachable on the standard job and the guard did nothing.
  *
  * **Resolved 2026-08-10: the founder keeps 35% commission**, so the placement figures are the
  * thing that was misfiled. They stay here, correctly labelled, for `CarePlusApply` to cite — and
@@ -137,23 +138,33 @@ export const MIN_XOOTER_PAY_FULL_DAY_CENTS = PLACEMENT_MIN_FULL_DAY_CENTS;
  * The per-booking floor: **R35 per booked hour.**
  *
  * A booking is priced by the hour, so its floor is hourly. R35 is not invented — it is the
- * `hourly_rate` `approve-zooter` writes onto every Xooter it activates, and at 35% commission it
- * is exactly what a 5.5-hour R296 clean returns (R192.40 ÷ 5.5 = R35.00).
+ * `hourly_rate` `approve-zooter` writes onto every Xooter it activates.
  *
- * ⚠️ WHAT MEASURING THIS EXPOSED, and it needs the founder rather than this file.
- * The price ladder is **sub-linear in hours** — R296 for 5.5h but only R430 for 10h — so pay per
- * hour falls as bookings get longer. At 35% commission the worst cell on each ladder is:
+ * ── The ladder now honours it. It did not until 2026-08-12. ──────────────────────
+ * This constant used to be an intention the prices contradicted. Every ladder was **sub-linear
+ * in hours** — R296 for 5.5h but only R430 for 10h — so pay per hour fell as bookings got
+ * longer, and the worst cell on each ladder at the 35% starting commission was:
  *
  *   regular  R27.95/h (10h)      airbnb  R34.54/h (7h)      moving  R31.07/h (10h)
  *   office   R42.90/h (10h)      express R47.67/h (3h)
  *
- * Even at the 20% floor, a 10-hour regular clean returns R34.40/h. **R27.95/h is close enough to
- * South Africa's national minimum wage for domestic work that it has to be checked against the
- * current figure, which changes every March.** That is a compliance question about the ladder, not
- * about this constant, and it is flagged rather than guessed at here.
+ * Three of the five sat under this floor, and the longest, hardest jobs sat furthest under it.
+ * R27.95/h was close enough to South Africa's national minimum wage for domestic work — a figure
+ * that changes every March — that it could not be left to a comment.
  *
- * The floor still does its job in the meantime: where a Xooter is already at or under it,
- * `splitDiscount` takes nothing from them and Xoot absorbs the whole Care+ discount.
+ * **Fixed on the price, not the commission.** `xoot-pricing.ts` now floors gross at R54 per
+ * booked hour from 5.5 hours up, which returns R35.10/h at 35%. The worst cell on every ladder
+ * is now:
+ *
+ *   regular  R35.10/h            airbnb  R35.10/h            moving  R35.10/h
+ *   office   R42.90/h (10h)      express R47.67/h (3h)
+ *
+ * — all at or above this floor, at the *starting* commission, which is the worst case a Xooter
+ * can be on. Every rank above `new` earns more. The reasoning for choosing R54, and for fixing
+ * the price rather than bending the commission ladder, is in `xoot-pricing.ts`.
+ *
+ * The floor still does its second job: where a Xooter is at or under it, `splitDiscount` takes
+ * nothing from them and Xoot absorbs the whole Care+ discount.
  */
 export const MIN_XOOTER_HOURLY_CENTS = 3500;
 

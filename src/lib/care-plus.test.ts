@@ -19,8 +19,20 @@ import {
   splitDiscount,
   startOrGetOffer,
 } from "./care-plus";
+import { hoursFor, isPriced, quote, type ServiceId } from "./xoot-pricing";
 
-const MEDIUM = 29600; // 5.5h regular clean, base before add-ons
+/**
+ * The 5.5h regular clean, base before add-ons — read from the ladder rather than transcribed.
+ *
+ * It was the literal `29600` until 2026-08-12, when the long-job floor moved it to R297. A money
+ * fixture copied out of a ladder goes stale the first time the ladder moves, and then the test
+ * still passes while describing a price nobody charges.
+ */
+const MEDIUM = (() => {
+  const q = quote({ service: "regular", hours: 5.5, bookingCover: false });
+  if (!isPriced(q)) throw new Error("the 5.5h regular clean must be priceable");
+  return q.baseCents;
+})();
 
 describe("care+ pricing", () => {
   beforeEach(() => window.localStorage.clear());
@@ -122,24 +134,47 @@ describe("care+ pricing", () => {
   });
 
   /**
-   * ⚠️ The compliance question this floor cannot answer, kept visible.
+   * The minimum-wage check, which this test exists to force someone to do again on any ladder
+   * change. It does not assert a legal threshold — that would be guessing at a figure that moves
+   * every March. It asserts the worst number the ladders actually produce.
    *
-   * The price ladder is sub-linear in hours — R296 for 5.5h but R430 for 10h — so pay per hour
-   * falls as bookings lengthen. At 35% commission a 10-hour regular clean returns R27.95/h, and
-   * even at the 20% floor it is R34.40/h. Whether R27.95 clears South Africa's national minimum
-   * wage for domestic work is a question about the ladder, and the figure changes every March.
+   * ── What it used to record, and what changed ────────────────────────────────────
+   * Until 2026-08-12 the worst cell was **R27.95/h**: a 10-hour regular clean at R430 on the 35%
+   * starting commission. The ladders were sub-linear in hours, so the longest jobs paid the least
+   * per hour, and three of the five ladders finished under `MIN_XOOTER_HOURLY_CENTS`.
    *
-   * This test does not assert a legal threshold — it would be guessing. It asserts the number, so
-   * that a ladder change moves it here and someone has to look again.
+   * `xoot-pricing.ts` now floors gross at R54/booked hour from 5.5h up. The worst cell is R35.10/h
+   * and it is no longer service-specific — regular, airbnb and moving all bottom out on the floor
+   * itself. This is computed from the ladder rather than transcribed, so re-flattening the tail of
+   * any ladder fails here.
    */
   it("records the worst hourly pay the ladder produces, for the minimum-wage check", () => {
-    const worstRegular = Math.round((43000 * 0.65) / 10); // 10h at R430, 35% commission
-    expect(worstRegular).toBe(2795);
-    expect(worstRegular).toBeLessThan(MIN_XOOTER_HOURLY_CENTS);
+    /** Cents per booked hour a Xooter keeps, at a given commission rate. */
+    const netPerHour = (service: ServiceId, hours: number, keepFraction: number) => {
+      const q = quote({ service, hours, bookingCover: false });
+      if (!isPriced(q)) throw new Error(`${service} refused at ${hours}h`);
+      return Math.round((q.baseCents * keepFraction) / hours);
+    };
+    const worstOn = (service: ServiceId, keepFraction: number) =>
+      Math.min(...hoursFor(service).map((h) => netPerHour(service, h, keepFraction)));
 
-    const atFloorRate = Math.round((43000 * 0.8) / 10);
-    expect(atFloorRate).toBe(3440);
-    expect(atFloorRate).toBeLessThan(MIN_XOOTER_HOURLY_CENTS);
+    // At the STARTING commission — the worst rate any Xooter can be on, so the binding case.
+    expect(worstOn("regular", 0.65)).toBe(3510);
+    expect(worstOn("airbnb", 0.65)).toBe(3510);
+    expect(worstOn("moving", 0.65)).toBe(3510);
+    expect(worstOn("office", 0.65)).toBe(4290);
+    expect(worstOn("express", 0.65)).toBe(4767);
+
+    // The floor holds across every priced service, which is the claim `care-plus.ts` makes.
+    for (const service of ["regular", "office", "express", "airbnb", "moving"] as const) {
+      expect({ service, worst: worstOn(service, 0.65) >= MIN_XOOTER_HOURLY_CENTS }).toEqual({
+        service,
+        worst: true,
+      });
+    }
+
+    // And the specific number that used to fail this check is unreachable now.
+    expect(worstOn("regular", 0.65)).toBeGreaterThan(2795);
   });
 
   it("splits the discount without ever losing or inventing cents", () => {

@@ -4,6 +4,8 @@ import {
   isPriced,
   BOOKING_COVER_CENTS,
   LINEN_ON_SITE_CENTS,
+  LONG_JOB_FLOOR_CENTS_PER_HOUR,
+  LONG_JOB_FLOOR_FROM_HOURS,
   formatRand,
   hoursFor,
   quote,
@@ -19,25 +21,35 @@ describe("xoot pricing", () => {
   it("prices regular cleaning off the shared hour ladder", () => {
     expect(ok(quote({ service: "regular", hours: 3.5, bookingCover: false })).baseCents).toBe(23600);
     expect(ok(quote({ service: "regular", hours: 4, bookingCover: false })).baseCents).toBe(25000);
-    expect(ok(quote({ service: "regular", hours: 5.5, bookingCover: false })).baseCents).toBe(29600);
-    expect(ok(quote({ service: "regular", hours: 8, bookingCover: false })).baseCents).toBe(37000);
-    expect(ok(quote({ service: "regular", hours: 10, bookingCover: false })).baseCents).toBe(43000);
+    expect(ok(quote({ service: "regular", hours: 5.5, bookingCover: false })).baseCents).toBe(29700);
+    expect(ok(quote({ service: "regular", hours: 8, bookingCover: false })).baseCents).toBe(43200);
+    expect(ok(quote({ service: "regular", hours: 10, bookingCover: false })).baseCents).toBe(54000);
   });
 
   it("reconciles with the superseded ZD-007 prices once their bundled add-on is removed", () => {
-    // ZD-007 quoted add-on-inclusive prices. The gap at each size's default hours is
-    // exactly one R30 add-on, which is what proved this is not a price cut.
+    // ZD-007 quoted add-on-inclusive prices. The gap at each size's default hours was exactly one
+    // R30 add-on, which is what proved ZD-020 was not a price cut.
+    //
+    // ⚠️ NARROWED 2026-08-12. The reconciliation now only holds below the long-job floor, and it
+    // has to: the floor deliberately RAISES long jobs past what ZD-007 quoted. Medium (5.5h) is
+    // R297 against ZD-007's R325 — a R28 gap rather than R30 — and large (8h) is R432 against
+    // R400, which is R32 *above* it. Loosening the bounds to keep all three cases would have
+    // turned a proof into a tautology, so the cases that the floor supersedes are asserted as
+    // superseded instead, below.
     const cases: [number, number][] = [
-      [4, 28000],   // small,  ZD-007 R280
-      [5.5, 32500], // medium, ZD-007 R325
-      [8, 40000],   // large,  ZD-007 R400
+      [4, 28000], // small, ZD-007 R280 — below the floor, untouched
     ];
     for (const [hours, legacyCents] of cases) {
       const base = ok(quote({ service: "regular", hours, bookingCover: false })).baseCents;
-      // Medium is R29 rather than R30 — rounding in the original R325, flagged in ZD-020.
       expect(legacyCents - base).toBeGreaterThanOrEqual(2900);
       expect(legacyCents - base).toBeLessThanOrEqual(3000);
     }
+
+    // Medium and large are now set by the floor, not by ZD-007. Recorded so the change is a fact
+    // in the suite rather than a hole in it.
+    expect(ok(quote({ service: "regular", hours: 5.5, bookingCover: false })).baseCents).toBe(29700);
+    expect(ok(quote({ service: "regular", hours: 8, bookingCover: false })).baseCents).toBe(43200);
+    expect(43200).toBeGreaterThan(40000); // large is above ZD-007's R400, on purpose
   });
 
   it("keeps express flat across its whole range", () => {
@@ -107,5 +119,83 @@ describe("xoot pricing", () => {
   it("formats rands without cents", () => {
     expect(formatRand(25000)).toBe("R250");
     expect(formatRand(43000)).toBe("R430");
+  });
+});
+
+/**
+ * The long-job floor, asserted as an invariant over the ladders rather than as a list of rungs.
+ *
+ * The tables in `xoot-pricing.ts` are hand-written literals, and the floor is the reason several
+ * of them hold the values they do. Checking the property directly means someone editing a rung
+ * back down — for a promotion, a transcription fix, a "round number" tidy-up — fails here with
+ * the reason, instead of silently reintroducing R27.95/h.
+ */
+describe("the long-job floor", () => {
+  const SERVICES = ["regular", "office", "express", "airbnb", "moving"] as const;
+
+  it("never charges under R54 per booked hour from 5.5 hours up", () => {
+    for (const service of SERVICES) {
+      for (const hours of hoursFor(service)) {
+        if (hours < LONG_JOB_FLOOR_FROM_HOURS) continue;
+        const base = ok(quote({ service, hours, bookingCover: false })).baseCents;
+        expect({ service, hours, meetsFloor: base >= LONG_JOB_FLOOR_CENTS_PER_HOUR * hours }).toEqual(
+          { service, hours, meetsFloor: true },
+        );
+      }
+    }
+  });
+
+  it("only ever raised a price — no rung fell", () => {
+    // The pre-floor ladders, as they stood on 2026-08-11. Kept as data so the claim "this is a
+    // floor, not a repricing" is checkable rather than asserted in a comment.
+    const before: Record<string, Record<string, number>> = {
+      regular: { "5.5": 29600, "6": 31000, "6.5": 32600, "7": 34000, "7.5": 35600, "8": 37000,
+                 "8.5": 38600, "9": 40000, "9.5": 41600, "10": 43000 },
+      airbnb: { "5.5": 34200, "6": 36200, "6.5": 36200, "7": 37200, "7.5": 40000, "8": 42600 },
+      moving: { "5.5": 34400, "6": 36400, "6.5": 37600, "7": 39000, "7.5": 40400, "8": 43000,
+                "8.5": 44800, "9": 46200, "9.5": 46800, "10": 47800 },
+      office: { "5.5": 47600, "6": 50400, "6.5": 51800, "7": 54000, "7.5": 55800, "8": 59200,
+                "8.5": 61800, "9": 63800, "9.5": 64600, "10": 66000 },
+    };
+    for (const [service, rungs] of Object.entries(before)) {
+      for (const [hours, wasCents] of Object.entries(rungs)) {
+        const now = ok(
+          quote({ service: service as (typeof SERVICES)[number], hours: Number(hours), bookingCover: false }),
+        ).baseCents;
+        expect({ service, hours, fell: now < wasCents }).toEqual({ service, hours, fell: false });
+      }
+    }
+  });
+
+  it("leaves office and express entirely alone, because they were already above it", () => {
+    // Both were compared against the floor and neither moved. If a future edit makes one of them
+    // depend on the floor, that is a real change to those services and should be seen, not
+    // absorbed.
+    for (const hours of hoursFor("office")) {
+      const base = ok(quote({ service: "office", hours, bookingCover: false })).baseCents;
+      expect({ hours, aboveFloor: base > LONG_JOB_FLOOR_CENTS_PER_HOUR * hours }).toEqual({
+        hours,
+        aboveFloor: true,
+      });
+    }
+    // Express tops out at 3 hours, so the floor cannot reach it at all.
+    expect(hoursFor("express").every((h) => h < LONG_JOB_FLOOR_FROM_HOURS)).toBe(true);
+  });
+
+  it("clears the R35/h Xooter pay floor at the worst commission rate on every ladder", () => {
+    // The whole point of the change. 35% is the STARTING rate — the worst any Xooter is on — so
+    // if it clears here it clears everywhere.
+    const MIN_XOOTER_HOURLY_CENTS = 3500;
+    for (const service of SERVICES) {
+      for (const hours of hoursFor(service)) {
+        const base = ok(quote({ service, hours, bookingCover: false })).baseCents;
+        const netPerHour = Math.round((base * 0.65) / hours);
+        expect({ service, hours, clears: netPerHour >= MIN_XOOTER_HOURLY_CENTS }).toEqual({
+          service,
+          hours,
+          clears: true,
+        });
+      }
+    }
   });
 });

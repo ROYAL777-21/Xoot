@@ -23,6 +23,21 @@ import {
 } from "./xooter-commission";
 import { calculateReliabilityScore, shouldDeprioritizeXooter } from "./trust";
 import { MIN_XOOTER_HOURLY_CENTS, splitDiscount } from "./care-plus";
+import { isPriced, quote } from "./xoot-pricing";
+
+/**
+ * The standard clean — 5.5 hours of regular, base before add-ons — read from the ladder.
+ *
+ * Was the literal `29600` until 2026-08-12, when the long-job floor lifted it to R297. Several
+ * assertions below are *about* that job rather than about arbitrary arithmetic, and a transcribed
+ * price leaves them describing a booking nobody can make.
+ */
+const STANDARD_CLEAN_CENTS = (() => {
+  const q = quote({ service: "regular", hours: 5.5, bookingCover: false });
+  if (!isPriced(q)) throw new Error("the 5.5h regular clean must be priceable");
+  return q.baseCents;
+})();
+const STANDARD_CLEAN_HOURS = 5.5;
 
 describe("commission bands", () => {
   it("starts at 35% and floors at 20%, falling monotonically with rank", () => {
@@ -212,11 +227,15 @@ describe("payout", () => {
   });
 
   it("pays a ranked Xooter more for the identical job", () => {
-    const newcomer = xooterPayoutFor(29600, STARTING_RATE_BPS);
-    const platinum = xooterPayoutFor(29600, FLOOR_RATE_BPS);
+    const newcomer = xooterPayoutFor(STANDARD_CLEAN_CENTS, STARTING_RATE_BPS);
+    const platinum = xooterPayoutFor(STANDARD_CLEAN_CENTS, FLOOR_RATE_BPS);
     expect(platinum.xooterPayCents).toBeGreaterThan(newcomer.xooterPayCents);
-    // R44.40 more on a single R296 clean — the ladder has to be worth noticing to work.
-    expect(platinum.xooterPayCents - newcomer.xooterPayCents).toBe(4440);
+    // The gap is the full 15 points of the ladder — R44.55 on a single standard clean. It has to
+    // be worth noticing or the ranks are decoration.
+    expect(platinum.xooterPayCents - newcomer.xooterPayCents).toBe(
+      Math.round((STANDARD_CLEAN_CENTS * (STARTING_RATE_BPS - FLOOR_RATE_BPS)) / 10000),
+    );
+    expect(platinum.xooterPayCents - newcomer.xooterPayCents).toBe(4455);
   });
 
   it("stays in whole cents at every band", () => {
@@ -229,12 +248,20 @@ describe("payout", () => {
   });
 
   it("keeps every band clear of the hourly floor on the standard clean", () => {
-    // Rewritten 2026-08-10, when the floor became hourly. On a 5.5-hour R296 clean the floor is
-    // 5.5 x R35 = R192.50, and the Care+ share is R11.84. Even a new Xooter at 35% (R192.40) is
-    // within ten cents of the floor, so the guard does what it is for: it takes nothing from them
-    // and Xoot absorbs the whole discount.
-    const subtotal = 29600;
-    const hours = 5.5;
+    // Rewritten 2026-08-10 when the floor became hourly, and again 2026-08-12 when the long-job
+    // floor moved the standard clean from R296 to R297.
+    //
+    // ── The inversion is the point ──────────────────────────────────────────────
+    // At R296 a new Xooter earned R192.40 on this job against a R192.50 floor: **ten cents
+    // under**, at the starting rate, on the most-booked job on the platform. The guard fired, so
+    // nothing was taken from them and Xoot absorbed the whole Care+ discount — but a pay floor
+    // that the ordinary job cannot clear is not a floor, it is a subsidy with a nice name.
+    //
+    // At R297 the same Xooter earns R193.05 and clears it. Every band above `new` clears it by
+    // more. That is what the R54/h floor bought, and it is why this test asserts the direction
+    // rather than a hardcoded 19240.
+    const subtotal = STANDARD_CLEAN_CENTS;
+    const hours = STANDARD_CLEAN_HOURS;
     const discountCents = Math.round(subtotal * 0.1);
     const floor = Math.round(hours * MIN_XOOTER_HOURLY_CENTS);
 
@@ -244,13 +271,16 @@ describe("payout", () => {
     expect(platinum.xooterPayCents - split.xooterCents).toBeGreaterThanOrEqual(floor);
     expect(split.xootCents + split.xooterCents).toBe(discountCents);
 
-    // A new Xooter is already below the hourly floor by ten cents, so nothing is taken from them.
+    // The worst-paid Xooter on the platform — starting rate, standard job — now clears the floor.
     const newcomer = xooterPayoutFor(subtotal, STARTING_RATE_BPS);
-    expect(newcomer.xooterPayCents).toBe(19240);
-    expect(newcomer.xooterPayCents).toBeLessThan(floor);
-    const newSplit = splitDiscount(discountCents, newcomer.xooterPayCents, hours);
-    expect(newSplit.xooterCents).toBe(0);
-    expect(newSplit.xootCents).toBe(discountCents);
+    expect(newcomer.xooterPayCents).toBe(19305);
+    expect(newcomer.xooterPayCents).toBeGreaterThanOrEqual(floor);
+
+    // And no band on the ladder falls under it on this job.
+    for (const band of COMMISSION_BANDS) {
+      const pay = xooterPayoutFor(subtotal, band.rateBps).xooterPayCents;
+      expect({ rank: band.rank, clears: pay >= floor }).toEqual({ rank: band.rank, clears: true });
+    }
   });
 
   /**
@@ -266,19 +296,20 @@ describe("payout", () => {
    * 5.5-hour clean — and the per-booking floor became hourly: R35/h, the same `hourly_rate`
    * `approve-zooter` writes onto every Xooter it activates.
    *
-   * What that decision does NOT settle is kept in `care-plus.test.ts`: the ladder is sub-linear in
-   * hours, so a 10-hour regular clean returns R27.95/h at 35% and R34.40/h even at the floor.
+   * What that decision did NOT settle was the ladder itself: it was sub-linear in hours, so a
+   * 10-hour regular clean returned R27.95/h at 35%. **Settled 2026-08-12** by flooring gross at
+   * R54 per booked hour from 5.5h up — see `xoot-pricing.ts`. `care-plus.test.ts` keeps the
+   * minimum-wage check that forces this to be re-examined on any ladder change.
    */
   it("records the resolved floor, and that the placement figures are no longer cited for bookings", () => {
-    const MEDIUM_CLEAN_CENTS = 29600;
-    const HOURS = 5.5;
-    const payAt = (rateBps: number) => xooterPayoutFor(MEDIUM_CLEAN_CENTS, rateBps).xooterPayCents;
+    const HOURS = STANDARD_CLEAN_HOURS;
+    const payAt = (rateBps: number) => xooterPayoutFor(STANDARD_CLEAN_CENTS, rateBps).xooterPayCents;
 
     // The hourly floor for the standard clean, and where each band sits against it.
     const floor = Math.round(HOURS * MIN_XOOTER_HOURLY_CENTS);
     expect(floor).toBe(19250);
-    expect(payAt(3500)).toBe(19240); // ten cents under, at the starting rate
-    expect(payAt(2000)).toBe(23680); // comfortably over at the ladder floor
+    expect(payAt(3500)).toBe(19305); // 55c clear, at the starting rate — was ten cents under
+    expect(payAt(2000)).toBe(23760); // comfortably over at the ladder floor
 
     // The placement day rates must no longer be used to floor a booking.
     const carePlus = readFileSync(join(process.cwd(), "src/lib/care-plus.ts"), "utf8");
@@ -292,7 +323,7 @@ describe("payout", () => {
 });
 
 describe("the 14-day earnings boost", () => {
-  const MEDIUM_CLEAN_CENTS = 29600;
+  const MEDIUM_CLEAN_CENTS = STANDARD_CLEAN_CENTS;
 
   it("takes a new Xooter from 35% to 30%", () => {
     expect(BOOST_BPS).toBe(500);
@@ -306,7 +337,7 @@ describe("the 14-day earnings boost", () => {
     const value = boostValueFor(MEDIUM_CLEAN_CENTS, STARTING_RATE_BPS);
     expect(value.pointsOfJob).toBe(5);
     expect(value.earningsPercent).toBe(7.7);
-    expect(value.extraCents).toBe(1480); // R192.40 -> R207.20
+    expect(value.extraCents).toBe(1485); // R193.05 -> R207.90 on the R297 standard clean
 
     // The claim that is exactly true is the one about the job, not the one about earnings.
     expect(value.earningsPercent).toBeGreaterThan(value.pointsOfJob);
