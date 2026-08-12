@@ -43,6 +43,7 @@ const AuthReset = lazy(() => import("./pages/AuthReset"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const PwaInstall = lazy(() => import("./pages/PwaInstall"));
+const SplitInvite = lazy(() => import("./pages/SplitInvite"));
 const Book = lazy(() => import("./pages/app/Book"));
 const Favorites = lazy(() => import("./pages/app/Favorites"));
 const Loyalty = lazy(() => import("./pages/app/Loyalty"));
@@ -165,6 +166,11 @@ const App = () => (
                   <Route path="/blog" element={<Blog />} />
                   <Route path="/blog/:slug" element={<BlogPost />} />
                   <Route path="/install" element={<PwaInstall />} />
+                  {/* Public on purpose: the person opening this link has no Xoot account yet,
+                      and asking them to make one before telling them what they are being asked
+                      to pay for is how an invitation gets ignored. The 192-bit invite token is
+                      the credential; accepting still requires signing in as the invited email. */}
+                  <Route path="/split/:token" element={<SplitInvite />} />
                   <Route path="/care-plus" element={<CarePlus />} />
                   <Route path="/care-plus/apply" element={<RequireAuth><CarePlusApply /></RequireAuth>} />
                   <Route path="/trust-centre" element={<TrustSafety />} />

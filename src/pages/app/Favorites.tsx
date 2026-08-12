@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { XooterCard, Xooter } from "@/components/zoot/XooterCard";
@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useProximity } from "@/hooks/useProximity";
+import { sortXootersForMarketplace, xooterDistanceKm } from "@/lib/trust";
 
 /**
  * `favorite_type` and `repeat_count` are the live column names. This page previously
@@ -35,6 +37,7 @@ const Favorites = () => {
   const navigate = useNavigate();
   const [list, setList] = useState<FavoriteRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const proximity = useProximity();
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -84,6 +87,25 @@ const Favorites = () => {
     navigate(`/app?zooter=${zooter.id}`);
   };
 
+  /*
+   * Favourites, nearest first.
+   *
+   * A favourites list is already filtered by the customer's own judgement, so quality ordering
+   * adds very little — but "which of my saved Xooters is actually near this address" is a real
+   * question, and it is the one someone re-booking is asking. Ranked, not filtered: a favourite is
+   * never hidden for being far. They chose them.
+   *
+   * With no saved address or no centroid table this collapses to the existing quality ordering,
+   * which is the same fallback every other proximity surface uses.
+   */
+  const ordered = useMemo(() => {
+    const byId = new Map(list.map((row) => [row.zooters!.id, row]));
+    return sortXootersForMarketplace(
+      list.map((row) => row.zooters!),
+      proximity,
+    ).map((zooter) => byId.get(zooter.id)!);
+  }, [list, proximity]);
+
   const preferredCount = list.filter((row) => row.favorite_type === "preferred_team").length;
   const recurringCount = list.filter((row) => row.favorite_type === "recurring_favorite").length;
   const repeatCount = list.reduce((sum, row) => sum + (row.repeat_count ?? row.zooters?.repeat_client_count ?? 0), 0);
@@ -125,12 +147,17 @@ const Favorites = () => {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {list.map((row) => {
+          {ordered.map((row) => {
             const z = row.zooters!;
             const firstName = z.name.split(" ")[0];
             return (
               <div key={z.id} className="space-y-2">
-                <XooterCard z={{ ...z, repeat_client_count: z.repeat_client_count ?? row.repeat_count }} onBook={() => bookAgain(z)} actionLabel={`Book ${firstName} Again`} />
+                <XooterCard
+                  z={{ ...z, repeat_client_count: z.repeat_client_count ?? row.repeat_count }}
+                  distanceKm={xooterDistanceKm(z, proximity)}
+                  onBook={() => bookAgain(z)}
+                  actionLabel={`Book ${firstName} Again`}
+                />
                 <div className="grid grid-cols-2 gap-2">
                   <Button variant="outline" size="sm" className="rounded-xl" onClick={() => bookAgain(z)}>Book {firstName} Again</Button>
                   <Button variant="outline" size="sm" className="rounded-xl" onClick={() => markKind(z.id, "preferred_team")}>Preferred Team</Button>

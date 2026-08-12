@@ -1,0 +1,159 @@
+name: Twilio self-test
+
+# Asks Twilio whether voice and chat are actually configured, and prints the answer.
+#
+# WHY THIS EXISTS
+# ---------------
+# `verify-secrets.yml` proves a secret is PRESENT. It cannot prove the value is right, and the most
+# likely failure on this project is exactly a present-but-wrong value: a TwiML App whose Voice
+# Request URL was never filled in. The SID verifies ✅, `twilio-token` mints a token happily, the
+# call button appears — and the call dies silently at the moment two people are trying to speak,
+# because Twilio has nowhere to fetch TwiML from.
+#
+# `twilio-selftest` catches that by asking Twilio. The problem was reaching it: the function is
+# admin-only, so answering "does Twilio work" required a human to sign in and click something. The
+# question kept being asked and kept being answered with "I cannot check".
+#
+# WHY IT NEEDS NO NEW SECRET
+# --------------------------
+# `supabase projects api-keys --reveal` returns a project's keys given only the account personal
+# access token, which is already a repository secret. So this job fetches the service-role key at
+# run time and calls the function with it. Nothing new to store, nothing new to rotate.
+#
+# The key is written to a step output? No — it is held in a shell variable inside a single step,
+# passed to curl in a header, and never echoed. `set +x` is on by default; there is no `echo "$KEY"`
+# anywhere below, and the response is filtered through `jq` rather than dumped, so a future change
+# to the function cannot start printing something it should not.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which project to test
+        required: true
+        default: production
+        type: choice
+        options: [production, staging, both]
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    name: Twilio self-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Refuse to run without a usable token
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          case "$SUPABASE_ACCESS_TOKEN" in
+            sbp_*) echo "Token present and correctly shaped." ;;
+            "") echo "::error::SUPABASE_ACCESS_TOKEN is not set."; exit 1 ;;
+            *) echo "::error::Not a personal access token. Account -> Access Tokens; starts 'sbp_'."; exit 1 ;;
+          esac
+
+      # Pinned for the same reason as every other workflow here: resolving `latest` calls the
+      # GitHub releases API and a production deploy already failed once on its rate limit.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.113.0
+
+      - name: Run the self-test
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          set -uo pipefail
+
+          run_one() {
+            local label="$1" ref="$2"
+
+            echo "## Twilio self-test — $label (\`$ref\`)" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+
+            # The service-role key. Fetched, used in a header, never printed. `--experimental` is
+            # required by the CLI for this command; `-o json` keeps the parse deterministic.
+            local key
+            key=$(supabase projects api-keys --project-ref "$ref" --experimental -o json 2>/dev/null \
+              | jq -r '.[] | select(.name == "service_role") | .api_key')
+
+            if [ -z "$key" ] || [ "$key" = "null" ]; then
+              echo "::error::Could not read the service-role key for $ref. Does the PAT have access to this project?"
+              echo "❌ Could not read the project key." >> "$GITHUB_STEP_SUMMARY"
+              return 1
+            fi
+
+            local response
+            response=$(curl -sS --max-time 60 \
+              -X POST "https://${ref}.supabase.co/functions/v1/twilio-selftest" \
+              -H "Authorization: Bearer ${key}" \
+              -H "apikey: ${key}" \
+              -H "Content-Type: application/json" \
+              -d '{}')
+
+            # Fail loudly on a non-JSON body rather than letting jq print "null" for every field,
+            # which reads like "everything is unset" instead of "the call did not land".
+            if ! echo "$response" | jq -e . >/dev/null 2>&1; then
+              echo "::error::$label returned a non-JSON response (the function may not be deployed)."
+              echo "❌ Non-JSON response — is \`twilio-selftest\` deployed to \`$ref\`?" >> "$GITHUB_STEP_SUMMARY"
+              return 1
+            fi
+
+            # ⚠️ Filtered, not dumped. Only these fields ever reach a log. The function is designed
+            # never to return a secret, and this is the second lock on that: a future field cannot
+            # start appearing in a public run log without someone editing this jq.
+            {
+              echo "**$(echo "$response" | jq -r '.summary // "no summary"')**"
+              echo ""
+              echo "Account SID: \`$(echo "$response" | jq -r '.accountSid // "unknown"')\`"
+              echo ""
+              echo "| check | status | detail |"
+              echo "|---|---|---|"
+              echo "$response" | jq -r '
+                .checks[]? |
+                "| \(.name) | \(if .ok == true then "✅" elif .ok == false then "❌" else "➖ n/a" end) | \(.detail | gsub("\\|"; "\\\\|")) |"
+              '
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            # And to the log, by name. `verify-secrets.yml` shipped reporting only a count to the
+            # step summary, and the summary is not readable from the API — so the one thing needed
+            # to act on a failure was the one thing not in the log. Same lesson, applied up front.
+            echo "----- $label -----"
+            echo "$response" | jq -r '
+              "summary: \(.summary // "none")",
+              "account: \(.accountSid // "unknown")",
+              (.checks[]? | "  \(if .ok == true then "OK  " elif .ok == false then "FAIL" else "n/a " end) \(.name): \(.detail)")
+            '
+
+            if [ "$(echo "$response" | jq -r '.ok')" != "true" ]; then
+              echo "::error::$label: Twilio self-test reported problems (see the checks above)."
+              return 1
+            fi
+            return 0
+          }
+
+          status=0
+          case "$ENVIRONMENT" in
+            production) run_one production mvlrkelahhsyjrwgsxaf || status=1 ;;
+            staging)    run_one staging    fxmxyabdjqviqbcxmvlp || status=1 ;;
+            both)
+              # Both, and neither short-circuits the other: "production is fine, staging is broken"
+              # is a useful answer and a `&&` would hide half of it.
+              run_one staging    fxmxyabdjqviqbcxmvlp || status=1
+              run_one production mvlrkelahhsyjrwgsxaf || status=1
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "> Compare the two Account SIDs above. **They must differ.**" >> "$GITHUB_STEP_SUMMARY"
+              echo "> The same SID on both means staging and production share Twilio credentials," >> "$GITHUB_STEP_SUMMARY"
+              echo "> which \`SECRETS_INVENTORY.md\` forbids — a staging test call would then bill" >> "$GITHUB_STEP_SUMMARY"
+              echo "> and log against the live account." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+          esac
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "A green run does **not** prove a call connects. Media has to flow between two" >> "$GITHUB_STEP_SUMMARY"
+          echo "browsers for that — see \`docs/release/go-live.md\` §2c." >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"

@@ -52,7 +52,29 @@ export const resolvePhoto = (p?: string | null) => (p && (imgMap[p] || p)) || w1
 
 const fmtPct = (value?: number | null) => `${Math.round(Number(value ?? 0))}%`;
 
-export const XooterCard = ({ z, onBook, actionLabel }: { z: Xooter; onBook?: (z: Xooter) => void; actionLabel?: string }) => {
+export const XooterCard = ({
+  z,
+  onBook,
+  actionLabel,
+  distanceKm,
+}: {
+  z: Xooter;
+  onBook?: (z: Xooter) => void;
+  actionLabel?: string;
+  /**
+   * Distance computed by the caller, for screens that rank client-side.
+   *
+   * `ai-match` puts the number on the row as `distance_km`, but the surfaces that rank locally —
+   * `NearbyWorkers`, `Favorites` — compute it themselves from `useProximity` and have nowhere to
+   * put it. Passing it in keeps one rule: **the card shows the number the list was sorted by.** A
+   * list ordered on one distance and labelled with another is worse than an unordered list,
+   * because it looks considered.
+   *
+   * Takes precedence over `z.distance_km`. Both null means unknown, and unknown falls back to
+   * coverage — never to a guess.
+   */
+  distanceKm?: number | null;
+}) => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const fav = isFavorite(z.id);
   const badges = deriveXooterBadges(z);
@@ -112,7 +134,9 @@ export const XooterCard = ({ z, onBook, actionLabel }: { z: Xooter; onBook?: (z:
           */}
           <span className="flex items-center gap-1">
             <MapPin className="h-3 w-3" />
-            {formatDistanceKm(z.distance_km ?? null) ?? z.suburb_coverage?.slice(0, 2).join(", ") ?? "Coverage on request"}
+            {formatDistanceKm(distanceKm ?? z.distance_km ?? null) ??
+              z.suburb_coverage?.slice(0, 2).join(", ") ??
+              "Coverage on request"}
           </span>
           <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3" />{z.transport || "Own transport"}</span>
           <span>{z.languages_spoken?.slice(0, 2).join(", ") || "English"}</span>

@@ -142,6 +142,14 @@ verify_jwt = true
 [functions.split-booking-fare]
 verify_jwt = true
 
+# Public: someone opening a WhatsApp invitation has no Xoot account yet, and asking them to make
+# one before telling them what they are being asked to pay for is how an invitation gets ignored.
+# The 192-bit invite token is the credential, and the response is four fields — service, date,
+# amount, organiser's first name. It grants no ability to accept: that still requires signing in as
+# the invited address.
+[functions.fare-split-invite]
+verify_jwt = false
+
 # Closed, and admin-only inside the handler too. Reports which Twilio SIDs exist and which URLs are
 # configured — not dangerous, but not a customer's business either.
 [functions.twilio-selftest]

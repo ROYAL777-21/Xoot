@@ -517,6 +517,10 @@ const BookingDetail = () => {
               bookingId={id}
               totalRands={Number(booking.price ?? 0)}
               paymentStatus={booking.payment_status}
+              // Service and date only — the two fields an invitation is allowed to carry. The
+              // panel builds the WhatsApp and mail text from these, and never sees the address.
+              serviceType={booking.service_type}
+              scheduledAt={booking.scheduled_at}
             />
           )}
 

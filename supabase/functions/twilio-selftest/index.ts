@@ -27,6 +27,22 @@ import { fail, handlePreflight, json, requireAdmin, requireAuth } from "../_shar
  * The response describes account configuration — which SIDs exist, which URLs are set. That is not
  * dangerous, but it is not a customer's business either, and an endpoint that enumerates your
  * integration state should not be open. It never returns a token or a secret, and never logs one.
+ *
+ * ── The service-role path, and why it is not an escalation ──────────────────────
+ * There are two ways in: an admin's session, or the project's **service-role key** in the
+ * `Authorization` header. The second exists because of a specific dead end — this function's whole
+ * purpose is to answer "does Twilio work", and until now the only way to ask was for a human to
+ * sign in as an admin and click something. No session, no answer. So the question kept being
+ * asked, and kept being answered with "I cannot check".
+ *
+ * The service role is not a privilege grant here. Anyone holding that key already has unrestricted
+ * read and write on every table in the project; there is nothing in this response they could not
+ * obtain more directly. What it buys is a caller with no browser — specifically
+ * `.github/workflows/twilio-selftest.yml`, which fetches the key with the `SUPABASE_ACCESS_TOKEN`
+ * that already exists as a repository secret and never echoes it.
+ *
+ * Compared exactly, not by prefix. A `startsWith("eyJ")` check would accept any JWT the caller
+ * happened to hold, including a user's own access token, and that WOULD be an escalation.
  */
 
 const TWILIO_API = "https://api.twilio.com/2010-04-01";
@@ -54,10 +70,25 @@ Deno.serve(async (req) => {
   if (preflight) return preflight;
 
   try {
-    const { response: authFailure, user, supa } = await requireAuth(req, origin);
-    if (authFailure || !user || !supa) return authFailure ?? fail("Authentication required", origin, 401);
-    const adminFailure = await requireAdmin(supa, user.id, origin);
-    if (adminFailure) return adminFailure;
+    /*
+     * Constant-time-ish exact comparison against the service-role key.
+     *
+     * `timingSafeEqual` is not available here without pulling in a Node polyfill, and the value
+     * being compared is a 200-plus-character random JWT — an attacker who could exploit the timing
+     * of a string compare against it would need the key already. What matters far more is that
+     * this is an EXACT match on the whole key and not a prefix or shape test: `startsWith("eyJ")`
+     * would accept any user's own access token and turn an admin endpoint into an open one.
+     */
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+    const isServiceRole = Boolean(serviceRoleKey) && bearer === serviceRoleKey;
+
+    if (!isServiceRole) {
+      const { response: authFailure, user, supa } = await requireAuth(req, origin);
+      if (authFailure || !user || !supa) return authFailure ?? fail("Authentication required", origin, 401);
+      const adminFailure = await requireAdmin(supa, user.id, origin);
+      if (adminFailure) return adminFailure;
+    }
 
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID") ?? "";
     // Either name — this repo reads the one Twilio Auth Token under two, and a check that accepted

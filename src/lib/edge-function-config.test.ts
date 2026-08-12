@@ -51,6 +51,18 @@ const MUST_STAY_OPEN: Record<string, string> = {
   // The paths it gates re-check the controls server-side, so this response is a hint for drawing
   // a button, never a permission.
   "concierge-config": "The Concierge launcher renders for signed-out visitors and must know if it is enabled.",
+  // Added 2026-08-12. A fare-split invitation arrives as a WhatsApp message from a friend, so its
+  // reader has no Xoot account — and asking them to make one before telling them what they are
+  // being asked to pay for is how an invitation gets ignored.
+  //
+  // The 192-bit `invite_token` is the credential, and the response is five scalars: service label,
+  // date, amount, the invited email and the organiser's FIRST name. No address, no notes, no
+  // access codes — `fare-split-privacy.test.ts` pins the booking select to exactly three columns.
+  //
+  // Open to read, closed to act: this endpoint cannot accept a share. Accepting goes to
+  // `split-booking-fare`, which additionally requires a verified session whose email matches the
+  // invited address, because a WhatsApp link lands in group chats.
+  "fare-split-invite": "A split invitation is opened by someone with no account, before they will make one.",
   "twilio-message-webhook": "Twilio SMS. HMAC-SHA1 signature is the auth.",
   "twilio-whatsapp-webhook": "Twilio WhatsApp. Same signature scheme.",
   "twilio-voice-webhook": "Twilio voice. Same.",

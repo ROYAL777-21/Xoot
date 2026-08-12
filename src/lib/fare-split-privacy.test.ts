@@ -24,6 +24,9 @@ const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
 const fn = read("supabase/functions/split-booking-fare/index.ts");
 const migration = read("supabase/migrations/20260811220000_booking_fare_splits.sql");
+/** The public preview endpoint — the sharpest test of the rule, because its caller has no session. */
+const inviteFn = read("supabase/functions/fare-split-invite/index.ts");
+const tokenMigration = read("supabase/migrations/20260812120000_fare_split_invite_tokens.sql");
 
 /**
  * The handler with comments removed, so a note explaining what is deliberately absent is not read
@@ -97,6 +100,96 @@ describe("fare split privacy", () => {
   });
 });
 
+/**
+ * The public preview endpoint.
+ *
+ * `fare-split-invite` runs with `verify_jwt = false` and the service role. It is the only place in
+ * this feature where an unauthenticated stranger, holding a link pasted into a group chat, reaches
+ * a booking row. Everything the rest of the feature protects is one careless `select("*")` away
+ * here, so the shape is pinned rather than trusted.
+ */
+describe("the public invite preview", () => {
+  const inviteCode = inviteFn.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+
+  it("never selects a forbidden booking field", () => {
+    const selects = [...inviteFn.matchAll(/\.select\("([^"]+)"\)/g)].map((match) => match[1]);
+    expect(selects.length).toBeGreaterThan(0);
+    for (const select of selects) {
+      expect(select, "select(*) served to an anonymous caller is the leak").not.toBe("*");
+      for (const field of FORBIDDEN) {
+        expect(select, `a select asks for ${field}`).not.toContain(field);
+      }
+    }
+  });
+
+  it("reads only scheduled_at, service_type and payment_status off the booking", () => {
+    // Named exhaustively rather than by exclusion. A future field is not automatically safe just
+    // because it is not on the forbidden list today — `special_instructions` would pass a
+    // blocklist and leak the same information as `notes`.
+    const bookingSelect = inviteFn.match(/from\("bookings"\)\s*\.select\("([^"]+)"\)/);
+    expect(bookingSelect?.[1]).toBe("scheduled_at,service_type,payment_status");
+  });
+
+  it("returns a first name, not a full name", () => {
+    // The recipient already knows who sent them the message. A surname adds nothing they need and
+    // something they could look up.
+    expect(inviteCode).toContain("firstNameOf");
+    expect(inviteCode).toMatch(/organiserName: firstNameOf/);
+  });
+
+  it("cannot accept a share — it only previews one", () => {
+    // The token proves you were sent the link. It does not prove you are who it was meant for, and
+    // a WhatsApp link lands in group chats. Accepting lives in `split-booking-fare`, behind a
+    // verified session whose email must match `invited_email`.
+    expect(inviteCode).not.toMatch(/status: "accepted"/);
+    expect(inviteCode).not.toContain("payment_records");
+    expect(inviteCode).not.toMatch(/\.update\(/);
+  });
+
+  it("validates the token shape before it reaches a query", () => {
+    expect(inviteFn).toMatch(/\^\[0-9a-f\]\{48\}\$/);
+  });
+
+  it("says collection is not configured", () => {
+    expect(inviteFn).toMatch(/collectionConfigured: false/);
+  });
+});
+
+describe("the invite token", () => {
+  it("is unguessable and unique, and is not the row id", () => {
+    // An id in a URL is an id that has also been logged, put in an outbox payload and quoted in a
+    // support ticket. This one is a bearer credential and has to be rotatable independently.
+    expect(tokenMigration).toMatch(/encode\(extensions\.gen_random_bytes\(24\), 'hex'\)/);
+    expect(tokenMigration).toMatch(/create unique index[\s\S]*invite_token/);
+    expect(tokenMigration).toMatch(/alter column invite_token set not null/);
+  });
+
+  it("is never written into an outbox payload", () => {
+    // An outbox row is admin-readable and exportable. A credential that unlocks someone's payment
+    // obligation does not belong in an audit log — the row records that an invitation exists, not
+    // how to open it.
+    const outboxBlock = fn.slice(fn.indexOf("await insertOutbox("), fn.indexOf("return json("));
+    expect(outboxBlock).not.toContain("invite_token");
+    expect(outboxBlock).not.toContain("inviteToken");
+  });
+
+  it("grants nothing at the RLS layer", () => {
+    // The read policy is unchanged: organiser and payer only. A visitor holding a token has no
+    // session and reads nothing directly — the preview comes from the service-role function.
+    expect(tokenMigration).not.toMatch(/create policy/);
+    expect(tokenMigration).not.toMatch(/grant .*to anon/);
+  });
+
+  it("addresses accept and decline by the row that was found, not the request's splitId", () => {
+    // A token-addressed call has an empty `splitId`. `.eq("id", splitId)` would then match nothing,
+    // the update would affect zero rows, and the handler would return 200 — an accepted share that
+    // was never accepted.
+    expect(fn).toMatch(/const resolvedSplitId = String\(split\.id\);/);
+    const answerBlock = fn.slice(fn.indexOf("const resolvedSplitId"));
+    expect(answerBlock).not.toMatch(/\.eq\("id", splitId\)/);
+  });
+});
+
 describe("fare split integrity", () => {
   it("enforces the sum in the database, not only in the handler", () => {
     // The handler's check is where a helpful message lives. The trigger is what makes an
@@ -153,7 +246,20 @@ describe("fare split honesty about money", () => {
     // own it — which is why `payer_user_id` is nullable until then.
     const acceptBlock = fn.slice(fn.indexOf("// Accepting creates the payment row"));
     expect(acceptBlock).toMatch(/from\("payment_records"\)\s*\.insert\(/);
-    const createBlock = fn.slice(fn.indexOf('if (action === "create")'), fn.indexOf("// ── accept / decline"));
+
+    /*
+     * The end of the create block is found by a line of CODE, not by a comment.
+     *
+     * It used to be `fn.indexOf("// ── accept / decline")`. When that header grew into a block
+     * comment explaining token addressing, the marker vanished, `indexOf` returned -1, and
+     * `slice(start, -1)` silently became "everything to the last character" — so the assertion
+     * below was checking the accept path for `payment_records` and passing only by accident of
+     * negation. A boundary anchored to prose is a boundary that moves when someone improves the
+     * prose.
+     */
+    const createEnd = fn.indexOf('const inviteToken = String(body.inviteToken');
+    expect(createEnd, "the accept/decline boundary marker moved").toBeGreaterThan(0);
+    const createBlock = fn.slice(fn.indexOf('if (action === "create")'), createEnd);
     expect(createBlock).not.toContain("payment_records");
   });
 

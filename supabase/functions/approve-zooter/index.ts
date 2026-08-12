@@ -98,7 +98,20 @@ Deno.serve(async (req) => {
       hourly_rate: 35,
       bio: cleanText(application.bio, 1000) || null,
       tags: ["Verified", "Background checked"],
-      distance_mi: 1,
+      /*
+       * `distance_mi: 1` was here until 2026-08-12, and it was the last live trace of the fake
+       * distance.
+       *
+       * The column is a static seed. It made every Xooter "1 away" from every customer in the
+       * country, `ai-match` scored on it, and `XooterCard` rendered it as though it meant
+       * something. Real distance now comes from `suburb_centroids` + `suburb_coverage` (below) via
+       * `_shared/geo.ts`, and nothing reads `distance_mi` anywhere in the repo.
+       *
+       * Nothing reading it is not a reason to keep writing it — it is the reason to stop. A column
+       * that nobody reads but something keeps filling is how a dead value comes back to life: the
+       * next person to see it populated reasonably assumes it means something. Removing the write
+       * is what makes the column provably vestigial and safe to drop.
+       */
       active: true,
       background_check_status: "approved",
       reliability_score: 100,

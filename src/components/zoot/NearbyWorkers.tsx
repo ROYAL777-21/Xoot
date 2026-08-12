@@ -1,16 +1,35 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { Xooter, XooterCard } from "@/components/zoot/XooterCard";
-import { sortXootersForMarketplace } from "@/lib/trust";
+import { sortXootersForMarketplace, xooterDistanceKm } from "@/lib/trust";
+import { useProximity } from "@/hooks/useProximity";
 
+/**
+ * The homepage's "Nearby Xooters".
+ *
+ * ── ⚠️ It did not rank by nearness until 2026-08-12 ─────────────────────────────
+ * This section has been headed "Nearby Xooters" since it was written, and it sorted by rating.
+ * The suburb-centroid work made real distance available and wired it into `ai-match`, but `ai-match`
+ * is only reachable from the booking flow — so the one screen whose heading makes a proximity
+ * claim was the one screen not honouring it.
+ *
+ * Now it ranks with `useProximity`, and the cards show the distance they were sorted by.
+ *
+ * ── What a signed-out visitor sees ──────────────────────────────────────────────
+ * The same list, ordered by quality. They have no saved address, so distance is unknown — and
+ * unknown means "fall back", never "far" and never "empty". The alternative is a geolocation
+ * prompt on the homepage, which is a permission request for precise location data in exchange for
+ * a sort order, and that trade is not worth making.
+ */
 export const NearbyWorkers = () => {
   const navigate = useNavigate();
   const [workers, setWorkers] = useState<Xooter[]>([]);
   const [loading, setLoading] = useState(true);
+  const proximity = useProximity();
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -22,18 +41,33 @@ export const NearbyWorkers = () => {
     let mounted = true;
     supabase
       .from("zooters_public")
+      // Deliberately unfiltered by suburb. A candidate is never excluded here — this is a shop
+      // window, not a dispatch decision, and `ai-match` is where the 25 km cut-off belongs.
       .select("*")
       .order("rating", { ascending: false })
-      .limit(4)
+      // Fetched wider than shown so proximity has something to reorder. Taking the top 4 by rating
+      // and then sorting those by distance would rank a set that distance had no say in choosing —
+      // the nearest Xooter in the city could be 5th by rating and never appear.
+      .limit(24)
       .then(({ data }) => {
         if (!mounted) return;
-        setWorkers(sortXootersForMarketplace((data ?? []) as Xooter[]));
+        setWorkers((data ?? []) as Xooter[]);
         setLoading(false);
       });
     return () => {
       mounted = false;
     };
   }, []);
+
+  /*
+   * Ranked here rather than at fetch time, so the list reorders when the address arrives instead
+   * of freezing in whatever order it loaded in. The two are independent requests and either can
+   * win the race.
+   */
+  const ranked = useMemo(
+    () => sortXootersForMarketplace(workers, proximity).slice(0, 4),
+    [workers, proximity],
+  );
 
   return (
     <section id="workers" className="py-20 md:py-28 bg-secondary/40 border-y border-border">
@@ -54,10 +88,17 @@ export const NearbyWorkers = () => {
           <div className="grid place-items-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
-        ) : workers.length > 0 ? (
+        ) : ranked.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {workers.map((worker) => (
-              <XooterCard key={worker.id} z={worker} onBook={() => navigate("/auth", { state: { from: { pathname: "/app" } } })} />
+            {ranked.map((worker) => (
+              <XooterCard
+                key={worker.id}
+                z={worker}
+                // The number the card shows is the number the list was sorted by. A list ordered on
+                // one distance and labelled with another is worse than an unordered one.
+                distanceKm={xooterDistanceKm(worker, proximity)}
+                onBook={() => navigate("/auth", { state: { from: { pathname: "/app" } } })}
+              />
             ))}
           </div>
         ) : (

@@ -544,6 +544,7 @@ export type Database = {
           booking_id: string
           created_at: string
           id: string
+          invite_token: string
           invited_by: string
           invited_email: string
           payer_user_id: string | null
@@ -557,6 +558,7 @@ export type Database = {
           booking_id: string
           created_at?: string
           id?: string
+          invite_token?: string
           invited_by: string
           invited_email: string
           payer_user_id?: string | null
@@ -570,6 +572,7 @@ export type Database = {
           booking_id?: string
           created_at?: string
           id?: string
+          invite_token?: string
           invited_by?: string
           invited_email?: string
           payer_user_id?: string | null
