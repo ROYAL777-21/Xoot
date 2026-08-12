@@ -534,11 +534,13 @@ Apply both, then regenerate `src/integrations/supabase/types.ts` from the live s
 the table were added to that file by hand so the schema-contract test could pass ahead of the
 migrations; a real regeneration replaces the hand edits and confirms the live database agrees.
 
-**Set "Use workflow from" to the release branch, not `main`.** `main` is where GitHub finds the
-workflow; the ref decides which branch's code and config get deployed. `main`'s `config.toml`
-declares 18 of 46 functions, and a deploy from there would give the ten webhook functions the
-default `verify_jwt = true` — a 401 at the gateway on every Twilio, Stitch and Ozow callback, with
-nothing in any function's logs. The workflow refuses that rather than trusting the dropdown.
+**Set "Use workflow from" to `main`.** ✅ Corrected 2026-08-12. This step used to say *"the release
+branch, not `main`"*, which was true when written — `main`'s `config.toml` then declared 18 of 46
+functions, and deploying from it would have given the ten webhook functions the default
+`verify_jwt = true`, a 401 at the gateway on every Twilio, Stitch and Ozow callback with nothing in
+any function's logs. The release stack has since merged: `main` declares **50 of 50**, and the
+release branch it pointed at no longer exists. The workflow's own header carries the same
+correction, and its guard refuses on the real count rather than trusting the dropdown either way.
 
 1. **staging**, `functions` = `twilio-token create-masked-call`. Read the drift table in the summary.
 2. **staging**, `functions` blank.
@@ -551,6 +553,38 @@ today.
 
 This also closes the inconsistency where `create-masked-call` runs the loosened masked-call rate
 limit (8 per 10 minutes) and `ops-workflow` still has its own copy at 3.
+
+### 3b. ⚠️ The R39 booking fee — the web app must ship BEFORE these two functions
+
+Same class of rule as 3a, opposite direction: here the *client* has to move first.
+
+ZD-026 made R39 a fee on every booking, waived only for Care+. Production `create-booking` is at
+**v15 and still runs the old rule** (`isCarePlusMember || frequency !== "one_time"`), verified
+2026-08-12 by reading the deployed source.
+
+**Deploy `create-booking` or `create-booking-request` while the live web app still predates ZD-026
+and recurring bookings are under-quoted by R39.** `Book.tsx` on the old build computes
+`serviceFee = frequency === "one_time" ? 39 : 0`, so a customer choosing a repeat booking sees R0
+for the fee and the new server charges R39. A total shown and then exceeded at charge time is the
+exact Consumer Protection Act problem ZD-026 exists to remove — deploying out of order would
+recreate it rather than fix it.
+
+The safe order:
+
+1. Land the ZD-026 branch on `main`. Netlify builds the client from `main`
+   (`npm ci && npm run build`), so this is what ships the new rule to customers.
+2. Confirm the deployed site prices a **recurring** booking with the R39 line showing.
+3. Only then dispatch the workflow for `create-booking create-booking-request` — **together**.
+   `_shared/pricing.ts` is bundled per function, so shipping one leaves two live pricing rules.
+
+The reverse order is harmless, unlike 3a: a client that shows R39 against a server that still
+waives it on recurring over-states the price, and the customer is charged less than they agreed to.
+Wrong, but wrong in the direction that does not breach the CPA.
+
+The other seven functions pending redeploy for the `governance-utils` fix — `support-respond`,
+`create-concierge-handoff`, `create-masked-call`, `ops-workflow`, `report-concierge-answer`,
+`send-booking-message`, `confirm-payment` — import no pricing module and carry no part of this
+constraint. They can go at any time.
 
 ---
 
