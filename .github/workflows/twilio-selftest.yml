@@ -110,9 +110,29 @@ jobs:
             # function compares each in full against its own env, so a wrong one is simply
             # rejected — trying two costs a round trip and buys immunity to which scheme a project
             # is on.
+            local raw
+            raw=$(supabase projects api-keys --project-ref "$ref" --experimental -o json 2>/dev/null)
+
+            # ⚠️ The KEY NAMES, printed. Not the values — the names, which is exactly the thing
+            # every failed attempt so far has been missing.
+            #
+            # Measured 17:15: `[eyJ… -> authentication required] [sb_… -> Invalid API key]`. The
+            # `eyJ` key PASSED Supabase's gateway (so it is a valid API key for the project) and
+            # was then rejected by the function (so it is not the service-role key) — i.e. it is
+            # the **anon** JWT, which the `select(.name != "anon")` filter below was supposed to
+            # exclude and evidently did not. `.name` is not the field this CLI version returns.
+            #
+            # Rather than guess at the field name a third time, this prints the object keys and
+            # each entry's identifying labels so the next run states the schema outright. All of
+            # it is metadata; `api_key` is never echoed.
+            echo "  api-keys schema for $label: $(echo "$raw" | jq -rc '(.[0] // {}) | keys' 2>/dev/null)"
+            echo "  api-keys labels for $label: $(echo "$raw" | jq -rc '[.[] | {name, type, id, description} | with_entries(select(.value != null))]' 2>/dev/null | head -c 300)"
+
             local keys
-            keys=$(supabase projects api-keys --project-ref "$ref" --experimental -o json 2>/dev/null \
-              | jq -r '.[] | select((.name // "") != "anon" and ((.api_key // "") | startswith("sb_publishable_") | not)) | .api_key' \
+            keys=$(echo "$raw" \
+              | jq -r '.[] | select(((.name // .type // "") | ascii_downcase | test("anon|publishable")) | not)
+                           | select(((.api_key // "") | startswith("sb_publishable_")) | not)
+                           | .api_key' \
               | grep -v '^null$' | grep -v '^$')
 
             if [ -z "$keys" ]; then
