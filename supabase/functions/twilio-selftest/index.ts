@@ -71,17 +71,36 @@ Deno.serve(async (req) => {
 
   try {
     /*
-     * Constant-time-ish exact comparison against the service-role key.
+     * Exact comparison against a service-role key — any of the names the platform uses for one.
      *
-     * `timingSafeEqual` is not available here without pulling in a Node polyfill, and the value
-     * being compared is a 200-plus-character random JWT — an attacker who could exploit the timing
-     * of a string compare against it would need the key already. What matters far more is that
-     * this is an EXACT match on the whole key and not a prefix or shape test: `startsWith("eyJ")`
-     * would accept any user's own access token and turn an admin endpoint into an open one.
+     * ⚠️ WHY THERE IS MORE THAN ONE NAME, measured 2026-08-12. The first CI run of this path
+     * answered `authentication required` on both projects. The workflow fetches the key with
+     * `supabase projects api-keys --reveal`, which returns Supabase's **current** key set, while
+     * this function was comparing only against `SUPABASE_SERVICE_ROLE_KEY` — the legacy JWT. On a
+     * project that has moved to the new `sb_secret_…` scheme those are two different strings, so
+     * a correct caller presenting a correct key was rejected.
+     *
+     * The fix is to accept any of the secret-key env names the platform injects. It is NOT to
+     * loosen the comparison: every entry below is still matched in full, against a value only the
+     * project owner has. `startsWith("eyJ")` or a length check would accept any user's own access
+     * token and turn an admin endpoint into an open one — that is the thing this must never do.
+     *
+     * `timingSafeEqual` is not available here without a Node polyfill, and the compared value is a
+     * 200-plus-character random secret; an attacker who could exploit the timing of a string
+     * compare against it would already have the key.
+     *
+     * No escalation either way: anyone holding any of these already has unrestricted read and
+     * write on every table in the project. There is nothing in this response they could not get
+     * more directly.
      */
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const serviceRoleKeys = [
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+      Deno.env.get("SUPABASE_SECRET_KEY"),
+      Deno.env.get("SB_SECRET_KEY"),
+    ].filter((key): key is string => typeof key === "string" && key.length > 20);
+
     const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
-    const isServiceRole = Boolean(serviceRoleKey) && bearer === serviceRoleKey;
+    const isServiceRole = bearer.length > 20 && serviceRoleKeys.some((key) => key === bearer);
 
     if (!isServiceRole) {
       const { response: authFailure, user, supa } = await requireAuth(req, origin);

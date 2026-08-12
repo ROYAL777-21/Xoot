@@ -57,6 +57,25 @@ jobs:
 
       # Pinned for the same reason as every other workflow here: resolving `latest` calls the
       # GitHub releases API and a production deploy already failed once on its rate limit.
+      #
+      # ⚠️ PINNING DOES NOT MAKE THIS STEP RELIABLE, and 2026-08-12 proved it. The action still
+      # downloads the release asset, and GitHub's release CDN returned 503 for a stretch that
+      # afternoon:
+      #
+      #     Unexpected HTTP response: 503
+      #     Waiting 10 seconds before trying again
+      #     Unexpected HTTP response: 503
+      #     Waiting 20 seconds before trying again
+      #     ##[error]socket hang up
+      #
+      # Two of the action's own retries, then it gives up after ~30 seconds. That one outage took
+      # down a `db push` on production and a self-test run, and each surfaced as a DIFFERENT
+      # confusing symptom — a migration that silently did not apply, and a Twilio check that
+      # reported nothing. Neither looked like "GitHub was down".
+      #
+      # So it is worth naming: **a step that fails HERE means nothing about Supabase, Twilio or
+      # this repository.** Read the log for `503` or `socket hang up` before investigating
+      # anything else, and just re-run.
       - uses: supabase/setup-cli@v1
         with:
           version: 2.113.0
@@ -77,25 +96,50 @@ jobs:
             echo "## Twilio self-test — $label (\`$ref\`)" >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
 
-            # The service-role key. Fetched, used in a header, never printed. `--experimental` is
+            # The secret keys, fetched and used in headers, never printed. `--experimental` is
             # required by the CLI for this command; `-o json` keeps the parse deterministic.
-            local key
-            key=$(supabase projects api-keys --project-ref "$ref" --experimental -o json 2>/dev/null \
-              | jq -r '.[] | select(.name == "service_role") | .api_key')
+            #
+            # ⚠️ EVERY secret key, not just the one named `service_role`. Measured 2026-08-12: the
+            # first run of this path got `authentication required` from both projects, because
+            # Supabase is midway through a key migration and `api-keys` can return the modern
+            # `sb_secret_…` key while the Edge Function's `SUPABASE_SERVICE_ROLE_KEY` env var still
+            # holds the legacy JWT. Picking one name and hoping is how that produced a failure that
+            # looked like a Twilio problem.
+            #
+            # So: collect the candidates, try each, stop at the first that authenticates. The
+            # function compares each in full against its own env, so a wrong one is simply
+            # rejected — trying two costs a round trip and buys immunity to which scheme a project
+            # is on.
+            local keys
+            keys=$(supabase projects api-keys --project-ref "$ref" --experimental -o json 2>/dev/null \
+              | jq -r '.[] | select((.name // "") != "anon" and ((.api_key // "") | startswith("sb_publishable_") | not)) | .api_key' \
+              | grep -v '^null$' | grep -v '^$')
 
-            if [ -z "$key" ] || [ "$key" = "null" ]; then
-              echo "::error::Could not read the service-role key for $ref. Does the PAT have access to this project?"
+            if [ -z "$keys" ]; then
+              echo "::error::Could not read any secret key for $ref. Does the PAT have access to this project?"
               echo "❌ Could not read the project key." >> "$GITHUB_STEP_SUMMARY"
               return 1
             fi
 
-            local response
-            response=$(curl -sS --max-time 60 \
-              -X POST "https://${ref}.supabase.co/functions/v1/twilio-selftest" \
-              -H "Authorization: Bearer ${key}" \
-              -H "apikey: ${key}" \
-              -H "Content-Type: application/json" \
-              -d '{}')
+            # Shapes only — `eyJ…` (legacy JWT) or `sb_secret_…`. Never the value. This one line is
+            # what would have identified the mismatch above in seconds instead of a round trip.
+            echo "  key candidates for $label: $(echo "$keys" | cut -c1-3 | tr '\n' ' ')"
+
+            local response=""
+            local key
+            while IFS= read -r key; do
+              [ -z "$key" ] && continue
+              response=$(curl -sS --max-time 60 \
+                -X POST "https://${ref}.supabase.co/functions/v1/twilio-selftest" \
+                -H "Authorization: Bearer ${key}" \
+                -H "apikey: ${key}" \
+                -H "Content-Type: application/json" \
+                -d '{}')
+              # Stop on the first key the function actually accepts.
+              if [ "$(echo "$response" | jq -r 'if (.checks | type) == "array" then "yes" else "no" end' 2>/dev/null)" = "yes" ]; then
+                break
+              fi
+            done <<< "$keys"
 
             # Fail loudly on a non-JSON body rather than letting jq print "null" for every field,
             # which reads like "everything is unset" instead of "the call did not land".
