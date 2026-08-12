@@ -150,10 +150,30 @@ verify_jwt = true
 [functions.fare-split-invite]
 verify_jwt = false
 
-# Closed, and admin-only inside the handler too. Reports which Twilio SIDs exist and which URLs are
-# configured — not dangerous, but not a customer's business either.
+# Open at the gateway, and the function is the gate. Admin-only inside the handler as before.
+#
+# ⚠️ WHY THIS FLIPPED, 2026-08-12. It was `verify_jwt = true`, and that made the function
+# unreachable by the one caller it was built for. Both projects have migrated to Supabase's new
+# API keys, so the function's `SUPABASE_SERVICE_ROLE_KEY` env var holds the `sb_secret_…` value —
+# while `verify_jwt = true` makes the gateway demand a JWT. Measured, both projects:
+#
+#     [eyJ… -> authentication required]   legacy JWT passes the gateway, is not the function's key
+#     [sb_… -> Invalid API key]           the function's key is not a JWT, gateway rejects it
+#
+# The credential that could reach the function was not the one it held, and the one it held could
+# not reach it. No amount of workflow tinkering fixes that from outside.
+#
+# THIS IS NOT A WEAKENING. The function performs a full-string comparison of the presented bearer
+# against `SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_SECRET_KEY` / `SB_SECRET_KEY`, and otherwise falls
+# through to `requireAuth` + `requireAdmin`. So the two ways in are unchanged: the project's secret
+# key, or an admin session. What changed is only which layer checks — the same shape the Twilio
+# webhooks already use, where the gateway is open and the handler verifies.
+#
+# Anyone holding the secret key already has unrestricted read and write on every table; there is
+# nothing in this response they could not obtain more directly. And the response itself carries no
+# token and no secret — only which SIDs exist and which URLs are set.
 [functions.twilio-selftest]
-verify_jwt = true
+verify_jwt = false
 
 [functions.create-booking-request]
 verify_jwt = true

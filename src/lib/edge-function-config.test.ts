@@ -63,6 +63,24 @@ const MUST_STAY_OPEN: Record<string, string> = {
   // `split-booking-fare`, which additionally requires a verified session whose email matches the
   // invited address, because a WhatsApp link lands in group chats.
   "fare-split-invite": "A split invitation is opened by someone with no account, before they will make one.",
+  // Added 2026-08-12, and it is the one entry here that is open for a platform reason rather than a
+  // product one — so it is worth being precise about what was traded.
+  //
+  // `verify_jwt = true` made this function unreachable by the only caller it was built for. Both
+  // projects have migrated to Supabase's new API keys, so the function's SUPABASE_SERVICE_ROLE_KEY
+  // holds the `sb_secret_…` value, while the gateway demanded a JWT. Measured on both:
+  //
+  //     [eyJ… -> authentication required]   legacy JWT clears the gateway, is not the function's key
+  //     [sb_… -> Invalid API key]           the function's key is not a JWT, gateway refuses it
+  //
+  // NOTHING WAS WIDENED. The handler compares the presented bearer IN FULL against
+  // SUPABASE_SERVICE_ROLE_KEY / SUPABASE_SECRET_KEY / SB_SECRET_KEY, and otherwise falls through to
+  // requireAuth + requireAdmin. Both routes in are exactly what they were — the project's secret
+  // key, or an admin session. Only the layer performing the check moved, to the same place the
+  // Twilio webhooks already do it.
+  //
+  // The response carries no token and no secret: which SIDs exist, which URLs are set, and ✅/❌.
+  "twilio-selftest": "The new-key migration means only the secret key matches, and the JWT gateway refuses it. The handler is the gate.",
   "twilio-message-webhook": "Twilio SMS. HMAC-SHA1 signature is the auth.",
   "twilio-whatsapp-webhook": "Twilio WhatsApp. Same signature scheme.",
   "twilio-voice-webhook": "Twilio voice. Same.",

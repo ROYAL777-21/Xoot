@@ -363,6 +363,19 @@ Written out properly below, because "two browsers" is a description, not instruc
 
 Budget 15 minutes the first time. You need **two devices, or one device and a phone** — see step 4.
 
+> ### ✅ On staging this is already done for you
+>
+> Run one command and skip to step 4:
+>
+> ```bash
+> ZOOT_STAGING_SUPABASE_URL=... ZOOT_STAGING_SERVICE_ROLE_KEY=... \
+>   node scripts/ops/arm-call-test.mjs
+> ```
+>
+> It puts the smoke booking into the callable window, prints the two accounts and the booking URL,
+> and **verifies all four gate conditions before saying it worked**. The window is only a few hours
+> wide — re-run it to re-arm rather than concluding the feature is broken.
+
 1. **Two accounts.** One customer, one Xooter. The Xooter account must be approved and active
    (`zooters.active = true`), which `approve-zooter` sets. If you only have one real Xooter, use
    your own second email.
@@ -371,10 +384,23 @@ Budget 15 minutes the first time. You need **two devices, or one device and a ph
    Xooter to it. Both parties must be on the *same* booking row — `assertBookingParticipant` checks
    `bookings.user_id` and `bookings.zooter_id`, and an admin account does not substitute for either.
 
-3. **Move the booking to `en_route` or `in_progress`.** This is the gate that catches most first
-   attempts. `maskedCallAvailable` returns false at every other status, so the call button simply
-   is not rendered on a `confirmed` booking and it looks like the feature is missing. The Xooter
-   moves it from their job screen; an admin can also set it from Admin → Ops.
+3. **Move the booking to `en_route` or `in_progress` — AND put it inside the access window.**
+   This is the step that has silently defeated every previous attempt, because it is really two
+   conditions and the runbook used to name only the first:
+
+   ```
+   maskedCallAvailable = status ∈ {en_route, in_progress}
+                         AND canAccessSensitiveBookingData(...)
+   ```
+
+   `canAccessSensitiveBookingData` (`src/lib/operations.ts:275`) is a **time window**, open from
+   **`scheduled_at − 45 minutes`** to **`scheduled_at + duration_hours + 30 minutes`**. A booking
+   dated last month at `en_route` shows **no call button at all**, and nothing on screen says why —
+   which is exactly the state staging's smoke booking sat in until 2026-08-12.
+
+   So the booking's `scheduled_at` must be roughly *now*. Set it to fifteen minutes ago and give it
+   a `duration_hours` of 4, which leaves the window open for about four and a half hours. The
+   Xooter moves the status from their job screen; an admin can also set it from Admin → Ops.
 
 4. **Sign in as each account, in two separate browsers.** Chrome and Firefox, or a laptop and a
    phone. **A private/incognito window is not enough** — it shares the session store with its
@@ -397,7 +423,7 @@ callee's panel offers accept/decline, and after accepting both hear each other. 
 
 | symptom | cause |
 |---|---|
-| No call button at all | Booking is not `en_route`/`in_progress`, or the signed-in account is not a participant. Step 3. |
+| No call button at all | **Check the window first** — `scheduled_at` more than 45 min in the future, or past `scheduled_at + duration + 30 min`, hides the button with no message. Then check status is `en_route`/`in_progress`, then that the signed-in account is a participant. Step 3. |
 | "Calling is not configured" | `twilio-token` returned `configured: false`. Gate 1 names the missing secrets. |
 | Rings, then drops immediately | The TwiML App's Voice Request URL is empty or wrong. **Gate 0 catches this** — it is the failure the self-test exists for. |
 | Connects but silence one way | Microphone permission denied on the silent side, or the OS input device is muted. Step 5. |
