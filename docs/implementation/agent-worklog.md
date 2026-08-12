@@ -23,47 +23,6 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-### Release & Infrastructure — 2026-08-12
-
-**Shipping ZD-026 in the §3b order.** Founder asked for it; founder dispatches the production
-deploy, I do everything up to it.
-
-Doing:
-
-1. Merging `claude/xoot-ios-build-setup-0te1sl` → `main`, which is what ships the web app (Netlify
-   builds `main`). This is §3b step 1.
-2. Proving the built artifact shows R39 on a **recurring** booking before pushing — §3b step 2. I
-   cannot load `xoot.co.za` from a session (the agent proxy blocks it), so the check runs against
-   the `dist` Netlify will build, not the live site. Founder confirms the live site after.
-3. Then merging `main` back into this branch so the two stop diverging and you pick up the Twilio
-   work sitting on `main`.
-
-> ⚠️ **Touching your path: `docs/implementation/decision-log.md`.** The merge conflicts there —
-> your ZD-026 row and notes land exactly where my ZD-025 notes are. It is purely additive and I am
-> **keeping both**, in ZD number order. Nothing of yours is reverted or reworded. Flagged because
-> rule 3 says never silently, and a merge conflict cannot wait for a handoff.
-
-**Not touching:** `src/index.css`, `src/lib/design-tokens.ts`, `src/components/kit/**` — yours.
-The voice UI needs nothing in `src/components/**` right now, so the design-kit port has those
-files uncontested; no sequencing needed from you.
-
-**Cross-review of ZD-026 through the release lens (rule 4) — it passes, and §3b is exactly right.**
-The risk my role owns is a `_shared/*` module reaching more functions than §3b names, since each
-deployed function carries its own frozen copy. Measured:
-
-- `_shared/care-plus-membership.ts` (new) — imported by exactly `create-booking` and
-  `create-booking-request`. **Not** by the `care-plus-membership` function, which imports only
-  `_shared/email-playbook.ts`. No third function to sequence.
-- `_shared/pricing.ts` — also bundled by `respond-zooter-job`, which §3b does not list. It imports
-  only `activeBoostBpsFor`, `applyBoost`, `commissionRateBps`, and your diff touches none of them.
-  **Unaffected — correctly excluded.**
-- The `ONE_TIME_SERVICE_FEE_CENTS` → `BOOKING_FEE_CENTS` rename is complete; the only surviving
-  mention is the comment explaining it, so nothing fails to bundle at deploy.
-
-Also confirmed your v15 reading, by a cheaper route than reading the deployed body: `create-booking`
-was last deployed **19:13:19Z** and `create-booking-request` **19:06:43Z**, while `bcae4a8` was
-authored **21:07:47Z**. Both deploys predate the commit, so neither can contain ZD-026.
-
 ### Correctness & Safety — 2026-08-12
 
 **Design-kit port.** Not yet started; claimed so the other session does not begin it.
@@ -76,6 +35,62 @@ Expected paths: `src/index.css`, `src/lib/design-tokens.ts`, `src/components/kit
 ---
 
 ## ✅ RELEASED — done, or stopped and available
+
+### Release & Infrastructure — 2026-08-12 — ZD-026 shipped to the web, functions await dispatch
+
+**Claim released.** §3b steps 1 and 2 are done. Step 3 is the founder's.
+
+**Merged `claude/xoot-ios-build-setup-0te1sl` → `main` (`6327b51`), and pushed.** Netlify builds
+`main`, so the ZD-026 client is shipping. Then merged `main` back here, so the branches are level
+again and you have the Twilio/voice work.
+
+Verified before the push, not after:
+
+| gate | result |
+| --- | --- |
+| `npx vitest run` | 752 tests / 76 files, green |
+| `npx vite build` | green |
+| §3b step 2 | **passes** — see below |
+
+For step 2 I could not use the live site: the agent proxy blocks `xoot.co.za`. Instead I checked
+the artifact Netlify will serve — `vite preview` over the built `dist`, `/book/confirm` seeded with
+a **fortnightly** draft, which is precisely the case the old rule waived. It renders a
+**"Booking fee" row at R39**, and the total is **R387** = R296 base + R30 add-on + R22 Booking Cover
++ R39. The fee is in the total, on a recurring booking. Founder confirms Netlify published.
+
+> ⚠️ **I edited your path — `docs/implementation/decision-log.md`.** The merge conflicted there.
+> Purely additive: your ZD-026 row against my ZD-025 row. **Both kept, in number order.** I took the
+> newer ZD-025 text because it records that Twilio defect ① is now fixed. Nothing of yours reverted
+> or reworded, and both notes sections are intact. Rule 3 flag; a merge conflict could not wait.
+
+**Cross-review of ZD-026 through the release lens (rule 4): passes, and §3b needed no widening.**
+The risk is a `_shared/*` module reaching more functions than §3b names, since each deployed
+function carries a frozen copy:
+
+- `_shared/care-plus-membership.ts` (new) — imported by exactly `create-booking` and
+  `create-booking-request`. **Not** by the `care-plus-membership` function, which imports only
+  `_shared/email-playbook.ts`.
+- `_shared/pricing.ts` — also bundled by `respond-zooter-job`, which §3b omits. It imports only
+  `activeBoostBpsFor`, `applyBoost`, `commissionRateBps`; your diff touches none. Correctly omitted.
+- The `ONE_TIME_SERVICE_FEE_CENTS` → `BOOKING_FEE_CENTS` rename is complete, so nothing fails to
+  bundle at deploy.
+
+Your v15 reading confirmed by a cheaper route than reading the body: `create-booking` last deployed
+**19:13:19Z**, `create-booking-request` **19:06:43Z**, `bcae4a8` authored **21:07:47Z**. Both
+deploys predate the commit.
+
+**⚠️ CORRECTION — the seven `governance-utils` redeploys are already done.** Your entry lists them
+as pending; they are not, and dispatching them would be a production deploy for no change.
+
+`_shared/governance-utils.ts` last changed **2026-08-08 09:21:58Z** (`ed1b20f`). All seven show a
+byte-identical deploy timestamp of **2026-08-12 17:13:54.778Z** — four days later, and identical to
+the millisecond across the batch, which means one operation wrote them.
+
+Verified rather than inferred: I read the **deployed body** of `create-concierge-handoff` (v4). Its
+bundled `_shared/governance-utils.ts` carries the fixed `governanceRpc` helper calling
+`supa.rpc(fn, args)`, and the comment recording the `supa.schema("private")` bug and the 2026-08-08
+measurement. One read directly; the other six share that exact millisecond timestamp with it.
+
 
 ### Correctness & Safety — 2026-08-12 — the R39 booking fee (ZD-026)
 
@@ -94,10 +109,12 @@ Also in scope, for awareness rather than action:
 
 - `create-booking-request` had no Care+ awareness at all and now shares
   `_shared/care-plus-membership.ts` with `create-booking`. Both are stale in production.
-- Seven functions still pending the `governance-utils` redeploy — `support-respond`,
+- ~~Seven functions still pending the `governance-utils` redeploy — `support-respond`,
   `create-concierge-handoff`, `create-masked-call`, `ops-workflow`, `report-concierge-answer`,
-  `send-booking-message`, `confirm-payment`. **These import no pricing module and carry none of
-  the §3b constraint.** They can go at any time.
+  `send-booking-message`, `confirm-payment`.~~ **Not pending — Release checked the deployed bodies
+  2026-08-12 and all seven already carry the fix.** See the Release entry above for the evidence.
+  Left struck through rather than deleted: this is the second time this repo has re-discovered a
+  redeploy that had already happened.
 - `go-live.md` §3 said "use the release branch, not `main`" — corrected, that branch is gone.
 
 ### Correctness & Safety — 2026-08-12 — brand wordmark
