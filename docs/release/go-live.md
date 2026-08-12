@@ -412,6 +412,20 @@ Written out properly below, because "two browsers" is a description, not instruc
 
 Budget 15 minutes the first time. You need **two devices, or one device and a phone** — see step 4.
 
+> ### ⚠️ Read this before you run it — 2c-0 changes what a staging call costs
+>
+> **On staging, this is a live-account call.** Both projects use Twilio account `AC93de1e…`, so a
+> staging test call bills the production account and appears in its call logs. That is not a reason
+> not to run it — the cost is cents — but it is a reason not to run it fifty times, and a reason
+> the staging subaccount in 2c-0 ② is worth doing before you invite anyone else to test.
+>
+> **On production, it will not work yet.** The TwiML App's Voice Request URL 404s (2c-0 ①), so the
+> call will ring and drop — the "Rings, then drops immediately" row in the table below. Fix the two
+> Console URLs first, then re-run gate 0 and confirm it is green before spending a person's time on
+> a call that cannot connect.
+>
+> **Staging's URLs are correct**, so staging is the right place to do this today.
+
 > ### ✅ On staging this is already done for you
 >
 > Run one command and skip to step 4:
@@ -474,7 +488,7 @@ callee's panel offers accept/decline, and after accepting both hear each other. 
 |---|---|
 | No call button at all | **Check the window first** — `scheduled_at` more than 45 min in the future, or past `scheduled_at + duration + 30 min`, hides the button with no message. Then check status is `en_route`/`in_progress`, then that the signed-in account is a participant. Step 3. |
 | "Calling is not configured" | `twilio-token` returned `configured: false`. Gate 1 names the missing secrets. |
-| Rings, then drops immediately | The TwiML App's Voice Request URL is empty or wrong. **Gate 0 catches this** — it is the failure the self-test exists for. |
+| Rings, then drops immediately | The TwiML App's Voice Request URL is empty, or set to something that does not route. **Gate 0 catches this** — it is the failure the self-test exists for, and as of 2026-08-12 it is production's actual state. See 2c-0 ①. |
 | Connects but silence one way | Microphone permission denied on the silent side, or the OS input device is muted. Step 5. |
 | Connects but silence both ways | Media is being blocked — a corporate network or VPN dropping UDP. Retry on a mobile hotspot to confirm. |
 | `403` in the Twilio Console with no matching function log | Auth Token wrong or absent. Gate 2. |
