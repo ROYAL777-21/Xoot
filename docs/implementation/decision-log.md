@@ -341,6 +341,34 @@ FAIL voice status callback: … https://mvlrkelahhsyjrwgsxaf.functions.supabase.
 
 Staging passes both.
 
+#### The 403 hiding behind the 404, and why the check belongs in the self-test
+
+Writing the "change these two Console URLs" instruction turned up a way it could have been wrong.
+Both voice functions validate Twilio's HMAC against an override secret rather than the request:
+
+```ts
+// twilio-voice-twiml/index.ts:62 and twilio-voice-status/index.ts:81
+const validationUrl = Deno.env.get("TWILIO_WEBHOOK_TWIML_URL") ?? req.url;
+```
+
+Twilio signs the URL it actually posted to. So correcting the Console URL has two outcomes: if the
+override is unset the fallback matches and the fix is complete; if the override is set to the old
+broken value, the request now *arrives* and is refused **403** — the call still dies, with a
+different error and nothing in the log saying why. Same family as the two-Auth-Token-names bug:
+fails closed, silent.
+
+**Measured 2026-08-12 20:42 rather than assumed** — both overrides are unset on production, so the
+Console edits are the whole fix. The instruction was right, but it was right by luck until checked.
+
+The check now lives in `twilio-selftest` because that is the only place both halves are visible:
+these are Edge Function secrets, unreadable from a session, and `verify-secrets.yml` reports names
+only. It is the same argument as ① — the value has to be compared against reality, not merely
+present.
+
+One incidental finding worth keeping: production's `TWILIO_WEBHOOK_BASE_URL` holds the **correct**
+origin while its Console URL did not. The secret was set properly and the Console was typed by
+hand, wrongly — so the five non-voice webhooks that validate against that base were never affected.
+
 It is a Twilio Console change, in `docs/release/go-live.md` §2c-0. No code fix reaches it.
 
 **The check had passed this URL.** It asked `voiceUrl.includes("twilio-voice-twiml")`, which the

@@ -353,19 +353,48 @@ Production's value is neither — it is the REST host with the function name pas
 answers 404. **A production call will connect and then die in silence**, which is precisely the
 scenario in this section's opening paragraph.
 
-Fix it in the Twilio Console → Voice → TwiML Apps → your app → Voice Request URL:
+##### Fixing it — five minutes, all in the Twilio Console
+
+**1. Open the TwiML App.** Twilio Console → **Voice** → **Manage** → **TwiML Apps** → the app whose
+SID matches `TWILIO_VOICE_APP_SID`. Gate 0 prints its friendly name, so you can confirm you are in
+the right one before changing anything.
+
+**2. Set the Voice Request URL**, and check the method is **POST**, not GET:
 
 ```
-https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml     (POST)
+https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml
 ```
 
-and the status callback alongside it:
+**3. Set the Status Callback URL** in the same form, also **POST**:
 
 ```
-https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-status    (POST)
+https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-status
 ```
 
-Staging's is already correct — copy its shape, not its project ref.
+**4. Save**, then re-run gate 0 (`environment: both`). Both rows should flip to ✅ and production's
+summary should read *"Voice and chat are configured"*.
+
+Copy staging's *shape*, not its project ref — the difference between the two URLs is only
+`fxmxy…` vs `mvlrk…`, and pasting staging's ref into production is a mistake gate 0 will not catch,
+because the ref is deliberately not pinned (a custom domain would otherwise read as broken).
+
+> **You do not need to change any secret.** That was worth checking rather than assuming, because
+> both voice functions validate Twilio's HMAC against an override secret if one is set, and a stale
+> override would have turned this 404 into a **403** — the call would still die, with a different
+> error and no log line saying why. Measured 20:42, production:
+>
+> ```
+> ➖ voice TwiML signature URL:  TWILIO_WEBHOOK_TWIML_URL is not set
+> ➖ voice status signature URL: TWILIO_WEBHOOK_STATUS_URL is not set
+> ✅ webhook base URL:          https://mvlrkelahhsyjrwgsxaf.functions.supabase.co
+> ```
+>
+> Both overrides are unset, so validation falls back to the request URL, which by definition matches
+> whatever Twilio called. **The two Console edits above are the whole fix.**
+>
+> The third line is the tell for how this happened: `TWILIO_WEBHOOK_BASE_URL` holds the *correct*
+> origin. So the secret was set properly and the Console URL was typed by hand, wrongly — which also
+> means the five non-voice webhooks that validate against that base were never affected.
 
 > Worth saying plainly: **the first version of gate 0 passed this URL.** It checked
 > `voiceUrl.includes("twilio-voice-twiml")`, which the broken value satisfies. The check now
@@ -378,9 +407,65 @@ same API key, "ZOOT API KEY". `SECRETS_INVENTORY.md` forbids this, and gate 0 no
 it rather than printing a note.
 
 It matters most for gate 3: every staging test call **bills the live account and appears in its
-call logs**, and a staging credential leak is a production credential leak. The fix is a Twilio
-**subaccount** for staging, with its own API key, TwiML App and Conversations service, set as the
-staging project's secrets. Until then, treat staging voice as production voice.
+call logs**, indistinguishable from a customer's, and a staging credential leak is a production
+credential leak. Until this is done, treat staging voice as production voice.
+
+##### Fixing it — ten minutes, one script and one command
+
+There is a script, because doing this by hand is four Console screens in the right order and one of
+them shows you a secret exactly once.
+
+**1. Get the parent account's credentials.** Twilio Console dashboard → Account Info →
+**Account SID** and **Auth Token**. These are the *production* account's, which is correct: a
+subaccount is created by its parent.
+
+**2. Dry run.** Changes nothing, prints exactly what it would create:
+
+```bash
+XOOT_TWILIO_ACCOUNT_SID=AC... XOOT_TWILIO_AUTH_TOKEN=... \
+  node scripts/ops/create-staging-twilio-subaccount.mjs
+```
+
+**3. Run it for real:**
+
+```bash
+XOOT_TWILIO_ACCOUNT_SID=AC... XOOT_TWILIO_AUTH_TOKEN=... \
+  node scripts/ops/create-staging-twilio-subaccount.mjs --confirm
+```
+
+It creates a subaccount named `Xoot Staging`, an API key on it, a TwiML App **already pointing at
+staging's routable URLs** — so it cannot repeat ① — and a Conversations service. Then it re-reads
+the TwiML App and refuses to claim success unless the Voice URL stuck.
+
+**4. Set the seven staging secrets.** The script prints the whole command filled in. Paste and run
+it.
+
+> ⚠️ **`TWILIO_API_KEY_SECRET` is shown once and never again.** Twilio does not store it in
+> retrievable form. Copy it into the command, run it, then clear your scrollback. If you lose it,
+> delete the key in the Console and make a new one — there is no recovery.
+>
+> ⚠️ **Run this in your own terminal, never in a workflow.** A workflow's output is a retained log,
+> and that secret would be in it. No workflow in this repo calls this script, deliberately.
+>
+> ⚠️ Both Auth Token names get the same value. Twilio issues one Auth Token per account; this repo
+> reads it under `TWILIO_AUTH_TOKEN` and `TWILIO_WEBHOOK_AUTH_TOKEN`, and setting only one leaves
+> five webhooks rejecting every inbound request with a silent 403.
+
+**5. No redeploy.** Edge Functions read secrets at runtime.
+
+**6. Prove it.** Re-run gate 0 with `environment: both`. The shared-Account-SID error should be
+gone, the two SIDs should differ, and staging's voice rows should be green because the TwiML App was
+born correct.
+
+**What this does and does not separate.** It separates identity, credentials and call logs — which
+is what `SECRETS_INVENTORY.md:56` asks for and what stops a staging call from looking like a
+customer's. It does **not** separate the invoice: a subaccount still bills to the parent. If you
+want separate billing, that is a second Twilio account rather than a subaccount, and a bigger
+decision than this script makes.
+
+If a subaccount named `Xoot Staging` already exists, the script refuses rather than making a second
+one — Twilio subaccounts cannot be deleted, only closed. Take the existing one's SID and Auth Token
+from the Console and go straight to step 4.
 
 **Gate 1 — did the secrets land? 30 seconds, no second person.** Sign in, open a booking you are on,
 and in the browser console:
@@ -412,32 +497,39 @@ Written out properly below, because "two browsers" is a description, not instruc
 
 Budget 15 minutes the first time. You need **two devices, or one device and a phone** — see step 4.
 
-> ### ⚠️ Read this before you run it — 2c-0 changes what a staging call costs
->
-> **On staging, this is a live-account call.** Both projects use Twilio account `AC93de1e…`, so a
-> staging test call bills the production account and appears in its call logs. That is not a reason
-> not to run it — the cost is cents — but it is a reason not to run it fifty times, and a reason
-> the staging subaccount in 2c-0 ② is worth doing before you invite anyone else to test.
->
-> **On production, it will not work yet.** The TwiML App's Voice Request URL 404s (2c-0 ①), so the
-> call will ring and drop — the "Rings, then drops immediately" row in the table below. Fix the two
-> Console URLs first, then re-run gate 0 and confirm it is green before spending a person's time on
-> a call that cannot connect.
->
-> **Staging's URLs are correct**, so staging is the right place to do this today.
+### First: which environment, and is it worth starting?
 
-> ### ✅ On staging this is already done for you
->
-> Run one command and skip to step 4:
->
-> ```bash
-> ZOOT_STAGING_SUPABASE_URL=... ZOOT_STAGING_SERVICE_ROLE_KEY=... \
->   node scripts/ops/arm-call-test.mjs
-> ```
->
-> It puts the smoke booking into the callable window, prints the two accounts and the booking URL,
-> and **verifies all four gate conditions before saying it worked**. The window is only a few hours
-> wide — re-run it to re-arm rather than concluding the feature is broken.
+Two questions, in this order. Both have measured answers as of 2026-08-12.
+
+**Where?** → **Staging.** Its Voice URL and status callback are correct. Production's are not (2c-0
+①): Twilio POSTs a URL that 404s, so a production call rings and drops. Do not spend a second
+person's time on production until 2c-0 ① is done and gate 0 is green.
+
+**What does it cost?** → **A staging call is a live-account call.** Both projects use Twilio account
+`AC93de1e…`, so it bills production and appears in production's call logs (2c-0 ②). Cents, and fine
+for a handful of tests. It is the reason to do the subaccount before anyone but you tests voice.
+
+**Then run gate 0 and read it before going further.** Actions → *Twilio self-test* → `environment:
+both`. Every step below assumes Twilio's side is right; if gate 0 is red for the environment you
+picked, the steps will still "work" and the call will still fail, and you will be debugging your
+browser instead of your configuration.
+
+### Then: arm staging with one command — it does steps 1 to 3 for you
+
+```bash
+ZOOT_STAGING_SUPABASE_URL=... ZOOT_STAGING_SERVICE_ROLE_KEY=... \
+  node scripts/ops/arm-call-test.mjs
+```
+
+It puts the smoke booking into the callable window, prints both sign-in addresses and the booking
+URL, and **verifies all four gate conditions before saying it worked**. Then **skip to step 4**.
+
+⚠️ The window is only about four and a half hours wide. If the call button has vanished since you
+last looked, re-run this rather than concluding the feature is broken — that is the single most
+likely reason, and it is invisible on screen.
+
+Steps 1 to 3 below are what the script does for you. Read them only if you are doing this on
+production, or if the script refuses.
 
 1. **Two accounts.** One customer, one Xooter. The Xooter account must be approved and active
    (`zooters.active = true`), which `approve-zooter` sets. If you only have one real Xooter, use
