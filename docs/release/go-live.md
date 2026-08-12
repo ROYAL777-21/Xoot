@@ -260,10 +260,17 @@ select control_key, enabled from public.operational_controls
 
 **No call has been placed on any surface, ever.** Four gates, cheapest first.
 
-**Gate 0 — is the Twilio configuration actually right? 10 seconds, admin account.**
+**Gate 0 — is the Twilio configuration actually right? One click, nobody needs to sign in.**
 
-New as of 2026-08-12, and it is now the first thing to run because it catches the failure the other
-gates cannot. Sign in as an admin and, in the browser console:
+Run the **Twilio self-test** workflow: Actions → *Twilio self-test* → Run workflow → environment
+`both`. It prints a ✅/❌/➖ table per project into the run summary and the log.
+
+It needs no new secret. The job fetches the project's service-role key with the
+`SUPABASE_ACCESS_TOKEN` that already exists as a repository secret, calls `twilio-selftest` with it,
+and never echoes the key — it goes into a header, and the response is filtered through an explicit
+`jq` allowlist rather than dumped.
+
+*Or, from an admin browser session, the same check by hand:*
 
 ```js
 const { data } = await window.supabase.functions.invoke("twilio-selftest", { body: {} });
@@ -284,9 +291,10 @@ Reading the output:
 - **`ok: null` is not a failure.** It means not applicable: the PSTN path and the SMS/WhatsApp
   webhooks need a phone number Xoot deliberately does not buy. Do not "fix" these.
 
-**Run it on staging too, and compare `accountSid`.** The same Account SID on both projects means
-staging and production share Twilio credentials, which `SECRETS_INVENTORY.md` forbids — a staging
-leak would then reach production.
+**Run it on staging too, and compare `accountSid`.** The workflow's `both` option does this for you
+and prints the reminder. The same Account SID on both projects means staging and production share
+Twilio credentials, which `SECRETS_INVENTORY.md` forbids — a staging test call would then bill and
+log against the live account, and a staging leak would reach production.
 
 **Gate 1 — did the secrets land? 30 seconds, no second person.** Sign in, open a booking you are on,
 and in the browser console:
@@ -308,13 +316,66 @@ into a list.
 broke. In the Twilio Console: Monitor → Logs → **Errors**. A `403` from `twilio-voice-twiml` with no
 matching function log means the Auth Token is wrong or absent. Nothing else produces that pattern.
 
-**Gate 3 — a real two-party call.** Two browsers, two accounts that are both participants on the
-same booking, booking status `en_route` or `in_progress`. Both should hear each other. Until that
-has happened once, voice calling is code that has never run.
+**Gate 3 — a real two-party call.** The only proof that media flows. Everything above proves
+configuration; this proves sound comes out. Until it has happened once, voice calling is code that
+has never run.
 
-**What I cannot do:** none of these, from a session. The agent proxy denies `*.supabase.co`, and
-`pg_net`/`http` are not installed, so an Edge Function cannot be invoked from here at all. Paste me
-the output of gate 1 and I will tell you what is missing.
+Written out properly below, because "two browsers" is a description, not instructions.
+
+#### 2c-i. The two-party call, step by step
+
+Budget 15 minutes the first time. You need **two devices, or one device and a phone** — see step 4.
+
+1. **Two accounts.** One customer, one Xooter. The Xooter account must be approved and active
+   (`zooters.active = true`), which `approve-zooter` sets. If you only have one real Xooter, use
+   your own second email.
+
+2. **One booking, with both of them on it.** Create a booking as the customer, then assign the
+   Xooter to it. Both parties must be on the *same* booking row — `assertBookingParticipant` checks
+   `bookings.user_id` and `bookings.zooter_id`, and an admin account does not substitute for either.
+
+3. **Move the booking to `en_route` or `in_progress`.** This is the gate that catches most first
+   attempts. `maskedCallAvailable` returns false at every other status, so the call button simply
+   is not rendered on a `confirmed` booking and it looks like the feature is missing. The Xooter
+   moves it from their job screen; an admin can also set it from Admin → Ops.
+
+4. **Sign in as each account, in two separate browsers.** Chrome and Firefox, or a laptop and a
+   phone. **A private/incognito window is not enough** — it shares the session store with its
+   parent window in the way that matters here, so signing in as the second account signs the first
+   one out and you end up calling yourself. Two different browsers, or two different devices.
+
+5. **Grant microphone permission in both.** The prompt appears on the first call attempt. If it was
+   ever denied for the site, the browser will not ask again: clear it in the padlock menu →
+   Site settings → Microphone → Allow, then reload.
+
+6. **Open the booking on both screens** (`/app/bookings/<id>` as the customer, the job detail as the
+   Xooter) and **press call on one.** The other should ring within a second or two.
+
+**What success looks like:** the caller's panel goes `connecting → ringing → connected`, the
+callee's panel offers accept/decline, and after accepting both hear each other. The Twilio Console
+(Monitor → Logs → Calls) shows **two** call legs joining one conference — two, because
+`<Dial><Conference>` dials each participant into a room rather than one party to the other.
+
+**When it does not work, what each failure means:**
+
+| symptom | cause |
+|---|---|
+| No call button at all | Booking is not `en_route`/`in_progress`, or the signed-in account is not a participant. Step 3. |
+| "Calling is not configured" | `twilio-token` returned `configured: false`. Gate 1 names the missing secrets. |
+| Rings, then drops immediately | The TwiML App's Voice Request URL is empty or wrong. **Gate 0 catches this** — it is the failure the self-test exists for. |
+| Connects but silence one way | Microphone permission denied on the silent side, or the OS input device is muted. Step 5. |
+| Connects but silence both ways | Media is being blocked — a corporate network or VPN dropping UDP. Retry on a mobile hotspot to confirm. |
+| `403` in the Twilio Console with no matching function log | Auth Token wrong or absent. Gate 2. |
+| One leg in the conference, not two | The callee never accepted, or their token was minted for a different booking. |
+
+**⚠️ This is the one gate no agent can run.** It needs two humans, or one human with two devices,
+in front of two microphones. Everything else in section 2c is now automated; this is not, and no
+amount of server-side checking substitutes for it. Do not treat a green gate 0 as a working phone.
+
+**What I cannot do:** gates 1, 2 and 3 from a session. The agent proxy denies `*.supabase.co`, and
+`pg_net`/`http` are not installed, so an Edge Function cannot be invoked from a session at all —
+which is exactly why gate 0 moved into a workflow, where a runner with network access can make the
+call instead. Paste me the output of gate 1 and I will tell you what is missing.
 
 ---
 
