@@ -327,7 +327,19 @@ production  https://mvlrkelahhsyjrwgsxaf.supabase.co/twilio-voice-twiml         
 Supabase serves an Edge Function on `https://<ref>.functions.supabase.co/<fn>` or
 `https://<ref>.supabase.co/functions/v1/<fn>`. Production's value is neither — the REST host with
 the function name on the root. **A production call would connect and then die in silence**, which
-is the single failure this self-test was built to catch.
+is the single failure this self-test was built to catch. The **status callback has the same
+defect**, so production would also have lost every call-status event.
+
+Re-run at 19:29 with the tightened check, both defects now named with the exact string to paste:
+
+```
+FAIL voice TwiML app:       Voice URL names twilio-voice-twiml but is not a routable Edge
+                            Function URL … Set it to
+                            https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml
+FAIL voice status callback: … https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-status
+```
+
+Staging passes both.
 
 It is a Twilio Console change, in `docs/release/go-live.md` §2c-0. No code fix reaches it.
 
