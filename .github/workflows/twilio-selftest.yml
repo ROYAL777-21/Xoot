@@ -291,6 +291,10 @@ jobs:
               (.checks[]? | "  \(if .ok == true then "OK  " elif .ok == false then "FAIL" else "n/a " end) \(.name): \(.detail)")
             '
 
+            # Kept for the cross-environment comparison below. An Account SID is an identifier, not
+            # a credential — it is already printed above and appears in every Twilio webhook.
+            seen_account_sids="${seen_account_sids}${label}=$(echo "$response" | jq -r '.accountSid // "unknown"') "
+
             if [ "$(echo "$response" | jq -r '.ok')" != "true" ]; then
               echo "::error::$label: Twilio self-test reported problems (see the checks above)."
               return 1
@@ -299,6 +303,7 @@ jobs:
           }
 
           status=0
+          seen_account_sids=""
           case "$ENVIRONMENT" in
             production) run_one production mvlrkelahhsyjrwgsxaf || status=1 ;;
             staging)    run_one staging    fxmxyabdjqviqbcxmvlp || status=1 ;;
@@ -307,11 +312,31 @@ jobs:
               # is a useful answer and a `&&` would hide half of it.
               run_one staging    fxmxyabdjqviqbcxmvlp || status=1
               run_one production mvlrkelahhsyjrwgsxaf || status=1
+
+              # ⚠️ COMPARED, not left to the reader.
+              #
+              # This block used to print "compare the two Account SIDs above, they must differ" and
+              # stop there. The first green run, 19:20, printed the SAME SID twice — and a green
+              # tick beside it, because nothing was actually checking. A rule that only a human can
+              # enforce is not enforced; it is a note.
+              local_sids=$(printf '%s' "$seen_account_sids" | tr ' ' '\n' | sed -n 's/.*=//p' | grep -v '^$' | sort -u | wc -l)
               echo "" >> "$GITHUB_STEP_SUMMARY"
-              echo "> Compare the two Account SIDs above. **They must differ.**" >> "$GITHUB_STEP_SUMMARY"
-              echo "> The same SID on both means staging and production share Twilio credentials," >> "$GITHUB_STEP_SUMMARY"
-              echo "> which \`SECRETS_INVENTORY.md\` forbids — a staging test call would then bill" >> "$GITHUB_STEP_SUMMARY"
-              echo "> and log against the live account." >> "$GITHUB_STEP_SUMMARY"
+              echo "Account SIDs seen: \`${seen_account_sids}\`" >> "$GITHUB_STEP_SUMMARY"
+              if [ "$local_sids" -lt 2 ]; then
+                echo "::error::staging and production report the SAME Twilio Account SID. SECRETS_INVENTORY.md forbids shared credentials: a staging test call bills and logs against the live account."
+                {
+                  echo ""
+                  echo "❌ **Staging and production share one Twilio account.**"
+                  echo ""
+                  echo "\`SECRETS_INVENTORY.md\` forbids this. Every staging test call bills the live"
+                  echo "account, appears in its call logs, and is one wrong SID away from reaching a"
+                  echo "real customer. The fix is a second Twilio subaccount with its own API key,"
+                  echo "TwiML App and Conversations service, set as the staging project's secrets."
+                } >> "$GITHUB_STEP_SUMMARY"
+                status=1
+              else
+                echo "✅ Staging and production use different Twilio accounts." >> "$GITHUB_STEP_SUMMARY"
+              fi
               ;;
           esac
 

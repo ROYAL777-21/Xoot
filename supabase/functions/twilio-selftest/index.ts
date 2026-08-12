@@ -1,4 +1,10 @@
 import { fail, handlePreflight, json, requireAdmin, requireAuth } from "../_shared/action-utils.ts";
+import {
+  describeUnroutableFunctionUrl,
+  expectedFunctionUrls,
+  isRoutableFunctionUrl,
+  projectRefFrom,
+} from "../_shared/function-url.ts";
 
 /**
  * Asks Twilio whether voice and chat are actually configured, and reports what it says.
@@ -63,6 +69,17 @@ const getJson = async (url: string, auth: string): Promise<{ status: number; bod
   const body = await res.json().catch(() => ({}));
   return { status: res.status, body };
 };
+
+/**
+ * The canonical URL this project serves `fn` on — the one an error message tells you to paste.
+ * The predicate itself lives in `_shared/function-url.ts`, where it is unit-tested; see the note
+ * at the top of that file for the production failure that made a substring match insufficient.
+ */
+const canonicalUrlFor = (fn: string) =>
+  expectedFunctionUrls(projectRefFrom(Deno.env.get("SUPABASE_URL") ?? ""), fn)[0];
+
+const describeUnroutable = (url: string, fn: string) =>
+  describeUnroutableFunctionUrl(url, fn, canonicalUrlFor(fn));
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
@@ -182,26 +199,31 @@ Deno.serve(async (req) => {
         const voiceUrl = String(app.body?.voice_url ?? "");
         const statusCallback = String(app.body?.status_callback ?? "");
         const voiceUrlSet = voiceUrl.length > 0;
-        const pointsAtUs = voiceUrl.includes("twilio-voice-twiml");
+        const voiceUrlRoutable = isRoutableFunctionUrl(voiceUrl, "twilio-voice-twiml");
 
         checks.push({
           name: "voice TwiML app",
-          ok: voiceUrlSet && pointsAtUs,
+          ok: voiceUrlSet && voiceUrlRoutable,
           detail: !voiceUrlSet
             // The named failure this function exists for.
-            ? `TwiML App "${app.body?.friendly_name ?? voiceAppSid}" exists but its Voice Request URL is EMPTY. Calls will connect and then die silently. Set it to .../twilio-voice-twiml (POST).`
-            : pointsAtUs
+            ? `TwiML App "${app.body?.friendly_name ?? voiceAppSid}" exists but its Voice Request URL is EMPTY. Calls will connect and then die silently. Set it to ${canonicalUrlFor("twilio-voice-twiml")} (POST).`
+            : voiceUrlRoutable
               ? `Voice URL: ${voiceUrl} (${app.body?.voice_method ?? "?"}).`
-              : `Voice URL is set but does not point at twilio-voice-twiml: ${voiceUrl}`,
+              : `Voice URL ${describeUnroutable(voiceUrl, "twilio-voice-twiml")}`,
         });
 
+        const statusRoutable = isRoutableFunctionUrl(statusCallback, "twilio-voice-status");
         checks.push({
           name: "voice status callback",
-          // Not fatal: calls connect without it, we just lose call-status events.
-          ok: statusCallback.includes("twilio-voice-status") ? true : null,
-          detail: statusCallback
-            ? `Status callback: ${statusCallback}`
-            : "No status callback set. Calls still work; call-status events will not arrive.",
+          // Not fatal: calls connect without it, we just lose call-status events. But a callback
+          // that is set to an unroutable URL is worth flagging as broken rather than absent — it
+          // looks configured and is not.
+          ok: statusRoutable ? true : statusCallback.length > 0 ? false : null,
+          detail: !statusCallback
+            ? "No status callback set. Calls still work; call-status events will not arrive."
+            : statusRoutable
+              ? `Status callback: ${statusCallback}`
+              : `Status callback ${describeUnroutable(statusCallback, "twilio-voice-status")}`,
         });
       }
     } else {
