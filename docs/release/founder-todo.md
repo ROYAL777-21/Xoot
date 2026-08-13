@@ -45,45 +45,35 @@ Recorded because it cost a round trip: a `workflow_dispatch` workflow is not dis
 exists on the **default branch**. On a feature branch the API answers `404 Not Found`, which reads
 like a missing file rather than a policy.
 
-### 1.2 Find out what is actually serving `xoot.co.za`
+### 1.2 ⚠️ ANSWERED — the Netlify site was never connected to the repo
 
-**⚠️ The live site has not picked up `main` in over 80 minutes.** *Verify live deploy* has now run
-**seven times** — on every push to `main` and three times on dispatch — and found no build stamp on
-any of them. Twelve attempts per run, so **84 fetches**, the last at 02:06Z.
+Read from the Netlify API 2026-08-13, so this is no longer four candidates:
 
-The stamp shipped in `d64f403` at **00:45Z**. If anything had rebuilt and published in the 81
-minutes since, `https://xoot.co.za/build-info.json` would exist. It does not. The site published fine
-at ~22:11 the night before, so this is a change of state.
+```
+published_at  2026-05-28T19:47:45Z     ← nearly three months old
+title         "Deploy triggered by upload"
+deploy_source "api"        commit_ref  null
+summary       "1 new file uploaded"    "No header rules processed"
+```
 
-> Being precise about what each run proves: a run fired by a *fresh* push checks a commit only three
-> minutes old, and a Netlify build legitimately takes longer than that — those runs prove nothing on
-> their own. The decisive evidence is the **00:45Z and 00:48Z commits**, which have now had over an
-> hour and still are not serving.
+**`xoot.co.za` serves a hand-uploaded `index.html` from 28 May.** The project `xoot-home-care` exists
+and the domain and certificate are correctly attached — but nothing ever linked it to the repository.
+No push has changed the live site, and none will until it is linked.
 
-Checked before reporting it, so this is not a false alarm: `netlify.toml`'s `/*` → `/index.html`
-rule has **no `force` flag**, and Netlify serves a real file ahead of a non-forced redirect, so the
-stamp would be served if it were in the published build.
+DNS is fine. **Do not touch GoDaddy.** The fix is four screens in Netlify:
+**→ [`domain-setup.md`](./domain-setup.md)**
 
-**Four candidates, indistinguishable from here:**
+Three consequences worth stating plainly:
 
-1. build queued — ruled out by now; an hour is not a queue
-2. build failing — the Netlify deploy log says so in one line
-3. the branch is no longer wired to the site
-4. **`xoot.co.za` may not be served by Netlify at all.** The repo carries *both* a `netlify.toml`
-   and an Apache `public/.htaccess` that `postbuild` copies into `dist` for **Hostinger**. If the
-   domain is served from a manual Hostinger upload, no git push will ever change it, and the 22:11
-   "publish" was an upload rather than a build. **Check this one first** — it would explain
-   everything, and it changes what §3b's gate even means.
+1. **The live site is not the app.** Nothing merged since 28 May is on it — the R39 fee, Care+, the
+   rename, voice.
+2. **The security headers are not live either** — *"No header rules processed"* means `_headers` has
+   never been applied.
+3. **"Netlify published at ~22:11" was this same file being served.** Nothing published then. A site
+   that returns 200 looks identical either way, which is exactly why the build stamp exists.
 
-**Why no session can do it:** outbound `CONNECT` to `xoot.co.za:443` is refused by the
-organisation's egress policy — the proxy logs it as `connect_rejected`, gateway 403. A GitHub runner
-is not restricted, which is why the check is a workflow; the hosting dashboard is yours alone.
-
-> **Proves it done:** *Verify live deploy* reports ✅ for a commit. If the answer turns out to be
-> candidate 4, that workflow needs repointing at whatever actually serves the domain — tell me and I
-> will do it.
-
----
+> **Proves it done:** *Verify live deploy* reports ✅. That also opens the §3b pricing gate — they
+> read the same stamp — which unblocks the production rename.
 
 ## 2. The two guides you asked for — both now followable from a browser
 

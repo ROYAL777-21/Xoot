@@ -1,144 +1,128 @@
-# Pointing xoot.co.za at Netlify
+# Getting xoot.co.za to serve the actual app
 
-**This is the highest-value thing on the founder's list**, and it is not a cosmetic one. Two
-separate guards are currently held shut by it:
+## ⚠️ Answered 2026-08-13, from the Netlify API: the site was never connected to the repository
 
-| guard | what it does | state |
-|---|---|---|
-| *Verify live deploy* | fetches `xoot.co.za/build-info.json`, compares to the pushed commit | ❌ 7 runs, no stamp |
-| §3b pricing gate in `deploy-edge-functions` | same file, compares `.pricingRule` and `.bookingFeeCents` | ❌ **blocks every production function deploy** |
+Eight runs of *Verify live deploy* found no build stamp. The reason is not a failing build, a queue,
+or DNS. It is this — the live deploy record, read directly:
 
-They read the **same file**, so fixing the site opens both at once. Until then, production Edge
-Functions cannot be deployed at all — which means the ZD-029 schema rename cannot go to production,
-because that migration requires all 33 functions to be redeployed immediately after it.
+```
+id            6a189bd7a6082006e0ca6aed
+state         ready
+published_at  2026-05-28T19:47:45Z        ← nearly three months old
+title         "Deploy triggered by upload"
+deploy_source "api"
+commit_ref    null                        ← not from a git commit at all
+committer     null
+summary       "1 new file uploaded — 1 generated page changed: index.html"
+              "No header rules processed"
+```
 
----
+**`xoot.co.za` is serving a hand-uploaded `index.html` from 28 May 2026.** The Netlify project
+`xoot-home-care` exists and the domain is correctly attached to it — but **nothing has ever linked
+it to `ROYAL777-21/zoot-your-local-helpers`**. There is no `commit_ref`, no commit URL, no committer,
+and the deploy source is `api`.
 
-## What we know, and what we do not
+So no push to `main` has ever changed the live site, and none ever will until this is fixed. Three
+things follow, and they are worth stating plainly:
 
-**Measured, seven times between 00:48Z and 02:06Z on 2026-08-13:** `https://xoot.co.za/build-info.json`
-returns nothing a JSON parser can read. 84 fetches in total.
+1. **The live site is not the app.** Every feature merged since 28 May — the R39 booking fee, the
+   Care+ waiver, the whole Xoot rename, voice calling — is not on it.
+2. **The security headers are not live either.** *"No header rules processed"* means `public/_headers`
+   has never been applied. The `/xooter/*` `noindex` / `no-store` rules I fixed this morning are in
+   the repo and not on the internet.
+3. **The founder's "Netlify published at ~22:11" was this same static file being served.** Nothing
+   published then. That is not a criticism — a site that returns 200 looks identical either way,
+   which is exactly why the build stamp exists.
 
-The stamp shipped in commit `d64f403` at 00:45Z. If anything had built and published since, that
-file would exist — `netlify.toml`'s `/*` → `/index.html` rule has **no `force` flag**, and Netlify
-serves a real file ahead of a non-forced redirect, so it would be reachable.
-
-**What that does *not* tell us** is why. Build queued, build failing, branch unwired, or the domain
-never pointed at Netlify in the first place — all four look identical from outside. No agent session
-can tell them apart: outbound `CONNECT` to `xoot.co.za:443` is refused by the organisation's egress
-policy (`connect_rejected`, gateway 403), and the Netlify dashboard needs your login regardless.
-
-**The repo is configured for Netlify.** `netlify.toml` already carries the build command
-(`npm ci --no-audit --prefer-offline && npm run build`), the publish directory (`dist`) and the SPA
-redirect. Nothing in it needs changing.
-
-> The repo also ships `public/.htaccess`, which `postbuild` copies into `dist` — an Apache file that
-> Netlify ignores completely. It is a leftover from a Hostinger target. Harmless, and worth knowing
-> so it does not read as evidence that Hostinger is the live host.
-
----
-
-## Step 1 — find out whether a Netlify site exists
-
-Sign in at **[app.netlify.com](https://app.netlify.com)** and look at your list of sites.
-
-**If a site is already connected to `ROYAL777-21/zoot-your-local-helpers`:** open it, go to
-**Deploys**, and read the most recent one. That single screen answers the question:
-
-| what you see | what it means | what to do |
-|---|---|---|
-| Last deploy hours old, no recent attempts | the branch is not wired, or auto-publishing is off | step 2 |
-| A **failed** deploy | the build broke — open it and read the log | send me the error; it is almost certainly fixable in the repo |
-| Deploys succeeding, but the domain is not listed | Netlify is building but nothing points at it | step 3 |
-
-**If no site exists**, create one: **Add new site → Import an existing project → GitHub →** pick the
-repo. Netlify reads `netlify.toml`, so leave the build command and publish directory exactly as it
-proposes them. Set the production branch to **`main`**.
-
-⚠️ **Environment variables.** The build inlines `VITE_*` values at build time. Netlify needs the
-same ones GitHub has under Settings → Variables — `VITE_SUPABASE_URL`,
-`VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, `VITE_PUBLIC_SITE_URL`,
-`VITE_MAPBOX_PUBLIC_TOKEN`, `VITE_APP_ENV`, and the rest. **A build with these missing succeeds and
-produces a site that cannot reach Supabase** — the failure is silent and looks like an app bug.
-Copy them into **Site configuration → Environment variables** before the first deploy.
-
-## Step 2 — make sure it builds `main` and publishes automatically
-
-**Site configuration → Build & deploy:**
-
-- **Production branch:** `main`
-- **Auto publish:** enabled. If it is off, deploys build but never go live — which would explain
-  every one of our seven measurements.
-- **Build command / publish directory:** should already read from `netlify.toml`.
-
-Then **Trigger deploy → Deploy site** and watch it finish once by hand.
-
-## Step 3 — add the domain in Netlify first
-
-**Domain management → Add a domain → `xoot.co.za`.** Netlify will say it does not control the DNS
-yet and offer you two ways to fix that. **Take note of the exact values it shows you** — do not use
-values from any guide, including this one, because Netlify assigns them per site.
-
-Either option works. They differ in who runs your DNS:
-
-|  | **Netlify DNS** (simpler) | **External DNS** (keep GoDaddy) |
-|---|---|---|
-| what you change at GoDaddy | the **nameservers** | two **records** |
-| Netlify gives you | 4 nameservers, `dns1.p0x.nsone.net`-shaped | an `A` record IP and a `CNAME` target |
-| HTTPS certificate | automatic | automatic, once DNS resolves |
-| other records (email, etc.) | must be recreated in Netlify | untouched |
-
-**If you have email on this domain, or any other DNS records, choose External DNS** — switching
-nameservers moves *all* DNS to Netlify and anything you do not recreate stops working. For a domain
-bought purely for this site, Netlify DNS is fewer moving parts.
-
-## Step 4 — GoDaddy
-
-Sign in → **My Products → Domains → `xoot.co.za` → DNS** (or *Manage DNS*).
-
-**If you chose Netlify DNS:** find **Nameservers** → *Change* → *Enter my own nameservers* → paste
-the four Netlify gave you, in order → Save. GoDaddy will warn you this moves DNS away; that is the
-intent.
-
-**If you chose External DNS:** in **DNS Records**, add or edit:
-
-| Type | Name | Value | TTL |
-|---|---|---|---|
-| `A` | `@` | the IP Netlify showed you | 600 |
-| `CNAME` | `www` | the `*.netlify.app` target Netlify showed you | 600 |
-
-Delete GoDaddy's default parking records for `@` and `www` first — a leftover parking `A` record
-alongside yours resolves round-robin, so the site works intermittently, which is far more confusing
-to debug than it being plainly down.
-
-⚠️ Do **not** use a `CNAME` on the root (`@`). It is invalid at the apex in ordinary DNS, and GoDaddy
-will either refuse it or silently break mail routing. Root gets an `A` record.
-
-## Step 5 — wait, then check
-
-DNS propagation is typically minutes and can be up to 48 hours; GoDaddy's own TTL is the floor.
-Netlify's Domain management page shows a green tick per hostname once it resolves, and issues the
-Let's Encrypt certificate automatically after that.
-
-**Then, and this is the proof:** GitHub → Actions → **Verify live deploy** → *Run workflow*.
-
-- ✅ **green** — the site is serving the commit `main` is on. Both guards are now open. Tell me and
-  I will take the ZD-029 rename to production.
-- ➖ **"no build stamp"** — DNS resolves but the published build predates `write-build-info.mjs`.
-  Trigger one more Netlify deploy from `main` and re-run.
-- ❌ **wrong commit** — the site is serving something older. The run prints both SHAs; send them to
-  me.
+> **DNS is fine. Do not touch GoDaddy.** Netlify already reports `xoot.co.za` as the primary URL with
+> `ssl_url: https://xoot.co.za`, so the domain and the certificate are both in place. The problem is
+> entirely on the build side.
 
 ---
 
-## What happens after it goes green
+## The fix: connect the existing project to the repo
 
-Nothing automatic, and deliberately so — a production deploy stays a human act. But the sequence
-that is currently impossible becomes possible, in this order:
+**Do not create a second site.** The domain is attached to `xoot-home-care`; making a new project
+would mean moving the domain and re-issuing the certificate for no reason.
+
+### 1. Open the project
+
+**[app.netlify.com/projects/xoot-home-care](https://app.netlify.com/projects/xoot-home-care)** →
+**Project configuration** → **Build & deploy** → **Continuous deployment**.
+
+It will say something like *"This project is not linked to a Git repository."* That line is the whole
+bug.
+
+### 2. Link the repository
+
+**Link repository** → **GitHub** → authorise if asked → choose
+**`ROYAL777-21/zoot-your-local-helpers`**.
+
+Netlify reads `netlify.toml`, so accept what it proposes:
+
+| field | value |
+|---|---|
+| Branch to deploy | **`main`** |
+| Build command | `npm ci --no-audit --prefer-offline && npm run build` |
+| Publish directory | `dist` |
+
+### 3. ⚠️ Set the environment variables BEFORE the first build
+
+This is the step that fails silently if skipped. The `VITE_*` values are **inlined at build time** —
+a build without them succeeds and produces a site that cannot reach Supabase. It looks like an app
+bug, not a config one.
+
+**Project configuration → Environment variables → Add a variable.** Copy each from GitHub →
+Settings → Secrets and variables → Actions → **Variables** tab:
+
+```
+VITE_SUPABASE_URL              VITE_APP_ENV
+VITE_SUPABASE_PUBLISHABLE_KEY  VITE_PUBLIC_SITE_URL
+VITE_SUPABASE_PROJECT_ID       VITE_MAPBOX_PUBLIC_TOKEN
+VITE_SENTRY_DSN                VITE_CLOUDFLARE_TURNSTILE_SITE_KEY
+VITE_GOOGLE_WEB_CLIENT_ID      VITE_APPLE_SERVICES_ID
+```
+
+All are safe to put in Netlify — they ship to the browser inside the bundle either way. None of them
+is a secret. Set the scope to **all deploy contexts**.
+
+### 4. Confirm auto-publishing is on
+
+Same screen: **Build settings → Stop builds** should read *"Builds are enabled"*, and under
+**Deploy contexts**, *Production branch* = `main`. If auto-publish is off, builds run and never go
+live — the same symptom by a different route.
+
+### 5. Trigger the first real build
+
+**Deploys → Trigger deploy → Deploy site.** Watch it. It will take a few minutes, and the log should
+end with the `postbuild` chain, including `Wrote dist/build-info.json`.
+
+If it fails, send me the error — a build failure now is almost certainly a missing environment
+variable or a Node version, and both are fixable in the repo.
+
+### 6. Prove it
+
+GitHub → Actions → **Verify live deploy** → *Run workflow*.
+
+- ✅ **green** — the live site is serving the commit `main` is on. **This also opens the §3b pricing
+  gate**, because both read the same stamp. Tell me and I will take the ZD-029 rename to production.
+- ➖ **"no build stamp"** — the deploy did not publish. Check *Deploys* for whether it says
+  *Published* or *Preview*.
+- ❌ **wrong commit** — an older deploy is still the published one. **Deploys → the newest → Publish
+  deploy.**
+
+---
+
+## After it goes green
+
+The production sequence that is currently impossible becomes possible, in this order and with no gap
+between the two steps:
 
 1. `db-push` → **production** (the ZD-029 migration)
-2. `deploy-edge-functions` → **production**, function list **blank**, immediately after
+2. `deploy-edge-functions` → **production**, function list **blank**
 
-Step 2 must follow step 1 without a gap: between them, every function is querying tables that have
-been renamed out from under it. That is survivable only because no operational table has rows in it,
-and that is the last moment it will be true.
+Between them, every function queries tables that have been renamed out from under it. That is
+survivable only while no operational table has rows, and that is the last moment it will be true.
+
+`preflight-production.yml` now refuses step 1 if step 2 would be blocked — see
+[`go-live.md`](./go-live.md) §3-1.

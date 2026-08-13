@@ -74,6 +74,56 @@ jobs:
             exit 1
           fi
 
+      #
+      # ⚠️ THE HALF-DEPLOY GUARD. Added 2026-08-13 after ZD-029 made the hazard concrete.
+      #
+      # A migration and the functions that read the schema are ONE change split across two
+      # dispatches. A deployed Edge Function carries frozen code, so from the moment a rename lands
+      # until the last function is redeployed, every function queries tables that no longer exist.
+      #
+      # `deploy-edge-functions.yml` refuses a production deploy touching a booking writer unless the
+      # live site already serves the matching pricing rule. That guard is right. But it created a
+      # trap this workflow could walk straight into: apply the migration here, then discover the
+      # redeploys are refused there — and there is no way out except forward, which is blocked.
+      #
+      # So this checks the OTHER workflow's precondition BEFORE writing anything. Same URL, same
+      # field. If the functions cannot be deployed, the migration does not get applied.
+      #
+      # Scoped to production applies only. Staging has no such gate, and a dry run writes nothing.
+      #
+      # ⚠️ This is a precondition check, not a promise: the site could go stale between this run and
+      # the deploy. It closes the trap that exists today, where the two guards did not know about
+      # each other at all.
+      - name: The functions this migration needs must be deployable
+        if: inputs.environment == 'production' && !inputs.dry_run
+        shell: bash
+        run: |
+          set +e
+          set -uo pipefail
+
+          body="$(curl -sS --max-time 25 "https://xoot.co.za/build-info.json?cachebust=${GITHUB_RUN_ID}" 2>&1)"
+          # Herestring, not a pipe: `printf | jq` takes SIGPIPE on non-JSON and pipefail turns that
+          # into a job failure that looks like a failed check rather than a broken one.
+          live_rule="$(jq -r '.pricingRule // ""' <<< "$body" 2>/dev/null || true)"
+
+          if [ -z "$live_rule" ] || [ "$live_rule" = "unknown" ]; then
+            echo "::error::REFUSING TO APPLY. https://xoot.co.za/build-info.json does not report a pricing rule, which means deploy-edge-functions will refuse the redeploys this migration depends on."
+            echo "::error::Applying now would leave every Edge Function querying a schema it does not match, with no way to fix it forward."
+            echo "::error::Fix the live site first — docs/release/domain-setup.md — then re-run. Verify live deploy going green opens both gates at once."
+            {
+              echo "## ⛔ Refused — the functions could not follow this migration"
+              echo ""
+              echo "A migration and the functions that read the schema are one change in two"
+              echo "dispatches. \`deploy-edge-functions\` would refuse the second half right now, so"
+              echo "this workflow refused the first."
+              echo ""
+              echo "Nothing was written. See [\`domain-setup.md\`](../blob/main/docs/release/domain-setup.md)."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          echo "Live site reports pricing rule ${live_rule}; the function deploy will not be refused."
+
       - name: Refuse to run without the credentials this needs
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
