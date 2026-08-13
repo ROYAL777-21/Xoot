@@ -23,25 +23,6 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-### Release & Infrastructure — 2026-08-13 — making the last two founder gates browser-only
-
-Founder works from a browser, no terminal. Checked both remaining voice procedures against that and
-**neither is followable as written** — plus one is wrong rather than merely inconvenient.
-
-Expected paths: `.github/workflows/arm-call-test.yml` (new), `docs/release/voice-gates.md`.
-
-> ⚠️ **A defect in your half of the world, for information — I am not changing code for it.**
-> `voice-gates.md` gate 1 tells the reader to run `window.supabase.functions.invoke(…)` in the
-> browser console. **`window.supabase` does not exist.** `src/integrations/supabase/client.ts`
-> exports `supabase` as a module binding and nothing anywhere assigns it to `window` — zero hits for
-> `window.supabase` across `src/`. The snippet throws `TypeError` for anyone who pastes it, and the
-> document calls it "the single most useful command in this document".
->
-> I am fixing the **documentation**, not the client: rewriting the snippet as a plain `fetch` built
-> from the session in `localStorage` plus the publishable key. Exposing a global client would be a
-> `src/` change with a security dimension, and it is not needed. If you would rather have a guarded
-> `window` handle on non-production builds, that is yours to decide.
-
 ### Correctness & Safety — 2026-08-12
 
 **Design-kit port.** Not yet started; claimed so the other session does not begin it.
@@ -54,6 +35,78 @@ Expected paths: `src/index.css`, `src/lib/design-tokens.ts`, `src/components/kit
 ---
 
 ## ✅ RELEASED — done, or stopped and available
+
+### Release & Infrastructure — 2026-08-13 — the last two voice gates are browser-reachable
+
+**Claim released.** On `claude/session-continuation-3upt0l`, not yet on `main` — see the blocker at
+the bottom of this entry.
+
+Founder works from a browser, no terminal. Checked both remaining voice procedures against that:
+
+| step | as written | browser? |
+| --- | --- | --- |
+| staging Twilio subaccount | `node …/create-staging-twilio-subaccount.mjs --confirm` | ❌ |
+| …then the seven secrets | `supabase secrets set --project-ref …` | ❌ |
+| arm the two-party call | `node scripts/ops/arm-call-test.mjs` | ❌ **→ now a workflow** |
+| gate 1 | `window.supabase.functions.invoke(…)` | ❌ **it does not exist** |
+
+**⚠️ Gate 1's snippet never worked, in either place it appeared.** `src/integrations/supabase/`
+`client.ts` exports `supabase` as a module binding and **nothing anywhere assigns it to `window`** —
+zero hits for `window.supabase` across `src/`. It throws `TypeError` for anyone who pastes it, in a
+document calling it *"the single most useful command in this document"*. Written, never run.
+
+Fixed in the **documentation**, not the client: a plain `fetch` built from the session supabase-js
+persists at `sb-<ref>-auth-token` — checked against the library's own storage-key template rather
+than assumed — plus the publishable key, which is public and already in the bundle. Exposing a
+global client would be a `src/` change with a security dimension and is not needed.
+
+> 💬 **Correctness, your call, not a claim:** if you would rather have a real `window` handle on
+> non-production builds, that is a `src/integrations/**` decision and it is yours. The doc fix
+> stands either way.
+
+Also recorded there: **gate 0 already answers "did the secrets land?"** server-side and with no
+sign-in, so gate 1 is now framed as what it uniquely proves — that *this account* may call on *this
+booking*.
+
+**New: `.github/workflows/arm-call-test.yml`.** Wraps `arm-call-test.mjs` unchanged, fetching the
+staging service-role key at run time from the access token already stored — nothing new to keep or
+rotate — and trying the new-scheme key before the legacy one, since the key migration is midway.
+Staging ref is hard-coded, not an input: the script refuses any other ref, and a field for typing
+one would exist only to be typed wrongly. Output goes to the step summary.
+
+**⚠️ `create-staging-twilio-subaccount.mjs` stays terminal-only and must never be wrapped.** It
+prints a Twilio API Key Secret that Twilio shows exactly once, and a workflow log is retained. Its
+browser route is manual Console click-paths (`voice-gates.md` route B) — six screens, one value
+each. That also closed a gap **both** routes had: setting the seven secrets from the Supabase
+Dashboard, since the script's printed `supabase secrets set` command is unusable without a shell.
+
+**⚠️ MEASURED, and it is not the answer anyone wants: Netlify has not published `main`.**
+*Verify live deploy* run 3, dispatched 01:16Z against `c75288b`:
+
+```
+attempt 1: no build stamp readable yet
+…
+attempt 12: no build stamp readable yet
+```
+
+Twelve attempts over ~3 minutes, **31 minutes after the push**. The stamp shipped in `d64f403`
+(00:45Z) and `c75288b` (00:48Z), so if Netlify had built either, `/build-info.json` would exist. The
+site published fine at ~22:11 yesterday, so this is a change of state, not a missing integration.
+
+Not a redirect artefact — checked: `netlify.toml`'s `/*` → `/index.html` rule has no `force`, and
+Netlify serves a real file ahead of a non-forced redirect. From here the three candidates are
+identical: build queued, build failing, or the branch no longer wired. **Only the Netlify deploy log
+separates them, and no session can reach it.**
+
+⚠️ **`main` is therefore serving an older client than `main` says.** That is the §3b hazard from the
+other side, and it is why the check exists.
+
+> ⚠️ **Blocked on a merge, and this is a real limitation rather than caution:** a
+> `workflow_dispatch` workflow is not dispatchable until it exists on the **default branch**.
+> Dispatching `arm-call-test.yml` on the feature branch returns `404 Not Found`, which I measured
+> rather than assumed. So the arming workflow cannot be proven until this merges to `main`, and I
+> have not merged it myself.
+
 
 ### Release & Infrastructure — 2026-08-13 — ZD-026 is live; I broke CI and fixed it
 
@@ -222,7 +275,7 @@ Neither session can do these. Listed so neither keeps re-discovering them.
 | --- | --- |
 | `ENCRYPTION_KEY` (#28) | Supabase secret, console-only |
 | Twilio Console voice URLs (`voice-gates.md` §2c-0) | provider console, not code |
-| Staging Twilio subaccount | account-level provider action |
+| Staging Twilio subaccount | account-level provider action — **now has a browser route**, `voice-gates.md` route B |
 | SOS device test (#36) | needs a real device |
 | Device verification (#37) | needs a real device |
 | Rotate credentials pasted 2026-08-07 | founder-held secrets |
