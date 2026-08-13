@@ -191,16 +191,44 @@ It matters most for gate 3: every staging test call **bills the live account and
 call logs**, indistinguishable from a customer's, and a staging credential leak is a production
 credential leak. Until this is done, treat staging voice as production voice.
 
-### Fixing it — ten minutes, either route
+### Fixing it — one click, or by hand
 
-Two ways, same result. **Route A needs a terminal; route B needs only a browser.** Both end at the
-same place — seven values pasted into staging's Edge Function secrets — so read
-[*Setting the seven staging secrets*](#setting-the-seven-staging-secrets) whichever you pick.
+## Route 0 — the workflow (recommended; nothing to install)
 
-> ⚠️ **The subaccount script is deliberately not a workflow, and must not become one.** It prints
-> `TWILIO_API_KEY_SECRET`, which Twilio shows exactly once, and a workflow log is retained for
-> anyone with repository access. `arm-call-test.mjs` *is* wrapped in a workflow precisely because it
-> prints nothing secret — that difference is the whole rule.
+**Actions → *Provision the staging Twilio subaccount* → Run workflow.** Leave `confirm` blank for a
+dry run; type `CREATE` to do it for real.
+
+It creates the subaccount, an API key on it, a TwiML App already pointing at staging's routable URLs,
+and a Conversations service — then **sets all seven secrets on staging itself**. Nothing to paste.
+
+It needs two repository secrets first, both from the **parent** account (Twilio Console → dashboard →
+Account Info). Settings → Secrets and variables → Actions → New repository secret:
+
+| secret | value |
+|---|---|
+| `XOOT_TWILIO_ACCOUNT_SID` | the parent account's Account SID, starting `AC` |
+| `XOOT_TWILIO_AUTH_TOKEN` | that account's Auth Token |
+
+The workflow checks both up front and names the exact screen if either is missing.
+
+> ##### Why this is safe, when the script's own header says "never CI"
+>
+> That header is right that the API Key Secret must never be **printed** into a retained log. It is
+> wrong that this rules out automation, and conflating the two is what left this undoable from a
+> browser for a day.
+>
+> Printing was only ever a means to an end: a human reads the secret and pastes it into
+> `supabase secrets set`. The workflow does not read it. `--emit-env` writes the seven values to a
+> `0600` file, the job hands that file to the CLI, and a shell trap deletes it on any exit. The value
+> goes **Twilio → file → Supabase** and is rendered nowhere a person or a log can see it. Every value
+> is `::add-mask::`ed first, so even a later edit that tried to echo one would print `***`.
+>
+> The printing path is untouched and still must not run in CI. Only `--emit-env` is used there.
+
+⚠️ **If it creates the Twilio resources and then fails to write the secrets**, the API Key Secret is
+gone — it was never printed. The run summary says so and tells you to delete that key in the Console
+and make a new one. Re-running will not help: the script refuses when `Xoot Staging` exists, and
+Twilio subaccounts cannot be deleted, only closed.
 
 ## Route A — the script (needs a terminal)
 
@@ -236,7 +264,10 @@ If a subaccount named `Xoot Staging` already exists, the script refuses rather t
 one — Twilio subaccounts cannot be deleted, only closed. Take the existing one's SID and Auth Token
 from the Console and skip to the secrets step.
 
-## Route B — the Twilio Console (browser only)
+## Route B — the Twilio Console by hand (browser only)
+
+**Route 0 does all of this in one dispatch.** Use this if you want to see what is being created, or
+if route 0 failed partway and you are finishing by hand.
 
 Six screens, each producing exactly one value. Write each one down as you go; three of them are
 awkward or impossible to find again.

@@ -64,6 +64,29 @@ const args = new Set(process.argv.slice(2));
 const confirmed = args.has("--confirm");
 const env = (name) => String(process.env[name] ?? "").trim();
 
+/**
+ * `--emit-env <path>` — write the seven values to a file instead of printing them.
+ *
+ * ── Why this exists, and why it makes CI safe rather than unsafe ────────────────
+ * The warning above is right that this script must never PRINT the API Key Secret into a retained
+ * log. It is wrong that this rules out automation, and that conflation left the founder — who works
+ * from a browser — with no route to this at all.
+ *
+ * Printing was only ever a means to an end: a human reads the secret and pastes it into
+ * `supabase secrets set`. A workflow does not need to read it. It can hand the file straight to the
+ * CLI, so the value goes Twilio → file → Supabase and is never rendered anywhere a person or a log
+ * can see it.
+ *
+ * So: with `--emit-env`, the human-readable block below prints every SID (safe, they are
+ * identifiers) and prints NO secret value. The file is written 0600 and the caller deletes it.
+ * Without the flag, behaviour is exactly as before.
+ */
+const emitEnvPath = (() => {
+  const argv = process.argv.slice(2);
+  const at = argv.indexOf("--emit-env");
+  return at >= 0 ? String(argv[at + 1] ?? "").trim() : "";
+})();
+
 const fail = (message) => {
   console.error(`\ncreate-staging-twilio-subaccount: ${message}\n`);
   process.exit(1);
@@ -258,18 +281,51 @@ info("verified: the TwiML App's Voice URL routes.");
  */
 const setLine = (name, value) => `  ${name}="${value}" \\`;
 
-console.log(`
+/*
+ * The seven, in one place, so the printed block and the emitted file cannot drift apart. Both
+ * Auth Token names carry the SAME value — see the warning below; this is the third time that trap
+ * has needed writing down.
+ */
+const secrets = [
+  ["TWILIO_ACCOUNT_SID", subSid],
+  ["TWILIO_AUTH_TOKEN", subToken],
+  ["TWILIO_WEBHOOK_AUTH_TOKEN", subToken],
+  ["TWILIO_API_KEY_SID", apiKey.sid],
+  ["TWILIO_API_KEY_SECRET", apiKey.secret],
+  ["TWILIO_VOICE_APP_SID", app.sid],
+  ["TWILIO_CONVERSATIONS_SERVICE_SID", conversations.sid],
+];
+
+if (emitEnvPath) {
+  const { writeFileSync } = await import("node:fs");
+  // 0600, and the caller deletes it. The runner is ephemeral, but "the machine goes away" is not
+  // a permission model.
+  writeFileSync(emitEnvPath, secrets.map(([name, value]) => `${name}=${value}`).join("\n") + "\n", {
+    mode: 0o600,
+  });
+  console.log(`
+✅ Created on Twilio, all owned by the new subaccount.
+
+  subaccount   ${subSid}
+  API key      ${apiKey.sid}
+  TwiML App    ${app.sid}
+  Conversations ${conversations.sid}
+
+Wrote 7 names to the env file for the caller to hand to \`supabase secrets set\`.
+**No secret value has been printed** — that is the entire point of --emit-env, and it is why this
+path is safe to run in a workflow while the printing path below is not.
+`);
+} else {
+  console.log(`
 ✅ Created on Twilio, all owned by the new subaccount.
 
 Now set these on the STAGING Supabase project. Copy the whole block:
 
 supabase secrets set --project-ref ${STAGING_PROJECT_REF} \\
-${setLine("TWILIO_ACCOUNT_SID", subSid)}
-${setLine("TWILIO_AUTH_TOKEN", subToken)}
-${setLine("TWILIO_WEBHOOK_AUTH_TOKEN", subToken)}
-${setLine("TWILIO_API_KEY_SID", apiKey.sid)}
-${setLine("TWILIO_API_KEY_SECRET", apiKey.secret)}
-${setLine("TWILIO_VOICE_APP_SID", app.sid)}
+${secrets
+  .slice(0, -1)
+  .map(([name, value]) => setLine(name, value))
+  .join("\n")}
   TWILIO_CONVERSATIONS_SERVICE_SID="${conversations.sid}"
 
 ⚠️ TWILIO_API_KEY_SECRET is shown HERE AND NOWHERE ELSE, EVER. Twilio does not
@@ -290,3 +346,4 @@ Then prove it worked:
   passes, and staging's own voice rows are green because the TwiML App above was
   created with routable URLs.
 `);
+}

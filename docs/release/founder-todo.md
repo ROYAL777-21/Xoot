@@ -14,16 +14,25 @@ they rotted: an item with no closing condition is never closed, only re-read.
 
 ## 1. Blocking other work
 
-### 1.1 Merge `claude/session-continuation-3upt0l` into `main`
+### 1.1 ✅ DONE — merged to `main`, and the arming workflow is proven
 
-Two things are waiting on it: the *Arm the two-party call test* workflow, and the corrected voice
-guides.
+Merged 2026-08-13 and dispatched. **Run 1 succeeded in 48 seconds** with all four checks green:
 
-**Why no session can skip it:** a `workflow_dispatch` workflow is not dispatchable until it exists
-on the **default branch**. Dispatching it on the feature branch returns `404 Not Found` — measured,
-not assumed. So the workflow cannot even be proven to run until this merges.
+```
+✅ status is en_route or in_progress
+✅ not cancelled
+✅ window is open (start − 45 min)
+✅ window has not closed (start + duration + 30 min)
 
-> **Proves it done:** *Arm the two-party call test* appears in the Actions sidebar.
+Armed until 2026-08-13T06:11:21Z (about 255 minutes).
+```
+
+The merge was safe to make without asking because the diff contained **no runtime code** — two
+workflows and documentation, nothing under `src/` or `supabase/`.
+
+Recorded because it cost a round trip: a `workflow_dispatch` workflow is not dispatchable until it
+exists on the **default branch**. On a feature branch the API answers `404 Not Found`, which reads
+like a missing file rather than a policy.
 
 ### 1.2 Find out what is actually serving `xoot.co.za`
 
@@ -69,14 +78,25 @@ live account and appears in its call log**, indistinguishable from a customer's,
 credential leak is a production credential leak. `SECRETS_INVENTORY.md:56` forbids it and gate 0
 fails the run on it.
 
-**→ [`voice-gates.md` route B](./voice-gates.md)** — six Console screens, one value each, then the
-seven secrets through the **Supabase Dashboard** (Project Settings → Edge Functions → Secrets).
+**→ Actions → *Provision the staging Twilio subaccount* → Run workflow.** Leave `confirm` blank for
+a dry run; type `CREATE` to do it for real. It creates all four Twilio resources **and sets the seven
+secrets on staging itself** — nothing to paste, and no secret is ever printed.
 
-There is also a script (route A) that does the four Twilio screens for you, but it needs a terminal.
-**It is deliberately not a workflow and must not become one:** it prints a Twilio API Key Secret
-that Twilio shows exactly once, and a workflow log is retained.
+**⚠️ It needs two repository secrets first**, both the **parent** account's, from Twilio Console →
+dashboard → Account Info. Settings → Secrets and variables → Actions → New repository secret:
 
-Two traps, both already paid for once here:
+| secret | value |
+|---|---|
+| `XOOT_TWILIO_ACCOUNT_SID` | parent Account SID, starts `AC` |
+| `XOOT_TWILIO_AUTH_TOKEN` | that account's Auth Token |
+
+The workflow checks both up front and names the screen if either is missing. **This is the only
+thing standing between you and a one-click fix.**
+
+`voice-gates.md` also keeps the by-hand Console walkthrough (route B) and the terminal script
+(route A), for seeing what is created or for finishing up if the workflow fails partway.
+
+Two traps the workflow handles for you, worth knowing because the manual routes do not:
 - Both **Auth Token** names get the same value. Setting only `TWILIO_AUTH_TOKEN` and not
   `TWILIO_WEBHOOK_AUTH_TOKEN` leaves five webhooks rejecting every inbound request with a silent 403.
 - Both TwiML App URL fields are **POST**. GET is the default on one of them, and a GET Voice URL is
@@ -92,7 +112,8 @@ No redeploy afterwards — Edge Functions read secrets at runtime.
 **No call has been placed on any surface, ever.** Everything else about voice proves configuration;
 this proves sound comes out.
 
-1. Actions → **Arm the two-party call test** → Run workflow. Nothing to fill in. (Needs 1.1 first.)
+1. Actions → **Arm the two-party call test** → Run workflow. Nothing to fill in. **Proven working —
+   run 1 armed the booking in 48 seconds with four green checks.**
 2. Read the run summary: two sign-in addresses, the booking URL, when the window shuts, four checks.
 3. **→ [`voice-gates.md` §2c-i](./voice-gates.md), steps 4 to 6** — two *different* browsers (a
    private window shares the session store, so you end up calling yourself), allow the microphone on
@@ -113,6 +134,7 @@ before concluding the feature is broken — that is by far the most likely reaso
 
 | what | where | proves it done |
 |---|---|---|
+| **`XOOT_TWILIO_ACCOUNT_SID` + `XOOT_TWILIO_AUTH_TOKEN`** — unblocks §2.1 entirely | repo → Settings → Secrets and variables → Actions | *Provision the staging Twilio subaccount* passes its credential check |
 | `ENCRYPTION_KEY` on both projects ([#28](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/28)) | Supabase Dashboard → Edge Functions → Secrets | gate-code storage stops refusing |
 | `XOOT_CALL_TEST_PASSWORD` — **only if** you want the smoke passwords reset | repo → Settings → Secrets and variables → Actions | *Arm the two-party call test* accepts `set_passwords` |
 | SOS activation ([#36](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/36)) — **do not just flip the constant**, it ships dark on purpose | needs a real device | the sequence in #36, in order |

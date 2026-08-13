@@ -1,0 +1,206 @@
+name: Provision the staging Twilio subaccount
+
+# Gives staging its own Twilio account, from a browser, without a secret ever reaching a log.
+#
+# ── The obstacle this removes ───────────────────────────────────────────────────
+# Staging and production share Twilio account `AC93de1e…`. Every staging test call bills the live
+# account and appears in its call log, indistinguishable from a customer's, and a staging credential
+# leak is a production credential leak. `SECRETS_INVENTORY.md:56` forbids it and `twilio-selftest`
+# fails the run on it.
+#
+# The fix has existed as a script since 2026-08-12 and was unreachable, because the script needs a
+# terminal and the founder works from a browser. `voice-gates.md` route B answers that with manual
+# Console steps — nine screens across two providers, three values that are awkward to find again and
+# one that cannot be. This is the same thing in one dispatch.
+#
+# ── Why it is safe to run here, when the script's own header says it is not ─────
+# That header is right that the API Key Secret must never be PRINTED into a retained log. It is
+# wrong that this rules out automation, and conflating the two is what left this undoable.
+#
+# Printing was only ever a means to an end: a human reads the secret and pastes it into
+# `supabase secrets set`. A workflow does not read it. `--emit-env` writes the seven values to a
+# 0600 file, this job hands that file to the CLI, and the file is deleted. The value goes
+# Twilio → file → Supabase and is rendered nowhere a person or a log can see it. Every value is
+# ::add-mask::ed first as well, so even a future edit that tried to echo one would print `***`.
+#
+# ⚠️ The printing path is untouched and still must not run in CI. Only `--emit-env` is used here.
+#
+# ── What it creates, none of which can be undone ────────────────────────────────
+# A subaccount, an API key on it, a TwiML App pointing at staging's routable URLs (so it cannot
+# repeat the 404 that production shipped with), and a Conversations service. Twilio subaccounts
+# cannot be deleted, only closed — hence the typed confirmation, and the script's own refusal to
+# create a second `Xoot Staging` if one exists.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: >-
+          Type CREATE to actually create the subaccount. Anything else does a dry run, which changes
+          nothing and prints what it would do.
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  # Never two at once. Twilio subaccounts cannot be deleted, so a race that created two would leave
+  # a mess that can only be closed, not removed.
+  group: provision-staging-twilio
+  cancel-in-progress: false
+
+jobs:
+  provision:
+    name: Create the Xoot Staging subaccount and set its secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check the credentials this needs
+        env:
+          PARENT_SID: ${{ secrets.XOOT_TWILIO_ACCOUNT_SID }}
+          PARENT_TOKEN: ${{ secrets.XOOT_TWILIO_AUTH_TOKEN }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          missing=0
+
+          # The PARENT account's credentials — production's. That is correct: a subaccount is
+          # created by its parent. Twilio Console → dashboard → Account Info.
+          case "$PARENT_SID" in
+            AC*) echo "XOOT_TWILIO_ACCOUNT_SID present, shaped AC…" ;;
+            "")  echo "::error::XOOT_TWILIO_ACCOUNT_SID is not set. Settings → Secrets and variables → Actions → New repository secret. Value: Twilio Console → dashboard → Account Info → Account SID (the PARENT account's)."; missing=1 ;;
+            *)   echo "::error::XOOT_TWILIO_ACCOUNT_SID does not start with AC. That is an Account SID, not an API key SID."; missing=1 ;;
+          esac
+
+          if [ -z "$PARENT_TOKEN" ]; then
+            echo "::error::XOOT_TWILIO_AUTH_TOKEN is not set. Same screen as the Account SID, behind the show/hide toggle."
+            missing=1
+          else
+            echo "XOOT_TWILIO_AUTH_TOKEN present, ${#PARENT_TOKEN} characters."
+          fi
+
+          case "$SUPABASE_ACCESS_TOKEN" in
+            sbp_*) echo "SUPABASE_ACCESS_TOKEN present and correctly shaped." ;;
+            *) echo "::error::SUPABASE_ACCESS_TOKEN is missing or not a personal access token."; missing=1 ;;
+          esac
+
+          [ "$missing" -eq 0 ] || exit 1
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
+
+      # Pinned like everything else here. A failure at THIS step means GitHub's release CDN, not
+      # Twilio and not Supabase — look for `503` or `socket hang up`, then re-run.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.113.0
+
+      - name: Create the subaccount, then set staging's secrets
+        env:
+          XOOT_TWILIO_ACCOUNT_SID: ${{ secrets.XOOT_TWILIO_ACCOUNT_SID }}
+          XOOT_TWILIO_AUTH_TOKEN: ${{ secrets.XOOT_TWILIO_AUTH_TOKEN }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          CONFIRM: ${{ inputs.confirm }}
+        # `shell: bash` DOES set `-e` — `bash --noprofile --norc -e -o pipefail {0}`, printed in the
+        # run log. See the note in `verify-live-deploy.yml`, which was written on the opposite
+        # belief and died in 7 seconds on it.
+        shell: bash
+        run: |
+          set +e
+          set -uo pipefail
+
+          ref="fxmxyabdjqviqbcxmvlp"
+          envfile="$RUNNER_TEMP/staging-twilio.env"
+
+          # Delete the env file on ANY exit, including a failure between writing it and consuming
+          # it. Nothing else in this job is allowed to outlive the trap.
+          cleanup() { rm -f "$envfile"; }
+          trap cleanup EXIT
+
+          echo "## Provision the staging Twilio subaccount" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$CONFIRM" != "CREATE" ]; then
+            echo "Dry run — nothing will be created. Type CREATE in the input to do it for real."
+            node scripts/ops/create-staging-twilio-subaccount.mjs
+            status=$?
+            {
+              echo "### Dry run"
+              echo ""
+              echo "Nothing was created. Re-run with \`confirm\` set to \`CREATE\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit "$status"
+          fi
+
+          node scripts/ops/create-staging-twilio-subaccount.mjs --confirm --emit-env "$envfile"
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Twilio provisioning failed — nothing was written to Supabase."
+            echo "❌ Twilio provisioning failed. See the log; no Supabase secret was changed." >> "$GITHUB_STEP_SUMMARY"
+            exit "$status"
+          fi
+
+          # ⚠️ Mask every value BEFORE it can appear anywhere. `add-mask` is retroactive only for
+          # output produced after it, so this must run before the CLI does.
+          #
+          # Read with `read -r` on a here-file: no `cat`, no expansion, nothing that could echo.
+          while IFS='=' read -r name value; do
+            [ -n "${value:-}" ] && echo "::add-mask::$value"
+          done < "$envfile"
+
+          echo "Setting 7 secrets on ${ref}…"
+
+          # `--env-file` keeps the values out of argv entirely. Not every CLI build has it, so the
+          # fallback builds `NAME=value` arguments instead — masked either way. The log says which
+          # path ran, because "it worked" and "it silently did nothing" must not look the same.
+          supabase secrets set --project-ref "$ref" --env-file "$envfile" >/dev/null 2>&1
+          set_status=$?
+
+          if [ "$set_status" -ne 0 ]; then
+            echo "--env-file was rejected; falling back to explicit arguments."
+            pairs=()
+            while IFS= read -r line; do
+              [ -n "$line" ] && pairs+=("$line")
+            done < "$envfile"
+            supabase secrets set --project-ref "$ref" "${pairs[@]+"${pairs[@]}"}" >/dev/null 2>&1
+            set_status=$?
+          fi
+
+          if [ "$set_status" -ne 0 ]; then
+            echo "::error::Twilio resources WERE created, but setting the Supabase secrets failed. Do not re-run this workflow — it will refuse anyway, because the subaccount now exists. Set the seven secrets by hand: docs/release/voice-gates.md, 'Setting the seven staging secrets'."
+            {
+              echo "### ⚠️ Half done — read this"
+              echo ""
+              echo "The Twilio subaccount, API key, TwiML App and Conversations service **were"
+              echo "created**. Writing the seven secrets to Supabase **failed**."
+              echo ""
+              echo "**The API Key Secret is now unrecoverable** — Twilio shows it once and this job"
+              echo "did not print it. Delete that API key in the Twilio Console and create a new one"
+              echo "by hand, then set the seven secrets: see \`docs/release/voice-gates.md\`."
+              echo ""
+              echo "Re-running this workflow will not help: it refuses when \`Xoot Staging\` already"
+              echo "exists, and Twilio subaccounts cannot be deleted."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          echo "✅ 7 secrets set on ${ref}."
+          {
+            echo "### ✅ Done"
+            echo ""
+            echo "Staging now has its own Twilio subaccount, and its seven secrets are set on"
+            echo "\`${ref}\`. **No secret value was printed** — the values went Twilio → file →"
+            echo "Supabase, and the file is deleted."
+            echo ""
+            echo "No redeploy needed; Edge Functions read secrets at runtime."
+            echo ""
+            echo "**Prove it:** Actions → *Twilio self-test* → \`environment: both\`. The two Account"
+            echo "SIDs should now differ, the shared-credentials check should pass, and staging's"
+            echo "voice rows should be green — the TwiML App was created pointing at staging's"
+            echo "routable URLs, so it cannot repeat the 404 production shipped with."
+          } >> "$GITHUB_STEP_SUMMARY"

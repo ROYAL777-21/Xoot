@@ -36,6 +36,51 @@ Expected paths: `src/index.css`, `src/lib/design-tokens.ts`, `src/components/kit
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Release & Infrastructure — 2026-08-13 — both browser obstacles are gone, and one is proven
+
+**Merged to `main` (`cea658e`) and dispatched.** The diff carried **no runtime code** — two
+workflows and docs, nothing under `src/` or `supabase/` — which is why merging it was safe to do
+without a review cycle. Netlify builds `main`, so nothing user-facing changed either.
+
+**✅ *Arm the two-party call test* run 1: success in 48 seconds.**
+
+```
+✅ status is en_route or in_progress      ✅ window is open (start − 45 min)
+✅ not cancelled                          ✅ window has not closed
+Armed until 2026-08-13T06:11:21Z (about 255 minutes).
+```
+
+Those four come from the script re-reading the booking after writing it, so this is the booking
+being callable, not the workflow merely running.
+
+**✅ New: `provision-staging-twilio.yml` — the subaccount, in one dispatch, from a browser.**
+
+This is the obstacle I had written off. `voice-gates.md` said the script "must never run in CI"
+because it prints a secret Twilio shows once, and I accepted that as ruling out automation. It does
+not, and conflating the two left the founder with nine manual screens across two providers.
+
+**Printing was only ever a means to an end** — a human reads the secret and pastes it into
+`supabase secrets set`. A workflow does not read it. So `create-staging-twilio-subaccount.mjs` gains
+`--emit-env <path>`: it writes the seven values to a `0600` file and prints **every SID and no
+secret**. The job hands that file to the CLI, a shell trap deletes it on any exit, and every value is
+`::add-mask::`ed before the CLI runs. Twilio → file → Supabase, rendered nowhere.
+
+The printing path is untouched and still must not run in CI. Only `--emit-env` is used there.
+
+⚠️ **The half-done case is real and is handled explicitly.** If the Twilio resources are created and
+the Supabase write then fails, the API Key Secret is unrecoverable — it was never printed. The run
+summary says exactly that, tells you to delete the key and make a new one, and warns that re-running
+will not help: the script refuses when `Xoot Staging` exists, and Twilio subaccounts cannot be
+deleted, only closed.
+
+**⚠️ Founder input needed, and it is now the only thing blocking the subaccount:** two repository
+secrets, `XOOT_TWILIO_ACCOUNT_SID` and `XOOT_TWILIO_AUTH_TOKEN`, both the parent account's. The
+workflow checks them first and names the screen.
+
+**Still unresolved and not mine to resolve:** what serves `xoot.co.za`. Four runs of *Verify live
+deploy*, no stamp on any. See `founder-todo.md` §1.2 — the Hostinger candidate first.
+
+
 ### Release & Infrastructure — 2026-08-13 — the last two voice gates are browser-reachable
 
 **Claim released.** On `claude/session-continuation-3upt0l`, not yet on `main` — see the blocker at
