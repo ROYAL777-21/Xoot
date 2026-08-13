@@ -67,6 +67,28 @@ jobs:
       - name: Unit tests
         run: bun run test
 
+      # ⚠️ Added 2026-08-13, because a guard test had never run anywhere.
+      #
+      # `supabase/functions/_shared/twilio-webhook.test.ts` verifies Twilio's HMAC against their
+      # documented request example — the check that stands between this product and accepting forged
+      # webhooks. It is written with `Deno.test()` and a `jsr:@std/assert` import, so vitest could
+      # never collect it, and nothing else ever invoked `deno test`. It sat in the tree for weeks
+      # looking exactly like coverage.
+      #
+      # This is the failure `CLAUDE.md` names outright: a guard is only worth having if it fails
+      # against the defect it describes, and one that is never collected cannot fail at all.
+      #
+      # `continue-on-error` deliberately: this is the step's first run and the Deno sources import
+      # from `esm.sh` at test time. A red gate that nobody asked for gets switched off; an advisory
+      # one that reports honestly gets read and then promoted. Remove the flag once it is green.
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Deno tests (advisory on its first outings)
+        continue-on-error: true
+        run: deno test --allow-net --allow-env supabase/functions/
+
       - name: Build
         run: bun run build
 
