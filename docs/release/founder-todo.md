@@ -1,25 +1,46 @@
 # What only you can do
 
-**This is the live list.** Every other checklist in `docs/release/` is history — several were last
-reviewed in July and are wrong about the current state. If they disagree with this file, this file
-is right; if this file is stale, fix it here rather than starting a seventh list.
-
-Last measured: **2026-08-13 09:45 SAST**. Everything below was checked against a workflow run, the
-live issue tracker, or the working tree on that date — not carried forward on trust.
+Last measured **2026-08-13 11:00 SAST**, against the live databases and the Netlify API — not
+carried forward on trust.
 
 ---
 
-## ✅ Done since the last update, with the run that proves it
+## Where production actually stands
 
-| what | evidence |
-|---|---|
-| The Xoot rename merged to `main` | `7180314`, 771 tests / 80 files green |
-| Schema rename applied to **staging** | *Database migration push* run 10, **APPLY on staging**, success |
-| All 46 Edge Functions redeployed to **staging** | *Deploy Edge Functions* run 27, success, drift-after clean |
-| Staging Twilio **subaccount created**, 7 secrets set | *Provision the staging Twilio subaccount* run 3, success — no secret printed |
-| Arming the call test | *Arm the two-party call test* run 1, 48s, four green checks |
+**The backend is finished. The product has never been live.** Those are both true, and holding them
+together is the whole picture.
 
-**Three defects were found and fixed on the way**, all in the rename — see §5.
+| layer | state | evidence |
+|---|---|---|
+| Production schema | ✅ ZD-029 applied | `xooters` exists, `zooters` gone, `bookings.xooter_id` present |
+| Production Edge Functions | ✅ all redeployed **with** it | stamped `1786613782233` = 09:36:22Z, one operation |
+| Production data at risk | **none** | **0 bookings, 1 user** |
+| Staging | ✅ same, plus its own Twilio subaccount | *db-push* run 10, *deploy* run 27, *self-test* run 16 |
+| **The web app** | ❌ **never deployed** | Netlify serves a hand-uploaded `index.html` from **28 May** |
+| **Payments** | ❌ **switched off** | `payments.provider_checkout` = false, both hosted-checkout controls false |
+| **Voice in production** | ❌ off | `twilio.masked_voice` = false, `twilio.operational_messages` = false |
+| A real call | ❌ never placed | on any surface, ever |
+
+> The migration/function ordering hazard did **not** bite: both halves went together at 09:36:22Z.
+> Production's schema and its functions match.
+
+### The three things between here and a customer booking and paying
+
+1. **Ship the front end** — `domain-setup.md`. Nothing merged since 28 May is live. This is the
+   single biggest gap and everything user-facing is behind it.
+2. **Turn on payments** — needs Stitch/Ozow credentials and a signed smoke test, then three controls
+   flipped. Today the app cannot take money.
+3. **`ENCRYPTION_KEY`** ([#28](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/28)) —
+   without it a customer cannot save a gate or alarm code, and the function fails loudly.
+
+Everything else is smaller: the two-party call, the production voice controls, store submission, and
+five decisions in the tracker.
+
+> ⚠️ **Orphaned deployed functions.** Production still carries `approve-zooter`,
+> `admin-reject-zooter`, `submit-zooter-application`, `get-zooter-job-cards`, `redeem-zootcred` and
+> `respond-zooter-job` from before the rename. Their source no longer exists in the repo and nothing
+> calls them, but they are live endpoints querying tables that are gone. Harmless today; worth
+> deleting so nothing rediscovers them.
 
 ---
 
