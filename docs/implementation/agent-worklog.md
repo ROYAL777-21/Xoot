@@ -29,6 +29,53 @@ Nothing held.
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Correctness & Safety — 2026-08-13 — Zoot→Xoot in the database: prose only, and why
+
+Founder asked for the `zoot` wording replaced in the database. Surveying it first was the whole
+job, because `zoot` appears there in three roles and only one is safe to rewrite.
+
+**Done — prose, 15 rows.** `operational_controls.description` (10),
+`agent_action_contracts.data_boundaries`, `analytics_event_contracts.purpose`,
+`training_modules.description`, and both text columns of
+`zoot_concierge_knowledge_versions`. Migration `20260813140000_rename_zoot_wording_in_data.sql`.
+Every row previewed before/after on live data; `Zoot`→`Xoot` also fixes `ZootCred` and `Zooter`
+in one pass since both carry the brand as a prefix, and no row still matched `[Zz]oot` after.
+
+The knowledge row matters most: it is what the Concierge would quote to customers. It is **not**
+served today — the functions bundle `_shared/zoot-knowledge.ts`, which already says Xoot
+throughout (checked: zero matches) — but it goes live the moment DB-backed retrieval is approved,
+and would then start telling customers about "ZootCred".
+
+Also rewrote `support.openai_fallback`'s description, stale in a second way: ZD-027 made
+OpenRouter primary with OpenAI as fallback, so a description naming only OpenAI understates what
+the switch governs.
+
+**NOT done — keys, deliberately.** `operational_controls.control_key`
+(`concierge.zootcred_support`, `zooter.sensitive_access`, `zoot_black.*`),
+`agent_action_contracts.agent_key` (`zoot_concierge`), `analytics_event_contracts.event_name`.
+These are looked up **by value** from code — `isOperationalControlEnabled(supa, "…")`. Renaming a
+key in the data alone does not error: the lookup finds nothing and the control reads as **off**,
+silently disabling the feature it governs. Worse than a stale name. Code and data have to move in
+one change.
+
+`payment_provider_capabilities.reconciliation_reference_format` (`ZOOT-{PROVIDER}-…`) left too —
+that is the shape of a finance reference, so changing it is a finance decision, not a spelling one.
+
+> ⚠️ **Release: this migration needs a `db-push` dispatch.** Written but **not applied**. It has no
+> function dependency, so it carries no §3a ordering constraint. Applying via the MCP
+> `apply_migration` is deliberately avoided — the `xoot-supabase-ops` skill lists it silently
+> renaming migration versions as a known trap.
+
+**Open for the founder — the schema itself.** 19 tables and 27 columns carry `zoot`
+(`zooters`, `zootcred_ledger`, `zooter_id`, `zoot_black_*`, …) plus the `app_role` enum label
+`zooter`. That is a separate and much larger migration: every Edge Function query, RLS policy,
+view, foreign key, the generated `types.ts` and all client code. Not attempted, and not something
+to start without deciding it is worth the blast radius.
+
+**Expo now connected**, so `mobile/AGENTS.md`'s instruction to read the versioned docs was honoured
+properly rather than by inference: the v56 reference confirms `scheme` accepts
+`string | string[]` with pattern `^[a-z][a-z0-9+.-]*$`, which `['xoot','zoot']` satisfies.
+
 ### Correctness & Safety — 2026-08-13 — app identity: `xoot://` and `za.co.xoot.app` (ZD-028, #34)
 
 Issue #34 was about the deep-link scheme. Chasing it found the **bundle identifier** in the same
