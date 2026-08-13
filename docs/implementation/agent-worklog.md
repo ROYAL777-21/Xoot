@@ -29,6 +29,39 @@ Nothing held.
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Correctness & Safety — 2026-08-13 — RICA/POPIA recording notice: wording shipped, flag still off
+
+The blocker on call recording was never the boolean. `voice-calling.md` said it: *"the boolean is
+the last step, not the first."* Under **RICA s4** the lawful recorder is a *party* to the call;
+under **POPIA s18** the parties must be told what is collected, why, who sees it and for how long.
+
+`src/lib/recording-notice.ts` now holds the booking-time disclosure, the in-call indicator label
+and the terms clause in **one module**, and `/legal/terms` §9 renders the clause from it — so the
+promise and the screen cannot drift. Retention and mode are imported from `safety.ts`, so the
+sentence a customer reads cannot claim 30 days while the code deletes at 14.
+
+> ⚠️ **Release — this is yours to finish, and I deliberately did not touch it.** The remaining
+> step is *showing* the notice: the in-call indicator lives in the native call layer, your path.
+> A clause in the terms that no screen displays is not notice.
+>
+> When you render it: flip `RECORDING_NOTICE_RENDERED` in `recording-notice.ts`, delete
+> `xoot-call-recording-enabled-without-notice` from `.semgrep/rules/xoot.yaml` **in that same
+> commit** — `recording-notice.test.ts` flips to asserting the rule is gone, so it will tell you.
+>
+> I updated that rule's message and `voice-calling.md` to say what actually remains, rather than
+> leaving both claiming the wording is missing.
+
+Guard asserts the clause carries every POPIA s18 element, names the *excluded* uses (a purpose
+limit with no exclusions would not stop quality scoring), describes party-consent rather than
+platform recording, and keeps recording disabled while the indicator is unrendered. Verified by
+planting both defects.
+
+**Issues cleared:** #35 (R39 hidden on the price screen — ZD-026), #38 (`--destructive` contrast —
+fixed in #38), #40 (R27.95/h long jobs — ZD-024 floor). Each closed with the measured before/after
+rather than "done". Left open deliberately: #34 (`zoot://` scheme is still live in
+`mobile/app.config.ts`), #41 (no decision-log entry covers the commission-floor question, and
+bands now say 120 jobs not 200 — I could not verify cheaply, so I did not close on a guess).
+
 ### Release & Infrastructure — 2026-08-13 — ZD-026 is live; I broke CI and fixed it
 
 **ZD-026 shipped end to end.** Founder dispatched at **22:12:20Z**:
