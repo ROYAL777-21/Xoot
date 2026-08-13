@@ -757,6 +757,52 @@ contained no stale entries — written on the theory that allowlists rot. Its si
 at copy on the placement form. The retirement made it stale the same day, and the assertion caught
 it rather than leaving a permission behind for a page that no longer exists.
 
+## ZD-032 — The accent family moves to the kit: ink commits, violet emphasis (2026-08-13)
+
+**Founder:** *"It doesn't look coherent with the app."* Correct, and this is why.
+
+### The site was violet in its tokens and terracotta on screen
+
+ZD-024 migrated the *semantic* tokens to the kit — `--primary` became ink, `--brand` became
+violet-600, red was confined to Care+. What it did not migrate were the **gradients and the
+accent family**, and those are what actually painted the product:
+
+| | the kit (`design/README.md`) | what rendered |
+|---|---|---|
+| primary commit button | ink `#151515` (`--xoot-action-primary`) | `gradient-warm` — terracotta, on 34 buttons |
+| brand emphasis | violet `#7C5CFC` | **`bg-brand` 0 uses, `border-brand` 0, `text-brand` 2** |
+| green | `--xoot-sage-500` `#3AA075`, the *success* semantic | `--sage` `#7FA86B`, olive, 157 uses as decoration |
+| terracotta | **not in the kit at all** | `--terracotta` + 58 `gradient-warm` surfaces |
+
+`index.css` had even labelled these "Superseded: terracotta/sage/cream" while still rendering
+them. The kit's defining colour was absent from the product it defines.
+
+### What changed
+
+- **`--gradient-warm` → violet**, built violet-600 → violet-700 rather than the kit's own
+  `--xoot-grad-violet`. That gradient (`#A38FF7` → `#7C5CFC`) is a light violet intended to sit
+  *under dark text*; every surface here carries white, and white on violet-500 measures **4.38** —
+  the same AA failure that darkened `--brand` in the first place. 600 → 700 gives **6.10 → 8.46**.
+- **34 primary buttons lost `gradient-warm`**, which was an override defeating `Button`'s default
+  `bg-primary text-primary-foreground` — already ink, already `--xoot-action-primary`, 18.26:1.
+  The README's "ink as the primary commit button, the Tiimo pattern" was one class away the whole
+  time.
+- **`--sage` → the kit's teal** `#3AA075` / `#1B6246`. Contrast on the page improves **4.93 →
+  6.54**. In the kit sage is `--xoot-success`, not decoration; the site's use as a general accent
+  is a separate cleanup.
+- `--shadow-warm` re-tinted to the brand it now sits under, rather than to the retired terracotta.
+
+`--terracotta`, `--terracotta-light` and `--cream` are left **defined but unused**, so a stray
+reference cannot break the build. Nothing should consume them.
+
+### Not covered by a test, and worth knowing
+
+`src/lib/design-tokens.ts` mirrors `:root` for React Native but does **not** carry sage,
+terracotta or the gradients, so `design-tokens.test.ts` did not object and could not have caught
+the divergence either. The contrast figures above were computed by hand against the page colour;
+`design-contrast.test.ts` covers the semantic roles, not the accent family. Extending it is the
+obvious follow-up.
+
 ## Pending Founder Decisions
 
 1. Canonical Supabase schema source.

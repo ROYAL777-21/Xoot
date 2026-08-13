@@ -35,7 +35,7 @@ const OfficeDashboard = () => {
           <Button asChild variant="outline" className="rounded-full" onClick={() => haptic("selection")}>
             <Link to="/app/properties"><DoorOpen className="mr-2 h-4 w-4" /> Manage office profile</Link>
           </Button>
-          <Button asChild className="rounded-full gradient-warm" onClick={() => haptic("impact")}>
+          <Button asChild className="rounded-full" onClick={() => haptic("impact")}>
             <Link to="/app"><Plus className="mr-2 h-4 w-4" /> Book office clean</Link>
           </Button>
         </div>

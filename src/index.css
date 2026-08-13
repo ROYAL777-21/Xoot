@@ -1543,19 +1543,50 @@
     --radius: 1rem;
 
     /* Brand specific */
+    /* ── ZD-032: the accent family moves to the kit ────────────────────────────────────────
+     *
+     * These were the last of the superseded terracotta/sage/cream palette still being RENDERED.
+     * The semantic tokens above were migrated to violet/ink/Care+-red, but the gradients and the
+     * accent family were not — and they are what actually painted every CTA and band. The site
+     * was violet-and-ink in its tokens and terracotta-and-olive on screen, which is why it did
+     * not look like the app.
+     *
+     * Measured before the change: `bg-brand` 0 uses, `border-brand` 0, `text-brand` 2. The kit's
+     * defining colour was absent from the product it defines, while `gradient-warm` painted 58
+     * surfaces including nine primary buttons.
+     *
+     * `design/README.md`, which the founder has made the source of truth: "The kit's UI is violet
+     * for brand emphasis, selection and progress, with ink as the primary commit button — the
+     * Tiimo pattern — on a warm neutral page. Red is not the UI colour: the kit reserves its red
+     * family for Care+ alone."
+     */
+
+    /* Kept only so a stray reference cannot break the build — nothing should use them. The kit
+     * has no terracotta at all, and `--cream` is superseded by the neutral ramp. */
     --terracotta: 14 51% 53%;
     --terracotta-light: 22 65% 76%;
-    --sage: 105 20% 56%;
-    --sage-deep: 110 18% 38%;
     --cream: 36 40% 96%;
     --ink: 20 30% 12%;
 
-    --gradient-warm: linear-gradient(135deg, hsl(14 51% 53%) 0%, hsl(22 65% 68%) 100%);
-    --gradient-sage: linear-gradient(135deg, hsl(105 20% 56%) 0%, hsl(110 18% 38%) 100%);
+    /* The kit's sage — `--xoot-sage-500` #3AA075 and `--xoot-sage-ink` #1B6246 — which is a teal
+     * green, not the olive this used to be (#7FA86B). In the kit sage is the SUCCESS semantic
+     * rather than a decorative accent, and the swap also improves contrast: sage-deep on the page
+     * goes 4.93 -> 6.54. */
+    --sage: 156 47% 43%;
+    --sage-deep: 157 57% 24%;
+
+    /* Brand emphasis, violet, built from violet-600 -> violet-700 rather than the kit's own
+     * `--xoot-grad-violet` (#A38FF7 -> #7C5CFC). That gradient is a light violet meant to sit
+     * UNDER dark text; every surface using this one carries white text, and white on violet-500
+     * measures 4.38 — the same AA failure that darkened `--brand` to violet-600 in the first
+     * place. 600 -> 700 gives 6.10 at the light end and 8.46 at the dark end. */
+    --gradient-warm: linear-gradient(135deg, hsl(253 79% 58%) 0%, hsl(258 60% 46%) 100%);
+    --gradient-sage: linear-gradient(135deg, hsl(156 47% 43%) 0%, hsl(157 57% 24%) 100%);
     --gradient-hero: linear-gradient(180deg, hsl(36 33% 97%) 0%, hsl(32 35% 92%) 100%);
 
     --shadow-soft: 0 8px 24px -8px hsl(20 30% 12% / 0.08);
-    --shadow-warm: 0 20px 48px -16px hsl(14 51% 53% / 0.35);
+    /* Tinted to the brand it now sits under, rather than to the retired terracotta. */
+    --shadow-warm: 0 20px 48px -16px hsl(253 79% 58% / 0.30);
     --shadow-card: 0 4px 16px -4px hsl(20 30% 12% / 0.06);
 
     --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);

@@ -136,7 +136,7 @@ const Bookings = () => {
           <p className="text-muted-foreground mt-2">Manage upcoming visits and review past ones.</p>
         </div>
         {selected.size > 0 && (
-          <Button onClick={() => setBulkOpen(true)} className="rounded-full gradient-warm">
+          <Button onClick={() => setBulkOpen(true)} className="rounded-full">
             <Repeat className="h-4 w-4 mr-1" /> Reschedule {selected.size}
           </Button>
         )}

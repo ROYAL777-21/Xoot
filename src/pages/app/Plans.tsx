@@ -141,7 +141,7 @@ const Plans = () => {
             ) : isPending ? (
               <Button disabled className="mt-6 h-12 w-full rounded-2xl">Pending payment confirmation</Button>
             ) : (
-              <Button onClick={subscribe} className="mt-6 h-12 w-full rounded-2xl gradient-warm font-semibold shadow-warm" disabled={actionLoading}>
+              <Button onClick={subscribe} className="mt-6 h-12 w-full rounded-2xl font-semibold" disabled={actionLoading}>
                 {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crown className="mr-2 h-4 w-4" />}
                 Join Care+ for R99/month
               </Button>

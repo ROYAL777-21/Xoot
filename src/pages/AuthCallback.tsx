@@ -109,7 +109,7 @@ const AuthCallback = () => {
             : "The sign-in link could not be completed. Start again from the secure sign-in page."}
         </p>
         {status === "error" && (
-          <Button asChild className="mt-6 rounded-full gradient-warm">
+          <Button asChild className="mt-6 rounded-full">
             <Link to="/auth">Back to sign-in</Link>
           </Button>
         )}

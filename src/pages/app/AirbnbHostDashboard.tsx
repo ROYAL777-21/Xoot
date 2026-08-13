@@ -42,7 +42,7 @@ const AirbnbHostDashboard = () => {
           <Button asChild variant="outline" className="rounded-full" onClick={() => haptic("selection")}>
             <Link to="/app/properties"><Home className="mr-2 h-4 w-4" /> Manage properties</Link>
           </Button>
-          <Button asChild className="rounded-full gradient-warm" onClick={() => haptic("impact")}>
+          <Button asChild className="rounded-full" onClick={() => haptic("impact")}>
             <Link to="/app"><Plus className="mr-2 h-4 w-4" /> Schedule turnover</Link>
           </Button>
         </div>

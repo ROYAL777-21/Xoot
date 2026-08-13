@@ -105,7 +105,7 @@ const Profile = () => {
             <div><Label>Pet comfort</Label><Input value={xooter.pet_comfort ?? ""} onChange={(e) => setXooter({ ...xooter, pet_comfort: e.target.value })} placeholder="Comfortable with dogs and cats" /></div>
             <label className="flex items-center gap-3 rounded-2xl border border-border p-3 cursor-pointer"><input type="checkbox" checked={!!xooter.airbnb_specialist} onChange={(e) => setXooter({ ...xooter, airbnb_specialist: e.target.checked })} className="accent-primary" /><span className="text-sm font-medium">Airbnb turnover specialist</span></label>
           </div>
-          <Button onClick={save} disabled={saving} className="mt-6 gradient-warm">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}</Button>
+          <Button onClick={save} disabled={saving} className="mt-6">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}</Button>
         </Card>
       </div>
     </div>

@@ -212,7 +212,7 @@ const AuthReset = () => {
               </p>
             </div>
 
-            <Button type="submit" disabled={loading || !!passwordIssue} className="h-12 w-full rounded-xl gradient-warm font-semibold shadow-warm">
+            <Button type="submit" disabled={loading || !!passwordIssue} className="h-12 w-full rounded-xl font-semibold">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}
             </Button>
           </form>

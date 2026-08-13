@@ -24,7 +24,7 @@ export const MyHomeHub = () => {
               and you get easy tools to manage it all — plus expert support when you need it.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button asChild size="lg" className="rounded-full gradient-warm shadow-warm">
+              <Button asChild size="lg" className="rounded-full">
                 <Link to="/care-plus">Find full-time help</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="rounded-full">

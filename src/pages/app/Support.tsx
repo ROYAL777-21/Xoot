@@ -176,7 +176,7 @@ const Support = () => {
                 </button>
               ))}
             </div>
-            <Button type="submit" disabled={submitting} className="rounded-xl gradient-warm">
+            <Button type="submit" disabled={submitting} className="rounded-xl">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><LifeBuoy className="h-4 w-4 mr-1" /> Get help</>}
             </Button>
           </form>

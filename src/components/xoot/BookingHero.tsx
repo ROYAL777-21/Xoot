@@ -106,7 +106,7 @@ export const BookingHero = () => {
                   <div className="flex-1 min-w-0"><Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Status</Label><p className="text-sm font-medium truncate">Tracked in app</p></div>
                 </div>
               </div>
-              <Button size="lg" onClick={startBooking} className="rounded-2xl h-14 text-base font-semibold gradient-warm hover:opacity-95 shadow-warm group">
+              <Button size="lg" onClick={startBooking} className="rounded-2xl h-14 text-base font-semibold hover:opacity-95 group">
                 {user ? "Start a booking" : "Book now"}
                 <ArrowRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>

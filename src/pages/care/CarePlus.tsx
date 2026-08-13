@@ -114,20 +114,20 @@ const CarePlus = () => {
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 {state.status === "unauthenticated" ? (
-                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => { haptic("success"); captureCarePlusCta("hero_guest_join"); }}>
+                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => { haptic("success"); captureCarePlusCta("hero_guest_join"); }}>
                     <Link to="/auth">Join Care+ membership <ArrowRight className="ml-1 h-4 w-4" /></Link>
                   </Button>
                 ) : state.status === "not_member" || state.status === "cancelled" ? (
-                  <Button size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => { captureCarePlusCta("hero_join"); void joinCarePlus(); }} disabled={carePlus.actionLoading}>
+                  <Button size="lg" className="h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => { captureCarePlusCta("hero_join"); void joinCarePlus(); }} disabled={carePlus.actionLoading}>
                     {carePlus.actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crown className="mr-2 h-4 w-4" />}
                     Join for {formatZAR(carePlus.plan.priceZar)}/month
                   </Button>
                 ) : state.status === "pending_payment" ? (
-                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => captureCarePlusCta("hero_pending_payment")}>
+                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => captureCarePlusCta("hero_pending_payment")}>
                     <a href={state.checkout_url}>Complete setup <ArrowRight className="ml-1 h-4 w-4" /></a>
                   </Button>
                 ) : (
-                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => captureCarePlusCta("hero_active_book")}>
+                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => captureCarePlusCta("hero_active_book")}>
                     <Link to="/app">Book with Care+ <ArrowRight className="ml-1 h-4 w-4" /></Link>
                   </Button>
                 )}
@@ -272,7 +272,7 @@ const CarePlusStatePanel = ({ carePlus, household, xootCred, onJoin }: { carePlu
         <CalendarClock className="mb-5 h-8 w-8 text-primary" />
         <h2 className="font-display text-3xl font-bold">Complete your Care+ setup</h2>
         <p className="mt-3 text-sm text-muted-foreground">Your membership request exists, but benefits activate only after payment is confirmed by the backend payment flow.</p>
-        <Button asChild className="mt-6 rounded-full gradient-warm">
+        <Button asChild className="mt-6 rounded-full">
           <a href={state.checkout_url}>Open payment link</a>
         </Button>
       </Card>
@@ -472,11 +472,11 @@ const CarePlusSignupPass = ({
         )}
 
         {mode === "guest" ? (
-          <Button asChild size="lg" className="mt-6 h-14 w-full rounded-full gradient-warm text-base font-semibold shadow-warm">
+          <Button asChild size="lg" className="mt-6 h-14 w-full rounded-full text-base font-semibold">
             <Link to="/auth">Join Care+ membership <ArrowRight className="ml-1 h-4 w-4" /></Link>
           </Button>
         ) : (
-          <Button size="lg" className="mt-6 h-14 w-full rounded-full gradient-warm text-base font-semibold shadow-warm" onClick={onJoin} disabled={loading}>
+          <Button size="lg" className="mt-6 h-14 w-full rounded-full text-base font-semibold" onClick={onJoin} disabled={loading}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crown className="mr-2 h-4 w-4" />}
             {mode === "rejoin" ? "Rejoin Care+ membership" : "Activate Care+ membership"}
           </Button>

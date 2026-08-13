@@ -134,7 +134,7 @@ export const AddressPicker = ({ value, onChange }: Props) => {
           <Input placeholder="Postal code" value={draft.postal_code} onChange={(e) => setDraft({ ...draft, postal_code: e.target.value })} />
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={() => setAdding(false)}>Cancel</Button>
-            <Button size="sm" onClick={save} className="gradient-warm flex-1">Save address</Button>
+            <Button size="sm" onClick={save} className="flex-1">Save address</Button>
           </div>
         </div>
       ) : (

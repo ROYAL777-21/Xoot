@@ -38,7 +38,7 @@ const PwaInstall = () => {
                 Use Xoot as an installable iPhone web app while the native TestFlight build waits for Apple Developer access and final bundle IDs.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="h-14 rounded-full gradient-warm px-7" onClick={() => haptic("impact")}>
+                <Button asChild size="lg" className="h-14 rounded-full px-7" onClick={() => haptic("impact")}>
                   <Link to="/auth">Open secure sign-in</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="h-14 rounded-full px-7" onClick={() => haptic("selection")}>

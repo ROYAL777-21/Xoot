@@ -40,7 +40,7 @@ export const Services = () => (
         })}
       </div>
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-        <Button asChild size="lg" className="rounded-full gradient-warm shadow-warm"><Link to="/app">Book a clean</Link></Button>
+        <Button asChild size="lg" className="rounded-full"><Link to="/app">Book a clean</Link></Button>
         <Button asChild size="lg" variant="outline" className="rounded-full"><Link to="/care-plus">Find full-time help</Link></Button>
       </div>
     </div>
