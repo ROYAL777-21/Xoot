@@ -13,6 +13,49 @@
 -- constraint added on 2026-08-13 still pins the `XOOT-%` prefix. `{PROVIDER}` becomes `PAYFAST`
 -- rather than the format changing shape.
 
+-- ── FIRST: the CHECK constraints that name the providers ────────────────────────────────────
+--
+-- ⚠️ Attempt 3 failed here, at statement 4, on
+-- `payment_provider_capabilities_provider_check` — `check (provider in ('stitch', 'ozow'))`.
+-- Inserting a `payfast` row is rejected by a constraint that predates the decision.
+--
+-- This is the FOURTH instance of one pattern in two days: a check constraint whose BODY spells out
+-- a value the product has since renamed. The ZD-029 rename hit three of them
+-- (`payment_provider_reference_format_safe`, `messages.sender_type`,
+-- `xoot_concierge_feedback.role`) and I wrote up the category at the time — then wrote this
+-- migration without looking for it here. Worth naming plainly: knowing a class of defect exists is
+-- not the same as checking for it.
+--
+-- Three tables carry one:
+--   payment_provider_capabilities.provider   in ('stitch','ozow')
+--   payment_records.provider                 in ('stitch','ozow')
+--   provider_events.provider                 in ('stitch','ozow','twilio','brevo',…)   ← keep the
+--                                            non-payment sources, swap only the payment ones
+--
+-- Dropped BY DEFINITION rather than by name, for the reason established during the rename: an
+-- inline `check (…)` gets an auto-generated name, and `drop constraint if exists <guess>` silently
+-- does nothing when the guess is wrong — leaving the old constraint in place while the `add`
+-- succeeds and the migration reports success.
+do $$
+declare c record;
+begin
+  for c in
+    select conrelid::regclass as tbl, conname
+    from pg_constraint
+    where contype = 'c'
+      and connamespace = 'public'::regnamespace
+      and conrelid in (
+        'public.payment_provider_capabilities'::regclass,
+        'public.payment_records'::regclass,
+        'public.provider_events'::regclass
+      )
+      and pg_get_constraintdef(oid) ~* '''(stitch|ozow)'''
+  loop
+    execute format('alter table %s drop constraint %I', c.tbl, c.conname);
+    raise notice 'dropped % on %', c.conname, c.tbl;
+  end loop;
+end $$;
+
 -- ── The control that gates checkout ─────────────────────────────────────────────────────────
 -- Named per-provider, so the old keys go and a PayFast one arrives DISABLED. Enabling it is a
 -- founder action after a sandbox payment has completed — see NEEDS-FOUNDER.md.
@@ -97,3 +140,23 @@ on conflict (provider, environment) do update
 -- event sources.
 update public.payment_records set provider = 'payfast' where provider in ('stitch', 'ozow');
 update public.provider_events set provider = 'payfast' where provider in ('stitch', 'ozow');
+
+-- ── LAST: put the CHECK constraints back, naming payfast ────────────────────────────────────
+-- After the data moves, so they validate rather than being added `not valid`. Original names kept,
+-- so anything referring to them by name still resolves.
+alter table public.payment_provider_capabilities
+  add constraint payment_provider_capabilities_provider_check
+  check (provider = 'payfast');
+
+alter table public.payment_records
+  add constraint payment_records_provider_check
+  check (provider = 'payfast');
+
+-- `provider_events` is the shared ledger for every external event source, not just payments — the
+-- non-payment entries stay exactly as they were and only the payment providers change.
+alter table public.provider_events
+  add constraint provider_events_provider_check
+  check (provider in (
+    'payfast', 'twilio', 'brevo', 'openai', 'mapbox', 'expo', 'cloudflare', 'hostinger',
+    'airtable', 'internal'
+  ));
