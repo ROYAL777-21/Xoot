@@ -269,15 +269,13 @@ Neither session should answer these alone. Record the question, let the founder 
 
 ## Founder-only items
 
-Neither session can do these. Listed so neither keeps re-discovering them.
+**Moved to [`docs/release/founder-todo.md`](../release/founder-todo.md)** on 2026-08-13, ordered,
+with a *proves it done* on every row.
 
-| item | why no session can do it |
-| --- | --- |
-| `ENCRYPTION_KEY` (#28) | Supabase secret, console-only |
-| Twilio Console voice URLs (`voice-gates.md` §2c-0) | provider console, not code |
-| Staging Twilio subaccount | account-level provider action — **now has a browser route**, `voice-gates.md` route B |
-| SOS device test (#36) | needs a real device |
-| Device verification (#37) | needs a real device |
-| Rotate credentials pasted 2026-08-07 | founder-held secrets |
-| Dismiss the two by-design advisors | no MCP dismiss tool exists |
-| Production deploy dispatch | deliberately a human act |
+This table was the eighth place the same list lived, and the other seven had rotted — `blocker.md`
+still showed three closed issues as open, and four `docs/release/` checklists were last reviewed in
+July. Keeping a second copy here would restart that. **Read the file, and edit the file.**
+
+The one thing worth repeating here, because it is a rule rather than a task: a session **never**
+dispatches a production deploy unasked, and `create-staging-twilio-subaccount.mjs` is **never**
+wrapped in a workflow — it prints a secret Twilio shows exactly once, into a retained log.

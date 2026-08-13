@@ -15,6 +15,11 @@ Added 2026-08-08. This file had grown to 81KB and was doing an issue tracker's j
 repository had **zero** issues. Anything still outstanding is now filed, each with the exact command
 or console step and who can move it. Track them there; this file keeps the reasoning and the history.
 
+> ⚠️ **Rows #29, #30 and #31 in the table below are closed** (verified against the tracker
+> 2026-08-13). For the founder-blocked subset in one ordered place, with a closing condition on each,
+> see [`docs/release/founder-todo.md`](./docs/release/founder-todo.md). Nothing removed here — the
+> reasoning under each heading is still worth reading.
+
 | # | What | Who |
 |---|---|---|
 | [#28](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/28) | `ENCRYPTION_KEY` on both projects — gate codes blocked until it exists | founder |

@@ -1,5 +1,10 @@
 # Environment Readiness
 
+> ⚠️ **The "Current Local Credential State" section below is out of date** — `SUPABASE_ACCESS_TOKEN`
+> is now a working repository secret, which is how `twilio-selftest` and `verify-live-deploy` reach
+> Supabase at all. For what is actually outstanding, see [`founder-todo.md`](./founder-todo.md).
+> The variable classification above it is still correct.
+
 Reviewed: 2026-07-10 00:42 SAST
 
 ## Safe Public Variables

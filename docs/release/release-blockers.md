@@ -1,5 +1,8 @@
 # Release Blockers
 
+> ⚠️ **Superseded for anything current — see [`founder-todo.md`](./founder-todo.md).** This file was
+> last reviewed 2026-07-03. Kept for the history.
+
 Reviewed: 2026-07-03 17:35 SAST
 
 This document summarizes release blockers. `blocker.md` remains the detailed unresolved-only ledger.

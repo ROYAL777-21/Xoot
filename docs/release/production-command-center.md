@@ -1,5 +1,9 @@
 # Xoot Production Command Center
 
+> ⚠️ **"Current Next Action" below is from 2026-07-10 and is no longer the next action.** For what
+> is actually outstanding and who can move it, see [`founder-todo.md`](./founder-todo.md). The
+> sources-of-truth table and the runbook links below are still accurate.
+
 Reviewed: 2026-07-10 00:12 SAST
 
 This document is the navigation layer for completing Xoot. It does not replace the detailed runbooks it links to.
