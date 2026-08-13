@@ -4,11 +4,22 @@
 reviewed in July and are wrong about the current state. If they disagree with this file, this file
 is right; if this file is stale, fix it here rather than starting a seventh list.
 
-Last measured: **2026-08-13 01:20 SAST**. Everything below was checked against the live issue
-tracker, the workflow run history, or the working tree on that date — not carried forward on trust.
+Last measured: **2026-08-13 09:45 SAST**. Everything below was checked against a workflow run, the
+live issue tracker, or the working tree on that date — not carried forward on trust.
 
-**Every item has a *proves it done*.** That is the part the old lists were missing, and it is why
-they rotted: an item with no closing condition is never closed, only re-read.
+---
+
+## ✅ Done since the last update, with the run that proves it
+
+| what | evidence |
+|---|---|
+| The Xoot rename merged to `main` | `7180314`, 771 tests / 80 files green |
+| Schema rename applied to **staging** | *Database migration push* run 10, **APPLY on staging**, success |
+| All 46 Edge Functions redeployed to **staging** | *Deploy Edge Functions* run 27, success, drift-after clean |
+| Staging Twilio **subaccount created**, 7 secrets set | *Provision the staging Twilio subaccount* run 3, success — no secret printed |
+| Arming the call test | *Arm the two-party call test* run 1, 48s, four green checks |
+
+**Three defects were found and fixed on the way**, all in the rename — see §5.
 
 ---
 
@@ -87,28 +98,16 @@ fails the run on it.
 a dry run; type `CREATE` to do it for real. It creates all four Twilio resources **and sets the seven
 secrets on staging itself** — nothing to paste, and no secret is ever printed.
 
-**⚠️ It needs two repository secrets first**, both the **parent** account's, from Twilio Console →
-dashboard → Account Info. Settings → Secrets and variables → Actions → New repository secret:
+✅ **DONE 2026-08-13 09:42Z — the subaccount exists and staging's seven secrets are set.**
+*Provision the staging Twilio subaccount* run 3, success, and **no secret value appears in the log**:
+the API Key Secret went Twilio → 0600 file → Supabase, and a shell trap deleted the file.
 
-| secret | value |
-|---|---|
-| `XOOT_TWILIO_ACCOUNT_SID` | parent Account SID, starts `AC` |
-| `XOOT_TWILIO_AUTH_TOKEN` | that account's Auth Token |
+The dry run before it (run 2) reached Twilio with your credentials and confirmed the ground was
+clear: *"checking the parent account for an existing Xoot Staging subaccount… none found — good."*
 
-**Measured 2026-08-13 02:01Z** — I dispatched it as a dry run, and it did the right thing:
-
-```
-##[error]XOOT_TWILIO_ACCOUNT_SID is not set. Settings → Secrets and variables →
-         Actions → New repository secret. Value: Twilio Console → dashboard →
-         Account Info → Account SID (the PARENT account's).
-##[error]XOOT_TWILIO_AUTH_TOKEN is not set. Same screen as the Account SID,
-         behind the show/hide toggle.
-SUPABASE_ACCESS_TOKEN present and correctly shaped.
-```
-
-Failed in **11 seconds, before installing anything or calling Twilio** — so nothing was created and
-there is nothing to clean up. **Those two secrets are the only thing standing between you and a
-one-click fix.**
+Created on the new subaccount: an API key, a TwiML App named `Xoot Staging Voice` **already pointing
+at staging's routable URLs over POST**, and a Conversations service. Born correct, so it cannot
+repeat the 404 production shipped with.
 
 `voice-gates.md` also keeps the by-hand Console walkthrough (route B) and the terminal script
 (route A), for seeing what is created or for finishing up if the workflow fails partway.
@@ -193,3 +192,73 @@ Things that look outstanding in older documents and are not:
 - **R39 not shown on the price screen** ([#35](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/35))
   — it is shown, on both surfaces, with a Care+-waived variant. See the note on that issue; closing
   it is your call because it is a Consumer Protection Act claim.
+
+---
+
+## 5. What the rename broke, and what fixing it cost
+
+The other session's Xoot rename (ZD-029, 285 files, three migrations) is **good work** — I could not
+fault the migration's core. Verified rather than assumed: zero residual `zoot` in any Edge Function,
+`types.ts` fully regenerated (284 `xooter`, zero `zooter`), column renames correctly ordered after
+table renames, and the `app_role` value renamed in place so every RLS policy follows without a data
+migration.
+
+**Four defects, all of one shape: things that name the brand but are not prose.**
+
+### ① Five private routes lost their security headers
+
+`npm run security:scan` failed with 13 findings on the merge result. The rename moved the app to
+`/xooter/*` and updated the *asserter's* expectations, but not the files that set the headers —
+`public/_headers` and `public/.htaccess` still said `/zooter/*`.
+
+So `/xooter/jobs`, `/earnings`, `/kyc`, `/profile` and `/training` would have shipped with **no
+`X-Robots-Tag: noindex` and no `Cache-Control: no-store`**. `/xooter/kyc` holds identity documents
+and `/xooter/earnings` holds money; indexable and cacheable is not a cosmetic state for either.
+
+The guard did its job — it failed against the real defect, which is the only evidence a guard is
+worth having. It simply was not run.
+
+### ②③④ Three check constraints whose *body* names the brand
+
+The migration reasons carefully about constraint **names**: internal identifiers, never referenced by
+application code, not worth the DDL. That is right. It was then silently extended to constraints as a
+whole — and a constraint's **body** is not an internal identifier.
+
+| constraint | effect |
+|---|---|
+| `payment_provider_reference_format_safe` — `like 'ZOOT-%'` | **failed the staging apply**, SQLSTATE 23514, statement 55 |
+| `messages.sender_type` — `in ('user','zooter')` | every message a Xooter sends would be rejected |
+| `xoot_concierge_feedback.role` — `in ('user','zooter')` | same shape |
+
+Only the first failed loudly. The other two would have deployed clean and broken on first use —
+`send-booking-message/index.ts:57` now writes `"xooter"`, and nothing that runs before a real user
+would have caught it.
+
+Fixed by finding the constraints **by definition** rather than by name: an inline `check (…)` gets an
+auto-generated name, and a wrong guess in `drop constraint if exists` silently does nothing while the
+`add` succeeds — leaving both constraints in place, the old one still rejecting `xooter`, and the
+migration reporting success. A `DO` block over `pg_constraint` cannot fail that way.
+
+---
+
+## 6. Production is deliberately NOT carrying the rename
+
+Staging has it; production does not. That is a decision, not an omission.
+
+The §3b pricing gate in `deploy-edge-functions` reads `xoot.co.za/build-info.json` and refuses a
+production deploy when it cannot. A **blank function list** — which is what the rename needs, because
+all 33 functions must be redeployed the moment the migration lands — sets `writers=1`, so the gate
+applies.
+
+**A production dispatch today would apply the migration and then be refused the redeploys it depends
+on**, leaving every function querying tables that no longer exist, with no forward fix.
+
+So the order is fixed, and step 1 is yours:
+
+1. **[`domain-setup.md`](./domain-setup.md)** — point `xoot.co.za` at Netlify from GoDaddy
+2. *Verify live deploy* goes ✅ — which opens the pricing gate too; they read the same stamp
+3. Tell me, and I run `db-push` → production, then `deploy-edge-functions` → production with a blank
+   list, immediately after
+
+Production's schema and its functions are consistent with each other right now. They stay that way
+until all three steps can happen in sequence.
