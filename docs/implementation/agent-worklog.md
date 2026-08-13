@@ -591,6 +591,61 @@ Also in scope, for awareness rather than action:
 `AuthReset.tsx` rendered `xoot` lowercase; `src/lib/brand-wordmark.test.ts` now guards it.
 Relevant to Release only if a native or preview build snapshots that screen.
 
+### Release & Infrastructure — 2026-08-13 — PayFast landed on staging, and three silent green ticks
+
+**Claimed and done.** Branch `claude/session-continuation-3upt0l`, merged up to `main`.
+
+**Verified, not assumed.** The staging `deploy-edge-functions` run (31699561600) was read rather
+than inferred from timestamps: 50 functions deployed, `confirm-payment` at v23, drift after the
+push `0 stale, 56 in step, of 56`. The PayFast migration is applied — `payfast` capability rows
+exist on both environments, `stitch`/`ozow` are gone, both controls false.
+
+**⚠️ For Correctness — CLAUDE.md rule 3.** I edited two of your paths, `src/index.css` and a new
+`src/lib/theme-consumes-audited-palette.test.ts`. Neither changes a rendered value; both are about
+stopping one from changing.
+
+The founder asked for the design system to be adopted across the marketing site and the app. The
+obvious way to do that is to repoint `@theme inline` at the kit's `--xoot-*` tokens. **That is an
+accessibility regression**, because the `:root` palette is not a rival to the kit — it is the kit,
+re-measured, with four colours darkened to clear AA for body text:
+
+| role | kit raw | ratio | audited | ratio |
+|---|---|---|---|---|
+| `brand` | violet-500 `#7C5CFC` | 4.38 ✗ | violet-600 | 6.10 ✓ |
+| `care-plus` | 53% | 4.31 ✗ | 51% | 4.50 ✓ |
+| `destructive` | 56% | 3.70 ✗ | 48% | 4.55 ✓ |
+| `success` | 43% | 3.20 ✗ | 35% | 4.62 ✓ |
+
+Nothing would have caught it. `design-tokens.test.ts` and `design-contrast.test.ts` both parse
+`:root` and `.dark`; neither reads `@theme inline`, which is the layer Tailwind actually renders.
+I planted `--color-brand: var(--xoot-violet-500)` and **all 75 assertions across your four design
+guards passed**. The new test fails on it; planted twice, restored both times.
+
+I also closed the "open palette decision" that `index.css` pointed at — it referenced `blocker.md`,
+which no longer mentions the palette at all, so the question had no answer to find. If you disagree
+with settling it this way, say so here and the founder decides; I have recorded the reasoning at
+the edit site rather than in a doc nobody opens.
+
+**Found, not fixed — needs the founder.** Six pre-rename functions are still deployed and ACTIVE on
+**both** projects with no source in this repo: `admin-reject-zooter`, `approve-zooter`,
+`get-zooter-job-cards`, `redeem-zootcred`, `respond-zooter-job`, `submit-zooter-application`. The
+rename deployed the new names and never deleted the old ones. Each carries its own frozen
+pre-rename `_shared`, so `redeem-zootcred` still redeems credit against the pre-rename pricing
+module. `.github/workflows/retire-orphaned-functions.yml` retires them; staging is safe now,
+production waits because the live 28 May bundle predates the rename and may still call the old
+names. NEEDS-FOUNDER.md item 3.
+
+*This surfaced in the deploy log's own drift line. It had been printing on every run.*
+
+**Also fixed.** The Deno test step added 2026-08-12 never executed an assertion — it globbed
+`supabase/functions/`, collected `payfast.test.ts` (which imports from `vitest`), died on
+resolution before reaching the Twilio HMAC guard, and `continue-on-error: true` reported the step
+as `success` to the API. Now scoped to `_shared/twilio-webhook.test.ts`.
+
+**Not claimed:** that payments work end to end (needs the merchant credentials), that anything
+reached production (both gates shut until the Netlify link is made), or that the marketing
+components have been restyled — they have not. What is done is making that work safe to start.
+
 ---
 
 ## Open questions between the roles
