@@ -23,7 +23,72 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-Nothing held.
+Nothing held. **PR [#42](https://github.com/ROYAL777-21/zoot-your-local-helpers/pull/42) is open**
+and being driven by the Correctness session.
+
+---
+
+## 🔎 AUTHZ AUDIT — measured 2026-08-13, guard NOT yet built
+
+`docs/security/rls-and-database-security-review.md` says **"Reviewed: 2026-07-02"** and has been
+touched since only by a rename sweep. **Eleven migrations** have landed behind it, including the
+client write-surface lockdown, fare splits, and ZD-029. Nothing in the repo fails when it stops
+being true. Recording the measurements now so they are not re-derived; the drift guard is the next
+piece and is **not done**.
+
+### The shape of it, read live from production and staging
+
+| | |
+|---|---|
+| tables in `public` | 83 |
+| RLS enabled | **83 of 83** |
+| policies | 122 |
+| tables with a client `INSERT/UPDATE/DELETE` grant | 38 |
+
+**No privilege-escalation path.** `user_roles` INSERT/UPDATE/DELETE are all admin-gated;
+`xooters` INSERT/DELETE likewise; `payment_records` and `bookings` are not client-writable at all.
+Owner-scoped writes (`saved_addresses`, `push_tokens`, `favorites`, `profiles`, `booking_tips` …)
+are all `user_id = auth.uid()` and legitimate.
+
+**`public.has_role` and `private.has_role` agree by design, not by accident.** `private` is
+SECURITY DEFINER and does the real lookup; `public` delegates to it but returns false unless
+`_user_id = auth.uid()`, so the public wrapper can only ever answer about yourself. Both pin
+`search_path`. This was the finding that would have invalidated every other one, so it was checked
+first.
+
+### ⚠️ A false finding I nearly recorded, and how
+
+My first "reachable writes" query filtered policies with `not ilike '%has_role%'`, intending to find
+non-admin-reachable ones. That **excludes owner-reachable policies of the form
+`(user_id = auth.uid()) OR has_role(admin)`** — so `profiles:UPDATE` and `post_job_reviews:INSERT`
+looked unreachable on production, and I was one step from reporting "editing your profile is broken
+in production". It is not. Corrected before it went anywhere.
+
+The lesson is the repo's own: a query that looks like evidence is not evidence until you check what
+it excludes.
+
+### Findings worth acting on
+
+1. **~13 tables carry client write grants with ZERO policies** — `xooter_earnings`,
+   `subscription_plans`, `training_modules`, `notification_templates`, `automation_skills`,
+   `contractor_screening_questions`, `analytics_*`, `booking_xooter_profiles`,
+   `xooter_training_progress`, `profiles:DELETE` and others. **Inert today**, because RLS
+   default-denies with no policy. But the grant is already in place, so the day anyone adds a
+   permissive policy the write is live immediately — defence in depth inverted. Money
+   (`xooter_earnings`) and pricing (`subscription_plans`) are in that list.
+2. **Staging and production write surfaces differ** and nothing checks it.
+3. **ZD-029 never renamed FUNCTIONS.** Production still has `zooter_job_transition_allowed`;
+   `types.ts` says `xooter_…`, which is why *Types match the live schema* fails on `main`. Read from
+   `pg_proc` directly. Anything RPC-ing the new name 404s today.
+4. `admin_review_queue` INSERT permits `user_id IS NULL` from any authenticated user.
+5. `booking_tips` policies use bare `auth.uid()` and role `{public}` where the repo's own documented
+   safe pattern is `(select auth.uid())` and `{authenticated}` — re-evaluated per row.
+6. `xooter_payout_accounts.xooter_id` is a FK to **`auth.users.id`**, not `xooters.id`, despite the
+   name. The policy is correct; the name is a trap for whoever writes the next one.
+
+**Next:** `scripts/security/assert-authz-surface.mjs` diffing the live grant⋈policy join against a
+committed `docs/security/client-write-surface.json`, plus an offline test catching new grants in
+migrations at review time, plus a hardening migration revoking the vestigial grants.
 
 ---
 
