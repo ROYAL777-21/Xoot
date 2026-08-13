@@ -87,6 +87,20 @@ const readHostedCheckoutGate = async (
   supa: ReturnType<typeof getServiceClient>,
   provider: string,
 ): Promise<{ allowed: boolean; reason: string | null; environment: string }> => {
+  /*
+   * ⚠️ `getEdgeEnvironment()` defaults to "production" when XOOT_APP_ENV / APP_ENV / ENVIRONMENT
+   * are all unset — and none of them is set in the documented staging Edge Function config.
+   *
+   * `payment_provider_capabilities` has a row per environment, so an unlabelled staging deployment
+   * reads PRODUCTION's readiness. That is wrong in both directions: verifying PayFast on staging
+   * would not open staging, and approving production would open staging too.
+   *
+   * Neither is exploitable today — every flag on both rows is false — but this is a money gate and
+   * a latent wrong answer in one is not something to leave unsaid. The fix is configuration, not
+   * code: `XOOT_APP_ENV=staging` on the staging project. Recorded in NEEDS-FOUNDER.md, and the
+   * resolved environment is returned in the refusal so the screen shows WHICH row was consulted
+   * rather than leaving someone to guess.
+   */
   const environment = getEdgeEnvironment();
   try {
     const [providerCheckoutEnabled, providerGateEnabled] = await Promise.all([

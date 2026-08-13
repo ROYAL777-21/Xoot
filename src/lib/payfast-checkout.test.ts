@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildPayfastCheckout,
@@ -150,6 +152,32 @@ describe("payfast checkout configuration", () => {
     expect(processUrlFor("sandbox", "https://example.test/process")).toBe("https://example.test/process");
     expect(processUrlFor("sandbox", "   ")).toContain("sandbox.payfast.co.za");
     expect(processUrlFor("sandbox", null)).toContain("sandbox.payfast.co.za");
+  });
+
+  it("makes confirm-payment derive its validate host from the same PAYFAST_MODE", () => {
+    /*
+     * ⚠️ Found in review, and it would have failed the one run that matters.
+     *
+     * The checkout defaults to the SANDBOX process URL; `confirm-payment` defaulted to the LIVE
+     * validate URL. A sandbox test payment would be posted back to the live endpoint, which has
+     * never heard of it, so the ITN would be rejected as invalid and the booking would never
+     * confirm — with the signature and amount checks both passing. That is exactly the founder's
+     * first PayFast smoke test.
+     *
+     * Asserted on source because `confirm-payment` is Deno and cannot be imported here.
+     */
+    const webhook = readFileSync(
+      join(process.cwd(), "supabase/functions/confirm-payment/index.ts"),
+      "utf8",
+    );
+    expect(webhook, "the ITN validator must read PAYFAST_MODE").toMatch(/resolveMode\(/);
+    expect(webhook, "the sandbox validate host must be reachable").toMatch(
+      /PAYFAST_VALIDATE_URL_SANDBOX/,
+    );
+    expect(
+      webhook.match(/PAYFAST_VALIDATE_URL_LIVE/g)?.length ?? 0,
+      "the live host must not be the unconditional default",
+    ).toBeGreaterThan(0);
   });
 
   it("refuses to build anything without merchant credentials", () => {

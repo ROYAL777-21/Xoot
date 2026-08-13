@@ -33,6 +33,12 @@ Also set, per environment:
 - `PAYFAST_NOTIFY_URL` *(optional)* — where PayFast posts the ITN. Derived from `SUPABASE_URL` as
   `<project>/functions/v1/confirm-payment` when unset, which is right unless the functions sit
   behind a custom domain.
+- **`XOOT_APP_ENV`** — set to `staging` on the staging project. ⚠️ Not currently set anywhere, and
+  it is not cosmetic: `payment_provider_capabilities` has one row per environment, and an
+  unlabelled deployment resolves to **`production`**. So a staging Edge Function reads
+  *production's* readiness row — verifying PayFast on staging would not open staging, and approving
+  production would open staging too. Neither bites today because every flag on both rows is false,
+  but it is a money gate reading the wrong row.
 - `PAYFAST_ALLOWED_IPS` *(optional, recommended)* — comma-separated. **Left empty the source check
   is skipped and logged**, deliberately: this environment's egress proxy blocks
   `developers.payfast.co.za`, so the list could not be read from the primary source, and a guessed

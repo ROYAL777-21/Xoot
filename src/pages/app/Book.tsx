@@ -149,6 +149,18 @@ const Book = () => {
    * BookingDetail, each against its own booking.
    */
   const [paymentRecordId, setPaymentRecordId] = useState<string | null>(null);
+  /*
+   * How many payment records the booking produced.
+   *
+   * ⚠️ This decides whether an amount may be shown on the pay button at all. A recurring booking,
+   * or one with several Xooters, produces ONE RECORD PER VISIT and `paymentRecordId` is only the
+   * first. Labelling that button with the basket total would say "Pay R1 000" and then charge
+   * R500 at PayFast — the screen and the charge disagreeing, which is the defect this repo has
+   * shipped three times and which the Consumer Protection Act treats as the displayed price being
+   * the price. When there is more than one record, the button names no figure and PayFast shows
+   * the real one.
+   */
+  const [paymentRecordCount, setPaymentRecordCount] = useState(0);
 
   useEffect(() => {
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -398,6 +410,7 @@ const Book = () => {
       setBookingStatus(result?.status ?? "draft");
     }
     setPaymentRecordId(result?.payment_record_ids?.[0] ?? null);
+    setPaymentRecordCount(result?.payment_record_ids?.length ?? 0);
     setSubmitting(false);
     setStep(4);
   };
@@ -674,12 +687,20 @@ const Book = () => {
           */}
           {paymentRecordId && bookingStatus === "draft" && (
             <div className="mx-auto max-w-sm">
-              <PayFastCheckout paymentRecordId={paymentRecordId} label={`Pay ${formatZAR(bookingTotal)}`} />
+              <PayFastCheckout
+                paymentRecordId={paymentRecordId}
+                label={paymentRecordCount === 1 ? `Pay ${formatZAR(bookingTotal)}` : "Pay for your first visit"}
+              />
+              {paymentRecordCount > 1 && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  This booking has {paymentRecordCount} visits. You are paying for the first one now; the rest are payable from the booking.
+                </p>
+              )}
             </div>
           )}
 
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
-            <Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); setPaymentRecordId(null); }} variant="outline" className="rounded-full">Book another</Button>
+            <Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); setPaymentRecordId(null); setPaymentRecordCount(0); }} variant="outline" className="rounded-full">Book another</Button>
             <Button asChild variant={paymentRecordId ? "outline" : "default"} className={paymentRecordId ? "rounded-full" : "rounded-full gradient-warm"}><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button>
           </div>
         </div>

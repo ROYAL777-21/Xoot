@@ -12,11 +12,13 @@ import {
 } from "../_shared/payment-confirmation.ts";
 import {
   PAYFAST_VALIDATE_URL_LIVE,
+  PAYFAST_VALIDATE_URL_SANDBOX,
   normaliseStatus,
   sourceAllowed,
   validateWithPayFast,
   verifySignature,
 } from "../_shared/payfast.ts";
+import { resolveMode } from "../_shared/payfast-checkout.ts";
 
 /**
  * ⚠️ REWRITTEN 2026-08-13 for PayFast. Read this before "simplifying" it back.
@@ -95,7 +97,23 @@ Deno.serve(async (req) => {
    */
   const validation = await validateWithPayFast(
     rawBody,
-    Deno.env.get("PAYFAST_VALIDATE_URL") ?? PAYFAST_VALIDATE_URL_LIVE,
+    /*
+     * ⚠️ The validate host MUST match the host the checkout sent the customer to.
+     *
+     * This defaulted to the LIVE validate URL while `create-payment-session` defaults to the
+     * SANDBOX process URL. A sandbox test payment would then be posted back to the live endpoint,
+     * which has never heard of it, return INVALID, and the booking would never confirm — with the
+     * signature and amount checks both passing, so the log would say "postback did not validate"
+     * and point at nothing.
+     *
+     * That is precisely the founder's first smoke test, so it would have failed on the one run
+     * that matters. Both sides now read `PAYFAST_MODE`, and an explicit `PAYFAST_VALIDATE_URL`
+     * still overrides.
+     */
+    Deno.env.get("PAYFAST_VALIDATE_URL") ??
+      (resolveMode(Deno.env.get("PAYFAST_MODE")) === "live"
+        ? PAYFAST_VALIDATE_URL_LIVE
+        : PAYFAST_VALIDATE_URL_SANDBOX),
   );
   if (!validation.ok) return fail(validation.reason, origin, 401);
 
@@ -130,8 +148,21 @@ Deno.serve(async (req) => {
     if (paymentError || !payment?.id) return fail("payment record not found", origin, 404);
     if (String(payment.currency ?? "ZAR").toUpperCase() !== currency) return fail("payment currency mismatch", origin, 409);
     if (Math.round(Number(payment.amount) * 100) !== Math.round(amount * 100)) return fail("payment amount mismatch", origin, 409);
-    if (payment.status === "paid") {
-      return ok({ payment_record_id: payment.id, booking_id: payment.booking_id, idempotent: true }, origin);
+    /*
+     * `admin_confirmed` counts as already handled, not just `paid`.
+     *
+     * An admin can confirm a record that was already routed to PayFast — they saw the money in the
+     * dashboard, or the customer sent proof. That leaves `status = 'admin_confirmed'` and the
+     * booking at `payment_confirmed`. Without this branch a later genuine ITN for the same payment
+     * would miss the idempotency return, then fail `assertBookingCanConfirmPayment` because the
+     * booking has already advanced, and return 409 — so PayFast would retry that notification on a
+     * schedule forever against a payment that is, in fact, settled.
+     */
+    if (payment.status === "paid" || payment.status === "admin_confirmed") {
+      return ok(
+        { payment_record_id: payment.id, booking_id: payment.booking_id, idempotent: true, prior_status: payment.status },
+        origin,
+      );
     }
 
     /*
