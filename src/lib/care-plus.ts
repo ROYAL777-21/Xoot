@@ -114,40 +114,22 @@ export const DISCOUNT_FUNDING: DiscountFunding = "commission";
 /** Fraction of the discount borne by the Xooter when funding is "shared". */
 export const XOOTER_SHARE_OF_DISCOUNT = 0.4;
 
-/**
- * ⚠️ THESE ARE PLACEMENT DAY RATES, NOT PER-BOOKING FLOORS. Do not use them to floor a clean.
+/*
+ * ── The placement day rates and admin fee lived here. Both are gone. ──────────────────────────
  *
- * R220 half-day / R300 full-day come from `CarePlusApply`, which is a **household hiring a
- * domestic worker for standing days** (07:00–16:00, chosen weekdays) at a `daily_pay_rate`. They
- * are the minimum that form will accept, and they are correct for that product.
+ * `PLACEMENT_MIN_HALF_DAY_CENTS` (R220), `PLACEMENT_MIN_FULL_DAY_CENTS` (R300) and
+ * `PLACEMENT_ADMIN_FEE_CENTS` (R399) belonged to the Care+ placement product — a household hiring
+ * a domestic worker for standing days — which the founder retired on 2026-08-13 (ZD-031).
  *
- * They were also wired into `splitDiscount` as a per-booking floor, via
- * `hours >= 6 ? full : half` — which quietly treats a 5.5-hour clean as "half a day" and demands
- * R220 for it. That never held: at the founder's 35% commission the medium clean paid the Xooter
- * R192.40, so the floor was unreachable on the standard job and the guard did nothing.
+ * They are deleted rather than left as unused exports, and that is deliberate. These exact
+ * constants had already caused one defect: they were wired into `splitDiscount` as a per-booking
+ * floor via `hours >= 6 ? full : half`, which treated a 5.5-hour clean as half a day and demanded
+ * R220 for it. A day rate sitting in scope next to booking arithmetic invites that mistake, and a
+ * dead export with no product behind it invites it more. `care-plus.test.ts` and
+ * `xooter-commission.test.ts` still assert the old expression cannot reappear.
  *
- * **Resolved 2026-08-10: the founder keeps 35% commission**, so the placement figures are the
- * thing that was misfiled. They stay here, correctly labelled, for `CarePlusApply` to cite — and
- * per-booking work gets an hourly floor instead, below.
+ * Per-booking work is floored by `MIN_XOOTER_HOURLY_CENTS` below. That is the only floor.
  */
-export const PLACEMENT_MIN_HALF_DAY_CENTS = 22000;
-export const PLACEMENT_MIN_FULL_DAY_CENTS = 30000;
-
-/**
- * The non-refundable placement admin fee, charged once when a household books the sourcing
- * service. Covers sourcing, vetting, and coordinating interviews and trials.
- *
- * ⚠️ **Extracted 2026-08-13 from a string literal, not decided here.** `CarePlusApply.tsx` has
- * rendered "Non-refundable admin fee: R399" since it was written. This constant does not change
- * the number — it gives it one home instead of none.
- *
- * ⚠️ **It is not in `docs/product/locked-commercial-facts.md`.** Every other price the company
- * charges is: the R39 booking fee, R99 Care+, the R280/R325/R400 sizes, the R21 Booking Cover.
- * This one is a non-refundable charge to a consumer and it is recorded nowhere, which means no
- * decision-log entry authorises it and nothing would notice if it drifted. Raised in
- * NEEDS-FOUNDER.md rather than quietly blessed by being typed into a file.
- */
-export const PLACEMENT_ADMIN_FEE_CENTS = 39900;
 
 /**
  * The one-time welcome credit a new member receives when Care+ starts.
@@ -162,11 +144,6 @@ export const PLACEMENT_ADMIN_FEE_CENTS = 39900;
  * different credits is the kind of discrepancy that is only ever found by the person disputing it.
  */
 export const CARE_PLUS_WELCOME_CREDIT_CENTS = 3000;
-
-/** @deprecated Placement day rates. Use `MIN_XOOTER_HOURLY_CENTS` to floor a booking. */
-export const MIN_XOOTER_PAY_HALF_DAY_CENTS = PLACEMENT_MIN_HALF_DAY_CENTS;
-/** @deprecated Placement day rates. Use `MIN_XOOTER_HOURLY_CENTS` to floor a booking. */
-export const MIN_XOOTER_PAY_FULL_DAY_CENTS = PLACEMENT_MIN_FULL_DAY_CENTS;
 
 /**
  * South Africa's **national minimum wage: R30.23 per ordinary hour, from 1 March 2026.**

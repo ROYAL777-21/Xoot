@@ -460,7 +460,7 @@ const Auth = () => {
           <div className="mb-5 rounded-2xl border border-accent/25 bg-accent-soft p-3 text-sm leading-relaxed text-sage-deep">
             <p className="font-semibold">Passwordless sign-in</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Xoot sends the code through Supabase Auth. The code is one-time use and should only be entered inside this app.
+              The code is one-time use and should only ever be entered inside this app. Xoot will never ask you for it by phone, email or message.
             </p>
           </div>
         )}

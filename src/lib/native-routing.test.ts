@@ -70,7 +70,10 @@ describe("resolveNativeRoute", () => {
     expect(resolveNativeRoute("xoot://airbnb-turnover?intent=book_clean&service=airbnb")).toBe(
       "/app?intent=book_clean&service=airbnb",
     );
-    expect(resolveNativeRoute("xoot://care-plus/apply")).toBe("/care-plus/apply");
+    // The placement product was retired (ZD-031). Links to it still exist in delivered push
+    // notifications and installed app builds, so the deep link resolves to the parent surface
+    // rather than to nothing — a dead end with no explanation is worse than a redirect.
+    expect(resolveNativeRoute("xoot://care-plus/apply")).toBe("/care-plus");
     expect(resolveNativeRoute("xoot://office-dashboard")).toBe("/app/properties/office");
   });
 

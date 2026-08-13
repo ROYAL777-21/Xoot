@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -22,12 +22,7 @@ import {
   xooterPayoutFor,
 } from "./xooter-commission";
 import { calculateReliabilityScore, shouldDeprioritizeXooter } from "./trust";
-import {
-  MIN_XOOTER_HOURLY_CENTS,
-  PLACEMENT_MIN_FULL_DAY_CENTS,
-  PLACEMENT_MIN_HALF_DAY_CENTS,
-  splitDiscount,
-} from "./care-plus";
+import { MIN_XOOTER_HOURLY_CENTS, splitDiscount } from "./care-plus";
 import { isPriced, quote } from "./xoot-pricing";
 
 /**
@@ -295,7 +290,8 @@ describe("payout", () => {
   /**
    * The conflict this file found, and how the founder resolved it (2026-08-10).
    *
-   * `CarePlusApply` tells households "Minimum pay enforced: R220 (half) / R300 (full)", and
+   * `CarePlusApply` told households "Minimum pay enforced: R220 (half) / R300 (full)" (the page was
+   * retired with the product in ZD-031), and
    * `care-plus.ts` had imported those into `splitDiscount` as a per-booking floor. They never held:
    * on the standard R296 clean a new Xooter earns R192.40 at 35%, so the floor sat above the
    * ordinary job and the guard never fired.
@@ -326,29 +322,24 @@ describe("payout", () => {
     expect(carePlus).toMatch(/const floor = Math\.round\(Math\.max\(0, hours\) \* MIN_XOOTER_HOURLY_CENTS\)/);
     expect(carePlus).not.toMatch(/hours >= 6 \? MIN_XOOTER_PAY_FULL_DAY_CENTS/);
 
-    // And the household-facing claim still stands where it belongs — on the placement form.
+    // ── The placement product is retired (ZD-031, 2026-08-13) ──────────────────────────────
     //
-    // ⚠️ This assertion changed shape on 2026-08-13, and the reason matters more than the edit.
+    // This assertion has now been through three shapes, and the sequence is the point.
     //
-    // It used to read `expect(apply).toContain("Minimum pay enforced: R220 (half) / R300 (full)")`
-    // — a literal string. That pinned the SENTENCE, which is why it passed for as long as the page
-    // typed the figures by hand, and would have kept passing if `PLACEMENT_MIN_HALF_DAY_CENTS` had
-    // been raised and the page left saying R220. It was asserting the copy, not the claim.
+    // It began as `expect(apply).toContain("Minimum pay enforced: R220 (half) / R300 (full)")`,
+    // which pinned the SENTENCE — so it passed precisely because the page typed the figures by
+    // hand, and would have kept passing after a wage increase. On 2026-08-13 it was changed to
+    // assert the page cited the constants instead. Hours later the founder retired the product,
+    // so there is no page and no constants.
     //
-    // These constants track the national minimum wage, which rises roughly 5% every March and has
-    // `NMW_REVIEW_BY` failing CI so it cannot go stale. The page now renders them via `formatRand`
-    // instead of restating them, so what is checked here is that it CITES them — which is the
-    // thing the original comment ("the household-facing claim still stands") actually meant.
-    const apply = readFileSync(join(process.cwd(), "src/pages/care/CarePlusApply.tsx"), "utf8");
-    expect(apply).toContain("PLACEMENT_MIN_HALF_DAY_CENTS");
-    expect(apply).toContain("PLACEMENT_MIN_FULL_DAY_CENTS");
-    expect(apply).toMatch(/Minimum pay enforced: \{formatRand\(PLACEMENT_MIN_HALF_DAY_CENTS\)\}/);
-
-    // The claim the household reads is still R220 / R300 — asserted against the constants rather
-    // than against the rendered text, so this fails loudly at the next wage increase instead of
-    // quietly agreeing with a page that has gone out of date.
-    expect(PLACEMENT_MIN_HALF_DAY_CENTS).toBe(22000);
-    expect(PLACEMENT_MIN_FULL_DAY_CENTS).toBe(30000);
+    // What survives is the thing all three versions were actually protecting: the placement day
+    // rates must never floor a per-booking clean. That is now guaranteed structurally rather than
+    // by assertion — the constants do not exist, so the `hours >= 6 ? full : half` expression
+    // cannot be written. The negative match above still covers the source text.
+    const carePlusSource = readFileSync(join(process.cwd(), "src/lib/care-plus.ts"), "utf8");
+    expect(carePlusSource).not.toMatch(/export const PLACEMENT_MIN_(HALF|FULL)_DAY_CENTS/);
+    expect(carePlusSource).not.toMatch(/export const PLACEMENT_ADMIN_FEE_CENTS/);
+    expect(existsSync(join(process.cwd(), "src/pages/care/CarePlusApply.tsx"))).toBe(false);
   });
 });
 

@@ -82,7 +82,7 @@ export const ServiceAreaMap = () => {
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <LocateFixed className="h-3.5 w-3.5" />
-            Mapbox-powered coverage
+            Launch coverage
           </div>
           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
             See where Xoot is launching, then book from the same flow.
@@ -122,9 +122,15 @@ export const ServiceAreaMap = () => {
             <div className="liquid-glass-readable absolute inset-0 grid place-items-center p-6">
               <div className="max-w-sm text-center">
                 <MapPin className="mx-auto mb-4 h-8 w-8 text-primary" />
-                <h3 className="font-display text-2xl font-bold">Mapbox is ready for activation.</h3>
+                {/*
+                  The map is decoration over a list that is already on the page. When the map
+                  cannot render, the suburbs beside it still answer the question, so this says
+                  what the visitor can do rather than which environment variable is missing.
+                */}
+                <h3 className="font-display text-2xl font-bold">Our launch suburbs</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Add `VITE_MAPBOX_PUBLIC_TOKEN` in the host or GitHub repository variables to render the live coverage map.
+                  The full list is beside this panel. Enter your address in the booking form to
+                  check whether we reach you.
                 </p>
               </div>
             </div>

@@ -591,9 +591,9 @@ const Book = () => {
                   <p className="text-xs text-muted-foreground">
                     {address.trim()
                       ? inLaunchRegion
-                        ? "Xoot can use this area context for calmer arrival planning once live Mapbox routing is configured."
+                        ? "Xoot uses this area context to plan a calmer arrival."
                         : "Use one of the approved launch suburbs so Xoot can match the right nearby Xooter."
-                      : "Add the address now; routing and ETA features stay server-gated until restricted Mapbox tokens are available."}
+                      : "Add the address now — your Xooter's arrival window is confirmed before dispatch."}
                   </p>
                 </div>
               </div>

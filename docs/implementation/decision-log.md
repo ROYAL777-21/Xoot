@@ -706,6 +706,57 @@ constants and said in its docstring that they were there "for `CarePlusApply` to
 non-refundable R399 admin fee charged to consumers with no constant and no locked-facts entry —
 raised as NEEDS-FOUNDER item 4 rather than blessed by being typed into a file.
 
+## ZD-031 — The Care+ placement product is retired (2026-08-13)
+
+**Decision, by the founder:** Xoot no longer offers Care+ placement — sourcing a domestic worker
+for a household on standing days, with a R399 non-refundable admin fee. Raised as NEEDS-FOUNDER
+item 4 (a consumer charge authorised by no document); answered by ending the product rather than
+by documenting the fee.
+
+### What was removed
+
+| surface | change |
+|---|---|
+| `src/pages/care/CarePlusApply.tsx` | deleted |
+| `/care-plus/apply` | **redirects** to `/care-plus`, not removed |
+| `native-routing.ts` | `care_plus_apply` host and route dropped; retired-route map added |
+| `notification-routing.ts` | route dropped from the exact-match set |
+| `care-plus.ts` | `PLACEMENT_MIN_HALF_DAY_CENTS`, `PLACEMENT_MIN_FULL_DAY_CENTS`, `PLACEMENT_ADMIN_FEE_CENTS` and the two deprecated `MIN_XOOTER_PAY_*` aliases deleted |
+| `activate-care-plus` | handler removed; `action: "placement_application"` now returns **410 Gone** |
+
+### Three choices worth the words
+
+**The route redirects rather than 404s.** Links to it do not vanish with the product: push
+notifications already delivered, installed app builds carrying the old deep-link table, bookmarks,
+emails. A dead end explains nothing, so both the web route and the native resolver send those
+people to `/care-plus`.
+
+**The Edge Function rejects explicitly instead of losing the branch.** A stale client can still
+POST `action: "placement_application"`. Without a check the request would fall through to the
+subscription path below it, where a body carrying an `application` object and no payment reference
+would be treated as a Care+ activation attempt. A retired endpoint must fail loudly, not do
+something adjacent. 410 rather than 400 — the request is well-formed and was valid until the
+product ended.
+
+**The constants are deleted, not left as unused exports.** These exact figures had already caused
+one defect: they were wired into `splitDiscount` as a per-booking floor via `hours >= 6 ? full :
+half`, which treated a 5.5-hour clean as half a day and demanded R220 for it. A day rate sitting
+in scope beside booking arithmetic invites that mistake; a dead export with no product behind it
+invites it more. `MIN_XOOTER_HOURLY_CENTS` is now the only floor.
+
+### Data is retained
+
+`care_plus_applications` and its rows are untouched. **Anyone who applied before the product ended
+is still in the support queue and still owed an answer** — the retirement does not close their
+request, and nothing in this change notifies them.
+
+### One guard proved itself immediately
+
+`marketing-claims.test.ts` had shipped hours earlier with an assertion that its own allowlist
+contained no stale entries — written on the theory that allowlists rot. Its single entry pointed
+at copy on the placement form. The retirement made it stale the same day, and the assertion caught
+it rather than leaving a permission behind for a page that no longer exists.
+
 ## Pending Founder Decisions
 
 1. Canonical Supabase schema source.

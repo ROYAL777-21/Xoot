@@ -30,10 +30,9 @@ import { describe, expect, it } from "vitest";
  *   · `CarePlusApply.tsx` wrote 220 and 300 by hand in FIVE places — the input's `min`, two
  *     validation branches, a toast, and the sentence telling the household what the floor is —
  *     while `care-plus.ts` exported `PLACEMENT_MIN_HALF_DAY_CENTS` and said in its own docstring
- *     that the constants "stay here, correctly labelled, for `CarePlusApply` to cite". They are
- *     pinned to the national minimum wage, which rises ~5% every March; `care-plus.test.ts`
- *     already fails on `NMW_REVIEW_BY` so the constant cannot go stale, but nothing connected
- *     that to the page enforcing and advertising the figure.
+ *     that the constants "stay here, correctly labelled, for `CarePlusApply` to cite".
+ *     *(That page and those constants were retired hours later with the placement product,
+ *     ZD-031. The finding still belongs here: it is why this file exists.)*
  *   · The R30 welcome credit appeared in a marketing page and in the membership TERMS, with
  *     nothing keeping them equal.
  *   · A "Non-refundable admin fee: R399" that exists in no constant and in no locked-facts entry.
@@ -64,16 +63,17 @@ const PUBLIC_GLOBS = [
  * Deliberate exceptions. Each needs a reason, and the reason has to survive being read aloud to
  * someone who just found the number wrong on a live page.
  */
-const ALLOWED: { fragment: string; because: string }[] = [
-  {
-    fragment: "Half day R250-R300 / Full day R300-R400",
-    because:
-      "Third-party market guidance, not a Xoot price. It tells a household what domestic work " +
-      "pays in the wider market so they can set a rate; Xoot neither charges nor pays it, and " +
-      "there is no constant it could drift from. The ENFORCED floors beside it are read from " +
-      "PLACEMENT_MIN_HALF_DAY_CENTS and PLACEMENT_MIN_FULL_DAY_CENTS.",
-  },
-];
+/**
+ * Deliberate exceptions. Each needs a reason, and the reason has to survive being read aloud to
+ * someone who just found the number wrong on a live page.
+ *
+ * Currently empty, and it emptied itself. The one entry — "Half day R250-R300 / Full day
+ * R300-R400", third-party market guidance on the placement form — went stale the same day it was
+ * written, because the founder retired the placement product (ZD-031) and the page went with it.
+ * The `has no stale allowlist entries` assertion below is what caught that; it was added on the
+ * theory that allowlists rot, and it took hours rather than months to prove the point.
+ */
+const ALLOWED: { fragment: string; because: string }[] = [];
 
 /** Comments are stripped first: the reasoning around a price is not a price. */
 const stripComments = (src: string) =>
@@ -91,7 +91,7 @@ describe("public pages never hardcode a rand figure", () => {
     // failure mode this repo has hit three times.
     const files = publicFiles();
     expect(files.length).toBeGreaterThan(15);
-    expect(files).toContain("src/pages/care/CarePlusApply.tsx");
+    expect(files).toContain("src/pages/care/CarePlus.tsx");
   });
 
   it("finds no rand literal outside a comment", () => {

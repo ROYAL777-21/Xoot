@@ -33,7 +33,7 @@ export const BookingHero = () => {
     });
   }, []);
 
-  const liveXooterLabel = isSupabaseConfigured ? String(activeXooters) : "Live roster";
+  const liveXooterLabel = String(activeXooters);
 
   const startBooking = () => {
     captureAnalyticsEvent("booking_flow_started", {
@@ -131,7 +131,15 @@ export const BookingHero = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <span><span className="font-semibold text-foreground">{liveXooterLabel}</span> {isSupabaseConfigured ? "approved Xooters currently live" : "loads from Supabase when configured"}</span>
+            {/*
+              When there is no live count, this line is omitted rather than replaced with an
+              explanation of why. It previously read "loads from Supabase when configured",
+              which tells a customer nothing and names our database. A claim we cannot
+              substantiate is better left unsaid than annotated.
+            */}
+            {isSupabaseConfigured && (
+              <span><span className="font-semibold text-foreground">{liveXooterLabel}</span> approved Xooters currently live</span>
+            )}
             <span><span className="font-semibold text-foreground">MIE-ready</span> trust workflow</span>
           </div>
         </div>

@@ -1,82 +1,14 @@
 import {
   addDays,
-  cleanArray,
-  cleanId,
   cleanText,
   fail,
   handlePreflight,
   insertNotification,
   insertOutbox,
-  insertReviewQueue,
   ok,
   requireAuth,
-  toNumber,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
-
-const createPlacementApplication = async (req: Request, origin: string | null, user: any, supa: any, body: any) => {
-  const application = body.application ?? body;
-  const firstName = cleanText(application.first_name, 100);
-  const lastName = cleanText(application.last_name, 100);
-  const email = cleanText(application.email, 255);
-  const phone = cleanText(application.phone, 40);
-  const address = cleanText(application.address, 500);
-  const dailyPayRate = toNumber(application.daily_pay_rate, 0);
-  if (!firstName || !lastName || !email.includes("@") || !phone || address.length < 5) {
-    return fail("complete contact details are required", origin, 400);
-  }
-  if (dailyPayRate < 220) return fail("minimum pay is R220 for half-day placement", origin, 400);
-
-  const { data, error } = await supa.from("care_plus_applications").insert({
-    user_id: user.id,
-    status: "submitted",
-    first_name: firstName,
-    last_name: lastName,
-    email,
-    phone,
-    address,
-    preferred_start_date: cleanText(application.preferred_start_date, 20) || null,
-    daily_start_time: cleanText(application.daily_start_time, 20) || null,
-    daily_end_time: cleanText(application.daily_end_time, 20) || null,
-    days_of_week: cleanArray(application.days_of_week, 7, 10),
-    daily_pay_rate: dailyPayRate,
-    overtime: cleanText(application.overtime, 120) || null,
-    job_description: cleanText(application.job_description, 1000) || null,
-    preferred_language: cleanText(application.preferred_language, 80) || null,
-    ideal_personality: cleanText(application.ideal_personality, 500) || null,
-    required_skills: cleanArray(application.required_skills, 12, 80),
-    pets: cleanArray(application.pets, 8, 80),
-    other_qualities: cleanText(application.other_qualities, 500) || null,
-  }).select("id").single();
-  if (error || !data?.id) throw new Error("care plus application insert failed");
-
-  await insertReviewQueue(supa, {
-    queueType: "support",
-    subjectTable: "care_plus_applications",
-    subjectId: data.id,
-    userId: user.id,
-    priority: "normal",
-    summary: `Care+ placement request for ${firstName} ${lastName}`,
-  });
-  await insertNotification(supa, {
-    userId: user.id,
-    kind: "care_plus_application_submitted",
-    title: "Care+ request received",
-    body: "Your placement request is in the support queue. We will review the details and next steps in-app.",
-    link: "/app",
-  });
-  await writeAuditLog(supa, {
-    actorId: user.id,
-    action: "create_care_plus_application",
-    targetTable: "care_plus_applications",
-    targetId: data.id,
-    changes: { status: "submitted" },
-    reason: "Client submitted Care+ placement request through Edge Function",
-    ipAddress: req.headers.get("x-forwarded-for"),
-  });
-
-  return ok({ application_id: data.id, status: "submitted" }, origin);
-};
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
@@ -89,8 +21,23 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
+    /*
+     * The Care+ placement product was retired on 2026-08-13 (ZD-031). This branch used to create
+     * a `care_plus_applications` row, queue a review and notify the user.
+     *
+     * It is rejected explicitly rather than deleted, and that matters: an installed app build or
+     * a queued retry can still POST `action: "placement_application"`. Without this check the
+     * request falls through to the SUBSCRIPTION path below, where a body carrying an
+     * `application` object and no payment reference would be handled as a Care+ activation
+     * attempt. A retired endpoint must fail loudly, not do something adjacent.
+     *
+     * 410 Gone, not 400: the request is well-formed and was valid until the product ended.
+     *
+     * Existing `care_plus_applications` rows are untouched. Anyone who applied before the product
+     * was retired is still in the support queue and still owed an answer.
+     */
     if (cleanText(body.action, 60) === "placement_application" || body.application) {
-      return await createPlacementApplication(req, origin, user, supa, body);
+      return fail("Care+ placement applications are no longer accepted", origin, 410);
     }
 
     const paymentReference = cleanText(body.paymentRef ?? body.payment_reference ?? body.provider_reference, 160);

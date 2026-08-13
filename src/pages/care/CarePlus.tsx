@@ -135,9 +135,6 @@ const CarePlus = () => {
                   <a href="#included">See benefits</a>
                 </Button>
               </div>
-              <p className="mt-5 text-sm text-muted-foreground">
-                Signed-in member panels come from your live Supabase account data.
-              </p>
             </div>
 
             {carePlus.loading ? (

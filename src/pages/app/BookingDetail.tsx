@@ -499,11 +499,11 @@ const BookingDetail = () => {
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="rounded-xl bg-background/75 p-2">
                     <p className="text-xs text-muted-foreground">Client proxy</p>
-                    <p className="font-medium">{maskedCall.proxy_numbers.client ?? "Pending Twilio assignment"}</p>
+                    <p className="font-medium">{maskedCall.proxy_numbers.client ?? "Assigned when the call starts"}</p>
                   </div>
                   <div className="rounded-xl bg-background/75 p-2">
                     <p className="text-xs text-muted-foreground">Xooter proxy</p>
-                    <p className="font-medium">{maskedCall.proxy_numbers.xooter ?? "Pending Twilio assignment"}</p>
+                    <p className="font-medium">{maskedCall.proxy_numbers.xooter ?? "Assigned when the call starts"}</p>
                   </div>
                 </div>
               </div>

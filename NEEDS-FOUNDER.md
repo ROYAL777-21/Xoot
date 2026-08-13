@@ -94,32 +94,9 @@ still matches `zooter` or `zootcred`.
 
 ---
 
-## 🟠 Decide, then it is settled
-
-### 4. The R399 placement admin fee is charged but recorded nowhere
-
-`care/CarePlusApply.tsx` has told households *"Non-refundable admin fee: R399"* since it was
-written. It is a non-refundable charge to a consumer, and it appears in **no** decision-log entry
-and **nothing** in `docs/product/locked-commercial-facts.md`.
-
-Every other price the company charges is recorded there — the R39 booking fee, R99 Care+, the
-R280/R325/R400 sizes, the R21 Booking Cover. This one is not, which means nothing authorises it
-and nothing would notice if it changed.
-
-I have given it a constant (`PLACEMENT_ADMIN_FEE_CENTS` in `src/lib/care-plus.ts`) so the figure
-has one home instead of being typed into a sentence — **the amount is unchanged**. What a session
-cannot do is decide whether R399 is the right number or write it into the locked facts, because
-that is a commercial decision with a consumer-law edge: under the CPA a non-refundable fee has to
-be disclosed before the consumer is bound, and the page currently discloses it at step 3 of 4.
-
-**Proves it done:** a line in `locked-commercial-facts.md` giving the amount and what it covers,
-and a decision-log entry. Then the constant cites the document rather than the other way round.
-
----
-
 ## 🟠 Blocking a feature each
 
-### 5. Place the first two-party call
+### 4. Place the first two-party call
 
 No call has been made on any surface, ever. Everything else about voice proves configuration; this
 proves sound comes out.
@@ -132,7 +109,7 @@ mail, so the reset flow can never work — see the walkthrough.
 
 **Proves it done:** Twilio Console → Monitor → Logs → Calls shows **two** legs in one conference.
 
-### 6. Decide what SOS does, then it can be enabled (#36)
+### 5. Decide what SOS does, then it can be enabled (#36)
 
 Four prerequisites, all decisions rather than settings. **Not enabled until all four are answered** —
 every step has a failure mode where the button appears to work, and a person in trouble pressing
@@ -140,7 +117,7 @@ something that does nothing is worse than no button.
 
 **→ [`docs/release/founder-walkthroughs.md`](./docs/release/founder-walkthroughs.md) §B**
 
-### 7. Device verification on real hardware (#37)
+### 6. Device verification on real hardware (#37)
 
 Live Activities, widgets, Siri intents, push, deep links. No simulator tests these honestly.
 
@@ -150,7 +127,7 @@ Live Activities, widgets, Siri intents, push, deep links. No simulator tests the
 
 ## 🟡 Before the first store submission
 
-### 8. The `zoot://` deep-link scheme (#34)
+### 7. The `zoot://` deep-link scheme (#34)
 
 Still live in `mobile/app.config.ts`. It is baked into the app record at first submission, so it
 changes **now or never**.
@@ -180,3 +157,8 @@ No session should answer these alone. Each has its full reasoning on the issue.
 - **The production rename** — applied with its functions, consistent, 0 bookings at risk.
 - **Credentials pasted 2026-08-07** — rotated.
 - **GoDaddy DNS** — correct. The problem was never DNS.
+- **The R399 placement admin fee** — resolved by retiring the product (ZD-031, 2026-08-13), not by
+  documenting the fee. Nothing charges it and nothing advertises it. Existing
+  `care_plus_applications` rows are untouched: **anyone who applied before the product ended is
+  still in the support queue and still owed an answer.** That is the one piece of follow-up the
+  retirement does not do for you.
