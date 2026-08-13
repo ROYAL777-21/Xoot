@@ -74,8 +74,13 @@ will not help: the script refuses when `Xoot Staging` exists, and Twilio subacco
 deleted, only closed.
 
 **⚠️ Founder input needed, and it is now the only thing blocking the subaccount:** two repository
-secrets, `XOOT_TWILIO_ACCOUNT_SID` and `XOOT_TWILIO_AUTH_TOKEN`, both the parent account's. The
-workflow checks them first and names the screen.
+secrets, `XOOT_TWILIO_ACCOUNT_SID` and `XOOT_TWILIO_AUTH_TOKEN`, both the parent account's.
+
+Dry-run dispatched 02:01Z to prove the guard rather than assume it. It named both missing secrets
+with the exact screen, confirmed `SUPABASE_ACCESS_TOKEN` is fine, and **exited in 11 seconds before
+`npm ci`, before the CLI install, and before any Twilio call** — so a misconfigured run creates
+nothing and leaves nothing to clean up. That ordering is deliberate: everything this workflow
+creates is permanent.
 
 **Still unresolved and not mine to resolve:** what serves `xoot.co.za`. Four runs of *Verify live
 deploy*, no stamp on any. See `founder-todo.md` §1.2 — the Hostinger candidate first.

@@ -90,8 +90,20 @@ dashboard → Account Info. Settings → Secrets and variables → Actions → N
 | `XOOT_TWILIO_ACCOUNT_SID` | parent Account SID, starts `AC` |
 | `XOOT_TWILIO_AUTH_TOKEN` | that account's Auth Token |
 
-The workflow checks both up front and names the screen if either is missing. **This is the only
-thing standing between you and a one-click fix.**
+**Measured 2026-08-13 02:01Z** — I dispatched it as a dry run, and it did the right thing:
+
+```
+##[error]XOOT_TWILIO_ACCOUNT_SID is not set. Settings → Secrets and variables →
+         Actions → New repository secret. Value: Twilio Console → dashboard →
+         Account Info → Account SID (the PARENT account's).
+##[error]XOOT_TWILIO_AUTH_TOKEN is not set. Same screen as the Account SID,
+         behind the show/hide toggle.
+SUPABASE_ACCESS_TOKEN present and correctly shaped.
+```
+
+Failed in **11 seconds, before installing anything or calling Twilio** — so nothing was created and
+there is nothing to clean up. **Those two secrets are the only thing standing between you and a
+one-click fix.**
 
 `voice-gates.md` also keeps the by-hand Console walkthrough (route B) and the terminal script
 (route A), for seeing what is created or for finishing up if the workflow fails partway.
