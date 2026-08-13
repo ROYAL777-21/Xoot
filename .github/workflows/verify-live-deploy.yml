@@ -49,11 +49,24 @@ jobs:
         env:
           SITE: https://xoot.co.za
           EXPECTED: ${{ inputs.expected_commit || github.sha }}
-        # No `-e`, for the same reason as `db-push.yml` and `twilio-selftest.yml`: a reporting
-        # workflow that dies on the first non-zero exit reports nothing, which is the failure mode
-        # it exists to prevent.
         shell: bash
         run: |
+          #
+          # ⚠️ `shell: bash` DOES set `-e`. Measured, on this workflow's first run.
+          #
+          # `db-push.yml` and `twilio-selftest.yml` both carry a comment claiming `shell: bash`
+          # avoids errexit. It does not — GitHub invokes it as
+          # `bash --noprofile --norc -e -o pipefail {0}`, which the run log prints verbatim. The
+          # only difference from the default is that `-o pipefail` is added.
+          #
+          # So the first run of this check died after 7 seconds with
+          # `printf: write error: Broken pipe`, exit 5: `printf … | jq` gets SIGPIPE when jq closes
+          # its input early on non-JSON, pipefail promotes that to a pipeline failure, and `-e`
+          # aborts the job. It looked like the live site had failed the check. It had not — the
+          # check had.
+          #
+          # Two fixes, both applied: clear errexit explicitly, and stop piping into jq at all.
+          set +e
           set -uo pipefail
 
           # Netlify builds take minutes. A check that fires on push and gives up immediately would
@@ -70,7 +83,11 @@ jobs:
 
           for attempt in $(seq 1 "$attempts"); do
             body=$(curl -sS --max-time 25 "${SITE}/build-info.json?cachebust=${GITHUB_RUN_ID}-${attempt}" 2>&1)
-            live=$(printf '%s' "$body" | jq -r '.commit // ""' 2>/dev/null)
+            # Herestring, not a pipe — see the note above about SIGPIPE killing the job.
+            # `|| true` as well as the `set +e` above: jq exits non-zero on invalid JSON, and a
+            # 404 HTML page is invalid JSON. Belt and braces, because either one alone failing
+            # silently turns "the site is not ready yet" into "the check is broken".
+            live=$(jq -r '.commit // ""' <<< "$body" 2>/dev/null || true)
 
             if [ -n "$live" ] && [ "$live" = "$EXPECTED" ]; then
               echo "attempt ${attempt}: live=${live:0:8} ✅ match"
@@ -115,7 +132,7 @@ jobs:
               echo "Last response body, truncated:"
               echo ""
               echo '```'
-              printf '%s' "$body" | head -c 300
+              echo "${body:0:300}"
               echo ""
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"

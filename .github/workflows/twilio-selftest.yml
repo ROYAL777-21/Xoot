@@ -84,8 +84,16 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           ENVIRONMENT: ${{ inputs.environment }}
-        # No `-e`, for the same reason as `db-push.yml`: a reporting workflow that dies on the
-        # first non-zero exit reports nothing, which is the failure mode it exists to prevent.
+        # ⚠️ CORRECTION 2026-08-13: `shell: bash` does NOT drop `-e`.
+        #
+        # This block used to claim it did. The run log prints the real invocation:
+        # `bash --noprofile --norc -e -o pipefail {0}` — errexit is still on, and pipefail is ADDED.
+        # `verify-live-deploy.yml` was written on that wrong belief and died after 7 seconds on a
+        # SIGPIPE from `printf | jq`, reporting a live-site failure that had not happened.
+        #
+        # `set +e` inside the script DOES work — it applies to every command after it, which is all
+        # of them. That is the actual fix, and it is what this job relies on. Left uncorrected here
+        # for a day, the comment would have taught the same mistake to the next reader.
         shell: bash
         run: |
           set -uo pipefail

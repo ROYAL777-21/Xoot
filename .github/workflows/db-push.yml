@@ -101,10 +101,13 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           PROJECT_REF: ${{ inputs.environment == 'production' && 'mvlrkelahhsyjrwgsxaf' || 'fxmxyabdjqviqbcxmvlp' }}
-        # ⚠️ `shell: bash` explicitly, WITHOUT `-e`.
+        # ⚠️ `shell: bash` explicitly. NOTE: this does NOT drop `-e` — see below.
         #
-        # GitHub's default for a `run:` block is `bash -e {0}`, and `-e` cannot be cleared from
-        # inside the script — `set +e` runs after the shell has already been started with it. That
+        # ⚠️ CORRECTED 2026-08-13. The original claim here — that `-e` cannot be cleared from
+        # inside the script — is WRONG, and `verify-live-deploy.yml` was written on it and broke.
+        # `shell: bash` runs `bash --noprofile --norc -e -o pipefail {0}`: errexit stays on and
+        # pipefail is added. `set +e` inside the script works fine; it applies to everything
+        # after it. GitHub's default for a `run:` block is `bash -e {0}`, and that
         # bit this workflow on its first real run: the step died the moment `db push --dry-run`
         # returned non-zero, before a single line of the plan reached the log, and the whole run
         # reported "exit code 1" with nothing to act on.
