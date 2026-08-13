@@ -28,6 +28,46 @@ and being driven by the Correctness session.
 
 ---
 
+## 🚨 Netlify has never been able to build this repo — fixed 2026-08-13
+
+> ⚠️ **Release — `netlify.toml` is deploy config and therefore effectively yours.** Taken because it
+> was 3 of the 5 red checks on an open PR that fixes a production outage.
+
+`NEEDS-FOUNDER.md` §2 framed the dead live site as an unlinked project. Linking was necessary and
+**never sufficient**: the first push after linking would have failed before compiling anything.
+
+**Netlify sets `CI=true`.** `npm run build` → `prebuild` → `config:check` →
+`validate-public-env.mjs`, which contains `if (process.env.CI && !appEnv) fail(…)`. `netlify.toml`
+set only `NODE_VERSION`. Reproduced rather than reasoned:
+
+| environment | result |
+|---|---|
+| `CI=true`, no `VITE_APP_ENV` — Netlify's shape | **exit 1**, "CI builds must set VITE_APP_ENV explicitly" |
+| `CI=true` + `VITE_APP_ENV` + Supabase public vars — Actions' shape | exit 0 |
+| no `CI` — how I ran it all session | exit 0 |
+
+That is why CI passes, why my local runs passed, and why the deploy preview failed on four
+consecutive commits including after a lockfile fix that turned the equivalent Actions job green.
+
+**⚠️ This is the SECOND appearance of one bug, and the first fix was yours.**
+`.github/workflows/tests.yml:22` carries your comment — *"when CI is set but VITE_APP_ENV is not.
+The Build step had therefore never once succeeded."* You found it, fixed it in Actions, and wrote it
+down. `netlify.toml` walked into the same hole because a comment in one file cannot guard another.
+`src/lib/netlify-build-env.test.ts` now fails if any context loses its `VITE_APP_ENV`, uses a value
+the validator rejects, or builds a preview as `production`.
+
+**Deploy previews now build with no founder action.** Production still needs
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the Netlify UI, because
+`VITE_APP_ENV = "production"` also trips `requiresRealSupabase` — recorded as NEEDS-FOUNDER §2a
+with the exact values.
+
+**I got this wrong first.** I told the PR the likely cause was the `NODE_VERSION = "20"` pin against
+Vite 8's `^20.19.0 || >=22.12.0`. It was a reasonable-looking guess and it was wrong; Node 20 is EOL
+so Netlify's `20` resolves above 20.19. Corrected on the PR rather than left standing — I could not
+read Netlify's log from here, and should have reproduced before hypothesising in public.
+
+---
+
 ## 🔎 AUTHZ AUDIT — measured 2026-08-13, guard NOT yet built
 
 `docs/security/rls-and-database-security-review.md` says **"Reviewed: 2026-07-02"** and has been

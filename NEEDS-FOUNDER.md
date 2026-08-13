@@ -74,6 +74,32 @@ security headers.
 
 **Do not touch GoDaddy.** DNS and TLS are already right.
 
+⚠️ **Linking was never sufficient, and this entry used to imply it was.** Netlify sets `CI=true`,
+and `scripts/config/validate-public-env.mjs` fails outright when `CI` is set and `VITE_APP_ENV` is
+not. `netlify.toml` set only `NODE_VERSION`, so **the very first push after linking would have
+failed before compiling anything** — and every deploy preview on PR #42 did exactly that, four
+commits running.
+
+Fixed in code on 2026-08-13: `netlify.toml` now sets `VITE_APP_ENV` per context. **Deploy previews
+build with no further action from you.** Production needs two more values, below.
+
+### 2a. Two public values in Netlify's environment settings
+
+Needed by the **production context only**. `VITE_APP_ENV = "production"` also requires real Supabase
+public values, or the build fails with *"staging and production builds require real
+VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY"*.
+
+| variable | value |
+|---|---|
+| `VITE_SUPABASE_URL` | `https://mvlrkelahhsyjrwgsxaf.supabase.co` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | the `sb_publishable_…` key — Supabase → Settings → API |
+
+Netlify → Site configuration → Environment variables, scoped to the **Production** context.
+
+**Neither is a secret** — both ship inside the client bundle already. They are not committed
+because the repo supplies them from variables rather than source, so a project reference changes in
+one place rather than two.
+
 **Proves it done:** Actions → *Verify live deploy* reports ✅. That also opens the §3b pricing gate,
 which currently blocks production Edge Function deploys.
 
