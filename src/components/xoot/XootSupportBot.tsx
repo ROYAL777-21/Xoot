@@ -276,7 +276,7 @@ export const XootSupportBot = () => {
     <div className="fixed bottom-4 right-4 z-50 sm:bottom-5 sm:right-5">
       {open && (
         <section
-          className="liquid-glass-shell xoot-concierge-panel mb-3 flex h-[min(36rem,calc(100vh-7rem))] w-[min(calc(100vw-1.5rem),25.5rem)] flex-col rounded-[1.85rem] shadow-warm"
+          className="liquid-glass-shell mb-3 flex h-[min(36rem,calc(100vh-7rem))] w-[min(calc(100vw-1.5rem),25.5rem)] flex-col rounded-[1.85rem] shadow-warm"
           data-open="true"
           aria-label="Xoot Concierge support bot"
         >
@@ -392,7 +392,7 @@ export const XootSupportBot = () => {
 
       <Button
         type="button"
-        className="xoot-concierge-launcher interactive-press liquid-glass-shell xoot-concierge-panel h-14 w-14 rounded-full px-0 shadow-warm sm:w-auto sm:px-4"
+        className="interactive-press liquid-glass-shell h-14 w-14 rounded-full px-0 shadow-warm sm:w-auto sm:px-4"
         data-open={open ? "true" : "false"}
         onClick={() => {
           haptic("selection");

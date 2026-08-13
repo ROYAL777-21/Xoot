@@ -225,7 +225,7 @@ const CarePlus = () => {
 
         <section className="bg-background py-20 md:py-28">
           <div className="container grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div className="rounded-4xl gradient-sage p-6 text-primary-foreground shadow-warm sm:p-8 md:p-12">
+            <div className="rounded-4xl gradient-sage p-6 text-primary-foreground sm:p-8 md:p-12">
               <Sparkles className="mb-5 h-8 w-8" />
               <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Home care should not reset every time.</h2>
               <p className="mt-4 max-w-2xl text-base opacity-90 sm:text-lg">Care+ keeps the useful context in the app: household notes, favourite people, XootCred, property profiles and support handoff history.</p>
@@ -301,7 +301,7 @@ const CarePlusStatePanel = ({ carePlus, household, xootCred, onJoin }: { carePlu
 
   return (
     <div className="grid gap-5">
-      <Card className="rounded-3xl border-0 bg-foreground p-6 text-background shadow-warm">
+      <Card className="rounded-3xl border-0 bg-foreground p-6 text-background">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-background/70">Care<span className="text-primary-glow">+</span> active</p>
@@ -413,10 +413,19 @@ const CarePlusSignupPass = ({
         ? `Your previous membership ended on ${formatDate(cancelledAt)}. Rejoin to restore Home Memory, priority context and member add-on credit.`
         : "Join to make repeat cleaning feel remembered, protected and easier to rebook.";
 
+  /*
+   * Was `liquid-glass-shell … shadow-warm` wrapping `liquid-glass-readable` wrapping a second
+   * shadowed card — a card inside a card, both elevated, both glass, on a content surface.
+   * `GLASS-SYSTEM.md` reserves glass for navigation, controls and overlays; the Care+ member pass
+   * is none of those, and its inverse fill already separates it from the page without help.
+   *
+   * It also carried `xoot-concierge-panel`, copied across from the Concierge sheet — a class
+   * defined in no stylesheet. It styled nothing here, and nothing there either.
+   */
   return (
-    <div className="liquid-glass-shell xoot-concierge-panel rounded-4xl p-5 shadow-warm sm:p-6">
-      <div className="liquid-glass-readable">
-        <div className="rounded-[1.6rem] border border-white/20 bg-foreground p-5 text-background shadow-warm sm:p-6">
+    <div className="rounded-4xl border border-border bg-card p-5 sm:p-6">
+      <div>
+        <div className="rounded-[var(--xoot-radius-lg)] border border-white/20 bg-foreground p-5 text-background sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-background/65">Care+ member pass</p>
