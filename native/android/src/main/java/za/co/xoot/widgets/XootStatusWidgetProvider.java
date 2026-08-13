@@ -1,4 +1,4 @@
-package za.co.zoothome.widgets;
+package za.co.xoot.widgets;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -31,7 +31,7 @@ public class XootStatusWidgetProvider extends AppWidgetProvider {
     PendingIntent openApp = PendingIntent.getActivity(
       context,
       appWidgetId,
-      new Intent(Intent.ACTION_VIEW, Uri.parse("zoot://bookings?intent=widget_next_booking"))
+      new Intent(Intent.ACTION_VIEW, Uri.parse("xoot://bookings?intent=widget_next_booking"))
         .setPackage(context.getPackageName()),
       pendingIntentFlags()
     );

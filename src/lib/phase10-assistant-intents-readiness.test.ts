@@ -28,9 +28,13 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
     expect(swift).toContain("Confirm your address, time and payment inside the app");
     expect(swift).not.toMatch(/URLQueryItem\(name:\s*"(booking_id|address|gate_code|alarm_code|access_code|payment_reference|payment_status)"/);
 
-    expect(androidShortcuts).toContain("zoot://book?intent=book_clean");
-    expect(androidShortcuts).toContain("zoot://bookings?intent=booking_status");
-    expect(androidShortcuts).toContain("zoot://zooter/jobs?intent=zooter_jobs");
+    // Shortcut targets moved to `xoot://` with the 2026-08-13 rename (#34). The app still
+    // registers `zoot://` so older links resolve, but anything Xoot itself emits uses the
+    // current scheme — a shortcut is regenerated on every install, so there is nothing to
+    // preserve here.
+    expect(androidShortcuts).toContain("xoot://book?intent=book_clean");
+    expect(androidShortcuts).toContain("xoot://bookings?intent=booking_status");
+    expect(androidShortcuts).toContain("xoot://zooter/jobs?intent=zooter_jobs");
     expect(androidShortcuts).not.toContain("https://xoot.co.za");
   });
 
@@ -48,7 +52,7 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
 
   it("keeps native widgets free of realistic fake production data", () => {
     const swiftWidget = read("native/ios/XootLiveActivities/XootBookingSummaryWidget.swift");
-    const androidWidget = read("native/android/src/main/java/za/co/zoothome/widgets/XootStatusWidgetProvider.java");
+    const androidWidget = read("native/android/src/main/java/za/co/xoot/widgets/XootStatusWidgetProvider.java");
 
     expect(swiftWidget).toContain("Live details stay inside Xoot");
     expect(swiftWidget).toContain("Open app");

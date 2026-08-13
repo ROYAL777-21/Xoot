@@ -18,7 +18,18 @@ const sentryUploadPlugin: NonNullable<ExpoConfig['plugins']>[number] | null =
       ]
     : null;
 
-const bundleId = isProduction ? 'za.co.zoothome.app' : 'za.co.zoothome.app.preview';
+// Changed off the pre-rename `zoothome` identifier on 2026-08-13, issue #34 — the literal old
+// value is deliberately not written here, because `app-identity.test.ts` forbids it appearing in
+// this file at all and a commented-out identifier is the kind of thing that gets pasted back.
+// An Android applicationId can never
+// change after publication and an iOS bundle identifier cannot change after submission, so this
+// was the last moment it could be corrected — the old value came from `zoothome.co.za`, a domain
+// `native-routing.ts` records as never having existed as more than placeholder debris.
+//
+// It is restated in `scripts/build/write-native-association-files.mjs` and `.env.example`, which
+// generate and document the app-site-association files. `app-identity.test.ts` pins all of them
+// together; changing it here alone breaks universal links rather than failing a build.
+const bundleId = isProduction ? 'za.co.xoot.app' : 'za.co.xoot.app.preview';
 const appName = isProduction ? 'Xoot' : 'Xoot Preview';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
@@ -29,7 +40,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: process.env.ZOOT_MOBILE_VERSION ?? '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  scheme: 'zoot',
+  // `xoot` is primary; `zoot` stays registered so links and OAuth callbacks built before the
+  // 2026-08-13 rename still resolve. Expo takes the first entry as the default for
+  // `makeRedirectUri`. Dropping `zoot` is safe only once every OAuth client has been updated.
+  scheme: ['xoot', 'zoot'],
   userInterfaceStyle: 'light',
   runtimeVersion: {
     policy: 'appVersion',
@@ -90,6 +104,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         action: 'VIEW',
         data: [
+          {
+            scheme: 'xoot',
+          },
           {
             scheme: 'zoot',
           },

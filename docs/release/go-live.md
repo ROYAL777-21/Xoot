@@ -439,6 +439,42 @@ constraint. They can go at any time.
 
 ---
 
+## 3c. ⚠️ The app identity changed — five provider consoles need updating (#34)
+
+On 2026-08-13 the deep-link scheme became `xoot://` and the app identifier became
+`za.co.xoot.app`. Both were the last moment they could change: an Android `applicationId` can
+never change after publication, and an iOS bundle identifier is fixed at submission.
+
+**`zoot://` is still registered**, deliberately. That is the safety net for everything below —
+until you have done these, native sign-in still works on the old callback rather than dead-ending.
+
+| what to change | where |
+| --- | --- |
+| Add `xoot://auth/callback` to the redirect allowlist | Supabase → Authentication → URL Configuration |
+| Update the redirect URI, and add the new reversed-client id | Google Cloud → the OAuth client(s) |
+| Register the new bundle id; update Sign in with Apple if enabled | Apple Developer → Identifiers |
+| **New identifier means new credentials** — the old ones are bound to the old id | EAS |
+| Update the project's bundle-id mapping | Sentry |
+
+⚠️ **The Android signing fingerprint changes with the credentials.** `assetlinks.json` is generated
+from `ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS`, so after EAS issues a new key that variable must be
+updated or Android App Links stop verifying. Same for `ZOOT_APPLE_TEAM_ID` / `ZOOT_IOS_APP_ID`.
+
+**Ordering — the §3b pattern again.** The website must serve the new `apple-app-site-association`
+and `assetlinks.json` **before or with** the app that claims them, or universal links break in the
+gap. The web deploy is the cheap side, so move it first. Neither file is generated at all until the
+team id and fingerprints above are set — the build logs `Skipped …: set ZOOT_APPLE_TEAM_ID`, which
+is why they are absent today rather than wrong.
+
+⚠️ **One thing the retained `zoot://` cannot save.** iOS automatically registers the bundle
+identifier itself as a URL scheme, so `za.co.zoothome.app://` stops resolving on iOS the moment the
+app ships with the new identifier — there is no way to keep a scheme for an identifier the app no
+longer has. `native-routing.ts` still accepts it, which covers anything that reaches the web
+router, but a native link built on the old bundle id will not open the app. Nothing has shipped, so
+nothing is currently relying on it.
+
+---
+
 ## 4. SOS (#36) — step by step
 
 `SAFETY_READINESS` is a **three-state gate in code**, not a database flag: `schema_pending` →

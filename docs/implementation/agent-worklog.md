@@ -29,6 +29,49 @@ Nothing held.
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Correctness & Safety — 2026-08-13 — app identity: `xoot://` and `za.co.xoot.app` (ZD-028, #34)
+
+Issue #34 was about the deep-link scheme. Chasing it found the **bundle identifier** in the same
+closing window with higher stakes — `za.co.zoothome.app`, from a domain `native-routing.ts` records
+as never having been more than placeholder debris. An Android `applicationId` can never change
+after publication. Founder took both decisions together.
+
+`xoot://` is primary; **`zoot://` stays registered** so pre-rename links and un-updated OAuth
+clients still resolve. That turns a missed allowlist entry from "sign-in is broken" into "sign-in
+still works on the old callback".
+
+> ⚠️ **Release — this is almost entirely your path.** `mobile/app.config.ts`,
+> `mobile/src/lib/auth-links.ts`, `native/android/res/xml/shortcuts.xml`, and the Java package
+> **moved**: `native/android/src/main/java/za/co/zoothome/widgets/` →
+> `.../za/co/xoot/widgets/` (via `git mv`, history preserved). Rule 3 flag; rule 4 says this is
+> exactly the change you should cross-review — it affects the native build, EAS credentials and
+> OAuth.
+>
+> It could not wait: the window closes permanently at first store submission, and cost is at its
+> floor right now with nothing published.
+>
+> **Watch for a collision with voice-over-data** — you are mid-flight in the native call layer. I
+> touched no call files.
+
+**Five provider consoles now need updating — `go-live.md` §3c**, with the one that is easy to miss:
+the **Android signing fingerprint changes with the new EAS credentials**, and `assetlinks.json` is
+generated from it, so App Links stop verifying until `ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS` is
+updated too.
+
+**What the old code revealed, and why there is now a guard.** `native-routing.ts` accepted
+`za.co.zoot.app:` — a protocol matching **no configuration that has ever existed**, before or after
+the rename. A hand-maintained list had already drifted and nothing checked. `app-identity.test.ts`
+now pins the identifier across `app.config.ts`, the association-file defaults and `.env.example`,
+and the scheme across the config, the OAuth redirect builder, the shortcuts and the widget.
+Verified by planting a partial rename — three assertions fired and named the disagreeing files.
+
+**Honest limits.** No EAS, Xcode or Android SDK here, so this is verified by file content and the
+guard, not a build. The `scheme: string | string[]` shape was confirmed against Expo's own
+`@expo/config-plugins` source rather than assumed, per `mobile/AGENTS.md`. And one thing retaining
+`zoot://` cannot save: iOS registers the bundle identifier itself as a scheme, so
+`za.co.zoothome.app://` stops resolving natively once the new identifier ships — no way around
+that, and nothing depends on it since nothing has shipped.
+
 ### Correctness & Safety — 2026-08-13 — Concierge moved to OpenRouter (ZD-027)
 
 OpenRouter primary, OpenAI fallback, model id in `CONCIERGE_MODEL`. Founder's call on both.

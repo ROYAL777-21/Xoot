@@ -40,6 +40,35 @@ const staticRoutes = new Set([
 const authRoutes = new Set(["/auth/callback", "/auth/reset"]);
 const queryPreservingRoutes = new Set(["/app", "/care-plus"]);
 const allowedSafeQueryKeys = new Set(["area", "date", "intent", "service", "zootBot"]);
+
+/**
+ * Every URL protocol that means "this app".
+ *
+ * ── Why there are five, and why none of them can be dropped ─────────────────────
+ * `xoot:` is the registered scheme; `za.co.xoot.app:` is the same identity as a scheme, which is
+ * the shape Google Sign-In uses for its iOS callback. So this list is load-bearing for
+ * authentication, not decoration — a protocol missing here is a sign-in that dead-ends.
+ *
+ * The `zoot`/`zoothome` entries are the pre-rename identity, kept deliberately (founder decision
+ * 2026-08-13, issue #34). A link already shared, or an OAuth client whose redirect URI has not been
+ * updated yet, still resolves. That turns a missed allowlist entry from "nobody can sign in" into
+ * "sign-in still works on the old callback", which is the whole point of adding the new scheme
+ * rather than replacing it.
+ *
+ * ⚠️ `za.co.zoot.app:` matches no configuration that has ever existed — the identifier was
+ * `za.co.zoothome.app` before the rename and is `za.co.xoot.app` after. It is kept because
+ * removing it is a behaviour change with no upside, and recorded here because it is the evidence
+ * that a hand-maintained list of this kind drifts: it was already wrong before anyone noticed.
+ * `app-identity.test.ts` now pins the entries that must be here against the config that produces
+ * them.
+ */
+const APP_URL_PROTOCOLS = new Set([
+  "xoot:",
+  "za.co.xoot.app:",
+  "zoot:",
+  "za.co.zoothome.app:",
+  "za.co.zoot.app:",
+]);
 /**
  * Hosts whose links this app will open as in-app routes.
  *
@@ -255,7 +284,7 @@ const routeFromUrl = (candidate: string) => {
 
   try {
     const url = new URL(value);
-    if (url.protocol === "zoot:" || url.protocol === "za.co.zoothome.app:" || url.protocol === "za.co.zoot.app:") {
+    if (APP_URL_PROTOCOLS.has(url.protocol)) {
       return routeFromXootUrl(url);
     }
     if (url.protocol === "https:" || url.protocol === "http:") return isAllowedWebUrl(url) ? routeForUrl(url) : null;

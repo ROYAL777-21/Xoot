@@ -31,6 +31,7 @@ Reviewed: 2026-06-24
 | ZD-025 | **A configuration check verifies URL shape, not substrings, and cross-environment rules are enforced by CI rather than by a note.** `twilio-selftest` now rejects a Voice URL that does not route, and fails the run when staging and production report the same Twilio Account SID. | Measured 2026-08-12 by the first working run of `twilio-selftest.yml`; no founder decision required for the code, two founder actions required for the findings | The self-test went green while production held the exact failure it exists to catch — a Voice URL that answers 404 — because `includes("twilio-voice-twiml")` is true of a broken URL. | ① **fixed 2026-08-12 21:40** — production's TwiML App now serves routable URLs over POST, and both environments are green on voice. ② still open: staging needs its own Twilio subaccount (`scripts/ops/create-staging-twilio-subaccount.mjs`, walkthrough in `docs/release/voice-gates.md` §2c-0 ②). See ZD-025 notes below. |
 | ZD-026 | **R39 is a booking fee on every booking, not a one-time fee. Care+ membership is the only thing that waives it.** Frequency no longer affects the fee on any surface. | Approved by founder 2026-08-12 ("a booking fee for every booking made, which no apparent if the user is signed up to Care+"; clarified "booking fee is only incurred to users that aren't subscribers to Care+") | Supersedes the fee clause of ZD-007. The paywall copy already promised the new rule — `docs/care-plus-paywall-copy.md` says "on every booking, not just your first" — while the code still charged the old one, so the promise was a price representation the system did not honour. | A fortnightly non-member pays the fee **26 times a year (~R1,014)**, which is what makes Care+ at R99/month pay for itself. See ZD-026 notes below. |
 | ZD-027 | **The Concierge answers through OpenRouter, with OpenAI as fallback.** Model id is `CONCIERGE_MODEL`, defaulting to a small fast model; the existing `support.openai_fallback` kill switch governs both providers. | Approved by founder 2026-08-13 ("Use this open router api for the chatbot/concierge bot"), cheapest-capable tier chosen the same day | One key to fund and one router to reach many models, rather than a per-provider account each time the model choice changes. The concierge answers bounded questions from a supplied knowledge context and is forbidden from deciding anything, so a small model is sufficient and support volume is what scales with users. | OpenAI's Responses API and OpenRouter's chat-completions API differ in request *and* response shape, so this is an adapter, not a key swap. `source` gains `'openrouter'` — see ZD-027 notes below for why that needed a migration. |
+| ZD-028 | **The deep-link scheme becomes `xoot://` and the app identifier becomes `za.co.xoot.app`.** `zoot://` stays registered; the pre-rename identifier does not. | Approved by founder 2026-08-13, both decisions taken together after the identifier was surfaced | Issue #34 gave the scheme a deadline — before first store submission or never. The identifier sat in the same window and is strictly more permanent: an Android `applicationId` can never change after publication. It came from `zoothome.co.za`, a domain `native-routing.ts` records as never having existed as more than placeholder debris. | Five provider consoles need updating — see `go-live.md` §3c. Retaining `zoot://` means a missed OAuth allowlist entry degrades instead of breaking sign-in. See ZD-028 notes below. |
 
 ## ZD-027 notes — the Concierge's provider
 
@@ -79,6 +80,45 @@ could not be exercised from a session. A stale or unknown model degrades rather 
 OpenRouter returns a non-OK status, the builder returns null, and the request falls through to
 OpenAI and then to the canned knowledge answer. The real confirmation is the first production
 answer recorded with `source: "openrouter"`.
+
+## ZD-028 notes — the app's identity
+
+### Why the identifier mattered more than the scheme that prompted it
+
+Issue #34 was about the URL scheme. Chasing it found `bundleId = 'za.co.zoothome.app'` sitting in
+the same closing window with higher stakes: a scheme can be added to later, an `applicationId`
+cannot change at all once published, and an iOS bundle identifier is fixed at submission. Both were
+corrected in one pass because the window closes on both at the same moment and the cost is at its
+floor — no submission, no installed apps, no production users.
+
+### What the old protocol list revealed
+
+`native-routing.ts` accepted three protocols, one of which — `za.co.zoot.app:` — matches **no
+configuration that has ever existed**. The identifier was `za.co.zoothome.app` before and
+`za.co.xoot.app` after; `za.co.zoot.app` is neither. A hand-maintained list had drifted from the
+config that produces it and nobody noticed, because nothing checked. That is the argument for
+`app-identity.test.ts`, which now pins the identifier across `app.config.ts`, the
+association-file defaults and `.env.example`, and pins the scheme across the config, the OAuth
+redirect builder, the Android shortcuts and the widget.
+
+Bundle-id-as-scheme is not decoration: Expo's iOS config plugin appends the bundle identifier to
+`CFBundleURLSchemes` automatically, and that is the form Google Sign-In uses for its iOS callback.
+A protocol missing from that list is a sign-in that dead-ends.
+
+### The limit of keeping `zoot://`
+
+Retaining the old scheme keeps pre-rename links and un-updated OAuth clients working. It cannot
+save the old *bundle-id* scheme: iOS registers the identifier the app actually has, so
+`za.co.zoothome.app://` stops resolving natively the moment the new identifier ships. `native-
+routing.ts` still accepts it for anything reaching the web router. Nothing has shipped, so nothing
+depends on it.
+
+### Not verified by a build
+
+No EAS, Xcode or Android SDK in an agent session. The change is verified by file content and by the
+guard, and the `scheme: string | string[]` shape was confirmed against Expo's own
+`@expo/config-plugins` source rather than assumed — `mobile/AGENTS.md` requires checking the
+versioned docs before writing config. The real check is the next EAS build and a sign-in on device.
 
 ## ZD-020 notes — pricing model change
 

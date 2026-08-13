@@ -28,6 +28,26 @@ describe("resolveNativeRoute", () => {
     expect(resolveNativeRoute("zoot://auth/reset#access_token=token&type=recovery")).toBe(
       "/auth/reset#access_token=token&type=recovery",
     );
+
+    /*
+     * The current scheme, added 2026-08-13 (#34) — and the cases above are kept rather than
+     * replaced, which is the decision itself.
+     *
+     * `xoot://` is what the app registers as primary and what `makeRedirectUri` now builds. The
+     * `zoot`/`zoothome` forms above stay registered so a link shared before the rename, or an
+     * OAuth client whose redirect URI has not been updated yet, still resolves. Deleting them here
+     * would let someone "tidy up" the protocol list and turn a missed allowlist entry into a
+     * sign-in that dead-ends.
+     */
+    expect(resolveNativeRoute("xoot://callback?code=abc&next=%2Fapp")).toBe(
+      "/auth/callback?code=abc&next=%2Fapp",
+    );
+    expect(resolveNativeRoute("za.co.xoot.app://callback?code=abc&type=oauth")).toBe(
+      "/auth/callback?code=abc&type=oauth",
+    );
+    expect(resolveNativeRoute("xoot://auth/reset#access_token=token&type=recovery")).toBe(
+      "/auth/reset#access_token=token&type=recovery",
+    );
   });
 
   it("maps zoot URL scheme shortcuts onto existing app routes", () => {
