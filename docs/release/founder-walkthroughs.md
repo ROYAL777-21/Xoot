@@ -62,6 +62,33 @@ Actions → New repository secret, at least 12 characters, something you can typ
 
 ### Step 3 — sign in on both devices
 
+> ### ⚠️ "This reset link has expired or cannot be used" — diagnosed 2026-08-13
+>
+> If you tried **Forgot password** on these accounts, that message is not a bug and retrying will
+> never fix it. Read from `auth.users` on staging:
+>
+> | account | confirmed | has password | last sign-in |
+> |---|---|---|---|
+> | `phase1-smoke-client@…` | ✅ | ✅ | **never** |
+> | `phase1-smoke-zooter@…` | ✅ | ✅ | **never** |
+>
+> Both accounts are ready and **already have passwords** — set by a seed script, so nobody knows
+> what they are. The reset flow cannot help, because the addresses end in **`.local`**, which is
+> reserved by RFC 6762 and **cannot receive mail from the internet**. The email is never delivered,
+> so any link is stale by definition. That is deliberate: these accounts exist only for this test
+> and must not be able to receive real mail.
+>
+> **The fix is to set the password directly, with no email involved:**
+>
+> 1. GitHub → Settings → Secrets and variables → Actions → **New repository secret**
+> 2. Name `XOOT_CALL_TEST_PASSWORD`, value: anything **12+ characters you can type on a phone**
+> 3. Actions → *Arm the two-party call test* → Run workflow → tick **`set_passwords`**
+>
+> It sets both accounts to that password through the Supabase admin API. Then sign in with
+> email + password — **not** a magic link, **not** Forgot password.
+
+
+
 - **Device 1 (the customer):** open the booking URL, sign in as `phase1-smoke-client@…`
 - **Device 2 (the Xooter):** same URL, sign in as `phase1-smoke-zooter@…`
 
