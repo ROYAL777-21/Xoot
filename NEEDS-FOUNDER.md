@@ -25,8 +25,14 @@ The integration is built and tested. It cannot take a cent without these.
 should use the real one. Sharing one merchant means a test payment appears in real books.
 
 Also set, per environment:
+- `PAYFAST_MODE` — `sandbox` or `live`. **Anything that is not exactly `live` means sandbox**, so
+  the failure direction is a test payment rather than a real charge.
 - `PAYFAST_PROCESS_URL` and `PAYFAST_VALIDATE_URL` — sandbox hosts on staging, live hosts on
-  production. Defaults are in `supabase/functions/_shared/payfast.ts`.
+  production. Defaults are in `supabase/functions/_shared/payfast.ts`; `PAYFAST_MODE` already picks
+  the right one, so these are only needed to override.
+- `PAYFAST_NOTIFY_URL` *(optional)* — where PayFast posts the ITN. Derived from `SUPABASE_URL` as
+  `<project>/functions/v1/confirm-payment` when unset, which is right unless the functions sit
+  behind a custom domain.
 - `PAYFAST_ALLOWED_IPS` *(optional, recommended)* — comma-separated. **Left empty the source check
   is skipped and logged**, deliberately: this environment's egress proxy blocks
   `developers.payfast.co.za`, so the list could not be read from the primary source, and a guessed
@@ -35,6 +41,14 @@ Also set, per environment:
 
 **Proves it done:** a sandbox payment completes and `confirm-payment` records it. Then flip
 `payments.provider_checkout` and `payments.hosted_checkout.payfast` on.
+
+⚠️ **Both flags are needed AND the capability row.** `create-payment-session` requires evidence
+(`payment_provider_capabilities.payfast` — every flag currently false) *and* intent (both controls,
+currently false). Flipping the controls alone still refuses, with the reason in the response, so
+the screen will tell you which one is missing rather than showing a dead button. Set
+`hosted_checkout_enabled`, `webhook_signature_verified`, `callback_urls_verified` and
+`reconciliation_verified` to true only once a sandbox payment has actually round-tripped — that row
+is a claim someone verified it.
 
 ---
 
@@ -92,10 +106,19 @@ Live Activities, widgets, Siri intents, push, deep links. No simulator tests the
 
 ## 🟡 Before the first store submission
 
-### 6. The `zoot://` deep-link scheme (#34)
+### 6. Provider consoles must learn the new app identity (ZD-028)
 
-Still live in `mobile/app.config.ts`. It is baked into the app record at first submission, so it
-changes **now or never**.
+The scheme and bundle id **changed in code** and now need the same change in three consoles. Until
+they match, native sign-in works only on the retained `zoot://` callback.
+
+| what | where |
+|---|---|
+| Add `xoot://auth/callback` to the redirect allowlist | Supabase → Authentication → URL Configuration |
+| Update the redirect URI / reversed-client id | Google Cloud OAuth client(s) |
+| Update the bundle id, and Sign in with Apple if enabled | Apple Developer → Identifiers |
+| **New identifier means new EAS credentials** | EAS — the old ones are bound to `za.co.zoothome.app` |
+
+**Proves it done:** a native sign-in completes on a device build using `xoot://`.
 
 ---
 
@@ -122,3 +145,14 @@ No session should answer these alone. Each has its full reasoning on the issue.
 - **The production rename** — applied with its functions, consistent, 0 bookings at risk.
 - **Credentials pasted 2026-08-07** — rotated.
 - **GoDaddy DNS** — correct. The problem was never DNS.
+- **The `zoot://` deep-link scheme (#34)** — changed 2026-08-13 in ZD-028 and merged to `main`.
+  `mobile/app.config.ts` reads `scheme: ['xoot', 'zoot']`: `xoot` primary, `zoot` retained so links
+  already in the wild keep resolving. The identifier moved to `za.co.xoot.app` in the same change.
+  This file listed it as outstanding for a day after it shipped — a register that names a cleared
+  blocker teaches people to skim it, which is the opposite of what it is for. What remains is the
+  console side, now item 6 above.
+- **The `payment_records` provider constraint** — `20260813180000` pinned `provider = 'payfast'`
+  while the column default is `manual_pending`, so **no booking, Care+ signup, gift clean or fare
+  split could be created on either project**. Fixed by `20260813200000` and applied to staging;
+  production applies with the next `db-push`. No founder action, listed because it was live on
+  production and anyone reading this during that window deserved to know.

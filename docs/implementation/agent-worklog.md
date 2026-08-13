@@ -23,39 +23,124 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-### 🔒 Correctness & Safety — 2026-08-13 13:30Z — the payment journey, and a constraint that blocks it
-
-**Holding:** `supabase/functions/_shared/payfast-checkout.ts` (new),
-`supabase/functions/create-payment-session/**` (new), `_shared/payment-confirmation.ts`,
-`confirm-payment/**`, `admin-confirm-payment/**`, `src/components/PayFastCheckout.tsx`,
-`src/pages/app/Book.tsx` step 4, `src/pages/app/BookingDetail.tsx`, and one new migration.
-
-> ⚠️ **Release — I am in two of your paths and one is urgent.** `supabase/migrations/**` and
-> `supabase/config.toml`. Detail in the entry below; the short version is that
-> `20260813180000_payfast_sole_payment_provider.sql` pinned `payment_records.provider = 'payfast'`
-> while the column's own default is `'manual_pending'`, so **every booking insert fails on staging
-> and production right now**. Fixing it forward rather than reverting yours.
-
-**We both built PayFast this weekend and neither of us knew.** I was building `_shared/payfast.ts`,
-a `payfast-itn` function and a provider migration on the feature branch while you built the same
-three things on `main` — our migrations even landed on the identical version prefix
-`20260813180000`. **Yours wins and mine is deleted**, unpushed: it is merged, applied to staging,
-better tested (RFC 1321 MD5 vectors), and has a source-IP layer mine lacked. Two ITN receivers for
-one provider is two code paths for money.
-
-That collision was invisible because **neither of us claimed PayFast in this file before starting**.
-This is the failure the worklog exists to prevent and it did not. Claiming here first, as the rule
-actually says.
-
-**I am building the half neither of us built: the outbound checkout.** `PAYFAST_PROCESS_URL_LIVE`
-and `_SANDBOX` are declared in your module and referenced nowhere; `create-booking` still returns
-the placeholder `/app/bookings/{id}?payment=pending`; `payment_session_url` appears in exactly one
-file — the one that generates it. So your own finish-line condition *"a sandbox PayFast payment
-completes end to end"* is currently unreachable: there is no way to reach PayFast.
+Nothing held.
 
 ---
 
 ## ✅ RELEASED — done, or stopped and available
+
+### 🔒 Correctness & Safety — 2026-08-13 — the payment journey, and the constraint that blocked it
+
+Pushed to `claude/xoot-ios-build-setup-0te1sl`. **85 files / 851 tests green** (main was 807),
+`npm run build` green, `security:scan` clean.
+
+> ⚠️ **RELEASE — TWO OF YOUR PATHS, AND ONE WAS AN OUTAGE.**
+>
+> **1. `supabase/migrations/**`.** `20260813180000_payfast_sole_payment_provider.sql` added
+> `check (provider = 'payfast')` to `payment_records`, whose column default is `'manual_pending'`.
+> **The column default violated the column's constraint**, so no booking, Care+ signup, gift clean
+> or fare split could be created — on staging *and* production. Six writers insert `manual_pending`
+> explicitly. Proven with a real insert, not argued:
+>
+> ```
+> ERROR: 23514: new row for relation "payment_records" violates check constraint
+> "payment_records_provider_check"   DETAIL: Failing row contains (..., manual_pending, ...)
+> ```
+>
+> `20260813200000_payment_records_provider_lifecycle.sql` widens it to
+> `manual_pending | payfast | manual_eft` and is **applied to staging**. Production is left for your
+> dispatch. Your `payment_provider_capabilities` constraint is deliberately untouched — `payfast`
+> alone is right *there*, because a capability row is a claim about one provider. It was only wrong
+> on `payment_records`, where `provider` is a lifecycle field.
+>
+> **2. `supabase/config.toml`.** One entry: `create-payment-session`, `verify_jwt = true`. Must stay
+> closed — it builds a signed checkout naming an amount for one person's booking.
+>
+> **3. Redeploy `confirm-payment` AND `admin-confirm-payment` together.** They now share a changed
+> `_shared/payment-confirmation.ts`; neither gets the fix until both go.
+>
+> One thing to watch on your side: applying via the MCP recorded my migration as version
+> `20260813132840` — a "now" timestamp that sorts **before** the migration it fixes. Corrected to
+> `20260813200000` so the repo and database agree and `db push` does not re-run it. Worth knowing
+> the rename trap bites on `apply_migration` even when the file is named correctly.
+
+**We both built PayFast this weekend and neither of us knew.** I built `_shared/payfast.ts`, a
+`payfast-itn` function and a provider migration on the feature branch while you built the same
+three things on `main`. Our migrations landed on the **identical version prefix `20260813180000`**.
+
+**Yours won and mine is deleted.** Not a quality judgement — yours is merged, applied to staging,
+better tested (RFC 1321 MD5 vectors, the 55/56/64-byte block boundary) and carries a source-IP
+layer mine lacked. And two ITN receivers for one provider is two code paths for money, which is the
+defect class this repo keeps paying for. Branch reset onto `origin/main` rather than merged, per
+rule 5.
+
+**That collision was invisible because neither of us claimed PayFast here before starting.** This
+is exactly the failure this file exists to prevent, and it did not. Roughly a day of duplicated
+work on the most safety-critical surface in the product. Worth more than an apology: **the claim is
+cheap and it is the only thing that works.** I pushed a claim-only commit before writing a line
+this time.
+
+#### What I built: the half neither of us had
+
+`PAYFAST_PROCESS_URL_LIVE` and `_SANDBOX` were declared in your module and referenced nowhere.
+`create-booking` returned `/app/bookings/{id}?payment=pending`, and `payment_session_url` appeared
+in exactly one file — the one that generates it. **So your own finish-line condition, "a sandbox
+PayFast payment completes end to end", was unreachable: nothing sent the customer to PayFast.**
+
+`_shared/payfast-checkout.ts` imports `buildSignatureBase` and `md5Hex` **from your module** rather
+than carrying its own. Outbound signing and inbound verification must agree, and two
+implementations that "should" match is how a payment bug survives a suite — each side passes its
+own tests and only PayFast sees the mismatch. That reuse is what makes the central test meaningful:
+it signs a checkout with one module and verifies it with your `verifySignature`.
+
+`create-payment-session` — authenticated, its own function because `create-booking` writes one
+payment record **per booking** in a recurring series, and because an abandoned checkout must be
+resumable. Ownership checked against the JWT; amount from `payment_records.amount` and never the
+body; gated on `payments.provider_checkout` **and** `payments.hosted_checkout.payfast` **and** the
+capability row — evidence and intent, neither sufficient alone, failing closed. All false today,
+read from staging.
+
+**The gate is on starting a checkout and deliberately not on `confirm-payment`.** If a control is
+switched off while a customer sits on PayFast's page, their money still arrives; an ITN handler
+that refused it would leave cash in the bank with no booking. Asserted in a test so nobody
+"tidies" it later.
+
+#### The step that was nearly lost
+
+`main`'s `admin-confirm-payment` still moved the payment record to `admin_confirmed` and never
+touched the booking — EFT confirmed against a statement, booking `draft` forever. Both paths now
+share `_shared/payment-confirmation.ts`.
+
+⚠️ **And the first version of that helper reproduced the bug one layer down.** It did the booking
+update and the status event and stopped — while the webhook it was extracted from *also* offered
+the job to the Xooter and queued the assignment search. Converging onto it would have fixed
+"booking never advances" and left "Xooter never gets the job", wearing the fix as a disguise. All
+five steps now live in the helper, and the parity test bans each inline form individually rather
+than just checking the helper is called.
+
+#### Verified by planting, restored after
+
+| planted | result |
+|---|---|
+| `manual_pending` removed from the constraint | 7 fail, each naming the file that disagrees |
+| passphrase leaked into the checkout response | 3 fail, including the signature round-trip |
+| `amount` / `item_name` swapped in the signed order | 2 fail |
+| job offer removed from the shared helper | 1 fail |
+
+> ⚠️ **NOT VERIFIED AGAINST PAYFAST.** Nothing here can reach `payfast.co.za`. The checkout matches
+> documented behaviour and is self-consistent with your verifier — a real consistency check, but
+> **not** proof PayFast accepts the form. A sandbox payment is the first honest test and needs the
+> merchant credentials in `NEEDS-FOUNDER.md`.
+
+**Recorded, not fixed:** `payment_records.provider_reference` has no unique index while
+`confirm-payment` looks up by it with `.maybeSingle()`. Two records sharing a reference would error
+and lose a payment. Practically impossible with the current UUID+timestamp scheme, so it is noted
+rather than changed mid-payment-work.
+
+**`NEEDS-FOUNDER.md` corrected:** item 6 said the `zoot://` scheme was "still live in
+`mobile/app.config.ts`". ZD-028 changed it and your own merge `7180314` brought it to `main`;
+`app.config.ts` reads `scheme: ['xoot', 'zoot']`. Replaced with what is actually outstanding — the
+provider consoles. A register that lists a cleared blocker teaches people to skim it.
 
 ### Correctness & Safety — 2026-08-13 — the schema says Xoot now (ZD-029) — ⚠️ REVIEW BEFORE DEPLOY
 
