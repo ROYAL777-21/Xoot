@@ -23,6 +23,25 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+### Release & Infrastructure — 2026-08-13 — making the last two founder gates browser-only
+
+Founder works from a browser, no terminal. Checked both remaining voice procedures against that and
+**neither is followable as written** — plus one is wrong rather than merely inconvenient.
+
+Expected paths: `.github/workflows/arm-call-test.yml` (new), `docs/release/voice-gates.md`.
+
+> ⚠️ **A defect in your half of the world, for information — I am not changing code for it.**
+> `voice-gates.md` gate 1 tells the reader to run `window.supabase.functions.invoke(…)` in the
+> browser console. **`window.supabase` does not exist.** `src/integrations/supabase/client.ts`
+> exports `supabase` as a module binding and nothing anywhere assigns it to `window` — zero hits for
+> `window.supabase` across `src/`. The snippet throws `TypeError` for anyone who pastes it, and the
+> document calls it "the single most useful command in this document".
+>
+> I am fixing the **documentation**, not the client: rewriting the snippet as a plain `fetch` built
+> from the session in `localStorage` plus the publishable key. Exposing a global client would be a
+> `src/` change with a security dimension, and it is not needed. If you would rather have a guarded
+> `window` handle on non-production builds, that is yours to decide.
+
 ### Correctness & Safety — 2026-08-12
 
 **Design-kit port.** Not yet started; claimed so the other session does not begin it.
