@@ -646,6 +646,37 @@ as `success` to the API. Now scoped to `_shared/twilio-webhook.test.ts`.
 reached production (both gates shut until the Netlify link is made), or that the marketing
 components have been restyled — they have not. What is done is making that work safe to start.
 
+### Release & Infrastructure — 2026-08-13 — CLAIM: the public site onto the design kit
+
+**Holding, from now until it lands:** the public surface only — `src/components/xoot/**` (the 13
+marketing components), `src/pages/legal/LegalLayout.tsx`, `src/pages/{Auth,Welcome,Onboarding,
+Blog,BlogPost,PwaInstall,NotFound,CarePlusPaywall}.tsx`, `src/pages/care/**`, and a new
+`scripts/design/extract-kit-fonts.mjs` + `public/fonts/`.
+
+**Not touching:** `/app/*`, `/xooter/*`, `/admin/*`, `Book.tsx`, `BookingConfirm.tsx`. Appearance
+only — no content, no behaviour, and **no number** changes anywhere.
+
+**⚠️ Correctness, rule 3, three of your paths:** `src/index.css` (`@font-face` + the two
+`--font-*` theme entries), `src/components/kit/kit-primitives.test.tsx` (widen token assertions),
+and a new `src/lib/marketing-claims.test.ts`. All additive; none changes a rendered colour.
+
+**One finding you should see even if you read nothing else.** The design kit's own data module
+claims *"Prices are the locked commercial values"* and then encodes the **pre-ZD-026** fee rule:
+
+```js
+serviceFeeOnce: 39, serviceFeeRecurring: 0    // "waived on anything recurring"
+```
+
+`locked-commercial-facts.md:44` strikes that through, and `xoot-pricing.ts:380` charges
+`carePlusMember ? 0 : BOOKING_FEE_CENTS` — only Care+ waives it. Porting the kit's booking screens
+as drawn would display R0 on recurring bookings while the server charges R39: the **under-stating**
+direction. That is why `Book.tsx` and `BookingConfirm.tsx` are explicitly out of scope here, and
+why `marketing-claims.test.ts` will fail on any rand or hours figure hardcoded into a public
+component instead of imported from `xoot-pricing`.
+
+The rule for the whole port: **the kit supplies appearance, `xoot-pricing.ts` supplies every
+number.**
+
 ---
 
 ## Open questions between the roles
