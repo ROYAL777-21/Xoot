@@ -99,17 +99,42 @@ describe("the gate's placement", () => {
      * one is not.
      */
     expect(read("supabase/functions/create-payment-session/index.ts")).toMatch(
-      /checkHostedCheckoutAllowed\(/,
+      /hostedCheckoutBlockReason\(/,
     );
     expect(
       read("supabase/functions/confirm-payment/index.ts"),
       "the ITN handler must never refuse money because a gate closed",
-    ).not.toMatch(/checkHostedCheckoutAllowed/);
+    ).not.toMatch(/hostedCheckoutBlockReason/);
   });
 
   it("fails closed when it cannot read its own rules", () => {
-    const source = read("supabase/functions/_shared/payment-provider-gate.ts");
-    expect(source).toMatch(/catch/);
+    const source = read("supabase/functions/create-payment-session/index.ts");
+    expect(source).toMatch(/gate lookup failed; failing closed/);
     expect(source).toMatch(/allowed: false/);
+  });
+
+  it("keeps the rules module free of Deno globals, so this suite can import it", () => {
+    /*
+     * ⚠️ This is a CI-only failure mode and it already bit once.
+     *
+     * When this module imported `governance-utils.ts` (which uses `Deno.env`), everything passed
+     * locally — `vitest` does not type-check and `vite build` does not follow test files — while
+     * `tsc --noEmit -p tsconfig.app.json` in CI followed the import chain out of THIS test and
+     * reported five `Cannot find name 'Deno'` errors in a file the change never touched.
+     *
+     * `_shared/payfast.ts` is kept pure for the same reason and says so in its header.
+     */
+    /*
+     * Comments are stripped first. The header of that module explains the `Deno.env` trap at
+     * length, and a check that reads prose as code would fail on the very explanation of why the
+     * rule exists — which is what happened on the first attempt at this test.
+     */
+    const code = read("supabase/functions/_shared/payment-provider-gate.ts")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    expect(code, "the rules module must not reference Deno").not.toMatch(/\bDeno\./);
+    expect(code, "the rules module must not import anything that might").not.toMatch(
+      /^\s*import\s/m,
+    );
   });
 });

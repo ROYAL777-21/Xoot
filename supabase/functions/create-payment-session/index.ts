@@ -4,12 +4,22 @@ import {
   getAllowedOrigins,
   handlePreflight,
   ok,
+  getServiceClient,
   requireAuth,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
-import { consumeRateLimit } from "../_shared/governance-utils.ts";
+import {
+  consumeRateLimit,
+  getEdgeEnvironment,
+  isOperationalControlEnabled,
+} from "../_shared/governance-utils.ts";
 import { buildPayfastCheckout, resolveMode } from "../_shared/payfast-checkout.ts";
-import { checkHostedCheckoutAllowed } from "../_shared/payment-provider-gate.ts";
+import {
+  CAPABILITY_COLUMNS,
+  hostedCheckoutBlockReason,
+  hostedCheckoutControlKey,
+  type PaymentProviderCapability,
+} from "../_shared/payment-provider-gate.ts";
 
 /**
  * Start a PayFast checkout for a payment record the caller owns.
@@ -60,6 +70,51 @@ const notifyUrl = () => {
   const base = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/$/, "");
   if (!base) throw new Error("SUPABASE_URL is not set, so the PayFast notify URL cannot be derived");
   return `${base}/functions/v1/confirm-payment`;
+};
+
+/**
+ * Read both gates and the capability row, then apply `hostedCheckoutBlockReason`.
+ *
+ * Lives here rather than in `_shared/payment-provider-gate.ts` because it is the only caller, and
+ * because putting it there would make that module import `governance-utils.ts` — which uses
+ * `Deno.env` and cannot be type-checked by the web app's `tsc` run. Keeping the rules importable is
+ * worth more than sharing a round trip nobody else makes.
+ *
+ * **Fails closed.** A lookup error returns blocked, for the same reason `getConciergeCapabilities`
+ * does: a gate that opens when it cannot read its own rules is not a gate.
+ */
+const readHostedCheckoutGate = async (
+  supa: ReturnType<typeof getServiceClient>,
+  provider: string,
+): Promise<{ allowed: boolean; reason: string | null; environment: string }> => {
+  const environment = getEdgeEnvironment();
+  try {
+    const [providerCheckoutEnabled, providerGateEnabled] = await Promise.all([
+      isOperationalControlEnabled(supa, "payments.provider_checkout", environment),
+      isOperationalControlEnabled(supa, hostedCheckoutControlKey(provider), environment),
+    ]);
+
+    const { data, error } = await supa
+      .from("payment_provider_capabilities")
+      .select(CAPABILITY_COLUMNS)
+      .eq("provider", provider)
+      .eq("environment", environment)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+
+    const reason = hostedCheckoutBlockReason({
+      providerCheckoutEnabled,
+      providerGateEnabled,
+      capability: (data as PaymentProviderCapability | null) ?? null,
+    });
+    return { allowed: reason === null, reason, environment };
+  } catch (error) {
+    console.warn("hosted checkout gate lookup failed; failing closed", {
+      provider,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return { allowed: false, reason: "provider readiness could not be confirmed", environment };
+  }
 };
 
 Deno.serve(async (req) => {
@@ -117,7 +172,7 @@ Deno.serve(async (req) => {
       return fail("payment record has no provider reference", origin, 409);
     }
 
-    const gate = await checkHostedCheckoutAllowed(supa, "payfast");
+    const gate = await readHostedCheckoutGate(supa, "payfast");
     if (!gate.allowed) {
       /*
        * 503 rather than 403: nothing is wrong with the caller or their booking. The provider is

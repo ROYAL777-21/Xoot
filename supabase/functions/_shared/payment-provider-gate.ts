@@ -1,11 +1,5 @@
-import { getEdgeEnvironment, isOperationalControlEnabled } from "./governance-utils.ts";
-
-// Deno Edge Function shared module. Bundled into each consuming function at deploy time, so a
-// change here reaches nothing until every consumer is redeployed.
-type SupabaseServiceClient = any;
-
 /**
- * May this provider take a customer's money right now?
+ * May a provider take a customer's money right now?
  *
  * ── Why three gates and not one ─────────────────────────────────────────────────
  * `payment_provider_capabilities` is **evidence**: a row saying someone verified hosted checkout
@@ -21,12 +15,19 @@ type SupabaseServiceClient = any;
  * switch on one nobody verified. PayFast is seeded with every capability flag false precisely so
  * this returns a reason rather than a checkout.
  *
- * ── Where this must NOT be used ─────────────────────────────────────────────────
- * **Never gate an inbound webhook on this.** If a control is switched off while a customer is on
- * PayFast's payment page, their money still arrives — and an ITN handler that refused it because
- * the gate closed would leave the payment in the bank with no booking against it. The gate belongs
- * on *starting* a checkout, which is reversible, not on *recording* one, which is not.
- * `confirm-payment` therefore does not call this, deliberately.
+ * ── Deliberately free of `Deno` globals, and it has to stay that way ────────────
+ * ⚠️ This module imports **nothing**. That is what lets `src/lib/payment-provider-gate.test.ts`
+ * import it and test the decision for real rather than asserting on source text.
+ *
+ * It was briefly written to import `getEdgeEnvironment` and `isOperationalControlEnabled` from
+ * `governance-utils.ts`, which uses `Deno.env`. Nothing failed locally — `vitest` does not
+ * type-check and `vite build` does not follow test files — but `tsc --noEmit -p tsconfig.app.json`
+ * in CI followed the import chain out of the test and reported five `Cannot find name 'Deno'`
+ * errors in a file this change never touched.
+ *
+ * The reading of the gates lives in `create-payment-session`, its only caller. The *rules* are
+ * what deserve to be shared and tested; a database round trip with one consumer does not.
+ * `_shared/payfast.ts` is kept pure for the same reason and says so.
  */
 
 export type PaymentProviderCapability = {
@@ -37,7 +38,7 @@ export type PaymentProviderCapability = {
 };
 
 /**
- * The decision itself, pure so it can be tested for real rather than by reading source text.
+ * The decision, pure.
  *
  * Returns the reason it is blocked, or `null` when the provider may charge. Phrased as "why not"
  * because every caller has to tell someone what is missing — a checkout that fails with
@@ -62,46 +63,10 @@ export const hostedCheckoutBlockReason = (input: {
   return null;
 };
 
+/** The control key each provider's switch lives under. */
 export const hostedCheckoutControlKey = (provider: string) =>
   `payments.hosted_checkout.${provider.trim().toLowerCase()}`;
 
-/**
- * Read the gates and decide.
- *
- * A lookup failure returns blocked, for the same reason `getConciergeCapabilities` fails closed: a
- * gate that opens when it cannot read its own rules is not a gate.
- */
-export const checkHostedCheckoutAllowed = async (
-  supa: SupabaseServiceClient,
-  provider: string,
-  environment = getEdgeEnvironment(),
-): Promise<{ allowed: boolean; reason: string | null; environment: string }> => {
-  try {
-    const [providerCheckoutEnabled, providerGateEnabled] = await Promise.all([
-      isOperationalControlEnabled(supa, "payments.provider_checkout", environment),
-      isOperationalControlEnabled(supa, hostedCheckoutControlKey(provider), environment),
-    ]);
-
-    const { data, error } = await supa
-      .from("payment_provider_capabilities")
-      .select("hosted_checkout_enabled,webhook_signature_verified,callback_urls_verified,reconciliation_verified")
-      .eq("provider", provider)
-      .eq("environment", environment)
-      .maybeSingle();
-
-    if (error) throw new Error(error.message);
-
-    const reason = hostedCheckoutBlockReason({
-      providerCheckoutEnabled,
-      providerGateEnabled,
-      capability: (data as PaymentProviderCapability | null) ?? null,
-    });
-    return { allowed: reason === null, reason, environment };
-  } catch (error) {
-    console.warn("hosted checkout gate lookup failed; failing closed", {
-      provider,
-      message: error instanceof Error ? error.message : String(error),
-    });
-    return { allowed: false, reason: "provider readiness could not be confirmed", environment };
-  }
-};
+/** The columns `create-payment-session` must select for the decision above to be complete. */
+export const CAPABILITY_COLUMNS =
+  "hosted_checkout_enabled,webhook_signature_verified,callback_urls_verified,reconciliation_verified";
