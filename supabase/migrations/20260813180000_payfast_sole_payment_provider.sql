@@ -17,29 +17,44 @@
 -- Named per-provider, so the old keys go and a PayFast one arrives DISABLED. Enabling it is a
 -- founder action after a sandbox payment has completed — see NEEDS-FOUNDER.md.
 --
--- ⚠️ The unique key is (control_key, ENVIRONMENT), not control_key alone, and `control_type` is a
--- constrained NOT NULL. The first version of this migration got both wrong and failed the staging
--- apply at statement 1 with SQLSTATE 42P10 — "no unique or exclusion constraint matching the ON
--- CONFLICT specification". Recorded because the error names the ON CONFLICT clause and not the
--- missing columns, which sends you looking in the wrong place.
+-- ⚠️ THIS INSERT FAILED THE STAGING APPLY TWICE. Both times the cause was writing it against an
+-- assumed table shape instead of a read one, and the second time was worse than the first because
+-- the lesson of the first had not been applied.
 --
--- `environment = 'all'` and `control_type = 'provider_gate'` match every existing payments row;
--- they were read from the live table rather than guessed.
+--   attempt 1: `on conflict (control_key)` — the unique key is (control_key, ENVIRONMENT).
+--              SQLSTATE 42P10, "no unique or exclusion constraint matching the ON CONFLICT
+--              specification". The message names the conflict target and says nothing about the
+--              column list, which is exactly where the real problem also was.
+--   attempt 2: conflict target fixed, but `owner` — NOT NULL, no default — was still missing.
+--
+-- The full column list below is copied from the migration that seeded these rows,
+-- `20260630005420_phase7_payments_payouts_foundation.sql:392`, so it matches by construction rather
+-- than by recollection. `owner = 'finance-security'` and the `launch_phase` metadata are what every
+-- other payments control carries.
+--
+-- The lesson worth keeping: `supabase db push` prints the failing STATEMENT prominently and the
+-- error line above it. Reading the statement and not the error is how the same migration fails
+-- twice.
 --
 delete from public.operational_controls
  where control_key in ('payments.hosted_checkout.stitch', 'payments.hosted_checkout.ozow');
 
-insert into public.operational_controls (control_key, environment, control_type, enabled, description)
+insert into public.operational_controls (
+  control_key, control_type, environment, enabled, description, owner, metadata
+)
 values (
   'payments.hosted_checkout.payfast',
-  'all',
   'provider_gate',
+  'all',
   false,
-  'Allows PayFast hosted checkout only after signature, ITN callback and reconciliation smoke tests pass.'
+  'Allows PayFast hosted checkout only after signature, ITN callback and reconciliation smoke tests pass.',
+  'finance-security',
+  '{"launch_phase":"phase_7","provider":"payfast"}'::jsonb
 )
 on conflict (control_key, environment) do update
   set description = excluded.description,
-      control_type = excluded.control_type;
+      control_type = excluded.control_type,
+      metadata = excluded.metadata;
 
 -- The generic gate still names the providers it was written for.
 update public.operational_controls
@@ -52,14 +67,25 @@ update public.operational_controls
 -- been bitten by before.
 delete from public.payment_provider_capabilities where provider in ('stitch', 'ozow');
 
+-- Column list copied from the seed at `20260630005420…:414` for the same reason as above: every
+-- readiness flag is stated rather than left to a default that may not exist. All false — nothing
+-- about PayFast is verified until a sandbox payment has round-tripped.
 insert into public.payment_provider_capabilities (
-  provider, environment, reconciliation_reference_format, metadata
+  provider,
+  environment,
+  hosted_checkout_enabled,
+  webhook_signature_verified,
+  callback_urls_verified,
+  reconciliation_verified,
+  payout_supported,
+  reconciliation_reference_format,
+  metadata
 )
 values
-  ('payfast', 'staging',    'XOOT-{PROVIDER}-{BOOKING8}-{PAYMENT8}',
-   '{"status": "blocked_until_provider_credentials_and_signed_smoke_test", "sandbox": true}'::jsonb),
-  ('payfast', 'production', 'XOOT-{PROVIDER}-{BOOKING8}-{PAYMENT8}',
-   '{"status": "blocked_until_provider_credentials_and_signed_smoke_test", "sandbox": false}'::jsonb)
+  ('payfast', 'staging',    false, false, false, false, false, 'XOOT-{PROVIDER}-{BOOKING8}-{PAYMENT8}',
+   '{"status":"blocked_until_provider_credentials_and_signed_smoke_test","sandbox":true}'::jsonb),
+  ('payfast', 'production', false, false, false, false, false, 'XOOT-{PROVIDER}-{BOOKING8}-{PAYMENT8}',
+   '{"status":"blocked_until_provider_credentials_and_signed_smoke_test","sandbox":false}'::jsonb)
 on conflict (provider, environment) do update
   set reconciliation_reference_format = excluded.reconciliation_reference_format,
       metadata = excluded.metadata;
