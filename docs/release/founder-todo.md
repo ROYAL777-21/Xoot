@@ -36,13 +36,18 @@ like a missing file rather than a policy.
 
 ### 1.2 Find out what is actually serving `xoot.co.za`
 
-**⚠️ The live site has not picked up `main` in an hour.** *Verify live deploy* has now run **four
-times** — 00:48Z, 01:16Z and 01:41Z on dispatch — and found no build stamp on any of them. The last
-run finished **58 minutes** after the push. Twelve attempts each time, so 48 fetches in total.
+**⚠️ The live site has not picked up `main` in over 80 minutes.** *Verify live deploy* has now run
+**seven times** — on every push to `main` and three times on dispatch — and found no build stamp on
+any of them. Twelve attempts per run, so **84 fetches**, the last at 02:06Z.
 
-The stamp shipped in `d64f403` at 00:45Z. If anything had rebuilt and published since,
-`https://xoot.co.za/build-info.json` would exist. It does not. The site published fine at ~22:11 the
-night before, so this is a change of state.
+The stamp shipped in `d64f403` at **00:45Z**. If anything had rebuilt and published in the 81
+minutes since, `https://xoot.co.za/build-info.json` would exist. It does not. The site published fine
+at ~22:11 the night before, so this is a change of state.
+
+> Being precise about what each run proves: a run fired by a *fresh* push checks a commit only three
+> minutes old, and a Netlify build legitimately takes longer than that — those runs prove nothing on
+> their own. The decisive evidence is the **00:45Z and 00:48Z commits**, which have now had over an
+> hour and still are not serving.
 
 Checked before reporting it, so this is not a false alarm: `netlify.toml`'s `/*` → `/index.html`
 rule has **no `force` flag**, and Netlify serves a real file ahead of a non-forced redirect, so the
