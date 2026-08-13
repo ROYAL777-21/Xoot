@@ -2,6 +2,12 @@
 
 Status: provisional foundations pending approved Figma variables and frames.
 
+> ⚠️ **PARTLY SUPERSEDED BY `Xoot_App.html` — see ZD-030 (2026-08-13).** This document predates the
+> exported kit, and `design/README.md` states that where the two disagree the export wins. Two
+> sections here are out of date and are marked inline below: **Typography** and **Shape**. The
+> semantic token model, component contract, spacing base and "primitives before patterns" all
+> still stand and are what the port is built on.
+
 ## Semantic token model
 
 Use semantic names shared across platforms:
@@ -30,7 +36,12 @@ Raw colour values belong in one source and generate web and mobile adapters. Pro
 
 ## Typography
 
-Web currently uses Space Grotesk for display and DM Sans for body through Fontsource under OFL-1.1. Native currently uses system type. Preserve system type on mobile for performance and platform fidelity unless an approved Figma comparison justifies a bundled family.
+⚠️ **Superseded (ZD-030).** Web now uses **Newsreader** for display and **Plus Jakarta Sans**
+for body — the families the exported kit names in its own `--xoot-font-display` and
+`--xoot-font-core` tokens — self-hosted as subset variable WOFF2 (73 KB total, SIL OFL-1.1). The
+Space Grotesk / DM Sans pairing below was never shipped.
+
+Web previously used Space Grotesk for display and DM Sans for body through Fontsource under OFL-1.1. Native currently uses system type. Preserve system type on mobile for performance and platform fidelity unless an approved Figma comparison justifies a bundled family.
 
 Typography rules:
 
@@ -47,7 +58,12 @@ Use a 4-point base with named steps. Default content gutters are 16 on compact m
 
 ## Shape
 
-Cards use a maximum 8px radius unless an approved platform component or glass control requires another token. Do not place cards inside cards. Page sections are unframed bands. Pills are reserved for tags, compact filters, status, and segmented controls.
+⚠️ **Superseded (ZD-030).** The exported kit honours an 8px cap nowhere; it ships a radius scale
+of 10 / 14 / 16 / 20 / 26 / 34 px plus a pill, as `--xoot-radius-xs` through `--xoot-radius-xl`.
+Use that scale. The rules that follow in this section — no cards inside cards, unframed section
+bands, pills reserved for tags and filters — are unaffected and are being applied.
+
+Previously: cards use a maximum 8px radius unless an approved platform component or glass control requires another token. Do not place cards inside cards. Page sections are unframed bands. Pills are reserved for tags, compact filters, status, and segmented controls.
 
 ## Elevation
 

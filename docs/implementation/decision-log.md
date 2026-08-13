@@ -659,6 +659,53 @@ If it is retired later, the test's `BOOKING_WRITERS` list is the thing to shorte
    contradicted the paywall on every booking, on the last screen before payment. `BookingConfirm`
    and `Book` now resolve membership through `useCarePlus` and show the waived line explicitly.
 
+## ZD-030 — The public site adopts the exported kit; the audited palette stays (2026-08-13)
+
+**Decision, by the founder:** the website in this repository is the website. It keeps its content
+and functionality and takes the Claude Design kit's appearance. Public surface first — roughly 15
+routes; `/app`, `/xooter` and `/admin` are a later pass.
+
+### The approval rule could not be satisfied as written
+
+`design/README.md` says implementation "may only claim design approval when a frame is labelled
+`APPROVED BY OWNER` and recorded in `approved-frames.json`", and that an empty registry means no
+direction is approved. `approved-frames.json` is `{"frames": []}`.
+
+That rule assumes a Figma project this repository does not have — there are no frames to label.
+The founder's instruction is the approval; it is recorded here because a registry that cannot be
+filled is not a gate, it is a stalled process, and pretending otherwise would have blocked the work
+or been ignored silently. **If Figma frames are ever produced, they become authoritative over this
+entry.**
+
+### Four resolutions, each against a document that disagreed
+
+1. **Type: the kit wins.** Newsreader (display) and Plus Jakarta Sans (body), from the export's own
+   `--xoot-font-display` / `--xoot-font-core`. `DESIGN-SYSTEM.md` says Space Grotesk + DM Sans and
+   is annotated as superseded. Shipped as subset variable WOFF2, 73 KB total.
+2. **Shape: the kit wins.** `DESIGN-SYSTEM.md` caps cards at 8px; the export honours that nowhere
+   and ships a scale of 10/14/16/20/26/34. Per `design/README.md`'s own precedence note the export
+   is the newer authority. Annotated, not silently contradicted.
+3. **Colour: neither the kit's raw values nor a redesign — the audited `:root` palette stays.**
+   This is the one that runs the other way, and it is the important one. The `:root` block is not a
+   rival to the kit; it *is* the kit, re-measured, with four colours darkened because the raw
+   values fail WCAG AA for body text: brand violet-500 4.38 → violet-600 6.10, care-plus 53% → 51%,
+   destructive 56% → 48%, success 43% → 35%. "Adopting the design system" by repointing
+   `@theme inline` at `--xoot-*` is an accessibility regression that reads as progress in a diff.
+   `src/lib/theme-consumes-audited-palette.test.ts` fails on it.
+4. **Numbers: the code wins, always.** The export's data module asserts *"Prices are the locked
+   commercial values"* and encodes `serviceFeeRecurring: 0` — the rule ZD-026 replaced.
+   `locked-commercial-facts.md:44` strikes it through; `xoot-pricing.ts` charges the R39 on every
+   booking unless the customer is Care+. **The kit supplies appearance; `xoot-pricing.ts` supplies
+   every number.** `src/lib/marketing-claims.test.ts` enforces it.
+
+### What the numbers rule found immediately
+
+Eleven hardcoded rand figures on public pages, including `CarePlusApply.tsx` writing the
+minimum-wage-linked placement floors by hand in five places while `care-plus.ts` exported the
+constants and said in its docstring that they were there "for `CarePlusApply` to cite". Also a
+non-refundable R399 admin fee charged to consumers with no constant and no locked-facts entry —
+raised as NEEDS-FOUNDER item 4 rather than blessed by being typed into a file.
+
 ## Pending Founder Decisions
 
 1. Canonical Supabase schema source.

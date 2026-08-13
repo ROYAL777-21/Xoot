@@ -142,8 +142,21 @@ export const BookingHero = () => {
             <div className="absolute inset-0 bg-linear-to-t from-foreground/40 via-transparent to-transparent" />
             <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
               <div className="liquid-glass-shell rounded-2xl p-3 shadow-card flex items-center gap-3 animate-fade-in">
-                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{isSupabaseConfigured ? activeXooters : "Z"}</span></div>
-                <div className="liquid-glass-readable"><p className="text-xs text-muted-foreground">Live Xooters</p><p className="text-sm font-semibold">{isSupabaseConfigured ? "After verification" : "Supabase-backed"}</p></div>
+                {/*
+                  Two fixes here, 2026-08-13, both in the unconfigured branch — the one nobody
+                  looks at because it only renders when Supabase is absent.
+
+                  The initial was "Z". That is Zoot, and the rename missed it: on any build
+                  without Supabase credentials the hero showed the previous brand's letter.
+
+                  The label was "Supabase-backed", which names the database to a customer. It
+                  means nothing to someone booking a clean, and on a misconfigured production
+                  build it would advertise the vendor in the first thing on the page. The label
+                  does not depend on configuration — only the count does — so it is now the same
+                  either way and only the number falls back.
+                */}
+                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{isSupabaseConfigured ? activeXooters : "X"}</span></div>
+                <div className="liquid-glass-readable"><p className="text-xs text-muted-foreground">Live Xooters</p><p className="text-sm font-semibold">After verification</p></div>
               </div>
             </div>
             <div className="absolute bottom-6 left-6 right-6">
