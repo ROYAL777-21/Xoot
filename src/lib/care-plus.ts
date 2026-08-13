@@ -133,6 +133,36 @@ export const XOOTER_SHARE_OF_DISCOUNT = 0.4;
 export const PLACEMENT_MIN_HALF_DAY_CENTS = 22000;
 export const PLACEMENT_MIN_FULL_DAY_CENTS = 30000;
 
+/**
+ * The non-refundable placement admin fee, charged once when a household books the sourcing
+ * service. Covers sourcing, vetting, and coordinating interviews and trials.
+ *
+ * ⚠️ **Extracted 2026-08-13 from a string literal, not decided here.** `CarePlusApply.tsx` has
+ * rendered "Non-refundable admin fee: R399" since it was written. This constant does not change
+ * the number — it gives it one home instead of none.
+ *
+ * ⚠️ **It is not in `docs/product/locked-commercial-facts.md`.** Every other price the company
+ * charges is: the R39 booking fee, R99 Care+, the R280/R325/R400 sizes, the R21 Booking Cover.
+ * This one is a non-refundable charge to a consumer and it is recorded nowhere, which means no
+ * decision-log entry authorises it and nothing would notice if it drifted. Raised in
+ * NEEDS-FOUNDER.md rather than quietly blessed by being typed into a file.
+ */
+export const PLACEMENT_ADMIN_FEE_CENTS = 39900;
+
+/**
+ * The one-time welcome credit a new member receives when Care+ starts.
+ *
+ * Locked: `locked-commercial-facts.md` says "R30 welcome add-on credit, one-time", with the
+ * banner correcting an earlier draft that described it as monthly. **One-time in the member's
+ * first month, and only when they did not arrive via the onboarding free trial.**
+ *
+ * Extracted 2026-08-13 because the figure was written out by hand in two places that must agree
+ * and had nothing keeping them in step: the Care+ benefits grid (`care/CarePlus.tsx`) and the
+ * membership terms (`legal/CarePlusTerms.tsx`). A marketing page and a legal page stating
+ * different credits is the kind of discrepancy that is only ever found by the person disputing it.
+ */
+export const CARE_PLUS_WELCOME_CREDIT_CENTS = 3000;
+
 /** @deprecated Placement day rates. Use `MIN_XOOTER_HOURLY_CENTS` to floor a booking. */
 export const MIN_XOOTER_PAY_HALF_DAY_CENTS = PLACEMENT_MIN_HALF_DAY_CENTS;
 /** @deprecated Placement day rates. Use `MIN_XOOTER_HOURLY_CENTS` to floor a booking. */

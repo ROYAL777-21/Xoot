@@ -22,6 +22,8 @@ import { SEO } from "@/components/SEO";
 import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 import { CarePlusBenefitCard, CarePlusComparisonTable, CarePlusSupportPromise } from "@/components/care-plus/CarePlusShowcase";
 import { carePlusBenefits, carePlusMoatBenefits } from "@/data/care-plus";
+import { CARE_PLUS_WELCOME_CREDIT_CENTS } from "@/lib/care-plus";
+import { formatRand } from "@/lib/xoot-pricing";
 import { useCarePlus } from "@/hooks/useCarePlus";
 import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
 import { useXootCred } from "@/hooks/useXootCred";
@@ -430,7 +432,7 @@ const CarePlusSignupPass = ({
           </div>
 
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
-            {["Home Memory", "Priority support", "R30 welcome credit", "Favourite Xooter"].map((item) => (
+            {["Home Memory", "Priority support", `${formatRand(CARE_PLUS_WELCOME_CREDIT_CENTS)} welcome credit`, "Favourite Xooter"].map((item) => (
               <div key={item} className="rounded-2xl bg-background/10 px-3 py-2 text-sm font-semibold">
                 {item}
               </div>

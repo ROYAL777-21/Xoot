@@ -13,6 +13,32 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
+import {
+  PLACEMENT_ADMIN_FEE_CENTS,
+  PLACEMENT_MIN_FULL_DAY_CENTS,
+  PLACEMENT_MIN_HALF_DAY_CENTS,
+} from "@/lib/care-plus";
+import { formatRand } from "@/lib/xoot-pricing";
+
+/**
+ * The placement minimums are read, not typed.
+ *
+ * `care-plus.ts` says of these constants: "They stay here, correctly labelled, for `CarePlusApply`
+ * to cite." This file did not cite them — it wrote 220 and 300 by hand in five places: the input's
+ * `min`, two validation branches, a toast, and the sentence telling the household what the floor
+ * is. So the number a form enforced and the number a page promised were four independent copies of
+ * a figure that is pinned to the national minimum wage.
+ *
+ * That figure expires: `NATIONAL_MINIMUM_WAGE_CENTS` is dated 2026-03-01, has risen ~5% a year,
+ * and `care-plus.test.ts` fails on `NMW_REVIEW_BY` (2027-01-31) precisely so it cannot go stale
+ * quietly. When it is raised, this page would have kept enforcing the old floor and kept saying it
+ * out loud — while `care-plus.ts` said something else.
+ *
+ * `MIN_RAND` is derived once here so the JSX reads in rands without each use restating the
+ * conversion.
+ */
+const MIN_HALF_DAY_RAND = PLACEMENT_MIN_HALF_DAY_CENTS / 100;
+const MIN_FULL_DAY_RAND = PLACEMENT_MIN_FULL_DAY_CENTS / 100;
 
 const SKILLS = [
   "Housekeeping", "Cooking experience", "Hospitality trained",
@@ -45,7 +71,7 @@ const CarePlusApply = () => {
     daily_start_time: "07:00",
     daily_end_time: "16:00",
     days_of_week: [] as string[],
-    daily_pay_rate: 300,
+    daily_pay_rate: MIN_FULL_DAY_RAND,
     overtime: "",
     job_description: "",
     preferred_language: "",
@@ -63,7 +89,10 @@ const CarePlusApply = () => {
     if (!user) { navigate("/auth"); return; }
     const v = schema.safeParse(form);
     if (!v.success) { toast.error(Object.values(v.error.flatten().fieldErrors)[0]?.[0] ?? "Check the form"); setStep(1); return; }
-    if (form.daily_pay_rate < 220) { toast.error("Minimum pay is R220 for half-day"); return; }
+    if (form.daily_pay_rate < MIN_HALF_DAY_RAND) {
+      toast.error(`Minimum pay is ${formatRand(PLACEMENT_MIN_HALF_DAY_CENTS)} for half-day`);
+      return;
+    }
 
     setSubmitting(true);
     const { data, error } = await supabase.functions.invoke("activate-care-plus", {
@@ -167,10 +196,11 @@ const CarePlusApply = () => {
               </div>
               <div>
                 <Label>Daily pay rate (Rand)</Label>
-                <Input type="number" min={220} value={form.daily_pay_rate} onChange={(e) => update("daily_pay_rate", Number(e.target.value))} />
+                <Input type="number" min={MIN_HALF_DAY_RAND} value={form.daily_pay_rate} onChange={(e) => update("daily_pay_rate", Number(e.target.value))} />
                 <p className="text-xs text-muted-foreground mt-2">
                   Recommended market average: <strong>Half day R250-R300 / Full day R300-R400</strong>.
-                  Minimum pay enforced: R220 (half) / R300 (full) for dignified work.
+                  Minimum pay enforced: {formatRand(PLACEMENT_MIN_HALF_DAY_CENTS)} (half) /{" "}
+                  {formatRand(PLACEMENT_MIN_FULL_DAY_CENTS)} (full) for dignified work.
                 </p>
               </div>
               <div>
@@ -249,7 +279,9 @@ const CarePlusApply = () => {
                 <p>Skills: {form.required_skills.join(", ") || "-"}</p>
               </div>
               <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5">
-                <p className="text-sm font-semibold mb-1">Non-refundable admin fee: R399</p>
+                <p className="text-sm font-semibold mb-1">
+                  Non-refundable admin fee: {formatRand(PLACEMENT_ADMIN_FEE_CENTS)}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   This covers expert sourcing, vetting, and coordination of interviews and trials.
                   Online payment collection is not connected in this build; submit and a placement agent will follow up before any fee is collected.
@@ -271,7 +303,10 @@ const CarePlusApply = () => {
                 }
                 if (step === 2) {
                   if (form.days_of_week.length === 0) { toast.error("Please select at least one day"); return; }
-                  if (form.daily_pay_rate < 220) { toast.error("Minimum daily pay is R220"); return; }
+                  if (form.daily_pay_rate < MIN_HALF_DAY_RAND) {
+                    toast.error(`Minimum daily pay is ${formatRand(PLACEMENT_MIN_HALF_DAY_CENTS)}`);
+                    return;
+                  }
                 }
                 setStep(step + 1);
               }} className="gradient-warm rounded-full">
