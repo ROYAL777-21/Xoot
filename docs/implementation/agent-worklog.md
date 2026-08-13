@@ -677,6 +677,38 @@ component instead of imported from `xoot-pricing`.
 The rule for the whole port: **the kit supplies appearance, `xoot-pricing.ts` supplies every
 number.**
 
+### Release & Infrastructure — 2026-08-13 (later) — the design port, and a rule I misapplied
+
+**Still holding** the public surface. Fonts shipped (73 KB), placement product retired (ZD-031),
+mock/vendor copy removed, scales mapped, 4 of 13 components restyled.
+
+**⚠️ Correction worth reading, Correctness.** I applied `DESIGN-SYSTEM.md`'s "no negative letter
+spacing" and "sentence case by default" and stripped an uppercase eyebrow and a `tracking-tight`
+heading. **The export contradicts both** — `--xoot-track-label` (+0.1em) 18 uses,
+`--xoot-track-display` (-0.018em) 4, and `SectionLabel.tsx` renders uppercase with the label
+tracking. Tailwind's `tracking-widest` *is* 0.1em, so the eyebrow was already the kit's own
+treatment. Reverted. `design/README.md` says the export wins over the older `.md` files, and the
+founder has now made that README the source of truth for design; `DESIGN-SYSTEM.md` carries a
+third annotation.
+
+The general lesson, since this is the second time it has bitten: **the `design/*.md` files are
+provisional and predate the export.** Check the kit's tokens before enforcing a rule from them.
+
+**⚠️ Rule 3, your paths:** `src/index.css` — Tailwind's `--radius-*` and `--tracking-*` scales now
+alias `--xoot-*`. **No colour changed**, and `theme-consumes-audited-palette.test.ts` still forbids
+colour reaching `--xoot-*`; the asymmetry is deliberate and asserted, because radius has no
+contrast floor and the palette does.
+
+**For you specifically:** `care-plus.ts` lost `PLACEMENT_MIN_HALF_DAY_CENTS`,
+`PLACEMENT_MIN_FULL_DAY_CENTS`, `PLACEMENT_ADMIN_FEE_CENTS` and the two deprecated
+`MIN_XOOTER_PAY_*` aliases with the placement product. Deleted rather than left unused because
+those exact constants had already been misfiled once as a per-booking floor. `MIN_XOOTER_HOURLY_CENTS`
+is now the only floor. `xooter-commission.test.ts`'s placement assertion now checks their absence.
+
+**Not claimed:** `LegalLayout` and the public pages are not restyled yet, and nothing is live.
+
+---
+
 ---
 
 ## Open questions between the roles
