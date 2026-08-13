@@ -15,7 +15,7 @@ import { SupportCaseInput } from "@/lib/validators";
 type SupportAssistantReply = {
   response?: string;
   escalated?: boolean;
-  source?: "openai_responses" | "human_escalation";
+  source?: "openrouter" | "openai_responses" | "human_escalation";
   openai_request_id?: string | null;
 };
 

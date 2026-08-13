@@ -29,7 +29,7 @@ type BotMessage = {
 type SupportBotReply = {
   response?: string;
   escalated?: boolean;
-  source?: "knowledge_base" | "openai_responses" | "human_escalation";
+  source?: "knowledge_base" | "openrouter" | "openai_responses" | "human_escalation";
   knowledge_version?: string | null;
   turnstile_required?: boolean;
 };

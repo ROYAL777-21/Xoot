@@ -30,6 +30,55 @@ Reviewed: 2026-06-24
 | ZD-024 | **The long-job floor.** From 5.5 booked hours up, gross price is at least **R47 per hour**. Fixed on the price, not on commission — the 35% starting rate is unchanged. | Approved by founder 2026-08-12, revised the same day from R54 to R47 ("Dont make it too expensive for users and to keep them long on the platform") | The ZD-020 ladders were sub-linear in hours, so a 10-hour regular clean returned the Xooter **R27.95/h** — **below South Africa's national minimum wage of R30.23/h**, which domestic workers are at parity with. | Only `REGULAR` moves, and only from 8h up (8h R370→R376, 10h R430→R470). `AIRBNB`, `MOVING`, `OFFICE` and `EXPRESS` are untouched. **Expires with the March 2027 wage increase** — `care-plus.test.ts` fails on 2027-01-31 to force the review. See ZD-024 notes below. |
 | ZD-025 | **A configuration check verifies URL shape, not substrings, and cross-environment rules are enforced by CI rather than by a note.** `twilio-selftest` now rejects a Voice URL that does not route, and fails the run when staging and production report the same Twilio Account SID. | Measured 2026-08-12 by the first working run of `twilio-selftest.yml`; no founder decision required for the code, two founder actions required for the findings | The self-test went green while production held the exact failure it exists to catch — a Voice URL that answers 404 — because `includes("twilio-voice-twiml")` is true of a broken URL. | ① **fixed 2026-08-12 21:40** — production's TwiML App now serves routable URLs over POST, and both environments are green on voice. ② still open: staging needs its own Twilio subaccount (`scripts/ops/create-staging-twilio-subaccount.mjs`, walkthrough in `docs/release/voice-gates.md` §2c-0 ②). See ZD-025 notes below. |
 | ZD-026 | **R39 is a booking fee on every booking, not a one-time fee. Care+ membership is the only thing that waives it.** Frequency no longer affects the fee on any surface. | Approved by founder 2026-08-12 ("a booking fee for every booking made, which no apparent if the user is signed up to Care+"; clarified "booking fee is only incurred to users that aren't subscribers to Care+") | Supersedes the fee clause of ZD-007. The paywall copy already promised the new rule — `docs/care-plus-paywall-copy.md` says "on every booking, not just your first" — while the code still charged the old one, so the promise was a price representation the system did not honour. | A fortnightly non-member pays the fee **26 times a year (~R1,014)**, which is what makes Care+ at R99/month pay for itself. See ZD-026 notes below. |
+| ZD-027 | **The Concierge answers through OpenRouter, with OpenAI as fallback.** Model id is `CONCIERGE_MODEL`, defaulting to a small fast model; the existing `support.openai_fallback` kill switch governs both providers. | Approved by founder 2026-08-13 ("Use this open router api for the chatbot/concierge bot"), cheapest-capable tier chosen the same day | One key to fund and one router to reach many models, rather than a per-provider account each time the model choice changes. The concierge answers bounded questions from a supplied knowledge context and is forbidden from deciding anything, so a small model is sufficient and support volume is what scales with users. | OpenAI's Responses API and OpenRouter's chat-completions API differ in request *and* response shape, so this is an adapter, not a key swap. `source` gains `'openrouter'` — see ZD-027 notes below for why that needed a migration. |
+
+## ZD-027 notes — the Concierge's provider
+
+### Why this was an adapter, not a key swap
+
+`support-respond` called OpenAI's **Responses API**. OpenRouter speaks **chat completions**. They
+differ in both directions: `messages` rather than `instructions` + `input`, `max_tokens` rather
+than `max_output_tokens`, and the answer at `choices[0].message.content` rather than under
+`output`. Both builders now live in one file and read almost identically at a glance, which is how
+a `max_tokens` becomes a `max_output_tokens` in a hurry — so `concierge-provider.test.ts` asserts
+the shape. Getting it wrong produces no visible error: the call 400s, the builder returns null, and
+the Concierge silently stops using the model it was just moved to.
+
+### The system prompt is shared, deliberately
+
+Most of it is safety rules, not tone — never claim a refund is approved, never ask for an OTP or a
+gate code, never promise an action the bot cannot take. Two providers meant two copies, and the
+copy that drifts is the one nobody is reading. One `const`, both builders, same argument that put
+the pricing rule in one module.
+
+Redaction likewise runs once, in `buildConciergeUserTurn`, rather than at each call site. A third
+provider added later cannot be wired up with the redaction accidentally left off, which is how a
+customer's pasted gate code reaches someone else's logs.
+
+### Why `source` needed a migration, and why the failure was quiet
+
+`report-concierge-answer` reads `allowedSources.has(body.source) ? body.source : "unknown"`. An
+unlisted provider is **not rejected** — the report saves, attributed to `unknown`. So nothing
+breaks and nobody is blocked; what is lost is the ability to answer *"are the new model's answers
+being reported more often than the old one's?"* — which is the first question worth asking after
+changing providers, and unanswerable from data that says `unknown`.
+
+That value lives in four places with nothing joining them: the CHECK constraint, `allowedSources`,
+and two client type unions. The parity test covers all four.
+
+⚠️ **The first version of that test passed against a migration with the value deleted.** It read
+the whole file, and the `comment on column` writes the value with SQL-escaped quotes
+(`''openrouter''`), which contains `'openrouter'` — so it was matching prose about the constraint
+instead of the constraint. Caught by planting the deletion and watching it stay green. It now
+matches inside the `check (source in (...))` block only.
+
+### Not verified live
+
+The agent proxy refuses outbound CONNECT to third-party hosts, so the key and the default model id
+could not be exercised from a session. A stale or unknown model degrades rather than breaks —
+OpenRouter returns a non-OK status, the builder returns null, and the request falls through to
+OpenAI and then to the canned knowledge answer. The real confirmation is the first production
+answer recorded with `source: "openrouter"`.
 
 ## ZD-020 notes — pricing model change
 

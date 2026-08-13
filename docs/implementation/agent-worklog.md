@@ -29,6 +29,42 @@ Nothing held.
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Correctness & Safety — 2026-08-13 — Concierge moved to OpenRouter (ZD-027)
+
+OpenRouter primary, OpenAI fallback, model id in `CONCIERGE_MODEL`. Founder's call on both.
+
+Not a key swap: OpenAI's Responses API and OpenRouter's chat-completions API differ in request and
+response shape. Both builders now share one system prompt const — most of it is safety rules
+(never claim a refund is approved, never ask for an OTP or a gate code), and two copies of those
+would drift. Redaction runs once in `buildConciergeUserTurn` so a third provider cannot be added
+with it left off.
+
+The existing `support.openai_fallback` kill switch governs **both** providers. Its name is stale;
+renaming the control key means a migration and a window where the switch silently does nothing,
+which is worse than a stale name.
+
+> ⚠️ **Release — deploy order, and it is the quiet kind.** Apply
+> `20260813100000_concierge_openrouter_source.sql` **before** `support-respond` and
+> `report-concierge-answer` (deploy those two together — the second validates the value the first
+> emits). Added to `go-live.md` §3a.
+>
+> Getting it wrong does **not** break anything: `report-concierge-answer` coerces an unrecognised
+> source to `'unknown'` rather than rejecting it, so reports still save. What is lost is
+> attribution — every complaint about an OpenRouter answer filed as "unknown provider", which is
+> the one question worth asking after a provider change.
+
+**Not verified live, and I will not imply otherwise.** The agent proxy refuses outbound CONNECT to
+third-party hosts, so I could not exercise the key or confirm the default model id resolves. A
+stale id degrades rather than breaks — non-OK status → null → OpenAI → knowledge base. The real
+confirmation is the first production answer recorded with `source: "openrouter"`.
+
+**My own test was wrong first.** The four-place enum parity guard passed against a migration with
+`'openrouter'` deleted from the CHECK — it read the whole file, and the `comment on column` writes
+the value with SQL-escaped quotes (`''openrouter''`). It was matching prose *about* the constraint
+instead of the constraint. Caught by planting the deletion and watching it stay green; it now
+matches inside the `check (source in (...))` block only. Recorded because the same shape of
+mistake is available to anyone asserting against a SQL file.
+
 ### Correctness & Safety — 2026-08-13 — RICA/POPIA recording notice: wording shipped, flag still off
 
 The blocker on call recording was never the boolean. `voice-calling.md` said it: *"the boolean is

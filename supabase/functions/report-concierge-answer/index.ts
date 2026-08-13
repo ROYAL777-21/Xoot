@@ -50,7 +50,10 @@ const getRequestActor = (req: Request, userId?: string | null) => {
   return `guest:${ip}:${userAgent.slice(0, 160)}`;
 };
 
-const allowedSources = new Set(["knowledge_base", "openai_responses", "human_escalation", "local_knowledge"]);
+// Must match the CHECK constraint on `zoot_concierge_feedback.source`. An unrecognised value is
+// not rejected here — line below coerces it to "unknown" — so a missing entry silently strips the
+// attribution off a report rather than failing. `concierge-provider.test.ts` pins all four copies.
+const allowedSources = new Set(["knowledge_base", "openrouter", "openai_responses", "human_escalation", "local_knowledge"]);
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");

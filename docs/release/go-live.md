@@ -332,6 +332,14 @@ column, so deploying those two functions against a table without the column does
 gracefully — every booking insert fails and booking creation is down until the migration lands. The
 opposite order is harmless: apply the migration and the column sits null until the functions ship.
 
+**A third, added 2026-08-13 — `20260813100000_concierge_openrouter_source.sql`.** It extends the
+`source` CHECK on `zoot_concierge_feedback` so Concierge answers can be attributed to OpenRouter
+(ZD-027). Its failure mode is the *quiet* one, unlike the two below: `report-concierge-answer`
+coerces an unrecognised source to `'unknown'` rather than rejecting it, so deploying the functions
+first breaks nothing and blocks nobody — it just files every complaint about an OpenRouter answer
+under "no idea which model", which is precisely the attribution you want after changing providers.
+Apply it first anyway; there is no reason not to.
+
 **Two migrations now, same rule for both:**
 
 | migration | adds | written by |
