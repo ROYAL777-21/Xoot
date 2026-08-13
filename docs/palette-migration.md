@@ -123,9 +123,22 @@ every foreground/background pair actually rendered, in both schemes, and pins `-
 violet-600 with the failing violet-500 asserted as failing so the number in the table above is
 verifiable rather than trusted.
 
-**Step 3 is still open** — `npm run shared:sync` and `npm run icons:render`. The launcher and
-launch-screen images are generated against the background colour and were last touched in
-`ed8d9e0`, before this palette landed, so they are probably stale.
+**Step 3 is done too — measured 2026-08-12, and this entry was wrong.** It used to read: *"still
+open … the launcher and launch-screen images were last touched in `ed8d9e0`, before this palette
+landed, so they are probably stale."*
+
+They were not stale. Both generators were re-run and **both produced an empty diff** —
+`git status --short mobile/` returned nothing. The assets were rendered in `cee0c3d`
+(*"Finish the palette: light-default native, regenerated assets"*) and every input to them is
+older: `remotion/Root.tsx` carries `PAGE = "#f5f3f2"` and has not changed since that same commit,
+and the mascot last moved in `f735ef7`, three days earlier. `mobile/src/generated/` was synced in
+`8190075`, the same commit as the last token change.
+
+The interesting part is the word *probably*. Nobody could answer it, because nothing guarded
+asset freshness — no test, no workflow referenced `icons:render` — so settling a one-bit question
+took archaeology across six `git log` queries. `scripts/build/render-manifest.json` now records a
+hash of the three files the stills are rendered from, written by the render script itself, and
+`src/lib/brand-assets-fresh.test.ts` fails when they drift. **The whole migration is closed.**
 
 ### Two things the audit above missed
 
@@ -136,17 +149,28 @@ proved that roles *present* in the mirror match the CSS, never that the CSS is f
 now checks both directions, with an `UNMIRRORED_BY_DESIGN` ledger for the eleven remaining
 web-only or legacy tokens. `info` and `popover` are on that list as genuinely-should-be-mirrored.
 
-**`--destructive` fails AA, and in dark it fails the UI floor.** Measured:
+**`--destructive` failed AA, and in dark it failed the UI floor. ✅ Fixed 2026-08-09 (#38).**
 
-| Pair | Ratio | Verdict |
+This entry said the fix was "recorded for a decision rather than taken unilaterally". The
+decision was taken and the paragraph was never updated, so it read as open for three days.
+Measured, before and after:
+
+| Pair | Before | After |
 |---|---|---|
-| light `destructive-foreground` on `destructive` | **3.70** | below 4.5 body |
-| dark `destructive-foreground` on `destructive` | **2.88** | below **3.0 UI** |
+| light `destructive-foreground` on `destructive` | **3.70** — below 4.5 body | **4.55** |
+| dark `destructive-foreground` on `destructive` | **2.88** — below the 3.0 UI floor | **5.79** |
 
-The light figure being a known consequence of mapping `coral-500` is fine. The dark one is not:
-2.88 is under the minimum for a UI component of any size, so a destructive button in dark mode is
-below the floor for its border and its label alike. Fixing it means changing an approved palette
-value, so it is recorded for a decision rather than taken unilaterally.
+Two different fixes, because the two schemes failed for different reasons. **Light** was a fill
+too pale for a near-white label, so the fill darkened 56% → 48%; this table classifies
+`coral-500` as "UI only", which would excuse 3.70 if a destructive button carried no text, and it
+carries a label — a 14px label is body text. **Dark** was a foreground that should never have
+been light: every other bright fill in the dark scheme pairs with ink `10 17% 7%`, and
+`destructive` alone kept an off-white label carried over from the red palette where its fill was
+dark. So the dark fix applied an existing rule to the one token that had escaped it, rather than
+making a new decision.
+
+`src/lib/design-contrast.test.ts` asserts both, and keeps the before-numbers in a comment so the
+fix stays explicable.
 
 Note also that the table at the top of this file is **optimistic by a small margin** wherever the
 foreground is not pure white: it measured white on `coral-500` at 3.87, but the pair actually

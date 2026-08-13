@@ -20,8 +20,36 @@
  *     npm run icons:render
  */
 import { execFileSync } from "node:child_process";
-import { mkdirSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+
+/**
+ * Everything the stills are rendered *from*.
+ *
+ * `Root.tsx` holds the `PAGE` and `INK` constants and the per-composition props; `XootMark`
+ * draws the plate; `ZoeyArt` is the mascot herself. Change any of them and the committed PNGs
+ * are stale until this script runs again.
+ *
+ * Add an input here when the renderer grows one, or the manifest will keep reporting fresh.
+ */
+const INPUTS = [
+  "remotion/Root.tsx",
+  "remotion/XootMark.tsx",
+  "src/components/zoot/mascot/ZoeyArt.tsx",
+];
+
+const MANIFEST = "scripts/build/render-manifest.json";
+
+/** Path then bytes, in list order, so a rename counts as a change. */
+const hashInputs = () => {
+  const sha = createHash("sha256");
+  for (const rel of INPUTS) {
+    sha.update(rel);
+    sha.update(readFileSync(rel));
+  }
+  return sha.digest("hex");
+};
 
 const TARGETS = [
   ["XootIcon", "mobile/assets/images/icon.png"],
@@ -42,4 +70,21 @@ for (const [composition, out] of TARGETS) {
   );
 }
 
-console.log("Brand assets rendered.");
+/*
+ * Stamp what these PNGs were rendered from.
+ *
+ * `brand-assets-fresh.test.ts` re-hashes the same inputs and fails when they have moved on,
+ * which is the whole point: `palette-migration.md` spent four days asserting these assets were
+ * "probably stale" because nothing could answer the question, and settling it took archaeology
+ * across six `git log` queries. They were fine. A hash makes the next version of that question
+ * a red test instead.
+ *
+ * Written here rather than by hand so the only way to update it is to actually re-render.
+ * No timestamp — the file must stay byte-identical when nothing changed, or every run would
+ * show up as a diff and teach people to ignore it.
+ */
+writeFileSync(
+  MANIFEST,
+  `${JSON.stringify({ inputs: INPUTS, sha256: hashInputs() }, null, 2)}\n`,
+);
+console.log(`Brand assets rendered. Manifest -> ${MANIFEST}`);

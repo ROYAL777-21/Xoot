@@ -167,6 +167,88 @@ jobs:
           fi
           echo "All $(ls -d supabase/functions/*/ | grep -cv '_shared/$') functions declared."
 
+      # THE ORDER THIS ENFORCES — docs/release/go-live.md §3b
+      #
+      # The booking writers price a booking on the server; `Book.tsx` prices the same booking on
+      # the client. Ship the server first and the live web app quotes the old rule while the new
+      # one charges — a total displayed and then exceeded at charge time, which is a Consumer
+      # Protection Act problem and the exact defect ZD-026 was written to remove.
+      #
+      # ⚠️ THIS IS NOT HYPOTHETICAL. On 2026-08-12 the functions were dispatched **70 seconds**
+      # after the merge, before Netlify had finished building, so for a few minutes production
+      # charged R39 on a recurring booking against a client still displaying R0. §3b existed and
+      # was followed; a runbook paragraph is not a gate. `verify-live-deploy.yml` made the state
+      # *observable* afterwards. This makes it *binding* beforehand.
+      #
+      # It reads the same `dist/build-info.json` stamp that workflow does, rather than a second
+      # marker of its own — a duplicated money fact is the drift this repo keeps paying for. The
+      # stamp carries `pricingRule` and `bookingFeeCents`, both read out of
+      # `src/lib/xoot-pricing.ts` at build time, so it cannot advertise a rule the build does not
+      # implement.
+      #
+      # Compared live-against-repo rather than against a hardcoded id: the check never needs
+      # editing when the rule changes again, and a hotfix that does not touch pricing carries the
+      # same id and passes. That is why it needs no override, and a guard with an override is one
+      # people learn to route around.
+      #
+      # It parses the body rather than trusting the status code, because `netlify.toml` rewrites
+      # `/*` to `/index.html` with **status 200** — a missing stamp returns HTML and a cheerful
+      # 200. Same lesson as reading `Access-Control-Allow-Origin` instead of the preflight
+      # status, and as `twilio-selftest` matching a URL's shape instead of a substring: this repo
+      # has twice shipped a check that passed on the failure it existed to catch.
+      - name: The web app must already carry this pricing rule
+        if: inputs.environment == 'production'
+        env:
+          FUNCTIONS: ${{ inputs.functions }}
+        run: |
+          # `shell: bash` sets -e AND -o pipefail — measured on verify-live-deploy's first run,
+          # where a SIGPIPE from `printf | jq` killed the job and looked like a failed check.
+          # Same discipline here: no piping into jq, and errexit off so a failed fetch is handled
+          # rather than aborting with no explanation.
+          set +e
+          set -uo pipefail
+
+          # Blank means every function, which includes both writers.
+          if [ -z "$(printf '%s' "$FUNCTIONS" | tr -d '[:space:]')" ]; then
+            writers=1
+          else
+            writers=0
+            for f in $FUNCTIONS; do
+              case "$f" in create-booking|create-booking-request) writers=1 ;; esac
+            done
+          fi
+
+          if [ "$writers" -eq 0 ]; then
+            echo "No booking writer in this deploy — the pricing rule gate does not apply."
+            exit 0
+          fi
+
+          src="src/lib/xoot-pricing.ts"
+          repo_rule="$(sed -n 's/.*export const PRICING_RULE = "\([A-Z]*-[0-9]*\)".*/\1/p' "$src")"
+          repo_fee="$(sed -n 's/.*export const BOOKING_FEE_CENTS = \([0-9]*\).*/\1/p' "$src")"
+          echo "This deploy carries pricing rule ${repo_rule} (fee ${repo_fee}c)."
+
+          body="$(curl -sS --max-time 25 "https://xoot.co.za/build-info.json?cachebust=${GITHUB_RUN_ID}" 2>&1)"
+          # Herestring, not a pipe — see the SIGPIPE note above.
+          live_rule="$(jq -r '.pricingRule // ""' <<< "$body" 2>/dev/null || true)"
+          live_fee="$(jq -r '.bookingFeeCents // ""' <<< "$body" 2>/dev/null || true)"
+
+          if [ -z "$live_rule" ] || [ "$live_rule" = "unknown" ]; then
+            echo "::error::https://xoot.co.za/build-info.json did not report a pricing rule."
+            echo "::error::Netlify rewrites unknown paths to index.html with status 200, so this usually means the live build predates the stamp — i.e. the web app has NOT shipped this change."
+            echo "::error::Deploy the web app from main and wait for Netlify to report success, then re-run. See docs/release/go-live.md 3b."
+            exit 1
+          fi
+
+          if [ "$live_rule" != "$repo_rule" ] || [ "$live_fee" != "$repo_fee" ]; then
+            echo "::error::The live web app serves pricing rule ${live_rule} (fee ${live_fee}c); this deploy carries ${repo_rule} (fee ${repo_fee}c)."
+            echo "::error::Deploying now would charge one price while the site displays another. Under the CPA the displayed price is the price."
+            echo "::error::Ship the web app from main, wait for the Netlify deploy to report success, then re-run this. See docs/release/go-live.md 3b."
+            exit 1
+          fi
+
+          echo "Live site and this deploy agree on ${repo_rule}. Safe to deploy the booking writers."
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest

@@ -32,7 +32,7 @@
  * "this build predates the stamp", which is true and actionable, rather than as a failure.
  */
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const OUT = resolve(process.cwd(), "dist", "build-info.json");
@@ -64,7 +64,34 @@ const commitFromGit = () => {
 
 const commit = commitFromEnv() || commitFromGit() || "unknown";
 
-const info = { commit, builtAt: new Date().toISOString() };
+/**
+ * The pricing rule this build implements, read out of the module that implements it.
+ *
+ * `deploy-edge-functions.yml` refuses to ship a booking writer to production while the live site
+ * still serves a different rule — the §3b ordering gate, which was missed by ~70 seconds on
+ * 2026-08-12 and briefly charged R39 against a client showing R0.
+ *
+ * Read from source rather than hardcoded here, because a second hand-maintained copy of a money
+ * rule is precisely the drift this repo keeps paying for. Regex rather than an import because
+ * this is plain node ESM and the source is TypeScript; `pricing-parity.test.ts` asserts this
+ * script still reads them, so the extraction cannot quietly start returning "unknown".
+ *
+ * Same fall-through discipline as the commit: a marker that cannot be read costs one
+ * verification, and the deploy guard treats a missing rule as "this build predates the stamp",
+ * which is true and actionable. A build that refuses to finish costs the deploy.
+ */
+const pricingFromSource = () => {
+  try {
+    const src = readFileSync(resolve(process.cwd(), "src/lib/xoot-pricing.ts"), "utf8");
+    const rule = /export const PRICING_RULE = "([A-Z]+-\d+)"/.exec(src)?.[1] ?? "";
+    const fee = /export const BOOKING_FEE_CENTS = (\d+)/.exec(src)?.[1] ?? "";
+    return { pricingRule: rule || "unknown", bookingFeeCents: fee ? Number(fee) : null };
+  } catch {
+    return { pricingRule: "unknown", bookingFeeCents: null };
+  }
+};
+
+const info = { commit, builtAt: new Date().toISOString(), ...pricingFromSource() };
 
 try {
   mkdirSync(dirname(OUT), { recursive: true });

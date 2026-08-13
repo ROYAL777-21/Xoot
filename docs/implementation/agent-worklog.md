@@ -23,14 +23,7 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-### Correctness & Safety — 2026-08-12
-
-**Design-kit port.** Not yet started; claimed so the other session does not begin it.
-Expected paths: `src/index.css`, `src/lib/design-tokens.ts`, `src/components/kit/**`.
-
-> ⚠️ Touching a shared path: the port will reach `src/components/**` and `src/pages/**`, which
-> neither role owns outright. If Release needs those files for the voice UI, say so here and I
-> will sequence around it rather than both of us editing the same components.
+Nothing held.
 
 ---
 
@@ -154,6 +147,67 @@ bundled `_shared/governance-utils.ts` carries the fixed `governanceRpc` helper c
 `supa.rpc(fn, args)`, and the comment recording the `supa.schema("private")` bug and the 2026-08-08
 measurement. One read directly; the other six share that exact millisecond timestamp with it.
 
+### Correctness & Safety — 2026-08-12 — design-kit port: **already complete, claim withdrawn**
+
+I claimed this and it was finished before I claimed it. Recording that plainly so Release does
+not inherit my wrong assumption, and does not re-do it.
+
+All five steps of `docs/palette-migration.md` are done: the violet/ink/warm-neutral palette is in
+`src/index.css`, mirrored in `design-tokens.ts` (`brand: "253 79% 58%"`, violet-600 for AA),
+`mobile/app.config.ts` is light-default, and `design-contrast.test.ts` audits every rendered pair.
+
+**Two claims in that doc were stale**, which is why it read as open:
+
+- Step 3 said the brand assets were *"probably stale"*. They were not — `icons:render` and
+  `shared:sync` were both re-run and **both produced an empty diff**, twice.
+- `--destructive` was listed as *"recorded for a decision"*. It was fixed 2026-08-09 (#38).
+
+Nothing guarded asset freshness, so answering a one-bit question took six `git log` queries.
+`scripts/build/render-manifest.json` + `src/lib/brand-assets-fresh.test.ts` now make it a red
+test. Both corrections are in `palette-migration.md`.
+
+### Correctness & Safety — 2026-08-12 — the §3b deploy order is now enforced
+
+> ⚠️ **Release: I edited your path.** `.github/workflows/deploy-edge-functions.yml` gains one
+> step, *"The web app must already carry this pricing rule"*. Per `CLAUDE.md` rule 3, flagging it
+> rather than doing it silently — and reviewing it through your lens is exactly the cross-review
+> the contract asks for, since you are the one who dispatches this workflow.
+>
+> **It does not touch the seven `governance-utils` redeploys.** The check only engages when the
+> function list is blank or names a booking writer; `support-respond` and friends skip it. I
+> verified that case explicitly.
+>
+> It could not wait: a runbook paragraph was the only thing between a dispatch and re-creating
+> the CPA defect ZD-026 exists to remove.
+
+**Reconciled with your work rather than shipped alongside it.** I had written my own
+`public/pricing-rules.json` marker before pulling and finding `build-info.json`. Two markers
+answering "what is live" is precisely the duplicated-fact drift this repo keeps paying for, so
+mine is deleted. The gate now reads **your** stamp: `write-build-info.mjs` gained `pricingRule`
+and `bookingFeeCents`, both extracted from `src/lib/xoot-pricing.ts` at build time, and
+`verify-live-deploy.yml` is untouched — it still reads `.commit` exactly as before.
+
+> ⚠️ **Second edit to your path:** `scripts/build/write-build-info.mjs`, +2 fields. Additive; the
+> fall-through discipline you wrote is preserved, so an unreadable source stamps `"unknown"` and
+> the build still finishes. `pricing-parity.test.ts` asserts the script still reads the pricing
+> module, so the extraction cannot silently start stamping `"unknown"` onto production.
+
+`src/lib/xoot-pricing.ts` gains `PRICING_RULE = "ZD-026"` beside the fee, so the rule id lives
+with the thing it names and the test can pin both.
+
+**Your 70-second measurement is why this is a step and not a paragraph.** §3b was written down
+and followed, and it was still missed — `verify-live-deploy.yml` makes the state observable
+afterwards; this makes it binding beforehand. Neither replaces the other.
+
+Guard logic verified offline across seven input shapes: live matches, live on the old rule, a
+build predating the stamp, the SPA-fallback HTML, blank-means-all, a non-writer deploy, and the
+real multi-line `build-info.json`. The HTML case is the one that matters — Netlify rewrites
+unknown paths with **status 200**, so a status-code check would have passed it.
+
+One harness bug worth recording: my first offline run reported the passing cases as failures,
+because `read` stopped at the first newline and truncated the multi-line JSON. The check had
+failed, not the thing being checked — the same shape as the SIGPIPE you hit on
+`verify-live-deploy`'s first run. Re-verified against the real stamp before trusting it.
 
 ### Correctness & Safety — 2026-08-12 — the R39 booking fee (ZD-026)
 

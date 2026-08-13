@@ -371,6 +371,17 @@ limit (8 per 10 minutes) and `ops-workflow` still has its own copy at 3.
 
 Same class of rule as 3a, opposite direction: here the *client* has to move first.
 
+✅ **This one is now enforced, not just written down.** The workflow step *"The web app must
+already carry this pricing rule"* fetches `https://xoot.co.za/pricing-rules.json` and refuses the
+deploy unless the live site reports the same rule the repo is about to make live. You can still
+read the rest of this section for the reasoning, but you cannot get it wrong by forgetting it.
+
+It compares live-against-repo rather than against a hardcoded `ZD-026`, so it needs no editing
+when the rule changes again, and a hotfix that does not touch pricing carries the same id and
+passes — which is why it needs no override. It parses the response body rather than trusting the
+status code, because `netlify.toml` rewrites unknown paths to `index.html` with **status 200**:
+a missing marker returns cheerful HTML, and a status-code check would wave it through.
+
 ZD-026 made R39 a fee on every booking, waived only for Care+. Production `create-booking` is at
 **v15 and still runs the old rule** (`isCarePlusMember || frequency !== "one_time"`), verified
 2026-08-12 by reading the deployed source.
