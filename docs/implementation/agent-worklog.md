@@ -56,7 +56,14 @@ functions 22:12:20 — Netlify had almost certainly not finished building, so br
 charged R39 on a recurring booking against a client still showing R0. Closed now. §3b step 2 now
 says the gate is **the Netlify deploy reporting success, not the push**.
 
-**⚠️ My defect: I broke the Web build and left it red for three commits (21:45 → 22:15).**
+**⚠️ My defect: I broke the Web build and left it red for six commits, 20:45 → 00:11 (~3.5 hours).**
+
+> ⚠️ I first wrote "three commits, from 21:45". That was wrong, and understated it. The run history:
+> last green `1553ebde` **20:39:40Z**, then failures at `a6a9dcc0` **20:45:23Z**, `ed27b641`,
+> `be8f97b8`, `cdf45984`, `6327b516`, `b6c24966`. The break began with the subaccount script, and
+> the full-length SIDs compounded it an hour later. Corrected because a wrong duration makes a
+> guard look less neglected than it was.
+
 `security:scan` was rejecting content I added:
 
 - Both TwiML App SIDs pasted at **full length** into `go-live.md` and `decision-log.md` — the exact
