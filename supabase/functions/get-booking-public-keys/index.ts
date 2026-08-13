@@ -34,29 +34,29 @@ Deno.serve(async (req) => {
 
     const { data: booking, error: bookingError } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id")
+      .select("id,user_id,xooter_id")
       .eq("id", bookingId)
       .maybeSingle();
 
     if (bookingError || !booking?.id) return fail("booking not found", origin, 404);
 
-    let zooterUserId: string | null = null;
-    if (booking.zooter_id) {
-      const { data: zooter, error: zooterError } = await supa
-        .from("zooters")
+    let xooterUserId: string | null = null;
+    if (booking.xooter_id) {
+      const { data: xooter, error: xooterError } = await supa
+        .from("xooters")
         .select("id,user_id")
-        .eq("id", booking.zooter_id)
+        .eq("id", booking.xooter_id)
         .maybeSingle();
 
-      if (zooterError) return fail("zooter lookup failed", origin, 500);
-      zooterUserId = zooter?.user_id ?? null;
+      if (xooterError) return fail("xooter lookup failed", origin, 500);
+      xooterUserId = xooter?.user_id ?? null;
     }
 
     const isClient = booking.user_id === user.id;
-    const isAssignedXooter = zooterUserId === user.id;
+    const isAssignedXooter = xooterUserId === user.id;
     if (!isClient && !isAssignedXooter) return fail("booking access denied", origin, 403);
 
-    const participantIds = unique([booking.user_id, zooterUserId]);
+    const participantIds = unique([booking.user_id, xooterUserId]);
     const { data: keys, error: keysError } = await supa
       .from("user_encryption_keys")
       .select("id,user_id,device_id,public_jwk,key_version,revoked_at")

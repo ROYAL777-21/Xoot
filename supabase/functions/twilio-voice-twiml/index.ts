@@ -82,8 +82,8 @@ Deno.serve(async (req) => {
     });
   }
 
-  const bookingId = String(form.get("bookingId") ?? new URL(req.url).searchParams.get("bookingId") ?? "zoot");
-  const room = `zoot-masked-${bookingId.replace(/[^a-zA-Z0-9-]/g, "")}`;
+  const bookingId = String(form.get("bookingId") ?? new URL(req.url).searchParams.get("bookingId") ?? "xoot");
+  const room = `xoot-masked-${bookingId.replace(/[^a-zA-Z0-9-]/g, "")}`;
   const callbackBase = Deno.env.get("SUPABASE_URL") ?? "";
   const statusCallback = callbackBase ? `${callbackBase}/functions/v1/twilio-voice-status` : "";
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

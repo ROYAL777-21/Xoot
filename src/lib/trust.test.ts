@@ -156,7 +156,7 @@ describe("marketplace proximity ranking", () => {
 
 describe("the fake distance is gone", () => {
   it("is written by nothing", () => {
-    // `approve-zooter` stamped `distance_mi: 1` onto every Xooter it activated until 2026-08-12 —
+    // `approve-xooter` stamped `distance_mi: 1` onto every Xooter it activated until 2026-08-12 —
     // the last live trace of a static seeded column that made everyone "1 away" from everyone.
     //
     // Nothing reading it was never a reason to keep writing it. A column nobody reads but

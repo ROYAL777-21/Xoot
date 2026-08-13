@@ -54,12 +54,18 @@ const collectFunctionSources = (dir: string, exclude?: string): string[] => {
   return out;
 };
 
+const RENAME_MIGRATION = "supabase/migrations/20260813160000_rename_zoot_schema_to_xoot.sql";
+
 const MIGRATIONS = [
   "supabase/migrations/20260703150828_concierge_governance_controls.sql",
   // The 20th control, `concierge.handoff.case_creation_tool`, lives here rather than in the
   // governance migration. Parsing only the obvious file would report a control as unregistered
   // that is registered and working.
   "supabase/migrations/20260703153056_concierge_structured_handoff.sql",
+  // The 2026-08-13 Zoot→Xoot rename. Included because it is where `concierge.xootcred_support`
+  // and `concierge.xooter_support` get their current names — the two migrations above still
+  // register the pre-rename ones, correctly, being the applied record of what ran at the time.
+  RENAME_MIGRATION,
 ];
 
 /**
@@ -73,11 +79,11 @@ const MIGRATIONS = [
 const DELIBERATELY_INERT: Record<string, string> = {
   "concierge.authenticated_account_support": "gates an account-data tool that is not built",
   "concierge.care_plus_support": "gates a live Care+ account tool that is not built",
-  "concierge.zootcred_support": "gates a XootCred balance tool that is not built",
+  "concierge.xootcred_support": "gates a XootCred balance tool that is not built",
   "concierge.referral_support": "gates a referral tool that is not built",
   "concierge.booking_cover_support": "gates a booking-cover claims tool that is not built",
   "concierge.partnership_interest": "gates a partnership lead tool that is not built",
-  "concierge.zooter_support": "gates a Xooter-account tool that is not built",
+  "concierge.xooter_support": "gates a Xooter-account tool that is not built",
   "concierge.booking_status": "gates reading a real booking's status; no tool reads it yet",
   "concierge.kill.booking_status": "kill switch for the above, inert until that tool exists",
   "concierge.mobile.enabled": "the mobile app reads this through its own client, not an Edge Function",
@@ -87,6 +93,17 @@ describe("concierge controls are wired, not merely registered", () => {
   const registered = new Set<string>();
   for (const path of MIGRATIONS) {
     for (const match of read(path).matchAll(/'(concierge\.[a-z._]+)'/g)) registered.add(match[1]);
+  }
+  /*
+   * Drop the superseded names, reading the mapping out of the rename migration rather than
+   * hardcoding it here. Each rename is written as
+   * `set control_key = 'new' where control_key = 'old'`, so the migration is the single place
+   * that says which key replaced which — and this test cannot fall out of step with it.
+   */
+  for (const match of read(RENAME_MIGRATION).matchAll(
+    /where control_key = '(concierge\.[a-z._]+)'/g,
+  )) {
+    registered.delete(match[1]);
   }
   const resolverSource = read(RESOLVER);
   const actingSources = collectFunctionSources("supabase/functions", RESOLVER).join("\n");
@@ -182,7 +199,7 @@ describe("concierge controls are wired, not merely registered", () => {
   });
 
   it("the launcher renders nothing when the Concierge is switched off", () => {
-    const bot = read("src/components/zoot/XootSupportBot.tsx");
+    const bot = read("src/components/xoot/XootSupportBot.tsx");
     expect(bot).toMatch(/if \(!webEnabled\) return null;/);
     expect(bot).toMatch(/useConciergeConfig/);
   });

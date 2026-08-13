@@ -27,11 +27,11 @@ import { haptic } from "@/lib/haptics";
 
 const benefitIcons = {
   "home-memory": Home,
-  "favourite-zooter": Heart,
+  "favourite-xooter": Heart,
   "priority-booking": CalendarClock,
   "priority-replacement": ShieldCheck,
   "one-tap-rebook": Repeat2,
-  "zootcred-boost": WalletCards,
+  "xootcred-boost": WalletCards,
   "monthly-credit": Crown,
   "smart-reminders": Sparkles,
   "home-readiness-score": CheckCircle2,

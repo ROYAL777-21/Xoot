@@ -153,7 +153,7 @@ export const useXootCred = () => {
     setLoading(true);
     setError(null);
     const { data, error: ledgerError } = await supabase
-      .from("zootcred_ledger")
+      .from("xootcred_ledger")
       .select("id,amount,direction,status,reason,meta,created_at,expires_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });

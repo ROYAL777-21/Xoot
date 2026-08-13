@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { XooterCard, Xooter } from "@/components/zoot/XooterCard";
+import { XooterCard, Xooter } from "@/components/xoot/XooterCard";
 import { ChipGrid } from "@/components/kit";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -109,7 +109,7 @@ const serviceMultiplier: Record<string, number> = {
 const Book = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const preferredXooterId = sanitiseSearchParam(searchParams.get("zooter"));
+  const preferredXooterId = sanitiseSearchParam(searchParams.get("xooter"));
   const requestedService = sanitiseSearchParam(searchParams.get("service"));
   const requestedAddress = sanitiseSearchParam(searchParams.get("address")) || sanitiseSearchParam(searchParams.get("area"));
   const requestedDate = sanitiseSearchParam(searchParams.get("date"));
@@ -134,7 +134,7 @@ const Book = () => {
   const [smartSuggestion, setSmartSuggestion] = useState("");
   const [bookingCoverOptIn, setBookingCoverOptIn] = useState(true);
   const [workerCount, setWorkerCount] = useState(1);
-  const [zooters, setXooters] = useState<Xooter[]>([]);
+  const [xooters, setXooters] = useState<Xooter[]>([]);
   const [loadingXooters, setLoadingXooters] = useState(false);
   const [picked, setPicked] = useState<Xooter[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -249,7 +249,7 @@ const Book = () => {
    * Rank Xooters by how far they actually are from this booking.
    *
    * ── What this replaced, and why it mattered ─────────────────────────────────
-   * This queried `zooters_public` directly with `.limit(30)`, no ordering by anything to do with
+   * This queried `xooters_public` directly with `.limit(30)`, no ordering by anything to do with
    * the customer, and **ignored the address typed one step earlier**. `ai-match` existed and
    * nothing in the app called it — so "matched with Xooters near you" was not a weak feature, it
    * was an absent one.
@@ -274,7 +274,7 @@ const Book = () => {
     };
 
     const fallback = async () => {
-      const { data } = await supabase.from("zooters_public").select("*").limit(30);
+      const { data } = await supabase.from("xooters_public").select("*").limit(30);
       applyResults(sortXootersForMarketplace((data ?? []) as Xooter[]));
     };
 
@@ -358,7 +358,7 @@ const Book = () => {
         householdProfileId: householdId,
         propertyAccountId: propertyId,
         workerCount: totalWorkers,
-        zooterIds: picked.map((z) => z.id),
+        xooterIds: picked.map((z) => z.id),
         addOns: safeBooking.extras,
         bookingCoverOptIn,
       },
@@ -483,7 +483,7 @@ const Book = () => {
               </div>
               <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{length.badge}</span>
             </div>
-            <div className="zoot-duration-grid grid gap-3">
+            <div className="xoot-duration-grid grid gap-3">
               {SERVICE_LENGTHS.map((option) => {
                 const selected = serviceLength === option.id;
                 return (
@@ -492,7 +492,7 @@ const Book = () => {
                     type="button"
                     onClick={() => setServiceLength(option.id)}
                     data-selected={selected ? "true" : "false"}
-                    className="zoot-duration-card liquid-glass-interactive interactive-press rounded-[1.35rem] border border-border p-4 text-left transition"
+                    className="xoot-duration-card liquid-glass-interactive interactive-press rounded-[1.35rem] border border-border p-4 text-left transition"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -577,7 +577,7 @@ const Book = () => {
           <div className="grid gap-3">
             <Label>Your address</Label>
             <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full street address in Sandton, Midrand, Rosebank..." className="h-12 rounded-2xl" />
-            <div className={`zoot-map-context rounded-2xl border p-3 text-sm ${address.trim() && !inLaunchRegion ? "border-destructive/35" : "border-border"}`}>
+            <div className={`xoot-map-context rounded-2xl border p-3 text-sm ${address.trim() && !inLaunchRegion ? "border-destructive/35" : "border-border"}`}>
               <div className="flex items-start gap-2">
                 <MapPin className={`mt-0.5 h-4 w-4 shrink-0 ${address.trim() && !inLaunchRegion ? "text-destructive" : "text-sage-deep"}`} />
                 <div>
@@ -610,7 +610,7 @@ const Book = () => {
           <div><h2 className="font-display text-2xl font-bold">Choose your Xooter{maxPick > 1 ? "s" : ""}</h2><p className="text-sm text-muted-foreground">{picked.length}/{maxPick} selected - low reliability contractors are automatically ranked lower</p></div>
           {loadingXooters ? (
             <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-          ) : zooters.length === 0 ? (
+          ) : xooters.length === 0 ? (
             <Card className="rounded-3xl p-8 text-center">
               <ShieldCheck className="h-8 w-8 text-sage-deep mx-auto mb-3" />
               <h3 className="font-display text-xl font-bold mb-2">No approved Xooters available yet</h3>
@@ -619,7 +619,7 @@ const Book = () => {
               </p>
             </Card>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{zooters.map((z) => <div key={z.id} className={picked.some((p) => p.id === z.id) ? "ring-2 ring-primary rounded-3xl" : ""}><XooterCard z={z} onBook={() => selectWorker(z)} /></div>)}</div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{xooters.map((z) => <div key={z.id} className={picked.some((p) => p.id === z.id) ? "ring-2 ring-primary rounded-3xl" : ""}><XooterCard z={z} onBook={() => selectWorker(z)} /></div>)}</div>
           )}
           <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(1)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={() => validateStep() && setStep(3)} disabled={picked.length === 0} className="flex-1 rounded-2xl h-12 gradient-warm font-semibold">Review & Pay <ArrowRight className="h-4 w-4 ml-1" /></Button></div>
         </div>

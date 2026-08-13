@@ -62,7 +62,7 @@ describe("mobile monitoring privacy", () => {
       },
     });
 
-    expect(event.tags?.app).toBe("zoot-mobile");
+    expect(event.tags?.app).toBe("xoot-mobile");
     expect(event.user).toEqual({ id: "admin-user" });
     expect(JSON.stringify(event)).not.toContain("admin@example.com");
     expect(JSON.stringify(event)).not.toContain("4111111111111111");

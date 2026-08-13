@@ -17,7 +17,7 @@ const read = (p: string) => readFileSync(join(process.cwd(), p), "utf8");
 
 const RENDERERS = [
   ["native", "mobile/src/components/splash-animation.tsx"],
-  ["web", "src/components/zoot/SplashScreen.tsx"],
+  ["web", "src/components/xoot/SplashScreen.tsx"],
   ["video", "remotion/XootSplash.tsx"],
 ] as const;
 

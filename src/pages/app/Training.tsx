@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Crown, GraduationCap, Loader2, Star } from "lucide-react";
-import { resolvePhoto } from "@/components/zoot/XooterCard";
+import { resolvePhoto } from "@/components/xoot/XooterCard";
 
 const Training = () => {
   const [modules, setModules] = useState<any[]>([]);
@@ -13,7 +13,7 @@ const Training = () => {
   useEffect(() => {
     Promise.all([
       supabase.from("training_modules").select("*").order("category"),
-      supabase.from("zooters_public").select("*").eq("is_zotm", true).maybeSingle(),
+      supabase.from("xooters_public").select("*").eq("is_zotm", true).maybeSingle(),
     ]).then(([m, z]) => {
       setModules(m.data ?? []); setZotm(z.data); setLoading(false);
     });
@@ -37,7 +37,7 @@ const Training = () => {
           <img src={resolvePhoto(zotm.photo_url)} alt={zotm.name} className="h-20 w-20 rounded-2xl object-cover border-2 border-background" />
           <div className="flex-1">
             <div className="inline-flex items-center gap-1 rounded-full bg-background/20 backdrop-blur-sm px-2.5 py-1 text-xs font-bold mb-1">
-              <Crown className="h-3 w-3" /> ZOOTER OF THE MONTH
+              <Crown className="h-3 w-3" /> XOOTER OF THE MONTH
             </div>
             <p className="font-display text-2xl font-bold">{zotm.name}</p>
             <p className="text-sm opacity-90 capitalize flex items-center gap-2">

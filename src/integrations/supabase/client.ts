@@ -6,7 +6,7 @@ import type { Database } from "./types";
 const configuredUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
 const configuredKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
 
-const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local"]);
+const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.xoot.local"]);
 
 const isInvalidSupabaseUrl = (value?: string) => {
   if (!value) return true;

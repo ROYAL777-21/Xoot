@@ -27,10 +27,10 @@ describe("mobile native launch experience", () => {
 
   it("bypasses the launch layer for assistant and urgent intents", () => {
     expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ intent: "book_clean" }))).toBe(true);
-    expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ zootBot: "open" }))).toBe(true);
+    expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ xootBot: "open" }))).toBe(true);
     expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ intent: "care_plus" }))).toBe(true);
     expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ intent: "booking_status" }))).toBe(true);
-    expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ intent: "zooter_jobs" }))).toBe(true);
+    expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({ intent: "xooter_jobs" }))).toBe(true);
     expect(shouldBypassNativeLaunchExperience(resolveNativeLaunchIntent({}))).toBe(false);
   });
 
@@ -76,7 +76,7 @@ describe("mobile native launch experience", () => {
     expect(buildNativeLaunchTarget("concierge", {})).toBe("/concierge");
     expect(buildNativeLaunchTarget("care_plus", {})).toBe("/care-plus");
     expect(buildNativeLaunchTarget("bookings", {})).toBe("/bookings?intent=bookings");
-    expect(buildNativeLaunchTarget("zooter_jobs", {})).toBe("/zooter/jobs?intent=zooter_jobs");
+    expect(buildNativeLaunchTarget("xooter_jobs", {})).toBe("/xooter/jobs?intent=xooter_jobs");
   });
 
   it("plays the launch animation only on a plain cold start", () => {
@@ -94,8 +94,8 @@ describe("mobile native launch experience", () => {
       { intent: "book_clean" },
       { intent: "care_plus" },
       { intent: "booking_status" },
-      { intent: "zooter_jobs" },
-      { zootBot: "open" },
+      { intent: "xooter_jobs" },
+      { xootBot: "open" },
     ]) {
       const intent = resolveNativeLaunchIntent(params);
       expect(shouldBypassNativeLaunchExperience(intent)).toBe(true);

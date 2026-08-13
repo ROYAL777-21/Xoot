@@ -160,7 +160,7 @@ describe("service labels", () => {
 
 describe("the panel no longer claims an email was sent", () => {
   const panel = readFileSync(
-    join(process.cwd(), "src/components/zoot/FareSplitPanel.tsx"),
+    join(process.cwd(), "src/components/xoot/FareSplitPanel.tsx"),
     "utf8",
   );
   /** Comments stripped: the file documents the sentence it removed, and that is not the sentence. */

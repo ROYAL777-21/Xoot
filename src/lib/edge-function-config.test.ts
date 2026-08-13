@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
  *
  * This became load-bearing the moment a repo-driven `supabase functions deploy` became possible
  * (`.github/workflows/deploy-edge-functions.yml`). Supabase treats an **undeclared** function as
- * `verify_jwt = true`. For most functions that is right; for the ten that Twilio, Stitch/Ozow and
+ * `verify_jwt = true`. For most functions that is right; for the ten that Twilio, PayFast and
  * the public concierge form call, it is fatal — none of them can present a Supabase JWT, so the
  * gateway rejects the request *before* the function's own HMAC signature check runs. The failure
  * is a 401 at the edge, invisible in the function's logs, on a webhook nobody watches.
@@ -42,7 +42,7 @@ const onDisk = readdirSync(functionsDir)
  * only symptom would be silence.
  */
 const MUST_STAY_OPEN: Record<string, string> = {
-  "confirm-payment": "Stitch and Ozow payment callbacks. A PSP cannot present a Supabase JWT.",
+  "confirm-payment": "PayFast payment callbacks. A PSP cannot present a Supabase JWT.",
   "support-respond": "The public support form, used before anyone has signed in.",
   "report-concierge-answer": "Concierge answer reports from the public site.",
   // Added 2026-08-11. Returns `concierge.*` capability booleans and nothing else — no user data,

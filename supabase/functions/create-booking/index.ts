@@ -84,13 +84,13 @@ const slotPremiumRate = (time: string): number => {
  * on an unexpected 35% reports it the same day; one silently granted the 20% floor is a
  * revenue leak nobody notices.
  */
-const getCommissionRates = async (supa: any, zooterIds: string[]) => {
+const getCommissionRates = async (supa: any, xooterIds: string[]) => {
   const rates = new Map<string, number>();
-  if (!zooterIds.length) return rates;
+  if (!xooterIds.length) return rates;
   const { data } = await supa
-    .from("zooters")
+    .from("xooters")
     .select("id,reliability_score,jobs_completed")
-    .in("id", zooterIds);
+    .in("id", xooterIds);
   for (const row of data ?? []) {
     const earned = commissionRateBps({
       reliabilityScore: row.reliability_score,
@@ -106,7 +106,7 @@ const getCommissionRates = async (supa: any, zooterIds: string[]) => {
 
 const getAvailableXootCred = async (supa: any, userId: string) => {
   const { data } = await supa
-    .from("zootcred_ledger")
+    .from("xootcred_ledger")
     .select("amount,direction,status,expires_at")
     .eq("user_id", userId);
 
@@ -141,10 +141,10 @@ Deno.serve(async (req) => {
     const householdProfileId = cleanText(body.householdProfileId ?? body.household_profile_id, 80) || null;
     const propertyAccountId = cleanText(body.propertyAccountId ?? body.property_account_id, 80) || null;
     const requestedWorkerCount = toNumber(body.workerCount ?? body.worker_count, 1);
-    const zooterIds = cleanArray(body.zooterIds ?? body.zooter_ids ?? (body.zooter_id ? [body.zooter_id] : []), 5, 80);
+    const xooterIds = cleanArray(body.xooterIds ?? body.xooter_ids ?? (body.xooter_id ? [body.xooter_id] : []), 5, 80);
     const addOns = cleanArray(body.addOns ?? body.extras, 12, 80);
     const bookingCoverOptIn = body.bookingCoverOptIn ?? body.booking_cover_opt_in;
-    const requestedRedemption = Math.max(0, toNumber(body.zootcredRedemption ?? body.zootcred_redemption, 0));
+    const requestedRedemption = Math.max(0, toNumber(body.xootcredRedemption ?? body.xootcred_redemption, 0));
 
     if (!services.has(serviceType)) return fail("unsupported service", origin, 400);
     if (HOME_SIZE_HOURS[homeSizeId] === undefined) return fail("unsupported home size", origin, 400);
@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
      * Refuse rather than silently slice.
      *
      * This used to cap `maxWorkers` at 1 for a single-Xooter service and then
-     * `zooterIds.slice(0, maxWorkers)`, so a request naming three Xooters for a residential
+     * `xooterIds.slice(0, maxWorkers)`, so a request naming three Xooters for a residential
      * clean booked one and charged for one — while the caller believed it had booked three.
      * Quietly delivering something other than what was asked for is the same failure as quietly
      * charging something other than what was shown; both end with a customer and an invoice
@@ -171,18 +171,18 @@ Deno.serve(async (req) => {
      */
     const serviceMaxWorkers = multiWorkerServices.has(serviceType) ? 5 : 1;
     const requestedWorkers = Math.min(Math.max(requestedWorkerCount || 1, 1), 5);
-    if (requestedWorkers > serviceMaxWorkers || zooterIds.length > serviceMaxWorkers) {
+    if (requestedWorkers > serviceMaxWorkers || xooterIds.length > serviceMaxWorkers) {
       return fail(`${serviceType} is booked with one Xooter`, origin, 400);
     }
     const maxWorkers = Math.min(requestedWorkers, serviceMaxWorkers);
-    const selectedXooterIds = zooterIds.slice(0, maxWorkers);
+    const selectedXooterIds = xooterIds.slice(0, maxWorkers);
     if (selectedXooterIds.length > 0) {
-      const { data: zooters } = await supa
-        .from("zooters")
+      const { data: xooters } = await supa
+        .from("xooters")
         .select("id,name,active")
         .in("id", selectedXooterIds)
         .eq("active", true);
-      if (!zooters || zooters.length !== selectedXooterIds.length) return fail("selected Xooter is unavailable", origin, 409);
+      if (!xooters || xooters.length !== selectedXooterIds.length) return fail("selected Xooter is unavailable", origin, 409);
     }
 
     const workerCount = Math.max(selectedXooterIds.length, 1);
@@ -272,14 +272,14 @@ Deno.serve(async (req) => {
     const carePlusDiscount = Math.round(subtotal * carePlusDiscountRate);
     const grossTotal = subtotal + highDemandPremium + serviceFee + bookingCover - carePlusDiscount;
 
-    let zootcredRedemption = 0;
+    let xootcredRedemption = 0;
     if (requestedRedemption > 0) {
       const available = await getAvailableXootCred(supa, user.id);
-      zootcredRedemption = Math.min(requestedRedemption, available, Math.max(0, grossTotal - 50));
-      if (zootcredRedemption <= 0) return fail("zootcred cannot reduce this booking below R50", origin, 409);
+      xootcredRedemption = Math.min(requestedRedemption, available, Math.max(0, grossTotal - 50));
+      if (xootcredRedemption <= 0) return fail("xootcred cannot reduce this booking below R50", origin, 409);
     }
 
-    const amountDue = Math.max(50, grossTotal - zootcredRedemption);
+    const amountDue = Math.max(50, grossTotal - xootcredRedemption);
     const perBookingAmount = Math.max(1, Math.round(amountDue / workerCount));
     const perBookingPrice = Math.max(1, Math.round(subtotal / workerCount));
     const perBookingServiceFee = Math.round(serviceFee / workerCount);
@@ -298,11 +298,11 @@ Deno.serve(async (req) => {
     const bookingIds: string[] = [];
     const paymentRecordIds: string[] = [];
 
-    for (const zooterId of bookingTargets) {
+    for (const xooterId of bookingTargets) {
       const { data: booking, error: bookingError } = await supa.from("bookings").insert({
         user_id: user.id,
-        zooter_id: zooterId,
-        original_zooter_id: zooterId,
+        xooter_id: xooterId,
+        original_xooter_id: xooterId,
         service: "cleaning",
         service_type: serviceType,
         scheduled_at: scheduledAt.toISOString(),
@@ -327,7 +327,7 @@ Deno.serve(async (req) => {
         high_demand_premium: perBookingHighDemand,
         // Null while nobody is assigned. An absence reads as pending; a default would read as
         // an agreement that was never struck.
-        commission_rate_bps: zooterId ? commissionRates.get(zooterId) ?? null : null,
+        commission_rate_bps: xooterId ? commissionRates.get(xooterId) ?? null : null,
       }).select("id").single();
       if (bookingError || !booking?.id) throw new Error("booking insert failed");
       bookingIds.push(booking.id);
@@ -340,7 +340,7 @@ Deno.serve(async (req) => {
         meta: { amount_due: perBookingAmount, care_plus_discount: perBookingDiscount },
       });
 
-      const providerReference = `zoot_booking_${booking.id}_${Date.now()}`;
+      const providerReference = `xoot_booking_${booking.id}_${Date.now()}`;
       const { data: payment, error: paymentError } = await supa.from("payment_records").insert({
         booking_id: booking.id,
         user_id: user.id,
@@ -353,10 +353,10 @@ Deno.serve(async (req) => {
         meta: {
           service_type: serviceType,
           service_length: serviceLengthId,
-          zooter_id: zooterId,
+          xooter_id: xooterId,
           frequency,
-          provider_required: "Ozow/Stitch credentials not connected",
-          breakdown: { subtotal, highDemandPremium, serviceFee, bookingCover, carePlusDiscount, zootcredRedemption, serviceLength: serviceLengthId },
+          provider_required: "PayFast credentials not connected",
+          breakdown: { subtotal, highDemandPremium, serviceFee, bookingCover, carePlusDiscount, xootcredRedemption, serviceLength: serviceLengthId },
         },
       }).select("id,provider_reference").single();
       if (paymentError || !payment?.id) throw new Error("payment record insert failed");
@@ -367,7 +367,7 @@ Deno.serve(async (req) => {
         subjectTable: "payment_records",
         subjectId: payment.id,
         userId: user.id,
-        zooterId: zooterId,
+        xooterId: xooterId,
         bookingId: booking.id,
         priority: "normal",
         summary: `Pending provider payment for ${serviceType} booking`,
@@ -379,7 +379,7 @@ Deno.serve(async (req) => {
         event_type: "payment_authorisation_requested",
         channel: "payment_provider",
         owner: "Finance Operations",
-        stack_tool: "Stitch/Ozow payment session",
+        stack_tool: "PayFast payment session",
         payload: { booking_id: booking.id, payment_record_id: payment.id, amount: perBookingAmount, currency: "ZAR" },
         status: "needs_approval",
         approval_required: true,
@@ -388,11 +388,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (zootcredRedemption > 0 && bookingIds[0]) {
-      await supa.from("zootcred_ledger").insert({
+    if (xootcredRedemption > 0 && bookingIds[0]) {
+      await supa.from("xootcred_ledger").insert({
         user_id: user.id,
         booking_id: bookingIds[0],
-        amount: zootcredRedemption,
+        amount: xootcredRedemption,
         direction: "debit",
         reason: "redemption",
         status: "redeemed",
@@ -403,7 +403,7 @@ Deno.serve(async (req) => {
     if (frequency === "repeat" && bookingIds[0]) {
       await supa.from("recurring_schedules").insert({
         user_id: user.id,
-        zooter_id: selectedXooterIds[0] ?? null,
+        xooter_id: selectedXooterIds[0] ?? null,
         household_profile_id: householdProfileId,
         cadence_days: 14,
         preferred_day: scheduledAt.toLocaleDateString("en-ZA", { weekday: "long" }),
@@ -422,7 +422,7 @@ Deno.serve(async (req) => {
       ipAddress: req.headers.get("x-forwarded-for"),
     });
 
-    // TODO: Replace this local handoff with a real Stitch/Ozow payment session URL once provider credentials are connected.
+    // TODO: Replace this local handoff with a real PayFast payment session URL once provider credentials are connected.
     return ok({
       booking_id: bookingIds[0] ?? null,
       booking_ids: bookingIds,
@@ -430,7 +430,7 @@ Deno.serve(async (req) => {
       payment_session_url: bookingIds[0] ? `/app/bookings/${bookingIds[0]}?payment=pending` : null,
       amount_due: amountDue,
       status: "draft",
-      breakdown: { subtotal, high_demand_premium: highDemandPremium, service_fee: serviceFee, booking_cover: bookingCover, care_plus_discount: carePlusDiscount, zootcred_redemption: zootcredRedemption, service_length: serviceLengthId },
+      breakdown: { subtotal, high_demand_premium: highDemandPremium, service_fee: serviceFee, booking_cover: bookingCover, care_plus_discount: carePlusDiscount, xootcred_redemption: xootcredRedemption, service_length: serviceLengthId },
     }, origin);
   } catch (error) {
     console.error("create-booking failed", error);

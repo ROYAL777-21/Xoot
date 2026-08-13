@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
-import { Zoey, type Pose } from "@/components/zoot/mascot/Zoey";
+import { Zoey, type Pose } from "@/components/xoot/mascot/Zoey";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import {

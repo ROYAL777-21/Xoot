@@ -4,12 +4,12 @@ import { isAllowedUrl, safeFetch } from "./safe-fetch";
 describe("safe fetch", () => {
   it("allows only approved browser-safe https domains", () => {
     expect(isAllowedUrl("https://foo.supabase.co/functions/v1/test")).toBe(true);
-    expect(isAllowedUrl("https://api.mapbox.com/styles/v1/zoot")).toBe(true);
+    expect(isAllowedUrl("https://api.mapbox.com/styles/v1/xoot")).toBe(true);
     expect(isAllowedUrl("https://events.mapbox.com/events/v2")).toBe(true);
     expect(isAllowedUrl("https://api.twilio.com/2010-04-01/Accounts")).toBe(false);
     expect(isAllowedUrl("https://api.brevo.com/v3/smtp/email")).toBe(false);
-    expect(isAllowedUrl("https://api.stitch.money/payments")).toBe(false);
-    expect(isAllowedUrl("https://api.ozow.com/postpaymentrequest")).toBe(false);
+    expect(isAllowedUrl("https://www.payfast.co.za/eng/process")).toBe(false);
+    expect(isAllowedUrl("https://sandbox.payfast.co.za/eng/process")).toBe(false);
     expect(isAllowedUrl("http://api.twilio.com")).toBe(false);
     expect(isAllowedUrl("https://localhost/internal")).toBe(false);
     expect(isAllowedUrl("https://127.0.0.1/internal")).toBe(false);

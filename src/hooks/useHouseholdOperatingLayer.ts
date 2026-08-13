@@ -34,11 +34,11 @@ type BookingRow = {
   status: string;
   service?: string | null;
   duration_hours?: number | null;
-  zooter_id?: string | null;
+  xooter_id?: string | null;
 };
 
 /**
- * Mirrors `public.favorites` as it exists live: user_id, zooter_id, favorite_type,
+ * Mirrors `public.favorites` as it exists live: user_id, xooter_id, favorite_type,
  * repeat_count, recurring_locked, notes, created_at.
  *
  * This previously named three columns that do not exist — `favorite_kind`,
@@ -51,7 +51,7 @@ type BookingRow = {
  * There is no live equivalent of `last_booked_at`, so ordering uses `created_at`.
  */
 type FavouriteRow = {
-  zooter_id: string;
+  xooter_id: string;
   favorite_type?: string | null;
   repeat_count?: number | null;
   created_at?: string | null;
@@ -225,17 +225,17 @@ const mapBooking = (row: BookingRow): BookingSnapshot => ({
   durationHours: toNumber(row.duration_hours, 0),
 });
 
-const mapFavourite = (zooter: PublicXooterRow, favourite?: FavouriteRow | null): FavouriteXooter => ({
-  id: zooter.id,
-  name: zooter.name,
-  rating: toNumber(zooter.rating, 0),
-  specialties: zooter.tags?.length ? zooter.tags : [zooter.role ?? "Cleaning"],
+const mapFavourite = (xooter: PublicXooterRow, favourite?: FavouriteRow | null): FavouriteXooter => ({
+  id: xooter.id,
+  name: xooter.name,
+  rating: toNumber(xooter.rating, 0),
+  specialties: xooter.tags?.length ? xooter.tags : [xooter.role ?? "Cleaning"],
   lastBookedAt: favourite?.created_at ?? "",
   nextAvailableAt: "",
   preferredFor: favourite?.favorite_type === "recurring_favorite"
     ? "Recurring favourite"
-    : zooter.jobs_completed
-      ? `${zooter.jobs_completed} completed jobs`
+    : xooter.jobs_completed
+      ? `${xooter.jobs_completed} completed jobs`
       : "Saved in My Xooters",
 });
 
@@ -393,20 +393,20 @@ export const buildServiceRecoverySignals = (
 };
 
 const resolveXooters = async (favorites: FavouriteRow[]) => {
-  const zooterIds = [...new Set(favorites.map((favorite) => favorite.zooter_id).filter(Boolean))];
-  if (zooterIds.length === 0) return [];
+  const xooterIds = [...new Set(favorites.map((favorite) => favorite.xooter_id).filter(Boolean))];
+  if (xooterIds.length === 0) return [];
 
   const { data } = await supabase
-    .from("zooters_public")
+    .from("xooters_public")
     .select("id,name,rating,tags,role,jobs_completed")
-    .in("id", zooterIds);
+    .in("id", xooterIds);
 
-  const zooters = (Array.isArray(data) ? data : []) as PublicXooterRow[];
-  const favoriteByXooter = new Map(favorites.map((favorite) => [favorite.zooter_id, favorite]));
-  return zooterIds
-    .map((id) => zooters.find((zooter) => zooter.id === id))
-    .filter((zooter): zooter is PublicXooterRow => Boolean(zooter))
-    .map((zooter) => mapFavourite(zooter, favoriteByXooter.get(zooter.id)));
+  const xooters = (Array.isArray(data) ? data : []) as PublicXooterRow[];
+  const favoriteByXooter = new Map(favorites.map((favorite) => [favorite.xooter_id, favorite]));
+  return xooterIds
+    .map((id) => xooters.find((xooter) => xooter.id === id))
+    .filter((xooter): xooter is PublicXooterRow => Boolean(xooter))
+    .map((xooter) => mapFavourite(xooter, favoriteByXooter.get(xooter.id)));
 };
 
 export const useHouseholdOperatingLayer = () => {
@@ -445,13 +445,13 @@ export const useHouseholdOperatingLayer = () => {
           .order("updated_at", { ascending: false }),
         supabase
           .from("bookings")
-          .select("id,scheduled_at,status,service,duration_hours,zooter_id")
+          .select("id,scheduled_at,status,service,duration_hours,xooter_id")
           .eq("user_id", user.id)
           .order("scheduled_at", { ascending: false })
           .limit(20),
         supabase
           .from("favorites")
-          .select("zooter_id,favorite_type,repeat_count,created_at")
+          .select("xooter_id,favorite_type,repeat_count,created_at")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false, nullsFirst: false })
           .limit(6),
@@ -476,15 +476,15 @@ export const useHouseholdOperatingLayer = () => {
         ? (bookingResult.data as BookingRow[]).map(mapBooking)
         : [];
       const favorites = Array.isArray(favoriteResult.data) ? (favoriteResult.data as FavouriteRow[]) : [];
-      const zooters = await resolveXooters(favorites);
+      const xooters = await resolveXooters(favorites);
       const tickets = Array.isArray(supportResult.data) ? (supportResult.data as SupportTicketRow[]) : [];
 
       setLayer({
         homeMemory,
         propertyProfiles: properties,
         householdCircle: {
-          favourite: zooters[0] ?? null,
-          backupXooters: zooters.slice(1, 4),
+          favourite: xooters[0] ?? null,
+          backupXooters: xooters.slice(1, 4),
           savedCount: favorites.length,
           recurringCount: favorites.filter((favorite) => favorite.favorite_type === "recurring_favorite").length,
         },

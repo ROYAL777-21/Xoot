@@ -1,4 +1,5 @@
 import { LegalLayout, LegalList, LegalSection } from "./LegalLayout";
+import { TERMS_CLAUSE } from "@/lib/recording-notice";
 
 const Terms = () => (
   <LegalLayout
@@ -79,13 +80,34 @@ const Terms = () => (
       </p>
     </LegalSection>
 
-    <LegalSection title="9. Xooter applicants">
+    {/*
+      Rendered from `src/lib/recording-notice.ts` rather than typed here, so this clause, the
+      booking-time disclosure and the in-call indicator cannot drift apart. A promise made in the
+      terms and contradicted on screen is worse than either alone.
+
+      ⚠️ Recording is OFF. This clause describes what happens when it is switched on, and exists
+      because it has to exist *first* — under RICA s4 the lawful recorder is a party to the call,
+      and POPIA s18 requires the parties to be told before the fact, not after.
+    */}
+    <LegalSection title="9. Recording in-app calls">
+      <p>
+        Xoot's in-app calling does not record by default, and Xoot does not record calls on its own
+        initiative. If in-call recording is switched on for your booking, the following applies.
+      </p>
+      <LegalList>
+        {TERMS_CLAUSE.map((clause) => (
+          <li key={clause}>{clause}</li>
+        ))}
+      </LegalList>
+    </LegalSection>
+
+    <LegalSection title="10. Xooter applicants">
       <p>
         Xooter applicants must provide truthful identity, right-to-work, background-check, training, reference, and document information. Uploading false, incomplete, or misleading information may result in rejection, suspension, or removal from the platform.
       </p>
     </LegalSection>
 
-    <LegalSection title="10. Liability">
+    <LegalSection title="11. Liability">
       <p>
         Xoot will take reasonable operational and security steps, but home services involve real-world risk. To the fullest extent allowed by South African law, Xoot is not liable for indirect loss, loss of profit, unsupported guarantees, or losses caused by inaccurate information supplied by users, Xooters, or third-party providers.
       </p>

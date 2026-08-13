@@ -7,7 +7,7 @@ enum XootAssistantDestination: String, AppEnum {
   case carePlus
   case concierge
   case bookings
-  case zooterJobs
+  case xooterJobs
 
   static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Xoot destination")
 
@@ -16,7 +16,7 @@ enum XootAssistantDestination: String, AppEnum {
     .carePlus: "Care+ membership",
     .concierge: "Xoot Concierge",
     .bookings: "My bookings",
-    .zooterJobs: "Xooter jobs",
+    .xooterJobs: "Xooter jobs",
   ]
 
   var dialogName: String {
@@ -29,7 +29,7 @@ enum XootAssistantDestination: String, AppEnum {
       return "Xoot Concierge"
     case .bookings:
       return "your bookings"
-    case .zooterJobs:
+    case .xooterJobs:
       return "your Xooter jobs"
     }
   }
@@ -37,15 +37,15 @@ enum XootAssistantDestination: String, AppEnum {
   var safeDeepLinkPath: String {
     switch self {
     case .bookClean:
-      return "zoot://book?intent=book_clean"
+      return "xoot://book?intent=book_clean"
     case .carePlus:
-      return "zoot://care-plus?intent=care_plus"
+      return "xoot://care-plus?intent=care_plus"
     case .concierge:
-      return "zoot://concierge?zootBot=open&intent=concierge"
+      return "xoot://concierge?xootBot=open&intent=concierge"
     case .bookings:
-      return "zoot://bookings?intent=bookings"
-    case .zooterJobs:
-      return "zoot://zooter/jobs?intent=zooter_jobs"
+      return "xoot://bookings?intent=bookings"
+    case .xooterJobs:
+      return "xoot://xooter/jobs?intent=xooter_jobs"
     }
   }
 
@@ -182,7 +182,7 @@ struct BookXootCleanerIntent: AppIntent {
   }
 
   private var bookingDeepLinkURL: URL {
-    var components = URLComponents(string: "zoot://book")!
+    var components = URLComponents(string: "xoot://book")!
     var queryItems = [
       URLQueryItem(name: "intent", value: "book_clean"),
     ]

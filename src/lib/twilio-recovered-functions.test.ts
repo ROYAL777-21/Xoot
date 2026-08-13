@@ -34,7 +34,7 @@ describe("recovered Twilio functions", () => {
     const source = readFunction(name);
     expect(source).toContain("assertBookingParticipant");
     expect(source).toMatch(/from\("bookings"\)/);
-    expect(source).toMatch(/\.select\("id,user_id,zooter_id"\)/);
+    expect(source).toMatch(/\.select\("id,user_id,xooter_id"\)/);
   });
 
   it.each(recovered)("%s answers not-found and not-yours identically", (name) => {

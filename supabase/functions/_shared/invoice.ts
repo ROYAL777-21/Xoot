@@ -65,7 +65,7 @@ export const normaliseVatRate = (value: unknown) => {
 export const buildInvoiceNumber = (bookingId: string, issuedAt: Date) => {
   const date = issuedAt.toISOString().slice(0, 10).replace(/-/g, "");
   const suffix = cleanText(bookingId, 80).replace(/[^a-z0-9]/gi, "").slice(0, 8).toUpperCase();
-  return `ZOOT-${date}-${suffix || "BOOKING"}`;
+  return `XOOT-${date}-${suffix || "BOOKING"}`;
 };
 
 export const buildBookingInvoiceSnapshot = ({

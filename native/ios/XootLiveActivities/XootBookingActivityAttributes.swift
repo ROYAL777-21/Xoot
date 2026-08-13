@@ -5,7 +5,7 @@ public struct XootBookingActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         public var status: BookingStatus
         public var statusLabel: String
-        public var zooterName: String
+        public var xooterName: String
         public var serviceName: String
         public var etaMinutes: Int?
         public var nextStep: String
@@ -15,7 +15,7 @@ public struct XootBookingActivityAttributes: ActivityAttributes {
         public init(
             status: BookingStatus,
             statusLabel: String,
-            zooterName: String,
+            xooterName: String,
             serviceName: String,
             etaMinutes: Int? = nil,
             nextStep: String,
@@ -24,7 +24,7 @@ public struct XootBookingActivityAttributes: ActivityAttributes {
         ) {
             self.status = status
             self.statusLabel = statusLabel
-            self.zooterName = zooterName
+            self.xooterName = xooterName
             self.serviceName = serviceName
             self.etaMinutes = etaMinutes
             self.nextStep = nextStep

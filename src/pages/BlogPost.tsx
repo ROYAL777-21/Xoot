@@ -2,8 +2,8 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, CalendarDays, MapPin, Search } from "lucide-react";
 
 import { SEO } from "@/components/SEO";
-import { Footer } from "@/components/zoot/Footer";
-import { Navbar } from "@/components/zoot/Navbar";
+import { Footer } from "@/components/xoot/Footer";
+import { Navbar } from "@/components/xoot/Navbar";
 import { getBlogPost } from "@/lib/blog-posts";
 
 const BlogPost = () => {

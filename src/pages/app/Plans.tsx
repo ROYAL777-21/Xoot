@@ -60,7 +60,7 @@ const Plans = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
-  const zootCred = useXootCred();
+  const xootCred = useXootCred();
   const household = useHouseholdOperatingLayer();
 
   const refresh = useCallback(async () => {
@@ -91,7 +91,7 @@ const Plans = () => {
       const result = data as { already_exists?: boolean; subscription_status?: string } | null;
       haptic("success");
       toast.success(result?.already_exists ? "Care+ request is already recorded" : "Care+ request recorded");
-      await Promise.all([refresh(), zootCred.refresh(), household.refresh()]);
+      await Promise.all([refresh(), xootCred.refresh(), household.refresh()]);
     } finally {
       setActionLoading(false);
     }
@@ -108,7 +108,7 @@ const Plans = () => {
       setCancelOpen(false);
       haptic("success");
       toast("Care+ cancelled");
-      await Promise.all([refresh(), zootCred.refresh(), household.refresh()]);
+      await Promise.all([refresh(), xootCred.refresh(), household.refresh()]);
     } finally {
       setActionLoading(false);
     }
@@ -198,7 +198,7 @@ const Plans = () => {
           )}
           {user && (
             <p className="mt-4 text-sm font-semibold text-sage-deep">
-              Current XootCred balance: {zootCred.loading ? "Loading..." : formatZAR(zootCred.availableBalance)}
+              Current XootCred balance: {xootCred.loading ? "Loading..." : formatZAR(xootCred.availableBalance)}
             </p>
           )}
           <p className="mt-5 text-xs text-muted-foreground">Sensitive access notes stay inside the authenticated app and should not be exposed in push notifications, SMS or email.</p>

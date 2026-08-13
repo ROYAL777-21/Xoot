@@ -26,8 +26,8 @@ type SupabaseServiceClient = any;
  * once.
  *
  * ── What is NOT gated here, and why it matters ──────────────────────────────────
- * The eight topic flags — `care_plus_support`, `zootcred_support`, `booking_status`,
- * `referral_support`, `booking_cover_support`, `partnership_interest`, `zooter_support`,
+ * The eight topic flags — `care_plus_support`, `xootcred_support`, `booking_status`,
+ * `referral_support`, `booking_cover_support`, `partnership_interest`, `xooter_support`,
  * `authenticated_account_support` — are **tool-permission flags, not topic-permission flags**, and
  * they are all `false` live.
  *
@@ -54,11 +54,11 @@ const CAPABILITY_KEYS = {
   bookingStatus: "concierge.booking_status",
   authenticatedAccountSupport: "concierge.authenticated_account_support",
   carePlusSupport: "concierge.care_plus_support",
-  zootcredSupport: "concierge.zootcred_support",
+  xootcredSupport: "concierge.xootcred_support",
   referralSupport: "concierge.referral_support",
   bookingCoverSupport: "concierge.booking_cover_support",
   partnershipInterest: "concierge.partnership_interest",
-  zooterSupport: "concierge.zooter_support",
+  xooterSupport: "concierge.xooter_support",
 } as const;
 
 const KILL_KEYS = {

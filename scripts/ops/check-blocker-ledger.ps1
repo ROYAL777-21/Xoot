@@ -19,7 +19,7 @@ $requiredBlockers = @(
   [pscustomobject]@{
     id = "supabase-auth-redirects"
     description = "Supabase Auth redirect allowlists"
-    patterns = @("Supabase Auth redirect allowlists", "zoot://auth/callback", "Google OAuth", "Apple Sign in")
+    patterns = @("Supabase Auth redirect allowlists", "xoot://auth/callback", "Google OAuth", "Apple Sign in")
   },
   [pscustomobject]@{
     id = "supabase-cli-auth"

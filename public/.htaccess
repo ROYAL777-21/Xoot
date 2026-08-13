@@ -18,12 +18,12 @@
   Header always set Cross-Origin-Resource-Policy "same-origin"
   Header always set Origin-Agent-Cluster "?1"
   Header always set X-Permitted-Cross-Domain-Policies "none"
-  SetEnvIf Request_URI "^/(app|auth|admin)(/|$)" ZOOT_NOINDEX=1
-  SetEnvIf Request_URI "^/zooter/(jobs|earnings|kyc|profile|training)(/|$)" ZOOT_NOINDEX=1
-  SetEnvIf Request_URI "^/(app|auth|admin)(/|$)" ZOOT_NOSTORE=1
-  SetEnvIf Request_URI "^/zooter/(jobs|earnings|kyc|profile|training)(/|$)" ZOOT_NOSTORE=1
-  Header always set X-Robots-Tag "noindex, noarchive, nosnippet" env=ZOOT_NOINDEX
-  Header always set Cache-Control "no-store, private, max-age=0, must-revalidate" env=ZOOT_NOSTORE
+  SetEnvIf Request_URI "^/(app|auth|admin)(/|$)" XOOT_NOINDEX=1
+  SetEnvIf Request_URI "^/xooter/(jobs|earnings|kyc|profile|training)(/|$)" XOOT_NOINDEX=1
+  SetEnvIf Request_URI "^/(app|auth|admin)(/|$)" XOOT_NOSTORE=1
+  SetEnvIf Request_URI "^/xooter/(jobs|earnings|kyc|profile|training)(/|$)" XOOT_NOSTORE=1
+  Header always set X-Robots-Tag "noindex, noarchive, nosnippet" env=XOOT_NOINDEX
+  Header always set Cache-Control "no-store, private, max-age=0, must-revalidate" env=XOOT_NOSTORE
 </IfModule>
 
 <IfModule mod_expires.c>

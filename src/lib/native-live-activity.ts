@@ -13,7 +13,7 @@ export interface XootBookingLiveActivityPayload {
   status: XootBookingLiveActivityStatus;
   statusLabel: string;
   serviceName: string;
-  zooterName?: string;
+  xooterName?: string;
   propertyName?: string;
   suburb?: string;
   scheduledAt?: string;
@@ -27,7 +27,7 @@ declare global {
   interface Window {
     webkit?: {
       messageHandlers?: {
-        zootLiveActivity?: { postMessage: (payload: XootBookingLiveActivityPayload) => void };
+        xootLiveActivity?: { postMessage: (payload: XootBookingLiveActivityPayload) => void };
       };
     };
     ReactNativeWebView?: { postMessage: (message: string) => void };
@@ -38,11 +38,11 @@ declare global {
 export const notifyBookingLiveActivity = (payload: XootBookingLiveActivityPayload) => {
   if (typeof window === "undefined") return false;
 
-  window.dispatchEvent(new CustomEvent("zoot:booking-live-activity", { detail: payload }));
+  window.dispatchEvent(new CustomEvent("xoot:booking-live-activity", { detail: payload }));
 
-  window.webkit?.messageHandlers?.zootLiveActivity?.postMessage(payload);
+  window.webkit?.messageHandlers?.xootLiveActivity?.postMessage(payload);
   window.XootNative?.updateBookingLiveActivity?.(payload);
-  window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "zoot.bookingLiveActivity", payload }));
+  window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "xoot.bookingLiveActivity", payload }));
 
   return true;
 };

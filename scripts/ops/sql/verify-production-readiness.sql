@@ -91,28 +91,28 @@ checks as (
 
   union all
   select
-    'safe zooter job cards RPC exists',
-    to_regprocedure('public.get_zooter_job_cards_for_user(uuid)') is not null,
-    'public.get_zooter_job_cards_for_user(uuid)'
+    'safe xooter job cards RPC exists',
+    to_regprocedure('public.get_xooter_job_cards_for_user(uuid)') is not null,
+    'public.get_xooter_job_cards_for_user(uuid)'
 
   union all
   select
     'accepted destination RPC exists',
-    to_regprocedure('public.get_accepted_zooter_job_destinations_for_user(uuid,uuid[])') is not null,
-    'public.get_accepted_zooter_job_destinations_for_user(uuid,uuid[])'
+    to_regprocedure('public.get_accepted_xooter_job_destinations_for_user(uuid,uuid[])') is not null,
+    'public.get_accepted_xooter_job_destinations_for_user(uuid,uuid[])'
 
   union all
   select
-    'legacy zooter job card RPC not executable by authenticated',
-    to_regprocedure('public.get_zooter_job_cards()') is not null
-      and not has_function_privilege('authenticated', 'public.get_zooter_job_cards()', 'EXECUTE'),
+    'legacy xooter job card RPC not executable by authenticated',
+    to_regprocedure('public.get_xooter_job_cards()') is not null
+      and not has_function_privilege('authenticated', 'public.get_xooter_job_cards()', 'EXECUTE'),
     'authenticated execute revoked'
 
   union all
   select
     'legacy accepted destination RPC not executable by authenticated',
-    to_regprocedure('public.get_accepted_zooter_job_destinations(uuid[])') is not null
-      and not has_function_privilege('authenticated', 'public.get_accepted_zooter_job_destinations(uuid[])', 'EXECUTE'),
+    to_regprocedure('public.get_accepted_xooter_job_destinations(uuid[])') is not null
+      and not has_function_privilege('authenticated', 'public.get_accepted_xooter_job_destinations(uuid[])', 'EXECUTE'),
     'authenticated execute revoked'
 
   union all
@@ -229,21 +229,21 @@ checks as (
   union all
   select
     'concierge knowledge versions table exists',
-    to_regclass('public.zoot_concierge_knowledge_versions') is not null,
-    'public.zoot_concierge_knowledge_versions'
+    to_regclass('public.xoot_concierge_knowledge_versions') is not null,
+    'public.xoot_concierge_knowledge_versions'
 
   union all
   select
     'concierge feedback table exists',
-    to_regclass('public.zoot_concierge_feedback') is not null,
-    'public.zoot_concierge_feedback'
+    to_regclass('public.xoot_concierge_feedback') is not null,
+    'public.xoot_concierge_feedback'
 
   union all
   select
     'concierge feedback direct client writes denied',
-    not has_table_privilege('authenticated', 'public.zoot_concierge_feedback', 'INSERT')
-      and not has_table_privilege('anon', 'public.zoot_concierge_feedback', 'INSERT'),
-    'public.zoot_concierge_feedback insert denied'
+    not has_table_privilege('authenticated', 'public.xoot_concierge_feedback', 'INSERT')
+      and not has_table_privilege('anon', 'public.xoot_concierge_feedback', 'INSERT'),
+    'public.xoot_concierge_feedback insert denied'
 
   union all
   select
@@ -261,46 +261,46 @@ checks as (
     exists (
       select 1
       from public.operational_controls
-      where control_key = 'zoot_black.enabled'
+      where control_key = 'xoot_black.enabled'
         and enabled = false
     )
       and exists (
         select 1
         from public.operational_controls
-        where control_key = 'zoot_black.area_pilot'
+        where control_key = 'xoot_black.area_pilot'
           and enabled = false
       )
       and exists (
         select 1
         from public.operational_controls
-        where control_key = 'zoot_black.certificates'
+        where control_key = 'xoot_black.certificates'
           and enabled = false
       ),
-    'public.operational_controls zoot_black.*'
+    'public.operational_controls xoot_black.*'
 
   union all
   select
     'Xoot Black selected area table exists',
-    to_regclass('public.zoot_black_area_pilots') is not null,
-    'public.zoot_black_area_pilots'
+    to_regclass('public.xoot_black_area_pilots') is not null,
+    'public.xoot_black_area_pilots'
 
   union all
   select
     'Xoot Black equipment evidence table exists',
-    to_regclass('public.zoot_black_equipment_evidence') is not null,
-    'public.zoot_black_equipment_evidence'
+    to_regclass('public.xoot_black_equipment_evidence') is not null,
+    'public.xoot_black_equipment_evidence'
 
   union all
   select
     'Xoot Black status history table exists',
-    to_regclass('public.zoot_black_status_history') is not null,
-    'public.zoot_black_status_history'
+    to_regclass('public.xoot_black_status_history') is not null,
+    'public.xoot_black_status_history'
 
   union all
   select
     'Xoot Black training requirements table exists',
-    to_regclass('public.zoot_black_training_requirements') is not null,
-    'public.zoot_black_training_requirements'
+    to_regclass('public.xoot_black_training_requirements') is not null,
+    'public.xoot_black_training_requirements'
 
   union all
   select
@@ -311,8 +311,8 @@ checks as (
   union all
   select
     'Xoot Black completion certificates table exists',
-    to_regclass('public.zoot_black_completion_certificates') is not null,
-    'public.zoot_black_completion_certificates'
+    to_regclass('public.xoot_black_completion_certificates') is not null,
+    'public.xoot_black_completion_certificates'
 
   union all
   select
@@ -320,18 +320,18 @@ checks as (
     exists (
       select 1
       from storage.buckets
-      where id = 'zoot-black-certificates'
+      where id = 'xoot-black-certificates'
         and public = false
     ),
-    'storage.buckets.zoot-black-certificates'
+    'storage.buckets.xoot-black-certificates'
 
   union all
   select
     'Xoot Black eligibility helper not client executable',
-    to_regprocedure('public.is_zoot_black_eligible(uuid,text)') is not null
-      and not has_function_privilege('anon', 'public.is_zoot_black_eligible(uuid,text)', 'EXECUTE')
-      and not has_function_privilege('authenticated', 'public.is_zoot_black_eligible(uuid,text)', 'EXECUTE'),
-    'public.is_zoot_black_eligible(uuid,text)'
+    to_regprocedure('public.is_xoot_black_eligible(uuid,text)') is not null
+      and not has_function_privilege('anon', 'public.is_xoot_black_eligible(uuid,text)', 'EXECUTE')
+      and not has_function_privilege('authenticated', 'public.is_xoot_black_eligible(uuid,text)', 'EXECUTE'),
+    'public.is_xoot_black_eligible(uuid,text)'
 
   union all
   select
@@ -348,8 +348,8 @@ checks as (
   union all
   select
     'Phase 7 payout account table exists',
-    to_regclass('public.zooter_payout_accounts') is not null,
-    'public.zooter_payout_accounts'
+    to_regclass('public.xooter_payout_accounts') is not null,
+    'public.xooter_payout_accounts'
 
   union all
   select
@@ -360,8 +360,8 @@ checks as (
   union all
   select
     'Phase 7 payout hold table exists',
-    to_regclass('public.zooter_payout_holds') is not null,
-    'public.zooter_payout_holds'
+    to_regclass('public.xooter_payout_holds') is not null,
+    'public.xooter_payout_holds'
 
   union all
   select
@@ -374,10 +374,10 @@ checks as (
   union all
   select
     'Phase 7 payout release helper not client executable',
-    to_regprocedure('public.can_release_zooter_payout(uuid,uuid)') is not null
-      and not has_function_privilege('anon', 'public.can_release_zooter_payout(uuid,uuid)', 'EXECUTE')
-      and not has_function_privilege('authenticated', 'public.can_release_zooter_payout(uuid,uuid)', 'EXECUTE'),
-    'public.can_release_zooter_payout(uuid,uuid)'
+    to_regprocedure('public.can_release_xooter_payout(uuid,uuid)') is not null
+      and not has_function_privilege('anon', 'public.can_release_xooter_payout(uuid,uuid)', 'EXECUTE')
+      and not has_function_privilege('authenticated', 'public.can_release_xooter_payout(uuid,uuid)', 'EXECUTE'),
+    'public.can_release_xooter_payout(uuid,uuid)'
 
   union all
   select
@@ -626,14 +626,14 @@ checks as (
           ('user_roles', 'user_roles_insert_admin'),
           ('user_roles', 'user_roles_update_admin'),
           ('user_roles', 'user_roles_delete_admin'),
-          ('zooter_reliability_metrics', 'zooter_reliability_metrics_select_owner_or_admin'),
-          ('zooter_reliability_metrics', 'zooter_reliability_metrics_insert_admin'),
-          ('zooter_reliability_metrics', 'zooter_reliability_metrics_update_admin'),
-          ('zooter_reliability_metrics', 'zooter_reliability_metrics_delete_admin'),
-          ('zooters', 'zooters_select_self_or_admin'),
-          ('zooters', 'zooters_insert_admin'),
-          ('zooters', 'zooters_update_self_or_admin'),
-          ('zooters', 'zooters_delete_admin')
+          ('xooter_reliability_metrics', 'xooter_reliability_metrics_select_owner_or_admin'),
+          ('xooter_reliability_metrics', 'xooter_reliability_metrics_insert_admin'),
+          ('xooter_reliability_metrics', 'xooter_reliability_metrics_update_admin'),
+          ('xooter_reliability_metrics', 'xooter_reliability_metrics_delete_admin'),
+          ('xooters', 'xooters_select_self_or_admin'),
+          ('xooters', 'xooters_insert_admin'),
+          ('xooters', 'xooters_update_self_or_admin'),
+          ('xooters', 'xooters_delete_admin')
       ) as expected(tablename, policyname)
       where not exists (
         select 1
@@ -643,7 +643,7 @@ checks as (
           and p.policyname = expected.policyname
       )
     ),
-    'support_tickets/user_roles/zooter_reliability_metrics/zooters policy set'
+    'support_tickets/user_roles/xooter_reliability_metrics/xooters policy set'
 
   union all
   select
@@ -664,19 +664,19 @@ checks as (
             ('user_roles', 'roles admin insert'),
             ('user_roles', 'roles admin update'),
             ('user_roles', 'roles admin delete'),
-            ('zooter_reliability_metrics', 'admins manage reliability metrics'),
-            ('zooter_reliability_metrics', 'zooters and admins view reliability metrics'),
-            ('zooter_reliability_metrics', 'reliability own zooter or admin'),
-            ('zooters', 'active zooters visible'),
-            ('zooters', 'admins insert zooters'),
-            ('zooters', 'admins manage zooters'),
-            ('zooters', 'zooters update own'),
-            ('zooters', 'zooters update own profile'),
-            ('zooters', 'zooters_self_select'),
-            ('zooters', 'zooters_self_update')
+            ('xooter_reliability_metrics', 'admins manage reliability metrics'),
+            ('xooter_reliability_metrics', 'xooters and admins view reliability metrics'),
+            ('xooter_reliability_metrics', 'reliability own xooter or admin'),
+            ('xooters', 'active xooters visible'),
+            ('xooters', 'admins insert xooters'),
+            ('xooters', 'admins manage xooters'),
+            ('xooters', 'xooters update own'),
+            ('xooters', 'xooters update own profile'),
+            ('xooters', 'xooters_self_select'),
+            ('xooters', 'xooters_self_update')
         )
     ),
-    'old support/user-role/reliability/zooter policy names'
+    'old support/user-role/reliability/xooter policy names'
 
   union all
   select
@@ -685,24 +685,24 @@ checks as (
       select 1
       from pg_policies p
       where p.schemaname = 'public'
-        and p.tablename in ('support_tickets', 'user_roles', 'zooter_reliability_metrics', 'zooters')
+        and p.tablename in ('support_tickets', 'user_roles', 'xooter_reliability_metrics', 'xooters')
         and p.cmd = 'ALL'
     ),
     'no broad ALL policies on targeted legacy tables'
 
   union all
   select
-    'zooters base table not readable by anon',
-    not has_table_privilege('anon', 'public.zooters', 'SELECT'),
-    'anon select revoked from public.zooters'
+    'xooters base table not readable by anon',
+    not has_table_privilege('anon', 'public.xooters', 'SELECT'),
+    'anon select revoked from public.xooters'
 
   union all
   select
-    'zooters public view readable only as select',
-    has_table_privilege('anon', 'public.zooters_public', 'SELECT')
-      and not has_table_privilege('anon', 'public.zooters_public', 'INSERT')
-      and not has_table_privilege('anon', 'public.zooters_public', 'UPDATE')
-      and not has_table_privilege('anon', 'public.zooters_public', 'DELETE'),
+    'xooters public view readable only as select',
+    has_table_privilege('anon', 'public.xooters_public', 'SELECT')
+      and not has_table_privilege('anon', 'public.xooters_public', 'INSERT')
+      and not has_table_privilege('anon', 'public.xooters_public', 'UPDATE')
+      and not has_table_privilege('anon', 'public.xooters_public', 'DELETE'),
     'anon can select public-safe view only'
 
   union all
@@ -762,8 +762,8 @@ checks as (
             'own favorites',
             'send messages on own booking',
             'view messages on own booking',
-            'zooters send messages on assigned bookings',
-            'zooters view messages on assigned bookings',
+            'xooters send messages on assigned bookings',
+            'xooters view messages on assigned bookings',
             'messages participants insert',
             'messages participants select',
             'referral_codes_own',

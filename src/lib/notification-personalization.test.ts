@@ -18,11 +18,11 @@ describe("notification personalization", () => {
       urgency: "high",
       title: "Access details are ready",
       body: "Gate code is 1234. Open the booking.",
-      route: "/zooter/jobs/job-123",
+      route: "/xooter/jobs/job-123",
       profile: {
-        role: "zooter",
+        role: "xooter",
         preferredChannels: ["in_app", "expo_push", "brevo_email", "whatsapp_urgent"],
-        behaviorSignals: ["zooter_active_today"],
+        behaviorSignals: ["xooter_active_today"],
       },
     });
 
@@ -173,10 +173,10 @@ describe("notification personalization", () => {
 
   it("rejects role-inappropriate notification categories", () => {
     const decision = buildPersonalizedNotificationDecision({
-      category: "zooter_jobs",
+      category: "xooter_jobs",
       title: "New job offer",
       body: "Open Xoot.",
-      route: "/zooter/jobs",
+      route: "/xooter/jobs",
       profile: { role: "customer" },
     });
 

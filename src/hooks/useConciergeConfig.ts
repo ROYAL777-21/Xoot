@@ -35,11 +35,11 @@ export type ConciergeCapabilities = {
   bookingStatus: boolean;
   authenticatedAccountSupport: boolean;
   carePlusSupport: boolean;
-  zootcredSupport: boolean;
+  xootcredSupport: boolean;
   referralSupport: boolean;
   bookingCoverSupport: boolean;
   partnershipInterest: boolean;
-  zooterSupport: boolean;
+  xooterSupport: boolean;
   killed: boolean;
 };
 

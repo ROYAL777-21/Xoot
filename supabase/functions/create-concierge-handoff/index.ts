@@ -42,9 +42,9 @@ const inferIntentCategory = (text: string, requested: string) => {
     return "trust_safety";
   }
   if (textIncludesAny(normalized, ["payment", "refund", "charge", "invoice", "paid", "card", "ozow", "stitch"])) return "payment";
-  if (textIncludesAny(normalized, ["cancel", "reschedule", "late", "arrived", "assignment", "zooter", "booking"])) return "booking";
+  if (textIncludesAny(normalized, ["cancel", "reschedule", "late", "arrived", "assignment", "xooter", "booking"])) return "booking";
   if (textIncludesAny(normalized, ["care+", "care plus", "membership"])) return "care_plus";
-  if (textIncludesAny(normalized, ["zootcred", "referral", "reward", "credit"])) return "zootcred_referrals";
+  if (textIncludesAny(normalized, ["xootcred", "referral", "reward", "credit"])) return "xootcred_referrals";
   if (textIncludesAny(normalized, ["cover", "claim", "damage", "insurance"])) return "booking_cover";
   if (textIncludesAny(normalized, ["partner", "property manager", "airbnb", "office manager", "body corporate"])) return "partnership";
   if (textIncludesAny(normalized, ["sign in", "login", "otp", "password", "account", "security"])) return "account_security";
@@ -76,13 +76,13 @@ const queueFromIntent = (intentCategory: string) => {
 const resolveRoleType = async (supa: any, userId: string) => {
   if (await isAdminUser(supa, userId)) return "admin";
 
-  const { data: zooter } = await supa
-    .from("zooters")
+  const { data: xooter } = await supa
+    .from("xooters")
     .select("id")
     .eq("user_id", userId)
     .maybeSingle();
 
-  return zooter?.id ? "zooter" : "user";
+  return xooter?.id ? "xooter" : "user";
 };
 
 const controlsEnabled = async (supa: any) => {
@@ -150,7 +150,7 @@ Deno.serve(async (req) => {
     if (bookingId) {
       const { data } = await supa
         .from("bookings")
-        .select("id,user_id,zooter_id,status,service_type,scheduled_at")
+        .select("id,user_id,xooter_id,status,service_type,scheduled_at")
         .eq("id", bookingId)
         .maybeSingle();
       if (!data?.id) return fail("booking not found", origin, 404);
@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
 
     const safeContext = {
       answer_type: "human_handoff",
-      source: "zoot_concierge",
+      source: "xoot_concierge",
       intent_category: intentCategory,
       urgency_level: urgencyLevel,
       booking_linked: Boolean(booking?.id),
@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
       subjectTable: "support_tickets",
       subjectId: ticket.id,
       userId: user.id,
-      zooterId: booking?.zooter_id ?? null,
+      xooterId: booking?.xooter_id ?? null,
       bookingId: booking?.id ?? null,
       priority,
       summary: `${subject}: ${intentCategory}`,

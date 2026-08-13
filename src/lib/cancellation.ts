@@ -5,7 +5,7 @@
 export type CancellationContext = {
   scheduledAt: string | Date;
   status: string;
-  zooterDistanceMi?: number; // if zooter has not started moving yet
+  xooterDistanceMi?: number; // if xooter has not started moving yet
 };
 
 export function calculateCancellationFeePct(ctx: CancellationContext): number {
@@ -21,8 +21,8 @@ export function calculateCancellationFeePct(ctx: CancellationContext): number {
   if (hoursTo < 2) pct = 50;
   else if (hoursTo < 24) pct = 25;
 
-  // Bump if zooter is very close (already preparing)
-  const d = ctx.zooterDistanceMi ?? 5;
+  // Bump if xooter is very close (already preparing)
+  const d = ctx.xooterDistanceMi ?? 5;
   if (d < 2 && pct < 40) pct = Math.max(pct, 40);
   else if (d < 5 && pct < 25) pct = Math.max(pct, 25);
 

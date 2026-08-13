@@ -170,8 +170,13 @@ jobs:
 
             echo ""
             echo "trying $scheme key ($(printf '%s' "$key" | cut -c1-3)…, ${#key} chars)"
-            out=$(ZOOT_STAGING_SUPABASE_URL="https://${ref}.supabase.co" \
-                  ZOOT_STAGING_SERVICE_ROLE_KEY="$key" \
+            # ⚠️ XOOT_, not ZOOT_. The ZD-029 rename changed these names inside the script, and
+            # this workflow kept passing the old ones — so run 2 failed with the script's own
+            # "Set XOOT_STAGING_SUPABASE_URL…" message while both keys were fetched correctly.
+            # It reads as a credential problem and is a spelling one. Run 1 passed only because it
+            # predated the merge.
+            out=$(XOOT_STAGING_SUPABASE_URL="https://${ref}.supabase.co" \
+                  XOOT_STAGING_SERVICE_ROLE_KEY="$key" \
                   node scripts/ops/arm-call-test.mjs "${script_args[@]+"${script_args[@]}"}" 2>&1)
             status=$?
             echo "$out"

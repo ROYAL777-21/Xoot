@@ -3,7 +3,7 @@ import {
   Bug, Waves, PawPrint, Truck, ClipboardCheck, Hammer, Paintbrush, Droplets,
   type LucideIcon,
 } from "lucide-react";
-import type { IconMotion } from "@/components/zoot/AnimatedIcon";
+import type { IconMotion } from "@/components/xoot/AnimatedIcon";
 
 export type ServiceVisual = { icon: LucideIcon; accent: string; tint: string; motion: IconMotion };
 

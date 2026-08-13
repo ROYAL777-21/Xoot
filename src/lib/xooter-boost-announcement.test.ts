@@ -124,7 +124,7 @@ describe("the Earnings page tells Xooters the rate they are actually paid", () =
   it("reads the ladder rather than a private tier table", async () => {
     const { readFileSync } = await import("node:fs");
     const { join } = await import("node:path");
-    const page = readFileSync(join(process.cwd(), "src/pages/zooter/Earnings.tsx"), "utf8");
+    const page = readFileSync(join(process.cwd(), "src/pages/xooter/Earnings.tsx"), "utf8");
     const live = page.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 
     expect(live).toMatch(/commissionBandFor\(\{ reliabilityScore, completedJobs \}\)/);

@@ -164,7 +164,7 @@ const Profile = () => {
           <h2 className="font-display text-xl font-bold">Become a Xooter</h2>
         </div>
         <p className="text-sm text-muted-foreground mb-4">Earn predictable income from recurring clients, premium homes, fair pay rules, fast support, and stronger vetting.</p>
-        <Button asChild variant="outline"><Link to="/zooter/apply">Apply now</Link></Button>
+        <Button asChild variant="outline"><Link to="/xooter/apply">Apply now</Link></Button>
       </Card>
 
       <Card className="p-6 rounded-3xl">

@@ -38,11 +38,11 @@ const requiredPrivateRoutes = [
   "/auth/*",
   "/admin",
   "/admin/*",
-  "/zooter/jobs*",
-  "/zooter/earnings*",
-  "/zooter/kyc*",
-  "/zooter/profile*",
-  "/zooter/training*",
+  "/xooter/jobs*",
+  "/xooter/earnings*",
+  "/xooter/kyc*",
+  "/xooter/profile*",
+  "/xooter/training*",
 ];
 
 requireMatch("Netlify headers define CSP", headersText, /Content-Security-Policy:\s+.*default-src 'self'/);
@@ -68,9 +68,9 @@ requireMatch("Apache .htaccess sets CSP", htaccessText, /Header always set Conte
 requireMatch("Apache .htaccess CSP uses self default", htaccessText, /Content-Security-Policy ".*default-src 'self'/);
 requireMatch("Apache .htaccess CSP blocks framing", htaccessText, /Content-Security-Policy ".*frame-ancestors 'none'/);
 requireMatch("Apache .htaccess CSP blocks plugins", htaccessText, /Content-Security-Policy ".*object-src 'none'/);
-requireMatch("Apache .htaccess protects private SPA routes from indexing", htaccessText, /SetEnvIf Request_URI "\^\/\(app\|auth\|admin\)\(\/\|\$\)" ZOOT_NOINDEX/);
-requireMatch("Apache .htaccess marks private SPA routes no-store", htaccessText, /SetEnvIf Request_URI "\^\/\(app\|auth\|admin\)\(\/\|\$\)" ZOOT_NOSTORE/);
-requireMatch("Apache .htaccess emits no-store for private routes", htaccessText, /Header always set Cache-Control "no-store, private, max-age=0, must-revalidate" env=ZOOT_NOSTORE/);
+requireMatch("Apache .htaccess protects private SPA routes from indexing", htaccessText, /SetEnvIf Request_URI "\^\/\(app\|auth\|admin\)\(\/\|\$\)" XOOT_NOINDEX/);
+requireMatch("Apache .htaccess marks private SPA routes no-store", htaccessText, /SetEnvIf Request_URI "\^\/\(app\|auth\|admin\)\(\/\|\$\)" XOOT_NOSTORE/);
+requireMatch("Apache .htaccess emits no-store for private routes", htaccessText, /Header always set Cache-Control "no-store, private, max-age=0, must-revalidate" env=XOOT_NOSTORE/);
 requireMatch("Apache .htaccess leaves service worker revalidating", htaccessText, /<Files "sw\.js">[\s\S]*Header set Cache-Control "no-cache"[\s\S]*<\/Files>/);
 requireMatch("Netlify build uses deterministic npm install", netlifyText, /command\s*=\s*"npm ci --no-audit --prefer-offline && npm run build"/);
 

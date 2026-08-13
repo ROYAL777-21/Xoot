@@ -279,7 +279,7 @@ describe("care+ pricing", () => {
     // The behaviour the corrected copy now describes. A second insert, or a scheduled
     // one, would make the terms false again — and the terms are the legal page.
     const fn = readFileSync(join(process.cwd(), "supabase/functions/activate-care-plus/index.ts"), "utf8");
-    const inserts = fn.match(/from\("zootcred_ledger"\)\s*\.insert\(/g) ?? [];
+    const inserts = fn.match(/from\("xootcred_ledger"\)\s*\.insert\(/g) ?? [];
     expect(inserts).toHaveLength(1);
     expect(fn).toMatch(/source: "care_plus_activation"/);
   });

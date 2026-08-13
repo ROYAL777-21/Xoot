@@ -49,7 +49,7 @@ describe("Phase 9 Twilio Verify and masked voice readiness", () => {
     expect(maskedCallFunction).toContain("can_create_masked_call");
     expect(maskedCallFunction).toContain("twilio.operational_messages");
     expect(maskedCallFunction).toContain("twilio.masked_voice");
-    expect(maskedCallFunction).toMatch(/if \(providerAllowed && clientPhone && zooterPhone\)/);
+    expect(maskedCallFunction).toMatch(/if \(providerAllowed && clientPhone && xooterPhone\)/);
     expect(opsWorkflowFunction).toContain("can_create_masked_call");
     expect(opsWorkflowFunction).toContain("twilio.masked_voice");
   });

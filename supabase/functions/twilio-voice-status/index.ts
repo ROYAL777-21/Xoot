@@ -31,7 +31,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
  *    it was written — whenever the callback omitted the field. A real duration was overwritten
  *    with zero by any later callback.
  *
- * Terminal states are now terminal, matching `respond-zooter-job`: once a session is completed
+ * Terminal states are now terminal, matching `respond-xooter-job`: once a session is completed
  * it is not moved back to active by a replayed or out-of-order callback.
  *
  * FIXED — the catch returned `String(err)`.

@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     const { data: booking, error: bookingError } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id,status")
+      .select("id,user_id,xooter_id,status")
       .eq("id", message.booking_id)
       .maybeSingle();
 

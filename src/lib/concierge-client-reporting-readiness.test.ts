@@ -7,7 +7,7 @@ const readRepoFile = (path: string) => readFileSync(join(repoRoot, path), "utf8"
 
 describe("Concierge client reporting readiness", () => {
   it("redacts web Concierge answer reports before invoking the feedback function", () => {
-    const bot = readRepoFile("src/components/zoot/XootSupportBot.tsx");
+    const bot = readRepoFile("src/components/xoot/XootSupportBot.tsx");
 
     expect(bot).toContain("redactConciergeClientText");
     expect(bot).toContain('supabase.functions.invoke("report-concierge-answer"');
@@ -19,7 +19,7 @@ describe("Concierge client reporting readiness", () => {
 
   it("keeps mobile Concierge reports and CTAs inside the same privacy boundary", () => {
     const mobile = readRepoFile("mobile/src/app/concierge.tsx");
-    const fallback = readRepoFile("mobile/src/lib/zoot-concierge-fallback.ts");
+    const fallback = readRepoFile("mobile/src/lib/xoot-concierge-fallback.ts");
 
     expect(mobile).toContain("redactConciergeClientText");
     expect(mobile).toContain("'report-concierge-answer'");

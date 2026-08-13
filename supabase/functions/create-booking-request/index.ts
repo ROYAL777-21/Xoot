@@ -124,8 +124,8 @@ Deno.serve(async (req) => {
     const instructions = cleanText(body.instructions, 1200);
     const householdProfileId = cleanText(body.householdProfileId, 60) || null;
     const requestedWorkerCount = Number(body.workerCount);
-    const zooterIds = Array.isArray(body.zooterIds)
-      ? body.zooterIds.map((id: unknown) => cleanText(id, 80)).filter(Boolean).slice(0, 5)
+    const xooterIds = Array.isArray(body.xooterIds)
+      ? body.xooterIds.map((id: unknown) => cleanText(id, 80)).filter(Boolean).slice(0, 5)
       : [];
     const addOns = Array.isArray(body.addOns) ? body.addOns.slice(0, 12) : [];
 
@@ -134,10 +134,10 @@ Deno.serve(async (req) => {
     if (!allowedTimes.has(time)) return json({ error: "unsupported time" }, 400, origin);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return json({ error: "invalid date" }, 400, origin);
     if (!address || !isApprovedLaunchRegion(address)) return json({ error: "outside launch coverage" }, 400, origin);
-    if (zooterIds.length === 0) return json({ error: "select at least one Xooter" }, 400, origin);
+    if (xooterIds.length === 0) return json({ error: "select at least one Xooter" }, 400, origin);
 
     const maxWorkers = multiWorkerServices.has(serviceType) ? Math.min(Math.max(requestedWorkerCount || 1, 1), 5) : 1;
-    const selectedXooterIds = zooterIds.slice(0, maxWorkers);
+    const selectedXooterIds = xooterIds.slice(0, maxWorkers);
     const bookedHours = resolveHours({ hours: body?.hours, homeSizeId });
     if (bookedHours === null) return json({ error: "booked hours are required" }, 400, origin);
 
@@ -206,19 +206,19 @@ Deno.serve(async (req) => {
       if (!household) return json({ error: "household profile not found" }, 404, origin);
     }
 
-    const { data: zooters } = await supa
-      .from("zooters")
+    const { data: xooters } = await supa
+      .from("xooters")
       .select("id,name,active")
       .in("id", selectedXooterIds)
       .eq("active", true);
-    if (!zooters || zooters.length !== selectedXooterIds.length) return json({ error: "selected Xooter is unavailable" }, 409, origin);
+    if (!xooters || xooters.length !== selectedXooterIds.length) return json({ error: "selected Xooter is unavailable" }, 409, origin);
 
     const bookingIds: string[] = [];
-    for (const zooterId of selectedXooterIds) {
+    for (const xooterId of selectedXooterIds) {
       const { data: booking, error: bookingError } = await supa.from("bookings").insert({
         user_id: authData.user.id,
-        zooter_id: zooterId,
-        original_zooter_id: zooterId,
+        xooter_id: xooterId,
+        original_xooter_id: xooterId,
         service: "cleaning",
         service_type: serviceType,
         scheduled_at: scheduledAt,
@@ -239,7 +239,7 @@ Deno.serve(async (req) => {
       if (bookingError || !booking?.id) throw new Error("booking insert failed");
       bookingIds.push(booking.id);
 
-      await supa.from("zooter_jobs").insert({ booking_id: booking.id, zooter_id: zooterId, state: "offered" });
+      await supa.from("xooter_jobs").insert({ booking_id: booking.id, xooter_id: xooterId, state: "offered" });
       await supa.from("booking_status_events").insert({ booking_id: booking.id, actor_id: authData.user.id, status: "pending", label: "Booking sent" });
 
       const { data: payment } = await supa.from("payment_records").insert({
@@ -250,7 +250,7 @@ Deno.serve(async (req) => {
         status: "pending",
         provider: "manual_pending",
         payment_kind: "booking",
-        meta: { service_type: serviceType, zooter_id: zooterId, frequency, provider_required: "Ozow/Stitch credentials not connected" },
+        meta: { service_type: serviceType, xooter_id: xooterId, frequency, provider_required: "PayFast credentials not connected" },
       }).select("id").single();
 
       await supa.from("admin_review_queue").insert({
@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
         subject_table: "payment_records",
         subject_id: payment?.id ?? booking.id,
         user_id: authData.user.id,
-        zooter_id: zooterId,
+        xooter_id: xooterId,
         booking_id: booking.id,
         priority: "normal",
         summary: `Pending payment confirmation for ${serviceType} booking`,
@@ -305,7 +305,7 @@ Deno.serve(async (req) => {
       const firstBookingDate = new Date(scheduledAt);
       await supa.from("recurring_schedules").insert({
         user_id: authData.user.id,
-        zooter_id: selectedXooterIds[0],
+        xooter_id: selectedXooterIds[0],
         household_profile_id: householdProfileId,
         cadence_days: 14,
         preferred_day: firstBookingDate.toLocaleDateString("en-ZA", { weekday: "long" }),

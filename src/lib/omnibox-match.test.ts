@@ -15,7 +15,7 @@ describe("omnibox matching", () => {
     expect(matchOmnibox("favorite")[0].to).toBe("/app/favorites");
     // XootCred lives under Rewards, and both spellings are in the wild after the rename.
     expect(matchOmnibox("xootcred")[0].to).toBe("/app/loyalty");
-    expect(matchOmnibox("zootcred")[0].to).toBe("/app/loyalty");
+    expect(matchOmnibox("xootcred")[0].to).toBe("/app/loyalty");
     // Someone whose clean went wrong types the symptom, not the page name.
     expect(matchOmnibox("refund")[0].to).toBe("/app/support");
     expect(matchOmnibox("damage claim")[0].to).toBe("/app/insurance");

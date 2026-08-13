@@ -55,7 +55,7 @@ export const initMonitoring = () => {
     beforeSend(event) {
       event.tags = {
         ...event.tags,
-        app: "zoot-web",
+        app: "xoot-web",
       };
       event.user = event.user?.id ? { id: String(event.user.id).slice(0, 80) } : undefined;
       event.contexts = scrubUnknown(event.contexts) as typeof event.contexts;
@@ -76,7 +76,7 @@ export const initMonitoring = () => {
 export const logError = (error: unknown, context?: MonitoringContext) => {
   if (monitoringStarted) {
     Sentry.withScope((scope) => {
-      if (context) scope.setContext("zoot", context);
+      if (context) scope.setContext("xoot", context);
       Sentry.captureException(error);
     });
     return;

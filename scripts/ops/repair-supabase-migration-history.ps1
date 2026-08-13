@@ -144,9 +144,9 @@ if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
 
 if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
   $DatabaseUrl = if ($Environment -eq "production") {
-    $env:ZOOT_PRODUCTION_SUPABASE_DB_URL
+    $env:XOOT_PRODUCTION_SUPABASE_DB_URL
   } else {
-    $env:ZOOT_STAGING_SUPABASE_DB_URL
+    $env:XOOT_STAGING_SUPABASE_DB_URL
   }
 
   if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
@@ -155,14 +155,14 @@ if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
-  throw "Set ZOOT_$($Environment.ToUpperInvariant())_SUPABASE_DB_URL or SUPABASE_DB_URL locally before repairing migration history. Do not paste the database URL into chat."
+  throw "Set XOOT_$($Environment.ToUpperInvariant())_SUPABASE_DB_URL or SUPABASE_DB_URL locally before repairing migration history. Do not paste the database URL into chat."
 }
 
 if ($DatabaseUrl -notmatch '^postgres(ql)?://') {
   throw "DatabaseUrl must be a PostgreSQL connection string."
 }
 
-$historyDir = Join-Path ([System.IO.Path]::GetTempPath()) "zoot-supabase-migration-repair"
+$historyDir = Join-Path ([System.IO.Path]::GetTempPath()) "xoot-supabase-migration-repair"
 New-Item -ItemType Directory -Force -Path $historyDir | Out-Null
 $timestamp = Get-Date -Format "yyyyMMddHHmmss"
 $beforeFile = Join-Path $historyDir "$Environment-migration-list-before-$timestamp.txt"

@@ -10,7 +10,7 @@ import type {
 } from "@/types/care-plus";
 
 export const carePlusPlan: CarePlusPlan = {
-  id: "zoot-care-plus",
+  id: "xoot-care-plus",
   name: "Xoot Care+",
   audience: "For busy households and professionals.",
   priceZar: 99,
@@ -42,7 +42,7 @@ export const carePlusShowcaseMembership: CarePlusMembership = {
   renewsAt: "2026-06-01T08:00:00.000Z",
   addOnCreditZar: 30,
   addOnCreditExpiresAt: "2026-05-31T21:59:59.000Z",
-  zootCredMultiplier: 1.5,
+  xootCredMultiplier: 1.5,
   homeReadinessScore: 86,
   favouriteXooterId: "nomsa-showcase",
 };
@@ -122,15 +122,15 @@ export const carePlusBenefits: CarePlusBenefit[] = [
     title: "Home Memory",
     summary: "Save pet notes, access instructions, parking, room priorities, fragile areas, product preferences, allergy notes, and favourite add-ons.",
     customerValue: "very_high",
-    zootCost: "low",
+    xootCost: "low",
     memberProof: "Your home stays remembered across bookings.",
   },
   {
-    id: "favourite-zooter",
+    id: "favourite-xooter",
     title: "Favourite Xooter",
     summary: "Save and rebook your preferred Xooter with a personal CTA like Book Nomsa again.",
     customerValue: "very_high",
-    zootCost: "medium",
+    xootCost: "medium",
     memberProof: "Continuity makes repeat bookings feel safer and calmer.",
   },
   {
@@ -138,7 +138,7 @@ export const carePlusBenefits: CarePlusBenefit[] = [
     title: "Priority Booking",
     summary: "Care+ members get earlier access to high-demand slots and recurring schedules.",
     customerValue: "high",
-    zootCost: "low",
+    xootCost: "low",
     memberProof: "Peak windows feel easier to secure without discounting the service.",
   },
   {
@@ -146,7 +146,7 @@ export const carePlusBenefits: CarePlusBenefit[] = [
     title: "Priority Replacement Support",
     summary: "If a Xooter cancels or becomes unavailable, Care+ members are prioritised for replacement matching.",
     customerValue: "very_high",
-    zootCost: "operational",
+    xootCost: "operational",
     memberProof: "Reduces the anxiety of disrupted home-care plans.",
   },
   {
@@ -154,15 +154,15 @@ export const carePlusBenefits: CarePlusBenefit[] = [
     title: "One-Tap Rebook",
     summary: "Repeat previous bookings quickly using saved preferences and default add-ons.",
     customerValue: "high",
-    zootCost: "low",
+    xootCost: "low",
     memberProof: "A full booking can feel like one calm tap.",
   },
   {
-    id: "zootcred-boost",
+    id: "xootcred-boost",
     title: "XootCred Boost",
     summary: "Earn 1.5x XootCred on completed bookings.",
     customerValue: "high",
-    zootCost: "controlled",
+    xootCost: "controlled",
     memberProof: "Repeat bookings quietly build loyalty value.",
   },
   {
@@ -170,7 +170,7 @@ export const carePlusBenefits: CarePlusBenefit[] = [
     title: "R30 Welcome Add-On Credit",
     summary: "A one-time booking-only add-on credit, granted when membership starts. It expires and cannot be withdrawn.",
     customerValue: "high",
-    zootCost: "controlled",
+    xootCost: "controlled",
     memberProof: "Makes the R99/month membership easier to justify.",
   },
   {
@@ -178,7 +178,7 @@ export const carePlusBenefits: CarePlusBenefit[] = [
     title: "Smart Home Reminders",
     summary: "Prompts surface the right next action, from rebooking to saving ironing as a default.",
     customerValue: "high",
-    zootCost: "low",
+    xootCost: "low",
     memberProof: "The app feels intelligent without being gimmicky.",
   },
 ];
@@ -189,7 +189,7 @@ export const carePlusMoatBenefits: CarePlusBenefit[] = [
     title: "Home Readiness Score",
     summary: "Encourages members to complete notes, defaults, add-ons and property profiles.",
     customerValue: "medium",
-    zootCost: "low",
+    xootCost: "low",
     memberProof: "Your home profile becomes more complete over time.",
   },
   {
@@ -197,7 +197,7 @@ export const carePlusMoatBenefits: CarePlusBenefit[] = [
     title: "Seasonal Home Reset Perks",
     summary: "Member-only prompts for deep cleans, guest prep and end-of-season resets.",
     customerValue: "high",
-    zootCost: "controlled",
+    xootCost: "controlled",
     memberProof: "Membership stays fresh without cheap-feeling discounts.",
   },
   {
@@ -205,7 +205,7 @@ export const carePlusMoatBenefits: CarePlusBenefit[] = [
     title: "Before/After Photo Proof",
     summary: "Useful for deep cleans, Airbnb turnovers and move-out cleans when proof matters.",
     customerValue: "high",
-    zootCost: "operational",
+    xootCost: "operational",
     memberProof: "Remote owners get more confidence after completion.",
   },
   {
@@ -213,7 +213,7 @@ export const carePlusMoatBenefits: CarePlusBenefit[] = [
     title: "Guest-Ready Mode",
     summary: "Turnover instructions, cleaning history and guest timing for Airbnb hosts and landlords.",
     customerValue: "high",
-    zootCost: "medium",
+    xootCost: "medium",
     memberProof: "Properties stay ready when guests are on the way.",
   },
 ];

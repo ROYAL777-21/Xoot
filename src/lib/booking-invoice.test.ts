@@ -8,7 +8,7 @@ import {
 
 describe("booking invoice helpers", () => {
   it("builds deterministic invoice numbers from booking id and issue date", () => {
-    expect(buildInvoiceNumber("booking-123456789", new Date("2026-06-29T10:00:00.000Z"))).toBe("ZOOT-20260629-BOOKING1");
+    expect(buildInvoiceNumber("booking-123456789", new Date("2026-06-29T10:00:00.000Z"))).toBe("XOOT-20260629-BOOKING1");
   });
 
   it("normalises VAT rates from decimals and percentages", () => {
@@ -33,7 +33,7 @@ describe("booking invoice helpers", () => {
         amount: 345,
         currency: "zar",
         status: "paid",
-        provider: "stitch",
+        provider: "payfast",
         provider_reference: "provider-ref",
       },
       issuedAt: new Date("2026-06-29T10:00:00.000Z"),
@@ -53,7 +53,7 @@ describe("booking invoice helpers", () => {
 
   it("renders a PDF without leaking unsafe markup", () => {
     const bytes = renderBookingInvoicePdf({
-      invoice_number: "ZOOT-20260629-BOOKING",
+      invoice_number: "XOOT-20260629-BOOKING",
       generated_at: "2026-06-29T10:00:00.000Z",
       legal_entity_name: "Xoot <script>",
       currency: "ZAR",
@@ -70,7 +70,7 @@ describe("booking invoice helpers", () => {
     const pdf = new TextDecoder().decode(bytes);
 
     expect(pdf.startsWith("%PDF-1.4")).toBe(true);
-    expect(pdf).toContain("ZOOT-20260629-BOOKING");
+    expect(pdf).toContain("XOOT-20260629-BOOKING");
     expect(pdf).not.toContain("<script>");
   });
 });

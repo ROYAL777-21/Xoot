@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
         meta: {
           plan_id: plan.id,
           membership_name: plan.name,
-          provider_required: "Ozow/Stitch credentials not connected",
+          provider_required: "PayFast credentials not connected",
         },
       }).select("id").single();
       if (paymentError || !payment?.id) throw new Error("payment insert failed");

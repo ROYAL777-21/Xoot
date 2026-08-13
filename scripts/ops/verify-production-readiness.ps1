@@ -95,7 +95,7 @@ Test-RepoFile "ops" "scripts/ops/verify-supabase-live.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/mobile-preview-smoke.ps1" | Out-Null
 Test-RepoFile "ops" "scripts/ops/sql/verify-production-readiness.sql" | Out-Null
 Test-RepoFile "ops" "scripts/ops/staging-role-smoke.mjs" | Out-Null
-Test-RepoFile "ops" "scripts/load/zoot-staging-10k-readiness.js" | Out-Null
+Test-RepoFile "ops" "scripts/load/xoot-staging-10k-readiness.js" | Out-Null
 Test-RepoFile "ops" "supabase/migration-drift-allowlist.json" | Out-Null
 Test-RepoFile "ops" "supabase/functions/admin-mark-outbox/index.ts" | Out-Null
 Test-RepoFile "ops" "docs/STAGING_ROLE_SMOKE_TESTS.md" | Out-Null
@@ -117,8 +117,8 @@ Test-RepoPattern "source-truth" "docs/release/metadata-drift-control.md" "Articl
 Test-RepoPattern "article-drift" "package.json" "seo:validate" "npm script exposes article metadata validator"
 Test-RepoPattern "article-drift" "package.json" "seo:sync-release-dates" "npm script exposes SAST release-date sync"
 Test-RepoPattern "article-drift" "scripts/seo/validate-articles.mjs" "Published queue item" "article validator checks published queue registry alignment"
-Test-RepoPattern "ops" "scripts/load/zoot-staging-10k-readiness.js" "LOAD_TEST_ENV !== `"staging`"" "staging 10k load test requires explicit staging target"
-Test-RepoPattern "ops" "scripts/load/zoot-staging-10k-readiness.js" "ALLOW_PRODUCTION_LOAD_TEST" "staging 10k load test refuses production by default"
+Test-RepoPattern "ops" "scripts/load/xoot-staging-10k-readiness.js" "LOAD_TEST_ENV !== `"staging`"" "staging 10k load test requires explicit staging target"
+Test-RepoPattern "ops" "scripts/load/xoot-staging-10k-readiness.js" "ALLOW_PRODUCTION_LOAD_TEST" "staging 10k load test refuses production by default"
 Test-RepoPattern "ops" "src/pages/admin/Ops.tsx" "outboxRetryRows" "admin ops computes retryable outbox rows"
 Test-RepoPattern "ops" "src/pages/admin/Ops.tsx" "outboxDeadLetters" "admin ops computes dead-letter outbox rows"
 Test-RepoPattern "ops" "src/pages/admin/Ops.tsx" "agentDecisionRows" "admin ops surfaces recent agent decisions"
@@ -132,8 +132,8 @@ Test-RepoFile "ops" "src/lib/notification-personalization.test.ts" | Out-Null
 Test-RepoPattern "ops" "docs/product/notification-personalization-system.md" "Behavior Signals" "notification personalization doc defines behavior signals"
 Test-RepoPattern "ops" "src/lib/notification-personalization.ts" "containsSensitiveNotificationText" "notification personalization strips sensitive preview text"
 Test-RepoPattern "ops" "src/lib/notification-personalization.test.ts" "sensitive access notifications on safe app channels only" "notification personalization regression covers sensitive access"
-Test-RepoPattern "ops" "mobile/src/lib/push-notifications.ts" "zoot-booking-updates" "Expo app defines booking notification channel"
-Test-RepoPattern "ops" "mobile/src/lib/push-notifications.ts" "zoot-zooter-jobs" "Expo app defines Xooter job notification channel"
+Test-RepoPattern "ops" "mobile/src/lib/push-notifications.ts" "xoot-booking-updates" "Expo app defines booking notification channel"
+Test-RepoPattern "ops" "mobile/src/lib/push-notifications.ts" "xoot-xooter-jobs" "Expo app defines Xooter job notification channel"
 
 $hardeningDocs = @(
   "docs/security/platform-hardening-baseline.md",
@@ -201,14 +201,14 @@ Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_a
 Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_and_sensitive_access_notifications.sql" "private\.enqueue_sensitive_access_notifications" "sensitive-access notification enqueue function"
 Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_and_sensitive_access_notifications.sql" "cron\.schedule" "sensitive-access notification scheduler"
 Test-RepoPattern "supabase" "supabase/migrations/20260624121516_policy_performance_hardening.sql" "bookings_participant_read" "optimized participant booking policy"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "get_zooter_job_cards" "safe zooter job-card RPC"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "add column if not exists decline_reason" "accepted-job migration repairs zooter job drift"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "destination_address" "accepted-job destination field"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "zj\.state = 'accepted'" "destination only after accepted job"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "not in \('cancelled', 'completed', 'rated'\)" "destination hidden after terminal booking states"
-Test-RepoPattern "supabase" "supabase/migrations/20260627101500_zooter_job_cards_service_boundary.sql" "get_zooter_job_cards_for_user" "service-role zooter job-card RPC"
-Test-RepoPattern "supabase" "supabase/migrations/20260627101500_zooter_job_cards_service_boundary.sql" "revoke all on function public\.get_zooter_job_cards\(\) from authenticated" "legacy zooter job-card RPC not browser-callable"
-Test-RepoFile "supabase" "supabase/functions/get-zooter-job-cards/index.ts" | Out-Null
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "get_xooter_job_cards" "safe xooter job-card RPC"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "add column if not exists decline_reason" "accepted-job migration repairs xooter job drift"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "destination_address" "accepted-job destination field"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "zj\.state = 'accepted'" "destination only after accepted job"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "not in \('cancelled', 'completed', 'rated'\)" "destination hidden after terminal booking states"
+Test-RepoPattern "supabase" "supabase/migrations/20260627101500_xooter_job_cards_service_boundary.sql" "get_xooter_job_cards_for_user" "service-role xooter job-card RPC"
+Test-RepoPattern "supabase" "supabase/migrations/20260627101500_xooter_job_cards_service_boundary.sql" "revoke all on function public\.get_xooter_job_cards\(\) from authenticated" "legacy xooter job-card RPC not browser-callable"
+Test-RepoFile "supabase" "supabase/functions/get-xooter-job-cards/index.ts" | Out-Null
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "operational_controls" "Phase 1 operational controls table"
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "approval_requests" "Phase 1 approval request model"
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "provider_events" "Phase 1 provider idempotency registry"
@@ -229,9 +229,9 @@ Test-RepoPattern "supabase" "supabase/migrations/20260627104500_drop_duplicate_p
 Test-RepoPattern "supabase" "supabase/migrations/20260627104500_drop_duplicate_production_indexes.sql" "idx_fk_integration_outbox_5366d64d19a03af936eb8e766c10b676" "production duplicate outbox index cleanup"
 Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "support_tickets_select_owner_or_admin" "legacy support ticket RLS convergence"
 Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "user_roles_select_owner_or_admin" "legacy user role RLS convergence"
-Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "zooter_reliability_metrics_select_owner_or_admin" "legacy reliability RLS convergence"
-Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "zooters_select_self_or_admin" "legacy zooter RLS convergence"
-Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "revoke all on table public\.zooters from anon" "zooters base table anon grant removal"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "xooter_reliability_metrics_select_owner_or_admin" "legacy reliability RLS convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "xooters_select_self_or_admin" "legacy xooter RLS convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "revoke all on table public\.xooters from anon" "xooters base table anon grant removal"
 Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "security invoker" "public has_role is self-scoped security invoker"
 Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "admin_review_queue_insert_user_or_admin" "admin review queue permissive policy convergence"
 Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "messages_participants_select" "messages permissive policy convergence"
@@ -248,15 +248,15 @@ Test-RepoPattern "phase-2-chat" "supabase/migrations/20260629113000_booking_chat
 Test-RepoFile "phase-2-chat" "supabase/functions/send-booking-message/index.ts" | Out-Null
 Test-RepoPattern "phase-2-chat" "supabase/functions/send-booking-message/index.ts" "consumeRateLimit" "booking chat send rate limit"
 Test-RepoPattern "phase-2-chat" "supabase/functions/send-booking-message/index.ts" "booking\.chat_send" "booking chat send operational control"
-Test-RepoPattern "phase-2-chat" "supabase/functions/send-booking-message/index.ts" "zoot:e2ee:v1:" "booking chat encrypted envelope required"
+Test-RepoPattern "phase-2-chat" "supabase/functions/send-booking-message/index.ts" "xoot:e2ee:v1:" "booking chat encrypted envelope required"
 Test-RepoFile "phase-2-chat" "supabase/functions/report-booking-message/index.ts" | Out-Null
 Test-RepoPattern "phase-2-chat" "supabase/functions/report-booking-message/index.ts" "booking_chat_report" "booking chat report creates admin review queue item"
 Test-RepoFile "phase-2-chat" "supabase/functions/mark-booking-message-read/index.ts" | Out-Null
 Test-RepoPattern "phase-2-chat" "supabase/config.toml" "\[functions\.send-booking-message\]\s+verify_jwt = true" "send-booking-message requires JWT"
 Test-RepoPattern "phase-2-chat" "supabase/config.toml" "\[functions\.report-booking-message\]\s+verify_jwt = true" "report-booking-message requires JWT"
 Test-RepoPattern "phase-2-chat" "supabase/config.toml" "\[functions\.mark-booking-message-read\]\s+verify_jwt = true" "mark-booking-message-read requires JWT"
-Test-RepoPattern "phase-2-chat" "src/components/zoot/BookingChat.tsx" "send-booking-message" "booking chat sends through Edge Function"
-Test-RepoPattern "phase-2-chat" "src/components/zoot/BookingChat.tsx" "report-booking-message" "booking chat report action"
+Test-RepoPattern "phase-2-chat" "src/components/xoot/BookingChat.tsx" "send-booking-message" "booking chat sends through Edge Function"
+Test-RepoPattern "phase-2-chat" "src/components/xoot/BookingChat.tsx" "report-booking-message" "booking chat report action"
 Test-RepoPattern "phase-2-chat" "src/lib/booking-chat-safety.ts" "off_platform" "booking chat client-side off-platform safety filter"
 Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "send-booking-message" "staging smoke covers booking chat send"
 Test-RepoPattern "phase-2-chat" "scripts/ops/staging-role-smoke.mjs" "mark-booking-message-read" "staging smoke covers booking chat read receipts"
@@ -288,42 +288,42 @@ Test-RepoPattern "phase-4-invoices" "supabase/migrations/20260629194645_complete
 Test-RepoPattern "phase-4-invoices" "supabase/migrations/20260629194645_completed_booking_invoices.sql" "booking_invoices_owner_admin_read" "booking invoice PDF owner/admin storage policy"
 Test-RepoPattern "phase-4-invoices" "supabase/functions/generate-booking-invoice/index.ts" "payment_records" "invoice generation verifies backend payment record"
 Test-RepoPattern "phase-4-invoices" "supabase/functions/generate-booking-invoice/index.ts" "booking_invoice_created" "invoice generation queues Brevo outbox delivery"
-Test-RepoPattern "phase-4-invoices" "supabase/functions/generate-booking-invoice/index.ts" "ZOOT_INVOICE_LEGAL_ENTITY" "invoice generation has legal config gate"
+Test-RepoPattern "phase-4-invoices" "supabase/functions/generate-booking-invoice/index.ts" "XOOT_INVOICE_LEGAL_ENTITY" "invoice generation has legal config gate"
 Test-RepoPattern "phase-4-invoices" "supabase/functions/resend-booking-invoice/index.ts" "booking_invoice_resend" "invoice resend queues original PDF outbox delivery"
 Test-RepoPattern "phase-4-invoices" "supabase/config.toml" "\[functions\.generate-booking-invoice\]\s+verify_jwt = true" "generate-booking-invoice requires JWT"
 Test-RepoPattern "phase-4-invoices" "supabase/config.toml" "\[functions\.resend-booking-invoice\]\s+verify_jwt = true" "resend-booking-invoice requires JWT"
-Test-RepoPattern "phase-4-invoices" "supabase/functions/.env.example" "ZOOT_INVOICE_LEGAL_ENTITY" "invoice legal env template"
+Test-RepoPattern "phase-4-invoices" "supabase/functions/.env.example" "XOOT_INVOICE_LEGAL_ENTITY" "invoice legal env template"
 Test-RepoPattern "phase-4-invoices" "docs/EMAIL_TEMPLATES.md" "booking_invoice_resend" "email playbook covers invoice resend"
-Test-RepoFile "phase-5-concierge" "docs/implementation/phase-5-zoot-concierge.md" | Out-Null
+Test-RepoFile "phase-5-concierge" "docs/implementation/phase-5-xoot-concierge.md" | Out-Null
 Test-RepoFile "phase-5-concierge" "supabase/functions/report-concierge-answer/index.ts" | Out-Null
-Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "zoot_concierge_knowledge_versions" "Concierge knowledge versions table"
-Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "zoot_concierge_feedback" "Concierge feedback table"
-Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "support\.turnstile_required" "Concierge Turnstile operational gate"
-Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "refund_payment" "Concierge prohibited payment actions"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_xoot_concierge.sql" "xoot_concierge_knowledge_versions" "Concierge knowledge versions table"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_xoot_concierge.sql" "xoot_concierge_feedback" "Concierge feedback table"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_xoot_concierge.sql" "support\.turnstile_required" "Concierge Turnstile operational gate"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_xoot_concierge.sql" "refund_payment" "Concierge prohibited payment actions"
 Test-RepoPattern "phase-5-concierge" "supabase/functions/_shared/turnstile.ts" "siteverify" "Cloudflare Turnstile server verification"
 Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "verifyTurnstile" "Concierge Turnstile verification boundary"
 Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "store: false" "Concierge OpenAI no-store setting"
 Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "fetchWithTimeout" "Concierge OpenAI timeout fallback"
 Test-RepoPattern "phase-5-concierge" "supabase/config.toml" "\[functions\.report-concierge-answer\]\s+verify_jwt = false" "report-concierge-answer allows guest reports"
-Test-RepoPattern "phase-5-concierge" "src/components/zoot/XootSupportBot.tsx" "report-concierge-answer" "Concierge UI reports answers through Edge Function"
-Test-RepoFile "phase-6-zoot-black" "docs/implementation/phase-6-zoot-black.md" | Out-Null
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black.enabled" "Xoot Black feature flag exists"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_area_pilots" "Xoot Black selected-area pilot gates"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_equipment_evidence" "Xoot Black private equipment evidence"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_status_history" "Xoot Black status history"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "booking_service_line_items" "explicit booking line items"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_completion_certificates" "Xoot Black completion certificates"
-Test-RepoPattern "phase-6-zoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "no_external_certification_claims" "Xoot Black avoids unsupported certification claims"
-Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "canOfferXootBlack" "Xoot Black shared eligibility gate"
-Test-RepoPattern "phase-6-zoot-black" "src/lib/operations.ts" "buildXootBlackLineItem" "Xoot Black explicit line item helper"
+Test-RepoPattern "phase-5-concierge" "src/components/xoot/XootSupportBot.tsx" "report-concierge-answer" "Concierge UI reports answers through Edge Function"
+Test-RepoFile "phase-6-xoot-black" "docs/implementation/phase-6-xoot-black.md" | Out-Null
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black.enabled" "Xoot Black feature flag exists"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black_area_pilots" "Xoot Black selected-area pilot gates"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black_equipment_evidence" "Xoot Black private equipment evidence"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black_status_history" "Xoot Black status history"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "booking_service_line_items" "explicit booking line items"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black_completion_certificates" "Xoot Black completion certificates"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "no_external_certification_claims" "Xoot Black avoids unsupported certification claims"
+Test-RepoPattern "phase-6-xoot-black" "src/lib/operations.ts" "canOfferXootBlack" "Xoot Black shared eligibility gate"
+Test-RepoPattern "phase-6-xoot-black" "src/lib/operations.ts" "buildXootBlackLineItem" "Xoot Black explicit line item helper"
 Test-RepoFile "phase-7-payments" "docs/implementation/phase-7-payments-payouts.md" | Out-Null
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payment_provider_capabilities" "payment provider capability table"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payment_reconciliation_checks" "payment reconciliation audit table"
-Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "zooter_payout_accounts" "verified payout account table"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "xooter_payout_accounts" "verified payout account table"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payout_change_requests" "payout account change workflow"
-Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "zooter_payout_holds" "payout hold ledger"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "xooter_payout_holds" "payout hold ledger"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "can_activate_payment_provider" "payment provider activation helper"
-Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "can_release_zooter_payout" "payout release readiness helper"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "can_release_xooter_payout" "payout release readiness helper"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payments\.hosted_checkout\.stitch" "Stitch hosted checkout provider gate"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payments\.hosted_checkout\.ozow" "Ozow hosted checkout provider gate"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payouts\.enabled" "payout release provider gate"
@@ -352,7 +352,7 @@ Test-RepoPattern "phase-9-twilio" "supabase/migrations/20260630102715_phase9_twi
 Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "consumeRateLimit" "create-masked-call rate limit"
 Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "can_create_masked_call" "create-masked-call uses DB eligibility helper"
 Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "twilio\.masked_voice" "create-masked-call requires masked voice provider gate"
-Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "if \(providerAllowed && clientPhone && zooterPhone\)" "create-masked-call does not call provider unless gate and phones pass"
+Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "if \(providerAllowed && clientPhone && xooterPhone\)" "create-masked-call does not call provider unless gate and phones pass"
 Test-RepoPattern "phase-9-twilio" "supabase/functions/create-masked-call/index.ts" "recording_enabled: false" "create-masked-call records no-recording provider status"
 Test-RepoPattern "phase-9-twilio" "supabase/functions/ops-workflow/index.ts" "can_create_masked_call" "ops masked-call branch uses DB eligibility helper"
 Test-RepoPattern "phase-9-twilio" "supabase/functions/ops-workflow/index.ts" "twilio\.masked_voice" "ops masked-call branch records provider gate status"
@@ -367,10 +367,10 @@ Test-RepoPattern "phase-10-assistant" "mobile/plugins/withXootAssistantIntents.c
 Test-RepoPattern "phase-10-assistant" "mobile/plugins/withXootAssistantIntents.cjs" "withXcodeProject" "assistant plugin updates generated Xcode project"
 Test-RepoPattern "phase-10-assistant" "native/ios/XootLiveActivities/XootAppIntents.swift" "XootAssistantDeepLinkSafety" "iOS assistant handoff sanitizes area text"
 Test-RepoPattern "phase-10-assistant" "native/ios/XootLiveActivities/XootAppIntents.swift" "Confirm your address, time and payment inside the app" "iOS assistant requires in-app confirmation"
-Test-RepoPattern "phase-10-assistant" "native/android/res/xml/shortcuts.xml" "zoot://book\?intent=book_clean" "Android shortcut opens native booking route"
-Test-RepoPattern "phase-10-assistant" "native/android/res/xml/shortcuts.xml" "zoot://zooter/jobs\?intent=zooter_jobs" "Android shortcut opens native Xooter jobs route"
+Test-RepoPattern "phase-10-assistant" "native/android/res/xml/shortcuts.xml" "xoot://book\?intent=book_clean" "Android shortcut opens native booking route"
+Test-RepoPattern "phase-10-assistant" "native/android/res/xml/shortcuts.xml" "xoot://xooter/jobs\?intent=xooter_jobs" "Android shortcut opens native Xooter jobs route"
 Test-RepoFile "phase-10-assistant" "mobile/src/app/bookings.tsx" | Out-Null
-Test-RepoFile "phase-10-assistant" "mobile/src/app/zooter/jobs.tsx" | Out-Null
+Test-RepoFile "phase-10-assistant" "mobile/src/app/xooter/jobs.tsx" | Out-Null
 Test-RepoPattern "phase-10-assistant" "src/lib/phase10-assistant-intents-readiness.test.ts" "Phase 10 Siri and Android assistant readiness" "Phase 10 static regression tests"
 
 $redirects = @(
@@ -379,7 +379,7 @@ $redirects = @(
   "https://staging.xoot.co.za/auth/callback",
   "https://xoot.co.za/auth/callback",
   "https://www.xoot.co.za/auth/callback",
-  "zoot://auth/callback"
+  "xoot://auth/callback"
 )
 foreach ($redirect in $redirects) {
   Test-RepoPattern "supabase-auth" "supabase/config.toml" ([regex]::Escape($redirect)) "local config redirect: $redirect"
@@ -428,7 +428,7 @@ Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "SUPABASE_
 Test-RepoPattern "supabase" "scripts/ops/setup-local-provider-auth.ps1" "supabase@2\.108\.0" "local Supabase auth setup uses pinned npx CLI"
 Test-RepoPattern "supabase" "scripts/ops/deploy-production-backend.ps1" "production" "production deploy wrapper exists"
 Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "VerifyLive" "shared deploy supports live verification"
-Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "ZOOT_PRODUCTION_SUPABASE_DB_URL" "shared deploy supports production DB URL"
+Test-RepoPattern "supabase" "scripts/ops/deploy-supabase-backend.ps1" "XOOT_PRODUCTION_SUPABASE_DB_URL" "shared deploy supports production DB URL"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "knownSchemaEquivalentVersions" "migration repair helper allowlists proven schema-equivalent versions"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "blockedPartialOrSplitVersions" "migration repair helper blocks partial or split migrations"
 Test-RepoPattern "supabase" "scripts/ops/repair-supabase-migration-history.ps1" "schemaEquivalentSafeToRepair" "migration repair helper derives safe versions from drift manifest"
@@ -442,13 +442,13 @@ Test-RepoPattern "supabase" "package.json" "ops:supabase:repair-migrations" "npm
 Test-RepoPattern "supabase" "package.json" "ops:supabase:drift-check" "npm script exposes metadata drift checker"
 Test-RepoPattern "supabase" "scripts/ops/verify-supabase-live.ps1" "SUPABASE_DB_URL" "live Supabase verifier requires database URL"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "booking_status_valid" "live SQL checks booking status constraint"
-Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "get_zooter_job_cards" "live SQL checks zooter card RPC"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "get_xooter_job_cards" "live SQL checks xooter card RPC"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "sensitive_access_available_notified_at" "live SQL checks sensitive-access notification column"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "private\.enqueue_sensitive_access_notifications" "live SQL checks sensitive-access notification function"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "integration outbox allows expo push channel" "live SQL checks Expo push outbox channel"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no duplicate public indexes" "live SQL checks duplicate indexes"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "legacy targeted RLS policies converged" "live SQL checks targeted legacy RLS convergence"
-Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "zooters base table not readable by anon" "live SQL checks zooters base table anon grant"
+Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "xooters base table not readable by anon" "live SQL checks xooters base table anon grant"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no missing public foreign-key covering indexes" "live SQL checks unindexed foreign keys"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "performance advisor RLS policy cleanup converged" "live SQL checks performance advisor RLS cleanup"
 Test-RepoPattern "supabase" "scripts/ops/sql/verify-production-readiness.sql" "no raw auth uid in public policies" "live SQL checks legacy auth-initplan cleanup"
@@ -515,7 +515,7 @@ Add-ManualBlocker "mapbox-live" "restricted Mapbox tokens" "Requires least-privi
 Add-ManualBlocker "cloudflare-live" "Cloudflare Xoot zone" "Requires a Cloudflare zone and token with the required zone-management permissions."
 Add-ManualBlocker "domain-live" "production domain registration" "Requires a registered final domain before Cloudflare zone, DNS, TLS, OAuth origins, sender-domain DNS, app links, support/legal URLs, and store URLs can be completed."
 Add-ManualBlocker "stores-live" "Apple/Google/EAS release credentials" "Requires developer-console records, signing credentials, privacy declarations, and legal review."
-Add-ManualBlocker "phase-6-zoot-black" "Xoot Black live activation approvals" "Requires founder, operations, supplier, and legal approval plus staging/prod migration deployment before enabling zoot_black.* controls or exposing any customer flow."
+Add-ManualBlocker "phase-6-xoot-black" "Xoot Black live activation approvals" "Requires founder, operations, supplier, and legal approval plus staging/prod migration deployment before enabling xoot_black.* controls or exposing any customer flow."
 Add-ManualBlocker "phase-7-payments" "Phase 7 payment and payout activation approvals" "Requires Stitch/Ozow credentials, callback dashboard configuration, signed webhook smoke tests, finance/legal approvals, payout account verification workflow, payout hold policy, and staging/prod migration deployment before enabling payment or payout controls."
 Add-ManualBlocker "phase-8-native-launch" "Phase 8 development-build device verification" "Requires EAS development builds and real iOS/Android device tests for normal launch, reduced-motion static launch, urgent route bypass, and safe assistant deep links."
 Add-ManualBlocker "phase-9-twilio" "Phase 9 Twilio live activation approvals" "Requires upgraded Twilio account or approved subaccount strategy, South African number, transactional Messaging Service, approved WhatsApp sender/templates, Verify Fraud Guard and geo permissions, callback assignment, rotated secrets, and signed staging smoke tests before enabling twilio.* controls."

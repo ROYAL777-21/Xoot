@@ -50,7 +50,7 @@ export type NativePushRegistrationResult = NativePushCapability & {
   error?: string;
 };
 
-const DEVICE_ID_KEY = "zoot.native.device_id";
+const DEVICE_ID_KEY = "xoot.native.device_id";
 const permissionStatuses = new Set<NativePushPermissionStatus>(["prompt", "prompt-with-rationale", "granted", "denied", "unknown"]);
 const tokenTypes = new Set<NativePushTokenType>(["capacitor", "expo_push", "web_push", "unknown"]);
 
@@ -76,7 +76,7 @@ const randomDeviceId = () => {
   const bytes = new Uint8Array(16);
   globalThis.crypto?.getRandomValues?.(bytes);
   const suffix = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
-  return `zoot-device-${suffix || Date.now().toString(36)}`;
+  return `xoot-device-${suffix || Date.now().toString(36)}`;
 };
 
 export const getOrCreateNativeDeviceId = () => {

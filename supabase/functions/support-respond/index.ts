@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
 import { getConciergeCapabilities } from "../_shared/concierge-controls.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
-import { getXootKnowledgeReply, redactSupportText, sanitiseSupportText, zootKnowledgeContext, zootKnowledgeVersion } from "../_shared/zoot-knowledge.ts";
+import { getXootKnowledgeReply, redactSupportText, sanitiseSupportText, xootKnowledgeContext, xootKnowledgeVersion } from "../_shared/xoot-knowledge.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -50,11 +50,11 @@ const sanitiseUuid = (value: unknown) =>
     ? value
     : "";
 
-type UserRole = "user" | "zooter";
+type UserRole = "user" | "xooter";
 
 type AssistantResult = {
   response: string;
-  source: "knowledge_base" | "openai_responses" | "human_escalation";
+  source: "knowledge_base" | "openrouter" | "openai_responses" | "human_escalation";
   requestId?: string | null;
   knowledge_id?: string;
   knowledge_version?: string;
@@ -122,6 +122,127 @@ const extractOpenAiText = (payload: any) => {
   return "";
 };
 
+/**
+ * The system prompt, in one place, because two providers now read it.
+ *
+ * Most of these lines are safety rules, not tone: never claim a refund or replacement is
+ * approved, never ask for an OTP or a gate code, never promise an action the bot cannot take.
+ * Two copies of that would drift, and the copy that drifts is the one nobody is looking at —
+ * which is the same argument that put the pricing rule in one module.
+ *
+ * Kept as an array so a rule reads as a rule rather than as a sentence buried in a paragraph.
+ */
+const CONCIERGE_INSTRUCTIONS = [
+  "You are Xoot Assistant, the in-app support concierge for Xoot home-care bookings in South Africa.",
+  "You can answer practical Xoot questions about booking cleaners, launch areas, Care+, XootCred, property profiles, office cleaning, Airbnb turnovers, onboarding, training, support routing, and how to prepare for a clean.",
+  "Guests may receive general guidance only. You have no account, booking, payment, address, ticket, or private user context unless the request is authenticated.",
+  "Give short, calm, practical help in 2-4 sentences with one clear next step.",
+  "Write in a human, warm, premium service tone; never sound like a generic AI policy bot.",
+  "Prefer app-safe guidance: tell people to use the authenticated app for bookings, ticket details, private property notes, and support follow-up.",
+  "If the user asks about their own booking, payment, refund, address, cleaner, support ticket, or private history while unauthenticated, say you can explain the general process but they must sign in for protected account help.",
+  "Never claim a refund, payment, insurance, safety, or contractor replacement is approved.",
+  "Never ask for passwords, OTPs, full card numbers, gate codes, access codes, lockbox codes, or private keys.",
+  "Do not perform or promise tools, actions, refunds, cancellations, bookings, claims, payouts, account changes, admin decisions or sensitive-data reveals.",
+  "For anything risky, tell the user a human support reviewer will handle it in the app.",
+  "Use this Xoot source-of-truth context and do not invent facts beyond it:",
+  xootKnowledgeContext,
+].join(" ");
+
+/**
+ * The user turn. Redacted on the way in, for whichever provider gets it.
+ *
+ * `redactSupportText` is applied here rather than at each call site so a new provider cannot be
+ * added with the redaction accidentally left off — the thing that would send a customer's pasted
+ * gate code to a third party.
+ */
+const buildConciergeUserTurn = ({
+  subject,
+  body,
+  role,
+  signedIn,
+}: {
+  subject: string;
+  body: string;
+  role: UserRole;
+  signedIn: boolean;
+}) =>
+  [
+    `Knowledge version: ${xootKnowledgeVersion}`,
+    `Role: ${role}`,
+    `Authenticated: ${signedIn ? "yes" : "no"}`,
+    `Subject: ${redactSupportText(subject)}`,
+    `Message: ${redactSupportText(body)}`,
+  ].join("\n");
+
+/**
+ * OpenRouter — the primary path since 2026-08-13.
+ *
+ * ⚠️ **This is chat-completions, not OpenAI's Responses API.** The two are easy to conflate while
+ * editing the file, and they differ in both directions: `messages` rather than `instructions` +
+ * `input`, `max_tokens` rather than `max_output_tokens`, and the answer at
+ * `choices[0].message.content` rather than under `output`. `concierge-provider.test.ts` asserts
+ * the shape so a half-applied edit fails loudly instead of returning null on every request and
+ * quietly degrading to canned answers.
+ *
+ * The model comes from `CONCIERGE_MODEL`. An unset or stale id is safe: OpenRouter answers with a
+ * non-OK status, this returns null, and the caller falls through to OpenAI and then to the
+ * knowledge base. That is what makes shipping a default id reasonable without being able to
+ * verify it from here.
+ */
+const buildOpenRouterSupportResponse = async (input: {
+  subject: string;
+  body: string;
+  role: UserRole;
+  signedIn: boolean;
+}): Promise<AssistantResult | null> => {
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY");
+  if (!apiKey) return null;
+
+  const model = Deno.env.get("CONCIERGE_MODEL") ?? "openai/gpt-4o-mini";
+  const clientRequestId = crypto.randomUUID();
+  let response: Response;
+  try {
+    response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        // OpenRouter's attribution headers. Not auth — they identify the calling app in
+        // OpenRouter's own dashboards, which is how spend gets attributed to this product.
+        "HTTP-Referer": "https://xoot.co.za",
+        "X-Title": "Xoot Concierge",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 260,
+        messages: [
+          { role: "system", content: CONCIERGE_INSTRUCTIONS },
+          { role: "user", content: buildConciergeUserTurn(input) },
+        ],
+      }),
+    });
+  } catch {
+    console.warn("OpenRouter support response timed out or failed before response", { requestId: clientRequestId });
+    return null;
+  }
+
+  // OpenRouter echoes an id header; fall back to ours so a reported answer is always traceable.
+  const requestId = response.headers.get("x-request-id") ?? clientRequestId;
+  if (!response.ok) {
+    // Status and id only. The key must never reach a log line, and neither must the customer's
+    // message — this function handles text a customer may have pasted a gate code into.
+    console.warn("OpenRouter support response failed", { status: response.status, model, requestId });
+    return null;
+  }
+
+  const payload = await response.json().catch(() => null);
+  const text = payload?.choices?.[0]?.message?.content;
+  const answer = typeof text === "string" ? text.trim().slice(0, 900) : "";
+  if (!answer) return null;
+
+  return { response: answer, source: "openrouter", requestId };
+};
+
 const buildOpenAiSupportResponse = async ({
   subject,
   body,
@@ -152,36 +273,11 @@ const buildOpenAiSupportResponse = async ({
         store: false,
         max_output_tokens: 260,
         text: { format: { type: "text" } },
-        instructions: [
-          "You are Xoot Assistant, the in-app support concierge for Xoot home-care bookings in South Africa.",
-          "You can answer practical Xoot questions about booking cleaners, launch areas, Care+, XootCred, property profiles, office cleaning, Airbnb turnovers, onboarding, training, support routing, and how to prepare for a clean.",
-          "Guests may receive general guidance only. You have no account, booking, payment, address, ticket, or private user context unless the request is authenticated.",
-          "Give short, calm, practical help in 2-4 sentences with one clear next step.",
-          "Write in a human, warm, premium service tone; never sound like a generic AI policy bot.",
-          "Prefer app-safe guidance: tell people to use the authenticated app for bookings, ticket details, private property notes, and support follow-up.",
-          "If the user asks about their own booking, payment, refund, address, cleaner, support ticket, or private history while unauthenticated, say you can explain the general process but they must sign in for protected account help.",
-          "Never claim a refund, payment, insurance, safety, or contractor replacement is approved.",
-          "Never ask for passwords, OTPs, full card numbers, gate codes, access codes, lockbox codes, or private keys.",
-          "Do not perform or promise tools, actions, refunds, cancellations, bookings, claims, payouts, account changes, admin decisions or sensitive-data reveals.",
-          "For anything risky, tell the user a human support reviewer will handle it in the app.",
-          "Use this Xoot source-of-truth context and do not invent facts beyond it:",
-          zootKnowledgeContext,
-        ].join(" "),
+        instructions: CONCIERGE_INSTRUCTIONS,
         input: [
           {
             role: "user",
-            content: [
-              {
-                type: "input_text",
-                text: [
-                  `Knowledge version: ${zootKnowledgeVersion}`,
-                  `Role: ${role}`,
-                  `Authenticated: ${signedIn ? "yes" : "no"}`,
-                  `Subject: ${redactSupportText(subject)}`,
-                  `Message: ${redactSupportText(body)}`,
-                ].join("\n"),
-              },
-            ],
+            content: [{ type: "input_text", text: buildConciergeUserTurn({ subject, body, role, signedIn }) }],
           },
         ],
       }),
@@ -270,7 +366,7 @@ Deno.serve(async (req) => {
     const turnstileRequired =
       !signedIn &&
       (
-        Deno.env.get("ZOOT_REQUIRE_CONCIERGE_TURNSTILE") === "true" ||
+        Deno.env.get("XOOT_REQUIRE_CONCIERGE_TURNSTILE") === "true" ||
         (adminClient
           ? await isOperationalControlEnabled(adminClient, "support.turnstile_required").catch((error) => {
               console.warn("support Turnstile gate lookup failed", { error: error instanceof Error ? error.message : String(error) });
@@ -292,7 +388,7 @@ Deno.serve(async (req) => {
           source: "human_escalation",
           turnstile_required: turnstile.required,
           turnstile_configured: turnstile.configured,
-          knowledge_version: zootKnowledgeVersion,
+          knowledge_version: xootKnowledgeVersion,
         },
         turnstile.configured ? 403 : 503,
         origin,
@@ -325,14 +421,14 @@ Deno.serve(async (req) => {
             : "Xoot Concierge is switched off right now. Please sign in and open Support, and a human reviewer will help.",
           escalated: true,
           source: "human_escalation",
-          knowledge_version: zootKnowledgeVersion,
+          knowledge_version: xootKnowledgeVersion,
         },
         200,
         origin,
       );
     }
 
-    const userRole: UserRole = requestBody.role === "zooter" ? "zooter" : "user";
+    const userRole: UserRole = requestBody.role === "xooter" ? "xooter" : "user";
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
     // `safe_static_fallback` governs the approved-knowledge answer. It is `true` live, so this
@@ -355,10 +451,30 @@ Deno.serve(async (req) => {
           return false;
         })
       : false;
-    const openAiAllowed = supportOpenAiAllowed && concierge.modelAnswers;
-    const openAiAssistant = escalated
+    /*
+     * The gate is "may a model answer at all", not "may OpenAI answer".
+     *
+     * `support.openai_fallback` is named for the only provider that existed when it was written;
+     * it governs both, and the kill switch must not stop working because a second provider was
+     * added behind it. Renaming the control key would mean a migration and a window where the
+     * switch silently does nothing, which is worse than a stale name.
+     */
+    const modelAnswersAllowed = supportOpenAiAllowed && concierge.modelAnswers;
+    const modelInput = { subject: safeSubject, body: safeBody, role: userRole, signedIn };
+    /*
+     * OpenRouter first, OpenAI second (founder decision 2026-08-13).
+     *
+     * `??` rather than a try/catch chain because each builder already returns null on a missing
+     * key, a timeout, a non-OK status or an empty answer — so "OpenRouter could not answer" and
+     * "OpenRouter is not configured" collapse to the same fall-through, which is the behaviour
+     * wanted in both cases. If neither answers, `assistant` below falls to the knowledge base.
+     */
+    const modelAssistant = escalated
       ? null
-      : knowledgeAssistant ?? (openAiAllowed ? await buildOpenAiSupportResponse({ subject: safeSubject, body: safeBody, role: userRole, signedIn }) : null);
+      : knowledgeAssistant ??
+        (modelAnswersAllowed
+          ? (await buildOpenRouterSupportResponse(modelInput)) ?? (await buildOpenAiSupportResponse(modelInput))
+          : null);
     const assistant: AssistantResult = escalated
       ? {
           response: signedIn
@@ -367,12 +483,12 @@ Deno.serve(async (req) => {
           source: "human_escalation" as const,
           requestId: null,
         }
-      : openAiAssistant ?? {
+      : modelAssistant ?? {
           response: "Xoot Support could not answer this automatically right now. A human support reviewer can handle it in the app without making unsupported claims.",
           source: "human_escalation" as const,
           requestId: null,
         };
-    const needsHumanReview = escalated || !openAiAssistant;
+    const needsHumanReview = escalated || !modelAssistant;
 
     if (safeTicketId && authData.user && assistant.response) {
       if (adminClient) {
@@ -393,7 +509,7 @@ Deno.serve(async (req) => {
         escalated: needsHumanReview,
         source: assistant.source,
         openai_request_id: assistant.requestId,
-        knowledge_version: assistant.knowledge_version ?? zootKnowledgeVersion,
+        knowledge_version: assistant.knowledge_version ?? xootKnowledgeVersion,
         knowledge_id: assistant.knowledge_id ?? null,
         answer_type: assistant.answer_type ?? (needsHumanReview ? "support_escalation" : "model_guidance"),
         confidence: assistant.confidence ?? null,

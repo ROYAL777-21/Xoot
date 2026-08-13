@@ -76,15 +76,15 @@ export type LedgerEntry = {
 export type XootBlackEligibilityInput = {
   featureEnabled: boolean;
   explicitOptIn: boolean;
-  zooterTier?: string | null;
-  zooterVerified: boolean;
+  xooterTier?: string | null;
+  xooterVerified: boolean;
   equipmentEvidenceApproved: boolean;
   areaPilotApproved: boolean;
   legalApproved: boolean;
 };
 
 export type XootBlackLineItem = {
-  item_key: "zoot_black_service";
+  item_key: "xoot_black_service";
   label: "Xoot Black service";
   quantity: 1;
   unit_amount: number;
@@ -92,7 +92,7 @@ export type XootBlackLineItem = {
   currency: "ZAR";
 };
 
-export type PaymentProvider = "stitch" | "ozow";
+export type PaymentProvider = "payfast";
 
 export type PaymentProviderReadinessInput = {
   provider: PaymentProvider;
@@ -274,7 +274,7 @@ export const routeNotificationChannel = (event: string): IntegrationChannel[] =>
     "support_opened",
     "onboarding_progress",
     "rebooking_prompt",
-    "zootcred_update",
+    "xootcred_update",
     "badge_unlocked",
   ]);
 
@@ -411,18 +411,18 @@ export const getSensitiveAccessAvailability = ({
 export const canOfferXootBlack = ({
   featureEnabled,
   explicitOptIn,
-  zooterTier,
-  zooterVerified,
+  xooterTier,
+  xooterVerified,
   equipmentEvidenceApproved,
   areaPilotApproved,
   legalApproved,
 }: XootBlackEligibilityInput) => {
-  const eliteTier = ["elite", "elite_verified", "black"].includes((zooterTier ?? "").toLowerCase());
+  const eliteTier = ["elite", "elite_verified", "black"].includes((xooterTier ?? "").toLowerCase());
   return Boolean(
     featureEnabled
       && explicitOptIn
       && eliteTier
-      && zooterVerified
+      && xooterVerified
       && equipmentEvidenceApproved
       && areaPilotApproved
       && legalApproved,
@@ -434,7 +434,7 @@ export const buildXootBlackLineItem = (amount: number): XootBlackLineItem | null
 
   const roundedAmount = Math.round(amount * 100) / 100;
   return {
-    item_key: "zoot_black_service",
+    item_key: "xoot_black_service",
     label: "Xoot Black service",
     quantity: 1,
     unit_amount: roundedAmount,
@@ -476,7 +476,7 @@ export const buildPaymentReconciliationReference = ({
   const bookingPart = clean(bookingId);
   const paymentPart = clean(paymentId);
   if (bookingPart.length < 6 || paymentPart.length < 6) return null;
-  return `ZOOT-${provider.toUpperCase()}-${bookingPart}-${paymentPart}`;
+  return `XOOT-${provider.toUpperCase()}-${bookingPart}-${paymentPart}`;
 };
 
 export const canReleaseXooterPayout = ({

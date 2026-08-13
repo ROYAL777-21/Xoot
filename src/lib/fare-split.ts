@@ -3,7 +3,7 @@
  *
  * ── What this does and does not do ──────────────────────────────────────────────
  * It decides and records **who owes what**. It does not move money, because nothing in Xoot moves
- * money yet: `create-booking` writes `provider_required: "Ozow/Stitch credentials not connected"`
+ * money yet: `create-booking` writes `provider_required: "PayFast credentials not connected"`
  * and every `payment_records` row goes `pending → admin_confirmed → paid` by hand. Each share
  * becomes its own payment row so it is independently collectable the moment a provider is
  * connected, and the UI says so rather than implying a payment happened.

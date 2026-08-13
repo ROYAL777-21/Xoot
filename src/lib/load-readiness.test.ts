@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const repoRoot = process.cwd();
 
 describe("staging load-readiness harness", () => {
-  const script = readFileSync(join(repoRoot, "scripts/load/zoot-staging-10k-readiness.js"), "utf8");
+  const script = readFileSync(join(repoRoot, "scripts/load/xoot-staging-10k-readiness.js"), "utf8");
   const packageJson = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as {
     scripts: Record<string, string>;
   };
@@ -38,7 +38,7 @@ describe("staging load-readiness harness", () => {
 
   it("is exposed through an npm script", () => {
     expect(packageJson.scripts["load:test:10k:staging"]).toBe(
-      "k6 run scripts/load/zoot-staging-10k-readiness.js",
+      "k6 run scripts/load/xoot-staging-10k-readiness.js",
     );
   });
 });

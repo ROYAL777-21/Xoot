@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { XooterCard, Xooter } from "@/components/zoot/XooterCard";
+import { XooterCard, Xooter } from "@/components/xoot/XooterCard";
 import { Heart, Loader2, Repeat, Star, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { sortXootersForMarketplace, xooterDistanceKm } from "@/lib/trust";
  * `favorite_type` and `repeat_count` are the live column names. This page previously
  * queried `favorite_kind`, `repeat_bookings_count` and `last_booked_at`, which come from
  * `20260508225000_trust_safety_retention.sql` — a migration that was never applied. Only
- * `zooter_id` of the four columns existed, so PostgREST rejected every select and this
+ * `xooter_id` of the four columns existed, so PostgREST rejected every select and this
  * page showed "No favorites yet" to everyone, including users who had saved Xooters.
  *
  * The failure was invisible because `load()` destructured `data` and dropped `error`.
@@ -26,10 +26,10 @@ import { sortXootersForMarketplace, xooterDistanceKm } from "@/lib/trust";
 type FavoriteType = "favorite" | "preferred_team" | "recurring_favorite";
 
 type FavoriteRow = {
-  zooter_id: string;
+  xooter_id: string;
   favorite_type?: FavoriteType;
   repeat_count?: number;
-  zooters: Xooter | null;
+  xooters: Xooter | null;
 };
 
 const Favorites = () => {
@@ -43,7 +43,7 @@ const Favorites = () => {
     if (!user) return;
     const { data, error } = await supabase
       .from("favorites")
-      .select("zooter_id, favorite_type, repeat_count")
+      .select("xooter_id, favorite_type, repeat_count")
       .eq("user_id", user.id);
 
     if (error) {
@@ -54,37 +54,37 @@ const Favorites = () => {
       return;
     }
 
-    const favorites = (data ?? []) as Array<Omit<FavoriteRow, "zooters">>;
-    const zooterIds = favorites.map((row) => row.zooter_id).filter(Boolean);
-    const { data: zooters } = zooterIds.length
-      ? await supabase.from("zooters_public").select("*").in("id", zooterIds)
+    const favorites = (data ?? []) as Array<Omit<FavoriteRow, "xooters">>;
+    const xooterIds = favorites.map((row) => row.xooter_id).filter(Boolean);
+    const { data: xooters } = xooterIds.length
+      ? await supabase.from("xooters_public").select("*").in("id", xooterIds)
       : { data: [] };
-    const zootersById = new Map(((zooters ?? []) as Xooter[]).map((zooter) => [zooter.id, zooter]));
+    const xootersById = new Map(((xooters ?? []) as Xooter[]).map((xooter) => [xooter.id, xooter]));
 
     setList(
       favorites
-        .map((row) => ({ ...row, zooters: zootersById.get(row.zooter_id) ?? null }))
-        .filter((row) => row.zooters) as FavoriteRow[],
+        .map((row) => ({ ...row, xooters: xootersById.get(row.xooter_id) ?? null }))
+        .filter((row) => row.xooters) as FavoriteRow[],
     );
     setLoading(false);
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
 
-  const markKind = async (zooterId: string, favoriteType: FavoriteType) => {
+  const markKind = async (xooterId: string, favoriteType: FavoriteType) => {
     if (!user) return;
     const { error } = await supabase
       .from("favorites")
       .update({ favorite_type: favoriteType })
       .eq("user_id", user.id)
-      .eq("zooter_id", zooterId);
+      .eq("xooter_id", xooterId);
     if (error) return toast.error(error.message);
     toast.success(favoriteType === "preferred_team" ? "Added to your preferred team" : "Marked as recurring favourite");
     load();
   };
 
-  const bookAgain = (zooter: Xooter) => {
-    navigate(`/app?zooter=${zooter.id}`);
+  const bookAgain = (xooter: Xooter) => {
+    navigate(`/app?xooter=${xooter.id}`);
   };
 
   /*
@@ -99,16 +99,16 @@ const Favorites = () => {
    * which is the same fallback every other proximity surface uses.
    */
   const ordered = useMemo(() => {
-    const byId = new Map(list.map((row) => [row.zooters!.id, row]));
+    const byId = new Map(list.map((row) => [row.xooters!.id, row]));
     return sortXootersForMarketplace(
-      list.map((row) => row.zooters!),
+      list.map((row) => row.xooters!),
       proximity,
-    ).map((zooter) => byId.get(zooter.id)!);
+    ).map((xooter) => byId.get(xooter.id)!);
   }, [list, proximity]);
 
   const preferredCount = list.filter((row) => row.favorite_type === "preferred_team").length;
   const recurringCount = list.filter((row) => row.favorite_type === "recurring_favorite").length;
-  const repeatCount = list.reduce((sum, row) => sum + (row.repeat_count ?? row.zooters?.repeat_client_count ?? 0), 0);
+  const repeatCount = list.reduce((sum, row) => sum + (row.repeat_count ?? row.xooters?.repeat_client_count ?? 0), 0);
 
   return (
     <div className="container py-8 lg:py-12 max-w-7xl">
@@ -148,7 +148,7 @@ const Favorites = () => {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {ordered.map((row) => {
-            const z = row.zooters!;
+            const z = row.xooters!;
             const firstName = z.name.split(" ")[0];
             return (
               <div key={z.id} className="space-y-2">
