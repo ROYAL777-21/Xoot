@@ -135,3 +135,61 @@ describe("@theme inline consumes the audited palette, not the raw kit", () => {
     expect(rawCss).toContain("@import './styles/kit-tokens.css';");
   });
 });
+
+/**
+ * ── Shape and type resolve to the kit; colour does not ─────────────────────────────────────────
+ *
+ * The opposite direction from the block above, and the asymmetry is the whole design decision.
+ *
+ * Colour must NOT reach `--xoot-*`, because the `:root` palette is the kit re-measured for WCAG AA
+ * and the raw values fail it. Radius and letter-spacing have no such audit — there is no
+ * contrast floor on a corner — so for those the export simply wins, per `design/README.md`.
+ *
+ * The components are written in ordinary Tailwind utilities (`rounded-3xl`, `tracking-tight`), and
+ * those resolve to Tailwind's defaults unless `@theme inline` says otherwise: 24px where the kit
+ * wants 26, -0.025em where the kit wants -0.018em. Close enough to look right and be wrong, which
+ * is the kind of drift nobody reports.
+ *
+ * Planted and confirmed 2026-08-13: deleting the `--radius-3xl` mapping fails the first test;
+ * pointing `--tracking-tight` at a raw `-0.025em` fails the second. Restored after each.
+ */
+describe("@theme inline resolves shape and tracking to the kit scale", () => {
+  const themeEntries = () => {
+    const out: Record<string, string> = {};
+    for (const m of themeBlock().matchAll(/--((?:radius|tracking)-[a-z0-9]+):\s*([^;]+);/g)) {
+      out[m[1]] = m[2].trim();
+    }
+    return out;
+  };
+
+  it("maps the large radii onto --xoot-radius-*", () => {
+    const t = themeEntries();
+    expect(t["radius-xl"]).toBe("var(--xoot-radius-md)");
+    expect(t["radius-2xl"]).toBe("var(--xoot-radius-key)");
+    expect(t["radius-3xl"]).toBe("var(--xoot-radius-lg)");
+    expect(t["radius-4xl"]).toBe("var(--xoot-radius-xl)");
+  });
+
+  it("maps negative tracking onto --xoot-track-*", () => {
+    const t = themeEntries();
+    expect(t["tracking-tight"]).toBe("var(--xoot-track-display)");
+    expect(t["tracking-tighter"]).toBe("var(--xoot-track-tight)");
+  });
+
+  /**
+   * `tracking-widest` is deliberately absent from the mapping: Tailwind's value and
+   * `--xoot-track-label` are both 0.1em. Aliasing it would imply a difference that is not there.
+   * This asserts the coincidence still holds — if the kit ever re-tunes its label tracking, the
+   * uppercase eyebrows across the marketing components silently stop matching it.
+   */
+  it("holds tracking-widest and --xoot-track-label at the same value", () => {
+    const kit = readFileSync(join(process.cwd(), "src/styles/kit-tokens.css"), "utf8");
+    const label = kit.match(/--xoot-track-label:\s*([^;]+);/)?.[1]?.trim();
+    expect(label, "--xoot-track-label is missing from kit-tokens.css").toBeDefined();
+    expect(
+      label,
+      "the kit's label tracking is no longer 0.1em, so Tailwind's `tracking-widest` no longer " +
+        "matches it — map --tracking-widest in @theme inline, or the uppercase eyebrows drift",
+    ).toBe("0.1em");
+  });
+});

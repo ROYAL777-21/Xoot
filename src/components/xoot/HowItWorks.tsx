@@ -44,7 +44,7 @@ export const HowItWorks = () => {
               return (
                 <li
                   key={s.n}
-                  className="group relative rounded-3xl bg-card border border-border p-6 md:p-7 shadow-card hover:shadow-warm transition-all duration-500"
+                  className="group relative rounded-3xl bg-card border border-border p-6 md:p-7 shadow-card transition-all duration-500"
                 >
                   <div className="flex gap-5 items-start">
                     <div className="relative shrink-0">

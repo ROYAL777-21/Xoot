@@ -45,9 +45,18 @@ Web previously used Space Grotesk for display and DM Sans for body through Fonts
 
 Typography rules:
 
+⚠️ **Two of these are superseded (ZD-030).** The exported kit uses negative letter-spacing on
+display type and positive-tracked UPPERCASE labels, measured from its own modules:
+`--xoot-track-label` (+0.1em) 18 uses, `--xoot-track-tight` (-0.01em) 7, `--xoot-track-display`
+(-0.018em) 4 — and `SectionLabel.tsx`, ported straight from the kit, renders uppercase text with
+the label tracking. Per `design/README.md` the export is the newer authority. `src/index.css` maps
+Tailwind's `tracking-tight` onto `--xoot-track-display` so the components inherit the kit's value.
+The remaining rules below still stand.
+
 - no viewport-scaled font sizes;
-- no negative letter spacing;
-- sentence case by default;
+- ~~no negative letter spacing~~ — superseded; use `--xoot-track-display` / `--xoot-track-tight`;
+- ~~sentence case by default~~ — superseded for labels and eyebrows, which take
+  `--xoot-track-label` with `text-transform: uppercase`; still the default for prose and headings;
 - compact panel headings remain compact;
 - support Dynamic Type and Android font scaling;
 - numbers and status labels must not rely on colour alone.

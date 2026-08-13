@@ -37,7 +37,7 @@ const Blog = () => {
 
         <section className="mx-auto grid max-w-6xl gap-5 px-4 pb-16 sm:px-6 lg:grid-cols-2 lg:px-8">
           {publishedBlogPosts.map((post) => (
-            <article key={post.slug} className="rounded-2xl border border-border bg-card p-5 shadow-card transition-smooth hover:-translate-y-1 hover:shadow-warm sm:p-6">
+            <article key={post.slug} className="rounded-2xl border border-border bg-card p-5 shadow-card transition-smooth hover:-translate-y-1 sm:p-6">
               <div className="mb-4 flex flex-wrap items-center gap-3 text-xs font-medium text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarDays className="h-3.5 w-3.5" />

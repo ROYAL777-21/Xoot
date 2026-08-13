@@ -62,10 +62,6 @@ const PUBLIC_GLOBS = [
 /**
  * Deliberate exceptions. Each needs a reason, and the reason has to survive being read aloud to
  * someone who just found the number wrong on a live page.
- */
-/**
- * Deliberate exceptions. Each needs a reason, and the reason has to survive being read aloud to
- * someone who just found the number wrong on a live page.
  *
  * Currently empty, and it emptied itself. The one entry — "Half day R250-R300 / Full day
  * R300-R400", third-party market guidance on the placement form — went stale the same day it was

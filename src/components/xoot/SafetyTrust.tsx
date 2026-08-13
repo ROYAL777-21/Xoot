@@ -27,7 +27,7 @@ export const SafetyTrust = () => {
           {items.map((it) => {
             const Icon = it.icon;
             return (
-              <article key={it.title} className="rounded-3xl border border-border bg-card p-6 shadow-card hover:shadow-warm transition-all duration-500 hover:-translate-y-1">
+              <article key={it.title} className="rounded-3xl border border-border bg-card p-6 shadow-card transition-all duration-500 hover:-translate-y-1">
                 <div className="grid place-items-center h-12 w-12 rounded-2xl bg-accent/15 text-sage-deep mb-4">
                   <Icon className="h-6 w-6" />
                 </div>

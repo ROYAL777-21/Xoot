@@ -203,6 +203,43 @@
   --radius-md: calc(var(--radius) - 4px);
   --radius-sm: calc(var(--radius) - 8px);
 
+  /* ── Tailwind's radius and tracking scales, mapped onto the kit's ─────────────────────────
+   *
+   * The components were written in Tailwind utilities — `rounded-3xl`, `tracking-tight` — and
+   * those resolve to Tailwind's defaults, which are near the kit's values but not equal to them:
+   *
+   *     rounded-2xl  16px  →  --xoot-radius-key  16px   (already equal)
+   *     rounded-3xl  24px  →  --xoot-radius-lg   26px
+   *     rounded-4xl  32px  →  --xoot-radius-xl   34px
+   *     rounded-xl   12px  →  --xoot-radius-md   20px
+   *     tracking-tight  -0.025em  →  --xoot-track-display  -0.018em
+   *
+   * Mapping the scale here rather than rewriting every utility in every component is the same
+   * lever the font swap used: one place decides, and the markup keeps reading as ordinary
+   * Tailwind. It also means a component added later inherits the kit without anyone remembering
+   * to.
+   *
+   * ⚠️ `--tracking-widest` is deliberately NOT redefined. Tailwind's value is 0.1em and
+   * `--xoot-track-label` is 0.1em — they are already the same number, and aliasing it would
+   * imply a difference that does not exist.
+   *
+   * ── Why negative tracking is here at all ────────────────────────────────────────────────
+   *
+   * `design/DESIGN-SYSTEM.md` says "no negative letter spacing" and "sentence case by default".
+   * The exported kit does both, routinely: its own modules use `--xoot-track-label` (+0.1em, the
+   * uppercase label treatment) 18 times, `--xoot-track-tight` 7 times and `--xoot-track-display`
+   * 4 times, and `SectionLabel.tsx` — ported straight from the kit — renders uppercase text with
+   * the label tracking. Per `design/README.md`, the export is the newer authority where the two
+   * disagree. DESIGN-SYSTEM.md is annotated accordingly rather than silently contradicted.
+   */
+  --radius-xl: var(--xoot-radius-md);
+  --radius-2xl: var(--xoot-radius-key);
+  --radius-3xl: var(--xoot-radius-lg);
+  --radius-4xl: var(--xoot-radius-xl);
+
+  --tracking-tight: var(--xoot-track-display);
+  --tracking-tighter: var(--xoot-track-tight);
+
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;

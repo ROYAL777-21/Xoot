@@ -37,7 +37,7 @@ export const MyHomeHub = () => {
             {features.map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.title} className="rounded-3xl bg-card border border-border p-5 shadow-card hover:shadow-warm transition-all duration-500">
+                <div key={f.title} className="rounded-3xl bg-card border border-border p-5 shadow-card transition-all duration-500">
                   <div className="grid place-items-center h-11 w-11 rounded-2xl bg-primary/10 text-primary mb-3">
                     <Icon className="h-5 w-5" />
                   </div>

@@ -92,7 +92,7 @@ export const ServiceAreaMap = () => {
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {approvedLaunchRegions.slice(0, 8).map((region) => (
-              <span key={region} className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold capitalize text-foreground/75 shadow-card">
+              <span key={region} className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold capitalize text-foreground/75">
                 {region}
               </span>
             ))}
@@ -108,7 +108,20 @@ export const ServiceAreaMap = () => {
           </div>
         </div>
 
-        <div className="liquid-glass-shell relative min-h-88 overflow-hidden rounded-4xl shadow-warm">
+        {/*
+          Glass and strong shadow off this panel, on purpose, and NOT off the things inside it.
+
+          `design/GLASS-SYSTEM.md` gives glass four jobs — navigation, controls, overlays, and
+          rare prominent actions. This outer element is none of them: it is the content surface
+          the map is drawn on, and `shadow-warm` on something this large is the "strong shadows
+          are reserved for temporary overlays" rule inverted.
+
+          What sits inside it keeps its glass and is correct to: the "Find full-time help"
+          button is a control, and the loading state, the no-map fallback and the bottom bar are
+          overlays drawn over the map. Stripping those too would have been the opposite mistake
+          to the one being fixed.
+        */}
+        <div className="relative min-h-88 overflow-hidden rounded-4xl border border-border bg-card">
           {mapboxToken ? (
             <>
               <div ref={mapContainerRef} className="absolute inset-0" aria-label="Xoot service area map" />

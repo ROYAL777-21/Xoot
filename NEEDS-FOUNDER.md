@@ -94,9 +94,38 @@ still matches `zooter` or `zootcred`.
 
 ---
 
+## 🟠 Say yes or no before the site goes live
+
+### 4. Four trust claims the homepage states as fact
+
+`SafetyTrust` publishes these to anyone who visits, in the present tense:
+
+| claim | is this running today? |
+|---|---|
+| Profiles show ratings, reliability score, completion rate, repeat-client count, trust badges | ? |
+| ID, selfie, proof of address, bank, references and **MIE screening** reviewed before activation | ? |
+| Required training covers etiquette, luxury-home expectations, pets, fragile items, punctuality | ? |
+| Lateness, damages and escalations **routed into trust review queues** | ? |
+
+`BRAND.md` allows "real process evidence, verified reviews, and approved client proof **only**"
+and forbids publishing invented guarantees. Production currently has **one user and zero
+bookings**, so none of these has been exercised — the schema and the queues exist, but existing
+does not mean operating.
+
+Separately, `BookingHero` says "**MIE-ready** trust workflow". *Ready* reads as *not yet running*,
+which is either an accidental admission or an accurate one.
+
+This is not a code question and I have not changed the copy. A claim about vetting that turns out
+to be aspirational is the kind a customer repeats to a journalist after something goes wrong.
+
+**Proves it done:** a yes/no on each row. Anything that is a no gets reworded to the future tense
+or removed before the site is linked to the domain.
+
+---
+
 ## 🟠 Blocking a feature each
 
-### 4. Place the first two-party call
+### 5. Place the first two-party call
 
 No call has been made on any surface, ever. Everything else about voice proves configuration; this
 proves sound comes out.
@@ -109,7 +138,7 @@ mail, so the reset flow can never work — see the walkthrough.
 
 **Proves it done:** Twilio Console → Monitor → Logs → Calls shows **two** legs in one conference.
 
-### 5. Decide what SOS does, then it can be enabled (#36)
+### 6. Decide what SOS does, then it can be enabled (#36)
 
 Four prerequisites, all decisions rather than settings. **Not enabled until all four are answered** —
 every step has a failure mode where the button appears to work, and a person in trouble pressing
@@ -117,7 +146,7 @@ something that does nothing is worse than no button.
 
 **→ [`docs/release/founder-walkthroughs.md`](./docs/release/founder-walkthroughs.md) §B**
 
-### 6. Device verification on real hardware (#37)
+### 7. Device verification on real hardware (#37)
 
 Live Activities, widgets, Siri intents, push, deep links. No simulator tests these honestly.
 
@@ -127,7 +156,7 @@ Live Activities, widgets, Siri intents, push, deep links. No simulator tests the
 
 ## 🟡 Before the first store submission
 
-### 7. The `zoot://` deep-link scheme (#34)
+### 8. The `zoot://` deep-link scheme (#34)
 
 Still live in `mobile/app.config.ts`. It is baked into the app record at first submission, so it
 changes **now or never**.

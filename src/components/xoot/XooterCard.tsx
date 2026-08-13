@@ -82,7 +82,7 @@ export const XooterCard = ({
   const firstName = z.name.split(" ")[0];
 
   return (
-    <article className="group rounded-3xl bg-card border border-border overflow-hidden shadow-card hover:shadow-warm transition-all duration-500 hover:-translate-y-1 flex flex-col">
+    <article className="group rounded-3xl bg-card border border-border overflow-hidden shadow-card transition-all duration-500 hover:-translate-y-1 flex flex-col">
       <div className="relative aspect-4/5 overflow-hidden">
         <img src={resolvePhoto(z.photo_url)} alt={`${z.name}, professional cleaner`} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-linear-to-t from-ink/75 via-transparent to-transparent" />
