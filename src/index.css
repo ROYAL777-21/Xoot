@@ -3,8 +3,31 @@
 /* The Xoot UI kit's own tokens, generated from design/Xoot_App.html by
    `npm run kit:tokens`. Additive on purpose: declaring them changes nothing until a
    component asks for a --xoot-* value, so the kit's system can land ahead of the port
-   instead of in one breaking sweep. The app's own semantic tokens are still the ones
-   below; which set wins is the open palette decision in blocker.md. */
+   instead of in one breaking sweep.
+
+   ── SETTLED 2026-08-13: the audited :root palette wins, and the kit tokens do not. ──
+   This was "the open palette decision in blocker.md". It is closed, and closed in the
+   direction that is not obvious, so the reasoning stays here where the edit would happen.
+
+   The :root block below is NOT a rival palette. It IS this kit's palette, re-measured for
+   contrast, with four colours deliberately darkened because the kit's raw values fail WCAG
+   AA for body text (a 14px button label is body text, so the threshold is 4.5):
+
+     brand        violet-500 #7C5CFC  4.38 ✗   ->  violet-600      6.10 ✓
+     care-plus    53% lightness       4.31 ✗   ->  51%             4.50 ✓
+     destructive  56% lightness       3.70 ✗   ->  48%             4.55 ✓
+     success      43% lightness       3.20 ✗   ->  35%             4.62 ✓
+
+   So "adopt the design system" must NOT mean repointing @theme inline at --xoot-*. That
+   reads like progress in a diff and silently drops the whole app below AA. The kit tokens
+   stay imported and stay used — --xoot-dur-*, --xoot-ease-*, the --slot-* aliases and the
+   primitives in src/components/kit/** all consume them directly — they simply do not feed
+   the Tailwind colour layer.
+
+   src/lib/theme-consumes-audited-palette.test.ts fails if they ever do. It exists because
+   design-tokens.test.ts and design-contrast.test.ts both parse :root and .dark and neither
+   looks at @theme inline, so the rewire was invisible to every guard: planted, all 75 of
+   their assertions still passed. */
 @import './styles/kit-tokens.css';
 
 @plugin 'tailwindcss-animate';
