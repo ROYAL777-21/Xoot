@@ -120,8 +120,26 @@ Two traps the workflow handles for you, worth knowing because the manual routes 
 
 No redeploy afterwards — Edge Functions read secrets at runtime.
 
-> **Proves it done:** Actions → *Twilio self-test* → `environment: both` stops reporting a shared
-> Account SID, and the two accounts' SIDs differ.
+> ### ✅ PROVEN — *Twilio self-test* run 16, `environment: both`, 09:44Z, success
+>
+> The self-test **fails the run** when staging and production report the same Account SID. It passed,
+> so they differ. Staging's own rows:
+>
+> ```
+> OK  voice TwiML app       "Xoot Staging Voice" (AP8ff23ac…)
+>                            https://fxmxyabdjqviqbcxmvlp.functions.supabase.co/twilio-voice-twiml (POST)
+> OK  voice status callback  …/twilio-voice-status
+> OK  conversations service "Xoot Home Services Conversation Staging" is reachable
+> n/a TwiML apps on this account: One TwiML App on this account ← THIS PROJECT USES THIS ONE
+> ```
+>
+> **One** app on the staging account — the two-apps-in-one-list ambiguity that made this dangerous to
+> edit by hand is gone on that side.
+>
+> ⚠️ **Leftover worth knowing:** the production account still carries the *old* staging app,
+> `AP2afeeb7… "Xoot TwiML App Staging "` (note the trailing space), which nothing now uses. Harmless,
+> but it is the one that made "edit by SID, not by name" necessary. Delete it in the Console when
+> convenient — the self-test still prints the warning while two apps are on the account.
 
 ### 2.2 Place the first real two-party call
 
