@@ -1,5 +1,5 @@
 param(
-  [string]$Repo = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { "ROYAL777-21/zoot-your-local-helpers" })
+  [string]$Repo = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { "ROYAL777-21/xoot-your-local-helpers" })
 )
 
 $ErrorActionPreference = "Stop"

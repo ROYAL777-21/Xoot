@@ -56,14 +56,14 @@
   </shortcut>
 
   <shortcut
-    android:shortcutId="zoot_concierge"
+    android:shortcutId="xoot_concierge"
     android:enabled="true"
     android:icon="@mipmap/ic_launcher"
     android:shortcutShortLabel="@string/shortcut_concierge_short"
     android:shortcutLongLabel="@string/shortcut_concierge_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="xoot://concierge?zootBot=open&amp;intent=concierge" />
+      android:data="xoot://concierge?xootBot=open&amp;intent=concierge" />
   </shortcut>
 
   <shortcut
@@ -100,13 +100,13 @@
   </shortcut>
 
   <shortcut
-    android:shortcutId="zooter_jobs"
+    android:shortcutId="xooter_jobs"
     android:enabled="true"
     android:icon="@mipmap/ic_launcher"
-    android:shortcutShortLabel="@string/shortcut_zooter_jobs_short"
-    android:shortcutLongLabel="@string/shortcut_zooter_jobs_long">
+    android:shortcutShortLabel="@string/shortcut_xooter_jobs_short"
+    android:shortcutLongLabel="@string/shortcut_xooter_jobs_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="xoot://zooter/jobs?intent=zooter_jobs" />
+      android:data="xoot://xooter/jobs?intent=xooter_jobs" />
   </shortcut>
 </shortcuts>

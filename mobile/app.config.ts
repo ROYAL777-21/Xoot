@@ -12,18 +12,18 @@ const sentryUploadPlugin: NonNullable<ExpoConfig['plugins']>[number] | null =
         '@sentry/react-native/expo',
         {
           organization: sentryOrg,
-          project: process.env.SENTRY_MOBILE_PROJECT ?? 'zoot-mobile',
+          project: process.env.SENTRY_MOBILE_PROJECT ?? 'xoot-mobile',
           url: 'https://sentry.io/',
         },
       ]
     : null;
 
-// Changed off the pre-rename `zoothome` identifier on 2026-08-13, issue #34 — the literal old
+// Changed off the pre-rename `xoothome` identifier on 2026-08-13, issue #34 — the literal old
 // value is deliberately not written here, because `app-identity.test.ts` forbids it appearing in
 // this file at all and a commented-out identifier is the kind of thing that gets pasted back.
 // An Android applicationId can never
 // change after publication and an iOS bundle identifier cannot change after submission, so this
-// was the last moment it could be corrected — the old value came from `zoothome.co.za`, a domain
+// was the last moment it could be corrected — the old value came from `xoothome.co.za`, a domain
 // `native-routing.ts` records as never having existed as more than placeholder debris.
 //
 // It is restated in `scripts/build/write-native-association-files.mjs` and `.env.example`, which
@@ -35,14 +35,14 @@ const appName = isProduction ? 'Xoot' : 'Xoot Preview';
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: appName,
-  slug: 'zoot',
+  slug: 'xoot',
   owner: process.env.EXPO_ACCOUNT_OWNER || undefined,
-  version: process.env.ZOOT_MOBILE_VERSION ?? '0.1.0',
+  version: process.env.XOOT_MOBILE_VERSION ?? '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   // `xoot` is primary; `zoot` stays registered so links and OAuth callbacks built before the
   // 2026-08-13 rename still resolve. Expo takes the first entry as the default for
-  // `makeRedirectUri`. Dropping `zoot` is safe only once every OAuth client has been updated.
+  // `makeRedirectUri`. Dropping `xoot` is safe only once every OAuth client has been updated.
   scheme: ['xoot', 'zoot'],
   userInterfaceStyle: 'light',
   runtimeVersion: {
@@ -131,7 +131,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         icon: './assets/images/android-icon-monochrome.png',
         color: '#151515',
-        defaultChannel: 'zoot-service-updates',
+        defaultChannel: 'xoot-service-updates',
       },
     ],
     [
@@ -174,7 +174,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     eas: {
       projectId: easProjectId,
     },
-    zoot: {
+    xoot: {
       appEnv,
       siteUrl: process.env.EXPO_PUBLIC_SITE_URL,
       supabaseProjectId: process.env.EXPO_PUBLIC_SUPABASE_PROJECT_ID,

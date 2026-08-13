@@ -9,12 +9,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RequireAuth } from "@/components/RequireAuth";
-import { AppLaunch } from "@/components/zoot/AppLaunch";
-import { AppShell } from "@/components/zoot/AppShell";
-import { NativeInteractionLayer } from "@/components/zoot/NativeInteractionLayer";
-import { XootSupportBot } from "@/components/zoot/XootSupportBot";
+import { AppLaunch } from "@/components/xoot/AppLaunch";
+import { AppShell } from "@/components/xoot/AppShell";
+import { NativeInteractionLayer } from "@/components/xoot/NativeInteractionLayer";
+import { XootSupportBot } from "@/components/xoot/XootSupportBot";
 import { ConciergeProvider } from "@/contexts/ConciergeContext";
-import { XooterShell } from "@/components/zooter/XooterShell";
+import { XooterShell } from "@/components/xooter/XooterShell";
 import { RequireRole } from "@/components/RequireRole";
 import { XootAnalyticsProvider } from "@/lib/analytics";
 
@@ -71,13 +71,13 @@ const AcceptableUse = lazy(() => import("./pages/legal/AcceptableUse"));
 const AiConciergeNotice = lazy(() => import("./pages/legal/AiConciergeNotice"));
 const CarePlusTerms = lazy(() => import("./pages/legal/CarePlusTerms"));
 const XooterTerms = lazy(() => import("./pages/legal/XooterTerms"));
-const XooterApply = lazy(() => import("./pages/zooter/Apply"));
-const XooterDashboard = lazy(() => import("./pages/zooter/Dashboard"));
-const XooterJobs = lazy(() => import("./pages/zooter/Jobs"));
-const XooterTraining = lazy(() => import("./pages/zooter/Training"));
-const XooterEarnings = lazy(() => import("./pages/zooter/Earnings"));
-const XooterKyc = lazy(() => import("./pages/zooter/Kyc"));
-const XooterProfile = lazy(() => import("./pages/zooter/Profile"));
+const XooterApply = lazy(() => import("./pages/xooter/Apply"));
+const XooterDashboard = lazy(() => import("./pages/xooter/Dashboard"));
+const XooterJobs = lazy(() => import("./pages/xooter/Jobs"));
+const XooterTraining = lazy(() => import("./pages/xooter/Training"));
+const XooterEarnings = lazy(() => import("./pages/xooter/Earnings"));
+const XooterKyc = lazy(() => import("./pages/xooter/Kyc"));
+const XooterProfile = lazy(() => import("./pages/xooter/Profile"));
 const AdminKyc = lazy(() => import("./pages/admin/Kyc"));
 const AdminOps = lazy(() => import("./pages/admin/Ops"));
 
@@ -137,7 +137,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <XootAnalyticsProvider>
       <HelmetProvider>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange storageKey="zoot-theme">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange storageKey="xoot-theme">
         <TooltipProvider>
           <ErrorBoundary>
             <Toaster />
@@ -184,7 +184,7 @@ const App = () => (
                   <Route path="/legal/acceptable-use" element={<AcceptableUse />} />
                   <Route path="/legal/ai-concierge" element={<AiConciergeNotice />} />
                   <Route path="/legal/care-plus-terms" element={<CarePlusTerms />} />
-                  <Route path="/legal/zooter-terms" element={<XooterTerms />} />
+                  <Route path="/legal/xooter-terms" element={<XooterTerms />} />
                   <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
@@ -201,13 +201,13 @@ const App = () => (
                   <Route path="/app/profile" element={<RequireAuth><AppShell><CustomerProfile /></AppShell></RequireAuth>} />
 
                   {/* Xooter portal */}
-                  <Route path="/zooter/apply" element={<RequireAuth><XooterApply /></RequireAuth>} />
-                  <Route path="/zooter" element={<RequireRole role="zooter"><XooterShell><XooterDashboard /></XooterShell></RequireRole>} />
-                  <Route path="/zooter/jobs" element={<RequireRole role="zooter"><XooterShell><XooterJobs /></XooterShell></RequireRole>} />
-                  <Route path="/zooter/training" element={<RequireAuth><XooterShell><XooterTraining /></XooterShell></RequireAuth>} />
-                  <Route path="/zooter/earnings" element={<RequireRole role="zooter"><XooterShell><XooterEarnings /></XooterShell></RequireRole>} />
-                  <Route path="/zooter/kyc" element={<RequireAuth><XooterShell><XooterKyc /></XooterShell></RequireAuth>} />
-                  <Route path="/zooter/profile" element={<RequireRole role="zooter"><XooterShell><XooterProfile /></XooterShell></RequireRole>} />
+                  <Route path="/xooter/apply" element={<RequireAuth><XooterApply /></RequireAuth>} />
+                  <Route path="/xooter" element={<RequireRole role="xooter"><XooterShell><XooterDashboard /></XooterShell></RequireRole>} />
+                  <Route path="/xooter/jobs" element={<RequireRole role="xooter"><XooterShell><XooterJobs /></XooterShell></RequireRole>} />
+                  <Route path="/xooter/training" element={<RequireAuth><XooterShell><XooterTraining /></XooterShell></RequireAuth>} />
+                  <Route path="/xooter/earnings" element={<RequireRole role="xooter"><XooterShell><XooterEarnings /></XooterShell></RequireRole>} />
+                  <Route path="/xooter/kyc" element={<RequireAuth><XooterShell><XooterKyc /></XooterShell></RequireAuth>} />
+                  <Route path="/xooter/profile" element={<RequireRole role="xooter"><XooterShell><XooterProfile /></XooterShell></RequireRole>} />
 
                   {/* Admin */}
                   <Route path="/admin/kyc" element={<RequireRole role="admin"><AdminKyc /></RequireRole>} />

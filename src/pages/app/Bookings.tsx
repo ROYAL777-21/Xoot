@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar, Loader2, MapPin, MessageSquare, Repeat, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { resolvePhoto } from "@/components/zoot/XooterCard";
+import { resolvePhoto } from "@/components/xoot/XooterCard";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 import { getClientVisibleStatus, normaliseBookingStatus } from "@/lib/booking-state-machine";
 
@@ -18,8 +18,8 @@ type Booking = {
   id: string; service: string; scheduled_at: string; status: string;
   price: number; address: string | null; was_reassigned: boolean;
   reassignment_acknowledged: boolean;
-  zooter_id: string | null;
-  zooter: { id: string; name: string; photo_url: string | null; rating: number; role: string } | null;
+  xooter_id: string | null;
+  xooter: { id: string; name: string; photo_url: string | null; rating: number; role: string } | null;
 };
 
 const statusBadge: Record<string, string> = {
@@ -74,21 +74,21 @@ const Bookings = () => {
   const refresh = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from("bookings")
-      .select("id, zooter_id, service, scheduled_at, status, price, address, was_reassigned, reassignment_acknowledged")
+      .select("id, xooter_id, service, scheduled_at, status, price, address, was_reassigned, reassignment_acknowledged")
       .eq("user_id", user.id).order("scheduled_at", { ascending: false });
-    const bookings = (data ?? []) as Array<Omit<Booking, "zooter">>;
+    const bookings = (data ?? []) as Array<Omit<Booking, "xooter">>;
     const bookingIds = bookings.map((booking) => booking.id);
-    const { data: zooters } = bookingIds.length
+    const { data: xooters } = bookingIds.length
       ? await supabase
-        .from("booking_zooter_profiles")
+        .from("booking_xooter_profiles")
         .select("booking_id,id,name,photo_url,rating,role")
         .in("booking_id", bookingIds)
       : { data: [] };
-    const zootersByBookingId = new Map(
-      ((zooters ?? []) as Array<NonNullable<Booking["zooter"]> & { booking_id: string }>)
-        .map((zooter) => [zooter.booking_id, zooter]),
+    const xootersByBookingId = new Map(
+      ((xooters ?? []) as Array<NonNullable<Booking["xooter"]> & { booking_id: string }>)
+        .map((xooter) => [xooter.booking_id, xooter]),
     );
-    setList(bookings.map((booking) => ({ ...booking, zooter: zootersByBookingId.get(booking.id) ?? null })) as Booking[]);
+    setList(bookings.map((booking) => ({ ...booking, xooter: xootersByBookingId.get(booking.id) ?? null })) as Booking[]);
     setLoading(false);
   }, [user]);
 
@@ -150,14 +150,14 @@ const Bookings = () => {
           {upcoming.map((b) => (
             <Card key={b.id} className="p-4 rounded-2xl flex items-center gap-4">
               <Checkbox checked={selected.has(b.id)} onCheckedChange={() => toggle(b.id)} />
-              <img src={resolvePhoto(b.zooter?.photo_url)} alt="" className="h-14 w-14 rounded-xl object-cover" />
+              <img src={resolvePhoto(b.xooter?.photo_url)} alt="" className="h-14 w-14 rounded-xl object-cover" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold truncate">{b.zooter?.name ?? "Reassigning…"}</p>
+                  <p className="font-semibold truncate">{b.xooter?.name ?? "Reassigning…"}</p>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${statusBadge[normaliseBookingStatus(b.status) ?? b.status] ?? "bg-muted text-muted-foreground"}`}>{getVisibleStatus(b.status)}</span>
                   {b.was_reassigned && !b.reassignment_acknowledged && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary text-primary-foreground flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" /> NEW ZOOTER
+                      <AlertCircle className="h-3 w-3" /> NEW XOOTER
                     </span>
                   )}
                 </div>
@@ -181,9 +181,9 @@ const Bookings = () => {
         <div className="space-y-3">
           {past.map((b) => (
             <Card key={b.id} className="p-4 rounded-2xl flex items-center gap-4 opacity-80">
-              <img src={resolvePhoto(b.zooter?.photo_url)} alt="" className="h-12 w-12 rounded-xl object-cover" />
+              <img src={resolvePhoto(b.xooter?.photo_url)} alt="" className="h-12 w-12 rounded-xl object-cover" />
               <div className="flex-1">
-                <p className="font-semibold">{b.zooter?.name}</p>
+                <p className="font-semibold">{b.xooter?.name}</p>
                 <p className="text-xs text-muted-foreground capitalize">{b.service} · {new Date(b.scheduled_at).toLocaleDateString()}</p>
               </div>
               <CheckCircle2 className="h-5 w-5 text-sage-deep" />

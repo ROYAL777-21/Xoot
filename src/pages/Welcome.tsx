@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
-import { Zoey } from "@/components/zoot/mascot/Zoey";
-import { AppleLogo, GoogleLogo } from "@/components/zoot/ProviderLogos";
+import { Zoey } from "@/components/xoot/mascot/Zoey";
+import { AppleLogo, GoogleLogo } from "@/components/xoot/ProviderLogos";
 import { haptic } from "@/lib/haptics";
-import { TermsNotice } from "@/components/zoot/TermsNotice";
+import { TermsNotice } from "@/components/xoot/TermsNotice";
 import { Mail, Phone } from "lucide-react";
 
 /**

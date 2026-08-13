@@ -9,21 +9,21 @@
  * ── The rank already exists; this file only attaches money to it ─────────────────
  * `calculateReliabilityScore` in `trust.ts` takes exactly those inputs — `lateArrivals`
  * (punctuality), `qualityAverage` (ratings), `complaints`, `escalations`, `cancellations`,
- * `repeatBookings` — and returns 0–100. It is persisted as `zooters.reliability_score`,
+ * `repeatBookings` — and returns 0–100. It is persisted as `xooters.reliability_score`,
  * shown on `XooterCard`, ranked on by `sortXootersForMarketplace`, and reported in the Ops
  * quality view. So the ladder below reads that score rather than inventing a second notion
  * of "doing well". Two competing definitions of a good Xooter is how a marketplace ends up
  * paying for one thing and promoting another.
  *
  * ── The trap this file exists to avoid ───────────────────────────────────────────
- * `calculateReliabilityScore` **starts at 100 and subtracts**, and `approve-zooter` writes
+ * `calculateReliabilityScore` **starts at 100 and subtracts**, and `approve-xooter` writes
  * `reliability_score: 100` on approval. A Xooter who has never cleaned a home therefore
  * scores a perfect 100. A naive "high score → low commission" mapping hands them the 20%
  * floor on day one, permanently, for having done nothing.
  *
  * `minCompletedJobs` is what prevents that: the score decides *which* band, the job count
  * decides whether the band has been **earned**. `xooter-commission.test.ts` asserts the
- * exact row `approve-zooter` writes resolves to 35%.
+ * exact row `approve-xooter` writes resolves to 35%.
  *
  * ── The floor is confirmed ───────────────────────────────────────────────────────
  * **20%, founder decision 2026-08-09.** This is the number that sets long-run marketplace
@@ -116,9 +116,9 @@ export const HYSTERESIS_POINTS = 3;
 export const IN_TROUBLE_SCORE = 75;
 
 export type XooterRankInputs = {
-  /** `zooters.reliability_score`. */
+  /** `xooters.reliability_score`. */
   reliabilityScore?: number | null;
-  /** `zooters.jobs_completed`. */
+  /** `xooters.jobs_completed`. */
   completedJobs?: number | null;
   /**
    * The rate this Xooter currently holds, for hysteresis. Omit and the band is resolved

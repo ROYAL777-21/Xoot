@@ -11,7 +11,7 @@ export interface CarePlusMembership {
   renewsAt: string;
   addOnCreditZar: number;
   addOnCreditExpiresAt: string;
-  zootCredMultiplier: number;
+  xootCredMultiplier: number;
   homeReadinessScore: number;
   favouriteXooterId?: string;
 }
@@ -76,7 +76,7 @@ export interface CarePlusBenefit {
   title: string;
   summary: string;
   customerValue: "medium" | "high" | "very_high";
-  zootCost: "low" | "medium" | "operational" | "controlled";
+  xootCost: "low" | "medium" | "operational" | "controlled";
   memberProof: string;
 }
 

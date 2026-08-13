@@ -7,7 +7,7 @@
  *
  *   1. `remotion/XootSplash.tsx` samples it per video frame to render the MP4/WebM
  *      used for the native launch screen and store previews.
- *   2. `src/components/zoot/SplashScreen.tsx` samples it into Web Animations API
+ *   2. `src/components/xoot/SplashScreen.tsx` samples it into Web Animations API
  *      keyframes for the in-app splash.
  *
  * Neither renderer owns any timing or geometry of its own. That is deliberate: a

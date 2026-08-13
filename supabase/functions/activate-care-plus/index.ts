@@ -132,14 +132,14 @@ Deno.serve(async (req) => {
     }).select("id,status,next_billing_at").single();
     if (error || !subscription?.id) throw new Error("subscription insert failed");
 
-    await supa.from("zootcred_ledger").insert({
+    await supa.from("xootcred_ledger").insert({
       user_id: user.id,
       amount: 30,
       direction: "credit",
       reason: "loyalty_reward",
       status: "available",
       expires_at: addDays(now, 30).toISOString(),
-      meta: { source: "care_plus_activation", zootcred_multiplier: 1.5, payment_record_id: payment.id },
+      meta: { source: "care_plus_activation", xootcred_multiplier: 1.5, payment_record_id: payment.id },
     });
 
     await insertNotification(supa, {
@@ -166,12 +166,12 @@ Deno.serve(async (req) => {
       action: "activate_care_plus",
       targetTable: "user_subscriptions",
       targetId: subscription.id,
-      changes: { status: "active", next_billing_at: subscription.next_billing_at, zootcred_credit: 30, zootcred_multiplier: 1.5 },
+      changes: { status: "active", next_billing_at: subscription.next_billing_at, xootcred_credit: 30, xootcred_multiplier: 1.5 },
       reason: "Confirmed membership payment activated Care+",
       ipAddress: req.headers.get("x-forwarded-for"),
     });
 
-    return ok({ subscription_id: subscription.id, status: "active", next_billing_at: subscription.next_billing_at, zootcred_multiplier: 1.5 }, origin);
+    return ok({ subscription_id: subscription.id, status: "active", next_billing_at: subscription.next_billing_at, xootcred_multiplier: 1.5 }, origin);
   } catch (error) {
     console.error("activate-care-plus failed", error);
     return fail("Care+ action failed", origin, 500);

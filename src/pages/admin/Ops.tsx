@@ -39,7 +39,7 @@ const Ops = () => {
   const [outbox, setOutbox] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [supportTickets, setSupportTickets] = useState<any[]>([]);
-  const [zooterApplications, setXooterApplications] = useState<any[]>([]);
+  const [xooterApplications, setXooterApplications] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [bookingAnalytics, setBookingAnalytics] = useState<any[]>([]);
   const [qualityAnalytics, setQualityAnalytics] = useState<any[]>([]);
@@ -60,7 +60,7 @@ const Ops = () => {
       supabase.from("integration_outbox").select("*").order("created_at", { ascending: false }).limit(12),
       supabase.from("admin_review_queue").select("*").order("created_at", { ascending: false }).limit(12),
       supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(12),
-      supabase.from("zooter_applications").select("id,full_name,email,service_category,status,reviewer_notes,updated_at,created_at").order("updated_at", { ascending: false }).limit(12),
+      supabase.from("xooter_applications").select("id,full_name,email,service_category,status,reviewer_notes,updated_at,created_at").order("updated_at", { ascending: false }).limit(12),
       supabase.from("admin_audit_log").select("id,admin_id,action,target_table,target_id,reason,changes,created_at").order("created_at", { ascending: false }).limit(20),
       supabase.from("analytics_booking_summary").select("*").order("day", { ascending: false }).limit(8),
       supabase.from("analytics_contractor_quality").select("*").order("reliability_score", { ascending: true }).limit(8),
@@ -205,7 +205,7 @@ const Ops = () => {
         <Stat icon={ClipboardCheck} label="Agent decisions" value={agentDecisionRows.length} />
         <Stat icon={ShieldAlert} label="Open reviews" value={reviews.filter((r) => r.status === "open").length} />
         <Stat icon={CheckCircle2} label="Open support" value={supportTickets.filter((t) => t.status === "open").length} />
-        <Stat icon={UserCheck} label="Xooter queue" value={zooterApplications.filter((a) => a.status === "submitted").length} />
+        <Stat icon={UserCheck} label="Xooter queue" value={xooterApplications.filter((a) => a.status === "submitted").length} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -311,7 +311,7 @@ const Ops = () => {
           }}
         </Queue>
 
-        <Queue title="Xooter applications" rows={zooterApplications} empty="No Xooter applications.">
+        <Queue title="Xooter applications" rows={xooterApplications} empty="No Xooter applications.">
           {(row) => {
             const key = `application:${row.id}`;
             return (

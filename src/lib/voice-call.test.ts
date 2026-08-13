@@ -24,12 +24,12 @@ describe("voice call lifecycle", () => {
   it("walks the ordinary path from tap to two-way audio", () => {
     const s = run([
       { type: "request", bookingId: "b1" },
-      { type: "token_ok", identity: "zoot_abc_voice" },
+      { type: "token_ok", identity: "xoot_abc_voice" },
       { type: "connected", at: 1_000 },
     ]);
     expect(s.phase).toBe("connected");
     expect(s.bookingId).toBe("b1");
-    expect(s.identity).toBe("zoot_abc_voice");
+    expect(s.identity).toBe("xoot_abc_voice");
     expect(s.connectedAt).toBe(1_000);
   });
 

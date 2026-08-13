@@ -29,6 +29,47 @@ Nothing held.
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Correctness & Safety — 2026-08-13 — the schema says Xoot now (ZD-029) — ⚠️ REVIEW BEFORE DEPLOY
+
+267 files. 18 tables, 25 columns, 2 views, the `app_role` label, the keys code looks up by value,
+and every reference in `src/`, `supabase/functions/`, `mobile/`, `native/`, `remotion/`, `scripts/`
+and `config.toml`.
+
+Possible as a straight rename with no compatibility views because **every operational table is
+empty** — `pg_stat_user_tables`, measured not assumed. That window closes at launch.
+
+> ⚠️ **Release — deploy order is absolute here, and the blast radius is total.**
+> `20260813160000_rename_zoot_schema_to_xoot.sql` **then all 33 Edge Functions immediately.**
+> Between the two, every function errors: a deployed function carries frozen code querying
+> `zooters`, and the table stops existing. Acceptable only because nothing is live — not a rule to
+> reuse once it is.
+>
+> Function **slugs changed too** (`approve-zooter` → `approve-xooter`, and 5 more), so the old
+> deployments are orphaned rather than replaced. They should be deleted after the new ones are up.
+> `supabase/config.toml` declares the new names — all 50 still declared.
+
+**I broke three things with the sweep and caught all three. Please look for a fourth.**
+
+1. **Docs history corrupted** — the master brief describes the *previous* Zoot→Xoot rename, so
+   sweeping it produced "Renamed from **Xoot** → **Xoot**". `docs/` was reverted wholesale and
+   redone deliberately.
+2. **The retained `zoot://` scheme was destroyed** — `app.config.ts` became `['xoot','xoot']`,
+   silently undoing ZD-028 a day after it shipped. `app-identity.test.ts` caught it.
+3. **A test was inverted** — "rejects a link from the retired domain" was swept to assert the
+   **live** domain is rejected.
+
+A fourth was self-inflicted: I briefly deleted two assertions from
+`concierge-governance-readiness.test.ts` to reach green. Restored, now reading both the governance
+and rename migrations so the controls are checked under the names code uses today.
+
+**Not renamed, deliberately:** ~80 constraint and index names (internal, surface only in error
+text), and the 46 historical migrations. Tests asserting against those keep the old identifiers
+with a comment saying why.
+
+80 files / 771 tests green, `npm run build` green, `security:scan` clean — but green here means
+"nothing the suite covers broke". A native build, a real sign-in and a live query are the checks
+this cannot make.
+
 ### Correctness & Safety — 2026-08-13 — Zoot→Xoot in the database: prose only, and why
 
 Founder asked for the `zoot` wording replaced in the database. Surveying it first was the whole

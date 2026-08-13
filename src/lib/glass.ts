@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 export type GlassLevel = "clear" | "frosted" | "solid";
 
-const KEY = "zoot.glass";
+const KEY = "xoot.glass";
 
 export const GLASS_PRESETS: Record<GlassLevel, { blur: number; opacity: number; label: string; hint: string }> = {
   clear: { blur: 14, opacity: 34, label: "Clear", hint: "See-through, minimal blur" },

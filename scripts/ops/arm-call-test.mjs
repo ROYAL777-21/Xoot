@@ -19,7 +19,7 @@
  * enough that nobody is tempted to skip it and conclude the feature is broken.
  *
  * ── Usage ───────────────────────────────────────────────────────────────────────
- *   ZOOT_STAGING_SUPABASE_URL=... ZOOT_STAGING_SERVICE_ROLE_KEY=... \
+ *   XOOT_STAGING_SUPABASE_URL=... XOOT_STAGING_SERVICE_ROLE_KEY=... \
  *     node scripts/ops/arm-call-test.mjs
  *
  * Optionally set both smoke passwords at the same time:
@@ -34,8 +34,8 @@ import { createClient } from "@supabase/supabase-js";
 
 const STAGING_PROJECT_REF = "fxmxyabdjqviqbcxmvlp";
 const BOOKING_ID = "10000000-0000-4000-8000-000000000401";
-const CLIENT_EMAIL = "phase1-smoke-client@staging.zoothome.local";
-const XOOTER_EMAIL = "phase1-smoke-zooter@staging.zoothome.local";
+const CLIENT_EMAIL = "phase1-smoke-client@staging.xoothome.local";
+const XOOTER_EMAIL = "phase1-smoke-xooter@staging.xoothome.local";
 
 /** Hours the booking is said to run. Sets how long the window stays open after the start. */
 const DURATION_HOURS = 4;
@@ -57,12 +57,12 @@ const fail = (message) => {
 };
 const info = (message) => console.log(`[arm-call-test] ${message}`);
 
-const url = env("ZOOT_STAGING_SUPABASE_URL");
-const serviceRoleKey = env("ZOOT_STAGING_SERVICE_ROLE_KEY");
+const url = env("XOOT_STAGING_SUPABASE_URL");
+const serviceRoleKey = env("XOOT_STAGING_SERVICE_ROLE_KEY");
 
 if (!url || !serviceRoleKey) {
   fail(
-    "Set ZOOT_STAGING_SUPABASE_URL and ZOOT_STAGING_SERVICE_ROLE_KEY in your shell.\n" +
+    "Set XOOT_STAGING_SUPABASE_URL and XOOT_STAGING_SERVICE_ROLE_KEY in your shell.\n" +
       "  Do not paste them into a chat or commit them.",
   );
 }
@@ -70,7 +70,7 @@ if (!url || !serviceRoleKey) {
 // The guard that makes the destructive parts safe to write at all.
 if (!url.includes(STAGING_PROJECT_REF)) {
   fail(
-    `Refusing to run: ZOOT_STAGING_SUPABASE_URL does not point at staging (${STAGING_PROJECT_REF}).\n` +
+    `Refusing to run: XOOT_STAGING_SUPABASE_URL does not point at staging (${STAGING_PROJECT_REF}).\n` +
       "  This script rewrites a booking's schedule and status, and optionally resets passwords.\n" +
       "  On production that is data loss, so it is refused rather than confirmed.",
   );
@@ -145,7 +145,7 @@ if (Object.values(checks).some((pass) => !pass)) {
   fail("the booking is not callable — see the failed check above.");
 }
 
-const appOrigin = env("ZOOT_STAGING_APP_ORIGIN") || "https://staging.xoot.co.za";
+const appOrigin = env("XOOT_STAGING_APP_ORIGIN") || "https://staging.xoot.co.za";
 console.log(`
   Armed until ${windowCloses.toISOString()} (about ${Math.round(
     (windowCloses.getTime() - now) / 60_000,

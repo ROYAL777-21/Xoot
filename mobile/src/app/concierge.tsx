@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { type Href, useRouter } from 'expo-router';
 import { AccessibilityInfo, Animated, Easing, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
+import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/xoot-ui';
 import { Colors, Spacing, alpha } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { redactConciergeClientText } from '@/lib/concierge-privacy';
 import { invokeXootFunction } from '@/lib/edge-functions';
-import { getLocalXootConciergeReply } from '@/lib/zoot-concierge-fallback';
+import { getLocalXootConciergeReply } from '@/lib/xoot-concierge-fallback';
 import { useAuth } from '@/providers/auth-provider';
 
 type SupportResponse = {

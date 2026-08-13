@@ -10,7 +10,7 @@ WebBrowser.maybeCompleteAuthSession();
 export const getAuthRedirectUrl = (path = 'auth/callback') =>
   makeRedirectUri({
     // Must match the PRIMARY scheme in `app.config.ts` and an entry in Supabase's redirect
-    // allowlist. `zoot://` stays registered on the app, so an OAuth client still pointing at the
+    // allowlist. `xoot://` stays registered on the app, so an OAuth client still pointing at the
     // old callback keeps working until it is updated.
     scheme: 'xoot',
     path,

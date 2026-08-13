@@ -13,7 +13,7 @@ struct XootBookingLiveActivityWidget: Widget {
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(context.state.zooterName)
+                        Text(context.state.xooterName)
                             .font(.headline)
                         Text(context.state.serviceName)
                             .font(.caption)
@@ -21,7 +21,7 @@ struct XootBookingLiveActivityWidget: Widget {
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
-                    .zootLiquidGlassCard(cornerRadius: 16, tint: .zootCream)
+                    .xootLiquidGlassCard(cornerRadius: 16, tint: .xootCream)
                 }
 
                 DynamicIslandExpandedRegion(.trailing) {
@@ -32,7 +32,7 @@ struct XootBookingLiveActivityWidget: Widget {
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
-                    .zootLiquidGlassCard(cornerRadius: 16, tint: .zootSage)
+                    .xootLiquidGlassCard(cornerRadius: 16, tint: .xootSage)
                 }
 
                 DynamicIslandExpandedRegion(.bottom) {
@@ -48,7 +48,7 @@ struct XootBookingLiveActivityWidget: Widget {
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
-                .zootLiquidGlassCard(cornerRadius: 16, tint: .zootTerracotta)
+                .xootLiquidGlassCard(cornerRadius: 16, tint: .xootTerracotta)
                 }
             } compactLeading: {
                 Image(systemName: context.state.status.systemImage)
@@ -61,7 +61,7 @@ struct XootBookingLiveActivityWidget: Widget {
                 Image(systemName: context.state.status.systemImage)
                     .foregroundStyle(Color(red: 0.76, green: 0.40, blue: 0.29))
             }
-            .widgetURL(URL(string: "zoot://booking/\(context.attributes.bookingId)"))
+            .widgetURL(URL(string: "xoot://booking/\(context.attributes.bookingId)"))
             .keylineTint(Color(red: 0.76, green: 0.40, blue: 0.29))
         }
     }
@@ -88,18 +88,18 @@ private struct XootLockScreenLiveActivityView: View {
         XootLiquidGlassGroup(spacing: 14) {
             HStack(spacing: 14) {
                 ZStack {
-                    Circle().fill(Color.zootTerracotta.opacity(0.14))
+                    Circle().fill(Color.xootTerracotta.opacity(0.14))
                     Image(systemName: context.state.status.systemImage)
-                        .foregroundStyle(Color.zootTerracotta)
+                        .foregroundStyle(Color.xootTerracotta)
                         .font(.title3.bold())
                 }
                 .frame(width: 48, height: 48)
-                .zootLiquidGlassCard(cornerRadius: 24, tint: .zootTerracotta)
+                .xootLiquidGlassCard(cornerRadius: 24, tint: .xootTerracotta)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(context.state.statusLabel)
                         .font(.headline)
-                    Text("\(context.state.zooterName) - \(context.state.serviceName)")
+                    Text("\(context.state.xooterName) - \(context.state.serviceName)")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     Text(context.state.nextStep)
@@ -121,11 +121,11 @@ private struct XootLockScreenLiveActivityView: View {
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .zootLiquidGlassCard(cornerRadius: 18, tint: .zootSage)
+                    .xootLiquidGlassCard(cornerRadius: 18, tint: .xootSage)
                 }
             }
             .padding()
-            .zootLiquidGlassCard(cornerRadius: 30, tint: .zootCream)
+            .xootLiquidGlassCard(cornerRadius: 30, tint: .xootCream)
         }
     }
 }

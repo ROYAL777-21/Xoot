@@ -44,7 +44,7 @@ const governanceRpc = (supa: SupabaseServiceClient, fn: string, args: Record<str
 };
 
 export const getEdgeEnvironment = () =>
-  cleanText(Deno.env.get("ZOOT_APP_ENV") ?? Deno.env.get("APP_ENV") ?? Deno.env.get("ENVIRONMENT") ?? "production", 40)
+  cleanText(Deno.env.get("XOOT_APP_ENV") ?? Deno.env.get("APP_ENV") ?? Deno.env.get("ENVIRONMENT") ?? "production", 40)
     .toLowerCase() || "production";
 
 export const isOperationalControlEnabled = async (
@@ -125,7 +125,7 @@ export const consumeRateLimit = async (
     windowSeconds: number;
   },
 ) => {
-  const salt = Deno.env.get("ZOOT_RATE_LIMIT_HASH_SALT") ?? Deno.env.get("SUPABASE_URL") ?? "zoot";
+  const salt = Deno.env.get("XOOT_RATE_LIMIT_HASH_SALT") ?? Deno.env.get("SUPABASE_URL") ?? "xoot";
   const actorHash = await sha256Hex(`${salt}:${input.actor}`);
   const { data, error } = await governanceRpc(supa, "consume_rate_limit", {
     p_bucket: cleanText(input.bucket, 80),

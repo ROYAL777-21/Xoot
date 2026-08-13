@@ -42,10 +42,10 @@ describe("app identity", () => {
     // These two defaults generate the files the website serves. If they drift from `app.config.ts`
     // the app claims one identity and the site vouches for another, and universal links break with
     // no error anywhere.
-    expect(association).toContain(`"ZOOT_IOS_BUNDLE_ID", "${BUNDLE_ID}"`);
-    expect(association).toContain(`"ZOOT_ANDROID_PACKAGE_NAME", "${BUNDLE_ID}"`);
-    expect(envExample).toContain(`ZOOT_IOS_BUNDLE_ID=${BUNDLE_ID}`);
-    expect(envExample).toContain(`ZOOT_ANDROID_PACKAGE_NAME=${BUNDLE_ID}`);
+    expect(association).toContain(`"XOOT_IOS_BUNDLE_ID", "${BUNDLE_ID}"`);
+    expect(association).toContain(`"XOOT_ANDROID_PACKAGE_NAME", "${BUNDLE_ID}"`);
+    expect(envExample).toContain(`XOOT_IOS_BUNDLE_ID=${BUNDLE_ID}`);
+    expect(envExample).toContain(`XOOT_ANDROID_PACKAGE_NAME=${BUNDLE_ID}`);
     expect(envExample).toContain(`APPLE_BUNDLE_ID=${BUNDLE_ID}`);
   });
 

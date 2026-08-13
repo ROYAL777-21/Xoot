@@ -19,7 +19,7 @@ const sensitiveFields = new Set([
 const logRevealAttempt = async (
   supa: any,
   payload: {
-    zooterId: string;
+    xooterId: string;
     bookingId: string;
     field: string;
     wasWithinWindow: boolean;
@@ -27,7 +27,7 @@ const logRevealAttempt = async (
   },
 ) => {
   await supa.from("sensitive_data_access_log").insert({
-    zooter_id: payload.zooterId,
+    xooter_id: payload.xooterId,
     booking_id: payload.bookingId,
     field_accessed: payload.field,
     device_info: payload.deviceInfo,
@@ -61,23 +61,23 @@ Deno.serve(async (req) => {
 
     const { data: booking, error: bookingError } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id,household_profile_id,status")
+      .select("id,user_id,xooter_id,household_profile_id,status")
       .eq("id", bookingId)
       .maybeSingle();
 
     if (bookingError || !booking?.id) return fail("booking not found", origin, 404);
-    if (!booking.zooter_id || !booking.household_profile_id) return fail("booking is not assigned", origin, 409);
+    if (!booking.xooter_id || !booking.household_profile_id) return fail("booking is not assigned", origin, 409);
 
-    const { data: zooter, error: zooterError } = await supa
-      .from("zooters")
+    const { data: xooter, error: xooterError } = await supa
+      .from("xooters")
       .select("id,user_id")
-      .eq("id", booking.zooter_id)
+      .eq("id", booking.xooter_id)
       .maybeSingle();
 
-    if (zooterError || zooter?.user_id !== user.id) return fail("booking access denied", origin, 403);
+    if (xooterError || xooter?.user_id !== user.id) return fail("booking access denied", origin, 403);
 
     const { data: allowed, error: accessError } = await supa.rpc("can_access_sensitive_data", {
-      p_zooter_id: booking.zooter_id,
+      p_xooter_id: booking.xooter_id,
       p_booking_id: booking.id,
     });
 
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
 
     if (allowed !== true) {
       await logRevealAttempt(supa, {
-        zooterId: booking.zooter_id,
+        xooterId: booking.xooter_id,
         bookingId: booking.id,
         field,
         wasWithinWindow: false,
@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
     if (accessViewError || !access) return fail("sensitive access details unavailable", origin, 404);
 
     await logRevealAttempt(supa, {
-      zooterId: booking.zooter_id,
+      xooterId: booking.xooter_id,
       bookingId: booking.id,
       field,
       wasWithinWindow: true,

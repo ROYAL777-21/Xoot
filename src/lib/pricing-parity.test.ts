@@ -522,7 +522,7 @@ describe("client/server pricing parity", () => {
   it("applies the boost at both points where a rate is struck", () => {
     for (const path of [
       "supabase/functions/create-booking/index.ts",
-      "supabase/functions/respond-zooter-job/index.ts",
+      "supabase/functions/respond-xooter-job/index.ts",
     ]) {
       const src = readFileSync(join(process.cwd(), path), "utf8");
       expect(src, `${path} does not read an active boost`).toMatch(/activeBoostBpsFor\(supa,/);
@@ -581,13 +581,13 @@ describe("client/server pricing parity", () => {
       "utf8",
     );
     const respond = readFileSync(
-      join(process.cwd(), "supabase/functions/respond-zooter-job/index.ts"),
+      join(process.cwd(), "supabase/functions/respond-xooter-job/index.ts"),
       "utf8",
     );
 
     // Booking time: the rate comes from the assigned Xooter's own rank, per booking row, and is
     // null when nobody is assigned rather than defaulted to something that reads as agreed.
-    expect(create).toMatch(/commission_rate_bps: zooterId \? commissionRates\.get\(zooterId\)/);
+    expect(create).toMatch(/commission_rate_bps: xooterId \? commissionRates\.get\(xooterId\)/);
     expect(create).toMatch(/reliabilityScore: row\.reliability_score/);
     expect(create).toMatch(/completedJobs: row\.jobs_completed/);
 

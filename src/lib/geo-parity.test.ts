@@ -59,7 +59,7 @@ describe("client/server geo parity", () => {
 
 describe("the dead distance column", () => {
   it("is no longer used to rank or display anything", () => {
-    // `zooters.distance_mi` is a static seeded value: the same number for every customer. It was
+    // `xooters.distance_mi` is a static seeded value: the same number for every customer. It was
     // scored in `ai-match` and rendered to users as `${distance_mi} km`, which is a claim about a
     // person's travel that the app could not support.
     //
@@ -67,7 +67,7 @@ describe("the dead distance column", () => {
     // change — but nothing may read it again.
     const consumers = [
       "supabase/functions/ai-match/index.ts",
-      "src/components/zoot/XooterCard.tsx",
+      "src/components/xoot/XooterCard.tsx",
     ];
     for (const path of consumers) {
       const source = read(path).replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");

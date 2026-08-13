@@ -47,7 +47,7 @@ describe("concierge provider", () => {
     expect(checkBlock, "migration no longer declares a source CHECK constraint").toBeTruthy();
 
     const allowed = read(REPORT_ANSWER);
-    const bot = read("src/components/zoot/XootSupportBot.tsx");
+    const bot = read("src/components/xoot/XootSupportBot.tsx");
     const support = read("src/pages/app/Support.tsx");
 
     for (const source of emitted) {

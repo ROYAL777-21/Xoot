@@ -11,7 +11,7 @@
  * needs to answer — is this Xooter close enough that the trip is worth their time.
  *
  * ── What this replaces ─────────────────────────────────────────────────────────
- * `zooters.distance_mi` is a **static seeded column**. `ai-match` scored on it, so a Xooter was
+ * `xooters.distance_mi` is a **static seeded column**. `ai-match` scored on it, so a Xooter was
  * "3 km away" from every customer in the country, and `XooterCard` rendered that number to people
  * as if it meant something. Nothing computed a distance from anywhere to anywhere.
  *

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { CheckCircle2, Home, Plus, Share, Smartphone, Sparkles } from "lucide-react";
-import { Navbar } from "@/components/zoot/Navbar";
-import { Footer } from "@/components/zoot/Footer";
+import { Navbar } from "@/components/xoot/Navbar";
+import { Footer } from "@/components/xoot/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SEO } from "@/components/SEO";

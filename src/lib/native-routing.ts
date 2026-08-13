@@ -27,19 +27,19 @@ const staticRoutes = new Set([
   "/legal/cookies",
   "/legal/terms",
   "/legal/trust-safety",
-  "/legal/zooter-terms",
+  "/legal/xooter-terms",
   "/trust-centre",
-  "/zooter",
-  "/zooter/earnings",
-  "/zooter/jobs",
-  "/zooter/kyc",
-  "/zooter/profile",
-  "/zooter/training",
+  "/xooter",
+  "/xooter/earnings",
+  "/xooter/jobs",
+  "/xooter/kyc",
+  "/xooter/profile",
+  "/xooter/training",
 ]);
 
 const authRoutes = new Set(["/auth/callback", "/auth/reset"]);
 const queryPreservingRoutes = new Set(["/app", "/care-plus"]);
-const allowedSafeQueryKeys = new Set(["area", "date", "intent", "service", "zootBot"]);
+const allowedSafeQueryKeys = new Set(["area", "date", "intent", "service", "xootBot"]);
 
 /**
  * Every URL protocol that means "this app".
@@ -65,6 +65,7 @@ const allowedSafeQueryKeys = new Set(["area", "date", "intent", "service", "zoot
 const APP_URL_PROTOCOLS = new Set([
   "xoot:",
   "za.co.xoot.app:",
+  // Pre-rename identity, kept deliberately — see the note above.
   "zoot:",
   "za.co.zoothome.app:",
   "za.co.zoot.app:",
@@ -73,7 +74,7 @@ const APP_URL_PROTOCOLS = new Set([
  * Hosts whose links this app will open as in-app routes.
  *
  * `zoot.co.za` and `www.zoot.co.za` were removed 2026-08-07. They were rename debris — the
- * company-wide Zoot→Xoot sweep missed this list, and they appeared nowhere else in the repo:
+ * company-wide Xoot→Xoot sweep missed this list, and they appeared nowhere else in the repo:
  * no DNS, no config, no deploy surface, not even the old `zoothome.co.za` placeholder.
  *
  * They are removed rather than left harmless because this list is a trust boundary, not a
@@ -113,8 +114,8 @@ const screenRoutes = new Map<string, string>([
   ["care_plus", "/app/plans"],
   ["care_plus_apply", "/care-plus/apply"],
   ["email_verification", "/auth/callback"],
-  ["favorite_zooter", "/app/favorites"],
-  ["favourite_zooter", "/app/favorites"],
+  ["favorite_xooter", "/app/favorites"],
+  ["favourite_xooter", "/app/favorites"],
   ["favorites", "/app/favorites"],
   ["favourites", "/app/favorites"],
   ["gift", "/app/gifts"],
@@ -136,10 +137,10 @@ const screenRoutes = new Map<string, string>([
   ["support_case", "/app/support"],
   ["trust_centre", "/trust-centre"],
   ["trust_policy", "/app/insurance"],
-  ["zootcred", "/app/loyalty"],
-  ["zoot_cred", "/app/loyalty"],
-  ["zooter", "/zooter"],
-  ["zooter_jobs", "/zooter/jobs"],
+  ["xootcred", "/app/loyalty"],
+  ["xoot_cred", "/app/loyalty"],
+  ["xooter", "/xooter"],
+  ["xooter_jobs", "/xooter/jobs"],
 ]);
 
 type NativeRouteRecord = Record<string, unknown>;
@@ -229,7 +230,7 @@ const routeForUrl = (url: URL) => {
 
   if (/^\/app\/favorites\/[^/]+$/.test(path)) return "/app/favorites";
   if (/^\/app\/support\/[^/]+$/.test(path)) return "/app/support";
-  if (/^\/zooter\/jobs\/[^/]+$/.test(path)) return "/zooter/jobs";
+  if (/^\/xooter\/jobs\/[^/]+$/.test(path)) return "/xooter/jobs";
 
   return null;
 };
@@ -240,7 +241,7 @@ const toSafeRoute = (candidate: string) => {
   if (!value.startsWith("/")) value = `/${value}`;
 
   try {
-    return routeForUrl(new URL(value, "https://zoot.local"));
+    return routeForUrl(new URL(value, "https://xoot.local"));
   } catch {
     return null;
   }
@@ -267,7 +268,7 @@ const routeFromXootUrl = (url: URL) => {
   const mapped = screenRoutes.get(host);
   if (mapped && !pathname) return appendSafeQuery(mapped, url);
 
-  if (["app", "auth", "zooter", "care_plus", "care_plus_apply", "trust_centre"].includes(host)) {
+  if (["app", "auth", "xooter", "care_plus", "care_plus_apply", "trust_centre"].includes(host)) {
     return toSafeRoute(`/${host.replace(/_/g, "-")}${pathname}${url.search}${url.hash}`);
   }
 

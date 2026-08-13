@@ -6,7 +6,7 @@ type RuntimeFlags = {
 };
 
 const allowedAppEnvironments = new Set(["development", "staging", "production"]);
-const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local"]);
+const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.xoot.local"]);
 const publicSecretNamePattern = /(?:SERVICE_ROLE|CLIENT_SECRET|AUTH_TOKEN|PRIVATE_KEY|WEBHOOK_SECRET|SIGNING_SECRET|SECRET_KEY|API_SECRET)/i;
 const allowedPublicSecretLikeNames = new Set(["VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SENTRY_DSN"]);
 const publicMapboxTokenNames = ["VITE_MAPBOX_PUBLIC_TOKEN", "VITE_MAPBOX_BROWSER_TOKEN"];

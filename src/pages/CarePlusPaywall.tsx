@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
-import { Zoey } from "@/components/zoot/mascot/Zoey";
+import { Zoey } from "@/components/xoot/mascot/Zoey";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { readDraft } from "@/lib/onboarding";
@@ -21,7 +21,7 @@ import {
   type WinBackOffer,
 } from "@/lib/care-plus";
 import { ArrowRight, Check, Clock3 } from "lucide-react";
-import { TermsNotice } from "@/components/zoot/TermsNotice";
+import { TermsNotice } from "@/components/xoot/TermsNotice";
 
 /**
  * Care+ paywall, sold on outcomes rather than on savings.

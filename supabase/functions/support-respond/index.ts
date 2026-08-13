@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
 import { getConciergeCapabilities } from "../_shared/concierge-controls.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
-import { getXootKnowledgeReply, redactSupportText, sanitiseSupportText, zootKnowledgeContext, zootKnowledgeVersion } from "../_shared/zoot-knowledge.ts";
+import { getXootKnowledgeReply, redactSupportText, sanitiseSupportText, xootKnowledgeContext, xootKnowledgeVersion } from "../_shared/xoot-knowledge.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -50,7 +50,7 @@ const sanitiseUuid = (value: unknown) =>
     ? value
     : "";
 
-type UserRole = "user" | "zooter";
+type UserRole = "user" | "xooter";
 
 type AssistantResult = {
   response: string;
@@ -145,7 +145,7 @@ const CONCIERGE_INSTRUCTIONS = [
   "Do not perform or promise tools, actions, refunds, cancellations, bookings, claims, payouts, account changes, admin decisions or sensitive-data reveals.",
   "For anything risky, tell the user a human support reviewer will handle it in the app.",
   "Use this Xoot source-of-truth context and do not invent facts beyond it:",
-  zootKnowledgeContext,
+  xootKnowledgeContext,
 ].join(" ");
 
 /**
@@ -167,7 +167,7 @@ const buildConciergeUserTurn = ({
   signedIn: boolean;
 }) =>
   [
-    `Knowledge version: ${zootKnowledgeVersion}`,
+    `Knowledge version: ${xootKnowledgeVersion}`,
     `Role: ${role}`,
     `Authenticated: ${signedIn ? "yes" : "no"}`,
     `Subject: ${redactSupportText(subject)}`,
@@ -366,7 +366,7 @@ Deno.serve(async (req) => {
     const turnstileRequired =
       !signedIn &&
       (
-        Deno.env.get("ZOOT_REQUIRE_CONCIERGE_TURNSTILE") === "true" ||
+        Deno.env.get("XOOT_REQUIRE_CONCIERGE_TURNSTILE") === "true" ||
         (adminClient
           ? await isOperationalControlEnabled(adminClient, "support.turnstile_required").catch((error) => {
               console.warn("support Turnstile gate lookup failed", { error: error instanceof Error ? error.message : String(error) });
@@ -388,7 +388,7 @@ Deno.serve(async (req) => {
           source: "human_escalation",
           turnstile_required: turnstile.required,
           turnstile_configured: turnstile.configured,
-          knowledge_version: zootKnowledgeVersion,
+          knowledge_version: xootKnowledgeVersion,
         },
         turnstile.configured ? 403 : 503,
         origin,
@@ -421,14 +421,14 @@ Deno.serve(async (req) => {
             : "Xoot Concierge is switched off right now. Please sign in and open Support, and a human reviewer will help.",
           escalated: true,
           source: "human_escalation",
-          knowledge_version: zootKnowledgeVersion,
+          knowledge_version: xootKnowledgeVersion,
         },
         200,
         origin,
       );
     }
 
-    const userRole: UserRole = requestBody.role === "zooter" ? "zooter" : "user";
+    const userRole: UserRole = requestBody.role === "xooter" ? "xooter" : "user";
     const text = `${safeSubject} ${safeBody}`.toLowerCase();
     const escalated = shouldEscalate(text);
     // `safe_static_fallback` governs the approved-knowledge answer. It is `true` live, so this
@@ -509,7 +509,7 @@ Deno.serve(async (req) => {
         escalated: needsHumanReview,
         source: assistant.source,
         openai_request_id: assistant.requestId,
-        knowledge_version: assistant.knowledge_version ?? zootKnowledgeVersion,
+        knowledge_version: assistant.knowledge_version ?? xootKnowledgeVersion,
         knowledge_id: assistant.knowledge_id ?? null,
         answer_type: assistant.answer_type ?? (needsHumanReview ? "support_escalation" : "model_guidance"),
         confidence: assistant.confidence ?? null,

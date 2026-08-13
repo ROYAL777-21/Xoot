@@ -78,7 +78,7 @@ export async function captureOrSelectImage(): Promise<File | null> {
 
     const mimeType = blob.type || fallbackMime;
     const extension = extensionForMime(mimeType);
-    return new File([blob], `zoot-upload-${Date.now()}.${extension}`, { type: mimeType });
+    return new File([blob], `xoot-upload-${Date.now()}.${extension}`, { type: mimeType });
   } catch {
     return null;
   }

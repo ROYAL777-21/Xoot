@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
-import { redactSupportText, sanitiseSupportText } from "../_shared/zoot-knowledge.ts";
+import { redactSupportText, sanitiseSupportText } from "../_shared/xoot-knowledge.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -50,7 +50,7 @@ const getRequestActor = (req: Request, userId?: string | null) => {
   return `guest:${ip}:${userAgent.slice(0, 160)}`;
 };
 
-// Must match the CHECK constraint on `zoot_concierge_feedback.source`. An unrecognised value is
+// Must match the CHECK constraint on `xoot_concierge_feedback.source`. An unrecognised value is
 // not rejected here — line below coerces it to "unknown" — so a missing entry silently strips the
 // attribution off a report rather than failing. `concierge-provider.test.ts` pins all four copies.
 const allowedSources = new Set(["knowledge_base", "openrouter", "openai_responses", "human_escalation", "local_knowledge"]);
@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     if (!feedbackEnabled) return json({ error: "concierge feedback disabled" }, 403, origin);
 
     const body = await req.json();
-    const role = body.role === "zooter" ? "zooter" : "user";
+    const role = body.role === "xooter" ? "xooter" : "user";
     const source = allowedSources.has(body.source) ? body.source : "unknown";
     const reason = sanitiseSupportText(body.reason, 240) || "User reported this Concierge answer";
     const answerExcerpt = redactSupportText(sanitiseSupportText(body.answer_excerpt, 900));
@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
     }
 
     const { data, error } = await adminClient
-      .from("zoot_concierge_feedback")
+      .from("xoot_concierge_feedback")
       .insert({
         user_id: authData.user?.id ?? null,
         role,

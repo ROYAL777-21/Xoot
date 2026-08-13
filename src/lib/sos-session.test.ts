@@ -204,7 +204,7 @@ describe("dispatch, and what happens when half of it works", () => {
  * for the rule.
  */
 describe("the SOS control", () => {
-  const button = readFileSync(join(process.cwd(), "src/components/zoot/SosButton.tsx"), "utf8")
+  const button = readFileSync(join(process.cwd(), "src/components/xoot/SosButton.tsx"), "utf8")
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*\/\/.*$/gm, "");
 

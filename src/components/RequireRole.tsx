@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
-type Role = "admin" | "user" | "zooter";
+type Role = "admin" | "user" | "xooter";
 
 export const RequireRole = ({ role, children }: { role: Role; children: ReactNode }) => {
   const { user, loading } = useAuth();
@@ -35,7 +35,7 @@ export const RequireRole = ({ role, children }: { role: Role; children: ReactNod
   }
   if (!user) return <Navigate to="/auth" state={{ from: location }} replace />;
   if (!hasRole) {
-    if (role === "zooter") return <Navigate to="/zooter/apply" replace />;
+    if (role === "xooter") return <Navigate to="/xooter/apply" replace />;
     return <Navigate to="/app" replace />;
   }
   return <>{children}</>;

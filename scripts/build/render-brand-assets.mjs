@@ -36,7 +36,7 @@ import path from "node:path";
 const INPUTS = [
   "remotion/Root.tsx",
   "remotion/XootMark.tsx",
-  "src/components/zoot/mascot/ZoeyArt.tsx",
+  "src/components/xoot/mascot/ZoeyArt.tsx",
 ];
 
 const MANIFEST = "scripts/build/render-manifest.json";

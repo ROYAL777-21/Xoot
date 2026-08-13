@@ -23,7 +23,7 @@ const codeOf = (path: string) =>
     .replace(/^\s*\/\/.*$/gm, "");
 
 const training = codeOf("supabase/functions/training-module/index.ts");
-const jobs = codeOf("supabase/functions/respond-zooter-job/index.ts");
+const jobs = codeOf("supabase/functions/respond-xooter-job/index.ts");
 const lockdown = readFileSync(
   join(root, "supabase/migrations/20260802120000_client_write_surface_lockdown.sql"),
   "utf8",
@@ -77,15 +77,15 @@ describe("training is graded by the server", () => {
 
 describe("job state is a server transition", () => {
   it("derives ownership from the session rather than the payload", () => {
-    // Reading the zooter from the caller and comparing to the job is the safe direction;
-    // taking zooter_id from the body and looking the job up by it is not.
+    // Reading the xooter from the caller and comparing to the job is the safe direction;
+    // taking xooter_id from the body and looking the job up by it is not.
     expect(jobs).toMatch(/\.eq\("user_id",\s*user\.id\)/);
-    expect(jobs).not.toMatch(/body\.zooterId|body\.zooter_id/);
+    expect(jobs).not.toMatch(/body\.xooterId|body\.xooter_id/);
   });
 
   it("does not confirm that someone else's job exists", () => {
     // Distinguishing "not found" from "not yours" is enough to enumerate the dispatch queue.
-    const denial = jobs.slice(jobs.indexOf("zooter.id !== job.zooter_id"));
+    const denial = jobs.slice(jobs.indexOf("xooter.id !== job.xooter_id"));
     expect(denial.slice(0, 200)).toMatch(/job not found/);
   });
 

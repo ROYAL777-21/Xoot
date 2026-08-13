@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
   const preflight = handlePreflight(req, origin);
   if (preflight) return preflight;
 
-  const signature = req.headers.get("x-zoot-webhook-signature") ?? req.headers.get("x-stitch-signature") ?? req.headers.get("x-ozow-signature");
+  const signature = req.headers.get("x-xoot-webhook-signature") ?? req.headers.get("x-stitch-signature") ?? req.headers.get("x-ozow-signature");
   const rawBody = await req.text();
   const signatureResult = await verifyWebhookSignature(rawBody, signature);
   if (!signatureResult.ok) return fail(signatureResult.reason, origin, 401);
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
     if (payment.booking_id) {
       const { data: booking } = await supa
         .from("bookings")
-        .select("id,user_id,zooter_id,scheduled_at,service_type,status")
+        .select("id,user_id,xooter_id,scheduled_at,service_type,status")
         .eq("id", payment.booking_id)
         .maybeSingle();
 
@@ -171,17 +171,17 @@ Deno.serve(async (req) => {
         meta: { payment_record_id: payment.id },
       });
 
-      if (bookingForPayment.zooter_id) {
+      if (bookingForPayment.xooter_id) {
         const { data: existingJob } = await supa
-          .from("zooter_jobs")
+          .from("xooter_jobs")
           .select("id")
           .eq("booking_id", bookingForPayment.id)
-          .eq("zooter_id", bookingForPayment.zooter_id)
+          .eq("xooter_id", bookingForPayment.xooter_id)
           .maybeSingle();
         if (existingJob?.id) {
-          await supa.from("zooter_jobs").update({ state: "offered" }).eq("id", existingJob.id);
+          await supa.from("xooter_jobs").update({ state: "offered" }).eq("id", existingJob.id);
         } else {
-          await supa.from("zooter_jobs").insert({ booking_id: bookingForPayment.id, zooter_id: bookingForPayment.zooter_id, state: "offered" });
+          await supa.from("xooter_jobs").insert({ booking_id: bookingForPayment.id, xooter_id: bookingForPayment.xooter_id, state: "offered" });
         }
       }
 

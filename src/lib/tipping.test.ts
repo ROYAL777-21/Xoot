@@ -127,16 +127,16 @@ describe("tipping", () => {
     // `settled_at` is the visibility gate. A customer able to set it could reveal their
     // own tip early; the row builder must not offer it at all, and the database trigger
     // reverts it regardless.
-    const row = buildTipRow({ bookingId: "b1", userId: "u1", zooterId: "z1", cents: 3000 });
-    expect(row).toEqual({ booking_id: "b1", user_id: "u1", zooter_id: "z1", amount_cents: 3000 });
+    const row = buildTipRow({ bookingId: "b1", userId: "u1", xooterId: "z1", cents: 3000 });
+    expect(row).toEqual({ booking_id: "b1", user_id: "u1", xooter_id: "z1", amount_cents: 3000 });
     expect(Object.keys(row!)).not.toContain("settled_at");
   });
 
   it("builds no row when there is no tip to write", () => {
     for (const cents of [null, 0, -100, 2050, MAX_TIP_CENTS + 100]) {
-      expect(buildTipRow({ bookingId: "b1", userId: "u1", zooterId: "z1", cents })).toBeNull();
+      expect(buildTipRow({ bookingId: "b1", userId: "u1", xooterId: "z1", cents })).toBeNull();
     }
     // An unassigned booking still accepts a tip; the payout resolves the Xooter later.
-    expect(buildTipRow({ bookingId: "b1", userId: "u1", zooterId: null, cents: 2000 })?.zooter_id).toBeNull();
+    expect(buildTipRow({ bookingId: "b1", userId: "u1", xooterId: null, cents: 2000 })?.xooter_id).toBeNull();
   });
 });

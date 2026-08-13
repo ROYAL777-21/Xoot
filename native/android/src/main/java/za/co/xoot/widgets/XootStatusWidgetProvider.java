@@ -18,15 +18,15 @@ public class XootStatusWidgetProvider extends AppWidgetProvider {
   }
 
   private static void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
-    int layoutId = resId(context, "layout", "zoot_status_widget");
+    int layoutId = resId(context, "layout", "xoot_status_widget");
     if (layoutId == 0) return;
 
     RemoteViews views = new RemoteViews(context.getPackageName(), layoutId);
-    views.setTextViewText(resId(context, "id", "zoot_widget_star"), "*");
-    views.setTextViewText(resId(context, "id", "zoot_widget_eyebrow"), "Xoot");
-    views.setTextViewText(resId(context, "id", "zoot_widget_title"), "Next clean");
-    views.setTextViewText(resId(context, "id", "zoot_widget_body"), "Open Xoot for live booking status.");
-    views.setTextViewText(resId(context, "id", "zoot_widget_action"), "View in app");
+    views.setTextViewText(resId(context, "id", "xoot_widget_star"), "*");
+    views.setTextViewText(resId(context, "id", "xoot_widget_eyebrow"), "Xoot");
+    views.setTextViewText(resId(context, "id", "xoot_widget_title"), "Next clean");
+    views.setTextViewText(resId(context, "id", "xoot_widget_body"), "Open Xoot for live booking status.");
+    views.setTextViewText(resId(context, "id", "xoot_widget_action"), "View in app");
 
     PendingIntent openApp = PendingIntent.getActivity(
       context,
@@ -35,8 +35,8 @@ public class XootStatusWidgetProvider extends AppWidgetProvider {
         .setPackage(context.getPackageName()),
       pendingIntentFlags()
     );
-    views.setOnClickPendingIntent(resId(context, "id", "zoot_widget_root"), openApp);
-    views.setOnClickPendingIntent(resId(context, "id", "zoot_widget_action"), openApp);
+    views.setOnClickPendingIntent(resId(context, "id", "xoot_widget_root"), openApp);
+    views.setOnClickPendingIntent(resId(context, "id", "xoot_widget_action"), openApp);
 
     appWidgetManager.updateAppWidget(appWidgetId, views);
   }

@@ -1,5 +1,5 @@
 param(
-  [string]$ProjectRef = $(if ($env:ZOOT_STAGING_SUPABASE_PROJECT_REF) { $env:ZOOT_STAGING_SUPABASE_PROJECT_REF } else { "fxmxyabdjqviqbcxmvlp" }),
+  [string]$ProjectRef = $(if ($env:XOOT_STAGING_SUPABASE_PROJECT_REF) { $env:XOOT_STAGING_SUPABASE_PROJECT_REF } else { "fxmxyabdjqviqbcxmvlp" }),
   [string]$EnvFile,
   [string]$SupabaseVersion = $(if ($env:SUPABASE_CLI_VERSION) { $env:SUPABASE_CLI_VERSION } else { "2.108.0" })
 )
@@ -15,7 +15,7 @@ if (-not $env:SUPABASE_ACCESS_TOKEN) {
 }
 
 if ([string]::IsNullOrWhiteSpace($EnvFile)) {
-  throw "Pass -EnvFile with a local, uncommitted secrets file. Example: -EnvFile C:\secure\zoot-staging-edge.env"
+  throw "Pass -EnvFile with a local, uncommitted secrets file. Example: -EnvFile C:\secure\xoot-staging-edge.env"
 }
 
 $resolvedEnvFile = Resolve-Path -LiteralPath $EnvFile
@@ -25,5 +25,5 @@ if ($resolvedEnvFile.Path.StartsWith($repoRoot.Path, [System.StringComparison]::
   throw "Refusing to read Edge secrets from inside the repository. Keep real secret files outside the repo."
 }
 
-& npx.cmd -y "supabase@$SupabaseVersion" login --token $env:SUPABASE_ACCESS_TOKEN --name "zoot-edge-secrets"
+& npx.cmd -y "supabase@$SupabaseVersion" login --token $env:SUPABASE_ACCESS_TOKEN --name "xoot-edge-secrets"
 & npx.cmd -y "supabase@$SupabaseVersion" secrets set --project-ref $ProjectRef --env-file $resolvedEnvFile.Path

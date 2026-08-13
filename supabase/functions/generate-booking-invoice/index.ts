@@ -20,10 +20,10 @@ const invoiceReadyStatuses = new Set(["completed", "rated"]);
 const paidStatuses = new Set(["paid", "admin_confirmed"]);
 
 const getInvoiceLegalConfig = () => {
-  const legalEntityName = (Deno.env.get("ZOOT_INVOICE_LEGAL_ENTITY") ?? "").trim();
-  const legalEntityRegistration = (Deno.env.get("ZOOT_INVOICE_LEGAL_ENTITY_REGISTRATION") ?? "").trim();
-  const vatRate = normaliseVatRate(Deno.env.get("ZOOT_INVOICE_VAT_RATE") ?? "0");
-  const vatNumber = (Deno.env.get("ZOOT_INVOICE_VAT_NUMBER") ?? "").trim();
+  const legalEntityName = (Deno.env.get("XOOT_INVOICE_LEGAL_ENTITY") ?? "").trim();
+  const legalEntityRegistration = (Deno.env.get("XOOT_INVOICE_LEGAL_ENTITY_REGISTRATION") ?? "").trim();
+  const vatRate = normaliseVatRate(Deno.env.get("XOOT_INVOICE_VAT_RATE") ?? "0");
+  const vatNumber = (Deno.env.get("XOOT_INVOICE_VAT_NUMBER") ?? "").trim();
 
   if (!legalEntityName) return { ok: false as const, error: "invoice legal entity is not configured" };
   if (vatRate > 0 && !vatNumber) return { ok: false as const, error: "invoice VAT number is required when VAT rate is configured" };
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
     const { data: booking, error: bookingError } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id,service,service_type,scheduled_at,duration_hours,address,status,price,notes,job_completed_at,completed_at")
+      .select("id,user_id,xooter_id,service,service_type,scheduled_at,duration_hours,address,status,price,notes,job_completed_at,completed_at")
       .eq("id", bookingId)
       .maybeSingle();
     if (bookingError || !booking?.id) return fail("booking not found", origin, 404);

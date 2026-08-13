@@ -6,7 +6,7 @@ import WidgetKit
 enum XootWidgetKind: String, AppEnum {
     case nextBooking
     case carePlusReadiness
-    case zootCred
+    case xootCred
     case favouriteXooter
     case acceptedXooterJob
 
@@ -14,7 +14,7 @@ enum XootWidgetKind: String, AppEnum {
     static var caseDisplayRepresentations: [XootWidgetKind: DisplayRepresentation] = [
         .nextBooking: "Next Booking",
         .carePlusReadiness: "Care+ Readiness",
-        .zootCred: "XootCred",
+        .xootCred: "XootCred",
         .favouriteXooter: "Favourite Xooter",
         .acceptedXooterJob: "Accepted Xooter Job",
     ]
@@ -49,7 +49,7 @@ struct XootWidgetEntry: TimelineEntry {
 @available(iOSApplicationExtension 17.0, *)
 struct XootWidgetProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> XootWidgetEntry {
-        XootWidgetEntry(date: .now, kind: "Xoot", title: "Safe summary", value: "Open app", detail: "Live details stay inside Xoot", deeplink: URL(string: "zoot://app")!)
+        XootWidgetEntry(date: .now, kind: "Xoot", title: "Safe summary", value: "Open app", detail: "Live details stay inside Xoot", deeplink: URL(string: "xoot://app")!)
     }
 
     func snapshot(for configuration: XootWidgetConfigurationIntent, in context: Context) async -> XootWidgetEntry {
@@ -63,15 +63,15 @@ struct XootWidgetProvider: AppIntentTimelineProvider {
     private func entry(for kind: XootWidgetKind) -> XootWidgetEntry {
         switch kind {
         case .nextBooking:
-            return XootWidgetEntry(date: .now, kind: "Booking", title: "Next clean", value: "Open app", detail: "View live time and safe status in Xoot", deeplink: URL(string: "zoot://bookings")!)
+            return XootWidgetEntry(date: .now, kind: "Booking", title: "Next clean", value: "Open app", detail: "View live time and safe status in Xoot", deeplink: URL(string: "xoot://bookings")!)
         case .carePlusReadiness:
-            return XootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "Open app", detail: "Check live member reminders in Xoot", deeplink: URL(string: "zoot://care-plus")!)
-        case .zootCred:
-            return XootWidgetEntry(date: .now, kind: "XootCred", title: "Available", value: "Open app", detail: "Balance and expiry stay in Xoot", deeplink: URL(string: "zoot://loyalty")!)
+            return XootWidgetEntry(date: .now, kind: "Care+", title: "Home readiness", value: "Open app", detail: "Check live member reminders in Xoot", deeplink: URL(string: "xoot://care-plus")!)
+        case .xootCred:
+            return XootWidgetEntry(date: .now, kind: "XootCred", title: "Available", value: "Open app", detail: "Balance and expiry stay in Xoot", deeplink: URL(string: "xoot://loyalty")!)
         case .favouriteXooter:
-            return XootWidgetEntry(date: .now, kind: "Favourite", title: "Favourite Xooter", value: "Open app", detail: "Book again from your signed-in profile", deeplink: URL(string: "zoot://favorites")!)
+            return XootWidgetEntry(date: .now, kind: "Favourite", title: "Favourite Xooter", value: "Open app", detail: "Book again from your signed-in profile", deeplink: URL(string: "xoot://favorites")!)
         case .acceptedXooterJob:
-            return XootWidgetEntry(date: .now, kind: "Xooter", title: "Accepted job", value: "Open route", detail: "Address opens in the authenticated job screen", deeplink: URL(string: "zoot://zooter/jobs")!)
+            return XootWidgetEntry(date: .now, kind: "Xooter", title: "Accepted job", value: "Open route", detail: "Address opens in the authenticated job screen", deeplink: URL(string: "xoot://xooter/jobs")!)
         }
     }
 }
@@ -100,11 +100,11 @@ struct XootWidgetEntryView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .top, spacing: 10) {
                         XootRoboticStarMark()
-                            .zootLiquidGlassCard(cornerRadius: 17, tint: .zootGold, interactive: true)
+                            .xootLiquidGlassCard(cornerRadius: 17, tint: .xootGold, interactive: true)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Xoot")
                                 .font(.caption.bold())
-                                .foregroundStyle(Color.zootGold)
+                                .foregroundStyle(Color.xootGold)
                             Text(entry.kind)
                                 .font(.caption2.weight(.semibold))
                                 .foregroundStyle(.secondary)
@@ -112,7 +112,7 @@ struct XootWidgetEntryView: View {
                         Spacer(minLength: 6)
                         Image(systemName: "arrow.up.forward")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(Color.zootGold.opacity(0.88))
+                            .foregroundStyle(Color.xootGold.opacity(0.88))
                     }
 
                     Spacer(minLength: 0)
@@ -131,7 +131,7 @@ struct XootWidgetEntryView: View {
                         .lineLimit(2)
                 }
                 .padding()
-                .zootLiquidGlassCard(cornerRadius: 24, tint: .zootCream, interactive: true)
+                .xootLiquidGlassCard(cornerRadius: 24, tint: .xootCream, interactive: true)
             }
         }
     }

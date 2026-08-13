@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "zoot-mobile",
+      "name": "xoot-mobile",
       "dependencies": {
         "@expo/ui": "~56.0.21",
         "@rnmapbox/maps": "^10.3.1",

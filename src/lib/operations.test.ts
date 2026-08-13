@@ -67,7 +67,7 @@ describe("Xoot operating rules", () => {
   it("routes notifications through the approved channel hierarchy", () => {
     expect(routeNotificationChannel("booking_confirmed")).toEqual(["in_app", "brevo_email"]);
     expect(routeNotificationChannel("contractor_on_the_way")).toEqual(["in_app", "whatsapp_urgent"]);
-    expect(routeNotificationChannel("zootcred_update")).toEqual(["in_app"]);
+    expect(routeNotificationChannel("xootcred_update")).toEqual(["in_app"]);
     expect(routeNotificationChannel("payment_receipt")).toEqual(["brevo_email"]);
   });
 
@@ -121,8 +121,8 @@ describe("Xoot operating rules", () => {
     const eligible = {
       featureEnabled: true,
       explicitOptIn: true,
-      zooterTier: "elite_verified",
-      zooterVerified: true,
+      xooterTier: "elite_verified",
+      xooterVerified: true,
       equipmentEvidenceApproved: true,
       areaPilotApproved: true,
       legalApproved: true,
@@ -131,7 +131,7 @@ describe("Xoot operating rules", () => {
     expect(canOfferXootBlack(eligible)).toBe(true);
     expect(canOfferXootBlack({ ...eligible, featureEnabled: false })).toBe(false);
     expect(canOfferXootBlack({ ...eligible, explicitOptIn: false })).toBe(false);
-    expect(canOfferXootBlack({ ...eligible, zooterTier: "standard" })).toBe(false);
+    expect(canOfferXootBlack({ ...eligible, xooterTier: "standard" })).toBe(false);
     expect(canOfferXootBlack({ ...eligible, equipmentEvidenceApproved: false })).toBe(false);
     expect(canOfferXootBlack({ ...eligible, areaPilotApproved: false })).toBe(false);
     expect(canOfferXootBlack({ ...eligible, legalApproved: false })).toBe(false);
@@ -139,7 +139,7 @@ describe("Xoot operating rules", () => {
 
   it("builds an explicit Xoot Black line item only from a positive backend amount", () => {
     expect(buildXootBlackLineItem(175.555)).toEqual({
-      item_key: "zoot_black_service",
+      item_key: "xoot_black_service",
       label: "Xoot Black service",
       quantity: 1,
       unit_amount: 175.56,
@@ -175,7 +175,7 @@ describe("Xoot operating rules", () => {
       provider: "ozow",
       bookingId: "booking-123456789",
       paymentId: "payment-abcdefghi",
-    })).toBe("ZOOT-OZOW-BOOKING1-PAYMENTA");
+    })).toBe("XOOT-OZOW-BOOKING1-PAYMENTA");
 
     expect(buildPaymentReconciliationReference({
       provider: "stitch",

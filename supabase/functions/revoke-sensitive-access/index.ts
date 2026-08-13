@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     const { data: booking } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id,status,sensitive_data_revoked_at")
+      .select("id,user_id,xooter_id,status,sensitive_data_revoked_at")
       .eq("id", bookingId)
       .maybeSingle();
     if (!booking?.id) return fail("booking not found", origin, 404);
@@ -44,9 +44,9 @@ Deno.serve(async (req) => {
       .eq("id", booking.id);
 
     let contractorStillAllowed = false;
-    if (booking.zooter_id) {
+    if (booking.xooter_id) {
       const { data } = await supa.rpc("can_access_sensitive_data", {
-        p_zooter_id: booking.zooter_id,
+        p_xooter_id: booking.xooter_id,
         p_booking_id: booking.id,
       });
       contractorStillAllowed = data === true;

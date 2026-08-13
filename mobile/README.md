@@ -54,4 +54,4 @@ npx eas-cli@20.5.0 build -p ios --profile preview-simulator
 npx eas-cli@20.5.0 build -p android --profile preview
 ```
 
-EAS project initialization is complete for `@don-pacho777/zoot`. Use EAS environments for `development`, `preview`, and `production`. The `preview` iOS profile is for physical-device internal distribution and requires Apple credentials; `preview-simulator` produces an iOS simulator artifact without provisioning a device. Store file credentials and secrets in EAS or provider dashboards, not in source control.
+EAS project initialization is complete for `@don-pacho777/xoot`. Use EAS environments for `development`, `preview`, and `production`. The `preview` iOS profile is for physical-device internal distribution and requires Apple credentials; `preview-simulator` produces an iOS simulator artifact without provisioning a device. Store file credentials and secrets in EAS or provider dashboards, not in source control.

@@ -15,7 +15,7 @@
  * **Why this is urgent** (see blocker.md): `getAllowedOrigins()` reads this variable and only
  * falls back to `defaultAllowedOrigins` compiled into the function at deploy time. Every
  * function deployed to production predates the xoot.co.za change, so every one of them still
- * has `zoothome.co.za` baked in and answers `403 origin not allowed` to the live site. Setting
+ * has `xoothome.co.za` baked in and answers `403 origin not allowed` to the live site. Setting
  * this corrects all 42 at once, with no redeploy — which matters, because redeploying
  * `create-booking` would also reprice every booking.
  *

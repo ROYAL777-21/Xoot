@@ -14,8 +14,8 @@ import {
   WalletCards,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Navbar } from "@/components/zoot/Navbar";
-import { Footer } from "@/components/zoot/Footer";
+import { Navbar } from "@/components/xoot/Navbar";
+import { Footer } from "@/components/xoot/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SEO } from "@/components/SEO";
@@ -65,7 +65,7 @@ const formatDate = (value?: string | null) =>
 const CarePlus = () => {
   const carePlus = useCarePlus();
   const household = useHouseholdOperatingLayer();
-  const zootCred = useXootCred();
+  const xootCred = useXootCred();
 
   const joinCarePlus = async () => {
     try {
@@ -143,7 +143,7 @@ const CarePlus = () => {
                 <Loader2 className="h-7 w-7 animate-spin text-primary" />
               </Card>
             ) : (
-              <CarePlusStatePanel carePlus={carePlus} household={household} zootCred={zootCred} onJoin={joinCarePlus} />
+              <CarePlusStatePanel carePlus={carePlus} household={household} xootCred={xootCred} onJoin={joinCarePlus} />
             )}
           </div>
         </section>
@@ -252,7 +252,7 @@ type CarePlusHook = ReturnType<typeof useCarePlus>;
 type HouseholdHook = ReturnType<typeof useHouseholdOperatingLayer>;
 type XootCredHook = ReturnType<typeof useXootCred>;
 
-const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlus: CarePlusHook; household: HouseholdHook; zootCred: XootCredHook; onJoin: () => Promise<void> }) => {
+const CarePlusStatePanel = ({ carePlus, household, xootCred, onJoin }: { carePlus: CarePlusHook; household: HouseholdHook; xootCred: XootCredHook; onJoin: () => Promise<void> }) => {
   const state = carePlus.state;
 
   if (state.status === "unauthenticated") {
@@ -312,10 +312,10 @@ const CarePlusStatePanel = ({ carePlus, household, zootCred, onJoin }: { carePlu
         </div>
         <div className="grid gap-3 text-center sm:grid-cols-3">
           <Metric label="Renews" value={formatDate(state.membership.renewsAt)} />
-          <Metric label="XootCred" value={zootCred.loading ? "..." : formatZAR(zootCred.availableBalance)} />
-          <Metric label="Welcome credit" value={zootCred.loading ? "..." : formatZAR(zootCred.welcomeCredit)} />
+          <Metric label="XootCred" value={xootCred.loading ? "..." : formatZAR(xootCred.availableBalance)} />
+          <Metric label="Welcome credit" value={xootCred.loading ? "..." : formatZAR(xootCred.welcomeCredit)} />
         </div>
-        <p className="mt-4 text-xs text-background/70">Welcome credit expires: {formatDate(zootCred.welcomeCreditExpiresAt)}</p>
+        <p className="mt-4 text-xs text-background/70">Welcome credit expires: {formatDate(xootCred.welcomeCreditExpiresAt)}</p>
       </Card>
 
       <div className="grid gap-5 md:grid-cols-2">
@@ -415,7 +415,7 @@ const CarePlusSignupPass = ({
         : "Join to make repeat cleaning feel remembered, protected and easier to rebook.";
 
   return (
-    <div className="liquid-glass-shell zoot-concierge-panel rounded-4xl p-5 shadow-warm sm:p-6">
+    <div className="liquid-glass-shell xoot-concierge-panel rounded-4xl p-5 shadow-warm sm:p-6">
       <div className="liquid-glass-readable">
         <div className="rounded-[1.6rem] border border-white/20 bg-foreground p-5 text-background shadow-warm sm:p-6">
           <div className="flex items-start justify-between gap-4">

@@ -284,7 +284,7 @@ Deno.serve(async (req) => {
 
     // Accepting creates the payment row: now there is a real user to own it, which is why
     // `payer_user_id` is nullable until here.
-    const providerReference = `zoot_split_${resolvedSplitId}_${Date.now()}`;
+    const providerReference = `xoot_split_${resolvedSplitId}_${Date.now()}`;
     const { data: payment, error: paymentError } = await supa
       .from("payment_records")
       .insert({

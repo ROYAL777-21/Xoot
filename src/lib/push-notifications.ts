@@ -59,7 +59,7 @@ const dispatchNativeRoute = (payload: unknown, onRoute?: (route: string) => void
   const route = resolveNativeRoute(payload);
   if (!route) return;
   if (onRoute) onRoute(route);
-  else window.dispatchEvent(new CustomEvent("zoot:native-route", { detail: payload }));
+  else window.dispatchEvent(new CustomEvent("xoot:native-route", { detail: payload }));
 };
 
 export async function initialisePushNotifications(

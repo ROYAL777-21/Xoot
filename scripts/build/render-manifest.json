@@ -2,7 +2,7 @@
   "inputs": [
     "remotion/Root.tsx",
     "remotion/XootMark.tsx",
-    "src/components/zoot/mascot/ZoeyArt.tsx"
+    "src/components/xoot/mascot/ZoeyArt.tsx"
   ],
-  "sha256": "3e800ddb4e66b741dd1d33717e088a533980acf1f7eb38b9c7a559b49fc5f2b9"
+  "sha256": "a20e269a429b168ee5637162559f84ea6041320da1ec8e0913e32619bb35b834"
 }

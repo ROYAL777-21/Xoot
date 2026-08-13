@@ -2,8 +2,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 const STAGING_PROJECT_REF = "fxmxyabdjqviqbcxmvlp";
-const SMOKE_TAG = "ZOOT_PHASE1_ROLE_SMOKE";
-const CHAT_SMOKE_FLAG = "zoot_phase2_booking_chat_smoke";
+const SMOKE_TAG = "XOOT_PHASE1_ROLE_SMOKE";
+const CHAT_SMOKE_FLAG = "xoot_phase2_booking_chat_smoke";
 const POLL_INTERVAL_MS = 5_000;
 const NOTIFICATION_TIMEOUT_MS = 90_000;
 
@@ -16,7 +16,7 @@ const fail = (message) => {
 };
 
 const info = (message) => {
-  console.log(`[zoot-smoke] ${message}`);
+  console.log(`[xoot-smoke] ${message}`);
 };
 
 if (!mode) {
@@ -25,35 +25,35 @@ if (!mode) {
 
 const env = (name) => String(process.env[name] ?? "").trim();
 const requiredEnv = [
-  "ZOOT_STAGING_SUPABASE_URL",
-  "ZOOT_STAGING_SUPABASE_PUBLISHABLE_KEY",
-  "ZOOT_STAGING_SERVICE_ROLE_KEY",
-  "ZOOT_SMOKE_CLIENT_EMAIL",
-  "ZOOT_SMOKE_CLIENT_PASSWORD",
-  "ZOOT_SMOKE_ADMIN_EMAIL",
-  "ZOOT_SMOKE_ADMIN_PASSWORD",
-  "ZOOT_SMOKE_ZOOTER_EMAIL",
-  "ZOOT_SMOKE_ZOOTER_PASSWORD",
+  "XOOT_STAGING_SUPABASE_URL",
+  "XOOT_STAGING_SUPABASE_PUBLISHABLE_KEY",
+  "XOOT_STAGING_SERVICE_ROLE_KEY",
+  "XOOT_SMOKE_CLIENT_EMAIL",
+  "XOOT_SMOKE_CLIENT_PASSWORD",
+  "XOOT_SMOKE_ADMIN_EMAIL",
+  "XOOT_SMOKE_ADMIN_PASSWORD",
+  "XOOT_SMOKE_XOOTER_EMAIL",
+  "XOOT_SMOKE_XOOTER_PASSWORD",
 ];
 
 for (const name of requiredEnv) {
   if (!env(name)) fail(`Missing ${name}. Do not paste secrets into chat; set it in your local shell.`);
 }
 
-if (env("ZOOT_ALLOW_STAGING_SMOKE") !== "true") {
-  fail("Set ZOOT_ALLOW_STAGING_SMOKE=true to confirm this should modify staging test data.");
+if (env("XOOT_ALLOW_STAGING_SMOKE") !== "true") {
+  fail("Set XOOT_ALLOW_STAGING_SMOKE=true to confirm this should modify staging test data.");
 }
 
-const stagingUrl = env("ZOOT_STAGING_SUPABASE_URL");
+const stagingUrl = env("XOOT_STAGING_SUPABASE_URL");
 const stagingHost = new URL(stagingUrl).hostname;
 if (stagingHost !== `${STAGING_PROJECT_REF}.supabase.co`) {
   fail(`Refusing to run outside staging project ${STAGING_PROJECT_REF}. Got host ${stagingHost}.`);
 }
 
 const emails = [
-  env("ZOOT_SMOKE_CLIENT_EMAIL").toLowerCase(),
-  env("ZOOT_SMOKE_ADMIN_EMAIL").toLowerCase(),
-  env("ZOOT_SMOKE_ZOOTER_EMAIL").toLowerCase(),
+  env("XOOT_SMOKE_CLIENT_EMAIL").toLowerCase(),
+  env("XOOT_SMOKE_ADMIN_EMAIL").toLowerCase(),
+  env("XOOT_SMOKE_XOOTER_EMAIL").toLowerCase(),
 ];
 if (new Set(emails).size !== emails.length) {
   fail("Smoke client/admin/Xooter emails must be three distinct staging-only accounts.");
@@ -67,8 +67,8 @@ const authOptions = {
   },
 };
 
-const service = createClient(stagingUrl, env("ZOOT_STAGING_SERVICE_ROLE_KEY"), authOptions);
-const makeUserClient = () => createClient(stagingUrl, env("ZOOT_STAGING_SUPABASE_PUBLISHABLE_KEY"), authOptions);
+const service = createClient(stagingUrl, env("XOOT_STAGING_SERVICE_ROLE_KEY"), authOptions);
+const makeUserClient = () => createClient(stagingUrl, env("XOOT_STAGING_SUPABASE_PUBLISHABLE_KEY"), authOptions);
 
 const maskEmail = (email) => {
   const [name, domain] = email.split("@");
@@ -126,8 +126,8 @@ const ensureUser = async ({ email, password, fullName, role }) => {
     const { data, error } = await service.auth.admin.updateUserById(existing.id, {
       password,
       email_confirm: true,
-      user_metadata: { full_name: fullName, zoot_smoke: true },
-      app_metadata: { zoot_smoke: true },
+      user_metadata: { full_name: fullName, xoot_smoke: true },
+      app_metadata: { xoot_smoke: true },
     });
     assertNoError(`update auth user ${maskEmail(email)}`, error);
     await upsertProfile(existing.id, fullName, "1 Smoke Test Lane, Bryanston");
@@ -139,8 +139,8 @@ const ensureUser = async ({ email, password, fullName, role }) => {
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name: fullName, zoot_smoke: true },
-    app_metadata: { zoot_smoke: true },
+    user_metadata: { full_name: fullName, xoot_smoke: true },
+    app_metadata: { xoot_smoke: true },
   });
   assertNoError(`create auth user ${maskEmail(email)}`, error);
   await upsertProfile(data.user.id, fullName, "1 Smoke Test Lane, Bryanston");
@@ -171,30 +171,30 @@ const ensureSingleByFilter = async ({ table, select, filters, insert, update }) 
 const seed = async () => {
   info("Creating or updating staging-only smoke users.");
   const client = await ensureUser({
-    email: env("ZOOT_SMOKE_CLIENT_EMAIL"),
-    password: env("ZOOT_SMOKE_CLIENT_PASSWORD"),
+    email: env("XOOT_SMOKE_CLIENT_EMAIL"),
+    password: env("XOOT_SMOKE_CLIENT_PASSWORD"),
     fullName: "Xoot Smoke Client",
     role: "user",
   });
   const admin = await ensureUser({
-    email: env("ZOOT_SMOKE_ADMIN_EMAIL"),
-    password: env("ZOOT_SMOKE_ADMIN_PASSWORD"),
+    email: env("XOOT_SMOKE_ADMIN_EMAIL"),
+    password: env("XOOT_SMOKE_ADMIN_PASSWORD"),
     fullName: "Xoot Smoke Admin",
     role: "admin",
   });
-  const zooterUser = await ensureUser({
-    email: env("ZOOT_SMOKE_ZOOTER_EMAIL"),
-    password: env("ZOOT_SMOKE_ZOOTER_PASSWORD"),
+  const xooterUser = await ensureUser({
+    email: env("XOOT_SMOKE_XOOTER_EMAIL"),
+    password: env("XOOT_SMOKE_XOOTER_PASSWORD"),
     fullName: "Xoot Smoke Xooter",
-    role: "zooter",
+    role: "xooter",
   });
 
-  const zooter = await ensureSingleByFilter({
-    table: "zooters",
+  const xooter = await ensureSingleByFilter({
+    table: "xooters",
     select: "id,user_id",
-    filters: { user_id: zooterUser.id },
+    filters: { user_id: xooterUser.id },
     insert: {
-      user_id: zooterUser.id,
+      user_id: xooterUser.id,
       name: "Xoot Smoke Xooter",
       role: "cleaning",
       hourly_rate: 120,
@@ -248,11 +248,11 @@ const seed = async () => {
   const scheduledAt = new Date(Date.now() + 20 * 60_000).toISOString();
   const booking = await ensureSingleByFilter({
     table: "bookings",
-    select: "id,user_id,zooter_id,household_profile_id,scheduled_at,status",
+    select: "id,user_id,xooter_id,household_profile_id,scheduled_at,status",
     filters: { user_id: client.id, notes: `${SMOKE_TAG}: accepted-job destination and sensitive-access fixture` },
     insert: {
       user_id: client.id,
-      zooter_id: zooter.id,
+      xooter_id: xooter.id,
       household_profile_id: household.id,
       service: "cleaning",
       service_type: "residential",
@@ -270,7 +270,7 @@ const seed = async () => {
       job_completed_at: null,
     },
     update: {
-      zooter_id: zooter.id,
+      xooter_id: xooter.id,
       household_profile_id: household.id,
       scheduled_at: scheduledAt,
       address: "1 Smoke Test Lane, Bryanston, Johannesburg",
@@ -286,12 +286,12 @@ const seed = async () => {
   });
 
   await ensureSingleByFilter({
-    table: "zooter_jobs",
-    select: "id,booking_id,zooter_id,state",
-    filters: { booking_id: booking.id, zooter_id: zooter.id },
+    table: "xooter_jobs",
+    select: "id,booking_id,xooter_id,state",
+    filters: { booking_id: booking.id, xooter_id: xooter.id },
     insert: {
       booking_id: booking.id,
-      zooter_id: zooter.id,
+      xooter_id: xooter.id,
       state: "accepted",
       offered_at: new Date().toISOString(),
       responded_at: new Date().toISOString(),
@@ -303,7 +303,7 @@ const seed = async () => {
     },
   });
 
-  info(`Seed complete for ${maskEmail(env("ZOOT_SMOKE_CLIENT_EMAIL"))}, ${maskEmail(env("ZOOT_SMOKE_ADMIN_EMAIL"))}, and ${maskEmail(env("ZOOT_SMOKE_ZOOTER_EMAIL"))}.`);
+  info(`Seed complete for ${maskEmail(env("XOOT_SMOKE_CLIENT_EMAIL"))}, ${maskEmail(env("XOOT_SMOKE_ADMIN_EMAIL"))}, and ${maskEmail(env("XOOT_SMOKE_XOOTER_EMAIL"))}.`);
   info("Cron may take up to one minute to create the sensitive-access notification.");
 };
 
@@ -317,21 +317,21 @@ const signIn = async (email, password) => {
 const getFixture = async () => {
   const { data: booking, error } = await service
     .from("bookings")
-    .select("id,user_id,zooter_id,status")
+    .select("id,user_id,xooter_id,status")
     .eq("notes", `${SMOKE_TAG}: accepted-job destination and sensitive-access fixture`)
     .maybeSingle();
   assertNoError("read smoke booking", error);
   expect(booking?.id, "Smoke booking fixture is missing. Run --seed first.");
 
-  const { data: zooter, error: zooterError } = await service
-    .from("zooters")
+  const { data: xooter, error: xooterError } = await service
+    .from("xooters")
     .select("id,user_id")
-    .eq("id", booking.zooter_id)
+    .eq("id", booking.xooter_id)
     .maybeSingle();
-  assertNoError("read smoke zooter", zooterError);
-  expect(zooter?.user_id, "Smoke zooter fixture is missing a user_id.");
+  assertNoError("read smoke xooter", xooterError);
+  expect(xooter?.user_id, "Smoke xooter fixture is missing a user_id.");
 
-  return { booking, zooter };
+  return { booking, xooter };
 };
 
 const invoke = async (client, functionName, body = {}) => {
@@ -348,10 +348,10 @@ const makeSmokeEnvelope = () => {
     }),
   ).toString("base64url");
 
-  return `zoot:e2ee:v1:${payload}`;
+  return `xoot:e2ee:v1:${payload}`;
 };
 
-const testBookingChatActionLayer = async ({ booking, client, zooter, admin }) => {
+const testBookingChatActionLayer = async ({ booking, client, xooter, admin }) => {
   const encryptedBody = makeSmokeEnvelope();
   const sendResult = await invoke(client, "send-booking-message", {
     booking_id: booking.id,
@@ -375,22 +375,22 @@ const testBookingChatActionLayer = async ({ booking, client, zooter, admin }) =>
   });
   expect(directInsert.error, "Client could still insert public.messages directly after Phase 2 hardening.");
 
-  const zooterRead = await zooter
+  const xooterRead = await xooter
     .from("messages")
     .select("id,booking_id,body,sender_type,moderation_state")
     .eq("id", message.id)
     .maybeSingle();
-  assertNoError("zooter reads booking chat message", zooterRead.error);
-  expect(zooterRead.data?.body === encryptedBody, "Assigned Xooter could not read the encrypted booking chat envelope.");
+  assertNoError("xooter reads booking chat message", xooterRead.error);
+  expect(xooterRead.data?.body === encryptedBody, "Assigned Xooter could not read the encrypted booking chat envelope.");
 
-  const receiptResult = await invoke(zooter, "mark-booking-message-read", {
+  const receiptResult = await invoke(xooter, "mark-booking-message-read", {
     booking_id: booking.id,
     message_ids: [message.id],
   });
   assertNoError("mark-booking-message-read", receiptResult.error);
   expect(receiptResult.data?.data?.marked === 1, "mark-booking-message-read did not mark the smoke message.");
 
-  const reportResult = await invoke(zooter, "report-booking-message", {
+  const reportResult = await invoke(xooter, "report-booking-message", {
     message_id: message.id,
     reason: "Smoke test booking chat report",
     details: `${CHAT_SMOKE_FLAG}: verifies report queue path for staging only`,
@@ -412,16 +412,16 @@ const testBookingChatActionLayer = async ({ booking, client, zooter, admin }) =>
   info("Booking chat action-layer smoke passed: Edge send, direct insert denial, read receipt, and report queue.");
 };
 
-const waitForNotification = async (zooterClient) => {
+const waitForNotification = async (xooterClient) => {
   const started = Date.now();
   while (Date.now() - started <= NOTIFICATION_TIMEOUT_MS) {
-    const { data, error } = await zooterClient
+    const { data, error } = await xooterClient
       .from("notifications")
       .select("id,kind,title,link")
       .eq("kind", "sensitive_access_available")
       .limit(10);
-    assertNoError("read zooter notifications", error);
-    if ((data ?? []).some((item) => item.kind === "sensitive_access_available" && item.link === "/zooter/jobs")) {
+    assertNoError("read xooter notifications", error);
+    if ((data ?? []).some((item) => item.kind === "sensitive_access_available" && item.link === "/xooter/jobs")) {
       return true;
     }
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
@@ -431,9 +431,9 @@ const waitForNotification = async (zooterClient) => {
 
 const test = async () => {
   const { booking } = await getFixture();
-  const client = await signIn(env("ZOOT_SMOKE_CLIENT_EMAIL"), env("ZOOT_SMOKE_CLIENT_PASSWORD"));
-  const admin = await signIn(env("ZOOT_SMOKE_ADMIN_EMAIL"), env("ZOOT_SMOKE_ADMIN_PASSWORD"));
-  const zooter = await signIn(env("ZOOT_SMOKE_ZOOTER_EMAIL"), env("ZOOT_SMOKE_ZOOTER_PASSWORD"));
+  const client = await signIn(env("XOOT_SMOKE_CLIENT_EMAIL"), env("XOOT_SMOKE_CLIENT_PASSWORD"));
+  const admin = await signIn(env("XOOT_SMOKE_ADMIN_EMAIL"), env("XOOT_SMOKE_ADMIN_PASSWORD"));
+  const xooter = await signIn(env("XOOT_SMOKE_XOOTER_EMAIL"), env("XOOT_SMOKE_XOOTER_PASSWORD"));
 
   const clientControls = await client.from("operational_controls").select("control_key").limit(1);
   expect(clientControls.error || (clientControls.data ?? []).length === 0, "Client user can read admin-only operational controls.");
@@ -442,12 +442,12 @@ const test = async () => {
   assertNoError("admin operational controls read", adminControls.error);
   expect((adminControls.data ?? []).length > 0, "Admin user could not read operational controls.");
 
-  const clientJobs = await invoke(client, "get-zooter-job-cards");
+  const clientJobs = await invoke(client, "get-xooter-job-cards");
   expect(clientJobs.error || (clientJobs.data?.data?.jobs ?? []).length === 0, "Client user received Xooter job cards.");
 
-  const zooterJobs = await invoke(zooter, "get-zooter-job-cards");
-  assertNoError("zooter job cards function", zooterJobs.error);
-  const jobs = zooterJobs.data?.data?.jobs ?? [];
+  const xooterJobs = await invoke(xooter, "get-xooter-job-cards");
+  assertNoError("xooter job cards function", xooterJobs.error);
+  const jobs = xooterJobs.data?.data?.jobs ?? [];
   const smokeJob = jobs.find((job) => job.booking_id === booking.id);
   expect(smokeJob, "Xooter did not receive the accepted smoke job card.");
   expect(smokeJob.state === "accepted", "Smoke job card is not accepted.");
@@ -456,15 +456,15 @@ const test = async () => {
   const clientSensitive = await invoke(client, "get-sensitive-access", { booking_id: booking.id, field: "gate_code" });
   expect(clientSensitive.error || clientSensitive.data?.success === false, "Client user could reveal Xooter-only sensitive access.");
 
-  const zooterSensitive = await invoke(zooter, "get-sensitive-access", { booking_id: booking.id, field: "gate_code" });
-  assertNoError("zooter sensitive access function", zooterSensitive.error);
-  expect(zooterSensitive.data?.data?.expires_in_seconds === 30, "Xooter sensitive reveal did not return the 30-second reveal contract.");
-  expect(typeof zooterSensitive.data?.data?.value === "string" && zooterSensitive.data.data.value.length > 0, "Xooter sensitive reveal returned an empty value.");
+  const xooterSensitive = await invoke(xooter, "get-sensitive-access", { booking_id: booking.id, field: "gate_code" });
+  assertNoError("xooter sensitive access function", xooterSensitive.error);
+  expect(xooterSensitive.data?.data?.expires_in_seconds === 30, "Xooter sensitive reveal did not return the 30-second reveal contract.");
+  expect(typeof xooterSensitive.data?.data?.value === "string" && xooterSensitive.data.data.value.length > 0, "Xooter sensitive reveal returned an empty value.");
 
-  const hasNotification = await waitForNotification(zooter);
+  const hasNotification = await waitForNotification(xooter);
   expect(hasNotification, "Xooter did not receive a sensitive_access_available notification within the polling window.");
 
-  await testBookingChatActionLayer({ booking, client, zooter, admin });
+  await testBookingChatActionLayer({ booking, client, xooter, admin });
 
   info("Role smoke tests passed: client/admin/Xooter auth, accepted destination, sensitive reveal, notification delivery, and booking chat action layer.");
 };

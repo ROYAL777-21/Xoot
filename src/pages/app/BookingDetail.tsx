@@ -6,13 +6,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle, Navigation, Share2 } from "lucide-react";
-import { resolvePhoto } from "@/components/zoot/XooterCard";
-import { TrustBadges } from "@/components/zoot/TrustBadges";
-import { BookingChat } from "@/components/zoot/BookingChat";
-import { VoiceCallPanel } from "@/components/zoot/VoiceCallPanel";
-import { FareSplitPanel } from "@/components/zoot/FareSplitPanel";
-import { SosButton } from "@/components/zoot/SosButton";
-import { TipCard } from "@/components/zoot/TipCard";
+import { resolvePhoto } from "@/components/xoot/XooterCard";
+import { TrustBadges } from "@/components/xoot/TrustBadges";
+import { BookingChat } from "@/components/xoot/BookingChat";
+import { VoiceCallPanel } from "@/components/xoot/VoiceCallPanel";
+import { FareSplitPanel } from "@/components/xoot/FareSplitPanel";
+import { SosButton } from "@/components/xoot/SosButton";
+import { TipCard } from "@/components/xoot/TipCard";
 import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
 import { canAccessSensitiveBookingData } from "@/lib/operations";
 import { notifyBookingLiveActivity, type XootBookingLiveActivityStatus } from "@/lib/native-live-activity";
@@ -41,7 +41,7 @@ type MaskedCallDetails = {
   status?: string;
   proxy_numbers?: {
     client?: string | null;
-    zooter?: string | null;
+    xooter?: string | null;
   } | null;
 };
 
@@ -128,16 +128,16 @@ const BookingDetail = () => {
 
   const load = useCallback(async () => {
     if (!user || !id) return;
-    const [{ data }, { data: zooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
+    const [{ data }, { data: xooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
       supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
-      supabase.from("booking_zooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
+      supabase.from("booking_xooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
       supabase.from("messages").select("*").eq("booking_id", id).order("created_at"),
       supabase.from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
       supabase.from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
       supabase.from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
     ]);
     if (!data) { navigate("/app/bookings"); return; }
-    setBooking({ ...data, zooter: zooter ?? null });
+    setBooking({ ...data, xooter: xooter ?? null });
     setMessages((m ?? []) as Msg[]);
     setEvents((ev ?? []) as TimelineEvent[]);
     setPhotos((ph ?? []) as CompletionPhoto[]);
@@ -171,7 +171,7 @@ const BookingDetail = () => {
       status: liveStatus,
       statusLabel: getVisibleStatusLabel(booking.status),
       serviceName: serviceNameForBooking(booking),
-      zooterName: booking.zooter?.name,
+      xooterName: booking.xooter?.name,
       propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name,
       suburb: booking.suburb,
       address: booking.address,
@@ -248,7 +248,7 @@ const BookingDetail = () => {
       status: liveStatus,
       statusLabel: statusLabel[status] ?? status,
       serviceName: serviceNameForBooking(booking),
-      zooterName: booking.zooter?.name,
+      xooterName: booking.xooter?.name,
       propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Xoot home",
       suburb: booking.suburb,
       scheduledAt: booking.scheduled_at,
@@ -295,7 +295,7 @@ const BookingDetail = () => {
 
       const callerProxyNumber = user.id === booking.user_id
         ? call.proxy_numbers?.client
-        : call.proxy_numbers?.zooter;
+        : call.proxy_numbers?.xooter;
       if (callerProxyNumber && isOptionalNativePlatform()) {
         window.location.href = `tel:${callerProxyNumber.replace(/[^\d+]/g, "")}`;
       }
@@ -310,7 +310,7 @@ const BookingDetail = () => {
   };
 
   const submitIncident = async () => {
-    if (!user || !id || !booking?.zooter_id || !incidentNotes.trim()) return;
+    if (!user || !id || !booking?.xooter_id || !incidentNotes.trim()) return;
     try {
       await invokeOpsWorkflow({
         action: "trust_incident_submitted",
@@ -327,11 +327,11 @@ const BookingDetail = () => {
   };
 
   const submitReview = async () => {
-    if (!user || !id || !booking?.zooter_id) return;
+    if (!user || !id || !booking?.xooter_id) return;
     const { data: savedReview, error } = await supabase.from("post_job_reviews").insert({
       booking_id: id,
       user_id: user.id,
-      zooter_id: booking.zooter_id,
+      xooter_id: booking.xooter_id,
       rating: reviewRating,
       quality_rating: reviewRating,
       punctuality_rating: reviewRating,
@@ -347,7 +347,7 @@ const BookingDetail = () => {
     // rolling back or blocking the follow-up routing below.
     const tipRow =
       canOfferTip() && booking
-        ? buildTipRow({ bookingId: id, userId: user.id, zooterId: booking.zooter_id ?? null, cents: tipCents })
+        ? buildTipRow({ bookingId: id, userId: user.id, xooterId: booking.xooter_id ?? null, cents: tipCents })
         : null;
 
     if (tipRow) {
@@ -383,12 +383,12 @@ const BookingDetail = () => {
   };
 
   const uploadPhoto = async (photoType: "before" | "after", file: File) => {
-    if (!user || !id || !booking?.zooter_id) return;
+    if (!user || !id || !booking?.xooter_id) return;
     setUploading(photoType);
     const path = `${id}/${photoType}-${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("booking-completion-photos").upload(path, file, { upsert: true });
     if (error) { setUploading(null); toast.error(error.message); return; }
-    const { error: insertError } = await supabase.from("booking_completion_photos").insert({ booking_id: id, zooter_id: booking.zooter_id, photo_type: photoType, storage_path: path });
+    const { error: insertError } = await supabase.from("booking_completion_photos").insert({ booking_id: id, xooter_id: booking.xooter_id, photo_type: photoType, storage_path: path });
     setUploading(null);
     if (insertError) return toast.error(insertError.message);
     toast.success(`${photoType} photo uploaded`);
@@ -404,7 +404,7 @@ const BookingDetail = () => {
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (!booking) return null;
 
-  const z = booking.zooter;
+  const z = booking.xooter;
   const serviceType = serviceNameForBooking(booking);
   const photoProofRequired = booking.completion_photo_required || requiresCompletionPhotos(serviceType);
   const beforeDone = photos.some((p) => p.photo_type === "before");
@@ -414,7 +414,7 @@ const BookingDetail = () => {
   const timeline = events.length ? events : [{ id: "current", status: canonicalStatus ?? booking.status, label: visibleStatus, created_at: booking.updated_at }];
   const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
   const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
-  const isAssignedXooter = Boolean(booking.zooter?.user_id && booking.zooter.user_id === user?.id);
+  const isAssignedXooter = Boolean(booking.xooter?.user_id && booking.xooter.user_id === user?.id);
   /**
    * The window where someone is on their way to, or inside, the home.
    *
@@ -503,7 +503,7 @@ const BookingDetail = () => {
                   </div>
                   <div className="rounded-xl bg-background/75 p-2">
                     <p className="text-xs text-muted-foreground">Xooter proxy</p>
-                    <p className="font-medium">{maskedCall.proxy_numbers.zooter ?? "Pending Twilio assignment"}</p>
+                    <p className="font-medium">{maskedCall.proxy_numbers.xooter ?? "Pending Twilio assignment"}</p>
                   </div>
                 </div>
               </div>
@@ -604,7 +604,7 @@ const BookingDetail = () => {
           </Card>
         </div>
 
-        <BookingChat bookingId={id} booking={booking} zooter={z} messages={messages} currentUserId={user?.id} />
+        <BookingChat bookingId={id} booking={booking} xooter={z} messages={messages} currentUserId={user?.id} />
       </div>
     </div>
   );

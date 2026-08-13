@@ -94,7 +94,7 @@ describe("the day-one trap", () => {
    * grant the 20% floor for life.
    *
    * This is not hypothetical: the assertion below is written against the literal row
-   * `approve-zooter` writes.
+   * `approve-xooter` writes.
    */
   it("gives a freshly approved Xooter the starting rate, not the floor", () => {
     expect(calculateReliabilityScore({})).toBe(100);
@@ -105,11 +105,11 @@ describe("the day-one trap", () => {
     expect(commissionBandFor({ reliabilityScore: 100, completedJobs: 0 }).rank).toBe("new");
   });
 
-  it("reads the same 100 out of approve-zooter that it is defending against", () => {
+  it("reads the same 100 out of approve-xooter that it is defending against", () => {
     // If the approval payload ever stops writing 100, the test above is defending a case that
     // no longer occurs and someone should re-derive the gate rather than trust it.
     const fn = readFileSync(
-      join(process.cwd(), "supabase/functions/approve-zooter/index.ts"),
+      join(process.cwd(), "supabase/functions/approve-xooter/index.ts"),
       "utf8",
     );
     expect(fn).toMatch(/reliability_score:\s*100/);
@@ -298,7 +298,7 @@ describe("payout", () => {
    * **The founder kept 35% commission.** So the placement figures were the thing misfiled — they
    * are day rates for a household hiring a domestic worker for standing days, not a floor for a
    * 5.5-hour clean — and the per-booking floor became hourly: R35/h, the same `hourly_rate`
-   * `approve-zooter` writes onto every Xooter it activates.
+   * `approve-xooter` writes onto every Xooter it activates.
    *
    * What that decision did NOT settle was the ladder itself: it was sub-linear in hours, so a
    * 10-hour regular clean returned R27.95/h at 35% — **below South Africa's R30.23 minimum wage**.
@@ -466,7 +466,7 @@ describe("what the next band is worth in rands", () => {
   it("the Earnings page reverses at the band rate, not the boosted one", () => {
     // A boost is temporary and most of the history was struck without it, so reversing at the
     // boosted rate would overstate the subtotal — and the reward quoted on top of it.
-    const page = readFileSync(join(process.cwd(), "src/pages/zooter/Earnings.tsx"), "utf8");
+    const page = readFileSync(join(process.cwd(), "src/pages/xooter/Earnings.tsx"), "utf8");
     expect(page).toMatch(/impliedSubtotalCents\(last30NetCents, band\.rateBps\)/);
     expect(page).not.toMatch(/impliedSubtotalCents\(last30NetCents, effectiveRateBps\)/);
     // And it renders nothing when there is no basis.

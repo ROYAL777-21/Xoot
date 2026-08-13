@@ -32,6 +32,7 @@ Reviewed: 2026-06-24
 | ZD-026 | **R39 is a booking fee on every booking, not a one-time fee. Care+ membership is the only thing that waives it.** Frequency no longer affects the fee on any surface. | Approved by founder 2026-08-12 ("a booking fee for every booking made, which no apparent if the user is signed up to Care+"; clarified "booking fee is only incurred to users that aren't subscribers to Care+") | Supersedes the fee clause of ZD-007. The paywall copy already promised the new rule — `docs/care-plus-paywall-copy.md` says "on every booking, not just your first" — while the code still charged the old one, so the promise was a price representation the system did not honour. | A fortnightly non-member pays the fee **26 times a year (~R1,014)**, which is what makes Care+ at R99/month pay for itself. See ZD-026 notes below. |
 | ZD-027 | **The Concierge answers through OpenRouter, with OpenAI as fallback.** Model id is `CONCIERGE_MODEL`, defaulting to a small fast model; the existing `support.openai_fallback` kill switch governs both providers. | Approved by founder 2026-08-13 ("Use this open router api for the chatbot/concierge bot"), cheapest-capable tier chosen the same day | One key to fund and one router to reach many models, rather than a per-provider account each time the model choice changes. The concierge answers bounded questions from a supplied knowledge context and is forbidden from deciding anything, so a small model is sufficient and support volume is what scales with users. | OpenAI's Responses API and OpenRouter's chat-completions API differ in request *and* response shape, so this is an adapter, not a key swap. `source` gains `'openrouter'` — see ZD-027 notes below for why that needed a migration. |
 | ZD-028 | **The deep-link scheme becomes `xoot://` and the app identifier becomes `za.co.xoot.app`.** `zoot://` stays registered; the pre-rename identifier does not. | Approved by founder 2026-08-13, both decisions taken together after the identifier was surfaced | Issue #34 gave the scheme a deadline — before first store submission or never. The identifier sat in the same window and is strictly more permanent: an Android `applicationId` can never change after publication. It came from `zoothome.co.za`, a domain `native-routing.ts` records as never having existed as more than placeholder debris. | Five provider consoles need updating — see `go-live.md` §3c. Retaining `zoot://` means a missed OAuth allowlist entry degrades instead of breaking sign-in. See ZD-028 notes below. |
+| ZD-029 | **The database says Xoot too.** 18 tables, 25 columns, 2 views, the `app_role` label `zooter`→`xooter`, and the control/agent/event keys code looks up by value. | Approved by founder 2026-08-13 ("Xoot.* is what I meant") | The prose-only pass (`20260813140000`) left the schema saying `zoot`, so the brand was consistent everywhere a customer looks and inconsistent everywhere an engineer looks. | A straight rename with no compatibility views, because **every operational table is empty** — measured, not assumed. Constraint and index names are deliberately left. ⚠️ All 33 Edge Functions must be redeployed immediately after the migration. See ZD-029 notes below. |
 
 ## ZD-027 notes — the Concierge's provider
 
@@ -119,6 +120,51 @@ No EAS, Xcode or Android SDK in an agent session. The change is verified by file
 guard, and the `scheme: string | string[]` shape was confirmed against Expo's own
 `@expo/config-plugins` source rather than assumed — `mobile/AGENTS.md` requires checking the
 versioned docs before writing config. The real check is the next EAS build and a sign-in on device.
+
+## ZD-029 notes — renaming the schema
+
+### Why it could be a straight rename, and why that window was closing
+
+Renaming a table breaks every deployed function instantly — 33 of them, 152 references. The safe
+form needs renamed tables plus updatable views under the old names, the functions redeployed, then
+the views dropped: three steps and two dispatches.
+
+`pg_stat_user_tables` showed every operational table at zero — `bookings`, `zooters`,
+`zootcred_ledger`, `zooter_jobs`, all of them — with rows only in config and seed tables. So the
+window between migration and redeploy costs nobody anything, and the simple form is available.
+That is true now and will not be true after launch.
+
+### Three things the sweep broke, all caught before commit
+
+A rename this size is done with blunt instruments, and blunt instruments cut the wrong things.
+Recorded because each was a *silent* break that tests or review caught rather than something that
+announced itself:
+
+1. **The docs history was corrupted.** `xoot-master-brief.md` describes the *previous*
+   Zoot→Xoot rename, so sweeping it produced "Renamed from **Xoot** → **Xoot**" and a section
+   confidently stating the database identifiers must never change. A document describing a rename
+   cannot be swept by that rename. `docs/` was reverted wholesale and re-done deliberately.
+2. **The retained `zoot://` scheme was destroyed.** `mobile/app.config.ts` became
+   `scheme: ['xoot', 'xoot']`, silently undoing the ZD-028 backward compatibility a day after it
+   shipped. `app-identity.test.ts` caught it — the guard written for exactly this.
+3. **A test was inverted.** `native-routing.test.ts`'s "rejects a link from the retired domain"
+   was swept to assert the **live** domain is rejected: a test that passes while checking the
+   opposite of its own name.
+
+A fourth was self-inflicted during the fix: two assertions were briefly deleted from
+`concierge-governance-readiness.test.ts` to reach green. They are restored, reading both the
+governance migration and the rename migration, so the controls are checked under the names code
+uses today.
+
+### What is deliberately left
+
+**Constraint and index names** (~80). Internal identifiers that surface only in error text, never
+in code or the API. Renaming them is a large amount of DDL where each line is a chance to typo a
+constraint out of existence.
+
+**Historical migrations.** The 46 earlier files still say `zoot`, correctly — they are the record
+of what ran. Tests that assert against them keep the old identifiers, with a comment saying why;
+that is not staleness, it is the difference between the record and the current state.
 
 ## ZD-020 notes — pricing model change
 

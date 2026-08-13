@@ -4,7 +4,7 @@ const XooterTerms = () => (
   <LegalLayout
     title="Xoot Xooter Terms"
     description="Terms for Xooter applicants and independent contractors using Xoot onboarding, training, booking, earnings, support, and sensitive-access workflows."
-    canonical="/legal/zooter-terms"
+    canonical="/legal/xooter-terms"
     eyebrow="Xooters"
   >
     <LegalSection title="Application and verification">

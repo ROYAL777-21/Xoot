@@ -29,10 +29,10 @@ import { MAX_TRAVEL_KM, distanceKmToCoverage, type SuburbCentroid } from "../_sh
 const findReplacement = async (supa: any, booking: any) => {
   const address = String(booking.address ?? booking.launch_region ?? "");
   const { data } = await supa
-    .from("zooters")
+    .from("xooters")
     .select("id,name,user_id,reliability_score,suburb_coverage,active,role")
     .eq("active", true)
-    .neq("id", booking.zooter_id ?? "00000000-0000-0000-0000-000000000000")
+    .neq("id", booking.xooter_id ?? "00000000-0000-0000-0000-000000000000")
     .limit(25);
 
   const { data: centroids } = await supa
@@ -42,13 +42,13 @@ const findReplacement = async (supa: any, booking: any) => {
   const suburbs = (centroids ?? []) as SuburbCentroid[];
 
   const candidates = (data ?? [])
-    .map((zooter: any) => ({
-      ...zooter,
-      distanceKm: address ? distanceKmToCoverage(address, zooter.suburb_coverage, suburbs) : null,
+    .map((xooter: any) => ({
+      ...xooter,
+      distanceKm: address ? distanceKmToCoverage(address, xooter.suburb_coverage, suburbs) : null,
     }))
     // Unknown distance stays in — an unlisted suburb must not leave a stranded customer with no
     // replacement at all. Only a Xooter provably too far is dropped.
-    .filter((zooter: any) => zooter.distanceKm === null || zooter.distanceKm <= MAX_TRAVEL_KM)
+    .filter((xooter: any) => xooter.distanceKm === null || xooter.distanceKm <= MAX_TRAVEL_KM)
     .sort((a: any, b: any) => {
       // Closest first, then most reliable. A known distance beats an unknown one, because
       // "definitely nearby" is worth more than "might be anywhere" when a job is already late.
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
 
     const { data: booking } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id,status,address,launch_region,service_type,scheduled_at,replacement_count")
+      .select("id,user_id,xooter_id,status,address,launch_region,service_type,scheduled_at,replacement_count")
       .eq("id", bookingId)
       .maybeSingle();
     if (!booking?.id) return fail("booking not found", origin, 404);
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
     if (replacement?.id) {
       await supa.from("bookings").update({
         status: "replacement_offered",
-        zooter_id: replacement.id,
+        xooter_id: replacement.id,
         replacement_status: "offered",
         replacement_offered: true,
         was_reassigned: true,
@@ -121,9 +121,9 @@ Deno.serve(async (req) => {
         actor_id: user.id,
         status: "replacement_offered",
         label: "Replacement Xooter found",
-        meta: { replacement_zooter_id: replacement.id },
+        meta: { replacement_xooter_id: replacement.id },
       });
-      await supa.from("zooter_jobs").insert({ booking_id: booking.id, zooter_id: replacement.id, state: "offered" });
+      await supa.from("xooter_jobs").insert({ booking_id: booking.id, xooter_id: replacement.id, state: "offered" });
       await insertNotification(supa, {
         userId: booking.user_id,
         kind: "replacement_offered",
@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
           kind: "replacement_job_offer",
           title: "Replacement job available",
           body: "A replacement booking needs quick confirmation.",
-          link: "/zooter/jobs",
+          link: "/xooter/jobs",
         });
       }
     } else {
@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
         replacement_status: "no_match",
         updated_at: new Date().toISOString(),
       }).eq("id", booking.id);
-      await supa.from("zootcred_ledger").insert({
+      await supa.from("xootcred_ledger").insert({
         user_id: booking.user_id,
         booking_id: booking.id,
         amount: 30,
@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
         subjectTable: "bookings",
         subjectId: booking.id,
         userId: booking.user_id,
-        zooterId: booking.zooter_id,
+        xooterId: booking.xooter_id,
         bookingId: booking.id,
         priority: "high",
         summary: "Replacement search found no available Xooter; reschedule support required",
@@ -180,7 +180,7 @@ Deno.serve(async (req) => {
       channel: "whatsapp_urgent",
       owner: "Scheduling & Allocation Agent",
       stack_tool: "WhatsApp urgent queue",
-      payload: { booking_id: booking.id, replacement_zooter_id: replacement?.id ?? null },
+      payload: { booking_id: booking.id, replacement_xooter_id: replacement?.id ?? null },
       status: "needs_approval",
       approval_required: true,
       failure_mode: "Support queue must manually contact client and available contractors if automation fails.",
@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
       action: "request_replacement",
       targetTable: "bookings",
       targetId: booking.id,
-      changes: { replacement_zooter_id: replacement?.id ?? null, status: replacement?.id ? "replacement_offered" : "replacement_required" },
+      changes: { replacement_xooter_id: replacement?.id ?? null, status: replacement?.id ? "replacement_offered" : "replacement_required" },
       reason,
       ipAddress: req.headers.get("x-forwarded-for"),
     });
@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
     return ok({
       booking_id: booking.id,
       status: replacement?.id ? "replacement_offered" : "replacement_required",
-      replacement_zooter_id: replacement?.id ?? null,
+      replacement_xooter_id: replacement?.id ?? null,
       compensation_credit: replacement?.id ? 0 : 30,
     }, origin);
   } catch (error) {

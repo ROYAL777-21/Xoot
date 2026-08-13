@@ -88,7 +88,7 @@ describe("auth security helpers", () => {
     expect(getSafeRedirectPath("/app?provider_token=token")).toBe("/app");
     expect(getSafeRedirectPath("/app?return_to=%2Fadmin%2Fops")).toBe("/app");
     expect(getSafeRedirectPath("/app?url=%2F%2Fevil.example")).toBe("/app");
-    expect(getSafeRedirectPath("/app?continue=zoot%3A%2F%2Fbooking")).toBe("/app");
+    expect(getSafeRedirectPath("/app?continue=xoot%3A%2F%2Fbooking")).toBe("/app");
     expect(getSafeRedirectPath("/app?area=https://evil.example")).toBe("/app");
     expect(getSafeRedirectPath("/app#access_token=secret")).toBe("/app");
   });

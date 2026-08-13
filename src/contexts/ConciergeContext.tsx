@@ -10,7 +10,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
  * "no secrets, OTPs or access codes" guard correct, and one of them would eventually drift.
  *
  * `XootSupportBot` previously owned its own `open` state and could only be opened from outside via
- * the `?zootBot=open` query parameter — which works, but navigating to open a panel puts the
+ * the `?xootBot=open` query parameter — which works, but navigating to open a panel puts the
  * question in the URL, and the whole point of the guard above is that questions do not belong in
  * places that get logged and shared.
  */

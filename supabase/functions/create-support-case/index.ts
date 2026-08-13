@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     if (bookingId) {
       const { data } = await supa
         .from("bookings")
-        .select("id,user_id,zooter_id,status")
+        .select("id,user_id,xooter_id,status")
         .eq("id", bookingId)
         .maybeSingle();
       if (!data?.id) return fail("booking not found", origin, 404);
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
       subjectTable: "support_tickets",
       subjectId: ticket.id,
       userId: user.id,
-      zooterId: booking?.zooter_id ?? null,
+      xooterId: booking?.xooter_id ?? null,
       bookingId: booking?.id ?? null,
       priority,
       summary: subject,
