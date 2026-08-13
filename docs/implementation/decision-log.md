@@ -344,7 +344,7 @@ Staging passes both.
 
 #### ① resolved, and a wrong diagnosis on the way there
 
-**Resolved 2026-08-12 21:40.** Production's TwiML App `APcfd1e3028c6d183ac1a7664e0b328f60`
+**Resolved 2026-08-12 21:40.** Production's TwiML App `APcfd1e30…`
 ("Xoot TwiML App Production") now serves
 `https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml` over POST, with a matching
 status callback. Both environments are green on voice.
@@ -430,6 +430,28 @@ This is founder-blocked: it needs a Twilio subaccount for staging with its own A
 and Conversations service. It is already item 6 in the list below.
 
 ## ZD-026 notes — the booking fee
+
+### ✅ Live in production, 2026-08-12 22:12:20Z
+
+| function | before | after |
+| --- | --- | --- |
+| `create-booking` | v15 | **v16** |
+| `create-booking-request` | v13 | **v14** |
+| `respond-zooter-job` | v12 | **v13** (unaffected by the diff; same batch) |
+
+All three carry `updated_at = 1786572740555` — identical to the millisecond, so it was one
+operation and §3b's "the two must go together" held. The deployed `create-booking-request` body was
+read back and carries `BOOKING_FEE_CENTS`, `_shared/care-plus-membership.ts`, and the comment
+*"`frequency` is deliberately not a term here"*.
+
+Order was correct: `main` merged at 22:11, functions at 22:12:20 — client before server.
+
+⚠️ **But the margin was about seventy seconds, and that is not enough.** Netlify builds on push and
+takes minutes, so for a short window the new server charged R39 on a recurring booking while the
+old client still showed R0 — the under-statement §3b exists to prevent. The window has closed and
+it is unlikely any booking landed in it, but *getting away with it* is not the same as *the order
+being safe*. §3b now says to wait for the Netlify deploy to report success, not merely to merge
+first. The gate is the deploy going green, not the push.
 
 ### The rule
 

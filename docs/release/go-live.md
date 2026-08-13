@@ -337,7 +337,7 @@ Gate 0 went green and immediately reported two real defects. ① is now **resolv
 **① ✅ RESOLVED 2026-08-12 21:40 — production's Voice Request URL now routes.**
 
 ```
-✅ voice TwiML app: TwiML App "Xoot TwiML App Production" (APcfd1e3028c6d183ac1a7664e0b328f60)
+✅ voice TwiML app: TwiML App "Xoot TwiML App Production" (APcfd1e30…)
    Voice URL: https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-twiml (POST)
 ✅ voice TwiML app method: POST
 ✅ voice status callback: https://mvlrkelahhsyjrwgsxaf.functions.supabase.co/twilio-voice-status
@@ -373,8 +373,8 @@ remembering that a correct fact and a correct diagnosis are different things.
 > ##### ⚠️ Still true, and worth knowing: there are two TwiML Apps in one account
 >
 > ```
-> APcfd1e3028c6d183ac1a7664e0b328f60  "Xoot TwiML App Production"  → production
-> AP2afeeb739fe2af44152e32aea6df715b  "Xoot TwiML App Staging "    → staging
+> APcfd1e30…  "Xoot TwiML App Production"  → production
+> AP2afeeb7…  "Xoot TwiML App Staging "    → staging
 > ```
 >
 > They live in one Console list with no environment column, no reliable ordering, and names that
@@ -618,6 +618,36 @@ call instead. Paste me the output of gate 1 and I will tell you what is missing.
 
 After section 0. Actions → **Deploy Edge Functions** → Run workflow.
 
+### 3-0. Check what is deployed the cheap way first
+
+CLAUDE.md rule 6 says to read the deployed copy rather than assume the repo reflects it. True, and
+**the obvious way to obey it is the most expensive routine act in this repo** — `get_edge_function`
+returns the function *plus every `_shared` file bundled into it*, tens of thousands of characters,
+for what is usually a yes/no question. An agent session that does this a few times a turn burns
+through a budget fast, and so does a human waiting on it.
+
+**Compare timestamps before reading bodies.** `list_edge_functions` returns `version` and
+`updated_at` for every function. Set that against `git log -1 --format=%ci -- <path>`:
+
+| question | cheap answer |
+| --- | --- |
+| Is the deployed copy older than my change? | `updated_at` **earlier** than the commit time ⇒ it cannot contain it. Done. |
+| Did these two functions deploy together? | identical `updated_at` **to the millisecond** ⇒ one operation. |
+| Is this `_shared` fix already live everywhere? | every consumer's `updated_at` **after** the shared file's last commit. |
+
+Measured 2026-08-12, all three were decided this way in seconds:
+
+- `create-booking` last deployed 19:13:19Z vs the ZD-026 commit authored 21:07:47Z — deployed copy
+  provably predates the change, no body read needed.
+- `create-booking` and `create-booking-request` both `1786572740555` — one dispatch, §3b satisfied.
+- The seven `governance-utils` redeploys, listed as pending, were **already done**: the shared file
+  last changed 2026-08-08, every consumer deployed 2026-08-12.
+
+**Read a body when the timestamps are ambiguous or the answer must be exact** — a value inside the
+code, or a shared module that changed and redeployed in the same window. That last check above was
+still confirmed against one deployed body, because "already done" is the kind of claim that costs a
+production deploy if it is wrong. Cheap first, exact when it matters.
+
 ### 3a. ⚠️ Apply the commission migration FIRST
 
 `supabase/migrations/20260809120000_booking_commission_rate.sql` adds `bookings.commission_rate_bps`,
@@ -678,11 +708,26 @@ for the fee and the new server charges R39. A total shown and then exceeded at c
 exact Consumer Protection Act problem ZD-026 exists to remove — deploying out of order would
 recreate it rather than fix it.
 
+> ### ✅ Done 2026-08-12 22:12:20Z
+>
+> `create-booking` v15→**v16** and `create-booking-request` v13→**v14**, both stamped
+> `1786572740555` — identical to the millisecond, so they went together as required. `main` merged
+> at 22:11, functions at 22:12:20.
+>
+> ⚠️ **That margin was ~70 seconds, and it should have been longer** — see step 2 below. Netlify
+> had almost certainly not finished building, so briefly the new server charged R39 on a recurring
+> booking while the old client showed R0. The window is closed; the lesson is kept.
+
 The safe order:
 
 1. Land the ZD-026 branch on `main`. Netlify builds the client from `main`
    (`npm ci && npm run build`), so this is what ships the new rule to customers.
-2. Confirm the deployed site prices a **recurring** booking with the R39 line showing.
+2. **Wait for the Netlify deploy to report success, then confirm the deployed site prices a
+   **recurring** booking with the R39 line showing.**
+   ⚠️ The gate is the deploy going green, **not the push**. A merge takes a second; a Netlify build
+   takes minutes, and every minute between them is a window where the server charges more than the
+   client displays — the exact CPA direction this section exists to prevent. Measured 2026-08-12:
+   the functions went out 70 seconds after the merge, which was too fast.
 3. Only then dispatch the workflow for `create-booking create-booking-request` — **together**.
    `_shared/pricing.ts` is bundled per function, so shipping one leaves two live pricing rules.
 
