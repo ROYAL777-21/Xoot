@@ -44,6 +44,31 @@
 -- leaves both the trigger bindings and its ACL (which does include anon/authenticated) untouched.
 
 -- ── 1. The sensitive-access gate. The one that raises today. ────────────────────────────────
+--
+-- ⚠️ A VIEW depends on this function, and the first version of this migration did not know that.
+-- The Supabase preview branch rejected it:
+--
+--     ERROR: cannot drop function can_access_sensitive_data(uuid,uuid) because other objects
+--            depend on it (SQLSTATE 2BP01)
+--     view booking_sensitive_access depends on function can_access_sensitive_data(uuid,uuid)
+--
+-- I had reasoned my way to the trigger dependency on `check_xootcred_balance` and missed this one.
+-- `pg_depend` was then queried for EVERY function here rather than reasoned about again; those two
+-- are the only dependents that exist.
+--
+-- The view is dropped and rebuilt around the new function. Three of its properties have to survive
+-- and are restored explicitly below, because a rebuilt view inherits none of them:
+--
+--   security_invoker = true   without it the view runs as its OWNER and the underlying RLS on
+--                             bookings and household_profiles stops applying — a view over gate
+--                             codes and alarm codes silently becoming readable by anyone who can
+--                             select from it
+--   the ACL                   postgres and service_role held ALL; PUBLIC held nothing
+--   the WHERE clause          the gate itself, called positionally
+--
+-- Its output column was also still aliased `zooter_id` over the renamed `bookings.xooter_id` —
+-- more of the same debris, and `types.ts` expects `xooter_id`. Corrected here.
+drop view if exists public.booking_sensitive_access;
 drop function if exists public.can_access_sensitive_data(uuid, uuid);
 
 create function public.can_access_sensitive_data(p_xooter_id uuid, p_booking_id uuid)
@@ -93,6 +118,27 @@ $function$;
 
 revoke execute on function public.can_access_sensitive_data(uuid, uuid) from public;
 grant execute on function public.can_access_sensitive_data(uuid, uuid) to service_role;
+
+-- The view rebuilt around it. `security_invoker = true` is not decoration: without it this view
+-- over gate codes and alarm codes would run as its owner and stop honouring the RLS on `bookings`
+-- and `household_profiles`.
+create view public.booking_sensitive_access
+with (security_invoker = true)
+as
+  select
+    b.id as booking_id,
+    b.xooter_id,
+    h.gate_code,
+    h.alarm_code,
+    h.access_instructions,
+    h.parking_instructions,
+    h.pet_notes
+  from public.bookings b
+  join public.household_profiles h on h.id = b.household_profile_id
+  where public.can_access_sensitive_data(b.xooter_id, b.id);
+
+revoke all on public.booking_sensitive_access from public;
+grant all on public.booking_sensitive_access to service_role;
 
 -- ── 2. The job-state rule. Body is pure text logic and was fine; only the name was wrong. ───
 drop function if exists public.zooter_job_transition_allowed(text, text);
