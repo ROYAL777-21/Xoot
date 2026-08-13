@@ -16,17 +16,35 @@
 -- ── The control that gates checkout ─────────────────────────────────────────────────────────
 -- Named per-provider, so the old keys go and a PayFast one arrives DISABLED. Enabling it is a
 -- founder action after a sandbox payment has completed — see NEEDS-FOUNDER.md.
+--
+-- ⚠️ The unique key is (control_key, ENVIRONMENT), not control_key alone, and `control_type` is a
+-- constrained NOT NULL. The first version of this migration got both wrong and failed the staging
+-- apply at statement 1 with SQLSTATE 42P10 — "no unique or exclusion constraint matching the ON
+-- CONFLICT specification". Recorded because the error names the ON CONFLICT clause and not the
+-- missing columns, which sends you looking in the wrong place.
+--
+-- `environment = 'all'` and `control_type = 'provider_gate'` match every existing payments row;
+-- they were read from the live table rather than guessed.
+--
 delete from public.operational_controls
  where control_key in ('payments.hosted_checkout.stitch', 'payments.hosted_checkout.ozow');
 
-insert into public.operational_controls (control_key, enabled, description)
+insert into public.operational_controls (control_key, environment, control_type, enabled, description)
 values (
   'payments.hosted_checkout.payfast',
+  'all',
+  'provider_gate',
   false,
-  'PayFast hosted checkout. Disabled until a sandbox payment has completed end to end and confirm-payment has recorded it.'
+  'Allows PayFast hosted checkout only after signature, ITN callback and reconciliation smoke tests pass.'
 )
-on conflict (control_key) do update
-  set description = excluded.description;
+on conflict (control_key, environment) do update
+  set description = excluded.description,
+      control_type = excluded.control_type;
+
+-- The generic gate still names the providers it was written for.
+update public.operational_controls
+   set description = 'Allows PayFast hosted checkout creation after provider signature and reconciliation are approved.'
+ where control_key = 'payments.provider_checkout';
 
 -- ── Provider capability rows ────────────────────────────────────────────────────────────────
 -- One row per environment, both starting blocked. `verified_at` stays null until a real sandbox
