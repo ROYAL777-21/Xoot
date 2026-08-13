@@ -23,7 +23,7 @@ const reasonLabel = (reason: string) =>
 
 const Loyalty = () => {
   const { user } = useAuth();
-  const zootCred = useXootCred();
+  const xootCred = useXootCred();
   const [loyalty, setLoyalty] = useState<{ points: number; free_credits: number; total_bookings: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,13 +41,13 @@ const Loyalty = () => {
     try {
       await invokeOpsWorkflow({ action: "redeem_loyalty_credit" });
       toast.success("Free credit applied to your next booking!");
-      await Promise.all([refresh(), zootCred.refresh()]);
+      await Promise.all([refresh(), xootCred.refresh()]);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Reward redemption failed");
     }
   };
 
-  if (loading || zootCred.loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  if (loading || xootCred.loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
   const total = loyalty?.total_bookings ?? 0;
   const progress = total % TARGET;
@@ -91,11 +91,11 @@ const Loyalty = () => {
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="rounded-2xl p-5">
-          <p className="font-display text-3xl font-bold">{formatZAR(zootCred.availableBalance)}</p>
+          <p className="font-display text-3xl font-bold">{formatZAR(xootCred.availableBalance)}</p>
           <p className="text-sm text-muted-foreground">Available XootCred</p>
         </Card>
         <Card className="rounded-2xl p-5">
-          <p className="font-display text-3xl font-bold">{formatZAR(zootCred.pendingBalance)}</p>
+          <p className="font-display text-3xl font-bold">{formatZAR(xootCred.pendingBalance)}</p>
           <p className="text-sm text-muted-foreground">Pending XootCred</p>
         </Card>
         <Card className="rounded-2xl p-5">
@@ -117,17 +117,17 @@ const Loyalty = () => {
           <WalletCards className="h-6 w-6 text-primary" />
         </div>
 
-        {zootCred.error ? (
+        {xootCred.error ? (
           <div className="rounded-2xl border border-destructive/25 bg-destructive/10 p-4 text-sm text-destructive">
-            {zootCred.error}
+            {xootCred.error}
           </div>
-        ) : zootCred.entries.length === 0 ? (
+        ) : xootCred.entries.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
             No XootCred ledger entries yet. Completed bookings and eligible credits will appear here.
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {zootCred.entries.map((entry) => (
+            {xootCred.entries.map((entry) => (
               <div key={entry.id} className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="font-semibold">{reasonLabel(entry.reason)}</p>

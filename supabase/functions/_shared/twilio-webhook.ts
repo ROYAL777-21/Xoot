@@ -237,7 +237,7 @@ const phoneLast4 = (value: string | null) => {
 
 const phoneHash = async (value: string | null) => {
   if (!value) return null;
-  const salt = Deno.env.get("TWILIO_WEBHOOK_HASH_SALT") ?? Deno.env.get("SUPABASE_URL") ?? "zoot";
+  const salt = Deno.env.get("TWILIO_WEBHOOK_HASH_SALT") ?? Deno.env.get("SUPABASE_URL") ?? "xoot";
   return sha256Hex(`${salt}:${value}`);
 };
 

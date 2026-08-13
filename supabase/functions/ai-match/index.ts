@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
      * `service` is optional as of 2026-08-12, and that is a deliberate widening.
      *
      * It used to be required, and the function filtered `role = service`. Meanwhile the booking
-     * page — `Book.tsx` — queried `zooters_public` directly with no role filter at all, and never
+     * page — `Book.tsx` — queried `xooters_public` directly with no role filter at all, and never
      * called this function. Wiring the page to a version that required a role would have silently
      * shown **fewer** Xooters than before, or none, if any role string failed to line up. Ranking
      * more people is recoverable; showing a customer an empty list is not.
@@ -76,14 +76,14 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const query = supa.from("zooters").select("*").eq("active", true);
-    const { data: zooters } = await (safeService ? query.eq("role", safeService) : query);
-    if (!zooters || zooters.length === 0) {
+    const query = supa.from("xooters").select("*").eq("active", true);
+    const { data: xooters } = await (safeService ? query.eq("role", safeService) : query);
+    if (!xooters || xooters.length === 0) {
       return json({ ranked: [] }, 200, origin);
     }
 
-    const { data: favs } = await supa.from("favorites").select("zooter_id").eq("user_id", authData.user.id);
-    const favIds = (favs ?? []).map((f) => f.zooter_id);
+    const { data: favs } = await supa.from("favorites").select("xooter_id").eq("user_id", authData.user.id);
+    const favIds = (favs ?? []).map((f) => f.xooter_id);
 
     const { data: centroids } = await supa
       .from("suburb_centroids")
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
     const distanceFor = (z: Record<string, unknown>): number | null =>
       address ? distanceKmToCoverage(address, z.suburb_coverage as string[] | null, suburbs) : null;
 
-    const withDistance = zooters.map((z) => ({ zooter: z, distanceKm: distanceFor(z) }));
+    const withDistance = xooters.map((z) => ({ xooter: z, distanceKm: distanceFor(z) }));
 
     /*
      * Beyond the radius, exclude rather than rank last.
@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
     const candidates = inRange.length > 0 ? inRange : withDistance;
 
     const ranked = candidates
-      .map(({ zooter: z, distanceKm }) => {
+      .map(({ xooter: z, distanceKm }) => {
         let score = Number(z.rating) * 20;
         score += Math.min(z.jobs_completed, 500) / 25;
         if (distanceKm !== null) score -= distanceKm * 1.6;

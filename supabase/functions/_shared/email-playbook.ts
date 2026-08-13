@@ -2,7 +2,7 @@ type EmailPlaybookEntry = {
   template_key: string;
   subject: string;
   preheader: string;
-  audience: "client" | "zooter" | "admin";
+  audience: "client" | "xooter" | "admin";
 };
 
 const entries: Record<string, EmailPlaybookEntry> = {
@@ -48,8 +48,8 @@ const entries: Record<string, EmailPlaybookEntry> = {
     preheader: "Open Xoot for the secure booking details and status.",
     audience: "client",
   },
-  zooter_en_route: {
-    template_key: "zooter_en_route",
+  xooter_en_route: {
+    template_key: "xooter_en_route",
     subject: "Your Xooter is on the way",
     preheader: "Open Xoot for live status. Sensitive access details stay inside the app.",
     audience: "client",
@@ -78,11 +78,11 @@ const entries: Record<string, EmailPlaybookEntry> = {
     preheader: "Update payment in Xoot to restore member benefits after confirmation.",
     audience: "client",
   },
-  zooter_onboarding_status: {
-    template_key: "zooter_onboarding_status",
+  xooter_onboarding_status: {
+    template_key: "xooter_onboarding_status",
     subject: "Your Xooter onboarding status changed",
     preheader: "Open Xoot for document, training and verification next steps.",
-    audience: "zooter",
+    audience: "xooter",
   },
   support_escalation: {
     template_key: "support_escalation",

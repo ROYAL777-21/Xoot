@@ -34,7 +34,7 @@ export const getCorsHeaders = (origin: string | null) => {
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-zoot-webhook-signature, x-stitch-signature, x-ozow-signature",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-xoot-webhook-signature, x-stitch-signature, x-ozow-signature",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Vary": "Origin",
   };
@@ -200,7 +200,7 @@ export const insertReviewQueue = async (
     subjectTable: string;
     subjectId?: string | null;
     userId?: string | null;
-    zooterId?: string | null;
+    xooterId?: string | null;
     bookingId?: string | null;
     priority?: string;
     summary: string;
@@ -211,7 +211,7 @@ export const insertReviewQueue = async (
     subject_table: payload.subjectTable,
     subject_id: payload.subjectId ?? null,
     user_id: payload.userId ?? null,
-    zooter_id: payload.zooterId ?? null,
+    xooter_id: payload.xooterId ?? null,
     booking_id: payload.bookingId ?? null,
     priority: payload.priority ?? "normal",
     summary: cleanText(payload.summary, 240),
@@ -231,13 +231,13 @@ export const assertBookingParticipant = async (
   userId: string,
 ) => {
   if (booking.user_id === userId) return { participant: true, role: "client" };
-  if (booking.zooter_id) {
-    const { data: zooter } = await supa
-      .from("zooters")
+  if (booking.xooter_id) {
+    const { data: xooter } = await supa
+      .from("xooters")
       .select("id,user_id")
-      .eq("id", booking.zooter_id)
+      .eq("id", booking.xooter_id)
       .maybeSingle();
-    if (zooter?.user_id === userId) return { participant: true, role: "contractor" };
+    if (xooter?.user_id === userId) return { participant: true, role: "contractor" };
   }
   if (await isAdminUser(supa, userId)) return { participant: true, role: "admin" };
   return { participant: false, role: "none" };

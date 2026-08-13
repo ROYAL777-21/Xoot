@@ -30,7 +30,7 @@ describe("native booking action helpers", () => {
       status: "enroute",
       statusLabel: "On the way",
       serviceName: "Guest-ready clean",
-      zooterName: "Nomsa",
+      xooterName: "Nomsa",
       propertyName: "Rosebank apartment",
       address: "12 Bath Avenue, access code 1234",
       etaMinutes: 9,
@@ -91,15 +91,15 @@ describe("native booking action helpers", () => {
 
     expect(sendNativeBookingAction(payload)).toBe(true);
     expect(events).toHaveLength(1);
-    expect(events[0].type).toBe("zoot:booking-action");
-    expect(JSON.parse(messages[0])).toMatchObject({ type: "zoot.bookingAction", payload: { action: "share_eta" } });
+    expect(events[0].type).toBe("xoot:booking-action");
+    expect(JSON.parse(messages[0])).toMatchObject({ type: "xoot.bookingAction", payload: { action: "share_eta" } });
   });
 
   it("creates concise ETA share text without destination details", () => {
     const payload = createNativeBookingActionPayload("share_eta", {
       bookingId: "booking-4",
       statusLabel: "On the way",
-      zooterName: "Nomsa",
+      xooterName: "Nomsa",
       address: "12 Bath Avenue",
       etaMinutes: 12,
       updatedAt: "2026-06-08T12:00:00.000Z",

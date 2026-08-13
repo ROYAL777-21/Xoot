@@ -120,7 +120,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
         with:
-          name: zoot-web-dist
+          name: xoot-web-dist
           path: dist
           if-no-files-found: error
           include-hidden-files: true

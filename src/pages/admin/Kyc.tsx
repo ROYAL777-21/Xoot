@@ -30,7 +30,7 @@ const AdminKyc = () => {
   const [passedTrainingCount, setPassedTrainingCount] = useState(0);
 
   const load = async () => {
-    const { data } = await supabase.from("zooter_applications").select("*").in("status", ["submitted", "approved", "rejected"]).order("updated_at", { ascending: false });
+    const { data } = await supabase.from("xooter_applications").select("*").in("status", ["submitted", "approved", "rejected"]).order("updated_at", { ascending: false });
     setApps(data ?? []);
     setLoading(false);
   };
@@ -40,10 +40,10 @@ const AdminKyc = () => {
   const openApp = async (a: any) => {
     setActive(a);
     setNotes(a.reviewer_notes ?? "");
-    const { data } = await supabase.from("zooter_documents").select("*").eq("user_id", a.user_id);
+    const { data } = await supabase.from("xooter_documents").select("*").eq("user_id", a.user_id);
     const [{ data: modules }, { data: completions }] = await Promise.all([
       supabase.from("training_modules").select("id").eq("required", true),
-      supabase.from("zooter_training_completions").select("module_id").eq("user_id", a.user_id).eq("passed", true),
+      supabase.from("xooter_training_completions").select("module_id").eq("user_id", a.user_id).eq("passed", true),
     ]);
     const requiredIds = new Set((modules ?? []).map((module: any) => module.id));
     const completedIds = new Set((completions ?? []).map((completion: any) => completion.module_id));

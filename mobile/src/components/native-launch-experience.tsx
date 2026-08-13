@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, Text, View } from 'react-native';
 
-import { Body, Eyebrow, PrimaryButton, SecondaryButton, StatusPill, Title } from '@/components/zoot-ui';
+import { Body, Eyebrow, PrimaryButton, SecondaryButton, StatusPill, Title } from '@/components/xoot-ui';
 import { Colors, Spacing, alpha } from '@/constants/theme';
 import { getNativeLaunchMode, nativeLaunchAssets, type NativeLaunchModeInput } from '@/lib/native-launch';
 

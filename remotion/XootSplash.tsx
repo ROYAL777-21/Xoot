@@ -1,5 +1,5 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
-import { StarMark, ZOEY_HALO, ZoeyArt, ZoeyEyes } from "@/components/zoot/mascot/ZoeyArt";
+import { StarMark, ZOEY_HALO, ZoeyArt, ZoeyEyes } from "@/components/xoot/mascot/ZoeyArt";
 import {
   BEATS,
   STAGE,

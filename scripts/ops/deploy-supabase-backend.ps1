@@ -25,17 +25,17 @@ Require-Command "npx.cmd"
 
 if ([string]::IsNullOrWhiteSpace($ProjectRef)) {
   $ProjectRef = if ($Environment -eq "production") {
-    if ($env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF) { $env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF } else { "mvlrkelahhsyjrwgsxaf" }
+    if ($env:XOOT_PRODUCTION_SUPABASE_PROJECT_REF) { $env:XOOT_PRODUCTION_SUPABASE_PROJECT_REF } else { "mvlrkelahhsyjrwgsxaf" }
   } else {
-    if ($env:ZOOT_STAGING_SUPABASE_PROJECT_REF) { $env:ZOOT_STAGING_SUPABASE_PROJECT_REF } else { "fxmxyabdjqviqbcxmvlp" }
+    if ($env:XOOT_STAGING_SUPABASE_PROJECT_REF) { $env:XOOT_STAGING_SUPABASE_PROJECT_REF } else { "fxmxyabdjqviqbcxmvlp" }
   }
 }
 
 if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
   $DatabaseUrl = if ($Environment -eq "production") {
-    $env:ZOOT_PRODUCTION_SUPABASE_DB_URL
+    $env:XOOT_PRODUCTION_SUPABASE_DB_URL
   } else {
-    $env:ZOOT_STAGING_SUPABASE_DB_URL
+    $env:XOOT_STAGING_SUPABASE_DB_URL
   }
 
   if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
@@ -45,9 +45,9 @@ if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
 
 if ([string]::IsNullOrWhiteSpace($DatabasePassword)) {
   $DatabasePassword = if ($Environment -eq "production") {
-    $env:ZOOT_PRODUCTION_SUPABASE_DB_PASSWORD
+    $env:XOOT_PRODUCTION_SUPABASE_DB_PASSWORD
   } else {
-    $env:ZOOT_STAGING_SUPABASE_DB_PASSWORD
+    $env:XOOT_STAGING_SUPABASE_DB_PASSWORD
   }
 
   if ([string]::IsNullOrWhiteSpace($DatabasePassword)) {
@@ -75,7 +75,7 @@ try {
       throw "Set $($Environment.ToUpperInvariant()) database password when using SUPABASE_ACCESS_TOKEN + project linking. Do not paste it into chat."
     }
 
-    & npx.cmd -y "supabase@$SupabaseVersion" login --token $env:SUPABASE_ACCESS_TOKEN --name "zoot-$Environment"
+    & npx.cmd -y "supabase@$SupabaseVersion" login --token $env:SUPABASE_ACCESS_TOKEN --name "xoot-$Environment"
     & npx.cmd -y "supabase@$SupabaseVersion" link --project-ref $ProjectRef --password $DatabasePassword --yes
     $dbPush = @("-y", "supabase@$SupabaseVersion", "db", "push", "--linked", "--include-all")
   }
@@ -96,7 +96,7 @@ try {
 
   if ($VerifyLive) {
     if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
-      throw "VerifyLive requires a database URL for $Environment. Set ZOOT_$($Environment.ToUpperInvariant())_SUPABASE_DB_URL locally."
+      throw "VerifyLive requires a database URL for $Environment. Set XOOT_$($Environment.ToUpperInvariant())_SUPABASE_DB_URL locally."
     }
 
     & (Join-Path $PSScriptRoot "verify-supabase-live.ps1") -DatabaseUrl $DatabaseUrl

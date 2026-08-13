@@ -4,9 +4,9 @@ export type XootNotificationCategory =
   | "booking"
   | "support"
   | "care_plus"
-  | "zootcred"
+  | "xootcred"
   | "security"
-  | "zooter_jobs"
+  | "xooter_jobs"
   | "sensitive_access"
   | "marketing";
 
@@ -37,18 +37,18 @@ export type XootNotificationBehaviorSignal =
   | "care_plus_viewed"
   | "care_plus_checkout_started"
   | "care_plus_candidate"
-  | "zootcred_earned"
+  | "xootcred_earned"
   | "support_waiting"
   | "security_reauth_required"
-  | "zooter_job_offer"
-  | "zooter_active_today"
-  | "zooter_eta_required"
-  | "zooter_check_in_due"
-  | "zooter_sensitive_access_ready"
+  | "xooter_job_offer"
+  | "xooter_active_today"
+  | "xooter_eta_required"
+  | "xooter_check_in_due"
+  | "xooter_sensitive_access_ready"
   | "inactive_14d";
 
 export type NotificationPersonalizationProfile = {
-  role: "guest" | "customer" | "zooter" | "admin" | "support";
+  role: "guest" | "customer" | "xooter" | "admin" | "support";
   timezone?: string;
   localHour?: number;
   behaviorSignals?: XootNotificationBehaviorSignal[];
@@ -133,9 +133,9 @@ export const isWithinQuietHours = (profile: NotificationPersonalizationProfile, 
 
 const roleAllowsCategory = (role: NotificationPersonalizationProfile["role"], category: XootNotificationCategory) => {
   if (role === "guest") return category === "marketing";
-  if (role === "zooter") return category === "zooter_jobs" || category === "support" || category === "security" || category === "sensitive_access";
+  if (role === "xooter") return category === "xooter_jobs" || category === "support" || category === "security" || category === "sensitive_access";
   if (role === "admin" || role === "support") return category === "support" || category === "security";
-  return category !== "zooter_jobs";
+  return category !== "xooter_jobs";
 };
 
 const TIME_SENSITIVE_SIGNALS = new Set<XootNotificationBehaviorSignal>([
@@ -146,11 +146,11 @@ const TIME_SENSITIVE_SIGNALS = new Set<XootNotificationBehaviorSignal>([
   "invoice_ready",
   "support_waiting",
   "security_reauth_required",
-  "zooter_job_offer",
-  "zooter_active_today",
-  "zooter_eta_required",
-  "zooter_check_in_due",
-  "zooter_sensitive_access_ready",
+  "xooter_job_offer",
+  "xooter_active_today",
+  "xooter_eta_required",
+  "xooter_check_in_due",
+  "xooter_sensitive_access_ready",
 ]);
 
 const behaviorBoostsPush = (signals: XootNotificationBehaviorSignal[] = []) => signals.some((signal) => TIME_SENSITIVE_SIGNALS.has(signal));
@@ -170,10 +170,10 @@ const getPersonalizationTags = (signals: XootNotificationBehaviorSignal[] = []) 
   if (signals.some((signal) => ["repeat_customer", "care_plus_viewed", "care_plus_checkout_started", "care_plus_candidate"].includes(signal))) {
     tags.add("care_plus_lifecycle");
   }
-  if (signals.includes("zootcred_earned")) tags.add("zootcred_lifecycle");
+  if (signals.includes("xootcred_earned")) tags.add("xootcred_lifecycle");
   if (signals.includes("support_waiting")) tags.add("support_followup");
   if (signals.includes("security_reauth_required")) tags.add("security_attention");
-  if (signals.some((signal) => signal.startsWith("zooter_"))) tags.add("zooter_operations");
+  if (signals.some((signal) => signal.startsWith("xooter_"))) tags.add("xooter_operations");
   if (signals.includes("inactive_14d")) tags.add("inactive_reengagement");
 
   return [...tags];

@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 const ROOT = process.cwd();
 const allowedAppEnvironments = new Set(["development", "staging", "production"]);
-const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.zoot.local"]);
+const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.xoot.local"]);
 const publicSecretNamePattern = /(?:SERVICE_ROLE|CLIENT_SECRET|AUTH_TOKEN|PRIVATE_KEY|WEBHOOK_SECRET|SIGNING_SECRET|SECRET_KEY|API_SECRET)/i;
 const allowedPublicSecretLikeNames = new Set(["VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SENTRY_DSN"]);
 const publicMapboxTokenNames = ["VITE_MAPBOX_PUBLIC_TOKEN", "VITE_MAPBOX_BROWSER_TOKEN"];
@@ -100,7 +100,7 @@ const hasRealSupabase = Boolean(
 const requiresRealSupabase =
   appEnv === "staging" ||
   appEnv === "production" ||
-  text("ZOOT_REQUIRE_REAL_PUBLIC_ENV") === "true";
+  text("XOOT_REQUIRE_REAL_PUBLIC_ENV") === "true";
 
 if (requiresRealSupabase && !hasRealSupabase) {
   fail("staging and production builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values.");

@@ -5,8 +5,8 @@ import { resolveNotificationLink } from "./notification-routing";
 describe("resolveNotificationLink", () => {
   it("keeps approved authenticated app notification routes", () => {
     expect(resolveNotificationLink("/app/bookings/booking-123")).toBe("/app/bookings/booking-123");
-    expect(resolveNotificationLink("zoot://booking?id=booking-123")).toBe("/app/bookings/booking-123");
-    expect(resolveNotificationLink("/zooter/jobs/job-123")).toBe("/zooter/jobs");
+    expect(resolveNotificationLink("xoot://booking?id=booking-123")).toBe("/app/bookings/booking-123");
+    expect(resolveNotificationLink("/xooter/jobs/job-123")).toBe("/xooter/jobs");
     expect(resolveNotificationLink("/care-plus")).toBe("/care-plus");
   });
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
 
-import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
+import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/xoot-ui';
 import { getAuthRedirectUrl, startOAuth } from '@/lib/auth-links';
 import { isAppleSignInAvailable, isAppleSignInCancellation, signInWithApple } from '@/lib/apple-auth';
 import { supabase } from '@/lib/supabase';

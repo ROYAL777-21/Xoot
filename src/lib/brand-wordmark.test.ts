@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 /**
  * The wordmark is `Xoot`, capital X, everywhere a customer can read it.
  *
- * This is a small thing that keeps coming back. The company-wide Zoot → Xoot rename lowercased
+ * This is a small thing that keeps coming back. The company-wide Xoot → Xoot rename lowercased
  * three wordmarks; two were fixed and `AuthReset.tsx` was missed, so the password-reset screen —
  * which a customer reaches while already unsure whether they are on the right site — showed
  * `xoot` under a header reading `Xoot`. It was then missed a second time by a review that named

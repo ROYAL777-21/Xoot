@@ -5,7 +5,7 @@
  *
  * The whole point is that this is **derived, never retyped**. `xoot.co.za` already exists in
  * `_shared/action-utils.ts`, in `.env.example`, and in the deployed bundles. A hardcoded fourth
- * copy here is exactly how the deployed functions ended up serving `zoothome.co.za` while the
+ * copy here is exactly how the deployed functions ended up serving `xoothome.co.za` while the
  * repo said otherwise — see blocker.md. Change the array in `action-utils.ts` and these follow.
  */
 

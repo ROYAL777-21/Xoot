@@ -72,7 +72,7 @@ const retiredTypedAdminActions = new Set([
   "admin_complete_outbox_event",
   "admin_resolve_review_item",
   "admin_close_support_followup",
-  "admin_decide_zooter_application",
+  "admin_decide_xooter_application",
 ]);
 
 const getAllowedOrigins = () =>
@@ -143,7 +143,7 @@ const routeNotificationChannel = (event: string) => {
     "support_opened",
     "onboarding_progress",
     "rebooking_prompt",
-    "zootcred_update",
+    "xootcred_update",
     "badge_unlocked",
   ]);
 
@@ -163,15 +163,15 @@ const getPriority = (text: string) => {
 
 const isBookingParticipant = async (supa: any, booking: Record<string, any>, userId: string) => {
   if (booking.user_id === userId) return { participant: true, role: "client" };
-  if (!booking.zooter_id) return { participant: false, role: null };
+  if (!booking.xooter_id) return { participant: false, role: null };
 
-  const { data: zooter } = await supa
-    .from("zooters")
+  const { data: xooter } = await supa
+    .from("xooters")
     .select("id,user_id")
-    .eq("id", booking.zooter_id)
+    .eq("id", booking.xooter_id)
     .maybeSingle();
 
-  if (zooter?.user_id === userId) return { participant: true, role: "contractor" };
+  if (xooter?.user_id === userId) return { participant: true, role: "contractor" };
   return { participant: false, role: null };
 };
 
@@ -259,7 +259,7 @@ Deno.serve(async (req) => {
       if (!verificationFields.has(field) || !verificationStatuses.has(status)) return json({ error: "invalid verification update" }, 400, origin);
 
       const { data, error } = await supa
-        .from("zooter_applications")
+        .from("xooter_applications")
         .update({ [field]: status })
         .eq("id", applicationId)
         .select("*")
@@ -432,7 +432,7 @@ Deno.serve(async (req) => {
         .from("loyalty_points")
         .update({ free_credits: Number(loyalty.free_credits) - 1 })
         .eq("user_id", userId);
-      const { data: ledger, error: ledgerError } = await supa.from("zootcred_ledger").insert({
+      const { data: ledger, error: ledgerError } = await supa.from("xootcred_ledger").insert({
         user_id: userId,
         amount: 1,
         direction: "debit",
@@ -440,11 +440,11 @@ Deno.serve(async (req) => {
         status: "redeemed",
         meta: { redemption_type: "free_clean_credit" },
       }).select("id").single();
-      if (ledgerError) throw new Error("zootcred ledger insert failed");
-      await insertOutbox(supa, routeNotificationChannel("zootcred_update").map((channel) => ({
-        source_table: "zootcred_ledger",
+      if (ledgerError) throw new Error("xootcred ledger insert failed");
+      await insertOutbox(supa, routeNotificationChannel("xootcred_update").map((channel) => ({
+        source_table: "xootcred_ledger",
         source_id: ledger?.id ?? null,
-        event_type: "zootcred_update",
+        event_type: "xootcred_update",
         channel,
         owner: "Retention & Loyalty Agent",
         stack_tool: "Xoot in-app notification",
@@ -464,7 +464,7 @@ Deno.serve(async (req) => {
 
       const { data: booking, error } = await supa
         .from("bookings")
-        .select("id,user_id,zooter_id,scheduled_at,status,job_completed_at,cancelled_at,service,service_type")
+        .select("id,user_id,xooter_id,scheduled_at,status,job_completed_at,cancelled_at,service,service_type")
         .eq("id", bookingId)
         .maybeSingle();
       if (error || !booking) return json({ error: "booking not found" }, 404, origin);
@@ -524,7 +524,7 @@ Deno.serve(async (req) => {
             free_credits: Number(lp.free_credits) + (total % 10 === 0 ? 1 : 0),
           }).eq("user_id", booking.user_id);
         }
-        await supa.from("zooter_jobs").update({ state: "completed" }).eq("booking_id", booking.id);
+        await supa.from("xooter_jobs").update({ state: "completed" }).eq("booking_id", booking.id);
       }
 
       return json({ status: bookingStatus, timeline_status: status }, 200, origin);
@@ -539,7 +539,7 @@ Deno.serve(async (req) => {
 
       const { data: booking, error } = await supa
         .from("bookings")
-        .select("id,user_id,zooter_id,scheduled_at,status")
+        .select("id,user_id,xooter_id,scheduled_at,status")
         .eq("id", bookingId)
         .maybeSingle();
       if (error || !booking) return json({ error: "booking not found" }, 404, origin);
@@ -586,7 +586,7 @@ Deno.serve(async (req) => {
       const bookingId = cleanId(body.bookingId);
       const { data: booking, error } = await supa
         .from("bookings")
-        .select("id,user_id,zooter_id,scheduled_at,status,job_completed_at,cancelled_at")
+        .select("id,user_id,xooter_id,scheduled_at,status,job_completed_at,cancelled_at")
         .eq("id", bookingId)
         .maybeSingle();
       if (error || !booking) return json({ error: "booking not found" }, 404, origin);
@@ -666,16 +666,16 @@ Deno.serve(async (req) => {
 
       const { data: booking } = await supa
         .from("bookings")
-        .select("id,user_id,zooter_id")
+        .select("id,user_id,xooter_id")
         .eq("id", bookingId)
         .eq("user_id", userId)
         .maybeSingle();
-      if (!booking?.id || !booking.zooter_id) return json({ error: "booking not found" }, 404, origin);
+      if (!booking?.id || !booking.xooter_id) return json({ error: "booking not found" }, 404, origin);
 
       const urgent = incidentType === "suspicious_behaviour" || incidentType === "damages";
       const { data: incident, error: incidentError } = await supa.from("trust_incidents").insert({
         booking_id: booking.id,
-        zooter_id: booking.zooter_id,
+        xooter_id: booking.xooter_id,
         user_id: userId,
         incident_type: incidentType,
         severity: urgent ? 4 : 3,
@@ -688,7 +688,7 @@ Deno.serve(async (req) => {
         subject_table: "trust_incidents",
         subject_id: incident.id,
         user_id: userId,
-        zooter_id: booking.zooter_id,
+        xooter_id: booking.xooter_id,
         booking_id: booking.id,
         priority: urgent ? "urgent" : "high",
         summary: `Trust incident: ${incidentType.replace(/_/g, " ")}`,
@@ -711,7 +711,7 @@ Deno.serve(async (req) => {
       const reviewId = cleanId(body.reviewId);
       const { data: review } = await supa
         .from("post_job_reviews")
-        .select("id,user_id,zooter_id,booking_id,rating,notes")
+        .select("id,user_id,xooter_id,booking_id,rating,notes")
         .eq("id", reviewId)
         .eq("user_id", userId)
         .maybeSingle();
@@ -730,7 +730,7 @@ Deno.serve(async (req) => {
         subject_table: "post_job_reviews",
         subject_id: review.id,
         user_id: userId,
-        zooter_id: review.zooter_id,
+        xooter_id: review.xooter_id,
         booking_id: review.booking_id,
         priority: "high",
         summary: "Low post-job rating needs follow-up",
@@ -739,17 +739,17 @@ Deno.serve(async (req) => {
       return json({ queued: true }, 200, origin);
     }
 
-    if (action === "zooter_application_submitted") {
+    if (action === "xooter_application_submitted") {
       const applicationId = cleanId(body.applicationId);
       const { data: application } = await supa
-        .from("zooter_applications")
+        .from("xooter_applications")
         .select("*")
         .eq("id", applicationId)
         .eq("user_id", userId)
         .maybeSingle();
       if (!application?.id) return json({ error: "application not found" }, 404, origin);
 
-      await supa.from("zooter_applications").update({
+      await supa.from("xooter_applications").update({
         status: "submitted",
         id_verification_status: "pending",
         selfie_verification_status: "pending",
@@ -763,13 +763,13 @@ Deno.serve(async (req) => {
 
       await supa.from("notifications").insert({
         user_id: userId,
-        kind: "zooter_application_submitted",
+        kind: "xooter_application_submitted",
         title: "Application received",
         body: "Our trust team reviews ID, selfie, address, bank, references and background checks before activation.",
       });
       await supa.from("admin_review_queue").insert({
         queue_type: "kyc",
-        subject_table: "zooter_applications",
+        subject_table: "xooter_applications",
         subject_id: application.id,
         user_id: userId,
         priority: "normal",
@@ -777,7 +777,7 @@ Deno.serve(async (req) => {
       });
       await insertOutbox(supa, [
         {
-          source_table: "zooter_applications",
+          source_table: "xooter_applications",
           source_id: application.id,
           event_type: "mie_screening_requested",
           channel: "mie_screening",
@@ -794,7 +794,7 @@ Deno.serve(async (req) => {
           created_by: userId,
         },
         ...routeNotificationChannel("trust_verification_update").map((channel) => ({
-          source_table: "zooter_applications",
+          source_table: "xooter_applications",
           source_id: application.id,
           event_type: "trust_verification_update",
           channel,
@@ -811,23 +811,23 @@ Deno.serve(async (req) => {
       return json({ application_id: application.id, status: "submitted" }, 200, origin);
     }
 
-    if (action === "zooter_job_response") {
+    if (action === "xooter_job_response") {
       const jobId = cleanId(body.jobId);
       const accept = body.accept === true;
       const { data: job } = await supa
-        .from("zooter_jobs")
-        .select("id,booking_id,zooter_id,state")
+        .from("xooter_jobs")
+        .select("id,booking_id,xooter_id,state")
         .eq("id", jobId)
         .maybeSingle();
       if (!job?.id) return json({ error: "job not found" }, 404, origin);
 
-      const { data: zooter } = await supa
-        .from("zooters")
+      const { data: xooter } = await supa
+        .from("xooters")
         .select("id,user_id")
-        .eq("id", job.zooter_id)
+        .eq("id", job.xooter_id)
         .eq("user_id", userId)
         .maybeSingle();
-      if (!zooter?.id) return json({ error: "job access denied" }, 403, origin);
+      if (!xooter?.id) return json({ error: "job access denied" }, 403, origin);
 
       const { data: booking } = await supa
         .from("bookings")
@@ -836,10 +836,10 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (!booking?.id) return json({ error: "booking not found" }, 404, origin);
 
-      await supa.from("zooter_jobs").update({
+      await supa.from("xooter_jobs").update({
         state: accept ? "accepted" : "declined",
         responded_at: new Date().toISOString(),
-      }).eq("id", job.id).eq("zooter_id", zooter.id);
+      }).eq("id", job.id).eq("xooter_id", xooter.id);
 
       if (accept) {
         let currentStatus = normaliseBookingStatus(booking.status);
@@ -880,7 +880,7 @@ Deno.serve(async (req) => {
           channel,
           owner: "Scheduling & Allocation Agent",
           stack_tool: "Xoot in-app notification",
-          payload: { booking_id: job.booking_id, zooter_id: zooter.id },
+          payload: { booking_id: job.booking_id, xooter_id: xooter.id },
           created_by: userId,
         })));
       } else {
@@ -888,7 +888,7 @@ Deno.serve(async (req) => {
           queue_type: "replacement",
           subject_table: "bookings",
           subject_id: job.booking_id,
-          zooter_id: zooter.id,
+          xooter_id: xooter.id,
           booking_id: job.booking_id,
           priority: "normal",
           summary: "Contractor declined job offer; review replacement availability",

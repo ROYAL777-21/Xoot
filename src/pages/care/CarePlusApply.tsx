@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Navbar } from "@/components/zoot/Navbar";
-import { Footer } from "@/components/zoot/Footer";
+import { Navbar } from "@/components/xoot/Navbar";
+import { Footer } from "@/components/xoot/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -122,7 +122,7 @@ const CarePlusApply = () => {
           <p className="text-xs text-muted-foreground mt-2">Step {step} of {totalSteps}</p>
         </div>
 
-        <div className="liquid-glass-shell zoot-concierge-panel rounded-4xl p-6 shadow-warm md:p-8">
+        <div className="liquid-glass-shell xoot-concierge-panel rounded-4xl p-6 shadow-warm md:p-8">
           <div className="liquid-glass-readable space-y-5">
           {step === 1 && (
             <>
@@ -138,7 +138,7 @@ const CarePlusApply = () => {
                 <Input placeholder="Please provide your full street address" value={form.address} onChange={(e) => update("address", e.target.value)} />
               </div>
               <p className="text-xs text-muted-foreground">
-                Are you a worker looking for a job? <Link to="/zooter/apply" className="text-primary font-semibold">Apply here</Link>.
+                Are you a worker looking for a job? <Link to="/xooter/apply" className="text-primary font-semibold">Apply here</Link>.
               </p>
             </>
           )}

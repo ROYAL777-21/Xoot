@@ -342,6 +342,14 @@ column, so deploying those two functions against a table without the column does
 gracefully — every booking insert fails and booking creation is down until the migration lands. The
 opposite order is harmless: apply the migration and the column sits null until the functions ship.
 
+**A third, added 2026-08-13 — `20260813100000_concierge_openrouter_source.sql`.** It extends the
+`source` CHECK on `zoot_concierge_feedback` so Concierge answers can be attributed to OpenRouter
+(ZD-027). Its failure mode is the *quiet* one, unlike the two below: `report-concierge-answer`
+coerces an unrecognised source to `'unknown'` rather than rejecting it, so deploying the functions
+first breaks nothing and blocks nobody — it just files every complaint about an OpenRouter answer
+under "no idea which model", which is precisely the attribution you want after changing providers.
+Apply it first anyway; there is no reason not to.
+
 **Two migrations now, same rule for both:**
 
 | migration | adds | written by |
@@ -380,6 +388,37 @@ limit (8 per 10 minutes) and `ops-workflow` still has its own copy at 3.
 ### 3b. ⚠️ The R39 booking fee — the web app must ship BEFORE these two functions
 
 Same class of rule as 3a, opposite direction: here the *client* has to move first.
+
+✅ **This one is now enforced, not just written down.** The workflow step *"The web app must
+already carry this pricing rule"* fetches **`https://xoot.co.za/build-info.json`** and refuses the
+deploy unless the live site reports the same rule the repo is about to make live. You can still
+read the rest of this section for the reasoning, but you cannot get it wrong by forgetting it.
+
+> ⚠️ **Corrected 2026-08-13.** This paragraph said `pricing-rules.json`. That was a second marker,
+> written and then correctly abandoned in favour of the existing `build-info.json` stamp — the
+> worklog records the decision, but this sentence was not updated with it. It named a file that
+> exists nowhere in the repository, which reads as "the gate is not implemented". **It is
+> implemented**, at `deploy-edge-functions.yml`, and it reads `.pricingRule` and `.bookingFeeCents`
+> from the stamp `write-build-info.mjs` emits.
+
+It compares live-against-repo rather than against a hardcoded `ZD-026`, so it needs no editing
+when the rule changes again, and a hotfix that does not touch pricing carries the same id and
+passes — which is why it needs no override. It parses the response body rather than trusting the
+status code, because `netlify.toml` rewrites unknown paths to `index.html` with **status 200**:
+a missing marker returns cheerful HTML, and a status-code check would wave it through.
+
+> ##### ⚠️ THIS GATE IS CURRENTLY CLOSED, AND IT BLOCKS EVERY PRODUCTION FUNCTION DEPLOY
+>
+> A **blank** function list sets `writers=1`, so the gate applies to "deploy everything" — which is
+> exactly what the ZD-029 schema rename requires. And `https://xoot.co.za/build-info.json` has been
+> unreadable on **seven** consecutive *Verify live deploy* runs.
+>
+> So a production dispatch today applies the migration and is then **refused the 33 redeploys the
+> migration depends on**, leaving every function querying tables that no longer exist, with no way
+> to fix it forward. The gate is behaving correctly; the live site is the problem.
+>
+> **Fix the hosting first — [`domain-setup.md`](./domain-setup.md).** When *Verify live deploy*
+> goes green this gate opens with it: they read the same stamp.
 
 ZD-026 made R39 a fee on every booking, waived only for Care+. Production `create-booking` is at
 **v15 and still runs the old rule** (`isCarePlusMember || frequency !== "one_time"`), verified
@@ -427,6 +466,42 @@ The other seven functions pending redeploy for the `governance-utils` fix — `s
 `create-concierge-handoff`, `create-masked-call`, `ops-workflow`, `report-concierge-answer`,
 `send-booking-message`, `confirm-payment` — import no pricing module and carry no part of this
 constraint. They can go at any time.
+
+---
+
+## 3c. ⚠️ The app identity changed — five provider consoles need updating (#34)
+
+On 2026-08-13 the deep-link scheme became `xoot://` and the app identifier became
+`za.co.xoot.app`. Both were the last moment they could change: an Android `applicationId` can
+never change after publication, and an iOS bundle identifier is fixed at submission.
+
+**`zoot://` is still registered**, deliberately. That is the safety net for everything below —
+until you have done these, native sign-in still works on the old callback rather than dead-ending.
+
+| what to change | where |
+| --- | --- |
+| Add `xoot://auth/callback` to the redirect allowlist | Supabase → Authentication → URL Configuration |
+| Update the redirect URI, and add the new reversed-client id | Google Cloud → the OAuth client(s) |
+| Register the new bundle id; update Sign in with Apple if enabled | Apple Developer → Identifiers |
+| **New identifier means new credentials** — the old ones are bound to the old id | EAS |
+| Update the project's bundle-id mapping | Sentry |
+
+⚠️ **The Android signing fingerprint changes with the credentials.** `assetlinks.json` is generated
+from `ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS`, so after EAS issues a new key that variable must be
+updated or Android App Links stop verifying. Same for `ZOOT_APPLE_TEAM_ID` / `ZOOT_IOS_APP_ID`.
+
+**Ordering — the §3b pattern again.** The website must serve the new `apple-app-site-association`
+and `assetlinks.json` **before or with** the app that claims them, or universal links break in the
+gap. The web deploy is the cheap side, so move it first. Neither file is generated at all until the
+team id and fingerprints above are set — the build logs `Skipped …: set ZOOT_APPLE_TEAM_ID`, which
+is why they are absent today rather than wrong.
+
+⚠️ **One thing the retained `zoot://` cannot save.** iOS automatically registers the bundle
+identifier itself as a URL scheme, so `za.co.zoothome.app://` stops resolving on iOS the moment the
+app ships with the new identifier — there is no way to keep a scheme for an identifier the app no
+longer has. `native-routing.ts` still accepts it, which covers anything that reaches the web
+router, but a native link built on the old bundle id will not open the app. Nothing has shipped, so
+nothing is currently relying on it.
 
 ---
 

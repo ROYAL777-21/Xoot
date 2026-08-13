@@ -1,17 +1,17 @@
-import { Navbar } from "@/components/zoot/Navbar";
-import { BookingHero } from "@/components/zoot/BookingHero";
-import { Services } from "@/components/zoot/Services";
-import { NearbyWorkers } from "@/components/zoot/NearbyWorkers";
-import { HowItWorks } from "@/components/zoot/HowItWorks";
-import { SafetyTrust } from "@/components/zoot/SafetyTrust";
-import { BecomeXooter } from "@/components/zoot/BecomeXooter";
-import { TrustedBy } from "@/components/zoot/TrustedBy";
-import { HomeExpansion } from "@/components/zoot/HomeExpansion";
-import { CtaBand } from "@/components/zoot/CtaBand";
-import { Footer } from "@/components/zoot/Footer";
-import { FeedbackSection } from "@/components/zoot/FeedbackSection";
+import { Navbar } from "@/components/xoot/Navbar";
+import { BookingHero } from "@/components/xoot/BookingHero";
+import { Services } from "@/components/xoot/Services";
+import { NearbyWorkers } from "@/components/xoot/NearbyWorkers";
+import { HowItWorks } from "@/components/xoot/HowItWorks";
+import { SafetyTrust } from "@/components/xoot/SafetyTrust";
+import { BecomeXooter } from "@/components/xoot/BecomeXooter";
+import { TrustedBy } from "@/components/xoot/TrustedBy";
+import { HomeExpansion } from "@/components/xoot/HomeExpansion";
+import { CtaBand } from "@/components/xoot/CtaBand";
+import { Footer } from "@/components/xoot/Footer";
+import { FeedbackSection } from "@/components/xoot/FeedbackSection";
 import { SEO } from "@/components/SEO";
-import { ServiceAreaMap } from "@/components/zoot/ServiceAreaMap";
+import { ServiceAreaMap } from "@/components/xoot/ServiceAreaMap";
 
 const homeStructuredData = {
   "@context": "https://schema.org",

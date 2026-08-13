@@ -67,16 +67,16 @@ export const shouldDeprioritizeXooter = (score?: number | null) => typeof score 
 
 export const shouldFlagXooterForReview = (score?: number | null) => typeof score === "number" && score < 50;
 
-export const deriveXooterBadges = (zooter: XooterTrustProfile): TrustBadgeKind[] => {
+export const deriveXooterBadges = (xooter: XooterTrustProfile): TrustBadgeKind[] => {
   const badges: TrustBadgeKind[] = [];
-  const backgroundChecked = zooter.background_checked || zooter.background_check_status === "approved";
+  const backgroundChecked = xooter.background_checked || xooter.background_check_status === "approved";
 
-  if (zooter.verified) badges.push("verified");
+  if (xooter.verified) badges.push("verified");
   if (backgroundChecked) badges.push("background_checked");
-  if ((zooter.rating ?? 0) >= 4.8 && (zooter.jobs_completed ?? 0) >= 20) badges.push("top_rated");
-  if (zooter.airbnb_specialist) badges.push("airbnb_specialist");
-  if (zooter.premium_care_plus) badges.push("premium_care_plus");
-  if ((zooter.repeat_client_count ?? 0) >= 3) badges.push("repeat_client_favourite");
+  if ((xooter.rating ?? 0) >= 4.8 && (xooter.jobs_completed ?? 0) >= 20) badges.push("top_rated");
+  if (xooter.airbnb_specialist) badges.push("airbnb_specialist");
+  if (xooter.premium_care_plus) badges.push("premium_care_plus");
+  if ((xooter.repeat_client_count ?? 0) >= 3) badges.push("repeat_client_favourite");
 
   return badges;
 };
@@ -103,11 +103,11 @@ export type ProximityContext = {
  * distance and labelled with another is worse than an unordered list.
  */
 export const xooterDistanceKm = (
-  zooter: XooterTrustProfile,
+  xooter: XooterTrustProfile,
   proximity?: ProximityContext,
 ): number | null => {
   if (!proximity?.address || !proximity.centroids?.length) return null;
-  return distanceKmToCoverage(proximity.address, zooter.suburb_coverage ?? null, proximity.centroids);
+  return distanceKmToCoverage(proximity.address, xooter.suburb_coverage ?? null, proximity.centroids);
 };
 
 /**
@@ -136,11 +136,11 @@ export const xooterDistanceKm = (
 const DISTANCE_BAND_KM = 5;
 
 export const sortXootersForMarketplace = <T extends XooterTrustProfile>(
-  zooters: T[],
+  xooters: T[],
   proximity?: ProximityContext,
 ) => {
-  const bandOf = (zooter: T): number => {
-    const km = xooterDistanceKm(zooter, proximity);
+  const bandOf = (xooter: T): number => {
+    const km = xooterDistanceKm(xooter, proximity);
     // `Infinity` for unknown: it sorts last among Xooters that DO have a distance, and — because
     // every band is Infinity when nobody has one — collapses to the pre-existing ordering when
     // there is no address or no centroid table. That collapse is the compatibility guarantee.
@@ -148,7 +148,7 @@ export const sortXootersForMarketplace = <T extends XooterTrustProfile>(
     return Math.floor(km / DISTANCE_BAND_KM);
   };
 
-  return [...zooters].sort((a, b) => {
+  return [...xooters].sort((a, b) => {
     const aScore = a.reliability_score ?? 100;
     const bScore = b.reliability_score ?? 100;
     const aPenalty = shouldDeprioritizeXooter(aScore) ? 1 : 0;

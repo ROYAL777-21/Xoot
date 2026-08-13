@@ -129,9 +129,16 @@ rules:
     message: >-
       Call recording and transcription are held `false` on purpose, in every masked-call payload
       and audit entry. Under RICA s4 a call may only be recorded with the consent of a party to
-      it, and POPIA requires the parties to be told what is collected and why. Flipping this
-      needs both-party notice wording in the UI and in the terms first — it is not just a
-      boolean. When that work ships, delete this rule in the same commit as the wording.
+      it, and POPIA requires the parties to be told what is collected and why.
+
+      The WORDING now exists — `src/lib/recording-notice.ts`, rendered at /legal/terms §9. What
+      is still missing is the notice being SHOWN: the in-call indicator is not rendered yet, and
+      a clause in the terms that no screen displays is not notice. That is why this rule is
+      still here.
+
+      To remove it: render the indicator, flip `RECORDING_NOTICE_RENDERED` in
+      `recording-notice.ts`, and delete this rule in that same commit —
+      `recording-notice.test.ts` then asserts it is gone.
     patterns:
       - pattern-either:
           - pattern: "{..., recording_enabled: true}"

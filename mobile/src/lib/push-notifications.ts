@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 
-const ZOOT_ANDROID_NOTIFICATION_CHANNELS: Array<{
+const XOOT_ANDROID_NOTIFICATION_CHANNELS: Array<{
   id: string;
   name: string;
   importance: Notifications.AndroidImportance;
@@ -13,35 +13,35 @@ const ZOOT_ANDROID_NOTIFICATION_CHANNELS: Array<{
   visibility: Notifications.AndroidNotificationVisibility;
 }> = [
   {
-    id: 'zoot-booking-updates',
+    id: 'xoot-booking-updates',
     name: 'Booking updates',
     importance: Notifications.AndroidImportance.HIGH,
     description: 'Booking status, assignment, arrival, and job-day updates without sensitive access details.',
     visibility: Notifications.AndroidNotificationVisibility.PUBLIC,
   },
   {
-    id: 'zoot-support-updates',
+    id: 'xoot-support-updates',
     name: 'Support updates',
     importance: Notifications.AndroidImportance.DEFAULT,
     description: 'Support case progress and safe Concierge handoff updates.',
     visibility: Notifications.AndroidNotificationVisibility.PUBLIC,
   },
   {
-    id: 'zoot-care-plus',
+    id: 'xoot-care-plus',
     name: 'Care+ reminders',
     importance: Notifications.AndroidImportance.DEFAULT,
     description: 'Care+ reminders, saved-home prompts, and preference updates.',
     visibility: Notifications.AndroidNotificationVisibility.PUBLIC,
   },
   {
-    id: 'zoot-security',
+    id: 'xoot-security',
     name: 'Account security',
     importance: Notifications.AndroidImportance.HIGH,
     description: 'Security, login, and account-protection updates.',
     visibility: Notifications.AndroidNotificationVisibility.PRIVATE,
   },
   {
-    id: 'zoot-zooter-jobs',
+    id: 'xoot-xooter-jobs',
     name: 'Xooter jobs',
     importance: Notifications.AndroidImportance.HIGH,
     description: 'Accepted job, job-day, and sensitive-access availability prompts that require opening Xoot.',
@@ -53,7 +53,7 @@ const configureAndroidNotificationChannels = async () => {
   if (Platform.OS !== 'android') return;
 
   await Promise.all(
-    ZOOT_ANDROID_NOTIFICATION_CHANNELS.map((channel) =>
+    XOOT_ANDROID_NOTIFICATION_CHANNELS.map((channel) =>
       Notifications.setNotificationChannelAsync(channel.id, {
         name: channel.name,
         description: channel.description,

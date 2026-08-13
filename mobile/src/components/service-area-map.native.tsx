@@ -50,9 +50,9 @@ export function ServiceAreaMap() {
     <View style={styles.shell}>
       <Mapbox.MapView style={styles.map} logoEnabled={false} attributionEnabled={false} compassEnabled scaleBarEnabled={false}>
         <Mapbox.Camera centerCoordinate={center} zoomLevel={10.2} pitch={34} animationMode="flyTo" animationDuration={850} />
-        <Mapbox.ShapeSource id="zoot-launch-areas" shape={shape}>
+        <Mapbox.ShapeSource id="xoot-launch-areas" shape={shape}>
           <Mapbox.CircleLayer
-            id="zoot-launch-points"
+            id="xoot-launch-points"
             style={{
               circleColor: Colors.dark.accent,
               circleOpacity: 0.92,
@@ -62,7 +62,7 @@ export function ServiceAreaMap() {
             }}
           />
           <Mapbox.SymbolLayer
-            id="zoot-launch-labels"
+            id="xoot-launch-labels"
             style={{
               textColor: Colors.dark.text,
               textField: ['get', 'name'],

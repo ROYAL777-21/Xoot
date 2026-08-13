@@ -9,7 +9,7 @@ import {
 } from "../_shared/action-utils.ts";
 import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
 
-const E2EE_CHAT_PREFIX = "zoot:e2ee:v1:";
+const E2EE_CHAT_PREFIX = "xoot:e2ee:v1:";
 const terminalStatuses = new Set(["cancelled", "rated"]);
 
 const cleanEncryptedBody = (value: unknown) => (typeof value === "string" ? value.trim() : "");
@@ -47,25 +47,25 @@ Deno.serve(async (req) => {
 
     const { data: booking, error: bookingError } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id,status")
+      .select("id,user_id,xooter_id,status")
       .eq("id", bookingId)
       .maybeSingle();
 
     if (bookingError || !booking?.id) return fail("booking not found", origin, 404);
     if (terminalStatuses.has(String(booking.status))) return fail("booking chat is closed", origin, 409);
 
-    let senderType: "user" | "zooter" | null = null;
+    let senderType: "user" | "xooter" | null = null;
     if (booking.user_id === user.id) {
       senderType = "user";
-    } else if (booking.zooter_id) {
-      const { data: zooter, error: zooterError } = await supa
-        .from("zooters")
+    } else if (booking.xooter_id) {
+      const { data: xooter, error: xooterError } = await supa
+        .from("xooters")
         .select("id,user_id")
-        .eq("id", booking.zooter_id)
+        .eq("id", booking.xooter_id)
         .maybeSingle();
 
-      if (zooterError) return fail("zooter lookup failed", origin, 500);
-      if (zooter?.user_id === user.id) senderType = "zooter";
+      if (xooterError) return fail("xooter lookup failed", origin, 500);
+      if (xooter?.user_id === user.id) senderType = "xooter";
     }
 
     if (!senderType) return fail("booking access denied", origin, 403);

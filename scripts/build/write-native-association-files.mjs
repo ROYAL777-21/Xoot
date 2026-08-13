@@ -38,13 +38,13 @@ const defaultAppLinkPaths = [
   "/install",
   "/trust-centre",
   "/legal/*",
-  "/zooter/*",
+  "/xooter/*",
 ];
 
-const appleTeamId = envText("ZOOT_APPLE_TEAM_ID");
-const iosBundleId = envText("ZOOT_IOS_BUNDLE_ID", "za.co.zoothome.app");
-const iosAppId = envText("ZOOT_IOS_APP_ID", appleTeamId ? `${appleTeamId}.${iosBundleId}` : "");
-const configuredAppLinkPaths = splitList(process.env.ZOOT_APP_LINK_PATHS);
+const appleTeamId = envText("XOOT_APPLE_TEAM_ID");
+const iosBundleId = envText("XOOT_IOS_BUNDLE_ID", "za.co.xoot.app");
+const iosAppId = envText("XOOT_IOS_APP_ID", appleTeamId ? `${appleTeamId}.${iosBundleId}` : "");
+const configuredAppLinkPaths = splitList(process.env.XOOT_APP_LINK_PATHS);
 const appLinkPaths = configuredAppLinkPaths.length ? configuredAppLinkPaths : defaultAppLinkPaths;
 
 if (iosAppId) {
@@ -60,11 +60,11 @@ if (iosAppId) {
     },
   });
 } else {
-  skipJson("apple-app-site-association", "set ZOOT_APPLE_TEAM_ID or ZOOT_IOS_APP_ID.");
+  skipJson("apple-app-site-association", "set XOOT_APPLE_TEAM_ID or XOOT_IOS_APP_ID.");
 }
 
-const androidPackageName = envText("ZOOT_ANDROID_PACKAGE_NAME", "za.co.zoothome.app");
-const androidFingerprints = splitList(process.env.ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS);
+const androidPackageName = envText("XOOT_ANDROID_PACKAGE_NAME", "za.co.xoot.app");
+const androidFingerprints = splitList(process.env.XOOT_ANDROID_SHA256_CERT_FINGERPRINTS);
 
 if (androidPackageName && androidFingerprints.length > 0) {
   writeJson("assetlinks.json", [
@@ -78,5 +78,5 @@ if (androidPackageName && androidFingerprints.length > 0) {
     },
   ]);
 } else {
-  skipJson("assetlinks.json", "set ZOOT_ANDROID_SHA256_CERT_FINGERPRINTS.");
+  skipJson("assetlinks.json", "set XOOT_ANDROID_SHA256_CERT_FINGERPRINTS.");
 }

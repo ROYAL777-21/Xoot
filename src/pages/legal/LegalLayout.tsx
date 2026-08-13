@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Footer } from "@/components/zoot/Footer";
-import { Navbar } from "@/components/zoot/Navbar";
+import { Footer } from "@/components/xoot/Footer";
+import { Navbar } from "@/components/xoot/Navbar";
 import { SEO } from "@/components/SEO";
 
 type LegalLayoutProps = {

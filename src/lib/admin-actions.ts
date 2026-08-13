@@ -25,13 +25,13 @@ export async function escalateSupportCase(ticketId: string, escalation_note: str
 }
 
 export async function approveXooterAdmin(applicationId: string, reason: string) {
-  return supabase.functions.invoke("approve-zooter", {
+  return supabase.functions.invoke("approve-xooter", {
     body: { application_id: applicationId, reason },
   });
 }
 
 export async function rejectXooterAdmin(applicationId: string, reason: string) {
-  return supabase.functions.invoke("admin-reject-zooter", {
+  return supabase.functions.invoke("admin-reject-xooter", {
     body: { application_id: applicationId, reason },
   });
 }

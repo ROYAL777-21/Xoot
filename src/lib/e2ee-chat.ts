@@ -1,4 +1,4 @@
-export const E2EE_CHAT_PREFIX = "zoot:e2ee:v1:";
+export const E2EE_CHAT_PREFIX = "xoot:e2ee:v1:";
 
 const CHAT_ALGORITHM = "ECDH-P256+HKDF-SHA256/AES-GCM" as const;
 const DEVICE_KEY_VERSION = 1;
@@ -159,7 +159,7 @@ const deriveWrapKey = async ({
     {
       name: "HKDF",
       hash: "SHA-256",
-      salt: encodeText(`zoot-chat-v1:${bookingId}:${senderId}:${recipientId}:${recipientDeviceId}`),
+      salt: encodeText(`xoot-chat-v1:${bookingId}:${senderId}:${recipientId}:${recipientDeviceId}`),
       info: encodeText(`message-key:${senderDeviceId}->${recipientDeviceId}`),
     },
     hkdfKey,
@@ -185,7 +185,7 @@ export const createDeviceKeyPair = async (deviceId = randomDeviceId()): Promise<
   };
 };
 
-export const getDeviceKeyStorageKey = (userId: string) => `zoot:e2ee:device-key:v1:${userId}`;
+export const getDeviceKeyStorageKey = (userId: string) => `xoot:e2ee:device-key:v1:${userId}`;
 
 export const readStoredDeviceKeyPair = (userId: string, storage?: Storage | null): StoredDeviceKeyPair | null => {
   const targetStorage = storage ?? (typeof window !== "undefined" ? window.localStorage : null);

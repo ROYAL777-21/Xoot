@@ -1,8 +1,8 @@
 param(
-  [string]$ProjectRef = $env:ZOOT_SUPABASE_PROJECT_REF,
-  [string]$SiteUrl = $env:ZOOT_AUTH_SITE_URL,
+  [string]$ProjectRef = $env:XOOT_SUPABASE_PROJECT_REF,
+  [string]$SiteUrl = $env:XOOT_AUTH_SITE_URL,
   [string[]]$RedirectUrls = @(),
-  [string]$RedirectFile = $env:ZOOT_AUTH_REDIRECT_FILE,
+  [string]$RedirectFile = $env:XOOT_AUTH_REDIRECT_FILE,
   [int]$JwtExpirySeconds = 3600,
   [int]$PasswordMinLength = 12,
   [switch]$RequireStrongPasswordCharacters,
@@ -49,7 +49,7 @@ function Assert-SafePublicUrl {
 
   $allowedSchemes = @("https", "http")
   if ($AllowNativeScheme) {
-    $allowedSchemes += "zoot"
+    $allowedSchemes += "xoot"
   }
 
   if ($allowedSchemes -notcontains $uri.Scheme) {
@@ -120,7 +120,7 @@ function Read-LocalSupabaseAuthConfig {
 }
 
 if ([string]::IsNullOrWhiteSpace($ProjectRef)) {
-  throw "Missing ProjectRef. Set ZOOT_SUPABASE_PROJECT_REF or pass -ProjectRef."
+  throw "Missing ProjectRef. Set XOOT_SUPABASE_PROJECT_REF or pass -ProjectRef."
 }
 
 if ($ProjectRef -notmatch "^[a-z0-9]{20}$") {
@@ -132,7 +132,7 @@ if ($UseLocalConfig) {
   $localConfig = Read-LocalSupabaseAuthConfig
   if ([string]::IsNullOrWhiteSpace($SiteUrl)) {
     if ($Apply) {
-      throw "When using -UseLocalConfig with -Apply, pass an explicit -SiteUrl or set ZOOT_AUTH_SITE_URL for the target environment."
+      throw "When using -UseLocalConfig with -Apply, pass an explicit -SiteUrl or set XOOT_AUTH_SITE_URL for the target environment."
     }
     $SiteUrl = $localConfig.site_url
   }
@@ -140,7 +140,7 @@ if ($UseLocalConfig) {
 
 Assert-SafePublicUrl -Value $SiteUrl -Name "SiteUrl"
 
-$envRedirects = Split-RedirectText -Text $env:ZOOT_AUTH_REDIRECT_URLS
+$envRedirects = Split-RedirectText -Text $env:XOOT_AUTH_REDIRECT_URLS
 $fileRedirects = @()
 if (-not [string]::IsNullOrWhiteSpace($RedirectFile)) {
   $resolvedRedirectFile = Resolve-Path -LiteralPath $RedirectFile
@@ -158,7 +158,7 @@ $allRedirects = @($localRedirects + $RedirectUrls + $envRedirects + $fileRedirec
   Select-Object -Unique
 
 if ($allRedirects.Count -eq 0) {
-  throw "No redirect URLs supplied. Pass -RedirectUrls, set ZOOT_AUTH_REDIRECT_URLS, or pass -RedirectFile outside the repo."
+  throw "No redirect URLs supplied. Pass -RedirectUrls, set XOOT_AUTH_REDIRECT_URLS, or pass -RedirectFile outside the repo."
 }
 
 foreach ($redirect in $allRedirects) {

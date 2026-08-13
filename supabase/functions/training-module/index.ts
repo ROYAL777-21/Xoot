@@ -12,7 +12,7 @@ import {
 /**
  * Serves training questions without their answers, and grades submitted attempts.
  *
- * The client used to write `passed` and `score` on `zooter_training_completions` directly,
+ * The client used to write `passed` and `score` on `xooter_training_completions` directly,
  * which meant "completed the safety module" only ever asserted that someone sent a row saying
  * so. `20260802120000_client_write_surface_lockdown.sql` revoked that write and
  * `20260802140000` revoked read access to the answer key, so both halves of self-certification
@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
     // Rate limit before grading, so a rejected attempt costs nothing and reveals nothing.
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count, error: countError } = await supa
-      .from("zooter_training_completions")
+      .from("xooter_training_completions")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .eq("module_id", module.id)
@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
     const { score, correct, total } = grade(questions, answers);
     const passed = score >= (module.pass_score ?? 100);
 
-    const { error: insertError } = await supa.from("zooter_training_completions").insert({
+    const { error: insertError } = await supa.from("xooter_training_completions").insert({
       user_id: user.id,
       module_id: module.id,
       passed,
@@ -141,25 +141,25 @@ Deno.serve(async (req) => {
 
     if (insertError) return fail("could not record attempt", origin, 500);
 
-    // `zooter_training_progress` is keyed by zooter, not user, and only exists once someone is
+    // `xooter_training_progress` is keyed by xooter, not user, and only exists once someone is
     // an active Xooter. Trainees who are still applicants have a completion but no progress
-    // row, so a missing zooter is not an error.
+    // row, so a missing xooter is not an error.
     if (passed) {
-      const { data: zooter } = await supa
-        .from("zooters")
+      const { data: xooter } = await supa
+        .from("xooters")
         .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (zooter?.id) {
-        await supa.from("zooter_training_progress").upsert(
+      if (xooter?.id) {
+        await supa.from("xooter_training_progress").upsert(
           {
-            zooter_id: zooter.id,
+            xooter_id: xooter.id,
             module_id: module.id,
             completed: true,
             completed_at: new Date().toISOString(),
           },
-          { onConflict: "zooter_id,module_id" },
+          { onConflict: "xooter_id,module_id" },
         );
       }
     }

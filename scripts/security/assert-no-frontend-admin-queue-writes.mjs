@@ -13,7 +13,7 @@ const TABLES = [
   "support_tickets",
   "payment_audit_events",
   "payment_records",
-  "zootcred_ledger",
+  "xootcred_ledger",
   "user_subscriptions",
   "booking_status_events",
   "masked_call_sessions",

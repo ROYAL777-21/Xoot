@@ -70,7 +70,7 @@ export const scrubMobileSentryEvent = <TEvent>(event: TEvent): TEvent => {
 
   mutableEvent.tags = {
     ...mutableEvent.tags,
-    app: 'zoot-mobile',
+    app: 'xoot-mobile',
   };
   mutableEvent.user = mutableEvent.user?.id ? { id: String(mutableEvent.user.id).slice(0, 80) } : undefined;
   mutableEvent.message = mutableEvent.message ? scrubMobileMonitoringString(mutableEvent.message) : mutableEvent.message;

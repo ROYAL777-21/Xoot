@@ -16,6 +16,13 @@ describe("resolveNativeRoute", () => {
     expect(resolveNativeRoute("https://xoot.co.za/auth/callback?code=abc&type=signup")).toBe(
       "/auth/callback?code=abc&type=signup",
     );
+    /*
+     * PRE-RENAME identities, kept working on purpose (#34, ZD-028).
+     *
+     * A link shared before the rename, or an OAuth client whose redirect URI has not been updated
+     * yet, still resolves. Deleting these would let someone "tidy up" the protocol list and turn a
+     * missed allowlist entry into a sign-in that dead-ends.
+     */
     expect(resolveNativeRoute("zoot://callback?code=abc&next=%2Fapp")).toBe(
       "/auth/callback?code=abc&next=%2Fapp",
     );
@@ -28,32 +35,43 @@ describe("resolveNativeRoute", () => {
     expect(resolveNativeRoute("zoot://auth/reset#access_token=token&type=recovery")).toBe(
       "/auth/reset#access_token=token&type=recovery",
     );
+
+    // The current scheme.
+    expect(resolveNativeRoute("xoot://callback?code=abc&next=%2Fapp")).toBe(
+      "/auth/callback?code=abc&next=%2Fapp",
+    );
+    expect(resolveNativeRoute("za.co.xoot.app://callback?code=abc&type=oauth")).toBe(
+      "/auth/callback?code=abc&type=oauth",
+    );
+    expect(resolveNativeRoute("xoot://auth/reset#access_token=token&type=recovery")).toBe(
+      "/auth/reset#access_token=token&type=recovery",
+    );
   });
 
-  it("maps zoot URL scheme shortcuts onto existing app routes", () => {
-    expect(resolveNativeRoute("zoot://app/bookings/booking_456")).toBe("/app/bookings/booking_456");
-    expect(resolveNativeRoute("zoot://bookings?id=booking-456")).toBe("/app/bookings/booking-456");
-    expect(resolveNativeRoute("zoot://book-cleaner")).toBe("/app");
+  it("maps xoot URL scheme shortcuts onto existing app routes", () => {
+    expect(resolveNativeRoute("xoot://app/bookings/booking_456")).toBe("/app/bookings/booking_456");
+    expect(resolveNativeRoute("xoot://bookings?id=booking-456")).toBe("/app/bookings/booking-456");
+    expect(resolveNativeRoute("xoot://book-cleaner")).toBe("/app");
     expect(resolveNativeRoute("https://xoot.co.za/app?intent=book_clean")).toBe("/app?intent=book_clean");
-    expect(resolveNativeRoute("zoot://book?intent=book_clean&service=office&date=2026-07-03&area=Rosebank")).toBe(
+    expect(resolveNativeRoute("xoot://book?intent=book_clean&service=office&date=2026-07-03&area=Rosebank")).toBe(
       "/app?area=Rosebank&date=2026-07-03&intent=book_clean&service=office",
     );
-    expect(resolveNativeRoute("zoot://book?intent=book_clean&gate_code=1234")).toBe("/app?intent=book_clean");
-    expect(resolveNativeRoute("zoot://book?intent=https://evil.example&service=office")).toBe(
+    expect(resolveNativeRoute("xoot://book?intent=book_clean&gate_code=1234")).toBe("/app?intent=book_clean");
+    expect(resolveNativeRoute("xoot://book?intent=https://evil.example&service=office")).toBe(
       "/app?service=office",
     );
-    expect(resolveNativeRoute("zoot://book?intent=book_clean&area=../admin")).toBe("/app?intent=book_clean");
-    expect(resolveNativeRoute("zoot://clean-house?intent=book_clean&date=2026-07-03&service=residential")).toBe(
+    expect(resolveNativeRoute("xoot://book?intent=book_clean&area=../admin")).toBe("/app?intent=book_clean");
+    expect(resolveNativeRoute("xoot://clean-house?intent=book_clean&date=2026-07-03&service=residential")).toBe(
       "/app?date=2026-07-03&intent=book_clean&service=residential",
     );
-    expect(resolveNativeRoute("zoot://office-clean?intent=book_clean&service=office&access_code=1234")).toBe(
+    expect(resolveNativeRoute("xoot://office-clean?intent=book_clean&service=office&access_code=1234")).toBe(
       "/app?intent=book_clean&service=office",
     );
-    expect(resolveNativeRoute("zoot://airbnb-turnover?intent=book_clean&service=airbnb")).toBe(
+    expect(resolveNativeRoute("xoot://airbnb-turnover?intent=book_clean&service=airbnb")).toBe(
       "/app?intent=book_clean&service=airbnb",
     );
-    expect(resolveNativeRoute("zoot://care-plus/apply")).toBe("/care-plus/apply");
-    expect(resolveNativeRoute("zoot://office-dashboard")).toBe("/app/properties/office");
+    expect(resolveNativeRoute("xoot://care-plus/apply")).toBe("/care-plus/apply");
+    expect(resolveNativeRoute("xoot://office-dashboard")).toBe("/app/properties/office");
   });
 
   it("maps structured push payloads to authenticated surfaces", () => {
@@ -61,7 +79,7 @@ describe("resolveNativeRoute", () => {
       "/app/bookings/booking-789",
     );
     expect(resolveNativeRoute({ data: { screen: "host_dashboard" } })).toBe("/app/properties/airbnb");
-    expect(resolveNativeRoute({ payload: { event_type: "zoot_cred" } })).toBe("/app/loyalty");
+    expect(resolveNativeRoute({ payload: { event_type: "xoot_cred" } })).toBe("/app/loyalty");
   });
 
   it("only treats source_id as a booking id for booking-source payloads", () => {
@@ -76,7 +94,7 @@ describe("resolveNativeRoute", () => {
     expect(resolveNativeRoute("http://evil.example/app")).toBeNull();
     expect(resolveNativeRoute("http://localhost:4173/app?intent=book_clean")).toBe("/app?intent=book_clean");
     expect(resolveNativeRoute("/admin/ops")).toBeNull();
-    expect(resolveNativeRoute("zoot://app/bookings/../../support")).toBeNull();
+    expect(resolveNativeRoute("xoot://app/bookings/../../support")).toBeNull();
     expect(resolveNativeRoute({ bookingId: "booking/with/slash" })).toBeNull();
   });
 });
@@ -100,6 +118,10 @@ describe("the deep-link host allow-list", () => {
   });
 
   it("rejects a link from the retired domain", () => {
+    // `zoot.co.za`, removed 2026-08-07. Written literally rather than derived, because the
+    // 2026-08-13 schema rename swept this file and briefly turned this assertion into a claim
+    // that the LIVE domain is rejected — a test that passes while asserting the opposite of its
+    // own name.
     expect(resolveNativeRoute("https://zoot.co.za/app/bookings")).toBeNull();
   });
 });

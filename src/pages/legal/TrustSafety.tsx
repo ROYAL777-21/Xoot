@@ -1,5 +1,5 @@
-import { Navbar } from "@/components/zoot/Navbar";
-import { Footer } from "@/components/zoot/Footer";
+import { Navbar } from "@/components/xoot/Navbar";
+import { Footer } from "@/components/xoot/Footer";
 import { SEO } from "@/components/SEO";
 import { ShieldCheck, FileSearch, Star, HeartHandshake, LockKeyhole, Clock3 } from "lucide-react";
 

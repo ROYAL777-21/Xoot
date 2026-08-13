@@ -8,7 +8,7 @@
     android:shortcutLongLabel="@string/shortcut_book_clean_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://book?intent=book_clean" />
+      android:data="xoot://book?intent=book_clean" />
   </shortcut>
 
   <shortcut
@@ -19,7 +19,7 @@
     android:shortcutLongLabel="@string/shortcut_clean_house_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://book?intent=book_clean&amp;service=residential" />
+      android:data="xoot://book?intent=book_clean&amp;service=residential" />
   </shortcut>
 
   <shortcut
@@ -30,7 +30,7 @@
     android:shortcutLongLabel="@string/shortcut_office_clean_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://book?intent=book_clean&amp;service=office" />
+      android:data="xoot://book?intent=book_clean&amp;service=office" />
   </shortcut>
 
   <shortcut
@@ -41,7 +41,7 @@
     android:shortcutLongLabel="@string/shortcut_clean_place_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://book?intent=book_clean&amp;service=residential" />
+      android:data="xoot://book?intent=book_clean&amp;service=residential" />
   </shortcut>
 
   <shortcut
@@ -52,18 +52,18 @@
     android:shortcutLongLabel="@string/shortcut_airbnb_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://book?intent=book_clean&amp;service=airbnb" />
+      android:data="xoot://book?intent=book_clean&amp;service=airbnb" />
   </shortcut>
 
   <shortcut
-    android:shortcutId="zoot_concierge"
+    android:shortcutId="xoot_concierge"
     android:enabled="true"
     android:icon="@mipmap/ic_launcher"
     android:shortcutShortLabel="@string/shortcut_concierge_short"
     android:shortcutLongLabel="@string/shortcut_concierge_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://concierge?zootBot=open&amp;intent=concierge" />
+      android:data="xoot://concierge?xootBot=open&amp;intent=concierge" />
   </shortcut>
 
   <shortcut
@@ -74,7 +74,7 @@
     android:shortcutLongLabel="@string/shortcut_care_plus_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://care-plus?intent=care_plus" />
+      android:data="xoot://care-plus?intent=care_plus" />
   </shortcut>
 
   <shortcut
@@ -85,7 +85,7 @@
     android:shortcutLongLabel="@string/shortcut_bookings_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://bookings?intent=bookings" />
+      android:data="xoot://bookings?intent=bookings" />
   </shortcut>
 
   <shortcut
@@ -96,17 +96,17 @@
     android:shortcutLongLabel="@string/shortcut_booking_status_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://bookings?intent=booking_status" />
+      android:data="xoot://bookings?intent=booking_status" />
   </shortcut>
 
   <shortcut
-    android:shortcutId="zooter_jobs"
+    android:shortcutId="xooter_jobs"
     android:enabled="true"
     android:icon="@mipmap/ic_launcher"
-    android:shortcutShortLabel="@string/shortcut_zooter_jobs_short"
-    android:shortcutLongLabel="@string/shortcut_zooter_jobs_long">
+    android:shortcutShortLabel="@string/shortcut_xooter_jobs_short"
+    android:shortcutLongLabel="@string/shortcut_xooter_jobs_long">
     <intent
       android:action="android.intent.action.VIEW"
-      android:data="zoot://zooter/jobs?intent=zooter_jobs" />
+      android:data="xoot://xooter/jobs?intent=xooter_jobs" />
   </shortcut>
 </shortcuts>

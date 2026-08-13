@@ -167,8 +167,8 @@ export const getSafeRedirectPath = (value: string | null | undefined, fallback =
   if (!trimmed || trimmed.includes("\\") || trimmed.startsWith("//")) return fallback;
 
   try {
-    const parsed = new URL(trimmed, "https://zoot.local");
-    if (parsed.origin !== "https://zoot.local") return fallback;
+    const parsed = new URL(trimmed, "https://xoot.local");
+    if (parsed.origin !== "https://xoot.local") return fallback;
     if (isUnsafeRedirectQuery(parsed.searchParams)) return fallback;
     const path = `${parsed.pathname}${parsed.search}`;
     if (!path.startsWith("/") || path.startsWith("/auth")) return fallback;

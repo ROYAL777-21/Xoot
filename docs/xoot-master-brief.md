@@ -39,18 +39,22 @@ case-sensitive `Zoot`→`Xoot` covered every form: `Zooter`, `ZootCred`, `Zoot B
 
 **What was deliberately NOT renamed, and must not be:**
 
-- **Lowercase database identifiers.** `zooters`, `zooter_id`, `zooter_applications`,
-  `zootcred_ledger`, `zoot_black_*` and friends are live table and column names in the
-  production Supabase project (`mvlrkelahhsyjrwgsxaf`), which holds real seeded rows.
-  Renaming them is a schema migration, not a find-and-replace, and it would break every
-  query the moment code and database disagreed.
+- ~~**Lowercase database identifiers.**~~ **Superseded 2026-08-13 (ZD-029) — they were
+  renamed.** This entry said renaming them "is a schema migration, not a find-and-replace,
+  and it would break every query the moment code and database disagreed". Both halves were
+  right, and that is exactly how it was done: `20260813160000_rename_zoot_schema_to_xoot.sql`
+  renames 18 tables, 25 columns, 2 views and the `app_role` label, and the code moves in the
+  same change. The claim about "real seeded rows" was the part that had gone stale —
+  `pg_stat_user_tables` shows every operational table at **zero**, which is what made a
+  straight rename possible without compatibility views.
 - **`supabase/migrations/`.** Migration files are an applied historical record. Editing them
   after they have run against production desynchronises the migration ledger.
 - **Internal directory names** such as `src/components/zoot/`. Churn with no user-visible
   benefit; rename only if a wider refactor is touching those paths anyway.
 
-So: **users see Xoot everywhere; the database still says zoot.** That is intentional and
-safe. Closing the gap is a future migration, tracked as an open question, not a loose end.
+~~So: **users see Xoot everywhere; the database still says zoot.**~~ **Closed 2026-08-13.**
+The gap this described — the "future migration, tracked as an open question" — is
+ZD-029. Users and the database now both say Xoot.
 
 ### Care+ benefits
 

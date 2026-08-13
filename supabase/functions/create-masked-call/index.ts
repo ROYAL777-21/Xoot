@@ -17,7 +17,7 @@ const getUserPhone = async (supa: any, userId: string) => {
   return data?.phone ?? null;
 };
 
-const createTwilioProxySession = async (bookingId: string, clientPhone: string, zooterPhone: string) => {
+const createTwilioProxySession = async (bookingId: string, clientPhone: string, xooterPhone: string) => {
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const apiKey = Deno.env.get("TWILIO_API_KEY_SID") ?? Deno.env.get("TWILIO_API_KEY");
   const apiSecret = Deno.env.get("TWILIO_API_KEY_SECRET");
@@ -54,12 +54,12 @@ const createTwilioProxySession = async (bookingId: string, clientPhone: string, 
   };
 
   const client = await createParticipant(clientPhone, "client");
-  const zooter = await createParticipant(zooterPhone, "zooter");
+  const xooter = await createParticipant(xooterPhone, "xooter");
   return {
     configured: true,
     session_sid: session.sid,
     client_proxy_number: client.proxy_identifier ?? client.proxyIdentifier ?? null,
-    zooter_proxy_number: zooter.proxy_identifier ?? zooter.proxyIdentifier ?? null,
+    xooter_proxy_number: xooter.proxy_identifier ?? xooter.proxyIdentifier ?? null,
     recording_enabled: false,
     transcription_enabled: false,
   };
@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
 
     const { data: booking } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id,status,scheduled_at,job_completed_at,cancelled_at")
+      .select("id,user_id,xooter_id,status,scheduled_at,job_completed_at,cancelled_at")
       .eq("id", bookingId)
       .maybeSingle();
     if (!booking?.id) return fail("booking not found", origin, 404);
@@ -145,13 +145,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!booking.zooter_id) return fail("booking has no assigned Xooter", origin, 409);
+    if (!booking.xooter_id) return fail("booking has no assigned Xooter", origin, 409);
 
-    const { data: zooter } = await supa.from("zooters").select("user_id").eq("id", booking.zooter_id).maybeSingle();
-    if (!zooter?.user_id) return fail("assigned Xooter account not found", origin, 404);
+    const { data: xooter } = await supa.from("xooters").select("user_id").eq("id", booking.xooter_id).maybeSingle();
+    if (!xooter?.user_id) return fail("assigned Xooter account not found", origin, 404);
 
     const clientPhone = await getUserPhone(supa, booking.user_id);
-    const zooterPhone = await getUserPhone(supa, zooter.user_id);
+    const xooterPhone = await getUserPhone(supa, xooter.user_id);
     const calleeRole = eligibility.participantRole === "contractor" ? "client" : "contractor";
     const twilioAccountReady = await isOperationalControlEnabled(supa, "twilio.operational_messages").catch(() => false);
     const maskedVoiceReady = await isOperationalControlEnabled(supa, "twilio.masked_voice").catch(() => false);
@@ -185,8 +185,8 @@ Deno.serve(async (req) => {
       recording_enabled: false,
       transcription_enabled: false,
     };
-    if (providerAllowed && clientPhone && zooterPhone) {
-      providerStatus = await createTwilioProxySession(booking.id, clientPhone, zooterPhone);
+    if (providerAllowed && clientPhone && xooterPhone) {
+      providerStatus = await createTwilioProxySession(booking.id, clientPhone, xooterPhone);
     }
 
     if (providerStatus.configured) {
@@ -209,7 +209,7 @@ Deno.serve(async (req) => {
         booking_id: booking.id,
         callee_role: calleeRole,
         provider_status: providerStatus,
-        missing_phone: !clientPhone || !zooterPhone,
+        missing_phone: !clientPhone || !xooterPhone,
         provider_allowed: providerAllowed,
         eligibility_reason: eligibility.reason,
         recording_enabled: false,
@@ -243,7 +243,7 @@ Deno.serve(async (req) => {
       status: providerStatus.configured ? "active" : "queued",
       provider_session_sid: providerStatus.session_sid ?? null,
       proxy_numbers: providerStatus.configured
-        ? { client: providerStatus.client_proxy_number ?? null, zooter: providerStatus.zooter_proxy_number ?? null }
+        ? { client: providerStatus.client_proxy_number ?? null, xooter: providerStatus.xooter_proxy_number ?? null }
         : null,
     }, origin);
   } catch (error) {

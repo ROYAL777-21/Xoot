@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/zoot-ui';
+import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/xoot-ui';
 import { invokeXootFunction } from '@/lib/edge-functions';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -27,7 +27,7 @@ export default function CarePlusScreen() {
     try {
       const response = await invokeXootFunction<CarePlusResponse>('care-plus-membership', {
         action: 'request_membership',
-        planId: 'zoot-care-plus',
+        planId: 'xoot-care-plus',
       });
       setStatus(
         response.already_exists

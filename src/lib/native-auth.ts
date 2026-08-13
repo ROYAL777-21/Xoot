@@ -8,7 +8,7 @@ type PreferencesModule = {
   };
 };
 
-const NATIVE_QUICK_UNLOCK_KEY = "zoot.native.quick_unlock_enabled";
+const NATIVE_QUICK_UNLOCK_KEY = "xoot.native.quick_unlock_enabled";
 
 export const isNativeAuthPlatform = () => isOptionalNativePlatform();
 

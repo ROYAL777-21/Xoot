@@ -29,7 +29,7 @@ describe("tip visibility policy", () => {
   it("keeps the tip off the bookings row", () => {
     // The whole reason for a separate table. RLS is row-level, so a tip column on
     // `bookings` is readable by every assigned Xooter through the existing
-    // "zooters view assigned bookings" policy, whatever else is written around it.
+    // "xooters view assigned bookings" policy, whatever else is written around it.
     expect(sql).toMatch(/create table if not exists public\.booking_tips/);
     expect(sql).not.toMatch(/alter table public\.bookings[\s\S]{0,200}tip_cents/);
   });

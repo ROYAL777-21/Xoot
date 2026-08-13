@@ -58,7 +58,20 @@ setting either to `true`.
 That is not caution for its own sake. Under **RICA s4** a call may only be recorded with the
 consent of a party to it, and **POPIA** requires the parties to be told what is collected and why.
 Turning either on needs both-party notice wording in the UI and in the terms — the boolean is the
-last step, not the first. When that wording ships, delete the Semgrep rule in the same commit.
+last step, not the first.
+
+✅ **The wording now exists** (2026-08-13): `src/lib/recording-notice.ts` holds the booking-time
+disclosure, the in-call indicator label and the terms clause in one module, and `/legal/terms` §9
+renders the clause from it — one source, so the promise and the screen cannot disagree.
+`recording-notice.test.ts` asserts the clause carries every element POPIA s18 requires, describes
+*party*-consent rather than platform recording, and quotes the same retention `safety.ts`
+enforces.
+
+⚠️ **The Semgrep rule stays, and this is the remaining step.** Wording is necessary and not
+sufficient: a clause in the terms that no screen ever shows is not notice. Recording may only be
+enabled once the **in-call indicator is actually rendered**, which is the native call layer's job.
+When that ships: flip `RECORDING_NOTICE_RENDERED` in `recording-notice.ts`, delete the Semgrep
+rule in the same commit, and the test flips to asserting the rule is gone.
 
 ## Why the feature is still gated
 

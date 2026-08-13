@@ -1,6 +1,6 @@
 import { resolveNativeRoute } from "./native-routing";
 
-const NOTIFICATION_ROUTE_PREFIXES = ["/app", "/zooter"];
+const NOTIFICATION_ROUTE_PREFIXES = ["/app", "/xooter"];
 const NOTIFICATION_EXACT_ROUTES = new Set(["/care-plus", "/care-plus/apply", "/trust-centre"]);
 
 export const resolveNotificationLink = (value: string | null | undefined): string | null => {

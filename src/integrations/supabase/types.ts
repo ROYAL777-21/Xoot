@@ -90,7 +90,7 @@ export type Database = {
           subject_table: string
           summary: string
           user_id: string | null
-          zooter_id: string | null
+          xooter_id: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -106,7 +106,7 @@ export type Database = {
           subject_table: string
           summary: string
           user_id?: string | null
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -122,7 +122,7 @@ export type Database = {
           subject_table?: string
           summary?: string
           user_id?: string | null
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Relationships: [
           {
@@ -136,7 +136,7 @@ export type Database = {
             foreignKeyName: "admin_review_queue_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -147,31 +147,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "admin_review_queue_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "admin_review_queue_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "admin_review_queue_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "admin_review_queue_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "admin_review_queue_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "admin_review_queue_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "admin_review_queue_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "admin_review_queue_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -448,7 +448,7 @@ export type Database = {
             foreignKeyName: "booking_chat_typing_indicators_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -467,7 +467,7 @@ export type Database = {
           id: string
           photo_type: string
           storage_path: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           booking_id: string
@@ -475,7 +475,7 @@ export type Database = {
           id?: string
           photo_type: string
           storage_path: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           booking_id?: string
@@ -483,7 +483,7 @@ export type Database = {
           id?: string
           photo_type?: string
           storage_path?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
@@ -497,7 +497,7 @@ export type Database = {
             foreignKeyName: "booking_completion_photos_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -508,31 +508,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "booking_completion_photos_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "booking_completion_photos_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "booking_completion_photos_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "booking_completion_photos_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "booking_completion_photos_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "booking_completion_photos_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "booking_completion_photos_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "booking_completion_photos_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -592,7 +592,7 @@ export type Database = {
             foreignKeyName: "booking_fare_splits_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -699,7 +699,7 @@ export type Database = {
             foreignKeyName: "booking_invoices_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: true
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -749,7 +749,7 @@ export type Database = {
             foreignKeyName: "booking_message_read_receipts_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -817,7 +817,7 @@ export type Database = {
             foreignKeyName: "booking_message_reports_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -888,7 +888,7 @@ export type Database = {
             foreignKeyName: "booking_service_line_items_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -940,7 +940,7 @@ export type Database = {
             foreignKeyName: "booking_status_events_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -960,7 +960,7 @@ export type Database = {
           settled_at: string | null
           updated_at: string
           user_id: string
-          zooter_id: string | null
+          xooter_id: string | null
         }
         Insert: {
           amount_cents: number
@@ -969,7 +969,7 @@ export type Database = {
           settled_at?: string | null
           updated_at?: string
           user_id: string
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Update: {
           amount_cents?: number
@@ -978,7 +978,7 @@ export type Database = {
           settled_at?: string | null
           updated_at?: string
           user_id?: string
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Relationships: [
           {
@@ -992,7 +992,7 @@ export type Database = {
             foreignKeyName: "booking_tips_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: true
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -1003,31 +1003,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "booking_tips_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "booking_tips_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "booking_tips_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "booking_tips_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "booking_tips_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "booking_tips_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "booking_tips_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "booking_tips_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1055,7 +1055,7 @@ export type Database = {
           job_started_at: string | null
           launch_region: string | null
           notes: string | null
-          original_zooter_id: string | null
+          original_xooter_id: string | null
           payment_confirmed_at: string | null
           payment_status: string
           price: number
@@ -1074,10 +1074,10 @@ export type Database = {
           updated_at: string
           user_id: string
           was_reassigned: boolean
-          zoot_black_certificate_id: string | null
-          zoot_black_line_item_amount: number | null
-          zoot_black_requested: boolean
-          zooter_id: string | null
+          xoot_black_certificate_id: string | null
+          xoot_black_line_item_amount: number | null
+          xoot_black_requested: boolean
+          xooter_id: string | null
         }
         Insert: {
           address?: string | null
@@ -1101,7 +1101,7 @@ export type Database = {
           job_started_at?: string | null
           launch_region?: string | null
           notes?: string | null
-          original_zooter_id?: string | null
+          original_xooter_id?: string | null
           payment_confirmed_at?: string | null
           payment_status?: string
           price?: number
@@ -1120,10 +1120,10 @@ export type Database = {
           updated_at?: string
           user_id: string
           was_reassigned?: boolean
-          zoot_black_certificate_id?: string | null
-          zoot_black_line_item_amount?: number | null
-          zoot_black_requested?: boolean
-          zooter_id?: string | null
+          xoot_black_certificate_id?: string | null
+          xoot_black_line_item_amount?: number | null
+          xoot_black_requested?: boolean
+          xooter_id?: string | null
         }
         Update: {
           address?: string | null
@@ -1147,7 +1147,7 @@ export type Database = {
           job_started_at?: string | null
           launch_region?: string | null
           notes?: string | null
-          original_zooter_id?: string | null
+          original_xooter_id?: string | null
           payment_confirmed_at?: string | null
           payment_status?: string
           price?: number
@@ -1166,10 +1166,10 @@ export type Database = {
           updated_at?: string
           user_id?: string
           was_reassigned?: boolean
-          zoot_black_certificate_id?: string | null
-          zoot_black_line_item_amount?: number | null
-          zoot_black_requested?: boolean
-          zooter_id?: string | null
+          xoot_black_certificate_id?: string | null
+          xoot_black_line_item_amount?: number | null
+          xoot_black_requested?: boolean
+          xooter_id?: string | null
         }
         Relationships: [
           {
@@ -1180,31 +1180,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_original_zooter_id_fkey"
-            columns: ["original_zooter_id"]
+            foreignKeyName: "bookings_original_xooter_id_fkey"
+            columns: ["original_xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "bookings_original_zooter_id_fkey"
-            columns: ["original_zooter_id"]
+            foreignKeyName: "bookings_original_xooter_id_fkey"
+            columns: ["original_xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_original_zooter_id_fkey"
-            columns: ["original_zooter_id"]
+            foreignKeyName: "bookings_original_xooter_id_fkey"
+            columns: ["original_xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_original_zooter_id_fkey"
-            columns: ["original_zooter_id"]
+            foreignKeyName: "bookings_original_xooter_id_fkey"
+            columns: ["original_xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
           {
@@ -1215,38 +1215,38 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_zoot_black_certificate_fk"
-            columns: ["zoot_black_certificate_id"]
+            foreignKeyName: "bookings_xoot_black_certificate_fk"
+            columns: ["xoot_black_certificate_id"]
             isOneToOne: false
-            referencedRelation: "zoot_black_completion_certificates"
+            referencedRelation: "xoot_black_completion_certificates"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "bookings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "bookings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "bookings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "bookings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "bookings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1441,7 +1441,7 @@ export type Database = {
           recurring_locked: boolean
           repeat_count: number
           user_id: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           created_at?: string
@@ -1450,7 +1450,7 @@ export type Database = {
           recurring_locked?: boolean
           repeat_count?: number
           user_id: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           created_at?: string
@@ -1459,35 +1459,35 @@ export type Database = {
           recurring_locked?: boolean
           repeat_count?: number
           user_id?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "favorites_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "favorites_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "favorites_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "favorites_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "favorites_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "favorites_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "favorites_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "favorites_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1798,7 +1798,7 @@ export type Database = {
             foreignKeyName: "masked_call_sessions_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -1865,7 +1865,7 @@ export type Database = {
             foreignKeyName: "masked_conversation_sessions_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -1926,7 +1926,7 @@ export type Database = {
             foreignKeyName: "messages_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -2295,7 +2295,7 @@ export type Database = {
             foreignKeyName: "payment_records_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -2321,7 +2321,7 @@ export type Database = {
           status: string
           step_up_verified_at: string | null
           updated_at: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           approval_request_id?: string | null
@@ -2336,7 +2336,7 @@ export type Database = {
           status?: string
           step_up_verified_at?: string | null
           updated_at?: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           approval_request_id?: string | null
@@ -2351,7 +2351,7 @@ export type Database = {
           status?: string
           step_up_verified_at?: string | null
           updated_at?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
@@ -2365,14 +2365,14 @@ export type Database = {
             foreignKeyName: "payout_change_requests_previous_payout_account_id_fkey"
             columns: ["previous_payout_account_id"]
             isOneToOne: false
-            referencedRelation: "zooter_payout_accounts"
+            referencedRelation: "xooter_payout_accounts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "payout_change_requests_requested_payout_account_id_fkey"
             columns: ["requested_payout_account_id"]
             isOneToOne: false
-            referencedRelation: "zooter_payout_accounts"
+            referencedRelation: "xooter_payout_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -2388,7 +2388,7 @@ export type Database = {
           quality_rating: number | null
           rating: number
           user_id: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           booking_id: string
@@ -2400,7 +2400,7 @@ export type Database = {
           quality_rating?: number | null
           rating: number
           user_id: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           booking_id?: string
@@ -2412,7 +2412,7 @@ export type Database = {
           quality_rating?: number | null
           rating?: number
           user_id?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
@@ -2426,7 +2426,7 @@ export type Database = {
             foreignKeyName: "post_job_reviews_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -2437,31 +2437,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "post_job_reviews_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "post_job_reviews_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "post_job_reviews_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "post_job_reviews_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "post_job_reviews_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "post_job_reviews_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "post_job_reviews_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "post_job_reviews_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2672,7 +2672,7 @@ export type Database = {
           preferred_time: string | null
           status: string
           user_id: string
-          zooter_id: string | null
+          xooter_id: string | null
         }
         Insert: {
           cadence_days?: number
@@ -2684,7 +2684,7 @@ export type Database = {
           preferred_time?: string | null
           status?: string
           user_id: string
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Update: {
           cadence_days?: number
@@ -2696,7 +2696,7 @@ export type Database = {
           preferred_time?: string | null
           status?: string
           user_id?: string
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Relationships: [
           {
@@ -2707,31 +2707,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "recurring_schedules_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "recurring_schedules_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "recurring_schedules_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "recurring_schedules_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "recurring_schedules_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "recurring_schedules_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "recurring_schedules_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "recurring_schedules_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2788,7 +2788,7 @@ export type Database = {
             foreignKeyName: "refund_requests_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -2880,7 +2880,7 @@ export type Database = {
             foreignKeyName: "safety_sos_alerts_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -2971,7 +2971,7 @@ export type Database = {
             foreignKeyName: "sensitive_access_logs_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -3023,7 +3023,7 @@ export type Database = {
             foreignKeyName: "sensitive_booking_access_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: true
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -3043,7 +3043,7 @@ export type Database = {
           field_accessed: string
           id: string
           was_within_window: boolean
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           accessed_at?: string
@@ -3052,7 +3052,7 @@ export type Database = {
           field_accessed: string
           id?: string
           was_within_window: boolean
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           accessed_at?: string
@@ -3061,7 +3061,7 @@ export type Database = {
           field_accessed?: string
           id?: string
           was_within_window?: boolean
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: []
       }
@@ -3180,7 +3180,7 @@ export type Database = {
             foreignKeyName: "support_followups_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -3266,7 +3266,7 @@ export type Database = {
             foreignKeyName: "support_handoff_contexts_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -3370,7 +3370,7 @@ export type Database = {
           severity: number
           status: string
           user_id: string | null
-          zooter_id: string | null
+          xooter_id: string | null
         }
         Insert: {
           booking_id?: string | null
@@ -3381,7 +3381,7 @@ export type Database = {
           severity?: number
           status?: string
           user_id?: string | null
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Update: {
           booking_id?: string | null
@@ -3392,7 +3392,7 @@ export type Database = {
           severity?: number
           status?: string
           user_id?: string | null
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Relationships: [
           {
@@ -3406,7 +3406,7 @@ export type Database = {
             foreignKeyName: "trust_incidents_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -3417,31 +3417,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "trust_incidents_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "trust_incidents_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "trust_incidents_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "trust_incidents_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "trust_incidents_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "trust_incidents_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "trust_incidents_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "trust_incidents_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3627,7 +3627,7 @@ export type Database = {
         Row: {
           cancelled_at: string | null
           checkout_url: string | null
-          favourite_zooter_id: string | null
+          favourite_xooter_id: string | null
           id: string
           next_billing_at: string
           plan_id: string | null
@@ -3638,7 +3638,7 @@ export type Database = {
         Insert: {
           cancelled_at?: string | null
           checkout_url?: string | null
-          favourite_zooter_id?: string | null
+          favourite_xooter_id?: string | null
           id?: string
           next_billing_at?: string
           plan_id?: string | null
@@ -3649,7 +3649,7 @@ export type Database = {
         Update: {
           cancelled_at?: string | null
           checkout_url?: string | null
-          favourite_zooter_id?: string | null
+          favourite_xooter_id?: string | null
           id?: string
           next_billing_at?: string
           plan_id?: string | null
@@ -3659,31 +3659,31 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_subscriptions_favourite_zooter_id_fkey"
-            columns: ["favourite_zooter_id"]
+            foreignKeyName: "user_subscriptions_favourite_xooter_id_fkey"
+            columns: ["favourite_xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "user_subscriptions_favourite_zooter_id_fkey"
-            columns: ["favourite_zooter_id"]
+            foreignKeyName: "user_subscriptions_favourite_xooter_id_fkey"
+            columns: ["favourite_xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "user_subscriptions_favourite_zooter_id_fkey"
-            columns: ["favourite_zooter_id"]
+            foreignKeyName: "user_subscriptions_favourite_xooter_id_fkey"
+            columns: ["favourite_xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "user_subscriptions_favourite_zooter_id_fkey"
-            columns: ["favourite_zooter_id"]
+            foreignKeyName: "user_subscriptions_favourite_xooter_id_fkey"
+            columns: ["favourite_xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
           {
@@ -3760,7 +3760,7 @@ export type Database = {
             foreignKeyName: "visit_recordings_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
@@ -3781,7 +3781,7 @@ export type Database = {
           id: string
           reason: string
           starts_at: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           bps?: number
@@ -3791,7 +3791,7 @@ export type Database = {
           id?: string
           reason: string
           starts_at?: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           bps?: number
@@ -3801,40 +3801,40 @@ export type Database = {
           id?: string
           reason?: string
           starts_at?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "xooter_commission_boosts_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
       }
-      zoot_black_area_pilots: {
+      xoot_black_area_pilots: {
         Row: {
           approval_request_id: string | null
           approved_at: string | null
@@ -3876,7 +3876,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "zoot_black_area_pilots_approval_request_id_fkey"
+            foreignKeyName: "xoot_black_area_pilots_approval_request_id_fkey"
             columns: ["approval_request_id"]
             isOneToOne: false
             referencedRelation: "approval_requests"
@@ -3884,7 +3884,7 @@ export type Database = {
           },
         ]
       }
-      zoot_black_completion_certificates: {
+      xoot_black_completion_certificates: {
         Row: {
           booking_id: string
           certificate_number: string
@@ -3900,7 +3900,7 @@ export type Database = {
           storage_bucket: string
           storage_path: string | null
           updated_at: string
-          zooter_id: string | null
+          xooter_id: string | null
         }
         Insert: {
           booking_id: string
@@ -3917,7 +3917,7 @@ export type Database = {
           storage_bucket?: string
           storage_path?: string | null
           updated_at?: string
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Update: {
           booking_id?: string
@@ -3934,61 +3934,61 @@ export type Database = {
           storage_bucket?: string
           storage_path?: string | null
           updated_at?: string
-          zooter_id?: string | null
+          xooter_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "zoot_black_completion_certificates_booking_id_fkey"
+            foreignKeyName: "xoot_black_completion_certificates_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: true
             referencedRelation: "booking_sensitive_access"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zoot_black_completion_certificates_booking_id_fkey"
+            foreignKeyName: "xoot_black_completion_certificates_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: true
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zoot_black_completion_certificates_booking_id_fkey"
+            foreignKeyName: "xoot_black_completion_certificates_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: true
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zoot_black_completion_certificates_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_completion_certificates_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "zoot_black_completion_certificates_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_completion_certificates_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zoot_black_completion_certificates_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_completion_certificates_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zoot_black_completion_certificates_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_completion_certificates_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
       }
-      zoot_black_equipment_evidence: {
+      xoot_black_equipment_evidence: {
         Row: {
           created_at: string
           evidence_type: string
@@ -4003,7 +4003,7 @@ export type Database = {
           storage_path: string | null
           submitted_by: string | null
           updated_at: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           created_at?: string
@@ -4019,7 +4019,7 @@ export type Database = {
           storage_path?: string | null
           submitted_by?: string | null
           updated_at?: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           created_at?: string
@@ -4035,40 +4035,40 @@ export type Database = {
           storage_path?: string | null
           submitted_by?: string | null
           updated_at?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "zoot_black_equipment_evidence_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_equipment_evidence_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "zoot_black_equipment_evidence_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_equipment_evidence_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zoot_black_equipment_evidence_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_equipment_evidence_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zoot_black_equipment_evidence_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_equipment_evidence_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
       }
-      zoot_black_status_history: {
+      xoot_black_status_history: {
         Row: {
           approval_request_id: string | null
           changed_by: string | null
@@ -4079,7 +4079,7 @@ export type Database = {
           metadata: Json
           reason: string
           status: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           approval_request_id?: string | null
@@ -4091,7 +4091,7 @@ export type Database = {
           metadata?: Json
           reason: string
           status: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           approval_request_id?: string | null
@@ -4103,47 +4103,47 @@ export type Database = {
           metadata?: Json
           reason?: string
           status?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "zoot_black_status_history_approval_request_id_fkey"
+            foreignKeyName: "xoot_black_status_history_approval_request_id_fkey"
             columns: ["approval_request_id"]
             isOneToOne: false
             referencedRelation: "approval_requests"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zoot_black_status_history_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_status_history_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "zoot_black_status_history_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_status_history_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zoot_black_status_history_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_status_history_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zoot_black_status_history_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xoot_black_status_history_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
       }
-      zoot_black_training_requirements: {
+      xoot_black_training_requirements: {
         Row: {
           approval_request_id: string | null
           created_at: string
@@ -4182,7 +4182,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "zoot_black_training_requirements_approval_request_id_fkey"
+            foreignKeyName: "xoot_black_training_requirements_approval_request_id_fkey"
             columns: ["approval_request_id"]
             isOneToOne: false
             referencedRelation: "approval_requests"
@@ -4190,7 +4190,7 @@ export type Database = {
           },
         ]
       }
-      zoot_concierge_feedback: {
+      xoot_concierge_feedback: {
         Row: {
           answer_excerpt: string | null
           conversation_context: string | null
@@ -4229,7 +4229,7 @@ export type Database = {
         }
         Relationships: []
       }
-      zoot_concierge_knowledge_versions: {
+      xoot_concierge_knowledge_versions: {
         Row: {
           created_at: string
           effective_at: string
@@ -4259,7 +4259,7 @@ export type Database = {
         }
         Relationships: []
       }
-      zootcred_ledger: {
+      xootcred_ledger: {
         Row: {
           amount: number
           booking_id: string | null
@@ -4298,21 +4298,21 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "zootcred_ledger_booking_id_fkey"
+            foreignKeyName: "xootcred_ledger_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "booking_sensitive_access"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zootcred_ledger_booking_id_fkey"
+            foreignKeyName: "xootcred_ledger_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zootcred_ledger_booking_id_fkey"
+            foreignKeyName: "xootcred_ledger_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
@@ -4320,7 +4320,7 @@ export type Database = {
           },
         ]
       }
-      zooter_applications: {
+      xooter_applications: {
         Row: {
           activation_locked_reason: string | null
           address: string | null
@@ -4473,7 +4473,7 @@ export type Database = {
         }
         Relationships: []
       }
-      zooter_documents: {
+      xooter_documents: {
         Row: {
           application_id: string | null
           created_at: string
@@ -4506,15 +4506,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "zooter_documents_application_id_fkey"
+            foreignKeyName: "xooter_documents_application_id_fkey"
             columns: ["application_id"]
             isOneToOne: false
-            referencedRelation: "zooter_applications"
+            referencedRelation: "xooter_applications"
             referencedColumns: ["id"]
           },
         ]
       }
-      zooter_earnings: {
+      xooter_earnings: {
         Row: {
           booking_id: string | null
           created_at: string
@@ -4523,7 +4523,7 @@ export type Database = {
           net_amount: number
           platform_fee: number
           status: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           booking_id?: string | null
@@ -4533,7 +4533,7 @@ export type Database = {
           net_amount?: number
           platform_fee?: number
           status?: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           booking_id?: string | null
@@ -4543,61 +4543,61 @@ export type Database = {
           net_amount?: number
           platform_fee?: number
           status?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "zooter_earnings_booking_id_fkey"
+            foreignKeyName: "xooter_earnings_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "booking_sensitive_access"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zooter_earnings_booking_id_fkey"
+            foreignKeyName: "xooter_earnings_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zooter_earnings_booking_id_fkey"
+            foreignKeyName: "xooter_earnings_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_earnings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_earnings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "zooter_earnings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_earnings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_earnings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_earnings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_earnings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_earnings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
       }
-      zooter_jobs: {
+      xooter_jobs: {
         Row: {
           booking_id: string
           decline_reason: string | null
@@ -4605,7 +4605,7 @@ export type Database = {
           offered_at: string
           responded_at: string | null
           state: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           booking_id: string
@@ -4614,7 +4614,7 @@ export type Database = {
           offered_at?: string
           responded_at?: string | null
           state?: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           booking_id?: string
@@ -4623,61 +4623,61 @@ export type Database = {
           offered_at?: string
           responded_at?: string | null
           state?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "zooter_jobs_booking_id_fkey"
+            foreignKeyName: "xooter_jobs_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "booking_sensitive_access"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zooter_jobs_booking_id_fkey"
+            foreignKeyName: "xooter_jobs_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zooter_jobs_booking_id_fkey"
+            foreignKeyName: "xooter_jobs_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_jobs_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_jobs_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "zooter_jobs_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_jobs_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_jobs_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_jobs_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_jobs_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_jobs_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
       }
-      zooter_payout_accounts: {
+      xooter_payout_accounts: {
         Row: {
           account_label: string | null
           account_reference_hash: string
@@ -4692,7 +4692,7 @@ export type Database = {
           verification_method: string
           verified_at: string | null
           verified_by: string | null
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           account_label?: string | null
@@ -4708,7 +4708,7 @@ export type Database = {
           verification_method?: string
           verified_at?: string | null
           verified_by?: string | null
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           account_label?: string | null
@@ -4724,11 +4724,11 @@ export type Database = {
           verification_method?: string
           verified_at?: string | null
           verified_by?: string | null
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "zooter_payout_accounts_approval_request_id_fkey"
+            foreignKeyName: "xooter_payout_accounts_approval_request_id_fkey"
             columns: ["approval_request_id"]
             isOneToOne: false
             referencedRelation: "approval_requests"
@@ -4736,7 +4736,7 @@ export type Database = {
           },
         ]
       }
-      zooter_payout_holds: {
+      xooter_payout_holds: {
         Row: {
           amount: number
           booking_id: string | null
@@ -4750,7 +4750,7 @@ export type Database = {
           released_by: string | null
           status: string
           updated_at: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           amount: number
@@ -4765,7 +4765,7 @@ export type Database = {
           released_by?: string | null
           status?: string
           updated_at?: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           amount?: number
@@ -4780,25 +4780,25 @@ export type Database = {
           released_by?: string | null
           status?: string
           updated_at?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "zooter_payout_holds_booking_id_fkey"
+            foreignKeyName: "xooter_payout_holds_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "booking_sensitive_access"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zooter_payout_holds_booking_id_fkey"
+            foreignKeyName: "xooter_payout_holds_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["booking_id"]
           },
           {
-            foreignKeyName: "zooter_payout_holds_booking_id_fkey"
+            foreignKeyName: "xooter_payout_holds_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
@@ -4806,7 +4806,7 @@ export type Database = {
           },
         ]
       }
-      zooter_reliability_metrics: {
+      xooter_reliability_metrics: {
         Row: {
           admin_review_required: boolean
           cancellation_count: number
@@ -4817,7 +4817,7 @@ export type Database = {
           repeat_booking_count: number
           support_escalation_count: number
           updated_at: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           admin_review_required?: boolean
@@ -4829,7 +4829,7 @@ export type Database = {
           repeat_booking_count?: number
           support_escalation_count?: number
           updated_at?: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           admin_review_required?: boolean
@@ -4841,40 +4841,40 @@ export type Database = {
           repeat_booking_count?: number
           support_escalation_count?: number
           updated_at?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "zooter_reliability_metrics_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_reliability_metrics_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: true
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "zooter_reliability_metrics_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_reliability_metrics_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: true
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_reliability_metrics_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_reliability_metrics_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: true
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_reliability_metrics_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_reliability_metrics_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: true
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
       }
-      zooter_training_completions: {
+      xooter_training_completions: {
         Row: {
           completed_at: string
           id: string
@@ -4901,7 +4901,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "zooter_training_completions_module_id_fkey"
+            foreignKeyName: "xooter_training_completions_module_id_fkey"
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "training_modules"
@@ -4909,67 +4909,67 @@ export type Database = {
           },
         ]
       }
-      zooter_training_progress: {
+      xooter_training_progress: {
         Row: {
           completed: boolean
           completed_at: string | null
           id: string
           module_id: string
-          zooter_id: string
+          xooter_id: string
         }
         Insert: {
           completed?: boolean
           completed_at?: string | null
           id?: string
           module_id: string
-          zooter_id: string
+          xooter_id: string
         }
         Update: {
           completed?: boolean
           completed_at?: string | null
           id?: string
           module_id?: string
-          zooter_id?: string
+          xooter_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "zooter_training_progress_module_id_fkey"
+            foreignKeyName: "xooter_training_progress_module_id_fkey"
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "training_modules"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_training_progress_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_training_progress_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "zooter_training_progress_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_training_progress_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_training_progress_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_training_progress_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "zooter_training_progress_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "xooter_training_progress_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
       }
-      zooters: {
+      xooters: {
         Row: {
           active: boolean
           airbnb_capable: boolean
@@ -5109,7 +5109,7 @@ export type Database = {
           rating: number | null
           reliability_score: number | null
           repeat_client_count: number | null
-          zooter_id: string | null
+          xooter_id: string | null
         }
         Relationships: []
       }
@@ -5121,40 +5121,40 @@ export type Database = {
           gate_code: string | null
           parking_instructions: string | null
           pet_notes: string | null
-          zooter_id: string | null
+          xooter_id: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "bookings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "bookings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
             referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["zooter_id"]
+            referencedColumns: ["xooter_id"]
           },
           {
-            foreignKeyName: "bookings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "bookings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "booking_zooter_profiles"
+            referencedRelation: "booking_xooter_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "bookings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters"
+            referencedRelation: "xooters"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_zooter_id_fkey"
-            columns: ["zooter_id"]
+            foreignKeyName: "bookings_xooter_id_fkey"
+            columns: ["xooter_id"]
             isOneToOne: false
-            referencedRelation: "zooters_public"
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
       }
-      booking_zooter_profiles: {
+      booking_xooter_profiles: {
         Row: {
           active: boolean | null
           airbnb_specialist: boolean | null
@@ -5187,7 +5187,7 @@ export type Database = {
         }
         Relationships: []
       }
-      zooters_public: {
+      xooters_public: {
         Row: {
           airbnb_specialist: boolean | null
           background_check_status: string | null
@@ -5271,7 +5271,7 @@ export type Database = {
     }
     Functions: {
       can_access_sensitive_data: {
-        Args: { p_booking_id: string; p_zooter_id: string }
+        Args: { p_booking_id: string; p_xooter_id: string }
         Returns: boolean
       }
       can_activate_payment_provider: {
@@ -5287,8 +5287,8 @@ export type Database = {
           reason: string
         }[]
       }
-      can_release_zooter_payout: {
-        Args: { p_booking_id?: string; p_zooter_id: string }
+      can_release_xooter_payout: {
+        Args: { p_booking_id?: string; p_xooter_id: string }
         Returns: boolean
       }
       claim_provider_event: {
@@ -5316,7 +5316,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      get_accepted_zooter_job_destinations: {
+      get_accepted_xooter_job_destinations: {
         Args: { p_job_ids: string[] }
         Returns: {
           address: string
@@ -5324,7 +5324,7 @@ export type Database = {
           job_id: string
         }[]
       }
-      get_accepted_zooter_job_destinations_for_user: {
+      get_accepted_xooter_job_destinations_for_user: {
         Args: { p_job_ids: string[]; p_user_id: string }
         Returns: {
           address: string
@@ -5332,7 +5332,7 @@ export type Database = {
           job_id: string
         }[]
       }
-      get_zooter_job_cards: {
+      get_xooter_job_cards: {
         Args: never
         Returns: {
           booking_id: string
@@ -5354,10 +5354,10 @@ export type Database = {
           state: string
           status: string
           user_id: string
-          zooter_id: string
+          xooter_id: string
         }[]
       }
-      get_zooter_job_cards_for_user: {
+      get_xooter_job_cards_for_user: {
         Args: { p_user_id: string }
         Returns: {
           booking_id: string
@@ -5379,7 +5379,7 @@ export type Database = {
           state: string
           status: string
           user_id: string
-          zooter_id: string
+          xooter_id: string
         }[]
       }
       has_role: {
@@ -5389,8 +5389,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_zoot_black_eligible: {
-        Args: { p_area_key?: string; p_zooter_id: string }
+      is_xoot_black_eligible: {
+        Args: { p_area_key?: string; p_xooter_id: string }
         Returns: boolean
       }
       mark_provider_event_processed: {
@@ -5406,13 +5406,13 @@ export type Database = {
         Args: { check_pin: string; check_user_id: string }
         Returns: boolean
       }
-      zooter_job_transition_allowed: {
+      xooter_job_transition_allowed: {
         Args: { current_state: string; next_state: string }
         Returns: boolean
       }
     }
     Enums: {
-      app_role: "admin" | "user" | "zooter"
+      app_role: "admin" | "user" | "xooter"
       booking_status:
         | "pending"
         | "confirmed"
@@ -5568,7 +5568,7 @@ export const Constants = {
   },
   public: {
     Enums: {
-      app_role: ["admin", "user", "zooter"],
+      app_role: ["admin", "user", "xooter"],
       booking_status: [
         "pending",
         "confirmed",

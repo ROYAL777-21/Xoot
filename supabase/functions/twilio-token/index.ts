@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     // yours", so the endpoint cannot be used to test which booking ids exist.
     const { data: booking } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id")
+      .select("id,user_id,xooter_id")
       .eq("id", bookingId)
       .maybeSingle();
     const { participant } = booking
@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID")!;
     const apiKeySid = Deno.env.get("TWILIO_API_KEY_SID")!;
     const apiKeySecret = Deno.env.get("TWILIO_API_KEY_SECRET")!;
-    const identity = `zoot_${user.id.replace(/-/g, "")}_${capability}`;
+    const identity = `xoot_${user.id.replace(/-/g, "")}_${capability}`;
     const now = Math.floor(Date.now() / 1000);
     const ttlSeconds = 3600;
     const grants: Record<string, unknown> = { identity };

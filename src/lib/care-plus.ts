@@ -177,7 +177,7 @@ export const NMW_REVIEW_BY = "2027-01-31";
  * Its actual job is the one `splitDiscount` uses it for: where a Xooter is at or under R35/h,
  * take nothing from them and let Xoot absorb the whole Care+ discount. That works precisely
  * *because* it sits above the legal minimum — it protects the lowest-paid bookings from carrying
- * a marketing cost. R35 is not invented either: it is the `hourly_rate` `approve-zooter` writes
+ * a marketing cost. R35 is not invented either: it is the `hourly_rate` `approve-xooter` writes
  * onto every Xooter it activates.
  *
  * ── What the ladder actually pays, measured ─────────────────────────────────────

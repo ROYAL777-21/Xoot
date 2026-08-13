@@ -129,7 +129,7 @@ export const SERVICE_LENGTH_HOURS: Record<string, number> = {
  * What Xoot keeps, and what the Xooter is paid.
  *
  * Commission starts at 35% for a new Xooter and falls as they rank higher on
- * `zooters.reliability_score` — ratings, punctuality, quality of work. The score decides
+ * `xooters.reliability_score` — ratings, punctuality, quality of work. The score decides
  * which band; `minCompletedJobs` decides whether the band has been earned.
  *
  * ⚠️ KEEP IN SYNC with `src/lib/xooter-commission.ts`, which carries the full reasoning
@@ -218,13 +218,13 @@ export const applyBoost = (rateBps: number, boostBps: number = BOOST_BPS): numbe
  * cannot be applied by a caller that forgot to check. A boost applies to bookings struck inside
  * its window and never retroactively, because the rate is stamped once at assignment.
  */
-export async function activeBoostBpsFor(supa: any, zooterId: string): Promise<number> {
-  if (!zooterId) return 0;
+export async function activeBoostBpsFor(supa: any, xooterId: string): Promise<number> {
+  if (!xooterId) return 0;
   const nowIso = new Date().toISOString();
   const { data, error } = await supa
     .from("xooter_commission_boosts")
     .select("bps")
-    .eq("zooter_id", zooterId)
+    .eq("xooter_id", xooterId)
     .lte("starts_at", nowIso)
     .gt("ends_at", nowIso)
     .order("bps", { ascending: false })
@@ -245,7 +245,7 @@ export async function activeBoostBpsFor(supa: any, zooterId: string): Promise<nu
    */
   if (error) {
     console.error("activeBoostBpsFor lookup failed; treating as no boost", {
-      zooterId,
+      xooterId,
       message: error.message ?? String(error),
     });
     return 0;

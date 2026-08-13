@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
 
     const { data: booking, error } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id,scheduled_at,status,payment_status,cancelled_at")
+      .select("id,user_id,xooter_id,scheduled_at,status,payment_status,cancelled_at")
       .eq("id", bookingId)
       .maybeSingle();
     if (error || !booking?.id) return fail("booking not found", origin, 404);
@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
       meta: { previous_status: currentStatus, refund },
     });
 
-    await supa.from("zooter_jobs").update({ state: "expired" }).eq("booking_id", booking.id).in("state", ["offered", "accepted"]);
+    await supa.from("xooter_jobs").update({ state: "expired" }).eq("booking_id", booking.id).in("state", ["offered", "accepted"]);
 
     let refundRequestId: string | null = null;
     if (refund.eligible && refund.amount > 0 && payment?.id) {
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
         subjectTable: "refund_requests",
         subjectId: refundRequestId,
         userId: booking.user_id,
-        zooterId: booking.zooter_id,
+        xooterId: booking.xooter_id,
         bookingId: booking.id,
         priority: "normal",
         summary: `Refund review queued for cancelled booking (${refund.reason})`,
@@ -120,15 +120,15 @@ Deno.serve(async (req) => {
       link: `/app/bookings/${booking.id}`,
     });
 
-    if (booking.zooter_id) {
-      const { data: zooter } = await supa.from("zooters").select("user_id").eq("id", booking.zooter_id).maybeSingle();
-      if (zooter?.user_id) {
+    if (booking.xooter_id) {
+      const { data: xooter } = await supa.from("xooters").select("user_id").eq("id", booking.xooter_id).maybeSingle();
+      if (xooter?.user_id) {
         await insertNotification(supa, {
-          userId: zooter.user_id,
+          userId: xooter.user_id,
           kind: "booking_cancelled",
           title: "Booking cancelled",
           body: "A booking assigned to you has been cancelled and removed from your active jobs.",
-          link: `/zooter/jobs`,
+          link: `/xooter/jobs`,
         });
       }
     }

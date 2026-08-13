@@ -44,6 +44,20 @@ export const BOOKING_COVER_CENTS = 2200;
 export const BOOKING_FEE_CENTS = 3900;
 
 /**
+ * The decision-log id of the pricing rule this build implements.
+ *
+ * Stamped into `dist/build-info.json` at build time and read back by the deploy workflow, which
+ * refuses to ship a booking writer to production while the live site is still serving a
+ * different rule. That gate used to be a runbook paragraph, and it was missed by roughly 70
+ * seconds on 2026-08-12: the functions went out before Netlify finished building, so briefly the
+ * new server charged R39 on a recurring booking against a client still displaying R0.
+ *
+ * It lives here, beside the fee it names, so that changing the rule and forgetting the id is a
+ * failing test rather than a marker that quietly advertises the wrong thing.
+ */
+export const PRICING_RULE = "ZD-026";
+
+/**
  * Multi-Xooter booking.
  *
  * **This mirrors `supabase/functions/create-booking/index.ts`. The server is the authority

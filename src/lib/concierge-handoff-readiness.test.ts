@@ -61,7 +61,7 @@ describe("Concierge structured handoff readiness", () => {
 
     expect(fn).toContain("resolveRoleType");
     expect(fn).toContain("isAdminUser");
-    expect(fn).toContain(".from(\"zooters\")");
+    expect(fn).toContain(".from(\"xooters\")");
     expect(fn).toContain("inferUrgencyLevel");
     expect(fn).toContain("priorityFromUrgency");
     expect(fn).toContain("assertBookingParticipant");
@@ -94,8 +94,8 @@ describe("Concierge structured handoff readiness", () => {
       "createRefund",
       "refundPayment",
       "confirm_payment",
-      "assign_zooter",
-      "issue_zootcred",
+      "assign_xooter",
+      "issue_xootcred",
       "change_care_plus",
     ]) {
       expect(fn).not.toContain(forbidden);

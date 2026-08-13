@@ -1,5 +1,5 @@
 import { AbsoluteFill } from "remotion";
-import { HEART_D, INK, ZoeyArt } from "@/components/zoot/mascot/ZoeyArt";
+import { HEART_D, INK, ZoeyArt } from "@/components/xoot/mascot/ZoeyArt";
 
 /**
  * Zoey as a still mark, for the launcher and launch-screen assets.

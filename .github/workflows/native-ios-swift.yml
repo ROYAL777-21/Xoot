@@ -30,4 +30,4 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-version
 
       - name: Type-check native Swift
-        run: bash scripts/ios/typecheck-zoot-live-activities.sh
+        run: bash scripts/ios/typecheck-xoot-live-activities.sh

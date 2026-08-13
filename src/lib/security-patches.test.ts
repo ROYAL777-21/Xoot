@@ -23,9 +23,9 @@ describe("phase 5 security helpers", () => {
   it("validates critical form payloads", () => {
     expect(BookingInput.safeParse({ service_type: "residential", home_size: "small", address: "12 Long Street, Rosebank", date: "2026-06-14", time: "08:00", extras: [] }).success).toBe(true);
     expect(SupportCaseInput.safeParse({ category: "Booking", description: "Please help me with a booking issue that needs review.", booking_id: "" }).success).toBe(true);
-    const zooterApplication = XooterApplicationInput.safeParse({ full_name: "Nomsa Dlamini", phone: "+27 82 123 4567", suburb: "Rosebank", years_experience: 5 });
-    expect(zooterApplication.success).toBe(true);
-    expect(zooterApplication.success ? zooterApplication.data.phone : "").toBe("+27821234567");
+    const xooterApplication = XooterApplicationInput.safeParse({ full_name: "Nomsa Dlamini", phone: "+27 82 123 4567", suburb: "Rosebank", years_experience: 5 });
+    expect(xooterApplication.success).toBe(true);
+    expect(xooterApplication.success ? xooterApplication.data.phone : "").toBe("+27821234567");
     const profileUpdate = ProfileUpdateInput.safeParse({ full_name: "Nomsa Dlamini", phone: "082 123 4567", address: "8 Oxford Road, Rosebank" });
     expect(profileUpdate.success).toBe(true);
     expect(profileUpdate.success ? profileUpdate.data.phone : "").toBe("0821234567");

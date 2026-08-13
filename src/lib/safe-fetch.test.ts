@@ -4,7 +4,7 @@ import { isAllowedUrl, safeFetch } from "./safe-fetch";
 describe("safe fetch", () => {
   it("allows only approved browser-safe https domains", () => {
     expect(isAllowedUrl("https://foo.supabase.co/functions/v1/test")).toBe(true);
-    expect(isAllowedUrl("https://api.mapbox.com/styles/v1/zoot")).toBe(true);
+    expect(isAllowedUrl("https://api.mapbox.com/styles/v1/xoot")).toBe(true);
     expect(isAllowedUrl("https://events.mapbox.com/events/v2")).toBe(true);
     expect(isAllowedUrl("https://api.twilio.com/2010-04-01/Accounts")).toBe(false);
     expect(isAllowedUrl("https://api.brevo.com/v3/smtp/email")).toBe(false);

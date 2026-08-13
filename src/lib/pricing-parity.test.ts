@@ -286,6 +286,52 @@ describe("client/server pricing parity", () => {
   });
 
   /**
+   * The build stamp a deploy reads to find out whether the web app has shipped this rule yet.
+   *
+   * `scripts/build/write-build-info.mjs` stamps `dist/build-info.json` with the commit, the
+   * pricing rule and the fee. `verify-live-deploy.yml` reads the commit; the pricing-rule gate in
+   * `deploy-edge-functions.yml` reads the other two and refuses to ship a booking writer to
+   * production while the live site serves something else.
+   *
+   * That gate is not theoretical. On 2026-08-12 the functions were dispatched **70 seconds**
+   * after the merge, before Netlify had finished, so production briefly charged R39 on a
+   * recurring booking against a client still showing R0 — the under-statement §3b exists to
+   * prevent, on a runbook step that was being followed.
+   *
+   * **The rule and the fee must be read out of the pricing module, not restated.** A second
+   * hand-maintained copy of a money fact is the drift this file exists to catch, and a stamp that
+   * can lie makes the deploy gate worse than useless — it would wave through exactly the case it
+   * is there to stop. So this asserts the extraction, not just today's values.
+   *
+   * `PRICING_RULE` must also name a real decision-log entry, so the id cannot be a string someone
+   * invented while editing a script.
+   */
+  it("the build stamp reads its pricing rule out of the code", () => {
+    const stamp = readFileSync(join(process.cwd(), "scripts/build/write-build-info.mjs"), "utf8");
+
+    expect(stamp, "build stamp must read src/lib/xoot-pricing.ts").toContain(
+      "src/lib/xoot-pricing.ts",
+    );
+    // The exact constants, so renaming one in the module breaks the extraction loudly here
+    // rather than silently stamping "unknown" onto a production build.
+    expect(stamp).toMatch(/PRICING_RULE = "\(\[A-Z\]\+-\\d\+\)"/);
+    expect(stamp).toMatch(/BOOKING_FEE_CENTS = \(\\d\+\)/);
+
+    // And the values it will extract are the ones this build actually implements.
+    const src = readFileSync(join(process.cwd(), "src/lib/xoot-pricing.ts"), "utf8");
+    expect(Number(/export const BOOKING_FEE_CENTS = (\d+)/.exec(src)![1])).toBe(BOOKING_FEE_CENTS);
+
+    const rule = /export const PRICING_RULE = "([A-Z]+-\d+)"/.exec(src)?.[1];
+    expect(rule, "xoot-pricing.ts must export a PRICING_RULE").toBeTruthy();
+
+    const decisionLog = readFileSync(
+      join(process.cwd(), "docs/implementation/decision-log.md"),
+      "utf8",
+    );
+    expect(decisionLog, `${rule} is not in the decision log`).toContain(rule!);
+  });
+
+  /**
    * Which services take more than one Xooter — the same question in three places.
    *
    * Until 2026-08-09 there were three answers. `xoot-pricing.ts` said `{airbnb, office, moving}`,
@@ -476,7 +522,7 @@ describe("client/server pricing parity", () => {
   it("applies the boost at both points where a rate is struck", () => {
     for (const path of [
       "supabase/functions/create-booking/index.ts",
-      "supabase/functions/respond-zooter-job/index.ts",
+      "supabase/functions/respond-xooter-job/index.ts",
     ]) {
       const src = readFileSync(join(process.cwd(), path), "utf8");
       expect(src, `${path} does not read an active boost`).toMatch(/activeBoostBpsFor\(supa,/);
@@ -535,13 +581,13 @@ describe("client/server pricing parity", () => {
       "utf8",
     );
     const respond = readFileSync(
-      join(process.cwd(), "supabase/functions/respond-zooter-job/index.ts"),
+      join(process.cwd(), "supabase/functions/respond-xooter-job/index.ts"),
       "utf8",
     );
 
     // Booking time: the rate comes from the assigned Xooter's own rank, per booking row, and is
     // null when nobody is assigned rather than defaulted to something that reads as agreed.
-    expect(create).toMatch(/commission_rate_bps: zooterId \? commissionRates\.get\(zooterId\)/);
+    expect(create).toMatch(/commission_rate_bps: xooterId \? commissionRates\.get\(xooterId\)/);
     expect(create).toMatch(/reliabilityScore: row\.reliability_score/);
     expect(create).toMatch(/completedJobs: row\.jobs_completed/);
 

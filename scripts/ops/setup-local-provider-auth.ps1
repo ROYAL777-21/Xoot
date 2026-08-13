@@ -3,7 +3,7 @@ param(
   [switch]$GitHub,
   [switch]$CodeRabbit,
   [switch]$CodeRabbitSelfHosted,
-  [string]$SupabaseProfileName = "zoot-local"
+  [string]$SupabaseProfileName = "xoot-local"
 )
 
 $ErrorActionPreference = "Stop"

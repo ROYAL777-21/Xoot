@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     // path still writes rows keyed to the booking.
     const { data: booking } = await supa
       .from("bookings")
-      .select("id,user_id,zooter_id")
+      .select("id,user_id,xooter_id")
       .eq("id", bookingId)
       .maybeSingle();
     const { participant } = booking
@@ -93,8 +93,8 @@ Deno.serve(async (req) => {
     const serviceSid = Deno.env.get("TWILIO_CONVERSATIONS_SERVICE_SID")!;
     const url = `https://conversations.twilio.com/v1/Services/${serviceSid}/Conversations`;
     const form = new URLSearchParams({
-      FriendlyName: `Zoot booking ${bookingId}`,
-      UniqueName: `zoot-booking-${bookingId}`,
+      FriendlyName: `Xoot booking ${bookingId}`,
+      UniqueName: `xoot-booking-${bookingId}`,
     });
     const twilioRes = await fetch(url, {
       method: "POST",
@@ -115,8 +115,8 @@ Deno.serve(async (req) => {
       requester_id: user.id,
       status: "active",
       provider_conversation_sid: conversationSid,
-      client_identity: `zoot_client_${bookingId}`,
-      contractor_identity: `zoot_contractor_${bookingId}`,
+      client_identity: `xoot_client_${bookingId}`,
+      contractor_identity: `xoot_contractor_${bookingId}`,
       started_at: new Date().toISOString(),
     }).select("id").single();
 

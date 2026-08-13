@@ -12,8 +12,8 @@ name: Verify generated types match the live schema
 #   - `bookings.commission_rate_bps` and the `xooter_commission_boosts` table were both added by
 #     hand on 2026-08-09.
 #   - The columns were right. The `Relationships` block was not: it said `[]` when the table has a
-#     real foreign key to `zooters`, which the generator renders as **four** entries — `zooters`,
-#     `zooters_public`, `booking_zooter_profiles` and `analytics_contractor_quality`. Three of the
+#     real foreign key to `xooters`, which the generator renders as **four** entries — `xooters`,
+#     `xooters_public`, `booking_xooter_profiles` and `analytics_contractor_quality`. Three of the
 #     four are views, so nobody transcribing by hand would think to include them.
 #
 # A wrong `Relationships` block is not cosmetic: supabase-js uses it to type nested selects, so an

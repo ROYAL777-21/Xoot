@@ -58,7 +58,7 @@ export const sanitiseSearchParam = (value: string | null | undefined, maxLength 
   sanitisePlainText(value, maxLength);
 
 export const sanitiseCacheKey = (params: URLSearchParams) => {
-  const allowedKeys = ["service", "page", "area", "sort", "zooter", "address"];
+  const allowedKeys = ["service", "page", "area", "sort", "xooter", "address"];
   const safe = new URLSearchParams();
 
   for (const key of allowedKeys) {

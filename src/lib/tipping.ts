@@ -56,7 +56,7 @@ export const TIP_GOES_ENTIRELY_TO_XOOTER = true;
  * customer relationship is closed out, because it colours the job and the rating.
  *
  * This is enforced in the database, not here, and it is why the tip lives in
- * `booking_tips` rather than on `bookings`. RLS is row-level: the existing "zooters view
+ * `booking_tips` rather than on `bookings`. RLS is row-level: the existing "xooters view
  * assigned bookings" policy returns whole rows, so a tip column on `bookings` would be
  * readable by the assigned Xooter the moment it existed, and column-level GRANTs cannot
  * separate customers from Xooters because they share the `authenticated` role.
@@ -164,7 +164,7 @@ export function totalWithTip(bookingCents: number, tipCents: number | null): num
 export type BookingTipInsert = {
   booking_id: string;
   user_id: string;
-  zooter_id: string | null;
+  xooter_id: string | null;
   amount_cents: number;
 };
 
@@ -178,14 +178,14 @@ export type BookingTipInsert = {
 export function buildTipRow(input: {
   bookingId: string;
   userId: string;
-  zooterId: string | null;
+  xooterId: string | null;
   cents: number | null;
 }): BookingTipInsert | null {
   if (input.cents === null || !isWritableTip(input.cents)) return null;
   return {
     booking_id: input.bookingId,
     user_id: input.userId,
-    zooter_id: input.zooterId,
+    xooter_id: input.xooterId,
     amount_cents: input.cents,
   };
 }

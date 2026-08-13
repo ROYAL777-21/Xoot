@@ -7,7 +7,7 @@ export type AnalyticsEventName =
   | "booking_flow_started"
   | "care_plus_cta_clicked"
   | "concierge_answer_reported"
-  | "zooter_training_module_completed";
+  | "xooter_training_module_completed";
 
 type AnalyticsValue = string | number | boolean | null | undefined;
 type AnalyticsProperties = Record<string, AnalyticsValue>;
@@ -16,7 +16,7 @@ const allowedProperties: Record<AnalyticsEventName, readonly string[]> = {
   booking_flow_started: ["service_category", "launch_area", "source", "device_type"],
   care_plus_cta_clicked: ["cta_location", "membership_state", "device_type"],
   concierge_answer_reported: ["source", "reason", "signed_in", "role"],
-  zooter_training_module_completed: ["module_category", "score_band", "badge_awarded"],
+  xooter_training_module_completed: ["module_category", "score_band", "badge_awarded"],
 };
 
 const token = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN?.trim() ?? "";
@@ -34,7 +34,7 @@ const options: Partial<PostHogConfig> = {
   persistence: "localStorage+cookie",
   loaded: (client) => {
     client.register({
-      app: "zoot-web",
+      app: "xoot-web",
       app_env: import.meta.env.VITE_APP_ENV || "development",
     });
   },

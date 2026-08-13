@@ -72,7 +72,12 @@ gets there first; say so in the worklog.
 5. **Never revert the other session's work to resolve a conflict.** Rebase onto it. If the two
    changes genuinely disagree, the worklog records the disagreement and the founder decides.
 6. **Report what is, not what should be.** If a check fails, say so with the output. If something
-   is deployed and stale, read the deployed copy rather than assuming the repo reflects it.
+   is deployed and stale, read the deployed copy rather than assuming the repo reflects it —
+   but **check the cheap way first**: `docs/release/go-live.md` §3-0. Comparing a function's
+   `version` and `updated_at` against `git log` answers most "is this deployed?" questions in
+   seconds, where `get_edge_function` returns the function plus every bundled `_shared` file and
+   is the most expensive routine act in this repo. Read a body when the timestamps are ambiguous
+   or the answer has to be exact. *(Added at Release's request, 2026-08-13.)*
 
 ---
 
@@ -102,7 +107,7 @@ These have each caused a real defect here. They are not style preferences.
 ## Verifying
 
 ```bash
-npx vitest run     # the guard layer — 76 files, 752 tests
+npx vitest run     # the guard layer — 77 files, 755 tests
 npx vite build     # Netlify runs `npm ci && npm run build`
 ```
 

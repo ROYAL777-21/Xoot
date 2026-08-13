@@ -13,9 +13,9 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
 
     expect(appConfig).toContain("./plugins/withXootAssistantIntents.cjs");
     expect(plugin).toContain("android.app.shortcuts");
-    expect(plugin).toContain("zoot_assistant_shortcuts.xml");
+    expect(plugin).toContain("xoot_assistant_shortcuts.xml");
     expect(plugin).toContain("XootAppIntents.swift");
-    expect(plugin).toContain("zoot_widget_mark_background.xml");
+    expect(plugin).toContain("xoot_widget_mark_background.xml");
     expect(plugin).toContain("withXcodeProject");
   });
 
@@ -28,9 +28,13 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
     expect(swift).toContain("Confirm your address, time and payment inside the app");
     expect(swift).not.toMatch(/URLQueryItem\(name:\s*"(booking_id|address|gate_code|alarm_code|access_code|payment_reference|payment_status)"/);
 
-    expect(androidShortcuts).toContain("zoot://book?intent=book_clean");
-    expect(androidShortcuts).toContain("zoot://bookings?intent=booking_status");
-    expect(androidShortcuts).toContain("zoot://zooter/jobs?intent=zooter_jobs");
+    // Shortcut targets moved to `xoot://` with the 2026-08-13 rename (#34). The app still
+    // registers `xoot://` so older links resolve, but anything Xoot itself emits uses the
+    // current scheme — a shortcut is regenerated on every install, so there is nothing to
+    // preserve here.
+    expect(androidShortcuts).toContain("xoot://book?intent=book_clean");
+    expect(androidShortcuts).toContain("xoot://bookings?intent=booking_status");
+    expect(androidShortcuts).toContain("xoot://xooter/jobs?intent=xooter_jobs");
     expect(androidShortcuts).not.toContain("https://xoot.co.za");
   });
 
@@ -40,7 +44,7 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
       "mobile/src/app/concierge.tsx",
       "mobile/src/app/care-plus.tsx",
       "mobile/src/app/bookings.tsx",
-      "mobile/src/app/zooter/jobs.tsx",
+      "mobile/src/app/xooter/jobs.tsx",
     ]) {
       expect(existsSync(join(repoRoot, path)), `${path} should exist`).toBe(true);
     }
@@ -48,7 +52,7 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
 
   it("keeps native widgets free of realistic fake production data", () => {
     const swiftWidget = read("native/ios/XootLiveActivities/XootBookingSummaryWidget.swift");
-    const androidWidget = read("native/android/src/main/java/za/co/zoothome/widgets/XootStatusWidgetProvider.java");
+    const androidWidget = read("native/android/src/main/java/za/co/xoot/widgets/XootStatusWidgetProvider.java");
 
     expect(swiftWidget).toContain("Live details stay inside Xoot");
     expect(swiftWidget).toContain("Open app");
@@ -61,12 +65,12 @@ describe("Phase 10 Siri and Android assistant readiness", () => {
   it("keeps widget motion and liquid-glass assets explicit", () => {
     const motionDoc = read("docs/native/native-widget-motion-system.md");
     const glass = read("native/ios/XootLiveActivities/XootLiquidGlass.swift");
-    const androidLayout = read("native/android/res/layout/zoot_status_widget.xml");
+    const androidLayout = read("native/android/res/layout/xoot_status_widget.xml");
 
     expect(motionDoc).toContain("Figma motion board");
     expect(glass).toContain("XootRoboticStarMark");
     expect(glass).toContain("topTrailing");
-    expect(androidLayout).toContain("zoot_widget_star");
-    expect(androidLayout).toContain("zoot_widget_mark_background");
+    expect(androidLayout).toContain("xoot_widget_star");
+    expect(androidLayout).toContain("xoot_widget_mark_background");
   });
 });

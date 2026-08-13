@@ -62,9 +62,9 @@ const withXootAssistantIntents = (config) => {
       new Set([
         ...existingActivities,
         "NSUserActivityTypeBrowsingWeb",
-        "za.co.zoothome.app.book",
-        "za.co.zoothome.app.concierge",
-        "za.co.zoothome.app.care-plus",
+        "za.co.xoothome.app.book",
+        "za.co.xoothome.app.concierge",
+        "za.co.xoothome.app.care-plus",
       ]),
     );
     config.modResults.NSSupportsLiveActivities = true;
@@ -86,24 +86,24 @@ const withXootAssistantIntents = (config) => {
     );
 
     if (shortcutMetadata) {
-      shortcutMetadata.$["android:resource"] = "@xml/zoot_assistant_shortcuts";
+      shortcutMetadata.$["android:resource"] = "@xml/xoot_assistant_shortcuts";
     } else {
       mainActivity["meta-data"].push({
         $: {
           "android:name": "android.app.shortcuts",
-          "android:resource": "@xml/zoot_assistant_shortcuts",
+          "android:resource": "@xml/xoot_assistant_shortcuts",
         },
       });
     }
 
     const widgetReceiver = ensureAndroidManifestEntry(
       application.receiver,
-      "za.co.zoothome.widgets.XootStatusWidgetProvider",
+      "za.co.xoothome.widgets.XootStatusWidgetProvider",
       () => ({
         $: {
-          "android:name": "za.co.zoothome.widgets.XootStatusWidgetProvider",
+          "android:name": "za.co.xoothome.widgets.XootStatusWidgetProvider",
           "android:exported": "false",
-          "android:label": "@string/zoot_widget_name",
+          "android:label": "@string/xoot_widget_name",
         },
       }),
     );
@@ -125,7 +125,7 @@ const withXootAssistantIntents = (config) => {
       () => ({
         $: {
           "android:name": "android.appwidget.provider",
-          "android:resource": "@xml/zoot_status_widget_info",
+          "android:resource": "@xml/xoot_status_widget_info",
         },
       }),
     );
@@ -139,35 +139,35 @@ const withXootAssistantIntents = (config) => {
       const { platformProjectRoot, projectRoot } = config.modRequest;
       copyFileEnsuringDirectory(
         getNativeAssetPath(projectRoot, "android", "res", "xml", "shortcuts.xml"),
-        path.join(platformProjectRoot, "app", "src", "main", "res", "xml", "zoot_assistant_shortcuts.xml"),
+        path.join(platformProjectRoot, "app", "src", "main", "res", "xml", "xoot_assistant_shortcuts.xml"),
       );
       copyFileEnsuringDirectory(
         getNativeAssetPath(projectRoot, "android", "res", "values", "strings.xml"),
-        path.join(platformProjectRoot, "app", "src", "main", "res", "values", "zoot_assistant_strings.xml"),
+        path.join(platformProjectRoot, "app", "src", "main", "res", "values", "xoot_assistant_strings.xml"),
       );
       copyFileEnsuringDirectory(
-        getNativeAssetPath(projectRoot, "android", "res", "xml", "zoot_status_widget_info.xml"),
-        path.join(platformProjectRoot, "app", "src", "main", "res", "xml", "zoot_status_widget_info.xml"),
+        getNativeAssetPath(projectRoot, "android", "res", "xml", "xoot_status_widget_info.xml"),
+        path.join(platformProjectRoot, "app", "src", "main", "res", "xml", "xoot_status_widget_info.xml"),
       );
       copyFileEnsuringDirectory(
-        getNativeAssetPath(projectRoot, "android", "res", "layout", "zoot_status_widget.xml"),
-        path.join(platformProjectRoot, "app", "src", "main", "res", "layout", "zoot_status_widget.xml"),
+        getNativeAssetPath(projectRoot, "android", "res", "layout", "xoot_status_widget.xml"),
+        path.join(platformProjectRoot, "app", "src", "main", "res", "layout", "xoot_status_widget.xml"),
       );
       copyFileEnsuringDirectory(
-        getNativeAssetPath(projectRoot, "android", "res", "drawable", "zoot_widget_glass_background.xml"),
-        path.join(platformProjectRoot, "app", "src", "main", "res", "drawable", "zoot_widget_glass_background.xml"),
+        getNativeAssetPath(projectRoot, "android", "res", "drawable", "xoot_widget_glass_background.xml"),
+        path.join(platformProjectRoot, "app", "src", "main", "res", "drawable", "xoot_widget_glass_background.xml"),
       );
       copyFileEnsuringDirectory(
-        getNativeAssetPath(projectRoot, "android", "res", "drawable", "zoot_widget_action_background.xml"),
-        path.join(platformProjectRoot, "app", "src", "main", "res", "drawable", "zoot_widget_action_background.xml"),
+        getNativeAssetPath(projectRoot, "android", "res", "drawable", "xoot_widget_action_background.xml"),
+        path.join(platformProjectRoot, "app", "src", "main", "res", "drawable", "xoot_widget_action_background.xml"),
       );
       copyFileEnsuringDirectory(
-        getNativeAssetPath(projectRoot, "android", "res", "drawable", "zoot_widget_mark_background.xml"),
-        path.join(platformProjectRoot, "app", "src", "main", "res", "drawable", "zoot_widget_mark_background.xml"),
+        getNativeAssetPath(projectRoot, "android", "res", "drawable", "xoot_widget_mark_background.xml"),
+        path.join(platformProjectRoot, "app", "src", "main", "res", "drawable", "xoot_widget_mark_background.xml"),
       );
       copyFileEnsuringDirectory(
-        getNativeAssetPath(projectRoot, "android", "src", "main", "java", "za", "co", "zoothome", "widgets", "XootStatusWidgetProvider.java"),
-        path.join(platformProjectRoot, "app", "src", "main", "java", "za", "co", "zoothome", "widgets", "XootStatusWidgetProvider.java"),
+        getNativeAssetPath(projectRoot, "android", "src", "main", "java", "za", "co", "xoothome", "widgets", "XootStatusWidgetProvider.java"),
+        path.join(platformProjectRoot, "app", "src", "main", "java", "za", "co", "xoothome", "widgets", "XootStatusWidgetProvider.java"),
       );
       return config;
     },

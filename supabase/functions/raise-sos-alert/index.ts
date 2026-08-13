@@ -63,12 +63,12 @@ Deno.serve(async (req) => {
       }
 
       // Role is derived, not taken from the payload — it decides who ops calls back.
-      const { data: zooter } = await supa
-        .from("zooters")
+      const { data: xooter } = await supa
+        .from("xooters")
         .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
-      const raiserRole = zooter?.id ? "zooter" : "customer";
+      const raiserRole = xooter?.id ? "xooter" : "customer";
 
       // The address is the single most useful field and the one a caller in trouble is least
       // able to give. Snapshotted from the booking rather than referenced, so it survives the
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       if (bookingId) {
         const { data: booking } = await supa
           .from("bookings")
-          .select("id,address,user_id,zooter_id")
+          .select("id,address,user_id,xooter_id")
           .eq("id", bookingId)
           .maybeSingle();
         if (booking?.id) addressSnapshot = booking.address ?? null;
