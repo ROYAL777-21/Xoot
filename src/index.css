@@ -30,6 +30,80 @@
    their assertions still passed. */
 @import './styles/kit-tokens.css';
 
+/* ── The kit's webfonts ────────────────────────────────────────────────────────────────────────
+ *
+ * Plus Jakarta Sans (body) and Newsreader (display) are the families named by the kit's own
+ * `--xoot-font-core` and `--xoot-font-display` tokens. Extracted from `design/Xoot_App.html` and
+ * subset by `scripts/design/extract-kit-fonts.mjs`; the .woff2 files are committed, so no build
+ * step and no CI job needs the extraction tooling.
+ *
+ * Both are VARIABLE, so one file per family covers every weight — hence the `font-weight` ranges
+ * below rather than one face per weight. Measured: 31 KB and 43 KB, 73 KB total, against the
+ * 120 KB ceiling the script enforces.
+ *
+ * ── No italics, deliberately ──────────────────────────────────────────────────────────────────
+ * The bundle carries italic cuts for both families and they are NOT shipped: together they are
+ * another ~70 KB, which would put the total over budget for `<em>` in blog prose. Browsers
+ * synthesise an oblique. If real italics are ever wanted, they are still in the bundle — add them
+ * to the script and re-measure rather than assuming there is room.
+ */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/plus-jakarta-sans-latin-var.woff2') format('woff2-variations');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('/fonts/newsreader-latin-var.woff2') format('woff2-variations');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── The fallback faces, and why they are not decoration ───────────────────────────────────────
+ *
+ * `font-display: swap` shows a fallback and then replaces it. If the two fonts have different
+ * vertical metrics, every line box changes height at that moment and the page jumps —
+ * `design/PERFORMANCE.md` puts CLS at or below 0.1 at p75, and an unadjusted swap is one of the
+ * easiest ways to fail it.
+ *
+ * These faces re-declare the LOCAL font with the WEBFONT's metrics, so the swap changes letter
+ * shapes without moving anything. Every number is measured from the TTF's `head`, `hhea` and
+ * `OS/2` tables, not estimated:
+ *
+ *   Newsreader          upem 2000, ascent 1470, descent -530, gap 0, x-height 852
+ *   Plus Jakarta Sans   upem 1000, ascent 1038, descent -222, gap 0, x-height 536
+ *
+ * `size-adjust` matches x-heights, which is what makes the two look the same size:
+ *   Newsreader vs Georgia   0.4260 / 0.4814 = 88.5%
+ *   Jakarta vs Arial        0.5360 / 0.5186 = 103.4%
+ *
+ * Georgia and Arial are named because they are metrically stable and present on macOS, Windows
+ * and iOS. Where they are absent (most Android, most Linux) the stack falls through to the plain
+ * generic — a slightly larger shift on those platforms, which is the honest trade for not
+ * guessing at a metric we cannot measure.
+ */
+@font-face {
+  font-family: 'Newsreader Fallback';
+  src: local('Georgia'), local('Times New Roman');
+  ascent-override: 73.50%;
+  descent-override: 26.50%;
+  line-gap-override: 0%;
+  size-adjust: 88.5%;
+}
+
+@font-face {
+  font-family: 'Jakarta Fallback';
+  src: local('Arial'), local('Helvetica Neue'), local('Roboto');
+  ascent-override: 103.80%;
+  descent-override: 22.20%;
+  line-gap-override: 0%;
+  size-adjust: 103.4%;
+}
+
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
@@ -46,13 +120,29 @@
 }
 
 @theme inline {
-  /* Georgia for display and for anything the user types — identified by the founder
-     from Tiimo's register, and it ships on iOS, macOS, Windows and Android, so there
-     is no webfont to download and no flash of unstyled text.
-     Body UI is the OS rounded face: SF Pro Rounded on Apple platforms. */
-  --font-display: Georgia, 'Times New Roman', ui-serif, serif;
+  /* ── Type, resolved 2026-08-13 ───────────────────────────────────────────────────────────
+   *
+   * Three sources disagreed, so this records which won and why.
+   *
+   *   the kit's own tokens   --xoot-font-display: "Newsreader", Georgia, serif
+   *                          --xoot-font-core:    "Plus Jakarta Sans", system-ui, …
+   *   design/DESIGN-SYSTEM.md  Space Grotesk + DM Sans     ← superseded, see below
+   *   this file, until today   Georgia + SF Pro Rounded    ← the no-webfont interim
+   *
+   * The kit wins, per `design/README.md`: it is the newer authority and the older documents
+   * predate it. `DESIGN-SYSTEM.md` is annotated rather than silently contradicted.
+   *
+   * Georgia is not discarded — it was never the wrong instinct. It is Newsreader's OWN declared
+   * fallback in `--xoot-font-display`, so the interim was already pointing at the right shape;
+   * it now sits behind the real face, wearing its metrics via 'Newsreader Fallback' above.
+   *
+   * `--font-serif` deliberately does NOT get Newsreader. It is the generic serif slot, and
+   * display type is a separate decision from prose serif; conflating them would silently restyle
+   * anything that asks for a serif.
+   */
+  --font-display: 'Newsreader', 'Newsreader Fallback', Georgia, 'Times New Roman', ui-serif, serif;
   --font-serif: Georgia, 'Times New Roman', ui-serif, serif;
-  --font-sans: ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Jakarta Fallback', ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
