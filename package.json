@@ -9,7 +9,7 @@
     "lockfiles:check": "node scripts/config/validate-lockfiles.mjs",
     "prebuild": "npm run config:check && npm run seo:validate && node scripts/build/write-native-association-files.mjs --target public",
     "build": "vite build",
-    "postbuild": "node scripts/build/copy-hostinger-files.mjs && node scripts/build/write-native-association-files.mjs --target dist",
+    "postbuild": "node scripts/build/copy-hostinger-files.mjs && node scripts/build/write-native-association-files.mjs --target dist && node scripts/build/write-build-info.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",

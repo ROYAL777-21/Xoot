@@ -1,0 +1,142 @@
+name: Verify live deploy
+
+# Has Netlify actually published the commit on `main`?
+#
+# ── Why this workflow exists ────────────────────────────────────────────────────
+# `docs/release/go-live.md` §3b: the web app must ship before the two booking writers, and its gate
+# is "wait for the Netlify deploy to succeed". Until this existed, that gate was a person looking at
+# the site — so in practice it was skipped.
+#
+# Measured 2026-08-12: the booking functions were dispatched **70 seconds** after the merge to
+# `main`. A Netlify build takes minutes, so for a short window the new server charged R39 on a
+# recurring booking while the old client still showed R0 — the price under-statement §3b exists to
+# prevent, and the Consumer Protection Act problem behind it. Nothing caught it because nothing
+# could.
+#
+# ⚠️ THIS CANNOT BE DONE FROM AN AGENT SESSION, and that is not a preference. Outbound CONNECT to
+# `xoot.co.za:443` is refused by the organisation's egress policy — the proxy records it as
+# `connect_rejected`, gateway 403 — and `/root/.ccr/README.md` says to report policy denials rather
+# than route around them. A GitHub runner has no such restriction. So the check lives here, the same
+# reason `twilio-selftest.yml` does.
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_commit:
+        description: >-
+          Commit the live site should be serving. Blank uses this workflow's own SHA, which is what
+          you want when checking `main` right after a merge.
+        required: false
+        type: string
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  # One at a time per branch. Two pushes in quick succession would otherwise race, and the older
+  # run would fail against a site that has correctly moved on to the newer commit.
+  group: verify-live-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Is the live site serving this commit?
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compare the deployed build stamp against this commit
+        env:
+          SITE: https://xoot.co.za
+          EXPECTED: ${{ inputs.expected_commit || github.sha }}
+        # No `-e`, for the same reason as `db-push.yml` and `twilio-selftest.yml`: a reporting
+        # workflow that dies on the first non-zero exit reports nothing, which is the failure mode
+        # it exists to prevent.
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          # Netlify builds take minutes. A check that fires on push and gives up immediately would
+          # fail every single time and be switched off within a week, so the window is generous and
+          # the backoff is gentle: 12 attempts, ~10 minutes total.
+          attempts=12
+          delay=15
+          live=""
+          body=""
+
+          echo "expected: $EXPECTED"
+          echo "site:     $SITE"
+          echo ""
+
+          for attempt in $(seq 1 "$attempts"); do
+            body=$(curl -sS --max-time 25 "${SITE}/build-info.json?cachebust=${GITHUB_RUN_ID}-${attempt}" 2>&1)
+            live=$(printf '%s' "$body" | jq -r '.commit // ""' 2>/dev/null)
+
+            if [ -n "$live" ] && [ "$live" = "$EXPECTED" ]; then
+              echo "attempt ${attempt}: live=${live:0:8} ✅ match"
+              {
+                echo "## ✅ Live site is serving this commit"
+                echo ""
+                echo "\`${EXPECTED:0:8}\` — confirmed after ${attempt} attempt(s)."
+                echo ""
+                echo "§3b's gate is satisfied: it is now safe to dispatch \`create-booking\` and"
+                echo "\`create-booking-request\`."
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+
+            if [ -n "$live" ]; then
+              echo "attempt ${attempt}: live=${live:0:8} expected=${EXPECTED:0:8} — not yet"
+            else
+              echo "attempt ${attempt}: no build stamp readable yet"
+            fi
+            [ "$attempt" -lt "$attempts" ] && sleep "$delay"
+          done
+
+          #
+          # Out of attempts. Separate the two failures, because the fixes are different and one of
+          # them is not a failure at all.
+          #
+          if [ -z "$live" ]; then
+            # No parseable stamp. Most likely the live build predates `write-build-info.mjs`, which
+            # is expected exactly once — on the first run after that script ships. Reporting that as
+            # a broken deploy would be wrong, and a false alarm on a new check is how it gets
+            # ignored forever.
+            echo "::warning::No build stamp on the live site. If this is the first run after write-build-info.mjs shipped, that is expected — the currently deployed build predates it. Re-run once Netlify has published a newer build."
+            {
+              echo "## ➖ No build stamp on the live site"
+              echo ""
+              echo "\`${SITE}/build-info.json\` did not return a readable \`commit\`."
+              echo ""
+              echo "**Most likely fine.** The deployed build predates \`write-build-info.mjs\`."
+              echo "Re-run this after the next Netlify publish; if it is still empty then, the"
+              echo "deploy genuinely is not landing."
+              echo ""
+              echo "Last response body, truncated:"
+              echo ""
+              echo '```'
+              printf '%s' "$body" | head -c 300
+              echo ""
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # A stamp, and it is the wrong commit. That is a real answer: Netlify is serving something
+          # else. Both SHAs are printed, because "the deploy is stale" is useless without knowing
+          # what is actually live.
+          echo "::error::Live site is serving ${live} but this commit is ${EXPECTED}. Netlify has not published it within ~10 minutes."
+          {
+            echo "## ❌ Live site is NOT serving this commit"
+            echo ""
+            echo "| | commit |"
+            echo "|---|---|"
+            echo "| live now | \`${live}\` |"
+            echo "| expected | \`${EXPECTED}\` |"
+            echo ""
+            echo "Netlify has not published this build within ~10 minutes. Check the Netlify deploy"
+            echo "log before treating §3b's gate as satisfied — **do not dispatch the booking"
+            echo "functions**, because the server would then charge a price the live client does not"
+            echo "display."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1

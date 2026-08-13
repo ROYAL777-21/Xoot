@@ -202,7 +202,7 @@ Neither session can do these. Listed so neither keeps re-discovering them.
 | item | why no session can do it |
 | --- | --- |
 | `ENCRYPTION_KEY` (#28) | Supabase secret, console-only |
-| Twilio Console voice URLs (§2c-0) | provider console, not code |
+| Twilio Console voice URLs (`voice-gates.md` §2c-0) | provider console, not code |
 | Staging Twilio subaccount | account-level provider action |
 | SOS device test (#36) | needs a real device |
 | Device verification (#37) | needs a real device |
