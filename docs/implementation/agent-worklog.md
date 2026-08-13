@@ -107,6 +107,36 @@ other side, and it is why the check exists.
 > rather than assumed. So the arming workflow cannot be proven until this merges to `main`, and I
 > have not merged it myself.
 
+**Follow-up, same night: four runs of *Verify live deploy*, no stamp on any of them.** 00:48Z,
+01:16Z, 01:41Z — 48 fetches, the last finishing **58 minutes** after the push. An hour is not a
+build queue, so this is now stuck rather than slow.
+
+⚠️ **A fourth candidate I had not considered, and it should be checked first:** the repo carries a
+`netlify.toml` **and** an Apache `public/.htaccess` that `postbuild` copies into `dist` for
+**Hostinger**. If `xoot.co.za` is served from a manual Hostinger upload rather than a Netlify git
+build, no push will ever change it, the founder's 22:11 "published" was an upload, and
+`verify-live-deploy` is pointed at a host that no commit reaches. That would explain every
+observation, and it changes what §3b's gate means. Recorded in `founder-todo.md` §1.2 rather than
+resolved, because only the hosting dashboard settles it.
+
+**New: `docs/release/founder-todo.md` — one ordered list of founder-only work, each row with a
+*proves it done*.** That answer had been living in eight places and most had rotted: `blocker.md`
+listed three closed issues as open, and four `docs/release/` checklists were last reviewed in July.
+The founder-only table that used to sit at the bottom of this file is now a pointer to it. Each
+stale document keeps its content and gains one line at the top.
+
+⚠️ **Touched your path again — `blocker.md`,** four added lines at the top of the issue table noting
+the three closed rows and pointing at the new file. Nothing removed or reworded.
+
+Two GitHub comments, and no issue closed by me:
+- **#35** (R39 charged but not displayed) — it *is* displayed, `Book.tsx:631` and
+  `BookingConfirm.tsx:345`, both with the Care+ variant, and ZD-026's server side is live. But the
+  live bundle cannot be confirmed until the deploy question above is settled, and closing a CPA
+  claim is the founder's call, not mine. Recommended, not done.
+- **#32** (voice) — three of six definition-of-done rows were out of date; re-measured with
+  evidence per row, including the two operational controls, which I flagged as **unknown from a
+  session** with the SQL to check rather than guessing.
+
 
 ### Release & Infrastructure — 2026-08-13 — ZD-026 is live; I broke CI and fixed it
 

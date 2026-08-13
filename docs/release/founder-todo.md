@@ -25,26 +25,38 @@ not assumed. So the workflow cannot even be proven to run until this merges.
 
 > **Proves it done:** *Arm the two-party call test* appears in the Actions sidebar.
 
-### 1.2 Open the Netlify deploy log
+### 1.2 Find out what is actually serving `xoot.co.za`
 
-**⚠️ Netlify has not published `main` since ~00:45Z on 2026-08-13.** *Verify live deploy* has run
-three times and found no build stamp each time, the last one **31 minutes** after the push.
+**⚠️ The live site has not picked up `main` in an hour.** *Verify live deploy* has now run **four
+times** — 00:48Z, 01:16Z and 01:41Z on dispatch — and found no build stamp on any of them. The last
+run finished **58 minutes** after the push. Twelve attempts each time, so 48 fetches in total.
 
-The stamp shipped in `d64f403` (00:45Z). If Netlify had built that commit or any since,
-`https://xoot.co.za/build-info.json` would exist. It does not. This is a change of state — the site
-published fine at ~22:11 the night before.
+The stamp shipped in `d64f403` at 00:45Z. If anything had rebuilt and published since,
+`https://xoot.co.za/build-info.json` would exist. It does not. The site published fine at ~22:11 the
+night before, so this is a change of state.
 
 Checked before reporting it, so this is not a false alarm: `netlify.toml`'s `/*` → `/index.html`
 rule has **no `force` flag**, and Netlify serves a real file ahead of a non-forced redirect, so the
-stamp would be reachable if it were in the published build.
+stamp would be served if it were in the published build.
+
+**Four candidates, indistinguishable from here:**
+
+1. build queued — ruled out by now; an hour is not a queue
+2. build failing — the Netlify deploy log says so in one line
+3. the branch is no longer wired to the site
+4. **`xoot.co.za` may not be served by Netlify at all.** The repo carries *both* a `netlify.toml`
+   and an Apache `public/.htaccess` that `postbuild` copies into `dist` for **Hostinger**. If the
+   domain is served from a manual Hostinger upload, no git push will ever change it, and the 22:11
+   "publish" was an upload rather than a build. **Check this one first** — it would explain
+   everything, and it changes what §3b's gate even means.
 
 **Why no session can do it:** outbound `CONNECT` to `xoot.co.za:443` is refused by the
 organisation's egress policy — the proxy logs it as `connect_rejected`, gateway 403. A GitHub runner
-is not restricted, which is why the check is a workflow; but the Netlify *dashboard* is yours alone.
+is not restricted, which is why the check is a workflow; the hosting dashboard is yours alone.
 
-Three candidates, indistinguishable from here: build queued, build failing, branch no longer wired.
-
-> **Proves it done:** *Verify live deploy* reports ✅ for a commit.
+> **Proves it done:** *Verify live deploy* reports ✅ for a commit. If the answer turns out to be
+> candidate 4, that workflow needs repointing at whatever actually serves the domain — tell me and I
+> will do it.
 
 ---
 
