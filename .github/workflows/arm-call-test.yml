@@ -1,0 +1,209 @@
+name: Arm the two-party call test
+
+# Puts staging's smoke booking into the window where the call button actually renders, from a
+# browser, with no terminal.
+#
+# ── Why this workflow exists ────────────────────────────────────────────────────
+# `docs/release/voice-gates.md` §2c-i is the last gate nobody can automate: two devices, two
+# microphones, a human. But *setting up* for it was also unreachable, and for a duller reason —
+# `scripts/ops/arm-call-test.mjs` needs a shell and a staging service-role key, and the founder
+# works from a browser. So the one gate that genuinely needs a person could not be started by the
+# person who needs to run it.
+#
+# This wraps that script and nothing more. The script is unchanged, and deliberately so: its
+# staging-ref refusal (`arm-call-test.mjs:71`) is what makes running it from CI safe at all.
+#
+# ── Why arming needs doing at all ───────────────────────────────────────────────
+#   maskedCallAvailable = status ∈ {en_route, in_progress}
+#                         AND canAccessSensitiveBookingData(...)
+# and the second half is a TIME WINDOW — `scheduled_at − 45 min` to `scheduled_at + duration +
+# 30 min` (`src/lib/operations.ts:275`). Outside it there is no call button and nothing on screen
+# says why. The window is about four and a half hours wide, so this gets re-run, not run once.
+#
+# ── Why the subaccount script is NOT here, and never will be ────────────────────
+# `scripts/ops/create-staging-twilio-subaccount.mjs` is the other terminal-only step, and it stays
+# terminal-only: it prints `TWILIO_API_KEY_SECRET`, which Twilio shows exactly once, and a workflow
+# log is retained. Its browser route is manual Console steps in `voice-gates.md` §2c-0 ②.
+#
+# This script prints no secret — two `.local` e-mail addresses, a booking URL and four pass/fail
+# checks — which is the whole difference between the two.
+
+on:
+  workflow_dispatch:
+    inputs:
+      set_passwords:
+        description: >-
+          Also reset the two smoke accounts' passwords to the XOOT_CALL_TEST_PASSWORD repository
+          secret. Leave off unless you have forgotten them.
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  # Two runs would fight over one booking row and the second would move the window under the first
+  # person's feet. Queue rather than cancel: a half-applied arm is worse than a slow one.
+  group: arm-call-test
+  cancel-in-progress: false
+
+jobs:
+  arm:
+    name: Arm staging's smoke booking
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Refuse to run without a usable token
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          case "$SUPABASE_ACCESS_TOKEN" in
+            sbp_*) echo "Token present and correctly shaped." ;;
+            "") echo "::error::SUPABASE_ACCESS_TOKEN is not set."; exit 1 ;;
+            *) echo "::error::Not a personal access token. Account -> Access Tokens; starts 'sbp_'."; exit 1 ;;
+          esac
+
+      # Checked here rather than letting the script fail on its own 12-character test, because that
+      # failure arrives four minutes into the run with a message about an environment variable the
+      # reader never set. This one names the screen.
+      - name: Refuse --set-passwords without the secret it needs
+        if: ${{ inputs.set_passwords }}
+        env:
+          PASSWORD: ${{ secrets.XOOT_CALL_TEST_PASSWORD }}
+        run: |
+          if [ "${#PASSWORD}" -lt 12 ]; then
+            echo "::error::set_passwords is on but XOOT_CALL_TEST_PASSWORD is missing or under 12 characters. Settings -> Secrets and variables -> Actions -> New repository secret, name it XOOT_CALL_TEST_PASSWORD, and pick something you can type on a phone."
+            exit 1
+          fi
+          echo "XOOT_CALL_TEST_PASSWORD present, ${#PASSWORD} characters."
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
+
+      - run: npm ci
+
+      # Pinned for the same reason as everywhere else here, and with the same caveat: pinning does
+      # not make this step reliable. GitHub's release CDN returned 503 for a stretch on 2026-08-12
+      # and took down a `db push` and a self-test run. A failure HERE means nothing about Supabase
+      # or this repository — look for `503` or `socket hang up`, then just re-run.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.113.0
+
+      - name: Arm the booking
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          XOOT_CALL_TEST_PASSWORD: ${{ secrets.XOOT_CALL_TEST_PASSWORD }}
+          SET_PASSWORDS: ${{ inputs.set_passwords }}
+        # ⚠️ `shell: bash` DOES set `-e`. GitHub invokes it as `bash --noprofile --norc -e -o
+        # pipefail {0}` and prints that verbatim in the log. `db-push.yml` and `twilio-selftest.yml`
+        # both carry a comment claiming otherwise; `verify-live-deploy.yml:55` records the run that
+        # disproved it. `set +e` below is the fix, and it works.
+        shell: bash
+        run: |
+          set +e
+          set -uo pipefail
+
+          # Hard-coded, not an input. The script refuses any ref that is not this one, and a
+          # workflow that let you type a ref would exist only to be typed wrongly — everything the
+          # script does (rewrite a booking's schedule, force its status, reset passwords) is
+          # harmless on smoke data and data loss on real data.
+          ref="fxmxyabdjqviqbcxmvlp"
+
+          echo "## Arm the two-party call test" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # `--reveal` is load-bearing: without it the new-scheme `sb_secret_…` row comes back with
+          # its `api_key` MASKED — present, correctly typed, correctly prefixed, and not the key.
+          # That cost `twilio-selftest` four runs. The retry covers CLI builds that predate the
+          # flag; there the legacy pair is still returned in full.
+          raw=$(supabase projects api-keys --project-ref "$ref" --experimental --reveal -o json 2>/dev/null)
+          if ! jq -e 'type == "array" and length > 0' >/dev/null 2>&1 <<< "$raw"; then
+            echo "--reveal was rejected; retrying without it (secret keys will be masked)"
+            raw=$(supabase projects api-keys --project-ref "$ref" --experimental -o json 2>/dev/null)
+          fi
+
+          # Lengths and names only — never values. A masked key is short and a real one is not, so
+          # this line alone separates "the key was rejected" from "that was never the key".
+          echo "api-key lengths: $(jq -rc '[.[] | {((.name // "?") + "/" + (.type // "?")): ((.api_key // "") | length)}] | add' <<< "$raw" 2>/dev/null || true)"
+
+          # ⚠️ Two candidates, tried in order, because Supabase is midway through a key-scheme
+          # migration and which one a project answers to is not knowable from here.
+          #
+          # Note this is NOT the header problem `twilio-selftest` hit. That was about presenting two
+          # DIFFERENT keys — `apikey` and `Authorization` are both read as API keys, and the
+          # gateway calls that a conflict. `@supabase/supabase-js` puts the SAME value in both, so
+          # either scheme's key works on its own; the only question is which one this project's
+          # PostgREST and GoTrue currently accept.
+          sec_new=$(jq -r 'first(.[] | select((.type // "") == "secret" and (.api_key // "") != "") | .api_key) // ""' <<< "$raw" 2>/dev/null || true)
+          sec_legacy=$(jq -r 'first(.[] | select((.name // "") == "service_role" and (.api_key // "") != "") | .api_key) // ""' <<< "$raw" 2>/dev/null || true)
+
+          if [ -z "$sec_new" ] && [ -z "$sec_legacy" ]; then
+            echo "::error::No usable service-role credential for ${ref}."
+            echo "❌ Could not read a usable key for \`${ref}\`." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          # Masked before use, so no future edit to the script can print one into a retained log.
+          [ -n "$sec_new" ] && echo "::add-mask::$sec_new"
+          [ -n "$sec_legacy" ] && echo "::add-mask::$sec_legacy"
+
+          script_args=()
+          if [ "$SET_PASSWORDS" = "true" ]; then
+            script_args+=(--set-passwords)
+            echo "Passwords will be reset as well."
+          fi
+
+          out=""
+          status=1
+          for scheme in new legacy; do
+            case "$scheme" in
+              new)    key="$sec_new" ;;
+              legacy) key="$sec_legacy" ;;
+            esac
+            [ -z "$key" ] && continue
+
+            echo ""
+            echo "trying $scheme key ($(printf '%s' "$key" | cut -c1-3)…, ${#key} chars)"
+            out=$(ZOOT_STAGING_SUPABASE_URL="https://${ref}.supabase.co" \
+                  ZOOT_STAGING_SERVICE_ROLE_KEY="$key" \
+                  node scripts/ops/arm-call-test.mjs "${script_args[@]+"${script_args[@]}"}" 2>&1)
+            status=$?
+            echo "$out"
+            [ "$status" -eq 0 ] && break
+            echo "  $scheme key did not work; trying the next one if there is one."
+          done
+
+          #
+          # The script's own output is the deliverable — both sign-in addresses, the booking URL,
+          # when the window shuts, and four checks it makes by RE-READING the booking rather than
+          # trusting its own write. Into the step summary, not just the log: three workflows in this
+          # repo had to learn that the summary is the thing a person actually opens.
+          #
+          {
+            echo '```'
+            echo "$out"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Could not arm the booking — see the checks above."
+            exit "$status"
+          fi
+
+          {
+            echo ""
+            echo "### Now the part no workflow can do"
+            echo ""
+            echo "Sign in as those two addresses in **two different browsers** — a private window is"
+            echo "not enough, it shares the session store and you end up calling yourself. Open the"
+            echo "booking URL on both, allow the microphone, press call on one side."
+            echo ""
+            echo "Re-run this workflow when the window closes. See \`docs/release/voice-gates.md\`"
+            echo "for what each failure means."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -271,8 +271,12 @@ in **[`docs/release/voice-gates.md`](./voice-gates.md)**:
 Gate 0 runs from Actions → **Twilio self-test** → `environment: both`. It is green on both projects
 as of 2026-08-12, and finding it green is not the same as a working phone — see gate 3.
 
-`voice-gates.md` also carries what gate 0 found on its first real pass, and the step-by-step for the
-two-party call.
+Gate 3's setup runs from Actions → **Arm the two-party call test**, which puts staging's smoke
+booking into the window where the call button renders. The call itself still needs two people.
+
+`voice-gates.md` also carries what gate 0 found on its first real pass, the step-by-step for the
+two-party call, and Twilio Console click-paths for the staging subaccount for anyone without a
+terminal.
 
 ---
 
@@ -315,12 +319,18 @@ production deploy if it is wrong. Cheap first, exact when it matters.
 > Outbound `CONNECT` to `xoot.co.za:443` is refused by the organisation's egress policy. The proxy
 > records it plainly — `connect_rejected`, *"gateway answered 403 to CONNECT (policy denial)"* — and
 > `/root/.ccr/README.md` says to report policy denials rather than route around them. The same
-> denial covers `api.twilio.com`, which is why the staging-subaccount script cannot be run from a
-> session either.
+> denial covers `api.twilio.com` and `*.supabase.co`, which is why the staging-subaccount script
+> cannot be run from a session either.
 >
-> This is not a gap to work around; it is why **Verify live deploy** and **Twilio self-test** are
-> workflows. A GitHub runner has no such restriction. If a session tells you it "cannot reach the
-> site", the correct next step is to dispatch the workflow, not to accept the answer.
+> This is not a gap to work around; it is why **Verify live deploy**, **Twilio self-test** and
+> **Arm the two-party call test** are workflows. A GitHub runner has no such restriction. If a
+> session tells you it "cannot reach the site", the correct next step is to dispatch the workflow,
+> not to accept the answer.
+>
+> The one thing that stays out of a workflow on purpose:
+> `scripts/ops/create-staging-twilio-subaccount.mjs`, which prints a Twilio API Key Secret that
+> Twilio shows exactly once. A workflow log is retained. Its browser route is the Console
+> click-paths in `voice-gates.md`, not automation.
 
 ### 3a. ⚠️ Apply the commission migration FIRST
 

@@ -52,12 +52,24 @@ It needs no new secret. The job fetches the project's service-role key with the
 and never echoes the key — it goes into a header, and the response is filtered through an explicit
 `jq` allowlist rather than dumped.
 
-*Or, from an admin browser session, the same check by hand:*
+*Or, from an admin browser session, the same check by hand — see the note under gate 1 about why
+this is a `fetch` and not `window.supabase`:*
 
 ```js
-const { data } = await window.supabase.functions.invoke("twilio-selftest", { body: {} });
+const ref = "mvlrkelahhsyjrwgsxaf";                // staging: fxmxyabdjqviqbcxmvlp
+const apikey = "<VITE_SUPABASE_PUBLISHABLE_KEY>";  // repo → Settings → Variables; public
+const { access_token } = JSON.parse(localStorage.getItem(`sb-${ref}-auth-token`));
+
+const data = await (await fetch(`https://${ref}.supabase.co/functions/v1/twilio-selftest`, {
+  method: "POST",
+  headers: { apikey, Authorization: `Bearer ${access_token}`, "Content-Type": "application/json" },
+  body: "{}",
+})).json();
 console.table(data.checks); console.log(data.summary, data.accountSid);
 ```
+
+The workflow is easier and needs no admin session. This is here for the case where you are already
+signed in and looking at something.
 
 This asks **Twilio** — not the secret store — whether the account credentials are a valid pair, the
 API key belongs to that account, the TwiML App exists **with its Voice Request URL set to a URL that
@@ -179,10 +191,21 @@ It matters most for gate 3: every staging test call **bills the live account and
 call logs**, indistinguishable from a customer's, and a staging credential leak is a production
 credential leak. Until this is done, treat staging voice as production voice.
 
-### Fixing it — ten minutes, one script and one command
+### Fixing it — ten minutes, either route
 
-There is a script, because doing this by hand is four Console screens in the right order and one of
-them shows you a secret exactly once.
+Two ways, same result. **Route A needs a terminal; route B needs only a browser.** Both end at the
+same place — seven values pasted into staging's Edge Function secrets — so read
+[*Setting the seven staging secrets*](#setting-the-seven-staging-secrets) whichever you pick.
+
+> ⚠️ **The subaccount script is deliberately not a workflow, and must not become one.** It prints
+> `TWILIO_API_KEY_SECRET`, which Twilio shows exactly once, and a workflow log is retained for
+> anyone with repository access. `arm-call-test.mjs` *is* wrapped in a workflow precisely because it
+> prints nothing secret — that difference is the whole rule.
+
+## Route A — the script (needs a terminal)
+
+Four Console screens in the right order, done for you, with the TwiML App born pointing at
+staging's routable URLs so it cannot repeat ①.
 
 **1. Get the parent account's credentials.** Twilio Console dashboard → Account Info →
 **Account SID** and **Auth Token**. These are the *production* account's, which is correct: a
@@ -206,51 +229,135 @@ It creates a subaccount named `Xoot Staging`, an API key on it, a TwiML App **al
 staging's routable URLs** — so it cannot repeat ① — and a Conversations service. Then it re-reads
 the TwiML App and refuses to claim success unless the Voice URL stuck.
 
-**4. Set the seven staging secrets.** The script prints the whole command filled in. Paste and run
-it.
+It also prints the seven values, filled into a ready-to-paste `supabase secrets set` command. Go to
+[*Setting the seven staging secrets*](#setting-the-seven-staging-secrets).
 
-> ⚠️ **`TWILIO_API_KEY_SECRET` is shown once and never again.** Twilio does not store it in
-> retrievable form. Copy it into the command, run it, then clear your scrollback. If you lose it,
-> delete the key in the Console and make a new one — there is no recovery.
->
-> ⚠️ **Run this in your own terminal, never in a workflow.** A workflow's output is a retained log,
-> and that secret would be in it. No workflow in this repo calls this script, deliberately.
->
-> ⚠️ Both Auth Token names get the same value. Twilio issues one Auth Token per account; this repo
-> reads it under `TWILIO_AUTH_TOKEN` and `TWILIO_WEBHOOK_AUTH_TOKEN`, and setting only one leaves
-> five webhooks rejecting every inbound request with a silent 403.
+If a subaccount named `Xoot Staging` already exists, the script refuses rather than making a second
+one — Twilio subaccounts cannot be deleted, only closed. Take the existing one's SID and Auth Token
+from the Console and skip to the secrets step.
 
-**5. No redeploy.** Edge Functions read secrets at runtime.
+## Route B — the Twilio Console (browser only)
 
-**6. Prove it.** Re-run gate 0 with `environment: both`. The shared-Account-SID error should be
-gone, the two SIDs should differ, and staging's voice rows should be green because the TwiML App was
-born correct.
+Six screens, each producing exactly one value. Write each one down as you go; three of them are
+awkward or impossible to find again.
+
+**1. Create the subaccount.** Console → the **account picker** (top left, showing your account
+name) → **Manage account** / **Subaccounts** → **Create new subaccount**. Friendly name exactly:
+
+```
+Xoot Staging
+```
+
+The list then shows its **Account SID**, starting `AC…`. → `TWILIO_ACCOUNT_SID`
+
+**2. Switch into it, and take its Auth Token.** Account picker → **Xoot Staging**. Everything from
+here happens *inside the subaccount* — this is the step people miss, and creating the API key on the
+parent instead is silent and wrong. Its dashboard shows an **Auth Token** behind a "show" toggle.
+→ `TWILIO_AUTH_TOKEN` **and** `TWILIO_WEBHOOK_AUTH_TOKEN`, both, same value.
+
+> ⚠️ **Both names, or five webhooks break silently.** Twilio issues one Auth Token per account; this
+> repo reads it under two names, and setting only one leaves the message, WhatsApp, verify,
+> status-callback and voice webhooks rejecting every inbound request with a 403 and no log line.
+> This has already happened here once.
+
+**3. Create an API key.** Still inside `Xoot Staging`: **Account → API keys & tokens → Create API
+key**. Friendly name `Xoot Staging API Key`, type **Standard** (not Main). It shows an **SID**
+(`SK…`) and a **Secret**.
+
+> ⚠️ **The secret is shown on this screen and never again.** Twilio does not store it in retrievable
+> form. Paste it straight into step 6 before you navigate away. If you lose it, delete the key and
+> make a new one — there is no recovery, only replacement.
+
+→ `TWILIO_API_KEY_SID` and `TWILIO_API_KEY_SECRET`
+
+**4. Create the TwiML App.** **Voice → Manage → TwiML Apps → Create new TwiML App**. Friendly name
+`Xoot TwiML App Staging`. Fill in, and **set both methods to POST** — GET is the default on one of
+them and is the exact failure ① was:
+
+| field | value | method |
+|---|---|---|
+| Voice **Request URL** | `https://fxmxyabdjqviqbcxmvlp.functions.supabase.co/twilio-voice-twiml` | POST |
+| Voice **Status Callback URL** | `https://fxmxyabdjqviqbcxmvlp.functions.supabase.co/twilio-voice-status` | POST |
+
+Those are **staging's** URLs — ref `fxmxy…`, not `mvlrk…`. Save; the app SID starts `AP…`.
+→ `TWILIO_VOICE_APP_SID`
+
+**5. Create a Conversations service.** **Conversations → Manage → Services → Create new service**,
+name `Xoot Staging Conversations`. Its SID starts `IS…`. → `TWILIO_CONVERSATIONS_SERVICE_SID`
+
+**6.** Continue to [*Setting the seven staging secrets*](#setting-the-seven-staging-secrets).
+
+## Setting the seven staging secrets
+
+Seven names, from either route. **Nothing needs redeploying afterwards** — Edge Functions read
+secrets at runtime.
+
+| secret | where it came from |
+|---|---|
+| `TWILIO_ACCOUNT_SID` | the subaccount, `AC…` |
+| `TWILIO_AUTH_TOKEN` | the subaccount's Auth Token |
+| `TWILIO_WEBHOOK_AUTH_TOKEN` | **the same Auth Token again** |
+| `TWILIO_API_KEY_SID` | `SK…` |
+| `TWILIO_API_KEY_SECRET` | shown once, on the API key screen |
+| `TWILIO_VOICE_APP_SID` | `AP…` |
+| `TWILIO_CONVERSATIONS_SERVICE_SID` | `IS…` |
+
+**In a terminal:** the script prints the `supabase secrets set --project-ref fxmxyabdjqviqbcxmvlp`
+command with every value already in it. Paste, run, then clear your scrollback.
+
+**In a browser:** Supabase Dashboard → project **`fxmxyabdjqviqbcxmvlp`** → **Project Settings →
+Edge Functions → Secrets** → *Add new secret*, once per row above. Same effect as the CLI command;
+this is the only route if you do not have a terminal, and the script's printed command is unusable
+without one.
+
+**Then prove it.** Re-run gate 0 with `environment: both`. The shared-Account-SID error should be
+gone, the two Account SIDs should differ, and staging's voice rows should be green because the TwiML
+App was born correct.
 
 **What this does and does not separate.** It separates identity, credentials and call logs — which
 is what `SECRETS_INVENTORY.md:56` asks for and what stops a staging call from looking like a
 customer's. It does **not** separate the invoice: a subaccount still bills to the parent. If you
 want separate billing, that is a second Twilio account rather than a subaccount, and a bigger
-decision than this script makes.
+decision than either route above makes.
 
-If a subaccount named `Xoot Staging` already exists, the script refuses rather than making a second
-one — Twilio subaccounts cannot be deleted, only closed. Take the existing one's SID and Auth Token
-from the Console and go straight to step 4.
+**Gate 1 — the per-booking check. Gate 0 already answers most of it.**
 
-**Gate 1 — did the secrets land? 30 seconds, no second person.** Sign in, open a booking you are on,
-and in the browser console:
+For *"did the seven secrets land?"*, **gate 0 is the better tool and needs no sign-in**: the
+self-test reads all seven `TWILIO_*` variables server-side and names the missing ones
+(`twilio-selftest/index.ts`). One click, either environment.
+
+Gate 1 is worth running for the thing gate 0 cannot see: whether `twilio-token` will actually mint a
+token **for a given booking and a given signed-in account** — the participation check and the
+per-capability secret scoping. Sign in, open a booking you are on, and paste this into the browser
+console:
 
 ```js
-const { data } = await window.supabase.functions.invoke("twilio-token",
-  { body: { bookingId: "<a booking id you are a participant on>", capability: "voice" } });
-console.log(data);
+// Staging; for production use mvlrkelahhsyjrwgsxaf and that project's publishable key.
+const ref = "fxmxyabdjqviqbcxmvlp";
+const apikey = "<VITE_SUPABASE_PUBLISHABLE_KEY>";  // repo → Settings → Variables; public, not a secret
+const { access_token } = JSON.parse(localStorage.getItem(`sb-${ref}-auth-token`));
+
+console.log(await (await fetch(`https://${ref}.supabase.co/functions/v1/twilio-token`, {
+  method: "POST",
+  headers: { apikey, Authorization: `Bearer ${access_token}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ bookingId: "<a booking id you are a participant on>", capability: "voice" }),
+})).json());
 ```
 
 - `{ configured: false, missing: ["TWILIO_VOICE_APP_SID", …] }` — the function naming exactly which
   secrets are absent. Set those and run it again.
-- `{ configured: true, token: "ey…" }` — all seven are in.
+- `{ configured: true, token: "ey…" }` — all seven are in, **and** this account may call on this
+  booking.
+- `401` / `403` — the secrets may be fine; you are not a participant on that booking, or the session
+  in `localStorage` has expired. Reload and sign in again.
 
-This is the single most useful command in this document: it turns "something is wrong with Twilio"
-into a list.
+> ⚠️ **CORRECTED 2026-08-13.** This block previously read
+> `await window.supabase.functions.invoke("twilio-token", …)`. **`window.supabase` does not exist** —
+> `src/integrations/supabase/client.ts` exports `supabase` as a module binding and nothing assigns it
+> to `window`, so that snippet threw `TypeError` for everyone who pasted it, in a document that
+> called it "the single most useful command" here. Written and never once run. The form above uses
+> only what a browser already has: the session the client persists to `localStorage`, and the
+> publishable key, which is public and already shipped inside the bundle.
 
 **Gate 2 — does the webhook signature check pass?** This is the one the two-Auth-Token-names bug
 broke. In the Twilio Console: Monitor → Logs → **Errors**. A `403` from `twilio-voice-twiml` with no
@@ -284,22 +391,41 @@ both`. Every step below assumes Twilio's side is right; if gate 0 is red for the
 picked, the steps will still "work" and the call will still fail, and you will be debugging your
 browser instead of your configuration.
 
-### Then: arm staging with one command — it does steps 1 to 3 for you
+### Then: arm staging with one click — it does steps 1 to 3 for you
+
+**Actions → *Arm the two-party call test* → Run workflow.** Nothing to fill in.
+
+The run summary comes back with both sign-in addresses, the booking URL, when the window shuts, and
+four ✅/❌ checks. Those checks are made by **re-reading the booking after writing it**, so a green
+summary means the booking is genuinely callable — not merely that the workflow ran. Then
+**skip to step 4**.
+
+<details>
+<summary>The same thing from a terminal, if you have one</summary>
 
 ```bash
 ZOOT_STAGING_SUPABASE_URL=... ZOOT_STAGING_SERVICE_ROLE_KEY=... \
   node scripts/ops/arm-call-test.mjs
 ```
 
-It puts the smoke booking into the callable window, prints both sign-in addresses and the booking
-URL, and **verifies all four gate conditions before saying it worked**. Then **skip to step 4**.
+The workflow is a wrapper around exactly this, fetching the staging service-role key at run time
+with the account access token rather than storing one. The script's staging-ref refusal
+(`arm-call-test.mjs:71`) is unchanged and is what makes running it from CI safe: it rewrites a
+booking's schedule and status, which is harmless on smoke data and data loss on real data.
+
+</details>
+
+**Forgotten the two smoke passwords?** Run the workflow with **`set_passwords` ticked**. It needs a
+repository secret named `XOOT_CALL_TEST_PASSWORD` (Settings → Secrets and variables → Actions → New
+repository secret, at least 12 characters, something you can type on a phone); the workflow refuses
+up front with that path if it is missing, rather than failing four minutes in.
 
 ⚠️ The window is only about four and a half hours wide. If the call button has vanished since you
 last looked, re-run this rather than concluding the feature is broken — that is the single most
 likely reason, and it is invisible on screen.
 
 Steps 1 to 3 below are what the script does for you. Read them only if you are doing this on
-production, or if the script refuses.
+production, or if it refuses.
 
 1. **Two accounts.** One customer, one Xooter. The Xooter account must be approved and active
    (`zooters.active = true`), which `approve-zooter` sets. If you only have one real Xooter, use
@@ -360,7 +486,8 @@ callee's panel offers accept/decline, and after accepting both hear each other. 
 in front of two microphones. Everything else in section 2c is now automated; this is not, and no
 amount of server-side checking substitutes for it. Do not treat a green gate 0 as a working phone.
 
-**What I cannot do:** gates 1, 2 and 3 from a session. The agent proxy denies `*.supabase.co`, and
-`pg_net`/`http` are not installed, so an Edge Function cannot be invoked from a session at all —
-which is exactly why gate 0 moved into a workflow, where a runner with network access can make the
-call instead. Paste me the output of gate 1 and I will tell you what is missing.
+**What I cannot do:** gates 1, 2 and 3 from a session. The agent proxy denies `*.supabase.co`,
+`xoot.co.za` and `api.twilio.com` — organisation egress policy, logged as `connect_rejected` — and
+`pg_net`/`http` are not installed, so an Edge Function cannot be invoked from a session at all. That
+is why gate 0 and the arming step both live in workflows: a runner has the network access a session
+does not. Paste me the output of gate 1 and I will tell you what is missing.
