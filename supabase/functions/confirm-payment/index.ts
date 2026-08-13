@@ -2,13 +2,14 @@ import {
   fail,
   getServiceClient,
   handlePreflight,
-  insertNotification,
-  insertOutbox,
   ok,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
-import { assertTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 import { claimProviderEvent, markProviderEventProcessed } from "../_shared/governance-utils.ts";
+import {
+  applyBookingPaymentConfirmed,
+  assertBookingCanConfirmPayment,
+} from "../_shared/payment-confirmation.ts";
 import {
   PAYFAST_VALIDATE_URL_LIVE,
   normaliseStatus,
@@ -133,22 +134,16 @@ Deno.serve(async (req) => {
       return ok({ payment_record_id: payment.id, booking_id: payment.booking_id, idempotent: true }, origin);
     }
 
+    /*
+     * Asserted BEFORE the provider event is claimed. Claiming is what makes this webhook
+     * idempotent, and a claim followed by a refused transition would burn the event id and turn
+     * PayFast's retry into a silent no-op.
+     */
     let bookingForPayment: Record<string, any> | null = null;
     if (payment.booking_id) {
-      const { data: booking } = await supa
-        .from("bookings")
-        .select("id,user_id,xooter_id,scheduled_at,service_type,status")
-        .eq("id", payment.booking_id)
-        .maybeSingle();
-
-      const currentStatus = normaliseBookingStatus(booking?.status);
-      if (!booking?.id || !currentStatus) return fail("booking status is unsupported", origin, 409);
-      try {
-        assertTransition(currentStatus, "payment_confirmed");
-      } catch (error) {
-        return fail(error instanceof Error ? error.message : "invalid booking transition", origin, 409);
-      }
-      bookingForPayment = booking;
+      const check = await assertBookingCanConfirmPayment(supa, payment.booking_id);
+      if (!check.ok) return fail(check.reason, origin, 409);
+      bookingForPayment = check.booking;
     }
 
     // The only route into this function is a verified PayFast ITN, so the provider is not
@@ -187,58 +182,22 @@ Deno.serve(async (req) => {
       })
       .eq("id", payment.id);
 
+    /*
+     * Everything that follows the money — booking row, status event, job offer, notification and
+     * the assignment outbox event — is in `_shared/payment-confirmation.ts`, which
+     * `admin-confirm-payment` also calls.
+     *
+     * It was inline here until 2026-08-13, and the admin path did none of it: an EFT confirmed
+     * against a bank statement left the booking `draft` forever. Sharing it is what stops the two
+     * routes to `payment_confirmed` from reaching different states.
+     */
     if (payment.booking_id && bookingForPayment) {
-      await supa
-        .from("bookings")
-        .update({
-          status: "payment_confirmed",
-          payment_status: "paid",
-          payment_confirmed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", payment.booking_id);
-
-      await supa.from("booking_status_events").insert({
-        booking_id: bookingForPayment.id,
-        actor_id: payment.user_id,
-        status: "payment_confirmed",
+      await applyBookingPaymentConfirmed(supa, {
+        bookingId: payment.booking_id,
+        actorId: payment.user_id,
+        paymentRecordId: payment.id,
         label: "Payment received",
-        meta: { payment_record_id: payment.id },
-      });
-
-      if (bookingForPayment.xooter_id) {
-        const { data: existingJob } = await supa
-          .from("xooter_jobs")
-          .select("id")
-          .eq("booking_id", bookingForPayment.id)
-          .eq("xooter_id", bookingForPayment.xooter_id)
-          .maybeSingle();
-        if (existingJob?.id) {
-          await supa.from("xooter_jobs").update({ state: "offered" }).eq("id", existingJob.id);
-        } else {
-          await supa.from("xooter_jobs").insert({ booking_id: bookingForPayment.id, xooter_id: bookingForPayment.xooter_id, state: "offered" });
-        }
-      }
-
-      await insertNotification(supa, {
-        userId: payment.user_id,
-        kind: "payment_confirmed",
-        title: "Payment confirmed",
-        body: "Your Xoot payment is confirmed. We are now finalising the booking assignment.",
-        link: `/app/bookings/${payment.booking_id}`,
-      });
-
-      await insertOutbox(supa, {
-        source_table: "bookings",
-        source_id: payment.booking_id,
-        event_type: "payment_confirmed_assignment_search",
-        channel: "in_app",
-        owner: "Scheduling & Allocation Agent",
-        stack_tool: "Xoot assignment queue",
-        payload: { booking_id: payment.booking_id, payment_record_id: payment.id },
-        status: "queued",
-        approval_required: false,
-        created_by: payment.user_id,
+        booking: bookingForPayment,
       });
     }
 

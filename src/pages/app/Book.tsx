@@ -13,6 +13,7 @@ import { Home as HomeIcon, Building2, BedDouble, Sparkles, ArrowRight, ArrowLeft
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { PayFastCheckout } from "@/components/PayFastCheckout";
 import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortXootersForMarketplace } from "@/lib/trust";
 import { calculateBookingQuote, isApprovedLaunchRegion } from "@/lib/operations";
 import { useCarePlus } from "@/hooks/useCarePlus";
@@ -140,6 +141,14 @@ const Book = () => {
   const [submitting, setSubmitting] = useState(false);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [bookingStatus, setBookingStatus] = useState<string | null>(null);
+  /*
+   * The payment record to charge, returned by `create-booking`.
+   *
+   * A recurring booking creates ONE RECORD PER VISIT, and only the first is offered here — paying
+   * for a whole series up front is not what the customer agreed to. The rest are payable from
+   * BookingDetail, each against its own booking.
+   */
+  const [paymentRecordId, setPaymentRecordId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -370,18 +379,25 @@ const Book = () => {
       return;
     }
 
-    const actionResult = data as { success?: boolean; error?: string; data?: { booking_ids?: string[]; booking_id?: string; status?: string } } | null;
+    type BookingResult = {
+      booking_ids?: string[];
+      booking_id?: string;
+      status?: string;
+      payment_record_ids?: string[];
+    };
+    const actionResult = data as { success?: boolean; error?: string; data?: BookingResult } | null;
     if (actionResult?.success === false) {
       toast.error(actionResult.error ?? "Booking request failed");
       setSubmitting(false);
       return;
     }
-    const result = actionResult?.data ?? (data as { booking_ids?: string[]; booking_id?: string; status?: string } | null);
+    const result = actionResult?.data ?? (data as BookingResult | null);
     const firstBookingId = result?.booking_id ?? result?.booking_ids?.[0] ?? null;
     if (firstBookingId) {
       setBookingId(firstBookingId);
       setBookingStatus(result?.status ?? "draft");
     }
+    setPaymentRecordId(result?.payment_record_ids?.[0] ?? null);
     setSubmitting(false);
     setStep(4);
   };
@@ -640,7 +656,33 @@ const Book = () => {
       )}
 
       {step === 4 && (
-        <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5"><div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div><h2 className="font-display text-3xl font-bold">Booking draft created</h2><p className="text-muted-foreground max-w-md mx-auto">Your server-priced booking draft is ready. Xoot confirms payment from the provider webhook before assignment is finalised.</p>{bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus}</span></div>}<div className="flex flex-col sm:flex-row gap-2 justify-center"><Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); }} variant="outline" className="rounded-full">Book another</Button><Button asChild className="rounded-full gradient-warm"><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button></div></div>
+        <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5">
+          <div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div>
+          <h2 className="font-display text-3xl font-bold">{paymentRecordId ? "Almost there — one payment left" : "Booking draft created"}</h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {paymentRecordId
+              ? "Your booking is held at the price you were shown. Pay to confirm it and we will assign your Xooter."
+              : "Your server-priced booking draft is ready. Xoot confirms payment before assignment is finalised."}
+          </p>
+          {bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus.replace(/_/g, " ")}</span></div>}
+
+          {/*
+            Until this existed, step 4 was where the journey stopped: a draft was created and the
+            customer was told payment happens "from the provider webhook", with no way to trigger
+            one. The amount charged is the SERVER's, read from `payment_records` — the client never
+            sends a price, which is what keeps the screen and the charge in agreement.
+          */}
+          {paymentRecordId && bookingStatus === "draft" && (
+            <div className="mx-auto max-w-sm">
+              <PayFastCheckout paymentRecordId={paymentRecordId} label={`Pay ${formatZAR(bookingTotal)}`} />
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); setPaymentRecordId(null); }} variant="outline" className="rounded-full">Book another</Button>
+            <Button asChild variant={paymentRecordId ? "outline" : "default"} className={paymentRecordId ? "rounded-full" : "rounded-full gradient-warm"}><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button>
+          </div>
+        </div>
       )}
 
       {step < 3 && (
