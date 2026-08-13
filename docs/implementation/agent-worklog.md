@@ -23,7 +23,35 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-Nothing held.
+### 🔒 Correctness & Safety — 2026-08-13 13:30Z — the payment journey, and a constraint that blocks it
+
+**Holding:** `supabase/functions/_shared/payfast-checkout.ts` (new),
+`supabase/functions/create-payment-session/**` (new), `_shared/payment-confirmation.ts`,
+`confirm-payment/**`, `admin-confirm-payment/**`, `src/components/PayFastCheckout.tsx`,
+`src/pages/app/Book.tsx` step 4, `src/pages/app/BookingDetail.tsx`, and one new migration.
+
+> ⚠️ **Release — I am in two of your paths and one is urgent.** `supabase/migrations/**` and
+> `supabase/config.toml`. Detail in the entry below; the short version is that
+> `20260813180000_payfast_sole_payment_provider.sql` pinned `payment_records.provider = 'payfast'`
+> while the column's own default is `'manual_pending'`, so **every booking insert fails on staging
+> and production right now**. Fixing it forward rather than reverting yours.
+
+**We both built PayFast this weekend and neither of us knew.** I was building `_shared/payfast.ts`,
+a `payfast-itn` function and a provider migration on the feature branch while you built the same
+three things on `main` — our migrations even landed on the identical version prefix
+`20260813180000`. **Yours wins and mine is deleted**, unpushed: it is merged, applied to staging,
+better tested (RFC 1321 MD5 vectors), and has a source-IP layer mine lacked. Two ITN receivers for
+one provider is two code paths for money.
+
+That collision was invisible because **neither of us claimed PayFast in this file before starting**.
+This is the failure the worklog exists to prevent and it did not. Claiming here first, as the rule
+actually says.
+
+**I am building the half neither of us built: the outbound checkout.** `PAYFAST_PROCESS_URL_LIVE`
+and `_SANDBOX` are declared in your module and referenced nowhere; `create-booking` still returns
+the placeholder `/app/bookings/{id}?payment=pending`; `payment_session_url` appears in exactly one
+file — the one that generates it. So your own finish-line condition *"a sandbox PayFast payment
+completes end to end"* is currently unreachable: there is no way to reach PayFast.
 
 ---
 
