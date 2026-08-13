@@ -237,7 +237,7 @@ describe("fare split honesty about money", () => {
     // No payment provider is connected. A response that omits this lets the UI imply a housemate
     // has paid when nothing can be charged — discovered at the worst possible moment.
     expect(fn).toMatch(/collectionConfigured: false/);
-    expect(fn).toMatch(/provider_required: "Ozow\/Stitch credentials not connected"/);
+    expect(fn).toMatch(/provider_required: "PayFast credentials not connected"/);
     expect(fn).toMatch(/collection_pending: true/);
   });
 

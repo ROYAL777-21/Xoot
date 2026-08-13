@@ -30,7 +30,7 @@ import { useAuth } from "@/contexts/AuthContext";
  * ── What it promises, and what it does not ──────────────────────────────────────
  * It records who owes what, and gives the organiser a link per person to send. **It does not
  * charge anyone**, because no payment provider is connected — `create-booking` still writes
- * `provider_required: "Ozow/Stitch credentials not connected"`.
+ * `provider_required: "PayFast credentials not connected"`.
  *
  * The panel says so on screen rather than leaving it implied. A split that looks settled while
  * nothing can be collected is discovered by the organiser at the worst possible moment, and the

@@ -152,7 +152,7 @@ describe("Xoot operating rules", () => {
 
   it("keeps hosted payment checkout disabled until every provider gate is proven", () => {
     const ready = {
-      provider: "stitch" as const,
+      provider: "payfast" as const,
       providerGateEnabled: true,
       hostedCheckoutConfigured: true,
       webhookSignatureVerified: true,
@@ -172,13 +172,13 @@ describe("Xoot operating rules", () => {
 
   it("builds non-secret payment reconciliation references", () => {
     expect(buildPaymentReconciliationReference({
-      provider: "ozow",
+      provider: "payfast",
       bookingId: "booking-123456789",
       paymentId: "payment-abcdefghi",
-    })).toBe("XOOT-OZOW-BOOKING1-PAYMENTA");
+    })).toBe("XOOT-PAYFAST-BOOKING1-PAYMENTA");
 
     expect(buildPaymentReconciliationReference({
-      provider: "stitch",
+      provider: "payfast",
       bookingId: "abc",
       paymentId: "payment-abcdefghi",
     })).toBeNull();

@@ -9,49 +9,45 @@ import {
 } from "../_shared/action-utils.ts";
 import { assertTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 import { claimProviderEvent, markProviderEventProcessed } from "../_shared/governance-utils.ts";
+import {
+  PAYFAST_VALIDATE_URL_LIVE,
+  normaliseStatus,
+  sourceAllowed,
+  validateWithPayFast,
+  verifySignature,
+} from "../_shared/payfast.ts";
 
-const encoder = new TextEncoder();
+/**
+ * ⚠️ REWRITTEN 2026-08-13 for PayFast. Read this before "simplifying" it back.
+ *
+ * The previous providers signed a JSON body with an HMAC in a REQUEST HEADER, so one check —
+ * recompute the HMAC, compare — was the whole verification. PayFast does none of that:
+ *
+ *   - the body is `application/x-www-form-urlencoded`, not JSON
+ *   - the signature is a FIELD IN THE BODY, and there is no signature header at all
+ *   - the hash is MD5 over the fields IN THE ORDER SENT, with the passphrase appended
+ *
+ * Keeping the old shape and renaming the provider would have produced an endpoint that reads
+ * `req.headers.get("x-payfast-signature")`, finds nothing, and — depending on how the null flowed —
+ * either rejects every real payment or accepts anything. Both are worse than no integration,
+ * because the code looks finished.
+ *
+ * Four checks now, in `_shared/payfast.ts`, each independently able to reject:
+ *   1. signature   — the sender holds the passphrase
+ *   2. amount      — the notification matches the order we created  (below, against payment_records)
+ *   3. validate    — PayFast confirms it sent this, server to server
+ *   4. source IP   — optional, additive; see the module for why it skips rather than fails closed
+ *
+ * The record matching, currency check and idempotency below are unchanged and provider-agnostic —
+ * that part was good and is the reason a replay cannot double-credit.
+ */
+const isPaidStatus = (status: string) => normaliseStatus(status) === "COMPLETE";
 
-const toHex = (buffer: ArrayBuffer) =>
-  Array.from(new Uint8Array(buffer))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-
-const timingSafeEqual = (a: string, b: string) => {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i += 1) result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return result === 0;
-};
-
-const verifyWebhookSignature = async (rawBody: string, signatureHeader: string | null) => {
-  const secret = Deno.env.get("STITCH_WEBHOOK_SECRET") ?? Deno.env.get("OZOW_WEBHOOK_SECRET") ?? Deno.env.get("PAYMENT_WEBHOOK_SECRET");
-  if (!secret) return { ok: false, reason: "payment webhook secret is not configured" };
-  if (!signatureHeader) return { ok: false, reason: "payment webhook signature missing" };
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const expected = toHex(await crypto.subtle.sign("HMAC", key, encoder.encode(rawBody)));
-  const supplied = signatureHeader.replace(/^sha256=/i, "").trim().toLowerCase();
-  return { ok: timingSafeEqual(expected, supplied), reason: "payment webhook signature invalid" };
-};
-
-const isPaidStatus = (status: string) => ["paid", "success", "succeeded", "complete", "completed"].includes(status.toLowerCase());
-
-const allowedProviderEvents = new Set(["stitch", "ozow", "twilio", "brevo", "openai", "mapbox", "expo", "cloudflare", "hostinger", "airtable", "internal"]);
-
-const resolvePaymentProvider = (payload: Record<string, unknown>, headers: Headers) => {
-  const explicit = String(payload.provider ?? payload.payment_provider ?? "").trim().toLowerCase();
-  if (allowedProviderEvents.has(explicit)) return explicit;
-  if (headers.get("x-stitch-signature")) return "stitch";
-  if (headers.get("x-ozow-signature")) return "ozow";
-  return "internal";
-};
+/**
+ * `payfast` is the only payment provider. The rest are non-payment event sources that share this
+ * function's provider-event ledger.
+ */
+const allowedProviderEvents = new Set(["payfast", "twilio", "brevo", "openai", "mapbox", "expo", "cloudflare", "hostinger", "airtable", "internal"]);
 
 const resolvePaymentEventId = (payload: Record<string, unknown>, providerReference: string, status: string) =>
   String(
@@ -68,20 +64,57 @@ Deno.serve(async (req) => {
   const preflight = handlePreflight(req, origin);
   if (preflight) return preflight;
 
-  const signature = req.headers.get("x-xoot-webhook-signature") ?? req.headers.get("x-stitch-signature") ?? req.headers.get("x-ozow-signature");
   const rawBody = await req.text();
-  const signatureResult = await verifyWebhookSignature(rawBody, signature);
+
+  /*
+   * PayFast ITN verification, in the order that rejects soonest and cheapest.
+   *
+   * `params` is built from the RAW body, not from an object: PayFast signs the fields in the order
+   * it sent them, and any `Object.keys()` round trip is liable to reorder them into a hash that is
+   * valid-looking and never matches.
+   */
+  const params = new URLSearchParams(rawBody);
+  const passphrase = Deno.env.get("PAYFAST_PASSPHRASE") ?? "";
+
+  const signatureResult = verifySignature(params, passphrase);
   if (!signatureResult.ok) return fail(signatureResult.reason, origin, 401);
+
+  // Additive layer. Skips loudly when unconfigured rather than failing closed on a list that could
+  // not be read from PayFast's own documentation — see `_shared/payfast.ts`.
+  const source = sourceAllowed(
+    req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip"),
+    Deno.env.get("PAYFAST_ALLOWED_IPS") ?? "",
+  );
+  if (!source.ok) return fail(source.reason ?? "source not allowed", origin, 401);
+  if (source.skipped) console.warn("payfast: PAYFAST_ALLOWED_IPS unset — source check skipped");
+
+  /*
+   * The authoritative check, and deliberately last: it costs a network round trip, so it runs only
+   * after the free checks have passed. A forged notification never reaches it.
+   */
+  const validation = await validateWithPayFast(
+    rawBody,
+    Deno.env.get("PAYFAST_VALIDATE_URL") ?? PAYFAST_VALIDATE_URL_LIVE,
+  );
+  if (!validation.ok) return fail(validation.reason, origin, 401);
 
   let providerEventId: string | null = null;
   let supa: ReturnType<typeof getServiceClient> | null = null;
 
   try {
-    const payload = JSON.parse(rawBody);
-    const providerReference = String(payload.payment_reference ?? payload.provider_reference ?? payload.reference ?? "").trim();
-    const status = String(payload.status ?? payload.payment_status ?? "").trim();
-    const amount = Number(payload.amount ?? payload.amount_paid);
-    const currency = String(payload.currency ?? "ZAR").trim().toUpperCase();
+    /*
+     * Form fields, not JSON. `m_payment_id` is the reference WE generated when creating the order,
+     * which is what `payment_records.provider_reference` holds; `pf_payment_id` is PayFast's own id
+     * and is kept for reconciliation but never used to look the record up.
+     *
+     * PayFast sends no currency field — it is a ZAR-only gateway — so the comparison below runs
+     * against the record's own currency rather than against something the sender controls.
+     */
+    const payload = Object.fromEntries(params.entries()) as Record<string, unknown>;
+    const providerReference = String(params.get("m_payment_id") ?? "").trim();
+    const status = String(params.get("payment_status") ?? "").trim();
+    const amount = Number(params.get("amount_gross"));
+    const currency = "ZAR";
     if (!providerReference) return fail("payment reference required", origin, 400);
     if (!isPaidStatus(status)) return fail("payment webhook status is not paid", origin, 400);
     if (!Number.isFinite(amount) || amount < 0) return fail("payment amount required", origin, 400);
@@ -118,7 +151,9 @@ Deno.serve(async (req) => {
       bookingForPayment = booking;
     }
 
-    const provider = resolvePaymentProvider(payload, req.headers);
+    // The only route into this function is a verified PayFast ITN, so the provider is not
+    // inferred from attacker-controlled fields any more — it is known.
+    const provider = "payfast";
     const providerEvent = await claimProviderEvent(supa, {
       provider,
       eventId: resolvePaymentEventId(payload, providerReference, status),

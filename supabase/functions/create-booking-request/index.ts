@@ -250,7 +250,7 @@ Deno.serve(async (req) => {
         status: "pending",
         provider: "manual_pending",
         payment_kind: "booking",
-        meta: { service_type: serviceType, xooter_id: xooterId, frequency, provider_required: "Ozow/Stitch credentials not connected" },
+        meta: { service_type: serviceType, xooter_id: xooterId, frequency, provider_required: "PayFast credentials not connected" },
       }).select("id").single();
 
       await supa.from("admin_review_queue").insert({

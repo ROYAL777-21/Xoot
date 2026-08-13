@@ -355,7 +355,7 @@ Deno.serve(async (req) => {
           service_length: serviceLengthId,
           xooter_id: xooterId,
           frequency,
-          provider_required: "Ozow/Stitch credentials not connected",
+          provider_required: "PayFast credentials not connected",
           breakdown: { subtotal, highDemandPremium, serviceFee, bookingCover, carePlusDiscount, xootcredRedemption, serviceLength: serviceLengthId },
         },
       }).select("id,provider_reference").single();
@@ -379,7 +379,7 @@ Deno.serve(async (req) => {
         event_type: "payment_authorisation_requested",
         channel: "payment_provider",
         owner: "Finance Operations",
-        stack_tool: "Stitch/Ozow payment session",
+        stack_tool: "PayFast payment session",
         payload: { booking_id: booking.id, payment_record_id: payment.id, amount: perBookingAmount, currency: "ZAR" },
         status: "needs_approval",
         approval_required: true,
@@ -422,7 +422,7 @@ Deno.serve(async (req) => {
       ipAddress: req.headers.get("x-forwarded-for"),
     });
 
-    // TODO: Replace this local handoff with a real Stitch/Ozow payment session URL once provider credentials are connected.
+    // TODO: Replace this local handoff with a real PayFast payment session URL once provider credentials are connected.
     return ok({
       booking_id: bookingIds[0] ?? null,
       booking_ids: bookingIds,

@@ -34,7 +34,7 @@ export const getCorsHeaders = (origin: string | null) => {
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-xoot-webhook-signature, x-stitch-signature, x-ozow-signature",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-xoot-webhook-signature",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Vary": "Origin",
   };

@@ -92,7 +92,7 @@ export type XootBlackLineItem = {
   currency: "ZAR";
 };
 
-export type PaymentProvider = "stitch" | "ozow";
+export type PaymentProvider = "payfast";
 
 export type PaymentProviderReadinessInput = {
   provider: PaymentProvider;

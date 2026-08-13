@@ -13,7 +13,7 @@ import { consumeRateLimit } from "../_shared/governance-utils.ts";
  *
  * ── What this does, precisely ───────────────────────────────────────────────────
  * It records **who owes what**. It does not collect money. Nothing in Xoot collects money yet:
- * `create-booking` writes `provider_required: "Ozow/Stitch credentials not connected"` and every
+ * `create-booking` writes `provider_required: "PayFast credentials not connected"` and every
  * `payment_records` row moves `pending → admin_confirmed → paid` by hand. An accepted share gets
  * its own payment row so it is independently collectable the moment a provider is connected.
  *
@@ -298,7 +298,7 @@ Deno.serve(async (req) => {
         payment_kind: "booking",
         meta: {
           fare_split_id: resolvedSplitId,
-          provider_required: "Ozow/Stitch credentials not connected",
+          provider_required: "PayFast credentials not connected",
         },
       })
       .select("id")

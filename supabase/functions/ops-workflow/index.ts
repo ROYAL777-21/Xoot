@@ -375,7 +375,7 @@ Deno.serve(async (req) => {
         status: "pending",
         provider: "manual_pending",
         payment_kind: "gift_clean",
-        meta: { gift_clean_order_id: order.id, service_type: serviceType, provider_required: "Ozow/Stitch credentials not connected" },
+        meta: { gift_clean_order_id: order.id, service_type: serviceType, provider_required: "PayFast credentials not connected" },
       }).select("id").single();
       if (paymentError || !payment?.id) throw new Error("gift payment insert failed");
 
