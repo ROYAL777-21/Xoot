@@ -16,6 +16,7 @@ const CarePlusTerms = () => (
     description="Terms for Xoot Care+ membership, Home Memory, favourite Xooter workflows, priority support, XootCred benefits, billing, cancellation, and limitations."
     canonical="/legal/care-plus-terms"
     eyebrow="Care+"
+    lastUpdated="13 August 2026"
   >
     <LegalSection title="Membership benefits">
       <p>
