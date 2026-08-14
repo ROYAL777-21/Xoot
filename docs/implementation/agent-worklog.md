@@ -301,6 +301,20 @@ there anyway — the product only ever names `xooter-avatars`.
 > SQL and has to go through the Storage API or the dashboard. After this migration it has no
 > policies, no objects and no reference in code, so it is cosmetic residue. Supabase project
 > settings are yours.
+>
+> 🚢 **Read this one before the next `db-push`.** The rejected version failed on its *last*
+> statement, so the six before it had committed. I then found `20260814103000` **recorded in
+> `supabase_migrations.schema_migrations`** on the preview branch, with the branch holding the new
+> policies. Two explanations fit: Supabase recorded a partly-failed migration as applied, or the
+> branch was reset and re-ran cleanly. **I cannot tell which from here and did not guess.**
+>
+> If it is the first, a version can be marked applied with only part of it run — which would make
+> `schema_migrations` a record of *attempts* rather than *outcomes*, and that is the assumption
+> `check-supabase-metadata-drift.ps1` and the whole `db-push` flow rest on. Worth five minutes
+> before you push to staging. Supabase project operations are yours; I stopped at the observation.
+>
+> The migration itself is now re-runnable from a partial apply (`drop policy if exists` on the new
+> names as well as the old), so whichever explanation holds, applying it again is safe.
 
 `src/lib/storage-bucket-names.test.ts` guards three things: every bucket code uploads to is created
 by a migration; no **new** old-brand bucket may appear (a public bucket id is customer-visible — it
