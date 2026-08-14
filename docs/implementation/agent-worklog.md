@@ -247,6 +247,63 @@ rather than changed mid-payment-work.
 `app.config.ts` reads `scheme: ['xoot', 'zoot']`. Replaced with what is actually outstanding — the
 provider consoles. A register that lists a cleared blocker teaches people to skim it.
 
+### Correctness & Safety — 2026-08-14 — ZD-029's eighth surface, on the only path left to production
+
+Asked which blockers need a terminal, I went to answer it and found the terminal path itself broken.
+
+**The ops scripts read `XOOT_*`. Every document telling a person what to export said `ZOOT_*`.**
+
+```
+scripts/ops/deploy-supabase-backend.ps1:36  $env:XOOT_PRODUCTION_SUPABASE_DB_URL
+docs/STAGING_BACKEND_DEPLOYMENT.md:33       "set ZOOT_PRODUCTION_SUPABASE_DB_URL"
+```
+
+So exporting exactly what the page said produced *"Set PRODUCTION database URL or
+SUPABASE_ACCESS_TOKEN locally before deploying"* — which reads as a missing credential when the
+credential was set and only the name was wrong. Same shape as the `ZOOT_INVOICE_*` variables that
+killed invoice generation, and as `TWILIO_API_KEY` and `ENVIRONMENT` before that.
+
+**Why this one is worse than the others: it is on the only route to production that still exists.**
+Actions has been down for this account since 10:38Z, and `SUPABASE_ACCESS_TOKEN` in the repo is a
+project key rather than an `sbp_` personal token (`go-live.md` §0), so *both* automated paths are
+shut. A local PowerShell shell is the only way to apply the four pending migrations — and that
+shell was being handed the wrong variable names.
+
+Two more found in the same sweep:
+
+- `deploy-production-backend.ps1` and `deploy-staging-backend.ps1` read `ZOOT_…_PROJECT_REF` while
+  the script they delegate to reads `XOOT_…_PROJECT_REF`. Latent — both have hardcoded defaults, so
+  it only bites when someone overrides the ref to target a different project.
+- `STAGING_BACKEND_DEPLOYMENT.md` §207 told people to export `ZOOT_SUPABASE_PROJECT_REF` for the
+  Auth-config script, which reads `XOOT_SUPABASE_PROJECT_REF` with **no default**. It fails closed
+  — `"Missing ProjectRef. Set XOOT_SUPABASE_PROJECT_REF or pass -ProjectRef."` — and the error
+  names the right variable, so this is annoying rather than dangerous. No wrong-project write.
+
+Fixed by accepting **both spellings, `XOOT_` first**, which is this repo's existing pattern for a
+renamed variable (`TWILIO_AUTH_TOKEN` / `TWILIO_WEBHOOK_AUTH_TOKEN`, and
+`XOOT_APP_ENV → APP_ENV → ENVIRONMENT`). A profile already exporting `ZOOT_` keeps working rather
+than failing on the day it is needed most. Docs now say `XOOT_`.
+
+**Historical evidence documents were deliberately left alone** — `supabase-migration-status-repair-20260630.md`
+and `environment-readiness.md` record what was run and observed on a date. Rewriting them would
+falsify history for the same reason rewriting an applied migration would.
+
+`src/lib/ops-env-var-names.test.ts` pins the agreement. It **failed at baseline** and found two
+spots my own fix had missed — §155 and §207. Then plant-and-verify caught it being too weak: a
+`ZOOT_`-only read in one script was vouched for by an `XOOT_` read in a *different* script, because
+I checked repo-wide when the fallback pattern is written per read site. Now per file.
+
+That is the third first-draft guard today that was too weak — substring twice
+(`TWILIO_API_KEY` inside `TWILIO_API_KEY_SID`, `not_booking_participant` inside
+`…_x`), and now scope. **Planting the bug is what caught all three**; none of them would have
+been found by reading the test back.
+
+92 files → 93, 1034 tests, typecheck, lint, build, `security:scan` green.
+
+> 🚢 **Release:** `scripts/ops/**` is unassigned and reads like yours; taken because ZD-029 is mine
+> and this blocks the only working deploy route. `docs/STAGING_BACKEND_DEPLOYMENT.md` is unowned.
+> Nothing about deploy *behaviour* changed — only which variable names are accepted and documented.
+
 ### Correctness & Safety — 2026-08-14 — a cron job has been failing every minute for 33 hours
 
 **`20260813220000` fixed the eight `public` functions ZD-029 broke. I checked `public` and stopped.
