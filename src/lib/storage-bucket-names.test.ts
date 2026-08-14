@@ -74,7 +74,7 @@ const bucketsUsedInCode = () => {
   return found;
 };
 
-/** Buckets any migration inserts into `storage.buckets`, minus any it later deletes. */
+/** Buckets any migration inserts into `storage.buckets`. */
 const bucketsInMigrations = () => {
   const dir = join(ROOT, "supabase/migrations");
   const sql = readdirSync(dir)
@@ -87,11 +87,31 @@ const bucketsInMigrations = () => {
   for (const match of sql.matchAll(/\(\s*'([a-z0-9_-]+)'\s*,\s*'[a-z0-9_-]+'\s*,\s*(?:true|false)/g)) {
     live.add(match[1]);
   }
-  // A bucket that was created and then renamed away is not available to upload to.
-  for (const match of sql.matchAll(/delete\s+from\s+storage\.buckets\s+where\s+id\s*=\s*'([a-z0-9_-]+)'/gi)) {
-    live.delete(match[1]);
-  }
   return live;
+};
+
+/**
+ * Old-brand buckets that still exist, each with the reason it is allowed to.
+ *
+ * ⚠️ This list is not a way to silence the check. Adding to it is a claim that the bucket is
+ * unreachable from the product, and the assertion below enforces exactly that.
+ *
+ * There is no delete-tracking here because **SQL cannot delete a bucket**. The first version of
+ * `20260814103000` tried, and Supabase rejected the migration outright:
+ *
+ *     ERROR: Direct deletion from storage tables is not allowed. Use the Storage API instead.
+ *     (SQLSTATE 42501)
+ *
+ * So "retired" can never mean "absent from the migrations" — it means no policies, no objects, and
+ * no reference in code. Deleting the row is an ops action through the Storage API.
+ */
+const RETIRED_OLD_BRAND_BUCKETS: Record<string, string> = {
+  "zooter-avatars":
+    "Superseded by xooter-avatars in 20260814103000, which also drops its two policies. " +
+    "0 objects and 0 xooters.photo_url references on both projects. Cannot be deleted in SQL.",
+  "zoot-black-certificates":
+    "Private, and unreachable from any client — Xoot Black ships dark behind xoot_black.enabled " +
+    "with every flag false. Rename it when that feature is turned on, not before.",
 };
 
 describe("storage bucket names", () => {
@@ -113,19 +133,26 @@ describe("storage bucket names", () => {
     ).toContain(bucket);
   });
 
-  it("no bucket id still carries the old brand", () => {
+  it("every old-brand bucket that still exists is a known retired one", () => {
     /*
      * The direction the check above cannot see: code and migrations agreeing on a `zoot`-era name
-     * is consistent and still wrong, because a public bucket id is customer-visible — it appears
-     * verbatim in every public URL, `/storage/v1/object/public/<bucket>/…`.
+     * is internally consistent and still wrong, because a public bucket id is customer-visible —
+     * it appears verbatim in every public URL, `/storage/v1/object/public/<bucket>/…`.
      *
-     * `zoot-black-certificates` is deliberately exempt: it is private, unreachable from any client
-     * (the Xoot Black feature ships dark behind `xoot_black.enabled`, every flag false), and its
-     * creating migrations are history that must not be rewritten. Rename it when that feature is
-     * turned on, not before.
+     * A NEW one fails here. The two that exist are listed with their reasons.
      */
-    const exempt = new Set(["zoot-black-certificates"]);
-    const stale = [...defined].filter((bucket) => /^zoot/.test(bucket) && !exempt.has(bucket));
-    expect(stale, "a customer-visible bucket id still says zoot").toEqual([]);
+    const undeclared = [...defined].filter(
+      (bucket) => /^zoot/.test(bucket) && !(bucket in RETIRED_OLD_BRAND_BUCKETS),
+    );
+    expect(undeclared, "an old-brand bucket exists with no recorded reason").toEqual([]);
+  });
+
+  it.each(Object.keys(RETIRED_OLD_BRAND_BUCKETS))("retired bucket %s is unreachable from code", (bucket) => {
+    // What the exemption actually claims. If someone re-points the app at a retired bucket, the
+    // list stops being a record and becomes a lie — so the list itself is what gets tested.
+    expect(
+      [...used.keys()],
+      `${bucket} is listed as retired but code still uploads to it`,
+    ).not.toContain(bucket);
   });
 });

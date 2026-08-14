@@ -10,22 +10,24 @@
 -- it. It fails visibly and closed — nothing is written anywhere wrong — but **no Xooter can set a
 -- profile photo**, and `photo_url` is what the client sees next to the person entering their home.
 --
--- Measured before writing this, on BOTH projects:
---   zooter-avatars  public=true  objects=0        xooter-avatars: does not exist
--- So there is nothing to migrate. The move-objects step below is still written, because "0 rows
--- today" is not "0 rows when this is applied".
+-- Measured on BOTH projects before writing this:
+--   zooter-avatars  public=true  objects=0   |   xooter-avatars: does not exist
+--   public.xooters: 0 rows with photo_url set, on either project
+-- So nothing anywhere references the old bucket.
 --
--- ⚠️ THE POLICIES ARE THE POINT. Two policies carry `bucket_id = 'zooter-avatars'` inside their
--- bodies, read live from `pg_policies` rather than guessed from the three migrations that have
--- touched this bucket:
+-- ⚠️ THE OLD BUCKET IS NOT DELETED HERE, AND CANNOT BE. The first version of this migration ended
+-- with `delete from storage.buckets where id = 'zooter-avatars'`. Supabase rejected it:
 --
---   zooter_avatars_owner_update  UPDATE  qual + with_check
---   zooter_avatars_owner_write   INSERT  with_check
+--     ERROR: Direct deletion from storage tables is not allowed. Use the Storage API instead.
+--     (SQLSTATE 42501)  At statement: 6
 --
--- A policy body is stored as text. Renaming the bucket does not rewrite it — the same reason ZD-029
--- left eight function bodies pointing at dropped columns. Renaming the bucket WITHOUT this step
--- would leave both policies matching a bucket id that no longer exists, so uploads would fail a
--- second way and look like the same bug.
+-- Caught by the Supabase preview branch on push, which is why this was never applied by hand. The
+-- failure is also informative: it failed at the LAST statement, so everything before it is
+-- permitted — inserting a bucket, and dropping and creating policies on `storage.objects`.
+--
+-- Retiring the empty `zooter-avatars` bucket is therefore an ops action through the Storage API or
+-- the dashboard, not a migration. It is cosmetic: after this runs the bucket has no policies, no
+-- objects, and nothing in the product ever names it. Left for Release, noted in the worklog.
 --
 -- ⚠️ Cross-role: `supabase/migrations/**` is Release's path. Written by Correctness & Safety because
 -- ZD-029 is mine and this is its sixth casualty. Flagged in the worklog.
@@ -38,11 +40,33 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('xooter-avatars', 'xooter-avatars', true, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
 on conflict (id) do nothing;
 
--- 2. Carry over anything uploaded between the measurement above and this being applied.
-update storage.objects set bucket_id = 'xooter-avatars' where bucket_id = 'zooter-avatars';
+-- 2. Refuse to run if anything is in the old bucket.
+--
+--    Deliberately NOT `update storage.objects set bucket_id = …`. That statement did execute in the
+--    rejected version, but against zero rows, which proves nothing about whether the same trigger
+--    that blocks deletion would block a real per-row move. Rather than ship a statement whose
+--    behaviour under load I cannot vouch for, this fails loudly and hands the move to the Storage
+--    API — the same interface Supabase's own error message points at.
+--
+--    The product cannot put anything here: it only ever names `xooter-avatars`. The only way this
+--    fires is a manual dashboard upload, which is exactly the case that deserves a human.
+do $$
+begin
+  if exists (select 1 from storage.objects where bucket_id = 'zooter-avatars') then
+    raise exception
+      'zooter-avatars is not empty. Move its objects to xooter-avatars through the Storage API, then re-run.';
+  end if;
+end
+$$;
 
--- 3. Recreate the two policies against the new id. Dropped by their real names; `if exists` so this
---    is safe on a project where a previous attempt got part-way.
+-- 3. Recreate the two policies against the new id.
+--
+--    ⚠️ This is the step that makes the rename real. Both policies carry `bucket_id =
+--    'zooter-avatars'` INSIDE their bodies — read live from `pg_policies`, not guessed from the
+--    three migrations that have touched this bucket. A policy body is stored as text, so pointing
+--    the app at a new bucket without this leaves every upload failing a second way that looks
+--    identical to the first. It is the same mechanism that left eight function bodies pointing at
+--    dropped columns after ZD-029.
 drop policy if exists "zooter_avatars_owner_write" on storage.objects;
 drop policy if exists "zooter_avatars_owner_update" on storage.objects;
 
@@ -63,8 +87,3 @@ create policy "xooter_avatars_owner_update"
     bucket_id = 'xooter-avatars'
     and (auth.uid())::text = (storage.foldername(name))[1]
   );
-
--- 4. Only once it is empty. Fails loudly rather than orphaning objects if step 2 somehow did not run.
-delete from storage.buckets
-where id = 'zooter-avatars'
-  and not exists (select 1 from storage.objects where bucket_id = 'zooter-avatars');

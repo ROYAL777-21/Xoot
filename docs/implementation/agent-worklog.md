@@ -274,17 +274,44 @@ all 6 rename pairs are consistent (`concierge.xootcred_support`, `xooter.sensiti
 `xoot_black.*` are not read by code; the keys code does read were never renamed). Storage buckets
 were the one that broke.
 
-`20260814103000_rename_zooter_avatars_bucket.sql` — insert new, move any objects, recreate policies,
-delete old. ⚠️ **The policies are the point:** two of them carry `bucket_id = 'zooter-avatars'`
-*inside their bodies*, read live from `pg_policies` rather than guessed from the three migrations
-that have touched this bucket. A policy body is text; renaming the bucket does not rewrite it —
-the same reason ZD-029 left eight function bodies pointing at dropped columns. Renaming without that
-step breaks uploads a second way that looks identical to the first.
+`20260814103000_rename_zooter_avatars_bucket.sql` — insert new, refuse if the old one is non-empty,
+recreate policies. ⚠️ **The policies are the point:** two of them carry `bucket_id =
+'zooter-avatars'` *inside their bodies*, read live from `pg_policies` rather than guessed from the
+three migrations that have touched this bucket. A policy body is text; renaming the bucket does not
+rewrite it — the same reason ZD-029 left eight function bodies pointing at dropped columns. Renaming
+without that step breaks uploads a second way that looks identical to the first.
 
-`src/lib/storage-bucket-names.test.ts` guards both directions: every bucket code uploads to must be
-created by a migration, and no customer-visible bucket id may still say `zoot` (a public bucket id
-appears verbatim in every public URL). `zoot-black-certificates` is exempt and says why. Planted
-twice — removing the migration fails 2 tests, dropping just the delete-old step fails 1.
+**The first version of this migration was wrong, and the preview branch caught it.** It ended with
+`delete from storage.buckets`, and Supabase rejected the whole migration:
+
+```
+ERROR: Direct deletion from storage tables is not allowed. Use the Storage API instead.
+(SQLSTATE 42501)  At statement: 6
+```
+
+Which is precisely why it was pushed rather than applied by hand. The failure is also informative —
+it failed on the *last* statement, so inserting a bucket and dropping/creating policies on
+`storage.objects` are all permitted. I also dropped the `update storage.objects set bucket_id` step:
+it executed, but against zero rows, which proves nothing about whether the same trigger would block
+a real per-row move. It is replaced by a `raise exception` if the old bucket is non-empty, which
+hands that case to the Storage API rather than to a statement I cannot vouch for. Nothing can land
+there anyway — the product only ever names `xooter-avatars`.
+
+> 🚢 **Small one for Release, not blocking:** the empty `zooter-avatars` bucket cannot be removed in
+> SQL and has to go through the Storage API or the dashboard. After this migration it has no
+> policies, no objects and no reference in code, so it is cosmetic residue. Supabase project
+> settings are yours.
+
+`src/lib/storage-bucket-names.test.ts` guards three things: every bucket code uploads to is created
+by a migration; no **new** old-brand bucket may appear (a public bucket id is customer-visible — it
+appears verbatim in every public URL); and each of the two retired old-brand buckets must stay
+unreachable from code. That last one exists because "retired" can never mean "deleted" here — SQL
+cannot delete a bucket — so the exemption list is itself asserted rather than trusted.
+
+Planted three times, each restored: removing the migration fails *"xooter-avatars is created by a
+migration"*; adding a `zoot-receipts` bucket fails *"every old-brand bucket that still exists is a
+known retired one"*; re-pointing `Profile.tsx` at `zooter-avatars` fails *"retired bucket
+zooter-avatars is unreachable from code"*.
 
 90 files / 1018 tests, typecheck, lint, build, `security:scan` green.
 
