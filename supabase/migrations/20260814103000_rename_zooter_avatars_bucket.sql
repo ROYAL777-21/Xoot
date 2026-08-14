@@ -70,6 +70,21 @@ $$;
 drop policy if exists "zooter_avatars_owner_write" on storage.objects;
 drop policy if exists "zooter_avatars_owner_update" on storage.objects;
 
+-- ⚠️ The new names are dropped first too, so this migration is RE-RUNNABLE.
+--
+-- Not hypothetical. The rejected first version failed on its last statement, which means the six
+-- before it had already committed — so the preview branch was left holding both new policies with
+-- the migration recorded as not applied. Queried, not assumed:
+--
+--   select policyname from pg_policies where schemaname='storage' and tablename='objects'
+--    -> xooter_avatars_owner_update, xooter_avatars_owner_write     (zooter_* already gone)
+--
+-- Without these two lines the retry dies on `policy "xooter_avatars_owner_write" already exists`,
+-- and the fix for a failed migration would itself fail. A migration that cannot be re-run after a
+-- partial apply is a trap for whoever meets it next.
+drop policy if exists "xooter_avatars_owner_write" on storage.objects;
+drop policy if exists "xooter_avatars_owner_update" on storage.objects;
+
 create policy "xooter_avatars_owner_write"
   on storage.objects for insert
   with check (
