@@ -247,6 +247,56 @@ rather than changed mid-payment-work.
 `app.config.ts` reads `scheme: ['xoot', 'zoot']`. Replaced with what is actually outstanding — the
 provider consoles. A register that lists a cleared blocker teaches people to skim it.
 
+### Correctness & Safety — 2026-08-14 — ZD-029's sixth casualty: no Xooter can set a profile photo
+
+**`src/pages/xooter/Profile.tsx:65` uploads to `xooter-avatars`. That bucket has never existed.**
+
+The bucket is `zooter-avatars`, created by `20260422031848` and re-affirmed by `20260620000000`, and
+**no migration ever renamed it.** `20260813160000` renamed tables, columns, views and an enum label;
+`20260813140000` renamed data values — control keys, agent keys, event names. A storage bucket is
+neither schema nor ordinary data. It sat in the gap between the two migrations and the sweep went
+straight past it.
+
+Measured on **both** projects before writing anything:
+
+```
+zooter-avatars   public=true   objects=0          xooter-avatars: does not exist
+```
+
+So `.upload()` returns `Bucket not found`, the toast shows it, and no Xooter can set a photo.
+Fails visibly and closed — nothing written anywhere wrong — but `photo_url` is what a client sees
+next to the person entering their home.
+
+**Found by looking for the class, not the instance.** After three surfaces of this bug in one day I
+went looking for a fourth in the things ZD-029 touched that no typechecker can see: keys code looks
+up **by value**. Checked all 13 operational-control keys against the migrations — **all fine**, and
+all 6 rename pairs are consistent (`concierge.xootcred_support`, `xooter.sensitive_access`,
+`xoot_black.*` are not read by code; the keys code does read were never renamed). Storage buckets
+were the one that broke.
+
+`20260814103000_rename_zooter_avatars_bucket.sql` — insert new, move any objects, recreate policies,
+delete old. ⚠️ **The policies are the point:** two of them carry `bucket_id = 'zooter-avatars'`
+*inside their bodies*, read live from `pg_policies` rather than guessed from the three migrations
+that have touched this bucket. A policy body is text; renaming the bucket does not rewrite it —
+the same reason ZD-029 left eight function bodies pointing at dropped columns. Renaming without that
+step breaks uploads a second way that looks identical to the first.
+
+`src/lib/storage-bucket-names.test.ts` guards both directions: every bucket code uploads to must be
+created by a migration, and no customer-visible bucket id may still say `zoot` (a public bucket id
+appears verbatim in every public URL). `zoot-black-certificates` is exempt and says why. Planted
+twice — removing the migration fails 2 tests, dropping just the delete-old step fails 1.
+
+90 files / 1018 tests, typecheck, lint, build, `security:scan` green.
+
+> 🚢 **For Release.** `supabase/migrations/**` is your path; I wrote this one because ZD-029 is mine.
+> **Not applied anywhere** — I did not touch staging or production. The Supabase preview branch
+> applies it on push, which is the validation. It needs a `db-push` alongside `20260813200000` and
+> `20260813220000`.
+>
+> Ordering is safe in one direction only, and it is the natural one: the repo already says
+> `xooter-avatars`, so **migration before web deploy** can only fix the feature. The reverse leaves
+> it exactly as broken as it is now, so there is no window this makes worse.
+
 ### Correctness & Safety — 2026-08-14 — ZD-029's third and fourth casualties, and a dead invoice
 
 **`Verify blocker and provider-readiness artifacts` is mine.** I called it "pre-existing, not mine"
