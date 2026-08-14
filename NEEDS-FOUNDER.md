@@ -136,9 +136,33 @@ Live Activities, widgets, Siri intents, push, deep links. No simulator tests the
 
 ---
 
+### 6. Invoice legal entity — set under the `XOOT_` names, not `ZOOT_`
+
+`generate-booking-invoice` refuses outright when the legal entity is unset — *"invoice legal entity
+is not configured"* — so **no completed booking produces an invoice until these are set.**
+
+| secret | note |
+|---|---|
+| `XOOT_INVOICE_LEGAL_ENTITY` | registered business name |
+| `XOOT_INVOICE_LEGAL_ENTITY_REGISTRATION` | company registration number |
+| `XOOT_INVOICE_VAT_RATE` | `0` until VAT-registered |
+| `XOOT_INVOICE_VAT_NUMBER` | **required** once the rate is above zero, enforced in code |
+
+⚠️ **If you set these before 2026-08-13, you set them under `ZOOT_` and they are doing nothing.**
+ZD-029 moved the names in the function and left `.env.example` and both setup docs on the old
+spelling, so the documented setup configured four variables nothing read. Fixed in the same change
+as this entry; the secrets themselves have to be re-set by hand on both projects.
+
+Failing closed was the right direction — a South African tax invoice showing a blank legal entity
+would be worse than no invoice — but it means the symptom is silence, not an error anyone sees.
+
+**Proves it done:** a completed booking generates a PDF invoice carrying the entity name.
+
+---
+
 ## 🟡 Before the first store submission
 
-### 6. Provider consoles must learn the new app identity (ZD-028)
+### 7. Provider consoles must learn the new app identity (ZD-028)
 
 The scheme and bundle id **changed in code** and now need the same change in three consoles. Until
 they match, native sign-in works only on the retained `zoot://` callback.

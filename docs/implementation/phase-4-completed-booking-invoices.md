@@ -24,14 +24,14 @@ Date: 2026-06-29
 
 These values must be stored in Supabase Edge Function secrets, not frontend/mobile env files:
 
-- `ZOOT_INVOICE_LEGAL_ENTITY`
-- `ZOOT_INVOICE_LEGAL_ENTITY_REGISTRATION`
-- `ZOOT_INVOICE_VAT_RATE`
-- `ZOOT_INVOICE_VAT_NUMBER`
+- `XOOT_INVOICE_LEGAL_ENTITY`
+- `XOOT_INVOICE_LEGAL_ENTITY_REGISTRATION`
+- `XOOT_INVOICE_VAT_RATE`
+- `XOOT_INVOICE_VAT_NUMBER`
 - `BREVO_API_KEY`
 - Brevo transactional template IDs for invoice and resend emails
 
-If VAT rate is greater than zero, `ZOOT_INVOICE_VAT_NUMBER` is required before invoice generation.
+If VAT rate is greater than zero, `XOOT_INVOICE_VAT_NUMBER` is required before invoice generation.
 
 ## Storage
 

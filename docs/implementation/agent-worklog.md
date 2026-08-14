@@ -247,6 +247,63 @@ rather than changed mid-payment-work.
 `app.config.ts` reads `scheme: ['xoot', 'zoot']`. Replaced with what is actually outstanding — the
 provider consoles. A register that lists a cleared blocker teaches people to skim it.
 
+### Correctness & Safety — 2026-08-14 — ZD-029's third and fourth casualties, and a dead invoice
+
+**`Verify blocker and provider-readiness artifacts` is mine.** I called it "pre-existing, not mine"
+four times over two days without once reading why it failed, and left that claim on the PR and in a
+scheduled note to myself. It failed because of ZD-029, my commit.
+
+`43e8d24` swept the repo for `zoot` → `xoot` and rewrote **assertions and code** without rewriting
+the **artifacts those assertions read** or the **templates that code reads**:
+
+| surface | effect |
+|---|---|
+| `scripts/ops/verify-production-readiness.ps1` | 20 literals moved; their targets correctly did not. 25 `fail` checks, exit 1 |
+| `supabase/functions/.env.example` + 3 docs | 5 env names left at `ZOOT_` after the code moved to `XOOT_` |
+| `blocker.md` (mine) | ledger guard requires `xoot://auth/callback`; this file still said the scheme was unchanged |
+
+The migration files are right and the assertions were wrong. `20260624224551` really did create
+`zooter_jobs`; `20260813160000` renamed it later. Rewriting the older file would make a fresh
+`supabase db reset` create the new name early and then fail the rename — breaking local resets and
+every Supabase preview branch. Restored the historical spellings with a header comment saying so.
+
+**The one that was a live defect, not a naming question.** `generate-booking-invoice` reads
+`XOOT_INVOICE_LEGAL_ENTITY`; `.env.example`, `ENVIRONMENT_SETUP.md`, `SECRETS_INVENTORY.md` and the
+phase-4 doc all said `ZOOT_`. Following the documented setup configured four variables nothing read,
+and `getInvoiceLegalConfig` refused **every** invoice with *"invoice legal entity is not
+configured"*. Fail-closed, so no invoice ever carried a blank legal entity — the right direction —
+but the feature was dead and silent. `NEEDS-FOUNDER.md` **item 6** (new) says to re-set the secrets;
+the provider-console item renumbered 6 → 7 and `blocker.md`'s references follow it.
+
+**Why nothing caught any of it:** these two PowerShell guards run in exactly one place, a
+`windows-latest` job, and that job stops at its first failing step — so the blocker-ledger failure
+sat invisible behind the verifier failure the whole time. `src/lib/ops-readiness-assertions.test.ts`
+now re-runs both on Linux under `npx vitest run`, plus a third assertion that every
+`Deno.env.get("X")` in `supabase/functions/**` is named in `.env.example`.
+
+That third one found two more on its first run, both masked by my own substring check:
+`TWILIO_API_KEY` (a fallback alias of `TWILIO_API_KEY_SID`, already classed `FALLBACK_BACKED` in
+`twilio-secrets-contract.test.ts`) and **`ENVIRONMENT`** — the third link in
+`XOOT_APP_ENV → APP_ENV → ENVIRONMENT → "production"`. Worth knowing: `ENVIRONMENT` is a generic
+name other tooling likes to set, and `ENVIRONMENT=production` left on staging would silently point
+staging at production's `payment_provider_capabilities` row. Both documented in the template.
+
+Planted and seen failing, then restored: the verifier literal (2 tests), the blocker callback
+literal (1), the invoice env name (2). 89 files / 1012 tests, typecheck, lint, build, `security:scan`
+all green.
+
+> 🚢 **For Release, two things.**
+>
+> 1. `scripts/ops/verify-production-readiness.ps1` is unassigned in `CLAUDE.md` and reads like
+>    yours. I edited it because I broke it; say if you want it back.
+> 2. **`.github/workflows/production-readiness.yml` runs five steps sequentially**, so one failure
+>    hides the rest — that is why the second failure went unseen for a day. Your path, not touched.
+>    Worth `continue-on-error` on the individual checks with a final gate, or splitting the steps
+>    into separate jobs.
+>
+> Still red and still yours: `Types match the live schema`, until `db-push` applies `20260813200000`
+> and `20260813220000`.
+
 ### Correctness & Safety — 2026-08-13 — the schema says Xoot now (ZD-029) — ⚠️ REVIEW BEFORE DEPLOY
 
 267 files. 18 tables, 25 columns, 2 views, the `app_role` label, the keys code looks up by value,
