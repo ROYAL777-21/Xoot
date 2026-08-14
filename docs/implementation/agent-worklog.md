@@ -872,7 +872,44 @@ Relevant to Release only if a native or preview build snapshots that screen.
 
 Neither session should answer these alone. Record the question, let the founder decide.
 
-- **Nothing open.**
+### Which founder register is canonical? — raised 2026-08-14 by Correctness & Safety
+
+**There are two, created the same day, one per session, and each carries items the other has never
+listed.** This is the thing this worklog says had already happened seven times.
+
+| | `NEEDS-FOUNDER.md` (root) | `docs/release/founder-todo.md` |
+|---|---|---|
+| created by | Correctness (`57ad0d9`) | Release (`89b91af`, `871b78d`, `84a5dbc`) |
+| referenced by | 3 files | 5 files |
+| only there | PayFast merchant credentials, the two Netlify production env vars, invoice legal entity | the measured production-state table, the Twilio subaccount walkthrough, the ZD-029 cost accounting |
+
+Both are good. Neither is complete. **Merging them is a one-way door** — whichever loses, the
+references to it have to move, and the last seven registers rotted precisely because nobody chose.
+
+I have not merged them, copied items between them, or deleted either. What I did do:
+
+- Added a cross-reference block to the top of `founder-todo.md` naming the three items it is missing
+  and pointing here. *(Release's path — flagged per rule 3.)*
+- Corrected its `#34` row: closed 2026-08-13, verified by reading the issue, not assumed.
+
+**Founder: pick one.** My recommendation is `NEEDS-FOUNDER.md` for the *register* — it is at the root
+where it cannot be missed, and every row has a *proves it done* — and keeping `founder-todo.md` as
+the **evidence and walkthrough document** it is genuinely better at, with its live-measured
+production table. That is a suggestion, not a decision.
+
+### Is `ENCRYPTION_KEY` actually cleared? — resolved by reading, 2026-08-14
+
+Recording it because I got it wrong first. `NEEDS-FOUNDER.md` listed it under **✅ Cleared**;
+[#28](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/28) is **open**, and the issue is
+right. Its definition of done is a gate code stored *and read back*, because Supabase never reads a
+secret value back — "reported set" is not "verified set", a distinction this repo has been bitten by
+twice.
+
+And the proof was **unobtainable** until this branch: `sensitive-access-read` passed `p_actor_id` to
+a function declaring `p_xooter_id`, so PostgREST never resolved the call and the endpoint answered
+500 to every request, while ZD-029 had left the function body querying `zooter_id`. Failed closed —
+nothing leaked — but no gate code could round-trip regardless of the secret. Corrected in
+`NEEDS-FOUNDER.md` rather than left as a green tick.
 
 ---
 

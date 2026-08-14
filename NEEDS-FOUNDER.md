@@ -193,8 +193,19 @@ No session should answer these alone. Each has its full reasoning on the issue.
 
 ## ✅ Cleared — kept so nothing re-discovers them
 
-- **`ENCRYPTION_KEY`** — set on both projects 2026-08-13, different values. Closes #28 once a gate
-  code round-trips.
+- **`ENCRYPTION_KEY`** — set on both projects 2026-08-13, different values. ⚠️ **This does not close
+  [#28](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/28), and the issue is right to
+  still be open.** Its definition of done is a gate code stored *and read back* through the app,
+  because Supabase never reads a secret value back — "reported set" is not "verified set".
+
+  **That proof was impossible to obtain until now, for a second reason.** `sensitive-access-read`
+  called `can_access_sensitive_data` with `p_actor_id`, a parameter it does not declare — PostgREST
+  resolves an RPC by name **and** argument names, so the call never resolved and the endpoint
+  answered 500 to every request. ZD-029 had also left the function's body querying `zooter_id` after
+  the column became `xooter_id`. Both are fixed on this branch (`20260813220000` plus the
+  `p_xooter_id` correction) and are **not on `main` and not deployed**. Nothing leaked — it failed
+  closed — but no Xooter could read a gate code either, so a round-trip could not have succeeded no
+  matter what the secret was set to.
 - **`XOOT_TWILIO_ACCOUNT_SID` / `_AUTH_TOKEN`** — added; staging subaccount provisioned and proven by
   *Twilio self-test* run 16.
 - **Staging Twilio separation** — done. Staging calls no longer bill the live account.
