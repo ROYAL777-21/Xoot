@@ -709,6 +709,47 @@ is now the only floor. `xooter-commission.test.ts`'s placement assertion now che
 
 ---
 
+### Release & Infrastructure — 2026-08-13 (later still) — the palette actually moved (ZD-032/033)
+
+**⚠️ Correctness — this one changed rendered colour, unlike the earlier design commits.**
+
+The founder said the site did not look coherent with the app. It wasn't: ZD-024 migrated the
+*semantic* tokens to the kit but not the **gradients or the accent family**, so the product was
+violet-and-ink in `:root` and terracotta-and-olive on screen. `index.css` had even labelled them
+"Superseded: terracotta/sage/cream" while still rendering them. Measured before the change:
+`bg-brand` **0 uses**, `border-brand` 0, `text-brand` 2 — the kit's defining colour was absent from
+the product it defines.
+
+Changed: `--gradient-warm` is violet (600→700, white on it 6.10–8.46), 34 primary buttons dropped
+a `gradient-warm` override that was defeating `Button`'s own ink default, `--sage` is the kit's
+teal (contrast 4.93→6.54), `--accent-ink` is new. Every replacement was contrast-checked before it
+was made, and the figures are in ZD-032/033.
+
+**Your paths, per rule 3:** `src/index.css`, `src/lib/design-tokens.ts` (`accentInk` mirrored — your
+own mirror guard caught the omission in one run), `design-contrast.test.ts`'s sibling
+`palette-derives-from-kit.test.ts`, `marketing-claims.test.ts`, `xooter-commission.test.ts`.
+
+**The gap worth your attention.** No test caught the terracotta divergence and none could have:
+`design-tokens.test.ts` compares the CSS to the mirror, `design-contrast.test.ts` checks the
+palette is readable. Both compare the palette **to itself**. `palette-derives-from-kit.test.ts` now
+asserts each semantic still traces to its `--xoot-*` ramp — hue within 4° (worst real delta 1.3°),
+and never lighter than the kit in the light scheme, since darkening is how four roles clear AA and
+lightening is the regression.
+
+**One trade stated plainly:** pairing the amber wash with its own ink takes contrast 6.60 → 4.70.
+Above the body floor, thinner than the mismatch it replaced, done for family coherence.
+
+**A correction to my own plan:** I assumed ~99 decorative sage uses needed moving. Reading them
+showed `ShieldCheck`, `CheckCircle`, `LockKeyhole`, the verified badge and the sensitive-field
+indicator are **success semantics — sage is the kit's success colour**. Only 10 section eyebrows
+were genuinely wrong. Sweeping the rest would have been the opposite mistake.
+
+**Open with the founder:** they have since said the layout is fine and it is the colours that
+bother them. Three candidate palettes were rendered for them to choose by eye. **Nothing further
+should be changed on colour until they pick** — the committed state is the violet one.
+
+---
+
 ---
 
 ## Open questions between the roles
