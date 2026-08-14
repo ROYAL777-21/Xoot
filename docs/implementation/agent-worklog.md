@@ -247,6 +247,72 @@ rather than changed mid-payment-work.
 `app.config.ts` reads `scheme: ['xoot', 'zoot']`. Replaced with what is actually outstanding — the
 provider consoles. A register that lists a cleared blocker teaches people to skim it.
 
+### Correctness & Safety — 2026-08-14 — a cron job has been failing every minute for 33 hours
+
+**`20260813220000` fixed the eight `public` functions ZD-029 broke. I checked `public` and stopped.
+The `private` schema has two more, and one of them is on a cron schedule.**
+
+Read from `cron.job_run_details` on production:
+
+```
+jobid 1  "zoot-sensitive-access-ready"  every minute
+  last success   2026-08-13 09:35:00
+  first failure  2026-08-13 09:36:00      <- the minute ZD-029 was applied
+  1,975 consecutive failures, still failing at 18:30Z on 2026-08-14
+
+  ERROR: relation "public.zooters" does not exist
+  CONTEXT: PL/pgSQL function private.enqueue_sensitive_access_notifications() line 1
+```
+
+Staging is the same — 1,977 failures, last at 18:32Z.
+
+That job is what tells a Xooter, 45 minutes before a booking, that gate codes and entry
+instructions are available: it marks the booking, writes the notification, queues the push.
+**None of that has happened since the rename.** Together with the read path I fixed earlier —
+`sensitive-access-read` passing `p_actor_id` to a function declaring `p_xooter_id`, and
+`can_access_sensitive_data`'s body naming `zooter_id` — the sensitive-access feature was dead end
+to end: never announced, and unreadable if you found it anyway.
+
+⚠️ **Blast radius today is zero, and that belongs in the report as much as the defect does.**
+Production has **0 bookings, 0 xooters, and 0 `sensitive_access_available` notifications ever
+sent**, so the `due` CTE selects nothing and nobody has missed anything. Dead on arrival, not an
+incident with victims. It becomes real with the first booking.
+
+The second one, `private.can_create_masked_call`, has never failed in the logs because
+`twilio.masked_voice` is false so nothing calls it. It would have broken on the first masked call
+after voice was switched on.
+
+`20260814170000_fix_private_function_bodies_zd029.sql` rebuilds both from `pg_get_functiondef`
+rather than from the migrations that created them, so nothing changed since is silently reverted.
+Two string fixes are real defects rather than tidying: the notification's deep link was
+`/zooter/jobs` and the app serves `/xooter/jobs`, and the body said "in the Zoot app".
+
+**The masked-call reason strings are deliberately unchanged, including
+`booking_has_no_assigned_zooter`.** They are a return value, and `twilio-phase9-readiness.test.ts`
+pins two siblings against migration text — this repo treats them as contract. Renaming a contract
+string while fixing an outage mixes two risks. Nothing matches on it today, so it stays cheap to do
+later; doing it here is not free.
+
+`src/lib/private-schema-rename.test.ts` fails any post-rename migration that names a dropped
+object, checks the notification route against `src/App.tsx` rather than a string I chose, and pins
+the contract reasons. Planted three times. **The third plant passed at first** — I had written
+`toContain("not_booking_participant")`, which a rename to `not_booking_participant_x` satisfies.
+Third substring trap today, after `TWILIO_API_KEY` inside `TWILIO_API_KEY_SID` and `ENVIRONMENT`
+inside `SENTRY_ENVIRONMENT`. Now matches the quoted literal.
+
+90 files → 92, 1030 tests, typecheck, lint, build, `security:scan` green.
+
+> 🚢 **Release — this one is live, on both projects.** `supabase/migrations/**` is your path and
+> `can_create_masked_call` gates voice, also yours; written here because ZD-029 is mine.
+> **Not applied anywhere.** It needs a `db-push` alongside `20260813200000`, `20260813220000` and
+> `20260814103000` — that is now four migrations deep, and this one stops an error being written to
+> `cron.job_run_details` sixty times an hour on production.
+>
+> Worth knowing for the runbook: **a failing cron writes only to `cron.job_run_details`**, which is
+> not on any dashboard or alert. This ran red for 33 hours with nothing surfacing it. A periodic
+> check of `select * from cron.job_run_details where status = 'failed'` would have caught it the
+> same day, and would be a cheap addition to `verify-supabase-live.ps1`.
+
 ### Correctness & Safety — 2026-08-14 — ZD-029's sixth casualty: no Xooter can set a profile photo
 
 **`src/pages/xooter/Profile.tsx:65` uploads to `xooter-avatars`. That bucket has never existed.**
