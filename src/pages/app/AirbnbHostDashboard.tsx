@@ -81,7 +81,7 @@ const AirbnbHostDashboard = () => {
             ))}
           </div>
           <div className="mt-5 rounded-3xl border border-accent/20 bg-accent-soft p-4">
-            <p className="flex items-center gap-2 text-sm font-semibold text-sage-deep"><Sparkles className="h-4 w-4" /> Care+ prompt</p>
+            <p className="flex items-center gap-2 text-sm font-semibold text-accent-ink"><Sparkles className="h-4 w-4" /> Care+ prompt</p>
             <p className="mt-1 text-sm text-muted-foreground">{household.lifecycleTriggers.find((reminder) => reminder.intent === "turnover")?.message ?? guestReadyMode?.summary ?? "Save a host property to unlock turnover planning."}</p>
           </div>
         </Card>

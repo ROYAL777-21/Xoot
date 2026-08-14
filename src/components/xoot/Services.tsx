@@ -29,7 +29,7 @@ export const Services = () => (
           return (
             <article key={s.title} className="group relative rounded-3xl border border-border bg-card p-6 md:p-7 shadow-card transition-all duration-500 hover:-translate-y-1 overflow-hidden">
               <div className="relative">
-                <div className={`inline-grid place-items-center h-12 w-12 rounded-2xl mb-5 transition-transform group-hover:scale-110 ${s.tone === "primary" ? "bg-primary/10 text-primary" : "bg-accent/15 text-sage-deep"}`}>
+                <div className={`inline-grid place-items-center h-12 w-12 rounded-2xl mb-5 transition-transform group-hover:scale-110 ${s.tone === "primary" ? "bg-primary/10 text-primary" : "bg-accent/15 text-accent-ink"}`}>
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="font-display text-xl font-semibold mb-1">{s.title}</h3>

@@ -208,7 +208,7 @@ const Support = () => {
                 </div>
               ) : assistantReply?.response ? (
                 <div className="space-y-3">
-                  <p className="flex items-center gap-2 text-xs font-bold uppercase text-sage-deep">
+                  <p className="flex items-center gap-2 text-xs font-bold uppercase text-brand">
                     {assistantReply.escalated ? <ShieldAlert className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
                     {assistantReply.escalated ? "Human review queued" : "Assistant reply"}
                   </p>
@@ -259,7 +259,7 @@ const Support = () => {
               {t.ai_response && (
                 <div className="liquid-glass-shell rounded-2xl p-3 text-sm">
                   <div className="liquid-glass-readable">
-                    <p className="flex items-center gap-1 text-xs font-bold text-sage-deep uppercase mb-1">
+                    <p className="flex items-center gap-1 text-xs font-bold text-brand uppercase mb-1">
                       <Sparkles className="h-3 w-3" /> Xoot Assistant
                     </p>
                     <p className="text-sm leading-6 text-foreground">{t.ai_response}</p>

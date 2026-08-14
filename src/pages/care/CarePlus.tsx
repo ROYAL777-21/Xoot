@@ -150,7 +150,7 @@ const CarePlus = () => {
         <section id="included" className="border-y border-border bg-secondary/35 py-20 md:py-28">
           <div className="container">
             <div className="mb-12 max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">What&apos;s included</p>
+              <p className="text-sm font-semibold uppercase tracking-wider text-brand">What&apos;s included</p>
               <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">The {formatZAR(carePlus.plan.priceZar)}/month reliability layer.</h2>
               <p className="mt-4 text-muted-foreground"><CarePlusMark /> gives practical continuity and emotional calm without pretending support, refunds or replacement decisions are automatic.</p>
             </div>
@@ -163,7 +163,7 @@ const CarePlus = () => {
         <section className="py-20 md:py-28">
           <div className="container">
             <div className="mb-12 max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">Value pillars</p>
+              <p className="text-sm font-semibold uppercase tracking-wider text-brand">Value pillars</p>
               <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Remembered, protected, ready.</h2>
             </div>
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -187,7 +187,7 @@ const CarePlus = () => {
           <div className="container">
             <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
-                <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">Compare</p>
+                <p className="text-sm font-semibold uppercase tracking-wider text-brand">Compare</p>
                 <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Standard Xoot vs <CarePlusMark /></h2>
               </div>
               <p className="max-w-md text-sm text-muted-foreground">Care+ adds continuity, priority handling and ledger-backed rewards to ordinary cleaning workflows.</p>
@@ -200,7 +200,7 @@ const CarePlus = () => {
           <section className="py-20 md:py-28">
             <div className="container grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">Smart reminders</p>
+                <p className="text-sm font-semibold uppercase tracking-wider text-brand">Smart reminders</p>
                 <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl"><CarePlusMark /> follows your real booking rhythm.</h2>
                 <p className="mt-4 text-muted-foreground">These prompts are based on your last completed booking, not generic example data.</p>
               </div>

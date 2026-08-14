@@ -55,8 +55,8 @@ export const BookingHero = () => {
       <div className="container relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 py-8 lg:py-20 items-center">
         <div className="relative z-10 animate-fade-up">
           <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 mb-4 lg:mb-6 border border-accent/20">
-            <Sparkles className="h-3.5 w-3.5 text-sage-deep" />
-            <span className="text-[11px] sm:text-xs font-medium text-sage-deep">Launching in selected Johannesburg suburbs</span>
+            <Sparkles className="h-3.5 w-3.5 text-accent-ink" />
+            <span className="text-[11px] sm:text-xs font-medium text-accent-ink">Launching in selected Johannesburg suburbs</span>
           </div>
           <h1 className="font-display text-[2.25rem] sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-balance text-foreground">
             Premium home care,<br />
@@ -98,11 +98,11 @@ export const BookingHero = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-2xl bg-muted/40 border border-border/60 p-3 flex items-center gap-3">
-                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-sage-deep"><Calendar className="h-4 w-4" /></span>
+                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-accent-ink"><Calendar className="h-4 w-4" /></span>
                   <div className="flex-1 min-w-0"><Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Date</Label><p className="text-sm font-medium truncate">Choose in booking</p></div>
                 </div>
                 <div className="rounded-2xl bg-muted/40 border border-border/60 p-3 flex items-center gap-3">
-                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-sage-deep"><Clock className="h-4 w-4" /></span>
+                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-accent-ink"><Clock className="h-4 w-4" /></span>
                   <div className="flex-1 min-w-0"><Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Status</Label><p className="text-sm font-medium truncate">Tracked in app</p></div>
                 </div>
               </div>

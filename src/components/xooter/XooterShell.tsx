@@ -28,8 +28,8 @@ export const XooterShell = ({ children }: { children: ReactNode }) => {
           <span className="font-display text-2xl font-bold tracking-tight">xooter</span>
         </NavLink>
         <div className="liquid-glass-readable inline-flex items-center gap-1.5 rounded-full bg-accent-soft/80 px-2.5 py-1 mb-7 self-start border border-accent/20">
-          <Sparkles className="h-3 w-3 text-sage-deep" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-sage-deep">Pro</span>
+          <Sparkles className="h-3 w-3 text-accent-ink" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-accent-ink">Pro</span>
         </div>
 
         <nav className="liquid-glass-readable flex-1 space-y-1.5">
@@ -42,7 +42,7 @@ export const XooterShell = ({ children }: { children: ReactNode }) => {
                 end={n.end}
                 className={({ isActive }) =>
                   `xoot-liquid-nav-item interactive-press liquid-glass-interactive flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    isActive ? "bg-accent/15 text-sage-deep" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    isActive ? "bg-accent/15 text-accent-ink" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   }`
                 }
               >

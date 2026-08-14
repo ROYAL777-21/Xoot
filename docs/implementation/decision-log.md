@@ -803,6 +803,54 @@ the divergence either. The contrast figures above were computed by hand against 
 `design-contrast.test.ts` covers the semantic roles, not the accent family. Extending it is the
 obvious follow-up.
 
+## ZD-033 — Guard the derivation, and pair each tint with its own ink (2026-08-13)
+
+The two follow-ups ZD-032 named and did not do.
+
+### The palette now has to prove it came from the kit
+
+`design-contrast.test.ts` proved the palette was *readable*; `design-tokens.test.ts` proved the CSS
+and the native mirror *agreed with each other*. Neither asked whether it was still the kit's
+colour — which is how terracotta painted 58 surfaces for months while the tokens beside it said
+violet. Every test passed throughout, because each compared the palette to itself.
+
+`palette-derives-from-kit.test.ts` names the `--xoot-*` ramp each semantic derives from and asserts
+two things:
+
+- **hue within 4°** — measured deltas across the table are ≤ 1.3°, so the tolerance is three times
+  the worst real case, and terracotta (14°) could never pass as coral (7°);
+- **never lighter than the kit, in the light scheme only** — because darkening is how four roles
+  clear AA (`success` −7.7%, `destructive` −7.7%, `care-plus` −2.1%, `brand` taking violet-600 over
+  a violet-500 that measures 4.38), and lightening is the regression.
+
+The dark scheme is hue-only: a brand colour on a near-black page *must* go lighter, so a ceiling
+there would be wrong rather than strict.
+
+### The kit pairs every tint with its own ink
+
+`--xoot-honey-wash` with `--xoot-honey-ink`, `--xoot-sage-wash` with `--xoot-sage-ink`. **43 places
+rendered sage green on an amber wash.** It passed contrast at 6.60 by accident, not by design.
+
+`--accent-ink` is the amber's own ink (`#94600E` light, `#F7D290` dark) and is mirrored in
+`design-tokens.ts` rather than exempted — the mirror guard caught the omission immediately, which
+is the guard working.
+
+⚠️ **Contrast on the wash goes 6.60 → 4.70.** Above the 4.5 body floor, and *thinner than the
+mismatch it replaces*. That is a real trade made for family coherence, stated here rather than
+discovered later.
+
+### Sage means success again — and less changed than expected
+
+The plan assumed ~99 decorative sage uses needed moving. Reading them showed otherwise: `ShieldCheck`
+(10), `CheckCircle` (7), `LockKeyhole` (3), the `verified` trust badge and the sensitive-field
+in-window indicator are **success semantics, and sage is the kit's success colour** — those are the
+kit used correctly.
+
+Only **10 section eyebrows** were genuinely wrong: "What's included", "Value pillars", "Nearby
+Xooters" and similar wearing the success colour as decoration. Those are now `text-brand` (violet
+on page 5.49, on card 6.12). 79 sage uses remain and 38 sit beside a sage fill or a check/shield
+icon; the rest are status text where green still reads correctly.
+
 ## Pending Founder Decisions
 
 1. Canonical Supabase schema source.

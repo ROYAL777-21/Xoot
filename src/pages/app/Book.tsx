@@ -393,8 +393,8 @@ const Book = () => {
       <div className="flex items-start justify-between gap-3 mb-5 lg:mb-6">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-2 border border-accent/20">
-            <Sparkles className="h-3 w-3 text-sage-deep" />
-            <span className="text-xs font-medium text-sage-deep">Book a clean · takes under a minute</span>
+            <Sparkles className="h-3 w-3 text-accent-ink" />
+            <span className="text-xs font-medium text-accent-ink">Book a clean · takes under a minute</span>
           </div>
           <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Your home, handled.</h1>
           <p className="mt-1 text-sm text-muted-foreground hidden sm:block">Four calm steps. Vetted Xooter. Price you see is the price you pay.</p>

@@ -74,7 +74,7 @@ export const NearbyWorkers = () => {
       <div className="container">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="max-w-xl">
-            <p className="text-sm font-semibold text-sage-deep uppercase tracking-wider mb-3">Nearby Xooters</p>
+            <p className="text-sm font-semibold text-brand uppercase tracking-wider mb-3">Nearby Xooters</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance">
               Approved Xooters appear here when they are live in your launch area.
             </h2>
@@ -104,7 +104,7 @@ export const NearbyWorkers = () => {
         ) : (
           <Card className="rounded-3xl p-8 text-center max-w-2xl mx-auto">
             <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft">
-              <ShieldCheck className="h-6 w-6 text-sage-deep" />
+              <ShieldCheck className="h-6 w-6 text-accent-ink" />
             </div>
             {/*
               One empty state, not two. This used to branch on whether Supabase was configured

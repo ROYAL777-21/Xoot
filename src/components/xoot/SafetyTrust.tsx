@@ -12,7 +12,7 @@ export const SafetyTrust = () => {
     <section id="safety" className="py-20 md:py-28">
       <div className="container">
         <div className="max-w-2xl mb-12 md:mb-16">
-          <p className="text-sm font-semibold text-sage-deep uppercase tracking-wider mb-3">
+          <p className="text-sm font-semibold text-brand uppercase tracking-wider mb-3">
             Safety & Security
           </p>
           <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-4">
@@ -28,7 +28,7 @@ export const SafetyTrust = () => {
             const Icon = it.icon;
             return (
               <article key={it.title} className="rounded-3xl border border-border bg-card p-6 shadow-card transition-all duration-500 hover:-translate-y-1">
-                <div className="grid place-items-center h-12 w-12 rounded-2xl bg-accent/15 text-sage-deep mb-4">
+                <div className="grid place-items-center h-12 w-12 rounded-2xl bg-accent/15 text-accent-ink mb-4">
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="font-display font-semibold text-lg mb-1">{it.title}</h3>

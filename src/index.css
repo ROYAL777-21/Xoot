@@ -177,6 +177,7 @@
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-accent-soft: hsl(var(--accent-soft));
+  --color-accent-ink: hsl(var(--accent-ink));
 
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
@@ -1527,6 +1528,19 @@
        rather than inheriting one global "on-accent" value. */
     --accent-foreground: 14 18% 14%;
     --accent-soft: 39 90% 92%;
+    /* The kit pairs every tint with its OWN ink — `--xoot-honey-wash` with `--xoot-honey-ink`,
+     * `--xoot-sage-wash` with `--xoot-sage-ink` — so a foreground is chosen against the background
+     * it actually sits on. `SectionLabel.tsx` carries the same note, and it was written after the
+     * `--slot-*` aliases had to be invented for exactly this reason.
+     *
+     * Eleven places rendered `text-sage-deep` (green) on `bg-accent/15` (amber). That passed
+     * contrast at 6.60 by accident, not by design — a green ink on an amber wash is two families
+     * colliding. This is the kit's `--xoot-honey-ink` #94600E, the amber's own ink.
+     *
+     * ⚠️ Contrast on the wash goes 6.60 -> 4.70. Still clear of the 4.5 body-text floor, but
+     * thinner than the mismatch it replaces, so it is stated here rather than discovered later.
+     * On a white card it measures 5.33. `palette-derives-from-kit.test.ts` covers it. */
+    --accent-ink: 37 83% 32%;
 
     /* 48%, not the 56% the migration mapped.
        At 56% the off-white label measured 3.70:1 — below the 4.5 body threshold, and a
@@ -1754,6 +1768,11 @@
     --muted-foreground: 25 7% 68%;
     --accent: 37 78% 60%;
     --accent-foreground: 10 17% 7%;
+    /* The kit's `--xoot-honey-mid` #F7D290. Amber ink is unreadable on a near-black page, so the
+     * dark counterpart moves UP the same ramp rather than across to another family: 13.05 on the
+     * dark page. This is why `palette-derives-from-kit.test.ts` checks hue in both schemes but
+     * lightness only in light — going lighter here is correct, not drift. */
+    --accent-ink: 38 86% 77%;
     /* Ink on coral, not off-white — and this was the only exception in the whole dark scheme.
        accent, success and warning all pair a bright fill with `10 17% 7%`; destructive alone
        kept a near-white label, carried over from the old red palette where the fill was dark.

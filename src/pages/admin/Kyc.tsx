@@ -168,6 +168,6 @@ const AdminKyc = () => {
 };
 
 const Field = ({ k, v }: any) => <div className="rounded-xl bg-muted/40 p-2.5"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">{k}</p><p className="font-medium">{v || "-"}</p></div>;
-const Status = ({ status }: { status?: string }) => <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${status === "approved" ? "bg-accent/15 text-sage-deep" : status === "rejected" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{status ?? "pending"}</span>;
+const Status = ({ status }: { status?: string }) => <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${status === "approved" ? "bg-accent/15 text-accent-ink" : status === "rejected" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{status ?? "pending"}</span>;
 
 export default AdminKyc;

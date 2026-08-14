@@ -150,7 +150,7 @@ export const ServiceAreaMap = () => {
           )}
           <div className="liquid-glass-readable absolute bottom-4 left-4 right-4 flex flex-col gap-2 rounded-3xl border border-white/35 bg-background/78 p-4 shadow-card sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-accent/15 text-sage-deep">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-accent/15 text-accent-ink">
                 <ShieldCheck className="h-5 w-5" />
               </span>
               <div>

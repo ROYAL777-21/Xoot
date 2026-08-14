@@ -198,8 +198,8 @@ const Training = () => {
     <div className="container py-8 lg:py-12 max-w-6xl">
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-3 border border-accent/20">
-          <GraduationCap className="h-3 w-3 text-sage-deep" />
-          <span className="text-xs font-medium text-sage-deep">Training rank</span>
+          <GraduationCap className="h-3 w-3 text-accent-ink" />
+          <span className="text-xs font-medium text-accent-ink">Training rank</span>
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-bold">Standards & skill badges</h1>
         <p className="text-muted-foreground mt-2 max-w-2xl">
@@ -388,7 +388,7 @@ const ModuleCard = ({
             {module.required ? (
               <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase bg-primary/15 text-primary">Required</span>
             ) : (
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase bg-accent/15 text-sage-deep">Optional</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase bg-accent/15 text-accent-ink">Optional</span>
             )}
           </div>
         </div>

@@ -75,7 +75,7 @@ const BlogPost = () => {
             Back to Xoot Articles
           </Link>
 
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent-soft px-3 py-1 text-xs font-semibold text-sage-deep">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-ink">
             <Search className="h-3.5 w-3.5" />
             {post.primaryKeyword}
           </div>
