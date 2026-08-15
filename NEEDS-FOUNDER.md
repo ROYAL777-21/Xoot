@@ -13,21 +13,24 @@ Last updated **2026-08-13**.
 
 ### 1. PayFast merchant credentials
 
-Credentials are the first blocker, but **they are not the only one** — this line used to say the
-integration was built and tested, and only half of it is.
+Both halves of the integration now exist, and **credentials are the only thing left.**
 
-**Built:** `supabase/functions/_shared/payfast.ts` (signature, encoding, validate hosts) and
-`confirm-payment`, which *receives* PayFast's ITN callback and records the payment. That half is
-tested.
+- `confirm-payment` receives and verifies PayFast's ITN callback, on four independent checks. On
+  `main` since 2026-08-13.
+- `create-payment-session` builds and signs the checkout form that sends the customer to PayFast.
+  **In PR #42, not yet merged.** It is gated on `payments.provider_checkout`,
+  `payments.hosted_checkout.payfast` *and* the `payment_provider_capabilities` row for the
+  environment, and it fails closed if it cannot read them — so merging and deploying it cannot
+  start taking money. Turning it on stays a deliberate act.
 
-**Not built:** the other end — the function that signs a checkout form and sends the customer to
-PayFast. Nothing in the repo does this. `create-booking` writes a draft at `payment_status:
-pending` and files a `payment_authorisation_requested` row for Finance Operations; the customer is
-then never asked to pay. So today a booking is a *request*, not a purchase, and the site now says
-so plainly ("Nothing has been charged") rather than implying a payment step that does not run.
+⚠️ **Neither has run against a live PayFast merchant**, because there isn't one. Until one sandbox
+transaction completes, this is written and internally consistent, not working.
 
-That function is small and unblocked in principle — but it cannot be verified end to end without a
-sandbox merchant, which is why it waits on the credentials below rather than being guessed at.
+⚠️ **`XOOT_APP_ENV=staging` must be set on the staging project.** `getEdgeEnvironment()` defaults to
+"production" when it is unset, and the capability table has one row per environment — so an
+unlabelled staging deployment reads production's readiness. Not exploitable today (every flag on
+both rows is false), but it is a money gate with a latent wrong answer. Found by Correctness &
+Safety in PR #42.
 
 | secret | where it goes | where you get it |
 |---|---|---|

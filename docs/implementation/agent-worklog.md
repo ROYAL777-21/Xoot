@@ -800,14 +800,79 @@ both webfonts active.
 
 ---
 
+## 2026-08-15 — 🚢 Release — I duplicated Correctness's PayFast work. Withdrawn.
+
+**What happened.** The founder asked whether users can actually book and pay. Tracing it, I found
+the checkout half of PayFast did not exist on `main` and built it: `_shared/payfast-checkout.ts`,
+`create-payment-session`, a client half and a Pay button on step 4. 26 tests, all green.
+
+**Correctness & Safety had already built it**, in PR #42 (`claude/xoot-ios-build-setup-0te1sl`),
+with the *same three filenames*. I did not find it because I checked `main` and this worklog, and
+an unmerged branch appears in neither. **Checking `main` is not checking the repo.** Open PRs are
+where the other session's in-flight work lives; listing them is now the first thing I do before
+starting anything substantial.
+
+**Withdrawn in full** — commit `851ff0e` reverts my implementation. Rule 5 says rebase onto the
+other session's work rather than fight it, and two branches each adding
+`supabase/functions/create-payment-session/index.ts` with different bodies is a hand-resolved
+conflict in the money path, which is the worst place in this repo to have one.
+
+**Theirs is also simply better, and it is worth recording why rather than just deferring:**
+
+| | mine | theirs |
+|---|---|---|
+| keyed on | `bookingId` | `payment_record_id` |
+| multi-Xooter | **refused** — N records, one checkout | **works** — one checkout per record |
+| gate | the two controls | the two controls **+** the `payment_provider_capabilities` row |
+| gate failure | throws → 500 | **fails closed**, returns blocked with a reason |
+| amount | rands, float | **cents, integer** |
+| `provider` update | writes `payfast` | writes `payfast` **+ the migration that makes it legal** |
+
+That last row is a defect in mine, not a preference:
+`20260813200000_payment_records_provider_lifecycle.sql` widens the provider check constraint. My
+version wrote `provider: "payfast"` without it.
+
+They also found something I did not: **`getEdgeEnvironment()` defaults to `"production"` when
+`XOOT_APP_ENV` is unset**, and `payment_provider_capabilities` has a row per environment — so an
+unlabelled staging deployment reads production's readiness. Not exploitable today (all flags false
+on both rows), but it is a money gate with a latent wrong answer. Now in `NEEDS-FOUNDER.md` as a
+staging configuration item.
+
+### 🔒 One thing mine had that theirs does not — offered, not imposed
+
+Mine compared the **server's amount against the figure the customer was shown**, immediately before
+submitting the form, and stopped if the server's was higher:
+
+```ts
+if (Math.round(session.amount) > Math.round(bookingTotal)) { /* refuse, say so, do not submit */ }
+```
+
+Asymmetric on purpose: under the CPA the displayed price is the price, so charging *less* than
+displayed is survivable and charging *more* is not. `create-payment-session` already returns
+`amount_cents`, so `PayFastCheckout.tsx` has the value — it just never compares it to anything.
+
+`pricing-parity.test.ts` makes this redundant *in theory*. It was redundant in theory the three
+times this screen shipped one price and charged another. **Your file, your call** — I have not
+touched PR #42.
+
+### What I kept
+
+Nothing of the PayFast work. ZD-034 and the booking-flow copy fix are separate commits and stand:
+step 2's button no longer says "Review & Pay", the progress rail no longer calls step 4 "Payment",
+and the confirmation leads with "Nothing has been charged". All true while PR #42 is unmerged, and
+still true after — theirs adds the Pay button that makes the rest of that sentence work.
+
+Verified after the revert: 821 tests, `tsc --noEmit`, `vite build`.
+
+
+---
+
 ## Open questions between the roles
 
 Neither session should answer these alone. Record the question, let the founder decide.
 
-- **Who builds the PayFast checkout-initiation function?** It is a money-path function, so
-  Correctness by ownership — but it is also the last thing between a booking draft and a paid
-  booking, and it is blocked on merchant credentials either way (NEEDS-FOUNDER #1). Raised by
-  Release 2026-08-15; not started.
+- **Nothing open.** (Release asked on 2026-08-15 who builds PayFast checkout initiation. Answered
+  the same day: Correctness already had, in PR #42. Release's duplicate is reverted.)
 
 ---
 
