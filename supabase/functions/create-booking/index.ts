@@ -355,7 +355,7 @@ Deno.serve(async (req) => {
           service_length: serviceLengthId,
           xooter_id: xooterId,
           frequency,
-          provider_required: "PayFast credentials not connected",  // cleared by create-payment-session once a session is minted
+          provider_required: "PayFast credentials not connected",
           breakdown: { subtotal, highDemandPremium, serviceFee, bookingCover, carePlusDiscount, xootcredRedemption, serviceLength: serviceLengthId },
         },
       }).select("id,provider_reference").single();
@@ -422,17 +422,7 @@ Deno.serve(async (req) => {
       ipAddress: req.headers.get("x-forwarded-for"),
     });
 
-    /*
-     * The TODO that stood here — "replace this local handoff with a real PayFast payment session"
-     * — is now `create-payment-session`, which the client calls with this booking id to get a
-     * signed PayFast form.
-     *
-     * `payment_session_url` stays an in-app link rather than becoming a gateway URL. A checkout
-     * session must be minted at the moment the customer chooses to pay, not at booking time: it
-     * carries a signed amount, and one built here would be a signed instruction sitting in a
-     * response body for as long as the customer takes to decide. The booking page is where paying
-     * is offered from.
-     */
+    // TODO: Replace this local handoff with a real PayFast payment session URL once provider credentials are connected.
     return ok({
       booking_id: bookingIds[0] ?? null,
       booking_ids: bookingIds,

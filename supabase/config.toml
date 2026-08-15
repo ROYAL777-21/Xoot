@@ -137,12 +137,6 @@ verify_jwt = true
 [functions.create-booking]
 verify_jwt = true
 
-# Added 2026-08-15. Closed, and it must stay closed: it returns a SIGNED field set containing the
-# PayFast merchant key, for the caller's own booking. The customer is authenticated; PayFast never
-# calls this — it calls `confirm-payment`, which is the open one.
-[functions.create-payment-session]
-verify_jwt = true
-
 # Closed. Creating a split needs the booking owner; accepting one needs the invited person signed
 # in as the invited address, which is not checkable without a verified session.
 [functions.split-booking-fare]

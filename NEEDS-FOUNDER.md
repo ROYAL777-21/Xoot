@@ -13,23 +13,21 @@ Last updated **2026-08-13**.
 
 ### 1. PayFast merchant credentials
 
-Both ends of the integration now exist. **Credentials are the only thing left.**
+Credentials are the first blocker, but **they are not the only one** — this line used to say the
+integration was built and tested, and only half of it is.
 
-- `create-payment-session` builds and signs the PayFast checkout form, gated on
-  `payments.provider_checkout` **and** `payments.hosted_checkout.payfast` — so deploying it cannot
-  start taking money. Turning it on stays a deliberate act.
-- `confirm-payment` receives and verifies the ITN callback, on four independent checks.
+**Built:** `supabase/functions/_shared/payfast.ts` (signature, encoding, validate hosts) and
+`confirm-payment`, which *receives* PayFast's ITN callback and records the payment. That half is
+tested.
 
-⚠️ **Neither has been exercised against a live PayFast merchant**, because there isn't one yet.
-What is proven is that the two halves agree: a checkout this code signs verifies under the same
-function that verifies PayFast's real callbacks, and the field ordering, encoding and cent-rounding
-are pinned by 26 tests. That is internal consistency, not "payments work". One sandbox transaction
-is what turns it into the second claim.
+**Not built:** the other end — the function that signs a checkout form and sends the customer to
+PayFast. Nothing in the repo does this. `create-booking` writes a draft at `payment_status:
+pending` and files a `payment_authorisation_requested` row for Finance Operations; the customer is
+then never asked to pay. So today a booking is a *request*, not a purchase, and the site now says
+so plainly ("Nothing has been charged") rather than implying a payment step that does not run.
 
-**Not covered:** a booking with more than one Xooter creates one payment record per Xooter, and
-PayFast checkout is one amount against one record. Those bookings are refused with a visible message
-rather than charged for one Xooter out of three. Grouping them needs a change to `confirm-payment`'s
-matching rule and is filed for Correctness & Safety.
+That function is small and unblocked in principle — but it cannot be verified end to end without a
+sandbox merchant, which is why it waits on the credentials below rather than being guessed at.
 
 | secret | where it goes | where you get it |
 |---|---|---|
@@ -43,28 +41,15 @@ should use the real one. Sharing one merchant means a test payment appears in re
 Also set, per environment:
 - `PAYFAST_PROCESS_URL` and `PAYFAST_VALIDATE_URL` — sandbox hosts on staging, live hosts on
   production. Defaults are in `supabase/functions/_shared/payfast.ts`.
-- `XOOT_SITE_URL` — where PayFast sends the customer back to. Defaults to `https://xoot.co.za`,
-  which is right for production and **wrong for staging** — leave it unset there and a staging test
-  payment returns the customer to the live site.
 - `PAYFAST_ALLOWED_IPS` *(optional, recommended)* — comma-separated. **Left empty the source check
   is skipped and logged**, deliberately: this environment's egress proxy blocks
   `developers.payfast.co.za`, so the list could not be read from the primary source, and a guessed
   list would reject genuine callbacks silently. Get the current list from PayFast's docs and paste
   it here — it is the one control this integration is missing.
 
-**Proves it done**, in order:
-
-1. Secrets set on **staging**, pointing at PayFast's sandbox.
-2. `create-payment-session` deployed to staging (it is a new function — it has never been deployed
-   anywhere).
-3. `payments.provider_checkout` and `payments.hosted_checkout.payfast` flipped on **for staging
-   only**.
-4. A real sandbox booking paid end to end: the form posts, PayFast accepts the signature, the ITN
-   arrives, and the booking moves to `payment_confirmed`.
-5. Only then repeat 1–3 on production, with the live merchant.
-
-Step 4 is the one that matters. Until it has happened, this integration is written and consistent
-but unproven, and nobody should describe it as working.
+**Proves it done:** a sandbox payment completes and `confirm-payment` records it — which requires
+the checkout-initiation function above to exist first. Then flip `payments.provider_checkout` and
+`payments.hosted_checkout.payfast` on.
 
 ---
 

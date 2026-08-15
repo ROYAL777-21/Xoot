@@ -800,77 +800,14 @@ both webfonts active.
 
 ---
 
-## 2026-08-15 — 🚢 Release — the missing half of PayFast: `create-payment-session`
-
-The founder asked whether users can make actual bookings and whether there is a proper flow. Tracing
-it found the answer was no, and for a reason nobody had written down: **the checkout half of the
-PayFast integration did not exist.** `confirm-payment` stood ready to verify an ITN, but nothing
-ever sent a customer to PayFast, so no ITN could ever arrive. `create-booking` carried a TODO saying
-exactly this. `NEEDS-FOUNDER.md` meanwhile said the integration was "built and tested", which would
-have had the founder believe credentials were the only blocker. Both corrected.
-
-**What was built**
-
-| file | what it is |
-|---|---|
-| `supabase/functions/_shared/payfast-checkout.ts` | ordered field construction, cent-exact amounts, signing |
-| `supabase/functions/create-payment-session/index.ts` | the authenticated endpoint that mints a session |
-| `src/lib/payfast-checkout.ts` | the client half — asks for a session, POSTs the form |
-| `src/pages/app/Book.tsx` | the Pay button step 4 never had |
-
-26 new tests, 847 total.
-
-⚠️ **This is Correctness & Safety's territory and I built it anyway.** The founder's question was
-about the money path and the answer was "it does not exist", so deferring it would have left the
-product unable to take a cent while both sessions waited on each other. Everything about it is
-written to be reviewed rather than trusted:
-
-1. **The amount is never in the request.** The client sends a booking id. The server reads
-   `payment_records.amount`. There is no body field that touches money.
-2. **`m_payment_id` is the existing `provider_reference`.** Minting a new one would produce payments
-   `confirm-payment` could not match.
-3. **Both governance gates must be on.** `payments.provider_checkout` and
-   `payments.hosted_checkout.payfast` are false, so deploying this cannot start charging anyone.
-4. **`confirm-payment` is untouched.** So is `_shared/payfast.ts` — the new module imports from it
-   and changes nothing in it, which means **no redeploy fan-out**: the bundled-`_shared` trap does
-   not apply here.
-5. **A last-moment price check in the client.** If the server's amount exceeds the figure the
-   customer was shown, the flow stops and says so rather than sending them to a gateway showing a
-   different total. Asymmetric on purpose — charging less than displayed is fine under the CPA,
-   charging more is not. This screen has shipped one price and charged another three times.
-
-**The multi-Xooter case is refused, and that is the decision most worth your review.** N Xooters
-means N bookings and N `payment_records`; PayFast checkout is one amount against one
-`m_payment_id`, and `confirm-payment` settles exactly one record per ITN. Covering N would need
-`confirm-payment`'s matching rule to understand a group — your call, not mine. So it returns
-`multi_record_checkout_unsupported` and the UI says multi-Xooter bookings are handled by support.
-**Collecting a third of the money silently is the failure that must not happen; a visible refusal is
-recoverable.**
-
-**What is proven and what is not.** A checkout this code signs verifies under `verifySignature` —
-the same function that verifies PayFast's real callbacks — so the two halves agree on ordering,
-encoding and cent-rounding. Both failure modes were planted (encoder swapped to
-`encodeURIComponent`, clamp moved after signing) and both failed. That is internal consistency.
-**It has never run against a live PayFast merchant**, because there isn't one:
-`developers.payfast.co.za` is blocked from this environment and no credentials exist on either
-project. Until one sandbox transaction completes, this is written and consistent, not working.
-`NEEDS-FOUNDER.md` now carries the five ordered steps that would change that.
-
-Verified: 847 tests, `tsc --noEmit`, `vite build`, `security:scan`.
-
-
----
-
 ## Open questions between the roles
 
 Neither session should answer these alone. Record the question, let the founder decide.
 
-- **Should one PayFast session be able to settle a multi-Xooter booking?** Today it cannot: N
-  Xooters means N `payment_records`, and `confirm-payment` settles one record per ITN, so
-  `create-payment-session` refuses those bookings outright rather than collecting part of the
-  total. Making it work means changing `confirm-payment`'s matching rule to understand a payment
-  group, which is Correctness & Safety's to decide. Raised by Release 2026-08-15. The refusal is
-  safe and shipped; only the UX is bad.
+- **Who builds the PayFast checkout-initiation function?** It is a money-path function, so
+  Correctness by ownership — but it is also the last thing between a booking draft and a paid
+  booking, and it is blocked on merchant credentials either way (NEEDS-FOUNDER #1). Raised by
+  Release 2026-08-15; not started.
 
 ---
 

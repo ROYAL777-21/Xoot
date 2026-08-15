@@ -26,7 +26,6 @@ import {
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sanitiseSearchParam } from "@/lib/sanitise";
 import { BookingInput } from "@/lib/validators";
-import { requestCheckoutSession, submitCheckout } from "@/lib/payfast-checkout";
 
 const services = [
   { id: "residential", label: "Residential", icon: HomeIcon },
@@ -387,59 +386,6 @@ const Book = () => {
     setStep(4);
   };
 
-  const [payingBooking, setPayingBooking] = useState(false);
-
-  /**
-   * Step 4's only action that moves money. Everything it needs — amount, reference, signature — is
-   * built server-side; this sends nothing but the booking id, so a customer cannot influence what
-   * they are charged by editing a request.
-   *
-   * Each refusal gets its own message. "Payment is not switched on yet" and "we could not reach the
-   * provider" mean different things to somebody trying to pay, and a booking that already paid must
-   * never be sent to pay again.
-   */
-  const payNow = async () => {
-    if (!bookingId) return;
-    setPayingBooking(true);
-    const outcome = await requestCheckoutSession(bookingId);
-    if (outcome.kind === "ready") {
-      /*
-       * The button shows the client's figure; the session carries the server's. They are pinned to
-       * each other by `pricing-parity.test.ts`, but this screen has shipped one price and charged
-       * another three times, so the two are compared once more at the last possible moment.
-       *
-       * Asymmetric on purpose. Charging LESS than displayed is fine — under the CPA the displayed
-       * price is the price, and we may not exceed it. Charging MORE stops here rather than sending
-       * the customer to a gateway showing a total they never agreed to.
-       */
-      if (Math.round(outcome.session.amount) > Math.round(bookingTotal)) {
-        setPayingBooking(false);
-        toast.error(
-          `The confirmed total is ${formatZAR(outcome.session.amount)}, not ${formatZAR(bookingTotal)}. ` +
-            "We have not charged you — please contact support.",
-        );
-        return;
-      }
-      // Navigates away. No setPayingBooking(false) — the button must stay busy until the browser
-      // leaves, or a second click posts a second form.
-      submitCheckout(outcome.session);
-      return;
-    }
-    setPayingBooking(false);
-    if (outcome.kind === "already_paid") {
-      toast.success("This booking is already paid.");
-      setBookingStatus("payment_confirmed");
-    } else if (outcome.kind === "disabled") {
-      toast.info("Online payment is not switched on yet. Xoot will contact you to arrange payment.");
-    } else if (outcome.kind === "not_configured") {
-      toast.info("Card payment is not available yet. Xoot will contact you to arrange payment.");
-    } else if (outcome.kind === "multi_record") {
-      toast.info("Bookings with more than one Xooter are paid through support for now — we will be in touch.");
-    } else {
-      toast.error(outcome.message);
-    }
-  };
-
   const maxPick = allowsMultipleWorkers(active) ? workerCount : 1;
 
   return (
@@ -694,7 +640,7 @@ const Book = () => {
       )}
 
       {step === 4 && (
-        <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5"><div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div><h2 className="font-display text-3xl font-bold">Booking request received</h2><p className="text-muted-foreground max-w-md mx-auto"><strong className="text-foreground">Nothing has been charged yet.</strong> Pay now to confirm — your Xooter is assigned once payment clears. Your booking stays pending until then.</p>{bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus.replace(/_/g, " ")}</span></div>}<div className="flex flex-col sm:flex-row gap-2 justify-center">{bookingId && bookingStatus !== "payment_confirmed" && <Button onClick={payNow} disabled={payingBooking} className="rounded-full h-12 px-6 font-semibold">{payingBooking ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Pay {formatZAR(bookingTotal)} <ArrowRight className="h-4 w-4 ml-1" /></>}</Button>}<Button asChild variant="outline" className="rounded-full"><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button><Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); }} variant="ghost" className="rounded-full">Book another</Button></div></div>
+        <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5"><div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div><h2 className="font-display text-3xl font-bold">Booking request received</h2><p className="text-muted-foreground max-w-md mx-auto"><strong className="text-foreground">Nothing has been charged.</strong> Xoot confirms your payment before your Xooter is assigned, and your booking stays pending until then. You can track it on the booking page.</p>{bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus}</span></div>}<div className="flex flex-col sm:flex-row gap-2 justify-center"><Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); }} variant="outline" className="rounded-full">Book another</Button><Button asChild className="rounded-full"><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button></div></div>
       )}
 
       {step < 3 && (
