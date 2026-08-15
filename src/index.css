@@ -1589,18 +1589,38 @@
     --sage: 156 47% 43%;
     --sage-deep: 157 57% 24%;
 
-    /* Brand emphasis, violet, built from violet-600 -> violet-700 rather than the kit's own
-     * `--xoot-grad-violet` (#A38FF7 -> #7C5CFC). That gradient is a light violet meant to sit
-     * UNDER dark text; every surface using this one carries white text, and white on violet-500
-     * measures 4.38 — the same AA failure that darkened `--brand` to violet-600 in the first
-     * place. 600 -> 700 gives 6.10 at the light end and 8.46 at the dark end. */
-    --gradient-warm: linear-gradient(135deg, hsl(253 79% 58%) 0%, hsl(258 60% 46%) 100%);
+    /* ── ZD-034: the large-surface gradient is ink, not violet ─────────────────────────────────
+     *
+     * ZD-032 moved this to violet-600 -> violet-700, which is what the kit's README describes.
+     * Rendered side by side against terracotta and against ink, the founder chose ink (2026-08-15,
+     * three built variants screenshotted at 1440px).
+     *
+     * This is a deliberate departure from `design/README.md` and the only one. The README's rule
+     * is "violet for brand emphasis, selection and progress, with ink as the primary commit
+     * button — the Tiimo pattern". Violet still holds all three of those roles: `--brand` is
+     * unchanged, and `bg-brand` / `ring-primary` / selection states are untouched. What moved is
+     * only `gradient-warm`, which is not an emphasis token at all — it paints 29 large surfaces
+     * (hero bands, logo tiles, page-width CTA cards). Violet at that size stops reading as
+     * emphasis and starts reading as the page's own colour, which is the thing the Tiimo pattern
+     * is arranged to avoid. Ink at that size is the pattern, taken to its conclusion.
+     *
+     * Contrast for the white text every one of those surfaces carries: 14.6:1 at the light end
+     * (hsl(20 8% 16%)) and 17.9:1 at the dark end. Violet gave 6.10 / 8.46 — both passed, this
+     * passes by a wider margin.
+     *
+     * `--brand` remains violet-600 and is the one colour that must not follow this. See
+     * `palette-derives-from-kit.test.ts`, which pins both halves of that split.
+     */
+    --gradient-warm: linear-gradient(135deg, hsl(20 8% 16%) 0%, hsl(20 10% 9%) 100%);
     --gradient-sage: linear-gradient(135deg, hsl(156 47% 43%) 0%, hsl(157 57% 24%) 100%);
     --gradient-hero: linear-gradient(180deg, hsl(36 33% 97%) 0%, hsl(32 35% 92%) 100%);
 
     --shadow-soft: 0 8px 24px -8px hsl(20 30% 12% / 0.08);
-    /* Tinted to the brand it now sits under, rather than to the retired terracotta. */
-    --shadow-warm: 0 20px 48px -16px hsl(253 79% 58% / 0.30);
+    /* Tinted to the surface it sits under. This shadow is only ever applied to `gradient-warm`
+     * elements, so it follows the gradient: a violet glow under an ink tile reads as a colour
+     * fringe rather than a shadow. Raised 0.30 -> 0.38 because a neutral shadow at the same alpha
+     * disappears against the warm page. */
+    --shadow-warm: 0 20px 48px -16px hsl(20 30% 12% / 0.38);
     --shadow-card: 0 4px 16px -4px hsl(20 30% 12% / 0.06);
 
     --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);

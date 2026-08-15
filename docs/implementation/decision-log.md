@@ -851,6 +851,51 @@ Xooters" and similar wearing the success colour as decoration. Those are now `te
 on page 5.49, on card 6.12). 79 sage uses remain and 38 sit beside a sage fill or a check/shield
 icon; the rest are status text where green still reads correctly.
 
+## ZD-034 — The large-surface gradient is ink; violet keeps emphasis (2026-08-15)
+
+The founder said the palette still bothered them after ZD-032. Rather than argue it in prose, the
+same page was built three times and screenshotted at 1440px — the kit's violet, the retired
+terracotta, and an ink-led variant. The founder chose ink.
+
+`--gradient-warm` is now `hsl(20 8% 16%) → hsl(20 10% 9%)`.
+
+### This is a departure from the source of truth, and it is narrow
+
+`design/README.md` is the design authority (founder, 2026-08-13) and it says: violet for brand
+emphasis, selection and progress, ink as the primary commit button — the Tiimo pattern. Three of
+those four roles are **untouched**: `--brand` is still violet-600, and selection, focus rings and
+progress emphasis still resolve through it.
+
+What moved is `gradient-warm`, which is not an emphasis token. It paints **29 large surfaces** —
+page-width CTA bands, hero panels, logo tiles, the booking progress rail. At that size a brand
+colour stops reading as emphasis and becomes the page's own colour, which is the effect the Tiimo
+pattern exists to avoid. Ink at that size is the pattern followed through, not abandoned.
+
+### Measured
+
+White text sits on every one of those 29 surfaces.
+
+| stop | contrast with white |
+|---|---|
+| `hsl(20 8% 16%)` (light end) | **14.6:1** |
+| `hsl(20 10% 9%)` (dark end) | **17.9:1** |
+| *was* violet-600 → violet-700 | 6.10 / 8.46 |
+
+Both passed; this passes by roughly twice the margin.
+
+`--shadow-warm` follows the surface it sits under — `hsl(20 30% 12% / 0.38)` rather than a violet
+glow, which under an ink tile reads as a colour fringe rather than a shadow. Alpha raised 0.30 →
+0.38 because a neutral shadow at the old alpha disappears against the warm page.
+
+### Guarded, because this is exactly the token that drifted before
+
+`--gradient-warm` is not a semantic token, so ZD-033's derivation table did not cover it — and it
+is the token that painted terracotta for months while everything around it said violet.
+`palette-derives-from-kit.test.ts` now pins **both halves** of the split: the gradient stops must
+stay near-neutral (saturation ≤ 15%) and dark (lightness ≤ 25%), *and* `--brand` must stay
+chromatic (saturation > 40%). The failure mode is collapsing to one colour for everything, in
+either direction. Planted both ways — violet gradient, ink brand — both failed. Restored.
+
 ## Pending Founder Decisions
 
 1. Canonical Supabase schema source.

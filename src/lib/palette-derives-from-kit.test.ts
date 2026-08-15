@@ -166,4 +166,42 @@ describe("the semantic palette still derives from the kit", () => {
       expect(site.l, `--${role} must not drift up toward --xoot-${from}`).toBeLessThanOrEqual(floor);
     }
   });
+
+  /**
+   * ── ZD-034: the large-surface gradient is ink; brand emphasis is still violet ────────────────
+   *
+   * The table above reads semantic tokens. `--gradient-warm` is not one, and it is precisely the
+   * token that drifted terracotta for months while everything around it said violet — so it gets
+   * its own assertion rather than none.
+   *
+   * The founder chose ink for it on 2026-08-15 from three rendered variants. That is a departure
+   * from `design/README.md` and it is *narrow*: only the 29 large painted surfaces move. Violet
+   * keeps emphasis, selection and progress via `--brand`. Both halves are asserted, because the
+   * failure mode is drifting back toward one colour for everything — in either direction.
+   */
+  it("holds the ink/violet split: large surfaces ink, brand emphasis violet", () => {
+    const decl = /--gradient-warm:([^;]*);/.exec(css);
+    expect(decl, "--gradient-warm not declared in index.css").not.toBeNull();
+    const stops = [...decl![1].matchAll(/hsl\(([\d.]+) ([\d.]+)% ([\d.]+)%\)/g)];
+    expect(stops.length, "--gradient-warm should declare two hsl() stops").toBe(2);
+
+    for (const [, h, s, l] of stops) {
+      expect(
+        +s,
+        `--gradient-warm stop hsl(${h} ${s}% ${l}%) carries chroma. ZD-034 makes this surface ` +
+          "ink; a saturated stop means it has drifted back to a hue.",
+      ).toBeLessThanOrEqual(15);
+      expect(
+        +l,
+        `--gradient-warm stop hsl(${h} ${s}% ${l}%) is too light for the white text all 29 of ` +
+          "these surfaces carry.",
+      ).toBeLessThanOrEqual(25);
+    }
+
+    // The other half. If brand ever follows the gradient to ink, violet leaves the product
+    // entirely — which is the state ZD-032 was opened to fix.
+    const brand = siteToken("brand", "  :root {")!;
+    expect(brand.s, "--brand must stay chromatic violet; ZD-034 moved the gradient, not the brand")
+      .toBeGreaterThan(40);
+  });
 });
