@@ -1,17 +1,44 @@
 name: Native iOS Swift check
 
+# ⚠️ macos-15 bills at 10x. This is the most expensive job in the repo by a wide margin, and it
+# type-checks seven Swift files in `native/ios/XootLiveActivities/`.
+#
+# Until 2026-08-15 it ran on every push to `main`/`codex/**` and every pull-request update,
+# regardless of what changed. On 2026-08-14, ten consecutive pushes — markdown, SQL and TypeScript,
+# not one Swift file among them — each spent roughly ten billed minutes checking nothing. That was
+# about a third of the account's entire Actions consumption that day, and the free-plan allowance of
+# 2,000 minutes/month for a private repository ran out.
+#
+# The `paths` filter below is the fix. `workflow_dispatch` is deliberately left unfiltered so this
+# can always be run by hand.
+#
+# Safe because `main` is NOT a protected branch and there are no required status checks — verified
+# 2026-08-15, and independently confirmed by PR #42 merging with twelve red checks. A path-filtered
+# workflow reports nothing on runs that do not match, so if branch protection is ever added and this
+# check is made required, replace the filter with an always-run skip job rather than reverting it.
 on:
   push:
+    # main only: a `codex/**` glob here fires alongside `pull_request` for the same
+    # commit, doubling the cost. Branch coverage comes from the pull-request run.
     branches:
       - main
-      - "codex/**"
+    paths:
+      - "native/ios/**"
+      - ".github/workflows/native-ios-swift.yml"
   pull_request:
     branches:
       - main
+    paths:
+      - "native/ios/**"
+      - ".github/workflows/native-ios-swift.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: native-ios-swift-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   swift-typecheck:

@@ -15,6 +15,11 @@ on:
         default: false
         type: boolean
 
+# Superseded preview builds are worthless; cancel them rather than pay for them.
+concurrency:
+  group: web-preview-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pages: write

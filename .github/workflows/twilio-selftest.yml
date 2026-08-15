@@ -35,6 +35,12 @@ on:
         type: choice
         options: [production, staging, both]
 
+# workflow_dispatch only, and it places real Twilio traffic. Queue rather than abort a run
+# mid-call — same reasoning as db-push.yml.
+concurrency:
+  group: twilio-selftest-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 

@@ -2,9 +2,10 @@ name: Production readiness guard
 
 on:
   push:
+    # main only: a `codex/**` glob here fires alongside `pull_request` for the same
+    # commit, doubling the cost. Branch coverage comes from the pull-request run.
     branches:
       - main
-      - "codex/**"
   pull_request:
     branches:
       - main
@@ -12,6 +13,13 @@ on:
 
 permissions:
   contents: read
+
+# windows-latest bills at 2x. Deliberately NOT path-filtered: this job asserts that documents,
+# scripts and migrations agree with each other, so a docs-only change genuinely can break it — that
+# is exactly how it broke on 2026-08-13. Cancelling superseded runs is the saving available here.
+concurrency:
+  group: production-readiness-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   readiness:

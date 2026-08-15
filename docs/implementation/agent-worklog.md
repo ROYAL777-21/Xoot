@@ -247,6 +247,56 @@ rather than changed mid-payment-work.
 `app.config.ts` reads `scheme: ['xoot', 'zoot']`. Replaced with what is actually outstanding — the
 provider consoles. A register that lists a cleared blocker teaches people to skim it.
 
+### Correctness & Safety — 2026-08-15 — CI was not broken, it was out of minutes
+
+The founder is on **GitHub Free**. That closes a diagnosis I could not: Free gives **2,000 Actions
+minutes/month for private repositories**, and this repo is private. The 28-hour outage was an
+exhausted allowance, not a raisable spending limit and not an incident. It resets on the 1st.
+
+So the fix is consumption, and it was all in `.github/workflows/**`.
+
+**Estimated, not billed** — `get_workflow_run_usage` returns `total_ms: 0` for every run on this
+account, so the numbers come from observed wall-clock durations and GitHub's published multipliers
+(Linux 1×, Windows 2×, macOS 10×, each job rounded up to a whole minute). Roughly **29 billed
+minutes per push**:
+
+| what | cost | why |
+|---|---|---|
+| `native-ios-swift` | **~10 min** | one `macos-15` job type-checking 7 Swift files, **no path filter** |
+| `tests` + `semgrep` | ~14 min | each ran **twice** — `push` listed `claude/**`/`codex/**` *and* `pull_request` targeted `main` |
+| `production-readiness` | ~2 min | `windows-latest`, 2× |
+| six workflows | — | **no `concurrency`**, so superseded runs kept billing |
+
+Not one of 2026-08-14's ten pushes touched a Swift file. About a third of that day's entire
+consumption went on type-checking nothing.
+
+Changed: `paths:` filter on the macOS job; `concurrency` on all six lacking it; `push:` narrowed to
+`main` on `tests`, `semgrep`, `native-ios-swift` and `production-readiness`. **≈29 → ≈8 minutes per
+push.** `production-readiness` is deliberately *not* path-filtered — it asserts that docs, scripts
+and migrations agree, so a docs-only change genuinely can break it, which is how it broke on 08-13.
+
+Checked before filtering: **`main` is `protected: false` with no required status checks** — from the
+branches API, and independently from PR #42 merging with twelve red checks. A path-filtered workflow
+reports nothing on non-matching runs, so a required check would have been blocked forever. The
+workflow comment says to use an always-run skip job if protection is ever added.
+
+`src/lib/actions-minute-budget.test.ts` pins all three controls. **It caught two of my own mistakes**:
+I had removed the `codex/**` glob from `tests`/`semgrep` but not from the two *expensive* workflows,
+so those still double-ran; and its first version read `paths: - "native/ios/**"` as a *branch* glob
+and failed against workflows that were already correct. Planted three ways — filter removed,
+concurrency deleted, glob restored — each failing on the right assertion.
+
+94 files / 1070 tests, typecheck, lint, build, `security:scan` green, all 14 workflows valid YAML,
+and `verify-production-readiness.ps1` 363 pass / 0 fail under real pwsh.
+
+> 🚢 **Release — two things, `.github/workflows/**` is your path (rule 3).**
+>
+> 1. Nothing about *what* CI checks changed; only *when* it runs. Revert any of it if you disagree,
+>    but please read `NEEDS-FOUNDER.md` §"CI is down until the monthly reset" first — the allowance
+>    is the constraint, not preference.
+> 2. ⚠️ **This changes your workflow too.** `codex/**` pushes no longer trigger CI on their own;
+>    coverage comes from the pull-request run. Push-without-PR now gets nothing.
+
 ### Correctness & Safety — 2026-08-15 — the readiness job actually passes, verified with real PowerShell
 
 I have been asserting things about `Verify blocker and provider-readiness artifacts` all week from a

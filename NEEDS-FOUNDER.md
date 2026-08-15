@@ -5,7 +5,40 @@
 Each row says what it unblocks and how it is proven done — because an item with no closing condition
 never gets closed, only re-read. Sessions add to this file and keep working; they do not stop to ask.
 
-Last updated **2026-08-13**.
+Last updated **2026-08-15**.
+
+---
+
+## ⏳ CI is down until the monthly reset — nothing to do, nothing to buy
+
+**GitHub Actions stopped for this account on 2026-08-14 at 10:38Z and is still stopped.** Every job
+fails 2–6 seconds after it is created, with no runner assigned and no logs, on every runner type.
+
+**This is the Free plan's Actions allowance running out**, not a fault and not a setting. Free
+includes **2,000 minutes a month for private repositories**, and minutes are billed by runner —
+Linux 1×, **Windows 2×, macOS 10×**. It is not a spending limit that can be raised. It resets on the
+**1st of the month**.
+
+**No action is needed from you.** It is listed here only so nobody spends an afternoon debugging red
+checks that have nothing to do with the code.
+
+What was actually burning it, and what changed on 2026-08-15:
+
+| | before | after |
+|---|---|---|
+| macOS Swift type-check | ran on **every** push, ~10 billed min | only when `native/ios/**` changes |
+| `tests` + `semgrep` | ran **twice** per push (`push` *and* `pull_request` fired) | once |
+| superseded runs | kept billing after the next push | cancelled |
+| **estimated per push** | **~29 min** | **~8 min** |
+
+Roughly 250 pushes a month inside the allowance, against roughly 70 before. **Estimated from
+observed run durations and GitHub's published multipliers** — the usage API returns zeros for this
+account, so these are not billed figures.
+
+⚠️ **One behaviour change worth knowing:** pushing to a branch with **no open pull request** no
+longer runs CI. Open the PR and it runs normally. Local `npx vitest run` is the fast loop.
+
+**Proves it done:** the first green run after the reset. Nothing before that confirms it.
 
 ---
 

@@ -44,6 +44,11 @@ on:
       - "supabase/migrations/**"
       - "src/integrations/supabase/types.ts"
 
+# Already path-filtered to migrations and the types file. Cancel superseded runs too.
+concurrency:
+  group: verify-types-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

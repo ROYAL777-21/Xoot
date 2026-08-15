@@ -4,9 +4,14 @@ name: Tests
 # mobile-* suites had been failing to transform without anything reporting it.
 # Lint, build and unit tests now gate every PR.
 
+# ⚠️ `push` is main-only ON PURPOSE. Adding a feature-branch glob here makes every push to a branch
+# with an open pull request run this workflow TWICE — once for `push`, once for `pull_request` — for
+# the same commit. That duplication was live until 2026-08-15 and is visible as paired run IDs on
+# every check in PR #42. Branch coverage comes from the `pull_request` trigger; the fast local loop
+# is `npx vitest run`.
 on:
   push:
-    branches: [main, "claude/**", "codex/**"]
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
