@@ -13,7 +13,21 @@ Last updated **2026-08-13**.
 
 ### 1. PayFast merchant credentials
 
-The integration is built and tested. It cannot take a cent without these.
+Credentials are the first blocker, but **they are not the only one** — this line used to say the
+integration was built and tested, and only half of it is.
+
+**Built:** `supabase/functions/_shared/payfast.ts` (signature, encoding, validate hosts) and
+`confirm-payment`, which *receives* PayFast's ITN callback and records the payment. That half is
+tested.
+
+**Not built:** the other end — the function that signs a checkout form and sends the customer to
+PayFast. Nothing in the repo does this. `create-booking` writes a draft at `payment_status:
+pending` and files a `payment_authorisation_requested` row for Finance Operations; the customer is
+then never asked to pay. So today a booking is a *request*, not a purchase, and the site now says
+so plainly ("Nothing has been charged") rather than implying a payment step that does not run.
+
+That function is small and unblocked in principle — but it cannot be verified end to end without a
+sandbox merchant, which is why it waits on the credentials below rather than being guessed at.
 
 | secret | where it goes | where you get it |
 |---|---|---|
@@ -33,8 +47,9 @@ Also set, per environment:
   list would reject genuine callbacks silently. Get the current list from PayFast's docs and paste
   it here — it is the one control this integration is missing.
 
-**Proves it done:** a sandbox payment completes and `confirm-payment` records it. Then flip
-`payments.provider_checkout` and `payments.hosted_checkout.payfast` on.
+**Proves it done:** a sandbox payment completes and `confirm-payment` records it — which requires
+the checkout-initiation function above to exist first. Then flip `payments.provider_checkout` and
+`payments.hosted_checkout.payfast` on.
 
 ---
 

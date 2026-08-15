@@ -745,10 +745,58 @@ indicator are **success semantics — sage is the kit's success colour**. Only 1
 were genuinely wrong. Sweeping the rest would have been the opposite mistake.
 
 **Open with the founder:** they have since said the layout is fine and it is the colours that
-bother them. Three candidate palettes were rendered for them to choose by eye. **Nothing further
-should be changed on colour until they pick** — the committed state is the violet one.
+bother them. Three candidate palettes were rendered for them to choose by eye. **Answered 2026-08-15: they picked ink.** See
+ZD-034 below.
 
 ---
+
+---
+
+## 2026-08-15 — 🚢 Release — ZD-034: ink large surfaces, and the booking flow stops saying "Pay"
+
+**Colour is settled.** The founder chose the ink variant from the three rendered builds.
+`--gradient-warm` is `hsl(20 8% 16%) → hsl(20 10% 9%)`; `--shadow-warm` follows it neutral.
+`--brand` is **unchanged** — violet still holds emphasis, selection and progress, which is the
+only reason this stays compatible with `design/README.md` at all. Full reasoning and the contrast
+figures are in ZD-034.
+
+⚠️ **For Correctness & Safety, through your lens:**
+
+1. `src/index.css` and `src/lib/palette-derives-from-kit.test.ts` are your paths. The palette line
+   was a founder decision made against a render, so it could not wait; the guard change is purely
+   additive. It now pins *both* halves of the ink/violet split, because `gradient-warm` is the
+   token that painted terracotta for months and ZD-033's derivation table does not reach it — it
+   is not a semantic.
+
+2. **The one worth your actual review** is `src/pages/app/Book.tsx`. Tracing the founder's question
+   *"can users make actual bookings, is there a proper flow?"* found the flow telling customers
+   something the money path does not do. Step 2's button said **"Review & Pay"**, the progress rail
+   called step 4 **"Payment"**, and the confirmation said Xoot *"confirms payment from the provider
+   webhook"*.
+
+   Measured, not assumed: `create-booking` writes `status: draft` / `payment_status: pending` and
+   files a `payment_authorisation_requested` outbox row at `needs_approval` for Finance Operations.
+   **No function in the repo builds a PayFast checkout session** — `_shared/payfast.ts` is imported
+   by `confirm-payment` alone, which only *receives* the ITN. `payments.provider_checkout` and
+   `payments.hosted_checkout.payfast` are both false.
+
+   So the customer submits, is never charged, and is never asked to pay. That errs in the CPA's
+   survivable direction, but it was still a false claim about the money path, which is your
+   territory even though the file is unowned. Copy is now "Review booking" / "Review", and the
+   confirmation leads with **"Nothing has been charged."** No new promise was substituted about how
+   payment *does* get taken, because that answer is still blocked on merchant credentials.
+
+**Not done, deliberately:** the missing piece is a checkout-initiation function — the thing that
+signs a PayFast form and redirects. That is a money-path function and squarely yours. It is also
+blocked on NEEDS-FOUNDER #1 (merchant ID, key, passphrase), so nothing about it can be verified
+end to end today. Flagging rather than starting it.
+
+**Header font is still open with the founder.** Three variants rendered and sent — Newsreader (the
+kit's own, shipping today), Plus Jakarta Sans for a single-family page at zero extra bytes, and
+system Georgia which would drop 43 KB from the payload. Committed state is Newsreader.
+
+Verified: 821 tests, `tsc --noEmit`, `vite build`, `security:scan`, six public routes rendering with
+both webfonts active.
 
 ---
 
@@ -756,7 +804,10 @@ should be changed on colour until they pick** — the committed state is the vio
 
 Neither session should answer these alone. Record the question, let the founder decide.
 
-- **Nothing open.**
+- **Who builds the PayFast checkout-initiation function?** It is a money-path function, so
+  Correctness by ownership — but it is also the last thing between a booking draft and a paid
+  booking, and it is blocked on merchant credentials either way (NEEDS-FOUNDER #1). Raised by
+  Release 2026-08-15; not started.
 
 ---
 
