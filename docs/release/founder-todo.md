@@ -19,6 +19,38 @@ carried forward on trust.
 
 ---
 
+## ✅ 2026-08-15 — the two live database defects are FIXED on production
+
+The Supabase MCP was authorised mid-session, which routed around the dead CI entirely. Applied and
+**verified by measurement, not by reading the DDL back**:
+
+| defect | was | now |
+|---|---|---|
+| `payment_records.provider` | `= 'payfast'` vs a `manual_pending` default — **no booking creatable since 13 Aug** | `in ('manual_pending','payfast','manual_eft')`; the failing insert now returns a row |
+| `safety_sos_alerts.raiser_role` | `('customer','zooter')` vs code sending `xooter` — **a Xooter could not raise an SOS alert** | `('customer','xooter')`; a Xooter SOS insert now succeeds |
+| `support_handoff_contexts.role_type` | `('user','zooter','admin')` | `('user','xooter','admin')` |
+| `visit_recordings.recorder_role` | latent, same shape | fixed before it could bite |
+| `payment_reconciliation_checks.provider` | `('stitch','ozow')` — PayFast rows impossible | `('payfast')` |
+| `xooter_payout_accounts.provider` | `('manual_bank','stitch','ozow')` | `('manual_bank','payfast')` |
+
+Every test insert was rolled back, so both projects still hold **0 rows** in all of them.
+`src/lib/constraint-writer-parity.test.ts` now fails the build if a writer ever sends a value its
+column forbids again — this was the eighth instance of one pattern.
+
+### ⚠️ Still broken on production, and it needs the two migrations below
+
+**A Xooter cannot open their job cards on production.** The code calls
+`get_xooter_job_cards_for_user` and `xooter_job_transition_allowed`; production still has only the
+`zooter_`-prefixed versions. Staging is correct. Two migrations, already on `main` and already
+applied to staging, are not yet on production:
+
+    20260813220000_rename_functions_zd029_missed.sql      ← fixes the job-cards break
+    20260814170000_fix_private_function_bodies_zd029.sql
+
+Applying them needs either a `db-push` (blocked on CI) or another MCP session.
+
+---
+
 ## 🚨 0. CI cannot run — this blocks the other four items
 
 **Added 2026-08-15.** GitHub Actions has been unable to allocate a runner for this account since
