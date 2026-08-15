@@ -867,6 +867,86 @@ Verified after the revert: 821 tests, `tsc --noEmit`, `vite build`.
 
 ---
 
+## 2026-08-15 — 🚢 Release — CI has been dead for a day, and PR #42 fixes a defect of mine
+
+### The thing nobody had written down
+
+**GitHub Actions cannot allocate a runner for this account, and has not since 2026-08-14 ~10:59Z.**
+Last green run anywhere: 2026-08-13T22:07Z. Job `94999334066`: `steps` absent, `runner_id: 0`,
+`runner_name: ""`, logs 404 — no step ever executed.
+
+Correctness hit this too and recorded it *inside a commit message* ("Actions has been down for this
+account since 10:38Z … both automated paths are shut"). That is why it stayed invisible for a day.
+It is now §0 of `founder-todo.md` and the top of `blocker.md`.
+
+Written as **symptom, not diagnosis**: the API does not expose a reason, so it says "cannot allocate
+a runner", not "billing failed". Naming a cause I did not read is the failure this repo keeps
+correcting.
+
+**Everything it blocks:** CI on every branch, `db-push`, `deploy-edge-functions`, merging #42 on
+green, and retiring the six orphaned functions. Until it lifts, a local run is the only evidence any
+change has — including all of mine since 13 Aug.
+
+### 🔒 Cross-review of PR #42 — posted, no deploy blockers
+
+Rule 4, Release lens only. Comment on the PR. Verified locally at `54349e1` because CI could not:
+**1034/1034 tests, `tsc --noEmit` clean, `vite build` clean, `security:scan` 4/4.**
+
+⚠️ For anyone repeating that: my first run showed 4 failures, all `mobile/node_modules` missing.
+`tests.yml` installs the mobile workspace as a **required** step and its own comment explains why.
+Root `npm ci` alone is not enough.
+
+**The finding that matters, and it is against me.** `20260813200000_payment_records_provider_lifecycle.sql`
+is not a tidy-up. My migration `20260813180000` (task #84) added
+`check (provider = 'payfast')` to `payment_records` at line 150, against a column whose default is
+`manual_pending` and which all six writers insert. **Booking creation has been broken on both
+projects since 13 August** — not "checkout was missing", but no booking creatable at all, because the
+`payment_records` insert violates the constraint and `create-booking` throws.
+
+I confirmed the constraint text in my own migration rather than taking the claim on trust. The fix
+and its reasoning — lifecycle column vs. claim-about-a-provider, and finding constraints by
+`pg_get_constraintdef` rather than by name — are correct and I had nothing to add.
+
+**This makes #42 the highest-priority merge open.** Bookings do not work on live without it.
+
+**Deploy shape, measured by import:** only three functions bundle the new `_shared` modules —
+`confirm-payment`, `admin-confirm-payment`, `create-payment-session`. No existing `_shared` module is
+modified, so no wider fan-out. Order: migrations → those three → web app (the avatar-bucket rename
+must precede the web deploy; `Profile.tsx` already references `xooter-avatars`).
+
+**Two runbook gaps found and fixed in `go-live.md` §3d:**
+
+1. `create-payment-session` appeared in **no** deploy list. `deploy-edge-functions` deploys only what
+   is named unless the list is blank, and every recent production deploy used an explicit list. Omit
+   it and the Pay button 404s with nothing in any log.
+2. `XOOT_APP_ENV=staging` was only in `NEEDS-FOUNDER.md`, not in the deploy sequence — and the person
+   deploying staging is not the person reading `NEEDS-FOUNDER.md`.
+
+**Also theirs, also mine to have found:** `netlify.toml` had never set `VITE_APP_ENV`, and Netlify
+sets `CI=true`, so `validate-public-env.mjs` hard-failed **every Netlify build before it compiled**.
+That is Release's own file. It would have failed the instant the repo was linked.
+
+### The `founder-todo` contradiction, resolved
+
+The document said both "Production schema ✅ ZD-029 applied" (top table, with a direct schema read as
+evidence, measured 2026-08-13 11:00 SAST) and "Production is deliberately NOT carrying the rename"
+(§6). **The table is right; §6 was written before the apply and never updated.** Corrected, with the
+original kept for the record and its still-live §3b pricing-gate warning preserved.
+
+Two things stated rather than glossed:
+
+- **I did not re-measure the live schema.** Supabase MCP is unauthenticated in this session.
+- **No `db-push` run has ever targeted production.** All five successes — runs 3, 4, 8, 10, 15 — are
+  `Dry run on staging` / `APPLY on staging`, with the production-confirmation step **skipped** in
+  every one. Production's schema arrived by another route. Not wrong, but it means the repo's own
+  deploy workflow has never been exercised against production, and the first time will be the first
+  time.
+
+Verified: 821 tests, `tsc --noEmit`, `vite build`, `security:scan`.
+
+
+---
+
 ## Open questions between the roles
 
 Neither session should answer these alone. Record the question, let the founder decide.

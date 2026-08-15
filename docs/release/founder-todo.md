@@ -5,6 +5,41 @@ carried forward on trust.
 
 ---
 
+## 🚨 0. CI cannot run — this blocks the other four items
+
+**Added 2026-08-15.** GitHub Actions has been unable to allocate a runner for this account since
+**2026-08-14 ~10:59Z**. Last successful run of anything: **2026-08-13T22:07Z**.
+
+Measured on job `94999334066` (Tests, 2026-08-15 10:19Z) — every failing job since has this shape:
+
+```
+"steps"       absent      no step ever executed
+"runner_id"   0
+"runner_name" ""          no runner was ever assigned
+logs          HTTP 404    nothing was produced to log
+```
+
+⚠️ **This is the symptom, not the diagnosis.** The API does not expose a reason. GitHub's usual
+causes are a failed payment or an exhausted Actions spending limit, and both are settings only you
+can see — **GitHub → Settings → Billing**. I am not asserting which; I am asserting that no runner
+is being assigned.
+
+**What it is currently blocking:**
+
+| blocked | why it matters |
+|---|---|
+| CI on every branch | nothing pushed since 13 Aug has been verified by anything but a local run |
+| **`db-push`** | migrations cannot be applied to either project |
+| **`deploy-edge-functions`** | no function can be deployed anywhere |
+| Merging PR #42 on green | its 10 red checks are *absent*, not failing — see below |
+| Retiring the six orphaned functions | needs a dispatch |
+
+**Do not read PR #42's red board as a broken PR.** I ran that branch locally at `54349e1`:
+**1034/1034 tests, `tsc --noEmit` clean, `vite build` clean, `security:scan` 4/4.** The code is
+fine; the runners are absent.
+
+---
+
 ## Where production actually stands
 
 **The backend is finished. The product has never been live.** Those are both true, and holding them
@@ -270,9 +305,39 @@ migration reporting success. A `DO` block over `pg_constraint` cannot fail that 
 
 ---
 
-## 6. Production is deliberately NOT carrying the rename
+## 6. ⚠️ Corrected 2026-08-15 — production DOES carry the rename
 
-Staging has it; production does not. That is a decision, not an omission.
+**This section used to say "Staging has it; production does not."** That was written before the
+production apply and never updated, and it contradicted the table at the top of this same document
+— which says production carries ZD-029, with a direct schema read as its evidence
+(`xooters` exists, `zooters` gone, `bookings.xooter_id` present), measured 2026-08-13 11:00 SAST.
+
+The table is the one that is right. Both halves went to production together at 09:36:22Z; the note
+under the table records it. **The sequencing plan below was completed, not skipped.**
+
+Two things I could not close myself, stated rather than glossed:
+
+- **I did not re-measure the live schema today.** The Supabase MCP is unauthenticated in this
+  session, so this correction rests on the dated measurement above, not a fresh read.
+- **No `db-push` run has ever targeted production.** All five successful runs — 3, 4, 8, 10, 15 —
+  are named `Dry run on staging` or `APPLY on staging`, with the step *"Require an explicit
+  confirmation to apply to production"* **skipped** in every one. So production's schema arrived by
+  another route (the Supabase MCP, per the `apply_migration` version-drift repair). That is not
+  wrong, but it means **the repo's own deploy workflow has never been exercised against
+  production**, and the first time it is will be the first time.
+
+### What in this section is still live and still true
+
+The §3b pricing gate in `deploy-edge-functions` reads `xoot.co.za/build-info.json` and refuses a
+production deploy when it cannot reach it. A **blank function list** sets `writers=1`, so the gate
+applies. That is unchanged and still gates the next production deploy — including the three
+functions PR #42 needs. Step 1 is still yours:
+
+1. **[`domain-setup.md`](./domain-setup.md)** — point `xoot.co.za` at Netlify from GoDaddy
+2. *Verify live deploy* goes ✅ — which opens the pricing gate too; they read the same stamp
+3. Tell me, and I run the deploys
+
+### The original text, kept for the record
 
 The §3b pricing gate in `deploy-edge-functions` reads `xoot.co.za/build-info.json` and refuses a
 production deploy when it cannot. A **blank function list** — which is what the rename needs, because
