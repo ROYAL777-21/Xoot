@@ -1,12 +1,21 @@
 # Revoking the 34 client write grants that have no policy
 
-**Status: written and evidenced, deliberately NOT applied.** Held until PR #42 merges, by the
-founder's call — #42 is already 28 files and a security-hardening migration does not belong inside
-a payments PR. This document exists so that when the hold lifts, the migration can be written
-immediately instead of the writer audit being done again from scratch.
+**Status: written as `supabase/migrations/20260815150000_revoke_client_writes_without_policy.sql`.
+Not applied — needs a `db-push`.** PR #42 merged 2026-08-15, which lifted the hold.
 
-Audit run **2026-08-14** against `docs/security/client-write-surface.json` (generated from the live
-schema by `npm run security:authz`).
+Audit first run **2026-08-14** against `docs/security/client-write-surface.json`, and **re-verified
+against the live production database on 2026-08-15** before the migration was written: 34 grants,
+13 tables, unchanged. The writer greps were re-run against the merged `main` — still one writer,
+the `profiles` UPDATE below.
+
+The live re-check sharpened one thing this baseline flattens: **`analytics_events` is granted to
+`anon` AND `authenticated`**, while every other table here is `authenticated` only. The baseline
+records the pair, not the grantee, so revoking from one role would have left the other holding it.
+Every statement in the migration names both.
+
+`src/lib/client-write-revoke.test.ts` pins the migration against this document: no `revoke all`,
+exactly the audited pairs and no others, both roles on every statement, and no client writer for
+any table whose writes are fully revoked.
 
 ---
 
@@ -84,3 +93,35 @@ on a row you did not touch means a policy changed underneath you.
 
 It is a point-in-time measurement. A writer added between now and then would not be in the table
 above, and `src/pages/**` is owned by neither session, so either may have added one.
+`client-write-revoke.test.ts` now re-runs the writer grep in the suite, so the check happens on
+every push rather than only when somebody remembers.
+
+---
+
+## ⚠️ Separate finding, deliberately NOT in this migration: TRUNCATE
+
+Found while verifying the above on 2026-08-15:
+
+```
+grantee          privilege    tables
+anon             TRUNCATE     50
+authenticated    TRUNCATE     51
+```
+
+**`TRUNCATE` is not subject to RLS.** Unlike `DELETE`, no policy can filter it — a role holding it
+can empty a table outright. That makes it categorically different from the 34 grants above, which
+are inert precisely *because* no policy exists.
+
+Three things keep it off this migration:
+
+1. **Not reachable through the API.** PostgREST exposes SELECT/INSERT/UPDATE/DELETE over HTTP and
+   has no verb for TRUNCATE. There is no client path to it today.
+2. **It is the Supabase platform default.** `grant all on all tables in schema public to anon,
+   authenticated` includes TRUNCATE/REFERENCES/TRIGGER. This is default posture, not a mistake
+   anybody made here.
+3. **The blast radius is 50 tables, not 13.** Revoking it is a much wider change than the audited
+   34, and would need its own writer-equivalent audit — anything relying on TRUNCATE, including
+   test fixtures and `supabase db reset` paths, has to be checked first.
+
+Folding it in would have been mixing a broad posture change into a narrow, evidenced one. Recorded
+here as its own decision rather than smuggled into this one.

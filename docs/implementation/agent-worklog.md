@@ -247,6 +247,54 @@ rather than changed mid-payment-work.
 `app.config.ts` reads `scheme: ['xoot', 'zoot']`. Replaced with what is actually outstanding — the
 provider consoles. A register that lists a cleared blocker teaches people to skim it.
 
+### Correctness & Safety — 2026-08-15 — #40 revoke, and ZD-029's ninth surface
+
+PR #42 merged. Branch restarted from the new `main` (`370f428`) rather than stacked on merged
+history. Two migrations, both **unapplied**, both needing the same `db-push`.
+
+**`20260814230000` — a view whose OUTPUT column kept the old name.** `alter table … rename`
+rewrites what a view *reads* and never what it *exposes*, so `analytics_contractor_quality` ended up
+split: `SELECT z.id AS zooter_id … FROM xooters z`. Internally consistent, externally stale, on both
+projects.
+
+⚠️ **This is why `Types match the live schema` will not go green after the pending `db-push`, and I
+said twice that it would.** `types.ts` declares the row as `xooter_id` — ZD-029 was a 267-file text
+sweep and the generated types file is text, so it was swept without the view ever changing. No
+pending migration closed that gap. `20260813220000` fixes the sibling
+(`booking_sensitive_access.zooter_id`) only because that view had to be dropped to rename the
+function under it; this one had no such trigger. `pg_depend` reports 0 dependents, so drop-and-
+recreate is safe.
+
+**`20260815150000` — the 34 client write grants with no policy.** Re-verified against the live
+production database before writing, not taken from the day-old baseline: 34 grants, 13 tables,
+unchanged; writer greps re-run against merged `main`, still one writer.
+
+The live check sharpened one thing the baseline flattens: **`analytics_events` is granted to `anon`
+AND `authenticated`** while every other table here is `authenticated` only. The baseline records the
+pair, not the grantee, so revoking from one role would have left the other holding it. Every
+statement names both.
+
+Per-operation, never `revoke all` — `profiles` has a live UPDATE at `Profile.tsx:74` and only
+`profiles:DELETE` lacks a policy, so `revoke all on public.profiles` breaks profile editing in
+production. `client-write-revoke.test.ts` planted four ways: `revoke all` (3 fail), over-revoke,
+under-revoke, single-role.
+
+⚠️ **Found and deliberately excluded: `anon` and `authenticated` hold TRUNCATE on 50-51 tables.**
+TRUNCATE is **not subject to RLS** — no policy can filter it — which makes it categorically worse
+than the 34 inert grants. Three reasons it is not in this migration: PostgREST has no HTTP verb for
+TRUNCATE so there is no client path; it is the Supabase platform default (`grant all … to anon,
+authenticated`), not a local mistake; and the blast radius is 50 tables rather than 13, needing its
+own audit of anything that relies on it. Recorded in `client-write-revoke-plan.md` as its own
+decision rather than folded into an evidenced, narrow one.
+
+93 files → 95, 1052 tests, typecheck, lint, build, `security:scan` green.
+
+> 🚢 **Release:** both are `supabase/migrations/**`. The order matters and is encoded in the
+> timestamps — `20260814230000` recreates the view and faithfully restores its grants, then
+> `20260815150000` revokes the ones the audit found unreachable, including that view's. A rename
+> fix should not carry a permission change, so they are separate on purpose. **The `db-push`
+> backlog is now six migrations.**
+
 ### Correctness & Safety — 2026-08-14 — ZD-029's eighth surface, on the only path left to production
 
 Asked which blockers need a terminal, I went to answer it and found the terminal path itself broken.
