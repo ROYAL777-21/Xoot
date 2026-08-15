@@ -51,6 +51,10 @@
 -- `src/lib/constraint-writer-parity.test.ts` now reads every value-list CHECK in this directory
 -- against every literal the code writes to that column, so a seventh instance cannot ship quietly.
 
+-- ── Step 1: drop the old bodies, found by DEFINITION ────────────────────────────────────────
+-- Dynamic because the names cannot be trusted: `zooter_payout_accounts_provider_check` still
+-- carries the old brand even though its table is now `xooter_payout_accounts`, so any
+-- `drop constraint if exists <guess>` would silently do nothing while the `add` succeeded.
 do $$
 declare
   target record;
@@ -59,15 +63,13 @@ begin
   for target in
     select *
     from (values
-      ('public.safety_sos_alerts'::text,             'raiser_role'::text,   'raiser_role in (''customer'', ''xooter'')'::text),
-      ('public.support_handoff_contexts',            'role_type',           'role_type in (''user'', ''xooter'', ''admin'')'),
-      ('public.visit_recordings',                    'recorder_role',       'recorder_role in (''customer'', ''xooter'')'),
-      ('public.payment_reconciliation_checks',       'provider',            'provider = ''payfast'''),
-      ('public.xooter_payout_accounts',              'provider',            'provider in (''manual_bank'', ''payfast'')')
-    ) as t(tbl, col, new_check)
+      ('public.safety_sos_alerts'::text,       'raiser_role'::text),
+      ('public.support_handoff_contexts',      'role_type'),
+      ('public.visit_recordings',              'recorder_role'),
+      ('public.payment_reconciliation_checks', 'provider'),
+      ('public.xooter_payout_accounts',        'provider')
+    ) as t(tbl, col)
   loop
-    -- Skip a table that does not exist rather than failing the whole migration: the two payment
-    -- tables arrived in phase 7 and a project restored from an older point may not carry them.
     if to_regclass(target.tbl) is null then
       raise notice 'skipping %, table not present', target.tbl;
       continue;
@@ -78,7 +80,7 @@ begin
       from pg_constraint
       where contype = 'c'
         and conrelid = to_regclass(target.tbl)
-        -- The column name must appear as a WORD, so `provider` does not also match
+        -- The column must appear as a WORD, so `provider` does not also match
         -- `provider_reference`, whose length check is unrelated and must survive.
         and pg_get_constraintdef(oid) ~ ('\m' || target.col || '\M')
         and pg_get_constraintdef(oid) !~* 'char_length'
@@ -86,16 +88,36 @@ begin
       execute format('alter table %s drop constraint %I', target.tbl, c.conname);
       raise notice 'dropped % on %', c.conname, target.tbl;
     end loop;
-
-    execute format(
-      'alter table %s add constraint %I check (%s)',
-      target.tbl,
-      replace(replace(target.tbl, 'public.', ''), '.', '_') || '_' || target.col || '_check',
-      target.new_check
-    );
-    raise notice 'added % check on %', target.col, target.tbl;
   end loop;
 end $$;
+
+-- ── Step 2: re-add them as plain, readable statements ───────────────────────────────────────
+-- Deliberately NOT generated inside the block above, even though that would be shorter.
+--
+-- `src/lib/constraint-writer-parity.test.ts` reads these files to learn what each column allows,
+-- and so does anyone reviewing a migration. A constraint assembled from a `values` list inside a
+-- `DO` block is invisible to both — the guard read this file and still believed `raiser_role`
+-- allowed `zooter`, which is exactly the blindness that let six of these ship. **If the final
+-- state is not greppable, it is not reviewable.**
+alter table public.safety_sos_alerts
+  add constraint safety_sos_alerts_raiser_role_check
+  check (raiser_role in ('customer', 'xooter'));
+
+alter table public.support_handoff_contexts
+  add constraint support_handoff_contexts_role_type_check
+  check (role_type in ('user', 'xooter', 'admin'));
+
+alter table public.visit_recordings
+  add constraint visit_recordings_recorder_role_check
+  check (recorder_role in ('customer', 'xooter'));
+
+alter table public.payment_reconciliation_checks
+  add constraint payment_reconciliation_checks_provider_check
+  check (provider in ('payfast'));
+
+alter table public.xooter_payout_accounts
+  add constraint xooter_payout_accounts_provider_check
+  check (provider in ('manual_bank', 'payfast'));
 
 comment on column public.safety_sos_alerts.raiser_role is
   'Who raised the alert: customer or xooter. Renamed from ''zooter'' on 2026-08-15 — the ZD-029 rename moved raise-sos-alert to ''xooter'' and left this constraint body behind, so a Xooter could not raise an SOS alert at all.';
