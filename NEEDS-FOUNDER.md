@@ -5,7 +5,16 @@
 Each row says what it unblocks and how it is proven done — because an item with no closing condition
 never gets closed, only re-read. Sessions add to this file and keep working; they do not stop to ask.
 
-Last updated **2026-08-13**.
+Last updated **2026-08-15**.
+
+**Three files, three jobs.** They drifted apart before because two of them were both trying to be
+the ordered list; the split is now explicit:
+
+| file | answers |
+|---|---|
+| **this one** | *what do you need to supply, and why* — credentials, decisions, consequences |
+| [`docs/release/founder-todo.md`](docs/release/founder-todo.md) | *what state is production actually in*, with evidence per row |
+| [`docs/release/next-session.md`](docs/release/next-session.md) | *what do I run, in what order, and what proves it worked* |
 
 ---
 
