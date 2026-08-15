@@ -78,6 +78,26 @@ function Add-ManualBlocker {
   Add-Check $Area $Name "manual" $Detail
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# ⚠️  DO NOT SWEEP THIS FILE IN A RENAME.
+#
+# Some literals below say `zoot`/`zooter` on purpose. They name objects as the
+# migration that CREATED them named them, and an applied migration is immutable
+# history: `20260624224551` created `zooter_jobs`; `20260813160000` (ZD-029)
+# renamed it to `xooter_jobs` three months later. Rewriting the older file to say
+# `xooter_` would make a fresh `supabase db reset` create the new name early and
+# then fail the rename, breaking local resets and every Supabase preview branch.
+#
+# ZD-029 swept this file anyway, on 2026-08-13. Twenty literals moved to `xoot`
+# while their targets correctly did not, producing 25 `fail` checks and exit 1 —
+# and because this script only ever runs in a `windows-latest` job that stops at
+# its first failing step, the blocker-ledger failure behind it stayed invisible.
+#
+# `src/lib/ops-readiness-assertions.test.ts` now re-runs every assertion below on
+# Linux under `npx vitest run`, so the next sweep fails in seconds instead of in
+# a CI log nobody reads.
+# ─────────────────────────────────────────────────────────────────────────────
+
 Test-RepoFile "ops" "blocker.md" | Out-Null
 Test-RepoFile "ops" "BLOCKER_REPORT.md" | Out-Null
 Test-RepoFile "ops" "scripts/ops/check-blocker-ledger.ps1" | Out-Null
@@ -201,13 +221,13 @@ Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_a
 Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_and_sensitive_access_notifications.sql" "private\.enqueue_sensitive_access_notifications" "sensitive-access notification enqueue function"
 Test-RepoPattern "supabase" "supabase/migrations/20260624114953_booking_policy_and_sensitive_access_notifications.sql" "cron\.schedule" "sensitive-access notification scheduler"
 Test-RepoPattern "supabase" "supabase/migrations/20260624121516_policy_performance_hardening.sql" "bookings_participant_read" "optimized participant booking policy"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "get_xooter_job_cards" "safe xooter job-card RPC"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "add column if not exists decline_reason" "accepted-job migration repairs xooter job drift"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "destination_address" "accepted-job destination field"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "zj\.state = 'accepted'" "destination only after accepted job"
-Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_xooter_job_destination.sql" "not in \('cancelled', 'completed', 'rated'\)" "destination hidden after terminal booking states"
-Test-RepoPattern "supabase" "supabase/migrations/20260627101500_xooter_job_cards_service_boundary.sql" "get_xooter_job_cards_for_user" "service-role xooter job-card RPC"
-Test-RepoPattern "supabase" "supabase/migrations/20260627101500_xooter_job_cards_service_boundary.sql" "revoke all on function public\.get_xooter_job_cards\(\) from authenticated" "legacy xooter job-card RPC not browser-callable"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "get_zooter_job_cards" "safe xooter job-card RPC"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "add column if not exists decline_reason" "accepted-job migration repairs xooter job drift"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "destination_address" "accepted-job destination field"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "zj\.state = 'accepted'" "destination only after accepted job"
+Test-RepoPattern "supabase" "supabase/migrations/20260624224551_accepted_zooter_job_destination.sql" "not in \('cancelled', 'completed', 'rated'\)" "destination hidden after terminal booking states"
+Test-RepoPattern "supabase" "supabase/migrations/20260627101500_zooter_job_cards_service_boundary.sql" "get_zooter_job_cards_for_user" "service-role xooter job-card RPC"
+Test-RepoPattern "supabase" "supabase/migrations/20260627101500_zooter_job_cards_service_boundary.sql" "revoke all on function public\.get_zooter_job_cards\(\) from authenticated" "legacy xooter job-card RPC not browser-callable"
 Test-RepoFile "supabase" "supabase/functions/get-xooter-job-cards/index.ts" | Out-Null
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "operational_controls" "Phase 1 operational controls table"
 Test-RepoPattern "supabase" "supabase/migrations/20260627090000_phase1_governance_controls.sql" "approval_requests" "Phase 1 approval request model"
@@ -229,9 +249,9 @@ Test-RepoPattern "supabase" "supabase/migrations/20260627104500_drop_duplicate_p
 Test-RepoPattern "supabase" "supabase/migrations/20260627104500_drop_duplicate_production_indexes.sql" "idx_fk_integration_outbox_5366d64d19a03af936eb8e766c10b676" "production duplicate outbox index cleanup"
 Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "support_tickets_select_owner_or_admin" "legacy support ticket RLS convergence"
 Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "user_roles_select_owner_or_admin" "legacy user role RLS convergence"
-Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "xooter_reliability_metrics_select_owner_or_admin" "legacy reliability RLS convergence"
-Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "xooters_select_self_or_admin" "legacy xooter RLS convergence"
-Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "revoke all on table public\.xooters from anon" "xooters base table anon grant removal"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "zooter_reliability_metrics_select_owner_or_admin" "legacy reliability RLS convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "zooters_select_self_or_admin" "legacy xooter RLS convergence"
+Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "revoke all on table public\.zooters from anon" "xooters base table anon grant removal"
 Test-RepoPattern "supabase" "supabase/migrations/20260627110000_legacy_rls_policy_convergence.sql" "security invoker" "public has_role is self-scoped security invoker"
 Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "admin_review_queue_insert_user_or_admin" "admin review queue permissive policy convergence"
 Test-RepoPattern "supabase" "supabase/migrations/20260627113000_performance_advisor_cleanup.sql" "messages_participants_select" "messages permissive policy convergence"
@@ -296,10 +316,10 @@ Test-RepoPattern "phase-4-invoices" "supabase/functions/.env.example" "XOOT_INVO
 Test-RepoPattern "phase-4-invoices" "docs/EMAIL_TEMPLATES.md" "booking_invoice_resend" "email playbook covers invoice resend"
 Test-RepoFile "phase-5-concierge" "docs/implementation/phase-5-xoot-concierge.md" | Out-Null
 Test-RepoFile "phase-5-concierge" "supabase/functions/report-concierge-answer/index.ts" | Out-Null
-Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_xoot_concierge.sql" "xoot_concierge_knowledge_versions" "Concierge knowledge versions table"
-Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_xoot_concierge.sql" "xoot_concierge_feedback" "Concierge feedback table"
-Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_xoot_concierge.sql" "support\.turnstile_required" "Concierge Turnstile operational gate"
-Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_xoot_concierge.sql" "refund_payment" "Concierge prohibited payment actions"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "zoot_concierge_knowledge_versions" "Concierge knowledge versions table"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "zoot_concierge_feedback" "Concierge feedback table"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "support\.turnstile_required" "Concierge Turnstile operational gate"
+Test-RepoPattern "phase-5-concierge" "supabase/migrations/20260629200351_phase5_zoot_concierge.sql" "refund_payment" "Concierge prohibited payment actions"
 Test-RepoPattern "phase-5-concierge" "supabase/functions/_shared/turnstile.ts" "siteverify" "Cloudflare Turnstile server verification"
 Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "verifyTurnstile" "Concierge Turnstile verification boundary"
 Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.ts" "store: false" "Concierge OpenAI no-store setting"
@@ -307,23 +327,23 @@ Test-RepoPattern "phase-5-concierge" "supabase/functions/support-respond/index.t
 Test-RepoPattern "phase-5-concierge" "supabase/config.toml" "\[functions\.report-concierge-answer\]\s+verify_jwt = false" "report-concierge-answer allows guest reports"
 Test-RepoPattern "phase-5-concierge" "src/components/xoot/XootSupportBot.tsx" "report-concierge-answer" "Concierge UI reports answers through Edge Function"
 Test-RepoFile "phase-6-xoot-black" "docs/implementation/phase-6-xoot-black.md" | Out-Null
-Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black.enabled" "Xoot Black feature flag exists"
-Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black_area_pilots" "Xoot Black selected-area pilot gates"
-Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black_equipment_evidence" "Xoot Black private equipment evidence"
-Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black_status_history" "Xoot Black status history"
-Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "booking_service_line_items" "explicit booking line items"
-Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "xoot_black_completion_certificates" "Xoot Black completion certificates"
-Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_xoot_black_foundation.sql" "no_external_certification_claims" "Xoot Black avoids unsupported certification claims"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black.enabled" "Xoot Black feature flag exists"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_area_pilots" "Xoot Black selected-area pilot gates"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_equipment_evidence" "Xoot Black private equipment evidence"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_status_history" "Xoot Black status history"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "booking_service_line_items" "explicit booking line items"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "zoot_black_completion_certificates" "Xoot Black completion certificates"
+Test-RepoPattern "phase-6-xoot-black" "supabase/migrations/20260630003602_phase6_zoot_black_foundation.sql" "no_external_certification_claims" "Xoot Black avoids unsupported certification claims"
 Test-RepoPattern "phase-6-xoot-black" "src/lib/operations.ts" "canOfferXootBlack" "Xoot Black shared eligibility gate"
 Test-RepoPattern "phase-6-xoot-black" "src/lib/operations.ts" "buildXootBlackLineItem" "Xoot Black explicit line item helper"
 Test-RepoFile "phase-7-payments" "docs/implementation/phase-7-payments-payouts.md" | Out-Null
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payment_provider_capabilities" "payment provider capability table"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payment_reconciliation_checks" "payment reconciliation audit table"
-Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "xooter_payout_accounts" "verified payout account table"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "zooter_payout_accounts" "verified payout account table"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payout_change_requests" "payout account change workflow"
-Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "xooter_payout_holds" "payout hold ledger"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "zooter_payout_holds" "payout hold ledger"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "can_activate_payment_provider" "payment provider activation helper"
-Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "can_release_xooter_payout" "payout release readiness helper"
+Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "can_release_zooter_payout" "payout release readiness helper"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payments\.hosted_checkout\.stitch" "Stitch hosted checkout provider gate"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payments\.hosted_checkout\.ozow" "Ozow hosted checkout provider gate"
 Test-RepoPattern "phase-7-payments" "supabase/migrations/20260630005420_phase7_payments_payouts_foundation.sql" "payouts\.enabled" "payout release provider gate"

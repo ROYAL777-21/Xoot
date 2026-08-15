@@ -11,6 +11,8 @@ import { TrustBadges } from "@/components/xoot/TrustBadges";
 import { BookingChat } from "@/components/xoot/BookingChat";
 import { VoiceCallPanel } from "@/components/xoot/VoiceCallPanel";
 import { FareSplitPanel } from "@/components/xoot/FareSplitPanel";
+import { PayFastCheckout } from "@/components/PayFastCheckout";
+import { formatZAR } from "@/lib/format";
 import { SosButton } from "@/components/xoot/SosButton";
 import { TipCard } from "@/components/xoot/TipCard";
 import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
@@ -36,6 +38,7 @@ type Msg = { id: string; sender_type: string; body: string; created_at: string }
 type TimelineEvent = { id: string; status: string; label: string; created_at: string };
 type CompletionPhoto = { id: string; photo_type: "before" | "after"; storage_path: string; created_at: string };
 type Review = { id: string; rating: number; notes: string | null };
+type PendingPayment = { id: string; amount: number; status: string };
 type MaskedCallDetails = {
   call_session_id?: string;
   status?: string;
@@ -125,16 +128,32 @@ const BookingDetail = () => {
   const [requestingCall, setRequestingCall] = useState(false);
   const [maskedCall, setMaskedCall] = useState<MaskedCallDetails | null>(null);
   const [eta, setEta] = useState(12);
+  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);
 
   const load = useCallback(async () => {
     if (!user || !id) return;
-    const [{ data }, { data: xooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }] = await Promise.all([
+    const [{ data }, { data: xooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }, { data: pay }] = await Promise.all([
       supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
       supabase.from("booking_xooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
       supabase.from("messages").select("*").eq("booking_id", id).order("created_at"),
       supabase.from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
       supabase.from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
       supabase.from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
+      /*
+       * The unpaid record for this booking, so a customer who closed the PayFast tab can come back
+       * and finish. Scoped to `user_id` as well as `booking_id`: RLS already restricts reads to
+       * the owner, but a fare-split booking can carry several people's records and only the
+       * caller's is theirs to pay.
+       */
+      supabase
+        .from("payment_records")
+        .select("id,amount,status")
+        .eq("booking_id", id)
+        .eq("user_id", user.id)
+        .eq("status", "pending")
+        .order("created_at")
+        .limit(1)
+        .maybeSingle(),
     ]);
     if (!data) { navigate("/app/bookings"); return; }
     setBooking({ ...data, xooter: xooter ?? null });
@@ -142,6 +161,7 @@ const BookingDetail = () => {
     setEvents((ev ?? []) as TimelineEvent[]);
     setPhotos((ph ?? []) as CompletionPhoto[]);
     setReview(rv as Review | null);
+    setPendingPayment((pay as PendingPayment | null) ?? null);
     setLoading(false);
   }, [id, navigate, user]);
 
@@ -509,6 +529,29 @@ const BookingDetail = () => {
               </div>
             )}
           </Card>
+
+          {/*
+            Finish an unpaid booking.
+
+            A customer who closed the PayFast tab had no way back before this: `create-booking`
+            returned a `payment_session_url` that nothing in the app read, so an abandoned checkout
+            was an abandoned booking. The amount shown is the record's own — the server's price,
+            not a recomputed one, so this screen and the charge cannot disagree.
+          */}
+          {pendingPayment && (
+            <Card className="rounded-3xl p-5 border-primary/30 bg-primary/5">
+              <h2 className="font-display text-xl font-bold mb-1 flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" /> Payment outstanding
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                This booking is held at {formatZAR(Number(pendingPayment.amount))}. It is confirmed and assigned once payment reaches us.
+              </p>
+              <PayFastCheckout
+                paymentRecordId={pendingPayment.id}
+                label={`Pay ${formatZAR(Number(pendingPayment.amount))}`}
+              />
+            </Card>
+          )}
 
           {/* Splitting is a payment relationship, not an access grant — the panel hides itself
               once the booking is being paid, since there is then nothing left to divide. */}

@@ -1,9 +1,63 @@
+# ⚠️ NETLIFY SETS `CI=true`. THAT IS WHY THIS FILE HAS TO SET `VITE_APP_ENV`.
+#
+# `npm run build` runs `prebuild` -> `npm run config:check` ->
+# `scripts/config/validate-public-env.mjs`, which contains:
+#
+#     if (process.env.CI && !appEnv) {
+#       fail("CI builds must set VITE_APP_ENV explicitly.");
+#     }
+#
+# Until 2026-08-13 this file set only NODE_VERSION, so every Netlify build failed on that line
+# before compiling anything. It looked like a broken PR each time, and it was not: the deploy
+# preview on #42 failed identically on four consecutive commits, including after a lockfile fix
+# that turned the equivalent GitHub Actions job green.
+#
+# Reproduced locally rather than guessed:
+#
+#     CI=true node scripts/config/validate-public-env.mjs
+#     -> Xoot environment configuration error: CI builds must set VITE_APP_ENV explicitly.  (exit 1)
+#
+#     CI=true VITE_APP_ENV=development node scripts/config/validate-public-env.mjs
+#     -> Xoot public environment check passed for development.                              (exit 0)
+#
+# This is the SECOND appearance of one bug. `.github/workflows/tests.yml` carries the comment
+# "when CI is set but VITE_APP_ENV is not. The Build step had therefore never once succeeded" —
+# the lesson was applied to GitHub Actions and never here. `src/lib/netlify-build-env.test.ts` now
+# fails if any context loses its `VITE_APP_ENV`, because a comment already proved insufficient.
+
 [build]
   command = "npm ci --no-audit --prefer-offline && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "20"
+
+# Production. `VITE_APP_ENV = "production"` also makes `requiresRealSupabase` true in
+# validate-public-env.mjs, so this context ADDITIONALLY needs real `VITE_SUPABASE_URL` and
+# `VITE_SUPABASE_PUBLISHABLE_KEY` set in Netlify's own environment settings.
+#
+# They are deliberately NOT committed here. Both are public values that already ship inside the
+# client bundle, so this is not secrecy — it is that the repo's convention supplies them from
+# variables (`vars.VITE_SUPABASE_PUBLISHABLE_KEY` in `.github/workflows/web-preview.yml`) rather
+# than from source, and one place to change a project reference is better than two.
+#
+# See NEEDS-FOUNDER.md §2. Until they are set, production builds fail with
+# "staging and production builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY".
+[context.production.environment]
+  VITE_APP_ENV = "production"
+
+# Deploy previews and branch deploys build with `development`, which is the only value that lets
+# them build with no further configuration: `staging` and `production` both trip
+# `requiresRealSupabase` and would keep previews red until someone filled in the Netlify UI.
+#
+# It is also the safer default in its own right — a preview can never accidentally point at the
+# production Supabase project. Pointing previews at STAGING is the upgrade, and needs staging's two
+# public values in the Netlify UI first.
+[context.deploy-preview.environment]
+  VITE_APP_ENV = "development"
+
+[context.branch-deploy.environment]
+  VITE_APP_ENV = "development"
 
 [[redirects]]
   from = "/*"

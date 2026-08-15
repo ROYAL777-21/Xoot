@@ -2,20 +2,23 @@ import {
   fail,
   getServiceClient,
   handlePreflight,
-  insertNotification,
-  insertOutbox,
   ok,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
-import { assertTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 import { claimProviderEvent, markProviderEventProcessed } from "../_shared/governance-utils.ts";
 import {
+  applyBookingPaymentConfirmed,
+  assertBookingCanConfirmPayment,
+} from "../_shared/payment-confirmation.ts";
+import {
   PAYFAST_VALIDATE_URL_LIVE,
+  PAYFAST_VALIDATE_URL_SANDBOX,
   normaliseStatus,
   sourceAllowed,
   validateWithPayFast,
   verifySignature,
 } from "../_shared/payfast.ts";
+import { resolveMode } from "../_shared/payfast-checkout.ts";
 
 /**
  * ⚠️ REWRITTEN 2026-08-13 for PayFast. Read this before "simplifying" it back.
@@ -94,7 +97,23 @@ Deno.serve(async (req) => {
    */
   const validation = await validateWithPayFast(
     rawBody,
-    Deno.env.get("PAYFAST_VALIDATE_URL") ?? PAYFAST_VALIDATE_URL_LIVE,
+    /*
+     * ⚠️ The validate host MUST match the host the checkout sent the customer to.
+     *
+     * This defaulted to the LIVE validate URL while `create-payment-session` defaults to the
+     * SANDBOX process URL. A sandbox test payment would then be posted back to the live endpoint,
+     * which has never heard of it, return INVALID, and the booking would never confirm — with the
+     * signature and amount checks both passing, so the log would say "postback did not validate"
+     * and point at nothing.
+     *
+     * That is precisely the founder's first smoke test, so it would have failed on the one run
+     * that matters. Both sides now read `PAYFAST_MODE`, and an explicit `PAYFAST_VALIDATE_URL`
+     * still overrides.
+     */
+    Deno.env.get("PAYFAST_VALIDATE_URL") ??
+      (resolveMode(Deno.env.get("PAYFAST_MODE")) === "live"
+        ? PAYFAST_VALIDATE_URL_LIVE
+        : PAYFAST_VALIDATE_URL_SANDBOX),
   );
   if (!validation.ok) return fail(validation.reason, origin, 401);
 
@@ -129,26 +148,33 @@ Deno.serve(async (req) => {
     if (paymentError || !payment?.id) return fail("payment record not found", origin, 404);
     if (String(payment.currency ?? "ZAR").toUpperCase() !== currency) return fail("payment currency mismatch", origin, 409);
     if (Math.round(Number(payment.amount) * 100) !== Math.round(amount * 100)) return fail("payment amount mismatch", origin, 409);
-    if (payment.status === "paid") {
-      return ok({ payment_record_id: payment.id, booking_id: payment.booking_id, idempotent: true }, origin);
+    /*
+     * `admin_confirmed` counts as already handled, not just `paid`.
+     *
+     * An admin can confirm a record that was already routed to PayFast — they saw the money in the
+     * dashboard, or the customer sent proof. That leaves `status = 'admin_confirmed'` and the
+     * booking at `payment_confirmed`. Without this branch a later genuine ITN for the same payment
+     * would miss the idempotency return, then fail `assertBookingCanConfirmPayment` because the
+     * booking has already advanced, and return 409 — so PayFast would retry that notification on a
+     * schedule forever against a payment that is, in fact, settled.
+     */
+    if (payment.status === "paid" || payment.status === "admin_confirmed") {
+      return ok(
+        { payment_record_id: payment.id, booking_id: payment.booking_id, idempotent: true, prior_status: payment.status },
+        origin,
+      );
     }
 
+    /*
+     * Asserted BEFORE the provider event is claimed. Claiming is what makes this webhook
+     * idempotent, and a claim followed by a refused transition would burn the event id and turn
+     * PayFast's retry into a silent no-op.
+     */
     let bookingForPayment: Record<string, any> | null = null;
     if (payment.booking_id) {
-      const { data: booking } = await supa
-        .from("bookings")
-        .select("id,user_id,xooter_id,scheduled_at,service_type,status")
-        .eq("id", payment.booking_id)
-        .maybeSingle();
-
-      const currentStatus = normaliseBookingStatus(booking?.status);
-      if (!booking?.id || !currentStatus) return fail("booking status is unsupported", origin, 409);
-      try {
-        assertTransition(currentStatus, "payment_confirmed");
-      } catch (error) {
-        return fail(error instanceof Error ? error.message : "invalid booking transition", origin, 409);
-      }
-      bookingForPayment = booking;
+      const check = await assertBookingCanConfirmPayment(supa, payment.booking_id);
+      if (!check.ok) return fail(check.reason, origin, 409);
+      bookingForPayment = check.booking;
     }
 
     // The only route into this function is a verified PayFast ITN, so the provider is not
@@ -187,58 +213,22 @@ Deno.serve(async (req) => {
       })
       .eq("id", payment.id);
 
+    /*
+     * Everything that follows the money — booking row, status event, job offer, notification and
+     * the assignment outbox event — is in `_shared/payment-confirmation.ts`, which
+     * `admin-confirm-payment` also calls.
+     *
+     * It was inline here until 2026-08-13, and the admin path did none of it: an EFT confirmed
+     * against a bank statement left the booking `draft` forever. Sharing it is what stops the two
+     * routes to `payment_confirmed` from reaching different states.
+     */
     if (payment.booking_id && bookingForPayment) {
-      await supa
-        .from("bookings")
-        .update({
-          status: "payment_confirmed",
-          payment_status: "paid",
-          payment_confirmed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", payment.booking_id);
-
-      await supa.from("booking_status_events").insert({
-        booking_id: bookingForPayment.id,
-        actor_id: payment.user_id,
-        status: "payment_confirmed",
+      await applyBookingPaymentConfirmed(supa, {
+        bookingId: payment.booking_id,
+        actorId: payment.user_id,
+        paymentRecordId: payment.id,
         label: "Payment received",
-        meta: { payment_record_id: payment.id },
-      });
-
-      if (bookingForPayment.xooter_id) {
-        const { data: existingJob } = await supa
-          .from("xooter_jobs")
-          .select("id")
-          .eq("booking_id", bookingForPayment.id)
-          .eq("xooter_id", bookingForPayment.xooter_id)
-          .maybeSingle();
-        if (existingJob?.id) {
-          await supa.from("xooter_jobs").update({ state: "offered" }).eq("id", existingJob.id);
-        } else {
-          await supa.from("xooter_jobs").insert({ booking_id: bookingForPayment.id, xooter_id: bookingForPayment.xooter_id, state: "offered" });
-        }
-      }
-
-      await insertNotification(supa, {
-        userId: payment.user_id,
-        kind: "payment_confirmed",
-        title: "Payment confirmed",
-        body: "Your Xoot payment is confirmed. We are now finalising the booking assignment.",
-        link: `/app/bookings/${payment.booking_id}`,
-      });
-
-      await insertOutbox(supa, {
-        source_table: "bookings",
-        source_id: payment.booking_id,
-        event_type: "payment_confirmed_assignment_search",
-        channel: "in_app",
-        owner: "Scheduling & Allocation Agent",
-        stack_tool: "Xoot assignment queue",
-        payload: { booking_id: payment.booking_id, payment_record_id: payment.id },
-        status: "queued",
-        approval_required: false,
-        created_by: payment.user_id,
+        booking: bookingForPayment,
       });
     }
 

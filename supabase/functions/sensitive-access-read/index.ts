@@ -85,9 +85,32 @@ Deno.serve(async (req) => {
     const { bookingId, requestedFields = [] } = await req.json();
     if (!bookingId) return jsonResponse({ error: "bookingId required" }, 400, origin);
 
+    /*
+     * `can_access_sensitive_data` takes a **`xooters.id`**, not an auth user id.
+     * `bookings.xooter_id` is a foreign key to `xooters.id` — read from the live schema, not
+     * assumed — and the function compares the two directly.
+     *
+     * ⚠️ This previously passed `p_actor_id: user.id`, which was wrong twice over: no such
+     * parameter exists (PostgREST resolves an RPC by name **and** argument names, so the call
+     * never resolved), and an auth user id would not have matched `bookings.xooter_id` even if it
+     * had. The call therefore returned an error and this endpoint answered 500 to every request.
+     *
+     * It failed CLOSED, so no gate code was ever wrongly released — but no Xooter could read one
+     * either. `revoke-sensitive-access` gets this right and is the shape copied here.
+     * `src/lib/rpc-names-exist.test.ts` now fails on an argument name the schema does not declare.
+     */
+    const { data: xooterRow } = await supabase
+      .from("xooters")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!xooterRow?.id) {
+      return jsonResponse({ error: "Sensitive access is limited to the assigned Xooter" }, 403, origin);
+    }
+
     const { data: allowed, error: decisionError } = await supabase.rpc("can_access_sensitive_data", {
+      p_xooter_id: xooterRow.id,
       p_booking_id: bookingId,
-      p_actor_id: user.id,
     });
     if (decisionError) return jsonResponse({ error: decisionError.message }, 500, origin);
     if (!allowed) return jsonResponse({ error: "Sensitive access is outside the booking window" }, 403, origin);

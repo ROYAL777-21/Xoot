@@ -29,8 +29,16 @@ Do not paste these into chat.
 
 Set one of these paths:
 
-- `SUPABASE_ACCESS_TOKEN` plus the matching `ZOOT_STAGING_SUPABASE_DB_PASSWORD` or `ZOOT_PRODUCTION_SUPABASE_DB_PASSWORD`, for `supabase link` and function deployment.
-- `ZOOT_STAGING_SUPABASE_DB_URL` or `ZOOT_PRODUCTION_SUPABASE_DB_URL`, for database migration push by connection string.
+- `SUPABASE_ACCESS_TOKEN` plus the matching `XOOT_STAGING_SUPABASE_DB_PASSWORD` or `XOOT_PRODUCTION_SUPABASE_DB_PASSWORD`, for `supabase link` and function deployment.
+- `XOOT_STAGING_SUPABASE_DB_URL` or `XOOT_PRODUCTION_SUPABASE_DB_URL`, for database migration push by connection string.
+
+> ⚠️ **These were `ZOOT_` in this document until 2026-08-14, and the scripts had already moved to
+> `XOOT_`.** ZD-029 renamed the reads and left the instructions behind, so exporting exactly what
+> this page said produced *"Set PRODUCTION database URL or SUPABASE_ACCESS_TOKEN locally before
+> deploying"* — which reads as a missing credential when only the name was wrong.
+>
+> `scripts/ops/deploy-supabase-backend.ps1` now accepts **either** spelling, `XOOT_` first, so a
+> shell profile still exporting `ZOOT_` keeps working. Use `XOOT_`.
 
 For one-off local use, the shared deploy wrapper also accepts generic
 `SUPABASE_DB_URL` and `SUPABASE_DB_PASSWORD` for the selected target. Prefer the
@@ -65,8 +73,8 @@ migration-history procedure in
 `docs/implementation/supabase-migration-status-repair-20260630.md`.
 
 ```powershell
-$env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF="mvlrkelahhsyjrwgsxaf"
-$env:ZOOT_PRODUCTION_SUPABASE_DB_URL="postgresql://..."
+$env:XOOT_PRODUCTION_SUPABASE_PROJECT_REF="mvlrkelahhsyjrwgsxaf"
+$env:XOOT_PRODUCTION_SUPABASE_DB_URL="postgresql://..."
 npm run ops:supabase:deploy:production -- -DryRun
 npm run ops:supabase:deploy:production -- -VerifyLive
 ```
@@ -144,7 +152,7 @@ npm run ops:supabase:verify:live
 
 For deploy-and-verify in one step, pass `-VerifyLive` to either
 `deploy-staging-backend.ps1` or `deploy-production-backend.ps1` after setting the
-matching `ZOOT_<ENV>_SUPABASE_DB_URL` variable.
+matching `XOOT_<ENV>_SUPABASE_DB_URL` variable.
 
 ## Storage Buckets
 
@@ -196,7 +204,7 @@ https://<project-ref>.supabase.co/auth/v1/callback
 The dashboard can be replaced by the Management API script once `SUPABASE_ACCESS_TOKEN` is available locally:
 
 ```powershell
-$env:ZOOT_SUPABASE_PROJECT_REF="fxmxyabdjqviqbcxmvlp"
+$env:XOOT_SUPABASE_PROJECT_REF="fxmxyabdjqviqbcxmvlp"
 npm run ops:supabase:auth-config -- -UseLocalConfig -SiteUrl "https://<approved-staging-domain-or-preview-origin>"
 npm run ops:supabase:auth-config -- -UseLocalConfig -SiteUrl "https://<approved-staging-domain-or-preview-origin>" -Apply
 ```

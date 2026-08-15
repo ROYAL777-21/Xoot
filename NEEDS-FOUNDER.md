@@ -25,8 +25,20 @@ The integration is built and tested. It cannot take a cent without these.
 should use the real one. Sharing one merchant means a test payment appears in real books.
 
 Also set, per environment:
+- `PAYFAST_MODE` — `sandbox` or `live`. **Anything that is not exactly `live` means sandbox**, so
+  the failure direction is a test payment rather than a real charge.
 - `PAYFAST_PROCESS_URL` and `PAYFAST_VALIDATE_URL` — sandbox hosts on staging, live hosts on
-  production. Defaults are in `supabase/functions/_shared/payfast.ts`.
+  production. Defaults are in `supabase/functions/_shared/payfast.ts`; `PAYFAST_MODE` already picks
+  the right one, so these are only needed to override.
+- `PAYFAST_NOTIFY_URL` *(optional)* — where PayFast posts the ITN. Derived from `SUPABASE_URL` as
+  `<project>/functions/v1/confirm-payment` when unset, which is right unless the functions sit
+  behind a custom domain.
+- **`XOOT_APP_ENV`** — set to `staging` on the staging project. ⚠️ Not currently set anywhere, and
+  it is not cosmetic: `payment_provider_capabilities` has one row per environment, and an
+  unlabelled deployment resolves to **`production`**. So a staging Edge Function reads
+  *production's* readiness row — verifying PayFast on staging would not open staging, and approving
+  production would open staging too. Neither bites today because every flag on both rows is false,
+  but it is a money gate reading the wrong row.
 - `PAYFAST_ALLOWED_IPS` *(optional, recommended)* — comma-separated. **Left empty the source check
   is skipped and logged**, deliberately: this environment's egress proxy blocks
   `developers.payfast.co.za`, so the list could not be read from the primary source, and a guessed
@@ -35,6 +47,14 @@ Also set, per environment:
 
 **Proves it done:** a sandbox payment completes and `confirm-payment` records it. Then flip
 `payments.provider_checkout` and `payments.hosted_checkout.payfast` on.
+
+⚠️ **Both flags are needed AND the capability row.** `create-payment-session` requires evidence
+(`payment_provider_capabilities.payfast` — every flag currently false) *and* intent (both controls,
+currently false). Flipping the controls alone still refuses, with the reason in the response, so
+the screen will tell you which one is missing rather than showing a dead button. Set
+`hosted_checkout_enabled`, `webhook_signature_verified`, `callback_urls_verified` and
+`reconciliation_verified` to true only once a sandbox payment has actually round-tripped — that row
+is a claim someone verified it.
 
 ---
 
@@ -53,6 +73,32 @@ security headers.
 **→ Four screens: [`docs/release/domain-setup.md`](./docs/release/domain-setup.md)**
 
 **Do not touch GoDaddy.** DNS and TLS are already right.
+
+⚠️ **Linking was never sufficient, and this entry used to imply it was.** Netlify sets `CI=true`,
+and `scripts/config/validate-public-env.mjs` fails outright when `CI` is set and `VITE_APP_ENV` is
+not. `netlify.toml` set only `NODE_VERSION`, so **the very first push after linking would have
+failed before compiling anything** — and every deploy preview on PR #42 did exactly that, four
+commits running.
+
+Fixed in code on 2026-08-13: `netlify.toml` now sets `VITE_APP_ENV` per context. **Deploy previews
+build with no further action from you.** Production needs two more values, below.
+
+### 2a. Two public values in Netlify's environment settings
+
+Needed by the **production context only**. `VITE_APP_ENV = "production"` also requires real Supabase
+public values, or the build fails with *"staging and production builds require real
+VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY"*.
+
+| variable | value |
+|---|---|
+| `VITE_SUPABASE_URL` | `https://mvlrkelahhsyjrwgsxaf.supabase.co` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | the `sb_publishable_…` key — Supabase → Settings → API |
+
+Netlify → Site configuration → Environment variables, scoped to the **Production** context.
+
+**Neither is a secret** — both ship inside the client bundle already. They are not committed
+because the repo supplies them from variables rather than source, so a project reference changes in
+one place rather than two.
 
 **Proves it done:** Actions → *Verify live deploy* reports ✅. That also opens the §3b pricing gate,
 which currently blocks production Edge Function deploys.
@@ -90,12 +136,45 @@ Live Activities, widgets, Siri intents, push, deep links. No simulator tests the
 
 ---
 
+### 6. Invoice legal entity — set under the `XOOT_` names, not `ZOOT_`
+
+`generate-booking-invoice` refuses outright when the legal entity is unset — *"invoice legal entity
+is not configured"* — so **no completed booking produces an invoice until these are set.**
+
+| secret | note |
+|---|---|
+| `XOOT_INVOICE_LEGAL_ENTITY` | registered business name |
+| `XOOT_INVOICE_LEGAL_ENTITY_REGISTRATION` | company registration number |
+| `XOOT_INVOICE_VAT_RATE` | `0` until VAT-registered |
+| `XOOT_INVOICE_VAT_NUMBER` | **required** once the rate is above zero, enforced in code |
+
+⚠️ **If you set these before 2026-08-13, you set them under `ZOOT_` and they are doing nothing.**
+ZD-029 moved the names in the function and left `.env.example` and both setup docs on the old
+spelling, so the documented setup configured four variables nothing read. Fixed in the same change
+as this entry; the secrets themselves have to be re-set by hand on both projects.
+
+Failing closed was the right direction — a South African tax invoice showing a blank legal entity
+would be worse than no invoice — but it means the symptom is silence, not an error anyone sees.
+
+**Proves it done:** a completed booking generates a PDF invoice carrying the entity name.
+
+---
+
 ## 🟡 Before the first store submission
 
-### 6. The `zoot://` deep-link scheme (#34)
+### 7. Provider consoles must learn the new app identity (ZD-028)
 
-Still live in `mobile/app.config.ts`. It is baked into the app record at first submission, so it
-changes **now or never**.
+The scheme and bundle id **changed in code** and now need the same change in three consoles. Until
+they match, native sign-in works only on the retained `zoot://` callback.
+
+| what | where |
+|---|---|
+| Add `xoot://auth/callback` to the redirect allowlist | Supabase → Authentication → URL Configuration |
+| Update the redirect URI / reversed-client id | Google Cloud OAuth client(s) |
+| Update the bundle id, and Sign in with Apple if enabled | Apple Developer → Identifiers |
+| **New identifier means new EAS credentials** | EAS — the old ones are bound to `za.co.zoothome.app` |
+
+**Proves it done:** a native sign-in completes on a device build using `xoot://`.
 
 ---
 
@@ -114,11 +193,33 @@ No session should answer these alone. Each has its full reasoning on the issue.
 
 ## ✅ Cleared — kept so nothing re-discovers them
 
-- **`ENCRYPTION_KEY`** — set on both projects 2026-08-13, different values. Closes #28 once a gate
-  code round-trips.
+- **`ENCRYPTION_KEY`** — set on both projects 2026-08-13, different values. ⚠️ **This does not close
+  [#28](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/28), and the issue is right to
+  still be open.** Its definition of done is a gate code stored *and read back* through the app,
+  because Supabase never reads a secret value back — "reported set" is not "verified set".
+
+  **That proof was impossible to obtain until now, for a second reason.** `sensitive-access-read`
+  called `can_access_sensitive_data` with `p_actor_id`, a parameter it does not declare — PostgREST
+  resolves an RPC by name **and** argument names, so the call never resolved and the endpoint
+  answered 500 to every request. ZD-029 had also left the function's body querying `zooter_id` after
+  the column became `xooter_id`. Both are fixed on this branch (`20260813220000` plus the
+  `p_xooter_id` correction) and are **not on `main` and not deployed**. Nothing leaked — it failed
+  closed — but no Xooter could read a gate code either, so a round-trip could not have succeeded no
+  matter what the secret was set to.
 - **`XOOT_TWILIO_ACCOUNT_SID` / `_AUTH_TOKEN`** — added; staging subaccount provisioned and proven by
   *Twilio self-test* run 16.
 - **Staging Twilio separation** — done. Staging calls no longer bill the live account.
 - **The production rename** — applied with its functions, consistent, 0 bookings at risk.
 - **Credentials pasted 2026-08-07** — rotated.
 - **GoDaddy DNS** — correct. The problem was never DNS.
+- **The `zoot://` deep-link scheme (#34)** — changed 2026-08-13 in ZD-028 and merged to `main`.
+  `mobile/app.config.ts` reads `scheme: ['xoot', 'zoot']`: `xoot` primary, `zoot` retained so links
+  already in the wild keep resolving. The identifier moved to `za.co.xoot.app` in the same change.
+  This file listed it as outstanding for a day after it shipped — a register that names a cleared
+  blocker teaches people to skim it, which is the opposite of what it is for. What remains is the
+  console side, now item 6 above.
+- **The `payment_records` provider constraint** — `20260813180000` pinned `provider = 'payfast'`
+  while the column default is `manual_pending`, so **no booking, Care+ signup, gift clean or fare
+  split could be created on either project**. Fixed by `20260813200000` and applied to staging;
+  production applies with the next `db-push`. No founder action, listed because it was live on
+  production and anyone reading this during that window deserved to know.

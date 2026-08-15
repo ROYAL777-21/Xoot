@@ -59,7 +59,8 @@
     "ops:supabase:encryption-key": "powershell -ExecutionPolicy Bypass -File scripts/ops/set-encryption-key.ps1",
     "ops:supabase:verify:live": "powershell -ExecutionPolicy Bypass -File scripts/ops/verify-supabase-live.ps1",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "kit:tokens": "node scripts/build/extract-kit-tokens.mjs"
+    "kit:tokens": "node scripts/build/extract-kit-tokens.mjs",
+    "security:authz": "node scripts/security/authz-surface.mjs"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
