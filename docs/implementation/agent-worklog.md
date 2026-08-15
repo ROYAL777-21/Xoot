@@ -1525,6 +1525,73 @@ none of it — Actions still cannot allocate a runner.
 
 ---
 
+## 2026-08-15 (later) — 🚢 Release — a ninth instance, of a shape the guard cannot see
+
+### The defect
+
+`check_xootcred_balance` queried `public.zootcred_ledger`. That table does not exist — ZD-029
+renamed it to `xootcred_ledger` and renamed the trigger function with
+`alter function … rename to`. **`ALTER FUNCTION … RENAME` changes the name and not one character of
+the body.** So the trigger on `xootcred_ledger` called a function querying a table that had been
+renamed out from under it.
+
+Proven by doing it, not by reading:
+
+    ERROR: 42P01: relation "public.zootcred_ledger" does not exist
+    CONTEXT: PL/pgSQL function check_xootcred_balance() line 17
+
+The lookup sits inside `if new.direction = 'debit'`, so **awarding** XootCred worked and **spending**
+it did not. `create-booking` writes `direction: 'debit'` for a redemption, so a customer applying
+credit to a booking got a 500 and lost the whole booking with it.
+
+Fixed in `20260815160000`, applied to production, re-verified by inserting a credit and a debit in
+one transaction and rolling back.
+
+### ⚠️ Why `constraint-writer-parity.test.ts` did not catch it, and still cannot
+
+The other eight were CHECK constraints whose bodies named the old brand, and the guard covers that.
+**This is a different shape** — a function body referencing a renamed *table* — and no repo-side test
+can see it, because **the repo's migration files are correct**. The drift is between the repo and
+what is actually installed. Only a live query reveals it:
+
+    select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname in ('public','private') and p.prosrc ~* '\mzoot|zooter';
+
+That is now a post-deploy check in `next-session.md` rather than a test, and the limitation is stated
+in the migration header instead of being papered over.
+
+Two matches are deliberate keeps: `booking_has_no_assigned_zooter` is a reason code returned to
+callers, so renaming it is an API change; and staging's `handle_new_user` inserts into
+`zootcred_wallets`, a table that still exists **on staging only**. Production has neither wallet
+table and its `handle_new_user` does not touch them. Recorded so the next person who greps does not
+re-investigate.
+
+### What went out, and what did not
+
+**Production's database is fully migrated** — six migrations, each verified by performing the failing
+operation and rolling it back. Ledgers on both projects re-stamped to the repo's filenames. One
+duplicate ledger row (`fix_private_function_bodies_zd029` recorded twice) was removed so there is
+exactly one row per repo file.
+
+**The site did not ship, and I could not verify it either way.** The founder authorised deploying
+straight to xoot.co.za. Netlify's upload API answered **403 Forbidden** — not retried, because a
+repeated 403 is a permission answer rather than a flake. Separately, **`xoot.co.za:443` is refused by
+this environment's egress proxy**, so a session cannot fetch the live site at all. Any session
+claiming to have "verified live" should be disbelieved.
+
+What did land: the production build variables are now set on `xoot-home-care`, so a Netlify-side
+build will succeed for the first time — `netlify.toml` supplies `VITE_APP_ENV`, and the two Supabase
+public values are now present. Linking the repository is enough to ship it.
+
+**Edge Functions were deliberately not deployed.** The founder chose staging-only, and `deploy_edge_function`
+requires every file inline — which means hand-assembling each function's `_shared` dependency closure
+in a chat message. For money functions that is exactly how one ships a stale or mis-transcribed
+shared copy, the trap that once left 28 of 43 functions behind. `supabase functions deploy` uploads
+from disk and resolves the closure itself. Recorded in `next-session.md` §2 as a CLI-only step.
+
+
+---
+
 ## Open questions between the roles
 
 Neither session should answer these alone. Record the question, let the founder decide.
