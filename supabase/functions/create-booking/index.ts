@@ -422,7 +422,12 @@ Deno.serve(async (req) => {
       ipAddress: req.headers.get("x-forwarded-for"),
     });
 
-    // TODO: Replace this local handoff with a real PayFast payment session URL once provider credentials are connected.
+    /*
+     * `payment_session_url` stays an in-app link, and that is the finished design rather than a
+     * placeholder. `create-payment-session` (PR #42) mints the PayFast form when the customer
+     * chooses to pay; a session built here would be a signed instruction naming an amount, sitting
+     * in a response body for as long as they take to decide.
+     */
     return ok({
       booking_id: bookingIds[0] ?? null,
       booking_ids: bookingIds,

@@ -6,6 +6,7 @@ const Privacy = () => (
     description="How Xoot collects, uses, protects, shares, and retains personal information for booking, Care+, support, Xooter onboarding, payments, safety, and product operations."
     canonical="/legal/privacy"
     eyebrow="Privacy"
+    lastUpdated="29 July 2026"
   >
     <LegalSection title="Information we collect">
       <LegalList>

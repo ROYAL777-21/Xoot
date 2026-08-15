@@ -6,6 +6,7 @@ const XooterTerms = () => (
     description="Terms for Xooter applicants and independent contractors using Xoot onboarding, training, booking, earnings, support, and sensitive-access workflows."
     canonical="/legal/xooter-terms"
     eyebrow="Xooters"
+    lastUpdated="13 August 2026"
   >
     <LegalSection title="Application and verification">
       <LegalList>

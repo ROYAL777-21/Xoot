@@ -25,8 +25,8 @@ const Training = () => {
     <div className="container py-8 lg:py-12 max-w-5xl">
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-3">
-          <GraduationCap className="h-3 w-3 text-sage-deep" />
-          <span className="text-xs font-medium text-sage-deep">Quality you can feel</span>
+          <GraduationCap className="h-3 w-3 text-accent-ink" />
+          <span className="text-xs font-medium text-accent-ink">Quality you can feel</span>
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-bold">Xooter training & recognition</h1>
         <p className="text-muted-foreground mt-2 max-w-xl">Every Xooter completes our standards programme. Top performers earn Xooter of the Month.</p>

@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -59,7 +59,6 @@ const Support = lazy(() => import("./pages/app/Support"));
 const Insurance = lazy(() => import("./pages/app/Insurance"));
 const CustomerProfile = lazy(() => import("./pages/app/Profile"));
 const CarePlus = lazy(() => import("./pages/care/CarePlus"));
-const CarePlusApply = lazy(() => import("./pages/care/CarePlusApply"));
 const Terms = lazy(() => import("./pages/legal/Terms"));
 const Privacy = lazy(() => import("./pages/legal/Privacy"));
 const TrustSafety = lazy(() => import("./pages/legal/TrustSafety"));
@@ -172,7 +171,13 @@ const App = () => (
                       the credential; accepting still requires signing in as the invited email. */}
                   <Route path="/split/:token" element={<SplitInvite />} />
                   <Route path="/care-plus" element={<CarePlus />} />
-                  <Route path="/care-plus/apply" element={<RequireAuth><CarePlusApply /></RequireAuth>} />
+                  {/*
+                    The Care+ placement application was retired on 2026-08-13 (ZD-031). The route
+                    stays as a redirect rather than being deleted outright: bookmarks, already-sent
+                    emails and delivered push notifications still point here, and a 404 tells those
+                    people nothing. `replace` so it does not sit in the back-stack.
+                  */}
+                  <Route path="/care-plus/apply" element={<Navigate to="/care-plus" replace />} />
                   <Route path="/trust-centre" element={<TrustSafety />} />
                   <Route path="/legal/terms" element={<Terms />} />
                   <Route path="/legal/privacy" element={<Privacy />} />

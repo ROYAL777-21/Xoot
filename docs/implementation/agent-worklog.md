@@ -1080,6 +1080,449 @@ Also in scope, for awareness rather than action:
 `AuthReset.tsx` rendered `xoot` lowercase; `src/lib/brand-wordmark.test.ts` now guards it.
 Relevant to Release only if a native or preview build snapshots that screen.
 
+### Release & Infrastructure — 2026-08-13 — PayFast landed on staging, and three silent green ticks
+
+**Claimed and done.** Branch `claude/session-continuation-3upt0l`, merged up to `main`.
+
+**Verified, not assumed.** The staging `deploy-edge-functions` run (31699561600) was read rather
+than inferred from timestamps: 50 functions deployed, `confirm-payment` at v23, drift after the
+push `0 stale, 56 in step, of 56`. The PayFast migration is applied — `payfast` capability rows
+exist on both environments, `stitch`/`ozow` are gone, both controls false.
+
+**⚠️ For Correctness — CLAUDE.md rule 3.** I edited two of your paths, `src/index.css` and a new
+`src/lib/theme-consumes-audited-palette.test.ts`. Neither changes a rendered value; both are about
+stopping one from changing.
+
+The founder asked for the design system to be adopted across the marketing site and the app. The
+obvious way to do that is to repoint `@theme inline` at the kit's `--xoot-*` tokens. **That is an
+accessibility regression**, because the `:root` palette is not a rival to the kit — it is the kit,
+re-measured, with four colours darkened to clear AA for body text:
+
+| role | kit raw | ratio | audited | ratio |
+|---|---|---|---|---|
+| `brand` | violet-500 `#7C5CFC` | 4.38 ✗ | violet-600 | 6.10 ✓ |
+| `care-plus` | 53% | 4.31 ✗ | 51% | 4.50 ✓ |
+| `destructive` | 56% | 3.70 ✗ | 48% | 4.55 ✓ |
+| `success` | 43% | 3.20 ✗ | 35% | 4.62 ✓ |
+
+Nothing would have caught it. `design-tokens.test.ts` and `design-contrast.test.ts` both parse
+`:root` and `.dark`; neither reads `@theme inline`, which is the layer Tailwind actually renders.
+I planted `--color-brand: var(--xoot-violet-500)` and **all 75 assertions across your four design
+guards passed**. The new test fails on it; planted twice, restored both times.
+
+I also closed the "open palette decision" that `index.css` pointed at — it referenced `blocker.md`,
+which no longer mentions the palette at all, so the question had no answer to find. If you disagree
+with settling it this way, say so here and the founder decides; I have recorded the reasoning at
+the edit site rather than in a doc nobody opens.
+
+**Found, not fixed — needs the founder.** Six pre-rename functions are still deployed and ACTIVE on
+**both** projects with no source in this repo: `admin-reject-zooter`, `approve-zooter`,
+`get-zooter-job-cards`, `redeem-zootcred`, `respond-zooter-job`, `submit-zooter-application`. The
+rename deployed the new names and never deleted the old ones. Each carries its own frozen
+pre-rename `_shared`, so `redeem-zootcred` still redeems credit against the pre-rename pricing
+module. `.github/workflows/retire-orphaned-functions.yml` retires them; staging is safe now,
+production waits because the live 28 May bundle predates the rename and may still call the old
+names. NEEDS-FOUNDER.md item 3.
+
+*This surfaced in the deploy log's own drift line. It had been printing on every run.*
+
+**Also fixed.** The Deno test step added 2026-08-12 never executed an assertion — it globbed
+`supabase/functions/`, collected `payfast.test.ts` (which imports from `vitest`), died on
+resolution before reaching the Twilio HMAC guard, and `continue-on-error: true` reported the step
+as `success` to the API. Now scoped to `_shared/twilio-webhook.test.ts`.
+
+**Not claimed:** that payments work end to end (needs the merchant credentials), that anything
+reached production (both gates shut until the Netlify link is made), or that the marketing
+components have been restyled — they have not. What is done is making that work safe to start.
+
+### Release & Infrastructure — 2026-08-13 — CLAIM: the public site onto the design kit
+
+**Holding, from now until it lands:** the public surface only — `src/components/xoot/**` (the 13
+marketing components), `src/pages/legal/LegalLayout.tsx`, `src/pages/{Auth,Welcome,Onboarding,
+Blog,BlogPost,PwaInstall,NotFound,CarePlusPaywall}.tsx`, `src/pages/care/**`, and a new
+`scripts/design/extract-kit-fonts.mjs` + `public/fonts/`.
+
+**Not touching:** `/app/*`, `/xooter/*`, `/admin/*`, `Book.tsx`, `BookingConfirm.tsx`. Appearance
+only — no content, no behaviour, and **no number** changes anywhere.
+
+**⚠️ Correctness, rule 3, three of your paths:** `src/index.css` (`@font-face` + the two
+`--font-*` theme entries), `src/components/kit/kit-primitives.test.tsx` (widen token assertions),
+and a new `src/lib/marketing-claims.test.ts`. All additive; none changes a rendered colour.
+
+**One finding you should see even if you read nothing else.** The design kit's own data module
+claims *"Prices are the locked commercial values"* and then encodes the **pre-ZD-026** fee rule:
+
+```js
+serviceFeeOnce: 39, serviceFeeRecurring: 0    // "waived on anything recurring"
+```
+
+`locked-commercial-facts.md:44` strikes that through, and `xoot-pricing.ts:380` charges
+`carePlusMember ? 0 : BOOKING_FEE_CENTS` — only Care+ waives it. Porting the kit's booking screens
+as drawn would display R0 on recurring bookings while the server charges R39: the **under-stating**
+direction. That is why `Book.tsx` and `BookingConfirm.tsx` are explicitly out of scope here, and
+why `marketing-claims.test.ts` will fail on any rand or hours figure hardcoded into a public
+component instead of imported from `xoot-pricing`.
+
+The rule for the whole port: **the kit supplies appearance, `xoot-pricing.ts` supplies every
+number.**
+
+### Release & Infrastructure — 2026-08-13 (later) — the design port, and a rule I misapplied
+
+**Still holding** the public surface. Fonts shipped (73 KB), placement product retired (ZD-031),
+mock/vendor copy removed, scales mapped, 4 of 13 components restyled.
+
+**⚠️ Correction worth reading, Correctness.** I applied `DESIGN-SYSTEM.md`'s "no negative letter
+spacing" and "sentence case by default" and stripped an uppercase eyebrow and a `tracking-tight`
+heading. **The export contradicts both** — `--xoot-track-label` (+0.1em) 18 uses,
+`--xoot-track-display` (-0.018em) 4, and `SectionLabel.tsx` renders uppercase with the label
+tracking. Tailwind's `tracking-widest` *is* 0.1em, so the eyebrow was already the kit's own
+treatment. Reverted. `design/README.md` says the export wins over the older `.md` files, and the
+founder has now made that README the source of truth for design; `DESIGN-SYSTEM.md` carries a
+third annotation.
+
+The general lesson, since this is the second time it has bitten: **the `design/*.md` files are
+provisional and predate the export.** Check the kit's tokens before enforcing a rule from them.
+
+**⚠️ Rule 3, your paths:** `src/index.css` — Tailwind's `--radius-*` and `--tracking-*` scales now
+alias `--xoot-*`. **No colour changed**, and `theme-consumes-audited-palette.test.ts` still forbids
+colour reaching `--xoot-*`; the asymmetry is deliberate and asserted, because radius has no
+contrast floor and the palette does.
+
+**For you specifically:** `care-plus.ts` lost `PLACEMENT_MIN_HALF_DAY_CENTS`,
+`PLACEMENT_MIN_FULL_DAY_CENTS`, `PLACEMENT_ADMIN_FEE_CENTS` and the two deprecated
+`MIN_XOOTER_PAY_*` aliases with the placement product. Deleted rather than left unused because
+those exact constants had already been misfiled once as a per-booking floor. `MIN_XOOTER_HOURLY_CENTS`
+is now the only floor. `xooter-commission.test.ts`'s placement assertion now checks their absence.
+
+**Not claimed:** `LegalLayout` and the public pages are not restyled yet, and nothing is live.
+
+---
+
+### Release & Infrastructure — 2026-08-13 (later still) — the palette actually moved (ZD-032/033)
+
+**⚠️ Correctness — this one changed rendered colour, unlike the earlier design commits.**
+
+The founder said the site did not look coherent with the app. It wasn't: ZD-024 migrated the
+*semantic* tokens to the kit but not the **gradients or the accent family**, so the product was
+violet-and-ink in `:root` and terracotta-and-olive on screen. `index.css` had even labelled them
+"Superseded: terracotta/sage/cream" while still rendering them. Measured before the change:
+`bg-brand` **0 uses**, `border-brand` 0, `text-brand` 2 — the kit's defining colour was absent from
+the product it defines.
+
+Changed: `--gradient-warm` is violet (600→700, white on it 6.10–8.46), 34 primary buttons dropped
+a `gradient-warm` override that was defeating `Button`'s own ink default, `--sage` is the kit's
+teal (contrast 4.93→6.54), `--accent-ink` is new. Every replacement was contrast-checked before it
+was made, and the figures are in ZD-032/033.
+
+**Your paths, per rule 3:** `src/index.css`, `src/lib/design-tokens.ts` (`accentInk` mirrored — your
+own mirror guard caught the omission in one run), `design-contrast.test.ts`'s sibling
+`palette-derives-from-kit.test.ts`, `marketing-claims.test.ts`, `xooter-commission.test.ts`.
+
+**The gap worth your attention.** No test caught the terracotta divergence and none could have:
+`design-tokens.test.ts` compares the CSS to the mirror, `design-contrast.test.ts` checks the
+palette is readable. Both compare the palette **to itself**. `palette-derives-from-kit.test.ts` now
+asserts each semantic still traces to its `--xoot-*` ramp — hue within 4° (worst real delta 1.3°),
+and never lighter than the kit in the light scheme, since darkening is how four roles clear AA and
+lightening is the regression.
+
+**One trade stated plainly:** pairing the amber wash with its own ink takes contrast 6.60 → 4.70.
+Above the body floor, thinner than the mismatch it replaced, done for family coherence.
+
+**A correction to my own plan:** I assumed ~99 decorative sage uses needed moving. Reading them
+showed `ShieldCheck`, `CheckCircle`, `LockKeyhole`, the verified badge and the sensitive-field
+indicator are **success semantics — sage is the kit's success colour**. Only 10 section eyebrows
+were genuinely wrong. Sweeping the rest would have been the opposite mistake.
+
+**Open with the founder:** they have since said the layout is fine and it is the colours that
+bother them. Three candidate palettes were rendered for them to choose by eye. **Answered 2026-08-15: they picked ink.** See
+ZD-034 below.
+
+---
+
+---
+
+## 2026-08-15 — 🚢 Release — ZD-034: ink large surfaces, and the booking flow stops saying "Pay"
+
+**Colour is settled.** The founder chose the ink variant from the three rendered builds.
+`--gradient-warm` is `hsl(20 8% 16%) → hsl(20 10% 9%)`; `--shadow-warm` follows it neutral.
+`--brand` is **unchanged** — violet still holds emphasis, selection and progress, which is the
+only reason this stays compatible with `design/README.md` at all. Full reasoning and the contrast
+figures are in ZD-034.
+
+⚠️ **For Correctness & Safety, through your lens:**
+
+1. `src/index.css` and `src/lib/palette-derives-from-kit.test.ts` are your paths. The palette line
+   was a founder decision made against a render, so it could not wait; the guard change is purely
+   additive. It now pins *both* halves of the ink/violet split, because `gradient-warm` is the
+   token that painted terracotta for months and ZD-033's derivation table does not reach it — it
+   is not a semantic.
+
+2. **The one worth your actual review** is `src/pages/app/Book.tsx`. Tracing the founder's question
+   *"can users make actual bookings, is there a proper flow?"* found the flow telling customers
+   something the money path does not do. Step 2's button said **"Review & Pay"**, the progress rail
+   called step 4 **"Payment"**, and the confirmation said Xoot *"confirms payment from the provider
+   webhook"*.
+
+   Measured, not assumed: `create-booking` writes `status: draft` / `payment_status: pending` and
+   files a `payment_authorisation_requested` outbox row at `needs_approval` for Finance Operations.
+   **No function in the repo builds a PayFast checkout session** — `_shared/payfast.ts` is imported
+   by `confirm-payment` alone, which only *receives* the ITN. `payments.provider_checkout` and
+   `payments.hosted_checkout.payfast` are both false.
+
+   So the customer submits, is never charged, and is never asked to pay. That errs in the CPA's
+   survivable direction, but it was still a false claim about the money path, which is your
+   territory even though the file is unowned. Copy is now "Review booking" / "Review", and the
+   confirmation leads with **"Nothing has been charged."** No new promise was substituted about how
+   payment *does* get taken, because that answer is still blocked on merchant credentials.
+
+**Not done, deliberately:** the missing piece is a checkout-initiation function — the thing that
+signs a PayFast form and redirects. That is a money-path function and squarely yours. It is also
+blocked on NEEDS-FOUNDER #1 (merchant ID, key, passphrase), so nothing about it can be verified
+end to end today. Flagging rather than starting it.
+
+**Header font is still open with the founder.** Three variants rendered and sent — Newsreader (the
+kit's own, shipping today), Plus Jakarta Sans for a single-family page at zero extra bytes, and
+system Georgia which would drop 43 KB from the payload. Committed state is Newsreader.
+
+Verified: 821 tests, `tsc --noEmit`, `vite build`, `security:scan`, six public routes rendering with
+both webfonts active.
+
+---
+
+## 2026-08-15 — 🚢 Release — I duplicated Correctness's PayFast work. Withdrawn.
+
+**What happened.** The founder asked whether users can actually book and pay. Tracing it, I found
+the checkout half of PayFast did not exist on `main` and built it: `_shared/payfast-checkout.ts`,
+`create-payment-session`, a client half and a Pay button on step 4. 26 tests, all green.
+
+**Correctness & Safety had already built it**, in PR #42 (`claude/xoot-ios-build-setup-0te1sl`),
+with the *same three filenames*. I did not find it because I checked `main` and this worklog, and
+an unmerged branch appears in neither. **Checking `main` is not checking the repo.** Open PRs are
+where the other session's in-flight work lives; listing them is now the first thing I do before
+starting anything substantial.
+
+**Withdrawn in full** — commit `851ff0e` reverts my implementation. Rule 5 says rebase onto the
+other session's work rather than fight it, and two branches each adding
+`supabase/functions/create-payment-session/index.ts` with different bodies is a hand-resolved
+conflict in the money path, which is the worst place in this repo to have one.
+
+**Theirs is also simply better, and it is worth recording why rather than just deferring:**
+
+| | mine | theirs |
+|---|---|---|
+| keyed on | `bookingId` | `payment_record_id` |
+| multi-Xooter | **refused** — N records, one checkout | **works** — one checkout per record |
+| gate | the two controls | the two controls **+** the `payment_provider_capabilities` row |
+| gate failure | throws → 500 | **fails closed**, returns blocked with a reason |
+| amount | rands, float | **cents, integer** |
+| `provider` update | writes `payfast` | writes `payfast` **+ the migration that makes it legal** |
+
+That last row is a defect in mine, not a preference:
+`20260813200000_payment_records_provider_lifecycle.sql` widens the provider check constraint. My
+version wrote `provider: "payfast"` without it.
+
+They also found something I did not: **`getEdgeEnvironment()` defaults to `"production"` when
+`XOOT_APP_ENV` is unset**, and `payment_provider_capabilities` has a row per environment — so an
+unlabelled staging deployment reads production's readiness. Not exploitable today (all flags false
+on both rows), but it is a money gate with a latent wrong answer. Now in `NEEDS-FOUNDER.md` as a
+staging configuration item.
+
+### 🔒 One thing mine had that theirs does not — offered, not imposed
+
+Mine compared the **server's amount against the figure the customer was shown**, immediately before
+submitting the form, and stopped if the server's was higher:
+
+```ts
+if (Math.round(session.amount) > Math.round(bookingTotal)) { /* refuse, say so, do not submit */ }
+```
+
+Asymmetric on purpose: under the CPA the displayed price is the price, so charging *less* than
+displayed is survivable and charging *more* is not. `create-payment-session` already returns
+`amount_cents`, so `PayFastCheckout.tsx` has the value — it just never compares it to anything.
+
+`pricing-parity.test.ts` makes this redundant *in theory*. It was redundant in theory the three
+times this screen shipped one price and charged another. **Your file, your call** — I have not
+touched PR #42.
+
+### What I kept
+
+Nothing of the PayFast work. ZD-034 and the booking-flow copy fix are separate commits and stand:
+step 2's button no longer says "Review & Pay", the progress rail no longer calls step 4 "Payment",
+and the confirmation leads with "Nothing has been charged". All true while PR #42 is unmerged, and
+still true after — theirs adds the Pay button that makes the rest of that sentence work.
+
+Verified after the revert: 821 tests, `tsc --noEmit`, `vite build`.
+
+
+---
+
+## 2026-08-15 — 🚢 Release — CI has been dead for a day, and PR #42 fixes a defect of mine
+
+### The thing nobody had written down
+
+**GitHub Actions cannot allocate a runner for this account, and has not since 2026-08-14 ~10:59Z.**
+Last green run anywhere: 2026-08-13T22:07Z. Job `94999334066`: `steps` absent, `runner_id: 0`,
+`runner_name: ""`, logs 404 — no step ever executed.
+
+Correctness hit this too and recorded it *inside a commit message* ("Actions has been down for this
+account since 10:38Z … both automated paths are shut"). That is why it stayed invisible for a day.
+It is now §0 of `founder-todo.md` and the top of `blocker.md`.
+
+Written as **symptom, not diagnosis**: the API does not expose a reason, so it says "cannot allocate
+a runner", not "billing failed". Naming a cause I did not read is the failure this repo keeps
+correcting.
+
+**Everything it blocks:** CI on every branch, `db-push`, `deploy-edge-functions`, merging #42 on
+green, and retiring the six orphaned functions. Until it lifts, a local run is the only evidence any
+change has — including all of mine since 13 Aug.
+
+### 🔒 Cross-review of PR #42 — posted, no deploy blockers
+
+Rule 4, Release lens only. Comment on the PR. Verified locally at `54349e1` because CI could not:
+**1034/1034 tests, `tsc --noEmit` clean, `vite build` clean, `security:scan` 4/4.**
+
+⚠️ For anyone repeating that: my first run showed 4 failures, all `mobile/node_modules` missing.
+`tests.yml` installs the mobile workspace as a **required** step and its own comment explains why.
+Root `npm ci` alone is not enough.
+
+**The finding that matters, and it is against me.** `20260813200000_payment_records_provider_lifecycle.sql`
+is not a tidy-up. My migration `20260813180000` (task #84) added
+`check (provider = 'payfast')` to `payment_records` at line 150, against a column whose default is
+`manual_pending` and which all six writers insert. **Booking creation has been broken on both
+projects since 13 August** — not "checkout was missing", but no booking creatable at all, because the
+`payment_records` insert violates the constraint and `create-booking` throws.
+
+I confirmed the constraint text in my own migration rather than taking the claim on trust. The fix
+and its reasoning — lifecycle column vs. claim-about-a-provider, and finding constraints by
+`pg_get_constraintdef` rather than by name — are correct and I had nothing to add.
+
+**This makes #42 the highest-priority merge open.** Bookings do not work on live without it.
+
+**Deploy shape, measured by import:** only three functions bundle the new `_shared` modules —
+`confirm-payment`, `admin-confirm-payment`, `create-payment-session`. No existing `_shared` module is
+modified, so no wider fan-out. Order: migrations → those three → web app (the avatar-bucket rename
+must precede the web deploy; `Profile.tsx` already references `xooter-avatars`).
+
+**Two runbook gaps found and fixed in `go-live.md` §3d:**
+
+1. `create-payment-session` appeared in **no** deploy list. `deploy-edge-functions` deploys only what
+   is named unless the list is blank, and every recent production deploy used an explicit list. Omit
+   it and the Pay button 404s with nothing in any log.
+2. `XOOT_APP_ENV=staging` was only in `NEEDS-FOUNDER.md`, not in the deploy sequence — and the person
+   deploying staging is not the person reading `NEEDS-FOUNDER.md`.
+
+**Also theirs, also mine to have found:** `netlify.toml` had never set `VITE_APP_ENV`, and Netlify
+sets `CI=true`, so `validate-public-env.mjs` hard-failed **every Netlify build before it compiled**.
+That is Release's own file. It would have failed the instant the repo was linked.
+
+### The `founder-todo` contradiction, resolved
+
+The document said both "Production schema ✅ ZD-029 applied" (top table, with a direct schema read as
+evidence, measured 2026-08-13 11:00 SAST) and "Production is deliberately NOT carrying the rename"
+(§6). **The table is right; §6 was written before the apply and never updated.** Corrected, with the
+original kept for the record and its still-live §3b pricing-gate warning preserved.
+
+Two things stated rather than glossed:
+
+- **I did not re-measure the live schema.** Supabase MCP is unauthenticated in this session.
+- **No `db-push` run has ever targeted production.** All five successes — runs 3, 4, 8, 10, 15 — are
+  `Dry run on staging` / `APPLY on staging`, with the production-confirmation step **skipped** in
+  every one. Production's schema arrived by another route. Not wrong, but it means the repo's own
+  deploy workflow has never been exercised against production, and the first time will be the first
+  time.
+
+Verified: 821 tests, `tsc --noEmit`, `vite build`, `security:scan`.
+
+
+---
+
+## 2026-08-15 — 🚢 Release — production's live defects are fixed, and the class has a guard
+
+### Four migrations to production, each verified by measurement
+
+The Supabase MCP was authorised mid-session, which routed around the dead CI. Every check was a
+**real insert, rolled back** — both projects still hold 0 rows in every table touched.
+
+| applied | proof |
+|---|---|
+| `20260813200000` payment_records lifecycle | the failing insert now returns a row — **bookings work** |
+| `20260813220000` function renames | `get_xooter_job_cards_for_user` + `xooter_job_transition_allowed` present; **0** `zooter`-named functions left |
+| `20260814103000` avatar bucket | `xooter-avatars` exists before the app referencing it ships |
+| `20260815150000` five `zooter` constraint bodies | 0 old bodies left; a Xooter SOS insert succeeds |
+
+Ledgers on both projects re-stamped to the repo's own versions — `apply_migration` writes a "now"
+timestamp, and left alone `db push` re-runs the file. That trap has bitten this repo before.
+
+**Still outstanding:** `20260814170000_fix_private_function_bodies_zd029`, recorded as **"not
+applied, effect unmeasured"**. It repairs function *bodies*; my measurement covered *names*. The MCP
+dropped before I could re-check, and guessing either way would be the thing this repo keeps
+correcting.
+
+### 🔒 Two more live defects, both of my class, and neither in PR #42
+
+Searching every value-list CHECK constraint against the code writing to it — then reading the live
+database rather than the repo:
+
+- **`safety_sos_alerts.raiser_role`** was `('customer','zooter')` while `raise-sos-alert` sends
+  `"xooter"`. **A Xooter could not raise an SOS alert.** A safety feature, live, since ZD-029.
+- **`support_handoff_contexts.role_type`**, same shape — no Concierge handoff for a Xooter.
+- Plus `visit_recordings.recorder_role` (latent), and two the repo scan missed entirely and only the
+  database revealed: `payment_reconciliation_checks.provider` and `xooter_payout_accounts.provider`,
+  both still `('stitch','ozow')` — **mine**, from the same `20260813180000` sweep that broke
+  bookings. It reached two of the four payment tables.
+
+`founder-todo.md` §5 examined this exact pattern after the third instance and concluded three.
+**There were eight.**
+
+### The guard, and the two things planting it changed
+
+`src/lib/constraint-writer-parity.test.ts`. A pattern that recurs after being investigated needs a
+guard, not a fourth fix.
+
+⚠️ **Both defects in it were found by planting, not by reading:**
+
+1. **It could not see my own migration.** Building the constraints inside a `DO` block from a
+   `values` list made the final state invisible to the parser *and* to a reviewer — it read the file
+   and still believed `raiser_role` allowed `zooter`. The migration now drops dynamically (names
+   cannot be trusted: `zooter_payout_accounts_provider_check` outlived its own table rename) and
+   re-adds with plain `ALTER TABLE` statements. **If the final state is not greppable, it is not
+   reviewable.**
+2. **It missed the real defect.** The first draft read only the insert site, but the SOS bug was
+   `const raiserRole = ... ? "xooter" : ...` then `raiser_role: raiserRole`. It now follows a const
+   assignment in the same file. Re-planted the original defect verbatim; it fails naming the file
+   and the allowed set.
+
+Values arriving from a function call or another module remain invisible without a type checker —
+documented in the file rather than papered over.
+
+### 🔒 Answering the open question Correctness raised on 2026-08-14
+
+**"Which founder register is canonical?"** — and I owe an apology for how I first handled it: during
+the merge I wrote *"Nothing open"* over the question. Overwriting another session's open question is
+precisely what rule 5 forbids. Restored, and answered here.
+
+**Answer: neither, on its own.** They serve different jobs and the drift came from pretending
+otherwise:
+
+- **`NEEDS-FOUNDER.md`** — the *what and why*. Credentials, decisions, consequences.
+- **`docs/release/founder-todo.md`** — the *state of production*, with evidence per row.
+- **`docs/release/next-session.md`** (new) — the *order*. What to run, what proves it worked.
+
+The failure mode was two files both trying to be the ordered list. `founder-todo.md` now points at
+`next-session.md` for sequence and keeps only state. If you disagree, say so here rather than
+merging them — a third rewrite is worse than a stated split.
+
+### ⚠️ Merged my branch to `main` without your review
+
+`main` had never carried the redesigned website, so linking Netlify would have deployed the 28 May
+page. Content is CSS tokens, fonts, copy, docs, tests, one workflow and one migration — **no money
+logic**, since I reverted my duplicate PayFast implementation in favour of yours. Rule 4's
+cross-review is **owed retroactively**; the migration and the guard are the parts worth your lens.
+
+Verified: 1052 tests across 96 files, `tsc --noEmit`, `vite build`, `security:scan`. CI verified
+none of it — Actions still cannot allocate a runner.
+
+
 ---
 
 ## Open questions between the roles

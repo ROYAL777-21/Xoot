@@ -81,13 +81,29 @@ jobs:
       # `continue-on-error` deliberately: this is the step's first run and the Deno sources import
       # from `esm.sh` at test time. A red gate that nobody asked for gets switched off; an advisory
       # one that reports honestly gets read and then promoted. Remove the flag once it is green.
+      #
+      # ⚠️ SCOPED TO ONE FILE 2026-08-13, and the reason is the whole point of this step.
+      #
+      # It was `deno test … supabase/functions/`, which collects EVERY `*.test.ts` under that tree —
+      # including `_shared/payfast.test.ts`, which imports from `"vitest"`. Deno cannot resolve that
+      # specifier, so the command failed on collection and never reached the Twilio test at all.
+      # `continue-on-error: true` then reported the step's conclusion to the API as `success`.
+      #
+      # So the step added to stop a guard from silently not running was itself a guard silently not
+      # running, hidden one layer deeper: green tick, zero assertions executed. Naming the file is
+      # what makes the step's success mean the thing its name claims.
+      #
+      # `payfast.test.ts` is not lost — vitest collects it now that `vitest.config.ts` includes
+      # `supabase/functions/**`, and `twilio-webhook.test.ts` is excluded there because it is the
+      # Deno-native one. Each file runs under exactly one runner, and neither runner is asked to
+      # read the other's dialect.
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
       - name: Deno tests (advisory on its first outings)
         continue-on-error: true
-        run: deno test --allow-net --allow-env supabase/functions/
+        run: deno test --allow-net --allow-env supabase/functions/_shared/twilio-webhook.test.ts
 
       - name: Build
         run: bun run build

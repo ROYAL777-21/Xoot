@@ -141,9 +141,9 @@ const Earnings = () => {
 
   const badges = [
     { icon: Trophy, label: `${completedJobs} jobs`, color: "bg-primary/10 text-primary", earned: completedJobs > 0 },
-    { icon: Star, label: `${Number(xooter?.rating ?? 0).toFixed(2)}★`, color: "bg-accent/15 text-sage-deep", earned: (xooter?.rating ?? 0) >= 4.5 },
+    { icon: Star, label: `${Number(xooter?.rating ?? 0).toFixed(2)}★`, color: "bg-accent/15 text-accent-ink", earned: (xooter?.rating ?? 0) >= 4.5 },
     { icon: Target, label: `${tierShare}% share`, color: "bg-primary/10 text-primary", earned: true },
-    { icon: TrendingUp, label: tier, color: "bg-sage/15 text-sage-deep", earned: true },
+    { icon: TrendingUp, label: tier, color: "bg-sage/15 text-accent-ink", earned: true },
   ];
 
   return (
@@ -253,7 +253,7 @@ const Earnings = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-display font-bold">{formatZARDecimal(e.net_amount)}</p>
-                  <p className={`text-[10px] uppercase font-bold ${e.status === "paid" ? "text-sage-deep" : "text-muted-foreground"}`}>{e.status}</p>
+                  <p className={`text-[10px] uppercase font-bold ${e.status === "paid" ? "text-brand" : "text-muted-foreground"}`}>{e.status}</p>
                 </div>
               </div>
             ))}

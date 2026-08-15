@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             Something interrupted this screen. Your Xoot account, bookings and saved home details remain protected.
           </p>
-          <Button className="mt-6 rounded-full gradient-warm" onClick={() => window.location.reload()}>
+          <Button className="mt-6 rounded-full" onClick={() => window.location.reload()}>
             <RotateCw className="mr-2 h-4 w-4" /> Refresh Xoot
           </Button>
         </Card>

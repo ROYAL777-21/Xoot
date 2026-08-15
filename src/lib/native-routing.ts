@@ -15,7 +15,6 @@ const staticRoutes = new Set([
   "/auth/callback",
   "/auth/reset",
   "/care-plus",
-  "/care-plus/apply",
   "/install",
   "/legal/privacy",
   "/legal/popia",
@@ -112,7 +111,6 @@ const screenRoutes = new Map<string, string>([
   ["callback", "/auth/callback"],
   ["care", "/app/plans"],
   ["care_plus", "/app/plans"],
-  ["care_plus_apply", "/care-plus/apply"],
   ["email_verification", "/auth/callback"],
   ["favorite_xooter", "/app/favorites"],
   ["favourite_xooter", "/app/favorites"],
@@ -219,10 +217,26 @@ const safeQuery = (url: URL) => {
 const appendSafeQuery = (path: string, url: URL) =>
   queryPreservingRoutes.has(path) ? `${path}${safeQuery(url)}` : path;
 
+/**
+ * Routes that no longer exist, and where a link to them should land instead.
+ *
+ * `/care-plus/apply` was the Care+ placement application. The product was retired on 2026-08-13
+ * (ZD-031), but links to it do not disappear with it: push notifications already delivered, an
+ * installed app build with the old deep-link table, a bookmark, an email. Returning `null` for
+ * those would drop the user on a dead end with no explanation.
+ *
+ * Sending them to the parent surface is the honest outcome — the thing they wanted is gone, and
+ * `/care-plus` is where the remaining membership product lives.
+ */
+const RETIRED_ROUTES = new Map<string, string>([["/care-plus/apply", "/care-plus"]]);
+
 const routeForUrl = (url: URL) => {
   const path = normalizePath(url.pathname);
   if (!path) return null;
   if (path === "/") return appendSafeQuery("/app", url);
+
+  const retired = RETIRED_ROUTES.get(path);
+  if (retired) return retired;
   if (staticRoutes.has(path)) return authRoutes.has(path) ? `${path}${url.search}${url.hash}` : appendSafeQuery(path, url);
 
   const bookingMatch = path.match(/^\/app\/bookings\/([^/]+)$/);
@@ -268,7 +282,7 @@ const routeFromXootUrl = (url: URL) => {
   const mapped = screenRoutes.get(host);
   if (mapped && !pathname) return appendSafeQuery(mapped, url);
 
-  if (["app", "auth", "xooter", "care_plus", "care_plus_apply", "trust_centre"].includes(host)) {
+  if (["app", "auth", "xooter", "care_plus", "trust_centre"].includes(host)) {
     return toSafeRoute(`/${host.replace(/_/g, "-")}${pathname}${url.search}${url.hash}`);
   }
 

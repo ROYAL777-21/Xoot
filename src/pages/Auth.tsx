@@ -399,8 +399,8 @@ const Auth = () => {
         </Link>
 
         <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
-          {mode === "signin" ? <LockKeyhole className="h-3 w-3 shrink-0 text-sage-deep" /> : mode === "forgot" ? <Mail className="h-3 w-3 shrink-0 text-sage-deep" /> : mode === "otp" ? <KeyRound className="h-3 w-3 shrink-0 text-sage-deep" /> : <Sparkles className="h-3 w-3 shrink-0 text-sage-deep" />}
-          <span className="text-xs font-medium text-sage-deep">{mode === "signin" ? "Secure sign-in" : mode === "forgot" ? "Password recovery" : mode === "otp" ? "Email one-time code" : "Join Xoot"}</span>
+          {mode === "signin" ? <LockKeyhole className="h-3 w-3 shrink-0 text-accent-ink" /> : mode === "forgot" ? <Mail className="h-3 w-3 shrink-0 text-accent-ink" /> : mode === "otp" ? <KeyRound className="h-3 w-3 shrink-0 text-accent-ink" /> : <Sparkles className="h-3 w-3 shrink-0 text-accent-ink" />}
+          <span className="text-xs font-medium text-accent-ink">{mode === "signin" ? "Secure sign-in" : mode === "forgot" ? "Password recovery" : mode === "otp" ? "Email one-time code" : "Join Xoot"}</span>
         </div>
 
         <h1 className="mb-1 font-display text-2xl font-bold sm:text-3xl">{heading}</h1>
@@ -457,10 +457,10 @@ const Auth = () => {
         )}
 
         {isOtpMode && (
-          <div className="mb-5 rounded-2xl border border-accent/25 bg-accent-soft p-3 text-sm leading-relaxed text-sage-deep">
+          <div className="mb-5 rounded-2xl border border-accent/25 bg-accent-soft p-3 text-sm leading-relaxed text-accent-ink">
             <p className="font-semibold">Passwordless sign-in</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Xoot sends the code through Supabase Auth. The code is one-time use and should only be entered inside this app.
+              The code is one-time use and should only ever be entered inside this app. Xoot will never ask you for it by phone, email or message.
             </p>
           </div>
         )}
@@ -626,7 +626,7 @@ const Auth = () => {
             </p>
           </div>
 
-          <Button type="submit" disabled={!canSubmit} className="h-12 w-full rounded-xl gradient-warm font-semibold shadow-warm">
+          <Button type="submit" disabled={!canSubmit} className="h-12 w-full rounded-xl font-semibold">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : submitLabel}
           </Button>
         </form>

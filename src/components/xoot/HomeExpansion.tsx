@@ -45,7 +45,7 @@ export const HomeExpansion = () => (
     <section className="py-14">
       <div className="container flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1 text-xs font-semibold text-sage-deep">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-ink">
             <BookOpen className="h-3.5 w-3.5" /> Articles
           </div>
           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Useful reads before you book.</h2>

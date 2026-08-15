@@ -28,8 +28,8 @@ const PwaInstall = () => {
           <div className="container grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div>
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
-                <Sparkles className="h-3 w-3 text-sage-deep" />
-                <span className="text-xs font-medium text-sage-deep">iPhone app access</span>
+                <Sparkles className="h-3 w-3 text-accent-ink" />
+                <span className="text-xs font-medium text-accent-ink">iPhone app access</span>
               </div>
               <h1 className="font-display text-5xl font-bold leading-[1.03] tracking-tight md:text-6xl">
                 Put Xoot on your iPhone Home Screen.
@@ -38,7 +38,7 @@ const PwaInstall = () => {
                 Use Xoot as an installable iPhone web app while the native TestFlight build waits for Apple Developer access and final bundle IDs.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="h-14 rounded-full gradient-warm px-7" onClick={() => haptic("impact")}>
+                <Button asChild size="lg" className="h-14 rounded-full px-7" onClick={() => haptic("impact")}>
                   <Link to="/auth">Open secure sign-in</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="h-14 rounded-full px-7" onClick={() => haptic("selection")}>
@@ -72,7 +72,7 @@ const PwaInstall = () => {
         <section className="py-16 md:py-24">
           <div className="container">
             <div className="mb-10 max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">Install steps</p>
+              <p className="text-sm font-semibold uppercase tracking-wider text-brand">Install steps</p>
               <h2 className="mt-3 font-display text-4xl font-bold tracking-tight">Four taps from browser to app-like Xoot.</h2>
             </div>
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -81,7 +81,7 @@ const PwaInstall = () => {
                 return (
                   <Card key={step.title} className="rounded-3xl border-border/70 p-6 shadow-card">
                     <div className="mb-5 flex items-center justify-between gap-3">
-                      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft text-sage-deep">
+                      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft text-accent-ink">
                         <Icon className="h-6 w-6" />
                       </div>
                       <span className="font-display text-3xl font-bold text-muted-foreground/50">0{index + 1}</span>

@@ -9,6 +9,26 @@ listed once under "Closed at review" at the foot of the file, then dropped.
 Everything dated 2026-08-02 in this file was re-verified live against both Supabase
 projects on that date, not carried forward on trust.
 
+## 🚨 2026-08-15 — CI cannot allocate a runner, and it gates the deploy path
+
+GitHub Actions has been unable to assign a runner for this account since **2026-08-14 ~10:59Z**.
+Last successful run of anything: **2026-08-13T22:07Z**.
+
+Evidence, job `94999334066` (Tests, 2026-08-15 10:19Z) — the shape of every failing job since:
+`steps` absent, `runner_id: 0`, `runner_name: ""`, logs HTTP 404. **No step ever executed.**
+
+⚠️ Symptom, not diagnosis. The API does not expose a reason; GitHub's usual causes are a failed
+payment or an exhausted Actions spending limit. Founder-only, in GitHub → Settings → Billing.
+
+**Why it belongs in a blockers file rather than a status note:** it silently disables
+`db-push` and `deploy-edge-functions`, which are the only two routes this repo has to change
+either Supabase project. It also makes every PR look broken. **PR #42's ten red checks are absent
+runs, not failures** — that branch is 1034/1034 tests, clean typecheck, clean build and 4/4 security
+scans when run locally at `54349e1`.
+
+Until it lifts, **a local run is the only evidence any change has**, and any claim of "CI is green"
+about work after 13 Aug is a claim about a run that never happened.
+
 ## The open work now lives in GitHub issues, not here
 
 Added 2026-08-08. This file had grown to 81KB and was doing an issue tracker's job while the

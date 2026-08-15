@@ -7,6 +7,7 @@ const Terms = () => (
     description="Terms for using Xoot's website, app, booking marketplace, Care+ membership, XootCred, support workflows, and related home-care services in South Africa."
     canonical="/legal/terms"
     eyebrow="Legal"
+    lastUpdated="13 August 2026"
   >
     <LegalSection title="1. Who these terms apply to">
       <p>

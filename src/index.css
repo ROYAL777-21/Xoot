@@ -3,9 +3,106 @@
 /* The Xoot UI kit's own tokens, generated from design/Xoot_App.html by
    `npm run kit:tokens`. Additive on purpose: declaring them changes nothing until a
    component asks for a --xoot-* value, so the kit's system can land ahead of the port
-   instead of in one breaking sweep. The app's own semantic tokens are still the ones
-   below; which set wins is the open palette decision in blocker.md. */
+   instead of in one breaking sweep.
+
+   ── SETTLED 2026-08-13: the audited :root palette wins, and the kit tokens do not. ──
+   This was "the open palette decision in blocker.md". It is closed, and closed in the
+   direction that is not obvious, so the reasoning stays here where the edit would happen.
+
+   The :root block below is NOT a rival palette. It IS this kit's palette, re-measured for
+   contrast, with four colours deliberately darkened because the kit's raw values fail WCAG
+   AA for body text (a 14px button label is body text, so the threshold is 4.5):
+
+     brand        violet-500 #7C5CFC  4.38 ✗   ->  violet-600      6.10 ✓
+     care-plus    53% lightness       4.31 ✗   ->  51%             4.50 ✓
+     destructive  56% lightness       3.70 ✗   ->  48%             4.55 ✓
+     success      43% lightness       3.20 ✗   ->  35%             4.62 ✓
+
+   So "adopt the design system" must NOT mean repointing @theme inline at --xoot-*. That
+   reads like progress in a diff and silently drops the whole app below AA. The kit tokens
+   stay imported and stay used — --xoot-dur-*, --xoot-ease-*, the --slot-* aliases and the
+   primitives in src/components/kit/** all consume them directly — they simply do not feed
+   the Tailwind colour layer.
+
+   src/lib/theme-consumes-audited-palette.test.ts fails if they ever do. It exists because
+   design-tokens.test.ts and design-contrast.test.ts both parse :root and .dark and neither
+   looks at @theme inline, so the rewire was invisible to every guard: planted, all 75 of
+   their assertions still passed. */
 @import './styles/kit-tokens.css';
+
+/* ── The kit's webfonts ────────────────────────────────────────────────────────────────────────
+ *
+ * Plus Jakarta Sans (body) and Newsreader (display) are the families named by the kit's own
+ * `--xoot-font-core` and `--xoot-font-display` tokens. Extracted from `design/Xoot_App.html` and
+ * subset by `scripts/design/extract-kit-fonts.mjs`; the .woff2 files are committed, so no build
+ * step and no CI job needs the extraction tooling.
+ *
+ * Both are VARIABLE, so one file per family covers every weight — hence the `font-weight` ranges
+ * below rather than one face per weight. Measured: 31 KB and 43 KB, 73 KB total, against the
+ * 120 KB ceiling the script enforces.
+ *
+ * ── No italics, deliberately ──────────────────────────────────────────────────────────────────
+ * The bundle carries italic cuts for both families and they are NOT shipped: together they are
+ * another ~70 KB, which would put the total over budget for `<em>` in blog prose. Browsers
+ * synthesise an oblique. If real italics are ever wanted, they are still in the bundle — add them
+ * to the script and re-measure rather than assuming there is room.
+ */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/plus-jakarta-sans-latin-var.woff2') format('woff2-variations');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('/fonts/newsreader-latin-var.woff2') format('woff2-variations');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── The fallback faces, and why they are not decoration ───────────────────────────────────────
+ *
+ * `font-display: swap` shows a fallback and then replaces it. If the two fonts have different
+ * vertical metrics, every line box changes height at that moment and the page jumps —
+ * `design/PERFORMANCE.md` puts CLS at or below 0.1 at p75, and an unadjusted swap is one of the
+ * easiest ways to fail it.
+ *
+ * These faces re-declare the LOCAL font with the WEBFONT's metrics, so the swap changes letter
+ * shapes without moving anything. Every number is measured from the TTF's `head`, `hhea` and
+ * `OS/2` tables, not estimated:
+ *
+ *   Newsreader          upem 2000, ascent 1470, descent -530, gap 0, x-height 852
+ *   Plus Jakarta Sans   upem 1000, ascent 1038, descent -222, gap 0, x-height 536
+ *
+ * `size-adjust` matches x-heights, which is what makes the two look the same size:
+ *   Newsreader vs Georgia   0.4260 / 0.4814 = 88.5%
+ *   Jakarta vs Arial        0.5360 / 0.5186 = 103.4%
+ *
+ * Georgia and Arial are named because they are metrically stable and present on macOS, Windows
+ * and iOS. Where they are absent (most Android, most Linux) the stack falls through to the plain
+ * generic — a slightly larger shift on those platforms, which is the honest trade for not
+ * guessing at a metric we cannot measure.
+ */
+@font-face {
+  font-family: 'Newsreader Fallback';
+  src: local('Georgia'), local('Times New Roman');
+  ascent-override: 73.50%;
+  descent-override: 26.50%;
+  line-gap-override: 0%;
+  size-adjust: 88.5%;
+}
+
+@font-face {
+  font-family: 'Jakarta Fallback';
+  src: local('Arial'), local('Helvetica Neue'), local('Roboto');
+  ascent-override: 103.80%;
+  descent-override: 22.20%;
+  line-gap-override: 0%;
+  size-adjust: 103.4%;
+}
 
 @plugin 'tailwindcss-animate';
 
@@ -23,13 +120,29 @@
 }
 
 @theme inline {
-  /* Georgia for display and for anything the user types — identified by the founder
-     from Tiimo's register, and it ships on iOS, macOS, Windows and Android, so there
-     is no webfont to download and no flash of unstyled text.
-     Body UI is the OS rounded face: SF Pro Rounded on Apple platforms. */
-  --font-display: Georgia, 'Times New Roman', ui-serif, serif;
+  /* ── Type, resolved 2026-08-13 ───────────────────────────────────────────────────────────
+   *
+   * Three sources disagreed, so this records which won and why.
+   *
+   *   the kit's own tokens   --xoot-font-display: "Newsreader", Georgia, serif
+   *                          --xoot-font-core:    "Plus Jakarta Sans", system-ui, …
+   *   design/DESIGN-SYSTEM.md  Space Grotesk + DM Sans     ← superseded, see below
+   *   this file, until today   Georgia + SF Pro Rounded    ← the no-webfont interim
+   *
+   * The kit wins, per `design/README.md`: it is the newer authority and the older documents
+   * predate it. `DESIGN-SYSTEM.md` is annotated rather than silently contradicted.
+   *
+   * Georgia is not discarded — it was never the wrong instinct. It is Newsreader's OWN declared
+   * fallback in `--xoot-font-display`, so the interim was already pointing at the right shape;
+   * it now sits behind the real face, wearing its metrics via 'Newsreader Fallback' above.
+   *
+   * `--font-serif` deliberately does NOT get Newsreader. It is the generic serif slot, and
+   * display type is a separate decision from prose serif; conflating them would silently restyle
+   * anything that asks for a serif.
+   */
+  --font-display: 'Newsreader', 'Newsreader Fallback', Georgia, 'Times New Roman', ui-serif, serif;
   --font-serif: Georgia, 'Times New Roman', ui-serif, serif;
-  --font-sans: ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Jakarta Fallback', ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -64,6 +177,7 @@
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-accent-soft: hsl(var(--accent-soft));
+  --color-accent-ink: hsl(var(--accent-ink));
 
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
@@ -89,6 +203,43 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 4px);
   --radius-sm: calc(var(--radius) - 8px);
+
+  /* ── Tailwind's radius and tracking scales, mapped onto the kit's ─────────────────────────
+   *
+   * The components were written in Tailwind utilities — `rounded-3xl`, `tracking-tight` — and
+   * those resolve to Tailwind's defaults, which are near the kit's values but not equal to them:
+   *
+   *     rounded-2xl  16px  →  --xoot-radius-key  16px   (already equal)
+   *     rounded-3xl  24px  →  --xoot-radius-lg   26px
+   *     rounded-4xl  32px  →  --xoot-radius-xl   34px
+   *     rounded-xl   12px  →  --xoot-radius-md   20px
+   *     tracking-tight  -0.025em  →  --xoot-track-display  -0.018em
+   *
+   * Mapping the scale here rather than rewriting every utility in every component is the same
+   * lever the font swap used: one place decides, and the markup keeps reading as ordinary
+   * Tailwind. It also means a component added later inherits the kit without anyone remembering
+   * to.
+   *
+   * ⚠️ `--tracking-widest` is deliberately NOT redefined. Tailwind's value is 0.1em and
+   * `--xoot-track-label` is 0.1em — they are already the same number, and aliasing it would
+   * imply a difference that does not exist.
+   *
+   * ── Why negative tracking is here at all ────────────────────────────────────────────────
+   *
+   * `design/DESIGN-SYSTEM.md` says "no negative letter spacing" and "sentence case by default".
+   * The exported kit does both, routinely: its own modules use `--xoot-track-label` (+0.1em, the
+   * uppercase label treatment) 18 times, `--xoot-track-tight` 7 times and `--xoot-track-display`
+   * 4 times, and `SectionLabel.tsx` — ported straight from the kit — renders uppercase text with
+   * the label tracking. Per `design/README.md`, the export is the newer authority where the two
+   * disagree. DESIGN-SYSTEM.md is annotated accordingly rather than silently contradicted.
+   */
+  --radius-xl: var(--xoot-radius-md);
+  --radius-2xl: var(--xoot-radius-key);
+  --radius-3xl: var(--xoot-radius-lg);
+  --radius-4xl: var(--xoot-radius-xl);
+
+  --tracking-tight: var(--xoot-track-display);
+  --tracking-tighter: var(--xoot-track-tight);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -1377,6 +1528,19 @@
        rather than inheriting one global "on-accent" value. */
     --accent-foreground: 14 18% 14%;
     --accent-soft: 39 90% 92%;
+    /* The kit pairs every tint with its OWN ink — `--xoot-honey-wash` with `--xoot-honey-ink`,
+     * `--xoot-sage-wash` with `--xoot-sage-ink` — so a foreground is chosen against the background
+     * it actually sits on. `SectionLabel.tsx` carries the same note, and it was written after the
+     * `--slot-*` aliases had to be invented for exactly this reason.
+     *
+     * Eleven places rendered `text-sage-deep` (green) on `bg-accent/15` (amber). That passed
+     * contrast at 6.60 by accident, not by design — a green ink on an amber wash is two families
+     * colliding. This is the kit's `--xoot-honey-ink` #94600E, the amber's own ink.
+     *
+     * ⚠️ Contrast on the wash goes 6.60 -> 4.70. Still clear of the 4.5 body-text floor, but
+     * thinner than the mismatch it replaces, so it is stated here rather than discovered later.
+     * On a white card it measures 5.33. `palette-derives-from-kit.test.ts` covers it. */
+    --accent-ink: 37 83% 32%;
 
     /* 48%, not the 56% the migration mapped.
        At 56% the off-white label measured 3.70:1 — below the 4.5 body threshold, and a
@@ -1393,19 +1557,70 @@
     --radius: 1rem;
 
     /* Brand specific */
+    /* ── ZD-032: the accent family moves to the kit ────────────────────────────────────────
+     *
+     * These were the last of the superseded terracotta/sage/cream palette still being RENDERED.
+     * The semantic tokens above were migrated to violet/ink/Care+-red, but the gradients and the
+     * accent family were not — and they are what actually painted every CTA and band. The site
+     * was violet-and-ink in its tokens and terracotta-and-olive on screen, which is why it did
+     * not look like the app.
+     *
+     * Measured before the change: `bg-brand` 0 uses, `border-brand` 0, `text-brand` 2. The kit's
+     * defining colour was absent from the product it defines, while `gradient-warm` painted 58
+     * surfaces including nine primary buttons.
+     *
+     * `design/README.md`, which the founder has made the source of truth: "The kit's UI is violet
+     * for brand emphasis, selection and progress, with ink as the primary commit button — the
+     * Tiimo pattern — on a warm neutral page. Red is not the UI colour: the kit reserves its red
+     * family for Care+ alone."
+     */
+
+    /* Kept only so a stray reference cannot break the build — nothing should use them. The kit
+     * has no terracotta at all, and `--cream` is superseded by the neutral ramp. */
     --terracotta: 14 51% 53%;
     --terracotta-light: 22 65% 76%;
-    --sage: 105 20% 56%;
-    --sage-deep: 110 18% 38%;
     --cream: 36 40% 96%;
     --ink: 20 30% 12%;
 
-    --gradient-warm: linear-gradient(135deg, hsl(14 51% 53%) 0%, hsl(22 65% 68%) 100%);
-    --gradient-sage: linear-gradient(135deg, hsl(105 20% 56%) 0%, hsl(110 18% 38%) 100%);
+    /* The kit's sage — `--xoot-sage-500` #3AA075 and `--xoot-sage-ink` #1B6246 — which is a teal
+     * green, not the olive this used to be (#7FA86B). In the kit sage is the SUCCESS semantic
+     * rather than a decorative accent, and the swap also improves contrast: sage-deep on the page
+     * goes 4.93 -> 6.54. */
+    --sage: 156 47% 43%;
+    --sage-deep: 157 57% 24%;
+
+    /* ── ZD-034: the large-surface gradient is ink, not violet ─────────────────────────────────
+     *
+     * ZD-032 moved this to violet-600 -> violet-700, which is what the kit's README describes.
+     * Rendered side by side against terracotta and against ink, the founder chose ink (2026-08-15,
+     * three built variants screenshotted at 1440px).
+     *
+     * This is a deliberate departure from `design/README.md` and the only one. The README's rule
+     * is "violet for brand emphasis, selection and progress, with ink as the primary commit
+     * button — the Tiimo pattern". Violet still holds all three of those roles: `--brand` is
+     * unchanged, and `bg-brand` / `ring-primary` / selection states are untouched. What moved is
+     * only `gradient-warm`, which is not an emphasis token at all — it paints 29 large surfaces
+     * (hero bands, logo tiles, page-width CTA cards). Violet at that size stops reading as
+     * emphasis and starts reading as the page's own colour, which is the thing the Tiimo pattern
+     * is arranged to avoid. Ink at that size is the pattern, taken to its conclusion.
+     *
+     * Contrast for the white text every one of those surfaces carries: 14.6:1 at the light end
+     * (hsl(20 8% 16%)) and 17.9:1 at the dark end. Violet gave 6.10 / 8.46 — both passed, this
+     * passes by a wider margin.
+     *
+     * `--brand` remains violet-600 and is the one colour that must not follow this. See
+     * `palette-derives-from-kit.test.ts`, which pins both halves of that split.
+     */
+    --gradient-warm: linear-gradient(135deg, hsl(20 8% 16%) 0%, hsl(20 10% 9%) 100%);
+    --gradient-sage: linear-gradient(135deg, hsl(156 47% 43%) 0%, hsl(157 57% 24%) 100%);
     --gradient-hero: linear-gradient(180deg, hsl(36 33% 97%) 0%, hsl(32 35% 92%) 100%);
 
     --shadow-soft: 0 8px 24px -8px hsl(20 30% 12% / 0.08);
-    --shadow-warm: 0 20px 48px -16px hsl(14 51% 53% / 0.35);
+    /* Tinted to the surface it sits under. This shadow is only ever applied to `gradient-warm`
+     * elements, so it follows the gradient: a violet glow under an ink tile reads as a colour
+     * fringe rather than a shadow. Raised 0.30 -> 0.38 because a neutral shadow at the same alpha
+     * disappears against the warm page. */
+    --shadow-warm: 0 20px 48px -16px hsl(20 30% 12% / 0.38);
     --shadow-card: 0 4px 16px -4px hsl(20 30% 12% / 0.06);
 
     --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
@@ -1573,6 +1788,11 @@
     --muted-foreground: 25 7% 68%;
     --accent: 37 78% 60%;
     --accent-foreground: 10 17% 7%;
+    /* The kit's `--xoot-honey-mid` #F7D290. Amber ink is unreadable on a near-black page, so the
+     * dark counterpart moves UP the same ramp rather than across to another family: 13.05 on the
+     * dark page. This is why `palette-derives-from-kit.test.ts` checks hue in both schemes but
+     * lightness only in light — going lighter here is correct, not drift. */
+    --accent-ink: 38 86% 77%;
     /* Ink on coral, not off-white — and this was the only exception in the whole dark scheme.
        accent, success and warning all pair a bright fill with `10 17% 7%`; destructive alone
        kept a near-white label, carried over from the old red palette where the fill was dark.

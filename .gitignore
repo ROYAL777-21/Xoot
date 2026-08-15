@@ -118,3 +118,4 @@ public/.well-known/assetlinks.json
 *.njsproj
 *.sln
 *.sw?
+.render-check/

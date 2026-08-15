@@ -1,4 +1,14 @@
 import { LegalLayout, LegalList, LegalSection } from "./LegalLayout";
+import { CARE_PLUS_WELCOME_CREDIT_CENTS } from "@/lib/care-plus";
+import { formatRand } from "@/lib/xoot-pricing";
+
+/*
+ * The welcome credit is read from the constant, not typed into the sentence.
+ *
+ * This is the legal page. If `care/CarePlus.tsx` advertises one figure and this document states
+ * another, the discrepancy is only ever discovered by the person disputing the difference — and
+ * the terms are the document they will be held against. Both now read the same constant.
+ */
 
 const CarePlusTerms = () => (
   <LegalLayout
@@ -6,6 +16,7 @@ const CarePlusTerms = () => (
     description="Terms for Xoot Care+ membership, Home Memory, favourite Xooter workflows, priority support, XootCred benefits, billing, cancellation, and limitations."
     canonical="/legal/care-plus-terms"
     eyebrow="Care+"
+    lastUpdated="13 August 2026"
   >
     <LegalSection title="Membership benefits">
       <p>
@@ -26,7 +37,7 @@ const CarePlusTerms = () => (
 
     <LegalSection title="XootCred and the welcome credit">
       <p>
-        XootCred is not cash, cannot be withdrawn, may expire, and may be reversed for refunds, chargebacks, cancelled bookings, abuse, duplicates, or fraud indicators. The R30 add-on credit is granted once, when membership starts. It does not recur, and its rules should be shown clearly in the live membership flow.
+        XootCred is not cash, cannot be withdrawn, may expire, and may be reversed for refunds, chargebacks, cancelled bookings, abuse, duplicates, or fraud indicators. The {formatRand(CARE_PLUS_WELCOME_CREDIT_CENTS)} add-on credit is granted once, when membership starts. It does not recur, and its rules should be shown clearly in the live membership flow.
       </p>
     </LegalSection>
   </LegalLayout>

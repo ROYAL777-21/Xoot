@@ -110,8 +110,8 @@ const AuthReset = () => {
         </Link>
 
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
-          <LockKeyhole className="h-3 w-3 text-sage-deep" />
-          <span className="text-xs font-medium text-sage-deep">Secure password reset</span>
+          <LockKeyhole className="h-3 w-3 text-accent-ink" />
+          <span className="text-xs font-medium text-accent-ink">Secure password reset</span>
         </div>
 
         <h1 className="mb-2 font-display text-3xl font-bold">Create a new password</h1>
@@ -212,7 +212,7 @@ const AuthReset = () => {
               </p>
             </div>
 
-            <Button type="submit" disabled={loading || !!passwordIssue} className="h-12 w-full rounded-xl gradient-warm font-semibold shadow-warm">
+            <Button type="submit" disabled={loading || !!passwordIssue} className="h-12 w-full rounded-xl font-semibold">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}
             </Button>
           </form>

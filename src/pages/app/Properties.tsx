@@ -147,7 +147,7 @@ const Properties = () => {
             </div>
             <div><Label>Preferred days</Label><Input value={form.preferred_days} onChange={(e) => setForm({ ...form, preferred_days: e.target.value })} placeholder="Monday, Thursday" /></div>
             <div><Label>Operations notes</Label><Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Turnover timing, concierge, linen, invoice preferences" /></div>
-            <Button type="submit" disabled={submitting} className="rounded-xl gradient-warm">
+            <Button type="submit" disabled={submitting} className="rounded-xl">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4 mr-1" /> Create account</>}
             </Button>
           </form>
