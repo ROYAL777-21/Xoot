@@ -137,6 +137,13 @@ verify_jwt = true
 [functions.create-booking]
 verify_jwt = true
 
+# Closed, and it must stay closed. This builds a SIGNED PayFast checkout naming an amount and a
+# reference for one person's booking, so it needs a caller identity to check ownership against.
+# Opened, anyone could mint a checkout for any payment record and read what it is worth.
+# The provider posts back to `confirm-payment`, which is the open one.
+[functions.create-payment-session]
+verify_jwt = true
+
 # Closed. Creating a split needs the booking owner; accepting one needs the invited person signed
 # in as the invited address, which is not checkable without a verified session.
 [functions.split-booking-fare]

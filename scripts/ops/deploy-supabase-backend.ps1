@@ -31,11 +31,29 @@ if ([string]::IsNullOrWhiteSpace($ProjectRef)) {
   }
 }
 
+# ⚠️ XOOT_ first, ZOOT_ accepted.
+#
+# ZD-029 renamed these reads to `XOOT_` and left every document that tells a person what to export
+# saying `ZOOT_` — `STAGING_BACKEND_DEPLOYMENT.md` §32-33 and §69, `environment-readiness.md`,
+# `supabase-migration-status-repair-20260630.md`, `blocker.md`. So following the documented setup
+# exactly produced:
+#
+#   "Set PRODUCTION database URL or SUPABASE_ACCESS_TOKEN locally before deploying."
+#
+# — which reads as a missing credential when the credential was set and only the name was wrong.
+# That is the same defect as the invoice `ZOOT_INVOICE_*` variables, on the one path that can
+# currently reach production at all: Actions is down and the repo's `SUPABASE_ACCESS_TOKEN` is a
+# project key rather than an `sbp_` personal token, so a local shell is the only remaining route.
+#
+# Accepting both is this repo's existing pattern for a renamed variable — `TWILIO_AUTH_TOKEN` /
+# `TWILIO_WEBHOOK_AUTH_TOKEN`, and `XOOT_APP_ENV -> APP_ENV -> ENVIRONMENT`. Docs now say `XOOT_`;
+# a shell profile already exporting `ZOOT_` keeps working rather than failing on the day it is
+# needed most.
 if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
   $DatabaseUrl = if ($Environment -eq "production") {
-    $env:XOOT_PRODUCTION_SUPABASE_DB_URL
+    if ($env:XOOT_PRODUCTION_SUPABASE_DB_URL) { $env:XOOT_PRODUCTION_SUPABASE_DB_URL } else { $env:ZOOT_PRODUCTION_SUPABASE_DB_URL }
   } else {
-    $env:XOOT_STAGING_SUPABASE_DB_URL
+    if ($env:XOOT_STAGING_SUPABASE_DB_URL) { $env:XOOT_STAGING_SUPABASE_DB_URL } else { $env:ZOOT_STAGING_SUPABASE_DB_URL }
   }
 
   if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
@@ -45,9 +63,9 @@ if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
 
 if ([string]::IsNullOrWhiteSpace($DatabasePassword)) {
   $DatabasePassword = if ($Environment -eq "production") {
-    $env:XOOT_PRODUCTION_SUPABASE_DB_PASSWORD
+    if ($env:XOOT_PRODUCTION_SUPABASE_DB_PASSWORD) { $env:XOOT_PRODUCTION_SUPABASE_DB_PASSWORD } else { $env:ZOOT_PRODUCTION_SUPABASE_DB_PASSWORD }
   } else {
-    $env:XOOT_STAGING_SUPABASE_DB_PASSWORD
+    if ($env:XOOT_STAGING_SUPABASE_DB_PASSWORD) { $env:XOOT_STAGING_SUPABASE_DB_PASSWORD } else { $env:ZOOT_STAGING_SUPABASE_DB_PASSWORD }
   }
 
   if ([string]::IsNullOrWhiteSpace($DatabasePassword)) {

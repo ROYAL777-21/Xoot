@@ -48,7 +48,7 @@ or console step and who can move it. Track them there; this file keeps the reaso
 | [#31](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/31) | Deploy the governance fix to staging (DB side now ready) | anyone with a token |
 | [#32](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/32) | Masked calling — 4 gates shut, **check Twilio Proxy EOL first** | founder |
 | [#33](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/33) | ZD-005 schema source of truth | founder |
-| [#34](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/34) | `zoot://` scheme — now or never, before store submission | founder |
+| ~~[#34](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/34)~~ | ~~`zoot://` scheme~~ — **changed 2026-08-13 (ZD-028)**; console side is `NEEDS-FOUNDER.md` item 7 | founder |
 | [#35](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/35) | R39 fee charged but not displayed (CPA exposure) | founder |
 | [#36](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/36) | SOS activation sequence — do not just flip the constant | founder + ops |
 | [#37](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/37) | Device verification: Live Activities, widgets, Siri, App Links | founder |
@@ -299,8 +299,10 @@ needs an account, a dashboard, a device, or a decision.
 
 ### Decisions only you can make
 - **ZD-005, the schema source of truth.** Four written migrations are unapplied behind it.
-- **The `zoot://` deep-link scheme.** Must change before first store submission or not at all;
-  it cannot move independently of Google/Apple OAuth config.
+- ~~**The `zoot://` deep-link scheme.** Must change before first store submission or not at all;
+  it cannot move independently of Google/Apple OAuth config.~~ **Decided and shipped 2026-08-13
+  (ZD-028).** `xoot://` primary, `zoot://` retained. The Google/Apple/Supabase console side it
+  cannot move independently of is now `NEEDS-FOUNDER.md` item 7.
 - ~~**The R39 one-time service fee.** The server charges it, the price screen does not show it.
   Closing the gap raises every quoted one-time total, which is a commercial call.~~
   **Decided and closed 2026-08-12 (ZD-026).** The commercial call was made in both directions
@@ -818,7 +820,8 @@ from a session is the proxy, not the function.
 ## Supabase
 
 - Live Supabase Auth redirect allowlists still need API/dashboard configuration and
-  verification for local web, staging, production, Expo dev client, `zoot://auth/callback`,
+  verification for local web, staging, production, Expo dev client, `xoot://auth/callback`
+  (**and** the retained `zoot://auth/callback`, so builds already installed keep signing in),
   Google OAuth, and Apple Sign in callbacks. Local `supabase/config.toml` contains the
   intended redirects, and `scripts/ops/set-supabase-auth-config.ps1` dry-runs passed on
   2026-07-01 for production project `mvlrkelahhsyjrwgsxaf` with `https://xoot.co.za`
@@ -1167,13 +1170,22 @@ from a session is the proxy, not the function.
   production/canonical URLs, Mapbox URL-restricted browser tokens, Apple AASA, Android
   assetlinks, privacy/support/account-deletion URLs, and store listing URLs.
 
-- **The deep-link scheme is still `zoot://`, not `xoot://`.** Left unchanged deliberately on
-  2026-08-06 rather than swept up with the domain. A URL scheme is not a string like a domain
-  is: changing it breaks every already-installed build, and it has to be changed in lockstep
-  with the Google and Apple OAuth redirect configurations, the Supabase Auth allowlist, and
-  `mobile/app.config.ts`. Decide it as its own change, before the first store submission —
-  after that it is effectively permanent. `scripts/ops/check-blocker-ledger.ps1` pins the
-  literal `zoot://auth/callback`, so that pattern has to move at the same time.
+- ~~**The deep-link scheme is still `zoot://`, not `xoot://`.**~~ **Changed 2026-08-13 in ZD-028
+  and merged to `main` (#34).** `mobile/app.config.ts` now reads `scheme: ['xoot', 'zoot']` —
+  `xoot` primary, `zoot` retained so links already in the wild keep resolving, which is what makes
+  this survivable at all: a URL scheme is not a string like a domain is, and dropping the old one
+  breaks every already-installed build. The identifier moved to `za.co.xoot.app` in the same
+  change.
+
+  **What remains is the console side, and it is a founder action** — see `NEEDS-FOUNDER.md` item 7.
+  Until three consoles learn the new identity, native sign-in works only on the retained `zoot://`
+  callback: add `xoot://auth/callback` to the Supabase Auth allowlist, update the Google OAuth
+  redirect URI / reversed-client id, and update the Apple bundle id. **New identifier means new EAS
+  credentials** — the old ones are bound to `za.co.zoothome.app`.
+
+  This entry claimed the scheme was unchanged for a day after it shipped, and
+  `scripts/ops/check-blocker-ledger.ps1` — which pins the callback literal — had already moved to
+  `xoot://auth/callback`, so the ledger guard failed against this file's own stale text.
 
 - **Every deployed Edge Function still has the old origin allow-list baked in.**
   `defaultAllowedOrigins` in `_shared/action-utils.ts` is compiled into each function at deploy

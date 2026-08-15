@@ -1,5 +1,5 @@
 param(
-  [string]$ProjectRef = $(if ($env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF) { $env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF } else { "mvlrkelahhsyjrwgsxaf" }),
+  [string]$ProjectRef = $(if ($env:XOOT_PRODUCTION_SUPABASE_PROJECT_REF) { $env:XOOT_PRODUCTION_SUPABASE_PROJECT_REF } elseif ($env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF) { $env:ZOOT_PRODUCTION_SUPABASE_PROJECT_REF } else { "mvlrkelahhsyjrwgsxaf" }),
   [string]$SupabaseVersion = $(if ($env:SUPABASE_CLI_VERSION) { $env:SUPABASE_CLI_VERSION } else { "2.108.0" }),
   [switch]$DryRun,
   [switch]$DeployFunctions,

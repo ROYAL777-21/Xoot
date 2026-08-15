@@ -23,11 +23,500 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-Nothing held.
+Nothing held. **PR [#42](https://github.com/ROYAL777-21/zoot-your-local-helpers/pull/42) is open**
+and being driven by the Correctness session.
+
+---
+
+## 🚨 Netlify has never been able to build this repo — fixed 2026-08-13
+
+> ⚠️ **Release — `netlify.toml` is deploy config and therefore effectively yours.** Taken because it
+> was 3 of the 5 red checks on an open PR that fixes a production outage.
+
+`NEEDS-FOUNDER.md` §2 framed the dead live site as an unlinked project. Linking was necessary and
+**never sufficient**: the first push after linking would have failed before compiling anything.
+
+**Netlify sets `CI=true`.** `npm run build` → `prebuild` → `config:check` →
+`validate-public-env.mjs`, which contains `if (process.env.CI && !appEnv) fail(…)`. `netlify.toml`
+set only `NODE_VERSION`. Reproduced rather than reasoned:
+
+| environment | result |
+|---|---|
+| `CI=true`, no `VITE_APP_ENV` — Netlify's shape | **exit 1**, "CI builds must set VITE_APP_ENV explicitly" |
+| `CI=true` + `VITE_APP_ENV` + Supabase public vars — Actions' shape | exit 0 |
+| no `CI` — how I ran it all session | exit 0 |
+
+That is why CI passes, why my local runs passed, and why the deploy preview failed on four
+consecutive commits including after a lockfile fix that turned the equivalent Actions job green.
+
+**⚠️ This is the SECOND appearance of one bug, and the first fix was yours.**
+`.github/workflows/tests.yml:22` carries your comment — *"when CI is set but VITE_APP_ENV is not.
+The Build step had therefore never once succeeded."* You found it, fixed it in Actions, and wrote it
+down. `netlify.toml` walked into the same hole because a comment in one file cannot guard another.
+`src/lib/netlify-build-env.test.ts` now fails if any context loses its `VITE_APP_ENV`, uses a value
+the validator rejects, or builds a preview as `production`.
+
+**Deploy previews now build with no founder action.** Production still needs
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the Netlify UI, because
+`VITE_APP_ENV = "production"` also trips `requiresRealSupabase` — recorded as NEEDS-FOUNDER §2a
+with the exact values.
+
+**I got this wrong first.** I told the PR the likely cause was the `NODE_VERSION = "20"` pin against
+Vite 8's `^20.19.0 || >=22.12.0`. It was a reasonable-looking guess and it was wrong; Node 20 is EOL
+so Netlify's `20` resolves above 20.19. Corrected on the PR rather than left standing — I could not
+read Netlify's log from here, and should have reproduced before hypothesising in public.
+
+---
+
+## 🔎 AUTHZ AUDIT — measured 2026-08-13, guard NOT yet built
+
+`docs/security/rls-and-database-security-review.md` says **"Reviewed: 2026-07-02"** and has been
+touched since only by a rename sweep. **Eleven migrations** have landed behind it, including the
+client write-surface lockdown, fare splits, and ZD-029. Nothing in the repo fails when it stops
+being true. Recording the measurements now so they are not re-derived; the drift guard is the next
+piece and is **not done**.
+
+### The shape of it, read live from production and staging
+
+| | |
+|---|---|
+| tables in `public` | 83 |
+| RLS enabled | **83 of 83** |
+| policies | 122 |
+| tables with a client `INSERT/UPDATE/DELETE` grant | 38 |
+
+**No privilege-escalation path.** `user_roles` INSERT/UPDATE/DELETE are all admin-gated;
+`xooters` INSERT/DELETE likewise; `payment_records` and `bookings` are not client-writable at all.
+Owner-scoped writes (`saved_addresses`, `push_tokens`, `favorites`, `profiles`, `booking_tips` …)
+are all `user_id = auth.uid()` and legitimate.
+
+**`public.has_role` and `private.has_role` agree by design, not by accident.** `private` is
+SECURITY DEFINER and does the real lookup; `public` delegates to it but returns false unless
+`_user_id = auth.uid()`, so the public wrapper can only ever answer about yourself. Both pin
+`search_path`. This was the finding that would have invalidated every other one, so it was checked
+first.
+
+### ⚠️ A false finding I nearly recorded, and how
+
+My first "reachable writes" query filtered policies with `not ilike '%has_role%'`, intending to find
+non-admin-reachable ones. That **excludes owner-reachable policies of the form
+`(user_id = auth.uid()) OR has_role(admin)`** — so `profiles:UPDATE` and `post_job_reviews:INSERT`
+looked unreachable on production, and I was one step from reporting "editing your profile is broken
+in production". It is not. Corrected before it went anywhere.
+
+The lesson is the repo's own: a query that looks like evidence is not evidence until you check what
+it excludes.
+
+### Findings worth acting on
+
+1. **~13 tables carry client write grants with ZERO policies** — `xooter_earnings`,
+   `subscription_plans`, `training_modules`, `notification_templates`, `automation_skills`,
+   `contractor_screening_questions`, `analytics_*`, `booking_xooter_profiles`,
+   `xooter_training_progress`, `profiles:DELETE` and others. **Inert today**, because RLS
+   default-denies with no policy. But the grant is already in place, so the day anyone adds a
+   permissive policy the write is live immediately — defence in depth inverted. Money
+   (`xooter_earnings`) and pricing (`subscription_plans`) are in that list.
+2. **Staging and production write surfaces differ** and nothing checks it.
+3. **ZD-029 never renamed FUNCTIONS.** Production still has `zooter_job_transition_allowed`;
+   `types.ts` says `xooter_…`, which is why *Types match the live schema* fails on `main`. Read from
+   `pg_proc` directly. Anything RPC-ing the new name 404s today.
+4. `admin_review_queue` INSERT permits `user_id IS NULL` from any authenticated user.
+5. `booking_tips` policies use bare `auth.uid()` and role `{public}` where the repo's own documented
+   safe pattern is `(select auth.uid())` and `{authenticated}` — re-evaluated per row.
+6. `xooter_payout_accounts.xooter_id` is a FK to **`auth.users.id`**, not `xooters.id`, despite the
+   name. The policy is correct; the name is a trap for whoever writes the next one.
+
+**Next:** `scripts/security/assert-authz-surface.mjs` diffing the live grant⋈policy join against a
+committed `docs/security/client-write-surface.json`, plus an offline test catching new grants in
+migrations at review time, plus a hardening migration revoking the vestigial grants.
 
 ---
 
 ## ✅ RELEASED — done, or stopped and available
+
+### 🔒 Correctness & Safety — 2026-08-13 — the payment journey, and the constraint that blocked it
+
+Pushed to `claude/xoot-ios-build-setup-0te1sl`. **85 files / 851 tests green** (main was 807),
+`npm run build` green, `security:scan` clean.
+
+> ⚠️ **RELEASE — TWO OF YOUR PATHS, AND ONE WAS AN OUTAGE.**
+>
+> **1. `supabase/migrations/**`.** `20260813180000_payfast_sole_payment_provider.sql` added
+> `check (provider = 'payfast')` to `payment_records`, whose column default is `'manual_pending'`.
+> **The column default violated the column's constraint**, so no booking, Care+ signup, gift clean
+> or fare split could be created — on staging *and* production. Six writers insert `manual_pending`
+> explicitly. Proven with a real insert, not argued:
+>
+> ```
+> ERROR: 23514: new row for relation "payment_records" violates check constraint
+> "payment_records_provider_check"   DETAIL: Failing row contains (..., manual_pending, ...)
+> ```
+>
+> `20260813200000_payment_records_provider_lifecycle.sql` widens it to
+> `manual_pending | payfast | manual_eft` and is **applied to staging**. Production is left for your
+> dispatch. Your `payment_provider_capabilities` constraint is deliberately untouched — `payfast`
+> alone is right *there*, because a capability row is a claim about one provider. It was only wrong
+> on `payment_records`, where `provider` is a lifecycle field.
+>
+> **2. `supabase/config.toml`.** One entry: `create-payment-session`, `verify_jwt = true`. Must stay
+> closed — it builds a signed checkout naming an amount for one person's booking.
+>
+> **3. Redeploy `confirm-payment` AND `admin-confirm-payment` together.** They now share a changed
+> `_shared/payment-confirmation.ts`; neither gets the fix until both go.
+>
+> One thing to watch on your side: applying via the MCP recorded my migration as version
+> `20260813132840` — a "now" timestamp that sorts **before** the migration it fixes. Corrected to
+> `20260813200000` so the repo and database agree and `db push` does not re-run it. Worth knowing
+> the rename trap bites on `apply_migration` even when the file is named correctly.
+
+**We both built PayFast this weekend and neither of us knew.** I built `_shared/payfast.ts`, a
+`payfast-itn` function and a provider migration on the feature branch while you built the same
+three things on `main`. Our migrations landed on the **identical version prefix `20260813180000`**.
+
+**Yours won and mine is deleted.** Not a quality judgement — yours is merged, applied to staging,
+better tested (RFC 1321 MD5 vectors, the 55/56/64-byte block boundary) and carries a source-IP
+layer mine lacked. And two ITN receivers for one provider is two code paths for money, which is the
+defect class this repo keeps paying for. Branch reset onto `origin/main` rather than merged, per
+rule 5.
+
+**That collision was invisible because neither of us claimed PayFast here before starting.** This
+is exactly the failure this file exists to prevent, and it did not. Roughly a day of duplicated
+work on the most safety-critical surface in the product. Worth more than an apology: **the claim is
+cheap and it is the only thing that works.** I pushed a claim-only commit before writing a line
+this time.
+
+#### What I built: the half neither of us had
+
+`PAYFAST_PROCESS_URL_LIVE` and `_SANDBOX` were declared in your module and referenced nowhere.
+`create-booking` returned `/app/bookings/{id}?payment=pending`, and `payment_session_url` appeared
+in exactly one file — the one that generates it. **So your own finish-line condition, "a sandbox
+PayFast payment completes end to end", was unreachable: nothing sent the customer to PayFast.**
+
+`_shared/payfast-checkout.ts` imports `buildSignatureBase` and `md5Hex` **from your module** rather
+than carrying its own. Outbound signing and inbound verification must agree, and two
+implementations that "should" match is how a payment bug survives a suite — each side passes its
+own tests and only PayFast sees the mismatch. That reuse is what makes the central test meaningful:
+it signs a checkout with one module and verifies it with your `verifySignature`.
+
+`create-payment-session` — authenticated, its own function because `create-booking` writes one
+payment record **per booking** in a recurring series, and because an abandoned checkout must be
+resumable. Ownership checked against the JWT; amount from `payment_records.amount` and never the
+body; gated on `payments.provider_checkout` **and** `payments.hosted_checkout.payfast` **and** the
+capability row — evidence and intent, neither sufficient alone, failing closed. All false today,
+read from staging.
+
+**The gate is on starting a checkout and deliberately not on `confirm-payment`.** If a control is
+switched off while a customer sits on PayFast's page, their money still arrives; an ITN handler
+that refused it would leave cash in the bank with no booking. Asserted in a test so nobody
+"tidies" it later.
+
+#### The step that was nearly lost
+
+`main`'s `admin-confirm-payment` still moved the payment record to `admin_confirmed` and never
+touched the booking — EFT confirmed against a statement, booking `draft` forever. Both paths now
+share `_shared/payment-confirmation.ts`.
+
+⚠️ **And the first version of that helper reproduced the bug one layer down.** It did the booking
+update and the status event and stopped — while the webhook it was extracted from *also* offered
+the job to the Xooter and queued the assignment search. Converging onto it would have fixed
+"booking never advances" and left "Xooter never gets the job", wearing the fix as a disguise. All
+five steps now live in the helper, and the parity test bans each inline form individually rather
+than just checking the helper is called.
+
+#### Verified by planting, restored after
+
+| planted | result |
+|---|---|
+| `manual_pending` removed from the constraint | 7 fail, each naming the file that disagrees |
+| passphrase leaked into the checkout response | 3 fail, including the signature round-trip |
+| `amount` / `item_name` swapped in the signed order | 2 fail |
+| job offer removed from the shared helper | 1 fail |
+
+> ⚠️ **NOT VERIFIED AGAINST PAYFAST.** Nothing here can reach `payfast.co.za`. The checkout matches
+> documented behaviour and is self-consistent with your verifier — a real consistency check, but
+> **not** proof PayFast accepts the form. A sandbox payment is the first honest test and needs the
+> merchant credentials in `NEEDS-FOUNDER.md`.
+
+**Recorded, not fixed:** `payment_records.provider_reference` has no unique index while
+`confirm-payment` looks up by it with `.maybeSingle()`. Two records sharing a reference would error
+and lose a payment. Practically impossible with the current UUID+timestamp scheme, so it is noted
+rather than changed mid-payment-work.
+
+**`NEEDS-FOUNDER.md` corrected:** item 6 said the `zoot://` scheme was "still live in
+`mobile/app.config.ts`". ZD-028 changed it and your own merge `7180314` brought it to `main`;
+`app.config.ts` reads `scheme: ['xoot', 'zoot']`. Replaced with what is actually outstanding — the
+provider consoles. A register that lists a cleared blocker teaches people to skim it.
+
+### Correctness & Safety — 2026-08-14 — ZD-029's eighth surface, on the only path left to production
+
+Asked which blockers need a terminal, I went to answer it and found the terminal path itself broken.
+
+**The ops scripts read `XOOT_*`. Every document telling a person what to export said `ZOOT_*`.**
+
+```
+scripts/ops/deploy-supabase-backend.ps1:36  $env:XOOT_PRODUCTION_SUPABASE_DB_URL
+docs/STAGING_BACKEND_DEPLOYMENT.md:33       "set ZOOT_PRODUCTION_SUPABASE_DB_URL"
+```
+
+So exporting exactly what the page said produced *"Set PRODUCTION database URL or
+SUPABASE_ACCESS_TOKEN locally before deploying"* — which reads as a missing credential when the
+credential was set and only the name was wrong. Same shape as the `ZOOT_INVOICE_*` variables that
+killed invoice generation, and as `TWILIO_API_KEY` and `ENVIRONMENT` before that.
+
+**Why this one is worse than the others: it is on the only route to production that still exists.**
+Actions has been down for this account since 10:38Z, and `SUPABASE_ACCESS_TOKEN` in the repo is a
+project key rather than an `sbp_` personal token (`go-live.md` §0), so *both* automated paths are
+shut. A local PowerShell shell is the only way to apply the four pending migrations — and that
+shell was being handed the wrong variable names.
+
+Two more found in the same sweep:
+
+- `deploy-production-backend.ps1` and `deploy-staging-backend.ps1` read `ZOOT_…_PROJECT_REF` while
+  the script they delegate to reads `XOOT_…_PROJECT_REF`. Latent — both have hardcoded defaults, so
+  it only bites when someone overrides the ref to target a different project.
+- `STAGING_BACKEND_DEPLOYMENT.md` §207 told people to export `ZOOT_SUPABASE_PROJECT_REF` for the
+  Auth-config script, which reads `XOOT_SUPABASE_PROJECT_REF` with **no default**. It fails closed
+  — `"Missing ProjectRef. Set XOOT_SUPABASE_PROJECT_REF or pass -ProjectRef."` — and the error
+  names the right variable, so this is annoying rather than dangerous. No wrong-project write.
+
+Fixed by accepting **both spellings, `XOOT_` first**, which is this repo's existing pattern for a
+renamed variable (`TWILIO_AUTH_TOKEN` / `TWILIO_WEBHOOK_AUTH_TOKEN`, and
+`XOOT_APP_ENV → APP_ENV → ENVIRONMENT`). A profile already exporting `ZOOT_` keeps working rather
+than failing on the day it is needed most. Docs now say `XOOT_`.
+
+**Historical evidence documents were deliberately left alone** — `supabase-migration-status-repair-20260630.md`
+and `environment-readiness.md` record what was run and observed on a date. Rewriting them would
+falsify history for the same reason rewriting an applied migration would.
+
+`src/lib/ops-env-var-names.test.ts` pins the agreement. It **failed at baseline** and found two
+spots my own fix had missed — §155 and §207. Then plant-and-verify caught it being too weak: a
+`ZOOT_`-only read in one script was vouched for by an `XOOT_` read in a *different* script, because
+I checked repo-wide when the fallback pattern is written per read site. Now per file.
+
+That is the third first-draft guard today that was too weak — substring twice
+(`TWILIO_API_KEY` inside `TWILIO_API_KEY_SID`, `not_booking_participant` inside
+`…_x`), and now scope. **Planting the bug is what caught all three**; none of them would have
+been found by reading the test back.
+
+92 files → 93, 1034 tests, typecheck, lint, build, `security:scan` green.
+
+> 🚢 **Release:** `scripts/ops/**` is unassigned and reads like yours; taken because ZD-029 is mine
+> and this blocks the only working deploy route. `docs/STAGING_BACKEND_DEPLOYMENT.md` is unowned.
+> Nothing about deploy *behaviour* changed — only which variable names are accepted and documented.
+
+### Correctness & Safety — 2026-08-14 — a cron job has been failing every minute for 33 hours
+
+**`20260813220000` fixed the eight `public` functions ZD-029 broke. I checked `public` and stopped.
+The `private` schema has two more, and one of them is on a cron schedule.**
+
+Read from `cron.job_run_details` on production:
+
+```
+jobid 1  "zoot-sensitive-access-ready"  every minute
+  last success   2026-08-13 09:35:00
+  first failure  2026-08-13 09:36:00      <- the minute ZD-029 was applied
+  1,975 consecutive failures, still failing at 18:30Z on 2026-08-14
+
+  ERROR: relation "public.zooters" does not exist
+  CONTEXT: PL/pgSQL function private.enqueue_sensitive_access_notifications() line 1
+```
+
+Staging is the same — 1,977 failures, last at 18:32Z.
+
+That job is what tells a Xooter, 45 minutes before a booking, that gate codes and entry
+instructions are available: it marks the booking, writes the notification, queues the push.
+**None of that has happened since the rename.** Together with the read path I fixed earlier —
+`sensitive-access-read` passing `p_actor_id` to a function declaring `p_xooter_id`, and
+`can_access_sensitive_data`'s body naming `zooter_id` — the sensitive-access feature was dead end
+to end: never announced, and unreadable if you found it anyway.
+
+⚠️ **Blast radius today is zero, and that belongs in the report as much as the defect does.**
+Production has **0 bookings, 0 xooters, and 0 `sensitive_access_available` notifications ever
+sent**, so the `due` CTE selects nothing and nobody has missed anything. Dead on arrival, not an
+incident with victims. It becomes real with the first booking.
+
+The second one, `private.can_create_masked_call`, has never failed in the logs because
+`twilio.masked_voice` is false so nothing calls it. It would have broken on the first masked call
+after voice was switched on.
+
+`20260814170000_fix_private_function_bodies_zd029.sql` rebuilds both from `pg_get_functiondef`
+rather than from the migrations that created them, so nothing changed since is silently reverted.
+Two string fixes are real defects rather than tidying: the notification's deep link was
+`/zooter/jobs` and the app serves `/xooter/jobs`, and the body said "in the Zoot app".
+
+**The masked-call reason strings are deliberately unchanged, including
+`booking_has_no_assigned_zooter`.** They are a return value, and `twilio-phase9-readiness.test.ts`
+pins two siblings against migration text — this repo treats them as contract. Renaming a contract
+string while fixing an outage mixes two risks. Nothing matches on it today, so it stays cheap to do
+later; doing it here is not free.
+
+`src/lib/private-schema-rename.test.ts` fails any post-rename migration that names a dropped
+object, checks the notification route against `src/App.tsx` rather than a string I chose, and pins
+the contract reasons. Planted three times. **The third plant passed at first** — I had written
+`toContain("not_booking_participant")`, which a rename to `not_booking_participant_x` satisfies.
+Third substring trap today, after `TWILIO_API_KEY` inside `TWILIO_API_KEY_SID` and `ENVIRONMENT`
+inside `SENTRY_ENVIRONMENT`. Now matches the quoted literal.
+
+90 files → 92, 1030 tests, typecheck, lint, build, `security:scan` green.
+
+> 🚢 **Release — this one is live, on both projects.** `supabase/migrations/**` is your path and
+> `can_create_masked_call` gates voice, also yours; written here because ZD-029 is mine.
+> **Not applied anywhere.** It needs a `db-push` alongside `20260813200000`, `20260813220000` and
+> `20260814103000` — that is now four migrations deep, and this one stops an error being written to
+> `cron.job_run_details` sixty times an hour on production.
+>
+> Worth knowing for the runbook: **a failing cron writes only to `cron.job_run_details`**, which is
+> not on any dashboard or alert. This ran red for 33 hours with nothing surfacing it. A periodic
+> check of `select * from cron.job_run_details where status = 'failed'` would have caught it the
+> same day, and would be a cheap addition to `verify-supabase-live.ps1`.
+
+### Correctness & Safety — 2026-08-14 — ZD-029's sixth casualty: no Xooter can set a profile photo
+
+**`src/pages/xooter/Profile.tsx:65` uploads to `xooter-avatars`. That bucket has never existed.**
+
+The bucket is `zooter-avatars`, created by `20260422031848` and re-affirmed by `20260620000000`, and
+**no migration ever renamed it.** `20260813160000` renamed tables, columns, views and an enum label;
+`20260813140000` renamed data values — control keys, agent keys, event names. A storage bucket is
+neither schema nor ordinary data. It sat in the gap between the two migrations and the sweep went
+straight past it.
+
+Measured on **both** projects before writing anything:
+
+```
+zooter-avatars   public=true   objects=0          xooter-avatars: does not exist
+```
+
+So `.upload()` returns `Bucket not found`, the toast shows it, and no Xooter can set a photo.
+Fails visibly and closed — nothing written anywhere wrong — but `photo_url` is what a client sees
+next to the person entering their home.
+
+**Found by looking for the class, not the instance.** After three surfaces of this bug in one day I
+went looking for a fourth in the things ZD-029 touched that no typechecker can see: keys code looks
+up **by value**. Checked all 13 operational-control keys against the migrations — **all fine**, and
+all 6 rename pairs are consistent (`concierge.xootcred_support`, `xooter.sensitive_access`,
+`xoot_black.*` are not read by code; the keys code does read were never renamed). Storage buckets
+were the one that broke.
+
+`20260814103000_rename_zooter_avatars_bucket.sql` — insert new, refuse if the old one is non-empty,
+recreate policies. ⚠️ **The policies are the point:** two of them carry `bucket_id =
+'zooter-avatars'` *inside their bodies*, read live from `pg_policies` rather than guessed from the
+three migrations that have touched this bucket. A policy body is text; renaming the bucket does not
+rewrite it — the same reason ZD-029 left eight function bodies pointing at dropped columns. Renaming
+without that step breaks uploads a second way that looks identical to the first.
+
+**The first version of this migration was wrong, and the preview branch caught it.** It ended with
+`delete from storage.buckets`, and Supabase rejected the whole migration:
+
+```
+ERROR: Direct deletion from storage tables is not allowed. Use the Storage API instead.
+(SQLSTATE 42501)  At statement: 6
+```
+
+Which is precisely why it was pushed rather than applied by hand. The failure is also informative —
+it failed on the *last* statement, so inserting a bucket and dropping/creating policies on
+`storage.objects` are all permitted. I also dropped the `update storage.objects set bucket_id` step:
+it executed, but against zero rows, which proves nothing about whether the same trigger would block
+a real per-row move. It is replaced by a `raise exception` if the old bucket is non-empty, which
+hands that case to the Storage API rather than to a statement I cannot vouch for. Nothing can land
+there anyway — the product only ever names `xooter-avatars`.
+
+> 🚢 **Small one for Release, not blocking:** the empty `zooter-avatars` bucket cannot be removed in
+> SQL and has to go through the Storage API or the dashboard. After this migration it has no
+> policies, no objects and no reference in code, so it is cosmetic residue. Supabase project
+> settings are yours.
+>
+> 🚢 **Read this one before the next `db-push`.** The rejected version failed on its *last*
+> statement, so the six before it had committed. I then found `20260814103000` **recorded in
+> `supabase_migrations.schema_migrations`** on the preview branch, with the branch holding the new
+> policies. Two explanations fit: Supabase recorded a partly-failed migration as applied, or the
+> branch was reset and re-ran cleanly. **I cannot tell which from here and did not guess.**
+>
+> If it is the first, a version can be marked applied with only part of it run — which would make
+> `schema_migrations` a record of *attempts* rather than *outcomes*, and that is the assumption
+> `check-supabase-metadata-drift.ps1` and the whole `db-push` flow rest on. Worth five minutes
+> before you push to staging. Supabase project operations are yours; I stopped at the observation.
+>
+> The migration itself is now re-runnable from a partial apply (`drop policy if exists` on the new
+> names as well as the old), so whichever explanation holds, applying it again is safe.
+
+`src/lib/storage-bucket-names.test.ts` guards three things: every bucket code uploads to is created
+by a migration; no **new** old-brand bucket may appear (a public bucket id is customer-visible — it
+appears verbatim in every public URL); and each of the two retired old-brand buckets must stay
+unreachable from code. That last one exists because "retired" can never mean "deleted" here — SQL
+cannot delete a bucket — so the exemption list is itself asserted rather than trusted.
+
+Planted three times, each restored: removing the migration fails *"xooter-avatars is created by a
+migration"*; adding a `zoot-receipts` bucket fails *"every old-brand bucket that still exists is a
+known retired one"*; re-pointing `Profile.tsx` at `zooter-avatars` fails *"retired bucket
+zooter-avatars is unreachable from code"*.
+
+90 files / 1018 tests, typecheck, lint, build, `security:scan` green.
+
+> 🚢 **For Release.** `supabase/migrations/**` is your path; I wrote this one because ZD-029 is mine.
+> **Not applied anywhere** — I did not touch staging or production. The Supabase preview branch
+> applies it on push, which is the validation. It needs a `db-push` alongside `20260813200000` and
+> `20260813220000`.
+>
+> Ordering is safe in one direction only, and it is the natural one: the repo already says
+> `xooter-avatars`, so **migration before web deploy** can only fix the feature. The reverse leaves
+> it exactly as broken as it is now, so there is no window this makes worse.
+
+### Correctness & Safety — 2026-08-14 — ZD-029's third and fourth casualties, and a dead invoice
+
+**`Verify blocker and provider-readiness artifacts` is mine.** I called it "pre-existing, not mine"
+four times over two days without once reading why it failed, and left that claim on the PR and in a
+scheduled note to myself. It failed because of ZD-029, my commit.
+
+`43e8d24` swept the repo for `zoot` → `xoot` and rewrote **assertions and code** without rewriting
+the **artifacts those assertions read** or the **templates that code reads**:
+
+| surface | effect |
+|---|---|
+| `scripts/ops/verify-production-readiness.ps1` | 20 literals moved; their targets correctly did not. 25 `fail` checks, exit 1 |
+| `supabase/functions/.env.example` + 3 docs | 5 env names left at `ZOOT_` after the code moved to `XOOT_` |
+| `blocker.md` (mine) | ledger guard requires `xoot://auth/callback`; this file still said the scheme was unchanged |
+
+The migration files are right and the assertions were wrong. `20260624224551` really did create
+`zooter_jobs`; `20260813160000` renamed it later. Rewriting the older file would make a fresh
+`supabase db reset` create the new name early and then fail the rename — breaking local resets and
+every Supabase preview branch. Restored the historical spellings with a header comment saying so.
+
+**The one that was a live defect, not a naming question.** `generate-booking-invoice` reads
+`XOOT_INVOICE_LEGAL_ENTITY`; `.env.example`, `ENVIRONMENT_SETUP.md`, `SECRETS_INVENTORY.md` and the
+phase-4 doc all said `ZOOT_`. Following the documented setup configured four variables nothing read,
+and `getInvoiceLegalConfig` refused **every** invoice with *"invoice legal entity is not
+configured"*. Fail-closed, so no invoice ever carried a blank legal entity — the right direction —
+but the feature was dead and silent. `NEEDS-FOUNDER.md` **item 6** (new) says to re-set the secrets;
+the provider-console item renumbered 6 → 7 and `blocker.md`'s references follow it.
+
+**Why nothing caught any of it:** these two PowerShell guards run in exactly one place, a
+`windows-latest` job, and that job stops at its first failing step — so the blocker-ledger failure
+sat invisible behind the verifier failure the whole time. `src/lib/ops-readiness-assertions.test.ts`
+now re-runs both on Linux under `npx vitest run`, plus a third assertion that every
+`Deno.env.get("X")` in `supabase/functions/**` is named in `.env.example`.
+
+That third one found two more on its first run, both masked by my own substring check:
+`TWILIO_API_KEY` (a fallback alias of `TWILIO_API_KEY_SID`, already classed `FALLBACK_BACKED` in
+`twilio-secrets-contract.test.ts`) and **`ENVIRONMENT`** — the third link in
+`XOOT_APP_ENV → APP_ENV → ENVIRONMENT → "production"`. Worth knowing: `ENVIRONMENT` is a generic
+name other tooling likes to set, and `ENVIRONMENT=production` left on staging would silently point
+staging at production's `payment_provider_capabilities` row. Both documented in the template.
+
+Planted and seen failing, then restored: the verifier literal (2 tests), the blocker callback
+literal (1), the invoice env name (2). 89 files / 1012 tests, typecheck, lint, build, `security:scan`
+all green.
+
+> 🚢 **For Release, two things.**
+>
+> 1. `scripts/ops/verify-production-readiness.ps1` is unassigned in `CLAUDE.md` and reads like
+>    yours. I edited it because I broke it; say if you want it back.
+> 2. **`.github/workflows/production-readiness.yml` runs five steps sequentially**, so one failure
+>    hides the rest — that is why the second failure went unseen for a day. Your path, not touched.
+>    Worth `continue-on-error` on the individual checks with a final gate, or splitting the steps
+>    into separate jobs.
+>
+> Still red and still yours: `Types match the live schema`, until `db-push` applies `20260813200000`
+> and `20260813220000`.
 
 ### Correctness & Safety — 2026-08-13 — the schema says Xoot now (ZD-029) — ⚠️ REVIEW BEFORE DEPLOY
 
@@ -951,8 +1440,44 @@ Verified: 821 tests, `tsc --noEmit`, `vite build`, `security:scan`.
 
 Neither session should answer these alone. Record the question, let the founder decide.
 
-- **Nothing open.** (Release asked on 2026-08-15 who builds PayFast checkout initiation. Answered
-  the same day: Correctness already had, in PR #42. Release's duplicate is reverted.)
+### Which founder register is canonical? — raised 2026-08-14 by Correctness & Safety
+
+**There are two, created the same day, one per session, and each carries items the other has never
+listed.** This is the thing this worklog says had already happened seven times.
+
+| | `NEEDS-FOUNDER.md` (root) | `docs/release/founder-todo.md` |
+|---|---|---|
+| created by | Correctness (`57ad0d9`) | Release (`89b91af`, `871b78d`, `84a5dbc`) |
+| referenced by | 3 files | 5 files |
+| only there | PayFast merchant credentials, the two Netlify production env vars, invoice legal entity | the measured production-state table, the Twilio subaccount walkthrough, the ZD-029 cost accounting |
+
+Both are good. Neither is complete. **Merging them is a one-way door** — whichever loses, the
+references to it have to move, and the last seven registers rotted precisely because nobody chose.
+
+I have not merged them, copied items between them, or deleted either. What I did do:
+
+- Added a cross-reference block to the top of `founder-todo.md` naming the three items it is missing
+  and pointing here. *(Release's path — flagged per rule 3.)*
+- Corrected its `#34` row: closed 2026-08-13, verified by reading the issue, not assumed.
+
+**Founder: pick one.** My recommendation is `NEEDS-FOUNDER.md` for the *register* — it is at the root
+where it cannot be missed, and every row has a *proves it done* — and keeping `founder-todo.md` as
+the **evidence and walkthrough document** it is genuinely better at, with its live-measured
+production table. That is a suggestion, not a decision.
+
+### Is `ENCRYPTION_KEY` actually cleared? — resolved by reading, 2026-08-14
+
+Recording it because I got it wrong first. `NEEDS-FOUNDER.md` listed it under **✅ Cleared**;
+[#28](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/28) is **open**, and the issue is
+right. Its definition of done is a gate code stored *and read back*, because Supabase never reads a
+secret value back — "reported set" is not "verified set", a distinction this repo has been bitten by
+twice.
+
+And the proof was **unobtainable** until this branch: `sensitive-access-read` passed `p_actor_id` to
+a function declaring `p_xooter_id`, so PostgREST never resolved the call and the endpoint answered
+500 to every request, while ZD-029 had left the function body querying `zooter_id`. Failed closed —
+nothing leaked — but no gate code could round-trip regardless of the secret. Corrected in
+`NEEDS-FOUNDER.md` rather than left as a green tick.
 
 ---
 

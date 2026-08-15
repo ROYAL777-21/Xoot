@@ -3,6 +3,20 @@
 Last measured **2026-08-13 11:00 SAST**, against the live databases and the Netlify API — not
 carried forward on trust.
 
+> ⚠️ **There are two founder registers, and this is only one of them.**
+> `NEEDS-FOUNDER.md` at the repo root was created the same day as this file, by the other session,
+> and carries founder items this one has never listed — **PayFast merchant credentials**, the **two
+> Netlify production environment variables**, and the **invoice legal entity**. All three block
+> revenue or a feature outright.
+>
+> Read both until one is retired. Which one survives is a founder call, recorded under *Open
+> questions between the roles* in `docs/implementation/agent-worklog.md` — deliberately **not**
+> resolved by either session unilaterally, and deliberately not fixed by copying the missing items
+> here, because a fourth copy is how the previous seven registers rotted.
+>
+> *(Flag added by Correctness & Safety, 2026-08-14. `docs/release/**` is Release's path; only this
+> block and the #34 row below were touched.)*
+
 ---
 
 ## 🚨 0. CI cannot run — this blocks the other four items
@@ -233,7 +247,7 @@ listed here only so they stop resurfacing as if they were unstarted work.
 | # | decision |
 |---|---|
 | [#33](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/33) | ZD-005 schema source of truth — four written migrations blocked behind it |
-| [#34](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/34) | the `zoot://` deep-link scheme — before first store submission, or never |
+| ~~[#34](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/34)~~ | ~~the `zoot://` deep-link scheme~~ — **decided and closed 2026-08-13** (ZD-028). `xoot://` primary, `zoot://` retained. What remains is provider-console work, not a decision: `NEEDS-FOUNDER.md` item 7 |
 | [#38](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/38) | `--destructive` fails AA contrast, and worse in dark mode |
 | [#40](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/40) | long bookings pay R27.95/h — the ladder is sub-linear in hours |
 | [#41](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/41) | 200 jobs to reach the 20% commission floor is roughly two years |

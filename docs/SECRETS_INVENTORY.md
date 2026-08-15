@@ -155,8 +155,8 @@ secret go in?" above — this is the section most often filed in the wrong place
 | Webhook key | `BREVO_WEBHOOK_KEY` | Edge secret | Template | Verify inbound webhook authenticity. |
 | Marketing list IDs | `BREVO_MARKETING_LIST_ID` | Edge secret or ops config | Template | Keep staging/prod separate. |
 | Transactional template IDs | `BREVO_TRANSACTIONAL_TEMPLATE_BOOKING_ID`, `BREVO_TRANSACTIONAL_TEMPLATE_SUPPORT_ID` | Edge secret or ops config | Template | Version and QA before production send. |
-| Invoice legal entity | `ZOOT_INVOICE_LEGAL_ENTITY`, `ZOOT_INVOICE_LEGAL_ENTITY_REGISTRATION` | Supabase Edge Function secret | Template | Required by `generate-booking-invoice`; use final reviewed business/legal values. |
-| Invoice VAT config | `ZOOT_INVOICE_VAT_RATE`, `ZOOT_INVOICE_VAT_NUMBER` | Supabase Edge Function secret | Template | If VAT rate is greater than zero, the VAT number is required before invoices can be generated. |
+| Invoice legal entity | `XOOT_INVOICE_LEGAL_ENTITY`, `XOOT_INVOICE_LEGAL_ENTITY_REGISTRATION` | Supabase Edge Function secret | Template | Required by `generate-booking-invoice`; use final reviewed business/legal values. |
+| Invoice VAT config | `XOOT_INVOICE_VAT_RATE`, `XOOT_INVOICE_VAT_NUMBER` | Supabase Edge Function secret | Template | If VAT rate is greater than zero, the VAT number is required before invoices can be generated. |
 
 ## KIE
 
@@ -189,7 +189,7 @@ secret go in?" above — this is the section most often filed in the wrong place
 | --- | --- | --- | --- | --- |
 | API key/provider key | `OPENAI_API_KEY` | Supabase Edge Function secret | Referenced | Used by `support-respond`; fallback rules work if missing. |
 | Model name | `OPENAI_SUPPORT_MODEL` | Supabase Edge Function secret | Referenced | Defaults to `gpt-4.1-mini`. |
-| Guest anti-abuse hard requirement | `ZOOT_REQUIRE_CONCIERGE_TURNSTILE` | Supabase Edge Function secret/env | Optional | Use only after Cloudflare Turnstile widget and domain restrictions are configured. The database gate is `support.turnstile_required`. |
+| Guest anti-abuse hard requirement | `XOOT_REQUIRE_CONCIERGE_TURNSTILE` | Supabase Edge Function secret/env | Optional | Use only after Cloudflare Turnstile widget and domain restrictions are configured. The database gate is `support.turnstile_required`. |
 | System prompt location | `supabase/functions/support-respond/index.ts` | Code | Referenced | Prompt forbids passwords, OTPs, refunds, payments, and unsafe approvals. |
 | Rate limit strategy | Edge Function/API gateway | Template | Add per-user and per-ticket throttles before scale. |
 | Human escalation rules | `support-respond` escalation keywords | Code | Referenced | Refunds, payments, damage, unsafe, cancellation, replacement, access codes escalate. |
