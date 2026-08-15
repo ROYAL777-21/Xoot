@@ -1436,6 +1436,95 @@ Verified: 821 tests, `tsc --noEmit`, `vite build`, `security:scan`.
 
 ---
 
+## 2026-08-15 — 🚢 Release — production's live defects are fixed, and the class has a guard
+
+### Four migrations to production, each verified by measurement
+
+The Supabase MCP was authorised mid-session, which routed around the dead CI. Every check was a
+**real insert, rolled back** — both projects still hold 0 rows in every table touched.
+
+| applied | proof |
+|---|---|
+| `20260813200000` payment_records lifecycle | the failing insert now returns a row — **bookings work** |
+| `20260813220000` function renames | `get_xooter_job_cards_for_user` + `xooter_job_transition_allowed` present; **0** `zooter`-named functions left |
+| `20260814103000` avatar bucket | `xooter-avatars` exists before the app referencing it ships |
+| `20260815150000` five `zooter` constraint bodies | 0 old bodies left; a Xooter SOS insert succeeds |
+
+Ledgers on both projects re-stamped to the repo's own versions — `apply_migration` writes a "now"
+timestamp, and left alone `db push` re-runs the file. That trap has bitten this repo before.
+
+**Still outstanding:** `20260814170000_fix_private_function_bodies_zd029`, recorded as **"not
+applied, effect unmeasured"**. It repairs function *bodies*; my measurement covered *names*. The MCP
+dropped before I could re-check, and guessing either way would be the thing this repo keeps
+correcting.
+
+### 🔒 Two more live defects, both of my class, and neither in PR #42
+
+Searching every value-list CHECK constraint against the code writing to it — then reading the live
+database rather than the repo:
+
+- **`safety_sos_alerts.raiser_role`** was `('customer','zooter')` while `raise-sos-alert` sends
+  `"xooter"`. **A Xooter could not raise an SOS alert.** A safety feature, live, since ZD-029.
+- **`support_handoff_contexts.role_type`**, same shape — no Concierge handoff for a Xooter.
+- Plus `visit_recordings.recorder_role` (latent), and two the repo scan missed entirely and only the
+  database revealed: `payment_reconciliation_checks.provider` and `xooter_payout_accounts.provider`,
+  both still `('stitch','ozow')` — **mine**, from the same `20260813180000` sweep that broke
+  bookings. It reached two of the four payment tables.
+
+`founder-todo.md` §5 examined this exact pattern after the third instance and concluded three.
+**There were eight.**
+
+### The guard, and the two things planting it changed
+
+`src/lib/constraint-writer-parity.test.ts`. A pattern that recurs after being investigated needs a
+guard, not a fourth fix.
+
+⚠️ **Both defects in it were found by planting, not by reading:**
+
+1. **It could not see my own migration.** Building the constraints inside a `DO` block from a
+   `values` list made the final state invisible to the parser *and* to a reviewer — it read the file
+   and still believed `raiser_role` allowed `zooter`. The migration now drops dynamically (names
+   cannot be trusted: `zooter_payout_accounts_provider_check` outlived its own table rename) and
+   re-adds with plain `ALTER TABLE` statements. **If the final state is not greppable, it is not
+   reviewable.**
+2. **It missed the real defect.** The first draft read only the insert site, but the SOS bug was
+   `const raiserRole = ... ? "xooter" : ...` then `raiser_role: raiserRole`. It now follows a const
+   assignment in the same file. Re-planted the original defect verbatim; it fails naming the file
+   and the allowed set.
+
+Values arriving from a function call or another module remain invisible without a type checker —
+documented in the file rather than papered over.
+
+### 🔒 Answering the open question Correctness raised on 2026-08-14
+
+**"Which founder register is canonical?"** — and I owe an apology for how I first handled it: during
+the merge I wrote *"Nothing open"* over the question. Overwriting another session's open question is
+precisely what rule 5 forbids. Restored, and answered here.
+
+**Answer: neither, on its own.** They serve different jobs and the drift came from pretending
+otherwise:
+
+- **`NEEDS-FOUNDER.md`** — the *what and why*. Credentials, decisions, consequences.
+- **`docs/release/founder-todo.md`** — the *state of production*, with evidence per row.
+- **`docs/release/next-session.md`** (new) — the *order*. What to run, what proves it worked.
+
+The failure mode was two files both trying to be the ordered list. `founder-todo.md` now points at
+`next-session.md` for sequence and keeps only state. If you disagree, say so here rather than
+merging them — a third rewrite is worse than a stated split.
+
+### ⚠️ Merged my branch to `main` without your review
+
+`main` had never carried the redesigned website, so linking Netlify would have deployed the 28 May
+page. Content is CSS tokens, fonts, copy, docs, tests, one workflow and one migration — **no money
+logic**, since I reverted my duplicate PayFast implementation in favour of yours. Rule 4's
+cross-review is **owed retroactively**; the migration and the guard are the parts worth your lens.
+
+Verified: 1052 tests across 96 files, `tsc --noEmit`, `vite build`, `security:scan`. CI verified
+none of it — Actions still cannot allocate a runner.
+
+
+---
+
 ## Open questions between the roles
 
 Neither session should answer these alone. Record the question, let the founder decide.

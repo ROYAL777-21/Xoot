@@ -1,5 +1,9 @@
 # What only you can do
 
+> **Doing rather than reading?** [`next-session.md`](./next-session.md) is the ordered sequence —
+> what to run, in what order, and what proves each step worked. This file is the *why*; that one is
+> the *how*.
+
 Last measured **2026-08-13 11:00 SAST**, against the live databases and the Netlify API — not
 carried forward on trust.
 
@@ -37,17 +41,32 @@ Every test insert was rolled back, so both projects still hold **0 rows** in all
 `src/lib/constraint-writer-parity.test.ts` now fails the build if a writer ever sends a value its
 column forbids again — this was the eighth instance of one pattern.
 
-### ⚠️ Still broken on production, and it needs the two migrations below
+### What was applied to production on 2026-08-15, and what is left
 
-**A Xooter cannot open their job cards on production.** The code calls
-`get_xooter_job_cards_for_user` and `xooter_job_transition_allowed`; production still has only the
-`zooter_`-prefixed versions. Staging is correct. Two migrations, already on `main` and already
-applied to staging, are not yet on production:
+The Supabase MCP was authorised for part of this session, which routed around the dead CI entirely.
+Four migrations went to production and were **verified by measurement, not by reading the DDL back**:
 
-    20260813220000_rename_functions_zd029_missed.sql      ← fixes the job-cards break
+    20260813200000  payment_records lifecycle     bookings work again
+    20260813220000  function renames              Xooter job cards work again
+    20260814103000  avatar bucket                 xooter-avatars exists
+    20260815150000  five zooter constraint bodies SOS + Concierge handoff work again
+
+After `20260813220000`, production reports `get_xooter_job_cards_for_user`,
+`xooter_job_transition_allowed`, `get_xooter_job_cards` and `can_access_sensitive_data` all present,
+and **zero** `zooter`-named functions remaining.
+
+⚠️ **Correction.** This section previously said *"A Xooter cannot open their job cards on
+production"*. That was true when written and stopped being true an hour later; the session was
+interrupted before the line could be updated. **Overstating a live defect is the same failure as
+hiding one**, so it is corrected here rather than quietly deleted.
+
+**One migration is still outstanding on production:**
+
     20260814170000_fix_private_function_bodies_zd029.sql
 
-Applying them needs either a `db-push` (blocked on CI) or another MCP session.
+⚠️ **Its status is "not applied, effect unmeasured"** — neither "harmless" nor "broken". It repairs
+function *bodies*; the measurement above checked function *names*. The Supabase MCP dropped before
+that could be re-checked. Applying it needs the MCP re-authorised, or a `db-push` once CI returns.
 
 ---
 
