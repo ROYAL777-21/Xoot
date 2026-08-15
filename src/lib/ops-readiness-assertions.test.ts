@@ -7,9 +7,25 @@ import { describe, expect, it } from "vitest";
  *
  * ── The defect ──────────────────────────────────────────────────────────────────
  * `scripts/ops/verify-production-readiness.ps1` and `scripts/ops/check-blocker-ledger.ps1` assert
- * that named files exist and contain named strings. They run in exactly one place: the
- * `windows-latest` job *Verify blocker and provider-readiness artifacts*. Nothing local runs them —
- * not `npm test`, not `npm run build`, not `security:scan`.
+ * that named files exist and contain named strings. In CI they run in exactly one place: the
+ * `windows-latest` job *Verify blocker and provider-readiness artifacts*. No **npm** command runs
+ * them — not `npm test`, not `npm run build`, not `security:scan` — so on a normal push they are
+ * exercised only by that one job.
+ *
+ * ⚠️ This comment used to say "nothing local runs them", which was wrong and worth correcting:
+ * **PowerShell is installable in a Linux dev container**, and on 2026-08-15 the real scripts were
+ * run here against this tree — parse clean on all 11, verifier `363 pass / 0 fail`, ledger and both
+ * drift environments exit 0. So the scripts *can* be executed directly, and should be when they are
+ * edited:
+ *
+ *     curl -sSL -o /tmp/pwsh.tar.gz \
+ *       https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-x64.tar.gz
+ *     mkdir -p /tmp/pwsh && tar -xzf /tmp/pwsh.tar.gz -C /tmp/pwsh && chmod +x /tmp/pwsh/pwsh
+ *     /tmp/pwsh/pwsh -NoProfile -File scripts/ops/verify-production-readiness.ps1 -Json
+ *
+ * This test still earns its place: it runs on every push with no download, and it catches the
+ * assertion drift below in seconds. But it is a **fast proxy, not the authority** — the scripts
+ * themselves are, and they are reachable.
  *
  * So when ZD-029 (`43e8d24`, "Rename the schema to Xoot, and the 267 files that name it") swept the
  * repo for `zoot` -> `xoot`, it rewrote **twenty assertions** in the verifier while their targets

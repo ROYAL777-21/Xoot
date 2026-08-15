@@ -247,6 +247,40 @@ rather than changed mid-payment-work.
 `app.config.ts` reads `scheme: ['xoot', 'zoot']`. Replaced with what is actually outstanding — the
 provider consoles. A register that lists a cleared blocker teaches people to skim it.
 
+### Correctness & Safety — 2026-08-15 — the readiness job actually passes, verified with real PowerShell
+
+I have been asserting things about `Verify blocker and provider-readiness artifacts` all week from a
+Node reimplementation, because I believed PowerShell was unavailable here. **It is not.** `pwsh`
+7.4.6 downloads and runs in this container, so the real scripts can be executed directly.
+
+Ran every step of the job against this tree:
+
+```
+parse check, all 11 ops scripts        0 errors
+verify-production-readiness.ps1 -Json  363 pass / 0 fail / 11 manual / 1 skipped   exit 0
+check-blocker-ledger.ps1 -Json                                                     exit 0
+check-supabase-metadata-drift.ps1 -Environment staging | production                exit 0, exit 0
+secret-scan.mjs + assert-no-frontend-admin-queue-writes.mjs                        pass
+```
+
+**So that job would be green today if Actions could run it** — which is the first time I can say
+that from the scripts themselves rather than from a proxy. It also retroactively validates the Node
+checkers: they agreed with the real scripts on every point.
+
+The immediate reason for running them was narrower. I edited three `.ps1` files yesterday
+(`deploy-supabase-backend`, `deploy-production-backend`, `deploy-staging-backend`) and the job's
+**first** step is a PowerShell *parse*. I had shipped those edits without being able to parse them.
+They parse clean — but that was luck plus care, not verification, and it should not have been left
+that way.
+
+Corrected the stale claim in `src/lib/ops-readiness-assertions.test.ts`, which said "nothing local
+runs them". That is now false, and a guard whose stated rationale is wrong is the doc-rot this repo
+keeps paying for. It now records the install command and describes itself accurately: a fast proxy
+that runs on every push with no download, **not** the authority. The scripts are.
+
+> 🚢 **For Release:** worth knowing before the next `.ps1` edit — the Windows-only job is no longer
+> the only way to exercise these. Four lines of setup and the real scripts run on Linux.
+
 ### Correctness & Safety — 2026-08-15 — #40 revoke, and ZD-029's ninth surface
 
 PR #42 merged. Branch restarted from the new `main` (`370f428`) rather than stacked on merged
