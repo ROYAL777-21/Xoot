@@ -6,6 +6,7 @@ const Popia = () => (
     description="Xoot's Protection of Personal Information Act notice for South African users, Xooters, applicants, clients, and operational partners."
     canonical="/legal/popia"
     eyebrow="POPIA"
+    lastUpdated="29 July 2026"
   >
     <LegalSection title="Responsible party">
       <p>

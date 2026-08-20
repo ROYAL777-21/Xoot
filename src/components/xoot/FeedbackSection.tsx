@@ -108,7 +108,7 @@ export const FeedbackSection = () => {
                 Please avoid sending passwords, card details, gate codes, ID numbers or private access notes.
               </p>
             </div>
-            <Button type="submit" className="h-12 rounded-2xl gradient-warm shadow-warm" disabled={submitting}>
+            <Button type="submit" className="h-12 rounded-2xl" disabled={submitting}>
               <Send className="mr-2 h-4 w-4" />
               Send constructive feedback
             </Button>

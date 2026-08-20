@@ -6,6 +6,7 @@ const AcceptableUse = () => (
     description="Rules for safe, lawful, respectful use of Xoot bookings, support, Concierge, Xooter onboarding, reviews, communication, and property workflows."
     canonical="/legal/acceptable-use"
     eyebrow="Platform rules"
+    lastUpdated="29 July 2026"
   >
     <LegalSection title="Use Xoot honestly">
       <LegalList>

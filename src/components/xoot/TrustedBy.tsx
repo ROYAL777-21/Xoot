@@ -25,11 +25,17 @@ export const TrustedBy = () => {
           {operatorProfiles.map((profile) => {
             const Icon = profile.icon;
             return (
-              <div key={profile.label} className="liquid-glass-shell rounded-3xl p-4 text-center shadow-card">
-                <div className="liquid-glass-readable">
-                  <Icon className="mx-auto mb-3 h-5 w-5 text-primary" />
-                  <p className="font-display text-lg font-bold tracking-tight">{profile.label}</p>
-                </div>
+              // Glass off, border on. `design/GLASS-SYSTEM.md` reserves glass for navigation,
+              // controls and overlays and says outright that it "is not the default treatment for
+              // page sections, forms, repeated content cards, or dashboards" — five repeated
+              // content cards in a row is the case it names. The `liquid-glass-readable` inner
+              // wrapper existed only to restore text contrast the glass took away, so both go.
+              <div
+                key={profile.label}
+                className="rounded-3xl border border-border bg-card p-4 text-center"
+              >
+                <Icon className="mx-auto mb-3 h-5 w-5 text-primary" />
+                <p className="font-display text-lg font-bold tracking-tight">{profile.label}</p>
               </div>
             );
           })}

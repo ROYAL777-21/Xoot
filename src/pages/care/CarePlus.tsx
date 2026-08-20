@@ -22,6 +22,8 @@ import { SEO } from "@/components/SEO";
 import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 import { CarePlusBenefitCard, CarePlusComparisonTable, CarePlusSupportPromise } from "@/components/care-plus/CarePlusShowcase";
 import { carePlusBenefits, carePlusMoatBenefits } from "@/data/care-plus";
+import { CARE_PLUS_WELCOME_CREDIT_CENTS } from "@/lib/care-plus";
+import { formatRand } from "@/lib/xoot-pricing";
 import { useCarePlus } from "@/hooks/useCarePlus";
 import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
 import { useXootCred } from "@/hooks/useXootCred";
@@ -112,20 +114,20 @@ const CarePlus = () => {
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 {state.status === "unauthenticated" ? (
-                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => { haptic("success"); captureCarePlusCta("hero_guest_join"); }}>
+                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => { haptic("success"); captureCarePlusCta("hero_guest_join"); }}>
                     <Link to="/auth">Join Care+ membership <ArrowRight className="ml-1 h-4 w-4" /></Link>
                   </Button>
                 ) : state.status === "not_member" || state.status === "cancelled" ? (
-                  <Button size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => { captureCarePlusCta("hero_join"); void joinCarePlus(); }} disabled={carePlus.actionLoading}>
+                  <Button size="lg" className="h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => { captureCarePlusCta("hero_join"); void joinCarePlus(); }} disabled={carePlus.actionLoading}>
                     {carePlus.actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crown className="mr-2 h-4 w-4" />}
                     Join for {formatZAR(carePlus.plan.priceZar)}/month
                   </Button>
                 ) : state.status === "pending_payment" ? (
-                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => captureCarePlusCta("hero_pending_payment")}>
+                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => captureCarePlusCta("hero_pending_payment")}>
                     <a href={state.checkout_url}>Complete setup <ArrowRight className="ml-1 h-4 w-4" /></a>
                   </Button>
                 ) : (
-                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full gradient-warm px-7 text-base font-semibold shadow-warm sm:w-auto" onClick={() => captureCarePlusCta("hero_active_book")}>
+                  <Button asChild size="lg" className="h-14 w-full justify-center rounded-full px-7 text-base font-semibold sm:w-auto" onClick={() => captureCarePlusCta("hero_active_book")}>
                     <Link to="/app">Book with Care+ <ArrowRight className="ml-1 h-4 w-4" /></Link>
                   </Button>
                 )}
@@ -133,9 +135,6 @@ const CarePlus = () => {
                   <a href="#included">See benefits</a>
                 </Button>
               </div>
-              <p className="mt-5 text-sm text-muted-foreground">
-                Signed-in member panels come from your live Supabase account data.
-              </p>
             </div>
 
             {carePlus.loading ? (
@@ -151,7 +150,7 @@ const CarePlus = () => {
         <section id="included" className="border-y border-border bg-secondary/35 py-20 md:py-28">
           <div className="container">
             <div className="mb-12 max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">What&apos;s included</p>
+              <p className="text-sm font-semibold uppercase tracking-wider text-brand">What&apos;s included</p>
               <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">The {formatZAR(carePlus.plan.priceZar)}/month reliability layer.</h2>
               <p className="mt-4 text-muted-foreground"><CarePlusMark /> gives practical continuity and emotional calm without pretending support, refunds or replacement decisions are automatic.</p>
             </div>
@@ -164,7 +163,7 @@ const CarePlus = () => {
         <section className="py-20 md:py-28">
           <div className="container">
             <div className="mb-12 max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">Value pillars</p>
+              <p className="text-sm font-semibold uppercase tracking-wider text-brand">Value pillars</p>
               <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Remembered, protected, ready.</h2>
             </div>
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -188,7 +187,7 @@ const CarePlus = () => {
           <div className="container">
             <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
-                <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">Compare</p>
+                <p className="text-sm font-semibold uppercase tracking-wider text-brand">Compare</p>
                 <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Standard Xoot vs <CarePlusMark /></h2>
               </div>
               <p className="max-w-md text-sm text-muted-foreground">Care+ adds continuity, priority handling and ledger-backed rewards to ordinary cleaning workflows.</p>
@@ -201,7 +200,7 @@ const CarePlus = () => {
           <section className="py-20 md:py-28">
             <div className="container grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-wider text-sage-deep">Smart reminders</p>
+                <p className="text-sm font-semibold uppercase tracking-wider text-brand">Smart reminders</p>
                 <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl"><CarePlusMark /> follows your real booking rhythm.</h2>
                 <p className="mt-4 text-muted-foreground">These prompts are based on your last completed booking, not generic example data.</p>
               </div>
@@ -226,7 +225,7 @@ const CarePlus = () => {
 
         <section className="bg-background py-20 md:py-28">
           <div className="container grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div className="rounded-4xl gradient-sage p-6 text-primary-foreground shadow-warm sm:p-8 md:p-12">
+            <div className="rounded-4xl gradient-sage p-6 text-primary-foreground sm:p-8 md:p-12">
               <Sparkles className="mb-5 h-8 w-8" />
               <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Home care should not reset every time.</h2>
               <p className="mt-4 max-w-2xl text-base opacity-90 sm:text-lg">Care+ keeps the useful context in the app: household notes, favourite people, XootCred, property profiles and support handoff history.</p>
@@ -273,7 +272,7 @@ const CarePlusStatePanel = ({ carePlus, household, xootCred, onJoin }: { carePlu
         <CalendarClock className="mb-5 h-8 w-8 text-primary" />
         <h2 className="font-display text-3xl font-bold">Complete your Care+ setup</h2>
         <p className="mt-3 text-sm text-muted-foreground">Your membership request exists, but benefits activate only after payment is confirmed by the backend payment flow.</p>
-        <Button asChild className="mt-6 rounded-full gradient-warm">
+        <Button asChild className="mt-6 rounded-full">
           <a href={state.checkout_url}>Open payment link</a>
         </Button>
       </Card>
@@ -302,7 +301,7 @@ const CarePlusStatePanel = ({ carePlus, household, xootCred, onJoin }: { carePlu
 
   return (
     <div className="grid gap-5">
-      <Card className="rounded-3xl border-0 bg-foreground p-6 text-background shadow-warm">
+      <Card className="rounded-3xl border-0 bg-foreground p-6 text-background">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-background/70">Care<span className="text-primary-glow">+</span> active</p>
@@ -414,10 +413,19 @@ const CarePlusSignupPass = ({
         ? `Your previous membership ended on ${formatDate(cancelledAt)}. Rejoin to restore Home Memory, priority context and member add-on credit.`
         : "Join to make repeat cleaning feel remembered, protected and easier to rebook.";
 
+  /*
+   * Was `liquid-glass-shell … shadow-warm` wrapping `liquid-glass-readable` wrapping a second
+   * shadowed card — a card inside a card, both elevated, both glass, on a content surface.
+   * `GLASS-SYSTEM.md` reserves glass for navigation, controls and overlays; the Care+ member pass
+   * is none of those, and its inverse fill already separates it from the page without help.
+   *
+   * It also carried `xoot-concierge-panel`, copied across from the Concierge sheet — a class
+   * defined in no stylesheet. It styled nothing here, and nothing there either.
+   */
   return (
-    <div className="liquid-glass-shell xoot-concierge-panel rounded-4xl p-5 shadow-warm sm:p-6">
-      <div className="liquid-glass-readable">
-        <div className="rounded-[1.6rem] border border-white/20 bg-foreground p-5 text-background shadow-warm sm:p-6">
+    <div className="rounded-4xl border border-border bg-card p-5 sm:p-6">
+      <div>
+        <div className="rounded-[var(--xoot-radius-lg)] border border-white/20 bg-foreground p-5 text-background sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-background/65">Care+ member pass</p>
@@ -430,7 +438,7 @@ const CarePlusSignupPass = ({
           </div>
 
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
-            {["Home Memory", "Priority support", "R30 welcome credit", "Favourite Xooter"].map((item) => (
+            {["Home Memory", "Priority support", `${formatRand(CARE_PLUS_WELCOME_CREDIT_CENTS)} welcome credit`, "Favourite Xooter"].map((item) => (
               <div key={item} className="rounded-2xl bg-background/10 px-3 py-2 text-sm font-semibold">
                 {item}
               </div>
@@ -464,11 +472,11 @@ const CarePlusSignupPass = ({
         )}
 
         {mode === "guest" ? (
-          <Button asChild size="lg" className="mt-6 h-14 w-full rounded-full gradient-warm text-base font-semibold shadow-warm">
+          <Button asChild size="lg" className="mt-6 h-14 w-full rounded-full text-base font-semibold">
             <Link to="/auth">Join Care+ membership <ArrowRight className="ml-1 h-4 w-4" /></Link>
           </Button>
         ) : (
-          <Button size="lg" className="mt-6 h-14 w-full rounded-full gradient-warm text-base font-semibold shadow-warm" onClick={onJoin} disabled={loading}>
+          <Button size="lg" className="mt-6 h-14 w-full rounded-full text-base font-semibold" onClick={onJoin} disabled={loading}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crown className="mr-2 h-4 w-4" />}
             {mode === "rejoin" ? "Rejoin Care+ membership" : "Activate Care+ membership"}
           </Button>

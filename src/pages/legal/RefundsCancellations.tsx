@@ -6,6 +6,7 @@ const RefundsCancellations = () => (
     description="How Xoot handles cancellations, refunds, replacement support, Care+ billing, payment disputes, and XootCred adjustments."
     canonical="/legal/refunds-cancellations"
     eyebrow="Payments"
+    lastUpdated="29 July 2026"
   >
     <LegalSection title="Payment confirmation">
       <p>

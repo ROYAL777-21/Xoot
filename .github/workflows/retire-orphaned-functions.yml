@@ -1,0 +1,185 @@
+name: Retire orphaned Edge Functions
+
+# ── What this is for ────────────────────────────────────────────────────────────────────────────
+#
+# Six functions are deployed and ACTIVE on BOTH projects with no source anywhere in this repo:
+#
+#   admin-reject-zooter   approve-zooter   get-zooter-job-cards
+#   redeem-zootcred       respond-zooter-job   submit-zooter-application
+#
+# They are the pre-rename originals. The ZD-029 rename renamed the directories, deployed the new
+# `-xooter-` names, and never removed the old deployments — so both generations are live and
+# reachable, and `supabase functions deploy` has no concept of deleting what it did not build.
+#
+# This matters more than a tidy-up. A deployed function carries its OWN FROZEN COPY of
+# `_shared/*` from the day it shipped (see CLAUDE.md). These six were last built 2026-08-12, so
+# each one still contains:
+#
+#   - the pre-rename pricing module, before the R47/h floor work
+#   - the pre-rename governance-utils
+#   - the pre-rename table names
+#
+# `redeem-zootcred` redeems account credit. `respond-zooter-job` moves job state. Neither is a
+# read-only leftover, and both bypass every correctness fix merged since the rename.
+#
+# ── Why this is not just done automatically ─────────────────────────────────────────────────────
+#
+# `xoot.co.za` currently serves a hand-uploaded build from 28 May 2026 — before the rename. If any
+# part of that build calls the old function names, deleting them breaks the live site. Nobody has
+# read that bundle. Until the Netlify link is made (NEEDS-FOUNDER.md item 2) and the live site is
+# built from this repo, the production half of this is a founder decision, not a session's.
+#
+# Staging has no such caller and can be cleaned immediately.
+#
+# ── Deletion is not reversible from here ────────────────────────────────────────────────────────
+#
+# There is no source to redeploy these from — that is the entire point of calling them orphaned.
+# Once deleted the slug is gone and only a Supabase support restore brings it back. Hence the
+# same typed-ref confirmation the deploy workflow uses for production, and hence `dry_run`
+# defaulting to true so the first run of this file cannot delete anything.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which project to clean
+        required: true
+        default: staging
+        type: choice
+        options: [staging, production]
+      dry_run:
+        description: List what would be deleted without deleting it. Leave ticked the first time.
+        required: true
+        default: true
+        type: boolean
+      confirm_project_ref:
+        description: >-
+          Required for production only. Type the project ref exactly — mvlrkelahhsyjrwgsxaf.
+          Leave blank for staging.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retire-functions-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  retire:
+    name: Retire on ${{ inputs.environment }}${{ inputs.dry_run && ' (dry run)' || '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Checked before any credential is touched, same as deploy-edge-functions.yml.
+      - name: Confirm production
+        if: inputs.environment == 'production' && !inputs.dry_run
+        env:
+          TYPED: ${{ inputs.confirm_project_ref }}
+        run: |
+          if [ "$TYPED" != "mvlrkelahhsyjrwgsxaf" ]; then
+            echo "::error::Production deletion requires confirm_project_ref = mvlrkelahhsyjrwgsxaf. Got: '${TYPED}'"
+            exit 1
+          fi
+
+      - name: Refuse to run without a usable token
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN is not set."
+            exit 1
+          fi
+          case "$TOKEN" in
+            sbp_*) ;;
+            *)
+              echo "::error::SUPABASE_ACCESS_TOKEN must be a personal access token starting 'sbp_'."
+              echo "::error::Account -> Access Tokens, NOT Project Settings -> API."
+              exit 1
+              ;;
+          esac
+
+      - uses: supabase/setup-cli@v1
+
+      # ── The safety rail that matters most ──────────────────────────────────────────────────
+      #
+      # The list below is not read from anywhere — it is written out literally, and every name is
+      # re-checked against `supabase/functions/` before deletion. If a directory by that name
+      # EXISTS in the repo, the function is not an orphan and the run aborts.
+      #
+      # That inversion is deliberate. A workflow that derived "orphan" as "deployed but not in the
+      # repo" would delete every function during any run where checkout was shallow, a rename was
+      # mid-flight, or a directory was temporarily moved. Hard-coding the six and verifying their
+      # absence fails safe in the direction that matters: the worst outcome is that it deletes
+      # nothing and says why.
+      - name: Every name must still be absent from the repo
+        run: |
+          set -euo pipefail
+          present=""
+          for fn in admin-reject-zooter approve-zooter get-zooter-job-cards \
+                    redeem-zootcred respond-zooter-job submit-zooter-application; do
+            if [ -d "supabase/functions/$fn" ]; then present="$present $fn"; fi
+          done
+          if [ -n "$present" ]; then
+            echo "::error::These are NOT orphans — they have source in this repo:$present"
+            echo "::error::Someone has re-added them. Delete this workflow's entry for them instead."
+            exit 1
+          fi
+          echo "Confirmed: none of the six have source in supabase/functions/."
+
+      - name: Retire them
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: ${{ inputs.environment == 'production' && 'mvlrkelahhsyjrwgsxaf' || 'fxmxyabdjqviqbcxmvlp' }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -uo pipefail
+          FUNCTIONS="admin-reject-zooter approve-zooter get-zooter-job-cards redeem-zootcred respond-zooter-job submit-zooter-application"
+
+          echo "Project: $PROJECT_REF"
+          echo "Dry run: $DRY_RUN"
+          echo
+
+          # Deliberately NOT `set -e` across the loop. One already-deleted slug returning an error
+          # must not abandon the remaining five — a half-cleaned project is the state this whole
+          # file exists to get out of. Failures are collected and reported at the end instead.
+          failed=""
+          for fn in $FUNCTIONS; do
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "would delete: $fn"
+              continue
+            fi
+            echo "deleting: $fn"
+            if ! supabase functions delete "$fn" --project-ref "$PROJECT_REF"; then
+              failed="$failed $fn"
+            fi
+          done
+
+          echo
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run only — nothing was deleted. Re-run with dry_run unticked to act."
+            exit 0
+          fi
+          if [ -n "$failed" ]; then
+            echo "::warning::These did not delete cleanly:$failed"
+            echo "::warning::An 'not found' here is fine — it means it was already gone."
+          fi
+
+      # Proves the outcome rather than assuming the CLI's exit code meant what we wanted. The six
+      # should no longer appear; everything else should be untouched.
+      - name: What is deployed now
+        if: ${{ !inputs.dry_run }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: ${{ inputs.environment == 'production' && 'mvlrkelahhsyjrwgsxaf' || 'fxmxyabdjqviqbcxmvlp' }}
+        run: |
+          set -uo pipefail
+          supabase functions list --project-ref "$PROJECT_REF" | tee /tmp/after.txt
+          echo
+          if grep -qE 'zooter|zootcred' /tmp/after.txt; then
+            echo "::error::A pre-rename function is still deployed. Read the list above."
+            exit 1
+          fi
+          echo "No pre-rename functions remain on $PROJECT_REF."

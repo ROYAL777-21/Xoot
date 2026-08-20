@@ -124,7 +124,7 @@ const Profile = () => {
           <div><Label>Phone</Label><Input value={profile.phone ?? ""} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} /></div>
           <div><Label>Default address</Label><Input value={profile.address ?? ""} onChange={(e) => setProfile({ ...profile, address: e.target.value })} placeholder="Used to pre-fill bookings" /></div>
         </div>
-        <Button onClick={save} disabled={saving} className="mt-5 gradient-warm">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}</Button>
+        <Button onClick={save} disabled={saving} className="mt-5">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}</Button>
       </Card>
 
       <Card className="p-6 rounded-3xl mb-6">
@@ -144,7 +144,7 @@ const Profile = () => {
           <div><Label>Favourite products</Label><Textarea rows={2} value={household.favourite_products ?? ""} onChange={(e) => setHousehold({ ...household, favourite_products: e.target.value })} placeholder="Eco products, floor cleaner, no bleach" /></div>
           <div className="sm:col-span-2"><Label>Access notes</Label><Textarea rows={2} value={household.access_notes ?? ""} onChange={(e) => setHousehold({ ...household, access_notes: e.target.value })} placeholder="Keys, concierge, alarm notes" /></div>
         </div>
-        <Button onClick={saveHousehold} disabled={savingHousehold} className="mt-5 gradient-warm">
+        <Button onClick={saveHousehold} disabled={savingHousehold} className="mt-5">
           {savingHousehold ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save household"}
         </Button>
       </Card>

@@ -52,7 +52,7 @@ const Dashboard = () => {
   const statusBadge: Record<string, { text: string; cls: string }> = {
     draft: { text: "Application incomplete", cls: "bg-muted text-muted-foreground" },
     submitted: { text: "Under review", cls: "bg-primary/15 text-primary" },
-    approved: { text: "Verified Xooter", cls: "bg-accent/15 text-sage-deep" },
+    approved: { text: "Verified Xooter", cls: "bg-accent/15 text-accent-ink" },
     rejected: { text: "Application rejected", cls: "bg-destructive/15 text-destructive" },
   };
 
@@ -60,7 +60,7 @@ const Dashboard = () => {
     <div className="container py-8 lg:py-12 max-w-6xl">
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-3 border border-accent/20">
-          <Sparkles className="h-3 w-3 text-sage-deep" />
+          <Sparkles className="h-3 w-3 text-accent-ink" />
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusBadge[status].cls}`}>{statusBadge[status].text}</span>
         </div>
         <h1 className="font-display text-4xl md:text-5xl font-bold">Hi {app?.full_name?.split(" ")[0] ?? "there"}</h1>
@@ -102,7 +102,7 @@ const Dashboard = () => {
 
 const Stat = ({ icon: Icon, label, value, accent }: any) => (
   <Card className="p-5 rounded-2xl">
-    <div className={`grid h-10 w-10 place-items-center rounded-xl mb-3 ${accent === "primary" ? "bg-primary/10 text-primary" : "bg-accent/15 text-sage-deep"}`}>
+    <div className={`grid h-10 w-10 place-items-center rounded-xl mb-3 ${accent === "primary" ? "bg-primary/10 text-primary" : "bg-accent/15 text-accent-ink"}`}>
       <Icon className="h-5 w-5" />
     </div>
     <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>

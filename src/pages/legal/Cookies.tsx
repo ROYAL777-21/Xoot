@@ -6,6 +6,7 @@ const Cookies = () => (
     description="How Xoot uses cookies, local storage, analytics, crash monitoring, authentication storage, and app-like browser storage across the website and web app."
     canonical="/legal/cookies"
     eyebrow="Cookies"
+    lastUpdated="29 July 2026"
   >
     <LegalSection title="What Xoot may store on your device">
       <LegalList>

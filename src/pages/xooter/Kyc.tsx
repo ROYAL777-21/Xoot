@@ -27,7 +27,7 @@ const Kyc = () => {
   const statusInfo: Record<string, { icon: any; cls: string; title: string; body: string }> = {
     draft: { icon: AlertCircle, cls: "bg-muted text-muted-foreground", title: "Application incomplete", body: "Finish all steps and submit." },
     submitted: { icon: Clock, cls: "bg-primary/15 text-primary", title: "Under review", body: "Your application is in the trust review queue. Each verification area is reviewed before activation." },
-    approved: { icon: ShieldCheck, cls: "bg-accent/15 text-sage-deep", title: "Verified", body: "You're cleared to take jobs." },
+    approved: { icon: ShieldCheck, cls: "bg-accent/15 text-accent-ink", title: "Verified", body: "You're cleared to take jobs." },
     rejected: { icon: AlertCircle, cls: "bg-destructive/15 text-destructive", title: "Rejected", body: app?.reviewer_notes || "Re-upload documents and resubmit." },
   };
   const info = statusInfo[status];
@@ -59,7 +59,7 @@ const Kyc = () => {
                 <p className="text-xs text-muted-foreground">Uploaded {new Date(d.created_at).toLocaleDateString()}</p>
               </div>
               <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${
-                d.status === "approved" ? "bg-accent/15 text-sage-deep"
+                d.status === "approved" ? "bg-accent/15 text-accent-ink"
                 : d.status === "rejected" ? "bg-destructive/15 text-destructive"
                 : "bg-muted text-muted-foreground"
               }`}>{d.status}</span>

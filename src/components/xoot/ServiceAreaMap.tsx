@@ -82,7 +82,7 @@ export const ServiceAreaMap = () => {
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <LocateFixed className="h-3.5 w-3.5" />
-            Mapbox-powered coverage
+            Launch coverage
           </div>
           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
             See where Xoot is launching, then book from the same flow.
@@ -92,7 +92,7 @@ export const ServiceAreaMap = () => {
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {approvedLaunchRegions.slice(0, 8).map((region) => (
-              <span key={region} className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold capitalize text-foreground/75 shadow-card">
+              <span key={region} className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold capitalize text-foreground/75">
                 {region}
               </span>
             ))}
@@ -108,7 +108,20 @@ export const ServiceAreaMap = () => {
           </div>
         </div>
 
-        <div className="liquid-glass-shell relative min-h-88 overflow-hidden rounded-4xl shadow-warm">
+        {/*
+          Glass and strong shadow off this panel, on purpose, and NOT off the things inside it.
+
+          `design/GLASS-SYSTEM.md` gives glass four jobs — navigation, controls, overlays, and
+          rare prominent actions. This outer element is none of them: it is the content surface
+          the map is drawn on, and `shadow-warm` on something this large is the "strong shadows
+          are reserved for temporary overlays" rule inverted.
+
+          What sits inside it keeps its glass and is correct to: the "Find full-time help"
+          button is a control, and the loading state, the no-map fallback and the bottom bar are
+          overlays drawn over the map. Stripping those too would have been the opposite mistake
+          to the one being fixed.
+        */}
+        <div className="relative min-h-88 overflow-hidden rounded-4xl border border-border bg-card">
           {mapboxToken ? (
             <>
               <div ref={mapContainerRef} className="absolute inset-0" aria-label="Xoot service area map" />
@@ -122,16 +135,22 @@ export const ServiceAreaMap = () => {
             <div className="liquid-glass-readable absolute inset-0 grid place-items-center p-6">
               <div className="max-w-sm text-center">
                 <MapPin className="mx-auto mb-4 h-8 w-8 text-primary" />
-                <h3 className="font-display text-2xl font-bold">Mapbox is ready for activation.</h3>
+                {/*
+                  The map is decoration over a list that is already on the page. When the map
+                  cannot render, the suburbs beside it still answer the question, so this says
+                  what the visitor can do rather than which environment variable is missing.
+                */}
+                <h3 className="font-display text-2xl font-bold">Our launch suburbs</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Add `VITE_MAPBOX_PUBLIC_TOKEN` in the host or GitHub repository variables to render the live coverage map.
+                  The full list is beside this panel. Enter your address in the booking form to
+                  check whether we reach you.
                 </p>
               </div>
             </div>
           )}
           <div className="liquid-glass-readable absolute bottom-4 left-4 right-4 flex flex-col gap-2 rounded-3xl border border-white/35 bg-background/78 p-4 shadow-card sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-accent/15 text-sage-deep">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-accent/15 text-accent-ink">
                 <ShieldCheck className="h-5 w-5" />
               </span>
               <div>

@@ -6,6 +6,7 @@ const AiConciergeNotice = () => (
     description="How Xoot Concierge answers general questions, when it may use AI assistance, what it cannot do, and how users can request human review."
     canonical="/legal/ai-concierge"
     eyebrow="AI notice"
+    lastUpdated="29 July 2026"
   >
     <LegalSection title="What Concierge can help with">
       <p>

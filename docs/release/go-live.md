@@ -469,6 +469,49 @@ constraint. They can go at any time.
 
 ---
 
+### 3d. ⚠️ The PayFast deploy — migrations first, and NAME the new function
+
+**Added 2026-08-15 from the Release cross-review of PR #42.** Applies once that PR merges.
+
+**Ordering is forced, and the first step is not optional.**
+`20260813200000_payment_records_provider_lifecycle.sql` widens `payment_records_provider_check` from
+`check (provider = 'payfast')` to `check (provider in ('manual_pending','payfast','manual_eft'))`.
+Until it lands:
+
+- `create-payment-session` cannot write `provider: 'payfast'`, and
+- **`create-booking` cannot insert a payment record at all** — the column default is
+  `manual_pending`, which the live constraint rejects. Booking creation is broken on both projects
+  until this migration applies.
+
+**The order:**
+
+1. `db-push` → the four PR #42 migrations.
+2. `deploy-edge-functions` with **exactly this list**:
+
+   ```
+   confirm-payment admin-confirm-payment create-payment-session
+   ```
+
+   Those are the only three that bundle the new `_shared` modules (`payment-confirmation.ts`,
+   `payment-provider-gate.ts`, `payfast-checkout.ts`). Verified by import rather than assumed; no
+   existing `_shared` module is modified, so nothing else carries a stale copy.
+3. Web app, **after** `20260814103000_rename_zooter_avatars_bucket.sql` — `src/pages/xooter/Profile.tsx`
+   references `xooter-avatars` and the live bucket is still `zooter-avatars`. Web-first breaks
+   avatar upload. Same shape as §3b.
+
+⚠️ **`create-payment-session` is a NEW function and appears in no deploy list anywhere.**
+`deploy-edge-functions` deploys everything on disk only when `functions` is blank; when it is not, it
+deploys **only what is named**. Every recent production deploy used an explicit list. Omit it and the
+Pay button returns 404 with nothing in any log.
+
+⚠️ **Set `XOOT_APP_ENV=staging` on the staging project before testing checkout there.**
+`getEdgeEnvironment()` falls back to `"production"` when `XOOT_APP_ENV`, `APP_ENV` and `ENVIRONMENT`
+are all unset, and `payment_provider_capabilities` has one row per environment — so an unlabelled
+staging deployment reads **production's** readiness row. Every flag on both rows is false today so it
+is not currently exploitable, but it is a money gate returning an answer about the wrong environment.
+
+---
+
 ## 3c. ⚠️ The app identity changed — five provider consoles need updating (#34)
 
 On 2026-08-13 the deep-link scheme became `xoot://` and the app identifier became

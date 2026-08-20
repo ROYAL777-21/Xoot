@@ -74,7 +74,7 @@ export const NearbyWorkers = () => {
       <div className="container">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="max-w-xl">
-            <p className="text-sm font-semibold text-sage-deep uppercase tracking-wider mb-3">Nearby Xooters</p>
+            <p className="text-sm font-semibold text-brand uppercase tracking-wider mb-3">Nearby Xooters</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance">
               Approved Xooters appear here when they are live in your launch area.
             </h2>
@@ -104,13 +104,21 @@ export const NearbyWorkers = () => {
         ) : (
           <Card className="rounded-3xl p-8 text-center max-w-2xl mx-auto">
             <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft">
-              <ShieldCheck className="h-6 w-6 text-sage-deep" />
+              <ShieldCheck className="h-6 w-6 text-accent-ink" />
             </div>
-            <h3 className="font-display text-2xl font-bold mb-2">{isSupabaseConfigured ? "No live Xooters yet" : "Live Xooter roster needs Supabase"}</h3>
+            {/*
+              One empty state, not two. This used to branch on whether Supabase was configured
+              and tell the visitor which piece of infrastructure was missing — "Live Xooter
+              roster needs Supabase", "running without live backend config". That is a note to
+              a developer printed on a marketing page.
+
+              What a visitor needs to know is the same either way: nobody is listed yet, and
+              why the list is short. The configuration state is ours to worry about.
+            */}
+            <h3 className="font-display text-2xl font-bold mb-2">Xooter profiles are being verified</h3>
             <p className="text-sm text-muted-foreground">
-              {isSupabaseConfigured
-                ? "Contractor profiles will appear only after admin-reviewed verification, training, and activation."
-                : "Public preview is running without live backend config, so verified Xooter profiles are intentionally not shown here."}
+              Profiles appear here only after ID checks, screening, required training and admin
+              activation. We would rather show none than show one we have not checked.
             </p>
           </Card>
         )}

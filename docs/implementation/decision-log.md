@@ -659,6 +659,243 @@ If it is retired later, the test's `BOOKING_WRITERS` list is the thing to shorte
    contradicted the paywall on every booking, on the last screen before payment. `BookingConfirm`
    and `Book` now resolve membership through `useCarePlus` and show the waived line explicitly.
 
+## ZD-030 — The public site adopts the exported kit; the audited palette stays (2026-08-13)
+
+**Decision, by the founder:** the website in this repository is the website. It keeps its content
+and functionality and takes the Claude Design kit's appearance. Public surface first — roughly 15
+routes; `/app`, `/xooter` and `/admin` are a later pass.
+
+### The approval rule could not be satisfied as written
+
+`design/README.md` says implementation "may only claim design approval when a frame is labelled
+`APPROVED BY OWNER` and recorded in `approved-frames.json`", and that an empty registry means no
+direction is approved. `approved-frames.json` is `{"frames": []}`.
+
+That rule assumes a Figma project this repository does not have — there are no frames to label.
+The founder's instruction is the approval; it is recorded here because a registry that cannot be
+filled is not a gate, it is a stalled process, and pretending otherwise would have blocked the work
+or been ignored silently. **If Figma frames are ever produced, they become authoritative over this
+entry.**
+
+### Four resolutions, each against a document that disagreed
+
+1. **Type: the kit wins.** Newsreader (display) and Plus Jakarta Sans (body), from the export's own
+   `--xoot-font-display` / `--xoot-font-core`. `DESIGN-SYSTEM.md` says Space Grotesk + DM Sans and
+   is annotated as superseded. Shipped as subset variable WOFF2, 73 KB total.
+2. **Shape: the kit wins.** `DESIGN-SYSTEM.md` caps cards at 8px; the export honours that nowhere
+   and ships a scale of 10/14/16/20/26/34. Per `design/README.md`'s own precedence note the export
+   is the newer authority. Annotated, not silently contradicted.
+3. **Colour: neither the kit's raw values nor a redesign — the audited `:root` palette stays.**
+   This is the one that runs the other way, and it is the important one. The `:root` block is not a
+   rival to the kit; it *is* the kit, re-measured, with four colours darkened because the raw
+   values fail WCAG AA for body text: brand violet-500 4.38 → violet-600 6.10, care-plus 53% → 51%,
+   destructive 56% → 48%, success 43% → 35%. "Adopting the design system" by repointing
+   `@theme inline` at `--xoot-*` is an accessibility regression that reads as progress in a diff.
+   `src/lib/theme-consumes-audited-palette.test.ts` fails on it.
+4. **Numbers: the code wins, always.** The export's data module asserts *"Prices are the locked
+   commercial values"* and encodes `serviceFeeRecurring: 0` — the rule ZD-026 replaced.
+   `locked-commercial-facts.md:44` strikes it through; `xoot-pricing.ts` charges the R39 on every
+   booking unless the customer is Care+. **The kit supplies appearance; `xoot-pricing.ts` supplies
+   every number.** `src/lib/marketing-claims.test.ts` enforces it.
+
+### What the numbers rule found immediately
+
+Eleven hardcoded rand figures on public pages, including `CarePlusApply.tsx` writing the
+minimum-wage-linked placement floors by hand in five places while `care-plus.ts` exported the
+constants and said in its docstring that they were there "for `CarePlusApply` to cite". Also a
+non-refundable R399 admin fee charged to consumers with no constant and no locked-facts entry —
+raised as NEEDS-FOUNDER item 4 rather than blessed by being typed into a file.
+
+## ZD-031 — The Care+ placement product is retired (2026-08-13)
+
+**Decision, by the founder:** Xoot no longer offers Care+ placement — sourcing a domestic worker
+for a household on standing days, with a R399 non-refundable admin fee. Raised as NEEDS-FOUNDER
+item 4 (a consumer charge authorised by no document); answered by ending the product rather than
+by documenting the fee.
+
+### What was removed
+
+| surface | change |
+|---|---|
+| `src/pages/care/CarePlusApply.tsx` | deleted |
+| `/care-plus/apply` | **redirects** to `/care-plus`, not removed |
+| `native-routing.ts` | `care_plus_apply` host and route dropped; retired-route map added |
+| `notification-routing.ts` | route dropped from the exact-match set |
+| `care-plus.ts` | `PLACEMENT_MIN_HALF_DAY_CENTS`, `PLACEMENT_MIN_FULL_DAY_CENTS`, `PLACEMENT_ADMIN_FEE_CENTS` and the two deprecated `MIN_XOOTER_PAY_*` aliases deleted |
+| `activate-care-plus` | handler removed; `action: "placement_application"` now returns **410 Gone** |
+
+### Three choices worth the words
+
+**The route redirects rather than 404s.** Links to it do not vanish with the product: push
+notifications already delivered, installed app builds carrying the old deep-link table, bookmarks,
+emails. A dead end explains nothing, so both the web route and the native resolver send those
+people to `/care-plus`.
+
+**The Edge Function rejects explicitly instead of losing the branch.** A stale client can still
+POST `action: "placement_application"`. Without a check the request would fall through to the
+subscription path below it, where a body carrying an `application` object and no payment reference
+would be treated as a Care+ activation attempt. A retired endpoint must fail loudly, not do
+something adjacent. 410 rather than 400 — the request is well-formed and was valid until the
+product ended.
+
+**The constants are deleted, not left as unused exports.** These exact figures had already caused
+one defect: they were wired into `splitDiscount` as a per-booking floor via `hours >= 6 ? full :
+half`, which treated a 5.5-hour clean as half a day and demanded R220 for it. A day rate sitting
+in scope beside booking arithmetic invites that mistake; a dead export with no product behind it
+invites it more. `MIN_XOOTER_HOURLY_CENTS` is now the only floor.
+
+### Data is retained
+
+`care_plus_applications` and its rows are untouched. **Anyone who applied before the product ended
+is still in the support queue and still owed an answer** — the retirement does not close their
+request, and nothing in this change notifies them.
+
+### One guard proved itself immediately
+
+`marketing-claims.test.ts` had shipped hours earlier with an assertion that its own allowlist
+contained no stale entries — written on the theory that allowlists rot. Its single entry pointed
+at copy on the placement form. The retirement made it stale the same day, and the assertion caught
+it rather than leaving a permission behind for a page that no longer exists.
+
+## ZD-032 — The accent family moves to the kit: ink commits, violet emphasis (2026-08-13)
+
+**Founder:** *"It doesn't look coherent with the app."* Correct, and this is why.
+
+### The site was violet in its tokens and terracotta on screen
+
+ZD-024 migrated the *semantic* tokens to the kit — `--primary` became ink, `--brand` became
+violet-600, red was confined to Care+. What it did not migrate were the **gradients and the
+accent family**, and those are what actually painted the product:
+
+| | the kit (`design/README.md`) | what rendered |
+|---|---|---|
+| primary commit button | ink `#151515` (`--xoot-action-primary`) | `gradient-warm` — terracotta, on 34 buttons |
+| brand emphasis | violet `#7C5CFC` | **`bg-brand` 0 uses, `border-brand` 0, `text-brand` 2** |
+| green | `--xoot-sage-500` `#3AA075`, the *success* semantic | `--sage` `#7FA86B`, olive, 157 uses as decoration |
+| terracotta | **not in the kit at all** | `--terracotta` + 58 `gradient-warm` surfaces |
+
+`index.css` had even labelled these "Superseded: terracotta/sage/cream" while still rendering
+them. The kit's defining colour was absent from the product it defines.
+
+### What changed
+
+- **`--gradient-warm` → violet**, built violet-600 → violet-700 rather than the kit's own
+  `--xoot-grad-violet`. That gradient (`#A38FF7` → `#7C5CFC`) is a light violet intended to sit
+  *under dark text*; every surface here carries white, and white on violet-500 measures **4.38** —
+  the same AA failure that darkened `--brand` in the first place. 600 → 700 gives **6.10 → 8.46**.
+- **34 primary buttons lost `gradient-warm`**, which was an override defeating `Button`'s default
+  `bg-primary text-primary-foreground` — already ink, already `--xoot-action-primary`, 18.26:1.
+  The README's "ink as the primary commit button, the Tiimo pattern" was one class away the whole
+  time.
+- **`--sage` → the kit's teal** `#3AA075` / `#1B6246`. Contrast on the page improves **4.93 →
+  6.54**. In the kit sage is `--xoot-success`, not decoration; the site's use as a general accent
+  is a separate cleanup.
+- `--shadow-warm` re-tinted to the brand it now sits under, rather than to the retired terracotta.
+
+`--terracotta`, `--terracotta-light` and `--cream` are left **defined but unused**, so a stray
+reference cannot break the build. Nothing should consume them.
+
+### Not covered by a test, and worth knowing
+
+`src/lib/design-tokens.ts` mirrors `:root` for React Native but does **not** carry sage,
+terracotta or the gradients, so `design-tokens.test.ts` did not object and could not have caught
+the divergence either. The contrast figures above were computed by hand against the page colour;
+`design-contrast.test.ts` covers the semantic roles, not the accent family. Extending it is the
+obvious follow-up.
+
+## ZD-033 — Guard the derivation, and pair each tint with its own ink (2026-08-13)
+
+The two follow-ups ZD-032 named and did not do.
+
+### The palette now has to prove it came from the kit
+
+`design-contrast.test.ts` proved the palette was *readable*; `design-tokens.test.ts` proved the CSS
+and the native mirror *agreed with each other*. Neither asked whether it was still the kit's
+colour — which is how terracotta painted 58 surfaces for months while the tokens beside it said
+violet. Every test passed throughout, because each compared the palette to itself.
+
+`palette-derives-from-kit.test.ts` names the `--xoot-*` ramp each semantic derives from and asserts
+two things:
+
+- **hue within 4°** — measured deltas across the table are ≤ 1.3°, so the tolerance is three times
+  the worst real case, and terracotta (14°) could never pass as coral (7°);
+- **never lighter than the kit, in the light scheme only** — because darkening is how four roles
+  clear AA (`success` −7.7%, `destructive` −7.7%, `care-plus` −2.1%, `brand` taking violet-600 over
+  a violet-500 that measures 4.38), and lightening is the regression.
+
+The dark scheme is hue-only: a brand colour on a near-black page *must* go lighter, so a ceiling
+there would be wrong rather than strict.
+
+### The kit pairs every tint with its own ink
+
+`--xoot-honey-wash` with `--xoot-honey-ink`, `--xoot-sage-wash` with `--xoot-sage-ink`. **43 places
+rendered sage green on an amber wash.** It passed contrast at 6.60 by accident, not by design.
+
+`--accent-ink` is the amber's own ink (`#94600E` light, `#F7D290` dark) and is mirrored in
+`design-tokens.ts` rather than exempted — the mirror guard caught the omission immediately, which
+is the guard working.
+
+⚠️ **Contrast on the wash goes 6.60 → 4.70.** Above the 4.5 body floor, and *thinner than the
+mismatch it replaces*. That is a real trade made for family coherence, stated here rather than
+discovered later.
+
+### Sage means success again — and less changed than expected
+
+The plan assumed ~99 decorative sage uses needed moving. Reading them showed otherwise: `ShieldCheck`
+(10), `CheckCircle` (7), `LockKeyhole` (3), the `verified` trust badge and the sensitive-field
+in-window indicator are **success semantics, and sage is the kit's success colour** — those are the
+kit used correctly.
+
+Only **10 section eyebrows** were genuinely wrong: "What's included", "Value pillars", "Nearby
+Xooters" and similar wearing the success colour as decoration. Those are now `text-brand` (violet
+on page 5.49, on card 6.12). 79 sage uses remain and 38 sit beside a sage fill or a check/shield
+icon; the rest are status text where green still reads correctly.
+
+## ZD-034 — The large-surface gradient is ink; violet keeps emphasis (2026-08-15)
+
+The founder said the palette still bothered them after ZD-032. Rather than argue it in prose, the
+same page was built three times and screenshotted at 1440px — the kit's violet, the retired
+terracotta, and an ink-led variant. The founder chose ink.
+
+`--gradient-warm` is now `hsl(20 8% 16%) → hsl(20 10% 9%)`.
+
+### This is a departure from the source of truth, and it is narrow
+
+`design/README.md` is the design authority (founder, 2026-08-13) and it says: violet for brand
+emphasis, selection and progress, ink as the primary commit button — the Tiimo pattern. Three of
+those four roles are **untouched**: `--brand` is still violet-600, and selection, focus rings and
+progress emphasis still resolve through it.
+
+What moved is `gradient-warm`, which is not an emphasis token. It paints **29 large surfaces** —
+page-width CTA bands, hero panels, logo tiles, the booking progress rail. At that size a brand
+colour stops reading as emphasis and becomes the page's own colour, which is the effect the Tiimo
+pattern exists to avoid. Ink at that size is the pattern followed through, not abandoned.
+
+### Measured
+
+White text sits on every one of those 29 surfaces.
+
+| stop | contrast with white |
+|---|---|
+| `hsl(20 8% 16%)` (light end) | **14.6:1** |
+| `hsl(20 10% 9%)` (dark end) | **17.9:1** |
+| *was* violet-600 → violet-700 | 6.10 / 8.46 |
+
+Both passed; this passes by roughly twice the margin.
+
+`--shadow-warm` follows the surface it sits under — `hsl(20 30% 12% / 0.38)` rather than a violet
+glow, which under an ink tile reads as a colour fringe rather than a shadow. Alpha raised 0.30 →
+0.38 because a neutral shadow at the old alpha disappears against the warm page.
+
+### Guarded, because this is exactly the token that drifted before
+
+`--gradient-warm` is not a semantic token, so ZD-033's derivation table did not cover it — and it
+is the token that painted terracotta for months while everything around it said violet.
+`palette-derives-from-kit.test.ts` now pins **both halves** of the split: the gradient stops must
+stay near-neutral (saturation ≤ 15%) and dark (lightness ≤ 25%), *and* `--brand` must stay
+chromatic (saturation > 40%). The failure mode is collapsing to one colour for everything, in
+either direction. Planted both ways — violet gradient, ink brand — both failed. Restored.
+
 ## Pending Founder Decisions
 
 1. Canonical Supabase schema source.

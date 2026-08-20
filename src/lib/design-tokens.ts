@@ -51,6 +51,13 @@ export const COLOR = {
     mutedForeground: "27 4% 47%",
     accent: "37 78% 56%",
     accentForeground: "14 18% 14%",
+    /**
+     * The amber's OWN ink, `--xoot-honey-ink`. The kit pairs each tint with an ink chosen against
+     * that tint — 43 places rendered sage green on this amber wash instead, which passed contrast
+     * at 6.60 by accident rather than by design. On the wash this measures 4.70, on a white card
+     * 5.33: clear of the 4.5 body floor, and deliberately thinner than the mismatch it replaced.
+     */
+    accentInk: "37 83% 32%",
     /** 48%, not 56%: at 56% the off-white label measured 3.70 and a button label is body text. */
     destructive: "7 78% 48%",
     destructiveForeground: "36 40% 98%",
@@ -81,6 +88,9 @@ export const COLOR = {
     mutedForeground: "25 7% 68%",
     accent: "37 78% 60%",
     accentForeground: "10 17% 7%",
+    /** `--xoot-honey-mid`. Amber ink is unreadable on a near-black page, so the dark counterpart
+     *  moves up the same ramp rather than across to another family: 13.05 on the dark page. */
+    accentInk: "38 86% 77%",
     destructive: "7 78% 62%",
     /** Ink, matching accent/success/warning. Off-white on this fill measured 2.88 — under the
      *  3.0 UI floor, so the button was below minimum for its border and its label alike. */

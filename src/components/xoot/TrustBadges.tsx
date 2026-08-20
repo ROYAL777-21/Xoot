@@ -12,7 +12,7 @@ const iconMap = {
 
 const toneMap: Record<TrustBadgeKind, string> = {
   verified: "bg-sage/15 text-sage-deep border-sage/30",
-  background_checked: "bg-accent-soft text-sage-deep border-accent/30",
+  background_checked: "bg-accent-soft text-accent-ink border-accent/30",
   top_rated: "bg-primary/10 text-primary border-primary/25",
   airbnb_specialist: "bg-muted text-foreground border-border",
   premium_care_plus: "bg-foreground text-background border-foreground",

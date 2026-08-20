@@ -60,7 +60,7 @@ const TrustSafety = () => (
         {items.map((it) => {
           const Icon = it.icon;
           return (
-            <div key={it.title} className="rounded-3xl border border-border bg-card p-6 shadow-card transition-smooth hover:-translate-y-1 hover:shadow-warm">
+            <div key={it.title} className="rounded-3xl border border-border bg-card p-6 shadow-card transition-smooth hover:-translate-y-1">
               <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary"><Icon className="h-6 w-6" /></div>
               <h3 className="mb-1 font-display text-lg font-semibold">{it.title}</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">{it.desc}</p>

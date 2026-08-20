@@ -33,7 +33,7 @@ export const BookingHero = () => {
     });
   }, []);
 
-  const liveXooterLabel = isSupabaseConfigured ? String(activeXooters) : "Live roster";
+  const liveXooterLabel = String(activeXooters);
 
   const startBooking = () => {
     captureAnalyticsEvent("booking_flow_started", {
@@ -55,8 +55,8 @@ export const BookingHero = () => {
       <div className="container relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 py-8 lg:py-20 items-center">
         <div className="relative z-10 animate-fade-up">
           <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 mb-4 lg:mb-6 border border-accent/20">
-            <Sparkles className="h-3.5 w-3.5 text-sage-deep" />
-            <span className="text-[11px] sm:text-xs font-medium text-sage-deep">Launching in selected Johannesburg suburbs</span>
+            <Sparkles className="h-3.5 w-3.5 text-accent-ink" />
+            <span className="text-[11px] sm:text-xs font-medium text-accent-ink">Launching in selected Johannesburg suburbs</span>
           </div>
           <h1 className="font-display text-[2.25rem] sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-balance text-foreground">
             Premium home care,<br />
@@ -98,15 +98,15 @@ export const BookingHero = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-2xl bg-muted/40 border border-border/60 p-3 flex items-center gap-3">
-                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-sage-deep"><Calendar className="h-4 w-4" /></span>
+                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-accent-ink"><Calendar className="h-4 w-4" /></span>
                   <div className="flex-1 min-w-0"><Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Date</Label><p className="text-sm font-medium truncate">Choose in booking</p></div>
                 </div>
                 <div className="rounded-2xl bg-muted/40 border border-border/60 p-3 flex items-center gap-3">
-                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-sage-deep"><Clock className="h-4 w-4" /></span>
+                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-accent-ink"><Clock className="h-4 w-4" /></span>
                   <div className="flex-1 min-w-0"><Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Status</Label><p className="text-sm font-medium truncate">Tracked in app</p></div>
                 </div>
               </div>
-              <Button size="lg" onClick={startBooking} className="rounded-2xl h-14 text-base font-semibold gradient-warm hover:opacity-95 shadow-warm group">
+              <Button size="lg" onClick={startBooking} className="rounded-2xl h-14 text-base font-semibold hover:opacity-95 group">
                 {user ? "Start a booking" : "Book now"}
                 <ArrowRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
@@ -131,7 +131,15 @@ export const BookingHero = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <span><span className="font-semibold text-foreground">{liveXooterLabel}</span> {isSupabaseConfigured ? "approved Xooters currently live" : "loads from Supabase when configured"}</span>
+            {/*
+              When there is no live count, this line is omitted rather than replaced with an
+              explanation of why. It previously read "loads from Supabase when configured",
+              which tells a customer nothing and names our database. A claim we cannot
+              substantiate is better left unsaid than annotated.
+            */}
+            {isSupabaseConfigured && (
+              <span><span className="font-semibold text-foreground">{liveXooterLabel}</span> approved Xooters currently live</span>
+            )}
             <span><span className="font-semibold text-foreground">MIE-ready</span> trust workflow</span>
           </div>
         </div>
@@ -142,8 +150,21 @@ export const BookingHero = () => {
             <div className="absolute inset-0 bg-linear-to-t from-foreground/40 via-transparent to-transparent" />
             <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
               <div className="liquid-glass-shell rounded-2xl p-3 shadow-card flex items-center gap-3 animate-fade-in">
-                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{isSupabaseConfigured ? activeXooters : "Z"}</span></div>
-                <div className="liquid-glass-readable"><p className="text-xs text-muted-foreground">Live Xooters</p><p className="text-sm font-semibold">{isSupabaseConfigured ? "After verification" : "Supabase-backed"}</p></div>
+                {/*
+                  Two fixes here, 2026-08-13, both in the unconfigured branch — the one nobody
+                  looks at because it only renders when Supabase is absent.
+
+                  The initial was "Z". That is Zoot, and the rename missed it: on any build
+                  without Supabase credentials the hero showed the previous brand's letter.
+
+                  The label was "Supabase-backed", which names the database to a customer. It
+                  means nothing to someone booking a clean, and on a misconfigured production
+                  build it would advertise the vendor in the first thing on the page. The label
+                  does not depend on configuration — only the count does — so it is now the same
+                  either way and only the number falls back.
+                */}
+                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{isSupabaseConfigured ? activeXooters : "X"}</span></div>
+                <div className="liquid-glass-readable"><p className="text-xs text-muted-foreground">Live Xooters</p><p className="text-sm font-semibold">After verification</p></div>
               </div>
             </div>
             <div className="absolute bottom-6 left-6 right-6">

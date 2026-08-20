@@ -24,7 +24,7 @@ export const MyHomeHub = () => {
               and you get easy tools to manage it all — plus expert support when you need it.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button asChild size="lg" className="rounded-full gradient-warm shadow-warm">
+              <Button asChild size="lg" className="rounded-full">
                 <Link to="/care-plus">Find full-time help</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="rounded-full">
@@ -37,7 +37,7 @@ export const MyHomeHub = () => {
             {features.map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.title} className="rounded-3xl bg-card border border-border p-5 shadow-card hover:shadow-warm transition-all duration-500">
+                <div key={f.title} className="rounded-3xl bg-card border border-border p-5 shadow-card transition-all duration-500">
                   <div className="grid place-items-center h-11 w-11 rounded-2xl bg-primary/10 text-primary mb-3">
                     <Icon className="h-5 w-5" />
                   </div>

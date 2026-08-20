@@ -329,7 +329,7 @@ const Apply = () => {
   return (
     <div className="min-h-screen gradient-hero py-10 px-6">
       <div className="max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-3 border border-accent/20"><Sparkles className="h-3 w-3 text-sage-deep" /><span className="text-xs font-medium text-sage-deep">Become a Xooter</span></div>
+        <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-3 border border-accent/20"><Sparkles className="h-3 w-3 text-accent-ink" /><span className="text-xs font-medium text-accent-ink">Become a Xooter</span></div>
         <h1 className="font-display text-4xl font-bold mb-2">Join Xoot</h1>
         <p className="text-muted-foreground mb-6">Build predictable income with recurring clients, premium homes, fast support, strong vetting and visible trust badges.</p>
         <div className="mb-4"><div className="flex justify-between text-xs text-muted-foreground mb-1.5"><span>Step {step + 1} of {steps.length} - {steps[step]}</span><span>{Math.round(progress)}%</span></div><Progress value={progress} /></div>
@@ -356,7 +356,7 @@ const Apply = () => {
                 const hasDoc = Boolean(docs[d.key]);
                 return (
                   <div key={d.key} className="rounded-2xl border border-border p-4 flex items-center gap-3">
-                    <div className={`grid h-10 w-10 place-items-center rounded-xl ${hasDoc ? "bg-accent/15 text-sage-deep" : "bg-muted text-muted-foreground"}`}>
+                    <div className={`grid h-10 w-10 place-items-center rounded-xl ${hasDoc ? "bg-accent/15 text-accent-ink" : "bg-muted text-muted-foreground"}`}>
                       {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : hasDoc ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
                     </div>
                     <div className="flex-1 min-w-0">

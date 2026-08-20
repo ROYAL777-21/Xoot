@@ -97,7 +97,7 @@ const AuthCallback = () => {
         noIndex
       />
       <Card className="w-full max-w-md rounded-3xl border-border p-8 text-center shadow-warm">
-        <div className="mx-auto mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft text-sage-deep">
+        <div className="mx-auto mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft text-accent-ink">
           {status === "loading" ? <Loader2 className="h-6 w-6 animate-spin" /> : <ShieldCheck className="h-6 w-6" />}
         </div>
         <h1 className="font-display text-3xl font-bold">
@@ -109,7 +109,7 @@ const AuthCallback = () => {
             : "The sign-in link could not be completed. Start again from the secure sign-in page."}
         </p>
         {status === "error" && (
-          <Button asChild className="mt-6 rounded-full gradient-warm">
+          <Button asChild className="mt-6 rounded-full">
             <Link to="/auth">Back to sign-in</Link>
           </Button>
         )}

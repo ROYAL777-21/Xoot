@@ -6,6 +6,7 @@ const AccountDeletion = () => (
     description="How users can request Xoot account deletion, what data may be deleted, and what information may need to be retained for legal, safety, payment, or dispute reasons."
     canonical="/legal/account-deletion"
     eyebrow="Account rights"
+    lastUpdated="29 July 2026"
   >
     <LegalSection title="How to request deletion">
       <p>
