@@ -1,6 +1,6 @@
 # Revoking the 34 client write grants that have no policy
 
-**Status: written as `supabase/migrations/20260815150000_revoke_client_writes_without_policy.sql`.
+**Status: written as `supabase/migrations/20260820120000_revoke_client_writes_without_policy.sql`.
 Not applied — needs a `db-push`.** PR #42 merged 2026-08-15, which lifted the hold.
 
 Audit first run **2026-08-14** against `docs/security/client-write-surface.json`, and **re-verified

@@ -349,7 +349,7 @@ pending migration closed that gap. `20260813220000` fixes the sibling
 function under it; this one had no such trigger. `pg_depend` reports 0 dependents, so drop-and-
 recreate is safe.
 
-**`20260815150000` — the 34 client write grants with no policy.** Re-verified against the live
+**`20260820120000` (renumbered from `20260815150000`) — the 34 client write grants with no policy.** Re-verified against the live
 production database before writing, not taken from the day-old baseline: 34 grants, 13 tables,
 unchanged; writer greps re-run against merged `main`, still one writer.
 
@@ -375,7 +375,7 @@ decision rather than folded into an evidenced, narrow one.
 
 > 🚢 **Release:** both are `supabase/migrations/**`. The order matters and is encoded in the
 > timestamps — `20260814230000` recreates the view and faithfully restores its grants, then
-> `20260815150000` revokes the ones the audit found unreachable, including that view's. A rename
+> `20260820120000` revokes the ones the audit found unreachable, including that view's. A rename
 > fix should not carry a permission change, so they are separate on purpose. **The `db-push`
 > backlog is now six migrations.**
 

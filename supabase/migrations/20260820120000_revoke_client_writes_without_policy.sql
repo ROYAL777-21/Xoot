@@ -1,5 +1,22 @@
 -- Revoke the 34 client write grants that no policy can ever satisfy.
 --
+-- ⚠️ RENUMBERED 2026-08-20 FROM `20260815150000`. DO NOT PUT IT BACK.
+--
+-- This file was written as `20260815150000_revoke_client_writes_without_policy.sql`. The Release
+-- session independently wrote `20260815150000_rename_remaining_zooter_check_bodies.sql` — same
+-- 14-digit version, different migration — and **theirs is already applied to production**:
+--
+--     version         name recorded in supabase_migrations.schema_migrations
+--     20260815150000  rename_remaining_zooter_check_bodies      <- applied, on origin/main
+--     20260815160000  xootcred_trigger_queries_a_dropped_table  <- applied
+--
+-- `supabase db push` keys on the version, never the name. With `20260815150000` already recorded,
+-- this file would have been **skipped, and the push would have reported success** — 34 grants left
+-- in place with nothing anywhere saying so. A revoke that silently does not happen is worse than
+-- no revoke, because the ledger says it is done.
+--
+-- `src/lib/migration-version-collision.test.ts` now fails on this offline, with no credentials.
+--
 -- A client write needs **both** a table GRANT and a permissive RLS policy. Reading either alone
 -- gives the wrong answer in both directions. These 34 have the grant and **zero** policies, so
 -- `authenticated`/`anon` hold permission Postgres will never let them use.

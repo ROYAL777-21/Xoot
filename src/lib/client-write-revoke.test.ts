@@ -23,7 +23,7 @@ import { describe, expect, it } from "vitest";
  */
 
 const ROOT = process.cwd();
-const MIGRATION = "supabase/migrations/20260815150000_revoke_client_writes_without_policy.sql";
+const MIGRATION = "supabase/migrations/20260820120000_revoke_client_writes_without_policy.sql";
 const BASELINE = "docs/security/client-write-surface.json";
 
 const sql = () => readFileSync(join(ROOT, MIGRATION), "utf8");
