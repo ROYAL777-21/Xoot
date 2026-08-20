@@ -117,22 +117,122 @@ it excludes.
    permissive policy the write is live immediately — defence in depth inverted. Money
    (`xooter_earnings`) and pricing (`subscription_plans`) are in that list.
 2. **Staging and production write surfaces differ** and nothing checks it.
-3. **ZD-029 never renamed FUNCTIONS.** Production still has `zooter_job_transition_allowed`;
-   `types.ts` says `xooter_…`, which is why *Types match the live schema* fails on `main`. Read from
-   `pg_proc` directly. Anything RPC-ing the new name 404s today.
-4. `admin_review_queue` INSERT permits `user_id IS NULL` from any authenticated user.
-5. `booking_tips` policies use bare `auth.uid()` and role `{public}` where the repo's own documented
-   safe pattern is `(select auth.uid())` and `{authenticated}` — re-evaluated per row.
-6. `xooter_payout_accounts.xooter_id` is a FK to **`auth.users.id`**, not `xooters.id`, despite the
-   name. The policy is correct; the name is a trap for whoever writes the next one.
+3. ~~**ZD-029 never renamed FUNCTIONS.**~~ **Closed.** `20260813220000` was applied, and a
+   `pg_proc` sweep on 2026-08-20 returns **zero** `zoot`-named functions in `public` or `private`.
+   The *Types match the live schema* failure it was blamed for has two other causes — see the
+   not-swept note below.
+4. ~~`admin_review_queue` INSERT permits `user_id IS NULL` from any authenticated user.~~
+   **Closed by `20260820130000`, and the audit had it too small.** Re-read live 2026-08-20:
+   `authenticated` holds INSERT **and UPDATE and DELETE**. UPDATE/DELETE sit against admin-only
+   policies so they are inert, but they are finding #1's shape. INSERT is *reachable today* — any
+   signed-in session satisfies `user_id IS NULL`, so anyone can file unlimited rows the queue
+   cannot attribute to anybody. All three grants revoked; the limb dropped. Nothing legitimate
+   loses a write: every writer is a service-role Edge Function (`ops-workflow` ×7,
+   `create-booking-request`, `care-plus-membership`, `admin-resolve-review`), `Ops.tsx` only reads,
+   and `assert-no-frontend-admin-queue-writes.mjs` already forbade client writes.
+5. ~~`booking_tips` policies use bare `auth.uid()` and role `{public}`.~~
+   **Closed by `20260820140000`, and this one was worse than recorded.** The live read found
+   **`anon` holding INSERT, UPDATE and DELETE grants on the table that records money owed to a
+   Xooter** — not in the finding at all. It fails closed only because `auth.uid()` is NULL for an
+   anonymous session, so `user_id = auth.uid()` is NULL rather than true. Grants revoked from
+   `anon`; all five policies (not four) recreated `to authenticated` with `(select auth.uid())`.
+   Predicates unchanged. `zooters view settled tips only` renamed to `xooters …` since the
+   migration recreates it anyway — 27 zoot-named policies become 26.
+6. ~~`xooter_payout_accounts.xooter_id` is a FK to `auth.users.id`, not `xooters.id`.~~
+   **Closed by `20260820150000`, and it is three tables, not one.** Nineteen tables carry an
+   `xooter_id`; on **`xooter_payout_accounts`, `xooter_payout_holds` and `payout_change_requests`**
+   it points at `auth.users`, and on the other sixteen at `xooters`. The three exceptions are
+   exactly the tables that move money. All three policies are correct — verified live, each reads
+   `xooter_id = (select auth.uid())` — so this is a `comment on column` on all three, not a rename:
+   the schema works and the *name* is the hazard.
 
-**Next:** `scripts/security/assert-authz-surface.mjs` diffing the live grant⋈policy join against a
-committed `docs/security/client-write-surface.json`, plus an offline test catching new grants in
-migrations at review time, plus a hardening migration revoking the vestigial grants.
+**Still open from this audit:** #2, staging and production write surfaces differ and nothing
+compares them. `authz-surface.mjs --staging` can read it but needs credentials, so it is not in CI.
+
+**Not swept, by the founder's call 2026-08-20.** Production still carries **~110 constraints, ~60
+indexes, 26 policies and 3 triggers** named `zoot*`/`zooter*`. A table rename never renames those —
+they are stored identifiers, not references, which is why policy *bodies* were rewritten
+automatically and policy *names* were not. `types.ts` carries **zero** `zoot`-named
+`foreignKeyName`s while production has ~110, so **_Types match the live schema_ will still fail
+after the next db-push**, for this reason and not only the `analytics_contractor_quality` column.
+Grep confirms no code reads a constraint name, so the sweep is safe whenever it is scheduled.
 
 ---
 
 ## ✅ RELEASED — done, or stopped and available
+
+### 🔒 Correctness & Safety — 2026-08-20 — the push would have skipped the revoke and said OK
+
+**`supabase db push` keys on a migration's 14-digit version, never its name.** Production's
+`schema_migrations`, read 2026-08-20:
+
+| version | name production recorded | file |
+|---|---|---|
+| `20260815150000` | `rename_remaining_zooter_check_bodies` | 🚢 Release's, on `main`, **applied** |
+| `20260815160000` | `xootcred_trigger_queries_a_dropped_table` | **no branch had it** |
+
+This branch carried `20260815150000_revoke_client_writes_without_policy.sql` at that same version.
+The next push would have found `20260815150000` already recorded, **skipped my file, and exited 0** —
+all 34 client write grants still in place, with the ledger saying they were revoked. Renumbered to
+`20260820120000`; contents unchanged, because it had never been applied anywhere.
+
+We could not have caught this locally. Two sessions numbered a migration the same day in branches
+that could not see each other, and each tree was internally consistent. So the guard is not a
+duplicate-filename check — that would have passed. `supabase/applied-migrations.json` commits the
+78 rows production has actually run, and `src/lib/migration-version-collision.test.ts` fails
+offline when a local file reuses an applied version under a different name.
+
+**Its other assertion then failed against a real defect rather than a planted one.**
+`20260815160000_xootcred_trigger_queries_a_dropped_table` was applied to production and existed in
+no branch, so `supabase/migrations/**` could no longer rebuild the database. Restored from
+`schema_migrations.statements` at its own version; the committed body's md5 matches production
+exactly (`5caa39b2…`, 1045 bytes). It fixes `check_xootcred_balance()`, a trigger function still
+selecting from `zootcred_ledger` — the same stored-as-text class as `20260814170000`.
+
+**I planted the guard wrong the first time.** I ran vitest from inside `supabase/migrations`, which
+broke `process.cwd()` and failed all six tests for a reason unrelated to the planted defect. It
+looked like proof and was not. Redone from the repo root, where each plant fails only its own
+assertion.
+
+**Then the three unactioned authz findings, all re-read live, two worse than the audit recorded:**
+
+- `20260820130000` — **`admin_review_queue` is reachable today.** `or user_id is null` is satisfied
+  by any signed-in session, so anyone can file unlimited rows the admin queue cannot attribute to
+  anybody. `authenticated` also held UPDATE and DELETE, which the audit had not listed. All three
+  revoked per-operation (never `revoke all` — SELECT is the admin console's only read), limb
+  dropped. Every real writer is a service-role Edge Function.
+- `20260820140000` — **`anon` held INSERT, UPDATE and DELETE on `booking_tips`**, a money table.
+  The audit recorded only "role `{public}`". Fails closed today because `auth.uid()` is NULL for
+  anon, so this is hardening, not an incident. Grants revoked; all five policies recreated
+  `to authenticated` with `(select auth.uid())`, **predicates unchanged**.
+- `20260820150000` — **the `xooter_id` trap is three tables, not one.** On
+  `xooter_payout_accounts`, `xooter_payout_holds` and `payout_change_requests` it is a FK to
+  `auth.users`; on the other sixteen tables, to `xooters`. The three exceptions are exactly the
+  payout tables. All three policies are correct, so this is a `comment on column`, not a rename.
+
+Verified here: **100 files / 1110 tests**, `tsc`, `eslint`, `security:scan` clean;
+`verify-production-readiness.ps1 -Json` **363 pass / 0 fail** under real pwsh 7.4.6; the staging and
+production metadata-drift checks both clean with the four new files. Seven planted defects, each
+failing only the assertion that names it.
+
+**What is NOT verified, and will not be until the founder pushes:** every migration above. The
+acceptance test is `20260820120000` appearing in `schema_migrations` after that push. CI cannot
+re-run until the Actions allowance resets on the 1st.
+
+> ⚠️ **Release — three things in your path (rule 3).**
+> 1. `supabase/migrations/**`: I renumbered my own file and **restored yours**
+>    (`20260815160000`) without changing a character of its SQL. A migrations directory that
+>    cannot rebuild the database is a correctness problem wherever it lives.
+> 2. **Regenerate `supabase/applied-migrations.json` AFTER the next push**, not before — the query
+>    is in the file's own `regenerate` field. Same for
+>    `docs/security/client-write-surface.json`, whose fingerprints change when
+>    `20260820130000`/`140000` land.
+> 3. The collision happened because we both picked `20260815150000` on the same day. Nothing stops
+>    it recurring except the new guard, and the guard only sees versions production has already
+>    run — so it catches the *second* session, never the first.
+
+---
+
 
 ### 🔒 Correctness & Safety — 2026-08-13 — the payment journey, and the constraint that blocked it
 

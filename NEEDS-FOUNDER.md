@@ -42,6 +42,37 @@ longer runs CI. Open the PR and it runs normally. Local `npx vitest run` is the 
 
 ---
 
+## 🔴 Six migrations are waiting, and one nearly did not run
+
+**Nothing here needs a decision — it needs one `db-push` from a terminal with your credentials.**
+Six migrations are written, verified and pushed to the branch, and none of them is applied:
+
+| version | what it does |
+|---|---|
+| `20260814230000` | renames the half-renamed `analytics_contractor_quality` output column |
+| `20260820120000` | revokes the 34 client write grants no policy can satisfy |
+| `20260820130000` | stops **any signed-in user** filing untraceable rows into the admin review queue |
+| `20260820140000` | takes `anon`'s INSERT/UPDATE/DELETE off `booking_tips`, a money table |
+| `20260820150000` | comments the three payout tables where `xooter_id` means `auth.users`, not `xooters` |
+
+(`20260815160000` is also in the directory but is **already applied** — it was restored into the
+repo from production, which had it while no branch did. `db push` will skip it by version.)
+
+**The one to know about.** `20260820120000` was numbered `20260815150000` until 2026-08-20. So was
+a different migration the Release session wrote the same day, and theirs is already applied.
+`db push` matches on the version number and not the name, so it would have **skipped the revoke and
+still reported success** — 34 grants left in place with every document saying they were gone. It is
+renumbered, and `src/lib/migration-version-collision.test.ts` now fails offline if it recurs.
+
+**After the push, two files need regenerating** (queries are inside each file):
+`supabase/applied-migrations.json` and `docs/security/client-write-surface.json`.
+
+**Still true after the push:** *Types match the live schema* will **still fail**. Production carries
+~110 constraints and ~60 indexes still named `zoot*`/`zooter*` — a table rename never renames those
+— while `types.ts` has none. That is a separate, deliberately deferred sweep, not a regression.
+
+---
+
 ## 🔴 Blocking revenue
 
 ### 1. PayFast merchant credentials
