@@ -1,7 +1,8 @@
 {
-  "generated_at": "2026-08-13T14:50:00.000Z",
+  "generated_at": "2026-08-20T22:45:00.000Z",
   "project_ref": "mvlrkelahhsyjrwgsxaf",
   "note": "Regenerate with --write, then READ THE DIFF before committing. Every entry is a decision about who may write.",
+  "read_via": "Regenerated 2026-08-20 through the Supabase MCP using this script's own SURFACE_QUERY, because this session holds no SUPABASE_ACCESS_TOKEN. The fingerprints are computed in SQL, so they match what --write produces.",
   "entries": {
     "admin_review_queue:DELETE": {
       "policy_count": 1,
@@ -78,6 +79,18 @@
     "booking_completion_photos:INSERT": {
       "policy_count": 1,
       "policy_fingerprint": "7a524112d4edf36997bca058adfb8d51"
+    },
+    "booking_sensitive_access:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "booking_sensitive_access:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "booking_sensitive_access:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
     },
     "booking_status_events:INSERT": {
       "policy_count": 1,

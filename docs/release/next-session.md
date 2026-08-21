@@ -4,6 +4,11 @@
 MCP and four other documents. This is the single ordered sequence. Nothing here is a plan — every
 step names what to run and what proves it worked.
 
+> 🔒 **Corrected 2026-08-20 by Correctness & Safety** (`docs/release/**` is Release's path — flagged
+> per rule 3). Step 0 and Step 1 had both been overtaken, and **Step 1's acceptance criterion could
+> not be met without breaking a pinned contract.** Corrections are marked ✅ / ⚠️ inline; nothing
+> else was touched, and no step was deleted.
+
 Read this before `go-live.md`. That file is the reference; this one is the order.
 
 ---
@@ -16,7 +21,7 @@ Read this before `go-live.md`. That file is the reference; this one is the order
 | Booking creation | ✅ **works** — was broken 13–15 Aug by a constraint that rejected its own column default |
 | Xooter SOS alert | ✅ **works** — was broken since the ZD-029 rename |
 | Xooter job cards | ✅ **works** — was broken since the ZD-029 rename |
-| One migration | ❌ `20260814170000_fix_private_function_bodies_zd029` — **not applied, effect unmeasured** |
+| One migration | ✅ `20260814170000_fix_private_function_bodies_zd029` — **applied**, verified 2026-08-20 in `schema_migrations` at that exact version |
 | Edge Functions | ❌ three need redeploying together (below) |
 | Web app | ❌ never deployed; Netlify still serves a hand-uploaded page from 28 May |
 | Payments | ❌ gates off, no merchant credentials |
@@ -25,8 +30,13 @@ Read this before `go-live.md`. That file is the reference; this one is the order
 
 ## Step 0 — restore one of the two hands
 
-Both routes to the databases are currently shut. **Either one unblocks the rest**, so do whichever is
-faster:
+✅ **Both are resolved as of 2026-08-20.** The Supabase MCP is authorised again — the migrations and
+live reads of 2026-08-20 went through it. The Actions stop was diagnosed as an exhausted **GitHub
+Free** allowance (2,000 minutes/month for private repos, resets on the 1st — not a spending limit
+that can be raised), and consumption was cut from roughly 29 to roughly 8 billed minutes per push in
+`6d7ba50`. Runners return at the reset.
+
+Kept below because the diagnosis is worth having if it recurs:
 
 - **Re-authorise the Supabase MCP** — direct database access, no CI needed. This is how the four
   migrations above were applied.
@@ -36,15 +46,16 @@ faster:
   symptom measured since 2026-08-14 10:59Z. This repo is private, and private repos consume Actions
   minutes where public ones do not.
 
-Nothing below can run until one of them is back.
+~~Nothing below can run until one of them is back.~~ Both are back.
 
 ---
 
-## Step 1 — the last migration
+## Step 1 — ✅ done, and its check needs fixing
 
     20260814170000_fix_private_function_bodies_zd029.sql
 
-Via MCP `apply_migration`, or `db-push` once runners return.
+**Applied.** `schema_migrations` carries it at version `20260814170000`, read from production
+2026-08-20. Nothing to run here.
 
 ⚠️ **`apply_migration` stamps a "now" version.** Left alone, `db push` then treats the repo file as
 unapplied and re-runs it. After applying, re-stamp:
@@ -55,14 +66,33 @@ update supabase_migrations.schema_migrations
  where name = 'fix_private_function_bodies_zd029' and version <> '20260814170000';
 ```
 
+⚠️ **Re-stamping by hand is also how `schema_migrations` gets a version that does not match the
+repo.** On 2026-08-15 two sessions numbered a migration `20260815150000`; the applied one won, and
+the other would have been silently skipped by `db push` with a success exit. Fixed in `d396bff`, and
+`src/lib/migration-version-collision.test.ts` now fails offline if it recurs. If you re-stamp, run
+that test afterwards.
+
 **Proves it done:**
 
 ```sql
-select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
- where n.nspname in ('public','private') and p.prosrc ~* '\mzoot|zooter';
+-- ⚠️ CORRECTED 2026-08-20. The original query was:
+--     ... and p.prosrc ~* '\mzoot|zooter';   -- "Zero rows."
+-- It returns ONE row, and always will: `private.can_create_masked_call` contains the reason string
+-- `booking_has_no_assigned_zooter`, which is deliberately preserved — two of its siblings are pinned
+-- as contract by `supabase/functions/_shared/twilio-phase9-readiness.test.ts`. Chasing that row to
+-- zero means renaming a wire-format string and breaking the Twilio gate.
+--
+-- Reason strings are data; identifiers are what the rename was about. This checks identifiers.
+select p.proname,
+       (select string_agg(distinct m[1], ', ')
+          from regexp_matches(p.prosrc, '([a-z_]*zoot[a-z_]*)', 'gi') m) as offending_tokens
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+ where n.nspname in ('public','private')
+   and p.prosrc ~* '\mzoot|zooter'
+   and p.prosrc !~ 'booking_has_no_assigned_zooter';
 ```
 
-Zero rows.
+Zero rows. **Verified zero on production 2026-08-20.**
 
 ---
 

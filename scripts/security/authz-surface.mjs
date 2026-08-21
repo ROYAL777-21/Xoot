@@ -31,9 +31,26 @@
  *   SUPABASE_ACCESS_TOKEN=… node scripts/security/authz-surface.mjs                 # verify
  *   SUPABASE_ACCESS_TOKEN=… node scripts/security/authz-surface.mjs --staging       # verify staging
  *   SUPABASE_ACCESS_TOKEN=… node scripts/security/authz-surface.mjs --write         # regenerate
+ *   SUPABASE_ACCESS_TOKEN=… node scripts/security/authz-surface.mjs --write --staging
  *
  * `--write` regenerates the baseline for a human to read and commit. It is never run in CI: a
  * guard that rewrites its own expectations is not a guard.
+ *
+ * ── One baseline per project, added 2026-08-20 ──────────────────────────────────
+ * `BASELINE_PATH` used to be a single constant while only the project ref varied, so `--staging`
+ * diffed STAGING's live surface against PRODUCTION's expectations — reporting every legitimate
+ * difference between the two environments as drift. That is why authz audit finding #2, "staging
+ * and production write surfaces differ and nothing checks it", stayed open: the tool that was
+ * supposed to check it could not tell the two apart.
+ *
+ * Worse, `--write --staging` wrote staging's data INTO the production baseline file. Not noise —
+ * silent corruption of the document the production guard reads.
+ *
+ * The two environments genuinely differ, and that is not by itself a defect: staging carries
+ * `referrals`, `referral_redemptions` and `subscription_cancellation_requests`; production carries
+ * `analytics_events`, `masked_conversation_sessions` and `notification_templates`. Each project now
+ * has its own reviewed baseline, and `src/lib/environment-write-surface-parity.test.ts` compares
+ * the two offline.
  *
  * Deliberately NOT part of `npm run security:scan`, which runs offline and must stay runnable
  * without credentials. `src/lib/authz-surface.test.ts` is the offline half.
@@ -43,10 +60,17 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
-const BASELINE_PATH = join(ROOT, "docs/security/client-write-surface.json");
 
 const PRODUCTION_REF = "mvlrkelahhsyjrwgsxaf";
 const STAGING_REF = "fxmxyabdjqviqbcxmvlp";
+
+/** One reviewed baseline per project. Never one file for both — see the header. */
+const BASELINE_PATHS = {
+  [PRODUCTION_REF]: join(ROOT, "docs/security/client-write-surface.json"),
+  [STAGING_REF]: join(ROOT, "docs/security/client-write-surface.staging.json"),
+};
+const baselinePathFor = (ref) => BASELINE_PATHS[ref];
+const baselineNameFor = (ref) => baselinePathFor(ref).slice(ROOT.length + 1);
 
 /**
  * The join, as one query.
@@ -182,12 +206,14 @@ const main = async () => {
   const write = process.argv.includes("--write");
   const ref = staging ? STAGING_REF : PRODUCTION_REF;
 
+  const baselinePath = baselinePathFor(ref);
+
   const rows = await runQuery(ref, SURFACE_QUERY);
   const rlsOff = await runQuery(ref, RLS_QUERY);
 
   if (write) {
-    writeFileSync(BASELINE_PATH, `${JSON.stringify(toBaseline(rows, ref), null, 2)}\n`);
-    console.log(`authz-surface: wrote ${rows.length} entries to docs/security/client-write-surface.json`);
+    writeFileSync(baselinePath, `${JSON.stringify(toBaseline(rows, ref), null, 2)}\n`);
+    console.log(`authz-surface: wrote ${rows.length} entries to ${baselineNameFor(ref)}`);
     console.log("Read the diff before committing. Every entry is a decision about who may write.");
     return;
   }
@@ -200,7 +226,13 @@ const main = async () => {
     failures.push(`RLS is DISABLED on: ${rlsOff.map((r) => r.tablename).join(", ")}`);
   }
 
-  const baseline = JSON.parse(readFileSync(BASELINE_PATH, "utf8"));
+  const baseline = JSON.parse(readFileSync(baselinePath, "utf8"));
+
+  if (baseline.project_ref !== ref) {
+    // The baseline names the project it describes. If they disagree, something copied one
+    // environment's file over the other's and every comparison below would be meaningless.
+    die(`${baselineNameFor(ref)} describes ${baseline.project_ref}, not ${ref}`);
+  }
   const { added, removed, changed, ok } = diffSurface(rows, baseline);
 
   if (!ok) {
@@ -211,7 +243,7 @@ const main = async () => {
   }
 
   if (failures.length) {
-    console.error(`authz-surface: ${ref} does not match the reviewed baseline\n`);
+    console.error(`authz-surface: ${ref} does not match ${baselineNameFor(ref)}\n`);
     for (const failure of failures) console.error(`  - ${failure}`);
     console.error(
       "\nIf the change is intended, regenerate with --write, read the diff, and commit it with the reason.",

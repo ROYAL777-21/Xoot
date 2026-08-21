@@ -146,8 +146,17 @@ it excludes.
    `xooter_id = (select auth.uid())` — so this is a `comment on column` on all three, not a rename:
    the schema works and the *name* is the hazard.
 
-**Still open from this audit:** #2, staging and production write surfaces differ and nothing
-compares them. `authz-surface.mjs --staging` can read it but needs credentials, so it is not in CI.
+2. ~~**Staging and production write surfaces differ** and nothing checks it.~~ **Closed 2026-08-20,
+   and the reason nothing checked it was the tool.** `authz-surface.mjs` had a `--staging` flag but
+   a single `BASELINE_PATH` constant, so `--staging` diffed staging's live surface against
+   **production's** baseline and reported every legitimate difference as drift — and
+   `--write --staging` wrote staging's data *into the production baseline file*. Each project now
+   has its own reviewed baseline, and `src/lib/environment-write-surface-parity.test.ts` compares
+   them offline. Measured: 2 pairs reachable on staging and inert on production
+   (`xooter_training_progress` INSERT/UPDATE), 2 the other way (`support_followups:DELETE`,
+   `xooter_applications:DELETE`), 13 production-only, 15 staging-only — including
+   **`zootcred_wallets`**, a pre-ZD-029 table name that production does not have at all. Recorded,
+   not swept: the same call as the ~110 constraints.
 
 **Not swept, by the founder's call 2026-08-20.** Production still carries **~110 constraints, ~60
 indexes, 26 policies and 3 triggers** named `zoot*`/`zooter*`. A table rename never renames those —
@@ -160,6 +169,61 @@ Grep confirms no code reads a constraint name, so the sweep is safe whenever it 
 ---
 
 ## ✅ RELEASED — done, or stopped and available
+
+### 🔒 Correctness & Safety — 2026-08-20 — a view rebuild handed back grants, and the runbook's check could not pass
+
+**A rebuilt view takes Supabase's default privileges.** `20260813220000` had to drop and recreate
+`public.booking_sensitive_access` — a view over gate codes and alarm codes — to rename the function
+it depended on. It carefully preserved `security_invoker = true`, and even named it as a property
+that "has to survive… because a rebuilt view inherits none of them". **The grants were a fourth such
+property and were not on that list.** Three earlier migrations (`20260603000000`, `20260621000000`,
+`20260624114953`) had revoked client access deliberately; the rebuild handed `anon` and
+`authenticated` back SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES and TRIGGER. That
+migration was mine. Closed by `20260820160000`.
+
+**Not a leak, and the obvious proof of that was worthless.** I ran `set local role anon; select
+count(*) from public.booking_sensitive_access` and got 0 — then checked, and `bookings` and
+`household_profiles` are both **empty on production**, so that query returns 0 for everybody. It
+could not have failed. The real evidence is structural: `security_invoker = true` survived, RLS is
+on for all four base tables, `bookings` has **no SELECT policy admitting anon**, and the view is not
+auto-updatable (`is_updatable = NO`, no INSTEAD OF trigger) so writes are rejected whatever the
+grant says. Inert for two independent reasons — and both are one edit from not holding, which is why
+it is revoked rather than noted.
+
+**It had also been invisible.** The committed `client-write-surface.json` was from 2026-08-13 and
+production had gained those three pairs since. Regenerated: **+3 pairs, 0 removed, 0 fingerprints
+changed** — so that view rebuild is the *only* production write-surface drift in a week.
+
+**Authz finding #2 is closed, and the reason it stayed open was the tool.** See the audit section
+above for the measured diff. `--write --staging` used to write staging's data into production's
+baseline file; each project now has its own.
+
+**Release's `next-session.md` had a step whose acceptance criterion could not be met.** Step 1 said
+`20260814170000` was unapplied — it is applied. Its "proves it done" query promised zero rows and
+returns **one**: `private.can_create_masked_call` matching on `booking_has_no_assigned_zooter`, a
+reason string deliberately preserved because `twilio-phase9-readiness.test.ts` pins two of its
+siblings as contract. Following the runbook meant concluding the migration failed, or "fixing" the
+string and breaking the Twilio gate. Query corrected to check identifiers rather than data, and
+**verified zero on production**. Step 0 refreshed; a caution added about hand-re-stamping
+`schema_migrations`, which is how `d396bff` happened.
+
+**One line of my own revoke said something false.** `20260820120000` justifies revoking
+`xooter_training_progress` as "grant with zero policies". True on production, false on staging. The
+revoke is still right — the only writer is `training-module` via `getServiceClient()` — but the
+reason was wrong for one of the two projects, so it now says so, and
+`environment-write-surface-parity.test.ts` fails if any *other* revoke there turns out reachable.
+
+Verified: **101 files / 1120 tests**, tsc, eslint, `security:scan` clean;
+`verify-production-readiness.ps1 -Json` 363 pass / 0 fail under real pwsh. Four planted defects
+against the new guards — self-comparison, a staging policy on a supposedly-inert pair, a missing
+`PUBLIC` revoke, a dropped comment — each failing only its own assertion.
+
+> ⚠️ **Release — two in your path (rule 3).** `docs/release/next-session.md` is corrected inline,
+> marked, and nothing was deleted. `supabase/migrations/**` gains `20260820160000`. Both baselines
+> need regenerating after the push, now with `--write` and `--write --staging` separately.
+
+---
+
 
 ### 🔒 Correctness & Safety — 2026-08-20 — the push would have skipped the revoke and said OK
 

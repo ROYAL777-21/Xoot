@@ -24,6 +24,22 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = process.cwd();
 const MIGRATION = "supabase/migrations/20260820120000_revoke_client_writes_without_policy.sql";
+
+/**
+ * The second half of the lockdown, added 2026-08-20.
+ *
+ * `booking_sensitive_access` is a VIEW whose client grants were revoked three times and then handed
+ * back by a view rebuild taking Supabase's default privileges. It is closed by
+ * `20260820160000` with `revoke all` rather than by the per-operation migration above, because
+ * nothing client-side reads it at all — so the pairs below are covered, just not by MIGRATION.
+ */
+const VIEW_REGRANT_MIGRATION =
+  "supabase/migrations/20260820160000_booking_sensitive_access_regrant_regression.sql";
+const REVOKED_BY_THE_VIEW_MIGRATION = [
+  "booking_sensitive_access:DELETE",
+  "booking_sensitive_access:INSERT",
+  "booking_sensitive_access:UPDATE",
+];
 const BASELINE = "docs/security/client-write-surface.json";
 
 const sql = () => readFileSync(join(ROOT, MIGRATION), "utf8");
@@ -57,7 +73,9 @@ describe("the revoke migration matches the audit", () => {
   it("parsed both sides", () => {
     // A regex that matches nothing would make everything below vacuous.
     expect(revokes().length, "no revoke statements parsed").toBeGreaterThan(5);
-    expect(noPolicyPairs().length, "no no-policy pairs in the baseline").toBe(34);
+    // 34 from the 2026-08-13 audit, plus the three `booking_sensitive_access` pairs production
+    // gained when a view rebuild restored default privileges — see VIEW_REGRANT_MIGRATION.
+    expect(noPolicyPairs().length, "no no-policy pairs in the baseline").toBe(37);
   });
 
   it("never uses `revoke all` — the statement that would break profile editing", () => {
@@ -70,6 +88,18 @@ describe("the revoke migration matches the audit", () => {
   it("revokes exactly the pairs the audit found unreachable, and nothing else", () => {
     const revoked = new Set<string>();
     for (const { table, ops } of revokes()) for (const op of ops) revoked.add(`${table}:${op}`);
+
+    // The view migration closes its three with `revoke all`, which is right for an object no client
+    // reads and wrong for a table with a live writer. Count them as covered, and prove they are.
+    const viewSql = readFileSync(join(ROOT, VIEW_REGRANT_MIGRATION), "utf8");
+    for (const pair of REVOKED_BY_THE_VIEW_MIGRATION) {
+      const [table] = pair.split(":");
+      expect(
+        new RegExp(`revoke\\s+all\\s+on\\s+public\\.${table}\\s+from`, "i").test(executable(viewSql)),
+        `${pair} is counted as covered, so ${VIEW_REGRANT_MIGRATION} must actually revoke it`,
+      ).toBe(true);
+      revoked.add(pair);
+    }
 
     const expected = new Set(noPolicyPairs());
     const missing = [...expected].filter((p) => !revoked.has(p));

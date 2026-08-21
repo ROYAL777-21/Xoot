@@ -175,6 +175,36 @@ describe("booking_tips is authenticated-only", () => {
   });
 });
 
+describe("booking_sensitive_access loses the grants a view rebuild handed back", () => {
+  const REGRANT = "supabase/migrations/20260820160000_booking_sensitive_access_regrant_regression.sql";
+  const source = () => read(REGRANT);
+
+  it("revokes from all three client-facing roles", () => {
+    /*
+     * `20260624113000`-era migrations used exactly these three statements. Missing `public` is the
+     * subtle one: revoking from anon and authenticated while PUBLIC still holds the grant leaves it
+     * reachable by both, because both are members of PUBLIC.
+     */
+    const revoked = [...executable(source()).matchAll(
+      /revoke\s+all\s+on\s+public\.booking_sensitive_access\s+from\s+([a-z]+);/gi,
+    )].map((m) => m[1].toLowerCase());
+    expect(revoked.sort(), "revoking from anon and authenticated but not PUBLIC changes nothing").toEqual([
+      "anon",
+      "authenticated",
+      "public",
+    ]);
+  });
+
+  it("records that security_invoker and the revokes must both survive a rebuild", () => {
+    // The whole defect was a rebuild inheriting neither. The comment is where the next person
+    // rebuilding this view will actually be looking.
+    const comment = /comment on view\s+public\.booking_sensitive_access[\s\S]*?;/i.exec(executable(source()))?.[0] ?? "";
+    expect(comment, "no comment on the view").not.toBe("");
+    expect(comment, "name the setting that keeps RLS applying").toMatch(/security_invoker/i);
+    expect(comment, "and say the grants come back on their own").toMatch(/default privileges/i);
+  });
+});
+
 describe("the xooter_id foreign-key trap is written into the schema", () => {
   const source = () => read(FK_TRAP);
 

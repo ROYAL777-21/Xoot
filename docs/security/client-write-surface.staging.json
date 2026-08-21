@@ -1,0 +1,420 @@
+{
+  "generated_at": "2026-08-20T22:40:00.000Z",
+  "project_ref": "fxmxyabdjqviqbcxmvlp",
+  "note": "Regenerate with --write --staging, then READ THE DIFF before committing. Every entry is a decision about who may write.",
+  "read_via": "Generated through the Supabase MCP using this script's own SURFACE_QUERY, because this session holds no SUPABASE_ACCESS_TOKEN. The fingerprints are computed in SQL (md5(string_agg(...))), so they are identical to what --write produces.",
+  "entries": {
+    "admin_review_queue:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "1903c6bb11d309be985d8dd1947b9000"
+    },
+    "admin_review_queue:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "b51efeb50ab87870e2420decc7ad6201"
+    },
+    "admin_review_queue:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "3ee3cf534de4c79fa0506cc18030c6af"
+    },
+    "analytics_booking_summary:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "analytics_booking_summary:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "analytics_booking_summary:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "analytics_contractor_quality:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "analytics_contractor_quality:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "analytics_contractor_quality:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "automation_skills:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "automation_skills:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "automation_skills:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "booking_chat_typing_indicators:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "booking_chat_typing_indicators:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "e7b3b8fbd6da62a9f8c164bad25c87f4"
+    },
+    "booking_chat_typing_indicators:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "7c631c275839a8f0303a3ede4d4b5921"
+    },
+    "booking_completion_photos:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "166308e5be037f48dfd4bd655ef9bcfb"
+    },
+    "booking_sensitive_access:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "booking_sensitive_access:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "booking_sensitive_access:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "booking_status_events:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "5b9dc4523ef739f18441c4166da438c3"
+    },
+    "booking_tips:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "d6d5cd7805a80fdf5a3a2ebc9a8fc260"
+    },
+    "booking_tips:INSERT": {
+      "policy_count": 2,
+      "policy_fingerprint": "63727db389806b7a0ebeb314ef4a0977"
+    },
+    "booking_tips:UPDATE": {
+      "policy_count": 2,
+      "policy_fingerprint": "22b4ad88049070b64fad3523a1bdc9e8"
+    },
+    "care_plus_applications:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "ab61f7b9e58d98ca544a35eeb99f194d"
+    },
+    "care_plus_applications:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "ab61f7b9e58d98ca544a35eeb99f194d"
+    },
+    "contractor_screening_questions:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "contractor_screening_questions:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "contractor_screening_questions:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "favorites:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "47e69ea9c3318f20b9a27cf53a4d5443"
+    },
+    "favorites:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "3f8b715ec59e9568c4beb4ac0f8640a6"
+    },
+    "favorites:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "489634f2f1887c32a618727615bbaf3e"
+    },
+    "gift_clean_orders:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "3bdcc831350915f3b38a16d8f39f8ea4"
+    },
+    "gift_clean_orders:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "3bdcc831350915f3b38a16d8f39f8ea4"
+    },
+    "household_profiles:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "9d34e24f1570c268165cb2406fc531d5"
+    },
+    "household_profiles:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "9d34e24f1570c268165cb2406fc531d5"
+    },
+    "household_profiles:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "9d34e24f1570c268165cb2406fc531d5"
+    },
+    "native_push_subscriptions:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "f3052f090c6cafe5bcbce621f7ff7c91"
+    },
+    "native_push_subscriptions:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "fbed303ceab8af1e606b4b03912317f7"
+    },
+    "native_push_subscriptions:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "c4ae77da378eaa88aeae0320c8fcea95"
+    },
+    "post_job_reviews:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "1fc7ce6baaca93be18046dc249dbdb65"
+    },
+    "profiles:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "profiles:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "c5dafe26796ca5e68274c80b07743495"
+    },
+    "profiles:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "46d58a1516d52f7fc31e2475cee212cb"
+    },
+    "property_accounts:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "f79ff516f518e79e31cd6b5c4464c3fd"
+    },
+    "property_accounts:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "f79ff516f518e79e31cd6b5c4464c3fd"
+    },
+    "property_accounts:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "f79ff516f518e79e31cd6b5c4464c3fd"
+    },
+    "push_tokens:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "152232caa0ec5e394ae0b8d0f1ad0875"
+    },
+    "push_tokens:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "bdfe14f4b7c53a3ec077a6f2565f1860"
+    },
+    "push_tokens:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "bd1feede62ceb36cd6d84ffa8497093e"
+    },
+    "recurring_schedules:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "d40071c1a77aa40a01e2152929a46e01"
+    },
+    "recurring_schedules:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "d40071c1a77aa40a01e2152929a46e01"
+    },
+    "recurring_schedules:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "d40071c1a77aa40a01e2152929a46e01"
+    },
+    "referral_redemptions:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "referral_redemptions:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "referral_redemptions:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "referrals:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "referrals:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "referrals:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "saved_addresses:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "cc941a01eb10a9aa654fa3d0fba98d18"
+    },
+    "saved_addresses:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "cc941a01eb10a9aa654fa3d0fba98d18"
+    },
+    "saved_addresses:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "cc941a01eb10a9aa654fa3d0fba98d18"
+    },
+    "subscription_cancellation_requests:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "cd43f5f3648fc1a2cfdf66cdd775b502"
+    },
+    "subscription_cancellation_requests:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "cd43f5f3648fc1a2cfdf66cdd775b502"
+    },
+    "subscription_cancellation_requests:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "cd43f5f3648fc1a2cfdf66cdd775b502"
+    },
+    "subscription_plans:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "subscription_plans:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "subscription_plans:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "support_followups:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "support_followups:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "ff892eae5950887ca93d92e34c14a14c"
+    },
+    "support_followups:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "8da9e69953e06b1984c7ba6445498659"
+    },
+    "support_tickets:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "f71ed3be37091f8534afcc3859492c44"
+    },
+    "support_tickets:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "e79fdea373226aa133a6cc7225baa612"
+    },
+    "support_tickets:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "e5724e943ca15682c865b98f4e569c65"
+    },
+    "training_modules:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "training_modules:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "training_modules:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "trust_incidents:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "76d1ca100425be9e7f6a1c0df2689f2f"
+    },
+    "user_encryption_keys:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "d2ff0b2ef1d2f0c62110c5d007f792c9"
+    },
+    "user_encryption_keys:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "d2ff0b2ef1d2f0c62110c5d007f792c9"
+    },
+    "user_reassignment_state:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "user_reassignment_state:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "user_reassignment_state:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "49ffda1c1809bc1cd0bb11745d4ecc52"
+    },
+    "user_roles:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "00b7d6b432cc0cc1852c70395605a58b"
+    },
+    "user_roles:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "adfb921ca749f73be984b1c25e2fe66a"
+    },
+    "user_roles:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "dec8daf7bdfd32de731cf4c356be140c"
+    },
+    "xooter_applications:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "xooter_applications:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "22037fdfae88edbcd0bcc94cb2b04991"
+    },
+    "xooter_documents:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "a23e2784b509f002797e78a9e0b64be1"
+    },
+    "xooter_documents:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "a23e2784b509f002797e78a9e0b64be1"
+    },
+    "xooter_earnings:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "xooter_earnings:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "xooter_earnings:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "xooter_reliability_metrics:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "5360423fd581d203e311dff9f953c569"
+    },
+    "xooter_reliability_metrics:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "de638f4607d53d7c738ebc700a1f56d0"
+    },
+    "xooter_reliability_metrics:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "58c07d051e59a94790dc069c1418a35a"
+    },
+    "xooter_training_progress:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "xooter_training_progress:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "94d2302b64e7f30134f63b16b697d4a4"
+    },
+    "xooter_training_progress:UPDATE": {
+      "policy_count": 1,
+      "policy_fingerprint": "c4a1b49059d8825226c7a45aa47af138"
+    },
+    "xooters:DELETE": {
+      "policy_count": 1,
+      "policy_fingerprint": "4bb77b7de834bd51d8b174a4eb813f6b"
+    },
+    "xooters:INSERT": {
+      "policy_count": 1,
+      "policy_fingerprint": "3bd889a81c2b149d2b435b8ecec29907"
+    },
+    "zootcred_wallets:DELETE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "zootcred_wallets:INSERT": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    },
+    "zootcred_wallets:UPDATE": {
+      "policy_count": 0,
+      "policy_fingerprint": "no-policy"
+    }
+  }
+}

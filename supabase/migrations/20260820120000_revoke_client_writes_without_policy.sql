@@ -70,6 +70,17 @@ revoke insert, update, delete on public.notification_templates from authenticate
 revoke insert, update, delete on public.subscription_plans from authenticated, anon;
 revoke insert, update, delete on public.training_modules from authenticated, anon;
 revoke insert, update, delete on public.xooter_earnings from authenticated, anon;
+-- ⚠️ `xooter_training_progress` is the one line here whose stated reason is only true on ONE
+-- project. On production the grant has zero policies, as described above. On STAGING, INSERT and
+-- UPDATE each have a policy, so there this statement removes a genuinely reachable write.
+--
+-- It is still correct in both. The only writer is `supabase/functions/training-module/index.ts`,
+-- which builds its client with `getServiceClient()`; service_role bypasses RLS and holds its own
+-- grants, so it is untouched. `src/pages/xooter/Training.tsx` only reads, and reads a different
+-- table (`xooter_training_completions`).
+--
+-- Measured 2026-08-20, and pinned by `src/lib/environment-write-surface-parity.test.ts`, which
+-- fails if any OTHER revoke here turns out to be reachable in either environment.
 revoke insert, update, delete on public.xooter_training_progress from authenticated, anon;
 
 -- ── Partly reachable: only the operations with no policy ─────────────────────────
