@@ -134,6 +134,79 @@ migrations at review time, plus a hardening migration revoking the vestigial gra
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Release & Infrastructure — 2026-08-21 — ZD-029's ACL surface: eight RPCs were anon-callable
+
+> ⚠️ **Correctness — I added `src/lib/security-definer-grants.test.ts`, which is your guard-test
+> layer (CLAUDE.md rule 3).** Taken because the defect it guards was live on production and the
+> guard is what found the tenth instance. Review it through your lens: the allowlist at the top is
+> a security decision, and I have justified each of its three entries with the migration that
+> intends it. Nothing else of yours is touched.
+
+**`REVOKE ... FROM PUBLIC` does not remove the direct grants Supabase's platform gives `anon` and
+`authenticated`.** You have to name the roles. `20260813220000` — the ZD-029 rename — wrote
+`from public;` alone, eight times.
+
+It compounds, and this is the part worth carrying forward: that migration **dropped and recreated**
+each function under its new name, and **a newly created function gets fresh default ACLs**. So
+`20260701093000`, which had correctly revoked `can_release_zooter_payout` from public, anon AND
+authenticated back in July, was silently undone by the rename — and the replacement re-revoked one
+role of the three.
+
+Read off production before touching anything:
+
+    get_xooter_job_cards_for_user(uuid)  prosecdef=t  postgres=X | anon=X | authenticated=X | service_role=X
+    set_safety_pin(text)                 prosecdef=t  postgres=X |         authenticated=X | service_role=X
+
+`set_safety_pin` is the control: `20260802170000` named `anon` in its revoke, and its ACL has no
+`anon`. Same file, same week, opposite outcome, one word apart.
+
+**What was reachable.** `get_xooter_job_cards_for_user` and
+`get_accepted_xooter_job_destinations_for_user` are SECURITY DEFINER, take an arbitrary user id,
+apply **no `auth.uid()` check**, and return `destination_address` — a customer's home address.
+Three more answer booleans about arbitrary ids.
+
+**Stated at its real size, because overstating this is as bad as hiding it.** Every relevant table
+measured **0 rows** on production, so **nothing was leaked**. Reaching it also needs a valid
+`xooters.user_id`, which is a 128-bit uuid. But `authenticated` held the same grant, so once the
+platform carries real bookings any signed-up user who learns one uuid gets that Xooter's live job
+list and their customer's address. Fixed before launch rather than after.
+
+**Deliberately not called a vulnerability:** `assert_fare_split_sums`, `enforce_booking_price_author`
+and `enforce_tip_settlement_author` also held EXECUTE, and the advisor flags two of them. They
+return `trigger`, and PostgREST does not expose trigger functions as RPC — they were never
+reachable. Revoked for hygiene, recorded as hygiene. `booking_sensitive_access` is likewise
+defended by its own `security_invoker = true`.
+
+**The guard found one the advisor did not.** On its first run — before it was committed —
+`security-definer-grants.test.ts` reported `enforce_tip_settlement_author`, which was not in the
+advisor's WARN list. The live ACL then confirmed it was exposed. That is the argument for the
+guard: an advisor reports what it samples, a replay of the migrations reports all of them.
+
+**Verified by doing, not by reading.** After applying to staging then production:
+
+| check | result |
+|---|---|
+| `has_function_privilege` on all 8 | `service_role` **true**, `anon` **false**, `authenticated` **false** |
+| `set role service_role` then call it | executed, returned rows |
+| `set role anon` then call it | refused, `insufficient_privilege` |
+| `get_advisors(security)` | `anon_security_definer_function_executable` — **0**, was 8 |
+| ledger version | realigned to `20260821120000` on both, so `db push` re-runs nothing |
+
+`npx vitest run` 1069/1069 · `tsc --noEmit` clean · `npm run build` · `npm run security:scan` clean.
+
+The guard was planted both ways before being trusted: reverting one revoke to `from public;`
+fails it naming that function and the RPC path; deleting a trigger-function revoke fails it with
+the hygiene wording instead. Restored after each.
+
+**Did not run `check-schema-drift.mjs`** — it compares function bodies and relations, and a
+GRANT/REVOKE migration changes neither. Saying so rather than implying a run that would have been
+theatre.
+
+**Left for the founder:** `get_advisors` also reports **leaked-password protection is disabled**
+(Auth → Passwords → enable the HaveIBeenPwned check). One toggle, no code. Added to the founder
+register.
+
+
 ### 🔒 Correctness & Safety — 2026-08-13 — the payment journey, and the constraint that blocked it
 
 Pushed to `claude/xoot-ios-build-setup-0te1sl`. **85 files / 851 tests green** (main was 807),

@@ -17,6 +17,7 @@ Read this before `go-live.md`. That file is the reference; this one is the order
 | Xooter SOS alert | ✅ **works** — was broken since the ZD-029 rename |
 | Xooter job cards | ✅ **works** — was broken since the ZD-029 rename |
 | XootCred redemption | ✅ **works** — a trigger queried `zootcred_ledger`, a table the rename dropped |
+| RPC grants | ✅ **closed 2026-08-21** — 8 SECURITY DEFINER functions were `anon`-callable; see below |
 | Edge Functions | ❌ three need redeploying together (Step 2) |
 | Web app | ❌ still the 28 May upload — **build env vars now set**, see below |
 | Payments | ❌ gates off, no merchant credentials |
@@ -34,6 +35,31 @@ called a table renamed out from under it for two days while every file in the re
 
 It asks "does this still exist", not "does this say `zoot`". A table renamed for any other reason
 would have been just as broken and completely invisible to a brand grep.
+
+**And run this one too, after any migration that creates or renames a function:**
+
+```sql
+select p.proname, array_to_string(p.proacl, ' | ') as acl
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.prosecdef
+  and (array_to_string(p.proacl,' ') like '%anon=%'
+    or array_to_string(p.proacl,' ') like '%authenticated=%')
+order by p.proname;
+```
+
+**`set_safety_pin` is the only row that belongs there.** Anything else is a SECURITY DEFINER
+function callable from a browser holding just the publishable key.
+
+Two things make this necessary rather than paranoid, both learned on 2026-08-21:
+
+- **`REVOKE ... FROM PUBLIC` does not remove `anon` and `authenticated`.** Supabase's platform
+  grants those roles directly; a revoke has to name them. `20260813220000` wrote `from public;`
+  alone, eight times.
+- **`drop` + `create` resets a function's ACL**, so renaming a function silently discards every
+  revoke ever applied to it. That is how a correct July hardening was undone in August.
+
+`src/lib/security-definer-grants.test.ts` catches both at review time by replaying the migrations,
+but it reads migration *text* — only the query above sees what is actually installed.
 
 ---
 

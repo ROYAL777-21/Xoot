@@ -296,6 +296,7 @@ before concluding the feature is broken — that is by far the most likely reaso
 | SOS activation ([#36](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/36)) — **do not just flip the constant**, it ships dark on purpose | needs a real device | the sequence in #36, in order |
 | Device verification ([#37](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/37)) — Live Activities, widgets, Siri, App Links | needs a real device | each surface opened once on hardware |
 | Rotate the credentials pasted into chat on 2026-08-07 | the issuing provider consoles | old values rejected |
+| **Enable leaked-password protection** — one toggle, checks new passwords against HaveIBeenPwned; reported by `get_advisors` 2026-08-21 | Supabase Dashboard → Authentication → Passwords | the advisor stops reporting `auth_leaked_password_protection` |
 | Dismiss the two by-design Supabase advisors | Supabase Dashboard | no MCP tool can do it |
 | Production deploy dispatches | Actions, typing the project ref | **deliberately** a human act; no session triggers it unasked |
 
