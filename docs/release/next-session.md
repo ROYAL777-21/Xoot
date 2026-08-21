@@ -22,7 +22,8 @@ Read this before `go-live.md`. That file is the reference; this one is the order
 | Xooter SOS alert | ✅ **works** — was broken since the ZD-029 rename |
 | Xooter job cards | ✅ **works** — was broken since the ZD-029 rename |
 | One migration | ✅ `20260814170000_fix_private_function_bodies_zd029` — **applied**, verified 2026-08-20 in `schema_migrations` at that exact version |
-| Edge Functions | ❌ three need redeploying together (below) |
+| Edge Functions | ✅ the three payment functions deployed 2026-08-15 15:40 UTC; no source has changed since, so nothing is carrying a stale `_shared` copy |
+| Orphaned functions | ❌ six pre-rename slugs still ACTIVE with no source in the repo — `NEEDS-FOUNDER.md` §3, still true 2026-08-20 |
 | Web app | ❌ never deployed; Netlify still serves a hand-uploaded page from 28 May |
 | Payments | ❌ gates off, no merchant credentials |
 
@@ -96,11 +97,20 @@ Zero rows. **Verified zero on production 2026-08-20.**
 
 ---
 
-## Step 2 — three Edge Functions, together
+## Step 2 — ✅ done, all three deployed together
 
 ```
 confirm-payment admin-confirm-payment create-payment-session
 ```
+
+✅ **Deployed to production 2026-08-15 15:40 UTC**, verified 2026-08-20 by reading the function list:
+all three carry `updated_at` = `1786808442340`, and `create-payment-session` exists at version 1. The
+warning below was heeded — nothing to do here.
+
+✅ **And they are still current.** `git log --since="2026-08-15T15:40:00Z" -- supabase/functions/`
+is empty, so no source has changed since that deploy. This is the check that matters most in this
+repo: a deployed function bundles its own frozen copy of `_shared/*`, so a shared-module change
+after a deploy leaves every importer silently behind. That has not happened here.
 
 **These three and no others.** Measured by import, not assumed: they are the only functions that
 bundle the new `_shared/payment-confirmation.ts`, `_shared/payment-provider-gate.ts` and
@@ -110,7 +120,7 @@ stale copy.
 ⚠️ **`create-payment-session` is new and appears in no older deploy list.**
 `deploy-edge-functions` deploys only what is named unless the list is blank, and every recent
 production deploy used an explicit list. Omit it and the Pay button returns 404 with nothing in any
-log.
+log. *(Kept for the next deploy — it stays true every time this list is used.)*
 
 ⚠️ **Migrations before functions** (`go-live.md` §3a). `create-payment-session` writes
 `provider: 'payfast'`, which the pre-`20260813200000` constraint rejected.
