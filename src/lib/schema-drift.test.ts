@@ -62,6 +62,29 @@ const CTE_HEAVY = `
   select count(*) from marked;
 `;
 
+/**
+ * Verbatim from `public.enforce_booking_price_author`. `IS DISTINCT FROM` contains the word `from`,
+ * and `OLD`/`NEW` are PL/pgSQL record variables rather than schemas — so the first version of this
+ * checker reported `old.price` and `old.status` as missing relations.
+ */
+const TRIGGER_PSEUDO_RECORD = `
+begin
+  if new.price is distinct from old.price
+     and auth.uid() is not null then
+    raise exception 'price is server-authored';
+  end if;
+  return new;
+end;
+`;
+
+/**
+ * Verbatim from `public.can_create_masked_call`. A set-returning function called in `FROM` is not a
+ * relation, so `to_regclass` correctly finds nothing — and the first version called that drift.
+ */
+const SET_RETURNING_CALL = `
+  select * from private.can_create_masked_call(p_booking_id, p_actor_id);
+`;
+
 const CATALOGUE = new Set([
   "public.xootcred_ledger",
   "public.bookings",
@@ -158,5 +181,49 @@ describe("findBrokenTriggers", () => {
       routineNames: new Set(["public.f"]),
     });
     expect(broken.map((b) => b.trigger)).toEqual(["t_missing_table", "t_missing_fn"]);
+  });
+});
+
+/**
+ * ── What running it against production taught it ───────────────────────────────────────────────
+ *
+ * The first live run produced **nineteen findings against zero real defects** — the cry-wolf state
+ * the lib's own header warns about, and a checker in that state gets ignored and then deleted.
+ * Neither cause was visible by reading the code. Both fixtures below are verbatim from production.
+ */
+describe("false positives found by running it, not by reading it", () => {
+  it("does not treat OLD/NEW as schemas", () => {
+    // `is distinct from old.price` — the word `from` is there, the schema is not.
+    expect(relationsReferencedBy(TRIGGER_PSEUDO_RECORD).size).toBe(0);
+    expect(
+      findMissingRelations({
+        routines: [{ schema: "public", name: "enforce_booking_price_author", body: TRIGGER_PSEUDO_RECORD }],
+        existing: CATALOGUE,
+      }),
+    ).toEqual([]);
+  });
+
+  it("does not treat a function call in FROM as a relation", () => {
+    expect(relationsReferencedBy(SET_RETURNING_CALL).size).toBe(0);
+    expect(
+      findMissingRelations({
+        routines: [{ schema: "public", name: "can_create_masked_call", body: SET_RETURNING_CALL }],
+        existing: CATALOGUE,
+      }),
+    ).toEqual([]);
+  });
+
+  it("still catches the real defect — the fix must not blind it", () => {
+    /*
+     * The regression that would actually matter. Both exclusions above narrow what the checker
+     * looks at, and narrowing is exactly how a guard gets quietly disarmed. `public.zootcred_ledger`
+     * is a bare relation reference, so neither exclusion may touch it.
+     */
+    expect(
+      findMissingRelations({
+        routines: [{ schema: "public", name: "check_xootcred_balance", body: BROKEN_XOOTCRED }],
+        existing: CATALOGUE,
+      }),
+    ).toEqual([{ routine: "public.check_xootcred_balance", missing: "public.zootcred_ledger" }]);
   });
 });

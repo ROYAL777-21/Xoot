@@ -49,13 +49,42 @@
  *
  * Every routine in this repo sets `search_path` to `''` or `'public'` and qualifies its references,
  * so qualified-only loses nothing here while removing the entire false-positive class.
+ *
+ * ── Two more exclusions, both found by RUNNING this against production ─────────────────────────
+ * The first live run reported **nineteen findings against zero real defects**, which is the
+ * cry-wolf state this file already warned about. Reading the code back would not have found either
+ * cause; running it did. Both are pinned as tests, verbatim from production:
+ *
+ *   1. **`OLD` / `NEW` are not schemas.** `if new.price is distinct from old.price` contains the
+ *      word `from`, so the pattern matched `old.price` and reported it missing. They are PL/pgSQL
+ *      record variables. `excluded` is the same story for `on conflict ... do update`.
+ *
+ *   2. **A name followed by `(` is a function, not a relation.**
+ *      `select * from private.can_create_masked_call(p_booking_id, p_actor_id)` is a set-returning
+ *      function call; `to_regclass` correctly says no such relation exists, and it is correct code.
  */
+
+/** `OLD`, `NEW` and `EXCLUDED` are record variables in PL/pgSQL, never schemas. */
+const PSEUDO_RECORDS = new Set(["old", "new", "excluded"]);
+
 export const relationsReferencedBy = (body) => {
   const found = new Set();
   const text = String(body ?? "");
-  const pattern = /\b(?:from|join|into|update)\s+(?:only\s+)?([a-z_][\w$]*)\.([a-z_][\w$]*)/gi;
+  /*
+   * The trailing `\b(?!\s*\()` separates `from public.bookings` from
+   * `from private.some_function(...)`.
+   *
+   * ⚠️ The `\b` is load-bearing and was missing at first. Without it the engine simply backtracks:
+   * `can_create_masked_call` fails the lookahead, so it retries with `can_create_masked_cal`, whose
+   * next character is `l` rather than `(` — lookahead satisfied, truncated name reported as a
+   * missing relation. The word boundary forbids stopping mid-identifier, so the match either takes
+   * the whole name or fails. The test for this failed until the `\b` was added.
+   */
+  const pattern = /\b(?:from|join|into|update)\s+(?:only\s+)?([a-z_][\w$]*)\.([a-z_][\w$]*)\b(?!\s*\()/gi;
   for (const match of text.matchAll(pattern)) {
-    found.add(`${match[1].toLowerCase()}.${match[2].toLowerCase()}`);
+    const schema = match[1].toLowerCase();
+    if (PSEUDO_RECORDS.has(schema)) continue;
+    found.add(`${schema}.${match[2].toLowerCase()}`);
   }
   return found;
 };

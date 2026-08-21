@@ -1644,6 +1644,59 @@ Verified: 1062 tests across 97 files, `tsc --noEmit`, `vite build`, `security:sc
 
 ---
 
+## 2026-08-15 (later) — 🚢 Release — running the checker against production is what fixed it
+
+The schema-drift checker had been unit-tested and never run live. Supabase came back, so I ran it.
+**Nineteen findings against zero real defects** — the exact cry-wolf state the lib's own header
+warns about, and a checker in that state gets ignored and then deleted. Two causes, neither visible
+by reading the code:
+
+1. **`OLD` / `NEW` are not schemas.** `if new.price is distinct from old.price` contains the word
+   `from`, so the pattern matched `old.price` and called it a missing relation. They are PL/pgSQL
+   record variables. `excluded` is the same story for upserts.
+2. **A name followed by `(` is a function, not a relation.**
+   `select * from private.can_create_masked_call(p_booking_id, p_actor_id)` is a set-returning call;
+   `to_regclass` correctly finds no such relation, and the code is correct.
+
+⚠️ **The fix's first attempt was silently wrong, and only the test caught it.** Adding
+`(?!\s*\()` did not work: the engine backtracks, retries with `can_create_masked_cal`, finds `l`
+rather than `(` ahead, satisfies the lookahead and reports a **truncated identifier** as missing. The
+`\b` before the lookahead is load-bearing — it forbids stopping mid-identifier. Written into the
+file, because the next person to touch that regex will otherwise remove it as noise.
+
+**Measured after: production NONE, staging NONE**, from nineteen. And the XootCred fixture still
+fails the checker — that is the regression that would have mattered, since both fixes narrow what it
+looks at and narrowing is how a guard gets quietly disarmed. Pinned as its own test.
+
+Both false positives are now fixtures **verbatim from production**, so the file records what the
+checker learned rather than only what it was designed for.
+
+### Staging ledger closed
+
+`20260815160000` applied to staging and stamped. Staging's body was already correct, so the
+`create or replace` is a no-op in effect — the point was the ledger row, without which `db push`
+re-runs the repo file. **Both projects now have one row per repo migration.**
+
+### 🔒 Hosting: Netlify, and there is nothing to do at GoDaddy
+
+The founder asked whether the GoDaddy connector could put the site live, since the domain was bought
+there. No, and the reasoning is worth recording because it will come up again:
+
+- **A registrar is not a host.** `domain-setup.md` already recorded, from the Netlify API on
+  2026-08-13, that `xoot.co.za` resolves to Netlify — that is what serves the 28 May page. The DNS
+  work was done long ago.
+- **The GoDaddy connector cannot host.** Its entire surface is `domains_check_availability` and
+  `domains_suggest`. No DNS write, no upload, no deploy.
+- **The repo is already a Netlify deployment** — `netlify.toml` (build, publish, per-context
+  `VITE_APP_ENV`, headers, SPA redirect), `public/_headers` in Netlify's format, and
+  `assert-static-hosting-security.mjs` checking it in the suite. GoDaddy's cPanel would mean
+  hand-maintaining `.htaccess` and losing git deploys, atomic rollback and previews.
+
+Verified: 1065 tests across 97 files, `tsc --noEmit`, `vite build`, `security:scan` 4/4.
+
+
+---
+
 ## Open questions between the roles
 
 Neither session should answer these alone. Record the question, let the founder decide.
