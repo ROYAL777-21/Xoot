@@ -1592,6 +1592,58 @@ from disk and resolves the closure itself. Recorded in `next-session.md` §2 as 
 
 ---
 
+## 2026-08-15 (close) — 🚢 Release — the XootCred check is a script now, not a paragraph
+
+The defect itself was already fixed and verified. What was **not** fixed is how it was found: by
+hand, once, by someone who happened to grep for the retired brand. I then wrote the method into
+`next-session.md` as a "post-deploy step", which is the same mistake in slower motion — **a check
+that lives in prose is a check nobody runs.** `founder-todo.md` §5 investigated the constraint
+pattern, concluded three, and five more shipped.
+
+`scripts/ops/check-schema-drift.mjs` + `scripts/ops/lib/schema-drift.mjs`, following
+`check-deployed-drift.mjs`'s shape rather than inventing one: token or `--from-json`, exit 0/1/2,
+pure logic split into `lib/` so the parsing is testable without a database.
+
+**It asks "does this relation still exist", not "does this say zoot".** `zootcred_ledger` was
+findable only because somebody thought to search for the old brand; a table renamed for any other
+reason would have been just as broken and completely invisible. The generalised question needs no
+prior knowledge of what changed — and `schema-drift.test.ts` pins that with a rename having nothing
+to do with the brand.
+
+⚠️ **The fixtures are the real defect**, copied from what production actually contained, not
+invented. A guard whose fixture is a toy proves the toy works. The suite fails if
+`check_xootcred_balance`'s broken body stops being reported, and passes on the fixed body — so it
+would have caught the live outage, and it is not simply always-firing.
+
+Two false-positive classes were found by running it, not by reasoning:
+
+1. **CTEs.** The first version reported every CTE in `enqueue_sensitive_access_notifications` as a
+   missing table. Fixed by matching **qualified references only** — CTE names and aliases are
+   unqualified, so they cannot be mistaken for relations.
+2. **String literals.** `'booking_has_no_assigned_zooter'` is a reason code this repo deliberately
+   keeps. Qualified-only excludes it for free, and a test pins that both deliberate keeps stay
+   unreported. A check that cries wolf gets deleted within a week.
+
+Supabase's own schemas (`auth`, `storage`, …) are excluded: `auth.users` is correct and always will
+be, and reporting it would bury the real findings.
+
+Wired into `go-live.md` as §3-1 — run after **any** migration — and into `next-session.md` in place
+of the raw SQL.
+
+**Not run against a live database.** The Supabase MCP is unauthenticated again and the script's own
+path needs `SUPABASE_ACCESS_TOKEN`, which is not set here. It is unit-tested against the real defect
+and proven both directions from fixtures; that is internal consistency, not a live result, and the
+distinction is the whole point of this file.
+
+**Still outstanding:** `20260815160000` is not recorded in staging's ledger. Staging's function body
+is already correct, so this is bookkeeping — but without the row, `db push` re-runs the migration.
+Needs the MCP back.
+
+Verified: 1062 tests across 97 files, `tsc --noEmit`, `vite build`, `security:scan` 4/4.
+
+
+---
+
 ## Open questions between the roles
 
 Neither session should answer these alone. Record the question, let the founder decide.

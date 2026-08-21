@@ -21,10 +21,19 @@ Read this before `go-live.md`. That file is the reference; this one is the order
 | Web app | ❌ still the 28 May upload — **build env vars now set**, see below |
 | Payments | ❌ gates off, no merchant credentials |
 
-**Nothing outstanding on either database.** `select … from pg_proc where prosrc ~* '\mzoot|zooter'`
-returns only two deliberate keeps: `booking_has_no_assigned_zooter` (a reason code returned to
-callers, so renaming it is an API change) and, on staging only, a `zootcred_wallets` insert in
-`handle_new_user` against a table that still exists there. Neither is a defect.
+**Nothing outstanding on either database.** Verify it rather than trusting this line:
+
+```bash
+SUPABASE_ACCESS_TOKEN=... node scripts/ops/check-schema-drift.mjs            # production
+SUPABASE_ACCESS_TOKEN=... node scripts/ops/check-schema-drift.mjs --staging
+```
+
+Exit 0 means every relation a database function references still exists. **Run this after every
+migration** — it is the check that would have caught the XootCred outage, where a trigger function
+called a table renamed out from under it for two days while every file in the repo was correct.
+
+It asks "does this still exist", not "does this say `zoot`". A table renamed for any other reason
+would have been just as broken and completely invisible to a brand grep.
 
 ---
 
