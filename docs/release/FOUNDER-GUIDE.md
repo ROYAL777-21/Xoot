@@ -9,6 +9,10 @@ that was the critical path, not the set. The count in that sentence and the rows
 are checked against each other by `src/lib/founder-guide-integrity.test.ts` — I wrote 21 first and
 the test caught it, which is the same mistake one order of magnitude smaller.
 
+**Phone-readable version:** <https://claude.ai/code/artifact/3f6cb715-cc40-4ce4-8d21-2d41bfa13175>
+— same content, with tick boxes that save in your browser and copy buttons on every command. This
+markdown file stays canonical; the page mirrors it.
+
 ## How to use this
 
 Do the phases in order. Inside a phase, order does not matter. Every item has:
