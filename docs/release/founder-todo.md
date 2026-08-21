@@ -1,5 +1,9 @@
 # What only you can do
 
+> 🧭 **For "what do I do next?", read [`FOUNDER-GUIDE.md`](FOUNDER-GUIDE.md) instead.**
+> It is the canonical ordered list as of 2026-08-21. **This file is still the best source for
+> the live-measured production-state table and the rename cost accounting** — nothing here has been deleted.
+
 > **Doing rather than reading?** [`next-session.md`](./next-session.md) is the ordered sequence —
 > what to run, in what order, and what proves each step worked. This file is the *why*; that one is
 > the *how*.

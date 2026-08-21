@@ -1,5 +1,9 @@
 # Needs the founder
 
+> 🧭 **For "what do I do next?", read [`docs/release/FOUNDER-GUIDE.md`](docs/release/FOUNDER-GUIDE.md) instead.**
+> It is the canonical ordered list as of 2026-08-21. **This file is still the best source for
+> per-item evidence and the *proves it done* on every row** — nothing here has been deleted.
+
 **Everything here is blocked on a human. Nothing here is blocked on a session.**
 
 Each row says what it unblocks and how it is proven done — because an item with no closing condition

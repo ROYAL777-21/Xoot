@@ -1,5 +1,9 @@
 # Go-live runbook
 
+> 🧭 **For "what do I do next?", read [`FOUNDER-GUIDE.md`](FOUNDER-GUIDE.md) instead.**
+> It is the canonical ordered list as of 2026-08-21. **This file is still the best source for
+> deploy ordering — §3a migrations before functions, §3b web app before the booking writers** — nothing here has been deleted.
+
 Everything left that only the founder can do, in the order it has to happen, with the exact
 commands. Written because "set the Twilio secrets" is not an instruction — there are eight of them,
 they come from four different pages of the Twilio console, and two of the things that look like

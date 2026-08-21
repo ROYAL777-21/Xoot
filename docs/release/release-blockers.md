@@ -1,5 +1,9 @@
 # Release Blockers
 
+> 🧭 **For "what do I do next?", read [`FOUNDER-GUIDE.md`](FOUNDER-GUIDE.md) instead.**
+> It is the canonical ordered list as of 2026-08-21. **This file is still the best source for
+> the 2026-07-03 snapshot, kept for history** — nothing here has been deleted.
+
 > ⚠️ **Superseded for anything current — see [`founder-todo.md`](./founder-todo.md).** This file was
 > last reviewed 2026-07-03. Kept for the history.
 

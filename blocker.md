@@ -1,5 +1,9 @@
 # Xoot Production Blockers
 
+> 🧭 **For "what do I do next?", read [`docs/release/FOUNDER-GUIDE.md`](docs/release/FOUNDER-GUIDE.md) instead.**
+> It is the canonical ordered list as of 2026-08-21. **This file is still the best source for
+> the full reasoning and history behind each blocker** — nothing here has been deleted.
+
 Reviewed: 2026-08-02
 
 This file lists unresolved blockers only. Resolved implementation history lives in git
@@ -56,7 +60,29 @@ or console step and who can move it. Track them there; this file keeps the reaso
 The triage below still holds and is worth reading once: **almost nothing left is blocked on writing
 code**. It needs an account, a dashboard, a device, or a decision.
 
-## OPEN 2026-08-08 — the seven `admin-*` functions have never been drift-checked correctly
+## ~~OPEN~~ CLOSED 2026-08-21 — the seven `admin-*` functions have been redeployed since
+
+> **Closed by reading the deployed function list, not by running the checker.** All seven are well
+> past "version 8 from 2026-06" and were redeployed on 2026-08-12/13/15:
+>
+> | function | version | redeployed |
+> |---|---|---|
+> | `admin-confirm-payment` | 15 | 2026-08-15 15:40 UTC |
+> | `admin-control-management` | 11 | 2026-08-13 12:19 UTC |
+> | `admin-escalate-support` | 14 | 2026-08-13 12:19 UTC |
+> | `admin-mark-outbox` | 14 | 2026-08-13 12:19 UTC |
+> | `admin-resolve-review` | 14 | 2026-08-13 12:19 UTC |
+> | `admin-reject-zooter` | 12 | 2026-08-12 17:13 UTC |
+> | `approve-zooter` | 13 | 2026-08-12 17:13 UTC |
+>
+> And `git log --since="2026-08-15T15:40:00Z" -- supabase/functions/` is empty, so nothing has
+> changed since the last of them. The two `-zooter` entries are the orphaned pre-rename slugs —
+> `FOUNDER-GUIDE.md` §3.2 retires them.
+>
+> The original text is kept below because the *cause* — `sharedClosure` not following bare sibling
+> imports — is worth remembering.
+
+### The original finding, kept for the reasoning
 
 Found while fixing the checker, not by the checker. `sharedClosure` matched only `_shared/x.ts`,
 but shared modules import each other as bare siblings, and two do:
