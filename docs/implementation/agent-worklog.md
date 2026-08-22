@@ -134,6 +134,91 @@ migrations at review time, plus a hardening migration revoking the vestigial gra
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Release & Infrastructure — 2026-08-22 — production had no signup trigger, and two claims of mine were wrong
+
+> ⚠️ **Correctness — three things for you.** (1) I touched `src/lib/schema-drift.test.ts` and
+> `scripts/ops/lib/schema-drift.mjs` again (guard layer, CLAUDE.md rule 3) — the checker had a real
+> blind spot. (2) The performance advisor reports **7 `auth_rls_initplan` + 19
+> `multiple_permissive_policies`** findings, which are RLS rewrites and therefore yours, not mine —
+> I deliberately did not touch them. (3) `handle_new_user` is now a SECURITY DEFINER function on
+> both projects; worth your eyes on the grant line.
+
+**The founder pushed back on two things I had refused to do, and was right on both.**
+
+**1. "Running the drift check would be theatre."** Wrong, and I had never measured it. The
+snapshot is 41KB, and Postgres will hand you an md5 of it — so transcription risk is *provable*,
+not a reason to skip. I pulled per-routine `md5(prosrc)` for every function on both projects,
+transcribed, and verified **all 37 production and all 40 staging bodies byte-for-byte**, plus
+relation and trigger digests. Then ran the real `check-schema-drift.mjs --from-json`:
+
+    production   37 routines, 348 relations — every referenced relation exists.  exit 0
+    staging      40 routines, 341 relations — every referenced relation exists.  exit 0
+
+**2. "The three payment Edge Functions are undeployed."** Wrong. I repeated it from
+`next-session.md` without applying the repo's own cheap check (rule 6). All three were deployed
+**2026-08-15 15:40:42Z**, two days newer than the newest file they bundle, and
+`create-payment-session` exists at v1 ACTIVE. `next-session.md` Step 2 is corrected.
+
+**What the exercise actually found — a live production defect.**
+
+Staging has `public.handle_new_user`; production's function list does not contain it at all.
+Measured on production:
+
+    trigger on auth.users     (none)
+    handle_new_user exists    NO
+    auth.users rows           1
+    public.profiles rows      0
+    public.user_roles rows    0
+
+**A real account had signed up and had neither row.** Nothing in `src/` or `supabase/functions/`
+ever inserts into `profiles` or `user_roles` — the trigger is the only creation path — so that
+account was signed in and inert: `Profile.tsx` read null, `RequireRole.tsx` found no role.
+
+**Why the repo's original body could not just be re-run.** It inserts into
+`user_reassignment_state`, and staging's copy also writes `referrals` and `zootcred_wallets`.
+**Production has none of those three.** This is an AFTER INSERT trigger on `auth.users`, so a
+42P01 inside it rolls back the signup — restoring it verbatim would have turned "signs up with no
+profile" into "cannot sign up at all". The shared four tables are written plainly; the three
+staging-only ones are `to_regclass`-guarded, so one file is correct on both projects.
+
+Proven by doing, on both projects, then rolled back:
+
+    staging     PROBE profiles=1 user_roles=1 loyalty=1 notifications=1 referrals=1 wallets=1 reassign=1
+    production  PROBE profiles=1 user_roles=1 loyalty=1 notifications=1
+
+Zero probe rows left behind. The one orphaned account was backfilled: 1 profile, 1 role, 1 loyalty.
+
+**Two checker bugs, both found by measuring rather than reading.**
+
+- **Every `insert into public.x (cols…)` was invisible.** The "a name followed by `(` is a
+  function" rule was applied to `into`/`update` as well as `from`/`join` — but there the
+  parenthesis is a *column list*. `enqueue_sensitive_access_notifications` writes exactly that
+  shape on both projects, so a dropped `notifications` table would have been reported as fine.
+  Split into read and write patterns. Found only because I checked whether my new trigger would
+  cause a false positive — it didn't, and *that* was the bug.
+- **Guarded references were then reported as broken.** With writes visible, the checker flagged
+  all three `to_regclass`-guarded tables on production and exited 1. Every one a false positive:
+  the guard *is* the code saying the table may be absent. Added `relationsGuardedIn`, keyed on the
+  specific relation named, so guarding one table does not excuse an unguarded sibling.
+
+Both planted before being trusted: reverting the write pattern fails the two insert tests;
+deleting the guard exclusion fails both guard tests. The XootCred fixture must still fail, and
+does — that is the assertion protecting the checker from its own exclusions.
+
+`npx vitest run` **1078/1078** · `tsc --noEmit` clean · `npm run build` · `npm run security:scan`.
+Both ledgers realigned to `20260822120000`.
+
+**Performance advisor, run for the first time — 139 findings, and I applied none. Deliberately:**
+
+| n | finding | why not now |
+|---|---|---|
+| 80 | `unused_index` | unused because the database has **no traffic**, not because the indexes are wrong. Dropping them pre-launch would be acting on a measurement of nothing |
+| 32 | `unindexed_foreign_keys` | real, but zero impact at zero rows; adding 32 more indexes to a table set that already has 80 unused ones is not obviously right. Pre-scale backlog |
+| 19 | `multiple_permissive_policies` | **RLS — Correctness's** |
+| 7 | `auth_rls_initplan` | **RLS — Correctness's.** The `(select auth.uid())` rewrite is mechanical but it is still editing who can read what, on a surface I do not own |
+| 1 | `no_primary_key` | `private.ledger_repair_backup_20260812`, a backup table. Correct as-is |
+
+
 ### Release & Infrastructure — 2026-08-21 — ZD-029's ACL surface: eight RPCs were anon-callable
 
 > ⚠️ **Correctness — I added `src/lib/security-definer-grants.test.ts`, which is your guard-test

@@ -18,7 +18,8 @@ Read this before `go-live.md`. That file is the reference; this one is the order
 | Xooter job cards | ✅ **works** — was broken since the ZD-029 rename |
 | XootCred redemption | ✅ **works** — a trigger queried `zootcred_ledger`, a table the rename dropped |
 | RPC grants | ✅ **closed 2026-08-21** — 8 SECURITY DEFINER functions were `anon`-callable; see below |
-| Edge Functions | ❌ three need redeploying together (Step 2) |
+| Edge Functions | ✅ **all three already deployed** 2026-08-15 15:40:42Z — see Step 2 |
+| Signup | ✅ **fixed 2026-08-22** — production had no trigger on `auth.users`; 1 account had 0 profile rows |
 | Web app | ❌ still the 28 May upload — **build env vars now set**, see below |
 | Payments | ❌ gates off, no merchant credentials |
 
@@ -116,7 +117,27 @@ re-runs nothing. Nothing to do here.
 
 ---
 
-## Step 2 — three Edge Functions, together
+## Step 2 — ✅ ALREADY DONE. Verified 2026-08-22, not assumed
+
+**This step was already complete and this document said otherwise for a week.** Corrected by
+applying the cheap check in CLAUDE.md rule 6 — comparing each function's `updated_at` against
+`git log` — which takes seconds and which nobody had run:
+
+| function | deployed | newest source file in its closure |
+|---|---|---|
+| `confirm-payment` | v16, **2026-08-15 15:40:42Z** | 2026-08-13 14:43 |
+| `admin-confirm-payment` | v15, **2026-08-15 15:40:42Z** | 2026-08-13 13:40 |
+| `create-payment-session` | **v1, ACTIVE**, 2026-08-15 15:40:41Z | 2026-08-13 14:43 |
+
+`create-payment-session` **exists**, so the 404 warning below is already satisfied. Every deploy is
+two days newer than the newest file it bundles, so no stale `_shared` copy is possible.
+
+Do **not** redeploy these to "be safe": re-inlining 11 files / 1,794 lines through the MCP would put
+working money functions at risk to fix a problem that does not exist.
+
+<details><summary>The original instructions, kept for the day these do need redeploying</summary>
+
+### (historical) three Edge Functions, together
 
 ⚠️ **Deploy these with `supabase functions deploy`, not through the MCP.** `deploy_edge_function`
 requires every file inline, which means hand-assembling each function's `_shared` dependency closure
@@ -143,6 +164,8 @@ log.
 `provider: 'payfast'`, which the pre-`20260813200000` constraint rejected.
 
 ---
+
+</details>
 
 ## Step 3 — the web app
 

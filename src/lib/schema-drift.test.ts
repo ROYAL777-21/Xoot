@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   findBrokenTriggers,
   findMissingRelations,
+  relationsGuardedIn,
   relationsReferencedBy,
 } from "../../scripts/ops/lib/schema-drift.mjs";
 
@@ -219,6 +220,135 @@ describe("false positives found by running it, not by reading it", () => {
      * looks at, and narrowing is exactly how a guard gets quietly disarmed. `public.zootcred_ledger`
      * is a bare relation reference, so neither exclusion may touch it.
      */
+    expect(
+      findMissingRelations({
+        routines: [{ schema: "public", name: "check_xootcred_balance", body: BROKEN_XOOTCRED }],
+        existing: CATALOGUE,
+      }),
+    ).toEqual([{ routine: "public.check_xootcred_balance", missing: "public.zootcred_ledger" }]);
+  });
+});
+
+describe("a write to a dropped table is not invisible", () => {
+  /*
+   * ── The blind spot, found 2026-08-22 by measuring rather than reasoning ──────────────────────
+   *
+   * The function-call exclusion (`a name followed by "(" is a function`) was applied to `into` and
+   * `update` as well as `from` and `join`. But `insert into public.notifications (user_id, kind)`
+   * is *also* followed by `(` — a column list — so **every INSERT that names its columns was
+   * skipped entirely.**
+   *
+   * That is not hypothetical: `private.enqueue_sensitive_access_notifications` on both live
+   * projects writes exactly this shape, so had `notifications` been renamed out from under it, the
+   * checker built specifically to catch renamed-table references would have reported nothing.
+   *
+   * Found while checking whether the restored signup trigger would produce a FALSE positive. It
+   * did not — and the reason it did not was this bug, silently swallowing the reference.
+   */
+  const INSERT_WITH_COLUMNS = `
+    begin
+      insert into public.notifications (user_id, kind, title, body, link)
+      values (new.id, 'welcome', 'Welcome', 'hi', '/app');
+      return new;
+    end;
+  `;
+
+  const UPDATE_WITH_ALIAS = `
+    begin
+      update public.zootcred_wallets w set balance = 0 where w.user_id = new.id;
+      return new;
+    end;
+  `;
+
+  it("sees an insert target even when the column list follows", () => {
+    expect(relationsReferencedBy(INSERT_WITH_COLUMNS)).toContain("public.notifications");
+  });
+
+  it("reports an insert into a table that no longer exists", () => {
+    expect(
+      findMissingRelations({
+        routines: [{ schema: "public", name: "handle_new_user", body: INSERT_WITH_COLUMNS }],
+        existing: new Set(["public.profiles"]),
+      }),
+    ).toEqual([{ routine: "public.handle_new_user", missing: "public.notifications" }]);
+  });
+
+  it("reports an update against a table that no longer exists", () => {
+    expect(
+      findMissingRelations({
+        routines: [{ schema: "public", name: "some_trigger", body: UPDATE_WITH_ALIAS }],
+        existing: new Set(["public.xootcred_wallets"]),
+      }),
+    ).toEqual([{ routine: "public.some_trigger", missing: "public.zootcred_wallets" }]);
+  });
+
+  it("still does not mistake a set-returning call after from/join for a relation", () => {
+    // The narrowing above must not undo the exclusion that read paths still need.
+    expect(relationsReferencedBy(SET_RETURNING_CALL).size).toBe(0);
+  });
+});
+
+describe("a reference the code guards with to_regclass is handled, not broken", () => {
+  /*
+   * Production and staging genuinely do not have the same tables: `referrals`,
+   * `zootcred_wallets` and `user_reassignment_state` exist only on staging. `handle_new_user` has
+   * to run on both, so it guards those three and writes the shared four plainly.
+   *
+   * Without this exclusion the checker reported all three as broken on production and exited 1 —
+   * measured, not imagined. Every one was a false positive: the guard is the code stating the
+   * table may be absent, so absence is the handled case.
+   *
+   * The exclusion is deliberately narrow. It keys on the *specific* relation named inside
+   * `to_regclass('...')`, so guarding one table does not excuse an unguarded reference to another
+   * in the same body — which is the assertion below that actually protects the checker.
+   */
+  const GUARDED = `
+    begin
+      insert into public.profiles (id) values (new.id) on conflict (id) do nothing;
+      if to_regclass('public.referrals') is not null then
+        execute 'insert into public.referrals (user_id) values ($1)' using new.id;
+      end if;
+      return new;
+    end;
+  `;
+
+  const GUARDED_ONE_BUT_NOT_THE_OTHER = `
+    begin
+      if to_regclass('public.referrals') is not null then
+        execute 'insert into public.referrals (user_id) values ($1)' using new.id;
+      end if;
+      insert into public.zootcred_wallets (user_id) values (new.id);
+      return new;
+    end;
+  `;
+
+  it("extracts the guarded relation names", () => {
+    expect([...relationsGuardedIn(GUARDED)]).toEqual(["public.referrals"]);
+  });
+
+  it("does not report a guarded relation that is absent", () => {
+    expect(
+      findMissingRelations({
+        routines: [{ schema: "public", name: "handle_new_user", body: GUARDED }],
+        existing: new Set(["public.profiles"]),
+      }),
+    ).toEqual([]);
+  });
+
+  it("still reports an UNGUARDED absent relation in the same body", () => {
+    // The regression that would matter: one guard must not blanket-excuse the whole function.
+    expect(
+      findMissingRelations({
+        routines: [{ schema: "public", name: "handle_new_user", body: GUARDED_ONE_BUT_NOT_THE_OTHER }],
+        existing: new Set(["public.profiles"]),
+      }),
+    ).toEqual([
+      { routine: "public.handle_new_user", missing: "public.zootcred_wallets" },
+    ]);
+  });
+
+  it("still catches the original XootCred defect", () => {
+    // The guard-awareness must not blind the checker to the outage it was built for.
     expect(
       findMissingRelations({
         routines: [{ schema: "public", name: "check_xootcred_balance", body: BROKEN_XOOTCRED }],

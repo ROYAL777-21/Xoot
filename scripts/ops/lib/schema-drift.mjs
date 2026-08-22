@@ -62,6 +62,14 @@
  *   2. **A name followed by `(` is a function, not a relation.**
  *      `select * from private.can_create_masked_call(p_booking_id, p_actor_id)` is a set-returning
  *      function call; `to_regclass` correctly says no such relation exists, and it is correct code.
+ *
+ *   3. **That exclusion must NOT apply to writes** — found 2026-08-22, and it was a real blind
+ *      spot rather than a hypothetical one. `insert into public.notifications (user_id, kind, ...)`
+ *      is followed by `(`, so rule 2 silently skipped it, and **every INSERT that lists its columns
+ *      was invisible to this checker.** `private.enqueue_sensitive_access_notifications` writes
+ *      exactly that shape, so a dropped `notifications` table would not have been reported. A
+ *      set-returning function can only appear after `from`/`join`; after `insert into` or `update`
+ *      the parenthesis is a column list, so the two cases need separate patterns.
  */
 
 /** `OLD`, `NEW` and `EXCLUDED` are record variables in PL/pgSQL, never schemas. */
@@ -80,11 +88,20 @@ export const relationsReferencedBy = (body) => {
    * missing relation. The word boundary forbids stopping mid-identifier, so the match either takes
    * the whole name or fails. The test for this failed until the `\b` was added.
    */
-  const pattern = /\b(?:from|join|into|update)\s+(?:only\s+)?([a-z_][\w$]*)\.([a-z_][\w$]*)\b(?!\s*\()/gi;
-  for (const match of text.matchAll(pattern)) {
-    const schema = match[1].toLowerCase();
-    if (PSEUDO_RECORDS.has(schema)) continue;
-    found.add(`${schema}.${match[2].toLowerCase()}`);
+  const readPattern = /\b(?:from|join)\s+(?:only\s+)?([a-z_][\w$]*)\.([a-z_][\w$]*)\b(?!\s*\()/gi;
+  /*
+   * Writes get no function-call exclusion. `insert into public.notifications (user_id, ...)` and
+   * `update public.bookings b set ...` can only ever name a relation — there is no such thing as
+   * inserting into a function — so a following `(` is a column list and must not suppress the
+   * match. Keeping the shared pattern here is what made every column-listing INSERT invisible.
+   */
+  const writePattern = /\b(?:into|update)\s+(?:only\s+)?([a-z_][\w$]*)\.([a-z_][\w$]*)\b/gi;
+  for (const pattern of [readPattern, writePattern]) {
+    for (const match of text.matchAll(pattern)) {
+      const schema = match[1].toLowerCase();
+      if (PSEUDO_RECORDS.has(schema)) continue;
+      found.add(`${schema}.${match[2].toLowerCase()}`);
+    }
   }
   return found;
 };
@@ -103,6 +120,28 @@ export const MANAGED_SCHEMAS = new Set([
 ]);
 
 /**
+ * Relations a body explicitly checks for before touching, via `to_regclass('schema.name')`.
+ *
+ * ── Why this exists, added 2026-08-22 ──────────────────────────────────────────────────────────
+ * Production and staging do not have the same tables. `public.handle_new_user` has to run on both,
+ * so it writes the rows every project has plainly and wraps the three staging-only tables in
+ * `if to_regclass('public.referrals') is not null then ... end if`.
+ *
+ * Absence there is **handled**, not broken — the guard is the code saying "this may not exist".
+ * Reporting it would be the checker crying wolf about the one thing it should reward, and a check
+ * that cries wolf gets deleted. A reference with no such guard is still a finding.
+ */
+export const relationsGuardedIn = (body) => {
+  const guarded = new Set();
+  for (const m of String(body ?? "").matchAll(
+    /to_regclass\s*\(\s*'([a-z_][\w$]*)\.([a-z_][\w$]*)'\s*\)/gi,
+  )) {
+    guarded.add(`${m[1].toLowerCase()}.${m[2].toLowerCase()}`);
+  }
+  return guarded;
+};
+
+/**
  * Routines referencing a relation that does not exist.
  *
  * `existing` is every relation the database actually has, as `schema.name`. `routines` is
@@ -112,10 +151,12 @@ export const MANAGED_SCHEMAS = new Set([
 export function findMissingRelations({ routines = [], existing = new Set() } = {}) {
   const missing = [];
   for (const routine of routines) {
+    const guarded = relationsGuardedIn(routine.body);
     for (const relation of relationsReferencedBy(routine.body)) {
       const [schema] = relation.split(".");
       if (MANAGED_SCHEMAS.has(schema)) continue;
       if (existing.has(relation)) continue;
+      if (guarded.has(relation)) continue;
       missing.push({
         routine: `${routine.schema}.${routine.name}`,
         missing: relation,
