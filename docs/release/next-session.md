@@ -135,6 +135,19 @@ two days newer than the newest file it bundles, so no stale `_shared` copy is po
 Do **not** redeploy these to "be safe": re-inlining 11 files / 1,794 lines through the MCP would put
 working money functions at risk to fix a problem that does not exist.
 
+**Verified by reading the deployed body, 2026-08-22** — the check CLAUDE.md requires for money
+("the deployed server is the authority on money, and the deployed server can be wrong"). All
+**7 bundled files of `confirm-payment` v16 are byte-identical to disk**:
+
+    functions/confirm-payment/index.ts        _shared/payfast.ts
+    _shared/action-utils.ts                   _shared/payfast-checkout.ts
+    _shared/governance-utils.ts               _shared/payment-confirmation.ts
+    _shared/booking-state-machine.ts
+
+`verify_jwt = false`, which is correct for an ITN webhook — PayFast cannot present a user JWT, and
+the body signature plus the source-IP allowlist are the verification. So the timestamp inference
+above is now backed by the bytes, and no stale `_shared` copy is bundled.
+
 <details><summary>The original instructions, kept for the day these do need redeploying</summary>
 
 ### (historical) three Edge Functions, together
