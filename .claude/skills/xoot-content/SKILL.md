@@ -210,3 +210,46 @@ Rules that keep this from degrading:
 4. Title, meta, H1 distinct from each other.
 5. Internal links resolve.
 6. Read it aloud — if it sounds like a brochure, rewrite the first paragraph.
+
+## Answer-engine optimisation — added 2026-08-26
+
+Everything above still holds. This section adds the second audience: an assistant that will read
+the page and answer on your behalf, sending no click at all. The goal shifts from *ranking* to
+**being the passage that gets quoted**.
+
+**Why coverage beats keywords now.** An assistant fans one prompt out into many sub-searches and
+assembles an answer. A page that half-covers a topic is never the source. So finish a topic —
+the question, its sub-questions, its objections and its local variants — before starting the
+next. Depth on one subject beats thin coverage of five.
+
+**Three levers decide citation:** consensus (the same claim about you appearing in several
+places), freshness (recent wins), and authority (classic SEO underneath — none of this replaces
+it).
+
+**Write passages that lift cleanly:**
+
+- **BLUF.** The answer in the first 40–60 words under the H2, self-contained. An engine takes
+  the first passage that stands alone; a paragraph that depends on the one before it is skipped.
+- **Atomic.** One claim per paragraph.
+- **Declarative, with the qualifier attached.** "A three-bedroom deep clean in Bryanston takes
+  4–6 hours" is liftable. "It depends" is not.
+- **Entity-rich.** Suburbs, services, standards, real processes, real numbers where permitted.
+- **Structure.** Lists and comparison tables are disproportionately quoted.
+
+**Mentions matter more than pages.** A branded mention on a third-party site, in a community
+thread, or in a review is a stronger AI-visibility signal than anything self-published. Three
+tiers: editorial, UGC communities, own properties. Earn them honestly — never astroturf a forum,
+which is both against every platform's rules and, when found, the sort of story that ends a local
+brand.
+
+**YouTube is disproportionately cited.** Optimise for search hits, not virality: keyword in
+title, description **and spoken audio**, since transcripts are indexed.
+
+**Technical, and check it first.** Verify `public/robots.txt` and the Netlify headers do not
+block `GPTBot`, `OAI-SearchBot`, `ChatGPT-User`, `PerplexityBot`, `ClaudeBot`, `Claude-Web`,
+`Google-Extended`, `Applebot-Extended`. **An accidental `Disallow` is the most common cause of
+zero AI visibility** — confirm before proposing any citation strategy.
+
+**Measure it.** AI referrals by referrer host, crawler hits by user-agent, and self-reported
+attribution ("how did you hear about us") at booking. Crawler hits move weeks before citations
+do, so they are the leading indicator.

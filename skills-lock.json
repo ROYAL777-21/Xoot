@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "ask-hormozi": {
+      "source": "poseljacob/ask-hormozi",
+      "sourceType": "github",
+      "skillPath": "skills/ask-hormozi/SKILL.md",
+      "computedHash": "0a88604fa1143ec24cbaa329decb57fe869a306d749ca29114e4e6b2df1e20f2"
+    },
     "brandkit": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
