@@ -37,6 +37,32 @@ dashboards. Any "growth report" produced before this is fiction.
 | Advocacy | reviews, referrals, UGC | reviews, `referrals` |
 | Supply | Xooter applications → approved → active | `xooter_applications`, `xooters` |
 
+## OpenRush — connected, and it closes the AEO measurement gap
+
+Verified 2026-08-27 via `describe_capabilities`. The tools that matter need **no owned-data
+connection**:
+
+| Tool | Gives us | Credits |
+|---|---|---|
+| `discover_ai_citations` | Which sources AI cites in our category | 22 |
+| `inspect_ai_visibility` | How xoot.co.za appears in AI answers vs named competitors | 20 |
+| `compare_keyword_coverage` | Keyword gap vs competitors | 12 |
+| `discover_competitors` | Who actually competes organically | 7 |
+| `research_keywords` / `inspect_keyword` / `inspect_serp` | Demand, detail, live SERP | 3 / 5 / 2 |
+| `audit_site` | Technical + content health crawl | 9 |
+| `compare_backlink_gap` | Referring domains linking to N competitors | 40 |
+
+> ⚠️ **OpenRush defaults to `location: "United States", language: "English"`. Override to South
+> Africa on every single call.** This is the same trap `xoot-content` documents for the Semrush
+> `za` database: the wrong market returns numbers that are confident and useless.
+
+**Cadence, to control credit spend:** AI-visibility monthly · keyword and SERP work weekly ·
+backlink gap quarterly. `inspect_serp` and `research_keywords` are cheap enough to run freely.
+
+`get_search_performance` and `get_website_analytics` **do** require connections (Search Console,
+analytics property) — both are items 1 and 4 below, which upgrades OpenRush from external
+estimates to Xoot's own numbers.
+
 ## What to install, in order
 
 1. **Privacy-respecting web analytics** on `xoot.co.za` — must record referrer host so AI
