@@ -60,6 +60,20 @@ supabase/.temp/
 !.claude/skills/plan-before-executing/
 !.claude/skills/finish-what-you-started/
 !.claude/skills/VENDORED-EXTERNAL.md
+
+# Growth programme, authored here — added 2026-08-31.
+#
+# These were written on 2026-08-27 and 2026-08-31 and silently ignored: `.claude/*` above is an
+# allowlist, so anything not re-included is dropped without a warning. Two commit messages
+# described "8 agents" and "five Xoot skills" while committing none of them. `git status` stays
+# clean, so nothing surfaces the gap -- it is only visible in `git show --stat`.
+!.claude/agents/
+!.claude/skills/xoot-growth/
+!.claude/skills/xoot-offer-design/
+!.claude/skills/xoot-demand/
+!.claude/skills/xoot-retention/
+!.claude/skills/xoot-hooks/
+!.claude/skills/xoot-paywall/
 .codeartsdoer/
 .codebuddy/
 .codemaker/
