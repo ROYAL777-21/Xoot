@@ -134,6 +134,32 @@ migrations at review time, plus a hardening migration revoking the vestigial gra
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Release & Infrastructure — 2026-09-01 — reference measurement for the founder brand, and three things that were not true
+
+Founder-directed marketing work, in shared paths (`docs/marketing/**`, `.claude/agents/**` — CLAUDE.md
+"neither owns outright"). **Documentation only. No code, no schema, no deploy, nothing published.**
+
+Added `docs/marketing/reference-creators.md` (Hormozi, Musk and Instagram measured against Eden's
+index) and `docs/marketing/personal-brand-doctrine.md` (patterns distilled from the founder's five
+YouTube references). Updated `.claude/agents/founder-voice.md`, whose reference table asserted the
+transcripts were unobtainable — they are not: **Eden hydrates YouTube transcripts server-side, so
+`eden_read_social_post` returns them even though youtube.com is `EGRESS_BLOCKED` from this
+container.** Worth knowing generally.
+
+**Three claims corrected rather than carried forward:**
+
+1. **The five reference videos are not Musk or Hormozi content.** Four are Eden-channel
+   personal-branding tutorials; one is a Craig Perry livestream. Useful for the brand frame,
+   useless as a voice sample of either figure. Drafts stay `VOICE: UNCALIBRATED`.
+2. **The founder's handles were not in the message** that said they were sent. Still outstanding.
+3. **Eden scheduling is not on this workspace's plan** — `eden_schedule_post` returns HTTP 402 even
+   for `draft: true`, with zero social accounts connected. The week-one drafts live in a table on an
+   Eden board instead. Nothing was queued, because nothing could be.
+
+Also corrected in passing: `CLAUDE.md` §Verifying says *77 files, 755 tests*. Measured on this
+branch today: **98 files, 1,078 tests, all passing.** Left for whoever next edits that section —
+flagging rather than silently editing a file both roles read as the contract.
+
 ### Release & Infrastructure — 2026-08-22 — production had no signup trigger, and two claims of mine were wrong
 
 > ⚠️ **Correctness — three things for you.** (1) I touched `src/lib/schema-drift.test.ts` and

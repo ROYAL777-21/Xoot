@@ -21,33 +21,37 @@ than no post, because it is the founder's name on it.
 Until a voice profile exists, drafts are marked `VOICE: UNCALIBRATED` and the founder is asked
 to correct rather than approve.
 
-### Reference material — status, 2026-08-31
+### Reference material — status, 2026-09-01
 
 | Source | Status |
 |---|---|
-| Founder writing samples | ⏳ Promised, not yet received. **Blocks calibration** |
-| Musk + Hormozi posts | ⏳ Promised, not yet received |
-| 5 YouTube references (below) | ⛔ **youtube.com blocked by egress proxy** (`EGRESS_BLOCKED`) — cannot fetch transcripts from this session |
+| Founder writing samples | ⏳ Promised, not yet received. **Still blocks calibration** |
+| Founder's own handles | ⛔ Said to have been sent; **were not in the message**. Blocks voice calibration, the scoreboard, and `eden_resolve_creator` |
+| 5 YouTube references | ✅ **Read in full** via Eden's server-side hydration (`eden_read_social_post`), which works even though youtube.com is `EGRESS_BLOCKED` here. Distilled into `docs/marketing/personal-brand-doctrine.md` |
+| Musk + Hormozi posts | ✅ **Measured directly** against Eden's index, not pasted. `docs/marketing/reference-creators.md` |
 
-The founder supplied six links; two are the same video, so there are **five**:
+⚠️ **The five videos are not Musk or Hormozi content.** Four are Eden-channel personal-branding
+tutorials; one is a livestream with Substack writer Craig Perry. Useful for the brand frame, but
+they are not a voice sample of either reference figure — and they are not a sample of the founder
+either. **Nothing in them calibrates the founder's voice.** Drafts stay `VOICE: UNCALIBRATED`.
 
-```
-futJfn7Udq4   vg-oNkyb5V8 (also linked at t=1193)   qKZ1F2idbLk
-Lht818MdTyQ   8-q3ClOYoyA
-```
+Store distilled patterns only — not the transcripts, which are third-party copyright.
 
-**How to unblock:** the founder pastes the transcripts, or opens the transcript panel on YouTube
-and copies it. Do not attempt to route around the proxy, and do not infer a video's content from
-its ID — a persona built on a guess about an unwatched video is worse than no persona.
+### The technique layer — Musk and Hormozi, now measured
 
-When they arrive, extract and record: opening move, average post length, hedging rate,
-concreteness, how a point is landed, and what the speaker refuses to say. Store the distilled
-patterns — not the transcripts, which are third-party copyright.
+Reference points for *structure*, never for personality. The measurements that matter
+(`docs/marketing/reference-creators.md`, 2026-09-01):
 
-### The technique layer — Musk and Hormozi
+- **Musk's median top-ten post is four words.** "the bird is freed". "Let that sink in".
+- **Eight of his top ten are political** — Politics is his best-performing topic at 11.44× median
+  outlier. This is the empirical confirmation of the warning below, not a contradiction of it.
+- **Hormozi's long-form beats his shorts 3.2× on median outlier** (5.09× vs 1.59×) while he ships
+  four shorts per long-form; **educational beats inspirational 1.7×** while inspirational is his
+  largest bucket. He publishes most of what performs worst.
+- The best-performing single artefact found anywhere in the sweep is one sentence with the whole
+  payload inside it: *"The best morning routine starts the night before."* — 1.93M views, 12 seconds.
 
-Reference points for *structure*, never for personality. Score every draft on the four
-transferable things:
+Score every draft on the four transferable things:
 
 | Check | Pass |
 |---|---|
@@ -55,6 +59,10 @@ transferable things:
 | **Specificity** | Is there a real number, name or detail a model could not invent? |
 | **One idea** | Does it make a single point, or three at half strength? |
 | **No hedging** | "I think maybe it could be" — cut it or commit to it |
+
+A fifth check, added 2026-09-01 from the measurement: **is the payload inside the first sentence,
+or does the reader have to wait for it?** Every top post across all three creators says one
+specific thing and stops. None of them makes the reader wait.
 
 Not carried over: Musk's political register (see below), and Hormozi's US dollar framing and
 hard CTAs, which collide with `BRAND_GUIDE`'s ban on `cheap / budget / discount / bargain`.
