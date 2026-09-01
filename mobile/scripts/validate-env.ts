@@ -36,7 +36,47 @@ const fail = (message: string): never => {
   throw new Error(message);
 };
 
-const appEnv = text('EXPO_PUBLIC_APP_ENV') || 'development';
+/*
+ * ── The web bug's silent twin ───────────────────────────────────────────────────────────────────
+ *
+ * `EXPO_PUBLIC_APP_ENV` used to fall back to `'development'` whenever it was unset. On a laptop
+ * that is right. On EAS it was dangerous, because `eas.json` sets `"environment": "production"` —
+ * which selects which EAS *environment variables* to load, and has nothing to do with this value.
+ *
+ * So a `--profile production` store build with `EXPO_PUBLIC_APP_ENV` unset in the EAS environment
+ * evaluated as `development`, which skips every real-Supabase assertion below. It would not fail.
+ * It would build, sign, and submit an app pointing at nothing.
+ *
+ * That is strictly worse than the web failure that prompted this: the web one was loud and stopped
+ * the deploy; this one is silent and reaches the App Store. Same root cause both times — the build
+ * host knows which environment it is and nobody asked it.
+ *
+ * EAS sets `EAS_BUILD=true` and `EAS_BUILD_PROFILE` to the profile name on every build.
+ * https://docs.expo.dev/build-reference/variables/
+ */
+const easProfileEnvironments: Record<string, string> = {
+  production: 'production',
+  preview: 'preview',
+  'preview-simulator': 'preview',
+  development: 'development',
+};
+
+const deriveAppEnv = () => {
+  const profile = text('EAS_BUILD_PROFILE');
+  if (!profile) return '';
+  const derived = easProfileEnvironments[profile];
+  if (!derived) {
+    fail(
+      `EAS_BUILD_PROFILE="${profile}" is not a profile this script knows. ` +
+        `Add it to easProfileEnvironments, or set EXPO_PUBLIC_APP_ENV explicitly for that profile.`,
+    );
+  }
+  return derived;
+};
+
+const explicitAppEnv = text('EXPO_PUBLIC_APP_ENV');
+const derivedAppEnv = explicitAppEnv ? '' : deriveAppEnv();
+const appEnv = explicitAppEnv || derivedAppEnv || 'development';
 const publicLeaks = Object.keys(process.env)
   .filter((name) => name.startsWith('EXPO_PUBLIC_'))
   .filter((name) => publicSecretNamePattern.test(name) && !allowedPublicSecretLikeNames.has(name));
@@ -79,4 +119,5 @@ if (appEnv === 'production' && !text('EXPO_PUBLIC_EAS_PROJECT_ID')) {
   fail('EXPO_PUBLIC_EAS_PROJECT_ID is required for production push notifications and EAS release tracing.');
 }
 
-console.log(`[Xoot mobile config] ${appEnv} configuration shape is valid.`);
+const provenance = derivedAppEnv ? ` (derived from EAS_BUILD_PROFILE="${text('EAS_BUILD_PROFILE')}")` : '';
+console.log(`[Xoot mobile config] ${appEnv} configuration shape is valid${provenance}.`);

@@ -63,7 +63,8 @@
     "build:preview:android": "npx eas-cli@20.5.0 build -p android --profile preview",
     "build:production": "npx eas-cli@20.5.0 build --profile production",
     "shared:sync": "node ../scripts/build/sync-shared-native.mjs",
-    "prestart": "npm run shared:sync"
+    "prestart": "npm run shared:sync",
+    "eas-build-post-install": "npm run config:check"
   },
   "overrides": {
     "uuid": "^11.1.1"

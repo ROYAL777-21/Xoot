@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
@@ -73,6 +73,77 @@ requireMatch("Apache .htaccess marks private SPA routes no-store", htaccessText,
 requireMatch("Apache .htaccess emits no-store for private routes", htaccessText, /Header always set Cache-Control "no-store, private, max-age=0, must-revalidate" env=XOOT_NOSTORE/);
 requireMatch("Apache .htaccess leaves service worker revalidating", htaccessText, /<Files "sw\.js">[\s\S]*Header set Cache-Control "no-cache"[\s\S]*<\/Files>/);
 requireMatch("Netlify build uses deterministic npm install", netlifyText, /command\s*=\s*"npm ci --no-audit --prefer-offline && npm run build"/);
+
+/*
+ * ── Vercel ─────────────────────────────────────────────────────────────────────────────────────
+ *
+ * ⚠️ `public/_headers` is a NETLIFY file format. Vercel does not read it, does not warn about it,
+ * and serves the site without a single one of those headers. Switching hosts on 2026-09-01 would
+ * therefore have shipped xoot.co.za with no CSP, no HSTS, and no `noindex` on `/app`, `/auth` and
+ * `/admin` — silently, on a green build.
+ *
+ * The loud build failure was the cheap half of that host switch. This is the expensive half, and
+ * nothing in the repo would have caught it, because every check here was written against the
+ * previous host by name.
+ */
+const vercelPath = join(ROOT, "vercel.json");
+if (!existsSync(vercelPath)) {
+  findings.push("vercel.json is missing — the project deploys on Vercel and would ship with no security headers");
+} else {
+  const vercel = JSON.parse(readFileSync(vercelPath, "utf8"));
+
+  /** Every header value Vercel would send for a path, flattened to `Key: value` lines. */
+  const vercelHeadersFor = (predicate) =>
+    (vercel.headers ?? [])
+      .filter((rule) => predicate(rule.source))
+      .flatMap((rule) => rule.headers ?? [])
+      .map((header) => `${header.key}: ${header.value}`)
+      .join("\n");
+
+  const globalHeaders = vercelHeadersFor((source) => source === "/(.*)");
+
+  requireMatch("Vercel headers define CSP", globalHeaders, /Content-Security-Policy:\s+.*default-src 'self'/);
+  requireMatch("Vercel CSP blocks framing", globalHeaders, /Content-Security-Policy:\s+.*frame-ancestors 'none'/);
+  requireMatch("Vercel CSP blocks plugins", globalHeaders, /Content-Security-Policy:\s+.*object-src 'none'/);
+  requireMatch("Vercel headers enable HSTS", globalHeaders, /Strict-Transport-Security:\s+max-age=31536000; includeSubDomains; preload/);
+  requireMatch("Vercel headers disable MIME sniffing", globalHeaders, /X-Content-Type-Options:\s+nosniff/);
+  requireMatch("Vercel headers set referrer policy", globalHeaders, /Referrer-Policy:\s+strict-origin-when-cross-origin/);
+  requireMatch("Vercel headers restrict device permissions", globalHeaders, /Permissions-Policy:\s+.*camera=\(\).*microphone=\(\).*payment=\(\)/);
+  requireMatch("Vercel service worker is not cached immutably", vercelHeadersFor((source) => source === "/sw.js"), /Cache-Control:\s+no-cache/);
+
+  /*
+   * The same private routes `_headers` protects. Vercel writes wildcards as `(.*)` rather than `*`,
+   * so the routes are matched by prefix instead of compared literally — a literal comparison would
+   * pass on Netlify's syntax and ship nothing on Vercel.
+   */
+  for (const route of requiredPrivateRoutes) {
+    const prefix = route.replace(/[*]$/, "").replace(/\/$/, "");
+    const rules = vercelHeadersFor((source) => source === prefix || source.startsWith(`${prefix}/`) || source.startsWith(`${prefix}(`));
+    if (!/X-Robots-Tag:\s+noindex, noarchive, nosnippet/.test(rules)) {
+      findings.push(`Vercel ${route} noindex header missing`);
+    }
+    if (!/Cache-Control:\s+no-store, private, max-age=0, must-revalidate/.test(rules)) {
+      findings.push(`Vercel ${route} no-store header missing`);
+    }
+  }
+
+  // A Vite SPA with no rewrite 404s on every deep link — including every link in a marketing post.
+  const rewrites = vercel.rewrites ?? [];
+  if (!rewrites.some((rule) => rule.destination === "/index.html")) {
+    findings.push("Vercel has no SPA rewrite to /index.html — every deep link would 404");
+  }
+  // `/.well-known/*` must be served as real files. Rewriting them to index.html breaks Universal
+  // Links and App Links, which fail silently: the app simply stops opening from a link.
+  if (!rewrites.some((rule) => /well-known/.test(rule.source))) {
+    findings.push("Vercel SPA rewrite does not exclude /.well-known/ — native app links would break");
+  }
+  if (vercel.buildCommand !== "npm run build") {
+    findings.push("Vercel buildCommand must be `npm run build` so prebuild hooks fire");
+  }
+  if (vercel.installCommand !== "npm ci --no-audit --prefer-offline") {
+    findings.push("Vercel install must be deterministic (`npm ci --no-audit --prefer-offline`)");
+  }
+}
 
 if (findings.length > 0) {
   console.error("Static hosting security configuration is incomplete:");
