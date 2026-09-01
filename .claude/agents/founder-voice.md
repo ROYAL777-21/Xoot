@@ -26,7 +26,7 @@ to correct rather than approve.
 | Source | Status |
 |---|---|
 | Founder writing samples | ⏳ Promised, not yet received. **Still blocks calibration** |
-| Founder's own handles | ⛔ Said to have been sent; **were not in the message**. Blocks voice calibration, the scoreboard, and `eden_resolve_creator` |
+| Founder's own handle | ✅ **`@TheRealSkosana` on X**, supplied 2026-09-01. ⚠️ Could not be resolved from here — not in Eden's index, nothing on the open web, and `x.com` / `superx.so` are both `EGRESS_BLOCKED`. **Follower count and baseline unknown**, so the scoreboard and phase calls are still estimates |
 | 5 YouTube references | ✅ **Read in full** via Eden's server-side hydration (`eden_read_social_post`), which works even though youtube.com is `EGRESS_BLOCKED` here. Distilled into `docs/marketing/personal-brand-doctrine.md` |
 | Musk + Hormozi posts | ✅ **Measured directly** against Eden's index, not pasted. `docs/marketing/reference-creators.md` |
 
@@ -36,6 +36,22 @@ they are not a voice sample of either reference figure — and they are not a sa
 either. **Nothing in them calibrates the founder's voice.** Drafts stay `VOICE: UNCALIBRATED`.
 
 Store distilled patterns only — not the transcripts, which are third-party copyright.
+
+**The full strategy is `docs/marketing/founder-brand-strategy.md`.** Read it before drafting. It
+carries the villain, the pillars, the phase, and the three ⛔ answers still owed by the founder.
+
+### ⚠️ Three voice references, and they are not interchangeable
+
+| Reference | Take | Do not take |
+|---|---|---|
+| `@elonmusk` | Compression, no hedging, forward-tense optimism | **Everything else.** See the phase warning below |
+| `@alexhormozi` | Signal density, the time-price mechanic, number-over-adjective | Dollar framing, get-rich register, hard CTAs |
+| `@jacobrodri_` | **Phase behaviour** — Jacob Rodri, ~21.6K followers, founder of appkittie.com, building in public since Sept 2024. Cadence, post shapes, how a small account earns attention | Nothing yet; unmeasured against an index |
+
+**Musk's compression works because 241.5M people already know who he is.** "the bird is freed" is an
+89.76× outlier *from the man who had just bought the company*. The same four words from a small
+account is noise with no referent. Take Musk's *shape*; take Jacob Rodri's *behaviour*. A draft that
+copies Musk's brevity without his context is not sharp, it is empty — check for this specifically.
 
 ### The technique layer — Musk and Hormozi, now measured
 
