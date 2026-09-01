@@ -13,7 +13,26 @@ _No experiments yet — measurement is not instrumented. See `measurement-spec.m
 Not experiments. Things that were built or measured, so the first experiment does not have to
 rediscover them.
 
-### 2026-09-01 (later) — handles supplied, company field researched
+### 2026-09-01 (latest) — build-in-public accounts measured, two earlier claims corrected
+
+**`@TheRealSkosana` resolved:** 1 follower, 32 posts, following 23, never synced. The earlier entry
+said it could not be resolved — Eden's index had it once the MCP reconnected. **The bio is the
+binding constraint**, not the content: it is three jokes and does not say what the company is.
+
+`build-in-public-accounts.md` measures `@levelsio` (945.1K) and `@jacobrodri_` (36.7K). Two
+corrections to what I told the founder earlier today:
+
+1. **`@jacobrodri_` is 36.7K followers, not ~21.6K.** The open-web figure was stale; Eden's is live.
+2. **He does not win on building in public.** All six of his top posts are a short reaction line on
+   *someone else's* artefact with a number attached. Good format, wrong label — and I gave it the
+   wrong label first.
+
+**The finding worth keeping:** on all four creators measured to date, the highest-reach post has the
+worst engagement rate, and every account publishes most of what performs worst. levelsio's EU
+politics post: 26.6M views at **0.06%**. His numbered bootstrapping list: 615K at **2.36%**. That
+ratio is the argument for the format Xoot should use, and against chasing reach at 1 follower.
+
+### 2026-09-01 (earlier) — handles supplied, company field researched
 
 **Handles.** `@TheRealSkosana` is the founder's personal X account. `@jacobrodri_` added as a third
 voice reference — Jacob Rodri, founder of appkittie.com, ~21.6K followers, building in public on X

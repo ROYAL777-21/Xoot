@@ -40,18 +40,29 @@ Store distilled patterns only — not the transcripts, which are third-party cop
 **The full strategy is `docs/marketing/founder-brand-strategy.md`.** Read it before drafting. It
 carries the villain, the pillars, the phase, and the three ⛔ answers still owed by the founder.
 
-### ⚠️ Three voice references, and they are not interchangeable
+### ⚠️ Four voice references, and they are not interchangeable
+
+All measured against Eden's index, 2026-09-01. Detail in `docs/marketing/build-in-public-accounts.md`.
 
 | Reference | Take | Do not take |
 |---|---|---|
-| `@elonmusk` | Compression, no hedging, forward-tense optimism | **Everything else.** See the phase warning below |
-| `@alexhormozi` | Signal density, the time-price mechanic, number-over-adjective | Dollar framing, get-rich register, hard CTAs |
-| `@jacobrodri_` | **Phase behaviour** — Jacob Rodri, ~21.6K followers, founder of appkittie.com, building in public since Sept 2024. Cadence, post shapes, how a small account earns attention | Nothing yet; unmeasured against an index |
+| `@levelsio` (945.1K) | **The numbered list of hard-won rules** — his highest-engagement post by far. Radical transparency: his bio *is* his revenue. Threads (4.09× vs 0.78× for tweets) | EU politics, profession-bashing, and "the rest of the world can't really do startups" |
+| `@jacobrodri_` (36.7K) | **The post shape**: one casual line + a real artefact + a checkable number | The subject. His wins are about *other people's apps*, not his own build |
+| `@alexhormozi` (4.45M) | Signal density, the time-price mechanic, number-over-adjective | Dollar framing, get-rich register, hard CTAs |
+| `@elonmusk` (241.5M) | Compression, no hedging, forward-tense optimism | **Everything else.** See below |
 
 **Musk's compression works because 241.5M people already know who he is.** "the bird is freed" is an
-89.76× outlier *from the man who had just bought the company*. The same four words from a small
-account is noise with no referent. Take Musk's *shape*; take Jacob Rodri's *behaviour*. A draft that
-copies Musk's brevity without his context is not sharp, it is empty — check for this specifically.
+89.76× outlier *from the man who had just bought the company*. The same four words from
+`@TheRealSkosana` — **1 follower, 32 posts** — is noise with no referent. A draft that copies Musk's
+brevity without his context is not sharp, it is empty. Check for this specifically.
+
+**Two measured facts that should govern every draft:**
+
+1. **Judge on engagement rate, not reach.** On all four accounts the highest-reach post has the
+   worst engagement. levelsio's politics post: 26.6M views, **0.06%**. His bootstrapping list:
+   615K views, **2.36%** — 43× less reach, ~39× better engagement.
+2. **Never copy a big account's posting mix.** All of them publish most of what performs worst —
+   levelsio posted 413 tweets at 0.78× and 5 threads at 4.09×. Copy what performs, not what they do.
 
 ### The technique layer — Musk and Hormozi, now measured
 

@@ -13,10 +13,21 @@ two are the inputs.
 
 | Handle | Role | Status |
 |---|---|---|
-| `@TheRealSkosana` | The founder's personal account. Build-in-public. **This is the one being built.** | ⛔ Could not resolve. Not in Eden's index, nothing on the open web, `x.com` and `superx.so` both `EGRESS_BLOCKED` here. Follower count, posting history and current baseline all unknown |
-| `@elonmusk` | Voice reference — compression | Measured, 241.5M followers |
-| `@alexhormozi` | Voice reference — structure | Measured, 4.45M YouTube |
-| `@jacobrodri_` | Voice reference — **phase**. Jacob Rodri, founder of appkittie.com, ~21.6K followers, joined X Sept 2024, build-in-public on app growth via TikTok/IG | Resolved from the open web; not yet measured against an index |
+| `@TheRealSkosana` | The founder's personal account. Build-in-public. **This is the one being built.** | ✅ Resolved 2026-09-01: **1 follower, 32 posts, following 23.** Never synced, so no baseline yet. **The bio is the first job** — see `build-in-public-accounts.md` |
+| `@levelsio` | Voice reference — **the build-in-public archetype** | Measured, 945.1K followers, 463 posts/year |
+| `@jacobrodri_` | Voice reference — **post shape at small scale** | Measured, **36.7K** followers (the open web said 21.6K; that was stale), 1,044 posts |
+| `@alexhormozi` | Voice reference — structure and density | Measured, 4.45M YouTube |
+| `@elonmusk` | Voice reference — compression only | Measured, 241.5M followers |
+
+Full analysis of the two build-in-public accounts: **`docs/marketing/build-in-public-accounts.md`**.
+Two findings from it change this strategy:
+
+- **`@jacobrodri_` does not actually win on building in public.** All six of his top posts are a
+  short reaction line attached to *somebody else's* artefact with a real number in it. That is
+  curated discovery, and it is a good format — but the label was wrong and the data says so.
+- **`@levelsio`'s highest-*reach* posts are off-topic outrage; his highest-*engagement* post is a
+  numbered list of hard-won rules** — 615K views at 2.36% against 26.6M views at 0.06% for the
+  politics post. Xoot needs the second one, and this repo generates its raw material weekly.
 
 ### ⚠️ Why `@jacobrodri_` is the most important of the three, and Musk the least usable
 
@@ -155,9 +166,10 @@ whole improvement loop, and it costs an hour.
 
 *Marcos Ruiz's phase model, applied honestly.*
 
-Under 5K followers, ≥50% of posts should be top-of-funnel. `@TheRealSkosana`'s count is unknown to me
-and Xoot's company accounts **do not exist**. That is not phase one, it is **phase zero**, and the
-first job is not reach — it is having somewhere for reach to land.
+Under 5K followers, ≥50% of posts should be top-of-funnel. `@TheRealSkosana` has **1 follower and 32
+posts**, and Xoot's company accounts **do not exist**. That is not phase one, it is **phase zero**,
+and the first job is not reach — it is having somewhere for reach to land, and a bio that tells a
+visitor what they have landed on.
 
 Which is the same argument as instrumenting before optimising, and the same argument as clearing the
 Phase 0 gates (GitHub billing, Netlify link, PayFast credentials) before spending a rand on
