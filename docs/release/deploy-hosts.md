@@ -59,18 +59,46 @@ A production build derives `VITE_APP_ENV=production`, which makes `requiresRealS
 gate is deliberate and cannot be automated away: **a production site built without Supabase values
 is a shell that cannot sign anyone in or take a booking, and it would deploy green.**
 
-In **Vercel → Project → Settings → Environment Variables**, scoped to **Production** only:
+The project is **`xoot`** (`prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`), on team `royal777-21s-projects`,
+linked to `ROYAL777-21/xoot-your-local-helpers`.
+
+In **Vercel → xoot → Settings → Environment Variables**, tick **Production only**:
 
 | Variable | Value |
 |---|---|
 | `VITE_SUPABASE_URL` | `https://mvlrkelahhsyjrwgsxaf.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | From Supabase → Project Settings → API Keys → the **publishable / anon** key |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | the `sb_publishable_…` key from Supabase → Settings → API Keys |
 
-Both are **public values that already ship inside the client bundle.** This is not secrecy — the
-repo's convention is to supply them from host variables so a project reference lives in one place.
+**Use the `sb_publishable_…` key, not the legacy `eyJ…` anon JWT.** Both are public and both work —
+the code makes no assumption about the format (`src/integrations/supabase/client.ts` passes the
+string straight to `createClient`). Two reasons to prefer the publishable one:
+
+1. **The legacy anon JWT trips this repo's secret scanner.** Its `eyJ…` shape matches the
+   "Supabase service role JWT" pattern, which cannot distinguish an `anon` JWT from a
+   `service_role` one by shape alone. `sb_publishable_…` is clean — verified, and deliberately so:
+   the scanner's Supabase pattern matches only `sb_secret_` and `sb_service_role_`.
+2. Supabase is migrating off legacy JWT keys.
 
 Leave **Preview** and **Development** unset. They derive `development`, need no credentials, and
 cannot reach the production project.
+
+> **Why these are not committed.** Both are public values that already ship inside the client
+> bundle, so this is not secrecy — it is that a project reference should live in one place. Putting
+> them in `vercel.json`'s `build.env` would also hand them to **preview** builds, which is exactly
+> the "a preview can never accidentally point at the production Supabase project" property
+> `netlify.toml` was written to preserve.
+
+### Prove it afterwards, rather than assuming
+
+```bash
+node scripts/ops/verify-live-site.mjs https://xoot.co.za
+```
+
+Checks the **served site**, not the config: CSP / HSTS / referrer / permissions headers, that a deep
+link serves the SPA instead of a 404, that `/app`, `/auth` and `/admin` return `noindex`, that
+`/.well-known/*` is served as JSON rather than rewritten to HTML, that the bundle carries a real
+Supabase URL and publishable key — and that it carries **no service-role key**, which would be a
+genuine incident rather than a misconfiguration.
 
 Verified locally, exactly as Vercel runs it:
 
