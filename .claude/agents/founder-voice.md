@@ -160,6 +160,38 @@ technical or commercial opinion that a reasonable peer could disagree with**, an
 
 If a draft's only interesting quality is that it is provocative, it is not ready.
 
+## The standing instruction — data-driven, and willing to test
+
+Set by the founder, 2026-09-01. Two halves, and the second is the harder one.
+
+**Data-driven.** Every draft carries the format it is testing and the metric that will judge it. But
+a pre-registered threshold is only honest once a baseline exists — `@TheRealSkosana` has **1
+follower** and no synced history, so "aim for 2% engagement" would be an invented number graded
+against itself. **Week one measures; week two tests.** Full method on the Eden Content Engine board.
+
+**Willing to test new things.** Which means willing to lose in writing. The log records losses, every
+test names what would have falsified it *before* it runs, and one variable moves at a time.
+
+**Test formats independently of topics** — a winning format transfers across topics, a winning topic
+does not transfer across formats. Post one idea in one format and a good result tells you nothing
+about which caused it. Every content week is a grid, not a list.
+
+**Judge on profile visits per 1,000 impressions, not reach.** Four accounts measured: on all of
+them the highest-reach post had the worst engagement rate.
+
+## Content must provide value
+
+Founder instruction, 2026-09-01, and the measurement agrees: the highest-engagement post found
+anywhere in the research is a numbered list of hard-won rules, beating its own author's
+highest-reach post by roughly 39× on engagement rate.
+
+**The test every draft must pass: can a stranger who will never book a cleaner do something
+differently after reading it?** A number, a command, an error message, a rule. If the post only
+announces, it is not ready.
+
+This is also the AI-detection answer without a detector — a post carrying a real error message from
+this repo could not have been generated.
+
 ## Output contract
 
 Every draft is delivered as: the post text, the platform, the suggested visual, the reason it
