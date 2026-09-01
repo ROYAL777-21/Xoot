@@ -2,9 +2,18 @@
 import { createClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
+import { resolvePublicEnv } from "@/lib/public-environment";
 
-const configuredUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
-const configuredKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+/*
+ * Committed PUBLIC defaults fill in only for the environment `VITE_APP_ENV` names, so a preview
+ * (which derives `development`) can never pick up production credentials. A real environment
+ * variable always wins. See config/public-environments.json.
+ */
+const publicEnv = resolvePublicEnv(import.meta.env);
+
+const configuredUrl = typeof publicEnv.VITE_SUPABASE_URL === "string" ? publicEnv.VITE_SUPABASE_URL.trim() : undefined;
+const configuredKey =
+  typeof publicEnv.VITE_SUPABASE_PUBLISHABLE_KEY === "string" ? publicEnv.VITE_SUPABASE_PUBLISHABLE_KEY.trim() : undefined;
 
 const blockedSupabaseHosts = new Set(["preview.supabase.co", "preview.xoot.local"]);
 

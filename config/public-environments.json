@@ -1,0 +1,31 @@
+{
+  "$comment": [
+    "Committed PUBLIC client configuration, per environment. Added 2026-09-01.",
+    "",
+    "WHY THIS FILE EXISTS. Until now these two values had to be typed into each host's dashboard by",
+    "hand. That cost a broken production deploy on the Vercel switch, and it had to be redone for",
+    "every new host. Both values are public: they are compiled into the browser bundle on every",
+    "build and anyone can read them out of the JavaScript. Keeping them out of the repo was never",
+    "secrecy — it was a preference for one place to change a project reference.",
+    "",
+    "WHAT MAY GO IN HERE. Only values that already ship to the browser. A service-role key, a",
+    "database password, an API secret or anything under supabase/functions/ MUST NEVER appear here.",
+    "The secret scanner and scripts/security/scan-build-artifacts.mjs both still run over this file.",
+    "",
+    "THE SAFETY PROPERTY, and it is the whole design. Defaults apply ONLY to the environment named",
+    "by VITE_APP_ENV. A Vercel preview derives `development` (see validate-public-env.mjs), so it",
+    "gets nothing from here and cannot reach the production project. That is the property",
+    "netlify.toml protected by hand; it is now enforced by src/lib/public-environment.ts and pinned",
+    "by src/lib/public-environment.test.ts.",
+    "",
+    "OVERRIDING. A real environment variable always wins over this file. To point a build at a",
+    "different Supabase project, set VITE_SUPABASE_URL in the host and this file is ignored."
+  ],
+  "development": {},
+  "staging": {},
+  "production": {
+    "VITE_SUPABASE_URL": "https://mvlrkelahhsyjrwgsxaf.supabase.co",
+    "VITE_SUPABASE_PROJECT_ID": "mvlrkelahhsyjrwgsxaf",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_fa9g4tx0elr7w_O11ZJksQ_gG0lS4Sk"
+  }
+}

@@ -53,40 +53,57 @@ the build failed, which is the shape of the bug.
 `vercel.json` carries the build config, the SPA rewrite and the security headers. `VITE_APP_ENV` is
 derived from `VERCEL_ENV`, so **there is nothing to set for gate one.**
 
-### ⚠️ 2. What you must still set by hand
-
-A production build derives `VITE_APP_ENV=production`, which makes `requiresRealSupabase` true. That
-gate is deliberate and cannot be automated away: **a production site built without Supabase values
-is a shell that cannot sign anyone in or take a booking, and it would deploy green.**
+### 2. There is nothing left to set by hand
 
 The project is **`xoot`** (`prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`), on team `royal777-21s-projects`,
-linked to `ROYAL777-21/xoot-your-local-helpers`.
+linked to `ROYAL777-21/xoot-your-local-helpers`. **It needs no environment variables set in the
+dashboard.** A production build configures itself.
 
-In **Vercel → xoot → Settings → Environment Variables**, tick **Production only**:
+`config/public-environments.json` carries the public client config per environment, and
+`src/lib/public-environment.ts` fills it in for whichever environment `VITE_APP_ENV` names:
 
-| Variable | Value |
-|---|---|
-| `VITE_SUPABASE_URL` | `https://mvlrkelahhsyjrwgsxaf.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | the `sb_publishable_…` key from Supabase → Settings → API Keys |
+```
+CI=1 VERCEL_ENV=production npm run build
+→ passed for production (derived from VERCEL_ENV="production" on Vercel);
+  filled from config/public-environments.json: VITE_SUPABASE_URL, VITE_SUPABASE_PROJECT_ID,
+  VITE_SUPABASE_PUBLISHABLE_KEY
+→ ✓ built in 5.61s
+```
 
-**Use the `sb_publishable_…` key, not the legacy `eyJ…` anon JWT.** Both are public and both work —
-the code makes no assumption about the format (`src/integrations/supabase/client.ts` passes the
-string straight to `createClient`). Two reasons to prefer the publishable one:
+**This reverses an earlier convention deliberately.** `netlify.toml` said these were kept out of the
+repo — but its own comment concedes the reason was never secrecy: *"Both are public values that
+already ship inside the client bundle."* It was a preference for one place to change a project
+reference. That preference cost a broken production deploy and a manual step per host, so the
+default now lives in the repo and **the host variable still overrides it** — one place to change a
+project reference, unchanged.
 
-1. **The legacy anon JWT trips this repo's secret scanner.** Its `eyJ…` shape matches the
-   "Supabase service role JWT" pattern, which cannot distinguish an `anon` JWT from a
-   `service_role` one by shape alone. `sb_publishable_…` is clean — verified, and deliberately so:
-   the scanner's Supabase pattern matches only `sb_secret_` and `sb_service_role_`.
-2. Supabase is migrating off legacy JWT keys.
+#### The safety property, and how it is enforced
 
-Leave **Preview** and **Development** unset. They derive `development`, need no credentials, and
-cannot reach the production project.
+Defaults apply **only to the environment `VITE_APP_ENV` names.** A preview derives `development`,
+whose block is `{}`, so a preview build cannot pick up production credentials. This is the property
+`netlify.toml` protected by hand with a comment; `src/lib/public-environment.test.ts` now enforces
+it, along with:
 
-> **Why these are not committed.** Both are public values that already ship inside the client
-> bundle, so this is not secrecy — it is that a project reference should live in one place. Putting
-> them in `vercel.json`'s `build.env` would also hand them to **preview** builds, which is exactly
-> the "a preview can never accidentally point at the production Supabase project" property
-> `netlify.toml` was written to preserve.
+- production's project id must match the ref inside its URL;
+- a blank host variable counts as unset, not as configured;
+- **no value in the file may be non-public** — no `sb_secret_`/`sb_service_role_`, no JWT (shape
+  alone cannot distinguish an `anon` token from a `service_role` one), no private key material, and
+  every key must be a `VITE_` name.
+
+Verified by planting the defects: copying production's block into `development` fails 2 assertions;
+putting a `service_role`-shaped JWT in the file fails 3. Both restored.
+
+#### Which key, if you ever change it
+
+Use `sb_publishable_…`, never the legacy `eyJ…` anon JWT. Both are public and both work — the client
+passes either straight to `createClient`. But the JWT's shape matches this repo's own "Supabase
+service role JWT" scanner pattern, which cannot tell an `anon` token from a `service_role` one; and
+Supabase is migrating off legacy JWT keys.
+
+#### To point production at a different Supabase project
+
+Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in **Vercel → xoot → Settings →
+Environment Variables**, Production scope. Host variables beat the committed default.
 
 ### Prove it afterwards, rather than assuming
 

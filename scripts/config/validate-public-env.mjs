@@ -29,6 +29,32 @@ const parseEnvFile = (filename) => {
   return parsed;
 };
 
+/*
+ * Committed PUBLIC defaults, read from the SAME file the browser bundle reads
+ * (`config/public-environments.json`). Duplicating the values here would let the validator pass
+ * while the app shipped different config — the exact shape of bug this repo keeps paying for.
+ *
+ * These are applied AFTER the environment is resolved, further down, because they are keyed by
+ * `VITE_APP_ENV` and that value may itself be derived from the host.
+ */
+const publicEnvironmentDefaults = (() => {
+  const file = join(ROOT, "config", "public-environments.json");
+  if (!existsSync(file)) return {};
+  try {
+    return JSON.parse(readFileSync(file, "utf8"));
+  } catch (error) {
+    console.error(`Xoot environment configuration error: config/public-environments.json is not valid JSON (${error.message})`);
+    process.exit(1);
+  }
+})();
+
+const defaultsFor = (appEnv) => {
+  const name = String(appEnv ?? "").trim().toLowerCase();
+  if (!name || name.startsWith("$")) return {};
+  const block = publicEnvironmentDefaults[name];
+  return block && typeof block === "object" && !Array.isArray(block) ? block : {};
+};
+
 const env = {
   ...parseEnvFile(".env"),
   ...parseEnvFile(".env.local"),
@@ -141,6 +167,21 @@ if (text("VITE_ENABLE_DEMO_MODE") === "true") {
   fail("VITE_ENABLE_DEMO_MODE is no longer supported. Configure real Supabase credentials instead.");
 }
 
+/*
+ * Apply the committed public defaults now that `appEnv` is settled — including when it was derived
+ * from the host above. Only the block matching this environment is used, so a preview
+ * (`development`, whose block is empty) can never inherit production credentials.
+ *
+ * A real environment variable always wins: only blank values are filled.
+ */
+const appliedDefaults = [];
+for (const [key, value] of Object.entries(defaultsFor(appEnv))) {
+  if (!text(key)) {
+    env[key] = value;
+    appliedDefaults.push(key);
+  }
+}
+
 const hasRealSupabase = Boolean(
   text("VITE_SUPABASE_URL") &&
     text("VITE_SUPABASE_PUBLISHABLE_KEY") &&
@@ -180,4 +221,5 @@ if (process.env.CI && !requiresRealSupabase && !hasRealSupabase) {
 const provenance = derived
   ? ` (derived from ${derived.variable}="${derived.raw}" on ${derived.host})`
   : "";
-console.log(`Xoot public environment check passed for ${appEnv || "local"}${provenance}.`);
+const filled = appliedDefaults.length > 0 ? `; filled from config/public-environments.json: ${appliedDefaults.join(", ")}` : "";
+console.log(`Xoot public environment check passed for ${appEnv || "local"}${provenance}${filled}.`);
