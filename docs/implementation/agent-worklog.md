@@ -23,15 +23,53 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-Nothing held. **Release released the go-live claim on 2026-09-02** — see the entry directly below.
+Nothing held. **Release released the go-live claim on 2026-09-02** — and then had to reopen it.
+Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live statement in this repo.
 
 ---
 
-## 🚢 Xoot is live on xoot.co.za — 2026-09-02
+## 📣 Release & Infrastructure — 2026-09-02 — the marketing layer, claimed under "whoever gets there first"
 
-Founder asked for the go-live gates closed rather than listed. **Four of the five hard gates closed
-today.** What follows is what the other session most needs to know, because several of it
-contradicts documents still in this repo.
+`docs/marketing/**` is in neither role's paths, so per CLAUDE.md I am saying so here: **I wrote all
+of it and it is not held.** Take any of it. Nothing under `docs/marketing/` is imported by runtime
+code, referenced by a test, or read by a workflow — the suite moved by zero when it landed.
+
+**All of it is draft. None of it publishes**, and the reason is a Release reason rather than a
+marketing one: pointing channels at a domain that serves a GoDaddy placeholder spends reach on a
+404. `growth-levers-2026.md` finding 5 is the number — bad word of mouth means reaching **3× as many
+people** for the same customer. Publication starts after gate 2, not before.
+
+**One thing here does need Correctness eyes, and I would rather you found it than a regulator.**
+`docs/marketing/ai-presenter-brief.md` governs an AI-generated presenter. The founder's GitHub edit
+`dbe4bf8` had her say she loved using Xoot; **Xoot has completed zero bookings**, so a photoreal
+figure making a first-person customer claim is a fabricated testimonial under **CPA s41**, where
+intent is irrelevant. Resolved by the founder choosing to make her *visibly illustrated*, which lets
+her speak as a brand character rather than pose as a customer. The permissions table now forbids
+photorealism, a specific-customer identity, a rating, and "an outcome the product cannot deliver
+today" — *"I love how fast this books" is fine; "my Xooter arrived in ten minutes" is not.* That
+line is a claims boundary sitting in a marketing file, and claims boundaries are yours.
+
+`customer-ugc-pipeline.md` is the same shape: POPIA consent, and two power-based rules — a Xooter
+never does the asking, because they depend on the rating, and no Xooter is filmed without their own
+written consent.
+
+⛔ **Nothing recruitment-facing can be published at all** until the founder settles employment
+classification under **LRA s200A**. `xooter-hiring-ad.md` is written and deliberately unposted.
+
+---
+
+## 🚨 Xoot is NOT live on xoot.co.za — 2026-09-02
+
+> **This entry was first written under the heading "🚢 Xoot is live on xoot.co.za", claiming four of
+> five gates closed. Both were false and are corrected in place rather than deleted, because the
+> false version is the thing worth learning from.** I closed gate 2 twice on host-API evidence, and
+> reopened it only after a runner printed the response body. If you read this file for state, read
+> the heading as a warning about how confidently that state can be wrong.
+
+Founder asked for the go-live gates closed rather than listed. **Three of the eight gates closed
+today — 0, 1 and 3a. Gate 2 is open and is the first blocker**, and the authoritative table is
+`docs/release/go-live-requirements.md` Part 1, not this entry. What follows is what the other session
+most needs to know, because several of it contradicts documents still in this repo.
 
 ### Cross-role edits, flagged per rule 3
 
@@ -80,9 +118,7 @@ no-stamp branch is gone, because that sentence is what stopped anyone looking.
 
 ### Where the site actually lives, which was not where the docs said
 
-`xoot.co.za` is the primary URL of the **Netlify** project `xoot-home-care`, and that project builds
-this repository. Merging PR #44 published the real app there — `currentDeploy` moved `6a189bd7` →
-`6a9808ea`, branch URL now `main--xoot-home-care.netlify.app`. 🚨 **`xoot.co.za` is served by the GoDaddy Website Builder, and always was.** Measured 2026-09-02
+🚨 **`xoot.co.za` is served by the GoDaddy Website Builder, and always was.** Measured 2026-09-02
 by printing the response body instead of reading a host's API:
 
 ```html
@@ -102,6 +138,13 @@ looking in the right place.
 
 `verify-live-deploy` now **fails** on a foreign `generator` meta rather than warning. Planted and
 proven both ways before keeping: fires on the captured GoDaddy body, silent on our own `index.html`.
+
+**What was true, and what I wrongly concluded from it.** `xoot.co.za` *is* configured as the primary
+URL of the Netlify project `xoot-home-care`, that project *does* build this repository, and merging
+PR #44 *did* publish a correct build there — `currentDeploy` moved `6a189bd7` → `6a9808ea`. Every one
+of those facts is still accurate. None of them is a statement about DNS, and I read the set of them
+as "the site is live." That is the whole error, and it is available to any session reading a
+provider API.
 
 Two more things measured from a local production build:
 
