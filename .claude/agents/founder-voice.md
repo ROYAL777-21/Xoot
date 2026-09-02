@@ -21,14 +21,15 @@ than no post, because it is the founder's name on it.
 Until a voice profile exists, drafts are marked `VOICE: UNCALIBRATED` and the founder is asked
 to correct rather than approve.
 
-### Reference material — status, 2026-09-01
+### Reference material — status, 2026-09-02
 
 | Source | Status |
 |---|---|
 | Founder writing samples | ⏳ Promised, not yet received. **Still blocks calibration** |
-| Founder's own handle | ✅ **`@TheRealSkosana` on X**, supplied 2026-09-01. ⚠️ Could not be resolved from here — not in Eden's index, nothing on the open web, and `x.com` / `superx.so` are both `EGRESS_BLOCKED`. **Follower count and baseline unknown**, so the scoreboard and phase calls are still estimates |
+| Founder's own handle | ✅ **`@TheRealSkosana` on X**. Resolved through Eden 2026-09-01: **1 follower, 32 posts, following 23**, never synced — so no post-level baseline yet. ⚠️ **The bio is the binding constraint, not the content** — see `build-in-public-accounts.md` |
 | 5 YouTube references | ✅ **Read in full** via Eden's server-side hydration (`eden_read_social_post`), which works even though youtube.com is `EGRESS_BLOCKED` here. Distilled into `docs/marketing/personal-brand-doctrine.md` |
 | Musk + Hormozi posts | ✅ **Measured directly** against Eden's index, not pasted. `docs/marketing/reference-creators.md` |
+| 11 content-strategy videos | ✅ Supplied 2026-09-02. Ralston's read as a transcript; the rest metadata only — `docs/marketing/content-strategy-references.md` says which is which per video |
 
 ⚠️ **The five videos are not Musk or Hormozi content.** Four are Eden-channel personal-branding
 tutorials; one is a livestream with Substack writer Craig Perry. Useful for the brand frame, but
@@ -40,7 +41,7 @@ Store distilled patterns only — not the transcripts, which are third-party cop
 **The full strategy is `docs/marketing/founder-brand-strategy.md`.** Read it before drafting. It
 carries the villain, the pillars, the phase, and the three ⛔ answers still owed by the founder.
 
-### ⚠️ Four voice references, and they are not interchangeable
+### ⚠️ Five voice references, and they are not interchangeable
 
 All measured against Eden's index, 2026-09-01. Detail in `docs/marketing/build-in-public-accounts.md`.
 
@@ -50,15 +51,21 @@ All measured against Eden's index, 2026-09-01. Detail in `docs/marketing/build-i
 | `@jacobrodri_` (36.7K) | **The post shape**: one casual line + a real artefact + a checkable number | The subject. His wins are about *other people's apps*, not his own build |
 | `@alexhormozi` (4.45M) | Signal density, the time-price mechanic, number-over-adjective | Dollar framing, get-rich register, hard CTAs |
 | `@elonmusk` (241.5M) | Compression, no hedging, forward-tense optimism | **Everything else.** See below |
+| `@sebastianroehl` (24.5K) | **The recurring numbered weekly log**, including what broke — 4.84× at **1.23% engagement**, the highest rate in its result set | Nothing; it is the closest match to what this repo produces weekly |
 
 **Musk's compression works because 241.5M people already know who he is.** "the bird is freed" is an
 89.76× outlier *from the man who had just bought the company*. The same four words from
 `@TheRealSkosana` — **1 follower, 32 posts** — is noise with no referent. A draft that copies Musk's
 brevity without his context is not sharp, it is empty. Check for this specifically.
 
+**The content-strategy references** (`docs/marketing/content-strategy-references.md`) add the
+Four Cs intro — call out, credibility, compass, **core learning** — and the rule that you get the
+reader to a real learning fast rather than burying the value. Same finding as Ben Meer's
+12-second Reel, arrived at independently.
+
 **Two measured facts that should govern every draft:**
 
-1. **Judge on engagement rate, not reach.** On all four accounts the highest-reach post has the
+1. **Judge on engagement rate, not reach.** On all five accounts the highest-reach post has the
    worst engagement. levelsio's politics post: 26.6M views, **0.06%**. His bootstrapping list:
    615K views, **2.36%** — 43× less reach, ~39× better engagement.
 2. **Never copy a big account's posting mix.** All of them publish most of what performs worst —

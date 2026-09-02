@@ -40,11 +40,18 @@ Each carries the same Xoot constraint block: the legalised tactic forms, the R47
 Care+ breakeven at 2.54 bookings/month, supply-as-ceiling, the dignity line, SA English, and the
 BRAND_GUIDE bans.
 
-⚠️ **`ask-hormozi` does not work in the remote session.** It needs `qmd`, and every install path
-is blocked by the egress proxy (vendor host unreachable; GitHub release assets 403;
-`static.crates.io` 403 so cargo cannot fetch dependencies). It works on the founder's own machine
-via `./setup.sh`. **Do not cite Hormozi passages you have not actually retrieved** — the doctrine
-file is the source of truth until then.
+⚠️ **`ask-hormozi`'s CLI does not work here, but the corpus does.** Corrected 2026-09-02 — the
+earlier claim that it "cannot retrieve anything" was wrong and cost real time. The repo clones
+fine and **bundles the corpus**: 2,039 episodes, 9,330 timestamped Markdown segments with citation
+URLs. Only `qmd`, the semantic indexer, is blocked (`static.crates.io`, 403), and the official CLI
+routes every search through it.
+
+Use **`node scripts/ops/ask-hormozi-search.mjs "<query>"`**, which reads the Markdown directly and
+needs no `qmd`. It is keyword, not semantic, so an empty result is **not** proof the corpus is
+silent — try other terms. Findings so far are in `docs/marketing/hormozi-findings.md`.
+
+**Still: never cite a passage you have not actually retrieved.** That rule caused none of the
+trouble; the untested claim of unavailability did.
 
 ## The team
 

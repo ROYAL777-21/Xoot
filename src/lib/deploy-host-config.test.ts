@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -88,8 +88,8 @@ describe("deploy host configuration", () => {
        * and nothing about the host, which is why four commits went by on Netlify without anyone
        * connecting the two.
        *
-       * A production build still fails afterwards if the real Supabase values are absent. That is
-       * a DIFFERENT gate and it is meant to fail — so this asserts on the message, not the code.
+       * This asserts on the MESSAGE rather than the exit code, so it stays true regardless of what
+       * the second gate (real Supabase values) does — that gate is covered separately below.
        */
       const preview = runValidator(host.previewEnv);
       expect(preview.code, `${host.name} preview build could not resolve an environment:\n${preview.output}`).toBe(0);
@@ -141,13 +141,47 @@ describe("deploy host configuration", () => {
     expect(unknown.output, "and where to read next").toMatch(/deploy-hosts\.md/);
   });
 
-  it("keeps production honest about needing real Supabase values", () => {
-    // Deriving `production` from the host makes this second gate reachable where it was not before.
-    // It must still fire: a production site with no Supabase config cannot sign anyone in, and
-    // would otherwise deploy green.
+  it("gives production real Supabase values without anything set in a dashboard", () => {
+    /*
+     * ── This assertion was REWRITTEN on 2026-09-02, and the reason matters ────────────────────
+     * It used to assert that a production build with nothing set FAILS. That was correct until
+     * `config/public-environments.json` made production self-configuring, at which point this test
+     * went red — correctly. It had caught a real behaviour change.
+     *
+     * The invariant it was protecting is NOT "production fails". It is **"production never ships
+     * without real Supabase config"**. That is still enforced; the enforcement simply moved from a
+     * failure to a committed default. So the test now asserts the invariant rather than the old
+     * mechanism, and the next assertion keeps the original teeth.
+     */
     const production = runValidator({ CI: "1", VERCEL: "1", VERCEL_ENV: "production" });
-    expect(production.code).toBe(1);
-    expect(production.output).toMatch(/require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY/);
+    expect(production.code, `production could not configure itself:\n${production.output}`).toBe(0);
+    expect(production.output).toMatch(/passed for production/);
+    expect(production.output, "the defaults must be visible in the build log, not silent").toMatch(
+      /filled from config\/public-environments\.json/,
+    );
+  });
+
+  it("still refuses a production build when the defaults are gone AND nothing is set", () => {
+    /*
+     * The original teeth, preserved. If someone empties the production block in
+     * `config/public-environments.json` and no host variable covers it, the build must fail — a
+     * production site that cannot sign anyone in must never deploy green.
+     *
+     * Run against a temporary copy of the repo config so the real file is untouched.
+     */
+    const config = join(ROOT, "config", "public-environments.json");
+    const original = readFileSync(config, "utf8");
+    try {
+      const stripped = JSON.parse(original);
+      stripped.production = {};
+      writeFileSync(config, JSON.stringify(stripped, null, 2));
+
+      const production = runValidator({ CI: "1", VERCEL: "1", VERCEL_ENV: "production" });
+      expect(production.code).toBe(1);
+      expect(production.output).toMatch(/require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY/);
+    } finally {
+      writeFileSync(config, original);
+    }
   });
 
   it("passes production once the two public values are supplied", () => {

@@ -13,6 +13,47 @@ _No experiments yet — measurement is not instrumented. See `measurement-spec.m
 Not experiments. Things that were built or measured, so the first experiment does not have to
 rediscover them.
 
+### 2026-09-02 — 11 reference videos read, and a blocker that was my mistake
+
+**The correction.** I reported that `ask-hormozi` "cannot retrieve anything" and recorded it as a
+blocker. **It was wrong.** The repo clones fine and bundles the corpus — 2,039 episodes, 9,330
+timestamped Markdown segments with citation URLs. Only `qmd`, the semantic indexer, is blocked
+(`static.crates.io`, 403). `scripts/ops/ask-hormozi-search.mjs` now queries it without `qmd`, and
+**exits 2 rather than 0 when no corpus is present**, because "I could not look" is not "there is
+nothing there" — which is precisely the conflation that produced the false blocker.
+
+The corpus stays out of the repo: redistributed with permission, copyright retained, explicitly not
+under that repo's MIT licence.
+
+**Findings** → `hormozi-findings.md`. Attribution-before-scaling independently supports the existing
+Phase 1 ordering. The discount mechanics are **not adoptable** — BRAND_GUIDE bans the vocabulary,
+CPA s30 bars a constructed "was" price, and the R47/R54 floors are legal minimums with nothing to
+discount. The transferable half is "give something that other people charge for".
+
+**The 11 videos** → `content-strategy-references.md`. Only Ralston's was read as a transcript
+(~52K of 115K chars, plus targeted extraction); the rest are metadata and Eden's structural
+analysis, and the doc says so per video rather than implying all eleven were watched.
+
+**Two things that change existing plans:**
+
+1. **Company platforms go sequential, not parallel.** Ralston: a solo creator runs **one primary +
+   one secondary**, with an "Eye of Sauron" rotation innovating on one at a time. The four-platform
+   plan in `company-social-playbook.md` is what he would call diluted — and 73% of people who start
+   making content quit inside a year. Order is unchanged; simultaneity is not.
+2. **Cadence is set against future capacity, not current.** Which argues against the daily-blog
+   commitment: it would be made by someone with more free time than the person who has to keep it.
+
+**The number worth remembering:** a client of Ralston's who switched from entertainment to
+educational content went from 4–5K leads per video to **over 20,000** — and that video became their
+**#3 of the year with over a million views**. Optimising for education did not cost reach. The
+value-versus-reach trade-off did not appear.
+
+**One honest caveat on scope.** Ralston's thesis is scoped to *high-ticket* offers, and he says
+plainly that for mass-market low-ticket products virality genuinely is what you want. Xoot is not
+high-ticket. The argument transfers on **geography** — three suburbs, so worldwide reach is close to
+worthless — not on price. Same conclusion, different mechanism, and the mechanism matters for when
+the rule stops applying.
+
 ### 2026-09-01 (latest) — build-in-public accounts measured, two earlier claims corrected
 
 **`@TheRealSkosana` resolved:** 1 follower, 32 posts, following 23, never synced. The earlier entry

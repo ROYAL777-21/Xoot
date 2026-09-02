@@ -184,6 +184,24 @@ strongest AI-visibility signal) and referral traffic — neither of which needs 
 | **YouTube** | 3rd | Shorts repurposed from TikTok; long-form evergreen for search and AI citation | "What's actually included in a deep clean" |
 | **X (company)** | 4th | A changelog with a personality. Low volume, high honesty. Not a reach play | Shipped changes, dated |
 
+> ### ⚠️ CORRECTION, 2026-09-02 — build these in SEQUENCE, not in parallel
+>
+> The table above is the right **order**. It is not a licence to run four accounts at once.
+>
+> Caleb Ralston (36.28× outlier, `content-strategy-references.md`) is explicit: a solo creator runs
+> **one primary + one secondary platform**, and innovates on **one at a time** — everything else
+> sits in maintenance mode running formats already known to work. Four simultaneous platforms
+> produces diluted content on all four, and **73% of people who start making content quit within
+> the first year.**
+>
+> **So: TikTok primary, Instagram secondary.** YouTube and X wait. The X changelog is low-volume by
+> design, which is maintenance mode by nature and costs almost nothing to keep ticking.
+>
+> **And set the cadence against the capacity you will have in six months, not this week.** Volume is
+> easy to increase and very hard to walk back once an audience expects it. This is the argument
+> against the daily-blog commitment: it would be made by someone with more free time than the person
+> who has to keep it.
+
 **The give:ask floor holds throughout: at most one post in five contains a call to book.**
 
 ---

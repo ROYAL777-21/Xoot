@@ -140,3 +140,50 @@ be an own goal in front of the exact audience Xoot needs.
    the worst engagement. At 1 follower, reach is not the constraint anyway — being worth following
    is.
 6. **Do not copy anyone's posting mix.** All three publish most of what performs worst.
+
+---
+
+## Accounts worth following, and why
+
+Measured 2026-09-01/02. Recommended for **building in public, posting thoughts, and giving value** —
+the founder's stated brief.
+
+### 1. `@sebastianroehl` — 24.5K. **The closest match to what Xoot already produces.**
+
+*"Building An Indie App Business #110"* — a recurring, **numbered weekly log** of what shipped, what
+was learned, and what went wrong. His own framing: *"Not everything was sunshine though, more on
+that in the insights."*
+
+**4.84× outlier at 1.23% engagement — the highest engagement rate in its entire result set**, where
+the viral listicles beside it ran 0.03–0.06%.
+
+The numbering matters: #110 is itself the proof. A hundred and ten weeks of showing up is a claim no
+single post can make, and it costs nothing to accumulate. **This repo generates the raw material for
+that log every week without being asked**, which makes it the cheapest format Xoot has access to.
+
+### 2. `@levelsio` — 945.1K. The numbered list of hard-won rules.
+
+His highest-*engagement* post (615K views, **2.36%**) is ten numbered bootstrapping rules. His
+highest-*reach* post (26.6M views, **0.06%**) is EU politics. Take the first shape; the register of
+the second is barred by `founder-voice.md` for unrelated and better reasons.
+
+### 3. `@jacobrodri_` — 36.7K. The reaction-plus-number shape.
+
+One casual line + a real artefact + a checkable number. **Take the shape, not the subject** — his
+wins are about other people's products, not his own build.
+
+### ⚠️ The anti-pattern, named — because it is what "successful" looks like from outside
+
+| Account | Outlier | Views | **Engagement** |
+|---|---|---|---|
+| `@aleiahlock` | 71.97× | 6.95M | **0.035%** |
+| `@eng_khairallah1` | 6.71× | 4.65M | **0.060%** |
+| `@sebastianroehl` | 4.84× | 7.1K | **1.23%** |
+
+Sebastian Röhl reaches **a thousand times fewer people** and earns **twenty to thirty-five times the
+engagement rate**. Both of the first two are long "how I made $X" articles engineered for
+impressions.
+
+If the scoreboard were reach, the wrong two accounts win by three orders of magnitude. This is the
+fourth and fifth account showing the same thing, and it is why the scoreboard is **profile visits
+per 1,000 impressions**.

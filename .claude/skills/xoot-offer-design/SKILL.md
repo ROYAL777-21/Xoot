@@ -100,3 +100,33 @@ point of the technique.
 3. Xooter coverage checked for the suburbs it targets.
 4. Care+ maths checked against 2.54 for the segment being sold to.
 5. Read aloud — if it sounds like a sale, rewrite it. Xoot sells relief, not price.
+
+---
+
+## The Hormozi corpus — what is usable, and the one rule that is not
+
+Findings and citations: **`docs/marketing/hormozi-findings.md`**. Query it yourself with
+`node scripts/ops/ask-hormozi-search.mjs "<query>"` (keyword, not semantic — an empty result is not
+proof of absence).
+
+### ⛔ Hard rule: never propose a discount mechanic
+
+Hormozi's position is that a 10–20% discount is pointless and that a discount should be large on
+something that costs little, as an entry to an upsell. **Do not adopt it in any form.** Three
+independent reasons, and each alone is sufficient:
+
+1. `docs/BRAND_GUIDE.md` bans `cheap`, `budget`, `discount` and `bargain` outright.
+2. **CPA s30** bars presenting a price as a reduction from one never actually charged — a "was"
+   price constructed to make a discount look big is exactly what that section addresses.
+3. **R47/R54 are legal floors, not levers.** Where labour is the cost, there is nothing to discount.
+
+### ✅ What does transfer
+
+- **"Give something that other people charge for."** The more genuinely valuable the giveaway, the
+  better it works — and it is brand-safe because it adds value instead of cutting price.
+- **Pick one offer lever and hammer it: speed, ease, or risk-reversal.** For Xoot the lever is
+  **risk-reversal** — vetting, the reliability record, the shown-price guarantee. It is the fear the
+  category runs on and the one Xoot can evidence rather than claim. Speed is weak pre-launch
+  (supply is the ceiling); ease is undifferentiated.
+- **Attribution before scaling.** Do not design a new offer for a new market while the first has no
+  measurement.
