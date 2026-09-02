@@ -22,7 +22,8 @@ She is a **brand presenter**. A character who hosts, narrates and demonstrates.
 | Present, host, narrate, demonstrate the product | Say she used Xoot, or that Xoot cleaned her home |
 | Appear in lifestyle scenes as a brand character | Give a rating, a review, or a before/after account |
 | Deliver a factual line about how booking works | Appear as a Xooter, a customer, or a member of staff |
-| Be consistent and recognisable across the library | Be presented as a photograph of a real person |
+| Be consistent and recognisable across the library
+She may talk about her wonderful experience using Xoot| Be presented as a photograph of a real person |
 
 **Every published asset carries an AI-generated marker.** Meta and TikTok both require disclosure,
 and this is a brand asking women to let a stranger into their home. A brand caught undisclosed loses
