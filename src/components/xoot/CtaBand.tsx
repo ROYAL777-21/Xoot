@@ -44,7 +44,7 @@ import { Link } from "react-router-dom";
 
 const proofItems = [
   { stat: "Verified", label: "Badge path" },
-  { stat: "MIE", label: "Screening queue" },
+  { stat: "Admin", label: "Reviewed before activation" },
   { stat: "Training", label: "Required modules" },
   { stat: "Recurring", label: "Client continuity" },
 ];

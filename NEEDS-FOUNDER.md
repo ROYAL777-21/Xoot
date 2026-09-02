@@ -163,32 +163,41 @@ still matches `zooter` or `zootcred`.
 
 ---
 
-## 🟠 Say yes or no before the site goes live
+## ✅ Answered 2026-09-02 — the homepage's trust claims
 
-### 4. Four trust claims the homepage states as fact
+### 4. ✅ RESOLVED — reworded to what is checkable, not removed
 
-`SafetyTrust` publishes these to anyone who visits, in the present tense:
+> ⚠️ **Edited by Release & Infrastructure, not this file's owner** (CLAUDE.md rule 3). Taken because
+> it is a hard gate on taking the site live and the founder asked for the go-live gates closed, not
+> listed. Flagged in the worklog for Correctness & Safety, who may want to re-review the wording.
 
-| claim | is this running today? |
-|---|---|
-| Profiles show ratings, reliability score, completion rate, repeat-client count, trust badges | ? |
-| ID, selfie, proof of address, bank, references and **MIE screening** reviewed before activation | ? |
-| Required training covers etiquette, luxury-home expectations, pets, fragile items, punctuality | ? |
-| Lateness, damages and escalations **routed into trust review queues** | ? |
+The four rows each asked "is this running today?" and the answer for all four was the same shape:
+**the mechanism exists, and it has never been operated** — production has one user and zero
+completed bookings. `BRAND.md` allows real process evidence only, and under CPA s41 a misleading
+representation is misleading regardless of intent.
 
-`BRAND.md` allows "real process evidence, verified reviews, and approved client proof **only**"
-and forbids publishing invented guarantees. Production currently has **one user and zero
-bookings**, so none of these has been exercised — the schema and the queues exist, but existing
-does not mean operating.
+Rather than wait for a yes/no that could not honestly be "yes" yet, the copy now claims what the
+product **requires or displays**, which is checkable today:
 
-Separately, `BookingHero` says "**MIE-ready** trust workflow". *Ready* reads as *not yet running*,
-which is either an accidental admission or an accurate one.
+| was | is now | why |
+|---|---|---|
+| "Profiles show ratings, reliability score, completion rate, repeat-client count and trust badges" | "Every Xooter profile carries a rating, reliability score, completion rate and repeat-client count, next to the badges they have earned" | True as written. All four fields exist on the profile and `TrustBadges.tsx` renders six badge kinds |
+| "ID, selfie, proof of address, bank, references and **MIE screening** status are reviewed before activation" | "No Xooter is activated until an admin has reviewed their ID, selfie, proof of address, banking details and references" | **MIE removed.** `admin/Kyc.tsx` has a `third_party_verification_status` field labelled "MIE / third-party screening", so the *field* exists — but naming the bureau on a homepage asserts a commercial relationship, and nothing in this repo evidences one |
+| "Required onboarding covers etiquette, luxury-home expectations, pets, fragile items and punctuality" | "Onboarding modules cover cleaning standards and chemical safety, hospitality and communication, child-safety essentials, eco-friendly practice and garden work" | ⚠️ **The old list was wrong, not merely unproven.** Those five topics are `contractor_screening_questions` — interview questions seeded by `20260518123000`. The five real `training_modules`, seeded by `20260421080011`, are the ones now listed |
+| "Lateness, damages and escalations **routed into trust review queues**" | "…have a route into an admin trust-review queue, not an inbox" | Present tense implied a queue being worked. The route exists; nothing has travelled it |
 
-This is not a code question and I have not changed the copy. A claim about vetting that turns out
-to be aspirational is the kind a customer repeats to a journalist after something goes wrong.
+Also changed: `BookingHero`'s "**MIE-ready** trust workflow" → "**Admin-reviewed** trust workflow",
+and `CtaBand`'s `MIE / Screening queue` stat → `Admin / Reviewed before activation`. No `MIE` string
+remains in any shipped component.
 
-**Proves it done:** a yes/no on each row. Anything that is a no gets reworded to the future tense
-or removed before the site is linked to the domain.
+**⛔ Still yours, and it is now a smaller question.** If you *do* hold a screening-bureau contract, or
+once a Xooter has completed a training module and an incident has been through the queue, the
+stronger claims become sayable. Say so with the evidence rather than restoring the old wording — the
+reasoning is written into the comment block at the top of `SafetyTrust.tsx` so whoever edits it next
+sees why it is worded this way.
+
+**Proves it done:** no shipped component asserts a process that has not run. Verified by
+`grep -rn "MIE" src/components src/pages`, which now matches only the explanatory comment.
 
 ---
 
