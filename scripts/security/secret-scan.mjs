@@ -1,8 +1,24 @@
 import { basename, extname, join, relative } from "node:path";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { lstatSync, readFileSync, readdirSync, statSync } from "node:fs";
 
 const ROOT = process.cwd();
-const SKIP_DIRS = new Set([".git", "dist", "node_modules", "ios", "android", ".next", ".vercel", "coverage"]);
+/*
+ * `.agents` holds vendored third-party skills (`npx skills add`). It is gitignored, so nothing
+ * in it can ever be committed — and this scanner exists to catch *committed* secrets.
+ *
+ * Added 2026-08-27 after installing the Higgsfield skills made this scan fail on:
+ *
+ *     .agents/skills/higgsfield-websites/references/security.md:354
+ *     const API_KEY = "sk-proj-abc123...";
+ *
+ * which is a deliberately fake placeholder inside a `// BAD` block in *their* security guide —
+ * documentation teaching the reader not to do exactly this. Scanning vendored docs for secrets
+ * they are warning about produces noise, and a scanner that cries wolf gets ignored.
+ *
+ * ⚠️ The patterns below were NOT touched, and must not be. The fix is scope: a path that cannot
+ * be committed is out of scope. Never allowlist a value to make this pass.
+ */
+const SKIP_DIRS = new Set([".git", "dist", "node_modules", "ios", "android", ".next", ".vercel", "coverage", ".agents"]);
 const SKIP_FILES = new Set(["package-lock.json", "pnpm-lock.yaml", "yarn.lock"]);
 const TEXT_EXTENSIONS = new Set([
   ".cjs", ".css", ".env", ".example", ".html", ".js", ".json", ".jsx", ".mjs", ".md", ".ps1", ".sql", ".svg", ".toml", ".ts", ".tsx", ".txt", ".yml", ".yaml",
@@ -41,6 +57,12 @@ const walk = (dir, files = []) => {
   for (const entry of readdirSync(dir)) {
     if (SKIP_DIRS.has(entry) || SKIP_FILES.has(entry)) continue;
     const full = join(dir, entry);
+    /*
+     * `lstat`, not `stat`: do not traverse symlinks. `.claude/skills/*` are symlinks into
+     * `.agents/`, so following them scanned the same vendored file twice and reported the same
+     * finding under two paths. A symlink pointing outside tracked content is not repo content.
+     */
+    if (lstatSync(full).isSymbolicLink()) continue;
     const stats = statSync(full);
     if (stats.isDirectory()) walk(full, files);
     else if (stats.isFile() && isTextFile(full)) files.push(full);

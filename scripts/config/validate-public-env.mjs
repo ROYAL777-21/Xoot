@@ -29,6 +29,32 @@ const parseEnvFile = (filename) => {
   return parsed;
 };
 
+/*
+ * Committed PUBLIC defaults, read from the SAME file the browser bundle reads
+ * (`config/public-environments.json`). Duplicating the values here would let the validator pass
+ * while the app shipped different config — the exact shape of bug this repo keeps paying for.
+ *
+ * These are applied AFTER the environment is resolved, further down, because they are keyed by
+ * `VITE_APP_ENV` and that value may itself be derived from the host.
+ */
+const publicEnvironmentDefaults = (() => {
+  const file = join(ROOT, "config", "public-environments.json");
+  if (!existsSync(file)) return {};
+  try {
+    return JSON.parse(readFileSync(file, "utf8"));
+  } catch (error) {
+    console.error(`Xoot environment configuration error: config/public-environments.json is not valid JSON (${error.message})`);
+    process.exit(1);
+  }
+})();
+
+const defaultsFor = (appEnv) => {
+  const name = String(appEnv ?? "").trim().toLowerCase();
+  if (!name || name.startsWith("$")) return {};
+  const block = publicEnvironmentDefaults[name];
+  return block && typeof block === "object" && !Array.isArray(block) ? block : {};
+};
+
 const env = {
   ...parseEnvFile(".env"),
   ...parseEnvFile(".env.local"),
@@ -59,7 +85,52 @@ const isPlaceholderSupabaseKey = (value) =>
   value.includes("your-anon-key") ||
   value.includes("placeholder");
 
-const appEnv = text("VITE_APP_ENV").toLowerCase();
+/*
+ * ── Derive the environment from the host, when the host actually knows ──────────────────────────
+ *
+ * ⚠️ This guard has now failed a build on THREE separate hosts: GitHub Actions, then Netlify, then
+ * Vercel (2026-09-01, commit 950dc5d, `main`). Each time the fix was written into that one host's
+ * config file — so the next host walked into the identical hole. A per-host fix cannot stop a
+ * per-host bug.
+ *
+ * Every CI host that builds a site already knows which environment it is building; it just spells
+ * it differently. Reading that signal is not a weakening of the guard — the guard exists so a build
+ * never runs without knowing which environment it is, and the host's own variable answers that
+ * question authoritatively. What is still refused is *guessing*: with no signal, it fails.
+ *
+ * A preview NEVER derives `production`. That would point branch code at the production Supabase
+ * project, and is the reason `netlify.toml` chose `development` for previews by hand.
+ */
+const hostEnvironmentSignals = [
+  // Vercel sets both CI=1 and VERCEL_ENV (production | preview | development) on every build.
+  // https://vercel.com/docs/environment-variables/system-environment-variables
+  { host: "Vercel", variable: "VERCEL_ENV", productionValue: "production" },
+  // Netlify sets CONTEXT (production | deploy-preview | branch-deploy | dev). netlify.toml sets
+  // VITE_APP_ENV explicitly, so this is a fallback that should never fire there — it exists so a
+  // context added to the Netlify UI rather than the file still builds.
+  { host: "Netlify", variable: "CONTEXT", productionValue: "production" },
+];
+
+const deriveAppEnv = () => {
+  for (const signal of hostEnvironmentSignals) {
+    const raw = String(process.env[signal.variable] ?? "").trim().toLowerCase();
+    if (!raw) continue;
+    return {
+      ...signal,
+      raw,
+      value: raw === signal.productionValue ? "production" : "development",
+    };
+  }
+  return null;
+};
+
+let appEnv = text("VITE_APP_ENV").toLowerCase();
+let derived = null;
+
+if (!appEnv) {
+  derived = deriveAppEnv();
+  if (derived) appEnv = derived.value;
+}
 const leaks = Object.keys(env)
   .filter((name) => name.startsWith("VITE_"))
   .filter((name) => publicSecretNamePattern.test(name) && !allowedPublicSecretLikeNames.has(name));
@@ -83,11 +154,32 @@ if (appEnv && !allowedAppEnvironments.has(appEnv)) {
 }
 
 if (process.env.CI && !appEnv) {
-  fail("CI builds must set VITE_APP_ENV explicitly.");
+  fail(
+    "CI builds must set VITE_APP_ENV explicitly.\n" +
+      `  Accepted values: ${[...allowedAppEnvironments].join(", ")}.\n` +
+      "  No host signal was found either — checked " +
+      `${hostEnvironmentSignals.map((s) => `${s.variable} (${s.host})`).join(", ")}.\n` +
+      "  Set VITE_APP_ENV in this host's build environment. See docs/release/deploy-hosts.md.",
+  );
 }
 
 if (text("VITE_ENABLE_DEMO_MODE") === "true") {
   fail("VITE_ENABLE_DEMO_MODE is no longer supported. Configure real Supabase credentials instead.");
+}
+
+/*
+ * Apply the committed public defaults now that `appEnv` is settled — including when it was derived
+ * from the host above. Only the block matching this environment is used, so a preview
+ * (`development`, whose block is empty) can never inherit production credentials.
+ *
+ * A real environment variable always wins: only blank values are filled.
+ */
+const appliedDefaults = [];
+for (const [key, value] of Object.entries(defaultsFor(appEnv))) {
+  if (!text(key)) {
+    env[key] = value;
+    appliedDefaults.push(key);
+  }
 }
 
 const hasRealSupabase = Boolean(
@@ -103,7 +195,21 @@ const requiresRealSupabase =
   text("XOOT_REQUIRE_REAL_PUBLIC_ENV") === "true";
 
 if (requiresRealSupabase && !hasRealSupabase) {
-  fail("staging and production builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values.");
+  /*
+   * This is the SECOND gate, and it is the one a host hits immediately after the first is fixed.
+   * Deriving `production` from the host above makes this fire where it previously could not, so
+   * the message has to say what to do rather than only what is wrong — otherwise fixing gate one
+   * just moves the confusion along by one build.
+   *
+   * It is deliberately NOT auto-satisfiable. A production site built without real Supabase values
+   * is a shell that cannot sign anyone in or take a booking, and it would deploy green.
+   */
+  fail(
+    "staging and production builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values.\n" +
+      `  VITE_APP_ENV is "${appEnv}"${derived ? ` (derived from ${derived.variable}="${derived.raw}" on ${derived.host})` : ""}, which requires them.\n` +
+      "  Both are PUBLIC values that already ship inside the client bundle — this is not secrecy.\n" +
+      "  Set them in the host's environment settings, not in this repo. See docs/release/deploy-hosts.md §2.",
+  );
 }
 
 if (process.env.CI && !requiresRealSupabase && !hasRealSupabase) {
@@ -112,4 +218,8 @@ if (process.env.CI && !requiresRealSupabase && !hasRealSupabase) {
   );
 }
 
-console.log(`Xoot public environment check passed for ${appEnv || "local"}.`);
+const provenance = derived
+  ? ` (derived from ${derived.variable}="${derived.raw}" on ${derived.host})`
+  : "";
+const filled = appliedDefaults.length > 0 ? `; filled from config/public-environments.json: ${appliedDefaults.join(", ")}` : "";
+console.log(`Xoot public environment check passed for ${appEnv || "local"}${provenance}${filled}.`);

@@ -154,7 +154,7 @@ const Profile = () => {
           <CreditCard className="h-5 w-5 text-primary" />
           <h2 className="font-display text-xl font-bold">Payment methods</h2>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">Card, Apple Pay, Google Pay and Link will be available once payments are connected. We never charge before a Xooter accepts.</p>
+        <p className="text-sm text-muted-foreground mb-4">Online payments are not connected yet. When they are, you&apos;ll be able to save a payment method here. We never charge before a Xooter accepts.</p>
         <Button variant="outline" disabled>Connect payment method (coming soon)</Button>
       </Card>
 

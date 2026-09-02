@@ -140,7 +140,7 @@ export const BookingHero = () => {
             {isSupabaseConfigured && (
               <span><span className="font-semibold text-foreground">{liveXooterLabel}</span> approved Xooters currently live</span>
             )}
-            <span><span className="font-semibold text-foreground">MIE-ready</span> trust workflow</span>
+            <span><span className="font-semibold text-foreground">Admin-reviewed</span> trust workflow</span>
           </div>
         </div>
 

@@ -469,6 +469,19 @@ constraint. They can go at any time.
 
 ---
 
+### 3-1. After ANY migration: prove the database still references only what it has
+
+```bash
+SUPABASE_ACCESS_TOKEN=... node scripts/ops/check-schema-drift.mjs [--staging]
+```
+
+Exit 0 or the migration is not finished. Added 2026-08-15 after `ALTER FUNCTION ... RENAME` left
+`check_xootcred_balance` querying a table ZD-029 had renamed away — the name changed, the body did
+not, and every XootCred debit failed with SQLSTATE 42P01 for two days. No repo-side test can catch
+that: the repo's migrations were right, and the drift was between the repo and what was installed.
+
+---
+
 ### 3d. ⚠️ The PayFast deploy — migrations first, and NAME the new function
 
 **Added 2026-08-15 from the Release cross-review of PR #42.** Applies once that PR merges.

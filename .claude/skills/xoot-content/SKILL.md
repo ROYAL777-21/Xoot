@@ -28,8 +28,13 @@ These are settled. Do not re-open them in a draft.
   a sweep when a ladder changes, and can never misquote one. Link to the live pricing page and
   let that be the single place a number appears. If a post genuinely cannot work without a
   price, ask first.
-- **All four audiences**, run as rotating campaigns rather than blended together — households,
-  Airbnb and property managers, Xooter recruitment, small offices.
+- **Four audiences exist** — households, Airbnb and property managers, Xooter recruitment, small
+  offices — run as rotating campaigns rather than blended together.
+
+  ⚠️ **Superseded in part, 2026-08-31: start very specific, broaden over time.** The founder's
+  call. Do not open all four at launch. See *Cadence* below for the phases and the trigger that
+  opens each one — writing thinly for four audiences at once is how a new domain teaches Google
+  it has nothing to say about any of them.
 - **Care+ is the founding member price**: "R99/month, locked for as long as you stay a
   member." No discount claim, no struck-through figure. A two-month free trial may be added
   later, on request only.
@@ -174,15 +179,42 @@ own audience and intent, so no two posts compete for the same query and none is 
 version of another. Seven posts serving four audiences is a content programme; seven posts
 serving one audience is cannibalisation.
 
+### ⚠️ Phase 1 is the current phase — two audiences, not four
+
+Founder decision 2026-08-31: **be very specific, then broaden.** A new domain writing thinly
+across four audiences teaches Google it is authoritative on none of them. Depth on one subject
+is what earns both rankings and AI citations, because an assistant fanning a prompt out into
+sub-searches will not cite a site that half-covers the topic.
+
+| Phase | Audiences | Opens when |
+|---|---|---|
+| **1 — now** | **Households** (launch suburbs only) + **Xooter recruitment** | — |
+| 2 | + Airbnb & property managers | Households rank top-10 for their core suburb terms, **and** Xooter coverage can absorb more demand |
+| 3 | + Small offices | Phase 2 converting, and a B2B invoicing/registration path actually exists |
+
+**Why recruitment is in Phase 1 and not deferred.** Supply is the ceiling in a marketplace.
+Demand content that outruns Xooter coverage produces cancellations and one-star reviews — growth
+spend converted into reputational damage. Recruitment content relieves the real constraint and is
+the cheapest acquisition channel the company has.
+
+**Phase 1 cadence:**
+
 | Day | Audience | Type |
 |---|---|---|
 | Mon | Households | Problem / how-to — the largest search volume |
-| Tue | Airbnb & property managers | Turnover, changeover, guest-ready, linen |
+| Tue | Households | Suburb-specific: one launch suburb, done properly |
 | Wed | Households | Comparison or "what's included" — commercial intent |
-| Thu | Small offices | Recurring cleans, invoicing, reliability, B2B register |
+| Thu | Households | The objection nobody answers — safety, vetting, what if she cancels |
 | Fri | Xooter recruitment | Earnings, how to apply, what the work is like |
 | Sat | Households | Seasonal or news-pegged — freshness and links |
 | Sun | Any | Evergreen, or a genuine repurpose of the week's best |
+
+The Phase 2 and 3 rows below are kept for when those phases open:
+
+| Day | Audience | Type |
+|---|---|---|
+| *(P2)* Tue | Airbnb & property managers | Turnover, changeover, guest-ready, linen |
+| *(P3)* Thu | Small offices | Recurring cleans, invoicing, reliability, B2B register |
 
 Rules that keep this from degrading:
 
@@ -210,3 +242,46 @@ Rules that keep this from degrading:
 4. Title, meta, H1 distinct from each other.
 5. Internal links resolve.
 6. Read it aloud — if it sounds like a brochure, rewrite the first paragraph.
+
+## Answer-engine optimisation — added 2026-08-26
+
+Everything above still holds. This section adds the second audience: an assistant that will read
+the page and answer on your behalf, sending no click at all. The goal shifts from *ranking* to
+**being the passage that gets quoted**.
+
+**Why coverage beats keywords now.** An assistant fans one prompt out into many sub-searches and
+assembles an answer. A page that half-covers a topic is never the source. So finish a topic —
+the question, its sub-questions, its objections and its local variants — before starting the
+next. Depth on one subject beats thin coverage of five.
+
+**Three levers decide citation:** consensus (the same claim about you appearing in several
+places), freshness (recent wins), and authority (classic SEO underneath — none of this replaces
+it).
+
+**Write passages that lift cleanly:**
+
+- **BLUF.** The answer in the first 40–60 words under the H2, self-contained. An engine takes
+  the first passage that stands alone; a paragraph that depends on the one before it is skipped.
+- **Atomic.** One claim per paragraph.
+- **Declarative, with the qualifier attached.** "A three-bedroom deep clean in Bryanston takes
+  4–6 hours" is liftable. "It depends" is not.
+- **Entity-rich.** Suburbs, services, standards, real processes, real numbers where permitted.
+- **Structure.** Lists and comparison tables are disproportionately quoted.
+
+**Mentions matter more than pages.** A branded mention on a third-party site, in a community
+thread, or in a review is a stronger AI-visibility signal than anything self-published. Three
+tiers: editorial, UGC communities, own properties. Earn them honestly — never astroturf a forum,
+which is both against every platform's rules and, when found, the sort of story that ends a local
+brand.
+
+**YouTube is disproportionately cited.** Optimise for search hits, not virality: keyword in
+title, description **and spoken audio**, since transcripts are indexed.
+
+**Technical, and check it first.** Verify `public/robots.txt` and the Netlify headers do not
+block `GPTBot`, `OAI-SearchBot`, `ChatGPT-User`, `PerplexityBot`, `ClaudeBot`, `Claude-Web`,
+`Google-Extended`, `Applebot-Extended`. **An accidental `Disallow` is the most common cause of
+zero AI visibility** — confirm before proposing any citation strategy.
+
+**Measure it.** AI referrals by referrer host, crawler hits by user-agent, and self-reported
+attribution ("how did you hear about us") at booking. Crawler hits move weeks before citations
+do, so they are the leading indicator.

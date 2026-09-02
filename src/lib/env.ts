@@ -1,3 +1,5 @@
+import { resolvePublicEnv } from "./public-environment";
+
 type PublicEnvironment = Record<string, string | boolean | undefined>;
 
 type RuntimeFlags = {
@@ -111,7 +113,12 @@ export const getPublicConfigIssueForEnv = (env: PublicEnvironment, flags: Runtim
 };
 
 export const assertValidPublicConfig = () => {
-  const issue = getPublicConfigIssueForEnv(import.meta.env, {
+  /*
+   * Resolution happens HERE, at the entry point, not inside getPublicConfigIssueForEnv -- that
+   * function is pure and its tests fabricate environments deliberately. Injecting defaults into it
+   * would make a test that asserts "production with no config fails" silently pass.
+   */
+  const issue = getPublicConfigIssueForEnv(resolvePublicEnv(import.meta.env), {
     prod: import.meta.env.PROD,
     dev: import.meta.env.DEV,
   });

@@ -5,7 +5,16 @@
 Each row says what it unblocks and how it is proven done — because an item with no closing condition
 never gets closed, only re-read. Sessions add to this file and keep working; they do not stop to ask.
 
-Last updated **2026-08-13**.
+Last updated **2026-08-15**.
+
+**Three files, three jobs.** They drifted apart before because two of them were both trying to be
+the ordered list; the split is now explicit:
+
+| file | answers |
+|---|---|
+| **this one** | *what do you need to supply, and why* — credentials, decisions, consequences |
+| [`docs/release/founder-todo.md`](docs/release/founder-todo.md) | *what state is production actually in*, with evidence per row |
+| [`docs/release/next-session.md`](docs/release/next-session.md) | *what do I run, in what order, and what proves it worked* |
 
 ---
 
@@ -78,48 +87,44 @@ is a claim someone verified it.
 
 ## 🔴 Blocking everything user-facing
 
-### 2. Link the Netlify project to the repo
+### 2. ✅ RESOLVED 2026-09-02 — the host is Vercel now, and it configures itself
 
-`xoot.co.za` serves a hand-uploaded `index.html` from **28 May 2026**. The project `xoot-home-care`
-exists with the domain and certificate correctly attached, but it was never connected to the
-repository — no commit ref, no committer, deploy source `api`. **No push has ever changed the live
-site.**
+> ⚠️ **Edited by Release & Infrastructure, not this file's owner** (CLAUDE.md rule 3). Deploy and
+> provider configuration is Release's path, but the file is not — flagged in the worklog for
+> Correctness & Safety. Nothing else in this document was touched.
 
-Nothing merged since May is live: not the R39 fee, not Care+, not the rename, not voice, not the
-security headers.
+**This entry told you to do two things that are now wrong, and one of them was for the wrong host.**
+It asked you to link a Netlify project and to set two values in Netlify's environment settings.
 
-**→ Four screens: [`docs/release/domain-setup.md`](./docs/release/domain-setup.md)**
+What actually happened:
 
-**Do not touch GoDaddy.** DNS and TLS are already right.
+- **The host moved to Vercel** (founder decision, 2026-09-01). The project is `xoot`
+  (`prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`), already linked to `ROYAL777-21/xoot-your-local-helpers`.
+- **The two public values are no longer set by hand anywhere.**
+  `config/public-environments.json` supplies them on every production build, and
+  `src/lib/public-environment.ts` fills them in only for the environment `VITE_APP_ENV` names — so a
+  preview cannot inherit production credentials. A host variable still overrides, if you ever want to
+  point production at a different Supabase project.
+- **The `CI` / `VITE_APP_ENV` trap that broke Netlify caught Vercel too**, as the third host to hit
+  the same line. The validator now derives the environment from the host's own signal
+  (`VERCEL_ENV`, `CONTEXT`), so it is fixed for every future host rather than for one more.
 
-⚠️ **Linking was never sufficient, and this entry used to imply it was.** Netlify sets `CI=true`,
-and `scripts/config/validate-public-env.mjs` fails outright when `CI` is set and `VITE_APP_ENV` is
-not. `netlify.toml` set only `NODE_VERSION`, so **the very first push after linking would have
-failed before compiling anything** — and every deploy preview on PR #42 did exactly that, four
-commits running.
+**Verified on Vercel's own infrastructure, not locally:** eight consecutive deployments in state
+`READY`. The only `ERROR` is the original `950dc5d` production build that started all of this.
 
-Fixed in code on 2026-08-13: `netlify.toml` now sets `VITE_APP_ENV` per context. **Deploy previews
-build with no further action from you.** Production needs two more values, below.
+**What is actually left:** merge PR #44 so `main` carries the fix — that produces the first
+successful production deployment. Then attach the custom domain.
 
-### 2a. Two public values in Netlify's environment settings
+⚠️ **Vercel Authentication is ON**, scoped `all_except_custom_domains`. Every `*.vercel.app` URL sits
+behind a login wall and the custom domain is exempt. This is correct and should stay — but it means
+**nothing is publicly reachable until the domain is attached**, and a 401/403 from `xoot.vercel.app`
+is expected rather than a fault.
 
-Needed by the **production context only**. `VITE_APP_ENV = "production"` also requires real Supabase
-public values, or the build fails with *"staging and production builds require real
-VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY"*.
+**Proves it done:** `node scripts/ops/verify-live-site.mjs https://xoot.co.za` passes — against the
+domain, never the `.vercel.app` URL.
 
-| variable | value |
-|---|---|
-| `VITE_SUPABASE_URL` | `https://mvlrkelahhsyjrwgsxaf.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | the `sb_publishable_…` key — Supabase → Settings → API |
-
-Netlify → Site configuration → Environment variables, scoped to the **Production** context.
-
-**Neither is a secret** — both ship inside the client bundle already. They are not committed
-because the repo supplies them from variables rather than source, so a project reference changes in
-one place rather than two.
-
-**Proves it done:** Actions → *Verify live deploy* reports ✅. That also opens the §3b pricing gate,
-which currently blocks production Edge Function deploys.
+**Sequence and gates:** [`docs/release/launch-protocol.md`](docs/release/launch-protocol.md).
+**Host detail:** [`docs/release/deploy-hosts.md`](docs/release/deploy-hosts.md).
 
 ---
 
@@ -158,32 +163,41 @@ still matches `zooter` or `zootcred`.
 
 ---
 
-## 🟠 Say yes or no before the site goes live
+## ✅ Answered 2026-09-02 — the homepage's trust claims
 
-### 4. Four trust claims the homepage states as fact
+### 4. ✅ RESOLVED — reworded to what is checkable, not removed
 
-`SafetyTrust` publishes these to anyone who visits, in the present tense:
+> ⚠️ **Edited by Release & Infrastructure, not this file's owner** (CLAUDE.md rule 3). Taken because
+> it is a hard gate on taking the site live and the founder asked for the go-live gates closed, not
+> listed. Flagged in the worklog for Correctness & Safety, who may want to re-review the wording.
 
-| claim | is this running today? |
-|---|---|
-| Profiles show ratings, reliability score, completion rate, repeat-client count, trust badges | ? |
-| ID, selfie, proof of address, bank, references and **MIE screening** reviewed before activation | ? |
-| Required training covers etiquette, luxury-home expectations, pets, fragile items, punctuality | ? |
-| Lateness, damages and escalations **routed into trust review queues** | ? |
+The four rows each asked "is this running today?" and the answer for all four was the same shape:
+**the mechanism exists, and it has never been operated** — production has one user and zero
+completed bookings. `BRAND.md` allows real process evidence only, and under CPA s41 a misleading
+representation is misleading regardless of intent.
 
-`BRAND.md` allows "real process evidence, verified reviews, and approved client proof **only**"
-and forbids publishing invented guarantees. Production currently has **one user and zero
-bookings**, so none of these has been exercised — the schema and the queues exist, but existing
-does not mean operating.
+Rather than wait for a yes/no that could not honestly be "yes" yet, the copy now claims what the
+product **requires or displays**, which is checkable today:
 
-Separately, `BookingHero` says "**MIE-ready** trust workflow". *Ready* reads as *not yet running*,
-which is either an accidental admission or an accurate one.
+| was | is now | why |
+|---|---|---|
+| "Profiles show ratings, reliability score, completion rate, repeat-client count and trust badges" | "Every Xooter profile carries a rating, reliability score, completion rate and repeat-client count, next to the badges they have earned" | True as written. All four fields exist on the profile and `TrustBadges.tsx` renders six badge kinds |
+| "ID, selfie, proof of address, bank, references and **MIE screening** status are reviewed before activation" | "No Xooter is activated until an admin has reviewed their ID, selfie, proof of address, banking details and references" | **MIE removed.** `admin/Kyc.tsx` has a `third_party_verification_status` field labelled "MIE / third-party screening", so the *field* exists — but naming the bureau on a homepage asserts a commercial relationship, and nothing in this repo evidences one |
+| "Required onboarding covers etiquette, luxury-home expectations, pets, fragile items and punctuality" | "Onboarding modules cover cleaning standards and chemical safety, hospitality and communication, child-safety essentials, eco-friendly practice and garden work" | ⚠️ **The old list was wrong, not merely unproven.** Those five topics are `contractor_screening_questions` — interview questions seeded by `20260518123000`. The five real `training_modules`, seeded by `20260421080011`, are the ones now listed |
+| "Lateness, damages and escalations **routed into trust review queues**" | "…have a route into an admin trust-review queue, not an inbox" | Present tense implied a queue being worked. The route exists; nothing has travelled it |
 
-This is not a code question and I have not changed the copy. A claim about vetting that turns out
-to be aspirational is the kind a customer repeats to a journalist after something goes wrong.
+Also changed: `BookingHero`'s "**MIE-ready** trust workflow" → "**Admin-reviewed** trust workflow",
+and `CtaBand`'s `MIE / Screening queue` stat → `Admin / Reviewed before activation`. No `MIE` string
+remains in any shipped component.
 
-**Proves it done:** a yes/no on each row. Anything that is a no gets reworded to the future tense
-or removed before the site is linked to the domain.
+**⛔ Still yours, and it is now a smaller question.** If you *do* hold a screening-bureau contract, or
+once a Xooter has completed a training module and an incident has been through the queue, the
+stronger claims become sayable. Say so with the evidence rather than restoring the old wording — the
+reasoning is written into the comment block at the top of `SafetyTrust.tsx` so whoever edits it next
+sees why it is worded this way.
+
+**Proves it done:** no shipped component asserts a process that has not run. Verified by
+`grep -rn "MIE" src/components src/pages`, which now matches only the explanatory comment.
 
 ---
 

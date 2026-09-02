@@ -23,8 +23,35 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-Nothing held. **PR [#42](https://github.com/ROYAL777-21/zoot-your-local-helpers/pull/42) is open**
-and being driven by the Correctness session.
+### 🚢 Release — the go-live sequence, 2026-09-02
+
+Founder asked for everything required to go live, done rather than listed. Holding:
+
+| path | what |
+|---|---|
+| `supabase/migrations/**` | one new migration finishing the ZD-028/029 rename in the **database** |
+| `.github/workflows/**` dispatches | `db-push`, `verify-types`, `retire-orphaned-functions`, `deploy-edge-functions` on **both** projects |
+| `docs/release/**` | `launch-protocol.md`, `founder-todo.md`, a new `go-live-requirements.md` |
+| `src/components/xoot/{SafetyTrust,CtaBand,BookingHero}.tsx` | ⚠️ **unowned by either role** — the four homepage trust claims, reworded to capability tense |
+| `NEEDS-FOUNDER.md` §3 and §4 | ⚠️ **Correctness's file — flagged per rule 3.** Both close as a result of the work above |
+
+**Three measured findings the other session should know, because two of them contradict documents
+currently in the repo:**
+
+1. **CI can allocate runners again.** The billing outage recorded here and in `founder-todo.md` §0
+   as blocking everything since 2026-08-14 has cleared — PR #44's jobs ran real runners on
+   2026-09-02T06:16Z (`Lint, build and unit tests`, 06:16:32 → 06:18:40, passed). `db-push` and
+   `deploy-edge-functions` are dispatchable again.
+2. **The rename never finished in the production database.** `verify-types` is red on PR #44. The
+   full 952-line diff is constraint names and one view column: ~31 foreign keys still named
+   `zoot*`, and `analytics_contractor_quality.zooter_id`. Columns, tables and functions were all
+   renamed; their constraint *names* were not, because `ALTER TABLE … RENAME COLUMN` does not touch
+   them. **Do not fix this by regenerating `types.ts`** — that puts `zooter` back in the repo and
+   the naming guard would reject it. The database is what is wrong.
+3. **`xoot.co.za` is served by the Netlify project `xoot-home-care`, and that project builds this
+   repo** — it produced a deploy preview for PR #44. The Vercel project has no custom domain. So
+   merging PR #44 publishes the real app to the live domain via Netlify, with no dashboard step.
+   Founder chose this route knowingly; Vercel stays as the parallel build.
 
 ---
 
@@ -133,6 +160,221 @@ migrations at review time, plus a hardening migration revoking the vestigial gra
 ---
 
 ## ✅ RELEASED — done, or stopped and available
+
+### Release & Infrastructure — 2026-09-02 — launch sequencing, and I edited NEEDS-FOUNDER.md
+
+> ⚠️ **Correctness — one thing for you.** I rewrote **`NEEDS-FOUNDER.md` §2 and §2a**, which is your
+> file (CLAUDE.md rule 3). Both entries were actively wrong: they told the founder to link a
+> **Netlify** project and to set two values in **Netlify's** environment settings. The host moved to
+> Vercel on 2026-09-01, and the two values are no longer set by hand anywhere — they come from
+> `config/public-environments.json`. Leaving it would have sent the founder to do obsolete work on a
+> host we no longer use. Content is deploy/provider configuration, which is Release's path; the file
+> is yours, hence this flag. Nothing else in it was touched.
+
+Added two documents that sequence what the existing ones only describe:
+
+- **`docs/release/launch-protocol.md`** — the gate order (CI → production deploy → public domain →
+  payments → trust claims → instrumentation → supply → first bookings → content), each with its
+  evidence, plus go/no-go and rollback. **It carries no task list**: `founder-todo.md` warns that
+  "a fourth copy is how the previous seven registers rotted", so every gate points at whichever of
+  the three registers owns the work.
+- **`docs/marketing/founder-brand-plan.md`** — the founder-account sequence, phase 0 through 3.
+
+**A gate worth your eye:** I promoted `NEEDS-FOUNDER.md` §4 — the four homepage trust claims still
+answered "?" — into a **hard** pre-launch gate (3a). Under CPA s41 a misleading representation is
+misleading regardless of intent, so a claim that is aspirational on a live homepage is an exposure.
+That is a Correctness call rather than a Release one; I sequenced it, I did not answer it.
+
+**Measured on Vercel's API rather than assumed:** 8 of 9 deployments `READY`; the only `ERROR` is the
+original `950dc5d` production build. The env fix is proven on the real host. Vercel Authentication is
+ON, scoped `all_except_custom_domains` — correct as configured, but it means nothing is publicly
+reachable until the custom domain is attached.
+
+
+
+### Release & Infrastructure — 2026-09-01 — reference measurement for the founder brand, and three things that were not true
+
+Founder-directed marketing work, in shared paths (`docs/marketing/**`, `.claude/agents/**` — CLAUDE.md
+"neither owns outright"). **Documentation only. No code, no schema, no deploy, nothing published.**
+
+Added `docs/marketing/reference-creators.md` (Hormozi, Musk and Instagram measured against Eden's
+index) and `docs/marketing/personal-brand-doctrine.md` (patterns distilled from the founder's five
+YouTube references). Updated `.claude/agents/founder-voice.md`, whose reference table asserted the
+transcripts were unobtainable — they are not: **Eden hydrates YouTube transcripts server-side, so
+`eden_read_social_post` returns them even though youtube.com is `EGRESS_BLOCKED` from this
+container.** Worth knowing generally.
+
+**Three claims corrected rather than carried forward:**
+
+1. **The five reference videos are not Musk or Hormozi content.** Four are Eden-channel
+   personal-branding tutorials; one is a Craig Perry livestream. Useful for the brand frame,
+   useless as a voice sample of either figure. Drafts stay `VOICE: UNCALIBRATED`.
+2. **The founder's handles were not in the message** that said they were sent. Still outstanding.
+3. **Eden scheduling is not on this workspace's plan** — `eden_schedule_post` returns HTTP 402 even
+   for `draft: true`, with zero social accounts connected. The week-one drafts live in a table on an
+   Eden board instead. Nothing was queued, because nothing could be.
+
+Also corrected in passing: `CLAUDE.md` §Verifying says *77 files, 755 tests*. Measured on this
+branch today: **98 files, 1,078 tests, all passing.** Left for whoever next edits that section —
+flagging rather than silently editing a file both roles read as the contract.
+
+### Release & Infrastructure — 2026-08-22 — production had no signup trigger, and two claims of mine were wrong
+
+> ⚠️ **Correctness — three things for you.** (1) I touched `src/lib/schema-drift.test.ts` and
+> `scripts/ops/lib/schema-drift.mjs` again (guard layer, CLAUDE.md rule 3) — the checker had a real
+> blind spot. (2) The performance advisor reports **7 `auth_rls_initplan` + 19
+> `multiple_permissive_policies`** findings, which are RLS rewrites and therefore yours, not mine —
+> I deliberately did not touch them. (3) `handle_new_user` is now a SECURITY DEFINER function on
+> both projects; worth your eyes on the grant line.
+
+**The founder pushed back on two things I had refused to do, and was right on both.**
+
+**1. "Running the drift check would be theatre."** Wrong, and I had never measured it. The
+snapshot is 41KB, and Postgres will hand you an md5 of it — so transcription risk is *provable*,
+not a reason to skip. I pulled per-routine `md5(prosrc)` for every function on both projects,
+transcribed, and verified **all 37 production and all 40 staging bodies byte-for-byte**, plus
+relation and trigger digests. Then ran the real `check-schema-drift.mjs --from-json`:
+
+    production   37 routines, 348 relations — every referenced relation exists.  exit 0
+    staging      40 routines, 341 relations — every referenced relation exists.  exit 0
+
+**2. "The three payment Edge Functions are undeployed."** Wrong. I repeated it from
+`next-session.md` without applying the repo's own cheap check (rule 6). All three were deployed
+**2026-08-15 15:40:42Z**, two days newer than the newest file they bundle, and
+`create-payment-session` exists at v1 ACTIVE. `next-session.md` Step 2 is corrected.
+
+**What the exercise actually found — a live production defect.**
+
+Staging has `public.handle_new_user`; production's function list does not contain it at all.
+Measured on production:
+
+    trigger on auth.users     (none)
+    handle_new_user exists    NO
+    auth.users rows           1
+    public.profiles rows      0
+    public.user_roles rows    0
+
+**A real account had signed up and had neither row.** Nothing in `src/` or `supabase/functions/`
+ever inserts into `profiles` or `user_roles` — the trigger is the only creation path — so that
+account was signed in and inert: `Profile.tsx` read null, `RequireRole.tsx` found no role.
+
+**Why the repo's original body could not just be re-run.** It inserts into
+`user_reassignment_state`, and staging's copy also writes `referrals` and `zootcred_wallets`.
+**Production has none of those three.** This is an AFTER INSERT trigger on `auth.users`, so a
+42P01 inside it rolls back the signup — restoring it verbatim would have turned "signs up with no
+profile" into "cannot sign up at all". The shared four tables are written plainly; the three
+staging-only ones are `to_regclass`-guarded, so one file is correct on both projects.
+
+Proven by doing, on both projects, then rolled back:
+
+    staging     PROBE profiles=1 user_roles=1 loyalty=1 notifications=1 referrals=1 wallets=1 reassign=1
+    production  PROBE profiles=1 user_roles=1 loyalty=1 notifications=1
+
+Zero probe rows left behind. The one orphaned account was backfilled: 1 profile, 1 role, 1 loyalty.
+
+**Two checker bugs, both found by measuring rather than reading.**
+
+- **Every `insert into public.x (cols…)` was invisible.** The "a name followed by `(` is a
+  function" rule was applied to `into`/`update` as well as `from`/`join` — but there the
+  parenthesis is a *column list*. `enqueue_sensitive_access_notifications` writes exactly that
+  shape on both projects, so a dropped `notifications` table would have been reported as fine.
+  Split into read and write patterns. Found only because I checked whether my new trigger would
+  cause a false positive — it didn't, and *that* was the bug.
+- **Guarded references were then reported as broken.** With writes visible, the checker flagged
+  all three `to_regclass`-guarded tables on production and exited 1. Every one a false positive:
+  the guard *is* the code saying the table may be absent. Added `relationsGuardedIn`, keyed on the
+  specific relation named, so guarding one table does not excuse an unguarded sibling.
+
+Both planted before being trusted: reverting the write pattern fails the two insert tests;
+deleting the guard exclusion fails both guard tests. The XootCred fixture must still fail, and
+does — that is the assertion protecting the checker from its own exclusions.
+
+`npx vitest run` **1078/1078** · `tsc --noEmit` clean · `npm run build` · `npm run security:scan`.
+Both ledgers realigned to `20260822120000`.
+
+**Performance advisor, run for the first time — 139 findings, and I applied none. Deliberately:**
+
+| n | finding | why not now |
+|---|---|---|
+| 80 | `unused_index` | unused because the database has **no traffic**, not because the indexes are wrong. Dropping them pre-launch would be acting on a measurement of nothing |
+| 32 | `unindexed_foreign_keys` | real, but zero impact at zero rows; adding 32 more indexes to a table set that already has 80 unused ones is not obviously right. Pre-scale backlog |
+| 19 | `multiple_permissive_policies` | **RLS — Correctness's** |
+| 7 | `auth_rls_initplan` | **RLS — Correctness's.** The `(select auth.uid())` rewrite is mechanical but it is still editing who can read what, on a surface I do not own |
+| 1 | `no_primary_key` | `private.ledger_repair_backup_20260812`, a backup table. Correct as-is |
+
+
+### Release & Infrastructure — 2026-08-21 — ZD-029's ACL surface: eight RPCs were anon-callable
+
+> ⚠️ **Correctness — I added `src/lib/security-definer-grants.test.ts`, which is your guard-test
+> layer (CLAUDE.md rule 3).** Taken because the defect it guards was live on production and the
+> guard is what found the tenth instance. Review it through your lens: the allowlist at the top is
+> a security decision, and I have justified each of its three entries with the migration that
+> intends it. Nothing else of yours is touched.
+
+**`REVOKE ... FROM PUBLIC` does not remove the direct grants Supabase's platform gives `anon` and
+`authenticated`.** You have to name the roles. `20260813220000` — the ZD-029 rename — wrote
+`from public;` alone, eight times.
+
+It compounds, and this is the part worth carrying forward: that migration **dropped and recreated**
+each function under its new name, and **a newly created function gets fresh default ACLs**. So
+`20260701093000`, which had correctly revoked `can_release_zooter_payout` from public, anon AND
+authenticated back in July, was silently undone by the rename — and the replacement re-revoked one
+role of the three.
+
+Read off production before touching anything:
+
+    get_xooter_job_cards_for_user(uuid)  prosecdef=t  postgres=X | anon=X | authenticated=X | service_role=X
+    set_safety_pin(text)                 prosecdef=t  postgres=X |         authenticated=X | service_role=X
+
+`set_safety_pin` is the control: `20260802170000` named `anon` in its revoke, and its ACL has no
+`anon`. Same file, same week, opposite outcome, one word apart.
+
+**What was reachable.** `get_xooter_job_cards_for_user` and
+`get_accepted_xooter_job_destinations_for_user` are SECURITY DEFINER, take an arbitrary user id,
+apply **no `auth.uid()` check**, and return `destination_address` — a customer's home address.
+Three more answer booleans about arbitrary ids.
+
+**Stated at its real size, because overstating this is as bad as hiding it.** Every relevant table
+measured **0 rows** on production, so **nothing was leaked**. Reaching it also needs a valid
+`xooters.user_id`, which is a 128-bit uuid. But `authenticated` held the same grant, so once the
+platform carries real bookings any signed-up user who learns one uuid gets that Xooter's live job
+list and their customer's address. Fixed before launch rather than after.
+
+**Deliberately not called a vulnerability:** `assert_fare_split_sums`, `enforce_booking_price_author`
+and `enforce_tip_settlement_author` also held EXECUTE, and the advisor flags two of them. They
+return `trigger`, and PostgREST does not expose trigger functions as RPC — they were never
+reachable. Revoked for hygiene, recorded as hygiene. `booking_sensitive_access` is likewise
+defended by its own `security_invoker = true`.
+
+**The guard found one the advisor did not.** On its first run — before it was committed —
+`security-definer-grants.test.ts` reported `enforce_tip_settlement_author`, which was not in the
+advisor's WARN list. The live ACL then confirmed it was exposed. That is the argument for the
+guard: an advisor reports what it samples, a replay of the migrations reports all of them.
+
+**Verified by doing, not by reading.** After applying to staging then production:
+
+| check | result |
+|---|---|
+| `has_function_privilege` on all 8 | `service_role` **true**, `anon` **false**, `authenticated` **false** |
+| `set role service_role` then call it | executed, returned rows |
+| `set role anon` then call it | refused, `insufficient_privilege` |
+| `get_advisors(security)` | `anon_security_definer_function_executable` — **0**, was 8 |
+| ledger version | realigned to `20260821120000` on both, so `db push` re-runs nothing |
+
+`npx vitest run` 1069/1069 · `tsc --noEmit` clean · `npm run build` · `npm run security:scan` clean.
+
+The guard was planted both ways before being trusted: reverting one revoke to `from public;`
+fails it naming that function and the RPC path; deleting a trigger-function revoke fails it with
+the hygiene wording instead. Restored after each.
+
+**Did not run `check-schema-drift.mjs`** — it compares function bodies and relations, and a
+GRANT/REVOKE migration changes neither. Saying so rather than implying a run that would have been
+theatre.
+
+**Left for the founder:** `get_advisors` also reports **leaked-password protection is disabled**
+(Auth → Passwords → enable the HaveIBeenPwned check). One toggle, no code. Added to the founder
+register.
+
 
 ### 🔒 Correctness & Safety — 2026-08-13 — the payment journey, and the constraint that blocked it
 
@@ -1521,6 +1763,178 @@ cross-review is **owed retroactively**; the migration and the guard are the part
 
 Verified: 1052 tests across 96 files, `tsc --noEmit`, `vite build`, `security:scan`. CI verified
 none of it — Actions still cannot allocate a runner.
+
+
+---
+
+## 2026-08-15 (later) — 🚢 Release — a ninth instance, of a shape the guard cannot see
+
+### The defect
+
+`check_xootcred_balance` queried `public.zootcred_ledger`. That table does not exist — ZD-029
+renamed it to `xootcred_ledger` and renamed the trigger function with
+`alter function … rename to`. **`ALTER FUNCTION … RENAME` changes the name and not one character of
+the body.** So the trigger on `xootcred_ledger` called a function querying a table that had been
+renamed out from under it.
+
+Proven by doing it, not by reading:
+
+    ERROR: 42P01: relation "public.zootcred_ledger" does not exist
+    CONTEXT: PL/pgSQL function check_xootcred_balance() line 17
+
+The lookup sits inside `if new.direction = 'debit'`, so **awarding** XootCred worked and **spending**
+it did not. `create-booking` writes `direction: 'debit'` for a redemption, so a customer applying
+credit to a booking got a 500 and lost the whole booking with it.
+
+Fixed in `20260815160000`, applied to production, re-verified by inserting a credit and a debit in
+one transaction and rolling back.
+
+### ⚠️ Why `constraint-writer-parity.test.ts` did not catch it, and still cannot
+
+The other eight were CHECK constraints whose bodies named the old brand, and the guard covers that.
+**This is a different shape** — a function body referencing a renamed *table* — and no repo-side test
+can see it, because **the repo's migration files are correct**. The drift is between the repo and
+what is actually installed. Only a live query reveals it:
+
+    select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname in ('public','private') and p.prosrc ~* '\mzoot|zooter';
+
+That is now a post-deploy check in `next-session.md` rather than a test, and the limitation is stated
+in the migration header instead of being papered over.
+
+Two matches are deliberate keeps: `booking_has_no_assigned_zooter` is a reason code returned to
+callers, so renaming it is an API change; and staging's `handle_new_user` inserts into
+`zootcred_wallets`, a table that still exists **on staging only**. Production has neither wallet
+table and its `handle_new_user` does not touch them. Recorded so the next person who greps does not
+re-investigate.
+
+### What went out, and what did not
+
+**Production's database is fully migrated** — six migrations, each verified by performing the failing
+operation and rolling it back. Ledgers on both projects re-stamped to the repo's filenames. One
+duplicate ledger row (`fix_private_function_bodies_zd029` recorded twice) was removed so there is
+exactly one row per repo file.
+
+**The site did not ship, and I could not verify it either way.** The founder authorised deploying
+straight to xoot.co.za. Netlify's upload API answered **403 Forbidden** — not retried, because a
+repeated 403 is a permission answer rather than a flake. Separately, **`xoot.co.za:443` is refused by
+this environment's egress proxy**, so a session cannot fetch the live site at all. Any session
+claiming to have "verified live" should be disbelieved.
+
+What did land: the production build variables are now set on `xoot-home-care`, so a Netlify-side
+build will succeed for the first time — `netlify.toml` supplies `VITE_APP_ENV`, and the two Supabase
+public values are now present. Linking the repository is enough to ship it.
+
+**Edge Functions were deliberately not deployed.** The founder chose staging-only, and `deploy_edge_function`
+requires every file inline — which means hand-assembling each function's `_shared` dependency closure
+in a chat message. For money functions that is exactly how one ships a stale or mis-transcribed
+shared copy, the trap that once left 28 of 43 functions behind. `supabase functions deploy` uploads
+from disk and resolves the closure itself. Recorded in `next-session.md` §2 as a CLI-only step.
+
+
+---
+
+## 2026-08-15 (close) — 🚢 Release — the XootCred check is a script now, not a paragraph
+
+The defect itself was already fixed and verified. What was **not** fixed is how it was found: by
+hand, once, by someone who happened to grep for the retired brand. I then wrote the method into
+`next-session.md` as a "post-deploy step", which is the same mistake in slower motion — **a check
+that lives in prose is a check nobody runs.** `founder-todo.md` §5 investigated the constraint
+pattern, concluded three, and five more shipped.
+
+`scripts/ops/check-schema-drift.mjs` + `scripts/ops/lib/schema-drift.mjs`, following
+`check-deployed-drift.mjs`'s shape rather than inventing one: token or `--from-json`, exit 0/1/2,
+pure logic split into `lib/` so the parsing is testable without a database.
+
+**It asks "does this relation still exist", not "does this say zoot".** `zootcred_ledger` was
+findable only because somebody thought to search for the old brand; a table renamed for any other
+reason would have been just as broken and completely invisible. The generalised question needs no
+prior knowledge of what changed — and `schema-drift.test.ts` pins that with a rename having nothing
+to do with the brand.
+
+⚠️ **The fixtures are the real defect**, copied from what production actually contained, not
+invented. A guard whose fixture is a toy proves the toy works. The suite fails if
+`check_xootcred_balance`'s broken body stops being reported, and passes on the fixed body — so it
+would have caught the live outage, and it is not simply always-firing.
+
+Two false-positive classes were found by running it, not by reasoning:
+
+1. **CTEs.** The first version reported every CTE in `enqueue_sensitive_access_notifications` as a
+   missing table. Fixed by matching **qualified references only** — CTE names and aliases are
+   unqualified, so they cannot be mistaken for relations.
+2. **String literals.** `'booking_has_no_assigned_zooter'` is a reason code this repo deliberately
+   keeps. Qualified-only excludes it for free, and a test pins that both deliberate keeps stay
+   unreported. A check that cries wolf gets deleted within a week.
+
+Supabase's own schemas (`auth`, `storage`, …) are excluded: `auth.users` is correct and always will
+be, and reporting it would bury the real findings.
+
+Wired into `go-live.md` as §3-1 — run after **any** migration — and into `next-session.md` in place
+of the raw SQL.
+
+**Not run against a live database.** The Supabase MCP is unauthenticated again and the script's own
+path needs `SUPABASE_ACCESS_TOKEN`, which is not set here. It is unit-tested against the real defect
+and proven both directions from fixtures; that is internal consistency, not a live result, and the
+distinction is the whole point of this file.
+
+**Still outstanding:** `20260815160000` is not recorded in staging's ledger. Staging's function body
+is already correct, so this is bookkeeping — but without the row, `db push` re-runs the migration.
+Needs the MCP back.
+
+Verified: 1062 tests across 97 files, `tsc --noEmit`, `vite build`, `security:scan` 4/4.
+
+
+---
+
+## 2026-08-15 (later) — 🚢 Release — running the checker against production is what fixed it
+
+The schema-drift checker had been unit-tested and never run live. Supabase came back, so I ran it.
+**Nineteen findings against zero real defects** — the exact cry-wolf state the lib's own header
+warns about, and a checker in that state gets ignored and then deleted. Two causes, neither visible
+by reading the code:
+
+1. **`OLD` / `NEW` are not schemas.** `if new.price is distinct from old.price` contains the word
+   `from`, so the pattern matched `old.price` and called it a missing relation. They are PL/pgSQL
+   record variables. `excluded` is the same story for upserts.
+2. **A name followed by `(` is a function, not a relation.**
+   `select * from private.can_create_masked_call(p_booking_id, p_actor_id)` is a set-returning call;
+   `to_regclass` correctly finds no such relation, and the code is correct.
+
+⚠️ **The fix's first attempt was silently wrong, and only the test caught it.** Adding
+`(?!\s*\()` did not work: the engine backtracks, retries with `can_create_masked_cal`, finds `l`
+rather than `(` ahead, satisfies the lookahead and reports a **truncated identifier** as missing. The
+`\b` before the lookahead is load-bearing — it forbids stopping mid-identifier. Written into the
+file, because the next person to touch that regex will otherwise remove it as noise.
+
+**Measured after: production NONE, staging NONE**, from nineteen. And the XootCred fixture still
+fails the checker — that is the regression that would have mattered, since both fixes narrow what it
+looks at and narrowing is how a guard gets quietly disarmed. Pinned as its own test.
+
+Both false positives are now fixtures **verbatim from production**, so the file records what the
+checker learned rather than only what it was designed for.
+
+### Staging ledger closed
+
+`20260815160000` applied to staging and stamped. Staging's body was already correct, so the
+`create or replace` is a no-op in effect — the point was the ledger row, without which `db push`
+re-runs the repo file. **Both projects now have one row per repo migration.**
+
+### 🔒 Hosting: Netlify, and there is nothing to do at GoDaddy
+
+The founder asked whether the GoDaddy connector could put the site live, since the domain was bought
+there. No, and the reasoning is worth recording because it will come up again:
+
+- **A registrar is not a host.** `domain-setup.md` already recorded, from the Netlify API on
+  2026-08-13, that `xoot.co.za` resolves to Netlify — that is what serves the 28 May page. The DNS
+  work was done long ago.
+- **The GoDaddy connector cannot host.** Its entire surface is `domains_check_availability` and
+  `domains_suggest`. No DNS write, no upload, no deploy.
+- **The repo is already a Netlify deployment** — `netlify.toml` (build, publish, per-context
+  `VITE_APP_ENV`, headers, SPA redirect), `public/_headers` in Netlify's format, and
+  `assert-static-hosting-security.mjs` checking it in the suite. GoDaddy's cPanel would mean
+  hand-maintaining `.htaccess` and losing git deploys, atomic rollback and previews.
+
+Verified: 1065 tests across 97 files, `tsc --noEmit`, `vite build`, `security:scan` 4/4.
 
 
 ---

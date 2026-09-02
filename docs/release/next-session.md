@@ -12,14 +12,83 @@ Read this before `go-live.md`. That file is the reference; this one is the order
 
 | layer | state |
 |---|---|
-| Schema | ✅ 4 of 5 pending migrations applied 2026-08-15, each verified by a real insert |
-| Booking creation | ✅ **works** — was broken 13–15 Aug by a constraint that rejected its own column default |
+| Schema | ✅ **fully migrated**, 6 migrations applied 2026-08-15, each verified by a real insert |
+| Booking creation | ✅ **works** — was broken 13–15 Aug by a constraint rejecting its own column default |
 | Xooter SOS alert | ✅ **works** — was broken since the ZD-029 rename |
 | Xooter job cards | ✅ **works** — was broken since the ZD-029 rename |
-| One migration | ❌ `20260814170000_fix_private_function_bodies_zd029` — **not applied, effect unmeasured** |
-| Edge Functions | ❌ three need redeploying together (below) |
-| Web app | ❌ never deployed; Netlify still serves a hand-uploaded page from 28 May |
+| XootCred redemption | ✅ **works** — a trigger queried `zootcred_ledger`, a table the rename dropped |
+| RPC grants | ✅ **closed 2026-08-21** — 8 SECURITY DEFINER functions were `anon`-callable; see below |
+| Edge Functions | ✅ **all three already deployed** 2026-08-15 15:40:42Z — see Step 2 |
+| Signup | ✅ **fixed 2026-08-22** — production had no trigger on `auth.users`; 1 account had 0 profile rows |
+| Web app | ❌ still the 28 May upload — **build env vars now set**, see below |
 | Payments | ❌ gates off, no merchant credentials |
+
+**Nothing outstanding on either database.** Verify it rather than trusting this line:
+
+```bash
+SUPABASE_ACCESS_TOKEN=... node scripts/ops/check-schema-drift.mjs            # production
+SUPABASE_ACCESS_TOKEN=... node scripts/ops/check-schema-drift.mjs --staging
+```
+
+Exit 0 means every relation a database function references still exists. **Run this after every
+migration** — it is the check that would have caught the XootCred outage, where a trigger function
+called a table renamed out from under it for two days while every file in the repo was correct.
+
+It asks "does this still exist", not "does this say `zoot`". A table renamed for any other reason
+would have been just as broken and completely invisible to a brand grep.
+
+**And run this one too, after any migration that creates or renames a function:**
+
+```sql
+select p.proname, array_to_string(p.proacl, ' | ') as acl
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.prosecdef
+  and (array_to_string(p.proacl,' ') like '%anon=%'
+    or array_to_string(p.proacl,' ') like '%authenticated=%')
+order by p.proname;
+```
+
+**`set_safety_pin` is the only row that belongs there.** Anything else is a SECURITY DEFINER
+function callable from a browser holding just the publishable key.
+
+Two things make this necessary rather than paranoid, both learned on 2026-08-21:
+
+- **`REVOKE ... FROM PUBLIC` does not remove `anon` and `authenticated`.** Supabase's platform
+  grants those roles directly; a revoke has to name them. `20260813220000` wrote `from public;`
+  alone, eight times.
+- **`drop` + `create` resets a function's ACL**, so renaming a function silently discards every
+  revoke ever applied to it. That is how a correct July hardening was undone in August.
+
+`src/lib/security-definer-grants.test.ts` catches both at review time by replaying the migrations,
+but it reads migration *text* — only the query above sees what is actually installed.
+
+---
+
+## ⚠️ Two things a session cannot do from here — read before retrying either
+
+**1. `xoot.co.za` is blocked by this environment's egress proxy.**
+
+    2026-08-15T16:30Z  connect_rejected  xoot.co.za:443
+    gateway answered 403 to CONNECT (policy denial)
+
+So a session **cannot fetch the live site to verify a deploy**. Any claim about what xoot.co.za
+serves has to come from you or from the Netlify dashboard, not from a session. Do not accept
+"verified live" from a session that cannot reach the domain.
+
+**2. The Netlify upload returned 403.** `netlify-deploy-services-updater` does not deploy directly —
+it hands back an `npx @netlify/mcp --site-id … --proxy-path …` command that uploads the repo and
+builds on Netlify. That upload was refused with `403 Forbidden`, and the proxy log does **not** list
+the upload host, so this reads as Netlify's own API rather than the egress policy. Not retried:
+repeated 403s are a permission answer, not a flake.
+
+**What IS done:** the production build env vars are set on `xoot-home-care`
+(`84f2dfcc-e653-4ce6-bb15-c9d5921e1a51`), production context, builds scope:
+
+    VITE_SUPABASE_URL             https://mvlrkelahhsyjrwgsxaf.supabase.co
+    VITE_SUPABASE_PUBLISHABLE_KEY sb_publishable_…  (public value, ships in every client bundle)
+
+`netlify.toml` supplies `VITE_APP_ENV=production`. So **a Netlify-side build will now succeed** — the
+thing that had never once worked. Linking the repository is enough to ship it.
 
 ---
 
@@ -40,33 +109,55 @@ Nothing below can run until one of them is back.
 
 ---
 
-## Step 1 — the last migration
+## Step 1 — migrations ✅ done 2026-08-15
 
-    20260814170000_fix_private_function_bodies_zd029.sql
-
-Via MCP `apply_migration`, or `db-push` once runners return.
-
-⚠️ **`apply_migration` stamps a "now" version.** Left alone, `db push` then treats the repo file as
-unapplied and re-runs it. After applying, re-stamp:
-
-```sql
-update supabase_migrations.schema_migrations
-   set version = '20260814170000'
- where name = 'fix_private_function_bodies_zd029' and version <> '20260814170000';
-```
-
-**Proves it done:**
-
-```sql
-select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
- where n.nspname in ('public','private') and p.prosrc ~* '\mzoot|zooter';
-```
-
-Zero rows.
+All six applied to production and verified by performing the operation that was failing, then
+rolling it back. Ledgers on both projects re-stamped to the repo's own filenames, so `db push`
+re-runs nothing. Nothing to do here.
 
 ---
 
-## Step 2 — three Edge Functions, together
+## Step 2 — ✅ ALREADY DONE. Verified 2026-08-22, not assumed
+
+**This step was already complete and this document said otherwise for a week.** Corrected by
+applying the cheap check in CLAUDE.md rule 6 — comparing each function's `updated_at` against
+`git log` — which takes seconds and which nobody had run:
+
+| function | deployed | newest source file in its closure |
+|---|---|---|
+| `confirm-payment` | v16, **2026-08-15 15:40:42Z** | 2026-08-13 14:43 |
+| `admin-confirm-payment` | v15, **2026-08-15 15:40:42Z** | 2026-08-13 13:40 |
+| `create-payment-session` | **v1, ACTIVE**, 2026-08-15 15:40:41Z | 2026-08-13 14:43 |
+
+`create-payment-session` **exists**, so the 404 warning below is already satisfied. Every deploy is
+two days newer than the newest file it bundles, so no stale `_shared` copy is possible.
+
+Do **not** redeploy these to "be safe": re-inlining 11 files / 1,794 lines through the MCP would put
+working money functions at risk to fix a problem that does not exist.
+
+**Verified by reading the deployed body, 2026-08-22** — the check CLAUDE.md requires for money
+("the deployed server is the authority on money, and the deployed server can be wrong"). All
+**7 bundled files of `confirm-payment` v16 are byte-identical to disk**:
+
+    functions/confirm-payment/index.ts        _shared/payfast.ts
+    _shared/action-utils.ts                   _shared/payfast-checkout.ts
+    _shared/governance-utils.ts               _shared/payment-confirmation.ts
+    _shared/booking-state-machine.ts
+
+`verify_jwt = false`, which is correct for an ITN webhook — PayFast cannot present a user JWT, and
+the body signature plus the source-IP allowlist are the verification. So the timestamp inference
+above is now backed by the bytes, and no stale `_shared` copy is bundled.
+
+<details><summary>The original instructions, kept for the day these do need redeploying</summary>
+
+### (historical) three Edge Functions, together
+
+⚠️ **Deploy these with `supabase functions deploy`, not through the MCP.** `deploy_edge_function`
+requires every file inline, which means hand-assembling each function's `_shared` dependency closure
+in a chat message. For money functions that is precisely how one ships a function carrying a stale or
+mis-transcribed `_shared` copy — the trap that once left 28 of 43 functions behind. The CLI uploads
+from disk and resolves the closure itself. This was deliberately **not** attempted on 2026-08-15 for
+that reason.
 
 ```
 confirm-payment admin-confirm-payment create-payment-session
@@ -86,6 +177,8 @@ log.
 `provider: 'payfast'`, which the pre-`20260813200000` constraint rejected.
 
 ---
+
+</details>
 
 ## Step 3 — the web app
 

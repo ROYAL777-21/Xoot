@@ -41,32 +41,43 @@ Every test insert was rolled back, so both projects still hold **0 rows** in all
 `src/lib/constraint-writer-parity.test.ts` now fails the build if a writer ever sends a value its
 column forbids again — this was the eighth instance of one pattern.
 
-### What was applied to production on 2026-08-15, and what is left
+### ✅ Production's database is fully migrated — 2026-08-15
 
-The Supabase MCP was authorised for part of this session, which routed around the dead CI entirely.
-Four migrations went to production and were **verified by measurement, not by reading the DDL back**:
+Six migrations applied, each **verified by performing the operation that was failing and rolling it
+back**, so both projects still hold 0 rows everywhere:
 
-    20260813200000  payment_records lifecycle     bookings work again
-    20260813220000  function renames              Xooter job cards work again
-    20260814103000  avatar bucket                 xooter-avatars exists
-    20260815150000  five zooter constraint bodies SOS + Concierge handoff work again
+| was broken | now |
+|---|---|
+| **No booking could be created**, 13–15 Aug — a constraint rejected its own column default | the failing insert returns a row |
+| **A Xooter could not raise an SOS alert** | a Xooter SOS insert succeeds |
+| **A Xooter could not open a Concierge handoff** | fixed in the same migration |
+| **A Xooter could not open their job cards** | the renamed RPCs exist; 0 old-named functions remain |
+| **Every XootCred redemption failed** — a trigger queried `zootcred_ledger`, dropped by the rename | a debit succeeds and the balance check still bites |
 
-After `20260813220000`, production reports `get_xooter_job_cards_for_user`,
-`xooter_job_transition_allowed`, `get_xooter_job_cards` and `can_access_sensitive_data` all present,
-and **zero** `zooter`-named functions remaining.
+That last one was the **ninth** instance of the rename class and the only one of a different shape:
+not a constraint but a function body pointing at a renamed table. `ALTER FUNCTION … RENAME` changes
+the name and not one character of the body, which is how it survived. Proven by insert
+(`ERROR: 42P01: relation "public.zootcred_ledger" does not exist`) before being fixed.
 
-⚠️ **Correction.** This section previously said *"A Xooter cannot open their job cards on
-production"*. That was true when written and stopped being true an hour later; the session was
-interrupted before the line could be updated. **Overstating a live defect is the same failure as
-hiding one**, so it is corrected here rather than quietly deleted.
+Migration ledgers on both projects were re-stamped to the repo's own filenames, so `db push` will
+re-run nothing.
 
-**One migration is still outstanding on production:**
+### ⚠️ The site is still the 28 May upload — and a session cannot finish this one
 
-    20260814170000_fix_private_function_bodies_zd029.sql
+I set the production build variables on `xoot-home-care`, so **a Netlify build will now succeed for
+the first time**: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (public values that ship in
+every client bundle), with `netlify.toml` supplying `VITE_APP_ENV=production`.
 
-⚠️ **Its status is "not applied, effect unmeasured"** — neither "harmless" nor "broken". It repairs
-function *bodies*; the measurement above checked function *names*. The Supabase MCP dropped before
-that could be re-checked. Applying it needs the MCP re-authorised, or a `db-push` once CI returns.
+The deploy itself did not go through:
+
+- Netlify's upload API answered **403 Forbidden**. Not retried — a repeated 403 is a permission
+  answer, not a flake.
+- **`xoot.co.za` is blocked by this environment's egress proxy** (`connect_rejected … 403 to
+  CONNECT`), so a session cannot even fetch the live site to check. Treat any session's claim about
+  what xoot.co.za serves as unverifiable.
+
+**Linking the repository is now enough to ship it** — the build that used to fail before compiling
+will now complete. See [`next-session.md`](./next-session.md).
 
 ---
 
@@ -285,6 +296,7 @@ before concluding the feature is broken — that is by far the most likely reaso
 | SOS activation ([#36](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/36)) — **do not just flip the constant**, it ships dark on purpose | needs a real device | the sequence in #36, in order |
 | Device verification ([#37](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/37)) — Live Activities, widgets, Siri, App Links | needs a real device | each surface opened once on hardware |
 | Rotate the credentials pasted into chat on 2026-08-07 | the issuing provider consoles | old values rejected |
+| **Enable leaked-password protection** — one toggle, checks new passwords against HaveIBeenPwned; reported by `get_advisors` 2026-08-21 | Supabase Dashboard → Authentication → Passwords | the advisor stops reporting `auth_leaked_password_protection` |
 | Dismiss the two by-design Supabase advisors | Supabase Dashboard | no MCP tool can do it |
 | Production deploy dispatches | Actions, typing the project ref | **deliberately** a human act; no session triggers it unasked |
 
