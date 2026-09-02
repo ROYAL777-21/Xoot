@@ -124,10 +124,36 @@ jobs:
 
           echo "Live site reports pricing rule ${live_rule}; the function deploy will not be refused."
 
+      # ⚠️ ONE PASSWORD CANNOT OPEN TWO DATABASES. Found the hard way, 2026-09-02.
+      #
+      # Until now both steps below read `secrets.SUPABASE_DB_PASSWORD` while `PROJECT_REF` switched
+      # between the two projects. A Postgres password belongs to one server, so that arrangement can
+      # only ever authenticate against whichever project the single stored password came from.
+      #
+      # Measured, minutes apart, on the same commit:
+      #
+      #   staging    (fxmxyabdjqviqbcxmvlp)  -> linked, applied, exit 0
+      #   production (mvlrkelahhsyjrwgsxaf)  -> FATAL: password authentication failed for user
+      #                                         "postgres" (SQLSTATE 28P01)
+      #
+      # So the stored value is staging's, and **production has never been reachable through this
+      # workflow with it**. The old error message said "Check SUPABASE_DB_PASSWORD", which sends
+      # someone to re-paste the value that is already correct for the environment they last used.
+      #
+      # Per-environment secrets, falling back to the shared name so the staging path keeps working
+      # exactly as it does today and only one new secret has to be added.
       - name: Refuse to run without the credentials this needs
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_PASSWORD: >-
+            ${{ inputs.environment == 'production'
+                && (secrets.SUPABASE_DB_PASSWORD_PRODUCTION || secrets.SUPABASE_DB_PASSWORD)
+                || (secrets.SUPABASE_DB_PASSWORD_STAGING || secrets.SUPABASE_DB_PASSWORD) }}
+          HAS_PER_ENV: >-
+            ${{ inputs.environment == 'production'
+                && (secrets.SUPABASE_DB_PASSWORD_PRODUCTION != '')
+                || (secrets.SUPABASE_DB_PASSWORD_STAGING != '') }}
+          ENVIRONMENT: ${{ inputs.environment }}
         run: |
           case "$SUPABASE_ACCESS_TOKEN" in
             sbp_*) : ;;
@@ -135,8 +161,15 @@ jobs:
             *) echo "::error::Not a personal access token. Account -> Access Tokens; starts 'sbp_'."; exit 1 ;;
           esac
           if [ -z "$SUPABASE_DB_PASSWORD" ]; then
-            echo "::error::SUPABASE_DB_PASSWORD is not set. db push needs a direct Postgres connection."
+            echo "::error::No database password for $ENVIRONMENT. Set SUPABASE_DB_PASSWORD_$(echo "$ENVIRONMENT" | tr a-z A-Z) in Actions secrets."
             exit 1
+          fi
+          # Names and shapes only. Never the value.
+          if [ "$HAS_PER_ENV" = "true" ]; then
+            echo "Using the $ENVIRONMENT-specific database password (${#SUPABASE_DB_PASSWORD} characters)."
+          else
+            echo "::warning::Falling back to the shared SUPABASE_DB_PASSWORD for $ENVIRONMENT."
+            echo "::warning::A Postgres password belongs to ONE project. If this run fails with SQLSTATE 28P01, the shared value belongs to the other environment - add SUPABASE_DB_PASSWORD_$(echo "$ENVIRONMENT" | tr a-z A-Z) rather than overwriting the shared one, which would break the environment that currently works."
           fi
           echo "Credentials present."
 
@@ -149,7 +182,12 @@ jobs:
       - name: Link and push
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          # Must resolve identically to the check above, or the step that validates the credential
+          # and the step that uses it are talking about different secrets.
+          SUPABASE_DB_PASSWORD: >-
+            ${{ inputs.environment == 'production'
+                && (secrets.SUPABASE_DB_PASSWORD_PRODUCTION || secrets.SUPABASE_DB_PASSWORD)
+                || (secrets.SUPABASE_DB_PASSWORD_STAGING || secrets.SUPABASE_DB_PASSWORD) }}
           PROJECT_REF: ${{ inputs.environment == 'production' && 'mvlrkelahhsyjrwgsxaf' || 'fxmxyabdjqviqbcxmvlp' }}
         # ⚠️ `shell: bash` explicitly. NOTE: this does NOT drop `-e` — see below.
         #
@@ -182,7 +220,7 @@ jobs:
           both() { tee -a "$GITHUB_STEP_SUMMARY"; }
 
           if ! supabase link --project-ref "$PROJECT_REF" 2>&1 | both; then
-            echo "::error::Could not link to $PROJECT_REF. Check SUPABASE_DB_PASSWORD and the PAT's access."
+            echo "::error::Could not link to $PROJECT_REF. On SQLSTATE 28P01 the stored password belongs to a different project - add a per-environment secret (SUPABASE_DB_PASSWORD_PRODUCTION / _STAGING) rather than overwriting the shared one."
             exit 1
           fi
 
