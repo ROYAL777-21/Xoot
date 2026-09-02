@@ -31,6 +31,24 @@ on:
   push:
     branches: [main]
 
+  # ── A daily heartbeat, added 2026-09-02 ─────────────────────────────────────────────────────
+  #
+  # This check only ever ran on a push to `main` or when someone remembered to dispatch it. So the
+  # live site was silently wrong for THREE WEEKS: `xoot.co.za` was answering with a GoDaddy Website
+  # Builder placeholder while both hosts held correct production builds, and nothing was watching
+  # the one thing that would have said so.
+  #
+  # A deploy check that only runs at deploy time cannot catch the failures that happen between
+  # deploys — a DNS change, a certificate lapse, a domain moved to another host, a builder site
+  # republished by accident. Those are exactly the failures nobody notices, because the site keeps
+  # returning 200.
+  #
+  # 06:00 UTC is 08:00 SAST — before the working day, so a failure is waiting rather than arriving
+  # mid-afternoon. On a scheduled run `github.sha` is main's head, which is the right thing to
+  # compare against.
+  schedule:
+    - cron: "0 6 * * *"
+
 permissions:
   contents: read
 
@@ -46,6 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Compare the deployed build stamp against this commit
+        id: stamp
         env:
           SITE: https://xoot.co.za
           EXPECTED: ${{ inputs.expected_commit || github.sha }}
@@ -69,11 +88,21 @@ jobs:
           set +e
           set -uo pipefail
 
-          # Netlify builds take minutes. A check that fires on push and gives up immediately would
-          # fail every single time and be switched off within a week, so the window is generous and
-          # the backoff is gentle: 12 attempts, ~10 minutes total.
-          attempts=12
-          delay=15
+          # ⚠️ CORRECTED 2026-09-02. This block used to say "12 attempts, ~10 minutes total" while
+          # setting `attempts=12` and `delay=15`, which is 11 sleeps of 15 seconds — **3 minutes**,
+          # not 10. Off by more than three times, in the direction that makes the check useless.
+          #
+          # Netlify's build of this repo takes longer than 3 minutes, so the poll had always given
+          # up before the deploy landed, every time, and always down the "no build stamp readable"
+          # path below — which exits 0. Measured on the merge of PR #44: the check ran 11:30:56 to
+          # 11:33:43 reporting "no build stamp" on all 12 attempts, and Netlify's `currentDeploy`
+          # had moved to `6a9808ea` state `ready` shortly after. The site was fine; the window was
+          # not.
+          #
+          # 20 attempts at 30 seconds is ~9.5 minutes — the interval the comment always claimed —
+          # with fewer requests than shortening the delay would cost.
+          attempts=20
+          delay=30
           live=""
           body=""
 
@@ -99,11 +128,29 @@ jobs:
                 echo "§3b's gate is satisfied: it is now safe to dispatch \`create-booking\` and"
                 echo "\`create-booking-request\`."
               } >> "$GITHUB_STEP_SUMMARY"
+              # Read by the header check below, which is only meaningful once the live site is
+              # known to be serving THIS commit. Checking headers on a stale build tells you about
+              # a build nobody is shipping.
+              echo "serving=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
 
             if [ -n "$live" ]; then
               echo "attempt ${attempt}: live=${live:0:8} expected=${EXPECTED:0:8} — not yet"
+            # ⚠️ Print the body, not just the verdict. Added 2026-09-02 after a run reported
+            # "no build stamp readable" twenty times, and the one thing needed to act on it — what
+            # the site actually returned — went only to the step summary, which is not readable
+            # from the API. `verify-secrets.yml` and `verify-types.yml` both carry this same lesson
+            # in their own comments: a check that reports a verdict without the evidence sends
+            # someone to go and find the evidence by hand.
+            #
+            # Safe to print: a public URL's public response. First and last attempt only, so a slow
+            # publish does not paste twenty copies of the same 404 into the log.
+            elif [ "$attempt" -eq 1 ] || [ "$attempt" -eq "$attempts" ]; then
+              echo "attempt ${attempt}: no build stamp readable yet — first 400 bytes of the response:"
+              echo "----- body -----"
+              echo "${body:0:400}"
+              echo "----- end body -----"
             else
               echo "attempt ${attempt}: no build stamp readable yet"
             fi
@@ -114,20 +161,70 @@ jobs:
           # Out of attempts. Separate the two failures, because the fixes are different and one of
           # them is not a failure at all.
           #
+          # ── Is this even our site? Added 2026-09-02, and it should have existed first. ──────
+          #
+          # For three weeks this check reported "no build stamp" and everyone read it as a slow or
+          # broken deploy. It was neither. `https://xoot.co.za` was answering with:
+          #
+          #   <meta name="generator" content="Starfield Technologies; Go Daddy Website Builder 8.0.0000"/>
+          #   <link rel="canonical" href="https://xoot.co.za/404"/>
+          #
+          # A GoDaddy Website Builder placeholder was published on the apex domain, so DNS never
+          # reached Netlify or Vercel at all — while BOTH hosts held correct, current production
+          # builds of `main` and both of their APIs happily reported the domain as theirs. A host's
+          # own record describes what it would serve if traffic arrived; it says nothing about where
+          # DNS sends traffic. That distinction cost three weeks.
+          #
+          # "Someone else's site is on our domain" is a different failure from "the publish is still
+          # running", it needs a different action, and it must not exit 0.
+          #
+          # Guarded on evidence rather than a guess: a `generator` meta tag that is present and is
+          # not ours. Our own build emits no `generator`, so the SPA's index.html cannot trip this —
+          # which matters, because that body is the genuine "still publishing" case and must keep
+          # warning rather than failing.
+          foreign=$(grep -o -i -m1 'name="generator" content="[^"]*"' <<< "$body" || true)
+          if [ -n "$foreign" ]; then
+            echo "::error::$SITE is being served by something that is not this app: $foreign"
+            {
+              echo "## 🚨 The domain is serving someone else's site"
+              echo ""
+              echo "\`$SITE\` returned a page identifying itself as:"
+              echo ""
+              echo '```'
+              echo "$foreign"
+              echo '```'
+              echo ""
+              echo "This is **not** a slow deploy. DNS is not reaching this project. Both hosts can"
+              echo "report the domain as theirs and still never receive a request."
+              echo ""
+              echo "**Fix:** \`docs/release/domain-setup.md\` → *Point the domain at the app*."
+              echo "Unpublish the builder site first, or the DNS records will be overwritten."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
           if [ -z "$live" ]; then
-            # No parseable stamp. Most likely the live build predates `write-build-info.mjs`, which
-            # is expected exactly once — on the first run after that script ships. Reporting that as
-            # a broken deploy would be wrong, and a false alarm on a new check is how it gets
-            # ignored forever.
-            echo "::warning::No build stamp on the live site. If this is the first run after write-build-info.mjs shipped, that is expected — the currently deployed build predates it. Re-run once Netlify has published a newer build."
+            # No parseable stamp after the full window.
+            #
+            # ⚠️ The reassurance that used to live here — "most likely fine, the deployed build
+            # predates write-build-info.mjs" — is no longer true and was doing real harm. That
+            # script has shipped since 2026-08-13 and runs in `postbuild`, so any build published
+            # from this repo carries the stamp. Combined with the 3-minute window above, this
+            # branch was where every run of this check quietly landed.
+            #
+            # Still exit 0 rather than fail: a slow publish is not a broken one, and a check that
+            # cries wolf on timing gets switched off. But the message no longer tells anyone it is
+            # probably fine, because that is the sentence that stopped people looking.
+            echo "::warning::No build stamp on $SITE after the full window. Either the publish is still running, or the deployed build did not come from this repository."
             {
               echo "## ➖ No build stamp on the live site"
               echo ""
-              echo "\`${SITE}/build-info.json\` did not return a readable \`commit\`."
+              echo "\`${SITE}/build-info.json\` did not return a readable \`commit\` within the poll"
+              echo "window. **This is not a pass.** Two things it can mean:"
               echo ""
-              echo "**Most likely fine.** The deployed build predates \`write-build-info.mjs\`."
-              echo "Re-run this after the next Netlify publish; if it is still empty then, the"
-              echo "deploy genuinely is not landing."
+              echo "1. The publish had not finished. Check the deploy log and re-run."
+              echo "2. The site is serving a build that did not come from this repository —"
+              echo "   \`postbuild\` always writes the stamp, so a build without one is not ours."
               echo ""
               echo "Last response body, truncated:"
               echo ""
@@ -136,6 +233,7 @@ jobs:
               echo ""
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
+            echo "serving=unknown" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -157,3 +255,75 @@ jobs:
             echo "display."
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
+
+      # ── The second half of "is it live", added 2026-09-02 ────────────────────────────────────
+      #
+      # The check above proves the live site is serving this COMMIT. It says nothing about whether
+      # the site is serving it *correctly*, and those are different failures with different causes.
+      #
+      # `scripts/ops/verify-live-site.mjs` was written on 2026-09-01 to answer the second question
+      # — CSP, HSTS, referrer and permissions headers, deep links reaching the SPA instead of a 404,
+      # `noindex` on /app /auth /admin, `/.well-known/*` served as JSON rather than rewritten to
+      # HTML, a real Supabase URL in the bundle and NO service-role key in it. **Nothing ran it.**
+      # It could not run from an agent session either: `xoot.co.za:443` is refused by this
+      # organisation's egress policy, so every local invocation returned "I could not look".
+      #
+      # A GitHub runner has real egress. This is the only place the script can actually answer.
+      #
+      # The header question matters most on exactly this deploy: `public/_headers` is a Netlify
+      # format and `vercel.json` now carries a mirrored copy, so the two hosts can silently drift
+      # apart. `assert-static-hosting-security.mjs` compares the two FILES; this reads what the
+      # server actually sent.
+      - uses: actions/checkout@v5
+        if: steps.stamp.outputs.serving == 'true'
+
+      - uses: actions/setup-node@v5
+        if: steps.stamp.outputs.serving == 'true'
+        with:
+          node-version: 22
+
+      - name: The served site must carry its security headers
+        if: steps.stamp.outputs.serving == 'true'
+        env:
+          SITE: https://xoot.co.za
+        shell: bash
+        run: |
+          set +e
+          set -uo pipefail
+
+          node scripts/ops/verify-live-site.mjs "$SITE"
+          status=$?
+
+          # ⚠️ Exit 2 is not a failing verdict, and collapsing it into one would be the specific
+          # mistake this repo keeps making. The script exits 2 when it could not READ the site —
+          # a 401, a 403, a refused connection. "I could not look" is not "the site is wrong", and
+          # a check that reports the second when it means the first gets muted within a week.
+          #
+          # Exit 1 is a real verdict: the site answered, and an assertion failed.
+          case "$status" in
+            0)
+              echo "## ✅ Served site passes the header and routing checks" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+              ;;
+            2)
+              echo "::warning::Could not read $SITE to verify its headers (exit 2). That is an access result, not a verdict on the site."
+              {
+                echo "## ➖ Could not read the served site"
+                echo ""
+                echo "Exit 2 means the script could not reach or read \`$SITE\` — not that the"
+                echo "site failed. Re-run once it is reachable."
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+              ;;
+            *)
+              echo "::error::The served site failed its header or routing checks (exit $status)."
+              {
+                echo "## ❌ Served site failed the header and routing checks"
+                echo ""
+                echo "The site answered and an assertion failed — see the step log above. This is"
+                echo "the class of defect that ships silently on a green build, because"
+                echo "\`public/_headers\` is a Netlify format that other hosts ignore without warning."
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit "$status"
+              ;;
+          esac

@@ -81,7 +81,76 @@ will now complete. See [`next-session.md`](./next-session.md).
 
 ---
 
-## 🚨 0. CI cannot run — this blocks the other four items
+## ✅ 0. RESOLVED 2026-09-02 — CI allocates runners again
+
+**Whatever it was, it has cleared.** Measured rather than assumed, on job `100145687623`
+(*Lint, build and unit tests*, PR #44):
+
+```
+runner_id     1000002340        a runner was assigned
+runner_name   "GitHub Actions 1000002340"
+steps         present, 15 of them
+started_at    2026-09-02T06:16:32Z
+completed_at  2026-09-02T06:18:40Z    two minutes of real work
+conclusion    success
+```
+
+Compare that with the shape below, which is what every job looked like for nineteen days. This
+is the opposite of it in every field.
+
+**Everything this was blocking has now been done or attempted:**
+
+| was blocked | now |
+|---|---|
+| CI on every branch | ✅ running — PR #44's board is real again |
+| `db-push` | ✅ dispatched. Staging applied, exit 0. ⚠️ **Production refused — see §0a** |
+| `deploy-edge-functions` | ✅ dispatchable |
+| Merging PR #42 / #44 | ✅ **PR #44 merged 2026-09-02**, commit `8cb2d0b` |
+| Retiring the six orphaned functions | ✅ unblocked — the domain now serves this repo's build |
+
+---
+
+## 🔴 0a. The production database password in Actions secrets is staging's
+
+**Found 2026-09-02, by the first production `db push` anyone has attempted since the outage.**
+Four minutes after staging applied cleanly, on the same commit:
+
+```
+staging    (fxmxyabdjqviqbcxmvlp)   linked, applied, exit 0
+production (mvlrkelahhsyjrwgsxaf)   FATAL: password authentication failed for user "postgres"
+                                    (SQLSTATE 28P01)
+```
+
+`db-push.yml` read **one** secret, `SUPABASE_DB_PASSWORD`, while switching `PROJECT_REF` between
+the two projects. A Postgres password belongs to one server, so that could only ever authenticate
+against whichever project the stored value came from. It came from staging.
+
+**Production has never been reachable through this workflow.** Nothing said so, because the CI
+outage began before anyone tried, and staging is the environment that works.
+
+**⛔ Yours, and it is one field.** GitHub → Settings → Secrets and variables → Actions → New
+repository secret:
+
+| name | value |
+|---|---|
+| `SUPABASE_DB_PASSWORD_PRODUCTION` | the database password for `mvlrkelahhsyjrwgsxaf` — Supabase → Project Settings → Database → Database password. Reset it there if it is not written down; a reset is safe, nothing else uses it |
+
+⚠️ **Do not overwrite the shared `SUPABASE_DB_PASSWORD`** — that is staging's and staging works.
+The workflow now prefers a per-environment secret and falls back to the shared one, so adding the
+new name changes nothing about staging.
+
+**Proves it done:** *Database migration push* → `production`, `dry_run` ticked, reaches
+"Would push these migrations" instead of 28P01. Then untick and type `mvlrkelahhsyjrwgsxaf`.
+
+**What is waiting on it:** `20260902120000_finish_zd028_rename_in_constraint_names.sql`, which
+finishes ZD-028/029 in the database — ~31 foreign-key constraint names and one view column still
+spell the old brand on production. It is applied and proven on staging. Nothing breaks at runtime;
+it is why the `Types match the live schema` check is red.
+
+---
+
+<details>
+<summary>The original §0, kept because the shape of the outage is worth recognising again</summary>
 
 **Added 2026-08-15.** GitHub Actions has been unable to allocate a runner for this account since
 **2026-08-14 ~10:59Z**. Last successful run of anything: **2026-08-13T22:07Z**.
@@ -113,6 +182,8 @@ is being assigned.
 **Do not read PR #42's red board as a broken PR.** I ran that branch locally at `54349e1`:
 **1034/1034 tests, `tsc --noEmit` clean, `vite build` clean, `security:scan` 4/4.** The code is
 fine; the runners are absent.
+
+</details>
 
 ---
 

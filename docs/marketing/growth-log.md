@@ -13,6 +13,50 @@ _No experiments yet — measurement is not instrumented. See `measurement-spec.m
 Not experiments. Things that were built or measured, so the first experiment does not have to
 rediscover them.
 
+### 2026-09-02 (later) — MrBeast measured, and seven platforms answered with two
+
+**MrBeast added as a sixth voice reference at the founder's request, and measured rather than
+assumed.** 34.98M followers, 295 posts indexed, **1.09% average engagement**, median outlier 1.06×.
+
+**The finding that matters: he is the least transferable reference supplied so far.** Four of his top
+six posts are pure borrowed context — *"Can I be the new Twitter CEO?"* at 36.76×, *"I'll buy Tik
+Tok"* at 24.49×, the $1,000,000 line at **43.25×**. Each works because of who is saying it. This is
+the Musk problem with an extra layer: 35M followers **plus** demonstrated follow-through **plus**
+capital.
+
+**What transfers is one thing:** the mechanic is a **falsifiable claim** — *"exactly 1 like in 24
+hours"* is checkable inside the post, structurally the same as quoting a real error message.
+
+**Two measurements that confirm existing findings rather than adding new ones:**
+
+1. His `promo` posts average **0.69× outlier, median 0.61×** — below his own baseline, his worst
+   category, while Entertainment averages 12.24×. **Third independent confirmation** that big
+   accounts publish most of what performs worst.
+2. His lowest-reach top post ("Mr and MrsBeast", 19.6M) carries his **highest engagement rate at
+   2.35%**. The View Trap, now **five accounts out of five**.
+
+⛔ **The giveaway mechanic is not adoptable.** CPA s36 governs promotional competitions in South
+Africa — written rules, no required consideration, records kept.
+
+### Seven platforms, and why the answer is two
+
+The founder asked for content across **YouTube, LinkedIn, Indeed, X, Instagram, TikTok and
+Facebook**. The entry directly below this one already recorded, from Ralston, that the **four**
+platform plan was diluted and that 73% of people who start making content quit inside a year.
+
+**Decision: seven presences, two content engines.** Claim all seven handles — cheap, correct, stops
+squatting. Produce for **TikTok primary, Instagram secondary**. X and LinkedIn carry founder text,
+YouTube stays reserved and dormant, Indeed takes one job ad and is not a content channel at all.
+
+**The Facebook finding is the one worth keeping.** Its value is not the feed — it is that **suburb
+community groups are where South Africans actually ask for a cleaner**. *"Can anyone recommend
+someone reliable?"* is demand with intent in a named suburb, which is exactly what gate 5 needs. It
+is also the fastest channel to get banned from, so the rule recorded in `platform-playbooks.md` is
+that the founder participates as a person and never pitches unprompted.
+
+**Recorded here so it is not re-litigated in a month.** Full reasoning:
+`platform-playbooks.md`, `content-calendar.md`.
+
 ### 2026-09-02 — 11 reference videos read, and a blocker that was my mistake
 
 **The correction.** I reported that `ask-hormozi` "cannot retrieve anything" and recorded it as a
