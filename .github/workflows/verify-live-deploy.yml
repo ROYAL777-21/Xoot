@@ -31,6 +31,24 @@ on:
   push:
     branches: [main]
 
+  # ── A daily heartbeat, added 2026-09-02 ─────────────────────────────────────────────────────
+  #
+  # This check only ever ran on a push to `main` or when someone remembered to dispatch it. So the
+  # live site was silently wrong for THREE WEEKS: `xoot.co.za` was answering with a GoDaddy Website
+  # Builder placeholder while both hosts held correct production builds, and nothing was watching
+  # the one thing that would have said so.
+  #
+  # A deploy check that only runs at deploy time cannot catch the failures that happen between
+  # deploys — a DNS change, a certificate lapse, a domain moved to another host, a builder site
+  # republished by accident. Those are exactly the failures nobody notices, because the site keeps
+  # returning 200.
+  #
+  # 06:00 UTC is 08:00 SAST — before the working day, so a failure is waiting rather than arriving
+  # mid-afternoon. On a scheduled run `github.sha` is main's head, which is the right thing to
+  # compare against.
+  schedule:
+    - cron: "0 6 * * *"
+
 permissions:
   contents: read
 
