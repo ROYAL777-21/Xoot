@@ -23,8 +23,35 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-Nothing held. **PR [#42](https://github.com/ROYAL777-21/zoot-your-local-helpers/pull/42) is open**
-and being driven by the Correctness session.
+### 🚢 Release — the go-live sequence, 2026-09-02
+
+Founder asked for everything required to go live, done rather than listed. Holding:
+
+| path | what |
+|---|---|
+| `supabase/migrations/**` | one new migration finishing the ZD-028/029 rename in the **database** |
+| `.github/workflows/**` dispatches | `db-push`, `verify-types`, `retire-orphaned-functions`, `deploy-edge-functions` on **both** projects |
+| `docs/release/**` | `launch-protocol.md`, `founder-todo.md`, a new `go-live-requirements.md` |
+| `src/components/xoot/{SafetyTrust,CtaBand,BookingHero}.tsx` | ⚠️ **unowned by either role** — the four homepage trust claims, reworded to capability tense |
+| `NEEDS-FOUNDER.md` §3 and §4 | ⚠️ **Correctness's file — flagged per rule 3.** Both close as a result of the work above |
+
+**Three measured findings the other session should know, because two of them contradict documents
+currently in the repo:**
+
+1. **CI can allocate runners again.** The billing outage recorded here and in `founder-todo.md` §0
+   as blocking everything since 2026-08-14 has cleared — PR #44's jobs ran real runners on
+   2026-09-02T06:16Z (`Lint, build and unit tests`, 06:16:32 → 06:18:40, passed). `db-push` and
+   `deploy-edge-functions` are dispatchable again.
+2. **The rename never finished in the production database.** `verify-types` is red on PR #44. The
+   full 952-line diff is constraint names and one view column: ~31 foreign keys still named
+   `zoot*`, and `analytics_contractor_quality.zooter_id`. Columns, tables and functions were all
+   renamed; their constraint *names* were not, because `ALTER TABLE … RENAME COLUMN` does not touch
+   them. **Do not fix this by regenerating `types.ts`** — that puts `zooter` back in the repo and
+   the naming guard would reject it. The database is what is wrong.
+3. **`xoot.co.za` is served by the Netlify project `xoot-home-care`, and that project builds this
+   repo** — it produced a deploy preview for PR #44. The Vercel project has no custom domain. So
+   merging PR #44 publishes the real app to the live domain via Netlify, with no dashboard step.
+   Founder chose this route knowingly; Vercel stays as the parallel build.
 
 ---
 
