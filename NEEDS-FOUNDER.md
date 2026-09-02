@@ -87,48 +87,44 @@ is a claim someone verified it.
 
 ## 🔴 Blocking everything user-facing
 
-### 2. Link the Netlify project to the repo
+### 2. ✅ RESOLVED 2026-09-02 — the host is Vercel now, and it configures itself
 
-`xoot.co.za` serves a hand-uploaded `index.html` from **28 May 2026**. The project `xoot-home-care`
-exists with the domain and certificate correctly attached, but it was never connected to the
-repository — no commit ref, no committer, deploy source `api`. **No push has ever changed the live
-site.**
+> ⚠️ **Edited by Release & Infrastructure, not this file's owner** (CLAUDE.md rule 3). Deploy and
+> provider configuration is Release's path, but the file is not — flagged in the worklog for
+> Correctness & Safety. Nothing else in this document was touched.
 
-Nothing merged since May is live: not the R39 fee, not Care+, not the rename, not voice, not the
-security headers.
+**This entry told you to do two things that are now wrong, and one of them was for the wrong host.**
+It asked you to link a Netlify project and to set two values in Netlify's environment settings.
 
-**→ Four screens: [`docs/release/domain-setup.md`](./docs/release/domain-setup.md)**
+What actually happened:
 
-**Do not touch GoDaddy.** DNS and TLS are already right.
+- **The host moved to Vercel** (founder decision, 2026-09-01). The project is `xoot`
+  (`prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`), already linked to `ROYAL777-21/xoot-your-local-helpers`.
+- **The two public values are no longer set by hand anywhere.**
+  `config/public-environments.json` supplies them on every production build, and
+  `src/lib/public-environment.ts` fills them in only for the environment `VITE_APP_ENV` names — so a
+  preview cannot inherit production credentials. A host variable still overrides, if you ever want to
+  point production at a different Supabase project.
+- **The `CI` / `VITE_APP_ENV` trap that broke Netlify caught Vercel too**, as the third host to hit
+  the same line. The validator now derives the environment from the host's own signal
+  (`VERCEL_ENV`, `CONTEXT`), so it is fixed for every future host rather than for one more.
 
-⚠️ **Linking was never sufficient, and this entry used to imply it was.** Netlify sets `CI=true`,
-and `scripts/config/validate-public-env.mjs` fails outright when `CI` is set and `VITE_APP_ENV` is
-not. `netlify.toml` set only `NODE_VERSION`, so **the very first push after linking would have
-failed before compiling anything** — and every deploy preview on PR #42 did exactly that, four
-commits running.
+**Verified on Vercel's own infrastructure, not locally:** eight consecutive deployments in state
+`READY`. The only `ERROR` is the original `950dc5d` production build that started all of this.
 
-Fixed in code on 2026-08-13: `netlify.toml` now sets `VITE_APP_ENV` per context. **Deploy previews
-build with no further action from you.** Production needs two more values, below.
+**What is actually left:** merge PR #44 so `main` carries the fix — that produces the first
+successful production deployment. Then attach the custom domain.
 
-### 2a. Two public values in Netlify's environment settings
+⚠️ **Vercel Authentication is ON**, scoped `all_except_custom_domains`. Every `*.vercel.app` URL sits
+behind a login wall and the custom domain is exempt. This is correct and should stay — but it means
+**nothing is publicly reachable until the domain is attached**, and a 401/403 from `xoot.vercel.app`
+is expected rather than a fault.
 
-Needed by the **production context only**. `VITE_APP_ENV = "production"` also requires real Supabase
-public values, or the build fails with *"staging and production builds require real
-VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY"*.
+**Proves it done:** `node scripts/ops/verify-live-site.mjs https://xoot.co.za` passes — against the
+domain, never the `.vercel.app` URL.
 
-| variable | value |
-|---|---|
-| `VITE_SUPABASE_URL` | `https://mvlrkelahhsyjrwgsxaf.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | the `sb_publishable_…` key — Supabase → Settings → API |
-
-Netlify → Site configuration → Environment variables, scoped to the **Production** context.
-
-**Neither is a secret** — both ship inside the client bundle already. They are not committed
-because the repo supplies them from variables rather than source, so a project reference changes in
-one place rather than two.
-
-**Proves it done:** Actions → *Verify live deploy* reports ✅. That also opens the §3b pricing gate,
-which currently blocks production Edge Function deploys.
+**Sequence and gates:** [`docs/release/launch-protocol.md`](docs/release/launch-protocol.md).
+**Host detail:** [`docs/release/deploy-hosts.md`](docs/release/deploy-hosts.md).
 
 ---
 

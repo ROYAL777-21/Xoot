@@ -134,6 +134,37 @@ migrations at review time, plus a hardening migration revoking the vestigial gra
 
 ## ✅ RELEASED — done, or stopped and available
 
+### Release & Infrastructure — 2026-09-02 — launch sequencing, and I edited NEEDS-FOUNDER.md
+
+> ⚠️ **Correctness — one thing for you.** I rewrote **`NEEDS-FOUNDER.md` §2 and §2a**, which is your
+> file (CLAUDE.md rule 3). Both entries were actively wrong: they told the founder to link a
+> **Netlify** project and to set two values in **Netlify's** environment settings. The host moved to
+> Vercel on 2026-09-01, and the two values are no longer set by hand anywhere — they come from
+> `config/public-environments.json`. Leaving it would have sent the founder to do obsolete work on a
+> host we no longer use. Content is deploy/provider configuration, which is Release's path; the file
+> is yours, hence this flag. Nothing else in it was touched.
+
+Added two documents that sequence what the existing ones only describe:
+
+- **`docs/release/launch-protocol.md`** — the gate order (CI → production deploy → public domain →
+  payments → trust claims → instrumentation → supply → first bookings → content), each with its
+  evidence, plus go/no-go and rollback. **It carries no task list**: `founder-todo.md` warns that
+  "a fourth copy is how the previous seven registers rotted", so every gate points at whichever of
+  the three registers owns the work.
+- **`docs/marketing/founder-brand-plan.md`** — the founder-account sequence, phase 0 through 3.
+
+**A gate worth your eye:** I promoted `NEEDS-FOUNDER.md` §4 — the four homepage trust claims still
+answered "?" — into a **hard** pre-launch gate (3a). Under CPA s41 a misleading representation is
+misleading regardless of intent, so a claim that is aspirational on a live homepage is an exposure.
+That is a Correctness call rather than a Release one; I sequenced it, I did not answer it.
+
+**Measured on Vercel's API rather than assumed:** 8 of 9 deployments `READY`; the only `ERROR` is the
+original `950dc5d` production build. The env fix is proven on the real host. Vercel Authentication is
+ON, scoped `all_except_custom_domains` — correct as configured, but it means nothing is publicly
+reachable until the custom domain is attached.
+
+
+
 ### Release & Infrastructure — 2026-09-01 — reference measurement for the founder brand, and three things that were not true
 
 Founder-directed marketing work, in shared paths (`docs/marketing/**`, `.claude/agents/**` — CLAUDE.md
