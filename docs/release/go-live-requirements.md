@@ -18,7 +18,7 @@ run. `launch-protocol.md` holds the ordering and the reasoning behind it; this h
 |---|---|---|---|
 | 0 | CI can allocate a runner | ✅ **closed today** | Job `100145687623`, `runner_id 1000002340`, 15 steps, 06:16:32 → 06:18:40, success. Nineteen days of `runner_id 0` ended |
 | 1 | Production actually deploys | ✅ **closed today** | Vercel `dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx`, `target: production`, **READY**, commit `8cb2d0b`. The first non-ERROR production deployment the project has ever had |
-| 2 | The site is publicly reachable | ✅ **closed today** | Netlify's deploy record for `xoot-home-care`: `commit_ref 8cb2d0ba…`, `branch main`, `context production`, `state ready`, `ssl_url https://xoot.co.za`, published 11:31:57Z. **The domain serves the merged commit.** ⚠️ The *header and routing* verification is a separate question and has still not run — see below |
+| 2 | The site is publicly reachable | 🔴 **OPEN — the first blocker** | `https://xoot.co.za` returns a **GoDaddy Website Builder** page. Both hosts hold correct production builds of `main` and neither receives traffic. See below |
 | 3 | A booking can be paid for | 🔴 **founder** | No PayFast merchant exists. `NEEDS-FOUNDER.md` §1 |
 | 3a | The homepage's claims are true | ✅ **closed today** | Four claims reworded to what is checkable; `MIE` removed from every shipped component. `NEEDS-FOUNDER.md` §4 |
 | 4 | Instrumented before spend | ⚪ not started | No analytics, no crash reporting, no funnel. Attribution before acquisition — `hormozi-findings.md` §1 |
@@ -26,32 +26,39 @@ run. `launch-protocol.md` holds the ordering and the reasoning behind it; this h
 | 6 | 10–20 friendly bookings | 🔴 **founder** | Real reviews, real photography, real numbers. Cannot be manufactured later |
 | 7 | Content banked | 🟠 partial | Drafts exist on the Eden Content Engine board. TikTok primary, Instagram secondary, sequential |
 
-**Gates 0, 1, 2 and 3a closed today.** What is left before a
+**Gates 0, 1 and 3a closed today. Gate 2 is open and is now the first blocker.** What is left before a
 customer can pay is gate 3, and it is a merchant account.
 
-### ⚠️ What gate 2 does and does not prove
+### 🚨 Gate 2: the domain serves a GoDaddy placeholder
 
-**Proved, from Netlify's own API rather than from inference:** the production deploy attached to
-`xoot.co.za` is `commit_ref 8cb2d0ba9ceab839068e3b9968811caa4818adeb`, `branch main`,
-`context production`, `state ready`, published `2026-09-02T11:31:57Z`, with 1 redirect rule and 22
-header rules processed. The 28 May hand-upload is no longer what the domain serves.
+Measured 2026-09-02 by printing what the URL returns, rather than by reading a host's opinion of
+itself:
 
-**Not proved: that it serves it *correctly*.** `verify-live-deploy` polls
-`xoot.co.za/build-info.json` for the commit and gates the header check on that stamp matching. The
-stamp is **not readable** — twenty attempts over ten minutes. So `verify-live-site.mjs` has still
-never run against the live site, and CSP, HSTS, `noindex` on `/app` `/auth` `/admin`,
-`/.well-known/` handling and "no service-role key in the bundle" are all unverified in production.
-
-**The repo is not the cause.** Built locally under Vercel's exact production environment:
-
-```
-> postbuild
-Wrote dist/build-info.json (commit 2d0ce032)
+```html
+<meta name="generator" content="Starfield Technologies; Go Daddy Website Builder 8.0.0000"/>
+<link rel="canonical" href="https://xoot.co.za/404"/>
 ```
 
-`postbuild` runs the stamp writer, `netlify.toml` publishes `dist`, and its SPA redirect is
-`status = 200` **without** `force`, so a real file wins over the rewrite. The remaining candidates
-are all on the deploy side, and the next run prints the response body rather than only the verdict.
+**Nothing is wrong with either build.** Netlify holds `6a9808ea` / `commit_ref 8cb2d0ba…` /
+`branch main` / `context production` / ready. Vercel holds `dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx` /
+`target production` / READY. Both are correct and current. **Neither receives any traffic**, because
+a GoDaddy Website Builder site is published on the apex domain.
+
+This is also the answer to *"I can't seem to edit the credentials and nothing changes."* Editing
+Vercel's environment variables would not have changed anything a visitor sees, because visitors never
+reach Vercel.
+
+⚠️ **This gate was closed twice on bad evidence, and both mistakes had the same shape.** Netlify's
+`ssl_url: https://xoot.co.za` and Vercel's `target: production, state: READY` both mean *"this host
+is configured to serve that domain if traffic arrives."* Neither is a statement about DNS. The only
+thing that settles it is fetching the URL from outside, and `xoot.co.za:443` is refused by the agent
+environment's egress policy — so the answer could only come from a GitHub runner.
+
+**`verify-live-deploy` now fails instead of warning** when the response carries a `generator` meta
+that is not ours, with the fix named in the failure message. Proven both ways before being kept: it
+fires on the captured GoDaddy body, and stays silent on our own built `index.html`.
+
+**→ The fix is `domain-setup.md` → *Point the domain at the app*, and it is Part 2 item 1 below.**
 
 ### 🟠 A second finding from that same local build — the association files do not ship
 
@@ -90,7 +97,28 @@ DNS change and nothing else.
 Ordered by what they unblock. Each says why no session can do it, because that is the part that
 makes the list trustworthy.
 
-### 🔴 1. `SUPABASE_DB_PASSWORD_PRODUCTION` — found today, and it is one field
+### 🔴 1. Point `xoot.co.za` away from the GoDaddy Website Builder
+
+**This is the only thing standing between the public and the app.** Both hosts are built and ready.
+
+1. **GoDaddy → My Products → Websites + Marketing.** Find the site on `xoot.co.za` and **unpublish
+   it** (or remove the domain from it). ⚠️ Do this first — while it is published, GoDaddy keeps its
+   own apex records and overwrites what you set.
+2. Point the domain at the host you want. **Netlify is the shorter path** — its project already
+   builds this repo and already had the certificate for `xoot.co.za`. Vercel works too and needs the
+   domain adding under Settings → Domains first, which prints the records to set.
+3. Delete any leftover `@` / `www` A, CNAME or forwarding record GoDaddy added for the builder.
+
+Full click-path, both options: `domain-setup.md` → *Point the domain at the app*.
+
+**Why no session can do it:** the GoDaddy MCP surface here is domain availability and suggestions
+only — no DNS record management — and the account is yours. Attaching a custom domain in Vercel also
+has no MCP tool.
+
+**Proves it done:** Actions → *Verify live deploy* reaches "Live site is serving this commit" instead
+of printing a GoDaddy body.
+
+### 🔴 2. `SUPABASE_DB_PASSWORD_PRODUCTION` — found today, and it is one field
 
 GitHub → Settings → Secrets and variables → Actions → New repository secret. The value is the
 database password for `mvlrkelahhsyjrwgsxaf` (Supabase → Project Settings → Database). Reset it
@@ -110,7 +138,7 @@ and proven on staging, refused on production with `SQLSTATE 28P01`. It is why th
 `Types match the live schema` check is red. Nothing breaks at runtime; ~31 foreign-key constraint
 names and one view column still spell the old brand.
 
-### 🔴 2. PayFast merchant credentials — gate 3, the last hard gate
+### 🔴 3. PayFast merchant credentials — gate 3, the last hard gate
 
 Three secrets on both Supabase projects, plus `PAYFAST_MODE` and `XOOT_APP_ENV=staging`. Full detail
 and the capability-row mechanics: `NEEDS-FOUNDER.md` §1.
@@ -118,7 +146,7 @@ and the capability-row mechanics: `NEEDS-FOUNDER.md` §1.
 **Why no session can do it:** there is no merchant account to get credentials from. This is a
 commercial relationship, not a configuration value.
 
-### 🔴 3. Invoice legal entity — `XOOT_INVOICE_LEGAL_ENTITY` and its registration number
+### 🔴 4. Invoice legal entity — `XOOT_INVOICE_LEGAL_ENTITY` and its registration number
 
 `generate-booking-invoice` refuses outright when unset, so **no completed booking produces an
 invoice** until it is. `NEEDS-FOUNDER.md` §6.
@@ -126,7 +154,7 @@ invoice** until it is. `NEEDS-FOUNDER.md` §6.
 **Why no session can do it:** these are facts about a registered company. A guessed entity name on a
 South African tax invoice is worse than no invoice, which is exactly why the function fails closed.
 
-### 🟠 4. The Vercel plan, if Vercel is ever to serve the domain
+### 🟠 5. The Vercel plan, if Vercel is ever to serve the domain
 
 The team is on **`hobby`**. Vercel's Hobby tier is for non-commercial use, and Xoot intends to take
 payments. This is a terms question rather than a technical one, and it belongs on the list before
@@ -135,7 +163,7 @@ any spend starts. Nothing today depends on it, because Netlify serves the domain
 **Why no session can do it:** buying a plan is a purchase, and attaching a custom domain has no MCP
 tool on this surface.
 
-### 🟠 5. Three `XOOT_*` build variables, or deep links break the day the app ships
+### 🟠 6. Three `XOOT_*` build variables, or deep links break the day the app ships
 
 `XOOT_APPLE_TEAM_ID`, `XOOT_IOS_APP_ID`, `XOOT_ANDROID_SHA256_CERT_FINGERPRINTS`, set in the web
 host's build environment. Without them `write-native-association-files.mjs` skips both files and
@@ -148,7 +176,7 @@ from this repository.
 **Proves it done:** `https://xoot.co.za/.well-known/apple-app-site-association` returns JSON rather
 than the SPA's HTML. `verify-live-site.mjs` already asserts exactly this, once it can run.
 
-### 🟠 6. Four `EXPO_PUBLIC_*` variables, before the next production app build
+### 🟠 7. Four `EXPO_PUBLIC_*` variables, before the next production app build
 
 `EXPO_PUBLIC_SUPABASE_URL`, `_PROJECT_ID`, `_PUBLISHABLE_KEY`, `_EAS_PROJECT_ID`. Table and
 reasoning: `deploy-hosts.md` §3.
@@ -157,14 +185,14 @@ reasoning: `deploy-hosts.md` §3.
 There is no environment-variable tool. ⚠️ A production EAS build will now **fail** until these are
 set — that is the intended change; it previously succeeded silently while pointing at no backend.
 
-### 🟠 7. `XOOT_CALL_TEST_PASSWORD`, and then place the first two-party call
+### 🟠 8. `XOOT_CALL_TEST_PASSWORD`, and then place the first two-party call
 
 `NEEDS-FOUNDER.md` §5, walkthrough §A.
 
 **Why no session can do it:** everything else about voice proves configuration. This proves sound
 comes out of a phone, and a person has to hold one.
 
-### ⚪ 8. Four decisions in the tracker
+### ⚪ 9. Four decisions in the tracker
 
 [#33](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/33),
 [#38](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/38),

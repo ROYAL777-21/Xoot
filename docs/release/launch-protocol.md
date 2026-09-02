@@ -43,7 +43,7 @@ GitHub Actions could not allocate a runner from 2026-08-14 until some time befor
 that is not an ERROR. The only previous one was `950dc5d`, the `config:check` failure that started
 all of this.
 
-### Gate 2 — the site is publicly reachable ✅ CLOSED 2026-09-02, by a different route than planned
+### Gate 2 — the site is publicly reachable 🔴 OPEN — the domain serves a GoDaddy placeholder
 
 ⚠️ **This gate said the site could not be public until a custom domain was attached to Vercel. That
 was wrong, and it was wrong because I had not looked at Netlify.**
@@ -53,28 +53,36 @@ this repository and builds it. Merging PR #44 published the real app there with 
 and no DNS change. Netlify's `currentDeploy` moved from `6a189bd7` to `6a9808ea`, state `ready`, and
 its branch URL became `main--xoot-home-care.netlify.app`.
 
-**The 28 May hand-uploaded `index.html` is no longer the live site.** From Netlify's deploy record,
-not inferred from the deploy id changing:
+🚨 **`xoot.co.za` is served by the GoDaddy Website Builder.** Measured 2026-09-02, by finally
+printing what the URL returns rather than reading a host's opinion of itself:
 
+```html
+<meta name="generator" content="Starfield Technologies; Go Daddy Website Builder 8.0.0000"/>
+<link rel="canonical" href="https://xoot.co.za/404"/>
 ```
-commit_ref   8cb2d0ba9ceab839068e3b9968811caa4818adeb
-branch       main          context  production      state  ready
-ssl_url      https://xoot.co.za    published_at  2026-09-02T11:31:57Z
-```
 
-⚠️ **One thing this gate does not cover, and it is worth separating.** `verify-live-site.mjs` checks
-whether the site serves that commit *correctly* — CSP, HSTS, `noindex` on the private routes,
-`/.well-known/` as JSON, no service-role key in the bundle. It is gated behind a build stamp at
-`xoot.co.za/build-info.json` which is **not currently readable**, so it has still never run. The
-repo is not the cause: a local build prints `Wrote dist/build-info.json`, `netlify.toml` publishes
-`dist`, and its SPA redirect is `status = 200` without `force` so a real file wins.
+**Both hosts hold correct, current production builds of `main` and neither receives any traffic.**
 
-The Vercel note below remains true and still matters, because Vercel is the parallel host and will
-be the domain host if the founder moves it:
+| host | build |
+|---|---|
+| Netlify `xoot-home-care` | `6a9808ea`, `commit_ref 8cb2d0ba…`, `branch main`, `context production`, ready |
+| Vercel `xoot` | `dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx`, `target production`, READY |
 
-> Vercel Authentication is ON, scoped `all_except_custom_domains`. Every `*.vercel.app` URL,
-> previews included, sits behind a login wall — **that is correct and should stay.** A 401/403 from
-> `xoot.vercel.app` is expected behaviour, not a fault.
+⚠️ **I closed this gate twice on bad evidence, and both times the mistake had the same shape.** First
+on Netlify's `currentDeploy` id changing; then on its deploy record reading
+`ssl_url: https://xoot.co.za, context: production, state: ready`. **Those fields say what a host
+would serve if traffic arrived. They say nothing about where DNS sends traffic.** Vercel's
+`target: production, state: READY` is the same class of statement. Only fetching the URL from outside
+settles it — and `xoot.co.za:443` is refused by the agent environment's egress policy, so it could
+only ever be answered from a runner.
+
+`verify-live-deploy` now **fails** rather than warns when the response carries a `generator` meta
+that is not ours. Proven both ways before being kept: it fires on the captured GoDaddy body and
+stays silent on our own built `index.html`, which emits no `generator` and must keep warning as the
+genuine "still publishing" case.
+
+**Fix:** `domain-setup.md` → *Point the domain at the app*. Unpublish the GoDaddy Website Builder
+site first, or the DNS records get overwritten.
 
 **Evidence:** `verify-live-deploy.yml`, which polls `xoot.co.za/build-info.json` for the deployed
 commit and then runs `verify-live-site.mjs` against the served site — headers, deep-link routing,
@@ -170,8 +178,9 @@ does not work.
 
 - **Gates 0–3a are hard.** Any one unmet and the launch does not happen. They are the difference
   between a live product and a shopfront that cannot take money or tells the truth badly.
-  **As of 2026-09-02, gates 0, 1, 2 and 3a are closed.** Gate 3 — payments — is the only hard gate
-  left, and it is a merchant account rather than a piece of work.
+  **As of 2026-09-02, gates 0, 1 and 3a are closed. Gate 2 is OPEN and is now the first blocker** —
+  the domain serves a GoDaddy placeholder, so no customer can reach the app at all. Gate 3 —
+  payments — is behind it.
 - **Gates 4–7 are judgement.** They can be compressed under pressure. **Gate 5 is the one that looks
   compressible and is not** — skipping it converts the launch budget into refunds and bad reviews.
 

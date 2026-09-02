@@ -143,6 +143,48 @@ jobs:
           # Out of attempts. Separate the two failures, because the fixes are different and one of
           # them is not a failure at all.
           #
+          # ── Is this even our site? Added 2026-09-02, and it should have existed first. ──────
+          #
+          # For three weeks this check reported "no build stamp" and everyone read it as a slow or
+          # broken deploy. It was neither. `https://xoot.co.za` was answering with:
+          #
+          #   <meta name="generator" content="Starfield Technologies; Go Daddy Website Builder 8.0.0000"/>
+          #   <link rel="canonical" href="https://xoot.co.za/404"/>
+          #
+          # A GoDaddy Website Builder placeholder was published on the apex domain, so DNS never
+          # reached Netlify or Vercel at all — while BOTH hosts held correct, current production
+          # builds of `main` and both of their APIs happily reported the domain as theirs. A host's
+          # own record describes what it would serve if traffic arrived; it says nothing about where
+          # DNS sends traffic. That distinction cost three weeks.
+          #
+          # "Someone else's site is on our domain" is a different failure from "the publish is still
+          # running", it needs a different action, and it must not exit 0.
+          #
+          # Guarded on evidence rather than a guess: a `generator` meta tag that is present and is
+          # not ours. Our own build emits no `generator`, so the SPA's index.html cannot trip this —
+          # which matters, because that body is the genuine "still publishing" case and must keep
+          # warning rather than failing.
+          foreign=$(grep -o -i -m1 'name="generator" content="[^"]*"' <<< "$body" || true)
+          if [ -n "$foreign" ]; then
+            echo "::error::$SITE is being served by something that is not this app: $foreign"
+            {
+              echo "## 🚨 The domain is serving someone else's site"
+              echo ""
+              echo "\`$SITE\` returned a page identifying itself as:"
+              echo ""
+              echo '```'
+              echo "$foreign"
+              echo '```'
+              echo ""
+              echo "This is **not** a slow deploy. DNS is not reaching this project. Both hosts can"
+              echo "report the domain as theirs and still never receive a request."
+              echo ""
+              echo "**Fix:** \`docs/release/domain-setup.md\` → *Point the domain at the app*."
+              echo "Unpublish the builder site first, or the DNS records will be overwritten."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
           if [ -z "$live" ]; then
             # No parseable stamp after the full window.
             #

@@ -82,24 +82,33 @@ no-stamp branch is gone, because that sentence is what stopped anyone looking.
 
 `xoot.co.za` is the primary URL of the **Netlify** project `xoot-home-care`, and that project builds
 this repository. Merging PR #44 published the real app there — `currentDeploy` moved `6a189bd7` →
-`6a9808ea`, branch URL now `main--xoot-home-care.netlify.app`. **The 28 May hand-uploaded
-`index.html` is no longer the live site** — Netlify's deploy record reads `commit_ref 8cb2d0ba…`,
-`branch main`, `context production`, `state ready`, `ssl_url https://xoot.co.za`, published
-11:31:57Z.
+`6a9808ea`, branch URL now `main--xoot-home-care.netlify.app`. 🚨 **`xoot.co.za` is served by the GoDaddy Website Builder, and always was.** Measured 2026-09-02
+by printing the response body instead of reading a host's API:
 
-⚠️ **Two things you will want to know before trusting the live site further.** First,
-`xoot.co.za/build-info.json` is not readable — twenty attempts over ten minutes — so
-`verify-live-site.mjs` is still gated shut and **no header, CSP, `noindex` or service-role-key check
-has ever run against production**. The repo is not the cause; a local build writes the file. Second,
-`dist/.well-known/` is not produced at all, because three `XOOT_*` build variables are unset — so
-Universal Links and App Links have no association file and those paths fall through the SPA rewrite
-to HTML. That breaks deep links silently the day the app ships.
+```html
+<meta name="generator" content="Starfield Technologies; Go Daddy Website Builder 8.0.0000"/>
+```
 
-Vercel built the same commit in parallel: `dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx`, `target: production`,
-**READY** — its first production deployment that is not an ERROR. It has no custom domain, and the
-founder chose Netlify-now / Vercel-later knowingly. `launch-protocol.md` gate 2 previously said
-nothing could be public until a domain was attached to Vercel; that was wrong, and it was wrong
-because I had not looked at Netlify.
+**Both hosts hold correct production builds of `main` and neither gets any traffic** — Netlify
+`6a9808ea` / `commit_ref 8cb2d0ba…` / `context production` / ready, and Vercel
+`dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx` / `target production` / READY.
+
+⚠️ **I closed gate 2 twice on bad evidence and had to reopen it. Worth knowing because the trap is
+generic:** Netlify's `ssl_url: https://xoot.co.za` and Vercel's `target: production, state: READY`
+both mean *"configured to serve this domain if traffic arrives."* Neither says anything about DNS.
+`domain-setup.md` carried "**DNS is fine. Do not touch GoDaddy**" since 2026-08-13 — that line is
+now corrected in place, with the old text kept, because it is what stopped three weeks of people
+looking in the right place.
+
+`verify-live-deploy` now **fails** on a foreign `generator` meta rather than warning. Planted and
+proven both ways before keeping: fires on the captured GoDaddy body, silent on our own `index.html`.
+
+Two more things measured from a local production build:
+
+- **`dist/.well-known/` is never created** — three `XOOT_*` variables are unset, so Universal Links
+  and App Links have no association file and fall through the SPA rewrite to HTML. Silent breakage
+  the day the app ships.
+- `postbuild` does write `dist/build-info.json`, so the missing stamp was never a repo problem.
 
 **The state of every gate is `docs/release/go-live-requirements.md`**, written today.
 
