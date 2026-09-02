@@ -83,7 +83,10 @@ no-stamp branch is gone, because that sentence is what stopped anyone looking.
 `xoot.co.za` is the primary URL of the **Netlify** project `xoot-home-care`, and that project builds
 this repository. Merging PR #44 published the real app there — `currentDeploy` moved `6a189bd7` →
 `6a9808ea`, branch URL now `main--xoot-home-care.netlify.app`. **The 28 May hand-uploaded
-`index.html` is no longer the live site.**
+`index.html` is no longer what `currentDeploy` points at** — which is not the same as confirming what
+the domain serves. ⚠️ `verify-live-deploy` polled `xoot.co.za/build-info.json` twenty times over ten
+minutes and never read a commit, so **gate 2 is published, not confirmed.** The check now prints the
+response body so the next run says why.
 
 Vercel built the same commit in parallel: `dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx`, `target: production`,
 **READY** — its first production deployment that is not an ERROR. It has no custom domain, and the

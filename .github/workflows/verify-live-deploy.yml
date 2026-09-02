@@ -119,6 +119,20 @@ jobs:
 
             if [ -n "$live" ]; then
               echo "attempt ${attempt}: live=${live:0:8} expected=${EXPECTED:0:8} — not yet"
+            # ⚠️ Print the body, not just the verdict. Added 2026-09-02 after a run reported
+            # "no build stamp readable" twenty times, and the one thing needed to act on it — what
+            # the site actually returned — went only to the step summary, which is not readable
+            # from the API. `verify-secrets.yml` and `verify-types.yml` both carry this same lesson
+            # in their own comments: a check that reports a verdict without the evidence sends
+            # someone to go and find the evidence by hand.
+            #
+            # Safe to print: a public URL's public response. First and last attempt only, so a slow
+            # publish does not paste twenty copies of the same 404 into the log.
+            elif [ "$attempt" -eq 1 ] || [ "$attempt" -eq "$attempts" ]; then
+              echo "attempt ${attempt}: no build stamp readable yet — first 400 bytes of the response:"
+              echo "----- body -----"
+              echo "${body:0:400}"
+              echo "----- end body -----"
             else
               echo "attempt ${attempt}: no build stamp readable yet"
             fi

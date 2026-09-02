@@ -18,7 +18,7 @@ run. `launch-protocol.md` holds the ordering and the reasoning behind it; this h
 |---|---|---|---|
 | 0 | CI can allocate a runner | ✅ **closed today** | Job `100145687623`, `runner_id 1000002340`, 15 steps, 06:16:32 → 06:18:40, success. Nineteen days of `runner_id 0` ended |
 | 1 | Production actually deploys | ✅ **closed today** | Vercel `dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx`, `target: production`, **READY**, commit `8cb2d0b`. The first non-ERROR production deployment the project has ever had |
-| 2 | The site is publicly reachable | ✅ **closed today** | Netlify `xoot-home-care` (which holds `xoot.co.za`) moved `currentDeploy` from `6a189bd7` to `6a9808ea`, state `ready`, branch URL `main--xoot-home-care.netlify.app`. **The 28 May hand-upload is gone** |
+| 2 | The site is publicly reachable | 🟠 **published, not yet confirmed** | Netlify `xoot-home-care` (which holds `xoot.co.za`) moved `currentDeploy` from `6a189bd7` to `6a9808ea`, state `ready`, branch URL `main--xoot-home-care.netlify.app`. ⚠️ **But `xoot.co.za/build-info.json` is still unreadable after 20 attempts over 10 minutes**, so the served build has not been confirmed to be this commit — see below |
 | 3 | A booking can be paid for | 🔴 **founder** | No PayFast merchant exists. `NEEDS-FOUNDER.md` §1 |
 | 3a | The homepage's claims are true | ✅ **closed today** | Four claims reworded to what is checkable; `MIE` removed from every shipped component. `NEEDS-FOUNDER.md` §4 |
 | 4 | Instrumented before spend | ⚪ not started | No analytics, no crash reporting, no funnel. Attribution before acquisition — `hormozi-findings.md` §1 |
@@ -26,8 +26,28 @@ run. `launch-protocol.md` holds the ordering and the reasoning behind it; this h
 | 6 | 10–20 friendly bookings | 🔴 **founder** | Real reviews, real photography, real numbers. Cannot be manufactured later |
 | 7 | Content banked | 🟠 partial | Drafts exist on the Eden Content Engine board. TikTok primary, Instagram secondary, sequential |
 
-**Gates 0, 1, 2 and 3a all closed today.** What is left before a customer can pay is gate 3, and it
-is a merchant account.
+**Gates 0, 1 and 3a closed today. Gate 2 is published but unconfirmed.** What is left before a
+customer can pay is gate 3, and it is a merchant account.
+
+### ⚠️ Gate 2's open question, stated honestly
+
+Netlify published a new deploy from `main` — that much is measured, and it means the 28 May
+hand-upload is no longer what `currentDeploy` points at. **What is not measured is what the domain
+actually serves.** `verify-live-deploy` polled `https://xoot.co.za/build-info.json` twenty times over
+ten minutes and never got a readable `commit`.
+
+`postbuild` writes `dist/build-info.json` on every build, `netlify.toml` publishes `dist`, and its
+SPA redirect is `status = 200` **without** `force`, so a real file wins over it. All three of those
+say the file should be served. It is not being served, and I do not yet know why.
+
+Three candidates, none confirmed: the `xoot-home-care` project may have dashboard build settings
+that override `netlify.toml`; the published deploy may not be the one built from `main`; or the
+domain may not resolve to this Netlify project at all any more.
+
+**The next run will say which.** The check now prints the response body on the first and last
+attempt, because the previous version reported the verdict and sent the evidence only to the step
+summary, which is not readable from the API — the same lesson `verify-secrets.yml` and
+`verify-types.yml` already carry.
 
 ### Two things that are true at once about the web host
 
