@@ -41,9 +41,9 @@ Store distilled patterns only — not the transcripts, which are third-party cop
 **The full strategy is `docs/marketing/founder-brand-strategy.md`.** Read it before drafting. It
 carries the villain, the pillars, the phase, and the three ⛔ answers still owed by the founder.
 
-### ⚠️ Five voice references, and they are not interchangeable
+### ⚠️ Six voice references, and they are not interchangeable
 
-All measured against Eden's index, 2026-09-01. Detail in `docs/marketing/build-in-public-accounts.md`.
+All measured against Eden's index, 2026-09-01 and 2026-09-02. Detail in `docs/marketing/build-in-public-accounts.md`.
 
 | Reference | Take | Do not take |
 |---|---|---|
@@ -52,6 +52,28 @@ All measured against Eden's index, 2026-09-01. Detail in `docs/marketing/build-i
 | `@alexhormozi` (4.45M) | Signal density, the time-price mechanic, number-over-adjective | Dollar framing, get-rich register, hard CTAs |
 | `@elonmusk` (241.5M) | Compression, no hedging, forward-tense optimism | **Everything else.** See below |
 | `@sebastianroehl` (24.5K) | **The recurring numbered weekly log**, including what broke — 4.84× at **1.23% engagement**, the highest rate in its result set | Nothing; it is the closest match to what this repo produces weekly |
+| `@mrbeast` (34.98M) | **The falsifiable mechanic** — a checkable condition inside the post. And the mundane self-deprecating register, which outperformed most of his spectacle | **Almost everything else.** See below |
+
+**⚠️ MrBeast is the least transferable reference here, and by some distance.** Measured 2026-09-02:
+34.98M followers, 295 posts, **1.09% average engagement**, median outlier 1.06×. Four of his top six
+are pure borrowed context — *"Can I be the new Twitter CEO?"* (85.8M views, 36.76×) works because he
+is MrBeast; *"Okay fine, I'll buy Tik Tok"* (24.49×) works because it is plausible he could; the
+$1,000,000 line (72.2M views, **43.25×**) works because he has the money and a decade of visibly
+paying out. **None of that shape survives a transfer to an account with one follower.**
+
+What *does* transfer is one structural thing: **the mechanic is a falsifiable claim.** *"exactly 1
+like in 24 hours"* is a condition the reader can check, inside the post. That is the same property as
+quoting a real error message and its arithmetic — and it is the transferable half, not the money.
+
+⛔ **The giveaway mechanic is not adoptable.** Promotional competitions in South Africa fall under
+**CPA s36** — written rules, no required consideration, records kept. And money-as-spectacle collides
+with `BRAND_GUIDE`'s ban on `cheap / budget / discount / bargain`.
+
+**One more finding worth carrying:** his `promo` posts average **0.69× outlier, median 0.61×** —
+*below his own baseline*, his worst category, while Entertainment averages 12.24×. That is the third
+independent confirmation, after levelsio and Hormozi, that big accounts publish most of what performs
+worst. And his lowest-reach top post has his **highest engagement rate (2.35%)** — the View Trap, now
+five accounts for five.
 
 **Musk's compression works because 241.5M people already know who he is.** "the bird is freed" is an
 89.76× outlier *from the man who had just bought the company*. The same four words from
