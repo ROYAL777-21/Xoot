@@ -70,11 +70,21 @@ jobs:
           set +e
           set -uo pipefail
 
-          # Netlify builds take minutes. A check that fires on push and gives up immediately would
-          # fail every single time and be switched off within a week, so the window is generous and
-          # the backoff is gentle: 12 attempts, ~10 minutes total.
-          attempts=12
-          delay=15
+          # ⚠️ CORRECTED 2026-09-02. This block used to say "12 attempts, ~10 minutes total" while
+          # setting `attempts=12` and `delay=15`, which is 11 sleeps of 15 seconds — **3 minutes**,
+          # not 10. Off by more than three times, in the direction that makes the check useless.
+          #
+          # Netlify's build of this repo takes longer than 3 minutes, so the poll had always given
+          # up before the deploy landed, every time, and always down the "no build stamp readable"
+          # path below — which exits 0. Measured on the merge of PR #44: the check ran 11:30:56 to
+          # 11:33:43 reporting "no build stamp" on all 12 attempts, and Netlify's `currentDeploy`
+          # had moved to `6a9808ea` state `ready` shortly after. The site was fine; the window was
+          # not.
+          #
+          # 20 attempts at 30 seconds is ~9.5 minutes — the interval the comment always claimed —
+          # with fewer requests than shortening the delay would cost.
+          attempts=20
+          delay=30
           live=""
           body=""
 
@@ -120,19 +130,27 @@ jobs:
           # them is not a failure at all.
           #
           if [ -z "$live" ]; then
-            # No parseable stamp. Most likely the live build predates `write-build-info.mjs`, which
-            # is expected exactly once — on the first run after that script ships. Reporting that as
-            # a broken deploy would be wrong, and a false alarm on a new check is how it gets
-            # ignored forever.
-            echo "::warning::No build stamp on the live site. If this is the first run after write-build-info.mjs shipped, that is expected — the currently deployed build predates it. Re-run once Netlify has published a newer build."
+            # No parseable stamp after the full window.
+            #
+            # ⚠️ The reassurance that used to live here — "most likely fine, the deployed build
+            # predates write-build-info.mjs" — is no longer true and was doing real harm. That
+            # script has shipped since 2026-08-13 and runs in `postbuild`, so any build published
+            # from this repo carries the stamp. Combined with the 3-minute window above, this
+            # branch was where every run of this check quietly landed.
+            #
+            # Still exit 0 rather than fail: a slow publish is not a broken one, and a check that
+            # cries wolf on timing gets switched off. But the message no longer tells anyone it is
+            # probably fine, because that is the sentence that stopped people looking.
+            echo "::warning::No build stamp on $SITE after the full window. Either the publish is still running, or the deployed build did not come from this repository."
             {
               echo "## ➖ No build stamp on the live site"
               echo ""
-              echo "\`${SITE}/build-info.json\` did not return a readable \`commit\`."
+              echo "\`${SITE}/build-info.json\` did not return a readable \`commit\` within the poll"
+              echo "window. **This is not a pass.** Two things it can mean:"
               echo ""
-              echo "**Most likely fine.** The deployed build predates \`write-build-info.mjs\`."
-              echo "Re-run this after the next Netlify publish; if it is still empty then, the"
-              echo "deploy genuinely is not landing."
+              echo "1. The publish had not finished. Check the deploy log and re-run."
+              echo "2. The site is serving a build that did not come from this repository —"
+              echo "   \`postbuild\` always writes the stamp, so a build without one is not ours."
               echo ""
               echo "Last response body, truncated:"
               echo ""
