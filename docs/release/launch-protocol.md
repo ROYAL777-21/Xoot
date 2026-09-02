@@ -43,7 +43,7 @@ GitHub Actions could not allocate a runner from 2026-08-14 until some time befor
 that is not an ERROR. The only previous one was `950dc5d`, the `config:check` failure that started
 all of this.
 
-### Gate 2 — the site is publicly reachable 🟠 PUBLISHED 2026-09-02, NOT YET CONFIRMED
+### Gate 2 — the site is publicly reachable ✅ CLOSED 2026-09-02, by a different route than planned
 
 ⚠️ **This gate said the site could not be public until a custom domain was attached to Vercel. That
 was wrong, and it was wrong because I had not looked at Netlify.**
@@ -53,14 +53,21 @@ this repository and builds it. Merging PR #44 published the real app there with 
 and no DNS change. Netlify's `currentDeploy` moved from `6a189bd7` to `6a9808ea`, state `ready`, and
 its branch URL became `main--xoot-home-care.netlify.app`.
 
-**The 28 May hand-uploaded `index.html` that `currentDeploy` pointed at for three months is no
-longer what it points at.**
+**The 28 May hand-uploaded `index.html` is no longer the live site.** From Netlify's deploy record,
+not inferred from the deploy id changing:
 
-⚠️ **That is not the same as confirming what the domain serves, and the confirmation has not been
-obtained.** `verify-live-deploy` polled `xoot.co.za/build-info.json` twenty times over ten minutes
-and never read a `commit`. `postbuild` writes that file, `netlify.toml` publishes `dist`, and the SPA
-redirect is `status = 200` without `force` so a real file wins — all three say it should be there.
-Until the next run prints the actual response body, **this gate is published, not closed.**
+```
+commit_ref   8cb2d0ba9ceab839068e3b9968811caa4818adeb
+branch       main          context  production      state  ready
+ssl_url      https://xoot.co.za    published_at  2026-09-02T11:31:57Z
+```
+
+⚠️ **One thing this gate does not cover, and it is worth separating.** `verify-live-site.mjs` checks
+whether the site serves that commit *correctly* — CSP, HSTS, `noindex` on the private routes,
+`/.well-known/` as JSON, no service-role key in the bundle. It is gated behind a build stamp at
+`xoot.co.za/build-info.json` which is **not currently readable**, so it has still never run. The
+repo is not the cause: a local build prints `Wrote dist/build-info.json`, `netlify.toml` publishes
+`dist`, and its SPA redirect is `status = 200` without `force` so a real file wins.
 
 The Vercel note below remains true and still matters, because Vercel is the parallel host and will
 be the domain host if the founder moves it:
@@ -163,9 +170,8 @@ does not work.
 
 - **Gates 0–3a are hard.** Any one unmet and the launch does not happen. They are the difference
   between a live product and a shopfront that cannot take money or tells the truth badly.
-  **As of 2026-09-02, gates 0, 1 and 3a are closed and gate 2 is published but unconfirmed.**
-  Gate 3 — payments — is the only hard gate left that is purely a merchant account rather than a
-  piece of work.
+  **As of 2026-09-02, gates 0, 1, 2 and 3a are closed.** Gate 3 — payments — is the only hard gate
+  left, and it is a merchant account rather than a piece of work.
 - **Gates 4–7 are judgement.** They can be compressed under pressure. **Gate 5 is the one that looks
   compressible and is not** — skipping it converts the launch budget into refunds and bad reviews.
 

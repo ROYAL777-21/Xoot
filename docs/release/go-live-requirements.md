@@ -18,7 +18,7 @@ run. `launch-protocol.md` holds the ordering and the reasoning behind it; this h
 |---|---|---|---|
 | 0 | CI can allocate a runner | ✅ **closed today** | Job `100145687623`, `runner_id 1000002340`, 15 steps, 06:16:32 → 06:18:40, success. Nineteen days of `runner_id 0` ended |
 | 1 | Production actually deploys | ✅ **closed today** | Vercel `dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx`, `target: production`, **READY**, commit `8cb2d0b`. The first non-ERROR production deployment the project has ever had |
-| 2 | The site is publicly reachable | 🟠 **published, not yet confirmed** | Netlify `xoot-home-care` (which holds `xoot.co.za`) moved `currentDeploy` from `6a189bd7` to `6a9808ea`, state `ready`, branch URL `main--xoot-home-care.netlify.app`. ⚠️ **But `xoot.co.za/build-info.json` is still unreadable after 20 attempts over 10 minutes**, so the served build has not been confirmed to be this commit — see below |
+| 2 | The site is publicly reachable | ✅ **closed today** | Netlify's deploy record for `xoot-home-care`: `commit_ref 8cb2d0ba…`, `branch main`, `context production`, `state ready`, `ssl_url https://xoot.co.za`, published 11:31:57Z. **The domain serves the merged commit.** ⚠️ The *header and routing* verification is a separate question and has still not run — see below |
 | 3 | A booking can be paid for | 🔴 **founder** | No PayFast merchant exists. `NEEDS-FOUNDER.md` §1 |
 | 3a | The homepage's claims are true | ✅ **closed today** | Four claims reworded to what is checkable; `MIE` removed from every shipped component. `NEEDS-FOUNDER.md` §4 |
 | 4 | Instrumented before spend | ⚪ not started | No analytics, no crash reporting, no funnel. Attribution before acquisition — `hormozi-findings.md` §1 |
@@ -26,28 +26,50 @@ run. `launch-protocol.md` holds the ordering and the reasoning behind it; this h
 | 6 | 10–20 friendly bookings | 🔴 **founder** | Real reviews, real photography, real numbers. Cannot be manufactured later |
 | 7 | Content banked | 🟠 partial | Drafts exist on the Eden Content Engine board. TikTok primary, Instagram secondary, sequential |
 
-**Gates 0, 1 and 3a closed today. Gate 2 is published but unconfirmed.** What is left before a
+**Gates 0, 1, 2 and 3a closed today.** What is left before a
 customer can pay is gate 3, and it is a merchant account.
 
-### ⚠️ Gate 2's open question, stated honestly
+### ⚠️ What gate 2 does and does not prove
 
-Netlify published a new deploy from `main` — that much is measured, and it means the 28 May
-hand-upload is no longer what `currentDeploy` points at. **What is not measured is what the domain
-actually serves.** `verify-live-deploy` polled `https://xoot.co.za/build-info.json` twenty times over
-ten minutes and never got a readable `commit`.
+**Proved, from Netlify's own API rather than from inference:** the production deploy attached to
+`xoot.co.za` is `commit_ref 8cb2d0ba9ceab839068e3b9968811caa4818adeb`, `branch main`,
+`context production`, `state ready`, published `2026-09-02T11:31:57Z`, with 1 redirect rule and 22
+header rules processed. The 28 May hand-upload is no longer what the domain serves.
 
-`postbuild` writes `dist/build-info.json` on every build, `netlify.toml` publishes `dist`, and its
-SPA redirect is `status = 200` **without** `force`, so a real file wins over it. All three of those
-say the file should be served. It is not being served, and I do not yet know why.
+**Not proved: that it serves it *correctly*.** `verify-live-deploy` polls
+`xoot.co.za/build-info.json` for the commit and gates the header check on that stamp matching. The
+stamp is **not readable** — twenty attempts over ten minutes. So `verify-live-site.mjs` has still
+never run against the live site, and CSP, HSTS, `noindex` on `/app` `/auth` `/admin`,
+`/.well-known/` handling and "no service-role key in the bundle" are all unverified in production.
 
-Three candidates, none confirmed: the `xoot-home-care` project may have dashboard build settings
-that override `netlify.toml`; the published deploy may not be the one built from `main`; or the
-domain may not resolve to this Netlify project at all any more.
+**The repo is not the cause.** Built locally under Vercel's exact production environment:
 
-**The next run will say which.** The check now prints the response body on the first and last
-attempt, because the previous version reported the verdict and sent the evidence only to the step
-summary, which is not readable from the API — the same lesson `verify-secrets.yml` and
-`verify-types.yml` already carry.
+```
+> postbuild
+Wrote dist/build-info.json (commit 2d0ce032)
+```
+
+`postbuild` runs the stamp writer, `netlify.toml` publishes `dist`, and its SPA redirect is
+`status = 200` **without** `force`, so a real file wins over the rewrite. The remaining candidates
+are all on the deploy side, and the next run prints the response body rather than only the verdict.
+
+### 🟠 A second finding from that same local build — the association files do not ship
+
+```
+Skipped apple-app-site-association: set XOOT_APPLE_TEAM_ID or XOOT_IOS_APP_ID.
+Skipped assetlinks.json: set XOOT_ANDROID_SHA256_CERT_FINGERPRINTS.
+```
+
+**`dist/.well-known/` does not exist.** So iOS Universal Links and Android App Links have no
+association file to fetch, and because the SPA redirect catches anything that is not a real file,
+those paths return HTML rather than JSON.
+
+This does not affect the website. It **silently breaks deep links the moment the app ships** — which
+is the exact failure mode `vercel.json`'s `/.well-known/` exclusion exists to prevent, arriving from
+the other direction: the rewrite is configured correctly and there is simply no file behind it.
+
+Three build-time variables fix it, and they are the founder's because they come from the Apple and
+Google consoles: `XOOT_APPLE_TEAM_ID`, `XOOT_IOS_APP_ID`, `XOOT_ANDROID_SHA256_CERT_FINGERPRINTS`.
 
 ### Two things that are true at once about the web host
 
@@ -113,7 +135,20 @@ any spend starts. Nothing today depends on it, because Netlify serves the domain
 **Why no session can do it:** buying a plan is a purchase, and attaching a custom domain has no MCP
 tool on this surface.
 
-### 🟠 5. Four `EXPO_PUBLIC_*` variables, before the next production app build
+### 🟠 5. Three `XOOT_*` build variables, or deep links break the day the app ships
+
+`XOOT_APPLE_TEAM_ID`, `XOOT_IOS_APP_ID`, `XOOT_ANDROID_SHA256_CERT_FINGERPRINTS`, set in the web
+host's build environment. Without them `write-native-association-files.mjs` skips both files and
+`dist/.well-known/` is never created — measured on a local production build today.
+
+**Why no session can do it:** the team id and app id come from Apple Developer, and the SHA-256
+signing fingerprint comes from the Android keystore or Play App Signing. None of them is derivable
+from this repository.
+
+**Proves it done:** `https://xoot.co.za/.well-known/apple-app-site-association` returns JSON rather
+than the SPA's HTML. `verify-live-site.mjs` already asserts exactly this, once it can run.
+
+### 🟠 6. Four `EXPO_PUBLIC_*` variables, before the next production app build
 
 `EXPO_PUBLIC_SUPABASE_URL`, `_PROJECT_ID`, `_PUBLISHABLE_KEY`, `_EAS_PROJECT_ID`. Table and
 reasoning: `deploy-hosts.md` §3.
@@ -122,14 +157,14 @@ reasoning: `deploy-hosts.md` §3.
 There is no environment-variable tool. ⚠️ A production EAS build will now **fail** until these are
 set — that is the intended change; it previously succeeded silently while pointing at no backend.
 
-### 🟠 6. `XOOT_CALL_TEST_PASSWORD`, and then place the first two-party call
+### 🟠 7. `XOOT_CALL_TEST_PASSWORD`, and then place the first two-party call
 
 `NEEDS-FOUNDER.md` §5, walkthrough §A.
 
 **Why no session can do it:** everything else about voice proves configuration. This proves sound
 comes out of a phone, and a person has to hold one.
 
-### ⚪ 7. Four decisions in the tracker
+### ⚪ 8. Four decisions in the tracker
 
 [#33](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/33),
 [#38](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/38),

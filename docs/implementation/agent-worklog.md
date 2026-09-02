@@ -83,10 +83,17 @@ no-stamp branch is gone, because that sentence is what stopped anyone looking.
 `xoot.co.za` is the primary URL of the **Netlify** project `xoot-home-care`, and that project builds
 this repository. Merging PR #44 published the real app there — `currentDeploy` moved `6a189bd7` →
 `6a9808ea`, branch URL now `main--xoot-home-care.netlify.app`. **The 28 May hand-uploaded
-`index.html` is no longer what `currentDeploy` points at** — which is not the same as confirming what
-the domain serves. ⚠️ `verify-live-deploy` polled `xoot.co.za/build-info.json` twenty times over ten
-minutes and never read a commit, so **gate 2 is published, not confirmed.** The check now prints the
-response body so the next run says why.
+`index.html` is no longer the live site** — Netlify's deploy record reads `commit_ref 8cb2d0ba…`,
+`branch main`, `context production`, `state ready`, `ssl_url https://xoot.co.za`, published
+11:31:57Z.
+
+⚠️ **Two things you will want to know before trusting the live site further.** First,
+`xoot.co.za/build-info.json` is not readable — twenty attempts over ten minutes — so
+`verify-live-site.mjs` is still gated shut and **no header, CSP, `noindex` or service-role-key check
+has ever run against production**. The repo is not the cause; a local build writes the file. Second,
+`dist/.well-known/` is not produced at all, because three `XOOT_*` build variables are unset — so
+Universal Links and App Links have no association file and those paths fall through the SPA rewrite
+to HTML. That breaks deep links silently the day the app ships.
 
 Vercel built the same commit in parallel: `dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx`, `target: production`,
 **READY** — its first production deployment that is not an ERROR. It has no custom domain, and the
