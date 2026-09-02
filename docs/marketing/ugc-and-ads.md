@@ -18,7 +18,7 @@ the same way.
 |---|---|---|
 | **Founder-led** | The founder on camera, as himself, saying true things | ✅ Now |
 | **Presenter-led** | The AI presenter, clearly marked, never claiming to be a customer | ✅ Once the Higgsfield plan allows |
-| **Customer UGC** | A real customer, with written consent | ⛔ Gate 6 |
+| **Customer UGC** | A real customer, with written consent | ⛔ Gate 6 — **pipeline now built and dormant**: `customer-ugc-pipeline.md` |
 
 **The third tier is the one that actually converts**, and it cannot be manufactured earlier. That is
 the whole argument for gate 6 existing.
@@ -64,8 +64,10 @@ still the cheapest read on whether the hook works at all.
 | **Script** | *"Four hours, every Saturday. That's twenty-six days a year."* (beat) *"What would you do with twenty-six days?"* |
 | **Note** | 4 × 52 ÷ 24 = 8.7 days of *cleaning*; "twenty-six days" counts the Saturday, which is the honest framing of what is lost. **State it as the Saturday, not as hours scrubbed** |
 
-⚠️ **The presenter never says she used Xoot.** She presents. She has no opinion about the service,
-gives no rating, and is never a customer or a Xooter. Full rules in `ai-presenter-brief.md`.
+⚠️ **Updated 2026-09-02.** She *may* now speak in the first person — *"I love how fast this books"*
+— because the render style changed to stylised illustration. She still may never be a specific
+customer, give a rating, or describe an outcome the product cannot deliver. **"I love how fast this
+books" is fine; "my Xooter arrived in ten minutes" is not.** Full rules in `ai-presenter-brief.md`.
 
 ---
 

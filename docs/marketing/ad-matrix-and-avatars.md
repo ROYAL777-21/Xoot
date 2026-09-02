@@ -43,12 +43,19 @@ Under **CPA s41** a misleading representation is misleading regardless of intent
 Advertising Regulatory Board's code treats testimonials as requiring a real, identifiable person.
 `BRAND_GUIDE` independently bans *"fake reviews, invented credentials"*.
 
+> **⚠️ UPDATED 2026-09-02 by founder decision.** She may now speak in the first person — *"I love
+> how fast this books"* — and **in exchange the render style changed from photoreal to stylised
+> illustration**. The two are locked together: a cartoon character enthusing about a product is
+> advertising; a photorealistic person describing a clean that never happened is a testimonial for a
+> service with zero completed bookings. Full reasoning in `ai-presenter-brief.md`.
+
 | The AI presenter may | The AI presenter may never |
 |---|---|
-| Present the brand, host, narrate, demonstrate | Say "I use Xoot" or "Xoot cleaned my flat" |
-| Appear in lifestyle scenes as a **brand character** | Give a rating, a review, or a before/after account |
-| Deliver a factual line about how booking works | Be presented as a Xooter, a customer, or a staff member |
-| Be visibly stylised and consistent across assets | Be passed off as a photograph of a real person |
+| Present, host, narrate, demonstrate | Be rendered photorealistically or be mistakable for a photograph |
+| **Speak in first person as a brand character** | Be presented as a real, specific customer |
+| Express warmth and enthusiasm about Xoot | Give a star rating, a numeric review, or a before/after account |
+| Deliver factual lines about how booking works | Appear as a Xooter or a member of staff |
+| Be consistent and recognisable across assets | Describe an outcome the product cannot deliver today |
 
 **Every asset carries an AI-generated marker.** Meta and TikTok both require AI-content disclosure,
 and a brand caught undisclosed loses more than the asset was worth. This is not caution for its own

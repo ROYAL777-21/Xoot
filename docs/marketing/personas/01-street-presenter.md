@@ -6,6 +6,7 @@
 | Trained from | [`../ai-presenter-brief.md`](../ai-presenter-brief.md) |
 | Targets | **Avatar A — The Reclaimed Weekend** (26–34, professional, flat, no kids, long hours) |
 | Source | Founder-supplied reference image, 2026-09-02. **Confirmed AI-generated**, so no real-person likeness, consent or POPIA question |
+| Render style | **Stylised editorial illustration** — changed from photoreal on 2026-09-02 so she can speak in the first person as a brand character. The two settings are locked together; see the brief |
 | Entered rotation | — |
 | Status | **proposed — blocked on the Higgsfield plan** |
 
@@ -52,6 +53,9 @@ Retired if **any** of these hold after twelve assets, or eight weeks, whichever 
    drift, the Soul is not doing its job and the consistency premium is unpaid.
 3. A garment-text or anatomy artefact reaches a published asset. One is a mistake; a second means
    the pipeline is not safe at volume.
+3a. **Any frame ships that could be mistaken for a photograph at thumbnail size.** This is not a
+   quality bar, it is the condition on which she is permitted to speak in the first person at all —
+   if the illustration drifts toward realism, the first-person lines have to stop with it.
 4. A third persona is proposed and she is the weaker of the two live. Rule 2 of the registry.
 
 ⚠️ **Eight weeks, not two.** The corpus warning applies directly: a cheaply-acquired result can be
