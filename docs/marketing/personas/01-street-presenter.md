@@ -7,7 +7,28 @@
 | Targets | **Avatar A — The Reclaimed Weekend** (26–34, professional, flat, no kids, long hours) |
 | Source | Founder-supplied reference image, 2026-09-02. **Confirmed AI-generated**, so no real-person likeness, consent or POPIA question |
 | Entered rotation | — |
-| Status | **proposed** |
+| Status | **proposed — blocked on the Higgsfield plan** |
+
+## ⛔ Blocked 2026-09-02 — the account cannot generate
+
+Measured, not assumed:
+
+```
+balance          → { credits: 2, subscription_plan_type: "free" }
+get_cost         → { credits: 1, credits_exact: 0.12 }   per character-sheet image
+generate_image   → Error: Requires basic plan or higher
+```
+
+**The blocker is the plan, not the credits.** At 0.12 credits an image the 2-credit balance would
+cover roughly sixteen character-sheet frames — comfortably more than the 8–12 Soul training needs.
+`soul_cast` simply is not available on the free tier, so nothing runs.
+
+**The prompt is written, costed and ready.** It is the full slot-architecture prompt from
+[`../ai-presenter-brief.md`](../ai-presenter-brief.md), assembled against Higgsfield's own
+`character-sheet` workflow. The moment the plan allows generation, the sequence is: character sheet →
+founder reviews → Soul training → `soul_id` recorded here.
+
+⛔ **Upgrading is a purchase and therefore the founder's.** No plan was bought and no card was used.
 
 ## Hypothesis
 
