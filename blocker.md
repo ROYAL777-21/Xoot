@@ -56,6 +56,43 @@ or console step and who can move it. Track them there; this file keeps the reaso
 The triage below still holds and is worth reading once: **almost nothing left is blocked on writing
 code**. It needs an account, a dashboard, a device, or a decision.
 
+## ✅ ANSWERED 2026-09-02 — and the answer is far bigger than seven functions
+
+The drift checker finally ran, the day CI could allocate a runner again. Job `100145687623`,
+*Deployed-vs-repo drift (advisory)*:
+
+```
+51 stale, 6 in step, of 57 deployed.
+Deployed with NO source in this repo: admin-reject-zooter, approve-zooter,
+get-zooter-job-cards, redeem-zootcred, respond-zooter-job, submit-zooter-application
+```
+
+**The `admin-*` question is subsumed.** It is not seven functions behind — it is **51 of 57**, and
+almost all of them last deployed 2026-08-13. Every one carries its own frozen copy of `_shared/*`
+from that date, so every correctness fix merged since reaches nothing.
+
+⚠️ **Two of the "seven" in the original entry — `admin-reject-zooter` and `approve-zooter` — are not
+stale, they are orphans.** They are pre-rename functions with no source in the repo at all. Six such
+orphans were deleted from **staging** on 2026-09-02 (*"No pre-rename functions remain on
+`fxmxyabdjqviqbcxmvlp`"*); production's dry run confirms the same six and is deliberately not
+applied yet.
+
+**Staging is being redeployed now.** Production is **sequenced behind two things and neither is a
+session's to move:**
+
+1. Production's schema is **four migrations behind** — the three from PR #44 plus the rename
+   completion — because `db push` fails `SQLSTATE 28P01`. The stored `SUPABASE_DB_PASSWORD` is
+   staging's. See `founder-todo.md` §0a.
+2. `go-live.md` §3a: **migrations before functions**, a rule this repo derived from a real failure.
+   Deploying 51 functions written against a schema production does not have is precisely the
+   ordering that rule exists to prevent.
+
+**So the order is:** founder adds `SUPABASE_DB_PASSWORD_PRODUCTION` → `db-push` production →
+`deploy-edge-functions` production → retire the six orphans. Not before.
+
+<details>
+<summary>The original entry, kept because the checker blind spot it describes is real and fixed</summary>
+
 ## OPEN 2026-08-08 — the seven `admin-*` functions have never been drift-checked correctly
 
 Found while fixing the checker, not by the checker. `sharedClosure` matched only `_shared/x.ts`,
@@ -73,6 +110,8 @@ All seven are still on version 8 from 2026-06, and `action-utils.ts` has changed
 `scripts/ops/lib/deployed-drift.mjs` now follows sibling imports, so
 `node scripts/ops/check-deployed-drift.mjs` will finally say which, and that should be run and
 acted on rather than assumed.
+
+</details>
 
 ## OPEN 2026-08-08 — masked calling is reachable now, but four of five gates are still shut
 
