@@ -23,35 +23,75 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-### 🚢 Release — the go-live sequence, 2026-09-02
+Nothing held. **Release released the go-live claim on 2026-09-02** — see the entry directly below.
 
-Founder asked for everything required to go live, done rather than listed. Holding:
+---
 
-| path | what |
+## 🚢 Xoot is live on xoot.co.za — 2026-09-02
+
+Founder asked for the go-live gates closed rather than listed. **Four of the five hard gates closed
+today.** What follows is what the other session most needs to know, because several of it
+contradicts documents still in this repo.
+
+### Cross-role edits, flagged per rule 3
+
+| file | what and why it could not wait |
 |---|---|
-| `supabase/migrations/**` | one new migration finishing the ZD-028/029 rename in the **database** |
-| `.github/workflows/**` dispatches | `db-push`, `verify-types`, `retire-orphaned-functions`, `deploy-edge-functions` on **both** projects |
-| `docs/release/**` | `launch-protocol.md`, `founder-todo.md`, a new `go-live-requirements.md` |
-| `src/components/xoot/{SafetyTrust,CtaBand,BookingHero}.tsx` | ⚠️ **unowned by either role** — the four homepage trust claims, reworded to capability tense |
-| `NEEDS-FOUNDER.md` §3 and §4 | ⚠️ **Correctness's file — flagged per rule 3.** Both close as a result of the work above |
+| `NEEDS-FOUNDER.md` §4 | The four homepage trust claims — **answered and closed**. It is a hard launch gate under CPA s41 and the founder asked for it closed, not carried. **The wording is yours to re-review**; the reasoning is in a comment block at the top of `SafetyTrust.tsx` so it is not silently widened later |
+| `src/components/xoot/{SafetyTrust,CtaBand,BookingHero}.tsx` | Unowned by either role. The copy changes §4 describes |
 
-**Three measured findings the other session should know, because two of them contradict documents
-currently in the repo:**
+### The four things worth your attention
 
-1. **CI can allocate runners again.** The billing outage recorded here and in `founder-todo.md` §0
-   as blocking everything since 2026-08-14 has cleared — PR #44's jobs ran real runners on
-   2026-09-02T06:16Z (`Lint, build and unit tests`, 06:16:32 → 06:18:40, passed). `db-push` and
-   `deploy-edge-functions` are dispatchable again.
-2. **The rename never finished in the production database.** `verify-types` is red on PR #44. The
-   full 952-line diff is constraint names and one view column: ~31 foreign keys still named
-   `zoot*`, and `analytics_contractor_quality.zooter_id`. Columns, tables and functions were all
-   renamed; their constraint *names* were not, because `ALTER TABLE … RENAME COLUMN` does not touch
-   them. **Do not fix this by regenerating `types.ts`** — that puts `zooter` back in the repo and
-   the naming guard would reject it. The database is what is wrong.
-3. **`xoot.co.za` is served by the Netlify project `xoot-home-care`, and that project builds this
-   repo** — it produced a deploy preview for PR #44. The Vercel project has no custom domain. So
-   merging PR #44 publishes the real app to the live domain via Netlify, with no dashboard step.
-   Founder chose this route knowingly; Vercel stays as the parallel build.
+**1. CI came back.** Runners allocate again — job `100145687623`, `runner_id 1000002340`, fifteen
+steps, success. `founder-todo.md` §0 and `launch-protocol.md` gate 0 both said this was blocking
+everything since 2026-08-14; both are now corrected with the evidence. `db-push` and
+`deploy-edge-functions` are dispatchable.
+
+**2. The ZD-028/029 rename never finished in the database, and now half-has.** `verify-types` went
+red the moment CI could run it. All 952 lines of that diff are names: ~31 foreign-key constraints
+and `analytics_contractor_quality.zooter_id`. `ALTER TABLE … RENAME COLUMN` renames the column and
+leaves every constraint that references it under its original name — a constraint name is an
+identifier, not a reference.
+
+`20260902120000_finish_zd028_rename_in_constraint_names.sql` fixes it by reading `pg_constraint` and
+`pg_attribute` rather than hard-coding names. **Applied and proven on staging. Refused on
+production**, see 3.
+
+⚠️ **Do not "fix" this by regenerating `types.ts`.** That writes the old brand back into the repo,
+`Xoot rules (blocking)` rejects it, and it records the incomplete rename as intended. Also worth
+knowing: **`private-schema-rename.test.ts` correctly failed my first draft** of that migration, which
+spelled the view column out. I did not allowlist it — the migration derives the name from the
+catalogue instead, so the SQL never contains it. That guard has caught three rounds of this defect
+and should keep its teeth.
+
+**3. One database password was serving two projects.** `db-push.yml` read a single
+`SUPABASE_DB_PASSWORD` while `PROJECT_REF` switched. Staging applied cleanly; production returned
+`SQLSTATE 28P01` four minutes later on the same commit. The stored value is staging's, so
+**production has never been reachable through that workflow**. Now per-environment with a fallback;
+the founder needs to add `SUPABASE_DB_PASSWORD_PRODUCTION`. ⚠️ **Nobody should overwrite the shared
+secret** — that breaks staging to fix production.
+
+**4. Two checks that were watching nothing.** `verify-live-deploy` polled for **3 minutes** while its
+own comment claimed ~10 (`attempts=12`, `delay=15`), so it had never once confirmed a deploy and
+always exited green down its "no build stamp, probably fine" branch. And it never ran
+`verify-live-site.mjs`, written 2026-09-01, which nothing had ever invoked — it cannot run from a
+session because `xoot.co.za:443` is egress-blocked here. Both fixed; the reassuring message on the
+no-stamp branch is gone, because that sentence is what stopped anyone looking.
+
+### Where the site actually lives, which was not where the docs said
+
+`xoot.co.za` is the primary URL of the **Netlify** project `xoot-home-care`, and that project builds
+this repository. Merging PR #44 published the real app there — `currentDeploy` moved `6a189bd7` →
+`6a9808ea`, branch URL now `main--xoot-home-care.netlify.app`. **The 28 May hand-uploaded
+`index.html` is no longer the live site.**
+
+Vercel built the same commit in parallel: `dpl_A5fuZXCQAPF7zCQJVKy7cAxzrPNx`, `target: production`,
+**READY** — its first production deployment that is not an ERROR. It has no custom domain, and the
+founder chose Netlify-now / Vercel-later knowingly. `launch-protocol.md` gate 2 previously said
+nothing could be public until a domain was attached to Vercel; that was wrong, and it was wrong
+because I had not looked at Netlify.
+
+**The state of every gate is `docs/release/go-live-requirements.md`**, written today.
 
 ---
 
