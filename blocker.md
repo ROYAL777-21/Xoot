@@ -77,8 +77,21 @@ orphans were deleted from **staging** on 2026-09-02 (*"No pre-rename functions r
 `fxmxyabdjqviqbcxmvlp`"*); production's dry run confirms the same six and is deliberately not
 applied yet.
 
-**Staging is being redeployed now.** Production is **sequenced behind two things and neither is a
-session's to move:**
+**Staging is now clean, and it is the rehearsal for production.** Run `33657404238`, *Deploy to
+staging*, 2026-09-02:
+
+```
+Deployed vs repo — staging (fxmxyabdjqviqbcxmvlp)
+0 stale, 51 in step, of 51 deployed.
+```
+
+**51 deployed, not 57** — because the six orphans were deleted from staging earlier the same day.
+The two numbers agree, which is the check that the retirement actually took rather than merely
+reporting success.
+
+So staging is at full parity on three axes at once: schema migrated, every function redeployed from
+current source, no pre-rename functions left. **Production can follow exactly this sequence**, and
+is **sequenced behind two things, neither of which a session can move:**
 
 1. Production's schema is **four migrations behind** — the three from PR #44 plus the rename
    completion — because `db push` fails `SQLSTATE 28P01`. The stored `SUPABASE_DB_PASSWORD` is
