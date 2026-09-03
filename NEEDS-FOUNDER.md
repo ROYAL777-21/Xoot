@@ -87,7 +87,11 @@ is a claim someone verified it.
 
 ## 🔴 Blocking everything user-facing
 
-### 2. ✅ RESOLVED 2026-09-02 — the host is Vercel now, and it configures itself
+### 2. 🔴 REOPENED 2026-09-02 — the domain serves a GoDaddy site, and that is the blocker
+
+> 🚨 **This entry was marked ✅ RESOLVED and it was not.** The hosting half was genuinely
+> fixed; the conclusion drawn from it was wrong. Corrected in place, with the original kept below,
+> because the mistake is the reusable part.
 
 > ⚠️ **Edited by Release & Infrastructure, not this file's owner** (CLAUDE.md rule 3). Deploy and
 > provider configuration is Release's path, but the file is not — flagged in the worklog for
@@ -112,8 +116,36 @@ What actually happened:
 **Verified on Vercel's own infrastructure, not locally:** eight consecutive deployments in state
 `READY`. The only `ERROR` is the original `950dc5d` production build that started all of this.
 
-**What is actually left:** merge PR #44 so `main` carries the fix — that produces the first
-successful production deployment. Then attach the custom domain.
+**What is actually left — and it is not "attach the custom domain".**
+
+🚨 **`xoot.co.za` is served by the GoDaddy Website Builder.** Measured 2026-09-02 by printing
+the response body from a runner rather than reading a host's API:
+
+```html
+<meta name="generator" content="Starfield Technologies; Go Daddy Website Builder 8.0.0000"/>
+```
+
+**Both hosts hold correct, current production builds of `main` and neither receives a single
+request.** PR #44 and PR #45 are both merged; `main` is current on Netlify and Vercel. Nothing is
+wrong with either build. A GoDaddy Website Builder site is published on the apex domain, so no
+visitor ever reaches them.
+
+**Your two steps, in order:**
+
+1. **GoDaddy → unpublish the Website Builder site on `xoot.co.za`.** Attaching a domain that is
+   still publishing someone else's page does not help; the publish has to stop first.
+2. **Point DNS at the chosen host.** Click-paths for both hosts are in
+   [`docs/release/domain-setup.md`](docs/release/domain-setup.md).
+
+⚠️ **The trap that hid this for three weeks, stated so it is not repeated:** Netlify's
+`ssl_url: https://xoot.co.za` and Vercel's `target: production, state: READY` both mean *"configured
+to serve this domain if a request arrives."* Neither is a statement about DNS. A host can only tell
+you about itself. **The only thing that settles it is fetching the URL from outside and reading the
+body.** A document in this repo carried *"DNS is fine. Do not touch GoDaddy"* from 13 August, and
+that sentence is what stopped three weeks of people looking in the right place.
+
+`verify-live-deploy` now **fails** on a foreign `generator` meta rather than warning, and runs daily
+at 06:00 UTC. It going green is the proof this is done.
 
 ⚠️ **Vercel Authentication is ON**, scoped `all_except_custom_domains`. Every `*.vercel.app` URL sits
 behind a login wall and the custom domain is exempt. This is correct and should stay — but it means
@@ -198,6 +230,61 @@ sees why it is worded this way.
 
 **Proves it done:** no shipped component asserts a process that has not run. Verified by
 `grep -rn "MIE" src/components src/pages`, which now matches only the explanatory comment.
+
+---
+
+## 🟡 From the 2026-09-03 design port
+
+Added by Release & Infrastructure (rule 3 — this file is Correctness's, flagged in the worklog).
+Full detail: [`docs/implementation/design-port-plan.md`](docs/implementation/design-port-plan.md).
+
+### 8. The crew model needs a schema shape decision — **ZD-035 is decided, its shape is not**
+
+You chose the design's crew model: two Xooters **finish one job faster** rather than doing two
+jobs. A 5.5h Airbnb turnover with two Xooters goes from **R684 to R393**.
+
+⛔ **It cannot be implemented as a price change.** `create-booking` builds
+`bookingTargets = selectedXooterIds.length ? selectedXooterIds : [null]` and **inserts one
+`bookings` row per Xooter**, each priced as a whole job. The data model *is* the old commercial
+model. Changing only the multiplier would emit N rows at the overhead each — 2.3× the intended
+price for a crew of two, in the under-stating direction against what the customer was shown.
+
+**Two shapes, and this is the decision:**
+
+| | What it means | Cost |
+|---|---|---|
+| **(a) A `booking_assignees` relation** ⭐ | One `bookings` row per job; a join table carries each Xooter and their commission rate | Largest migration, cleanest model |
+| **(b) One priced row plus zero-value participants** | Keep a row per Xooter, make one the priced one | Smaller migration; every earnings query must know the difference, which is where it rots |
+
+**Recommendation: (a).** This repo already learned that a duplicated money *rule* drifts. A
+duplicated booking *row* carrying implicit pricing semantics is the same failure one level up.
+
+**In scope either way:** the Xooter job list, tracking, earnings, ratings, the replacement flow, and
+`xooterPayout`, which runs per row today.
+
+### 9. `SUPABASE_DB_PASSWORD_PRODUCTION` — still outstanding, and now blocking more
+
+It already blocked the production schema. It now also blocks **ZD-036's `referrals` table** and the
+**`merch_waitlist` table**, because both are migrations and `db-push` cannot reach production.
+
+⚠️ **Do not overwrite the shared `SUPABASE_DB_PASSWORD`** — that value is staging's and staging
+works with it. Add a second secret under the new name.
+
+### 10. Supabase MCP authorisation
+
+Dropped mid-session. Until it is reconnected in your claude.ai connector settings, no session can
+read the production database directly, so "is this migration applied?" can only be answered from
+CI output rather than from the database.
+
+### 11. The merch waitlist, if you want one
+
+The design pairs the merch section with an email capture whose only destination is React state — it
+takes an address, says you have joined, and discards it. **Shipped without the field**, because
+under POPIA an email address is personal information needing a stated purpose and a real record, and
+a form that discards its input is worse than none.
+
+Wanting it back is fine and needs: a `merch_waitlist` table with RLS, a purpose statement, and item
+9's password to deploy.
 
 ---
 
