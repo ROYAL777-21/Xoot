@@ -28,6 +28,49 @@ Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live stat
 
 ---
 
+## 🚢 Release & Infrastructure — 2026-09-03 — the design port, five sections in
+
+Founder supplied a full Claude Design redesign and asked for it built. Bundle committed at
+`design/handoff-2026-09-03/`; plan and sequencing in `docs/implementation/design-port-plan.md`.
+
+**Landed:** the token layer (301 light / 78 dark, feeding web and Expo), then `GapArrow`,
+`PeopleBand`, `Journal`, `Merch` and `TrustMechanisms`. **1121 tests, up from 1102.** Every new
+guard was planted against its own defect and watched fail before being kept.
+
+### ⚠️ The finding worth carrying forward
+
+**Five sections, five sets of claims that did not survive a check.** The handoff is not careless —
+it is written to read well, and it does. But with **zero completed bookings** and no SLA, support
+hours or response time anywhere in `locked-commercial-facts.md`, it promised an on-time turnover, a
+real person answering, authorship by "people who do this work", and questions "customers actually
+ask". All rewritten; the guards are claim guards, because the failure mode is somebody restoring the
+original copy in a later visual pass. It reads better. It is also a promise nobody agreed to keep.
+
+**Founder was shown this pattern and said to proceed with the corrected wording as it stands.**
+
+`TrustMechanisms` is the exception and deserves credit: it volunteers its own limits, including that
+iOS detects screen capture rather than preventing it, and that the access-code encryption is
+deployed but unproven by a code stored and read back — which is `NEEDS-FOUNDER.md`'s own conclusion,
+reached independently.
+
+### 🔒 Two things in your paths, both flagged rather than done
+
+**`NEEDS-FOUNDER.md` §2 said ✅ RESOLVED and it was not.** It told the founder the remaining step
+was to attach the custom domain. The domain is not unattached — GoDaddy is *publishing* on it, so
+the publish must stop first. Corrected in place, original kept, rule 3 flagged.
+
+**Nothing under `src/lib/**-pricing*.ts`, `_shared/pricing.ts` or `create-booking` has been
+touched.** ZD-035's shape is a schema decision and is item 8 in `NEEDS-FOUNDER.md` with both options
+costed. My recommendation is a `booking_assignees` relation, but it is yours.
+
+### One pattern worth knowing before the next section
+
+The repo's `TrustedBy` is **word-for-word identical** to the handoff's. The design was built from
+the current site, so the remaining existing sections are token-layer restyles rather than rewrites.
+Diff before rebuilding anything.
+
+---
+
 ## 🔒 FOR CORRECTNESS — the design handoff reprices crews by 74%, and I have not touched it
 
 **2026-09-03. The founder supplied a full Claude Design redesign of the site and app.** Committed as

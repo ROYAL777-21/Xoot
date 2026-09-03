@@ -140,6 +140,19 @@ Straight ports, `design/handoff-2026-09-03/xoot/site/*.jsx` → `src/components/
 - ✅ **`PeopleBand`** — "Who turns up". **Two of four cards rewritten**; see below. `5ffbe9b`
 - ✅ **`Journal`** — the teaser, linking `/blog/:slug` rather than the handoff's hash modal,
   because this repo has real routes and 31 real posts. **Two claims rewritten.** `f211d27`
+- ✅ **`Merch`** — the coming-soon showcase. **Shipped without the handoff's email capture**, whose
+  only destination was React state. `a3d6de2`
+- ✅ **`TrustMechanisms`** — six mechanisms with their own stated limits. **SOS status is derived
+  from `canArmSos()`** rather than hardcoded, so the copy cannot drift from the gate. `a3d6de2`
+
+### Still to port
+
+| | |
+|---|---|
+| **The access-window timeline** | The interactive scrubber that opens `TrustMechanisms` in the handoff. Explains a timed release in four seconds where a paragraph does not. The largest remaining piece |
+| `TextFlip` | The animated headline treatment |
+| Restyles | `TrustedBy`, `HowItWorks`, `ServiceAreaMap`, `HomeExpansion`, `FeedbackSection` — copy already matches, so these are token-layer restyles, not rewrites |
+| ⛔ `Reviews` | Stays out. Zero completed bookings; placeholder reviews are a fabricated testimonial |
 
 **Running total: 1114 tests, up from 1102 when the port started.** Every new guard was planted
 against its own defect and watched fail before being kept.
