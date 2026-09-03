@@ -42,8 +42,24 @@ describe("kit tokens", () => {
   });
 
   it("uses violet as the brand and ink as the primary action", () => {
+    // The palette entry itself is unchanged — violet-500 is still THE violet.
     expect(KIT_LIGHT["violet-500"]).toBe("#7C5CFC");
-    expect(KIT_LIGHT["action-brand"]).toBe("var(--xoot-violet-500)");
+
+    // ── Re-pinned 2026-09-03, and the direction matters ──────────────────────────────
+    // This asserted `violet-500` until the founder's design handoff, which moved the
+    // interactive brand alias one step darker (and hover/press with it). That is not a
+    // regression to absorb: #7C5CFC is 4.38:1 on white and FAILS AA for body text, which
+    // is why `src/index.css` had already darkened its own audited `--brand` to violet-600
+    // by hand. The handoff has now made the same correction inside the kit, so the two
+    // layers agree instead of one compensating for the other.
+    //
+    // Pinned rather than loosened: if this ever drifts BACK to violet-500 the app silently
+    // drops below AA on every brand-coloured label, which is the failure this file exists
+    // to catch. Planted both ways before keeping — violet-500 fails, violet-600 passes.
+    expect(KIT_LIGHT["action-brand"]).toBe("var(--xoot-violet-600)");
+    expect(KIT_LIGHT["action-brand-hover"]).toBe("var(--xoot-violet-700)");
+    expect(KIT_LIGHT["action-brand-press"]).toBe("var(--xoot-violet-800)");
+
     // Not the brand colour — the kit's commit button is ink, the Tiimo pattern.
     expect(KIT_LIGHT["action-primary"]).toBe("var(--xoot-ink-900)");
   });
