@@ -28,6 +28,51 @@ Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live stat
 
 ---
 
+## 📣 Release & Infrastructure — 2026-09-03 — Substack, the loops, and a month of drafts
+
+Extends the entry directly below. Same claim: **`docs/marketing/**` is unheld — take any of it.**
+Nothing under it is imported by runtime code, referenced by a test, or read by a workflow.
+
+**PR #45 merged.** `main` moved `8cb2d0b` → `fc17b74`. Both hosts rebuilt from it.
+
+### ⚠️ What the founder asked for and what was actually possible
+
+Three requests hit a wall that is worth recording, because in each case the wall is a *plan or a
+platform limit* rather than something a session can work around.
+
+| Asked for | Reality |
+|---|---|
+| *"Deploy the updated website"* | **There was nothing to deploy.** `8cb2d0b` already carried the redesign and the corrected claims, and this branch touched zero `src/` files. Both hosts held it already. Merging #45 shipped the workflow and doc changes; the site artefact is byte-identical, and gate 2 is still DNS |
+| *"Use Eden and Claude to orchestrate automations"* | Eden **cannot publish**: scheduling returns **402**, no account connected, `eden_list_schedules` → `[]`. Claude Routines do work. Architecture is now *Claude schedules, Eden measures, a human publishes* — `automation-loops.md` |
+| *"Use the Marketing Studio"* | Free plan refuses to generate. And 20 of its 26 presets are **physical-product** formats — Xoot is a service. Six fit. `marketing-studio-briefs.md` has the paste-ready pack for the moment the plan clears |
+
+⚠️ **I armed a weekly Eden routine and then deleted it**, because a session-created routine stores no
+MCP connectors — it would have woken every Monday with no Eden tools and written nothing. A loop that
+exists and cannot run is the `verify-live-deploy` defect wearing a different hat. It is now documented
+as a founder action via the claude.ai Routines UI, with the prompt inline.
+
+### 🔒 For Correctness — the claim boundary that runs through all of this
+
+**Not one draft in `docs/marketing/drafts/` states a price, and that is deliberate rather than
+stylistic.** `locked-commercial-facts.md` §Current Pricing Conflict is **open**: the document locks
+R280/R325/R400 and `create-booking` still charges R270/R315/R390. Under the CPA the displayed price
+*is* the price, so publishing either figure risks publishing the wrong one.
+
+I verified it by grep rather than by intention — the only two rand amounts anywhere in
+`drafts/` are inside the rules explaining why none may appear.
+
+**This is your call to make, not mine.** If you resolve that conflict, the drafts unlock a whole hook
+family they are currently written around — and `drafts/facebook-groups-replies.md` FBG-03 exists
+specifically to answer "what's a fair rate?" without a number, which stops being necessary the day
+the two agree.
+
+Also yours: every draft is checked against **CPA s41** (no outcome claim, no testimonial — zero
+bookings exist), **CPA s36** (no giveaway mechanic), **LRA s200A** (⛔ nothing recruitment-facing
+publishes at all) and **POPIA**. The reasoning is at the top of `drafts/README.md` in a table with
+sources, so it can be reviewed as a set rather than found post by post.
+
+---
+
 ## 📣 Release & Infrastructure — 2026-09-02 — the marketing layer, claimed under "whoever gets there first"
 
 `docs/marketing/**` is in neither role's paths, so per CLAUDE.md I am saying so here: **I wrote all

@@ -1,24 +1,32 @@
-# Platform playbooks — seven presences, two content engines
+# Platform playbooks — eight presences, two content engines
 
 Written 2026-09-02. One page per platform: what it is for, what never goes on it, cadence, the
 metric that judges it.
 
+**Substack added 2026-09-02 at the founder's request**, and it changes the shape of the argument
+below rather than just extending the list — see its section. It is the only channel here that is
+not rented.
+
 ---
 
-## ⚠️ Why seven platforms are claimed and only two are published on
+## ⚠️ Why eight platforms are claimed and only two are published on
 
-The founder asked for content across seven. Claiming seven is right. **Publishing on seven is the
-documented way this fails**, and the file that says so is already in this repo:
+The founder asked for content across seven, then added Substack. Claiming eight is right.
+**Publishing on eight is the documented way this fails**, and the file that says so is already in
+this repo:
 
 > *"Company platforms go sequential, not parallel. A solo creator runs one primary + one secondary,
 > with an 'Eye of Sauron' rotation innovating on one at a time. The four-platform plan is what he
 > would call diluted — and 73% of people who start making content quit inside a year."*
 > — `growth-log.md`, 2026-09-02, from the Ralston transcript
 
-That was written about **four** platforms. Seven is not an improvement on four.
+That was written about **four** platforms. Eight is not an improvement on four.
 
-**So: claim all seven handles this week — cheap, correct, stops squatting. Produce for two.** The
+**So: claim all eight handles this week — cheap, correct, stops squatting. Produce for two.** The
 rest carry repurposed work or a single artefact, at a cost measured in minutes.
+
+The two engines are **TikTok** (company) and **X** (founder). Everything else in this table is a
+resize, a repost, a conversation, or a placeholder — and that is the point.
 
 | Platform | Role | Weekly cost |
 |---|---|---|
@@ -26,6 +34,7 @@ rest carry repurposed work or a single artefact, at a cost measured in minutes.
 | **Instagram** | 🟢 Secondary — Reels repurposed | ~30 min |
 | **Facebook** | 🟡 Page + **Groups** — the underrated one | Participation, not posting |
 | **X** | 🟡 Founder, text | 1 post/day |
+| **Substack** | 🟡 **Founder, long-form — the only owned audience** | 1 essay/week |
 | **LinkedIn** | 🟡 Founder, repurposed from X | ~15 min |
 | **YouTube** | ⚪ Reserved, dormant | Claim only |
 | **Indeed** | ⚪ Job board, not a channel | One ad |
@@ -121,6 +130,65 @@ copy-paste** — same idea, different room.
 
 Highest-value use is not the feed: it is being findable when a training school, a corporate
 facilities manager or a potential Xooter looks up whether Xoot is real.
+
+---
+
+## 🟡 Substack — the only channel here that is not rented
+
+Added at the founder's request, 2026-09-02.
+
+### Why it is worth a slot when seven were already too many
+
+**Every other channel on this page is rented.** X, TikTok, Instagram, Facebook and LinkedIn each
+decide how many of the people who chose to follow Xoot actually see it, and each has changed that
+answer without warning. An email list is the only asset here that survives an algorithm change,
+because delivery does not pass through anyone's ranking model.
+
+It is also the only place the founder's material has **natural length**. The GoDaddy discovery is a
+1,400-word essay with a real mechanism, three false conclusions and a correction. Compressed to 280
+characters it loses the part that makes it worth reading. That essay has nowhere else to go.
+
+### ⚠️ Two constraints, both permanent, both recorded so nobody re-litigates them
+
+**1. Substack has no public posting API.** Eden indexes Substack for *analysis* — it can measure a
+publication, and that is genuinely useful — but nothing in this stack can publish to it. **Automation
+stops at the draft, permanently.** Every essay is a manual paste, and no roadmap changes that.
+
+**2. At zero subscribers an essay is a broadcast to nobody.** This is the honest near-term case: its
+value is **archive and credibility link**, not reach. Someone who sees a good X post and wants more
+needs somewhere to go, and a Substack archive is a better answer than a profile with 32 posts. Reach
+comes later or not at all, and the plan does not depend on it.
+
+Both of those argue for the same cadence: **one essay a week, and no more.** Weekly is sustainable
+against a founder's actual week and produces an archive worth linking to inside a month.
+
+### What goes here
+
+Long-form build-in-public. The register is the founder's — *futuristic and sharp*, per
+`BRAND_GUIDE`'s two-register rule — and the subject is always **a thing that actually happened, with
+the number attached**. The four drafted essays in `drafts/substack-month-one.md` are each built on a
+defect in this repo that has a measurement behind it.
+
+**Substack Notes is X-shaped.** The week's X drafts repurpose there at close to zero marginal cost,
+which is the main reason Substack does not become a third production line.
+
+### Never
+
+- ⛔ A customer story. Zero bookings exist, and a long-form format makes a fabricated one *more*
+  convincing, not less — which under **CPA s41** makes it worse, not better.
+- ⛔ A price. `locked-commercial-facts.md` §Current Pricing Conflict is **open**: the document locks
+  R280/R325/R400 and `create-booking` still charges R270/R315/R390. Until that is resolved, no essay
+  states a number a reader could hold Xoot to.
+- ⛔ A paid tier. Charging for a newsletter before the actual product takes money is the wrong first
+  transaction.
+- ⛔ Cross-posting an essay verbatim to LinkedIn. Same idea, different room — the LinkedIn drafts are
+  written separately for exactly this reason.
+
+**Metric:** subscribers per 1,000 X impressions. That measures whether the founder account is
+converting attention into something owned, which is the only reason this channel exists.
+
+⛔ **Fix the X bio before the first essay ships.** The bio is the path to Substack; without it the
+essay is unreachable and the metric above cannot move.
 
 ---
 
