@@ -14,6 +14,7 @@ import { SEO } from "@/components/SEO";
 import { ServiceAreaMap } from "@/components/xoot/ServiceAreaMap";
 import { GapArrow } from "@/components/xoot/GapArrow";
 import { PeopleBand } from "@/components/xoot/PeopleBand";
+import { Journal } from "@/components/xoot/Journal";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -55,6 +56,7 @@ const Index = () => {
         <GapArrow offset={-58} rotate={-6} />
         <BecomeXooter />
         <HomeExpansion />
+        <Journal />
         <FeedbackSection />
         <CtaBand />
       </main>
