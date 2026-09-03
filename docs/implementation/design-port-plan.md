@@ -134,6 +134,29 @@ Straight ports, `design/handoff-2026-09-03/xoot/site/*.jsx` → `src/components/
 `Journal` · `FeedbackSection` · `HomeExpansion` · `SiteFooter` · `GapArrow` · `TextFlip` ·
 `BugBounty` (its own route, footer-linked only — the design correctly moved it off the main page).
 
+### Progress
+
+- ✅ **`GapArrow`** — ported, wired at the handoff's three positions, guards planted. `486295f`.
+- **Existing sections are a restyle, not a rewrite.** The repo's `TrustedBy` is already
+  word-for-word identical to the handoff's; only the visual treatment differs. The same is likely
+  true of `HowItWorks`, `ServiceAreaMap`, `HomeExpansion` and `FeedbackSection` — check before
+  rewriting any of them.
+
+### ⚠️ `PeopleBand` — port the layout, change one line
+
+It uses `XootCharacter`, an illustration, so there is **no POPIA question** — it does not use the
+`xooter-female-polo` photo.
+
+But its sub-line reads *"Every Xooter is vetted before their first visit and rated after every
+one."* The bare word **"vetted"** is the one `SafetyTrust` deliberately qualified on 2026-09-02,
+because naming or implying a third-party screening bureau asserts a commercial relationship nothing
+in this repo evidences. The approved wording is **"Admin-reviewed vetting"** — *"No Xooter is
+activated until an admin has reviewed their ID, selfie, proof of address, banking details and
+references."*
+
+**Use the repo's phrasing.** The claim underneath is compatible — activation does precede a first
+visit — so this is a wording change, not a lost section.
+
 ⚠️ `Reviews` and `SafetyTrust` are **not** in this list. `Reviews` renders customer reviews and
 **zero bookings have completed** — shipping it with placeholder content is a CPA s41 fabricated
 testimonial. `SafetyTrust`'s claims were reworded on 2026-09-02 after they overstated screening;
