@@ -2330,3 +2330,78 @@ I am asserting.** It does not affect the server path above, which uses service_r
 **Verification:** 111 files, 1166 tests passing. `tsc --noEmit` clean. `vite build` clean.
 `security:scan` 4/4. Five defects planted against the new wiring guards and each confirmed failing
 before restore.
+
+---
+
+# 🚢 Release — 2026-09-03, night session
+
+## 🔒 For Correctness — three items, and the first changes a locked fact
+
+### 1. ✅ ZD-037 — the pricing conflict is CLOSED, and the reason it stayed open matters
+
+**§Current Pricing Conflict named numbers that existed nowhere.** Measured by calling
+`basePrice('residential', hours)` directly:
+
+| Source | Small | Medium | Large |
+|---|---|---|---|
+| The locked table | R280 | R325 | R400 |
+| The conflict section's claim about the code | R270 | R315 | R390 |
+| **What the server actually charges** | **R250** | **R296** | **R376** |
+
+⚠️ **Three sets of numbers, none agreeing, and no test compared any of them to any other.** The
+founder was being asked to settle a conflict whose terms were wrong.
+
+**Founder decision: the cheaper ladder is canonical.** The document was corrected to the code. ⛔ **No
+code changed.** `locked-facts-parity.test.ts` now pins the document to `basePrice()`, which is the
+gap that let this survive — `pricing-parity` pinned client to server, and **nothing pinned the
+document to either.**
+
+✅ **This lifts the price ban on all marketing.** `marketing-claim-rules.test.ts` now scans
+`docs/marketing/**` for any rand figure outside the locked table.
+
+### 2. ⛔ ZD-035 — shape (a) confirmed, price still NOT wired
+
+Founder chose `booking_assignees`. The 61% cut stands unimplemented and **both absence guards stay**.
+`crew_size` is also left unwritten — under the row-per-Xooter model every new row *is* a solo job,
+so stamping a crew size would record a number the price does not reflect.
+
+### 3. 🛑 A false money claim was live in the tree
+
+`src/components/xoot/MyHomeHub.tsx` — orphaned, never rendered, and it said:
+
+> *"You set the pay"* · *"Decide your worker's daily rate. **They get 100% — Xoot never deducts.**"*
+
+`STARTING_RATE_BPS` is **3500**. Xoot deducts 35%. Rendered, that is a **CPA s41 misleading
+representation about money**, and the file read as finished work — the class of thing a later
+session mounts. **Deleted**, with `no-unbacked-money-claims.test.ts` scanning all of `src/` so the
+sentence cannot reappear elsewhere. Also deleted `NavLink.tsx`, shadowed by react-router's.
+
+## 🚢 Release-side, for the record
+
+- **Merged 29 stranded commits to `main`** (`6d1eb84`). Netlify and Vercel both build `main`, so
+  until tonight the entire design port, the ZD-035 constants and the whole ZD-036 referral were **in
+  no deployed artefact anywhere**. ⚠️ This was not an open item in any of the six registers.
+- **Ported `ReferSection` / `ReferralWelcome`.** The line drawn: eligibility stays server-only, but
+  the advertised **amount** is a marketing claim and must be sayable — so `referral-display.ts`
+  exports the figure and nothing else, pinned to the server constant.
+- **New docs:** `agent-orchestration.md`, `campaign-concepts.md`, `deliverable-prompts.md`,
+  `mobile-app-spec.md`.
+
+## ⛔ What I could NOT verify, stated plainly
+
+| Sweep | Result |
+|---|---|
+| Deployed-function drift | 🔴 **BLOCKED** — `SUPABASE_ACCESS_TOKEN is not set`, and the Supabase MCP is unauthorised this session |
+| Staging redeploy of the three `_shared/pricing.ts` importers | 🔴 **NOT DONE** — same blocker |
+| Production DB | 🔴 Still **2 migrations behind** — `SUPABASE_DB_PASSWORD_PRODUCTION` |
+
+⚠️ **So `create-booking` on staging is carrying a stale bundled copy of `_shared/pricing.ts` and
+`_shared/referrals.ts`.** The referral will not work against staging until it is redeployed. This is
+the bundling trap, and it is recorded rather than assumed away.
+
+**Verified instead:** 1196 tests across 117 files, `tsc --noEmit` clean, `vite build` clean,
+`security:scan` 4/4, 0 TODO/FIXME in `src/` or `supabase/functions/`. Every new guard was proved by
+planting the defect it describes and watching it fail.
+
+**Remaining orphans, harmless and left in place:** `LoadingScreen.tsx`, `AddressPicker.tsx`,
+`service-visual.ts`. None carries a claim.
