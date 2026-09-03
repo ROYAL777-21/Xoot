@@ -265,9 +265,15 @@ duplicated booking *row* carrying implicit pricing semantics is the same failure
 ### 9. `SUPABASE_DB_PASSWORD_PRODUCTION` — the migration is now written and waiting on it
 
 It already blocked the production schema. **`20260903120000_zd035_crew_and_zd036_referrals.sql` is
-now written** — the `booking_assignees` relation and the `referrals` table, with RLS. It has **not
-been applied anywhere** and cannot be, because `db-push` reaches staging only and Supabase MCP is
-unauthorised (item 10). It is unverified against a live database until one of those clears.
+written and 🟢 applied to staging** — run `33787222596`, success. It adds the
+`booking_assignees` relation, two `bookings` columns, and two columns on the redemption ledger.
+
+⚠️ **Its first draft failed on staging, and that failure was worth the run.** It tried to create a
+`referrals` table that has existed since April; `create table if not exists` made the collision
+silent, and only a name clash on the index surfaced it. Had it not clashed, new RLS policies and
+grants would have landed on a live table with real rows. Staging is where that was caught.
+
+**Production is still yours**: `db-push` reaches staging only until this secret exists.
 
 It also still blocks the **`merch_waitlist` table** (item 11).
 
