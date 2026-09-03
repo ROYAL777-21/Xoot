@@ -154,8 +154,41 @@ Straight ports, `design/handoff-2026-09-03/xoot/site/*.jsx` → `src/components/
 
 | | |
 |---|---|
-| Restyles | `TrustedBy`, `HowItWorks`, `ServiceAreaMap`, `HomeExpansion`, `FeedbackSection` — copy already matches, so these are token-layer restyles, not rewrites |
+| ⛔ **Colour restyles — do not do these** | See below |
 | ⛔ `Reviews` | Stays out. Zero completed bookings; placeholder reviews are a fabricated testimonial |
+
+### ⛔ The remaining "restyle" is a trap, and it is already half-done
+
+`TrustedBy`, `HowItWorks`, `ServiceAreaMap`, `HomeExpansion` and `FeedbackSection` look different
+from the handoff. It is tempting to close that gap by repointing them at `--xoot-*`. **Do not.**
+
+**The shape half is already done** — ZD-030 and the "restyle the marketing components to the kit's
+shape rules" work landed radius, spacing and elevation. What is left is colour, and colour is
+exactly what must not move.
+
+Checked: `TrustedBy.tsx` contains **zero** `--xoot-*` references. It renders entirely through the
+Tailwind semantic layer, which is fed by the **audited** `:root` palette — the one that darkened
+four kit colours because the kit's raw values fail WCAG AA for body text at 14px:
+
+```
+brand        violet-500 #7C5CFC  4.38 ✗  ->  violet-600  6.10 ✓
+care-plus    53% lightness       4.31 ✗  ->  51%         4.50 ✓
+destructive  56% lightness       3.70 ✗  ->  48%         4.55 ✓
+success      43% lightness       3.20 ✗  ->  35%         4.62 ✓
+```
+
+Repointing a marketing section at raw kit colours reads as progress in a diff and **silently drops
+that section below AA**. `src/index.css` says so at length, and
+`theme-consumes-audited-palette.test.ts` guards the Tailwind layer — but it cannot see a component
+that reaches for `var(--xoot-…)` directly.
+
+**The rule:** a ported component may use kit tokens for **shape, spacing, elevation and motion**,
+and for the **tint washes** (`--xoot-sage-wash` and friends, which are decorative surfaces behind
+icons, not body text). **Colour that carries text stays on the semantic layer.** Every section
+ported in this phase follows that split.
+
+⚠️ The Phase 1 token import does not change this. It landed the kit's own values, including its
+newly-corrected `action-brand`; it deliberately does **not** feed the Tailwind colour layer.
 
 **Running total: 1114 tests, up from 1102 when the port started.** Every new guard was planted
 against its own defect and watched fail before being kept.
