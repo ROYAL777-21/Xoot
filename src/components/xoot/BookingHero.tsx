@@ -9,6 +9,7 @@ import { approvedLaunchRegions } from "@/lib/operations";
 import { captureAnalyticsEvent, getAnalyticsDeviceType } from "@/lib/analytics";
 import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
 import heroImg from "@/assets/hero-xoot.jpg";
+import { HeroWordFlip } from "@/components/xoot/HeroWordFlip";
 
 const services = [
   { id: "residential", label: "Residential", icon: Home },
@@ -60,10 +61,9 @@ export const BookingHero = () => {
           </div>
           <h1 className="font-display text-[2.25rem] sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-balance text-foreground">
             Premium home care,<br />
-            <span className="relative inline-block">
-              <span className="relative z-10 text-primary">built on trust</span>
-              <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/15 z-0" />
-            </span>
+            {/* The rotating half, from the 2026-09-03 handoff. "built on trust" is still the
+                first phrase shown, so the hero reads exactly as before on first paint. */}
+            <HeroWordFlip />
           </h1>
           <p className="mt-4 lg:mt-5 text-base sm:text-lg text-muted-foreground max-w-md">Book vetted independent Xooters for homes, Airbnb turnovers, office workspaces, moving cleans and premium resets. Xoot verifies your address and confirms availability before final dispatch.</p>
 

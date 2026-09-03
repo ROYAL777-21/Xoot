@@ -146,12 +146,14 @@ Straight ports, `design/handoff-2026-09-03/xoot/site/*.jsx` → `src/components/
   from `canArmSos()`** rather than hardcoded, so the copy cannot drift from the gate. `a3d6de2`
 - ✅ **`AccessWindowTimeline`** — the interactive demo that opens the trust section. Five discrete
   stages, a revoke switch, and the panel labelled an illustration
+- ✅ **`HeroWordFlip`** — the rotating half of the hero headline, with the measure-and-fit that
+  keeps it on one line. ⛔ **"Affordable pricing" dropped** — it contradicts the locked premium
+  position and is a price claim while the pricing conflict is open
 
 ### Still to port
 
 | | |
 |---|---|
-| `TextFlip` | The animated headline treatment |
 | Restyles | `TrustedBy`, `HowItWorks`, `ServiceAreaMap`, `HomeExpansion`, `FeedbackSection` — copy already matches, so these are token-layer restyles, not rewrites |
 | ⛔ `Reviews` | Stays out. Zero completed bookings; placeholder reviews are a fabricated testimonial |
 
