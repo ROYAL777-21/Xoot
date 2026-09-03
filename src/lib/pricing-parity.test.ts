@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, BOOKING_FEE_CENTS, MULTI_XOOTER_SERVICES, serviceAllowsMultipleXooters } from "./xoot-pricing";
+import { hoursFor, quote, isPriced, ADD_ON_CENTS, BOOKING_COVER_CENTS, LINEN_ON_SITE_CENTS, BOOKING_FEE_CENTS, MULTI_XOOTER_SERVICES, serviceAllowsMultipleXooters, CREW_OVERHEAD, MAX_CREW, CREW_CAP_BY_SIZE, CREW_CAP_BY_SERVICE, crewCapFor, crewPriceCents, crewHours } from "./xoot-pricing";
 import { CADENCE_DISCOUNT } from "./care-plus";
 import { GRADED_SLOT_PRICING, SLOT_PREMIUM_CURVE } from "./operations";
 import {
@@ -643,5 +643,120 @@ describe("client/server pricing parity", () => {
       .toMatch(/const getCarePlusDiscount[\s\S]{0,600}return 0\.1;/);
     expect(CADENCE_DISCOUNT.weekly).toBe(0.15);
     expect(CADENCE_DISCOUNT.weekly).not.toBe(0.1);
+  });
+});
+
+/**
+ * ── ZD-035 crew pricing ────────────────────────────────────────────────────────────────
+ *
+ * The crew rule is duplicated into `_shared/pricing.ts` for the same reason the ladders are:
+ * Edge Functions run on Deno and cannot import from `src/`. So it gets the same treatment —
+ * the server file is read as text and every number is asserted against the client's.
+ *
+ * ⚠️ These functions are **defined and not yet wired into `quote()`**. Pinning them now is
+ * the point: the arithmetic lands once, in agreement, before anything starts charging with
+ * it. This repo has shipped a screen showing one price and charging another three times, and
+ * every one of them began with a rule that existed in two places and agreed on the day it was
+ * written.
+ */
+describe("ZD-035 crew pricing parity", () => {
+  const serverNumberArray = (name: string) => {
+    const m = serverSrc.match(new RegExp(`export const ${name} = \\[([^\\]]*)\\]`));
+    if (!m) throw new Error(`server ${name} not found`);
+    return m[1].split(",").map((v) => Number(v.trim())).filter((v) => !Number.isNaN(v));
+  };
+
+  const serverRecord = (name: string) => {
+    const m = serverSrc.match(new RegExp(`export const ${name}: Record<string, number> = \\{([^}]*)\\}`));
+    if (!m) throw new Error(`server ${name} not found`);
+    const out: Record<string, number> = {};
+    for (const pair of m[1].matchAll(/(\w+)\s*:\s*(\d+)/g)) out[pair[1]] = Number(pair[2]);
+    return out;
+  };
+
+  it("agrees on the overhead curve", () => {
+    expect(serverNumberArray("CREW_OVERHEAD")).toEqual([...CREW_OVERHEAD]);
+    // A lone Xooter must never carry an overhead, or every solo booking silently reprices.
+    expect(CREW_OVERHEAD[0]).toBe(1);
+    expect(MAX_CREW).toBe(CREW_OVERHEAD.length);
+  });
+
+  it("agrees on both cap tables", () => {
+    expect(serverRecord("CREW_CAP_BY_SIZE")).toEqual(CREW_CAP_BY_SIZE);
+    expect(serverRecord("CREW_CAP_BY_SERVICE")).toEqual(CREW_CAP_BY_SERVICE);
+  });
+
+  it("keeps laundry at one Xooter in every size", () => {
+    // Machine-bound: a second person cannot make a wash cycle finish sooner. The service cap
+    // has to beat the size allowance, and "large" is where that goes wrong if the precedence
+    // is ever inverted.
+    for (const size of ["small", "medium", "large"]) {
+      expect({ size, cap: crewCapFor("laundry", size) }).toEqual({ size, cap: 1 });
+    }
+  });
+
+  it("lets the deadline-driven services exceed their size cap", () => {
+    // A studio Airbnb is "small" and would cap at 2, but finishing before check-in is the
+    // whole reason to send a third person.
+    expect(crewCapFor("airbnb", "small")).toBe(3);
+    expect(crewCapFor("office", "small")).toBe(4);
+    // A service with no entry falls back to the size allowance rather than to the maximum.
+    expect(crewCapFor("regular", "small")).toBe(2);
+    expect(crewCapFor("regular", "large")).toBe(4);
+    expect(crewCapFor("regular", undefined)).toBe(2);
+  });
+
+  it("prices ZD-035's own worked example, to the rand", () => {
+    // The decision record says a 5.5h Airbnb at R342 base with two Xooters is R393. If this
+    // moves, the code and the decision log disagree about money and one of them is lying.
+    expect(crewPriceCents(34200, 2)).toBe(39300);
+    // And a crew of one is exactly the solo price — no rounding drift on the common case.
+    expect(crewPriceCents(34200, 1)).toBe(34200);
+  });
+
+  it("rounds to whole rand rather than whole cents", () => {
+    // R342 × 1.15 is R393.30. A cleaning quote reading R393.30 looks like a bug to the person
+    // paying it, so the rounding is deliberate and is asserted rather than left to chance.
+    expect(crewPriceCents(34200, 2) % 100).toBe(0);
+    for (const cents of [23600, 25000, 31000, 47000]) {
+      for (let crew = 1; crew <= MAX_CREW; crew += 1) {
+        expect(crewPriceCents(cents, crew) % 100).toBe(0);
+      }
+    }
+  });
+
+  it("clamps a crew size the caller should never have sent", () => {
+    // The resolver is the last line of defence for a number the UI should not have offered.
+    expect(crewPriceCents(34200, 0)).toBe(crewPriceCents(34200, 1));
+    expect(crewPriceCents(34200, 99)).toBe(crewPriceCents(34200, MAX_CREW));
+    expect(crewHours(5.5, 99)).toBe(crewHours(5.5, MAX_CREW));
+  });
+
+  it("shortens the visit, on the half hour, never below 1.5h", () => {
+    // Two people on a 5.5h job: 5.5 × 1.15 / 2 = 3.1625 -> 3 hours elapsed.
+    expect(crewHours(5.5, 2)).toBe(3);
+    expect(crewHours(5.5, 1)).toBe(5.5);
+    for (const hours of [3.5, 4, 5.5, 8, 10]) {
+      for (let crew = 1; crew <= MAX_CREW; crew += 1) {
+        const elapsed = crewHours(hours, crew);
+        expect((elapsed * 2) % 1).toBe(0);
+        expect(elapsed).toBeGreaterThanOrEqual(1.5);
+        // A crew is only worth booking if it actually finishes sooner.
+        if (crew > 1) expect(elapsed).toBeLessThan(hours);
+      }
+    }
+  });
+
+  it("is not yet charging anyone — quote() still uses the live model", () => {
+    // The guard that keeps this honest until the booking_assignees migration lands. If crew
+    // pricing reaches `quote()` before `create-booking` can produce the same number, the site
+    // shows one total and the server takes another.
+    const solo = quote({ service: "airbnb", hours: 5.5, xooterCount: 1, bookingCover: false });
+    const pair = quote({ service: "airbnb", hours: 5.5, xooterCount: 2, bookingCover: false });
+    if (!isPriced(solo) || !isPriced(pair)) throw new Error("airbnb refused a valid quote");
+
+    // Live model: two Xooters is twice the base. Not the ZD-035 overhead.
+    expect(pair.baseCents).toBe(solo.baseCents * 2);
+    expect(pair.baseCents).not.toBe(crewPriceCents(solo.baseCents, 2));
   });
 });

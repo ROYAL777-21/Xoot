@@ -81,6 +81,95 @@ export const PRICING_RULE = "ZD-026";
 const MULTI_XOOTER_DISCOUNT_THRESHOLD = 3;
 const MULTI_XOOTER_DISCOUNT_RATE = 0.1;
 
+/* ── ZD-035 — crew pricing ──────────────────────────────────────────────────────────
+ *
+ * ⚠️ **DEFINED HERE, NOT YET WIRED INTO `quote()`. This changes nothing a customer is
+ * charged today**, and that is deliberate.
+ *
+ * ZD-035 (founder, 2026-09-03) replaces "N Xooters is N jobs" with "a crew finishes ONE job
+ * sooner". The price stops being a headcount multiple and becomes a coordination overhead.
+ *
+ *   live today   base × count, less 10% at ≥3     5.5h Airbnb, 2 Xooters -> R684
+ *   ZD-035       base × CREW_OVERHEAD[n − 1]      5.5h Airbnb, 2 Xooters -> R393
+ *
+ * Both are R62 per labour-hour. They differ in how much labour the phrase "2 Xooters" sells.
+ *
+ * ⛔ **Why it cannot simply replace the old rule here.** `create-booking` inserts one
+ * `bookings` row per Xooter, each priced as a whole job. The data model IS the old commercial
+ * model. Swapping the multiplier alone would emit N rows at the overhead each — 2.3× the
+ * intended price for a crew of two, in the UNDER-stating direction against what the customer
+ * was shown, which is the side of the CPA line that is not survivable.
+ *
+ * So the arithmetic lands first, mirrored and pinned by `pricing-parity.test.ts`. Wiring it
+ * waits on the `booking_assignees` migration — `docs/implementation/design-port-plan.md`.
+ */
+
+/**
+ * Coordination overhead by crew size, indexed from zero. A lone Xooter is 1.
+ *
+ * Two people do not halve a job: they have to divide rooms, avoid each other, and agree when
+ * it is finished. 1.15 prices that, and the elapsed time still drops by roughly 40%.
+ */
+export const CREW_OVERHEAD = [1, 1.15, 1.25, 1.4] as const;
+
+/** ZD-035 caps at 4. The live model's `MAX_XOOTERS` of 5 stays until the wiring changes. */
+export const MAX_CREW = CREW_OVERHEAD.length;
+
+/** How many people a home of each size can absorb before they are in each other's way. */
+export const CREW_CAP_BY_SIZE: Record<string, number> = { small: 2, medium: 3, large: 4 };
+
+/**
+ * Size is the wrong sole constraint for the deadline-driven services.
+ *
+ * A 40m² Airbnb studio is "small" and would cap at 2 — but a turnover has a hard check-in
+ * time, and finishing before it is the entire reason to send a third person. An office is
+ * booked by floor area the size tiers do not describe. A moving clean has a handover.
+ *
+ * ⚠️ **Laundry's 1 is a ceiling, not a floor.** It is machine-bound; a second person cannot
+ * make a wash cycle finish sooner, so it must win over any size allowance.
+ */
+export const CREW_CAP_BY_SERVICE: Record<string, number> = {
+  airbnb: 3,
+  office: 4,
+  moving: 4,
+  express: 3,
+  laundry: 1,
+};
+
+/** The largest crew this service and size may be booked with. */
+export function crewCapFor(service: string, sizeKey?: string): number {
+  const bySize = (sizeKey && CREW_CAP_BY_SIZE[sizeKey]) || 2;
+  const bySvc = CREW_CAP_BY_SERVICE[service];
+  if (bySvc === undefined) return bySize;
+  if (service === "laundry") return 1;
+  return Math.max(bySize, bySvc);
+}
+
+/**
+ * What a crew costs, in cents.
+ *
+ * ⚠️ **Rounded to whole rand, not to whole cents**, which is not this file's usual habit and
+ * is deliberate: R342 × 1.15 is R393.30, and a quote reading "R393.30" for a cleaning job
+ * looks like a bug to the person paying it. ZD-035's worked example is R393, so the rounding
+ * has to land there or the decision record and the code disagree.
+ */
+export function crewPriceCents(soloCents: number, crew: number): number {
+  const overhead = CREW_OVERHEAD[Math.min(Math.max(crew, 1), MAX_CREW) - 1];
+  return Math.round((soloCents / 100) * overhead) * 100;
+}
+
+/**
+ * Elapsed hours for a crew — the part the customer actually feels.
+ *
+ * Snapped to the half hour because the ladders are, and floored at 1.5h: below that the
+ * travel and setup dominate and the number stops describing a real visit.
+ */
+export function crewHours(soloHours: number, crew: number): number {
+  const size = Math.min(Math.max(crew, 1), MAX_CREW);
+  const overhead = CREW_OVERHEAD[size - 1];
+  return Math.max(1.5, Math.round(((soloHours * overhead) / size) * 2) / 2);
+}
+
 /** Server caps at 5 (`Math.min(..., 5)` in create-booking). */
 export const MAX_XOOTERS = 5;
 
