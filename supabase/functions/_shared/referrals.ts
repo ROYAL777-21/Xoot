@@ -13,9 +13,17 @@
  * `pricing-parity.test.ts`. This one is not mirrored at all. The client renders the credit the
  * server returned on the quote and computes nothing.
  *
- * ⛔ **Not yet wired into `create-booking`.** The `referrals` table does not exist — the
- * migration is blocked on `SUPABASE_DB_PASSWORD_PRODUCTION`. This file is the rule, tested,
- * waiting for a row store. See `docs/implementation/design-port-plan.md`.
+ * ── ⚠️ Corrected 2026-09-03: the schema already existed ───────────────────────────────
+ * The first version of this file invented an `ownerId`, and a migration to go with it. Staging
+ * refused that migration, and the reason was better than a typo: **`public.referrals` has
+ * existed since 2026-04-23**, keyed on `user_id`, with a signup trigger that already issues
+ * every user a code — and `public.referral_redemptions` beside it, whose
+ * `referred_user_id UNIQUE` **is** the single-use burn this file was about to reinvent.
+ *
+ * So the types below are the real columns. A rule written against a table that does not exist
+ * is a rule that will not survive contact with the one that does.
+ *
+ * ⛔ **Not yet wired into `create-booking`.** See `docs/implementation/design-port-plan.md`.
  */
 
 /** Rand → cents, matching `pricing.ts`, so no float ever touches a money value. */
@@ -36,17 +44,20 @@ export type ReferralRefusal =
   | "unknown_code"
   | "own_code"
   | "already_used"
-  | "not_a_first_booking"
-  | "code_inactive";
+  | "not_a_first_booking";
 
+/**
+ * A row of `public.referrals`, in its real shape.
+ *
+ * ⚠️ There is no `active` column and no `burned_at`. A code is not withdrawn, and it is not
+ * burned on the code itself — **the burn lives in `referral_redemptions`**, enforced by
+ * `referred_user_id UNIQUE`. Modelling it here as a nullable timestamp would have been a
+ * second, weaker copy of a constraint the database already guarantees.
+ */
 export type ReferralRecord = {
   code: string;
-  /** The account the code belongs to — the person who would earn the credit. */
-  ownerId: string;
-  /** False once withdrawn, or once the owner's account is closed. */
-  active: boolean;
-  /** Set when the code has been redeemed. A code is single-use by the referee. */
-  burnedAt: string | null;
+  /** `referrals.user_id` — the account the code belongs to, who earns the credit. */
+  userId: string;
 };
 
 export type ReferralCheck = {
@@ -55,10 +66,17 @@ export type ReferralCheck = {
   buyerId: string;
   /** Completed bookings for this buyer. The referee discount is a first-booking offer. */
   buyerCompletedBookings: number;
+  /**
+   * Whether a `referral_redemptions` row already exists for this buyer.
+   *
+   * The database enforces this with `referred_user_id UNIQUE`, so the insert would fail
+   * anyway. Checked here as well so the customer gets an explanation instead of a 409.
+   */
+  buyerHasRedeemed: boolean;
 };
 
 export type ReferralVerdict =
-  | { ok: true; ownerId: string; creditCents: number }
+  | { ok: true; referrerUserId: string; creditCents: number }
   | { ok: false; reason: ReferralRefusal };
 
 /**
@@ -71,22 +89,21 @@ export type ReferralVerdict =
  * history that disqualifies them sends them to support with the wrong question.
  */
 export function checkReferral(input: ReferralCheck): ReferralVerdict {
-  const { record, buyerId, buyerCompletedBookings } = input;
+  const { record, buyerId, buyerCompletedBookings, buyerHasRedeemed } = input;
 
   if (!record) return { ok: false, reason: "unknown_code" };
-  if (!record.active) return { ok: false, reason: "code_inactive" };
 
   // Self-referral. The commonest attempt, and honest more often than not — people assume the
   // code is theirs to use. It is still a discount funded by Xoot for no new customer.
-  if (record.ownerId === buyerId) return { ok: false, reason: "own_code" };
+  if (record.userId === buyerId) return { ok: false, reason: "own_code" };
 
-  if (record.burnedAt !== null) return { ok: false, reason: "already_used" };
+  if (buyerHasRedeemed) return { ok: false, reason: "already_used" };
 
   // A referral buys a *first* customer. Someone who has already completed a booking is a
   // customer Xoot already has, and paying R100 to keep them is a different programme.
   if (buyerCompletedBookings > 0) return { ok: false, reason: "not_a_first_booking" };
 
-  return { ok: true, ownerId: record.ownerId, creditCents: REFERRAL_REWARD_CENTS };
+  return { ok: true, referrerUserId: record.userId, creditCents: REFERRAL_REWARD_CENTS };
 }
 
 /**

@@ -1,10 +1,27 @@
--- ZD-035 crew bookings, and ZD-036 referrals.
+-- ZD-035 crew bookings, and ZD-036's missing referral columns.
 --
--- ⚠️ WRITTEN, NOT APPLIED. `db-push` cannot reach production — the stored
--- `SUPABASE_DB_PASSWORD` is staging's, and `SUPABASE_DB_PASSWORD_PRODUCTION` does not exist
--- yet. This file is the artefact that founder secret unblocks; it has not run anywhere.
+-- ── ⚠️ THIS FILE'S FIRST DRAFT WAS WRONG, AND STAGING IS WHAT CAUGHT IT ─────────────────
 --
--- ── ZD-035, and why this is a migration rather than a constant change ────────────────────
+-- The first version created `public.referrals` from scratch with an `owner_id`. Applying it to
+-- staging failed at statement 11:
+--
+--     ERROR: column "owner_id" does not exist (SQLSTATE 42703)
+--     create index if not exists referrals_owner_id_idx on public.referrals (owner_id)
+--
+-- `create table if not exists` had silently done nothing, because **`public.referrals` has
+-- existed since 2026-04-23** with `user_id` as its primary key, a unique `code`, and a signup
+-- trigger that already issues every user a code. `referral_redemptions` exists beside it, and
+-- its `referred_user_id UNIQUE` **is** the single-use burn ZD-036 asked for.
+--
+-- So ZD-036 needs no new tables. It needed two columns. Had the index name not collided, this
+-- migration would have bolted new RLS policies and grants onto a live table with a different
+-- shape and real rows in it — which is a considerably worse outcome than a failed apply.
+--
+-- ⚠️ **`if not exists` is why the collision was silent.** It is the right default for a table
+-- this migration owns and the wrong one for a table it does not, because it converts "this
+-- already exists and is not what you think" into "fine, carry on".
+--
+-- ── ZD-035, and why this half is a migration rather than a constant change ───────────────
 --
 -- `create-booking` builds `bookingTargets = selectedXooterIds.length ? selectedXooterIds :
 -- [null]` and inserts ONE `bookings` ROW PER XOOTER, each priced as a whole job with its own
@@ -12,11 +29,7 @@
 --
 -- ZD-035 makes it one job a crew finishes sooner. Under the old shape, changing only the
 -- multiplier would emit N rows at the coordination overhead each — 2.3× the intended price for
--- a crew of two, in the UNDER-stating direction against what the customer was shown. That is
--- the side of the CPA line this repo does not survive.
---
--- So: one `bookings` row for the job, and a `booking_assignees` row per Xooter carrying that
--- Xooter's own commission rate. Option (a) in `docs/implementation/design-port-plan.md`.
+-- a crew of two, in the UNDER-stating direction against what the customer was shown.
 --
 -- ⚠️ NOTHING IS BACKFILLED AND NOTHING IS DROPPED. Existing multi-Xooter bookings keep their
 -- row-per-Xooter shape and their prices. Rewriting historical money to a model that did not
@@ -69,39 +82,29 @@ alter table public.booking_assignees enable row level security;
 revoke all on public.booking_assignees from anon, authenticated;
 grant select, insert, update, delete on public.booking_assignees to service_role;
 
--- ── ZD-036 ──────────────────────────────────────────────────────────────────────────────
+-- ── ZD-036 — two columns on the redemption ledger that already exists ────────────────────
+--
+-- `public.referrals` and `public.referral_redemptions` are left exactly as they are. Their
+-- RLS was already tightened by `20260627113000_performance_advisor_cleanup`, and the signup
+-- trigger that issues codes already works. Adding to them, not replacing them.
 
-create table if not exists public.referrals (
-  code text primary key,
-  owner_id uuid not null references auth.users (id) on delete cascade,
-  active boolean not null default true,
-  -- Set on redemption. Single-use by the referee, so the burn is what makes it single-use.
-  burned_at timestamptz,
-  burned_by uuid references auth.users (id),
-  burned_booking_id uuid references public.bookings (id),
-  created_at timestamptz not null default now(),
-  -- A person gets one code, not a supply of them.
-  unique (owner_id)
-);
+alter table public.referral_redemptions
+  -- Which booking burned the code. Without it a redemption cannot be reconciled against the
+  -- money it discounted, and "was this credit actually applied?" has no answer.
+  add column if not exists booking_id uuid references public.bookings (id) on delete set null,
+  -- What was actually taken off, in cents. Stored rather than assumed from today's constant:
+  -- ZD-036 records R100 as provisional, and a redemption from before a change must still
+  -- report the number that was really applied.
+  add column if not exists credit_cents integer;
 
-create index if not exists referrals_owner_id_idx on public.referrals (owner_id);
+-- Never negative, and never invented. A null means the redemption predates this column.
+alter table public.referral_redemptions
+  drop constraint if exists referral_redemptions_credit_cents_non_negative;
+alter table public.referral_redemptions
+  add constraint referral_redemptions_credit_cents_non_negative
+  check (credit_cents is null or credit_cents >= 0);
 
-alter table public.referrals enable row level security;
-
--- A user may read their own code, and nothing else. They may not write it: issuing, burning
--- and validating are server decisions. `locked-commercial-facts.md` § Financial And Trust
--- Authority already lists "referral qualification" among the things the frontend is never
--- authoritative for, and a policy allowing update here would contradict that fact in SQL.
-drop policy if exists referrals_owner_can_read on public.referrals;
-create policy referrals_owner_can_read
-  on public.referrals
-  for select
-  to authenticated
-  using (owner_id = auth.uid());
-
-revoke all on public.referrals from anon;
-revoke insert, update, delete on public.referrals from authenticated;
-grant select on public.referrals to authenticated;
-grant select, insert, update, delete on public.referrals to service_role;
+create index if not exists referral_redemptions_booking_id_idx
+  on public.referral_redemptions (booking_id);
 
 commit;

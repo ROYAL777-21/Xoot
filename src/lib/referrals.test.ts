@@ -11,29 +11,36 @@ import {
 
 const record = (over: Partial<ReferralRecord> = {}): ReferralRecord => ({
   code: "THANDI100",
-  ownerId: "owner-1",
-  active: true,
-  burnedAt: null,
+  userId: "referrer-1",
   ...over,
 });
 
 const verdictFor = (over: Partial<Parameters<typeof checkReferral>[0]> = {}) =>
-  checkReferral({ record: record(), buyerId: "buyer-1", buyerCompletedBookings: 0, ...over });
+  checkReferral({
+    record: record(),
+    buyerId: "buyer-1",
+    buyerCompletedBookings: 0,
+    buyerHasRedeemed: false,
+    ...over,
+  });
 
 describe("ZD-036 referral eligibility", () => {
   it("accepts a valid first-booking redemption", () => {
-    expect(verdictFor()).toEqual({ ok: true, ownerId: "owner-1", creditCents: 10000 });
+    expect(verdictFor()).toEqual({ ok: true, referrerUserId: "referrer-1", creditCents: 10000 });
     expect(REFERRAL_REWARD_CENTS).toBe(10000);
   });
 
   it("refuses a self-referral", () => {
     // The commonest attempt, and honest more often than not — but it is a discount funded by
     // Xoot for a customer Xoot already had.
-    expect(verdictFor({ buyerId: "owner-1" })).toEqual({ ok: false, reason: "own_code" });
+    expect(verdictFor({ buyerId: "referrer-1" })).toEqual({ ok: false, reason: "own_code" });
   });
 
-  it("refuses a code that has already been redeemed", () => {
-    expect(verdictFor({ record: record({ burnedAt: "2026-09-01T10:00:00Z" }) })).toEqual({
+  it("refuses a buyer who has already redeemed one", () => {
+    // The burn is `referral_redemptions.referred_user_id UNIQUE`, not a flag on the code —
+    // one redemption per person, guaranteed by the database. Checked here too so the customer
+    // gets an explanation rather than a constraint violation.
+    expect(verdictFor({ buyerHasRedeemed: true })).toEqual({
       ok: false,
       reason: "already_used",
     });
@@ -48,19 +55,16 @@ describe("ZD-036 referral eligibility", () => {
     });
   });
 
-  it("refuses an unknown or withdrawn code", () => {
+  it("refuses an unknown code", () => {
     expect(verdictFor({ record: null })).toEqual({ ok: false, reason: "unknown_code" });
-    expect(verdictFor({ record: record({ active: false }) })).toEqual({
-      ok: false,
-      reason: "code_inactive",
-    });
   });
 
-  it("tells a self-referrer the honest reason even when their code is also burned", () => {
+  it("tells a self-referrer the honest reason even when they have also redeemed before", () => {
     // Order matters: "already used" would send them to support with the wrong question.
-    expect(
-      verdictFor({ buyerId: "owner-1", record: record({ burnedAt: "2026-09-01T10:00:00Z" }) }),
-    ).toEqual({ ok: false, reason: "own_code" });
+    expect(verdictFor({ buyerId: "referrer-1", buyerHasRedeemed: true })).toEqual({
+      ok: false,
+      reason: "own_code",
+    });
   });
 });
 
@@ -77,7 +81,7 @@ describe("ZD-036 referral credit", () => {
   });
 
   it("is zero on any refusal, and never negative", () => {
-    const refused = verdictFor({ buyerId: "owner-1" });
+    const refused = verdictFor({ buyerId: "referrer-1" });
     expect(referralCreditCents({ verdict: refused, baseCents: 34200, addOnsCents: 0 })).toBe(0);
     expect(referralCreditCents({ verdict: ok, baseCents: -500, addOnsCents: -100 })).toBe(0);
   });
@@ -105,5 +109,31 @@ describe("ZD-036 stays server-side", () => {
   it("keeps the locked fact that names it", () => {
     const locked = readFileSync(join(root, "docs/product/locked-commercial-facts.md"), "utf8");
     expect(locked).toMatch(/referral qualification/i);
+  });
+});
+
+describe("ZD-036 matches the schema that already exists", () => {
+  // Comments stripped before matching. The file's own header *quotes* the mistake in order to
+  // explain it, so a whole-file match fails against the explanation rather than a regression —
+  // which is exactly how the first version of this guard failed.
+  const source = readFileSync(
+    join(process.cwd(), "supabase/functions/_shared/referrals.ts"),
+    "utf8",
+  ).replace(/\/\*[\s\S]*?\*\//g, "");
+
+  it("keys on user_id, because that is what public.referrals uses", () => {
+    // The first version of this file invented an ownerId and a table to hold it. Staging
+    // refused the migration: public.referrals has existed since April, keyed on user_id, with
+    // a signup trigger already issuing codes.
+    expect(source).toMatch(/userId/);
+    expect(source).not.toMatch(/ownerId/);
+  });
+
+  it("does not reinvent the burn as a column on the code", () => {
+    // referral_redemptions.referred_user_id is UNIQUE. That constraint is the burn, and a
+    // nullable timestamp here would be a second, weaker copy of a guarantee the database
+    // already makes.
+    expect(source).not.toMatch(/burnedAt/);
+    expect(source).toMatch(/buyerHasRedeemed/);
   });
 });
