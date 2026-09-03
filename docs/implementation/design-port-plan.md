@@ -36,88 +36,65 @@ context and respected the money layer.
 
 ---
 
-# 🛑 Three decisions only the founder can make
+# ✅ Two decisions taken, one still open
 
-Work on the money layer should not start until these are settled. Each changes what a customer is
-charged, so each needs a `decision-log.md` entry and a `locked-commercial-facts.md` update.
+**The founder decided both money questions on 2026-09-03.** Recorded as **ZD-035** (crew) and
+**ZD-036** (referral) in `decision-log.md`, and written into `locked-commercial-facts.md` under
+*Crew Bookings* and *Referrals*. ⛔ Both are **decided and not implemented** — the live server still
+prices the old way.
 
-## Decision 1 — the crew model. **This is the big one.**
+## ZD-035 — a crew finishes one job faster
 
-The repo and the design both price multiple Xooters, coherently, and **they model different
-products.**
+Adopted: `base × crewOverhead[n−1]`, `[1, 1.15, 1.25, 1.4]`; elapsed time `soloHours × overhead / n`;
+max 4; caps by size `{small:2, medium:3, large:4}` and by service
+`{airbnb:3, office:4, moving:4, express:3, laundry:1}`.
 
-| | Repo (live, server-mirrored, parity-pinned) | Design |
-|---|---|---|
-| What "2 Xooters" means | Two people each working the full duration — **more labour** | Two people splitting one job — **same labour, done faster** |
-| Price | `base × count`, less 10% at ≥3 | `base × crewOverhead[n-1]` — `[1, 1.15, 1.25, 1.4]` |
-| Elapsed time | Unchanged | `soloHours × overhead / n` |
-| Max | 5 | 4 |
-| Allowed on | `airbnb`, `office`, `moving` | those **plus `express`, `lux`, and regular via size caps** `{small:2, medium:3, large:4}` |
+A 5.5h Airbnb at R342 base with 2 Xooters: **R684 live → R393**. Both are R62 per labour-hour.
 
-**A 5.5-hour Airbnb turnover at R342 base, with 2 Xooters:**
+### 🛑 It is a schema change, and this was not obvious from the pricing files
 
-| | Charged |
-|---|---|
-| Repo today | **R684** |
-| Design | **R393** |
+`create-booking/index.ts` builds `bookingTargets = selectedXooterIds.length ? selectedXooterIds :
+[null]` and **inserts one `bookings` row per Xooter**, each priced as a whole job with its own
+commission rate. **The data model is the old commercial model.** Swapping the multiplier alone would
+produce N rows each at 1.15× — 2.3× the intended price, in the under-stating direction relative to
+what the customer was shown.
 
-**74% apart.** Both are internally consistent — each is R62 per labour-hour, which is the same
-number. They differ only in how much labour "2 Xooters" buys.
+So ZD-035 needs one of:
 
-⚠️ **Neither is a bug.** Do not "fix" one to match the other. The design's version is the better
-customer proposition — *finish my turnover before check-in* is a real reason to want two people,
-and it is what an Airbnb host actually wants. The repo's version bills more per crew booking.
+- **(a) A crew relation** — one `bookings` row for the job, a `booking_assignees` table carrying
+  Xooter id and commission rate per member. Cleanest model, largest migration.
+- **(b) One row, N assignees by split** — keep a row per Xooter but make exactly one the priced row
+  and the rest zero-value participants. Smaller migration, and every earnings query has to know the
+  difference, which is where this kind of thing rots.
 
-**This also decides Xooter earnings.** Commission is a percentage of booking value, so halving the
-crew price halves what two Xooters split for the same job. Under the design's model each Xooter
-takes ~57% of a solo job's value for roughly half the elapsed time — consistent per hour, lower per
-job.
+**Recommend (a).** The repo already learned that a duplicated money rule drifts; a duplicated
+*booking* row carrying implicit pricing semantics is the same failure one level up.
 
-⛔ **Blocked until the founder picks.** Then: `decision-log.md` entry →
-`locked-commercial-facts.md` → `src/lib/xoot-pricing.ts` → `_shared/pricing.ts` →
-`pricing-parity.test.ts` → redeploy every importing function.
+**In scope wherever `bookings` is read as one-Xooter-per-row:** the Xooter job list, tracking,
+earnings, ratings, the replacement flow, and `xooterPayout`, which currently runs per row.
 
-## Decision 2 — the R100 two-sided referral
+## ZD-036 — the referral is server-side or it does not exist
 
-`design/handoff-2026-09-03/xoot/referral.js`. R100 to the referrer in credit, R100 off the
-referee's first booking, rendered as a **line on the quote**.
+R100 two-sided, named line on the quote, funded from commission.
 
-🔴 **This is the one that fails in the illegal direction.** The site would show −R100 and
-`create-booking` would charge R100 more than displayed. Under the CPA the displayed price is the
-price, and under-stating is the side that is not survivable.
+⚠️ **This is not merely good practice — it is an existing locked fact.**
+`locked-commercial-facts.md` § *Financial And Trust Authority* already lists **"referral
+qualification"** among the things the frontend is never authoritative for. The design implements
+every check in `referral.js`, in the browser. Shipping that would breach a fact locked before the
+design existed.
 
-The design's own client-side guards are good — it refuses self-referrals and existing customers,
-and burns the code on redemption — but **all of that is in the browser**, which means it is a
-suggestion.
+## Still open — Decision 3, service-fit re-pricing
 
-**Needs, before any of it ships:**
-1. A `referrals` table: code, owner, issued-to, state, burned-at, booking id. RLS so a user reads
-   only their own.
-2. Server validation inside the booking write, in one place: the code exists, is not the buyer's
-   own, is unburned, and the buyer has no completed booking.
-3. The credit applied **server-side**, so the discount on the quote is one the server produced.
-4. `DISCOUNT_FUNDING` — this comes off commission, never Xooter pay. The repo already has that
-   constant and the rule.
+`serviceFit()` re-prices a booking upward when the property type does not match the service chosen —
+a move-out booked as a Regular clean is charged as a move-out. The reasoning is sound and is in the
+design's own comment: *a move-out booked as a Regular clean is 8 hours of work priced as 4; the
+Xooter absorbs the difference or abandons the job.* It fails in the over-stating direction on
+purpose.
 
-⚠️ **Also a commercial question, not only an engineering one.** R100 against a ~R335 first clean is
-roughly a third off, funded by Xoot. `referral.js` says so itself and argues it pays back on
-first-visit-to-second-visit conversion — a conversion rate **Xoot cannot measure yet**, because zero
-bookings have completed.
-
-## Decision 3 — service-fit re-pricing
-
-`serviceFit()` re-prices a booking when the property type does not match the service chosen — a
-move-out booked as a Regular clean is charged as a move-out.
-
-The reasoning is sound and is in the design's own comment: *a move-out booked as a Regular clean is
-8 hours of work priced as 4; the Xooter absorbs the difference or abandons the job.* It fails in the
-over-stating direction on purpose.
-
-⚠️ **But re-pricing a customer's explicit choice upward, at the last step, is a CPA-sensitive
-interaction** even when the arithmetic is right. It must be visible and explained before the total
-changes, not after. The design returns a `mismatch` object for exactly this — the UI must use it.
-
-⛔ Needs a server counterpart, or the client and server disagree by design.
+⚠️ **Re-pricing a customer's explicit choice upward at the last step is CPA-sensitive even when the
+arithmetic is right.** It must be visible and explained *before* the total changes. The design
+returns a `mismatch` object for exactly this and the UI must use it. Needs a founder decision and a
+server counterpart.
 
 ---
 
@@ -162,15 +139,16 @@ Straight ports, `design/handoff-2026-09-03/xoot/site/*.jsx` → `src/components/
 testimonial. `SafetyTrust`'s claims were reworded on 2026-09-02 after they overstated screening;
 port the design's *layout*, keep the repo's *words*.
 
-## Phase 3 — the money surfaces *(gated on Decisions 1–3)*
+## Phase 3 — the money surfaces *(ZD-035, ZD-036, and service-fit still open)*
 
 `BookingHero` · `BookingModal` · `Services` · `CarePlusBand` · `GiftClean` · `GiftCheckout` ·
 `ReferSection` · `ReferralWelcome`.
 
 **Order is not negotiable, and it is the repo's own §3a/§3b rule:**
 
-1. Migration first — `referrals` table, any pricing columns.
-2. `_shared/pricing.ts` — crew model, serviceFit, referral validation.
+1. Migration first — the crew relation (ZD-035), the `referrals` table (ZD-036).
+2. `_shared/pricing.ts` and `create-booking` — the crew model, and the referral checks
+   that `locked-commercial-facts.md` already says the frontend may never own.
 3. `src/lib/xoot-pricing.ts` — mirror it.
 4. `pricing-parity.test.ts` — extend to pin the new rules. **Plant the bug, watch it fail, restore.**
 5. Redeploy **every** function importing `_shared/pricing.ts`. A deployed function carries its own

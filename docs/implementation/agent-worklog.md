@@ -56,9 +56,24 @@ different products.**
 are R62 per labour-hour — the same number. They differ only in how much labour the customer is
 buying, and it also halves what two Xooters split for that job.
 
-⛔ **I have changed nothing in `src/lib/**-pricing*.ts` or `_shared/pricing.ts`.** This needs a
-founder decision, then a `decision-log.md` entry and a `locked-commercial-facts.md` update before a
-line of it moves. Flagged rather than resolved because it is a commercial choice wearing a diff.
+**Founder decided later the same day: the design's model.** Recorded as **ZD-035**, with **ZD-036**
+for the referral. `locked-commercial-facts.md` now carries both under *Crew Bookings* and
+*Referrals*, each marked decided-and-not-implemented.
+
+⛔ **I have still changed nothing in `src/lib/**-pricing*.ts`, `_shared/pricing.ts` or
+`create-booking`** — and the reason changed once I read the writer.
+
+🛑 **ZD-035 is a schema change, not a constant swap.** `create-booking` builds
+`bookingTargets = selectedXooterIds.length ? selectedXooterIds : [null]` and **inserts one
+`bookings` row per Xooter**, each priced as a whole job with its own commission rate. The data model
+*is* the old commercial model. Swapping only the multiplier would emit N rows at 1.15× each — 2.3×
+the intended price for a crew of two, in the under-stating direction against what the customer was
+shown. The plan recommends a `booking_assignees` relation; the alternative keeps a row per Xooter
+and makes every earnings query carry the distinction, which is where this rots.
+
+Everything reading `bookings` as one-Xooter-per-row is in scope: job list, tracking, earnings,
+ratings, replacement, and `xooterPayout`, which runs per row today. **That is your call on shape,
+and I have not started it.**
 
 ### 🔴 And one that fails in the direction we do not survive
 

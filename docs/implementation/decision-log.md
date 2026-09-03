@@ -896,6 +896,92 @@ stay near-neutral (saturation ≤ 15%) and dark (lightness ≤ 25%), *and* `--br
 chromatic (saturation > 40%). The failure mode is collapsing to one colour for everything, in
 either direction. Planted both ways — violet gradient, ink brand — both failed. Restored.
 
+## ZD-035 — A crew finishes one job faster; it is not N jobs (2026-09-03)
+
+**Founder decision, 2026-09-03**, taken on the Claude Design handoff at
+`design/handoff-2026-09-03/`. Adopts the design's crew model over the one now live.
+
+### What changes
+
+| | Live today | ZD-035 |
+|---|---|---|
+| What "2 Xooters" sells | Two people each working the full duration — **twice the labour** | Two people **splitting one job**, finishing sooner |
+| Price | `base × count`, less 10% at ≥3 | `base × crewOverhead[n−1]`, `[1, 1.15, 1.25, 1.4]` |
+| Elapsed time | Unchanged | `soloHours × overhead / n` |
+| Max crew | 5 | 4 |
+| Available on | `airbnb`, `office`, `moving` | those **plus `express`, and regular via size caps** `{small:2, medium:3, large:4}`; `laundry` fixed at 1 |
+
+**Worked example — 5.5h Airbnb turnover, base R342, 2 Xooters:** R684 today, **R393** under ZD-035.
+
+**Neither number was wrong.** Both are **R62 per labour-hour** — the identical rate. They differ
+only in how much labour the phrase "2 Xooters" sells. The live model reads it as *more work*; ZD-035
+reads it as *the same work, sooner*, which is what an Airbnb host wants when a check-in time is
+fixed.
+
+Laundry stays capped at 1 in every size: it is machine-bound, and a second person cannot make a wash
+cycle finish sooner.
+
+### ⚠️ What this costs, stated plainly
+
+- **Revenue per crew booking falls sharply** — 43% on the worked example.
+- **Two Xooters split ~57% of a solo job's value** for roughly half the elapsed time each.
+  Consistent per hour, lower per job. Anyone recruiting Xooters on crew work must not describe it
+  as two full jobs.
+
+### 🛑 This is a schema change, not a constant swap — and that was not obvious
+
+`create-booking/index.ts` builds `bookingTargets = selectedXooterIds.length ? selectedXooterIds :
+[null]` and **inserts one `bookings` row per Xooter**, each priced as a whole job and each carrying
+its own commission rate. The data model *is* the old commercial model.
+
+ZD-035 is one job with a crew, so it needs either a crew/assignee relation or one row whose
+subtotal is split across N Xooters at their individual rates. Everything reading `bookings` on the
+assumption of one Xooter per row is in scope: the Xooter job list, tracking, earnings, ratings and
+the replacement flow.
+
+⛔ **Not implemented.** Sequenced in `docs/implementation/design-port-plan.md` Phase 3, migrations
+before functions (§3a), web before the booking writers (§3b), and **every function importing
+`_shared/pricing.ts` must be redeployed** or it keeps its own frozen copy.
+
+---
+
+## ZD-036 — The R100 referral is built server-side or not at all (2026-09-03)
+
+**Founder decision, 2026-09-03.** The design's two-sided referral is adopted, and is built with the
+credit resolved on the server.
+
+**The programme:** R100 to the referrer as credit, R100 off the referee's first booking, shown as a
+named line on the quote — *"Thandi's invite"* rather than "Discount", which is the point of a
+referral appearing on a receipt.
+
+### 🔴 Why it could not ship as designed
+
+`design/handoff-2026-09-03/xoot/referral.js` refuses self-referrals, refuses existing customers, and
+burns the code on redemption. Every one of those guards runs **in the browser**, which makes them
+suggestions.
+
+With no server counterpart the site renders **−R100** and `create-booking` charges **R100 more than
+displayed**. Under the CPA the displayed price is the price, and this is the **under-stating**
+direction — the side this repo has already crossed three times and the side that is not survivable.
+
+### What "properly" means
+
+1. A `referrals` table — code, owner, issued-to, state, burned-at, booking id — with RLS so a user
+   reads only their own rows.
+2. Validation **inside the booking write**, in one place: the code exists, is not the buyer's own,
+   is unburned, and the buyer has no completed booking.
+3. The credit applied server-side, so the discount on the quote is one the server produced.
+4. Funded from **commission, never Xooter pay** — `DISCOUNT_FUNDING`, already the rule here.
+
+### ⚠️ The commercial caveat, recorded because it is not an engineering question
+
+R100 against a ~R335 first clean is roughly a third off, funded by Xoot. `referral.js` argues it
+pays back through first-visit-to-second-visit conversion — **a rate Xoot cannot measure, because
+zero bookings have completed.** The amount is worth revisiting once there is a repeat rate to divide
+by; the founder was offered a smaller figure and kept R100.
+
+⛔ **Not implemented.** Port plan Phase 3.
+
 ## Pending Founder Decisions
 
 1. Canonical Supabase schema source.
