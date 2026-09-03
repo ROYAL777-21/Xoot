@@ -13,6 +13,7 @@ import { FeedbackSection } from "@/components/xoot/FeedbackSection";
 import { SEO } from "@/components/SEO";
 import { ServiceAreaMap } from "@/components/xoot/ServiceAreaMap";
 import { GapArrow } from "@/components/xoot/GapArrow";
+import { PeopleBand } from "@/components/xoot/PeopleBand";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -47,6 +48,7 @@ const Index = () => {
             texture without changing its rhythm. */}
         <GapArrow offset={-58} rotate={-8} />
         <SafetyTrust />
+        <PeopleBand />
         <GapArrow offset={-54} rotate={7} colour="var(--xoot-violet-600)" />
         <NearbyWorkers />
         <HowItWorks />
