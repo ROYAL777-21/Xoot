@@ -17,6 +17,7 @@ import { PeopleBand } from "@/components/xoot/PeopleBand";
 import { Journal } from "@/components/xoot/Journal";
 import { Merch } from "@/components/xoot/Merch";
 import { TrustMechanisms } from "@/components/xoot/TrustMechanisms";
+import { ReferSection } from "@/components/xoot/ReferSection";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -62,7 +63,8 @@ const Index = () => {
         <Merch />
         <Journal />
         <FeedbackSection />
-        <CtaBand />
+        <ReferSection />
+      <CtaBand />
       </main>
       <Footer />
     </div>
