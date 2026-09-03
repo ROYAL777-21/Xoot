@@ -1,0 +1,40 @@
+:root{
+  /* Newsreader carries every headline. Plus Jakarta Sans carries everything else. */
+  --xoot-font-display:"Newsreader",Georgia,serif;
+  --xoot-font-core:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
+  --xoot-font-mono:"DM Mono",ui-monospace,SFMono-Regular,monospace;
+  /* The logo hand. Only ever the wordmark — never body copy, never a heading. */
+  --xoot-font-script:"Caveat","Segoe Script",cursive;
+
+  /* Weights. The serif sits at 400–500 (never bold — it loses its calm).
+     The sans does the emphasis work at 600–700. */
+  --xoot-weight-display:400; /* @kind font */
+  --xoot-weight-display-strong:500; /* @kind font */
+  --xoot-weight-body:500; /* @kind font */
+  --xoot-weight-medium:600; /* @kind font */
+  --xoot-weight-strong:700; /* @kind font */
+
+  /* Display scale — Newsreader. Tight leading, slight negative tracking. */
+  --xoot-display-1:44px;   --xoot-display-1-lh:1.05; /* @kind font */
+  --xoot-display-2:36px;   --xoot-display-2-lh:1.1; /* @kind font */
+  --xoot-display-3:30px;   --xoot-display-3-lh:1.14; /* @kind font */
+  --xoot-title-1:25px;     --xoot-title-1-lh:1.2; /* @kind font */
+  --xoot-title-2:20px;     --xoot-title-2-lh:1.26; /* @kind font */
+  --xoot-title-3:17px;     --xoot-title-3-lh:1.35; /* @kind font */
+
+  /* Core scale — Plus Jakarta Sans. */
+  --xoot-body-lg:17px;     --xoot-body-lg-lh:1.5; /* @kind font */
+  --xoot-body:15px;        --xoot-body-lh:1.55; /* @kind font */
+  --xoot-body-sm:13px;     --xoot-body-sm-lh:1.45; /* @kind font */
+  --xoot-caption:12px;     --xoot-caption-lh:1.4; /* @kind font */
+  --xoot-micro:10px;       --xoot-micro-lh:1.3; /* @kind font */
+
+  /* The ALL-CAPS section label — the single most recognisable Xoot text style. */
+  --xoot-label:11px;       --xoot-label-lh:1; /* @kind font */
+
+  --xoot-track-display:-0.018em; /* @kind font */
+  --xoot-track-tight:-0.01em; /* @kind font */
+  --xoot-track-normal:0; /* @kind font */
+  --xoot-track-label:0.1em; /* @kind font */
+  --xoot-track-mono:-0.01em; /* @kind font */
+}

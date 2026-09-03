@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<!-- ── A note on what is deliberately NOT preloaded ───────────────────────────
+     Two preload hints were tried here and both measured worse, so neither survives:
+
+     · The three variable TTFs (~1MB) are font-display:swap, so text paints in a fallback
+       immediately and nothing waits on them. Raising their priority starved the scripts that DO
+       block render — DOMContentLoaded went from 3.3s to 10.5s.
+     · ds-bundle.js (1.1MB) looked like the obvious candidate, but the DC runtime resolves modules
+       with fetch(), which does not reliably claim a `rel=preload as=script` entry. Both requests
+       went to the network: the same megabyte, twice.
+
+     The wins that did hold are elsewhere — one flattened stylesheet instead of an eleven-deep
+     @import chain, and a 154KB WebP hero instead of a 5.8MB PNG. -->
+<link rel="stylesheet" href="./xoot/styles.css">
+<style>
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  html,body{background:var(--xoot-surface-page)}
+  body{margin:0;font-family:var(--xoot-font-core);color:var(--xoot-text-primary);-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4,p,ul,ol,li{margin:0}
+  a{color:var(--xoot-violet-700);text-decoration:none;border-bottom:1px solid var(--xoot-violet-200)}
+  a:hover{color:var(--xoot-violet-800);border-bottom-color:var(--xoot-violet-400)}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column">
+  <header style="background:var(--xoot-ink-900);color:var(--xoot-neutral-0)">
+    <div style="max-width:1180px;margin:0 auto;padding:clamp(22px,3.4vw,32px) clamp(16px,4vw,40px);display:flex;flex-direction:column;gap:clamp(18px,2.6vw,26px)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <a href="./Xoot Website.dc.html" style="display:inline-flex;align-items:center;gap:9px;border:none;color:inherit">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Logo" from="./xoot/ds-bundle.js" size="24" tone="inverse" hint-size="72px,24px"></x-import>
+          <span style="font-size:var(--xoot-body-sm);font-weight:700;opacity:.72">← Back to Xoot</span>
+        </a>
+        <span style="font-family:var(--xoot-font-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;opacity:.5">Legal centre</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <h1 style="font-family:var(--xoot-font-display);font-size:clamp(30px,4.6vw,50px);line-height:1.06;letter-spacing:-.02em">The rules, in plain language.</h1>
+        <p style="max-width:64ch;font-size:var(--xoot-body-lg);line-height:1.55;color:rgba(255,255,255,.72);text-wrap:pretty">Twelve documents covering how Xoot works, what we do with your information, and what happens when something goes wrong. Written to be read, not to be survived.</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 18px;border-radius:var(--xoot-radius-md);background:rgba(230,51,41,.16);box-shadow:inset 0 0 0 1px rgba(246,182,172,.32)">
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Icon" name="circle-alert" size="19" strokeWidth="2" dc-props="{{ warnIcon }}" hint-size="19px,19px"></x-import>
+        <span style="font-size:var(--xoot-body-sm);line-height:1.55;color:rgba(255,255,255,.9)">
+          <strong>Draft — not yet in force.</strong> Xoot is mid-restructure and not currently registered, so no document below can name a contracting party. Every <span style="font-family:var(--xoot-font-mono);font-size:12px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.14)">[ ]</span> marks something only incorporation can fill in. Have a South African attorney review these before you publish or rely on them.
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <div style="flex:1;max-width:1180px;width:100%;margin:0 auto;padding:clamp(24px,3.4vw,44px) clamp(16px,4vw,40px) clamp(60px,7vw,100px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:clamp(24px,3.4vw,44px);align-items:start">
+    <nav style="position:sticky;top:24px;display:flex;flex-direction:column;gap:5px;max-width:300px">
+      <span style="padding:0 12px 8px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--xoot-text-muted)">{{ docCount }} documents</span>
+      <sc-for list="{{ index }}" as="d" hint-placeholder-count="12">
+        <button type="button" onClick="{{ d.go }}" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:9px 12px;border:none;cursor:pointer;text-align:left;border-radius:var(--xoot-radius-sm);font-family:var(--xoot-font-core);font-size:var(--xoot-body-sm);font-weight:{{ d.weight }};background:{{ d.bg }};color:{{ d.fg }};transition:background var(--xoot-dur-instant) var(--xoot-ease-out)">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Icon" name="{{ d.icon }}" size="16" strokeWidth="1.9" dc-props="{{ d.iconProps }}" hint-size="16px,16px"></x-import>
+          <span>{{ d.title }}</span>
+        </button>
+      </sc-for>
+      <a href="./Xoot Bug Bounty.dc.html" style="display:flex;align-items:center;gap:10px;min-height:44px;margin-top:8px;padding:9px 12px;border:none;border-radius:var(--xoot-radius-sm);font-size:var(--xoot-body-sm);font-weight:600;color:var(--xoot-text-secondary)">
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Icon" name="search" size="16" strokeWidth="1.9" hint-size="16px,16px"></x-import>
+        <span>Bug bounty programme</span>
+      </a>
+    </nav>
+
+    <article style="display:flex;flex-direction:column;gap:clamp(20px,2.6vw,28px);min-width:0">
+      <div style="display:flex;flex-direction:column;gap:10px;padding-bottom:clamp(16px,2vw,22px);box-shadow:inset 0 -1px 0 var(--xoot-neutral-200)">
+        <span style="font-family:var(--xoot-font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--xoot-violet-700)">{{ doc.kicker }}</span>
+        <h2 style="font-family:var(--xoot-font-display);font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:-.02em">{{ doc.title }}</h2>
+        <p style="max-width:70ch;font-size:var(--xoot-body-lg);line-height:1.55;color:var(--xoot-text-secondary);text-wrap:pretty">{{ doc.intro }}</p>
+        <span style="font-family:var(--xoot-font-mono);font-size:11px;color:var(--xoot-text-muted)">{{ doc.meta }}</span>
+      </div>
+
+      <sc-for list="{{ doc.blocks }}" as="b" hint-placeholder-count="6">
+        <section style="display:flex;flex-direction:column;gap:11px">
+          <h3 style="font-size:var(--xoot-title-2);font-family:var(--xoot-font-display);line-height:1.24;letter-spacing:-.015em">{{ b.h }}</h3>
+          <sc-for list="{{ b.paras }}" as="p" hint-placeholder-count="2">
+            <p style="max-width:72ch;font-size:var(--xoot-body);line-height:1.62;color:var(--xoot-text-secondary);text-wrap:pretty">{{ p.t }}</p>
+          </sc-for>
+          <sc-if value="{{ b.hasList }}" hint-placeholder-val="{{ false }}">
+            <ul style="display:flex;flex-direction:column;gap:8px;margin:2px 0 0;padding:0;list-style:none;max-width:72ch">
+              <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="3">
+                <li style="display:flex;gap:11px;font-size:var(--xoot-body);line-height:1.58;color:var(--xoot-text-secondary)">
+                  <span style="flex:0 0 auto;width:5px;height:5px;margin-top:9px;border-radius:50%;background:var(--xoot-violet-400)"></span>
+                  <span>{{ it.t }}</span>
+                </li>
+              </sc-for>
+            </ul>
+          </sc-if>
+          <sc-if value="{{ b.hasNote }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:11px;padding:15px 17px;border-radius:var(--xoot-radius-md);background:var(--xoot-honey-wash);max-width:72ch">
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.Icon" name="info" size="17" strokeWidth="2" dc-props="{{ noteIcon }}" hint-size="17px,17px"></x-import>
+              <span style="font-size:var(--xoot-body-sm);line-height:1.55;color:var(--xoot-honey-ink)">{{ b.note }}</span>
+            </div>
+          </sc-if>
+        </section>
+      </sc-for>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:clamp(12px,2vw,20px);padding:clamp(20px,2.6vw,26px);border-radius:var(--xoot-radius-lg);background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <h3 style="font-size:var(--xoot-title-3);font-weight:700">Questions about this document?</h3>
+        <p style="max-width:64ch;font-size:var(--xoot-body-sm);line-height:1.55;color:var(--xoot-text-secondary)">Write to <a href="mailto:newsletter@xoot.co.za">newsletter@xoot.co.za</a> and we will answer in writing. If your question is about your own information, say so in the subject line — those get handled first.</p>
+        <span style="font-size:var(--xoot-caption);color:var(--xoot-text-muted);line-height:1.5">Xoot does not yet operate a dedicated legal or privacy mailbox. Set one up before launch: a marketing address is the wrong place for a POPIA request, and POPIA gives you 30 days to answer one.</span>
+      </div>
+    </article>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+/* ── The twelve documents ─────────────────────────────────────────────────────
+ *
+ * Drafted against the answers given in the brief, with three deliberate constraints:
+ *
+ *  1. NOTHING IS INVENTED. Xoot is not currently registered, so no document names a company,
+ *     registration number or registered address — every one of those is a [bracketed] slot. A
+ *     policy that names a non-existent entity is worse than no policy: it misrepresents who the
+ *     customer is contracting with, which is itself a Consumer Protection Act problem.
+ *  2. NOTHING NOT-YET-TRUE IS STATED AS TRUE. XootCover is described as intended cover with
+ *     Genric, not as cover in force, because it is not placed yet.
+ *  3. SOUTH AFRICAN LAW BY NAME. POPIA, the CPA, ECTA and the LRA are the instruments that
+ *     actually bind this business; a generic US-style privacy policy would be decorative.
+ *
+ * `p()` and `li()` wrap strings as objects because the template renders them through named
+ * holes, and a hole resolves a property, not a bare array element.
+ */
+const p = t => ({ t });
+const B = (h, paras, items, note) => ({
+  h,
+  paras: (paras || []).map(p),
+  items: (items || []).map(p),
+  hasList: !!(items && items.length),
+  hasNote: !!note,
+  note: note || '',
+});
+
+const CO = '[Xoot legal entity — to be inserted on incorporation]';
+const EMAIL = 'newsletter@xoot.co.za';
+const DRAFTED = 'Drafted 31 August 2026 · not yet in force';
+
+const DOCS = [
+  {
+    id: 'terms', icon: 'book-open', title: 'Terms & Conditions',
+    kicker: 'The master agreement',
+    intro: 'What you agree to when you use Xoot to book a clean, and what we agree to in return.',
+    blocks: [
+      B('Who you are contracting with', [
+        `Xoot is operated by ${CO} ("Xoot", "we"). Xoot runs a booking platform. It is not a cleaning company and does not itself perform cleaning work.`,
+        'When you book, you enter into two relationships at once: a contract with Xoot for the use of the platform and the payment, scheduling, vetting and support that sit around it, and a contract for the cleaning work itself with the independent Xooter assigned to your booking.',
+      ], null,
+        'Xoot sets the prices and the service standards, and requires training before a Xooter can accept work. That degree of control is unusual for a pure intermediary and may make Xooters employees in the eyes of South African labour law regardless of what this clause says. Get advice before publishing.'),
+      B('Booking and payment', [
+        'A booking is confirmed only once payment has been authorised. The price shown at checkout is the price charged — it is calculated by Xoot at the moment you confirm and is not adjusted afterwards except where you change the booking.',
+        'Prices include a booking fee and any add-ons you selected. Care+ members do not pay the booking fee.',
+      ], [
+        'Payment is taken up front, when you confirm.',
+        'Xoot holds the payment and releases the Xooter\'s share after the visit is verified as complete.',
+        'Xoot retains a service fee from each booking. The balance goes to the Xooter.',
+        'Where a job runs materially longer than quoted through no fault of yours, Xoot absorbs the difference. Where it runs longer because the place or the scope was described inaccurately, we may ask you to approve additional time before it is worked.',
+      ]),
+      B('Changing or cancelling a visit', [
+        'You can move or cancel any visit from the app. Cancel more than 24 hours before the start time and you are refunded in full. Cancel inside 24 hours and 50% of the booking value is retained.',
+      ], null,
+        'The Consumer Protection Act section 17 allows a cancellation charge but requires it to be reasonable, judged partly on how likely we are to re-sell the slot. A flat 50% inside 24 hours will be hard to defend on a slot we refill, and retaining all of it while the Xooter — who kept the time free — receives nothing is worse. Recommend: pay the Xooter at least half of anything retained, and drop the charge when the slot is refilled.'),
+      B('What we ask of you', null, [
+        'Describe your place accurately, including pets, security and access.',
+        'Give safe access at the agreed time, or use the access window so nobody is left waiting at a gate.',
+        'Treat Xooters lawfully and with respect. Harassment, discrimination and unsafe premises end the booking immediately, with no refund.',
+        'Do not ask a Xooter to do work outside the booked service, or anything unsafe. Cleaning outside on a ledge, moving heavy furniture alone and handling hazardous chemicals are all out.',
+        'Do not contract a Xooter privately for six months after they last worked for you through Xoot. It removes the insurance, the vetting and the recourse that made them safe to let into your home.',
+      ]),
+      B('Our liability', [
+        'Xoot is liable for its own failures — the platform, the payment handling, the vetting process and the support we promise. Xoot is not liable for the independent work of a Xooter beyond the cover described in the XootCover terms and our obligation to handle an incident properly.',
+        'Nothing here limits liability that cannot be limited by law, including liability for death, personal injury or gross negligence.',
+      ]),
+      B('Ending the agreement', [
+        `You can close your account at any time — see Account deletion. We can suspend or close an account for non-payment, fraud, abuse of a Xooter, or repeated late cancellation, and will tell you why in writing.`,
+        `South African law governs these terms. Questions go to ${EMAIL}.`,
+      ]),
+    ],
+  },
+  {
+    id: 'privacy', icon: 'lock', title: 'Privacy policy',
+    kicker: 'What we know about you',
+    intro: 'What Xoot collects, why, who sees it and how long we keep it. The short version: we collect what a visit needs and nothing that it does not.',
+    blocks: [
+      B('What we collect', null, [
+        'Account: name, mobile number, email, password (stored hashed, never in readable form).',
+        'Your places: address, size, access notes, gate and alarm codes, pets, parking.',
+        'Bookings: what you booked, when, who worked, what it cost, what you rated.',
+        'Payments: card token and last four digits, held by our payment provider. Xoot never stores a full card number.',
+        'Photos you send with a booking, to show a Xooter what needs doing.',
+        'Support and Concierge messages.',
+        'Device and usage data: app version, device type, crash logs, which screens you used.',
+        'Approximate location, only while you are tracking a visit, and only if you allow it.',
+      ]),
+      B('Why we collect it', [
+        'Each purpose below is a separate lawful basis under POPIA. We do not quietly reuse information collected for one purpose to serve another.',
+      ], [
+        'To perform the contract: schedule the visit, assign a Xooter, take payment, give access.',
+        'To keep both sides safe: vetting, incident handling, fraud checks.',
+        'Because the law requires it: tax records, and responding to a lawful request.',
+        'With your consent, and only then: marketing, and precise location.',
+      ]),
+      B('Who sees your information', null, [
+        'Your assigned Xooter sees your first name, the address, the access details you saved and the job notes. They do not see your payment details, your other places or your booking history with other Xooters.',
+        'Access details are released on the schedule in the Trust & safety policy — not from the moment you save them.',
+        'Our payment provider, hosting provider, mapping provider and messaging provider each see the minimum their function needs.',
+        'Xoot staff see your information only where a support or trust matter requires it, and that access is logged.',
+        'We do not sell your information. We have never done so and this policy is the commitment not to.',
+      ]),
+      B('Cross-border transfers', [
+        'Some providers process information outside South Africa. Where they do, POPIA section 72 requires comparable protection, and we contract for it. The Cookies notice lists who they are.',
+      ]),
+      B('Your rights', [
+        'You can ask what we hold, correct it, delete it, object to marketing, or complain to the Information Regulator. See the POPIA notice for how, and how quickly we answer.',
+      ]),
+    ],
+  },
+  {
+    id: 'popia', icon: 'shield-check', title: 'POPIA notice',
+    kicker: 'Protection of Personal Information Act, 2013',
+    intro: 'The specific POPIA machinery: who is accountable, how long information is kept, and how to exercise a right. This is the notice a regulator asks for.',
+    blocks: [
+      B('Responsible party and Information Officer', [
+        `The responsible party is ${CO}, of [registered address].`,
+        'POPIA makes the head of a private body the Information Officer automatically, and requires that person to be registered with the Information Regulator before processing begins. A deputy may be appointed but does not replace the obligation.',
+      ], [
+        'Information Officer: [full name] · [dedicated email] · [phone]',
+        'Registered with the Information Regulator on: [date]',
+        'Information Regulator, for complaints: complaints.IR@justice.gov.za · 010 023 5200',
+      ],
+        'Two things are outstanding and both are conditions of lawful processing, not paperwork: register the Information Officer with the Regulator, and give them a mailbox that is not the marketing address. POPIA gives you 30 days to answer a request — a newsletter inbox will miss that deadline.'),
+      B('How long we keep things', [
+        'POPIA section 14 says information may not be kept longer than the purpose requires, unless a law requires longer. These are the retention periods Xoot operates on. They are recommendations drafted to be defensible; confirm the tax figure with your accountant.',
+      ], [
+        'Booking and payment records: 5 years from the end of the tax year. Required by the Tax Administration Act.',
+        'Account details: for as long as the account is open, then 30 days after a deletion request, then erased.',
+        'Access codes — gate, alarm, key location: deleted 7 days after the visit they belong to. These are the most sensitive thing on the platform and they have the shortest life of anything here.',
+        'Job photos you send: 90 days, then deleted automatically.',
+        'Support and Concierge transcripts: 24 months.',
+        'Incident, damage and safety reports: 5 years. Held longer because they are the evidence base for a claim or a dispute.',
+        'Xooter vetting documents — ID, proof of residence, certifications: for as long as they are active, then 3 years. Labour and insurance disputes surface late.',
+        'Marketing consent records: 3 years after consent is withdrawn, as proof that it existed.',
+        'Rejected Xooter applications: 12 months, then erased.',
+      ]),
+      B('Exercising a right', [
+        `Email ${EMAIL} with "POPIA request" in the subject line, or use the Form 2 prescribed under PAIA. We will confirm receipt within 5 working days and answer within 30 days, which is the POPIA maximum.`,
+        'We will verify who you are before releasing anything — the alternative is handing your address and gate code to whoever asks for it.',
+      ], [
+        'Access: a copy of what we hold and who we shared it with.',
+        'Correction or deletion of anything inaccurate, irrelevant, excessive or unlawfully held.',
+        'Objection to processing based on legitimate interest.',
+        'Withdraw marketing consent, effective immediately.',
+        'Complain to the Information Regulator, with or without coming to us first.',
+      ]),
+      B('Security and breach', [
+        'Information is encrypted in transit and at rest. Access is role-based and logged. Payment card data never reaches Xoot systems.',
+        'POPIA section 22 requires us to notify both the Information Regulator and every affected person as soon as reasonably possible after discovering a breach. We will do so in writing, describing what happened, what it means for you and what we are doing about it — with no waiting to see whether anybody noticed.',
+      ]),
+      B('Children', [
+        'Xoot is not for under-18s and we do not knowingly process a child\'s information. POPIA treats children\'s information as a special category requiring the Regulator\'s prior authorisation, which is a reason to keep it off the platform entirely.',
+      ]),
+    ],
+  },
+  {
+    id: 'cookies', icon: 'settings', title: 'Cookies',
+    kicker: 'Website storage',
+    intro: 'What Xoot stores in your browser, and what you can switch off.',
+    blocks: [
+      B('Strictly necessary — cannot be switched off', null, [
+        'Your signed-in session, so you are not asked to sign in on every page.',
+        'A security token that stops a third-party site submitting a booking as you.',
+        'Your cookie choices, so we do not ask again.',
+      ]),
+      B('Optional — off until you say yes', null, [
+        'Analytics: which pages get used, where people abandon a booking. Aggregated.',
+        'Performance monitoring: crashes and slow pages.',
+        'Marketing attribution: which campaign brought you here.',
+      ]),
+      B('Managing them', [
+        'Change your choices any time from the link in the footer, or clear cookies in your browser. Turning off strictly-necessary cookies at browser level will stay signed out and may break checkout.',
+        'The current site sets no third-party marketing cookies. When that changes, this notice changes first.',
+      ]),
+    ],
+  },
+  {
+    id: 'refunds', icon: 'credit-card', title: 'Refunds & cancellations',
+    kicker: 'Money back',
+    intro: 'When you get your money back, how much, and how fast.',
+    blocks: [
+      B('Cancelling a visit', null, [
+        'More than 24 hours before the start time: cancelled free, refunded in full.',
+        'Inside 24 hours: 50% of the booking value is retained, 50% refunded.',
+        'A Xooter cancels, or nobody arrives: refunded in full, and we offer a replacement slot at the same price even if the price has since changed.',
+        'You are not there and no access was arranged: treated as a cancellation inside 24 hours.',
+      ],
+        'Recommend two changes before launch. First, split anything retained with the Xooter who kept the time free — otherwise a late cancellation pays Xoot and costs the worker. Second, waive the charge when the slot is refilled, which also makes the 50% defensible under CPA section 17.'),
+      B('If the work was not good enough', [
+        'Tell us within 72 hours. We will send someone back to redo what was missed at no charge, and that is the remedy we would rather give. If a redo is not practical or you do not want one, we refund the affected portion.',
+        'You do not have to argue with the Xooter about it. Report it to Xoot and we handle it.',
+      ]),
+      B('Damage or loss', [
+        'Report within 72 hours with photographs. XootCover is the route to compensation — see the XootCover terms for what it covers and what it does not.',
+      ]),
+      B('How refunds are paid', [
+        'To the original payment method, within 5 to 10 working days depending on your bank. XootCred is instant, and is optional — you can always ask for the money instead.',
+      ]),
+      B('Your statutory rights', [
+        'The Consumer Protection Act and the Electronic Communications and Transactions Act give you rights that this policy cannot reduce. Where anything above gives you less than the law does, the law applies.',
+      ]),
+    ],
+  },
+  {
+    id: 'careplus', icon: 'heart-plus', title: 'Care+ terms',
+    kicker: 'Membership',
+    intro: 'Care+ is R99 a month with the first month free. What that includes, and how to leave.',
+    blocks: [
+      B('The free month', null, [
+        'One free month per customer, ever. It does not reset by closing and reopening an account.',
+        'A card is required up front to start it. Nothing is charged during the free month.',
+        'Cancel at any point during the free month and you are not charged at all.',
+        'We remind you before the first charge, in good time and more than once. A trial that quietly converts is a trial designed to catch you out.',
+      ]),
+      B('What membership includes', null, [
+        'No booking fee on any visit, for as long as you are a member.',
+        'A once-off R30 add-on credit when you join.',
+        'Your preferred Xooter held for your recurring slot.',
+        'Early access to weekend slots.',
+        'The first add-on each month at no charge.',
+      ]),
+      B('Billing and renewal', [
+        'R99 is charged monthly, on the same date, until you cancel. The price will not change without a month\'s notice in writing, and you can cancel in response.',
+        'If a payment fails we retry, and tell you. Benefits pause after a failed payment and resume when it clears.',
+      ]),
+      B('Cancelling', [
+        'Cancel from You › Care+, in two taps, with no retention call and no exit survey you cannot skip. Benefits continue to the end of the month you have already paid for.',
+        'Cancelling does not cancel a booking you have already made, and does not take back XootCred you have already earned.',
+      ]),
+    ],
+  },
+  {
+    id: 'xooter', icon: 'briefcase', title: 'Xooter terms',
+    kicker: 'For people who work through Xoot',
+    intro: 'The agreement between Xoot and a Xooter: how work is offered, how you are paid, and what we require of you.',
+    blocks: [
+      B('Your status', [
+        'You work as an independent contractor. You are not an employee of Xoot and no employment relationship is intended by this agreement.',
+        'You choose which jobs to accept and when you are available. You may work for anyone else, including a competitor.',
+      ], null,
+        'This is the highest-risk clause in the set. Xoot sets the rates, sets the service standards and requires training before you may accept work. Labour Relations Act section 200A presumes an employment relationship where a person is subject to another\'s control or direction, or where their hours are controlled — and the CCMA looks at the substance, not the label. Calling it a contract does not settle it. Either get advice and accept the risk knowingly, or loosen the controls: let Xooters set their own rates within a band, and make advanced training optional.'),
+      B('Getting approved', [
+        'Before you can accept work you must complete onboarding and be approved. This exists because customers are letting a stranger into their home, and it is the whole basis on which they are willing to.',
+      ], [
+        'A South African ID, or a passport with a valid permit showing you may legally work in South Africa.',
+        'Proof of residence no older than three months.',
+        'A clear photograph of yourself for your profile.',
+        'Bank details in your own name. We do not pay into a third party\'s account.',
+        'Consent to a criminal record check.',
+        'Completion of the required training modules.',
+      ]),
+      B('Pay', null, [
+        'Xoot sets the customer price and retains a service fee. The balance is yours.',
+        'You are paid after the visit is verified as complete — not when it is booked. Payouts run [weekly, on a fixed day].',
+        'On jobs of 5.5 hours or more, a minimum hourly floor applies so that a long job cannot pay less per hour than a short one. That floor is a commitment, not a promotion.',
+        'Tips are yours in full. Xoot takes nothing from a tip.',
+        'You are responsible for your own tax and, if applicable, UIF and provisional tax. Xoot does not deduct it.',
+      ]),
+      B('What we require', null, [
+        'Arrive when you accepted. Tell us early if you cannot.',
+        'Do the work booked, to the standard covered in training.',
+        'Treat the customer\'s home and belongings with care. Report a breakage yourself, immediately — reporting one is not the problem, hiding one is.',
+        'Keep what you learn about a customer confidential. Access codes, alarm details and anything you see inside a home stay there.',
+        'Never photograph a customer\'s home except where the job requires it and they have agreed.',
+        'Do not take a customer off-platform. It removes their insurance and your recourse.',
+      ]),
+      B('Ending it', [
+        'Either side can end this agreement with 14 days\' notice. We can suspend you immediately for theft, violence, intoxication on a job, or a safety risk to a customer — and will tell you why and hear your side.',
+        'A rating alone will never be the reason. A pattern of substantiated complaints can be.',
+      ]),
+    ],
+  },
+  {
+    id: 'acceptable-use', icon: 'circle-alert', title: 'Acceptable use',
+    kicker: 'Platform conduct',
+    intro: 'What will get you removed from Xoot, whichever side of the platform you are on.',
+    blocks: [
+      B('Never, by anyone', null, [
+        'Harassment, discrimination, threats or violence.',
+        'Anything sexual directed at a Xooter or a customer. A cleaning booking is not an invitation.',
+        'Discriminating on race, gender, nationality, religion, disability, sexual orientation or HIV status — including declining a Xooter on those grounds.',
+        'Fraud: fake bookings, chargeback abuse, invented damage claims, manufactured reviews.',
+        'Sharing another person\'s address, codes or contact details.',
+        'Recording someone without their knowledge.',
+        'Using Xoot to arrange anything illegal.',
+      ]),
+      B('Reviews', [
+        'Review the work. Do not review the person\'s accent, appearance, nationality or private life. We remove reviews that do, and we do not remove a review simply because it is unflattering.',
+      ]),
+      B('Security', [
+        'Do not attack the platform. If you find a vulnerability, the Bug bounty programme is the way to tell us — it has safe harbour and it pays.',
+      ]),
+      B('Consequences', [
+        'A warning, a suspension, or removal, depending on what happened. Anything involving safety, a child, or a criminal offence is removal on the first occasion and, where appropriate, a report to the police.',
+      ]),
+    ],
+  },
+  {
+    id: 'concierge', icon: 'sparkles', title: 'AI Concierge terms',
+    kicker: 'The assistant',
+    intro: 'The Concierge is an AI assistant that answers questions about your Xoot account and bookings. What it can do, what it cannot, and what happens to what you type.',
+    blocks: [
+      B('What it is', [
+        'A scoped assistant. It can answer questions about Xoot services, prices, your bookings, your credit and your membership, and it can take you to the screen that does the thing you asked for.',
+        'It is not a general chatbot and it is not a person.',
+      ]),
+      B('What it will not do', null, [
+        'Give legal, medical, financial or immigration advice.',
+        'Discuss anything unrelated to Xoot. It will say so and offer to hand you to a human.',
+        'Change a booking, take a payment or cancel a membership without your explicit confirmation on the relevant screen.',
+        'Tell you anything about another customer or another Xooter.',
+        'Invent an answer. Where it does not know, it says so and escalates.',
+      ]),
+      B('Accuracy', [
+        'AI can be wrong. Anything about money, timing or access is confirmed against your actual booking before you act on it, and the booking screen — not the Concierge — is the record.',
+        'If the Concierge tells you something incorrect and you act on it, tell us. We will fix the outcome, not argue about the transcript.',
+      ]),
+      B('Your messages', [
+        'Conversations are stored for 24 months to handle disputes and improve the assistant. Do not type card numbers, ID numbers or passwords into it — it never needs them.',
+        'A human can review a conversation for a support or safety reason. That access is logged.',
+      ]),
+      B('Escalation', [
+        `Ask for a human at any point and you get one. Anything involving safety, money in dispute, or a complaint about a person goes to a human automatically, without you having to insist. For anything urgent, email ${EMAIL}.`,
+      ]),
+    ],
+  },
+  {
+    id: 'account-deletion', icon: 'trash-2', title: 'Account deletion',
+    kicker: 'Leaving',
+    intro: 'How to delete your Xoot account, what goes, and what has to stay.',
+    blocks: [
+      B('How', [
+        `From You › Account › Delete my account, or by emailing ${EMAIL} from your account address. Deletion is available in the app itself, not only by email — an account you cannot leave from inside the product is a dark pattern.`,
+        'We confirm within 5 working days and complete within 30 days.',
+      ]),
+      B('What is deleted', null, [
+        'Your name, contact details and password.',
+        'Your saved places, access codes, gate and alarm details.',
+        'Your photos.',
+        'Your payment methods.',
+        'Your marketing preferences.',
+      ]),
+      B('What has to stay, and why', [
+        'Some records cannot be deleted on request, because a law requires them or because deleting them would erase someone else\'s evidence. These are kept in a restricted form and are not used to contact you or to market to you.',
+      ], [
+        'Invoices and payment records: 5 years, required by tax law.',
+        'Incident, damage and safety reports: 5 years. These are the record a Xooter or another customer may need to rely on.',
+        'Reviews you wrote: kept, but anonymised.',
+        'A record that a deletion happened, and when.',
+      ]),
+      B('Before you go', [
+        'Deleting closes any Care+ membership and forfeits unused XootCred and gift credit. Gift credit given to you by someone else cannot be refunded to them. If you have credit, spend it or transfer it first.',
+        'Open bookings are cancelled under the normal cancellation rules, so a booking inside 24 hours still carries its charge.',
+      ]),
+    ],
+  },
+  {
+    id: 'trust-safety', icon: 'hand-heart', title: 'Trust & safety policy',
+    kicker: 'How we keep both sides safe',
+    intro: 'The mechanisms Xoot operates so that letting a stranger into your home is a reasonable thing to do — and so that entering a stranger\'s home is too.',
+    blocks: [
+      B('Before anyone is let in', null, [
+        'Identity verified against a South African ID, or a passport plus a permit showing the right to work here.',
+        'Proof of residence no older than three months.',
+        'Criminal record check, with consent.',
+        'Bank account in the Xooter\'s own name.',
+        'Required training completed before any job can be accepted.',
+        'A photograph on the profile, so you know who is at the gate before they arrive.',
+      ]),
+      B('Access windows', [
+        'Access details — gate codes, alarm codes, where a key is — are the most sensitive thing on the platform, so they are treated as a time-limited release rather than as saved data a Xooter can browse.',
+      ], [
+        'Details unlock 45 minutes before the visit and lock again when it is completed.',
+        'Only the assigned Xooter sees them, and only for that visit.',
+        'Screenshots are blocked on that screen, and the details are hidden when the app goes to the background.',
+        'You can revoke access instantly from the app. It takes effect immediately, mid-visit if necessary.',
+        'Every time details are viewed, it is logged, and you can see that log.',
+        'Codes are deleted 7 days after the visit.',
+      ],
+        'Screenshot blocking is a real deterrent on Android and on iOS it can only be detected, not prevented — and no software stops a second phone photographing a screen. It is one layer. The seven-day deletion and the revoke switch are the ones that matter.'),
+      B('During a visit', null, [
+        'Live tracking, so you know when someone is arriving instead of waiting.',
+        'In-app messaging, so nobody has to share a personal number.',
+        'SOS, available to both sides: hold the button and it shares your live location with the Xoot safety team and offers a direct line to emergency services. It is on the Xooter\'s screen as well as yours — a lone worker in a stranger\'s house is the person most exposed here.',
+        'The Xooter can end a visit and leave, without penalty, if they feel unsafe.',
+      ]),
+      B('When something goes wrong', [
+        'Report it in the app or by email within 72 hours. Every report is read by a person.',
+      ], [
+        'Safety reports are triaged within 4 hours, and the Xooter is suspended pending review where there is any risk.',
+        'Quality complaints get a redo or a refund.',
+        'Damage goes to XootCover.',
+        'Both sides are heard before any account is closed, except where there is immediate danger.',
+        'A pattern is what triggers removal. A single unexplained bad rating is not evidence.',
+      ]),
+      B('What we will not do', [
+        'We will not give a Xooter your surname, your other addresses or your booking history. We will not give a customer a Xooter\'s home address or ID number. We will not share a safety report with the person it is about in a form that identifies who made it, where that would put them at risk.',
+      ]),
+    ],
+  },
+  {
+    id: 'xootcover', icon: 'heart-handshake', title: 'XootCover terms',
+    kicker: 'Damage cover',
+    intro: 'What happens if something is broken during a visit.',
+    blocks: [
+      B('Status — read this first', [
+        'XootCover is not yet in force. Xoot intends to place it with Genric Insurance Company Limited, with a cover limit of R5 000 per incident, covering items inside the household. Until that policy is issued and a number can be printed here, nothing on this page is insurance and it should not be described as insurance anywhere on the site or in the app.',
+      ], null,
+        'Until the policy is bound, either mark the feature "coming soon" or run it as a stated goodwill guarantee paid out of Xoot\'s own funds — and call it a guarantee, not cover. Marketing insurance that does not exist is a Financial Advisory and Intermediary Services Act problem on top of a Consumer Protection Act one.'),
+      B('What it is intended to cover', null, [
+        'Accidental damage to items inside the home, caused during a visit, up to R5 000 per incident.',
+        'One claim per visit.',
+        'Reported within 72 hours of the visit, with photographs.',
+      ]),
+      B('What it will not cover', null, [
+        'Anything outside the household — the garden, the vehicle, the structure of the building.',
+        'Wear and tear, or damage that was already there.',
+        'Cash, jewellery, documents, artwork and collectibles. Put them away before a visit.',
+        'Items whose value cannot be evidenced.',
+        'Damage from a task you asked for that was outside the booked service.',
+        'Anything above R5 000. Your household contents insurance is the route for that, and it is worth checking that it covers domestic workers.',
+      ]),
+      B('Claiming', [
+        `Report in the app, or email ${EMAIL} with "Damage claim" in the subject line, within 72 hours. Include photographs, what the item is and what it is worth.`,
+        'We acknowledge within 2 working days and decide within 10. If a claim is declined you get the reason in writing and can ask for it to be reviewed by someone who was not involved the first time.',
+      ]),
+      B('Theft', [
+        'Theft is not a damage claim. Report it to the police and to Xoot immediately. We will suspend the Xooter pending investigation, give the police what they lawfully ask for, and tell you what we find.',
+      ]),
+    ],
+  },
+];
+
+class Component extends DCLogic {
+  state = { id: DOCS[0].id };
+
+  componentDidMount() {
+    this.sync();
+    this.onHash = () => this.sync();
+    window.addEventListener('hashchange', this.onHash);
+  }
+  componentWillUnmount() { window.removeEventListener('hashchange', this.onHash); }
+
+  /* Deep-linkable, because every one of these is reached from a footer link. */
+  sync() {
+    const h = (window.location.hash || '').replace('#', '');
+    if (h && DOCS.some(d => d.id === h)) this.setState({ id: h });
+  }
+
+  go = (id) => {
+    this.setState({ id });
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#' + id);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  renderVals() {
+    const doc = DOCS.find(d => d.id === this.state.id) || DOCS[0];
+    return {
+      docCount: DOCS.length,
+      warnIcon: { color: 'var(--xoot-careplus-200)' },
+      noteIcon: { color: 'var(--xoot-honey-ink)' },
+      index: DOCS.map(d => {
+        const on = d.id === this.state.id;
+        return {
+          title: d.title, icon: d.icon,
+          go: () => this.go(d.id),
+          bg: on ? 'var(--xoot-violet-100)' : 'transparent',
+          fg: on ? 'var(--xoot-violet-800)' : 'var(--xoot-text-secondary)',
+          weight: on ? 700 : 600,
+          iconProps: { color: on ? 'var(--xoot-violet-700)' : 'var(--xoot-neutral-500)' },
+        };
+      }),
+      doc: {
+        kicker: doc.kicker,
+        title: doc.title,
+        intro: doc.intro,
+        meta: DRAFTED,
+        blocks: doc.blocks,
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

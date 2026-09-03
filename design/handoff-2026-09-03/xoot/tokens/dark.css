@@ -1,0 +1,140 @@
+/* Xoot dark theme. Light is the default and the primary mode — this is the opt-in.
+   Re-declares SEMANTIC aliases only; the palette in colors.css is never touched.
+   Apply with <html data-theme="dark"> (or on any subtree). */
+[data-theme="dark"]{
+  /* ── Button + surface inversions ──
+     In dark mode a "white" or "cream" button becomes a LIGHT surface, so its label must go
+     dark. Anything reading --xoot-text-on-light gets ink; anything on a violet or ink fill
+     keeps white. Getting this wrong is the classic dark-mode bug: white text on a white pill. */
+  --xoot-surface-light:var(--xoot-neutral-100);
+  --xoot-text-on-light:var(--xoot-ink-900);
+
+  /* The primary commit pill flips to light-on-dark: a near-white fill with ink text. */
+  --xoot-action-primary:var(--xoot-neutral-100);
+  --xoot-action-primary-hover:var(--xoot-neutral-0);
+  --xoot-action-primary-press:var(--xoot-neutral-200);
+  --xoot-action-primary-text:var(--xoot-ink-900);
+
+  /* Icon outlines flip, or the cartoon glyph system disappears entirely. */
+  --xoot-icon-on-tint:var(--xoot-ink-900);
+
+  /* Dark iOS chrome — a lifted near-black, matching how the system renders sheets. */
+  --xoot-ios-sheet:rgba(44,42,40,.96);
+  --xoot-ios-hairline:rgba(255,255,255,.13);
+  --xoot-ios-tint:#3B9BFF;
+  --xoot-ios-danger:#FF6A54;
+  --xoot-icon-outline:#F2EFED;
+  --xoot-icon-outline-soft:#CFC9C6;
+
+  /* Text */
+  --xoot-text-primary:#F4F1EF;
+  --xoot-text-secondary:#B8B2AD;
+  /* Lifted for the same reason light-mode muted was darkened: this is caption and
+     field-label text at 11–12px, so it needs headroom over the card ground. */
+  --xoot-text-muted:#9C948E;
+  /* 2.82:1 at #615B57. Disabled still has to be READ — it means unavailable, not invisible. */
+  --xoot-text-disabled:#8A8279;
+  --xoot-text-inverse:var(--xoot-ink-900);
+  --xoot-text-brand:var(--xoot-violet-300);
+  --xoot-text-link:var(--xoot-violet-300);
+  --xoot-text-link-hover:var(--xoot-violet-200);
+  /* action-primary is a NEAR-WHITE pill in dark mode, so its label must be ink. Leaving this
+     white was a 1.12:1 contrast failure on every primary CTA in the app — the Accept button a
+     Xooter taps to take work, and Continue in the booking funnel. */
+  --xoot-text-on-primary:var(--xoot-ink-900);
+  /* action-brand LIGHTENS in dark mode (violet-500 → 400), so its text has to invert with it,
+     exactly as action-primary does. White on violet-400 is 2.68:1 — unreadable at 15px, which
+     is the size chat bubbles use. An earlier comment here claimed the violet stayed put; it
+     doesn't, and that assumption is what hid this. */
+  --xoot-text-on-brand:var(--xoot-ink-900);
+
+  /* Surfaces — warm near-blacks, so dark mode stays as warm as light mode. */
+  --xoot-surface-page:#121110;
+  --xoot-surface-page-alt:#191716;
+  --xoot-surface-card:#1C1A19;
+  --xoot-surface-sunken:#262322;
+  --xoot-surface-ink:#000000;
+  --xoot-surface-brand:var(--xoot-violet-500);
+  --xoot-surface-brand-soft:rgba(124,92,252,.16);
+  --xoot-surface-scrim:rgba(0,0,0,.6);
+
+  /* Primary commit pill inverts — on dark, the high-contrast button is light. */
+  --xoot-action-primary:#F4F1EF;
+  --xoot-action-primary-hover:#FFFFFF;
+  --xoot-action-primary-press:#DAD5D1;
+
+  --xoot-action-brand:var(--xoot-violet-400);
+  --xoot-action-brand-hover:var(--xoot-violet-300);
+  --xoot-action-brand-press:var(--xoot-violet-500);
+  --xoot-action-brand-soft:rgba(124,92,252,.18);
+  --xoot-action-brand-soft-hover:rgba(124,92,252,.28);
+
+  --xoot-action-quiet-hover:rgba(255,255,255,.07);
+  --xoot-action-quiet-press:rgba(255,255,255,.12);
+
+  /* Borders lift off the surface instead of sitting darker than it. */
+  --xoot-border-color:rgba(255,255,255,.11);
+  --xoot-border-color-strong:rgba(255,255,255,.2);
+  --xoot-border-dashed:1.5px dashed rgba(255,255,255,.18); /* @kind other */
+
+  /* Feedback — tints move to their 300s so they read on dark. */
+  --xoot-success:var(--xoot-sage-mid);
+  --xoot-success-soft:rgba(58,160,117,.18);
+  --xoot-success-text:var(--xoot-sage-mid);
+  --xoot-warning:var(--xoot-honey-mid);
+  --xoot-warning-soft:rgba(231,163,56,.18);
+  --xoot-warning-text:var(--xoot-honey-mid);
+  --xoot-danger:#FF7B66;
+  --xoot-danger-soft:rgba(230,75,54,.18);
+  --xoot-danger-text:#FF9C8B;
+  --xoot-info:var(--xoot-mist-mid);
+  --xoot-info-soft:rgba(74,143,216,.18);
+  --xoot-info-text:var(--xoot-mist-mid);
+
+  /* Icon outlines invert — cartoon glyphs are light-outlined on dark. */
+  --xoot-icon-on-tint:var(--xoot-ink-900);
+
+  /* Dark iOS chrome — a lifted near-black, matching how the system renders sheets. */
+  --xoot-ios-sheet:rgba(44,42,40,.96);
+  --xoot-ios-hairline:rgba(255,255,255,.13);
+  --xoot-ios-tint:#3B9BFF;
+  --xoot-ios-danger:#FF6A54;
+  --xoot-icon-outline:#F4F1EF;
+  --xoot-icon-outline-soft:#B8B2AD;
+
+  /* Time-of-day sections — translucent tints over the dark page. */
+  --xoot-time-anytime:rgba(255,255,255,.07);
+  --xoot-time-anytime-ink:#B8B2AD;
+  --xoot-time-morning:rgba(238,124,85,.2);
+  --xoot-time-morning-ink:#F8C2AE;
+  --xoot-time-afternoon:rgba(74,143,216,.2);
+  --xoot-time-afternoon-ink:#B5D0EC;
+  --xoot-time-evening:rgba(124,92,252,.22);
+  --xoot-time-evening-ink:#C6B9FA;
+
+  /* Glass — dark frosted chrome. */
+  --xoot-glass-light:rgba(28,26,25,.72);
+  --xoot-glass-light-edge:rgba(255,255,255,.12);
+  --xoot-glass-tint:rgba(18,17,16,.6);
+  /* Lifted, not darkened: on a near-black page a darker panel would vanish, so the dark glass
+     tone sits just above the surface it floats on. */
+  --xoot-glass-dark:rgba(52,48,45,.72);
+  --xoot-glass-dark-edge:rgba(255,255,255,.16);
+
+  /* Shadows deepen; the light-mode softness would vanish on dark. */
+  --xoot-shadow-1:0 1px 2px rgba(0,0,0,.4);
+  --xoot-shadow-2:0 2px 10px -2px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.4);
+  --xoot-shadow-3:0 8px 24px -8px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.4);
+  --xoot-shadow-4:0 16px 40px -12px rgba(0,0,0,.7),0 4px 12px rgba(0,0,0,.45);
+  --xoot-shadow-5:0 28px 64px -16px rgba(0,0,0,.8),0 8px 20px rgba(0,0,0,.5);
+  --xoot-shadow-glass:0 12px 40px -14px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.09);
+  --xoot-inset-key:inset 0 -1.5px 0 rgba(0,0,0,.4);
+  --xoot-inset-well:inset 0 1px 3px rgba(0,0,0,.45);
+
+  /* Page washes go near-black. */
+  --xoot-grad-page:linear-gradient(180deg,#1C1A19 0%,#121110 100%); /* @kind color */
+  --xoot-grad-cream:linear-gradient(180deg,#1F1C1A 0%,#171514 100%); /* @kind color */
+
+  --xoot-track-empty:rgba(255,255,255,.14);
+  --xoot-focus-ring:0 0 0 2px var(--xoot-surface-page),0 0 0 4px var(--xoot-violet-300);
+}

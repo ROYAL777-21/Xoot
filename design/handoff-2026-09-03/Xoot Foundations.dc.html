@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="./xoot/styles.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--xoot-surface-page);font-family:var(--xoot-font-core);color:var(--xoot-text-primary);-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4,p{margin:0}
+  a{color:var(--xoot-violet-700);text-decoration:none;border-bottom:1px solid var(--xoot-violet-200)}
+  a:hover{color:var(--xoot-violet-800);border-bottom-color:var(--xoot-violet-400)}
+  @keyframes xf-slide{0%{transform:translateX(0)}50%{transform:translateX(104px)}100%{transform:translateX(0)}}
+</style>
+</helmet>
+<div style="max-width:1180px;margin:0 auto;padding:64px 40px 120px;display:flex;flex-direction:column;gap:84px">
+
+  <header style="display:flex;flex-direction:column;gap:20px">
+    <span style="font-family:var(--xoot-font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--xoot-text-muted)">Xoot · design foundations</span>
+    <h1 style="font-family:var(--xoot-font-display);font-size:60px;line-height:1.02;letter-spacing:-.02em;max-width:15ch">Every token in the system, on one page.</h1>
+    <p style="max-width:68ch;font-size:var(--xoot-body-lg);line-height:1.55;color:var(--xoot-text-secondary);text-wrap:pretty">The alternative UI direction, rendered from its own source: ten token files, the type pairing, the tint set, the elevation ramp, the motion curves and all {{ iconCount }} icons. Violet is the brand and carries every primary action; Care+ red appears only on membership surfaces; nothing else is allowed to shout.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:6px">
+      <a href="./Xoot App.dc.html" style="border:none;padding:11px 18px;border-radius:999px;background:var(--xoot-ink-900);color:#fff;font-size:13px;font-weight:700">The app →</a>
+      <a href="./Xoot Website.dc.html" style="border:none;padding:11px 18px;border-radius:999px;background:var(--xoot-neutral-0);color:var(--xoot-ink-900);font-size:13px;font-weight:700;box-shadow:var(--xoot-shadow-2)">The website →</a>
+      <a href="./Xoot Components.dc.html" style="border:none;padding:11px 18px;border-radius:999px;background:var(--xoot-neutral-0);color:var(--xoot-ink-900);font-size:13px;font-weight:700;box-shadow:var(--xoot-shadow-2)">Component library →</a>
+    </div>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:44px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:36px;line-height:1.1;letter-spacing:-.018em">Colour</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Three layers: one violet family for brand and action, near-black ink for commit buttons and type, and a calm pastel tint set for categories. Light mode is a guarantee, not a default.</p>
+    </div>
+    <sc-for list="{{ colourGroups }}" as="g" hint-placeholder-count="6">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h3 style="font-size:var(--xoot-title-3);font-weight:700;letter-spacing:-.01em">{{ g.title }}</h3>
+          <p style="max-width:68ch;font-size:var(--xoot-body-sm);line-height:1.5;color:var(--xoot-text-muted)">{{ g.note }}</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:12px">
+          <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="9">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="height:{{ swatchH }};border-radius:16px;box-shadow:inset 0 0 0 1px rgba(20,18,16,.08);background:{{ it.value }}"></div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:-.01em">{{ it.name }}</span>
+                <sc-if value="{{ showHex }}" hint-placeholder-val="{{ true }}">
+                  <span style="font-family:var(--xoot-font-mono);font-size:10px;color:var(--xoot-text-muted);word-break:break-all">{{ it.label }}</span>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:36px;line-height:1.1;letter-spacing:-.018em">Semantic aliases</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Components never reach for a palette value directly. These are the names the code uses — the reason the commit button is ink while selection is violet.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px">
+      <sc-for list="{{ semantics }}" as="it" hint-placeholder-count="12">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-1)">
+          <span style="width:40px;height:40px;flex:0 0 auto;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(20,18,16,.08);background:{{ it.value }}"></span>
+          <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+            <span style="font-size:12px;font-weight:700;letter-spacing:-.01em">{{ it.name }}</span>
+            <span style="font-family:var(--xoot-font-mono);font-size:10px;color:var(--xoot-text-muted)">{{ it.label }}</span>
+          </span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:36px;line-height:1.1;letter-spacing:-.018em">Type</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Newsreader for every headline, Plus Jakarta Sans for everything else, DM Mono for times and prices. Caveat is the wordmark's hand and never appears in UI copy.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+      <sc-for list="{{ families }}" as="f" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:10px;padding:24px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+          <span style="font-family:{{ f.family }};font-size:44px;line-height:1;letter-spacing:-.02em">{{ f.specimen }}</span>
+          <span style="font-size:13px;font-weight:700">{{ f.name }}</span>
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted);line-height:1.5">{{ f.token }}<br>{{ f.use }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-direction:column;padding:8px 26px 18px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+      <sc-for list="{{ typeRows }}" as="t" hint-placeholder-count="12">
+        <div style="display:flex;align-items:baseline;gap:22px;padding:16px 0;box-shadow:inset 0 -1px 0 var(--xoot-neutral-50)">
+          <span style="width:132px;flex:0 0 auto;font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">{{ t.token }}</span>
+          <span style="flex:1;min-width:0;font-family:{{ t.family }};font-size:{{ t.size }};line-height:{{ t.lh }};letter-spacing:{{ t.track }};font-weight:{{ t.weight }};text-transform:{{ t.tt }};color:var(--xoot-text-primary)">{{ t.sample }}</span>
+          <span style="flex:0 0 auto;font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">{{ t.meta }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:40px">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:30px;line-height:1.14;letter-spacing:-.018em">Space</h2>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <sc-for list="{{ spaces }}" as="s" hint-placeholder-count="8">
+          <div style="display:flex;align-items:center;gap:14px">
+            <span style="width:110px;flex:0 0 auto;font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">{{ s.name }}</span>
+            <span style="height:12px;border-radius:6px;background:var(--xoot-violet-300);width:{{ s.value }}"></span>
+            <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">{{ s.value }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:30px;line-height:1.14;letter-spacing:-.018em">Radii</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px">
+        <sc-for list="{{ radii }}" as="r" hint-placeholder-count="7">
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div style="height:86px;background:var(--xoot-neutral-0);box-shadow:inset 0 0 0 1.5px var(--xoot-violet-300);border-radius:{{ r.value }}"></div>
+            <span style="font-family:var(--xoot-font-mono);font-size:10px;color:var(--xoot-text-muted)">{{ r.name }} · {{ r.value }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:36px;line-height:1.1;letter-spacing:-.018em">Elevation</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Wide, soft, almost colourless — cards look like paper resting on paper. Nothing darker than 12%, nothing tighter than 8px blur.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:22px">
+      <sc-for list="{{ shadows }}" as="e" hint-placeholder-count="6">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="height:104px;border-radius:20px;background:var(--xoot-surface-card);box-shadow:{{ e.value }}"></div>
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">{{ e.name }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:36px;line-height:1.1;letter-spacing:-.018em">Motion</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Calm first, playful second — nothing linear, nothing abrupt. Three of these curves are the iOS system curves, because that difference is why a web app feels webby next to a native one.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+      <sc-for list="{{ eases }}" as="m" hint-placeholder-count="7">
+        <div style="display:flex;flex-direction:column;gap:12px;padding:18px 20px;border-radius:20px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-1)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <span style="font-size:12px;font-weight:700">{{ m.name }}</span>
+            <span style="font-family:var(--xoot-font-mono);font-size:10px;color:var(--xoot-text-muted)">{{ m.dur }}</span>
+          </div>
+          <div style="height:22px;border-radius:11px;background:var(--xoot-neutral-50);position:relative;overflow:hidden">
+            <span style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--xoot-violet-500);animation-name:xf-slide;animation-iteration-count:infinite;animation-duration:{{ m.animDur }};animation-timing-function:{{ m.value }}"></span>
+          </div>
+          <span style="font-family:var(--xoot-font-mono);font-size:9.5px;color:var(--xoot-text-muted);word-break:break-all">{{ m.value }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <sc-for list="{{ durations }}" as="d" hint-placeholder-count="8">
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-1);font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-secondary)">{{ d.name }} <b style="color:var(--xoot-ink-900)">{{ d.value }}</b></span>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:36px;line-height:1.1;letter-spacing:-.018em">Iconography</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Lucide geometry, ink-outlined, {{ iconCount }} of them — drawn by the system's own <b>Icon</b> component so stroke weight stays a token, not a per-icon decision.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;padding:22px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+      <sc-for list="{{ icons }}" as="ic" hint-placeholder-count="24">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 4px;border-radius:14px" style-hover="background:var(--xoot-neutral-25)">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Icon" from="./xoot/ds-bundle.js" name="{{ ic }}" size="{{ iconSize }}" strokeWidth="{{ iconStroke }}" hint-size="24px,24px"></x-import>
+          <span style="font-family:var(--xoot-font-mono);font-size:8.5px;color:var(--xoot-text-muted);text-align:center;line-height:1.3;word-break:break-word">{{ ic }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:1.1fr 1fr;gap:34px;align-items:stretch">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:36px;line-height:1.1;letter-spacing:-.018em">Photography</h2>
+      <p style="font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary);text-wrap:pretty">One real photograph sets the standard for the rest: a Xooter in the black polo with the violet cursive mark, at a front door, in daylight, mid-shot, at ease. Not stock, not staged mid-scrub. A site selling someone entry to their own home leads with a face, because the face is the argument.</p>
+      <p style="font-size:var(--xoot-body-sm);line-height:1.5;color:var(--xoot-text-muted)">Used full-bleed in the site hero, anchored at <span style="font-family:var(--xoot-font-mono);font-size:11px">objectPosition: 50% 12%</span> so the head survives a short viewport. It carries a generator watermark the hero frame crops — a stand-in until the shoot happens.</p>
+    </div>
+    <div style="border-radius:26px;overflow:hidden;box-shadow:var(--xoot-shadow-3);min-height:320px;background:var(--xoot-neutral-100)">
+      <img src="./xoot/assets/marketing/xooter-female-polo.webp" alt="A Xooter in uniform outside a Johannesburg home" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 12%">
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:36px;line-height:1.1;letter-spacing:-.018em">What is in the system</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">The alternative UI direction as files — every folder accounted for, and where each one is visualised.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+      <sc-for list="{{ inventory }}" as="v" hint-placeholder-count="6">
+        <div style="display:flex;flex-direction:column;gap:10px;padding:22px;border-radius:22px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-1)">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+            <span style="font-family:var(--xoot-font-mono);font-size:11px;color:var(--xoot-violet-700)">{{ v.path }}</span>
+            <span style="font-family:var(--xoot-font-mono);font-size:10px;color:var(--xoot-text-muted)">{{ v.count }}</span>
+          </div>
+          <span style="font-size:var(--xoot-body-sm);line-height:1.5;color:var(--xoot-text-secondary)">{{ v.what }}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--xoot-ink-900)">{{ v.where }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showHex&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Foundations&quot;},&quot;swatchHeight&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:74,&quot;min&quot;:48,&quot;max&quot;:140,&quot;step&quot;:2,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Foundations&quot;},&quot;iconStroke&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:2.25,&quot;min&quot;:1.2,&quot;max&quot;:3,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Foundations&quot;}}">
+const V = (n, v, label) => ({ name: n, value: v, label: label || v });
+
+const COLOUR = [
+  ['Xoot Violet', 'The brand signature. 500 is THE violet — never invent another. Selection, progress and brand emphasis; 600 wherever white type sits on it.', [
+    ['violet-50', '#F4F1FE'], ['violet-100', '#EDE9FD'], ['violet-200', '#DDD5FC'], ['violet-300', '#C6B9FA'], ['violet-400', '#A38FF7'],
+    ['violet-500', '#7C5CFC'], ['violet-600', '#6440E8'], ['violet-700', '#4F2FBE'], ['violet-800', '#3A2190'], ['violet-900', '#251458'],
+  ]],
+  ['Ink & neutrals', 'Ink is the commit button and every icon outline. The neutral set is warm grey — the app floats on neutral-25, cards sit on white.', [
+    ['ink-900', '#151515'], ['ink-800', '#242424'], ['ink-700', '#3C3A38'], ['ink-600', '#5A5754'],
+    ['neutral-0', '#FFFFFF'], ['neutral-25', '#F5F3F2'], ['neutral-50', '#EFEDEB'], ['neutral-100', '#E8E5E3'],
+    ['neutral-200', '#DCD8D5'], ['neutral-300', '#C6C1BD'], ['neutral-400', '#A29D99'], ['neutral-500', '#7C7773'], ['neutral-600', '#5E5A56'],
+  ]],
+  ['The tint set · wash', 'Seven category colours, four steps each. The wash is the surface a tinted section sits on.', [
+    ['lilac-wash', '#EDE9FD'], ['mist-wash', '#E4EEF9'], ['blush-wash', '#FCE6DE'], ['petal-wash', '#FBE3EC'],
+    ['moss-wash', '#EAF0D6'], ['sage-wash', '#DFF0E7'], ['honey-wash', '#FCEEDA'],
+  ]],
+  ['The tint set · mid', 'The fill or blob behind a service glyph.', [
+    ['lilac-mid', '#C6B9FA'], ['mist-mid', '#B5D0EC'], ['blush-mid', '#F8C2AE'], ['petal-mid', '#F5B8CE'],
+    ['moss-mid', '#D2DD79'], ['sage-mid', '#A9DBC2'], ['honey-mid', '#F7D290'],
+  ]],
+  ['The tint set · 500 & ink', 'The saturated accent, and the text colour that reads on its wash.', [
+    ['lilac-500', '#7C5CFC'], ['mist-500', '#4A8FD8'], ['blush-500', '#EE7C55'], ['petal-500', '#E36A9A'],
+    ['moss-500', '#A6B336'], ['sage-500', '#3AA075'], ['honey-500', '#E7A338'],
+    ['lilac-ink', '#4A31B8'], ['mist-ink', '#215184'], ['blush-ink', '#A6421F'], ['petal-ink', '#9C3463'],
+    ['moss-ink', '#5C661A'], ['sage-ink', '#1B6246'], ['honey-ink', '#94600E'],
+  ]],
+  ['Care+ red', 'The membership red, and the only red in a violet product. Badge, paywall, the + mark, plan savings — never a generic action. Filled buttons use 600, the mark stays on 500.', [
+    ['careplus-50', '#FDEBE8'], ['careplus-100', '#FBD9D3'], ['careplus-200', '#F6B6AC'], ['careplus-300', '#EF8878'], ['careplus-400', '#E85E4B'],
+    ['careplus-500', '#E63329'], ['careplus-600', '#C4211A'], ['careplus-700', '#9B1712'], ['careplus-800', '#71100C'], ['careplus-900', '#4A0A07'],
+  ]],
+  ['Coral & the onboarding canvas', 'Coral is destructive actions and urgency only. Onboarding is the one place Xoot goes dark — a deep warm ink, not black.', [
+    ['coral-50', '#FFF2F0'], ['coral-500', '#E64B36'], ['coral-700', '#A72B1A'],
+    ['onboard-900', '#1A1614'], ['onboard-800', '#241F1C'], ['onboard-700', '#332C28'],
+  ]],
+  ['Orbs', 'Soft 3D spheres for the mascot, streaks and stat markers. The heart is a distinct pastel red so the character reads friendly, not urgent.', [
+    ['orb-violet', 'radial-gradient(circle at 34% 28%,#FFFFFF 0%,#DDD5FC 32%,#A38FF7 78%,#7C5CFC 100%)', 'violet'],
+    ['orb-teal', 'radial-gradient(circle at 34% 28%,#FFFFFF 0%,#CFEAE6 28%,#5FB5AE 76%,#2E8F88 100%)', 'teal'],
+    ['orb-blush', 'radial-gradient(circle at 34% 28%,#FFFFFF 0%,#FCE6DE 30%,#F8C2AE 76%,#EE7C55 100%)', 'blush'],
+    ['orb-honey', 'radial-gradient(circle at 34% 28%,#FFFFFF 0%,#FCEEDA 30%,#F7D290 76%,#E7A338 100%)', 'honey'],
+    ['orb-pearl', 'radial-gradient(circle at 34% 28%,#FFFFFF 0%,#F8F5FF 34%,#E4DCF7 72%,#CFC4EE 100%)', 'pearl'],
+    ['orb-heart', 'radial-gradient(circle at 36% 26%,#FFF1EE 0%,#FBC9BF 30%,#F49384 74%,#EC6F5D 100%)', 'heart'],
+  ]],
+  ['Gradients', 'Barely-there washes only. No hard colour ramps anywhere in the UI.', [
+    ['grad-page', 'linear-gradient(180deg,#FFFFFF 0%,#F5F3F2 100%)', 'page'],
+    ['grad-lilac', 'linear-gradient(180deg,#F4F1FE 0%,#EDE9FD 100%)', 'lilac'],
+    ['grad-dawn', 'linear-gradient(180deg,#FCEEDA 0%,#FCE6DE 52%,#FBE3EC 100%)', 'dawn'],
+    ['grad-dusk', 'linear-gradient(180deg,#EDE9FD 0%,#E4EEF9 100%)', 'dusk'],
+    ['grad-violet', 'linear-gradient(180deg,#A38FF7 0%,#7C5CFC 100%)', 'violet'],
+    ['grad-careplus', 'linear-gradient(180deg,#FDEBE8 0%,#FBD9D3 52%,#F6B6AC 100%)', 'care+ wash'],
+    ['grad-cream', 'linear-gradient(180deg,#FAF6F0 0%,#F4EDE3 100%)', 'cream'],
+    ['grad-onboard', 'linear-gradient(180deg,#241F1C 0%,#1A1614 62%,#140F0D 100%)', 'onboarding'],
+  ]],
+];
+
+const SEMANTIC = [
+  ['text-primary', 'ink-900'], ['text-secondary', 'ink-600'], ['text-muted', 'neutral-600'], ['text-brand', 'violet-700'],
+  ['surface-page', 'neutral-25'], ['surface-card', 'neutral-0'], ['surface-sunken', 'neutral-100'], ['surface-onboard', 'onboard-900'],
+  ['action-primary', 'ink-900 · the commit pill'], ['action-brand', 'violet-600 · selection'], ['action-brand-soft', 'violet-100'], ['action-quiet-hover', 'neutral-100'],
+  ['success', 'sage-500'], ['warning', 'honey-500'], ['danger', 'coral-500'], ['info', 'mist-500'],
+  ['time-morning', 'blush-wash'], ['time-afternoon', 'mist-wash'], ['time-evening', 'lilac-wash'], ['time-anytime', 'neutral-100'],
+  ['svc-indoor', 'blush-500'], ['svc-office', 'mist-500'], ['svc-moving', 'lilac-500'], ['svc-laundry', 'moss-500'],
+  ['streak', 'violet-500'], ['xp', 'petal-500'], ['level', 'mist-500'], ['track-empty', 'neutral-200'],
+];
+
+const TYPE = [
+  ['--xoot-display-1', 'display', '44px', 1.05, '-.018em', 400, 'Your home. Handled.'],
+  ['--xoot-display-2', 'display', '36px', 1.1, '-.018em', 400, 'Friday'],
+  ['--xoot-display-3', 'display', '30px', 1.14, '-.018em', 400, 'Care+ membership'],
+  ['--xoot-title-1', 'display', '25px', 1.2, '-.018em', 400, 'What do you need done?'],
+  ['--xoot-title-2', 'display', '20px', 1.26, '-.018em', 400, "Today's visit"],
+  ['--xoot-title-3', 'core', '17px', 1.35, '-.01em', 700, 'Regular cleaning'],
+  ['--xoot-body-lg', 'core', '17px', 1.5, '-.01em', 500, 'Book a vetted Xooter for your place.'],
+  ['--xoot-body', 'core', '15px', 1.55, '0', 500, 'Nomsa is on the way — about 12 minutes out.'],
+  ['--xoot-body-sm', 'core', '13px', 1.45, '0', 500, 'Gate code is saved for this visit.'],
+  ['--xoot-caption', 'core', '12px', 1.4, '0', 500, 'Access opens 45 minutes before the visit.'],
+  ['--xoot-micro', 'core', '10px', 1.3, '0', 600, 'Verified · insured'],
+  ['--xoot-label', 'core', '11px', 1, '.1em', 800, 'Good morning'],
+  ['--xoot-font-mono', 'mono', '15px', 1.4, '-.01em', 400, 'R470 · 09:00 → 13:30'],
+];
+
+class Component extends DCLogic {
+  state = { tick: 0 };
+  componentDidMount() {
+    /* The icon list arrives with the bundle, which resolves after first paint. */
+    let n = 0;
+    this.timer = window.setInterval(() => {
+      n += 1;
+      if (this.iconNames().length || n > 40) { window.clearInterval(this.timer); this.timer = null; }
+      this.setState({ tick: n });
+    }, 120);
+  }
+  componentWillUnmount() { if (this.timer) window.clearInterval(this.timer); }
+
+  iconNames() {
+    const ns = window.CareDesignSystem_ed2067;
+    return ns && ns.XOOT_ICONS ? Object.keys(ns.XOOT_ICONS) : [];
+  }
+
+  renderVals() {
+    const icons = this.iconNames();
+    return {
+      showHex: this.props.showHex !== false,
+      swatchH: (this.props.swatchHeight || 74) + 'px',
+      iconStroke: this.props.iconStroke || 2.25,
+      iconSize: 26,
+      iconCount: icons.length || 86,
+      icons: icons,
+      colourGroups: COLOUR.map((g) => ({
+        title: g[0], note: g[1],
+        items: g[2].map((c) => V(c[0], c[1], c[2] || c[1])),
+      })),
+      semantics: SEMANTIC.map((s) => V(s[0], 'var(--xoot-' + s[0] + ')', '→ ' + s[1])),
+      families: [
+        { name: 'Newsreader', family: 'var(--xoot-font-display)', token: '--xoot-font-display', use: 'Every headline. 400–500 only.', specimen: 'Handled.' },
+        { name: 'Plus Jakarta Sans', family: 'var(--xoot-font-core)', token: '--xoot-font-core', use: 'All UI copy. 600–700 for emphasis.', specimen: 'Book now' },
+        { name: 'DM Mono', family: 'var(--xoot-font-mono)', token: '--xoot-font-mono', use: 'Times, prices, dense data.', specimen: 'R470' },
+        { name: 'Caveat', family: 'var(--xoot-font-script)', token: '--xoot-font-script', use: 'The wordmark hand. Never UI copy.', specimen: 'Xoot' },
+      ],
+      typeRows: TYPE.map((t) => ({
+        token: t[0],
+        family: 'var(--xoot-font-' + t[1] + ')',
+        size: t[2], lh: t[3], track: t[4], weight: t[5],
+        tt: t[0] === '--xoot-label' ? 'uppercase' : 'none',
+        sample: t[6],
+        meta: t[2] + '/' + t[3],
+      })),
+      spaces: [['space-1', '4px'], ['space-1h', '6px'], ['space-2', '8px'], ['space-3', '12px'], ['space-4', '16px'], ['space-5', '20px'], ['space-6', '24px'], ['space-7', '32px'], ['space-8', '40px'], ['space-9', '56px'], ['space-10', '72px'], ['space-11', '96px'], ['space-12', '128px'], ['gutter-mobile', '20px'], ['tabbar-h', '76px'], ['hit-min', '48px']].map((s) => V(s[0], s[1])),
+      radii: [['radius-xs', '10px'], ['radius-sm', '14px'], ['radius-md', '20px'], ['radius-key', '16px'], ['radius-lg', '26px'], ['radius-xl', '34px'], ['radius-pill', '999px']].map((r) => V(r[0], r[1])),
+      shadows: [['shadow-1', '0 1px 2px rgba(20,18,16,.04)'], ['shadow-2', '0 2px 10px -2px rgba(20,18,16,.06),0 1px 2px rgba(20,18,16,.03)'], ['shadow-3', '0 8px 24px -8px rgba(20,18,16,.10),0 2px 6px rgba(20,18,16,.04)'], ['shadow-4', '0 16px 40px -12px rgba(20,18,16,.14),0 4px 12px rgba(20,18,16,.05)'], ['shadow-5', '0 28px 64px -16px rgba(20,18,16,.20),0 8px 20px rgba(20,18,16,.06)'], ['shadow-brand', '0 6px 18px -6px rgba(124,92,252,.34)'], ['shadow-careplus', '0 6px 18px -6px rgba(230,51,41,.32)'], ['shadow-glass', '0 12px 40px -14px rgba(20,18,16,.16),inset 0 1px 0 rgba(255,255,255,.6)']].map((e) => V(e[0], e[1])),
+      eases: [
+        { name: 'ease-out · the default', dur: '280ms', animDur: '1800ms', value: 'cubic-bezier(.22,.9,.28,1)' },
+        { name: 'ease-in-out', dur: '280ms', animDur: '1800ms', value: 'cubic-bezier(.6,.05,.3,.95)' },
+        { name: 'ease-spring', dur: '170ms', animDur: '1600ms', value: 'cubic-bezier(.34,1.42,.5,1)' },
+        { name: 'ease-settle', dur: '440ms', animDur: '2000ms', value: 'cubic-bezier(.16,1,.3,1)' },
+        { name: 'ios-sheet · modal', dur: '500ms', animDur: '2000ms', value: 'cubic-bezier(.32,.72,0,1)' },
+        { name: 'ios-nav · push/pop', dur: '350ms', animDur: '1800ms', value: 'cubic-bezier(.4,.8,.15,1)' },
+        { name: 'ios-snap · toggles', dur: '300ms', animDur: '1600ms', value: 'cubic-bezier(.34,1.56,.64,1)' },
+      ],
+      durations: [['instant', '90ms'], ['fast', '170ms'], ['base', '280ms'], ['slow', '440ms'], ['story', '760ms'], ['bloom', '1200ms'], ['breathe', '4600ms'], ['ios-sheet', '500ms'], ['ios-nav', '350ms'], ['press-scale', '.97'], ['hover-lift', '-2px'], ['stagger', '70ms']].map((d) => V(d[0], d[1])),
+      inventory: [
+        { path: 'tokens/', count: '10 files', what: 'fonts, colors, typography, spacing, radii, elevation, motion, semantic, dark, base — imported as one styles.css.', where: 'This page' },
+        { path: 'guidelines/', count: '24 cards', what: 'Colour, type, space, brand elevation, glass, iconography, motion, states and widget rules.', where: 'This page + Components' },
+        { path: 'components/core · feedback · forms', count: '19 components', what: 'Button, Card, Icon, IconButton, Avatar, Logo; Badge, Tag, Progress, Rating, Toast, Tooltip; Input, Select, Switch, Checkbox, Radio, Stepper, DayKeys.', where: 'Components →' },
+        { path: 'components/brand', count: '20 components', what: 'Bloom, Flower, Mascot, XootCharacter, MemberBadge, Paywall, GiftCard, WashiTape, TapedFrame, HandNote, Concierge, GlassPanel and more.', where: 'Components →' },
+        { path: 'components/patterns', count: '19 patterns', what: 'BookBar, BookingSummary, XooterCard, MapCanvas, PaymentFlow, SensitiveAccess, CrewPicker, WinCard, GiftCredit, FileUpload, Safety.', where: 'Components →' },
+        { path: 'components/native · motion · calendar · navigation · overlay · onboarding', count: '25 components', what: 'Live Activity, Dynamic Island, home widgets, Siri shortcuts, iOS motion, DayStrip, TaskRow, TabBar, Tabs, Sheet, Dialog, StepHeader, TrialTimeline.', where: 'Components →' },
+        { path: 'ui_kits/xoot_app', count: '18 screens', what: 'Onboarding through booking, tracking, chat, rate, rewards, You and the whole Xooter side.', where: 'The app →' },
+        { path: 'ui_kits/xoot_site', count: '7 modules', what: 'Nav, hero, services, safety, reviews, Care+, merch, bug bounty, footer, booking modal, sign-in.', where: 'The website →' },
+        { path: 'assets/', count: '7 fonts · 86 svgs · 1 photo', what: 'Variable font binaries (all OFL), the Lucide-derived icon set (80 wired into Icon), the logo mark and the first real Xooter photograph.', where: 'This page' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

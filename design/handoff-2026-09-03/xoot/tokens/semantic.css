@@ -1,0 +1,122 @@
+/* Semantic aliases — always prefer these in components over raw palette values.
+   Xoot is light-mode only. There is no dark theme scope. */
+:root{
+  /* Text */
+  --xoot-text-primary:var(--xoot-ink-900);
+  --xoot-text-secondary:var(--xoot-ink-600);
+  /* neutral-600, not 500: muted is used at 11–12px for field labels and captions, where
+     500 measures 4.43:1 on white and 3.79:1 on the sunken ground — both under AA. */
+  --xoot-text-muted:var(--xoot-neutral-600);
+  --xoot-text-disabled:var(--xoot-neutral-400);
+  --xoot-text-inverse:var(--xoot-neutral-0);
+  --xoot-text-brand:var(--xoot-violet-700);
+  --xoot-text-link:var(--xoot-violet-700);
+  --xoot-text-link-hover:var(--xoot-violet-800);
+  /* Two tokens, because the two fills they sit on invert in opposite directions in dark mode.
+     Pair -on-primary with --xoot-action-primary, and -on-brand with --xoot-action-brand.
+     Using the wrong one is invisible in light mode and unreadable in dark. */
+  --xoot-text-on-primary:var(--xoot-neutral-0);
+  --xoot-text-on-brand:var(--xoot-neutral-0);
+
+  /* Surfaces */
+  --xoot-surface-page:var(--xoot-neutral-25);
+  --xoot-surface-page-alt:var(--xoot-neutral-50);
+  --xoot-surface-card:var(--xoot-neutral-0);
+  --xoot-surface-sunken:var(--xoot-neutral-100);
+  --xoot-surface-ink:var(--xoot-ink-900);
+  /* The onboarding canvas. Deep warm ink so white type and pastel blooms both carry. */
+  --xoot-surface-onboard:var(--xoot-onboard-900);
+  --xoot-surface-onboard-alt:var(--xoot-onboard-800);
+  --xoot-surface-brand:var(--xoot-violet-500);
+  --xoot-surface-brand-soft:var(--xoot-violet-100);
+  --xoot-surface-scrim:rgba(21,21,21,.38);
+
+  /* Interactive — primary. Xoot's commit button is INK, the Tiimo way;
+     violet carries selection, progress and brand emphasis. */
+  --xoot-action-primary:var(--xoot-ink-900);
+  --xoot-action-primary-hover:var(--xoot-ink-800);
+  --xoot-action-primary-press:var(--xoot-ink-700);
+
+  /* violet-600, not 500: white on 500 measures 4.38:1, which fails AA for the 15px body copy
+     in chat bubbles. 600 gives 6.06:1 and reads as the same brand violet. */
+  --xoot-action-brand:var(--xoot-violet-600);
+  /* 700 on hover: with base moved to 600, leaving hover at 600 meant hovering did nothing. */
+  --xoot-action-brand-hover:var(--xoot-violet-700);
+  --xoot-action-brand-press:var(--xoot-violet-800);
+  --xoot-action-brand-soft:var(--xoot-violet-100);
+  --xoot-action-brand-soft-hover:var(--xoot-violet-200);
+
+  /* Interactive — quiet */
+  --xoot-action-quiet-hover:var(--xoot-neutral-100);
+  --xoot-action-quiet-press:var(--xoot-neutral-200);
+
+  /* Feedback — drawn from the tint set, so nothing shouts */
+  --xoot-success:var(--xoot-sage-500);
+  --xoot-success-soft:var(--xoot-sage-wash);
+  --xoot-success-text:var(--xoot-sage-ink);
+  --xoot-warning:var(--xoot-honey-500);
+  --xoot-warning-soft:var(--xoot-honey-wash);
+  --xoot-warning-text:var(--xoot-honey-ink);
+  --xoot-danger:var(--xoot-coral-500);
+  --xoot-danger-soft:var(--xoot-coral-50);
+  --xoot-danger-text:var(--xoot-coral-700);
+  --xoot-info:var(--xoot-mist-500);
+  --xoot-info-soft:var(--xoot-mist-wash);
+  --xoot-info-text:var(--xoot-mist-ink);
+
+  /* Icon outlines — the cartoon system. Glyphs are ALWAYS ink-outlined. */
+  --xoot-icon-outline:var(--xoot-ink-900);
+  /* Glyphs drawn on a pastel tint (service marks, widget tiles) knock OUT of the colour in
+     light mode and sit ink-dark in dark mode — the reverse of the outline above, because the
+     ground behind them inverts too. */
+  --xoot-icon-on-tint:var(--xoot-neutral-0);
+
+  /* iOS-native overlay chrome — action sheets, permission dialogs, call UI. These imitate
+     system surfaces, so they track the OS appearance rather than the brand page tokens. */
+  --xoot-ios-sheet:rgba(255,255,255,.96);
+  --xoot-ios-hairline:rgba(21,21,21,.11);
+  --xoot-ios-tint:#0A84FF;
+  --xoot-ios-danger:#E64B36;
+  --xoot-icon-outline-soft:var(--xoot-ink-700);
+  --xoot-icon-stroke:2.25; /* @kind other */
+  --xoot-icon-stroke-bold:2.75; /* @kind other */
+
+  /* Time-of-day sections — the calendar's colour language */
+  --xoot-time-anytime:var(--xoot-neutral-100);
+  --xoot-time-anytime-ink:var(--xoot-ink-600);
+  --xoot-time-morning:var(--xoot-blush-wash);
+  --xoot-time-morning-ink:var(--xoot-blush-ink);
+  --xoot-time-afternoon:var(--xoot-mist-wash);
+  --xoot-time-afternoon-ink:var(--xoot-mist-ink);
+  --xoot-time-evening:var(--xoot-lilac-wash);
+  --xoot-time-evening-ink:var(--xoot-lilac-ink);
+
+  /* Service families — one tint each, for the icon blob and row accent */
+  --xoot-svc-indoor:var(--xoot-blush-500);
+  --xoot-svc-outdoor:var(--xoot-sage-500);
+  --xoot-svc-office:var(--xoot-mist-500);
+  --xoot-svc-moving:var(--xoot-lilac-500);
+  --xoot-svc-family:var(--xoot-petal-500);
+  --xoot-svc-elder:var(--xoot-honey-500);
+  --xoot-svc-airbnb:var(--xoot-blush-500);
+  --xoot-svc-laundry:var(--xoot-moss-500);
+  --xoot-svc-pets:var(--xoot-sage-500);
+  --xoot-svc-express:var(--xoot-coral-500);
+  --xoot-svc-extra:var(--xoot-violet-500);
+
+  /* Calendar sources — connected external calendars */
+  --xoot-cal-apple:var(--xoot-ink-900);
+  --xoot-cal-google:var(--xoot-mist-500);
+  --xoot-cal-outlook:var(--xoot-violet-500);
+  --xoot-cal-xoot:var(--xoot-blush-500);
+
+  /* Gamification */
+  --xoot-streak:var(--xoot-violet-500);
+  --xoot-xp:var(--xoot-petal-500);
+  --xoot-level:var(--xoot-mist-500);
+  --xoot-track-empty:var(--xoot-neutral-200);
+
+  /* Focus ring — 2px page-coloured gap then a 4px violet ring. On every focusable thing. */
+  --xoot-focus-ring:0 0 0 2px var(--xoot-neutral-0),0 0 0 4px var(--xoot-violet-400); /* @kind other */
+  --xoot-focus-ring-inverse:0 0 0 2px var(--xoot-ink-900),0 0 0 4px var(--xoot-violet-300); /* @kind other */
+}

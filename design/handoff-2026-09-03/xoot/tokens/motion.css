@@ -1,0 +1,68 @@
+:root{
+  /* Xoot motion is calm first, playful second. Nothing linear, nothing abrupt. */
+  --xoot-ease-out:cubic-bezier(.22,.9,.28,1); /* @kind other */
+  --xoot-ease-in-out:cubic-bezier(.6,.05,.3,.95); /* @kind other */
+  --xoot-ease-spring:cubic-bezier(.34,1.42,.5,1); /* @kind other */
+  --xoot-ease-settle:cubic-bezier(.16,1,.3,1); /* @kind other */
+
+  /* ── iOS-native curves ───────────────────────────────────────────────────
+     Apple's system animations are not generic ease-outs, and the difference is why a web app
+     feels "webby" next to a native one. Three curves do nearly all the work in UIKit:
+
+     · sheet — the modal presentation curve. Fast start, long deceleration, no overshoot at
+       all. Overshoot on a sheet reads as bounce, and iOS sheets never bounce.
+     · nav — the push/pop curve. Gentler start than the sheet, so a screen slide feels lighter
+       than a modal.
+     · snap — the spring on toggles, checkmarks and anything that "clicks" into place. Small
+       deliberate overshoot; this is the only curve allowed to exceed 1. */
+  --xoot-ease-ios-sheet:cubic-bezier(.32,.72,0,1); /* @kind other */
+  --xoot-ease-ios-nav:cubic-bezier(.4,.8,.15,1); /* @kind other */
+  --xoot-ease-ios-snap:cubic-bezier(.34,1.56,.64,1); /* @kind other */
+
+  --xoot-dur-instant:90ms; /* @kind other */
+  --xoot-dur-fast:170ms; /* @kind other */
+  --xoot-dur-base:280ms; /* @kind other */
+  --xoot-dur-slow:440ms; /* @kind other */
+  --xoot-dur-story:760ms; /* @kind other */
+  --xoot-dur-bloom:1200ms; /* @kind other */
+  --xoot-dur-breathe:4600ms; /* @kind other */
+  --xoot-dur-icon:2600ms; /* @kind other */
+
+  /* iOS timings. A sheet is SLOWER than feels right on paper — 500ms is the real UIKit
+     figure, and shortening it is the commonest way a web sheet gives itself away. */
+  --xoot-dur-ios-sheet:500ms; /* @kind other */
+  --xoot-dur-ios-nav:350ms; /* @kind other */
+  --xoot-dur-ios-snap:300ms; /* @kind other */
+
+  --xoot-press-scale:.97; /* @kind other */
+  /* Big surfaces need less: .97 on a full card reads as a lurch. */
+  --xoot-press-scale-card:.985; /* @kind other */
+  --xoot-hover-lift:-2px; /* @kind other */
+  --xoot-stagger:70ms; /* @kind other */
+
+  /* The scrim behind a sheet, and how far the screen behind it recedes. iOS scales the
+     presenting view down very slightly — it's barely perceptible and it's most of why the
+     sheet feels layered rather than pasted on. */
+  --xoot-sheet-scrim:rgba(20,18,16,.34); /* @kind color */
+  --xoot-sheet-recede:.965; /* @kind other */
+}
+@media (prefers-reduced-motion:reduce){
+  :root{
+    --xoot-dur-instant:0ms; /* @kind other */
+    --xoot-dur-fast:0ms; /* @kind other */
+    --xoot-dur-base:0ms; /* @kind other */
+    --xoot-dur-slow:0ms; /* @kind other */
+    --xoot-dur-story:0ms; /* @kind other */
+    --xoot-dur-bloom:0ms; /* @kind other */
+    --xoot-dur-breathe:0ms; /* @kind other */
+    --xoot-dur-icon:0ms; /* @kind other */
+    --xoot-dur-ios-sheet:0ms; /* @kind other */
+    --xoot-dur-ios-nav:0ms; /* @kind other */
+    --xoot-dur-ios-snap:0ms; /* @kind other */
+    --xoot-press-scale:1; /* @kind other */
+    --xoot-press-scale-card:1; /* @kind other */
+    --xoot-hover-lift:0px; /* @kind other */
+    --xoot-stagger:0ms; /* @kind other */
+    --xoot-sheet-recede:1; /* @kind other */
+  }
+}

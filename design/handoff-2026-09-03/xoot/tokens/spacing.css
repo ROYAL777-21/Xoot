@@ -1,0 +1,26 @@
+:root{
+  /* 4px base, with a 6px half-step for the tight inner padding rounded UI needs. */
+  --xoot-space-1:4px;
+  --xoot-space-1h:6px;
+  --xoot-space-2:8px;
+  --xoot-space-3:12px;
+  --xoot-space-4:16px;
+  --xoot-space-5:20px;
+  --xoot-space-6:24px;
+  --xoot-space-7:32px;
+  --xoot-space-8:40px;
+  --xoot-space-9:56px;
+  --xoot-space-10:72px;
+  --xoot-space-11:96px;
+  --xoot-space-12:128px;
+
+  /* Layout rails */
+  --xoot-gutter-mobile:20px;    /* screen edge → content, phone */
+  --xoot-gutter-desktop:40px;
+  --xoot-max-prose:68ch;
+  --xoot-max-content:1180px;
+  --xoot-max-doc:820px;
+  --xoot-tabbar-h:76px;         /* floating pill tab bar + safe area */
+  --xoot-topbar-h:60px;
+  --xoot-hit-min:48px;          /* never smaller — everything is thumb-first */
+}
