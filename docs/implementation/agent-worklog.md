@@ -2249,3 +2249,84 @@ July. Keeping a second copy here would restart that. **Read the file, and edit t
 The one thing worth repeating here, because it is a rule rather than a task: a session **never**
 dispatches a production deploy unasked, and `create-staging-twilio-subaccount.mjs` is **never**
 wrapped in a workflow — it prints a secret Twilio shows exactly once, into a retained log.
+
+---
+
+# 🚢 Release — 2026-09-03, late session
+
+## 🔒 Two items for Correctness, and the first is a decision only they can make
+
+### 1. ⛔ ZD-035 crew pricing is built and NOT wired. That is deliberate, and it is yours.
+
+`crewPriceCents` / `CREW_OVERHEAD` exist in **both** `src/lib/xoot-pricing.ts` and
+`supabase/functions/_shared/pricing.ts`, mirrored and parity-pinned. **Neither is called by
+`quote()` or by `create-booking`**, and `src/lib/referral-wiring.test.ts` asserts that absence.
+
+The reason, measured against the live multi-worker model rather than argued:
+
+| crew | live model (N× base, −10% at 3+) | ZD-035 overhead | delta |
+|---|---|---|---|
+| 2 | 2.00× | 1.15× | **−43%** |
+| 3 | 2.70× | 1.25× | **−54%** |
+| 4 | 3.60× | 1.40× | **−61%** |
+
+Wiring it cuts a four-Xooter booking by **61%**. That is a locked commercial fact, and CLAUDE.md
+says those move only through a decision-log entry. I built the ready state and stopped at the line
+where it becomes a pricing decision — **which is Correctness's call, not Release's.**
+
+⚠️ `crew_size` is also left unwritten, and for a subtler reason: under the row-per-Xooter model
+every new `bookings` row **is** a solo job, so stamping a crew size would record a number the price
+does not reflect. The column's default of 1 is already the true answer. The schema is ready; the
+writer changes when the model does.
+
+### 2. ⚠️ I edited `supabase/functions/create-booking/` — your path — and here is why it could not wait
+
+ZD-036 (referral) is additive: it displaces no existing rule, so wiring it is a port rather than a
+decision. Doing it in the same change as the schema is what surfaced **four defects that a unit
+test could not have caught**, all from reading the real database rather than the design:
+
+1. **`referral_redemptions` has no `referral_code` column.** My insert named one. Runtime failure.
+2. **`.eq("status", "completed")` is a check that can never fire.** `booking-state-machine.ts`
+   allows `completed → rated`, so a reviewed booking stops reading as completed — and the query
+   returns 0 either way, with **0 being the *eligible* answer**. Anyone whose first booking was
+   rated could take a second first-booking discount, silently. Now counts `completed_at`.
+3. **`requireAuth` returns a service_role client**, so the code lookup is not blocked by the
+   owner-only RLS `performance_advisor_cleanup` put on `public.referrals`. Confirmed rather than
+   assumed — the feature is entirely dead if that read returns null.
+4. **`rewarded` stays `false` on purpose.** The row records the *referee's* discount; the
+   *referrer's* reward must not be paid until the booking completes, or a pair can book, collect
+   and cancel. ⛔ **No payout job exists yet.** Filed here so it is not mistaken for done.
+
+A refused code returns **409** rather than creating the booking at full price. Harsher, and the
+only outcome where the customer is never charged something they were not shown.
+
+### ⚠️ One thing I did not touch, that is yours to judge
+
+`public.referrals` carries a **`"view by code"` SELECT policy with `USING (true)`** from the
+2026-04-23 migration. `performance_advisor_cleanup` added an owner-or-admin policy and dropped three
+policy names — **but not that one.** Permissive policies OR together, so if it survived, every
+user's `code` ↔ `user_id` pair is readable by any client. I could not verify against the live
+database (Supabase MCP is unauthorised this session), so this is **a thing to check, not a finding
+I am asserting.** It does not affect the server path above, which uses service_role.
+
+## 🚢 Release-side work, for the record
+
+- **`types.ts`** gained `referrals` and `referral_redemptions`, written from the migrations because
+  the MCP cannot regenerate. The existing `supabase-schema-contract` guard is what caught them
+  missing — it worked exactly as intended.
+- **Copyright asserted properly.** `LICENSE` added (proprietary), `package.json` gained
+  `"license": "UNLICENSED"` (`private: true` was already set), and the site footer was missing the
+  **`©` symbol entirely**. `docs/legal/intellectual-property.md` carries the CIPC filing guidance.
+  ⚠️ **One item there is time-sensitive against gate 2:** a registered design under the Designs Act
+  has a six-month novelty grace period that **starts at first public release**. Taking the site
+  live starts that clock. Decide before the DNS cutover, not after.
+- **Loop 4 armed** — `trig_01GZkAWJCuPdpx49s8ifdpXG`, weekly, writes `docs/marketing/idea-log.md`.
+  It **proposes and never writes code**, because loop 1 fired this morning, ran 100 minutes, and
+  finished FAILED having produced nothing. Recorded in `automation-loops.md` with the evidence.
+- **`docs/marketing/growth-strategy-2026.md`** — five Hormozi references read in full via Eden. The
+  finding reorders the marketing plan: a done-for-you service business is **supply constrained**,
+  so recruiting is the primary marketing function, and it is entirely blocked on **LRA s200A**.
+
+**Verification:** 111 files, 1166 tests passing. `tsc --noEmit` clean. `vite build` clean.
+`security:scan` 4/4. Five defects planted against the new wiring guards and each confirmed failing
+before restore.
