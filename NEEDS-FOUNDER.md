@@ -286,6 +286,34 @@ Dropped mid-session. Until it is reconnected in your claude.ai connector setting
 read the production database directly, so "is this migration applied?" can only be answered from
 CI output rather than from the database.
 
+### 12. ⛔ The bug bounty page is a set of promises, not a design — your call
+
+The handoff ships a full bug-bounty page and the port plan listed it. **I did not build it**, and
+the reason is not effort.
+
+It commits Xoot, in public, to:
+
+| Promise | What it binds |
+|---|---|
+| **Safe harbour** | A legal undertaking not to pursue researchers acting in good faith |
+| **"2 days to a human reply"** | A response SLA to strangers who will screenshot it |
+| **"Within 10 business days"** to assess | Another SLA |
+| **"90 days to publish, or sooner"** | A disclosure window you must then honour |
+| A **rewards** section with amounts | Money, per report, unbudgeted |
+
+There is no security team, no staffed hours and no budget line behind any of it. This is the same
+unbacked-promise problem as the on-time turnover — with a harsher audience, because a researcher
+held to a broken safe-harbour promise publishes that fact.
+
+**Three ways forward, and the middle one is what I would do:**
+
+1. Publish as designed — only once the SLAs and the reward budget are real.
+2. **Publish a `security.txt` and a disclosure address, with no timings and no rewards.** Honest,
+   standard, costs nothing, and gets researchers reporting to you rather than to the internet.
+3. Ship nothing until after launch.
+
+⛔ Blocked on your decision, not on code.
+
 ### 11. The merch waitlist, if you want one
 
 The design pairs the merch section with an email capture whose only destination is React state — it

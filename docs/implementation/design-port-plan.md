@@ -156,6 +156,7 @@ Straight ports, `design/handoff-2026-09-03/xoot/site/*.jsx` → `src/components/
 |---|---|
 | ⛔ **Colour restyles — do not do these** | See below |
 | ⛔ `Reviews` | Stays out. Zero completed bookings; placeholder reviews are a fabricated testimonial |
+| ⛔ `BugBounty` | **Not built.** Safe harbour, two response SLAs, a disclosure window and reward amounts — commitments with no team, hours or budget behind them. Founder decision, `NEEDS-FOUNDER.md` item 12 |
 
 ### ⛔ The remaining "restyle" is a trap, and it is already half-done
 
