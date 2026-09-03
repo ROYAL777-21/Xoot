@@ -2661,6 +2661,71 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_redemptions: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          credit_cents: number | null
+          id: string
+          referred_user_id: string
+          referrer_user_id: string
+          rewarded: boolean
+          rewarded_at: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          credit_cents?: number | null
+          id?: string
+          referred_user_id: string
+          referrer_user_id: string
+          rewarded?: boolean
+          rewarded_at?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          credit_cents?: number | null
+          id?: string
+          referred_user_id?: string
+          referrer_user_id?: string
+          rewarded?: boolean
+          rewarded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_redemptions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          total_invited: number
+          total_rewarded: number
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          total_invited?: number
+          total_rewarded?: number
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          total_invited?: number
+          total_rewarded?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       recurring_schedules: {
         Row: {
           cadence_days: number

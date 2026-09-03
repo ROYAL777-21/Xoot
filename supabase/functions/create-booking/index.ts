@@ -14,6 +14,12 @@ import {
   writeAuditLog,
 } from "../_shared/action-utils.ts";
 import {
+  REFERRAL_FUNDING,
+  checkReferral,
+  referralCreditCents,
+  type ReferralRecord,
+} from "../_shared/referrals.ts";
+import {
   ADD_ON_CENTS,
   BOOKING_COVER_CENTS,
   BOOKING_FEE_CENTS,
@@ -119,6 +125,61 @@ const getAvailableXootCred = async (supa: any, userId: string) => {
   }, 0);
 };
 
+/**
+ * ZD-036 — read the three facts `checkReferral` needs, and nothing else.
+ *
+ * Split out so the decision stays in `_shared/referrals.ts` and this function only supplies
+ * inputs. The rule is testable in isolation precisely because it does no I/O.
+ *
+ * ⚠️ `referrals` and `referral_redemptions` have existed since 2026-04-23 with a signup trigger
+ * already issuing every user a code. These are reads against the real columns — `user_id` on the
+ * code, `referred_user_id` on the redemption — not against a table this session invented.
+ */
+const readReferralFacts = async (supa: any, code: string, buyerId: string) => {
+  const { data: row } = await supa
+    .from("referrals")
+    .select("code,user_id")
+    .eq("code", code)
+    .maybeSingle();
+
+  const record: ReferralRecord | null = row?.user_id
+    ? { code: row.code, userId: row.user_id }
+    : null;
+
+  /*
+   * The buyer's own history. Both reads are about the person, never the code — the burn is
+   * per person, not per code.
+   *
+   * ⚠️ **Counts `completed_at`, not `status = 'completed'`, and the difference is a real bug.**
+   * `booking_state_machine.ts` allows `completed → rated`, so a booking the customer has since
+   * reviewed no longer reads as `completed`. Filtering on the status would have let anyone
+   * whose first booking was rated collect a second first-booking discount — and it would have
+   * done so silently, because the query returns 0 either way and 0 is the eligible answer.
+   *
+   * `bookings.completed_at` is set once and never cleared (added by
+   * `20260602000000_booking_state_constraint`, which also backfilled it from
+   * `job_completed_at`), so it survives every later transition.
+   */
+  const { count: completedBookings } = await supa
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", buyerId)
+    .not("completed_at", "is", null);
+
+  const { data: priorRedemption } = await supa
+    .from("referral_redemptions")
+    .select("id")
+    .eq("referred_user_id", buyerId)
+    .maybeSingle();
+
+  return {
+    record,
+    buyerId,
+    buyerCompletedBookings: completedBookings ?? 0,
+    buyerHasRedeemed: Boolean(priorRedemption),
+  };
+};
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
   const preflight = handlePreflight(req, origin);
@@ -145,6 +206,9 @@ Deno.serve(async (req) => {
     const addOns = cleanArray(body.addOns ?? body.extras, 12, 80);
     const bookingCoverOptIn = body.bookingCoverOptIn ?? body.booking_cover_opt_in;
     const requestedRedemption = Math.max(0, toNumber(body.xootcredRedemption ?? body.xootcred_redemption, 0));
+    // Uppercased because the codes the signup trigger issues are uppercase and a customer
+    // retyping one from a WhatsApp message will not be.
+    const referralCode = (cleanText(body.referralCode ?? body.referral_code, 40) || "").toUpperCase();
 
     if (!services.has(serviceType)) return fail("unsupported service", origin, 400);
     if (HOME_SIZE_HOURS[homeSizeId] === undefined) return fail("unsupported home size", origin, 400);
@@ -270,7 +334,45 @@ Deno.serve(async (req) => {
     const serviceFee = toRands(serviceFeeCents);
     const bookingCover = toRands(bookingCoverCents);
     const carePlusDiscount = Math.round(subtotal * carePlusDiscountRate);
-    const grossTotal = subtotal + highDemandPremium + serviceFee + bookingCover - carePlusDiscount;
+
+    /*
+     * ZD-036 — the referral credit.
+     *
+     * ⛔ **A refused code fails the booking rather than quietly charging full price.**
+     *
+     * That looks harsh and is the conservative choice. A customer who typed a code is expecting
+     * a total that includes it. Creating the booking at the undiscounted price and mentioning
+     * the refusal in the response body is the "shown one price, charged another" defect this
+     * repo has already shipped three times, and under CPA s41 the displayed price is the price.
+     * Refusing lets them remove the code and rebook knowing what they will pay; there is no
+     * outcome here where they are charged something they did not see.
+     *
+     * ⚠️ **Capped at the work, never the fee or the cover** — `referralCreditCents` enforces it.
+     * The booking fee is Xoot's own charge for arranging the booking and the cover is a premium
+     * passed to an underwriter; a referral eating either funds a discount out of someone else's
+     * money. So the cap is `discountedBaseCents + addOnsCents`, which is why this sits here
+     * rather than being subtracted from `grossTotal` after the fee was added.
+     *
+     * ⚠️ **Funded from commission, never from Xooter pay.** `REFERRAL_FUNDING` states it as a
+     * constant, and nothing below touches `commission_rate_bps` — a Xooter's rate is struck from
+     * their own rank and must not move because a customer arrived through someone else's link.
+     */
+    let referralVerdict = null as ReturnType<typeof checkReferral> | null;
+    let referralCredit = 0;
+    if (referralCode) {
+      referralVerdict = checkReferral(await readReferralFacts(supa, referralCode, user.id));
+      if (!referralVerdict.ok) return fail(`referral code ${referralVerdict.reason}`, origin, 409);
+      referralCredit = Math.round(
+        referralCreditCents({
+          verdict: referralVerdict,
+          baseCents: discountedBaseCents,
+          addOnsCents,
+        }) / 100,
+      );
+    }
+
+    const grossTotal =
+      subtotal + highDemandPremium + serviceFee + bookingCover - carePlusDiscount - referralCredit;
 
     let xootcredRedemption = 0;
     if (requestedRedemption > 0) {
@@ -356,7 +458,7 @@ Deno.serve(async (req) => {
           xooter_id: xooterId,
           frequency,
           provider_required: "PayFast credentials not connected",
-          breakdown: { subtotal, highDemandPremium, serviceFee, bookingCover, carePlusDiscount, xootcredRedemption, serviceLength: serviceLengthId },
+          breakdown: { subtotal, highDemandPremium, serviceFee, bookingCover, carePlusDiscount, referralCredit, xootcredRedemption, serviceLength: serviceLengthId },
         },
       }).select("id,provider_reference").single();
       if (paymentError || !payment?.id) throw new Error("payment record insert failed");
@@ -388,6 +490,57 @@ Deno.serve(async (req) => {
       });
     }
 
+    /*
+     * Burn the code, and record what it actually took off.
+     *
+     * ⚠️ `referred_user_id` is UNIQUE, so this insert IS the burn — a concurrent second booking
+     * with the same code loses the race at the database rather than at a check, which is the
+     * whole reason ZD-036 was not given a `burned_at` flag of its own.
+     *
+     * `credit_cents` is stored rather than recomputed from today's constant, because
+     * REFERRAL_REWARD_CENTS is recorded as provisional and a redemption from before a change
+     * must still report the number that was really applied.
+     *
+     * ⚠️ Not thrown on. The booking and its payment record exist by this point; failing here
+     * would leave the customer with a booking already priced with the credit and no ledger row
+     * for it — worse than a missing ledger row on its own. The review queue is where a
+     * discrepancy gets a human, and the audit log below carries the amount either way.
+     */
+    if (referralVerdict?.ok && referralCredit > 0 && bookingIds[0]) {
+      const { error: redemptionError } = await supa.from("referral_redemptions").insert({
+        referrer_user_id: referralVerdict.referrerUserId,
+        referred_user_id: user.id,
+        booking_id: bookingIds[0],
+        credit_cents: referralCredit * 100,
+        /*
+         * ⚠️ `rewarded` stays false, and that is the correct state, not an omission.
+         *
+         * Two different amounts of money are involved and only one of them moves here. This
+         * row records the REFEREE's discount, which is applied to the booking above. The
+         * REFERRER's own R100 is a separate payout that must not be made until the booking
+         * actually completes — otherwise a referral pair can book, take the referrer's reward,
+         * and cancel. `rewarded` / `rewarded_at` are how a later payout job finds the
+         * redemptions it still owes, so setting them true here would mark a debt as settled
+         * before anything was paid.
+         *
+         * There is no such job yet. That is filed, not forgotten — see
+         * docs/implementation/design-port-plan.md.
+         */
+      });
+      if (redemptionError) {
+        console.error("referral redemption insert failed", redemptionError);
+        await insertReviewQueue(supa, {
+          queueType: "payment",
+          subjectTable: "bookings",
+          subjectId: bookingIds[0],
+          userId: user.id,
+          bookingId: bookingIds[0],
+          priority: "high",
+          summary: `Referral credit of R${referralCredit} was applied to the booking but the redemption ledger row failed to write`,
+        });
+      }
+    }
+
     if (xootcredRedemption > 0 && bookingIds[0]) {
       await supa.from("xootcred_ledger").insert({
         user_id: user.id,
@@ -417,7 +570,7 @@ Deno.serve(async (req) => {
       action: "create_booking",
       targetTable: "bookings",
       targetId: bookingIds[0] ?? null,
-      changes: { booking_ids: bookingIds, payment_record_ids: paymentRecordIds, amount_due: amountDue, status: "draft", service_length: serviceLengthId },
+      changes: { booking_ids: bookingIds, payment_record_ids: paymentRecordIds, amount_due: amountDue, status: "draft", service_length: serviceLengthId, referral_credit: referralCredit, referral_funding: referralCredit > 0 ? REFERRAL_FUNDING : null },
       reason: "Client created a server-priced booking draft",
       ipAddress: req.headers.get("x-forwarded-for"),
     });
@@ -435,7 +588,7 @@ Deno.serve(async (req) => {
       payment_session_url: bookingIds[0] ? `/app/bookings/${bookingIds[0]}?payment=pending` : null,
       amount_due: amountDue,
       status: "draft",
-      breakdown: { subtotal, high_demand_premium: highDemandPremium, service_fee: serviceFee, booking_cover: bookingCover, care_plus_discount: carePlusDiscount, xootcred_redemption: xootcredRedemption, service_length: serviceLengthId },
+      breakdown: { subtotal, high_demand_premium: highDemandPremium, service_fee: serviceFee, booking_cover: bookingCover, care_plus_discount: carePlusDiscount, referral_credit: referralCredit, xootcred_redemption: xootcredRedemption, service_length: serviceLengthId },
     }, origin);
   } catch (error) {
     console.error("create-booking failed", error);

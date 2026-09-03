@@ -82,7 +82,18 @@ export const Footer = () => (
         ))}
       </div>
       <div className="flex flex-col justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground md:flex-row">
-        <p>{new Date().getFullYear()} Xoot. All rights reserved.</p>
+        {/*
+          The © symbol was missing here, which is the one thing a copyright line exists to carry.
+          South African copyright subsists automatically under the Copyright Act 98 of 1978 whether
+          or not it is marked — but the mark is what puts a copier on notice, and an unmarked work
+          lets an infringer argue innocent infringement in mitigation of damages.
+
+          Says "Xoot", not "Xoot (Pty) Ltd". The registered entity name is not recorded anywhere in
+          this repository, and naming a company form that may not exist would be a false statement
+          about the company on every page. docs/legal/intellectual-property.md asks the founder for
+          it; the moment it is known this line takes it.
+        */}
+        <p>© {new Date().getFullYear()} Xoot. All rights reserved.</p>
         <p>Made with care, for every home.</p>
       </div>
     </div>

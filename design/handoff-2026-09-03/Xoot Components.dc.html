@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="./xoot/styles.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--xoot-surface-page);font-family:var(--xoot-font-core);color:var(--xoot-text-primary);-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4,p{margin:0}
+  a{color:var(--xoot-violet-700);text-decoration:none;border-bottom:1px solid var(--xoot-violet-200)}
+  a:hover{color:var(--xoot-violet-800);border-bottom-color:var(--xoot-violet-400)}
+</style>
+</helmet>
+<div style="max-width:1180px;margin:0 auto;padding:64px 40px 120px;display:flex;flex-direction:column;gap:72px">
+
+  <header style="display:flex;flex-direction:column;gap:18px">
+    <span style="font-family:var(--xoot-font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--xoot-text-muted)">Xoot · component library</span>
+    <h1 style="font-family:var(--xoot-font-display);font-size:58px;line-height:1.02;letter-spacing:-.02em;max-width:17ch">Every component, live and pressable.</h1>
+    <p style="max-width:68ch;font-size:var(--xoot-body-lg);line-height:1.55;color:var(--xoot-text-secondary);text-wrap:pretty">Mounted from the design system's own compiled source — not redrawn. Core, feedback, forms, navigation, calendar, overlay, onboarding, brand, patterns and the native surfaces.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px">
+      <a href="./Xoot Foundations.dc.html" style="padding:11px 18px;border-radius:999px;background:var(--xoot-neutral-0);color:var(--xoot-ink-900);font-size:13px;font-weight:700;box-shadow:var(--xoot-shadow-2);border:none">Foundations →</a>
+      <a href="./Xoot App.dc.html" style="padding:11px 18px;border-radius:999px;background:var(--xoot-ink-900);color:#fff;font-size:13px;font-weight:700;border:none">The app →</a>
+      <a href="./Xoot Website.dc.html" style="padding:11px 18px;border-radius:999px;background:var(--xoot-neutral-0);color:var(--xoot-ink-900);font-size:13px;font-weight:700;box-shadow:var(--xoot-shadow-2);border:none">The website →</a>
+    </div>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:34px;line-height:1.1;letter-spacing:-.018em">Core</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">The commit button is ink, the Tiimo way — violet carries selection and brand emphasis. Care+ is the only other filled variant, and it belongs to membership surfaces alone.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px;padding:26px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Button — variants</span>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" from="./xoot/ds-bundle.js" variant="primary" icon="calendar-check" hint-size="150px,48px">Book now</x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" variant="soft" hint-size="130px,48px">Reschedule</x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" variant="outline" hint-size="110px,48px">Details</x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" variant="ghost" hint-size="90px,48px">Skip</x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" variant="cream" hint-size="110px,48px">On dark</x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" variant="careplus" icon="heart-plus" hint-size="150px,48px">Join Care+</x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" variant="primary" dc-props="{{ loadingBtn }}" hint-size="120px,48px">Saving</x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" variant="primary" dc-props="{{ disabledBtn }}" hint-size="140px,48px">Unavailable</x-import>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" size="sm" variant="outline" hint-size="90px,36px">Small</x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" size="md" variant="outline" hint-size="105px,48px">Medium</x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Button" size="lg" variant="primary" iconRight="arrow-right" hint-size="140px,56px">Large</x-import>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">IconButton</span>
+          <div style="display:flex;gap:10px;align-items:center">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.IconButton" icon="arrow-left" label="Back" variant="surface" hint-size="44px,44px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.IconButton" icon="bell" label="Alerts" hint-size="44px,44px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.IconButton" icon="plus" label="Add" variant="brand" hint-size="44px,44px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.IconButton" icon="ellipsis" label="More" variant="ink" hint-size="44px,44px"></x-import>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Avatar</span>
+          <div style="display:flex;gap:12px;align-items:center">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Avatar" name="Caroline Mpofu" size="sm" hint-size="34px,34px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Avatar" name="Thandi Nkosi" size="md" badge="verified" hint-size="44px,44px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Avatar" name="Sipho D" size="lg" ring="var(--xoot-violet-300)" badge="verified" hint-size="56px,56px"></x-import>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Logo · Wordmark · mark</span>
+          <div style="display:flex;gap:18px;align-items:center">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Logo" variant="icon" dc-props="{{ logo44 }}" hint-size="44px,44px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Wordmark" dc-props="{{ mark30 }}" hint-size="90px,30px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Wordmark" tone="brand" dc-props="{{ mark22 }}" hint-size="70px,22px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.LogoScript" dc-props="{{ mark30 }}" hint-size="80px,34px"></x-import>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Card — tones</span>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <sc-for list="{{ cardTones }}" as="t" hint-placeholder-count="5">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Card" tone="{{ t.tone }}" pad="md" hint-size="100%,88px">
+              <span style="font-family:var(--xoot-font-display);font-size:20px">{{ t.tone }}</span>
+            </x-import>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:34px;line-height:1.1;letter-spacing:-.018em">Feedback</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Tones come from the tint set, so nothing shouts. Ratings are the only place a number is allowed to be the loudest thing in a row.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px;padding:26px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Badge</span>
+        <div style="display:flex;flex-wrap:wrap;gap:9px;align-items:center">
+          <sc-for list="{{ badges }}" as="b" hint-placeholder-count="9">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Badge" tone="{{ b.tone }}" icon="{{ b.icon }}" hint-size="96px,26px">{{ b.label }}</x-import>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Tag — tappable filters</span>
+        <div style="display:flex;flex-wrap:wrap;gap:9px;align-items:center">
+          <sc-for list="{{ tags }}" as="t" hint-placeholder-count="4">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Tag" icon="{{ t.icon }}" dc-props="{{ t.props }}" hint-size="110px,34px">{{ t.label }}</x-import>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:11px;flex:1;min-width:260px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Progress</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Progress" dc-props="{{ prog1 }}" hint-size="100%,10px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Progress" tone="xp" label="Xoot Points" dc-props="{{ prog2 }}" hint-size="100%,30px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Progress" tone="streak" size="sm" dc-props="{{ prog3 }}" hint-size="100%,8px"></x-import>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:11px;flex:0 0 250px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Rating</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Rating" dc-props="{{ rating1 }}" hint-size="150px,20px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Rating" dc-props="{{ rating2 }}" hint-size="150px,26px"></x-import>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start">
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Toast" tone="success" title="You're all set" description="Nomsa arrives Wednesday at 08:00." dc-props="{{ toastProps }}" hint-size="100%,74px"></x-import>
+        <div style="display:flex;flex-direction:column;gap:9px;flex:0 0 200px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Tooltip — hover it</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Tooltip" content="Covers accidental damage up to R10 000" hint-size="140px,28px">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Badge" tone="info" icon="shield-check" hint-size="120px,26px">XootCover</x-import>
+          </x-import>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:34px;line-height:1.1;letter-spacing:-.018em">Forms</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Thumb-first: nothing smaller than a 48px target, keyboard-key radii on steppers and day keys, and hints written like a person talking.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px;padding:26px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Input" label="Where do you need us?" icon="map-pin" defaultValue="14 Fredman Dr, Sandton" dc-props="{{ flex1 }}" hint-size="46%,70px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Select" label="How often?" dc-props="{{ selectProps }}" hint-size="46%,70px"></x-import>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Input" label="Custom tip" suffix="ZAR" defaultValue="3" error="Pop in an amount above R5" dc-props="{{ flex1 }}" hint-size="46%,92px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Input" label="Anything a Xooter should know?" icon="pencil" placeholder="The gate code is 1408" hint="Totally optional — most people skip this." dc-props="{{ flex1 }}" hint-size="46%,92px"></x-import>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:9px;flex:1;min-width:280px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Checkbox — boxed</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Checkbox" label="Laundry & ironing" description="Adds about an hour" dc-props="{{ cbA }}" hint-size="100%,68px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Checkbox" label="Inside the fridge" description="Adds 30 minutes" dc-props="{{ cbB }}" hint-size="100%,68px"></x-import>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;flex:1;min-width:280px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">RadioGroup</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.RadioGroup" dc-props="{{ radioProps }}" hint-size="100%,150px"></x-import>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:11px;flex:1;min-width:280px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Switch</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Switch" label="Use XootCred" description="R120 available" dc-props="{{ swA }}" hint-size="100%,46px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Switch" size="sm" label="Same Xooter every time" dc-props="{{ swB }}" hint-size="100%,34px"></x-import>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:11px;flex:1;min-width:280px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Stepper</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Stepper" label="Bedrooms" sublabel="Common areas included" dc-props="{{ stepA }}" hint-size="100%,60px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Stepper" label="Hours" suffix="hrs" dc-props="{{ stepB }}" hint-size="100%,60px"></x-import>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">DayKeys</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.DayKeys" dc-props="{{ dayKeys }}" hint-size="100%,58px"></x-import>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:34px;line-height:1.1;letter-spacing:-.018em">Navigation &amp; calendar</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">The tab bar is the only glass in the app — a control layer floating over content, blurred and saturated, with a rim highlight. The calendar home is built from four small pieces.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px;padding:26px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+      <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:9px;flex:1;min-width:240px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Tabs — segment</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Tabs" dc-props="{{ tabsA }}" hint-size="100%,42px"></x-import>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;flex:1;min-width:240px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Tabs — underline</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Tabs" variant="underline" dc-props="{{ tabsB }}" hint-size="100%,42px"></x-import>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">TabBar — floating glass over content</span>
+        <div style="position:relative;padding:28px 20px 20px;border-radius:26px;background:var(--xoot-grad-dawn)">
+          <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px">
+            <span style="height:11px;width:62%;border-radius:4px;background:rgba(255,255,255,.7)"></span>
+            <span style="height:11px;width:44%;border-radius:4px;background:rgba(255,255,255,.55)"></span>
+          </div>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.TabBar" dc-props="{{ tabBar }}" hint-size="100%,68px"></x-import>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">DayStrip · WidgetCard · SectionLabel · TaskRow · EmptyRow</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.DayStrip" dc-props="{{ dayStrip }}" hint-size="100%,74px"></x-import>
+        <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.WidgetCard" tint="mist" icon="map-pin" title="Add your home address" dc-props="{{ noop }}" hint-size="200px,120px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.WidgetCard" tint="lilac" icon="repeat" title="Set up a weekly visit" dc-props="{{ noop }}" hint-size="200px,120px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.WidgetCard" tint="moss" icon="wallet" title="Top up XootCred" dc-props="{{ noop }}" hint-size="200px,120px"></x-import>
+        </div>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.SectionLabel" slot="morning" dc-props="{{ secMorning }}" hint-size="100%,34px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.TaskRow" service="regular" title="Regular clean" meta="08:00 · 4 hrs · Nomsa M." dc-props="{{ taskA }}" hint-size="100%,72px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.SectionLabel" slot="afternoon" dc-props="{{ secAfternoon }}" hint-size="100%,34px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.TaskRow" service="laundry" title="Laundry &amp; ironing" meta="13:00 · 1 hr" dc-props="{{ taskB }}" hint-size="100%,72px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.EmptyRow" label="Anytime today works" dc-props="{{ noop }}" hint-size="100%,58px"></x-import>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:34px;line-height:1.1;letter-spacing:-.018em">Overlay &amp; onboarding</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Sheets use the real UIKit curve at 500ms — shortening it is the commonest way a web sheet gives itself away. Onboarding is the one place Xoot goes dark.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px">
+      <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:9px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Sheet</span>
+        <div style="position:relative;height:280px;border-radius:26px;overflow:hidden;background:var(--xoot-grad-dusk)">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Sheet" title="What do you need done?" dc-props="{{ openTrue }}" hint-size="100%,200px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.ServiceRow" icon="brush-cleaning" accent="var(--xoot-svc-indoor)" title="Indoor cleaning" description="3,5–10 hours, top to bottom" meta="from R332" hint-size="100%,66px"></x-import>
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.ServiceRow" icon="trees" accent="var(--xoot-svc-outdoor)" title="Outdoor services" description="Garden, windows, patio" meta="from R380" hint-size="100%,66px"></x-import>
+            </div>
+          </x-import>
+        </div>
+      </div>
+      <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:9px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Dialog</span>
+        <div style="position:relative;height:280px;border-radius:26px;overflow:hidden;background:var(--xoot-grad-dusk)">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.Dialog" title="Cancel Wednesday's visit?" description="Nomsa is already scheduled. You could move it instead — no charge either way." dc-props="{{ dialogProps }}" hint-size="100%,180px"></x-import>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px">
+      <div style="flex:1;min-width:320px;padding:24px;border-radius:26px;background:var(--xoot-surface-onboard);display:flex;flex-direction:column;gap:14px">
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.StepHeader" dc-props="{{ stepHeader }}" hint-size="100%,30px"></x-import>
+        <h3 style="font-family:var(--xoot-font-display);font-size:27px;line-height:1.12;color:#fff">What would help most right now?</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ choices }}" as="c" hint-placeholder-count="3">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.ChoiceRow" label="{{ c.label }}" description="{{ c.description }}" dc-props="{{ c.props }}" hint-size="100%,62px"></x-import>
+          </sc-for>
+        </div>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.TrialTimeline" dc-props="{{ trial }}" hint-size="100%,180px"></x-import>
+      </div>
+      <div style="flex:1;min-width:320px;display:flex;flex-direction:column;gap:16px">
+        <div style="padding:22px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2);display:flex;flex-direction:column;gap:12px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">ChipGrid</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.ChipGrid" theme="light" dc-props="{{ chipGrid }}" hint-size="100%,120px"></x-import>
+        </div>
+        <div style="padding:22px;border-radius:26px;background:var(--xoot-surface-page-alt);display:flex;flex-direction:column;gap:12px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">TestimonialStack</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.TestimonialStack" dc-props="{{ testimonials }}" hint-size="100%,150px"></x-import>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:34px;line-height:1.1;letter-spacing:-.018em">Brand</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">The flower, the orbs, the cast and the paper elements — washi tape, a taped frame, a hand-written note. This is where the product stops looking like a booking utility.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:24px;padding:26px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+      <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Bloom — the progress meter</span>
+          <div style="display:flex;gap:14px;align-items:flex-end">
+            <sc-for list="{{ blooms }}" as="b" hint-placeholder-count="5">
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.Bloom" palette="{{ b.palette }}" motion="sway" dc-props="{{ b.props }}" hint-size="64px,64px"></x-import>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Orb</span>
+          <div style="display:flex;gap:12px;align-items:flex-end">
+            <sc-for list="{{ orbs }}" as="o" hint-placeholder-count="6">
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.Orb" palette="{{ o.palette }}" motion="breathe" dc-props="{{ o.props }}" hint-size="46px,46px"></x-import>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Flower · FlowerBed</span>
+          <div style="display:flex;gap:10px;align-items:flex-end">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Flower" palette="petal" dc-props="{{ flower1 }}" hint-size="40px,72px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Flower" palette="lilac" dc-props="{{ flower2 }}" hint-size="40px,60px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.Flower" palette="honey" dc-props="{{ flower3 }}" hint-size="40px,84px"></x-import>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Mascot — moods</span>
+          <div style="display:flex;gap:12px;align-items:flex-end">
+            <sc-for list="{{ moods }}" as="m" hint-placeholder-count="5">
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.Mascot" mood="{{ m.mood }}" motion="breathe" dc-props="{{ m.props }}" hint-size="54px,54px"></x-import>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">XootCharacter — the cast</span>
+          <div style="display:flex;gap:6px;align-items:flex-end">
+            <sc-for list="{{ cast }}" as="c" hint-placeholder-count="4">
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.XootCharacter" scene="{{ c.scene }}" garment="{{ c.garment }}" dc-props="{{ c.props }}" hint-size="104px,104px"></x-import>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:center">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">MemberBadge · CarePlusMark · MemberRing</span>
+          <div style="display:flex;gap:14px;align-items:center">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.MemberBadge" hint-size="96px,28px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.MemberBadge" variant="pill" tone="soft" size="sm" hint-size="80px,24px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.CarePlusMark" dc-props="{{ mark22 }}" hint-size="22px,22px"></x-import>
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.MemberRing" dc-props="{{ openTrue }}" hint-size="52px,52px">
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.Avatar" name="Nadia Khan" size="md" hint-size="44px,44px"></x-import>
+            </x-import>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">ServiceIcon — one per service</span>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <sc-for list="{{ services }}" as="s" hint-placeholder-count="7">
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.ServiceIcon" service="{{ s.key }}" motion="still" dc-props="{{ s.props }}" hint-size="44px,44px"></x-import>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start">
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.GiftCard" tint="petal" title="A clean, on me" note="Enjoy the quiet." dc-props="{{ giftCard }}" hint-size="230px,190px"></x-import>
+        <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:280px">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.HandNote" tape="mist" dc-props="{{ handNote }}" hint-size="100%,80px">you don't need to be home — we'll text before we arrive</x-import>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <sc-for list="{{ tapes }}" as="t" hint-placeholder-count="5">
+              <x-import component-from-global-scope="CareDesignSystem_ed2067.WashiTape" colour="{{ t.colour }}" dc-props="{{ t.props }}" hint-size="72px,26px"></x-import>
+            </sc-for>
+          </div>
+          <div style="font-family:var(--xoot-font-display);font-size:26px;line-height:1.2">
+            Built on <x-import component-from-global-scope="CareDesignSystem_ed2067.Squiggled" colour="var(--xoot-careplus-500)" dc-props="{{ squiggle }}" hint-size="70px,30px">trust</x-import>
+          </div>
+        </div>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.TapedFrame" caption="Nomsa, Sandton" dc-props="{{ tapedFrame }}" hint-size="200px,190px">
+          <div style="height:130px;background:var(--xoot-grad-dawn)"></div>
+        </x-import>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start">
+        <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:12px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">SurpriseCard · SurpriseChip</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.SurpriseCard" title="A free add-on, on us" detail="Inside the fridge, next visit." expires="Ends Sunday" tint="honey" icon="gift" dc-props="{{ surprise }}" hint-size="100%,150px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.SurpriseChip" detail="R30 credit" tint="violet" icon="sparkles" dc-props="{{ noop }}" hint-size="180px,38px"></x-import>
+        </div>
+        <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:12px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">GlassPanel over a tinted ground</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.GlassBackdrop" tone="dusk" hint-size="100%,160px">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.GlassPanel" pad="lg" radius="lg" hint-size="100%,110px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-family:var(--xoot-font-display);font-size:20px">Glass is the control layer</span>
+                <span style="font-size:13px;line-height:1.5;color:var(--xoot-text-secondary)">Blur and saturate, always a rim highlight, one saturated element per panel.</span>
+              </div>
+            </x-import>
+          </x-import>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:center">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">LogoAssemble</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.LogoAssemble" dc-props="{{ logoAssemble }}" hint-size="140px,80px"></x-import>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:260px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">TextFlippingBoard · EncryptedText</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.TextFlippingBoard" text="REPORT A BUG" dc-props="{{ flipBoard }}" hint-size="100%,60px"></x-import>
+          <span style="font-family:var(--xoot-font-display);font-size:24px">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.EncryptedText" text="End-to-end encrypted" dc-props="{{ encrypted }}" hint-size="240px,30px"></x-import>
+          </span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;flex:0 0 200px">
+          <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">ConciergeEntry</span>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.ConciergeEntry" hint="When is my Xooter arriving?" dc-props="{{ noop }}" hint-size="100%,60px"></x-import>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:34px;line-height:1.1;letter-spacing:-.018em">Patterns</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Whole jobs rather than widgets: rebooking, crew sizing, the access window, the payment sheet, the safety hold. Each one carries a rule the product cannot get wrong.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px">
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">BookBar · RebookBar</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.BookBar" dc-props="{{ bookBar }}" hint-size="100%,80px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.RebookBar" xooter="Nomsa" service="regular" serviceLabel="Regular cleaning" when="Wednesday 08:00" dc-props="{{ noop }}" hint-size="100%,110px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">RecurringToggle · PauseControl</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.RecurringToggle" frequency="Every week" dc-props="{{ recurring }}" hint-size="100%,110px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.PauseControl" nextVisit="Wednesday 08:00" dc-props="{{ pause }}" hint-size="100%,90px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">XooterCard · XooterStack</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.XooterCard" dc-props="{{ xooterCard }}" hint-size="100%,110px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">BookingSummary</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.BookingSummary" headline="Wednesday, 08:00" totalLabel="Total" note="Paid up front. Your Xooter is paid after the visit is verified." dc-props="{{ summary }}" hint-size="100%,240px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">CrewPicker</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.CrewPicker" startTime="08:00" currency="R" dc-props="{{ crew }}" hint-size="100%,200px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">MapCanvas — live tracking</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.MapCanvas" dc-props="{{ mapCanvas }}" hint-size="100%,190px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">SensitiveAccess — the access window</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.SensitiveAccess" state="open" opensIn="38 min" closesIn="4 h 12 min" dc-props="{{ access }}" hint-size="100%,230px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">WinCard · SOSButton</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.WinCard" title="R30 is already yours" detail="Welcome credit, on your first visit." icon="gift" cta="Use it" dc-props="{{ winCard }}" hint-size="100%,130px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.SOSButton" label="Hold for help" hint-size="100%,54px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">GiftCreditPanel</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.GiftCreditPanel" dc-props="{{ giftCredit }}" hint-size="100%,240px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">QuietUpdate · CalendarSync</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.QuietUpdate" headline="You pay once, up front." detail="We hold your payment, then pay your Xooter after the visit is verified." dc-props="{{ quiet }}" hint-size="100%,120px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.CalendarSync" place="14 Fredman Dr" dc-props="{{ noop }}" hint-size="100%,200px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">CameraCard · FileUpload</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.CameraCard" title="Show us the spot" hint="One photo is enough — it goes to your Xooter only." dc-props="{{ camera }}" hint-size="100%,200px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.FileUpload" dc-props="{{ upload }}" hint-size="100%,200px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">PaymentFlow</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.PaymentFlow" service="Regular cleaning" when="Wednesday 08:00" xooter="Nomsa" dc-props="{{ payment }}" hint-size="100%,300px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">StoreBadges · DownloadBand</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.StoreBadges" dc-props="{{ storeBadges }}" hint-size="100%,60px"></x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;padding:22px;border-radius:24px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Paywall — Care+, the one red surface</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.Paywall" period="month" footnote="Cancel any time from You › Care+." dc-props="{{ paywall }}" hint-size="100%,420px"></x-import>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <h2 style="font-family:var(--xoot-font-display);font-size:34px;line-height:1.1;letter-spacing:-.018em">Native surfaces</h2>
+      <p style="max-width:68ch;font-size:var(--xoot-body);line-height:1.55;color:var(--xoot-text-secondary)">Live Activity, the Dynamic Island, home-screen widgets and Siri phrases — the parts of the product that live outside the app.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px;padding:26px;border-radius:26px;background:linear-gradient(170deg,#2A2440 0%,#161320 52%,#0D0B14 100%)">
+      <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:rgba(255,255,255,.5)">LiveActivity · DynamicIsland — on the lock screen</span>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center">
+        <sc-for list="{{ islands }}" as="i" hint-placeholder-count="3">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.DynamicIsland" status="{{ i.status }}" xooterName="Nomsa" dc-props="{{ i.props }}" hint-size="200px,38px"></x-import>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <sc-for list="{{ activities }}" as="a" hint-placeholder-count="2">
+          <div style="flex:1;min-width:320px">
+            <x-import component-from-global-scope="CareDesignSystem_ed2067.LiveActivity" status="{{ a.status }}" xooterName="Nomsa" nextStep="{{ a.nextStep }}" dc-props="{{ a.props }}" hint-size="100%,150px"></x-import>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;padding:26px;border-radius:26px;background:var(--xoot-surface-card);box-shadow:var(--xoot-shadow-2)">
+      <div style="display:flex;flex-direction:column;gap:11px;flex:1;min-width:300px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">Home-screen widgets</span>
+        <div style="display:flex;flex-wrap:wrap;gap:14px">
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.NextBookingWidget" when="Wed 08:00" service="regular" xooter="Nomsa" status="Confirmed" size="medium" hint-size="240px,110px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.XootCredWidget" expires="30 Sep" size="small" dc-props="{{ credWidget }}" hint-size="110px,110px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.HomeReadinessWidget" prompt="Two rooms left" size="small" dc-props="{{ readyWidget }}" hint-size="110px,110px"></x-import>
+          <x-import component-from-global-scope="CareDesignSystem_ed2067.FavouriteXooterWidget" name="Nomsa M." size="small" dc-props="{{ favWidget }}" hint-size="110px,110px"></x-import>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;flex:1;min-width:300px">
+        <span style="font-family:var(--xoot-font-mono);font-size:10.5px;color:var(--xoot-text-muted)">SiriShortcuts · ConciergePrompt</span>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.SiriShortcuts" dc-props="{{ siri }}" hint-size="100%,200px"></x-import>
+        <x-import component-from-global-scope="CareDesignSystem_ed2067.ConciergePrompt" dc-props="{{ conciergePrompt }}" hint-size="100%,120px"></x-import>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = {
+    tag: 'deep', cbA: true, cbB: false, swA: true, swB: false,
+    beds: 2, hours: 4, days: [3, 5], tabsA: 'upcoming', tabsB: 'overview', tab: 'today',
+    day: '2026-07-29', doneA: false, doneB: false, openM: true, openA: true,
+    goals: ['clean'], rooms: ['kitchen', 'bathroom'], ti: 1, freq: 'weekly',
+    crew: 1, rating: 4, tick: 0,
+  };
+
+  componentDidMount() {
+    let n = 0;
+    this.timer = window.setInterval(() => {
+      n += 1;
+      if (window.CareDesignSystem_ed2067 || n > 40) { window.clearInterval(this.timer); this.timer = null; }
+      this.setState({ tick: n });
+    }, 150);
+  }
+  componentWillUnmount() { if (this.timer) window.clearInterval(this.timer); }
+
+  set = (k, v) => this.setState({ [k]: v });
+  toggleIn = (k, v) => this.setState((s) => ({ [k]: s[k].indexOf(v) === -1 ? s[k].concat([v]) : s[k].filter((x) => x !== v) }));
+
+  renderVals() {
+    const s = this.state;
+    const ns = window.CareDesignSystem_ed2067 || {};
+    const D = window.XootData;
+    const noop = () => {};
+
+    return {
+      noop: { onDismiss: noop, onAdd: noop, onClick: noop, onOpen: noop, onConnect: noop, onDisconnect: noop, onClaim: noop, onRebook: noop, onChange: noop },
+      openTrue: { open: true },
+      flex1: { style: { flex: 1, minWidth: 260 } },
+      loadingBtn: { loading: true },
+      disabledBtn: { disabled: true },
+      logo44: { size: 44 },
+      mark30: { size: 30 },
+      mark22: { size: 22 },
+
+      cardTones: ['surface', 'dawn', 'dusk', 'flat', 'ink'].map((t) => ({ tone: t })),
+
+      badges: [
+        { tone: 'brand', icon: 'sparkles', label: 'New' },
+        { tone: 'success', icon: 'badge-check', label: 'Vetted' },
+        { tone: 'warning', icon: 'clock', label: 'Starts soon' },
+        { tone: 'danger', icon: 'circle-alert', label: 'Payment failed' },
+        { tone: 'info', icon: 'info', label: 'Insured' },
+        { tone: 'neutral', icon: 'repeat', label: '412 visits' },
+        { tone: 'streak', icon: 'flame', label: '12 weeks' },
+        { tone: 'lilac', icon: 'trophy', label: 'Level 4' },
+      ],
+      tags: [['deep', 'Deep clean', 'sparkles'], ['weekends', 'Weekends', 'calendar'], ['pets', 'Pet friendly', 'dog'], ['same', 'Same Xooter', 'repeat']].map((t) => ({
+        label: t[1], icon: t[2],
+        props: { selected: s.tag === t[0], onClick: () => this.set('tag', t[0]) },
+      })),
+      prog1: { segments: 5, value: 3 },
+      prog2: { value: 340, max: 500, showValue: true },
+      prog3: { value: 72 },
+      rating1: { value: 4.9, count: 218 },
+      rating2: { editable: true, value: s.rating, size: 26, showNumber: false, onChange: (v) => this.set('rating', v) },
+      toastProps: { onDismiss: noop, style: { flex: 1, minWidth: 280 } },
+
+      selectProps: { options: ['Weekly', 'Every 2 weeks', 'Monthly', 'Just once'], style: { flex: 1, minWidth: 260 } },
+      cbA: { boxed: true, checked: s.cbA, onChange: () => this.set('cbA', !s.cbA) },
+      cbB: { boxed: true, checked: s.cbB, onChange: () => this.set('cbB', !s.cbB) },
+      radioProps: {
+        value: s.freq, onChange: (v) => this.set('freq', v),
+        options: [
+          { value: 'weekly', label: 'Every week', description: 'Save up to 15%' },
+          { value: 'fortnightly', label: 'Every second week' },
+          { value: 'once', label: 'Just this once' },
+        ],
+      },
+      swA: { checked: s.swA, onChange: () => this.set('swA', !s.swA) },
+      swB: { checked: s.swB, onChange: () => this.set('swB', !s.swB) },
+      stepA: { value: s.beds, onChange: (v) => this.set('beds', v), max: 8 },
+      stepB: { value: s.hours, onChange: (v) => this.set('hours', v), min: 2, max: 10 },
+      dayKeys: { value: s.days, onChange: (v) => this.set('days', v), disabled: [0] },
+
+      tabsA: { value: s.tabsA, onChange: (v) => this.set('tabsA', v), items: [{ value: 'upcoming', label: 'Upcoming' }, { value: 'past', label: 'Past' }] },
+      tabsB: { value: s.tabsB, onChange: (v) => this.set('tabsB', v), items: [{ value: 'overview', label: 'Overview' }, { value: 'reviews', label: 'Reviews' }, { value: 'photos', label: 'Photos' }] },
+      tabBar: {
+        value: s.tab, onChange: (v) => this.set('tab', v), onBook: noop,
+        items: [
+          { value: 'today', label: 'Today', icon: 'house' },
+          { value: 'visits', label: 'Visits', icon: 'list-checks', dot: true },
+          { value: 'rewards', label: 'Rewards', icon: 'trophy' },
+          { value: 'you', label: 'You', icon: 'circle-user' },
+        ],
+      },
+      dayStrip: {
+        value: s.day, onChange: (v) => this.set('day', v),
+        days: ['2026-07-26', '2026-07-27', '2026-07-28', '2026-07-29', '2026-07-30', '2026-07-31', '2026-08-01'].map((d, i) => ({ date: d, dot: [1, 3, 5].indexOf(i) !== -1 })),
+      },
+      secMorning: { count: 1, open: s.openM, onToggle: () => this.set('openM', !s.openM), onAdd: noop },
+      secAfternoon: { count: 2, open: s.openA, onToggle: () => this.set('openA', !s.openA), onAdd: noop },
+      taskA: { progress: { done: 1, total: 3 }, done: s.doneA, onToggle: () => this.set('doneA', !s.doneA), onExpand: noop },
+      taskB: { done: s.doneB, onToggle: () => this.set('doneB', !s.doneB) },
+
+      dialogProps: {
+        open: true,
+        footer: ns.Button ? [
+          React.createElement(ns.Button, { key: 'k', variant: 'outline', block: true }, 'Keep it'),
+          React.createElement(ns.Button, { key: 'c', variant: 'primary', block: true }, 'Cancel visit'),
+        ] : null,
+      },
+      stepHeader: { step: 2, total: 6, onSkip: noop },
+      choices: [['clean', 'Keep my home clean', 'Weekly or once-off'], ['hands', 'Have an extra pair of hands', ''], ['time', 'Get my weekends back', '']].map((c) => ({
+        label: c[1], description: c[2],
+        props: { multi: true, selected: s.goals.indexOf(c[0]) !== -1, onClick: () => this.toggleIn('goals', c[0]) },
+      })),
+      trial: {
+        steps: [
+          { icon: 'lock', when: 'Today', detail: 'Book your first visit. Nothing is charged yet.' },
+          { icon: 'bell', when: 'Tuesday', detail: "We'll confirm Nomsa and send a reminder." },
+          { icon: 'star', when: 'Wednesday', detail: 'Your home gets its four hours. Pay after.' },
+        ],
+      },
+      chipGrid: {
+        value: s.rooms, onChange: (v) => this.set('rooms', v),
+        options: [
+          { value: 'kitchen', label: 'Kitchen', icon: 'spray-can' },
+          { value: 'bathroom', label: 'Bathrooms', icon: 'droplet' },
+          { value: 'laundry', label: 'Laundry', icon: 'washing-machine' },
+          { value: 'windows', label: 'Windows', icon: 'wind' },
+          { value: 'fridge', label: 'Inside fridge', icon: 'sparkles' },
+        ],
+      },
+      testimonials: {
+        index: s.ti, onIndexChange: (i) => this.set('ti', i),
+        items: [
+          { quote: 'I stopped dreading Sunday nights.', name: 'Thandi M.' },
+          { quote: 'Same Xooter every week. She knows the house now.', name: 'Sipho D.' },
+          { quote: 'Booking took ninety seconds flat.', name: 'Ruan V.' },
+        ],
+      },
+
+      blooms: ['mist', 'sage', 'lilac', 'petal', 'red'].map((p, i) => ({ palette: p, props: { size: 56 + i * 6, delay: i * 120 } })),
+      orbs: ['violet', 'teal', 'blush', 'honey', 'pearl', 'heart'].map((p, i) => ({ palette: p, props: { size: 46, delay: i * 90 } })),
+      flower1: { height: 74, lean: -4 },
+      flower2: { height: 58, lean: 6 },
+      flower3: { height: 88, lean: 0 },
+      moods: ['calm', 'happy', 'celebrate', 'thinking', 'wink'].map((m, i) => ({ mood: m, props: { size: 54, delay: i * 110 } })),
+      cast: [['customer', 'violet'], ['customer', 'cream'], ['xooter', 'violet'], ['xooter', 'black']].map((c, i) => ({
+        scene: c[0], garment: c[1], props: { castIndex: i, size: 104, delay: i * 260 },
+      })),
+      services: ['regular', 'express', 'office', 'airbnb', 'moving', 'laundry', 'lux'].map((k, i) => ({ key: k, props: { size: 44, delay: i * 60 } })),
+      giftCard: { width: 230, height: 190, from: 'Nadia' },
+      handNote: { rotate: -1.2, width: '100%' },
+      tapes: ['blush', 'mist', 'honey', 'sage', 'petal'].map((c, i) => ({ colour: c, props: { width: 72, height: 26, rotate: -3 + i * 1.5, seed: i + 2 } })),
+      squiggle: { offset: -2, seed: 3 },
+      tapedFrame: { rotate: -1.5, width: 200, seed: 4 },
+      surprise: { onClaim: noop, onDismiss: noop, value: 'Free', opened: true },
+      logoAssemble: { width: 130, loop: true, duration: 2600 },
+      flipBoard: { duration: 2.4 },
+      encrypted: { revealDelayMs: 900, flipDelayMs: 40 },
+
+      bookBar: { credit: 30, onBook: noop, services: ['regular', 'express', 'laundry', 'office'] },
+      recurring: { on: true, onChange: noop, saving: 42, newTotal: 238, currentTotal: 280 },
+      pause: { paused: false, onSkip: noop, onPause: noop, onResume: noop },
+      xooterCard: D && D.pros ? Object.assign({}, D.pros[0]) : { name: 'Nomsa Mahlangu', rating: 4.9 },
+      summary: {
+        facts: [
+          { label: 'Service', value: 'Regular cleaning' },
+          { label: 'Place', value: '3 bed · 2 bath, Sandton' },
+          { label: 'Xooter', value: 'Nomsa M.' },
+        ],
+        lines: [{ label: '4 hours', amount: 250 }, { label: 'Laundry & ironing', amount: 30 }, { label: 'Booking fee', amount: 39 }],
+        total: 319,
+      },
+      crew: { value: s.crew, onChange: (v) => this.set('crew', v), soloHours: 8, soloPrice: 376, maxCrew: 3, deadline: null, onDeadlineChange: noop },
+      mapCanvas: { progressPct: 62, height: 180, showRoute: true, badge: true },
+      access: { fields: [{ label: 'Gate code', value: '1408#' }, { label: 'Alarm', value: '2277' }, { label: 'Entry', value: 'Side gate, key under the pot' }] },
+      winCard: { amount: 30, onCta: noop, claimed: false },
+      giftCredit: {
+        xootCred: 120, onUse: noop, onGift: noop,
+        gifts: [{ id: 'g1', from: 'Nadia K.', note: 'Enjoy the quiet.', original: 380, remaining: 380, expires: '30 Sep' }],
+      },
+      quiet: { channels: ['inapp', 'email'] },
+      camera: { onCapture: noop, onClose: noop, aspect: 1.4 },
+      upload: { documents: ns.XOOTER_DOCUMENTS || [{ key: 'id', label: 'ID or passport', hint: 'Both sides', icon: 'user' }], onChange: noop },
+      payment: { total: 319, giftApplied: 0, credApplied: 30, isMember: false, onPaid: noop, onBack: noop },
+      storeBadges: { showQr: false, align: 'flex-start' },
+      paywall: {
+        price: 99, trialDays: 14, visitsLastMonth: 4, onJoin: noop, onDismiss: noop,
+        perks: [
+          { icon: 'ticket-percent', title: 'No booking fee, ever', detail: 'The R39 fee comes off every visit you book.' },
+          { icon: 'wallet', title: 'R30 add-on credit to start', detail: 'A once-off welcome credit.' },
+          { icon: 'repeat', title: 'Your Xooter, held for you', detail: 'The same person week after week.' },
+          { icon: 'zap', title: 'First pick of slots', detail: 'Saturday mornings open two days early.' },
+        ],
+      },
+
+      islands: [
+        { status: 'enroute', props: { etaMinutes: 12 } },
+        { status: 'arrived', props: {} },
+        { status: 'in_progress', props: { expanded: true } },
+      ],
+      activities: [
+        { status: 'enroute', nextStep: 'Guest-ready clean', props: { etaMinutes: 12 } },
+        { status: 'in_progress', nextStep: 'Kitchen, then bathrooms', props: {} },
+      ],
+      credWidget: { available: 120, pending: 30 },
+      readyWidget: { score: 72, memory: 8, memoryTotal: 12 },
+      favWidget: { visits: 14 },
+      siri: {
+        added: ['Book a cleaner'], onAdd: noop,
+        phrases: ns.XOOT_PHRASES && ns.XOOT_PHRASES.length ? ns.XOOT_PHRASES : [
+          { phrase: 'Book a cleaner', icon: 'brush-cleaning', opens: 'Booking' },
+          { phrase: 'Where is my Xooter?', icon: 'map-pin', opens: 'Tracking' },
+          { phrase: 'How much credit do I have?', icon: 'wallet', opens: 'XootCred' },
+        ],
+      },
+      conciergePrompt: { onAsk: noop, suggestions: ['When is my Xooter arriving?', 'Move Wednesday to Thursday', 'How much credit do I have?'] },
+    };
+  }
+}
+</script>
+</body>
+</html>

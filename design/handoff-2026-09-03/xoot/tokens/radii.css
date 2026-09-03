@@ -1,0 +1,17 @@
+:root{
+  /* Xoot is generously rounded. Nothing structural is squarer than 14px. */
+  --xoot-radius-xs:10px;     /* inline chips, tiny tiles */
+  --xoot-radius-sm:14px;     /* inputs, list rows */
+  --xoot-radius-md:20px;     /* cards, task rows, service tiles */
+  --xoot-radius-lg:26px;     /* sheets, widget cards, hero panels */
+  --xoot-radius-xl:34px;     /* onboarding panels, full-bleed cards */
+  --xoot-radius-key:16px;    /* the "keyboard key" radius — steppers, day keys, keypad */
+  --xoot-radius-pill:999px;  /* buttons, tab bar, section labels, avatars, badges */
+
+  /* Borders. Hairlines are warm-grey; the dashed variant marks empty slots. */
+  --xoot-border-hair:1px;
+  --xoot-border-thick:1.5px;
+  --xoot-border-color:var(--xoot-neutral-200);
+  --xoot-border-color-strong:var(--xoot-neutral-300);
+  --xoot-border-dashed:1.5px dashed var(--xoot-neutral-300);
+}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<!-- ── A note on what is deliberately NOT preloaded ───────────────────────────
+     Two preload hints were tried here and both measured worse, so neither survives:
+
+     · The three variable TTFs (~1MB) are font-display:swap, so text paints in a fallback
+       immediately and nothing waits on them. Raising their priority starved the scripts that DO
+       block render — DOMContentLoaded went from 3.3s to 10.5s.
+     · ds-bundle.js (1.1MB) looked like the obvious candidate, but the DC runtime resolves modules
+       with fetch(), which does not reliably claim a `rel=preload as=script` entry. Both requests
+       went to the network: the same megabyte, twice.
+
+     The wins that did hold are elsewhere — one flattened stylesheet instead of an eleven-deep
+     @import chain, and a 154KB WebP hero instead of a 5.8MB PNG. -->
+<link rel="stylesheet" href="./xoot/styles.css">
+<style>
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  /* The page background was --xoot-onboard-900, a near-black carried over from the onboarding
+     screens. Every section below it renders on light surfaces, so the top of the page opened on
+     a black strip that matched nothing — and the back-link inside it inherited inverse ink.
+     One background, the same one the rest of the site uses. */
+  html,body{background:var(--xoot-surface-page)}
+  body{margin:0;font-family:var(--xoot-font-core);color:var(--xoot-text-primary);-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4,p,ul,li{margin:0}
+  a{color:var(--xoot-violet-700);text-decoration:none}
+  a:hover{color:var(--xoot-violet-800)}
+  /* The dock is fixed to the bottom on every viewport, so whatever is LAST on the page needs room
+     to clear it. That is the footer, not main — padding on main just pushed the footer up under
+     the dock instead of out from under it. */
+  footer{padding-bottom:clamp(96px,14vw,132px) !important}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column">
+  <!-- No site nav. This page is reached from one footer link and read start to finish; a full
+       marketing navbar here invites the reader back to the shop mid-policy. A back-link and the
+       page's own dock are the whole chrome. -->
+  <div style="max-width:1180px;width:100%;margin:0 auto;padding:clamp(18px,2.6vw,26px) clamp(16px,4vw,40px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <a href="./Xoot%20Website.dc.html" style="display:inline-flex;align-items:center;gap:9px;flex:0 0 auto;color:var(--xoot-text-secondary)">
+      <x-import component-from-global-scope="CareDesignSystem_ed2067.Logo" from="./xoot/ds-bundle.js ./xoot/app/ns.js ./xoot/app/data.js ./xoot/quote.js ./xoot/rwd.js ./xoot/site/SiteBody.jsx ./xoot/site/SiteFoot.jsx ./xoot/site/BugBounty.jsx" size="24" hint-size="72px,24px"></x-import>
+      <!-- nowrap because the label's own box computes to display:flex, which collapses its
+           max-content contribution toward min-content and wraps "← Back / to Xoot" with hundreds
+           of spare pixels beside it. This is the page's only persistent nav now. -->
+      <span style="font-size:var(--xoot-body-sm);font-weight:700;white-space:nowrap">← Back to Xoot</span>
+    </a>
+    <a href="./Xoot%20Legal.dc.html" style="flex:0 0 auto;font-size:var(--xoot-body-sm);font-weight:700;white-space:nowrap;color:var(--xoot-text-secondary)">Legal centre →</a>
+  </div>
+  <x-import component-from-global-scope="BugBountyPage" from="./xoot/ds-bundle.js ./xoot/app/ns.js ./xoot/app/data.js ./xoot/quote.js ./xoot/rwd.js ./xoot/site/SiteBody.jsx ./xoot/site/SiteFoot.jsx ./xoot/site/BugBounty.jsx" hint-size="100%,1400px"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}"></script>
+</body>
+</html>

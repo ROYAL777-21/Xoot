@@ -191,6 +191,42 @@ Do not use:
 
 Show the CTA only when availability is genuine or reasonably likely.
 
+## Crew Bookings
+
+**Decided 2026-09-03 (ZD-035). ⛔ Decided, not yet implemented — the live server still prices the
+old way.**
+
+- A crew **finishes one job sooner**. It is not N separate jobs.
+- Price: `base × crewOverhead[n−1]`, where `crewOverhead = [1, 1.15, 1.25, 1.4]`.
+- Elapsed time: `soloHours × overhead / n`.
+- Maximum crew 4. Caps by size `{small: 2, medium: 3, large: 4}`; by service
+  `{airbnb: 3, office: 4, moving: 4, express: 3, laundry: 1}`.
+- **Laundry is 1 in every size** — machine-bound; a second person cannot shorten a wash cycle.
+
+⚠️ **Until ZD-035 ships, the live charge is the old model** — `base × count`, less 10% at ≥3,
+available only on `airbnb`, `office` and `moving`. A 5.5h Airbnb with 2 Xooters is **R684 live** and
+**R393 under ZD-035**. Both are R62 per labour-hour; they sell different amounts of labour.
+
+⛔ **No surface may quote the ZD-035 number while the server charges the old one.** That is the
+defect this repository has shipped three times.
+
+## Referrals
+
+**Decided 2026-09-03 (ZD-036). ⛔ Decided, not yet implemented.**
+
+- Two-sided, **R100 each**: credit to the referrer, R100 off the referee's **first** booking.
+- Shown as a **named line** on the quote — *"Thandi's invite"*, not "Discount".
+- Funded from **commission, never Xooter pay**.
+- Not combinable with itself: one code per buyer, burned on redemption.
+- Ineligible: the buyer's own code, and any buyer with a completed booking.
+
+⚠️ **Every one of those checks is server-side or it does not exist.** *Referral qualification* is
+already listed below as something the frontend is never authoritative for, and the design's
+`referral.js` implements all of it in the browser.
+
+⚠️ **The amount is provisional.** R100 against a ~R335 first clean is roughly a third off, funded
+by Xoot, justified by a repeat rate that cannot be measured until bookings complete.
+
 ## Financial And Trust Authority
 
 The frontend and agents are never authoritative for:

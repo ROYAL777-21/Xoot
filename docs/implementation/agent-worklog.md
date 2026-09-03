@@ -28,6 +28,157 @@ Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live stat
 
 ---
 
+## 🚢 Release & Infrastructure — 2026-09-03 — the design port, five sections in
+
+Founder supplied a full Claude Design redesign and asked for it built. Bundle committed at
+`design/handoff-2026-09-03/`; plan and sequencing in `docs/implementation/design-port-plan.md`.
+
+**Landed:** the token layer (301 light / 78 dark, feeding web and Expo), then `GapArrow`,
+`PeopleBand`, `Journal`, `Merch` and `TrustMechanisms`. **1121 tests, up from 1102.** Every new
+guard was planted against its own defect and watched fail before being kept.
+
+### ⚠️ The finding worth carrying forward
+
+**Five sections, five sets of claims that did not survive a check.** The handoff is not careless —
+it is written to read well, and it does. But with **zero completed bookings** and no SLA, support
+hours or response time anywhere in `locked-commercial-facts.md`, it promised an on-time turnover, a
+real person answering, authorship by "people who do this work", and questions "customers actually
+ask". All rewritten; the guards are claim guards, because the failure mode is somebody restoring the
+original copy in a later visual pass. It reads better. It is also a promise nobody agreed to keep.
+
+**Founder was shown this pattern and said to proceed with the corrected wording as it stands.**
+
+`TrustMechanisms` is the exception and deserves credit: it volunteers its own limits, including that
+iOS detects screen capture rather than preventing it, and that the access-code encryption is
+deployed but unproven by a code stored and read back — which is `NEEDS-FOUNDER.md`'s own conclusion,
+reached independently.
+
+### 🔒 Two things in your paths, both flagged rather than done
+
+**`NEEDS-FOUNDER.md` §2 said ✅ RESOLVED and it was not.** It told the founder the remaining step
+was to attach the custom domain. The domain is not unattached — GoDaddy is *publishing* on it, so
+the publish must stop first. Corrected in place, original kept, rule 3 flagged.
+
+**Nothing under `src/lib/**-pricing*.ts`, `_shared/pricing.ts` or `create-booking` has been
+touched.** ZD-035's shape is a schema decision and is item 8 in `NEEDS-FOUNDER.md` with both options
+costed. My recommendation is a `booking_assignees` relation, but it is yours.
+
+### One pattern worth knowing before the next section
+
+The repo's `TrustedBy` is **word-for-word identical** to the handoff's. The design was built from
+the current site, so the remaining existing sections are token-layer restyles rather than rewrites.
+Diff before rebuilding anything.
+
+---
+
+## 🔒 FOR CORRECTNESS — the design handoff reprices crews by 74%, and I have not touched it
+
+**2026-09-03. The founder supplied a full Claude Design redesign of the site and app.** Committed as
+reference at `design/handoff-2026-09-03/` (78 files, nothing imported, nothing built). Plan and
+sequencing: `docs/implementation/design-port-plan.md`.
+
+### The good news first, because it is genuinely unusual
+
+**The design's pricing matches `src/lib/xoot-pricing.ts` value for value.** All 14 regular rungs,
+all four other ladders, R39 fee, R30 add-on, R22 cover, R47/h floor from 5.5h, hours-by-size. It
+even independently reaches our own conclusion that R280 is a stale display value resolving to
+R250 + the R30 add-on. Whoever built it had this repo as context and respected the money layer.
+
+### ⚠️ The one that is yours, and it is not a bug in either place
+
+`src/lib/xoot-pricing.ts` and the design both price multiple Xooters, coherently, and **they model
+different products.**
+
+| | Repo (live, parity-pinned) | Design |
+|---|---|---|
+| What 2 Xooters means | Each works the full duration — more labour | They split one job — same labour, done faster |
+| Price | `base × count`, −10% at ≥3 | `base × [1, 1.15, 1.25, 1.4][n-1]` |
+| Allowed on | `airbnb`, `office`, `moving` | those + `express`, `lux`, and **regular** via size caps |
+
+**A 5.5h Airbnb at R342 base with 2 Xooters: R684 today, R393 under the design. 74% apart.** Both
+are R62 per labour-hour — the same number. They differ only in how much labour the customer is
+buying, and it also halves what two Xooters split for that job.
+
+**Founder decided later the same day: the design's model.** Recorded as **ZD-035**, with **ZD-036**
+for the referral. `locked-commercial-facts.md` now carries both under *Crew Bookings* and
+*Referrals*, each marked decided-and-not-implemented.
+
+⛔ **I have still changed nothing in `src/lib/**-pricing*.ts`, `_shared/pricing.ts` or
+`create-booking`** — and the reason changed once I read the writer.
+
+🛑 **ZD-035 is a schema change, not a constant swap.** `create-booking` builds
+`bookingTargets = selectedXooterIds.length ? selectedXooterIds : [null]` and **inserts one
+`bookings` row per Xooter**, each priced as a whole job with its own commission rate. The data model
+*is* the old commercial model. Swapping only the multiplier would emit N rows at 1.15× each — 2.3×
+the intended price for a crew of two, in the under-stating direction against what the customer was
+shown. The plan recommends a `booking_assignees` relation; the alternative keeps a row per Xooter
+and makes every earnings query carry the distinction, which is where this rots.
+
+Everything reading `bookings` as one-Xooter-per-row is in scope: job list, tracking, earnings,
+ratings, replacement, and `xooterPayout`, which runs per row today. **That is your call on shape,
+and I have not started it.**
+
+### 🔴 And one that fails in the direction we do not survive
+
+The design renders a **R100 two-sided referral as a line on the quote** (`xoot/referral.js`). Its
+guards are decent — refuses self-referrals and existing customers, burns the code — and **all of
+them are in the browser.** With no server counterpart the site shows −R100 and `create-booking`
+charges R100 more than displayed. That is the under-stating side of the CPA line.
+
+Third: `serviceFit()` re-prices a booking upward when the property type does not match the service
+chosen. Over-stating, and the reasoning is sound, but it re-prices a customer's explicit choice at
+the last step and needs a server counterpart or it disagrees with the server by construction.
+
+**All three are gated in the port plan behind Phase 3, in the §3a/§3b order, with the reminder that
+every function importing `_shared/pricing.ts` must redeploy or it carries its own frozen copy.**
+
+---
+
+## 📣 Release & Infrastructure — 2026-09-03 — Substack, the loops, and a month of drafts
+
+Extends the entry directly below. Same claim: **`docs/marketing/**` is unheld — take any of it.**
+Nothing under it is imported by runtime code, referenced by a test, or read by a workflow.
+
+**PR #45 merged.** `main` moved `8cb2d0b` → `fc17b74`. Both hosts rebuilt from it.
+
+### ⚠️ What the founder asked for and what was actually possible
+
+Three requests hit a wall that is worth recording, because in each case the wall is a *plan or a
+platform limit* rather than something a session can work around.
+
+| Asked for | Reality |
+|---|---|
+| *"Deploy the updated website"* | **There was nothing to deploy.** `8cb2d0b` already carried the redesign and the corrected claims, and this branch touched zero `src/` files. Both hosts held it already. Merging #45 shipped the workflow and doc changes; the site artefact is byte-identical, and gate 2 is still DNS |
+| *"Use Eden and Claude to orchestrate automations"* | Eden **cannot publish**: scheduling returns **402**, no account connected, `eden_list_schedules` → `[]`. Claude Routines do work. Architecture is now *Claude schedules, Eden measures, a human publishes* — `automation-loops.md` |
+| *"Use the Marketing Studio"* | Free plan refuses to generate. And 20 of its 26 presets are **physical-product** formats — Xoot is a service. Six fit. `marketing-studio-briefs.md` has the paste-ready pack for the moment the plan clears |
+
+⚠️ **I armed a weekly Eden routine and then deleted it**, because a session-created routine stores no
+MCP connectors — it would have woken every Monday with no Eden tools and written nothing. A loop that
+exists and cannot run is the `verify-live-deploy` defect wearing a different hat. It is now documented
+as a founder action via the claude.ai Routines UI, with the prompt inline.
+
+### 🔒 For Correctness — the claim boundary that runs through all of this
+
+**Not one draft in `docs/marketing/drafts/` states a price, and that is deliberate rather than
+stylistic.** `locked-commercial-facts.md` §Current Pricing Conflict is **open**: the document locks
+R280/R325/R400 and `create-booking` still charges R270/R315/R390. Under the CPA the displayed price
+*is* the price, so publishing either figure risks publishing the wrong one.
+
+I verified it by grep rather than by intention — the only two rand amounts anywhere in
+`drafts/` are inside the rules explaining why none may appear.
+
+**This is your call to make, not mine.** If you resolve that conflict, the drafts unlock a whole hook
+family they are currently written around — and `drafts/facebook-groups-replies.md` FBG-03 exists
+specifically to answer "what's a fair rate?" without a number, which stops being necessary the day
+the two agree.
+
+Also yours: every draft is checked against **CPA s41** (no outcome claim, no testimonial — zero
+bookings exist), **CPA s36** (no giveaway mechanic), **LRA s200A** (⛔ nothing recruitment-facing
+publishes at all) and **POPIA**. The reasoning is at the top of `drafts/README.md` in a table with
+sources, so it can be reviewed as a set rather than found post by post.
+
+---
+
 ## 📣 Release & Infrastructure — 2026-09-02 — the marketing layer, claimed under "whoever gets there first"
 
 `docs/marketing/**` is in neither role's paths, so per CLAUDE.md I am saying so here: **I wrote all
@@ -2098,3 +2249,84 @@ July. Keeping a second copy here would restart that. **Read the file, and edit t
 The one thing worth repeating here, because it is a rule rather than a task: a session **never**
 dispatches a production deploy unasked, and `create-staging-twilio-subaccount.mjs` is **never**
 wrapped in a workflow — it prints a secret Twilio shows exactly once, into a retained log.
+
+---
+
+# 🚢 Release — 2026-09-03, late session
+
+## 🔒 Two items for Correctness, and the first is a decision only they can make
+
+### 1. ⛔ ZD-035 crew pricing is built and NOT wired. That is deliberate, and it is yours.
+
+`crewPriceCents` / `CREW_OVERHEAD` exist in **both** `src/lib/xoot-pricing.ts` and
+`supabase/functions/_shared/pricing.ts`, mirrored and parity-pinned. **Neither is called by
+`quote()` or by `create-booking`**, and `src/lib/referral-wiring.test.ts` asserts that absence.
+
+The reason, measured against the live multi-worker model rather than argued:
+
+| crew | live model (N× base, −10% at 3+) | ZD-035 overhead | delta |
+|---|---|---|---|
+| 2 | 2.00× | 1.15× | **−43%** |
+| 3 | 2.70× | 1.25× | **−54%** |
+| 4 | 3.60× | 1.40× | **−61%** |
+
+Wiring it cuts a four-Xooter booking by **61%**. That is a locked commercial fact, and CLAUDE.md
+says those move only through a decision-log entry. I built the ready state and stopped at the line
+where it becomes a pricing decision — **which is Correctness's call, not Release's.**
+
+⚠️ `crew_size` is also left unwritten, and for a subtler reason: under the row-per-Xooter model
+every new `bookings` row **is** a solo job, so stamping a crew size would record a number the price
+does not reflect. The column's default of 1 is already the true answer. The schema is ready; the
+writer changes when the model does.
+
+### 2. ⚠️ I edited `supabase/functions/create-booking/` — your path — and here is why it could not wait
+
+ZD-036 (referral) is additive: it displaces no existing rule, so wiring it is a port rather than a
+decision. Doing it in the same change as the schema is what surfaced **four defects that a unit
+test could not have caught**, all from reading the real database rather than the design:
+
+1. **`referral_redemptions` has no `referral_code` column.** My insert named one. Runtime failure.
+2. **`.eq("status", "completed")` is a check that can never fire.** `booking-state-machine.ts`
+   allows `completed → rated`, so a reviewed booking stops reading as completed — and the query
+   returns 0 either way, with **0 being the *eligible* answer**. Anyone whose first booking was
+   rated could take a second first-booking discount, silently. Now counts `completed_at`.
+3. **`requireAuth` returns a service_role client**, so the code lookup is not blocked by the
+   owner-only RLS `performance_advisor_cleanup` put on `public.referrals`. Confirmed rather than
+   assumed — the feature is entirely dead if that read returns null.
+4. **`rewarded` stays `false` on purpose.** The row records the *referee's* discount; the
+   *referrer's* reward must not be paid until the booking completes, or a pair can book, collect
+   and cancel. ⛔ **No payout job exists yet.** Filed here so it is not mistaken for done.
+
+A refused code returns **409** rather than creating the booking at full price. Harsher, and the
+only outcome where the customer is never charged something they were not shown.
+
+### ⚠️ One thing I did not touch, that is yours to judge
+
+`public.referrals` carries a **`"view by code"` SELECT policy with `USING (true)`** from the
+2026-04-23 migration. `performance_advisor_cleanup` added an owner-or-admin policy and dropped three
+policy names — **but not that one.** Permissive policies OR together, so if it survived, every
+user's `code` ↔ `user_id` pair is readable by any client. I could not verify against the live
+database (Supabase MCP is unauthorised this session), so this is **a thing to check, not a finding
+I am asserting.** It does not affect the server path above, which uses service_role.
+
+## 🚢 Release-side work, for the record
+
+- **`types.ts`** gained `referrals` and `referral_redemptions`, written from the migrations because
+  the MCP cannot regenerate. The existing `supabase-schema-contract` guard is what caught them
+  missing — it worked exactly as intended.
+- **Copyright asserted properly.** `LICENSE` added (proprietary), `package.json` gained
+  `"license": "UNLICENSED"` (`private: true` was already set), and the site footer was missing the
+  **`©` symbol entirely**. `docs/legal/intellectual-property.md` carries the CIPC filing guidance.
+  ⚠️ **One item there is time-sensitive against gate 2:** a registered design under the Designs Act
+  has a six-month novelty grace period that **starts at first public release**. Taking the site
+  live starts that clock. Decide before the DNS cutover, not after.
+- **Loop 4 armed** — `trig_01GZkAWJCuPdpx49s8ifdpXG`, weekly, writes `docs/marketing/idea-log.md`.
+  It **proposes and never writes code**, because loop 1 fired this morning, ran 100 minutes, and
+  finished FAILED having produced nothing. Recorded in `automation-loops.md` with the evidence.
+- **`docs/marketing/growth-strategy-2026.md`** — five Hormozi references read in full via Eden. The
+  finding reorders the marketing plan: a done-for-you service business is **supply constrained**,
+  so recruiting is the primary marketing function, and it is entirely blocked on **LRA s200A**.
+
+**Verification:** 111 files, 1166 tests passing. `tsc --noEmit` clean. `vite build` clean.
+`security:scan` 4/4. Five defects planted against the new wiring guards and each confirmed failing
+before restore.

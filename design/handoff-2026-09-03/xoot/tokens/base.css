@@ -1,0 +1,50 @@
+/* Minimal resets + shared brand keyframes. Consumers get these for free. */
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--xoot-surface-page);color:var(--xoot-text-primary);font-family:var(--xoot-font-core);font-size:var(--xoot-body);font-weight:var(--xoot-weight-body);line-height:var(--xoot-body-lh);-webkit-font-smoothing:antialiased;text-wrap:pretty}
+h1,h2,h3,h4{font-family:var(--xoot-font-display);font-weight:var(--xoot-weight-display);letter-spacing:var(--xoot-track-display);line-height:1.1;margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--xoot-text-link);text-decoration-color:color-mix(in oklch,var(--xoot-text-link) 32%,transparent);text-underline-offset:3px;transition:color var(--xoot-dur-instant) var(--xoot-ease-out)}
+a:hover{color:var(--xoot-text-link-hover);text-decoration-color:currentColor}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:none;box-shadow:var(--xoot-focus-ring)}
+code,kbd,pre{font-family:var(--xoot-font-mono);font-size:.92em;letter-spacing:var(--xoot-track-mono)}
+::selection{background:var(--xoot-violet-100);color:var(--xoot-ink-900)}
+
+/* The ALL-CAPS section label, available as a utility because it recurs everywhere. */
+.xoot-label{font-family:var(--xoot-font-core);font-size:var(--xoot-label);font-weight:var(--xoot-weight-strong);letter-spacing:var(--xoot-track-label);text-transform:uppercase;line-height:1}
+
+@keyframes xoot-bloom{0%{transform:scale(.6) rotate(-10deg);opacity:0}58%{transform:scale(1.06) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes xoot-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes xoot-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes xoot-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes xoot-spin-slow{to{transform:rotate(360deg)}}
+@keyframes xoot-rise{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes xoot-pop{0%{transform:scale(.82)}62%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes xoot-draw{from{stroke-dashoffset:var(--xoot-draw-len,120)}to{stroke-dashoffset:0}}
+/* Kept for the APP, which has no content-visibility equivalent: its screens are all inside one
+   390px frame that never leaves the viewport, so ambient loops there need pausing by hand when
+   a screen is swapped out. The marketing site no longer uses this — `content-visibility: auto`
+   on Section skips offscreen work wholesale, which is both cheaper and more thorough than
+   pausing animations one subtree at a time. */
+[data-xoot-offscreen="true"] *,[data-xoot-offscreen="true"]{animation-play-state:paused!important}
+
+/* Ends on `transform:none`, NOT translateY(0): a zero translate still promotes the element to
+   its own compositing layer, and with fill-mode:both that layer is never released — leaving
+   every animated-in surface rasterising its text blurrily forever. */
+@keyframes xoot-sheet-up{from{transform:translateY(101%)}to{transform:none}}
+@keyframes xoot-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes xoot-appear{from{opacity:0;transform:translateY(var(--xoot-appear-y,10px))}to{opacity:1;transform:none}}
+@keyframes xoot-pulse-ring{0%{box-shadow:0 0 0 0 rgba(230,51,41,.34)}70%{box-shadow:0 0 0 12px rgba(230,51,41,0)}100%{box-shadow:0 0 0 0 rgba(230,51,41,0)}}
+@keyframes xoot-shimmer{from{background-position:-160% 0}to{background-position:260% 0}}
+/* Flowers: stems grow from their base, then sway from the same point; heads nod on a slower cycle. */
+@keyframes xoot-grow{from{transform:scaleY(.04) scaleX(.7);opacity:0}60%{opacity:1}to{transform:scaleY(1) scaleX(1);opacity:1}}
+@keyframes xoot-stem-sway{0%,100%{transform:rotate(-2.2deg)}50%{transform:rotate(2.2deg)}}
+@keyframes xoot-head-nod{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+/* The cursive wordmark writing itself on. */
+@keyframes xoot-write{from{stroke-dashoffset:var(--xoot-write-len,1000)}to{stroke-dashoffset:0}}
+
+/* Per-glyph tab-bar select animations. Each destination moves in its own way. */
+@keyframes xoot-tab-swing{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-9deg) scale(1.1)}62%{transform:rotate(5deg) scale(1.04)}100%{transform:rotate(0) scale(1)}}
+@keyframes xoot-tab-tick{0%{transform:translateX(0) scale(1)}28%{transform:translateX(-2px) scale(1.12)}58%{transform:translateX(1px) scale(1.04)}100%{transform:translateX(0) scale(1)}}
+@keyframes xoot-tab-shine{0%{transform:scale(1) rotate(0);filter:brightness(1)}26%{transform:scale(1.16) rotate(-4deg);filter:brightness(1.25)}55%{transform:scale(1.04) rotate(3deg);filter:brightness(1.1)}100%{transform:scale(1) rotate(0);filter:brightness(1)}}
+@keyframes xoot-tab-blink{0%,100%{transform:scaleY(1)}42%{transform:scaleY(.7)}52%{transform:scaleY(1.06)}}

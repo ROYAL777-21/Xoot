@@ -107,6 +107,25 @@ const serviceMultiplier: Record<string, number> = {
   premium: 1.55,
 };
 
+/**
+ * ZD-036 — the four refusals `checkReferral` can return, in words a customer can act on.
+ *
+ * ⚠️ **The wording matters more than it looks.** The server checks `own_code` BEFORE
+ * `already_used` precisely so a person entering their own burned code is told the honest reason
+ * rather than a misleading one — telling them "already used" sends them to support with the
+ * wrong question. Flattening these four into one "invalid code" message would throw away that
+ * care at the last step.
+ *
+ * ⛔ None of these say the credit is worth a specific amount. The value is server-side only, and
+ * `locked-commercial-facts.md` §Current Pricing Conflict is still open.
+ */
+const REFERRAL_REFUSALS = [
+  { reason: "unknown_code", message: "We do not recognise that referral code. Check the spelling, or remove it to carry on." },
+  { reason: "own_code", message: "That is your own referral code. Share it with someone else — it cannot be used on your own booking." },
+  { reason: "already_used", message: "A referral code has already been used on this account. One per customer." },
+  { reason: "not_a_first_booking", message: "Referral codes apply to a first booking only. Remove the code to carry on." },
+] as const;
+
 const Book = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -134,6 +153,22 @@ const Book = () => {
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const [smartSuggestion, setSmartSuggestion] = useState("");
   const [bookingCoverOptIn, setBookingCoverOptIn] = useState(true);
+  /*
+   * ZD-036 — the referral code, and nothing derived from it.
+   *
+   * ⚠️ This screen deliberately does NOT compute or preview the credit, and that is the design
+   * rather than an omission. `locked-commercial-facts.md` lists "referral qualification" among
+   * the things the frontend is never authoritative for: a screen that can decide its own
+   * eligibility can decide its own discount. `_shared/referrals.ts` has no client mirror for
+   * exactly this reason, unlike every other duplicated money rule in the repo.
+   *
+   * So the total shown on this step EXCLUDES the credit even when the code is valid, and the
+   * customer is charged less than they were shown. Under the CPA that is the safe direction —
+   * over-stating is survivable, under-stating is not — and it is the only arrangement where the
+   * client never states a number the server has not agreed to.
+   */
+  const [referralCode, setReferralCode] = useState("");
+  const [referralError, setReferralError] = useState<string | null>(null);
   const [workerCount, setWorkerCount] = useState(1);
   const [xooters, setXooters] = useState<Xooter[]>([]);
   const [loadingXooters, setLoadingXooters] = useState(false);
@@ -382,14 +417,52 @@ const Book = () => {
         xooterIds: picked.map((z) => z.id),
         addOns: safeBooking.extras,
         bookingCoverOptIn,
+        referralCode: referralCode.trim() || undefined,
       },
     });
 
     if (error) {
-      toast.error(error.message);
+      /*
+       * A refused referral code comes back as a 409 from `create-booking`, which fails the whole
+       * booking rather than quietly charging full price. That is deliberate on the server: a
+       * customer who typed a code expects a total that includes it, and creating the booking
+       * without it is the "shown one price, charged another" defect this repo shipped three
+       * times.
+       *
+       * So the refusal has to land on the field, not in a toast that disappears. The reasons
+       * are the four in `ReferralRefusal`, mapped to something a person can act on.
+       */
+      /*
+       * ⚠️ The reason is in the RESPONSE BODY, not in `error.message`.
+       *
+       * `supabase.functions.invoke` sets `error.message` to a generic "Edge Function returned a
+       * non-2xx status code" for every failure — the body `fail()` sent is only reachable through
+       * `error.context`, which is the raw Response. Matching on `error.message` would have
+       * compiled, passed a type check, and silently never fired, dropping the customer to a
+       * generic toast that tells them nothing.
+       */
+      let serverMessage = error.message ?? "";
+      const context = (error as { context?: Response }).context;
+      if (context && typeof context.json === "function") {
+        try {
+          const payload = await context.clone().json();
+          if (typeof payload?.error === "string") serverMessage = payload.error;
+        } catch {
+          // Body already consumed or not JSON — fall back to error.message below.
+        }
+      }
+      const refusal = REFERRAL_REFUSALS.find((entry) => serverMessage.includes(entry.reason));
+      if (refusal) {
+        setReferralError(refusal.message);
+        toast.error(refusal.message);
+        setSubmitting(false);
+        return;
+      }
+      toast.error(serverMessage || error.message);
       setSubmitting(false);
       return;
     }
+    setReferralError(null);
 
     type BookingResult = {
       booking_ids?: string[];
@@ -664,6 +737,32 @@ const Book = () => {
           </button>
           {photoRequired && <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4 flex items-start gap-3"><ShieldCheck className="h-5 w-5 text-primary mt-0.5" /><p className="text-sm">This service requires before and after completion photos to reduce disputes and verify quality.</p></div>}
           <div className="rounded-2xl bg-muted/40 p-4 text-sm space-y-1"><p><span className="text-muted-foreground">Service:</span> <span className="capitalize font-medium">{active}</span></p><p><span className="text-muted-foreground">Length:</span> {length.label} - {estHours}h reserved</p><p><span className="text-muted-foreground">Date:</span> {new Date(date).toLocaleDateString("en-ZA")} at {time}</p><p><span className="text-muted-foreground">Xooter:</span> {picked.map((z) => z.name).join(", ")}</p></div>
+          <div className="rounded-2xl border border-border bg-muted/40 p-4 space-y-2">
+            <label htmlFor="referral-code" className="text-sm font-semibold">Referral code <span className="font-normal text-muted-foreground">(optional)</span></label>
+            <input
+              id="referral-code"
+              value={referralCode}
+              onChange={(event) => {
+                // Uppercased on entry because the issued codes are uppercase and someone
+                // retyping one from a WhatsApp message will not be. The server uppercases too;
+                // this is so the field shows the customer the form that will actually be sent.
+                setReferralCode(event.target.value.toUpperCase());
+                setReferralError(null);
+              }}
+              maxLength={40}
+              autoComplete="off"
+              spellCheck={false}
+              aria-invalid={referralError ? true : undefined}
+              aria-describedby="referral-code-help"
+              className={`w-full rounded-xl border bg-background px-3 py-2 text-sm uppercase tracking-wide ${referralError ? "border-destructive" : "border-border"}`}
+              placeholder="Enter a friend's code"
+            />
+            <p id="referral-code-help" className="text-xs text-muted-foreground">
+              {referralError
+                ? referralError
+                : "Applied by Xoot when your booking is created. The credit comes off the cleaning, not the booking fee or the cover, so your total here may drop once it is confirmed."}
+            </p>
+          </div>
           <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(2)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={handleBook} disabled={submitting} className="flex-1 rounded-2xl h-12 font-semibold">{submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Confirm booking <ArrowRight className="h-4 w-4 ml-1" /></>}</Button></div>
         </div>
       )}

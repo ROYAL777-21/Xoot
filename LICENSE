@@ -1,0 +1,25 @@
+Copyright © 2026 Xoot. All rights reserved.
+
+PROPRIETARY AND CONFIDENTIAL
+
+This repository and everything in it — source code, database schema and migrations,
+Edge Functions, design tokens, component library, written copy, documentation,
+brand assets and marketing material — is proprietary work. No licence, express or
+implied, is granted to any person to use, copy, modify, merge, publish, distribute,
+sublicense, or sell any part of it.
+
+Copyright subsists automatically under the Copyright Act 98 of 1978 (South Africa)
+from the moment each work is created in material form. There is no copyright
+register to file with in South Africa, and none is required. This file exists to
+state ownership and to remove any argument that the work was released openly
+because a repository carried no licence.
+
+Third-party dependencies listed in package.json are licensed by their own authors
+under their own terms, and nothing above applies to them.
+
+The registered entity name and company registration number are not yet recorded
+here. See docs/legal/intellectual-property.md — once the founder supplies them,
+they replace "Xoot" in the first line of this file, in the site footer, and in the
+mobile app's about screen.
+
+Contact: xoot.co.za

@@ -12,6 +12,11 @@ import { Footer } from "@/components/xoot/Footer";
 import { FeedbackSection } from "@/components/xoot/FeedbackSection";
 import { SEO } from "@/components/SEO";
 import { ServiceAreaMap } from "@/components/xoot/ServiceAreaMap";
+import { GapArrow } from "@/components/xoot/GapArrow";
+import { PeopleBand } from "@/components/xoot/PeopleBand";
+import { Journal } from "@/components/xoot/Journal";
+import { Merch } from "@/components/xoot/Merch";
+import { TrustMechanisms } from "@/components/xoot/TrustMechanisms";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -41,11 +46,21 @@ const Index = () => {
         <TrustedBy />
         <ServiceAreaMap />
         <Services />
+        {/* The three connectors sit where the 2026-09-03 handoff places them, with its own
+            offsets and alternating tilt. They occupy no height, so they change the page's
+            texture without changing its rhythm. */}
+        <GapArrow offset={-58} rotate={-8} />
         <SafetyTrust />
+        <TrustMechanisms />
+        <PeopleBand />
+        <GapArrow offset={-54} rotate={7} colour="var(--xoot-violet-600)" />
         <NearbyWorkers />
         <HowItWorks />
+        <GapArrow offset={-58} rotate={-6} />
         <BecomeXooter />
         <HomeExpansion />
+        <Merch />
+        <Journal />
         <FeedbackSection />
         <CtaBand />
       </main>

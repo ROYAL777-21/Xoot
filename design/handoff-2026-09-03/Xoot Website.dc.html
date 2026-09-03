@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./xoot/session.js"></script>
+    <script src="./xoot/referral.js"></script>
+<script src="./xoot/nudges.js"></script>
+<!-- ── A note on what is deliberately NOT preloaded ───────────────────────────
+     Two preload hints were tried here and both measured worse, so neither survives:
+
+     · The three variable TTFs (~1MB) are font-display:swap, so text paints in a fallback
+       immediately and nothing waits on them. Raising their priority starved the scripts that DO
+       block render — DOMContentLoaded went from 3.3s to 10.5s.
+     · ds-bundle.js (1.1MB) looked like the obvious candidate, but the DC runtime resolves modules
+       with fetch(), which does not reliably claim a `rel=preload as=script` entry. Both requests
+       went to the network: the same megabyte, twice.
+
+     The wins that did hold are elsewhere — one flattened stylesheet instead of an eleven-deep
+     @import chain, and a 154KB WebP hero instead of a 5.8MB PNG. -->
+<link rel="stylesheet" href="./xoot/styles.css">
+<style>
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  /* The page ground is the hero's own top colour, not the neutral page surface. The nav is a
+     floating pill inset 12px from the top, so whatever sits behind it shows as a band above it —
+     against the dawn-gradient hero, a near-white page surface read as a blank strip pasted over
+     the design. */
+  html,body{background:#FCEEDA}
+  body{margin:0;font-family:var(--xoot-font-core);color:var(--xoot-text-primary);-webkit-font-smoothing:antialiased}
+  @keyframes xoot-flip-in{from{opacity:0;filter:blur(10px)}to{opacity:1;filter:blur(0)}}
+  h1,h2,h3,h4,p{margin:0}
+  a{color:var(--xoot-violet-600);text-decoration:none;transition:color 120ms var(--xoot-ease-out)}
+  a:hover{color:var(--xoot-violet-700)}
+  select{color:var(--xoot-text-primary)}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</helmet>
+<x-import component="ReferralWelcome" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ bookProps }}" hint-size="100%,0px"></x-import>
+<x-import component="SiteNav" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ navProps }}" hint-size="100%,76px"></x-import>
+<main style="display:flex;flex-direction:column">
+  <x-import component="BookingHero" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ heroProps }}" hint-size="100%,700px"></x-import>
+  <x-import component="GiftClean" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ giftProps }}" hint-size="100%,700px"></x-import>
+  <x-import component="CarePlusBand" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ joinProps }}" hint-size="100%,640px"></x-import>
+  <x-import component="TrustedBy" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,180px"></x-import>
+  <x-import component="ServiceAreaMap" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,560px"></x-import>
+  <x-import component="Services" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ bookProps }}" hint-size="100%,700px"></x-import>
+  <x-import component="GapArrow" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ arrowA }}" hint-size="100%,90px"></x-import>
+  <x-import component="SafetyTrust" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,620px"></x-import>
+  <x-import component="TrustMechanisms" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ bookProps }}" hint-size="100%,1200px"></x-import>
+  <x-import component="PeopleBand" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,420px"></x-import>
+  <x-import component="GapArrow" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ arrowB }}" hint-size="100%,90px"></x-import>
+  <x-import component="NearbyXooters" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,520px"></x-import>
+  <x-import component="HowItWorks" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,560px"></x-import>
+  <x-import component="GapArrow" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ arrowC }}" hint-size="100%,90px"></x-import>
+  <x-import component="Reviews" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,520px"></x-import>
+  <x-import component="Merch" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,520px"></x-import>
+  <x-import component="BecomeXooter" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ xooterCta }}" hint-size="100%,520px"></x-import>
+  <x-import component="Journal" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ bookProps }}" hint-size="100%,900px"></x-import>
+  <x-import component="ReferSection" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ referProps }}" hint-size="100%,520px"></x-import>
+  <x-import component="HomeExpansion" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,520px"></x-import>
+  <x-import component="FeedbackSection" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,420px"></x-import>
+  <!-- The bug bounty programme lives at Xoot Bug Bounty.dc.html, reachable from the footer
+       only. On the main page it spent a full section explaining vulnerability disclosure to
+       people who came to book a cleaner. -->
+  <x-import component="CtaBand" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ ctaBandProps }}" hint-size="100%,420px"></x-import>
+</main>
+<x-import component="SiteFooter" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" hint-size="100%,480px"></x-import>
+<x-import component="BookingModal" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ bookingModal }}" hint-size="0px,0px"></x-import>
+<x-import component="SiteConcierge" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ conciergeProps }}" hint-size="0px,0px"></x-import>
+<x-import component="XooterOnboarding" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ xooterProps }}" hint-size="0px,0px"></x-import>
+<x-import component="NudgeBanner" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ nudgeProps }}" hint-size="0px,0px"></x-import>
+<x-import component="GiftCheckout" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ giftCheckout }}" hint-size="0px,0px"></x-import>
+<x-import component="SignIn" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/site-bundle.jsx" dc-props="{{ signInModal }}" hint-size="0px,0px"></x-import>
+<sc-if value="{{ planOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closePlanBackdrop }}" style="position:fixed;inset:0;z-index:230;display:grid;place-items:start center;padding:clamp(12px,4vw,40px);background:rgba(20,18,16,.5);overflow-y:auto">
+    <div style="position:relative;width:100%;max-width:760px;padding:clamp(24px,4vw,40px);background:var(--xoot-surface-page);border-radius:var(--xoot-radius-xl);box-shadow:var(--xoot-shadow-5)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--xoot-text-muted)">For businesses and hosts</span>
+          <h2 style="font-family:var(--xoot-font-display);font-size:clamp(26px,3vw,38px);line-height:1.1;letter-spacing:var(--xoot-track-display)">Plan every place at once.</h2>
+        </div>
+        <button type="button" aria-label="Close" onClick="{{ closePlan }}" style="display:grid;place-items:center;width:38px;height:38px;flex:0 0 auto;border:none;border-radius:50%;background:var(--xoot-surface-sunken);cursor:pointer;color:var(--xoot-text-primary);font-size:16px">✕</button>
+      </div>
+      <x-import component-from-global-scope="CareDesignSystem_ed2067.SitePlanner" dc-props="{{ plannerProps }}" hint-size="100%,520px"></x-import>
+    </div>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = { booking: false, signIn: false, plan: false, user: null, gift: null, xooter: false, concierge: false };
+
+  openXooter = () => this.setState({ xooter: true });
+  openConcierge = () => this.setState({ concierge: true });
+
+  /* Identity, membership, credit and documents live in XootSession, not in this component's state.
+     Before that, signing in set a name in React state and nothing else: a refresh signed you out,
+     and a Care+ member who reloaded became a non-member and was quoted the booking fee again. */
+  componentDidMount() {
+    /* Guarded even though session.js now loads in the helmet. The logic class is evaluated with
+       the document and mounts before any x-import chain resolves, so anything it reaches for at
+       mount must either be helmet-loaded or optional — this used to throw seven times a load. */
+    const S = window.XootSession;
+    if (!S) return;
+    this.unsub = S.subscribe(() => this.forceUpdate());
+    if (S.user) this.setState({ user: S.user });
+
+    /* First-touch referral attribution. Runs once, here, because a link shared to WhatsApp lands
+       on this page and the R100 the sender promised has to be armed before the visitor reaches
+       the booking modal. XootRefer refuses self-referrals and existing customers itself. */
+    if (window.XootRefer) window.XootRefer.capture();
+  }
+  componentWillUnmount() { if (this.unsub) this.unsub(); }
+
+  book = () => this.setState({ booking: true });
+
+  renderVals() {
+    const s = this.state;
+    const S = window.XootSession;
+    /* The session is the truth; component state only mirrors it so the nav re-renders. Optional
+       chaining because renderVals runs on the very first paint, which can precede any script. */
+    const user = S && S.user
+      ? Object.assign({}, S.user, {
+          carePlus: S.isMember(),
+          inTrial: S.inTrial(),
+          trialDaysLeft: S.trialDaysLeft(),
+          credit: S.credit,
+        })
+      : null;
+
+    return {
+      navProps: {
+        onBook: this.book,
+        user: user,
+        onSignIn: () => this.setState({ signIn: true }),
+        onSignOut: () => { S.signOut(); this.setState({ user: null }); },
+      },
+      heroProps: { onBook: this.book, onPlan: () => this.setState({ plan: true }), onConcierge: this.openConcierge },
+      bookProps: { onBook: this.book },
+      /* Gifting goes to its own two-step checkout, NOT the booking modal. The sender has already
+         chosen the bundle, the service and the occasion; a booking flow would then ask them for
+         their own address and their own date, neither of which belongs to the gift. Both surfaces
+         price through XootQuote, so there is still one source of truth for the money. */
+      giftProps: { onGift: (sel) => this.setState({ gift: sel }) },
+
+      /* Refer & earn. Signed out it pitches the code; signed in it shows the real one. */
+      /* One object: two dc-props attributes on the same tag means the first is discarded, which
+         is how this band lost its onBook. */
+      ctaBandProps: { onBook: this.book, onConcierge: this.openConcierge },
+
+      referProps: {
+        onBook: this.book,
+        onSignIn: () => this.setState({ signIn: true }),
+      },
+
+      /* "Become a Xooter" and "See training" both land here. The modal decides which stage to
+         open on from what the person has actually completed, rather than always starting at
+         step one — which is why the gate is enforced in one place instead of at each button. */
+      xooterCta: { onJoin: this.openXooter },
+      conciergeCta: { onConcierge: this.openConcierge },
+      conciergeProps: {
+        open: s.concierge,
+        onClose: () => this.setState({ concierge: false }),
+        onBook: () => this.setState({ concierge: false, booking: true }),
+      },
+      xooterProps: {
+        open: s.xooter,
+        onClose: () => this.setState({ xooter: false }),
+        onSignIn: () => this.setState({ signIn: true }),
+      },
+
+      /* Nudges act on the page rather than only informing about it — a notification whose button
+         does not go anywhere is a worse version of no notification. */
+      nudgeProps: {
+        onAction: (n) => {
+          const S = window.XootSession;
+          if (n.action === 'resume_draft' || n.action === 'book') this.setState({ booking: true });
+          else if (n.action === 'manage_careplus') { const el = document.getElementById('careplus'); if (el) window.scrollTo({ top: el.offsetTop - 96, behavior: 'smooth' }); }
+          else if (n.action === 'concierge') { const el = document.getElementById('how'); if (el) window.scrollTo({ top: el.offsetTop - 96, behavior: 'smooth' }); }
+          else if (n.action === 'save_place') this.setState({ booking: true });
+          else if (n.action === 'open_documents') { window.location.href = './Xoot%20App.dc.html'; }
+          S.markSeen(n.id);
+        },
+      },
+      giftCheckout: {
+        open: !!s.gift,
+        gift: s.gift,
+        user: user,
+        onClose: () => this.setState({ gift: null }),
+        onDone: () => this.setState({ gift: null }),
+      },
+      joinProps: { onJoin: this.book },
+      arrowA: { offset: -58, rotate: -8 },
+      arrowB: { offset: -54, rotate: 7, colour: 'var(--xoot-violet-600)' },
+      arrowC: { offset: -58, rotate: -6 },
+      bookingModal: { open: s.booking, onClose: () => this.setState({ booking: false }) },
+      signInModal: {
+        open: s.signIn,
+        onClose: () => this.setState({ signIn: false }),
+        /* Persisted, so a refresh keeps them signed in and keeps their membership. */
+        onSignedIn: (u) => { window.XootSession.signIn(u); this.setState({ user: u, signIn: false }); },
+      },
+      planOpen: s.plan,
+      closePlan: () => this.setState({ plan: false }),
+      closePlanBackdrop: (e) => { if (e.target === e.currentTarget) this.setState({ plan: false }); },
+      /* Submit was an empty function — the planner collected every property, then the button did
+         nothing. A multi-property planner that dead-ends is worse than no planner: the person has
+         already done the work of listing their places. It now carries straight into booking. */
+      plannerProps: {
+        onSubmit: () => { this.setState({ plan: false }); this.book(); },
+        onCancel: () => this.setState({ plan: false }),
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

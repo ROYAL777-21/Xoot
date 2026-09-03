@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#141210;font-family:ui-monospace,monospace;color:#fff}
+</style>
+</helmet>
+<div style="display:flex;gap:18px;padding:18px;align-items:flex-start;overflow-x:auto">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="4">
+    <div style="display:flex;flex-direction:column;gap:8px;flex:0 0 auto">
+      <span style="font-size:11px;letter-spacing:.08em;color:#A29D99">{{ f.label }}</span>
+      <iframe src="{{ f.src }}" title="{{ f.label }}" style="border:1px solid #3C3A38;border-radius:8px;background:#fff;width:{{ f.w }};height:{{ f.h }}"></iframe>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;target&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Xoot Website.dc.html&quot;,&quot;options&quot;:[&quot;Xoot Website.dc.html&quot;,&quot;Xoot App.dc.html&quot;,&quot;Xoot Components.dc.html&quot;,&quot;Xoot Foundations.dc.html&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const src = (this.props.target || 'Xoot Website.dc.html');
+    const url = './' + encodeURIComponent(src).replace(/%2F/g, '/');
+    return {
+      frames: [
+        ['iPhone 390×844', 390, 844],
+        ['Landscape phone 844×390', 844, 390],
+        ['iPad 834×1112', 834, 1112],
+        ['Laptop 1280×800', 1280, 800],
+      ].map((f) => ({ label: f[0], w: f[1] + 'px', h: f[2] + 'px', src: url })),
+    };
+  }
+}
+</script>
+</body>
+</html>

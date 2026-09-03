@@ -166,13 +166,28 @@ Legitimate material, all of it already true and already written down in this rep
 
 ## Format
 
+Three founder channels, and the difference between them is not length — it is **who the reader is
+and what they already know.**
+
 - **X:** one idea. Hook in line one, no throat-clearing, no "🧵". Threads only when the idea
   genuinely needs sequence.
 - **LinkedIn:** the same idea, more context, written for someone who has not read the previous
   post. Not a copy-paste of the X post — same substance, different room.
-- Both get a visual. While Higgsfield credits are unavailable, use a real screenshot, a real
+- **Substack:** *(added 2026-09-02)* one essay a week, 800–1,600 words. The format for material
+  that **loses its point when compressed** — a mechanism, the false conclusions drawn along the
+  way, and the correction. It is the only founder channel that is not rented: delivery is email
+  and does not pass through anyone's ranking model.
+- All three get a visual. While Higgsfield generation is unavailable, use a real screenshot, a real
   terminal output, or a design-kit graphic. **A real screenshot of a real failure outperforms a
   generated image** on this account anyway.
+
+⚠️ **Substack cannot be automated, and this is not a temporary gap.** There is no public posting
+API. Eden indexes Substack for analysis only. Every essay is a manual paste by the founder, which is
+consistent with the approval rule below rather than an exception to it.
+
+⚠️ **An essay is worth more per word than a post and costs more to be wrong in.** Long-form makes a
+false claim *more* persuasive, so the claim rules bind harder here, not more loosely — particularly
+the ban on customer stories while zero bookings exist.
 
 ## "Occasionally controversial"
 

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<!-- ── App-wide singletons ────────────────────────────────────────────────────
+     Session, referral attribution and the nudge rules are stores, not components, and everything
+     downstream reads them. They load HERE rather than in an x-import chain for a specific reason:
+     the DC logic class is evaluated with the document and its componentDidMount runs before any
+     x-import resolves, so anything it reaches for at mount must already exist. When these lived
+     in the chain, `window.XootSession` was undefined at mount and threw.
+
+     All three are IIFE-wrapped, so a double evaluation is harmless. -->
+<script src="./xoot/session.js"></script>
+<script src="./xoot/referral.js"></script>
+<script src="./xoot/nudges.js"></script>
+<!-- ── A note on what is deliberately NOT preloaded ───────────────────────────
+     Two preload hints were tried here and both measured worse, so neither survives:
+
+     · The three variable TTFs (~1MB) are font-display:swap, so text paints in a fallback
+       immediately and nothing waits on them. Raising their priority starved the scripts that DO
+       block render — DOMContentLoaded went from 3.3s to 10.5s.
+     · ds-bundle.js (1.1MB) looked like the obvious candidate, but the DC runtime resolves modules
+       with fetch(), which does not reliably claim a `rel=preload as=script` entry. Both requests
+       went to the network: the same megabyte, twice.
+
+     The wins that did hold are elsewhere — one flattened stylesheet instead of an eleven-deep
+     @import chain, and a 154KB WebP hero instead of a 5.8MB PNG. -->
+<link rel="stylesheet" href="./xoot/styles.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--xoot-neutral-100);font-family:var(--xoot-font-core);color:var(--xoot-text-primary);-webkit-font-smoothing:antialiased}
+  h1,h2,h3,p{margin:0}
+  a{color:var(--xoot-violet-600);text-decoration:none}
+  a:hover{color:var(--xoot-violet-700)}
+  ::-webkit-scrollbar{width:0;height:0}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:24px;padding:34px 24px 60px">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;max-width:660px">
+    <span style="font-family:var(--xoot-font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--xoot-text-muted)">Xoot · alternative UI direction</span>
+    <h1 style="font-family:var(--xoot-font-display);font-size:var(--xoot-display-3);line-height:1.05;letter-spacing:var(--xoot-track-display)">The app, end to end</h1>
+    <p style="font-size:var(--xoot-body);color:var(--xoot-text-secondary);text-wrap:pretty">Customer and Xooter apps running on the real design-system components. Every row, tab and CTA goes somewhere — pick a screen on the right or just tap through.</p>
+  </div>
+
+  <div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;justify-content:center">
+    <div style="display:flex;flex-direction:column;gap:11px;align-items:center">
+      <sc-if value="{{ bare }}" hint-placeholder-val="{{ false }}">
+        <x-import component="{{ screenName }}" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/app-bundle.jsx" dc-props="{{ screenProps }}" hint-size="390px,844px"></x-import>
+      </sc-if>
+      <sc-if value="{{ framed }}" hint-placeholder-val="{{ true }}">
+        <x-import component="Phone" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/app-bundle.jsx" dc-props="{{ phoneProps }}" hint-size="390px,844px">
+          <x-import component="{{ screenName }}" from="./xoot/ds-bundle.js ./xoot/engine-bundle.js ./xoot/app-bundle.jsx" dc-props="{{ screenProps }}" hint-size="100%,100%"></x-import>
+        </x-import>
+      </sc-if>
+      <span style="font-family:var(--xoot-font-mono);font-size:11px;letter-spacing:-.01em;color:var(--xoot-text-muted)">{{ label }}</span>
+    </div>
+
+    <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+      <div style="width:238px;display:flex;flex-direction:column;gap:4px">
+        <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+            <span style="font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--xoot-text-muted)">{{ g.label }}</span>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+                <button type="button" onClick="{{ it.go }}" style="text-align:left;padding:10px 14px;border:none;cursor:pointer;border-radius:var(--xoot-radius-sm);font-family:var(--xoot-font-core);font-size:var(--xoot-body-sm);font-weight:700;letter-spacing:-.01em;box-shadow:var(--xoot-shadow-1);transition:transform 120ms var(--xoot-ease-out);background:{{ it.bg }};color:{{ it.fg }}" style-hover="transform:translateY(-1px)">{{ it.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--xoot-text-muted)">You ›</span>
+          <div style="display:flex;flex-direction:column;gap:2px;max-height:250px;overflow-y:auto">
+            <sc-for list="{{ subItems }}" as="it" hint-placeholder-count="8">
+              <button type="button" onClick="{{ it.go }}" style="text-align:left;padding:8px 12px;border:none;cursor:pointer;border-radius:var(--xoot-radius-xs);font-family:var(--xoot-font-core);font-size:var(--xoot-caption);font-weight:600;background:{{ it.bg }};color:{{ it.fg }}">{{ it.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;today&quot;,&quot;options&quot;:[&quot;onboarding&quot;,&quot;today&quot;,&quot;booking&quot;,&quot;tracking&quot;,&quot;visitslist&quot;,&quot;rewards&quot;,&quot;profile&quot;,&quot;search&quot;,&quot;concierge&quot;,&quot;paywall&quot;,&quot;gift&quot;,&quot;xjoin&quot;,&quot;xhome&quot;,&quot;xdash&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;showRail&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;darkMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;}}">
+const SUBS = {
+  account: ['Your account', 'AccountScreen'],
+  home: ['Place details', 'HomeEditScreen'],
+  cred: ['XootCred', 'CredScreen'],
+  payment: ['Payment methods', 'PaymentScreen'],
+  invoices: ['Receipts', 'InvoicesScreen'],
+  refer: ['Refer & earn', 'ReferScreen'],
+  notifications: ['Notification settings', 'NotificationsScreen'],
+  calendars: ['Connected calendars', 'CalendarScreen'],
+  siri: ['Siri & Concierge', 'SiriScreen'],
+  careplus: ['Care+ membership', 'CarePlusManageScreen'],
+  widgets: ['Widgets', 'WidgetsScreen'],
+  manage: ['Manage more', 'ManageMoreScreen'],
+  cover: ['XootCover', 'CoverScreen'],
+  help: ['Get help', 'HelpScreen'],
+  how: ['How Xoot works', 'HowScreen'],
+  terms: ['Terms & conditions', 'HowScreen'],
+  privacy: ['Privacy', 'PrivacyScreen'],
+};
+
+const NAV = [
+  ['Flow', [['onboarding', 'Onboarding'], ['today', 'Home'], ['booking', 'Book a visit'], ['tracking', 'Live tracking'], ['chat', 'Chat'], ['rate', 'Rate & pay'], ['visit', 'Visit detail']]],
+  ['Header', [['search', 'Search'], ['notifications', 'Notifications'], ['concierge', 'Concierge']]],
+  ['Tabs', [['visitslist', 'Visits'], ['rewards', 'Rewards'], ['profile', 'You']]],
+  ['Care+ & gifting', [['paywall', 'Join · 14-day trial'], ['gift', 'Gift a clean']]],
+  ['Xooter side', [['xjoin', 'Join Xoot'], ['xtrain', 'Training'], ['xhome', 'Work · offer → payout'], ['xdash', 'Dashboard'], ['xearn', 'Earnings'], ['xgrow', 'Badges']]],
+];
+
+const TAB_FOR = { today: 'today', booking: 'today', visitslist: 'visits', rewards: 'rewards', profile: 'you' };
+const BARE = ['onboarding', 'xjoin'];
+const NO_TABBAR = ['booking', 'tracking', 'chat', 'rate', 'visit', 'search', 'notifications', 'concierge', 'gift', 'paywall', 'xtrain', 'xmod', 'xhome', 'xjob', 'xearn', 'xgrow', 'xdash', 'xwork'];
+
+class Component extends DCLogic {
+  state = {
+    view: this.props.startScreen || 'today',
+    sub: null,
+    tab: TAB_FOR[this.props.startScreen] || 'today',
+    job: null,
+    mod: null,
+    accepted: [],
+  };
+
+  componentDidMount() { this.paintTheme(); }
+  componentDidUpdate(prev) { if (prev.darkMode !== this.props.darkMode) this.paintTheme(); }
+  paintTheme() { if (window.XootTheme) window.XootTheme.set(this.props.darkMode ? 'dark' : 'light'); }
+
+  go = (view, extra) => this.setState(Object.assign({ view: view, sub: null, tab: TAB_FOR[view] || this.state.tab }, extra || {}));
+  openSub = (key) => this.setState({ sub: key });
+  closeSub = () => this.setState({ sub: null });
+  book = () => this.go('booking');
+
+  goTab = (t) => this.setState({
+    sub: null, tab: t,
+    view: t === 'visits' ? 'visitslist' : t === 'rewards' ? 'rewards' : t === 'you' ? 'profile' : 'today',
+  });
+
+  screen() {
+    const go = this.go, s = this.state;
+    const back = () => go('today');
+
+    if (s.sub) {
+      const entry = SUBS[s.sub];
+      const props = { onBack: this.closeSub };
+      if (s.sub === 'careplus') { props.onGift = () => go('gift'); props.onCancelled = this.closeSub; }
+      return { name: entry[1], props: props, label: 'You › ' + entry[0] };
+    }
+
+    const V = {
+      onboarding: ['OnboardingFlow', { onDone: () => go('today'), onBook: this.book, onXooter: () => go('xjoin') }, 'Onboarding — skippable'],
+      today: ['TodayScreen', { onOpenVisit: () => go('tracking'), onBook: this.book, onProfile: () => this.goTab('you'), onNotifications: () => go('notifications'), onSearch: () => go('search') }, 'Home'],
+      booking: ['BookingFlow', { onDone: () => go('tracking'), onCancel: back }, 'Booking — five stages'],
+      tracking: ['TrackingScreen', { onBack: back, onChat: () => go('chat'), onRate: () => go('rate') }, 'Live tracking'],
+      chat: ['ChatScreen', { onBack: () => go('tracking') }, 'Chat — guarded'],
+      rate: ['RateScreen', { onDone: back }, 'Rate & tip'],
+      visit: ['VisitScreen', { onBack: back, onRate: () => go('rate') }, 'Visit detail'],
+      visitslist: ['VisitsListScreen', { onOpen: () => go('tracking'), onRebook: this.book, onChat: () => go('chat') }, 'Visits'],
+      rewards: ['RewardsScreen', { onOpen: this.openSub }, 'Rewards'],
+      profile: ['ProfileScreen', { onOpen: (k) => k === 'careplus' ? go('paywall') : k === 'gift' ? go('gift') : this.openSub(k) }, 'You'],
+      search: ['SearchScreen', { onBack: back, onBook: this.book, onOpenVisit: () => go('tracking'), onOpenEntry: (k) => this.setState({ view: 'profile', tab: 'you', sub: k }), onConcierge: () => go('concierge') }, 'Search'],
+      notifications: ['NotificationsFeedScreen', { onBack: back, onOpenVisit: () => go('tracking'), onRate: () => go('rate') }, 'Notifications'],
+      concierge: ['ConciergeScreen', { onBack: back, onNavigate: (k) => k === 'book' ? this.book() : k === 'tracking' ? go('tracking') : this.setState({ view: 'profile', tab: 'you', sub: k }) }, 'Xoot Concierge'],
+      gift: ['GiftFlow', { onDone: () => this.goTab('you'), onCancel: () => this.goTab('you') }, 'Gift a clean'],
+      paywall: ['CarePlusJoinScreen', { onDone: () => this.goTab('you'), onBack: () => this.goTab('you') }, 'Care+ — join'],
+      xjoin: ['XooterSignup', { onDone: () => go('xhome'), onBack: () => go('onboarding') }, 'Xooter — join'],
+      xhome: ['JobFeed', { accepted: s.accepted, onAccept: (o) => this.setState({ view: 'xjob', job: o, accepted: s.accepted.concat([o]) }), onOpenEarnings: () => go('xearn'), onOpenGrowth: () => go('xtrain'), onOpenDash: () => go('xdash') }, 'Xooter — job feed'],
+      xjob: ['ActiveJob', { job: s.job || (window.XOOTER_OFFERS || [])[0], onBack: () => go('xhome'), onDone: () => go('xhome') }, 'Xooter — active job'],
+      xearn: ['XooterEarningsScreen', { onBack: () => go('xhome') }, 'Xooter — earnings'],
+      xgrow: ['XooterGrowthScreen', { onBack: () => go('xhome') }, 'Xooter — badges'],
+      xdash: ['XooterDashboardScreen', { onBack: () => go('xhome'), onOpenGrowth: () => go('xgrow'), onOpenJobs: () => go('xhome') }, 'Xooter — dashboard'],
+      xtrain: ['TrainingList', { onPick: (m) => this.setState({ view: 'xmod', mod: m }), onBack: () => go('xhome') }, 'Xooter — training'],
+      xmod: ['TrainingModule', { module: s.mod || (window.XOOT_MODULES || [])[0], onDone: () => go('xtrain'), onBack: () => go('xtrain') }, 'Xooter — module'],
+      xwork: ['XooterHomeScreen', { onOpenJob: () => go('xhome'), onOpenEarnings: () => go('xearn'), onOpenGrowth: () => go('xgrow') }, 'Xooter — work'],
+    }[s.view] || V_FALLBACK;
+
+    return { name: V[0], props: V[1], label: V[2] };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const cur = this.screen();
+    const bare = !s.sub && BARE.indexOf(s.view) !== -1;
+    const showTabBar = !s.sub && NO_TABBAR.indexOf(s.view) === -1;
+
+    const chip = (active) => ({
+      bg: active ? 'var(--xoot-violet-500)' : 'var(--xoot-neutral-0)',
+      fg: active ? '#FFFFFF' : 'var(--xoot-ink-900)',
+    });
+    const quiet = (active) => ({
+      bg: active ? 'var(--xoot-violet-100)' : 'transparent',
+      fg: active ? 'var(--xoot-violet-700)' : 'var(--xoot-neutral-600)',
+    });
+
+    return {
+      screenName: cur.name,
+      screenProps: cur.props,
+      label: cur.label,
+      bare: bare,
+      framed: !bare,
+      showRail: this.props.showRail !== false,
+      phoneProps: {
+        tab: s.tab, onTab: this.goTab, onBook: this.book, showTabBar: showTabBar,
+        dark: s.view === 'paywall' ? false : undefined,
+      },
+      navGroups: NAV.map((g) => ({
+        label: g[0],
+        items: g[1].map((it) => Object.assign({
+          label: it[1],
+          go: () => this.go(it[0]),
+        }, chip(!s.sub && s.view === it[0]))),
+      })),
+      subItems: Object.keys(SUBS).map((k) => Object.assign({
+        label: SUBS[k][0],
+        go: () => this.setState({ view: 'profile', tab: 'you', sub: k }),
+      }, quiet(s.sub === k))),
+    };
+  }
+}
+
+const V_FALLBACK = ['TodayScreen', {}, 'Home'];
+</script>
+</body>
+</html>

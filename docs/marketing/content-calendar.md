@@ -1,125 +1,120 @@
-# Content calendar — four weeks
+# Content calendar — month one, eight channels
 
-Written 2026-09-02. **Everything here is a draft. Nothing is scheduled, queued or published.**
+Rewritten 2026-09-02 as the index over `drafts/`. Every ID below points at a written draft; nothing
+is scheduled, queued or published.
 
-Status values: `draft` · `approved` · `published`. Nothing moves past `draft` without the founder
-approving that exact text.
-
----
-
-## ⚠️ The gate on all of it
-
-**Weeks 1–2 are producible today. Weeks 3–4 are not**, and the reason is specific rather than
-cautious: `xoot.co.za` currently serves a GoDaddy Website Builder placeholder.
-
-`growth-levers-2026.md` finding 5, from the Hormozi transcript: bad word of mouth means reaching
-**three times as many people** to get the same customer, because two of three who would have bought
-heard something negative first. **Driving seven channels at a placeholder is that mistake seven
-times over.**
-
-**Publication begins when phase 1 of `COMPANY-WIDE-GO-LIVE-GUIDE.md` is done.** Production does not
-have to wait; publication does.
+**Two content engines, eight presences.** TikTok is the company engine, X is the founder engine.
+Everything else is a resize, a repurpose, a conversation, or a placeholder — see
+`platform-playbooks.md` for why, and for the 73%-quit-inside-a-year figure that argues it.
 
 ---
 
-## Week 0 — this week, and none of it is blocked
+## The gate that splits this calendar in two
 
-| # | Task | Owner | Why now |
-|---|---|---|---|
-| 0.1 | **Claim seven handles**: TikTok, Instagram, Facebook (Page), YouTube, LinkedIn (Company), X company, Indeed employer | ⛔ Founder | Cheap, stops squatting, needs your identity and phone |
-| 0.2 | **Rewrite the `@TheRealSkosana` bio** | ⛔ Founder | 1 follower. The bio converts more profile visits than any post will |
-| 0.3 | Answer the three ⛔ questions in `founder-brand-strategy.md` | ⛔ Founder | Gates voice calibration |
-| 0.4 | Confirm employment classification with an attorney | ⛔ Founder | Gates the Indeed and LinkedIn recruitment posts |
-
-⚠️ **0.1 is not "set up seven content channels".** It is reserving names. Five of the seven stay
-dormant or repurposed — `platform-playbooks.md` says which and why.
-
----
-
-## Week 1 — the founder account only
-
-**One platform, one variable at a time.** X carries the seven drafts already written in
-`x-drafts-week-one.md`: a 3×2 format-topic grid plus a thread.
-
-| Day | Platform | Format | Topic | Testing | Status |
-|---|---|---|---|---|---|
-| 1 | X | Single + screenshot | The 3-minute deploy check | Does a real error message earn replies? | `draft` |
-| 2 | X | Numbered list | Three weeks debugging a working deploy | levelsio's highest-engagement shape | `draft` |
-| 3 | X | Single, no artefact | The comment that cost three weeks | Is it the screenshot or the story? | `draft` |
-| 4 | X | Question | "Does your green check verify anything?" | Does asking beat telling at 1 follower? | `draft` |
-| 5 | X | Numbered list | Four things I check before believing a deploy | Same shape, different topic | `draft` |
-| 6 | X | Thread (4) | The GoDaddy placeholder, in full | Does sequence beat compression? | `draft` |
-| 7 | X | Single + screenshot | The guard that now fails instead of warning | Repeat of day 1's format | `draft` |
-
-**Measure at 72h:** impressions, profile visits, replies, saves. **Rank on profile visits per 1,000
-impressions.** **No thresholds** — no baseline exists, and a threshold without one is an invented
-number graded against itself. **Week one measures. Week two tests.**
-
-**LinkedIn:** one post, the strongest of the seven, rewritten for someone who has not read the
-others.
-
----
-
-## Week 2 — the company grid, produced not published
-
-Cells 1–3 of the six-cell grid in `ad-matrix-and-avatars.md`, all targeting **Avatar A — The
-Reclaimed Weekend**.
-
-| Cell | Hook | Form | Testing | Blocked on |
-|---|---|---|---|---|
-| 1 | H1 guilt-name | AI presenter, 12–20s | Does the presenter hold attention? | Higgsfield plan |
-| 2 | H1 guilt-name | Text-on-still, **no presenter** | **The control.** Same hook without her | — |
-| 3 | H2 time-arithmetic | AI presenter | Hook or face? | Higgsfield plan |
-
-⚠️ **Cells 1 and 2 are the whole point of the week.** Same avatar, same hook, one with the presenter
-and one without. It is the only comparison that says whether the Soul is worth its credits — and if
-cell 2 wins, the answer is not a different persona, it is no persona
-(`personas/01-street-presenter.md`).
-
-**Cell 2 is producible today.** Cells 1 and 3 are blocked on the Higgsfield plan, which is free tier
-and cannot generate.
-
----
-
-## Week 3 — unlocks when the site is live
-
-| Cell | Avatar | Hook | Form | Note |
-|---|---|---|---|---|
-| 4 | C — Household Manager | H4 continuity | **Screen recording of the real booking flow** | The most credible asset available, and it costs a screen recorder |
-| 5 | D — The Returner | H3 trust mechanic | Screen-record the admin vetting fields | Shows the mechanism instead of claiming it |
-| 6 | B — The Host | H4 continuity | Screen recording | Is the Airbnb avatar real or a distraction? |
-
-**All three need a reachable product to record.** Cell 4 is the one to prioritise: real product
-beats produced creative, and it is free.
-
-⚠️ **Cell 5's claim must be true before it ships.** "No Xooter is activated until a person reviews
-their ID, address, banking details and references" is the reworded, verified claim from
-`NEEDS-FOUNDER.md` §4. **Do not restore the MIE wording.**
-
----
-
-## Week 4 — Facebook, and the first thing that is not a post
-
-| # | Channel | Action |
-|---|---|---|
-| 4.1 | Facebook Page | Publish service area, contact, one feature announcement |
-| 4.2 | **Facebook Groups** | **Join the community groups for each launch suburb. Participate. Do not pitch.** Read each group's rules first |
-| 4.3 | Instagram | Reels: the TikTok cuts, reframed. Not a second production line |
-| 4.4 | Indeed + LinkedIn | The Xooter ad — **only after the classification answer and gate 3** |
-
-**4.2 is the highest-value item in the calendar and the least like content.** *"Can anyone recommend
-someone reliable?"* appears weekly in every suburb group. That is demand with intent, in a named
-suburb. The etiquette rules in `platform-playbooks.md` are what keep it a channel instead of a ban.
-
----
-
-## What is deliberately absent
-
-| Not scheduled | Why |
+| | |
 |---|---|
-| YouTube | Handle reserved, dormant. No proof to fill long-form with until gate 6 |
-| Paid spend on any platform | Launch is gate 7. Paid comes after, behind organically validated creative only |
-| Customer UGC | Needs real customers and written consent. Gate 6 |
-| Before/after creative | Same |
-| Any giveaway | CPA s36 governs promotional competitions — written rules, no required consideration, records kept |
-| A launch announcement | The site is not reachable. It is the one post people would check |
+| 🟢 **Producible and publishable now** | Founder channels — X, LinkedIn, Substack. They are about a person building a company, not about buying a clean, and no draft depends on a working link |
+| 🟠 **Producible now, publishes after gate 2** | TikTok TT-01–04 (phone-shot, no AI needed), Facebook Groups FBG-05 |
+| 🔴 **Waits for gate 2** | Every company channel with a link in it: Facebook Page, Instagram, TikTok TT-05–12 |
+| ⛔ **Waits for a decision, not a date** | Indeed and anything recruitment-facing (LRA s200A); TT-11 Care+ (pricing conflict) |
+
+**Gate 2 is DNS.** `xoot.co.za` serves a GoDaddy Website Builder page. Until that changes, every link
+in every company post lands on a placeholder — and `growth-levers-2026.md` finding 5 says bad word of
+mouth means reaching **3× as many people** for the same customer. That is the whole reason for the
+split.
+
+---
+
+## Week 1
+
+| Channel | ID | Format | Testing |
+|---|---|---|---|
+| X | `../x-drafts-week-one.md` D1–D7 | 3 formats × 2 topics + thread | Does a real error message earn replies at 1 follower? |
+| Substack | **SUB-01** | Essay, ~900w | Does long-form convert X attention into an owned list? |
+| LinkedIn | **LI-01** | Repurpose of X D1 | Does the same story work in the other room? |
+| TikTok | **TT-01, TT-02** | Screen recording | **Uncut vs timed** — same content, different framing device |
+| Instagram | **IG-01** + Reels of TT-01/02 | Static + repurpose | Baseline |
+| Facebook | Page setup only | — | — |
+| YouTube | Handle + About | — | — |
+| Substack Notes | X D1–D7, reposted | Free | — |
+
+## Week 2
+
+| Channel | ID | Format | Testing |
+|---|---|---|---|
+| X | **X2-01 – X2-07** | Mechanism week | Does *how it works* beat *what happened*? |
+| Substack | **SUB-02** | Essay, ~1,000w | The GoDaddy story — the strongest material we have |
+| LinkedIn | **LI-02** | Repurpose | — |
+| TikTok | **TT-03, TT-04** | Screen recording | **Customer side vs Xooter side** |
+| Instagram | **IG-02** + Reels | Static + repurpose | — |
+| Facebook | **FB-01** 🔴 | Page post | — |
+| Groups | Read only, comment nothing | — | Two weeks of reading before the first comment |
+
+## Week 3
+
+| Channel | ID | Format | Testing |
+|---|---|---|---|
+| X | **X3-01 – X3-07** | Wrong-conclusion week | Does visible fallibility beat competence? |
+| Substack | **SUB-03** | Essay, ~850w | — |
+| LinkedIn | **LI-03** | Repurpose | — |
+| TikTok | **TT-05, TT-07** 🔴 | First AI assets | **Brand film vs explanatory** |
+| Instagram | **IG-03** + Reels | Static + repurpose | — |
+| Facebook | **FB-02** 🔴 | Page post | — |
+| Groups | **FBG-01 – FBG-04** 🔴 | Replies only, never a post | Enquiries by suburb |
+
+## Week 4
+
+| Channel | ID | Format | Testing |
+|---|---|---|---|
+| X | **X4-01 – X4-07** | Commercial week | **Does the engineering audience follow into business reasoning?** |
+| Substack | **SUB-04** | Essay, ~800w | — |
+| LinkedIn | **LI-04** | Written *for* LinkedIn, not translated | The one most likely to reach a training school |
+| TikTok | **TT-09, TT-12** 🔴 | Founder on camera / montage | **Person vs montage** |
+| Instagram | **IG-04** + Reels | Static + repurpose | — |
+| Facebook | **FB-03, FB-04** 🔴 | Page post | — |
+
+---
+
+## What is being tested, and the one rule that makes it readable
+
+**Format and topic vary independently.** A winning format transfers across topics; a winning topic
+does not transfer across formats. Change both at once and a good result tells you nothing about which
+caused it.
+
+**Metric everywhere: profile visits per 1,000 impressions at 72 hours. Not views, not likes.**
+
+⚠️ **The View Trap — five accounts measured, five out of five.** The highest-reach post had the worst
+engagement rate every time. levelsio, Hormozi, Musk, MrBeast, and the Instagram reference sample.
+
+⚠️ **No thresholds this month, deliberately.** There is no baseline, and a threshold invented before
+the first post is a number graded against itself. Rank within each week's pair; set real thresholds
+at the end of week 4.
+
+⚠️ **X week 4 is the most informative week in the calendar.** If it collapses relative to weeks 2–3,
+the audience is there for the debugging and this account should never be used to sell a clean —
+which is exactly the two-avatar problem Hormozi warns about
+([rMMOHeBzA50, 01:30](https://www.youtube.com/watch?v=rMMOHeBzA50&t=90s)) and worth learning cheaply.
+
+---
+
+## Not in this calendar, and why
+
+| | |
+|---|---|
+| **Indeed** | The ad is written (`xooter-hiring-ad.md`). ⛔ Blocked on employment classification under LRA s200A — a decision, not a date |
+| **TT-11, Care+** | ⛔ Blocked on `locked-commercial-facts.md` §Current Pricing Conflict. Care+ is a number, and two numbers currently disagree |
+| **Any paid promotion** | ⛔ Not before gate 2 and gate 3. Paying to send people to a placeholder, or to a booking nobody can pay for |
+| **Customer UGC** | ⛔ Gate 6. `customer-ugc-pipeline.md` has the POPIA consent flow ready for the day real customers exist |
+| **Giveaways / competitions** | ⛔ CPA s36 — written rules, no required consideration, records kept. A compliance exercise, not a post |
+
+---
+
+## Before any of this starts
+
+**Three things, none of which are content:**
+
+1. **Claim all eight handles.** Cheap, fast, stops squatting: X ✅ (exists), TikTok, Instagram,
+   Facebook, YouTube, LinkedIn, Substack, Indeed employer account.
+2. **Rewrite the `@TheRealSkosana` bio.** One follower and a bio that is three jokes and never says a
+   company exists. At this size the bio converts more profile visits than any post will.
+3. **Gate 2.** Everything marked 🔴 above is waiting on one DNS change.
