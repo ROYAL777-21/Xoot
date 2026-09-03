@@ -262,10 +262,14 @@ duplicated booking *row* carrying implicit pricing semantics is the same failure
 **In scope either way:** the Xooter job list, tracking, earnings, ratings, the replacement flow, and
 `xooterPayout`, which runs per row today.
 
-### 9. `SUPABASE_DB_PASSWORD_PRODUCTION` — still outstanding, and now blocking more
+### 9. `SUPABASE_DB_PASSWORD_PRODUCTION` — the migration is now written and waiting on it
 
-It already blocked the production schema. It now also blocks **ZD-036's `referrals` table** and the
-**`merch_waitlist` table**, because both are migrations and `db-push` cannot reach production.
+It already blocked the production schema. **`20260903120000_zd035_crew_and_zd036_referrals.sql` is
+now written** — the `booking_assignees` relation and the `referrals` table, with RLS. It has **not
+been applied anywhere** and cannot be, because `db-push` reaches staging only and Supabase MCP is
+unauthorised (item 10). It is unverified against a live database until one of those clears.
+
+It also still blocks the **`merch_waitlist` table** (item 11).
 
 ⚠️ **Do not overwrite the shared `SUPABASE_DB_PASSWORD`** — that value is staging's and staging
 works with it. Add a second secret under the new name.
