@@ -28,6 +28,54 @@ Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live stat
 
 ---
 
+## 🔒 FOR CORRECTNESS — the design handoff reprices crews by 74%, and I have not touched it
+
+**2026-09-03. The founder supplied a full Claude Design redesign of the site and app.** Committed as
+reference at `design/handoff-2026-09-03/` (78 files, nothing imported, nothing built). Plan and
+sequencing: `docs/implementation/design-port-plan.md`.
+
+### The good news first, because it is genuinely unusual
+
+**The design's pricing matches `src/lib/xoot-pricing.ts` value for value.** All 14 regular rungs,
+all four other ladders, R39 fee, R30 add-on, R22 cover, R47/h floor from 5.5h, hours-by-size. It
+even independently reaches our own conclusion that R280 is a stale display value resolving to
+R250 + the R30 add-on. Whoever built it had this repo as context and respected the money layer.
+
+### ⚠️ The one that is yours, and it is not a bug in either place
+
+`src/lib/xoot-pricing.ts` and the design both price multiple Xooters, coherently, and **they model
+different products.**
+
+| | Repo (live, parity-pinned) | Design |
+|---|---|---|
+| What 2 Xooters means | Each works the full duration — more labour | They split one job — same labour, done faster |
+| Price | `base × count`, −10% at ≥3 | `base × [1, 1.15, 1.25, 1.4][n-1]` |
+| Allowed on | `airbnb`, `office`, `moving` | those + `express`, `lux`, and **regular** via size caps |
+
+**A 5.5h Airbnb at R342 base with 2 Xooters: R684 today, R393 under the design. 74% apart.** Both
+are R62 per labour-hour — the same number. They differ only in how much labour the customer is
+buying, and it also halves what two Xooters split for that job.
+
+⛔ **I have changed nothing in `src/lib/**-pricing*.ts` or `_shared/pricing.ts`.** This needs a
+founder decision, then a `decision-log.md` entry and a `locked-commercial-facts.md` update before a
+line of it moves. Flagged rather than resolved because it is a commercial choice wearing a diff.
+
+### 🔴 And one that fails in the direction we do not survive
+
+The design renders a **R100 two-sided referral as a line on the quote** (`xoot/referral.js`). Its
+guards are decent — refuses self-referrals and existing customers, burns the code — and **all of
+them are in the browser.** With no server counterpart the site shows −R100 and `create-booking`
+charges R100 more than displayed. That is the under-stating side of the CPA line.
+
+Third: `serviceFit()` re-prices a booking upward when the property type does not match the service
+chosen. Over-stating, and the reasoning is sound, but it re-prices a customer's explicit choice at
+the last step and needs a server counterpart or it disagrees with the server by construction.
+
+**All three are gated in the port plan behind Phase 3, in the §3a/§3b order, with the reminder that
+every function importing `_shared/pricing.ts` must redeploy or it carries its own frozen copy.**
+
+---
+
 ## 📣 Release & Infrastructure — 2026-09-03 — Substack, the loops, and a month of drafts
 
 Extends the entry directly below. Same claim: **`docs/marketing/**` is unheld — take any of it.**
