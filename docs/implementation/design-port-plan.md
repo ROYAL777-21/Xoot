@@ -136,7 +136,24 @@ Straight ports, `design/handoff-2026-09-03/xoot/site/*.jsx` → `src/components/
 
 ### Progress
 
-- ✅ **`GapArrow`** — ported, wired at the handoff's three positions, guards planted. `486295f`.
+- ✅ **`GapArrow`** — the section connectors, at the handoff's three positions. `486295f`
+- ✅ **`PeopleBand`** — "Who turns up". **Two of four cards rewritten**; see below. `5ffbe9b`
+- ✅ **`Journal`** — the teaser, linking `/blog/:slug` rather than the handoff's hash modal,
+  because this repo has real routes and 31 real posts. **Two claims rewritten.** `f211d27`
+
+**Running total: 1114 tests, up from 1102 when the port started.** Every new guard was planted
+against its own defect and watched fail before being kept.
+
+### ⚠️ The pattern that has held for three sections running
+
+**Every section ported so far has contained at least one claim that does not survive a check.**
+Not carelessness in the handoff — it was written to read well, and it does. But it promises an
+on-time turnover, a real person answering, authorship by "people who do this work", and questions
+"customers actually ask". With **zero completed bookings** and no SLA, support hours or response
+time anywhere in `locked-commercial-facts.md`, none of those are available.
+
+**Budget claim-checking time for every remaining section, and grep before rewriting.** The pattern
+is strong enough that a section arriving with no claim problem should itself be suspicious.
 - **Existing sections are a restyle, not a rewrite.** The repo's `TrustedBy` is already
   word-for-word identical to the handoff's; only the visual treatment differs. The same is likely
   true of `HowItWorks`, `ServiceAreaMap`, `HomeExpansion` and `FeedbackSection` — check before
