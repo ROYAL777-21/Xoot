@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { BadgeCheck, Camera, Lock, MessageCircle, Phone, X } from "lucide-react";
 import { canArmSos } from "@/lib/safety";
+import { AccessWindowTimeline } from "./AccessWindowTimeline";
 
 /**
  * "Trust, safety and security" — ported from the 2026-09-03 handoff
@@ -26,11 +27,8 @@ import { canArmSos } from "@/lib/safety";
  * pressing something that does nothing is worse than no button."* That is the reason the
  * gate exists, and it must not be softened into a coming-soon teaser.
  *
- * ── Not ported yet ───────────────────────────────────────────────────────────────────
- * The handoff opens with an interactive access-window timeline — a scrubber showing a code
- * locked, released, then gone, with a revoke switch. It explains a timed release in about
- * four seconds where a paragraph does not, and it is worth building. It is a larger
- * interactive piece and is listed as remaining in the port plan.
+ * The handoff's interactive access-window timeline opens this section and is ported in
+ * `AccessWindowTimeline.tsx`.
  */
 
 type Status = "live" | "built" | "launch";
@@ -160,7 +158,11 @@ export const TrustMechanisms = () => {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-2">
+        <div className="mt-10">
+          <AccessWindowTimeline />
+        </div>
+
+        <div className="mt-6 grid gap-5 lg:grid-cols-2">
           {MECHANISMS.map((mechanism) => {
             const Icon = mechanism.icon;
             const notLive = mechanism.status === "launch";

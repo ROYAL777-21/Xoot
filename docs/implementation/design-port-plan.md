@@ -144,12 +144,13 @@ Straight ports, `design/handoff-2026-09-03/xoot/site/*.jsx` → `src/components/
   only destination was React state. `a3d6de2`
 - ✅ **`TrustMechanisms`** — six mechanisms with their own stated limits. **SOS status is derived
   from `canArmSos()`** rather than hardcoded, so the copy cannot drift from the gate. `a3d6de2`
+- ✅ **`AccessWindowTimeline`** — the interactive demo that opens the trust section. Five discrete
+  stages, a revoke switch, and the panel labelled an illustration
 
 ### Still to port
 
 | | |
 |---|---|
-| **The access-window timeline** | The interactive scrubber that opens `TrustMechanisms` in the handoff. Explains a timed release in four seconds where a paragraph does not. The largest remaining piece |
 | `TextFlip` | The animated headline treatment |
 | Restyles | `TrustedBy`, `HowItWorks`, `ServiceAreaMap`, `HomeExpansion`, `FeedbackSection` — copy already matches, so these are token-layer restyles, not rewrites |
 | ⛔ `Reviews` | Stays out. Zero completed bookings; placeholder reviews are a fabricated testimonial |
