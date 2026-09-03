@@ -29,13 +29,13 @@ These values and policies are locked. Code, copy, agents and provider configurat
 
 | Item | Locked value |
 | --- | --- |
-| Small home clean | R280 for 4 hours |
-| Medium home clean | R325 for 5.5 hours |
-| Large home clean | R400 for 8 hours |
+| Small home clean | **R250** for 4 hours |
+| Medium home clean | **R296** for 5.5 hours |
+| Large home clean | **R376** for 8 hours |
 | Standard add-on | R30 |
 | Booking fee, every booking | R39 (ZD-026) |
 | Booking fee for Care+ members | Waived, at every frequency (ZD-026) |
-| Booking Cover by Genric | R21, optional and only preselected when legally and commercially approved |
+| Booking Cover by Genric | **R22** (ZD-020), optional and only preselected when legally and commercially approved |
 | Care+ membership | R99 per month |
 
 Recurring rules (**the fee clause is superseded by ZD-026** — cadence no longer waives the
@@ -47,16 +47,39 @@ booking fee, only Care+ does; the discount tiers below still stand pending confi
 
 All authoritative pricing, credits and discounts are server-controlled.
 
-## Current Pricing Conflict
+## ✅ The pricing conflict is CLOSED — ZD-037, 2026-09-03
 
-`supabase/functions/create-booking/index.ts` currently contains:
+This section used to describe a conflict. **It named numbers that existed nowhere**, and that is
+why it took so long to resolve: it said the code charged R270/R315/R390 and this document locked
+R280/R325/R400, while `basePrice()` actually returned **R250/R296/R376**. Three sets of numbers,
+none of them agreeing, and the founder could not settle a conflict whose terms were wrong.
 
-- small R270;
-- medium R315;
-- large R390;
-- service multipliers, service-length factors and a high-demand premium not approved by this locked document.
+Measured 2026-09-03 by calling `basePrice('residential', hours)` directly:
 
-No silent code change is permitted. Phase 1 must define the canonical server pricing contract, migration and rollout approval.
+| Source | Small (4h) | Medium (5.5h) | Large (8h) |
+|---|---|---|---|
+| This document, before today | R280 | R325 | R400 |
+| This section's claim about the code | R270 | R315 | R390 |
+| **What the server actually charges** | **R250** | **R296** | **R376** |
+
+**Founder decision, 2026-09-03: the cheaper ladder is the locked truth.** The table above now
+records what the code has been charging all along. ⛔ **No code changed** — the document was the
+thing that was wrong.
+
+⚠️ **The full ladder is in `supabase/functions/_shared/pricing.ts`, and it is per-hour, not
+per-size.** The three "sizes" are only the default hours for that size (4 / 5.5 / 8). The real
+`REGULAR` ladder runs R236 at 3.5h to R470 at 10h. `HOME_SIZE_HOURS` maps size → hours; the ladder
+maps hours → price. **Quoting a size price without its hours is quoting half a fact.**
+
+⚠️ **These prices are deliberately low and are intended to rise.** The founder's words:
+*"use the cheaper pricing ladder for now as we will eventually increase the prices as time
+progresses."* So an evergreen asset — the documentary, a blog post, a printed card — that bakes in
+R250 will be wrong within a year. **Prefer "from R250" in anything with a long life.** A raise
+happens through a new decision-log entry, never a silent edit.
+
+⛔ **The R47/h long-job floor is not negotiable in either direction.** It exists because a 10-hour
+clean returned R27.95/h, which put a Xooter under the national minimum wage at 35% commission. Any
+future price rise must keep every rung above it, and any future *cut* is bounded by it.
 
 ## Care+
 

@@ -994,3 +994,98 @@ by; the founder was offered a smaller figure and kept R100.
 8. Legal entity and Information Officer details.
 9. Native Care+ billing classification.
 10. WSL installation for CodeRabbit.
+
+## ZD-037
+
+**The pricing conflict is closed. The cheaper ladder is the locked truth.**
+Decided by the founder, 2026-09-03.
+
+### What the conflict actually was
+
+`locked-commercial-facts.md` carried a §Current Pricing Conflict that had blocked every marketing
+draft from stating a price for weeks. **It named numbers that existed nowhere.** Measured on
+2026-09-03 by calling `basePrice('residential', hours)` directly:
+
+| Source | Small (4h) | Medium (5.5h) | Large (8h) |
+|---|---|---|---|
+| The locked table | R280 | R325 | R400 |
+| The conflict section's claim about the code | R270 | R315 | R390 |
+| **What the server actually charges** | **R250** | **R296** | **R376** |
+
+Three sets of numbers, none agreeing. The section described a code state that had not existed since
+`eb5401e`, when `create-booking` stopped carrying its own `homeSizes × serviceMultiplier` table and
+started pricing off `_shared/pricing.ts`.
+
+⚠️ **This is why it went unresolved.** A conflict stated in wrong terms cannot be settled by the
+person who has to settle it. The founder was being asked to choose between two numbers, neither of
+which was what customers would have been charged.
+
+### The decision
+
+**The ladder in `_shared/pricing.ts` is canonical.** `locked-commercial-facts.md` now records
+R250 / R296 / R376. ⛔ **No code changed** — the document was corrected to the code, not the other
+way round, because the code is what takes the money.
+
+Founder's reasoning, verbatim: *"Use the cheaper pricing ladder for now as we will eventually
+increase the prices as time progresses."*
+
+### What this unblocks
+
+✅ **Marketing may state prices.** The price ban across ~55 drafts, the ad matrix, and every video
+script is lifted. The permitted set is exactly: **R250 / R296 / R376**, R39 booking fee, R30 add-on,
+R22 cover, R99 Care+ — and the full per-hour ladder for anything longer or shorter.
+
+⚠️ **Any other number remains a violation.** Under the CPA the displayed price is the price, and
+this repo has shipped a screen showing one price while charging another **three times**.
+`pricing-parity.test.ts` is what stops the fourth.
+
+### Two things this decision does not do
+
+⛔ **It does not touch the R47/h long-job floor.** That floor exists because a 10-hour regular clean
+returned R27.95/h, below the national minimum wage, at the 35% starting commission. A future price
+rise must keep every rung above it. A future price *cut* is bounded by it.
+
+⚠️ **It does not make these prices permanent, and the intent is explicitly that they rise.** So any
+asset with a long life — the brand documentary, an evergreen blog post, anything printed — should
+say **"from R250"** rather than baking in a number that is planned to change. A raise goes through a
+new decision-log entry.
+
+## ZD-035 — addendum, 2026-09-03: shape chosen, price held
+
+Two decisions the founder made on ZD-035, recorded so neither is re-litigated by a later session.
+
+### 1. Schema shape: **(a) the `booking_assignees` relation**
+
+`NEEDS-FOUNDER.md` §8 offered (a) a `booking_assignees` relation or (b) one priced row plus
+zero-value participant rows. **(a) is chosen.** The table is already applied to staging by
+`20260903120000_zd035_crew_and_zd036_referrals.sql` — RLS on, `revoke all from anon, authenticated`,
+service_role only, `unique (booking_id, xooter_id)` so a retry cannot double-assign.
+
+### 2. ⛔ The crew price is NOT wired, and that is deliberate
+
+Measured against the live model (`base × count`, −10% at three or more):
+
+| crew | live model | ZD-035 overhead | delta |
+|---|---|---|---|
+| 2 | 2.00× | 1.15× | −43% |
+| 3 | 2.70× | 1.25× | −54% |
+| 4 | 3.60× | 1.40× | **−61%** |
+
+**Wiring it would cut a four-Xooter booking by 61%.** That is a locked commercial fact, and locked
+facts move only through a decision-log entry. The founder chose to keep the current revenue and
+leave the schema ready.
+
+⚠️ **`crew_size` is also left unwritten by `create-booking`, for a subtler reason.** Under the
+row-per-Xooter model every new `bookings` row **is** a solo job, so stamping a crew size would
+record a number the price does not reflect. The column's default of 1 is already the true answer.
+
+⛔ **Two absence guards enforce this and must not be deleted casually:**
+`src/lib/pricing-parity.test.ts` (`quote()` still uses the live model) and
+`src/lib/referral-wiring.test.ts` (`create-booking` mentions no crew symbol). They exist because
+"finish the port" is the obvious next instinct and it is the one part that must not be finished
+quietly.
+
+**To wire it later:** a new decision-log entry, `locked-commercial-facts.md` updated, both guards
+deleted in the same change, every reader that assumes one `bookings` row per Xooter rewritten (job
+list, tracking, earnings, ratings, replacement, payout), then `create-booking`,
+`create-booking-request` and `respond-xooter-job` redeployed.
