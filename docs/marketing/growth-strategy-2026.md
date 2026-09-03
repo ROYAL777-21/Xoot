@@ -4,6 +4,13 @@ Written 2026-09-03 from five Hormozi references supplied by the founder, read as
 through Eden rather than recalled, plus the existing `ask-hormozi` corpus and this repo's own
 measured findings.
 
+> ⚠️ **Superseded in part, 2026-09-03.** This document was built from the five references the
+> founder supplied. `hormozi-corpus-findings.md` then read the **full 2,039-video corpus** and
+> measured the channel through Eden. It **corroborates** the central finding below — independently,
+> using a cleaning business as the example again — and adds one thing this document gets wrong by
+> omission: **recruiting content is the worst-performing topic on that channel** (0.59× outlier vs a
+> 1.16× baseline). The strategy stands; the way its success is measured does not. Read both.
+
 **This document changes the shape of the plan.** Everything before it treated growth as a demand
 problem — channels, hooks, avatars, ad matrices. The references say that is the wrong constraint for
 this kind of business, and they say it about *this* kind of business specifically.
