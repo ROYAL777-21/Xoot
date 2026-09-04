@@ -210,8 +210,18 @@ together is the whole picture.
 
 1. **Ship the front end** — `domain-setup.md`. Nothing merged since 28 May is live. This is the
    single biggest gap and everything user-facing is behind it.
-2. **Turn on payments** — needs Stitch/Ozow credentials and a signed smoke test, then three controls
-   flipped. Today the app cannot take money.
+2. **Turn on payments** — needs **PayFast** merchant credentials and a signed smoke test, then three
+   controls flipped. Today the app cannot take money.
+
+   > ⚠️ **Corrected 2026-09-04. This line said "Stitch/Ozow credentials" and would have sent you to
+   > buy the wrong thing.** The provider surface was swept to PayFast — `_shared/payfast.ts` holds
+   > the ITN contract, `confirm-payment` implements it, and
+   > `payment_reconciliation_checks.provider` is now constrained to `('payfast')`. Stitch and Ozow
+   > are gone from the schema; credentials for either would connect to nothing.
+   >
+   > This is also what blocks gifting: `ops-workflow` stamps every gift order
+   > `provider_required: "PayFast credentials not connected"`, so the homepage gift section can take
+   > an enquiry but not a payment.
 3. **`ENCRYPTION_KEY`** ([#28](https://github.com/ROYAL777-21/zoot-your-local-helpers/issues/28)) —
    without it a customer cannot save a gate or alarm code, and the function fails loudly.
 

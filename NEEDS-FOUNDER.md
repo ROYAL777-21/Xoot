@@ -450,3 +450,83 @@ No session should answer these alone. Each has its full reasoning on the issue.
   staging on 13 Aug and **to production on 15 Aug**, verified by performing the insert that was
   failing and rolling it back. No founder action; listed because it was live on production for two
   days and anyone reading this during that window deserved to know.
+
+---
+
+## Added 2026-09-04 — five findings from reading the design files as source of truth
+
+### 1. ⛔ The bug bounty page names six researchers who do not exist
+
+`design/handoff-2026-09-03/Xoot Bug Bounty.dc.html` contains a `HALL_OF_FAME` array with **six
+named researchers, each with a finding, a month and a severity** — `@thabo_sec` "IDOR on booking
+receipts" Jul 2026 High, `@n1ghtjar` "Access-window token replay" Jun 2026 Critical, and four more.
+
+**They are fabricated.** The file's own comment calls the hall of fame *"the proof that reports here
+get read and paid."*
+
+This is the same class of defect the `Reviews` section is excluded from the site for, and worse,
+because it names people. **It makes "publish the bug bounty page as designed" unavailable regardless
+of how the SLA questions below are answered** — which the existing bug-bounty entry in this document
+does not say, because it was written from the SLAs alone.
+
+### 2. ⚠️ The hero photograph is AI-generated, and so is its replacement
+
+`src/assets/hero-xoot.jpg` is a generated image that sat on the homepage **unmarked** while
+`ugc-and-ads.md` says *"AI-generated marker, every asset, no exceptions."* A marker was added on
+2026-09-04, and its alt text corrected — it said "Friendly Xoot cleaner", asserting the person is a
+Xooter, when no Xooter has been activated.
+
+⛔ **The handoff's replacement cannot be used as-is.**
+`xoot/assets/marketing/xooter-female-polo.webp` is the only asset showing the real uniform — and it
+has **"HIGGSFIELD AI" burned into the bottom-right corner**. Cropping a generator's watermark may
+breach its terms; that is a question for whoever holds the Higgsfield account.
+
+**The decision you have:** commission a real photograph (needs a real Xooter and POPIA consent),
+license a stock image of a South African home, or keep the marked AI illustration. The current
+image is also a Mediterranean-looking courtyard, not a South African home.
+
+### 3. ⚠️ Nobody can tell from this repository whether the website is live
+
+`founder-todo.md` §65 says Netlify still serves a hand-uploaded `index.html` from **28 May**. §109
+says the domain now serves this repo's build. **Both are in the same document.**
+
+It could not be settled from the build environment: `curl` to `xoot.co.za` and `www.xoot.co.za` both
+returned `CONNECT tunnel failed, response 403` — an organisation proxy policy denial, which is not
+something to retry around.
+
+**Please open the site in a browser and say which it is.** Everything user-facing depends on the
+answer, and it is thirty seconds of your time against an unbounded amount of guessing.
+
+### 4. ⚠️ Two declared fonts do not ship
+
+`src/styles/kit-tokens.css:89-90` declares `--xoot-font-mono: "DM Mono"` and
+`--xoot-font-script: "Caveat"`. **Neither font file exists in `public/fonts/`** — only Newsreader and
+Plus Jakarta Sans are shipped.
+
+Any surface using a price or time in mono, or the script wordmark, silently falls back to a system
+face. Both TTFs are in the handoff at `xoot/assets/fonts/` and
+`scripts/design/extract-kit-fonts.mjs` already knows how to subset them; this is small work, but it
+must happen **before** anything using those tokens is ported or the surface ships wrong.
+
+### 5. ⚠️ The twelfth legal document is missing, and it is XootCover
+
+`Xoot Legal.dc.html` carries **twelve** documents; `src/pages/legal/` has **eleven**. The missing one
+is **XootCover terms**.
+
+That is not a coincidence. The same file states, in its drafting constraints, that *"XootCover is
+described as intended cover with Genric, **not as cover in force, because it is not placed yet**"* —
+and `locked-commercial-facts.md` agrees the cover is *"optional and only preselected when legally
+and commercially approved."*
+
+⛔ **So the right move is not to draft the page.** Terms for cover that has not been placed would
+name an insurer relationship that does not exist. **The decision you have is whether to place the
+cover**; the document follows it.
+
+⚠️ Two related gaps in the shipped legal pages, both from the same file:
+
+- `LegalLayout.tsx` says the pages are *"operational launch drafts"* but **does not say Xoot is not
+  currently registered**, which the design requires and which is independently true — `Footer.test.tsx`
+  already asserts the footer claims no `(Pty)` or `Ltd` for exactly that reason.
+- **No email address appears on any legal page.** The design flags `newsletter@xoot.co.za` as the
+  wrong route for a POPIA request and notes POPIA gives you **30 days** to answer one. The repo is
+  worse than the flagged version: a data subject currently has no route at all.

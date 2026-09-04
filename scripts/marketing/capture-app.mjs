@@ -224,8 +224,8 @@ async function capture(id, path, viewport, { at = 0, wait = 2500, note = "" } = 
  */
 await capture("site-hero-phone", "/", PHONE, { note: "Hero above the fold, phone" });
 // The two sections ported 2026-09-04 — design positions 2 and 3, absent from the site until then.
-await capture("site-gift-phone", "/", PHONE, { at: 900, note: "Gift a clean, phone" });
-await capture("site-careplus-phone", "/", PHONE, { at: 1750, note: "Care+ band, phone" });
+await capture("site-gift-phone", "/", PHONE, { at: 1290, note: "Gift a clean, phone" });
+await capture("site-careplus-phone", "/", PHONE, { at: 2560, note: "Care+ band, phone" });
 /* The design's own four frames. These exist to be LOOKED at, not posted — a layout check. */
 await capture("frame-phone-landscape", "/", PHONE_LANDSCAPE, { note: "844x390 — never rendered before" });
 await capture("frame-ipad", "/", IPAD, { note: "834x1112 iPad" });
