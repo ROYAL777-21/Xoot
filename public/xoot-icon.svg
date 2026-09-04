@@ -1,0 +1,19 @@
+<!--
+  The Xoot mark: the "oo" of Xoot as two rings on a violet squircle.
+
+  Taken verbatim from `design/handoff-2026-09-03/xoot/assets/logo.svg` — the geometry is the
+  designer's, not a redraw, so it stays byte-comparable against the handoff.
+
+  ⚠️ This replaced `zoot-icon.svg`, a terracotta square carrying a **Z**, on 2026-09-04. That file
+  was the pre-rename Zoot mark and it was still wired as the favicon in `index.html` and as a PWA
+  icon in both manifests, so every browser tab and every installed home-screen icon showed the
+  wrong company's letter. The rename shipped in code long before it reached the icons.
+
+  #7C5CFC is `--xoot-violet-500`. Note the shipped UI renders brand colour through `--brand`
+  (violet-600, #6440E9) for WCAG AA on text; this mark carries no text, so it takes the 500.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Xoot">
+<rect width="512" height="512" rx="115" fill="#7C5CFC"></rect>
+<circle cx="196" cy="256" r="66" fill="none" stroke="#FFFFFF" stroke-width="38"></circle>
+<circle cx="330" cy="256" r="66" fill="none" stroke="#FFFFFF" stroke-width="38"></circle>
+</svg>

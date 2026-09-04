@@ -1,3 +1,4 @@
+import { Logo } from "@/components/kit/Logo";
 const cols: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Cleaning services",
@@ -57,9 +58,7 @@ export const Footer = () => (
       <div className="mb-12 grid gap-10 lg:grid-cols-6">
         <div className="lg:col-span-1">
           <div className="mb-4 flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm">
-              <span className="font-display text-lg font-bold text-primary-foreground">X</span>
-            </span>
+            <Logo size={36} title="" className="rounded-xl" />
             <span className="font-display text-2xl font-bold">Xoot</span>
           </div>
           <p className="max-w-xs text-sm text-muted-foreground">

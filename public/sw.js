@@ -1,6 +1,20 @@
-const CACHE_NAME = "zoot-static-v6";
+/*
+ * ⚠️ Bumped from `zoot-static-v6` on 2026-09-04, and the rename is doing work here.
+ *
+ * The brand assets below all changed content on the same day — the icons carried the pre-rename
+ * Zoot mark. `activate` deletes every cache whose key is not CACHE_NAME, so bumping the key is what
+ * makes an already-installed client drop the old icons instead of serving them from cache forever.
+ * Leaving the key at v6 would have shipped the fix and had returning users never see it.
+ */
+const CACHE_NAME = "xoot-static-v7";
 const OFFLINE_URL = "/offline.html";
-const STATIC_ASSETS = ["/manifest.json", "/manifest.webmanifest", "/zoot-icon.svg", "/favicon.ico", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", OFFLINE_URL];
+/*
+ * ⚠️ `cache.addAll` is atomic: one 404 rejects the whole install, the worker never activates, and
+ * offline support disappears with no console error on the page. This list held `/zoot-icon.svg`
+ * for the few minutes between deleting that file and this edit, which is exactly that failure.
+ * Anything named here must exist in `public/`.
+ */
+const STATIC_ASSETS = ["/manifest.json", "/manifest.webmanifest", "/xoot-icon.svg", "/favicon.ico", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", OFFLINE_URL];
 const SENSITIVE_NOTIFICATION_PATTERNS = [
   /\b(gate|alarm|lockbox|pin|code|access note|access notes|id number|passport|bank|card|payment ref|complaint)\b/i,
   /\b\d{4,}\b/,
