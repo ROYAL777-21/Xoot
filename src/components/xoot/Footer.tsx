@@ -13,7 +13,10 @@ const cols: { title: string; links: { label: string; href: string }[] }[] = [
     title: "Membership & accounts",
     links: [
       { label: "Care+ membership", href: "/care-plus" },
-      { label: "Find full-time help", href: "/care-plus" },
+      // "Find full-time help" sat here and pointed at /care-plus. It advertised Care+ placement,
+      // which ZD-031 retired on 2026-08-13 — see the note in `Services.tsx`. The link also lied
+      // twice over: /care-plus is the membership, so even before the retirement it did not lead
+      // to the thing it named.
       { label: "Pricing", href: "/care-plus" },
     ],
   },

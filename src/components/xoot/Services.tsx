@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 const services = [
-  { icon: Home, title: "Residential cleaning", desc: "Weekly tidies, fortnightly deep cleans, and one-off resets.", tone: "primary" },
+  // "Regular cleaning" is the catalogue's own name — `regular` is the ServiceId in
+  // `xoot-pricing.ts`, and `residential` is only an alias pointing at it. The handoff makes the
+  // same correction at `SiteBody.jsx:158`.
+  { icon: Home, title: "Regular cleaning", desc: "Weekly tidies, fortnightly deep cleans, and one-off resets.", tone: "primary" },
   { icon: TimerReset, title: "Express cleaning", desc: "Focused resets for smaller spaces and tighter windows.", tone: "sage" },
   { icon: Building2, title: "Office & commercial", desc: "Office, estate and small commercial cleans with admin follow-up.", tone: "sage" },
   { icon: BedDouble, title: "Airbnb turnovers", desc: "Turnovers with host notes, readiness checks and photo proof.", tone: "primary" },
@@ -39,9 +42,23 @@ export const Services = () => (
           );
         })}
       </div>
+      {/*
+        ⛔ "Find full-time help" was the second button here until 2026-09-04. It sold Care+
+        placement — sourcing a domestic worker for a household on standing days — which **ZD-031
+        retired on 2026-08-13**. That decision deleted the route, the handler, the constants and the
+        apply page, and its own removal table lists no marketing surface, so this button and the
+        matching Footer link kept offering the product for three weeks after it ended.
+
+        Removed rather than demoted to "coming soon": ZD-031 ended the product, it did not defer it.
+        Saying "soon" about something the founder cancelled is the same misrepresentation with a
+        friendlier face, and under CPA s41 intent is not the test.
+
+        One CTA is also the truer shape. The design's own comment on this row says a not-yet-product
+        must read "visibly not-yet rather than as a peer of the working CTA"; a retired one should
+        not read at all.
+      */}
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
         <Button asChild size="lg" className="rounded-full"><Link to="/app">Book a clean</Link></Button>
-        <Button asChild size="lg" variant="outline" className="rounded-full"><Link to="/care-plus">Find full-time help</Link></Button>
       </div>
     </div>
   </section>
