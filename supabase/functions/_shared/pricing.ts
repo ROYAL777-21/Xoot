@@ -192,6 +192,47 @@ export function crewHours(soloHours: number, crew: number): number {
 export const BOOKING_FEE_CENTS = r(39);
 
 /** Legacy request vocabulary → the five priced services. */
+/**
+ * ZD-038 — the hours a gifted clean buys, per service.
+ *
+ * ⛔ **Added because `GiftClean.tsx` and `ops-workflow` both hardcoded a price table that existed
+ * nowhere else in the product:**
+ *
+ *     { residential: 270, deep: 365, airbnb: 315, premium: 420, moving: 455 }
+ *
+ * None of those numbers appears in `LADDERS`. **270 and 315 are two of the exact phantom prices
+ * ZD-037 established had never been charged by anything** — the gift page was quoting the ghost
+ * ladder from a document that was itself wrong. `pricing-parity.test.ts` never covered gift, so
+ * nothing caught it.
+ *
+ * A gift buys a whole clean, so it needs a duration to price against. These are the durations,
+ * and the price comes from `basePrice()` like every other surface. ⚠️ **Never reintroduce a
+ * literal rand figure for a gift** — that is the defect this constant exists to close.
+ *
+ * `deep` and `premium` alias to `regular` for pricing but buy a longer visit, which is what
+ * distinguished them in the old table and is the one honest thing about it.
+ */
+export const GIFT_HOURS: Record<string, number> = {
+  residential: 4,
+  deep: 5.5,
+  premium: 8,
+  airbnb: 4,
+  moving: 4.5,
+};
+
+/**
+ * What a gifted clean costs, in cents, from the real ladder.
+ *
+ * Returns `null` for a service with no gift duration rather than guessing — a gift for a service
+ * nobody priced must fail loudly, not silently pick a number.
+ */
+export function giftPriceCents(serviceType: string): number | null {
+  const hours = GIFT_HOURS[serviceType];
+  if (hours === undefined) return null;
+  const priced = basePrice(serviceType, hours);
+  return priced.ok ? priced.baseCents : null;
+}
+
 export const SERVICE_ALIASES: Record<string, ServiceId> = {
   residential: "regular",
   regular: "regular",

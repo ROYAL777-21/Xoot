@@ -1,3 +1,4 @@
+import { giftPriceCents } from "../_shared/pricing.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   assertTransition,
@@ -13,13 +14,16 @@ const defaultAllowedOrigins = [
   "https://www.xoot.co.za",
 ];
 
-const servicePrices: Record<string, number> = {
-  residential: 270,
-  deep: 365,
-  airbnb: 315,
-  premium: 420,
-  moving: 455,
-};
+/*
+ * ⛔ The hardcoded gift price table that used to live here is gone — ZD-038.
+ *
+ * It read `{ residential: 270, deep: 365, airbnb: 315, premium: 420, moving: 455 }`, and none of
+ * those numbers existed in `_shared/pricing.ts`. Two of them — 270 and 315 — are the exact phantom
+ * prices ZD-037 established had never been charged by anything. `pricing-parity.test.ts` did not
+ * cover gift, so a routed page quoted a ghost ladder for months and nothing caught it.
+ *
+ * Gift now prices from `basePrice()` like every other surface.
+ */
 
 const bookingStatusLabels: Record<string, string> = {
   draft: "Setting up your booking",
@@ -350,8 +354,14 @@ Deno.serve(async (req) => {
     }
 
     if (action === "gift_clean_order_requested") {
-      const serviceType = servicePrices[cleanText(body.serviceType, 40)] ? cleanText(body.serviceType, 40) : "residential";
-      const amount = servicePrices[serviceType];
+      const requested = cleanText(body.serviceType, 40);
+      const serviceType = giftPriceCents(requested) === null ? "residential" : requested;
+      const cents = giftPriceCents(serviceType);
+      // ⛔ Refuse rather than guess. giftPriceCents returns null for a service nobody priced, and
+      // "residential" always resolves — so a null here means the ladder itself changed shape and
+      // the correct response is a loud failure, not a silent default amount.
+      if (cents === null) return fail("gift pricing unavailable for this service", origin, 400);
+      const amount = cents / 100;
       const recipientName = cleanText(body.recipientName, 120);
       if (!recipientName) return json({ error: "recipient required" }, 400, origin);
 

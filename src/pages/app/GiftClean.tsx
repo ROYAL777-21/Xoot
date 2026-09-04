@@ -8,15 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Gift, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
+import { giftPriceCents } from "@/lib/xoot-pricing";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 
-const servicePrices: Record<string, number> = {
-  residential: 270,
-  deep: 365,
-  airbnb: 315,
-  premium: 420,
-  moving: 455,
-};
+/*
+ * ⛔ The hardcoded price table that used to be here is gone — ZD-038. See `giftPriceCents`.
+ * It quoted numbers that existed nowhere in the ladder, two of them the phantom prices ZD-037
+ * proved had never been charged by anything.
+ */
 
 const GiftClean = () => {
   const { user } = useAuth();
@@ -29,7 +28,9 @@ const GiftClean = () => {
     service_type: "residential",
   });
   const [submitting, setSubmitting] = useState(false);
-  const amount = servicePrices[form.service_type] ?? servicePrices.residential;
+  // Falls back to residential only when the chosen service has no gift duration; never to a
+  // literal figure. The rand shown here is the same ladder create-booking charges from.
+  const amount = (giftPriceCents(form.service_type) ?? giftPriceCents("residential") ?? 0) / 100;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

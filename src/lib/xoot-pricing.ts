@@ -570,3 +570,38 @@ export function serviceBounds(service: ServiceId) {
 export function formatRand(cents: number) {
   return `R${(cents / 100).toLocaleString("en-ZA", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
+
+/**
+ * ZD-038 — gift durations, mirrored from `supabase/functions/_shared/pricing.ts`.
+ *
+ * ⛔ **`GiftClean.tsx` used to carry its own price table**, and none of its numbers existed in the
+ * ladder: `{ residential: 270, deep: 365, airbnb: 315, premium: 420, moving: 455 }`. Two of them
+ * were the phantom prices ZD-037 proved nothing had ever charged. A routed page was quoting a
+ * ghost ladder, and `pricing-parity.test.ts` did not cover gift, so nothing failed.
+ *
+ * ⚠️ **This is a mirror, and mirrors drift.** `pricing-parity.test.ts` now pins it to the server
+ * copy, the same way it pins every other duplicated money rule in this repo.
+ */
+export const GIFT_HOURS: Record<string, number> = {
+  residential: 4,
+  deep: 5.5,
+  premium: 8,
+  airbnb: 4,
+  moving: 4.5,
+};
+
+/**
+ * What a gifted clean costs, in cents, read off the same ladder `quote()` reads.
+ *
+ * ⚠️ Reads `SERVICES[...].ladder` directly rather than calling `quote()`, because a gift buys the
+ * work and nothing else — no booking fee, no cover, no add-ons, no multi-Xooter discount. Running
+ * it through `quote()` would attach lines a gift does not include.
+ */
+export function giftPriceCents(serviceType: string): number | null {
+  const hours = GIFT_HOURS[serviceType];
+  if (hours === undefined) return null;
+  const service = SERVICE_ALIASES[serviceType];
+  if (!service) return null;
+  const cents = SERVICES[service]?.ladder[String(hours)];
+  return cents === undefined ? null : cents;
+}

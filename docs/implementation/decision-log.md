@@ -1089,3 +1089,61 @@ quietly.
 deleted in the same change, every reader that assumes one `bookings` row per Xooter rewritten (job
 list, tracking, earnings, ratings, replacement, payout), then `create-booking`,
 `create-booking-request` and `respond-xooter-job` redeployed.
+
+## ZD-038
+
+**Gift prices come from the ladder. The gift page was quoting a ghost.**
+2026-09-04.
+
+### What was wrong
+
+`src/pages/app/GiftClean.tsx` — **routed at `/app/gifts`, in the nav and in the omnibox** — and
+`supabase/functions/ops-workflow/index.ts` each carried their own copy of:
+
+```js
+const servicePrices = { residential: 270, deep: 365, airbnb: 315, premium: 420, moving: 455 };
+```
+
+⚠️ **None of those five numbers exists in `_shared/pricing.ts`.** And **270 and 315 are two of the
+exact phantom prices ZD-037 established had never been charged by anything** — the gift page was
+quoting the ghost ladder out of a document that was itself wrong, months after the code stopped
+using it.
+
+⛔ **`pricing-parity.test.ts` never covered gift**, so a shipped, routed page displayed prices no
+other surface would honour and nothing failed. Under the CPA the displayed price is the price, and
+this repo has now shipped a screen showing one figure while charging another **four** times.
+
+### The fix
+
+`GIFT_HOURS` and `giftPriceCents()` in `_shared/pricing.ts`, mirrored in `src/lib/xoot-pricing.ts`.
+A gift buys a whole clean, so it needs a duration; the price then comes from the real ladder like
+every other surface.
+
+| Service | Hours | Price |
+|---|---|---|
+| residential | 4 | **R250** |
+| deep | 5.5 | **R296** |
+| premium | 8 | **R376** |
+| airbnb | 4 | **R304** |
+| moving | 4.5 | **R320** |
+
+⚠️ **`giftPriceCents` returns `null` for a service nobody priced, and `ops-workflow` fails the
+request rather than defaulting.** A silent default amount is how a wrong number reaches a customer.
+
+⚠️ **A gift is priced on the work only** — no booking fee, no cover, no add-ons, no multi-Xooter
+discount. That is why the client helper reads the ladder directly instead of calling `quote()`,
+which would attach lines a gift does not include.
+
+### The guard
+
+`src/lib/gift-pricing-parity.test.ts` — six assertions. It pins client to server, pins both to the
+ladder, requires a `null` refusal for an unpriced service, and **fails if either writer reintroduces
+a literal rand figure or the identifier `servicePrices`**. Proved by planting the exact table that
+shipped and by drifting a client duration; both failed before restore.
+
+### ⛔ What this does NOT do
+
+**It does not make gifting work.** There is still no redemption path — nothing sets `paid`, `sent`
+or `redeemed`, nothing writes `redeemed_at`, and the recipient is never notified. This change makes
+the *price* honest; the *product* is still capture-only and waits on a founder decision about gift
+economics and **CPA s63** voucher expiry. ⛔ **No marketing may show a gift being received.**

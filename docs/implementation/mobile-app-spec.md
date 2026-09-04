@@ -28,7 +28,7 @@ is a working JSX prototype. It will be read once more, months from now, by someo
 | `Tracking.jsx` | Live job state | ✅ `booking_status_events` + state machine |
 | `Visits.jsx` | History | ✅ `bookings` |
 | `Rewards.jsx` | XootCred, referrals | ✅ `xootcred_ledger`, `referrals` |
-| `Gift.jsx` | Gift a clean | ⛔ **No server support** — no gift table, no writer |
+| `Gift.jsx` | Gift a clean | ⚠️ **Capture only** — table + writer + routed page exist; **no redemption path** |
 | `CarePlus.jsx` | Membership | ✅ `care-plus-membership.ts` |
 | `Profile.jsx` | Account, household profile | ✅ `household_profiles` |
 | `Frame.jsx` / `Overlays.jsx` | Shell, sheets, toasts | n/a — chrome |
@@ -39,11 +39,35 @@ is a working JSX prototype. It will be read once more, months from now, by someo
 
 ### 🛑 Three findings that matter more than the screen list
 
-**1. `Gift.jsx` has no server behind it.** There is no gift table, no gift writer, no redemption
-path. It is the one screen in the set that is **a product proposal wearing a design's clothes**.
-Building it would mean designing gift economics — who pays, when it is charged, what happens if the
-recipient never books, whether it expires (⚠️ CPA s63 governs unredeemed vouchers). ⛔ **Not a port.
-A founder decision.**
+**1. `Gift.jsx` cannot deliver a gift. ⚠️ CORRECTED 2026-09-04 — the first version of this line
+was wrong.**
+
+It said *"there is no gift table, no gift writer, no redemption path."* **Two-thirds of that is
+false**, and a full backend search found:
+
+- ✅ **`public.gift_clean_orders` has existed since `20260518123000`** — purchaser, recipient,
+  occasion, message, amount, and a status check of
+  `pending_payment | paid | sent | redeemed | cancelled`
+- ✅ **A writer exists** — `ops-workflow/index.ts`, action `gift_clean_order_requested`
+- ✅ **A routed page already ships** — `src/pages/app/GiftClean.tsx` at `/app/gifts`, in the nav and
+  the omnibox
+
+⛔ **The accurate third: there is no redemption path.** Nothing anywhere sets `paid`, `sent` or
+`redeemed`; nothing writes `redeemed_at`; the recipient is never notified and cannot book against a
+gift. **Three of the five states in the constraint are unreachable.**
+
+So the honest one-liner is: **someone can record a gift order; nobody can pay for it, be told about
+it, or redeem it.**
+
+⚠️ **The search also found a live money defect, now fixed as ZD-038.** Both `GiftClean.tsx` and
+`ops-workflow` hardcoded `{ residential: 270, deep: 365, airbnb: 315, premium: 420, moving: 455 }` —
+numbers that existed nowhere in `_shared/pricing.ts`, two of which (270, 315) are the exact phantom
+prices ZD-037 proved had never been charged by anything. Gift now prices from the ladder and
+`gift-pricing-parity.test.ts` pins it.
+
+**What remains a founder decision** is the gift *economics*: who pays, when it is charged, what
+happens if the recipient never books, and whether it expires (⚠️ **CPA s63 governs unredeemed
+vouchers**). ⛔ Not a port.
 
 **2. Every Xooter-facing screen is behind LRA s200A.** Four of sixteen. The classification decision
 does not just block recruitment *marketing* — **it blocks a quarter of the app.**
