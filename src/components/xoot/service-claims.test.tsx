@@ -4,7 +4,9 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { SERVICE_ALIASES, quote } from "@/lib/xoot-pricing";
+import { CarePlusBand } from "./CarePlusBand";
 import { Footer } from "./Footer";
+import { GiftClean } from "./GiftClean";
 import { Services } from "./Services";
 
 /**
@@ -109,5 +111,112 @@ describe("the retirement is recorded where the next person will look", () => {
         readFileSync(join(dir, f), "utf8"),
       ));
     expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * The two sections ported from the handoff on 2026-09-04 say only what the product can keep.
+ *
+ * ⚠️ **The handoff is the source of truth for how these look. It is not the source of truth for what
+ * Xoot may promise** — and reading it against `Xoot Legal.dc.html`, `care-plus.ts` and
+ * `ops-workflow/index.ts` turned up eight statements the product cannot back. The obvious way to
+ * "finish" either section is to restore them from the design, so each is pinned here.
+ *
+ * Matched by meaning rather than by the design's exact sentence: a guard pinned to "It never
+ * expires" passes the moment someone writes "yours forever", which is the same promise.
+ */
+const renderText = (ui: React.ReactElement) => {
+  const { container } = render(<MemoryRouter>{ui}</MemoryRouter>);
+  return container.textContent ?? "";
+};
+
+describe("CarePlusBand claims only what the code backs", () => {
+  it("never says XootCover is included", () => {
+    /*
+     * ⛔ The single most important assertion in this file.
+     *
+     * The design's CARE_COMPARE lists "XootCover included" as a tick on BOTH columns. But
+     * `design/handoff-2026-09-03/Xoot Legal.dc.html` states, in its own drafting constraints, that
+     * "XootCover is described as intended cover with Genric, NOT as cover in force, because it is
+     * not placed yet" — and `locked-commercial-facts.md` agrees: Booking Cover is "optional and only
+     * preselected when legally and commercially approved."
+     *
+     * Two of the three sources say the cover does not exist yet. Telling a customer an insurance
+     * product covers them when it has not been placed is the worst claim in this repo to get wrong.
+     */
+    expect(renderText(<CarePlusBand />)).not.toMatch(/xootcover|cover included|insured|insurance/i);
+  });
+
+  it("quotes no cadence discount the server does not give", () => {
+    // `care-plus.ts` documents 15% weekly / 10% fortnightly / 5% monthly and then flags, in its own
+    // header, that `create-booking` applies a FLAT 10% and ignores cadence entirely. A band quoting
+    // 15% quotes a discount the server will not apply — the defect this repo has shipped three times.
+    const text = renderText(<CarePlusBand />);
+    expect(text).not.toMatch(/\b(15|5)\s?%/);
+    expect(text).not.toMatch(/weekly|fortnightly/i);
+  });
+
+  it("does not promise the same Xooter every time", () => {
+    /*
+     * `PREMIUM_OUTCOMES` says "The same person every time"; `STANDARD_OUTCOMES` hedges — "your
+     * favourite, WHEN THEY'RE FREE". The live tier includes every outcome, so the pair contradicts
+     * itself, and `launch-protocol.md` gate 5 is open: there are no activated Xooters.
+     *
+     * Promising a named person weekly from a roster that does not exist is a representation Xoot
+     * cannot keep, and under CPA s41 intent is not the test.
+     */
+    const text = renderText(<CarePlusBand />);
+    expect(text).not.toMatch(/same (person|Xooter) every time|every week|week after week/i);
+  });
+
+  it("states the break-even rather than only the best case", () => {
+    // `care-plus.ts`: a monthly booker is R45 down and "the copy must keep saying so". A band that
+    // showed only the four-visit gain would be quoting a saving most members do not get.
+    const text = renderText(<CarePlusBand />);
+    expect(text).toMatch(/costs you more than it saves/i);
+  });
+
+  it("mentions no rescheduling rule, because there is none", () => {
+    // "Free rescheduling" is a row in the design's CARE_COMPARE and appears nowhere in this
+    // codebase — zero hits in care-plus.ts. There is no rule to point at, free or otherwise.
+    expect(renderText(<CarePlusBand />)).not.toMatch(/reschedul/i);
+  });
+});
+
+describe("GiftClean promises nothing the gift path cannot do", () => {
+  /*
+   * Measured, not assumed: `ops-workflow/index.ts` handles `gift_clean_order_requested` by inserting
+   * a `gift_clean_orders` row and a `payment_records` row stamped
+   * `provider_required: "PayFast credentials not connected"`.
+   *
+   * So a gift cannot be paid for, delivered, redeemed or refunded today. The design's own header
+   * sells all four.
+   */
+  it.each([
+    ["payment", /pay once|pay now|pay today|checkout|charged now/i],
+    ["delivery", /they get a card|we.ll send|sent to them|delivered to/i],
+    ["refund", /comes back to you|refundable|ask for it back|money back/i],
+    ["expiry", /never expires|no expiry|doesn.t expire|yours forever/i],
+  ])("makes no %s promise", (_kind, pattern) => {
+    expect(renderText(<GiftClean />)).not.toMatch(pattern);
+  });
+
+  it("shows a price the gift resolver produced, never a literal", () => {
+    // ZD-038: this section's app-side twin quoted a hardcoded table — 270/365/315/420/455 — that
+    // existed nowhere in the ladder. Two of those were ZD-037 phantom prices.
+    const source = readFileSync(
+      join(process.cwd(), "src/components/xoot/GiftClean.tsx"),
+      "utf8",
+    );
+    expect(source).toMatch(/giftPriceCents\(/);
+    expect(source).not.toMatch(/\b(270|365|315|420|455)\b/);
+    expect(source).not.toMatch(/servicePrices/);
+  });
+
+  it("claims no popularity it has no bookings to support", () => {
+    // The design's Mother's Day hint says "the most-gifted day of the year on Xoot". Production
+    // holds zero completed bookings, so there is no most-gifted anything — the same fabricated
+    // evidence class the Reviews section is excluded for.
+    expect(renderText(<GiftClean />)).not.toMatch(/most[- ]gifted|most popular|customers love|thousands/i);
   });
 });

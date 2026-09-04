@@ -113,8 +113,23 @@ const harden = async (ctx) => {
   });
 };
 
-/** Phone frame — what a TikTok/Reels viewer expects a screen recording to look like. */
+/*
+ * ── The four frames, from the design's own responsive contract ──────────────────
+ *
+ * `design/handoff-2026-09-03/Xoot Responsive Check.dc.html` is not a mood board — it renders the
+ * website at exactly four viewports, and those are the sizes the design is claimed to work at:
+ *
+ *     iPhone 390x844 · Landscape phone 844x390 · iPad 834x1112 · Laptop 1280x800
+ *
+ * ⚠️ **This script shot two of them and had never rendered landscape phone or iPad**, while the
+ * design source calls `useLandscapeCompact()` explicitly — so a breakpoint the designer wrote code
+ * for had never once been looked at. Landscape phone is the cruel one: 390px of height with a
+ * fixed nav on top leaves very little, and it is what someone gets watching a video and tilting.
+ */
 const PHONE = { width: 390, height: 844, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
+const PHONE_LANDSCAPE = { width: 844, height: 390, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
+const IPAD = { width: 834, height: 1112, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+const LAPTOP = { width: 1280, height: 800, deviceScaleFactor: 2 };
 const DESKTOP = { width: 1440, height: 900, deviceScaleFactor: 2 };
 
 const shots = [];
@@ -208,6 +223,13 @@ async function capture(id, path, viewport, { at = 0, wait = 2500, note = "" } = 
  * The `at` offsets are read from the measured section positions on the homepage.
  */
 await capture("site-hero-phone", "/", PHONE, { note: "Hero above the fold, phone" });
+// The two sections ported 2026-09-04 — design positions 2 and 3, absent from the site until then.
+await capture("site-gift-phone", "/", PHONE, { at: 900, note: "Gift a clean, phone" });
+await capture("site-careplus-phone", "/", PHONE, { at: 1750, note: "Care+ band, phone" });
+/* The design's own four frames. These exist to be LOOKED at, not posted — a layout check. */
+await capture("frame-phone-landscape", "/", PHONE_LANDSCAPE, { note: "844x390 — never rendered before" });
+await capture("frame-ipad", "/", IPAD, { note: "834x1112 iPad" });
+await capture("frame-laptop", "/", LAPTOP, { note: "1280x800 laptop" });
 await capture("site-services-phone", "/", PHONE, { at: 3050, note: "The six services, phone" });
 await capture("site-trust-phone", "/", PHONE, { at: 4900, note: "Trust workflow, phone" });
 await capture("site-refer-phone", "/", PHONE, { at: 19080, note: "Referral — R100 for them, R100 for you" });

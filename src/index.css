@@ -2006,3 +2006,44 @@
     transform: none !important;
   }
 }
+
+/*
+ * ── Landscape-compact: the design's own breakpoint ──────────────────────────────
+ *
+ * `(orientation: landscape) and (max-height: 560px)` is taken verbatim from the handoff's
+ * `xoot/rwd.js:50` — `useLandscapeCompact()`. `Xoot Responsive Check.dc.html` lists
+ * **844×390 landscape phone** as one of the four viewports the design is claimed to work at.
+ *
+ * ⚠️ **Nothing had ever rendered that frame.** `capture-app.mjs` shot portrait phone and desktop
+ * only, and the first landscape capture (2026-09-04) showed the hero headline filling the entire
+ * viewport: nav, badge, two lines of 60px display type, and then the fold. No paragraph, no service
+ * picker, no CTA. Someone who tilts their phone mid-scroll sees a headline and nothing to do.
+ *
+ * The handoff anticipated exactly this. Its hero comment at `SiteTop.jsx:296` reads: *"viewport, so
+ * the hero becomes a scroll with nothing in it — the image gets capped instead."* `68vh` below is
+ * its number, not one I chose.
+ *
+ * Scoped to `.xoot-hero` rather than applied globally: this is a hero problem — a section that
+ * deliberately sizes itself against the viewport — and the rest of the page is ordinary flow that
+ * scrolls perfectly well when it is short.
+ */
+@media (orientation: landscape) and (max-height: 560px) {
+  .xoot-hero {
+    --hero-compact: 1;
+  }
+
+  /* Down from md:text-6xl (60px). Two lines at 32px leaves room for the paragraph and the CTA. */
+  .xoot-hero h1 {
+    font-size: 2rem;
+    line-height: 1.08;
+  }
+
+  .xoot-hero p {
+    font-size: 0.9375rem;
+  }
+
+  /* The design's value. Capping the photo is what stops the grid row growing past the fold. */
+  .xoot-hero-photo {
+    max-height: 68vh;
+  }
+}

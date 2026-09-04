@@ -1,5 +1,7 @@
 import { Navbar } from "@/components/xoot/Navbar";
 import { BookingHero } from "@/components/xoot/BookingHero";
+import { CarePlusBand } from "@/components/xoot/CarePlusBand";
+import { GiftClean } from "@/components/xoot/GiftClean";
 import { Services } from "@/components/xoot/Services";
 import { NearbyWorkers } from "@/components/xoot/NearbyWorkers";
 import { HowItWorks } from "@/components/xoot/HowItWorks";
@@ -44,6 +46,11 @@ const Index = () => {
       <main className="relative z-20">
         <h1 className="sr-only">Xoot - Premium home services with trust, safety, and retention workflows</h1>
         <BookingHero />
+        {/* Design positions 2 and 3. The handoff puts gifting and Care+ immediately under the fold
+            because they are the two commercially loudest sections; the shipped homepage had neither
+            until 2026-09-04, so the two things Xoot most wants to sell were below eleven others. */}
+        <GiftClean />
+        <CarePlusBand />
         <TrustedBy />
         <ServiceAreaMap />
         <Services />

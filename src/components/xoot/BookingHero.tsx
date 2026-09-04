@@ -52,7 +52,7 @@ export const BookingHero = () => {
   };
 
   return (
-    <section className="relative overflow-hidden gradient-hero">
+    <section className="xoot-hero relative overflow-hidden gradient-hero">
       <div className="container relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 py-8 lg:py-20 items-center">
         <div className="relative z-10 animate-fade-up">
           <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 mb-4 lg:mb-6 border border-accent/20">
@@ -145,8 +145,28 @@ export const BookingHero = () => {
         </div>
 
         <div className="relative animate-scale-in hidden md:block">
-          <div className="relative aspect-4/5 rounded-4xl overflow-hidden shadow-warm">
-            <img src={heroImg} alt="Friendly Xoot cleaner finishing a residential clean" className="h-full w-full object-cover" width={1280} height={1600} />
+          <div className="xoot-hero-photo relative aspect-4/5 rounded-4xl overflow-hidden shadow-warm">
+            <img src={heroImg} alt="Illustration of a home-care professional finishing a clean" className="h-full w-full object-cover" width={1280} height={1600} />
+            {/*
+              ⚠️ **The AI marker, added 2026-09-04.** `hero-xoot.jpg` is a generated image, and it
+              had been on the homepage unmarked since the site was built.
+
+              `docs/marketing/ugc-and-ads.md` says "AI-generated marker, every asset, no exceptions"
+              and `platform-playbooks.md` lists disclosure as a Meta and TikTok requirement. That
+              rule was being applied to ad creative while the largest generated image Xoot shows
+              anyone carried nothing — the homepage is not an exception, it is the main case.
+
+              The alt text changed with it: it said "Friendly Xoot cleaner", which asserted the
+              person is a Xooter. No Xooter has been activated (gate 5), so it named a member of
+              staff who does not exist.
+
+              ⛔ The handoff's `xooter-female-polo.webp` is NOT the fix, tempting as it is — it is
+              the only asset showing the real uniform, and it has "HIGGSFIELD AI" burned into the
+              bottom-right corner. See NEEDS-FOUNDER.
+            */}
+            <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-foreground/55 px-2.5 py-1 text-[10px] font-medium tracking-wide text-background backdrop-blur-sm">
+              AI-generated illustration
+            </span>
             <div className="absolute inset-0 bg-linear-to-t from-foreground/40 via-transparent to-transparent" />
             <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
               <div className="liquid-glass-shell rounded-2xl p-3 shadow-card flex items-center gap-3 animate-fade-in">
