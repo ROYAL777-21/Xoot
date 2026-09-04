@@ -41,6 +41,20 @@ const walk = (dir: string): string[] =>
 const ANALYSIS = new Set([
   "growth-doctrine.md", "growth-strategy-2026.md", "hormozi-corpus-findings.md",
   "hormozi-findings.md", "growth-levers-2026.md", "growth-log.md", "idea-log.md",
+  /*
+   * ⚠️ `hormozi-playbooks.md` is analysis, not a draft, and the distinction is load-bearing here.
+   *
+   * It quotes the founder's own instruction — "use the cheaper pricing ladder for now" — in order to
+   * set the Price Raise playbook's counter-argument beside it. The banned-vocabulary rule is on
+   * POSITIONING Xoot as cheap; a file arguing about whether a cheap ladder is wise is the opposite
+   * of that, and failing on it would push the analysis toward vaguer language for no compliance
+   * gain. Same reason "that's not a bargain" was allowed to stand.
+   *
+   * ⛔ It is on this list because it is internal reference that nobody publishes — NOT to get a
+   * green tick. If any line of it is ever lifted into a draft, the draft is scanned, which is where
+   * the check belongs.
+   */
+  "hormozi-playbooks.md",
   "content-strategy-references.md", "personal-brand-doctrine.md", "reference-creators.md",
   "build-in-public-accounts.md", "measurement-spec.md", "automation-loops.md",
   "agent-orchestration.md", "company-social-playbook.md", "platform-playbooks.md",

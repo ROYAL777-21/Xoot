@@ -306,3 +306,48 @@ routine list last.** A routine that exists is not a routine that ran.
   `company-social` description drift is exactly the class of error prose review missed **three times
   across three files**, and this repo's own record — a green check that reviewed nothing, a fixture
   that could not fail — argues for a check over a convention.
+
+---
+
+## 📚 §6 — The reference library, and who reads what
+
+Added 2026-09-04, when the founder supplied the `$100M Playbook` series and `$100M Money Models`
+as source of truth. Extracted into
+[`hormozi-playbooks.md`](./hormozi-playbooks.md).
+
+**Why ownership is assigned rather than shared.** Eight agents with access to seven playbooks is
+eight agents each free to reach for a pricing play. The reason this file exists at all is that
+overlapping ownership produced three copies of the constraint logic; a shared library would do the
+same to commercial strategy. So each playbook has one reader.
+
+| Playbook | Reader | What they may do with it |
+|---|---|---|
+| **Hooks** | `creative-director` | Apply freely. Hooks change wording, not obligations. ⚠️ The one constraint: a call-out naming a suburb must name a **real launch suburb** — gate 5 |
+| **Marketing Machine** | `growth-orchestrator` | Propose a promotion rule (organic outlier → paid). ⛔ **Never keyed to views alone** — the View Trap is measured seven times, and recruitment output is judged on applications |
+| **Money Models** | `growth-orchestrator` | Propose offer *structures*. ⛔ Giveaways need CPA s36 compliance; Decoy and "Pay Less Now" risk s30/s41 |
+| **Retention** · **Lead Nurture** | `retention-analyst` | Apply freely — these are measurement and follow-up, not claims. Lead Nurture's Speed pillar has **nothing measuring it yet** |
+| **Pricing** · **Price Raise** | 🔒 **Correctness & Safety** | ⛔ **Read-only for every marketing agent.** These change locked commercial facts and engage CPA s30/s41. A play from here reaches production only through a decision-log entry the founder signs |
+
+### ⛔ The refusal this adds to every marketing agent
+
+> **A playbook is not an authorisation.** If a play would change a price, a term, a commitment
+> period or a fee, the agent writes the proposal with its arithmetic and stops. It does not edit
+> `xoot-pricing.ts`, `_shared/pricing.ts` or `locked-commercial-facts.md`.
+
+This is not a new rule; it is the existing locked-facts rule stated where an agent holding a
+playbook full of pricing plays will actually meet it. `marketing-claim-rules.test.ts` enforces the
+pricing half automatically — it fails on any rand figure `basePrice()` does not produce. **A
+structural play (a term, a fee, a giveaway) has no such guard and needs a human.**
+
+### ⚠️ One correction already caught, recorded so it is not re-made
+
+An earlier draft filed **Care+ as Hormozi's "Waived Fee Offer."** It is not. His waives a *setup fee
+of 3–5× the monthly rate* in exchange for a *twelve-month commitment*, with the fee payable on early
+cancellation — *"customers will stay longer if leaving costs more than staying."* Care+ waives a
+**per-booking R39 fee**, every booking, with no term and nothing owed on cancellation. It is a
+Continuity **Discount** Offer.
+
+The mistake matters because the obvious way to "finish" a Waived Fee Offer is to add the commitment
+term — and **CPA s14** lets a consumer cancel a fixed-term agreement on 20 business days' notice
+with only a *reasonable* penalty, so the clawback that makes the play work is the part South African
+law constrains most. Misfiling it would have pointed a future agent straight at that.
