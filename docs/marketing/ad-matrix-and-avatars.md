@@ -149,7 +149,9 @@ measuring them together is how a test tells you nothing.**
 - "Your Xooter, not a Xooter."
 
 **H5 — the direct offer** *(all · most aware)*
-- "Four hours. R280. Booked in ninety seconds."
+- "Four hours. R250. Booked in ninety seconds." ⚠️ *Was R280 — a price the server never charged.
+  Corrected 2026-09-04 to the ZD-037 ladder. This is a hook a renderer typesets verbatim, so the
+  figure and the four hours travel together or neither is used.*
 - "Your home. Handled. [Suburbs]."
 
 ⚠️ **H3 and H4 both make claims the product must actually keep.** The vetting line is true today —

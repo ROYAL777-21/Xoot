@@ -96,9 +96,12 @@ shows a flow that exists.
   cartoon mascot, cluttered, neon, stock-photo smile, price tags, numbers, currency symbols`
 - **On-screen text:** three cards — *"Pick your home size"*, *"Pick your day"*, *"Done"*
 - **Marker:** `AI-generated illustration` bottom-left, 5% frame height, full duration
-- **⛔ Never:** a price on the screen. `locked-commercial-facts.md` §Current Pricing Conflict is
-  **open** — the document locks R280/R325/R400 and `create-booking` charges R270/R315/R390. Until
-  that is resolved, **no generated frame contains a number**.
+- **⛔ Never:** a price on the screen. Not because the number is unknown — ZD-037 closed the
+  pricing conflict on 2026-09-03 and `locked-commercial-facts.md` now agrees with `basePrice()` —
+  but because **a generated frame is not a quote**. An illustration showing a figure invites a
+  reading that the figure applies to the viewer's home, and under the CPA the displayed price is
+  the price. Prices belong on surfaces that computed them, which is why the ad frames composite a
+  real screenshot of `quote()` rather than typesetting a number.
 
 ## B2 — "The room, illustrated" · `mess_to_fresh` · 9:16
 

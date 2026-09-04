@@ -176,9 +176,10 @@ which is the main reason Substack does not become a third production line.
 
 - ⛔ A customer story. Zero bookings exist, and a long-form format makes a fabricated one *more*
   convincing, not less — which under **CPA s41** makes it worse, not better.
-- ⛔ A price. `locked-commercial-facts.md` §Current Pricing Conflict is **open**: the document locks
-  R280/R325/R400 and `create-booking` still charges R270/R315/R390. Until that is resolved, no essay
-  states a number a reader could hold Xoot to.
+- ⛔ A price *in isolation*. The conflict that made this an absolute ban closed with ZD-037 on
+  2026-09-03 — the locked document and `basePrice()` now agree — so an essay **may** state the
+  ladder, provided it states the hours with it. What stays banned is a bare rand figure with no
+  scope attached: a reader holds Xoot to "R250 a clean", and the four hours are what make it true.
 - ⛔ A paid tier. Charging for a newsletter before the actual product takes money is the wrong first
   transaction.
 - ⛔ Cross-posting an essay verbatim to LinkedIn. Same idea, different room — the LinkedIn drafts are

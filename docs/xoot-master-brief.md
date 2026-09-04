@@ -300,9 +300,17 @@ on every service.** This includes the onboarding-embedded booking setup.
 
 **Recommended hours = the default preselected value.** Not a label — the picker starts there.
 
-### 4.0 ⚠️ Three-way pricing conflict — resolve before writing any pricing code
+### 4.0 ✅ Three-way pricing conflict — CLOSED 2026-09-03 by `ZD-037`
 
-There are currently **three incompatible pricing models** in play:
+> **Read this heading before the section.** It said *"resolve before writing any pricing code"* and
+> meant it for six weeks. It is now history: `ZD-037` reconciled the last of the three sets, and
+> `docs/product/locked-commercial-facts.md` states the same numbers `basePrice()` returns —
+> **R250 / R296 / R376**. `locked-facts-parity.test.ts` fails if they drift again.
+>
+> The models below are recorded because the reconciliation is only checkable if the things being
+> reconciled are written down. **None of them is current.** The current ladder is §4.1 onward.
+
+These were the **three incompatible pricing models** in play:
 
 1. **`docs/product/locked-commercial-facts.md`** — flat per home size: R280 small / R325
    medium / R400 large, + R39 one-time service fee, + **R21** Booking Cover *by Genric*.

@@ -62,7 +62,7 @@ a worse outcome than a Xooter you never recruited.
 > | Gold | 50 | 75% |
 > | Platinum | 120 | 80% |
 >
-> On a standard 4-hour home clean at R280, that is **R182 to you at New rank and R224 at Platinum**.
+> On a standard 4-hour home clean at R250, that is **R162.50 to you at New rank and R200 at Platinum**.
 > The rank also depends on a reliability score — arriving when you said you would, finishing the
 > scope, and how clients rate the work. It is published in the app so you always know where you are
 > and what the next rung needs.
@@ -122,8 +122,8 @@ Indeed rewards a plain structure and specific search terms. Same facts, differen
 > - Platinum (120) — 80%
 >
 > Worked examples at current prices:
-> - 4-hour home clean, R280 → **R182** at New rank, **R224** at Platinum
-> - 8-hour home clean, R400 → **R260** at New rank, **R320** at Platinum
+> - 4-hour home clean, R250 → **R162.50** at New rank, **R200** at Platinum
+> - 8-hour home clean, R376 → **R244.40** at New rank, **R300.80** at Platinum
 >
 > Payment is per completed booking into your own bank account. **We do not guarantee a number of
 > bookings** — how much you earn depends on how many jobs you accept and complete.
@@ -166,8 +166,13 @@ Indeed rewards a plain structure and specific search terms. Same facts, differen
   is the remainder.
 - **Reliability thresholds** — `minScore` on the same bands: 85, 88, 93, 97, with a 3-point
   hysteresis so one bad week does not demote someone.
-- **Prices** — `docs/product/locked-commercial-facts.md`: small R280 / 4h, medium R325 / 5.5h,
-  large R400 / 8h.
+- **Prices** — `docs/product/locked-commercial-facts.md` after ZD-037: small **R250** / 4h, medium
+  **R296** / 5.5h, large **R376** / 8h. ⚠️ This file carried a higher set of prices until
+  2026-09-04 — numbers the server had never charged, which overstated every earnings example below
+  them. The superseded figures are recorded in `docs/implementation/decision-log.md` under ZD-037
+  and are deliberately not repeated here: `marketing-claim-rules.test.ts` cannot tell a price a
+  draft is retiring from a price a draft is claiming, and a recruitment ad is the wrong place to
+  discover the difference.
 - **Training modules** — seeded by `20260421080011`: cleaning standards and chemical safety,
   hospitality and communication, eco-friendly practices, child-safety essentials, garden pruning.
 

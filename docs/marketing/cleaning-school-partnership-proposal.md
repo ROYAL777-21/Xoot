@@ -96,8 +96,8 @@ figures is worth more than a partner you flattered once.
 ### Their second question will be about pay
 
 Have the ladder ready and quote it exactly: 65% at New, 67.5% at 5 completed jobs, 70% at 15, 75% at
-50, 80% at 120, with a reliability score gate at each rung. On a R280 four-hour clean that is R182 to
-the Xooter at New and R224 at Platinum.
+50, 80% at 120, with a reliability score gate at each rung. On a R250 four-hour clean that is R162.50
+to the Xooter at New and R200 at Platinum.
 
 **Do not quote a monthly figure.** There is no volume to support one, and under CPA s41 a
 representation is misleading regardless of intent.

@@ -45,7 +45,7 @@ Each has a named source. These are not preferences.
 
 | Rule | Why | Source |
 |---|---|---|
-| **No price. Anywhere. Not one.** | The locked document says R280/R325/R400; `create-booking` charges R270/R315/R390. **The conflict is open.** Under the CPA the displayed price *is* the price, so publishing either number could be publishing the wrong one | `locked-commercial-facts.md` §Current Pricing Conflict |
+| **A price only from the ladder, and only with its hours** | ⚠️ **Changed 2026-09-04.** This read "No price. Anywhere. Not one." while the locked document and `create-booking` disagreed. **ZD-037 closed that conflict** — they agree now, and `marketing-claim-rules.test.ts` fails on any rand figure `basePrice()` does not produce. So the ban is narrower than it was: state the ladder if you state the hours, never a bare figure | `locked-commercial-facts.md`, ZD-037 |
 | No customer story, testimonial or outcome claim | **Zero bookings have completed.** A misleading representation is misleading regardless of intent | CPA s41 |
 | No giveaway, competition or prize mechanic | Regulated: written rules, no required consideration, records kept. A compliance exercise, not a post | CPA s36 |
 | Nothing recruitment-facing publishes | A person below the BCEA threshold is *presumed* an employee if any of seven factors applies | LRA s200A |
