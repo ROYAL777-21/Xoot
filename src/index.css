@@ -383,6 +383,22 @@
   text-wrap: balance;
 }
 
+/* The ALL-CAPS section label — the kit calls it "the single most recognisable Xoot text style",
+   and until now nothing in the app consumed it. Every ported section wants it, and eight copies
+   of `text-[11px] font-extrabold uppercase tracking-[0.1em]` is how a token stops being a token.
+
+   Reads the kit for size, weight and tracking, because those are shape. Colour is deliberately
+   NOT set here: the caller picks it from the semantic layer, so the label cannot smuggle a raw
+   kit colour underneath text. */
+@utility xoot-label {
+  font-family: var(--xoot-font-core);
+  font-size: var(--xoot-label);
+  line-height: var(--xoot-label-lh);
+  font-weight: var(--xoot-weight-strong);
+  letter-spacing: var(--xoot-track-label);
+  text-transform: uppercase;
+}
+
 @utility tap-target {
   min-height: 44px;
   min-width: 44px;
