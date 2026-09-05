@@ -530,3 +530,51 @@ cover**; the document follows it.
 - **No email address appears on any legal page.** The design flags `newsletter@xoot.co.za` as the
   wrong route for a POPIA request and notes POPIA gives you **30 days** to answer one. The repo is
   worse than the flagged version: a data subject currently has no route at all.
+
+---
+
+## Added 2026-09-05 — two findings from the design governance layer
+
+### 6. ⛔ By the repository's own Gate 1, no design is approved
+
+`design/QUALITY-GATES.md` defines six gates, and **Gate 1 is design approval**. The register that
+records approvals — `design/approved-frames.json` — is empty:
+
+```json
+{ "version": 1, "updatedAt": null, "frames": [] }
+```
+
+So every surface built this week is unapproved under the repo's own contract, including the
+`GiftClean` and `CarePlusBand` sections just added to the homepage.
+
+⛔ **A Claude session must not populate this file.** Design approval is your signature; a session
+approving its own work is the same defect as a green check that reviewed nothing — which this
+repository has already shipped once.
+
+**What I need:** either approve the frames (and I will record them), or tell me the gate is not in
+force and I will note that instead of leaving a contract everyone ignores.
+
+### 7. ⚠️ There is no image provenance register, and `PHOTOGRAPHY.md` requires one
+
+`design/PHOTOGRAPHY.md` §Governance:
+
+> *"Every image records source, licence, release/consent, owner, permitted channels, expiration
+> where applicable, crop variants, focal point, and alternative text."*
+
+**No such record exists for any image in the repository.** `src/assets/hero-xoot.jpg` — the largest
+image any visitor sees — has none of it. Marking it `AI-generated illustration` yesterday met the
+disclosure rule but not this one.
+
+This also settles the hero question from item 2 more firmly than I put it then: the handoff's
+`xooter-female-polo.webp` fails this clause on two counts — no licence record, and a **"HIGGSFIELD
+AI" watermark** in the frame. And `PHOTOGRAPHY.md` separately says to avoid *"generic stock poses,
+staged luxury that misrepresents the product"*.
+
+**What I need:** a decision on the hero image, and whether you want me to build the provenance
+register (a small `design/image-provenance.json` alongside `approved-frames.json` would do it).
+
+### 8. ⚠️ `design/references/REFERENCE-MAP.md` still says "Zoot"
+
+Its interpretation rule 3 reads *"**Zoot** remains recognisably one product."* A pre-rename survivor
+sitting in the file that defines how every other design reference is read. One-word fix, but it is
+in a governance document so I am flagging rather than quietly editing.

@@ -166,6 +166,24 @@ form of payment · annual renewal fee on top of monthly · guarantee/warranty so
   ⚠️ *The source's own figures came through the PDF extraction partly unreadable, so they are not
   quoted here.* The mechanic is the point, and the arithmetic for Xoot is ours to do.
 
+### "Rules of Pricing I Follow"
+
+1. **Raising prices makes money twice.** More gross profit per customer, *and* less cost to deliver
+   because there are fewer customers. The worked example: **$99 → $299 lost 30% of customers**, so
+   200 × $99 became 140 × $299 — *"revenue more than doubled while my costs dropped by 30%."*
+   (Checked: $19,800 → $41,860.)
+2. **Price for lifetime money, not for the most customers or the biggest first purchase.**
+   *"I used to say the highest price I could get people to buy at. But now I want the price that
+   people will keep paying at."*
+3. **Higher prices win fewer customers but often more money.** Doubling $10 → $20 usually does not
+   halve conversion. *"This is fundamentally what all price increases take advantage of."*
+4. **A high close rate means the price is too low.** ⚠️ *The threshold percentage did not survive
+   PDF extraction cleanly and is deliberately not quoted here.* The rule stands without it: if
+   almost nobody says no, the price is not doing any filtering.
+
+⚠️ **Rule 2 is the one that bears on Xoot**, and it cuts both ways against the cheap-ladder plan —
+see Price Raise below.
+
 ⛔ **Neither may be implemented from this file.** Care+ pricing is a **locked commercial fact**
 (`docs/product/locked-commercial-facts.md`), and CLAUDE.md says those move only through a
 decision-log entry. Both also touch **CPA s41**: a rate advertised as monthly while billed every 28
@@ -183,8 +201,25 @@ The playbook opens on a business owner with three symptoms, all from underpricin
 3. *"I can get sign ups at these rates, but I lose so much money each month I have to pay employees
    out of what's left of my savings. **I can't afford to run paid ads.**"*
 
-Contents: why raising prices is a good idea · rules for raising · how to pick your price · **the
-perfect price raise letter**.
+### The Perfect Price Raise Letter — **RAISE**
+
+Five sections, and the acronym is the running order:
+
+| | Section | What it does |
+|---|---|---|
+| **R** | **Remind** | Restate the value already delivered — *before* any mention of price |
+| **A** | **Address** | State the change directly. No burying it |
+| **I** | **Invest** | Frame it as investment in their future outcome |
+| **S** | **Soften** | A loyalty reward for existing customers |
+| **E** | **Explain** | The reasoning |
+
+Also covered: what to do about **incoming** customers during a raise (Eden's outlier corroborates —
+*"raise on new clients first"*), a worked gym letter, a checklist, and a template appendix.
+
+⚠️ **For Xoot the S is the legally loaded one.** A loyalty reward that is really a retained old
+price must be described accurately: under **CPA s30** a "was" price that was never charged, or a
+"discount" off a price nobody paid, is a prohibited representation. A grandfathered rate is fine —
+calling a raise a discount is not.
 
 ### ⚠️ This bears directly on a decision the founder has already made
 
@@ -202,7 +237,17 @@ overturn it.
 
 > *"If they do not show, they cannot buy."*
 
-**Four pillars: Availability · Speed · Personalization** (plus an execution section and a checklist).
+**Four pillars, each with the playbook's own one-line law:**
+
+| Pillar | The law | The playbook's line |
+|---|---|---|
+| **I — Availability** | *"If leads cannot schedule, they do not show."* | The more availability you have, the higher the chance leads take one |
+| **II — Speed** | *"Money loves speed. Wealth loves time. Poverty loves indecision."* | The faster you contact them, the more likely they schedule |
+| **III — Personalization** | *"Personalize, don't pressure."* | The more you make it for them, the more likely they respond |
+| **IV — Volume** | *"Volume negates luck."* | The more times you reach out, the more likely they answer |
+
+⚠️ An earlier draft of this file listed only three pillars because the fourth had not been read out
+of the source yet. It is **Volume**, and it is named here from the text rather than inferred.
 
 The playbook's origin is COVID: gyms — the entire customer base — were closed, and the response was
 software called ALAN (Artificial… Nurture) built to work the leads that already existed.
@@ -230,10 +275,81 @@ wrong posts.** Recruitment output is judged on applications, never reach.
 
 ---
 
-## Retention
+## Retention — the most immediately usable playbook here
 
-A churn checklist. Feeds `retention-analyst`, alongside Lead Nurture — the two are the same problem
-at different ends of the customer.
+> *"It costs five to twenty-five times more to acquire a new customer compared to retaining one."*
+
+Structure: the **Four Horsemen of Retention**, what churn is, price/value/churn, and the **Churn
+Checklist**.
+
+### 🥇 The leading indicator, and why it is the whole idea
+
+The worked example is a gym, and the mechanic transfers exactly:
+
+> Members attending **three sessions a week or more stuck**. Members at **two or fewer churned**.
+> The pattern was always the same — 3, 2, 2, 1, cancel.
+>
+> *"The good news: if you talked to them when their attendance goes down to two sessions, you could
+> rescue them."* With the intervention: 3, **2 (reach out)**, 3, 3, 3.
+
+**The point is not attendance. It is that churn announces itself before it happens**, and there is a
+threshold where an intervention still works.
+
+⚠️ **Xoot's equivalent is booking frequency, and nothing currently watches it.** `retention-analyst`
+owns churn and cohorts; there is no trigger on a customer's cadence falling. That is the single
+cheapest retention mechanism in this file and it is unbuilt.
+
+### Exit interviews — the specific claim
+
+> *"If a person says they want to leave then **talk to them before they do**. Do this right, and save
+> about HALF the phone and email cancellations. Yes, really."*
+>
+> Set the expectation **at onboarding** that an exit interview is part of cancelling. Then use the
+> cancellation notice as the trigger. *"Realistically you'd cut churn by 25% (assuming half show).
+> That's a respectable 33% increase in LTV."*
+
+✅ `retention-analyst`'s own description already says it may be asked to *"design a retention
+intervention or exit-interview flow."* This is the source for that work.
+
+⚠️ **Under the CPA, cancelling must not be made difficult.** Setting an expectation and offering a
+conversation is fine; making the interview a *condition* of cancelling is not. Design it as an
+offer, not a gate.
+
+### The rest of the checklist
+
+Reach out twice a week praising participation and solving small problems · handwritten cards at
+signup and at the 3/6/12-month referral asks · member events on an internal calendar, *"regular to
+you and random to them"*, every 21/42/63 days.
+
+⚠️ Handwritten cards and events are a **supply-side cost per customer**. They work in a gym with one
+location. Xoot's Xooters travel between homes, so the analogue is more likely the Xooter than the
+customer — worth deciding deliberately rather than porting the tactic.
+
+---
+
+## Marketing Machine — and ⛔ why almost none of it is usable yet
+
+The playbook's engine is **proof-based marketing**: turning customers into ad creative.
+
+- A **testimonial competition**, judged not by taste but by performance: *"we measure the best by —
+  drum roll — its performance as an ad. The one with the most conversions over 30 days wins."*
+- A **weekly proof harvest**: names of people with results, scraped social tags, chat screenshots,
+  community comments, new 5-star reviews, unboxing and reaction videos.
+- *"The most important part of the testimonial is the hook."* Have them record several hooks before
+  they get into the story — which is the Hooks playbook applied to customer footage.
+
+### ⛔ The honest position
+
+**Every mechanism above requires customers, and Xoot has zero completed bookings.** There is no
+testimonial to harvest, no review to screenshot, no result to name. This is the playbook the
+`growth-orchestrator` owns and it is **gated on Gate 6**, not on effort.
+
+Recorded plainly because a knowledge base that lists tactics without their preconditions is how a
+team ends up fabricating the input. `docs/marketing/held-content/customer-proof.md` holds the
+scripts and the POPIA consent wording, ready for the day the gate clears.
+
+⚠️ **One part is usable now:** *"the most important part of the testimonial is the hook"* generalises
+to every asset, and `render-ads.mjs` already A/B-pairs each ad's hook with and without a call-out.
 
 ---
 

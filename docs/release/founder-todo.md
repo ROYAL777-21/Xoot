@@ -187,6 +187,14 @@ fine; the runners are absent.
 
 ---
 
+> 📋 **The short answer to "what is left?" is
+> [`go-live-checklist.md`](./go-live-checklist.md)** — added 2026-09-05, read from the code rather
+> than from this file. It lists the **seven conditions** the payment gate checks in sequence (it is
+> not one switch), the twelve `PAYFAST_*` secrets, and the two other blockers.
+>
+> ⚠️ It also records that **§65 and §109 of this document contradict each other** about whether the
+> website is live. That is not resolved here because it cannot be — see the checklist.
+
 ## Where production actually stands
 
 **The backend is finished. The product has never been live.** Those are both true, and holding them

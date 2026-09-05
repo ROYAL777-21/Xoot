@@ -29,6 +29,12 @@ scans when run locally at `54349e1`.
 Until it lifts, **a local run is the only evidence any change has**, and any claim of "CI is green"
 about work after 13 Aug is a claim about a run that never happened.
 
+> 📋 **Two registers added 2026-09-05:**
+> [`docs/release/go-live-checklist.md`](./docs/release/go-live-checklist.md) — what a functional app
+> still needs, read from the code. And
+> [`docs/SOURCES-OF-TRUTH.md`](./docs/SOURCES-OF-TRUTH.md) — every source of truth and, more
+> usefully, **which one wins when two disagree**.
+
 ## The open work now lives in GitHub issues, not here
 
 Added 2026-08-08. This file had grown to 81KB and was doing an issue tracker's job while the
