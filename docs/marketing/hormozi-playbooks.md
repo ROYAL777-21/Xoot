@@ -166,6 +166,34 @@ form of payment · annual renewal fee on top of monthly · guarantee/warranty so
   ⚠️ *The source's own figures came through the PDF extraction partly unreadable, so they are not
   quoted here.* The mechanic is the point, and the arithmetic for Xoot is ours to do.
 
+### The three pricing models
+
+> *"We've got: 1) cost plus pricing, 2) competitor based pricing, and 3) value based pricing."*
+
+**Cost-plus** — take your costs and add a margin.
+*Pros:* simple, and it covers your costs.
+*Cons, in the playbook's words:* **"Every person who would pay more because they need it more, you
+don't net on."** Costs change, you do not always know them ahead of time, and — the line that
+matters — ***"your customers have no idea what it costs you, so your costs don't matter to them."***
+
+**Competitor-based** — price against what others charge.
+
+**Value-based** — price against what the outcome is worth to the buyer.
+
+### ⚠️ Xoot's ladder is cost-plus, and that is a deliberate constraint rather than an oversight
+
+The ladder is built up from `LONG_JOB_FLOOR_CENTS_PER_HOUR` — **R47/hour**, set so a Xooter on the
+worst commission band still clears the national minimum wage on a ten-hour clean. That is cost-plus
+in its purest form: the floor is a cost, and the price is derived from it.
+
+The playbook would call that leaving money on the table. **It is not free to change**, because the
+floor is not a margin choice — it is a legal one, and `care-plus.test.ts` fails on 2027-01-31 to
+force a review before the minimum wage rise makes the ladder illegal.
+
+⛔ So the usable reading is narrow: **the floor sets the minimum, not the price.** Moving from
+cost-plus toward value-based means raising above the floor where the outcome justifies it, never
+lowering toward it. Any such move is a locked commercial fact and needs a decision-log entry.
+
 ### "Rules of Pricing I Follow"
 
 1. **Raising prices makes money twice.** More gross profit per customer, *and* less cost to deliver
@@ -279,8 +307,44 @@ wrong posts.** Recruitment output is judged on applications, never reach.
 
 > *"It costs five to twenty-five times more to acquire a new customer compared to retaining one."*
 
-Structure: the **Four Horsemen of Retention**, what churn is, price/value/churn, and the **Churn
+Structure: **the Horsemen of Retention**, what churn is, price/value/churn, and the **Churn
 Checklist**.
+
+⚠️ **A correction to an earlier draft of this file, which said "Four Horsemen".** I inferred that
+from the idiom. The source's digit does not decode through PDF extraction — the same glyph renders
+as `5` elsewhere in the document (`Week 4` is followed by `Week ti: CANCEL`), and the body reads
+*"I found ti common factors — which became The ti Horsemen of Retention"* and *"narrow it down to ti
+factors."* **So it is probably five, and "Four" was my pattern-matching rather than the text.**
+Written as "the Horsemen" until someone reads the PDF with working tooling.
+
+### What the Horsemen actually are — the parts that decoded
+
+**1. Learn everything you can about them.** Demographics, psychographics, income, business size,
+revenue. *"Survey customers if you don't know."* The worked example: a PR agency analyses its
+customers and finds one avatar *"pays more, stays longer and gets better results"* — and then serves
+only them.
+
+**2. Figure out how they used your stuff and how you treated them.** The common factors become
+**activation-point candidates**. Narrow the list, work down it, and accept that some will matter and
+some will not.
+
+> **Author Note: All Roads Lead To Activation.** *"Make finding activation points your top priority.
+> They have the greatest effect on customer churn. If you find the stuff that keeps people from
+> leaving, then you can do that stuff… and keep them from leaving."*
+
+**Bonus — update your messaging.** Advertise *to the people you found*. Update paid ads, organic
+content and onboarding to **select for** that customer, then treat them that way.
+
+⚠️ **The remaining items did not decode cleanly and are deliberately not invented here.**
+
+### 🥇 Why this is the most important idea in the corpus for Xoot
+
+An **activation point** is the behaviour that predicts staying — the gym's three-sessions-a-week.
+Xoot has never identified one. The candidate is obvious and untested: **the second booking**, or
+**booking the same Xooter twice**.
+
+⛔ Nothing in the product measures it, and `retention-analyst` cannot find it without the data.
+This is the cheapest high-value retention work available and it is unstarted.
 
 ### 🥇 The leading indicator, and why it is the whole idea
 
