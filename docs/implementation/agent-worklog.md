@@ -23,8 +23,63 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-Nothing held. **Release released the go-live claim on 2026-09-02** — and then had to reopen it.
-Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live statement in this repo.
+### 🔒 Correctness & Safety — 2026-09-05 — the frontend design port, website first
+
+Founder re-supplied the seven handoff artboards and the export zip. **Nothing was imported:** all
+seven `.dc.html` files are byte-identical to `design/handoff-2026-09-03/`, and the
+`claude.ai/design` share link 403s unauthenticated. So this **continues**
+`docs/implementation/design-port-plan.md` rather than restarting it.
+
+**Founder decisions, 2026-09-05:**
+
+- **Website first, then the app.** Phase 4 stays deferred until the site is shippable.
+- **Server before UI on the money surfaces.** I may write the ZD-035 migration,
+  `_shared/pricing.ts` and `create-booking`.
+- **Copy ports verbatim and each unbacked claim is flagged**, for one founder review pass —
+  rather than rewritten as it is reached, which is what the five previous sections did.
+  ⚠️ **This means the claim guards go red on purpose and the branch must not merge until the
+  founder rules.** One carve-out proposed and accepted-unless-reversed: the handoff's XootCover
+  *"included… no separate charge"* lines, which state a **false charge** against the R22 optional
+  line the server actually bills, and which the handoff's own Legal page forbids.
+
+**Holding, on `claude/frontend-ui-ux-prompt-sqxw11`:**
+
+- `src/components/xoot/**` — the remaining Phase 2 sections (`TrustedBy`, `ServiceAreaMap`,
+  `HowItWorks`, `NearbyXooters`, `FeedbackSection`, `HomeExpansion`, `Footer`, `TextFlip`)
+- `src/pages/Index.tsx`
+- New: `docs/xoot-frontend-design-port-prompt.md`, `docs/product/handoff-claim-review.md`
+
+**🔒 Flagged for Release — your paths, and why they cannot wait.** ZD-035 needs grants and RLS on
+`booking_assignees`, which `20260903120000_zd035_crew_and_zd036_referrals.sql:57` creates but
+leaves `revoke all from anon, authenticated` and referenced by no code. The crew price cannot be
+wired without it, so `supabase/migrations/**` is in scope. I will **prepare** the redeploy list for
+every `_shared/pricing.ts` importer and **not trigger it** — production deploys stay a human act.
+
+### ⚠️ Findings the other session should have now, before I finish
+
+Measured this session, against the deployed contract rather than the port plan:
+
+- **`docs/implementation/design-port-plan.md` is stale in one direction.** It lists ZD-036 as
+  "decided, not implemented" — `supabase/functions/_shared/referrals.ts` exists and
+  `create-booking` imports it. Verify its "not implemented" rows against `git log` before
+  repeating them.
+- 🔴 **There is no Care+ trial on the server.** `grep -i trial` across every edge function and all
+  82 migrations returns **nothing**; `user_subscriptions` has no trial column. The only route to
+  `active` is a `paid` payment record via `activate-care-plus`, which no client calls. The
+  handoff's paywall, its `TrialTimeline`, and **our own Legal centre's Care+ terms** all promise a
+  free first month the backend cannot honour.
+- 🔴 **Gifting is half a flow.** `gift_clean_orders` exists and `GiftClean.tsx:41` writes it via
+  `ops-workflow`; `status` allows `sent`/`redeemed` and there is a `redeemed_at` column — but no
+  function ever sets either, and `grep gift_credit` across `supabase/functions/` returns nothing.
+  A gift can be bought and never delivered. CPA s63 governs expiry.
+- 🔴 **Laundry cannot be priced or booked.** The client ladder is `{}` so `quote()` always refuses,
+  and the server has no `laundry` ServiceId at all.
+- 🟠 **`src/components/xoot/FeedbackSection.tsx:46` invokes `create-support-ticket`, which does not
+  exist.** The feedback form 404s today. Fixing it as part of this claim.
+- 🟠 **There is no 13:00 booking slot** — the allow-list runs `07:00–12:30`, then `14:00`–`17:00`.
+
+**Release's go-live claim:** released 2026-09-02, then reopened. Read the 🚨 **Xoot is NOT live**
+entry below before you trust any go-live statement in this repo.
 
 ---
 
