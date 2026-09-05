@@ -43,7 +43,14 @@ export const FeedbackSection = () => {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke("create-support-ticket", {
+      /*
+       * `create-support-case`, not `create-support-ticket`. The latter has never existed in
+       * `supabase/functions/`, so this form returned 404 to everyone who used it and showed the
+       * generic "could not be sent right now" below, which cannot tell a missing function from a
+       * dropped connection. `create-support-case` reads the description as `body.description ??
+       * body.body`, so the payload underneath is already the right shape and is unchanged.
+       */
+      const { error } = await supabase.functions.invoke("create-support-case", {
         body: {
           subject: `Product feedback: ${workflow}`,
           body,

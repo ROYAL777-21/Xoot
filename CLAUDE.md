@@ -107,7 +107,7 @@ These have each caused a real defect here. They are not style preferences.
 ## Verifying
 
 ```bash
-npx vitest run     # the guard layer — 77 files, 755 tests
+npx vitest run     # the guard layer — 118 files, 1199 tests (2026-09-05)
 npx vite build     # Netlify runs `npm ci && npm run build`
 ```
 
