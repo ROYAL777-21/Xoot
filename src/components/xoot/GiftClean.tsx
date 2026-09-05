@@ -137,7 +137,11 @@ export const GiftClean = () => {
                       type="button"
                       onClick={() => setService(s.id)}
                       aria-pressed={on}
-                      className={`rounded-2xl px-3.5 py-3 text-left text-sm font-semibold transition-colors ${
+                      /* min-h-11 = 44px — `design/DESIGN-SYSTEM.md`'s component contract and
+                         `ACCESSIBILITY.md` both require 44x44 iOS / 48x48 Android. py-3 landed at
+                         exactly 44 by accident of line-height; stating it means a text-size change
+                         cannot silently drop it under. */
+                      className={`min-h-11 rounded-2xl px-3.5 py-3 text-left text-sm font-semibold transition-colors ${
                         on
                           ? "bg-foreground text-background"
                           : "bg-muted/60 text-muted-foreground hover:bg-muted"
@@ -191,7 +195,10 @@ export const GiftClean = () => {
                     type="button"
                     onClick={() => setOccasion(i)}
                     aria-pressed={i === occasion}
-                    className={`rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                    /* ⚠️ Was py-2.5, which computes to ~40px — BELOW the 44px minimum in
+                       `ACCESSIBILITY.md` and `DESIGN-SYSTEM.md`. Caught by reading the governance
+                       docs after this component shipped, which is the wrong order. */
+                    className={`min-h-11 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                       i === occasion
                         ? "bg-foreground text-background"
                         : "bg-card/70 text-muted-foreground hover:bg-card"

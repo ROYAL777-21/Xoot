@@ -12,33 +12,77 @@ comparison grid promising insurance cover that has not been placed.
 
 ## 1 · Design
 
+> ⚠️ **Read-depth is stated on every row, and that column exists because of a real failure.** The
+> first version of this register (2026-09-04) named ten HTML files as source of truth when **three
+> had never been opened** — including the 2.8 MB mobile handoff, listed on the strength of its first
+> 400 bytes. A register that does not record its own confidence is the documentation equivalent of a
+> green check that reviewed nothing, which this repository has already shipped.
+>
+> **full** = read end to end · **substantive** = the parts that carry rules · **inventory** = names
+> and structure counted, contents not read.
+
 ### The 2026-09-03 handoff — `design/handoff-2026-09-03/`
 
-| File | Governs |
-|---|---|
-| `Xoot Foundations.dc.html` | The 9 colour groups, 13-row type scale, space/radii/elevation/motion tokens, 28 semantic aliases |
-| `Xoot Components.dc.html` | 137 component exports across 81 sources; the 80-icon set behind one `Icon` wrapper |
-| `Xoot Website.dc.html` | Public-site composition and **section order** |
-| `Xoot App.dc.html` | In-app screen map — 24 top-level screens, 17 "You ›" sub-screens |
-| `Xoot Legal.dc.html` | **Twelve** legal documents and their drafting constraints |
-| `Xoot Responsive Check.dc.html` | The **four viewports** the design is claimed to work at |
-| `Xoot Bug Bounty.dc.html` | The disclosure programme — ⛔ see the warning below |
-| `xoot/` | The compiled kit: `tokens/*.css`, `site/*.jsx`, `app/*.jsx`, `ds-bundle.js`, `rwd.js`, fonts, `assets/logo.svg` |
+| File | Depth | Governs |
+|---|---|---|
+| `Xoot Foundations.dc.html` | **substantive** | The 9 colour groups, 13-row type scale, space/radii/elevation/motion tokens, 28 semantic aliases |
+| `Xoot Components.dc.html` | **inventory** | 137 component exports across 81 sources; the 80-icon set behind one `Icon` wrapper |
+| `Xoot Website.dc.html` | **substantive** | Public-site composition and **section order** |
+| `Xoot App.dc.html` | **inventory** | In-app screen map — 24 top-level screens, 17 "You ›" sub-screens |
+| `Xoot Legal.dc.html` | **substantive** — constraints + titles; ⚠️ the twelve documents' bodies unread | **Twelve** legal documents and their drafting constraints |
+| `Xoot Responsive Check.dc.html` | **full** | The **four viewports** the design is claimed to work at |
+| `Xoot Bug Bounty.dc.html` | **substantive** | The disclosure programme — ⛔ see the warning below |
+| `xoot/` | **substantive** | The compiled kit: `tokens/*.css`, `site/*.jsx`, `app/*.jsx`, `ds-bundle.js`, `rwd.js`, fonts, `assets/logo.svg` |
 
 ### The mobile design handoff — `design/Xoot_App.html`
 
-**2.9 MB standalone UI kit** for the native app. ⚠️ **Distinct from the 15 KB
-`Xoot App.dc.html`** in the handoff folder — same subject, different artefact, and confusing them
-means porting a screen map when you wanted a component.
+**2.8 MB standalone UI kit** for the native app — **36 screens and flows**, depth: **inventory**.
+⚠️ **Distinct from the 16 KB `Xoot App.dc.html`** in the handoff folder — same subject, different
+artefact.
 
-### The governance layer — `design/*.md`
+📋 The measured comparison against `mobile/` and `src/pages/app/` is
+[`docs/design/handoff-delta.md`](./design/handoff-delta.md). Headline: **7 screens shipped in
+`mobile/` against 36 designed**, and six designed surfaces — `TodayScreen`, `SiriScreen`,
+`WidgetsScreen`, `CalendarScreen`, `SearchScreen`, `XooterGrowthScreen` — have **no counterpart on
+any platform**.
 
-`ACCESSIBILITY` · `BRAND` · `CONTENT-GUIDE` · `DESIGN-SYSTEM` · `FIGMA-WORKFLOW` · `GLASS-SYSTEM` ·
-`HAPTICS` · `ICONOGRAPHY` · `ILLUSTRATION` · `MOTION` · `PERFORMANCE` · `PHASE-1-AUDIT` ·
-`PHOTOGRAPHY` · `QUALITY-GATES` · `UX-PRINCIPLES` · `README`
+### The prototypes — `design/prototypes/customer-sign-in-first-booking/`
+
+Depth: **substantive**. `index.html` (40 K) and `selected-bc.html` (8 K), plus a 124-line screen
+spec and a `features/…/BRIEF.md`. **The only end-to-end flow anyone has specced**, and it covers the
+path the product needs to work: guest browses, prepares a booking, authenticates only when the draft
+becomes account-owned, and the draft survives the callback.
+
+⚠️ Its status line reads *"exploration handoff; Figma approval required before production UI
+implementation"* — consistent with `approved-frames.json` being empty. **Whether the shipped
+`Book.tsx` satisfies it has never been checked.**
+
+### The governance layer — `design/*.md`, 804 lines total, all read
+
+The shortest and most consequential part of the corpus. **Two of these overturned decisions after I
+had already made them**, and three more turned out to have been violated by components that shipped
+this week.
+
+| Document | The clause that binds | Consequence |
+|---|---|---|
+| **`ACCESSIBILITY.md`** | WCAG 2.2 AA · **44×44 iOS / 48×48 Android touch targets** · *"Status never conveyed by colour, motion, sound, or haptic alone"* | ⚠️ `GiftClean`'s occasion buttons were **~40px — below minimum**. Fixed 2026-09-05 |
+| **`ICONOGRAPHY.md`** | *"Status icons always include text."* · *"Do not use letters as service icons"* · *"Icons do not imply a provider, partner, guarantee, or certification that Zoot cannot verify"* | ⚠️ `CarePlusBand`'s grid showed a bare tick with only an `aria-label`. Fixed. ✅ The letters rule retroactively justifies replacing the "X"-in-a-box lockup with the real mark |
+| **`ILLUSTRATION.md`** | ⛔ *"Do not create fake logos, certification marks, partner marks, maps, reviews, **people**, or product screenshots"* | 🔴 **See below — this changes the hero question** |
+| **`BRAND.md`** | *"Do not use certainty language unless the backend verifies the state"* · *"Local and human, **never fabricated**"* · *"Optimistic, never overpromising"* | ✅ Exactly the principle behind the eight dropped claims |
+| **`UX-PRINCIPLES.md`** | **#4 Backend truth** — *"does not infer payment, membership, assignment, referral, credit, or payout success"* · **#3** *"Each step has one primary action"* | ✅ #4 is the gift claims; #3 justifies removing the second Services CTA |
+| **`CONTENT-GUIDE.md`** | *"Begin buttons with a clear verb: `Book a clean`…"* · *"Do not fabricate demand, scarcity, ratings, guarantees, background-check outcomes, or response times"* | ✅ Shipped buttons comply |
+| **`DESIGN-SYSTEM.md`** | Component contract: all interactive states, keyboard + screen-reader semantics, 44/48 targets, reduced-motion, large-text | ⚠️ Partly superseded by the export per ZD-030; the contract still stands |
+| **`MOTION.md`** | *"celebration: restrained, only after backend-verified success"* · reduced-motion renders resting state | ✅ `HeroWordFlip` already honours `prefers-reduced-motion` |
+| **`HAPTICS.md`** | *"success feedback only after backend-confirmed booking, payment, or saved change"* | Mobile; recorded for Phase 4 |
+| **`GLASS-SYSTEM.md`** | Glass is for controls, nav and overlays — *"not the default treatment for page sections"* | ✅ New sections use flat surfaces |
+| `PHOTOGRAPHY` · `QUALITY-GATES` · `PERFORMANCE` · `FIGMA-WORKFLOW` · `PHASE-1-AUDIT` · `README` | See the findings section | |
 
 Plus `screen-specs/`, `features/`, `prototypes/`, `references/REFERENCE-MAP.md`, and
 `approved-frames.json` with its schema.
+
+⚠️ **Two governance documents still say "Zoot".** `BRAND.md` — *"Render the brand as `Zoot`"* — and
+`REFERENCE-MAP.md` rule 3. Both survived the rename, inside the files that define how everything
+else is read.
 
 ## 2 · Commercial and legal truth, inside the repository
 
@@ -104,7 +148,24 @@ written before the constraints are known.
 
 ---
 
-# ⚠️ Three things this register surfaced
+# ⚠️ What this register surfaced
+
+## 0. 🔴 `ILLUSTRATION.md` forbids creating fake people — and the hero is one
+
+> *"Do not create fake logos, certification marks, partner marks, maps, reviews, **people**, or
+> product screenshots."*
+
+**`src/assets/hero-xoot.jpg` is an AI-generated photorealistic person.** So is the handoff's
+`xooter-female-polo.webp`.
+
+This escalates the hero question. On 2026-09-04 it read as *"an unmarked AI image needs a marker"*,
+and the marker was added. Read against this clause it is different: **the repository's own rules say
+the image should not have been created.** `BRAND.md` says the same thing from the other side —
+*"Local and human, never fabricated"* — and its trust rules require *"photographs that show the
+service and environment clearly."*
+
+⛔ The marker stays as harm-reduction, but it is not compliance. **This is a founder decision and
+`NEEDS-FOUNDER.md` carries it.**
 
 ## 1. `PHOTOGRAPHY.md` requires an image provenance record that does not exist
 

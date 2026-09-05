@@ -65,14 +65,62 @@ export const LegalLayout = ({
         {description}
       </p>
       <div className="divide-y divide-border">{children}</div>
-      <p className="mt-12 border-t border-border pt-6 text-xs text-muted-foreground">
-        Last updated: {lastUpdated}. These pages are operational launch drafts and should be
-        reviewed by South African legal counsel before public launch.
-      </p>
+      {/*
+        ⚠️ **Two additions, 2026-09-05, both required by `design/handoff-2026-09-03/Xoot Legal.dc.html`.**
+
+        1. **The unregistered statement.** That file's first drafting constraint reads: *"NOTHING IS
+           INVENTED. Xoot is not currently registered, so no document names a company, registration
+           number or registered address… A policy that names a non-existent entity is worse than no
+           policy: it misrepresents who the customer is contracting with, which is itself a Consumer
+           Protection Act problem."* This block previously said only "operational launch drafts",
+           which does not tell a reader the counterparty does not yet exist. It is independently
+           true — `Footer.test.tsx` already asserts the footer claims no `(Pty)` or `Ltd` for the
+           same reason.
+
+        2. **A contact route.** There was **no email address on any legal page at all**. The design
+           flags a marketing address as the wrong destination for a POPIA request and notes the
+           **30-day** statutory answer window. A data subject with no route is worse than one sent
+           to the wrong inbox.
+
+        ⚠️ `LEGAL_CONTACT` is deliberately one constant. The founder has not yet set up a dedicated
+        legal/privacy mailbox — `NEEDS-FOUNDER.md` carries it — so when they do, this is the single
+        line that changes rather than eleven pages.
+      */}
+      <div className="mt-12 space-y-4 border-t border-border pt-6 text-xs text-muted-foreground">
+        <p>
+          Last updated: {lastUpdated}. These pages are operational launch drafts and should be
+          reviewed by South African legal counsel before public launch.
+        </p>
+        <p>
+          <strong className="font-semibold text-foreground">Xoot is not yet a registered company.</strong>{" "}
+          Until it is, no document on this site can name the contracting party, and every place one
+          would appear is left deliberately blank rather than filled with a name that does not exist.
+        </p>
+        <p>
+          Questions about this document, or about your own personal information, go to{" "}
+          <a href={`mailto:${LEGAL_CONTACT}`} className="font-medium text-foreground underline">
+            {LEGAL_CONTACT}
+          </a>
+          . Say in the subject line if your question is about your own information — under POPIA we
+          have <strong className="font-semibold text-foreground">30 days</strong> to answer one, and
+          those are handled first.
+        </p>
+      </div>
     </main>
     <Footer />
   </div>
 );
+
+/**
+ * The one place the legal contact address is written.
+ *
+ * ⚠️ **This is a placeholder and `NEEDS-FOUNDER.md` says so.** `Xoot Legal.dc.html` is explicit
+ * that a marketing address is the wrong destination for a POPIA request, and that Xoot *"does not
+ * yet operate a dedicated legal or privacy mailbox."* Until the founder sets one up, this points at
+ * the support address — which at least reaches a person — and changing it is a one-line edit here
+ * rather than an edit to eleven pages.
+ */
+export const LEGAL_CONTACT = "support@xoot.co.za";
 
 export const LegalSection = ({ title, children }: { title: string; children: ReactNode }) => (
   <section className="py-7 first:pt-0">

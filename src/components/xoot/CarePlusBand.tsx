@@ -98,12 +98,32 @@ const COMPARE: { label: string; free: string | boolean; member: string | boolean
   { label: "Support without the queue", free: false, member: true },
 ];
 
+/*
+ * ⚠️ **The text beside the icon is required, not decoration.**
+ *
+ * `design/ICONOGRAPHY.md`: *"Status icons always include text."* `design/DESIGN-SYSTEM.md` adds
+ * that *"numbers and status labels must not rely on colour alone"*, and `ACCESSIBILITY.md` that
+ * *"status [is] never conveyed by colour, motion, sound, or haptic alone."*
+ *
+ * The first version of this cell rendered a bare tick with an `aria-label`. That satisfies a screen
+ * reader and fails everyone reading the column with their eyes — including anyone who cannot
+ * separate a green tick from a grey dash. Three separate governance documents say so, and all three
+ * were read *after* this component shipped.
+ */
 const Cell = ({ value }: { value: string | boolean }) => {
-  if (value === true) {
-    return <Check className="h-4 w-4 text-[var(--xoot-careplus-600)]" aria-label="Included" />;
-  }
-  if (value === false) {
-    return <Minus className="h-4 w-4 text-muted-foreground/50" aria-label="Not included" />;
+  if (typeof value === "boolean") {
+    const Icon = value ? Check : Minus;
+    return (
+      <span className="inline-flex items-center gap-1.5">
+        <Icon
+          aria-hidden="true"
+          className={`h-4 w-4 ${value ? "text-[var(--xoot-careplus-600)]" : "text-muted-foreground/50"}`}
+        />
+        <span className={`text-sm ${value ? "font-semibold" : "text-muted-foreground"}`}>
+          {value ? "Yes" : "No"}
+        </span>
+      </span>
+    );
   }
   return <span className="text-sm font-semibold">{value}</span>;
 };

@@ -578,3 +578,49 @@ register (a small `design/image-provenance.json` alongside `approved-frames.json
 Its interpretation rule 3 reads *"**Zoot** remains recognisably one product."* A pre-rename survivor
 sitting in the file that defines how every other design reference is read. One-word fix, but it is
 in a governance document so I am flagging rather than quietly editing.
+
+### 9. 🔴 The hero image is forbidden by the repo's own design rules, not just unmarked
+
+Item 2 above said the hero needed an AI-generated marker. It got one on 2026-09-04. Reading
+`design/ILLUSTRATION.md` on 2026-09-05 changes the question:
+
+> *"Do not create fake logos, certification marks, partner marks, maps, reviews, **people**, or
+> product screenshots."*
+
+**`src/assets/hero-xoot.jpg` is an AI-generated photorealistic person.** So is the handoff's
+`xooter-female-polo.webp`. `BRAND.md` says the same from the other side — *"Local and human, never
+fabricated"* — and its trust rules call for *"photographs that show the service and environment
+clearly."*
+
+⛔ **The marker is harm-reduction, not compliance.** The rules say the image should not have been
+created. That is not mine to overrule, and the options are unchanged from item 2:
+
+1. Commission a real photograph — needs a real Xooter and POPIA consent (gate 5 + gate 6)
+2. Licence a stock photograph of a South African home, with the provenance record item 7 asks for
+3. Go typographic on the dawn gradient until 1 or 2 is possible
+4. Decide the clause does not apply to a clearly-marked illustration, and say so in a decision-log
+   entry so the next session does not re-raise it
+
+⚠️ **Option 4 is legitimate** — it is your rule to interpret. What is not legitimate is leaving the
+rule and the image in contradiction with no record.
+
+### 10. ⚠️ Two governance documents still say "Zoot"
+
+`design/BRAND.md`: *"Render the brand as `Zoot`."*
+`design/references/REFERENCE-MAP.md` rule 3: *"**Zoot** remains recognisably one product."*
+
+Both survived the rename, and both sit in files that govern how everything else is read — BRAND.md
+literally defines how to render the name. One-word fixes, flagged rather than quietly edited because
+governance documents are yours.
+
+### 11. ⚠️ The only end-to-end flow anyone specced has never been checked against the code
+
+`design/screen-specs/customer-sign-in-first-booking.md` (124 lines) plus two built prototypes
+describe the path the product actually needs: **guest browses → prepares a booking → authenticates
+only when the draft becomes account-owned → the draft survives the secure callback.**
+
+Nobody has verified `src/pages/app/Book.tsx` against it. It is the most important flow in the
+product and the only one with a written spec.
+
+**What I need:** say whether you want that audit done. It is a day of work and it is the difference
+between "the booking flow exists" and "the booking flow does what we designed."

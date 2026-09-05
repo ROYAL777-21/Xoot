@@ -176,6 +176,29 @@ describe("CarePlusBand claims only what the code backs", () => {
     expect(text).toMatch(/costs you more than it saves/i);
   });
 
+  it("never conveys a status by icon and colour alone", () => {
+    /*
+     * ⚠️ **Three governance documents, one rule, and this component broke it on first ship.**
+     *
+     * `design/ICONOGRAPHY.md`: *"Status icons always include text."*
+     * `design/DESIGN-SYSTEM.md`: *"numbers and status labels must not rely on colour alone."*
+     * `design/ACCESSIBILITY.md`: *"Status never conveyed by colour, motion, sound, or haptic alone."*
+     *
+     * The comparison grid first rendered a bare green tick against a grey dash, with the meaning
+     * carried only by an `aria-label`. That reads correctly to a screen reader and not at all to
+     * someone looking at the column who cannot separate the two colours.
+     *
+     * Asserting on the rendered text rather than the markup: what matters is that a sighted reader
+     * gets a word, however the component chooses to draw it.
+     */
+    const text = renderText(<CarePlusBand />);
+    const rows = text.match(/Yes|No\b/g) ?? [];
+    expect(
+      rows.length,
+      "the comparison grid states no status in words — icon and colour alone is not enough",
+    ).toBeGreaterThanOrEqual(4);
+  });
+
   it("mentions no rescheduling rule, because there is none", () => {
     // "Free rescheduling" is a row in the design's CARE_COMPARE and appears nowhere in this
     // codebase — zero hits in care-plus.ts. There is no rule to point at, free or otherwise.
