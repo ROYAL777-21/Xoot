@@ -23,8 +23,22 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-Nothing held. **Release released the go-live claim on 2026-09-02** — and then had to reopen it.
-Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live statement in this repo.
+**Codex — 2026-09-11: HOLDING the approved website-first production implementation** on
+`codex/xoot-production-20260911`, based on `02bb284`.
+
+The founder explicitly approved the production plan: repair configuration and rendered deployment
+checks first, then the committed design, server quotes, crews, referrals and PayFast fulfilment,
+reviewed website release, remaining features and Expo. This crosses Release & Infrastructure and
+Correctness & Safety ownership; those owners should review their respective surfaces before merge.
+No previous local checkout is being modified. Other work must not be reverted.
+
+Verified during the 11 September planning audit: Vercel serves the current commit, but browser
+startup fails because `VITE_APP_ENV` is absent. The successful live-deploy check missed the broken
+render. The seven supplied HTML references match the committed handoff. Production is one migration
+behind staging; payment gates are closed. The older DNS and migration counts below are historical.
+Production publication remains dependent on reviewed code, release evidence and working provider
+configuration. No production migration, payment or operational action has been performed by this
+implementation session.
 
 ---
 
