@@ -28,7 +28,7 @@ const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
 const tokenFn = read("supabase/functions/twilio-token/index.ts");
 const sharedWebhook = read("supabase/functions/_shared/twilio-webhook.ts");
-const runbook = read("docs/release/go-live.md");
+const runbook = read("docs/release/production-checklist.md");
 const envExample = read("supabase/functions/.env.example");
 const envStaging = read("supabase/functions/.env.staging.example");
 
@@ -125,8 +125,7 @@ describe("Twilio secrets contract", () => {
     // And the runbook answers the question in those terms, because it is the one that keeps being
     // asked and the wrong answer costs money every month. If the code above ever changes, this
     // fails alongside it rather than leaving the doc confidently wrong.
-    expect(runbook).toContain('"Do I have to buy phone numbers?" — No.');
-    expect(runbook).toContain("**So the in-app call needs steps 1–5: five secrets, no phone number, nothing to buy.**");
+    expect(runbook).toContain("The in-app data call does not require purchasing a phone number.");
     // The runbook must not send anyone to buy a number for the caller ID.
     expect(runbook).not.toMatch(/Buy a\n\s*number under Phone Numbers/);
   });
@@ -158,7 +157,7 @@ describe("Twilio secrets contract", () => {
 
   it("the runbook documents every required secret, and the optional eighth", () => {
     for (const name of REQUIRED) {
-      expect(runbook, `go-live.md no longer documents ${name}`).toContain(name);
+      expect(runbook, `production-checklist.md no longer documents ${name}`).toContain(name);
     }
     expect(runbook).toContain(OPTIONAL_EIGHTH);
     // The sentence that was false must not come back.
@@ -207,6 +206,6 @@ describe("Twilio secrets contract", () => {
     expect(tokenFn).not.toContain("isOperationalControlEnabled");
     const masked = read("supabase/functions/create-masked-call/index.ts");
     expect(masked).toMatch(/twilioAccountReady && maskedVoiceReady/);
-    expect(runbook).toContain("These two switches turn on the phone-number fallback.");
+    expect(runbook).toContain("The WebRTC token does not read these controls");
   });
 });
