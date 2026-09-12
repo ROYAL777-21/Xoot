@@ -92,7 +92,7 @@ expansion if newly materialized tracked files were absent from the initial spars
 | Supabase | Read-only connector works; CLI login still required for approved live writes. |
 | CodeRabbit | Signed Windows CLI 0.7.6 authenticated. Awaiting code-review run; no approval claimed. |
 | Codex Security | Tools/skills available; scoped review required before release, not yet complete. |
-| Build Web Apps | Testing/debugging workflow read; existing Vite/React app remains the target. |
+| Build Web Apps | Testing/debugging, frontend builder and React performance skills read. Supplied visual reference replaces a new concept; existing Vite/React app remains the target. |
 | Browser / Computer | CUA browser automation available; native computer control disabled in this environment. |
 | Sentry / PostHog | Plugins available; account/project setup and privacy verification pending. |
 | Cloudflare | Skills/tools available; DNS export is historical. Inspect actual zone before any changes. |
