@@ -282,6 +282,12 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install rendered smoke dependencies
+        if: steps.stamp.outputs.serving == 'true'
+        run: |
+          npm ci --ignore-scripts --no-audit --prefer-offline
+          npx playwright install --with-deps chromium
+
       - name: The served site must carry its security headers
         if: steps.stamp.outputs.serving == 'true'
         env:
@@ -327,3 +333,9 @@ jobs:
               exit "$status"
               ;;
           esac
+
+      - name: The matched deployment must render and reach sign-in
+        if: steps.stamp.outputs.serving == 'true'
+        env:
+          SITE: https://xoot.co.za
+        run: npm run ops:smoke:rendered:live -- "$SITE"

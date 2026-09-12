@@ -108,6 +108,12 @@ jobs:
       - name: Build
         run: bun run build
 
+      - name: Install Chromium for rendered smoke
+        run: bunx playwright install --with-deps chromium
+
+      - name: Verify the rendered build
+        run: bun run ops:smoke:rendered:artifact
+
       # Does what is deployed still match what is in this repository?
       #
       # Nothing asked that question until 2026-08-07, and the answer was "no, not one of the 42

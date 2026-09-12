@@ -117,6 +117,12 @@ jobs:
       - name: Scan website build artifact
         run: npm run build:artifact-scan
 
+      - name: Install Chromium for rendered smoke
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify the rendered build
+        run: npm run ops:smoke:rendered:artifact
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
         with:

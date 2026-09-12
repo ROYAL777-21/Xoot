@@ -1,6 +1,7 @@
 import { getPublicConfigIssueForEnv, getPublicSecretLeaks, isSupabasePublicConfigComplete } from "@/lib/env";
+import { resolvedPublicEnv } from "@/lib/public-environment";
 
-const renderFatalConfigError = () => {
+export const renderFatalConfigError = () => {
   if (typeof document === "undefined" || !document.body) return;
 
   document.body.replaceChildren();
@@ -9,15 +10,17 @@ const renderFatalConfigError = () => {
   shell.style.padding = "2rem";
   shell.style.textAlign = "center";
   const heading = document.createElement("h1");
-  heading.textContent = "Configuration Error";
+  shell.setAttribute("role", "alert");
+  shell.setAttribute("aria-live", "assertive");
+  heading.textContent = "Xoot is temporarily unavailable";
   const message = document.createElement("p");
-  message.textContent = "VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY must be set for this environment. Contact support.";
+  message.textContent = "This release has an invalid public configuration. Please try again later or contact support.";
   shell.append(heading, message);
   document.body.append(shell);
 };
 
 export function assertProductionEnv() {
-  const issue = getPublicConfigIssueForEnv(import.meta.env, {
+  const issue = getPublicConfigIssueForEnv(resolvedPublicEnv, {
     prod: import.meta.env.PROD,
     dev: import.meta.env.DEV,
   });
@@ -27,9 +30,9 @@ export function assertProductionEnv() {
   const localStaticPreview =
     typeof window !== "undefined" &&
     ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname) &&
-    !isSupabasePublicConfigComplete(import.meta.env) &&
-    getPublicSecretLeaks(import.meta.env).length === 0 &&
-    import.meta.env.VITE_ENABLE_DEMO_MODE !== "true";
+    !isSupabasePublicConfigComplete(resolvedPublicEnv) &&
+    getPublicSecretLeaks(resolvedPublicEnv).length === 0 &&
+    resolvedPublicEnv.VITE_ENABLE_DEMO_MODE !== "true";
 
   if (localStaticPreview) {
     console.warn(`[Xoot] Local static preview is running without live Supabase config. Backend/auth actions remain disabled. ${issue}`);
