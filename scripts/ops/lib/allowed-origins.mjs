@@ -34,6 +34,8 @@ export const stagingValue = (origins) =>
   [
     ...origins.filter((o) => o.startsWith("http://localhost") || o.startsWith("http://127.0.0.1")),
     "https://staging.xoot.co.za",
+    "http://127.0.0.1:4199",
+    "https://xoot-git-codex-xoot-production-20260911-royal777-21s-projects.vercel.app",
   ].join(",");
 
 export const PROJECTS = { production: "mvlrkelahhsyjrwgsxaf", staging: "fxmxyabdjqviqbcxmvlp" };
