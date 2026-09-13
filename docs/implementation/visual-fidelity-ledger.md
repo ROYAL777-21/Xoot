@@ -20,6 +20,7 @@ Release evidence and owner dependencies: [production checklist](../release/produ
 | Xoot Bug Bounty.dc.html | Security-reporting layout |
 | Xoot Responsive Check.dc.html | Responsive reference surfaces |
 | Mobile app design request-handoff.zip | Editable source, fonts and artwork backing those references |
+| Mobile app design request.zip and (1)–(6).zip | Founder-reconfirmed sources; identical archive entries, verified in the [source receipt](design-source-receipt-2026-09-13.md) |
 
 The seven HTML files were verified byte-for-byte against the uploaded copies during
 the 11 September audit. Original handoff files stay unchanged. They are served
@@ -54,7 +55,7 @@ not completed implementation comparisons.
 
 | Surface | Reference source | Existing implementation | Work still required |
 |---|---|---|---|
-| Navigation / hero | site/SiteTop.jsx, site/TextFlip.jsx | xoot/Navbar, BookingHero, HeroWordFlip | Match composition, font weight, wordmark, service order, image and mobile reflow; remove permanent text scaling |
+| Navigation / hero | site/SiteTop.jsx, site/TextFlip.jsx | xoot/Navbar, BookingHero, HeroWordFlip | Restored source fonts/artwork/geometry; six widths and real input/auth handoff checked. Published preview still needs verification. |
 | Gift / Care+ bands | site/SiteGift.jsx, site/SiteFoot.jsx | app/GiftClean, care/CarePlus | Restore home-page composition; connect supported actions and expose unfinished purchase capabilities honestly |
 | Coverage / services | site/SiteBody.jsx and site bundle | xoot/TrustedBy, ServiceAreaMap, Services | Compare layouts and replace unsupported coverage/supply claims with actual operational states |
 | Trust / people / how | site source and bundle | xoot/SafetyTrust, TrustMechanisms, PeopleBand, HowItWorks | Preserve completed ports, compare spacing and typography; real trust/provider gates remain authoritative |
@@ -84,6 +85,7 @@ state. It must never reproduce example testimonials as real customer evidence.
 | Example worker names / verified badges | Use actual approved listings or clearly labelled illustration; no fabricated identity or verification |
 | “We'll text before we arrive” | Use an accurate notification description until a verified SMS service supports that promise |
 | App Store / Google Play search URLs | Show honest app availability until actual release links exist; search results are not installation links |
+| Extra floating Concierge launcher on the homepage | Keep the reference's “Ask Concierge first” entry and open panel; remove the extra closed launcher covering content |
 | Paid bounty, insurance and response-time commitments | Keep layout; publish commitments only after owner approval and functioning operations |
 | Duplicate compact “Book” and “Book now” actions | Keep one clear booking action when both cannot fit with the menu and wordmark |
 | Prototype browser-calculated prices, session and credit | Use real backend contracts and the repository's approved prices and eligibility rules |
@@ -105,4 +107,20 @@ blanket ban on restyling does not supersede the founder's approved faithful port
 - Exercise actual routes and form outcomes. Record external dependencies separately
   from verified behaviour; a screenshot does not prove backend correctness.
 
-No Phase 1 completion is claimed yet.
+## Navigation and hero evidence — 13 September 2026
+
+- At 1440px the original and implementation have identical heading, paragraph and card
+  start rectangles: heading (140, 206.594), paragraph (140, 459.141), card (140, 620.859).
+- Restored Newsreader optical sizing, Jakarta glyph features, Caveat wordmark, original
+  flowers, tape, arrow, portrait and crop. Final text has no transform or blur.
+- All six comparison widths have no document overflow or page exceptions. The reference
+  clips its duplicate navigation actions at 320px; the implementation keeps one there.
+- Real interaction checks pass for all five supported service/auth handoffs, unavailable
+  laundry, menu open/Escape/anchor navigation, landscape 844×390 and 720×500 reflow.
+  The latter approximates a 1440px browser at 200% zoom; it does not prove toolbar zoom
+  on every browser. A 1440px capture at device pixel ratio 2 is also saved.
+- The longest animated phrase fits using actual font size; reduced motion is static.
+  Counts/errors are visible. Example worker identity and unverified timings are not used.
+
+Task evidence: `outputs/xoot-visual-20260912/`; reproduce using the source receipt.
+This verifies the opening section. Full Phase 1 and production readiness remain unfinished.

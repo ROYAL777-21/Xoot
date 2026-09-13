@@ -23,6 +23,14 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**13 September checkpoint, same Codex claim:** unified startup repair is committed at
+`b923980`; the uploaded ZIPs match the handoff already in Git. Header/hero now use the
+actual fonts, artwork and geometry. Six widths and service/auth/navigation interactions
+are checked; CodeRabbit's two minor findings are fixed. Cross-role follow-up: the rendered
+artifact check uses an existing allowlisted loopback origin, and two guard tests normalize
+Windows line endings. No backend policy, business price or production state changed.
+The full website/app fidelity goal remains active. See the visual ledger and Task 2a report.
+
 **Codex — 2026-09-11: HOLDING the approved website-first production implementation** on
 `codex/xoot-production-20260911`, based on `02bb284`.
 

@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **12 September 2026**. This replaces the status claims in `blocker.md`,
+Current register: **13 September 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -12,16 +12,16 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
 | Website hosting | On 11 September, `xoot.co.za` served Vercel headers and build commit `02bb284`. | Domain resolves. Do not import the old GoDaddy zone export. |
-| Rendered startup | Browser at that commit threw missing `VITE_APP_ENV` while its deployment check passed. | Repair in progress; require homepage and sign-in browser assertions. |
+| Rendered startup | Shared config repair committed `b923980`; staging artifact renders home/sign-in, verified 13 September. | Local repair verified; updated hosted preview and production still need checks. |
 | Vercel access | Connector lists project `xoot`, `prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`, on 12 September. Team plan is Hobby. | Preview configuration possible; commercial hosting plan required for paid launch. |
-| Design references | Seven uploaded HTML files hash-match the committed handoff, checked 11 September. | Remaining layouts/interactions require screen comparison, not a fresh design. |
+| Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
 | Staging schema | Supabase migration list: 82 versions, including `20260903120000`, checked 11 September. | Recheck before delivery of new migrations. |
 | Production schema | Supabase migration list: 81 versions, missing `20260903120000`, checked 11 September. | One known migration behind at audit; new implementation may add more. |
 | Backend delivery | 51 source functions plus six obsolete production endpoints at audit. Shared code is bundled per function. | Compare versions/source, migrate first and redeploy every affected importer. |
 | PayFast | Hosted checkout disabled; provider verification flags false in both environments at audit. | Signed webhook smoke tests, amount matching and reconciliation evidence required. |
 | Supply | Production aggregate counts: zero Xooters and zero bookings, checked 11 September. | Recruit/verify helpers and run consenting pilot; no invented availability/reviews. |
 | Supabase CLI | `projects list` reports missing access token on 12 September. Read-only MCP works. | Complete secure login flow; configure separate database credentials. |
-| CodeRabbit | Old `.exe` was an ELF Linux binary. Signed Windows 0.7.6 installed in task tooling; authenticated on 12 September. | Ready for review; no CodeRabbit review result yet. |
+| CodeRabbit | Windows 0.7.6 reviewed the visual slice on 13 September: two minor findings. | Added rejected-request handling and visible roster counts/errors. |
 
 These are timestamped observations, not continuing monitoring. A checked build or a reachable domain
 does not prove booking, payment, data access, or operational readiness.

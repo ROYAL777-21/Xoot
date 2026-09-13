@@ -13,6 +13,9 @@ const option = (name) => {
 const timeout = Number(process.env.XOOT_SMOKE_TIMEOUT_MS ?? 15_000);
 const artifact = option("--artifact");
 const requestedUrl = option("--url");
+// A stable loopback origin is already allowlisted by the backend. A random port
+// produces CORS failures even when the exact same built website works on that origin.
+const artifactOrigin = new URL(process.env.XOOT_SMOKE_ARTIFACT_ORIGIN || "http://localhost:5173");
 
 if ((artifact && requestedUrl) || (!artifact && !requestedUrl)) {
   console.error("Usage: node scripts/ops/verify-rendered-site.mjs (--artifact dist | --url https://xoot.co.za)");
@@ -32,6 +35,9 @@ const mimeTypes = {
 };
 
 const createArtifactServer = async (directory) => {
+  if (artifactOrigin.protocol !== "http:" || !["localhost", "127.0.0.1"].includes(artifactOrigin.hostname) || artifactOrigin.pathname !== "/" || artifactOrigin.username || artifactOrigin.password || artifactOrigin.search || artifactOrigin.hash) {
+    throw new Error("XOOT_SMOKE_ARTIFACT_ORIGIN must be an HTTP loopback origin without a path, credentials, query or fragment");
+  }
   const root = resolve(directory);
   const index = resolve(root, "index.html");
   if (!existsSync(index)) throw new Error(`Built artifact is missing ${index}`);
@@ -48,11 +54,11 @@ const createArtifactServer = async (directory) => {
 
   await new Promise((resolveListening, reject) => {
     server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolveListening);
+    server.listen(Number(artifactOrigin.port || 80), "127.0.0.1", resolveListening);
   });
   const address = server.address();
   if (!address || typeof address === "string") throw new Error("Artifact server did not bind to a TCP port");
-  return { server, url: `http://127.0.0.1:${address.port}/` };
+  return { server, url: artifactOrigin.href };
 };
 
 const sameLocation = (actual, expected) => {

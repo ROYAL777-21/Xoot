@@ -390,7 +390,7 @@ export const XootSupportBot = () => {
         </section>
       )}
 
-      <Button
+      {(location.pathname !== "/" || open) && <Button
         type="button"
         className="interactive-press liquid-glass-shell h-14 w-14 rounded-full px-0 shadow-warm sm:w-auto sm:px-4"
         data-open={open ? "true" : "false"}
@@ -404,7 +404,7 @@ export const XootSupportBot = () => {
           {open ? <X className="h-5 w-5" /> : <RoboticStarIcon className="h-5 w-5" />}
           <span className="hidden font-semibold sm:inline">Concierge</span>
         </span>
-      </Button>
+      </Button>}
     </div>
   );
 };

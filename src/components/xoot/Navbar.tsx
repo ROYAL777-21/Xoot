@@ -1,120 +1,158 @@
-import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Menu, X, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
+import { useAuth } from "@/contexts/AuthContext";
+import { CarePlusGlyph } from "./HeroArtwork";
 
 const links = [
   { label: "Services", href: "/#services" },
   { label: "Care+", href: "/care-plus" },
   { label: "Trust", href: "/trust-centre" },
-  { label: "Blog", href: "/articles" },
+  { label: "Journal", href: "/articles" },
   { label: "How it works", href: "/#how" },
-  { label: "Become a Xooter", href: "/xooter/apply" },
-];
+] as const;
 
 const routePrefetchers: Record<string, () => Promise<unknown>> = {
   "/": () => import("@/pages/Index"),
   "/care-plus": () => import("@/pages/care/CarePlus"),
   "/trust-centre": () => import("@/pages/legal/TrustSafety"),
   "/articles": () => import("@/pages/Blog"),
-  "/xooter/apply": () => import("@/pages/xooter/Apply"),
   "/auth": () => import("@/pages/Auth"),
   "/app": () => import("@/pages/app/Book"),
 };
+
+const pathFor = (href: string) => href.split("#")[0] || "/";
 
 export const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user } = useAuth();
   const ctaTo = user ? "/app" : "/auth";
-  const ctaLabel = user ? "Open app" : "Get started";
-  const renderLabel = (label: string) => (label === "Care+" ? <CarePlusMark /> : <span>{label}</span>);
-  const prefetchRoute = (href: string) => {
-    const [path] = href.split("#");
-    if (!path) return;
-    void routePrefetchers[path]?.();
-  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
+
+  const prefetchRoute = (href: string) => {
+    void routePrefetchers[pathFor(href)]?.();
+  };
+
+  const renderLabel = (label: string) =>
+    label === "Care+" ? (
+      <span className="inline-flex h-[22px] items-center gap-1 rounded-full bg-care-plus px-[10px] text-[10px] font-extrabold uppercase leading-none tracking-[0.04em] text-care-plus-foreground">
+        <CarePlusGlyph />
+        <CarePlusMark plusClassName="text-care-plus-foreground" />
+      </span>
+    ) : <span>{label}</span>;
 
   return (
     <>
-    <header
-      className="liquid-glass-nav xoot-top-nav fixed left-3 right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] z-50 rounded-[1.6rem] border border-border/60 transition-[box-shadow,border-color,transform] duration-300 sm:left-4 sm:right-4"
-      data-scrolled={scrolled ? "true" : "false"}
-    >
-      <div className="liquid-glass-content mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link to="/" className="flex min-w-0 items-center gap-2 group">
-          <span className="grid h-9 w-9 place-items-center rounded-2xl gradient-warm shadow-warm transition-transform group-hover:scale-105">
-            <span className="font-display text-lg font-bold text-primary-foreground">X</span>
-          </span>
-          <span className="font-display text-2xl font-bold tracking-tight text-foreground">
+      <header
+        className="xoot-reference-nav fixed left-[14px] right-[14px] top-[calc(env(safe-area-inset-top)+0.75rem)] z-50 rounded-[26px] border-0 bg-white/90 shadow-[0_10px_35px_rgba(38,29,28,0.10)] backdrop-blur-md transition-shadow duration-300"
+        data-scrolled={scrolled ? "true" : "false"}
+      >
+        <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between gap-2 px-3 sm:px-5">
+          <Link
+            to="/"
+            aria-label="Xoot home"
+            onMouseEnter={() => prefetchRoute("/")}
+            className="xoot-wordmark min-w-[60px] shrink-0 text-[2.5rem] leading-none text-[var(--xoot-violet-500)] transition-opacity hover:opacity-80"
+          >
             Xoot
-          </span>
-        </Link>
+          </Link>
 
-        <nav className="hidden items-center gap-1 rounded-full border border-white/20 bg-background/12 p-1 transition-[transform,box-shadow] duration-300 xl:flex">
-          {links.map((l) => (
-            <a
-              key={`${l.href}-${l.label}`}
-              href={l.href}
-              onFocus={() => prefetchRoute(l.href)}
-              onMouseEnter={() => prefetchRoute(l.href)}
-              onTouchStart={() => prefetchRoute(l.href)}
-              className="xoot-liquid-nav-item liquid-glass-interactive interactive-press rounded-full px-3 py-2 text-sm font-semibold text-foreground/76 transition-colors hover:text-foreground 2xl:px-4"
-            >
-              {renderLabel(l.label)}
-            </a>
-          ))}
-        </nav>
-
-        <div className="hidden xl:flex items-center gap-3">
-          {!user && <Button asChild variant="ghost" size="sm" className="rounded-full"><Link to="/auth">Sign in</Link></Button>}
-          <Button asChild size="sm" className="interactive-press rounded-full px-5 shadow-card"><Link to={ctaTo} onFocus={() => prefetchRoute(ctaTo)} onMouseEnter={() => prefetchRoute(ctaTo)}>{ctaLabel}</Link></Button>
-        </div>
-
-        <button
-          className="liquid-glass-interactive xl:hidden tap-target rounded-2xl p-2 transition-smooth hover:bg-background/70"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-          aria-expanded={open}
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-      </div>
-
-      {open && (
-        <div className="liquid-glass-content animate-fade-in border-t border-border/60 xl:hidden">
-          <div className="grid max-h-[calc(100vh-6rem-env(safe-area-inset-top))] gap-2 overflow-y-auto px-3 py-4 sm:grid-cols-2 lg:grid-cols-3">
-            {links.map((l) => (
+          <nav className="hidden items-center gap-[2px] rounded-full bg-black/[0.07] p-1 text-[15px] min-[1080px]:flex">
+            {links.map((link) => (
               <a
-                key={`${l.href}-${l.label}`}
-                href={l.href}
-                onFocus={() => prefetchRoute(l.href)}
-                onMouseEnter={() => prefetchRoute(l.href)}
-                onTouchStart={() => prefetchRoute(l.href)}
-                onClick={() => setOpen(false)}
-                className="xoot-liquid-nav-item liquid-glass-interactive interactive-press rounded-2xl bg-background/18 px-3 py-3 text-sm font-semibold text-foreground/78 transition-colors hover:border-border hover:bg-background/72 hover:text-foreground"
+                key={link.href}
+                href={link.href}
+                onFocus={() => prefetchRoute(link.href)}
+                onMouseEnter={() => prefetchRoute(link.href)}
+                className={`xoot-reference-nav-item rounded-full px-[14px] py-[9px] text-[13px] font-semibold transition-colors hover:bg-white/80 hover:text-foreground ${link.label === "Care+" ? "text-care-plus" : "text-foreground/70"}`}
               >
-                {renderLabel(l.label)}
+                {renderLabel(link.label)}
               </a>
             ))}
-            <div className="flex gap-2 pt-2 sm:col-span-2 lg:col-span-3">
-              {!user && <Button asChild variant="ghost" className="flex-1"><Link to="/auth">Sign in</Link></Button>}
-              <Button asChild className="flex-1 rounded-full"><Link to={ctaTo}>{ctaLabel}</Link></Button>
-            </div>
+          </nav>
+
+          <div className="hidden items-center gap-[10px] min-[1080px]:flex">
+            {!user && (
+            <Button asChild variant="ghost" size="sm" className="min-h-0 min-w-0 h-9 rounded-full font-semibold">
+                <Link to="/auth" onMouseEnter={() => prefetchRoute("/auth")}>Sign in</Link>
+              </Button>
+            )}
+            <Button asChild size="sm" className="min-h-0 min-w-0 h-9 rounded-full bg-foreground px-[10px] text-background shadow-md hover:bg-foreground/90">
+              <Link to={ctaTo} onMouseEnter={() => prefetchRoute(ctaTo)}>
+                Book now <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2 min-[1080px]:hidden">
+            <Button
+              asChild
+              size="sm"
+              className="xoot-compact-book h-10 rounded-full bg-foreground px-4 text-background shadow-md hover:bg-foreground/90"
+            >
+              <Link to={ctaTo} aria-label="Book now" onClick={() => setOpen(false)}>Book</Link>
+            </Button>
+            <button
+              type="button"
+              className="grid h-10 w-10 place-items-center rounded-full bg-black/[0.07] text-foreground transition-colors hover:bg-black/[0.12]"
+              onClick={() => setOpen((value) => !value)}
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              aria-controls="xoot-mobile-menu"
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+            <Button
+              asChild
+              size="sm"
+              className="h-10 rounded-full bg-foreground px-4 text-background shadow-md hover:bg-foreground/90"
+            >
+              <Link to={ctaTo} aria-label="Book now" onClick={() => setOpen(false)}>Book now <ArrowRight className="h-4 w-4" /></Link>
+            </Button>
           </div>
         </div>
-      )}
-    </header>
-    <div aria-hidden="true" className="h-[calc(5.75rem+env(safe-area-inset-top))]" />
+
+        {open && (
+          <div id="xoot-mobile-menu" className="border-t border-black/10 px-3 pb-3 pt-2 min-[1080px]:hidden">
+            <div className="grid gap-2 sm:grid-cols-2">
+              {links.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onFocus={() => prefetchRoute(link.href)}
+                  onMouseEnter={() => prefetchRoute(link.href)}
+                  onClick={() => setOpen(false)}
+                  className="rounded-2xl bg-black/[0.04] px-4 py-3 text-sm font-semibold text-foreground/80 hover:bg-black/[0.08]"
+                >
+                  {renderLabel(link.label)}
+                </a>
+              ))}
+              {!user && (
+                <Link to="/auth" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-semibold text-foreground/80 hover:bg-black/[0.04]">
+                  Sign in
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+      </header>
+      <div aria-hidden="true" className="h-[calc(5.5rem+env(safe-area-inset-top))]" />
     </>
   );
 };

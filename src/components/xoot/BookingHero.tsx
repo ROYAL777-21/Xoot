@@ -1,42 +1,72 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  BedDouble,
+  Building2,
+  CalendarDays,
+  Clock,
+  House,
+  Key,
+  MapPin,
+  Rabbit,
+  Shirt,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Sparkles, MapPin, Calendar, Clock, Home, Building2, BedDouble, Wand2, ArrowRight, Truck, TimerReset } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
-import { approvedLaunchRegions } from "@/lib/operations";
 import { captureAnalyticsEvent, getAnalyticsDeviceType } from "@/lib/analytics";
 import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
-import heroImg from "@/assets/hero-xoot.jpg";
 import { HeroWordFlip } from "@/components/xoot/HeroWordFlip";
+import { AppAvailability } from "./AppAvailability";
+import { CleaningBrushIcon, HandoffNote, HandoffTape, HeroArrow, HeroFlowers } from "./HeroArtwork";
+import heroImage from "@/assets/xooter-female-polo.webp";
+import heroImageLarge from "@/assets/xooter-female-polo-large.webp";
 
 const services = [
-  { id: "residential", label: "Residential", icon: Home },
-  { id: "express", label: "Express", icon: TimerReset },
-  { id: "office", label: "Office", icon: Building2 },
-  { id: "airbnb", label: "Airbnb", icon: BedDouble },
-  { id: "deep", label: "Deep clean", icon: Wand2 },
-  { id: "moving", label: "Moving", icon: Truck },
-];
+  { id: "residential", label: "Regular cleaning", icon: CleaningBrushIcon, available: true },
+  { id: "airbnb", label: "Airbnb cleaning", icon: BedDouble, available: true },
+  { id: "express", label: "Express cleaning", icon: Rabbit, available: true },
+  { id: "office", label: "Office cleaning", icon: Building2, available: true },
+  { id: "moving", label: "Moving cleaning", icon: Key, available: true },
+  { id: "laundry", label: "Laundry & ironing", icon: Shirt, available: false },
+] as const;
+
+type ServiceId = (typeof services)[number]["id"];
 
 export const BookingHero = () => {
-  const [active, setActive] = useState("residential");
+  const [active, setActive] = useState<ServiceId>("residential");
   const [address, setAddress] = useState("");
-  const [activeXooters, setActiveXooters] = useState(0);
+  const [activeXooters, setActiveXooters] = useState<number | null>(null);
+  const [rosterError, setRosterError] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const selected = services.find((service) => service.id === active) ?? services[0];
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
-    supabase.from("xooters_public").select("id", { count: "exact", head: true }).then(({ count }) => {
-      setActiveXooters(count ?? 0);
-    });
+    let cancelled = false;
+    supabase
+      .from("xooters_public")
+      .select("id", { count: "exact", head: true })
+      .then(({ count, error }) => {
+        if (cancelled) return;
+        if (error) {
+          setRosterError(true);
+          return;
+        }
+        setActiveXooters(count ?? 0);
+      }, () => {
+        if (!cancelled) setRosterError(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const liveXooterLabel = String(activeXooters);
-
   const startBooking = () => {
+    if (!selected.available) return;
     captureAnalyticsEvent("booking_flow_started", {
       service_category: active,
       launch_area: "public_hero",
@@ -52,131 +82,112 @@ export const BookingHero = () => {
   };
 
   return (
-    <section className="relative overflow-hidden gradient-hero">
-      <div className="container relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 py-8 lg:py-20 items-center">
-        <div className="relative z-10 animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 mb-4 lg:mb-6 border border-accent/20">
-            <Sparkles className="h-3.5 w-3.5 text-accent-ink" />
-            <span className="text-[11px] sm:text-xs font-medium text-accent-ink">Launching in selected Johannesburg suburbs</span>
+    <section className="xoot-hero relative overflow-hidden">
+      <HeroFlowers />
+
+      <div className="xoot-hero-inner relative z-10 mx-auto grid w-full max-w-[1240px]">
+        <div className="xoot-hero-copy">
+          <div className="xoot-hero-badge">
+            <Sparkles className="h-4 w-4" />
+            <span>Launching in selected Johannesburg suburbs</span>
           </div>
-          <h1 className="font-display text-[2.25rem] sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-balance text-foreground">
+
+          <h1 className="xoot-hero-heading">
             Premium home care,<br />
-            {/* The rotating half, from the 2026-09-03 handoff. "built on trust" is still the
-                first phrase shown, so the hero reads exactly as before on first paint. */}
             <HeroWordFlip />
           </h1>
-          <p className="mt-4 lg:mt-5 text-base sm:text-lg text-muted-foreground max-w-md">Book vetted independent Xooters for homes, Airbnb turnovers, office workspaces, moving cleans and premium resets. Xoot verifies your address and confirms availability before final dispatch.</p>
+          <p className="xoot-hero-description">
+            On-demand home services. Book vetted independent Xooters for homes, Airbnb turnovers, office workspaces, moving cleans and premium resets — Xoot confirms availability before final dispatch, with timing shown before you pay.
+          </p>
 
-          <div className="mt-6 lg:mt-8 rounded-3xl bg-card border border-border shadow-soft p-4 sm:p-5 md:p-6">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {services.map((s) => {
-                const Icon = s.icon;
-                const isActive = active === s.id;
+          <div className="xoot-hero-card">
+            <div className="xoot-service-grid grid gap-2">
+              {services.map((service) => {
+                const Icon = service.icon;
+                const isActive = active === service.id;
                 return (
                   <button
-                    key={s.id}
-                    onClick={() => setActive(s.id)}
-                    className={`flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-2xl px-3 py-2 text-center text-sm font-semibold leading-tight transition-all duration-300 ${isActive ? "bg-foreground text-background shadow-warm" : "bg-muted/60 text-muted-foreground hover:bg-muted"}`}
+                    type="button"
+                    key={service.id}
+                    onClick={() => setActive(service.id)}
+                    aria-pressed={isActive}
+                    aria-label={service.available ? service.label : `${service.label}, currently unavailable`}
+                    className="xoot-hero-service"
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    <span className="min-w-0 wrap-break-word">{s.label}</span>
+                    <span>{service.label}</span>
                   </button>
                 );
               })}
             </div>
-            <div className="mt-5 grid gap-3">
-              <div className="rounded-2xl bg-muted/40 border border-border/60 p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="grid place-items-center h-9 w-9 rounded-full bg-primary/10 text-primary"><MapPin className="h-4 w-4" /></span>
-                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Where</Label>
-                </div>
-                <VerifiedAddressInput
-                  value={address}
-                  onChange={setAddress}
-                  placeholder={active === "office" ? "Office address..." : "Search address..."}
-                />
+
+            <div className="xoot-hero-address">
+              <div className="mb-[9px] flex items-center gap-2">
+                <span className="grid h-[34px] w-[34px] place-items-center rounded-full bg-[var(--xoot-violet-100)] text-[var(--xoot-violet-700)]"><MapPin className="h-4 w-4" /></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Where</span>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-muted/40 border border-border/60 p-3 flex items-center gap-3">
-                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-accent-ink"><Calendar className="h-4 w-4" /></span>
-                  <div className="flex-1 min-w-0"><Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Date</Label><p className="text-sm font-medium truncate">Choose in booking</p></div>
-                </div>
-                <div className="rounded-2xl bg-muted/40 border border-border/60 p-3 flex items-center gap-3">
-                  <span className="grid place-items-center h-9 w-9 rounded-full bg-accent/15 text-accent-ink"><Clock className="h-4 w-4" /></span>
-                  <div className="flex-1 min-w-0"><Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Status</Label><p className="text-sm font-medium truncate">Tracked in app</p></div>
-                </div>
-              </div>
-              <Button size="lg" onClick={startBooking} className="rounded-2xl h-14 text-base font-semibold hover:opacity-95 group">
-                {user ? "Start a booking" : "Book now"}
-                <ArrowRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <Link
-                  to="/?xootBot=open&intent=concierge"
-                  className="liquid-glass-interactive interactive-press inline-flex min-h-11 items-center justify-center rounded-2xl px-4 text-center text-sm font-bold text-foreground shadow-card"
-                >
-                  Ask Concierge first
-                </Link>
-                <Link
-                  to="/app/properties/office"
-                  className="liquid-glass-interactive interactive-press inline-flex min-h-11 items-center justify-center rounded-2xl px-4 text-center text-sm font-bold text-foreground shadow-card"
-                >
-                  Plan office or Airbnb cleaning
-                </Link>
-              </div>
-              <p className="text-xs text-muted-foreground text-center">
-                Active coverage includes {approvedLaunchRegions.slice(0, 6).map((region) => region.replace(/\b\w/g, (c) => c.toUpperCase())).join(", ")}. Other South African requests go to coverage review.
-              </p>
+              <VerifiedAddressInput value={address} onChange={setAddress} inputClassName="xoot-hero-address-input" showIcon={false} label="Service address" placeholder={active === "office" ? "Office address..." : "Search address..."} />
             </div>
+
+            <div className="xoot-hero-schedule">
+              <div className="flex items-center gap-3 rounded-xl bg-black/[0.06] p-[14px] ring-1 ring-black/[0.03]">
+                <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700"><CalendarDays className="h-4 w-4" /></span>
+                <div className="min-w-0"><span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Date</span><span className="block truncate text-sm font-semibold">Choose in booking</span></div>
+              </div>
+              <div className="flex items-center gap-3 rounded-xl bg-black/[0.06] p-[14px] ring-1 ring-black/[0.03]">
+                <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700"><Clock className="h-4 w-4" /></span>
+                <div className="min-w-0"><span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Status</span><span className="block truncate text-sm font-semibold">Tracked in app</span></div>
+              </div>
+            </div>
+
+            {!selected.available && (
+              <p role="status" className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-center text-xs font-semibold text-amber-900">
+                Laundry &amp; ironing is not available yet. Choose another service to continue.
+              </p>
+            )}
+            <Button type="button" size="lg" onClick={startBooking} disabled={!selected.available} className="xoot-hero-book">
+              {selected.available ? "Book now" : "Service unavailable"}
+              {selected.available && <ArrowRight className="h-5 w-5" />}
+            </Button>
+
+            <HandoffNote>arrival timing &amp; access instructions — all in your booking</HandoffNote>
+
+            <div className="xoot-hero-secondary-actions">
+              <Link to="/?xootBot=open&intent=concierge" className="inline-flex min-h-9 items-center justify-center rounded-xl border border-foreground/25 px-3 text-center text-sm font-bold text-foreground transition-colors hover:bg-foreground/[0.05]">Ask Concierge first</Link>
+              <Link to="/app/properties/office" className="inline-flex min-h-9 items-center justify-center rounded-xl border border-foreground/25 px-3 text-center text-sm font-bold text-foreground transition-colors hover:bg-foreground/[0.05]">Plan office or Airbnb cleaning</Link>
+            </div>
+
+            <div className="xoot-app-divider">
+              <span>Apps coming after store review</span><span />
+            </div>
+            <AppAvailability />
+            <p className="mt-3 text-center text-xs leading-[1.5] text-muted-foreground">
+              Active coverage includes Sandton, Bryanston, Rosebank, Midrand, Fourways and Waterfall. Other South African requests go to coverage review.
+            </p>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            {/*
-              When there is no live count, this line is omitted rather than replaced with an
-              explanation of why. It previously read "loads from Supabase when configured",
-              which tells a customer nothing and names our database. A claim we cannot
-              substantiate is better left unsaid than annotated.
-            */}
-            {isSupabaseConfigured && (
-              <span><span className="font-semibold text-foreground">{liveXooterLabel}</span> approved Xooters currently live</span>
-            )}
+          <div className="xoot-hero-trust">
+            <span aria-live="polite">
+              <strong className="text-foreground">Live roster</strong>{" "}
+              {!isSupabaseConfigured || rosterError ? "temporarily unavailable" : activeXooters === null ? "checking availability" : `${activeXooters} approved Xooters`}
+            </span>
             <span><span className="font-semibold text-foreground">Admin-reviewed</span> trust workflow</span>
           </div>
         </div>
 
-        <div className="relative animate-scale-in hidden md:block">
-          <div className="relative aspect-4/5 rounded-4xl overflow-hidden shadow-warm">
-            <img src={heroImg} alt="Friendly Xoot cleaner finishing a residential clean" className="h-full w-full object-cover" width={1280} height={1600} />
-            <div className="absolute inset-0 bg-linear-to-t from-foreground/40 via-transparent to-transparent" />
-            <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
-              <div className="liquid-glass-shell rounded-2xl p-3 shadow-card flex items-center gap-3 animate-fade-in">
-                {/*
-                  Two fixes here, 2026-08-13, both in the unconfigured branch — the one nobody
-                  looks at because it only renders when Supabase is absent.
-
-                  The initial was "Z". That is Zoot, and the rename missed it: on any build
-                  without Supabase credentials the hero showed the previous brand's letter.
-
-                  The label was "Supabase-backed", which names the database to a customer. It
-                  means nothing to someone booking a clean, and on a misconfigured production
-                  build it would advertise the vendor in the first thing on the page. The label
-                  does not depend on configuration — only the count does — so it is now the same
-                  either way and only the number falls back.
-                */}
-                <div className="relative"><span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" /><span className="relative grid place-items-center h-9 w-9 rounded-full bg-accent text-accent-foreground text-xs font-bold">{isSupabaseConfigured ? activeXooters : "X"}</span></div>
-                <div className="liquid-glass-readable"><p className="text-xs text-muted-foreground">Live Xooters</p><p className="text-sm font-semibold">After verification</p></div>
-              </div>
+        <div className="xoot-hero-portrait">
+          <HeroArrow />
+          <HandoffTape style={{ width: 104, height: 32, top: -12, left: -18, rotate: "-22deg" }} />
+          <HandoffTape style={{ backgroundColor: "var(--xoot-honey-mid)", width: 98, height: 30, bottom: -10, right: -16, rotate: "-16deg", clipPath: "polygon(3% 2%, 100% 0%, 96% 100%, 0% 97%, 1% 48%)" }} />
+          <div className="xoot-hero-photo">
+            <img src={heroImage} srcSet={`${heroImage} 1120w, ${heroImageLarge} 1792w`} sizes="(min-width: 1240px) 586px, (min-width: 962px) 50vw, 100vw" alt="Illustration of a Xooter in uniform outside a Johannesburg home" width={1120} height={1500} className="h-full w-full object-cover object-[50%_12%]" />
+            <div className="xoot-hero-roster">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">X</span>
+              <span><span className="block text-xs text-muted-foreground">Live Xooters</span><span className="block text-sm font-bold">After verification</span></span>
             </div>
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="liquid-glass-shell rounded-2xl p-4 shadow-card flex items-center justify-between animate-fade-up">
-                <div className="liquid-glass-readable flex w-full items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                <div className="h-11 w-11 rounded-full gradient-sage grid place-items-center"><Home className="h-5 w-5 text-primary-foreground" /></div>
-                  <div><p className="text-sm font-semibold">Arrival timeline</p><p className="text-xs text-muted-foreground">On the way, arrived, started, completed</p></div>
-                </div>
-                <span className="text-xs font-bold text-primary px-3 py-1.5 rounded-full bg-primary/10">TRUST</span>
-                </div>
-              </div>
+            <div className="xoot-hero-timeline">
+              <span className="flex min-w-0 items-center gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--xoot-violet-500)] text-white"><House className="h-5 w-5" /></span><span className="min-w-0"><span className="block text-sm font-bold">Arrival timeline</span><span className="block truncate text-xs text-muted-foreground">On the way, arrived, started, completed</span></span></span>
+              <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold tracking-wide text-primary">TRUST</span>
             </div>
           </div>
         </div>

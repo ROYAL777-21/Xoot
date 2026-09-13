@@ -30,7 +30,7 @@ import { describe, expect, it } from "vitest";
 
 const repoRoot = process.cwd();
 
-const read = (path: string) => readFileSync(join(repoRoot, path), "utf8");
+const read = (path: string) => readFileSync(join(repoRoot, path), "utf8").replace(/\r\n/g, "\n");
 
 /** The shared resolver. Excluded from the "acted on" corpus — see `actedOn` below. */
 const RESOLVER = "supabase/functions/_shared/concierge-controls.ts";
