@@ -51,6 +51,7 @@ const MUST_STAY_OPEN: Record<string, string> = {
   // The paths it gates re-check the controls server-side, so this response is a hint for drawing
   // a button, never a permission.
   "concierge-config": "The Concierge launcher renders for signed-out visitors and must know if it is enabled.",
+  "public-xooter-directory": "Signed-out visitors can browse an allowlisted projection of active, approved profiles. Private contractor records remain behind RLS.",
   // Added 2026-08-12. A fare-split invitation arrives as a WhatsApp message from a friend, so its
   // reader has no Xoot account — and asking them to make one before telling them what they are
   // being asked to pay for is how an invitation gets ignored.
