@@ -1,30 +1,41 @@
 Fonts shipped by Xoot
 =====================
 
-Both files in this directory are subsets of open-source families, extracted from the design kit
-(`design/Xoot_App.html`) by `scripts/design/extract-kit-fonts.mjs`. Neither has been modified
-beyond subsetting the character set and constraining variation axes, which the SIL Open Font
-License expressly permits.
+Source: the uploaded handoff at design/handoff-2026-09-03/xoot/assets/fonts.
+All four families are licensed under SIL Open Font License 1.1 (included below).
+Copyright notices are taken from the original font metadata.
 
+Plus Jakarta Sans
+  Copyright 2020 The Plus Jakarta Sans Project Authors
+  https://github.com/tokotype/PlusJakartaSans
+
+Newsreader
+  Copyright 2020 The Newsreader Project Authors
+  https://github.com/productiontype/Newsreader
+
+Caveat
+  Copyright 2014 The Caveat Project Authors
+  https://github.com/googlefonts/caveat
+
+DM Mono
+  Copyright 2020 The DM Mono Project Authors
+  https://github.com/googlefonts/dm-mono
+
+Website files:
   plus-jakarta-sans-latin-var.woff2
-      Plus Jakarta Sans, variable (weight 300–800)
-      Copyright 2020 The Plus Jakarta Sans Project Authors
-      https://github.com/tokotype/PlusJakartaSans
-      SIL Open Font License 1.1
-
   newsreader-latin-var.woff2
-      Newsreader, variable (weight 400–800, optical size pinned at 24)
-      Copyright 2019 The Newsreader Project Authors
-      https://github.com/productiontype/Newsreader
-      SIL Open Font License 1.1
+  caveat-latin-var.woff2
+  dm-mono-latin-regular.woff2
+  dm-mono-latin-medium.woff2
+These are character subsets. The variable fonts retain their original axes.
+Regenerate with scripts/design/subset-handoff-fonts.py.
 
-The design kit also carries DM Mono and Caveat, both SIL OFL 1.1. Neither is shipped: the public
-site renders no code and does not use the script wordmark. They remain available in the bundle.
-
-`design/BRAND.md` requires every final asset to carry an owner and a licence or release source.
-That is what this file is for.
-
---------------------------------------------------------------------------------------------------
+Native files:
+  XootJakarta.ttf (weight 500), XootJakartaBold.ttf (weight 700)
+  XootNewsreader.ttf (weight 400, optical size 36)
+  XootNewsreaderStrong.ttf (weight 600, optical size 36)
+  XootCaveat.ttf (weight 600), XootMono.ttf (regular)
+These are static instances. Regenerate with scripts/build/build-native-fonts.py.
 
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
 

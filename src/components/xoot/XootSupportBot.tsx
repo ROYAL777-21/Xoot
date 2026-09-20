@@ -390,7 +390,7 @@ export const XootSupportBot = () => {
         </section>
       )}
 
-      {(location.pathname !== "/" || open) && <Button
+      {(!["/", "/auth", "/bug-bounty"].includes(location.pathname) || open) && <Button
         type="button"
         className="interactive-press liquid-glass-shell h-14 w-14 rounded-full px-0 shadow-warm sm:w-auto sm:px-4"
         data-open={open ? "true" : "false"}

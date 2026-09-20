@@ -52,11 +52,10 @@ describe("PeopleBand claims", () => {
   it("claims only capabilities that exist, in capability tense", () => {
     render(<PeopleBand />);
     const copy = document.body.textContent ?? "";
-    // Arrival status is real (`src/lib/operations.ts`); in-app chat and calling are real
-    // (`BookingChat`, `VoiceCallPanel`). Each is described as a thing the app carries, not
-    // as an outcome a customer has already received.
+    // Arrival status and the support route are available; provider-dependent calling
+    // must not become a public availability promise.
     expect(copy).toMatch(/arrival status/i);
-    expect(copy).toMatch(/message or call about a booking from inside the app/i);
+    expect(copy).toMatch(/contact support from the booking/i);
     // No review, rating or testimonial: nothing has been completed to rate.
     expect(copy).not.toMatch(/\bstars?\b/i);
     expect(copy).not.toMatch(/\brated\b/i);

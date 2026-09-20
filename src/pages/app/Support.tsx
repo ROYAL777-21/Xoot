@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -66,8 +67,9 @@ const requestSupportAssistantReply = async (
 
 const Support = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [tickets, setTickets] = useState<any[]>([]);
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(() => searchParams.get("kind") === "security" ? "Security report" : "");
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [assistantReply, setAssistantReply] = useState<SupportAssistantReply | null>(null);
@@ -119,7 +121,10 @@ const Support = () => {
 
     let assistantReply: SupportAssistantReply | null = null;
     try {
-      assistantReply = await requestSupportAssistantReply(result.data.case_id, safeSupport.category, safeSupport.description);
+      // Security reports go to the support queue without sending the report to an AI provider.
+      if (searchParams.get("kind") !== "security" && !/^security report\b/i.test(safeSupport.category)) {
+        assistantReply = await requestSupportAssistantReply(result.data.case_id, safeSupport.category, safeSupport.description);
+      }
     } catch {
       assistantReply = null;
     }

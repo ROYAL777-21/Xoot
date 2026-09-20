@@ -1,54 +1,36 @@
-import { Building2, Home, Hotel, KeyRound, MapPinned, ShieldCheck } from "lucide-react";
+import { BedDouble, Building2, House, KeyRound, MapPin, ShieldCheck } from "lucide-react";
 import { approvedLaunchRegions } from "@/lib/operations";
+import "@/styles/homepage-sections.css";
 
-const operatorProfiles = [
-  { label: "Property managers", icon: Building2 },
-  { label: "Estate agents", icon: KeyRound },
-  { label: "Airbnb hosts", icon: Hotel },
-  { label: "Office admins", icon: ShieldCheck },
-  { label: "Landlords", icon: Home },
-];
+const operators = [
+  [Building2, "Property managers"],
+  [KeyRound, "Estate agents"],
+  [BedDouble, "Airbnb hosts"],
+  [ShieldCheck, "Office admins"],
+  [House, "Landlords"],
+] as const;
 
-export const TrustedBy = () => {
+export function TrustedBy() {
   return (
-    <section className="border-y border-border bg-background py-12">
-      <div className="container">
-        <div className="mx-auto mb-7 max-w-3xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Built for real Johannesburg operating workflows
-          </p>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Built around the real operating needs of teams and households that need cleaner handovers, protected access notes, repeatable quality, and accountable support.
-          </p>
+    <section className="xoot-trusted" aria-labelledby="trusted-title">
+      <div className="xoot-public-inner">
+        <div className="xoot-trusted__intro">
+          <p id="trusted-title" className="xoot-section-eyebrow">Built for real Johannesburg operating workflows</p>
+          <p>Built around the real operating needs of teams and households that need cleaner handovers, protected access notes, repeatable quality, and accountable support.</p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {operatorProfiles.map((profile) => {
-            const Icon = profile.icon;
-            return (
-              // Glass off, border on. `design/GLASS-SYSTEM.md` reserves glass for navigation,
-              // controls and overlays and says outright that it "is not the default treatment for
-              // page sections, forms, repeated content cards, or dashboards" — five repeated
-              // content cards in a row is the case it names. The `liquid-glass-readable` inner
-              // wrapper existed only to restore text contrast the glass took away, so both go.
-              <div
-                key={profile.label}
-                className="rounded-3xl border border-border bg-card p-4 text-center"
-              >
-                <Icon className="mx-auto mb-3 h-5 w-5 text-primary" />
-                <p className="font-display text-lg font-bold tracking-tight">{profile.label}</p>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-          <MapPinned className="h-4 w-4 text-primary" />
-          {approvedLaunchRegions.slice(0, 8).map((region) => (
-            <span key={region} className="font-semibold capitalize text-foreground/75">
-              {region}
-            </span>
+        <div className="xoot-trusted__grid">
+          {operators.map(([Icon, label]) => (
+            <div className="xoot-trusted__item" key={label}>
+              <Icon aria-hidden="true" />
+              <p>{label}</p>
+            </div>
           ))}
+        </div>
+        <div className="xoot-trusted__areas" aria-label="Current launch areas">
+          <MapPin aria-hidden="true" />
+          {approvedLaunchRegions.map((region) => <span key={region}>{region}</span>)}
         </div>
       </div>
     </section>
   );
-};
+}

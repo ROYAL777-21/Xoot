@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 import { useAuth } from "@/contexts/AuthContext";
 import { CarePlusGlyph } from "./HeroArtwork";
+import { Logo } from "@/components/kit/Logo";
 
 const links = [
   { label: "Services", href: "/#services" },
@@ -70,7 +71,7 @@ export const Navbar = () => {
             onMouseEnter={() => prefetchRoute("/")}
             className="xoot-wordmark min-w-[60px] shrink-0 text-[2.5rem] leading-none text-[var(--xoot-violet-500)] transition-opacity hover:opacity-80"
           >
-            Xoot
+            <Logo size={26} tone="violet" />
           </Link>
 
           <nav className="hidden items-center gap-[2px] rounded-full bg-black/[0.07] p-1 text-[15px] min-[1080px]:flex">

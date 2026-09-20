@@ -48,7 +48,7 @@ describe("brand assets", () => {
     const sha = createHash("sha256");
     for (const rel of manifest.inputs) {
       sha.update(rel);
-      sha.update(readFileSync(join(process.cwd(), rel)));
+      sha.update(readFileSync(join(process.cwd(), rel), "utf8").replace(/\r\n/g, "\n"));
     }
 
     expect(

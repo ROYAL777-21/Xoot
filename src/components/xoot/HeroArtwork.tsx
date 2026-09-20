@@ -20,10 +20,10 @@ const flowers = [
   { size: 64, palette: "honey", left: "78%", top: "92%", opacity: .26 },
 ];
 
-export function HeroFlowers() {
+export function HandoffFlowerField({ items = flowers, className = "xoot-hero-flowers" }: { items?: typeof flowers; className?: string } = {}) {
   return (
-    <div className="xoot-hero-flowers" aria-hidden="true">
-      {flowers.map(({ size, palette, ...position }, index) => {
+    <div className={className} aria-hidden="true">
+      {items.map(({ size, palette, ...position }, index) => {
         const width = Math.round(size * .34);
         const height = Math.round(size * .5);
         return (
@@ -56,6 +56,8 @@ export function HeroFlowers() {
 export function HandoffTape({ className = "", style }: { className?: string; style?: CSSProperties }) {
   return <span aria-hidden="true" className={`xoot-handoff-tape ${className}`} style={style} />;
 }
+
+export const HeroFlowers = HandoffFlowerField;
 
 export function HeroArrow() {
   return (

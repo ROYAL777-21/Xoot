@@ -41,6 +41,7 @@ const CarePlusPaywall = lazy(() => import("./pages/CarePlusPaywall"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const AuthReset = lazy(() => import("./pages/AuthReset"));
 const Blog = lazy(() => import("./pages/Blog"));
+const BugBounty = lazy(() => import("./pages/BugBounty"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const PwaInstall = lazy(() => import("./pages/PwaInstall"));
 const SplitInvite = lazy(() => import("./pages/SplitInvite"));
@@ -179,6 +180,7 @@ const App = () => (
                   */}
                   <Route path="/care-plus/apply" element={<Navigate to="/care-plus" replace />} />
                   <Route path="/trust-centre" element={<TrustSafety />} />
+                  <Route path="/bug-bounty" element={<BugBounty />} />
                   <Route path="/legal/terms" element={<Terms />} />
                   <Route path="/legal/privacy" element={<Privacy />} />
                   <Route path="/legal/trust-safety" element={<TrustSafety />} />
@@ -191,6 +193,7 @@ const App = () => (
                   <Route path="/legal/care-plus-terms" element={<CarePlusTerms />} />
                   <Route path="/legal/xooter-terms" element={<XooterTerms />} />
                   <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
+                  <Route path="/app/book" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
                   <Route path="/app/favorites" element={<RequireAuth><AppShell><Favorites /></AppShell></RequireAuth>} />

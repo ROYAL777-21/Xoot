@@ -127,6 +127,6 @@ describe("the curve, for when it is switched on", () => {
     // And the same line is carried by the Semgrep rule, so the guard and the doc cannot drift
     // into saying different things.
     const rules = readFileSync(join(process.cwd(), ".semgrep/rules/xoot.yaml"), "utf8");
-    expect(rules).toContain("rewarding frequency with a\n      better rate is fine");
+    expect(rules).toMatch(/rewarding frequency with a\r?\n {6}better rate is fine/);
   });
 });

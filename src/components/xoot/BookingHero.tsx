@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured } from "@/integrations/supabase/client";
+import { loadXooterDirectory } from "@/lib/xooter-directory";
 import { captureAnalyticsEvent, getAnalyticsDeviceType } from "@/lib/analytics";
 import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
 import { HeroWordFlip } from "@/components/xoot/HeroWordFlip";
@@ -47,16 +48,10 @@ export const BookingHero = () => {
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     let cancelled = false;
-    supabase
-      .from("xooters_public")
-      .select("id", { count: "exact", head: true })
-      .then(({ count, error }) => {
+    loadXooterDirectory()
+      .then(({ total }) => {
         if (cancelled) return;
-        if (error) {
-          setRosterError(true);
-          return;
-        }
-        setActiveXooters(count ?? 0);
+        setActiveXooters(total);
       }, () => {
         if (!cancelled) setRosterError(true);
       });

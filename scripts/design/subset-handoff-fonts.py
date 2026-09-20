@@ -15,6 +15,8 @@ FONTS = {
     "PlusJakartaSans[wght].ttf": "plus-jakarta-sans-latin-var.woff2",
     "Newsreader[opsz,wght].ttf": "newsreader-latin-var.woff2",
     "Caveat[wght].ttf": "caveat-latin-var.woff2",
+    "DMMono-Regular.ttf": "dm-mono-latin-regular.woff2",
+    "DMMono-Medium.ttf": "dm-mono-latin-medium.woff2",
 }
 
 # Latin including Afrikaans diacritics, common punctuation, currency and arrows.
@@ -27,7 +29,7 @@ if __name__ == "__main__":
     total = 0
     for source_name, output_name in FONTS.items():
         font = TTFont(SOURCE / source_name, recalcTimestamp=False)
-        original_axes = [(a.axisTag, a.minValue, a.maxValue) for a in font["fvar"].axes]
+        original_axes = [(a.axisTag, a.minValue, a.maxValue) for a in font["fvar"].axes] if "fvar" in font else []
         options = subset.Options()
         options.layout_features = ["*"]
         options.flavor = "woff2"
@@ -38,7 +40,7 @@ if __name__ == "__main__":
         destination = OUTPUT / output_name
         font.save(destination)
         with TTFont(destination) as result:
-            axes = [(a.axisTag, a.minValue, a.maxValue) for a in result["fvar"].axes]
+            axes = [(a.axisTag, a.minValue, a.maxValue) for a in result["fvar"].axes] if "fvar" in result else []
             assert axes == original_axes, f"Variable axes changed in {output_name}"
         size = destination.stat().st_size
         total += size

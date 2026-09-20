@@ -72,7 +72,7 @@ describe("mobile build environment", () => {
     let output = "";
     let code = 0;
     try {
-      output = execFileSync("npx", ["tsx", "scripts/validate-env.ts"], {
+      output = execFileSync(process.execPath, ["--import", "tsx", "scripts/validate-env.ts"], {
         cwd: join(ROOT, "mobile"),
         encoding: "utf8",
         env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "", EAS_BUILD: "true", EAS_BUILD_PROFILE: "production" },

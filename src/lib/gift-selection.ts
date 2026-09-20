@@ -1,0 +1,41 @@
+import { isPriced, quote, type ServiceId } from "./xoot-pricing";
+
+export const giftServices = [
+  { key: "regular", serviceType: "residential", label: "Regular cleaning", hours: 5.5 },
+  { key: "airbnb", serviceType: "airbnb", label: "Airbnb cleaning", hours: 5.5 },
+  { key: "express", serviceType: "express", label: "Express cleaning", hours: 2 },
+  { key: "office", serviceType: "office", label: "Office cleaning", hours: 6 },
+] as const;
+
+export const giftBundles = [
+  { count: 1, label: "One clean", detail: "A single visit, whenever they need it" },
+  { count: 4, label: "A month of Fridays", detail: "Four visits, used at their own pace" },
+  { count: 12, label: "A season", detail: "Twelve visits, used at their own pace" },
+] as const;
+
+export const giftOccasions = [
+  { label: "Mother's Day", tint: "petal", title: "Happy Mother's Day", note: "You have cleaned up after all of us for long enough.", hint: "A little time for herself. Choose the visits and make the card your own." },
+  { label: "A new baby", tint: "mist", title: "Congratulations", note: "One less thing. Sleep instead.", hint: "The practical present: help with the home while they find their new rhythm." },
+  { label: "Moving in", tint: "honey", title: "Welcome home", note: "Start in a place that is already clean.", hint: "For the first quiet moment in a new home." },
+  { label: "Just because", tint: "sage", title: "No occasion", note: "Go and sit down. It is handled.", hint: "No big occasion needed. A personal note makes the gift their own." },
+] as const;
+
+export type GiftSelection = { service: (typeof giftServices)[number]["key"]; count: number; occasion: number };
+
+export function readGiftSelection(params: URLSearchParams): GiftSelection {
+  const service = giftServices.find((item) => item.key === params.get("service"))?.key ?? "regular";
+  const count = Number(params.get("visits"));
+  const occasion = Number(params.get("occasion"));
+  return { service, count: giftBundles.some((bundle) => bundle.count === count) ? count : 4, occasion: Number.isInteger(occasion) && occasion >= 0 && occasion < giftOccasions.length ? occasion : 0 };
+}
+
+/** An indicative clean value; the gift order must be quoted and accepted by the server. */
+export function estimateGift(selection: GiftSelection) {
+  const service = giftServices.find((item) => item.key === selection.service) ?? giftServices[0];
+  const priced = quote({ service: service.key as ServiceId, hours: service.hours, bookingCover: false });
+  return { service, perVisitCents: isPriced(priced) ? priced.totalCents : null, totalCents: isPriced(priced) ? priced.totalCents * selection.count : null };
+}
+
+export function giftSetupPath(selection: GiftSelection) {
+  return `/app/gifts?${new URLSearchParams({ service: selection.service, visits: String(selection.count), occasion: String(selection.occasion) })}`;
+}

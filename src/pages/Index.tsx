@@ -18,6 +18,9 @@ import { Journal } from "@/components/xoot/Journal";
 import { Merch } from "@/components/xoot/Merch";
 import { TrustMechanisms } from "@/components/xoot/TrustMechanisms";
 import { ReferSection } from "@/components/xoot/ReferSection";
+import { GiftBand } from "@/components/xoot/GiftBand";
+import { CarePlusBand } from "@/components/xoot/CarePlusBand";
+import { Reviews } from "@/components/xoot/Reviews";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -43,6 +46,8 @@ const Index = () => {
       <Navbar />
       <main className="relative z-20">
         <BookingHero />
+        <GiftBand />
+        <CarePlusBand />
         <TrustedBy />
         <ServiceAreaMap />
         <Services />
@@ -57,12 +62,13 @@ const Index = () => {
         <NearbyWorkers />
         <HowItWorks />
         <GapArrow offset={-58} rotate={-6} />
-        <BecomeXooter />
-        <HomeExpansion />
+        <Reviews />
         <Merch />
+        <BecomeXooter />
         <Journal />
-        <FeedbackSection />
         <ReferSection />
+        <HomeExpansion />
+        <FeedbackSection />
       <CtaBand />
       </main>
       <Footer />

@@ -1,167 +1,201 @@
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import type { Map as MapboxMap } from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-import { ArrowRight, LocateFixed, MapPin, ShieldCheck } from "lucide-react";
+import React from "react";
 import { approvedLaunchRegions } from "@/lib/operations";
+import "@/styles/homepage-sections.css";
 
-const mapboxToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN?.trim();
+// Coordinates and SVG composition from the uploaded SiteMap.jsx.
+const SA: [number, number][] = [
+  [16.45,-28.58],[17.4,-30.1],[17.9,-31.4],[18.2,-32.6],[18.35,-33.5],[18.45,-34.35],
+  [19.3,-34.83],[20.9,-34.4],[22.6,-34.0],[24.8,-34.2],[25.7,-34.0],[26.9,-33.7],
+  [28.0,-32.7],[29.2,-31.5],[30.2,-30.9],[31.1,-29.9],[31.6,-29.2],[32.4,-28.5],
+  [32.9,-27.0],[32.89,-26.85],[32.0,-26.4],[31.9,-25.9],[31.3,-25.7],[31.0,-25.4],
+  [31.5,-24.4],[31.9,-24.1],[31.3,-22.4],[30.3,-22.35],[29.4,-22.2],[28.2,-22.7],
+  [27.5,-23.4],[26.9,-24.3],[26.0,-24.7],[25.6,-25.5],[24.7,-25.8],[23.9,-25.6],
+  [23.0,-25.3],[22.6,-26.1],[21.7,-26.7],[20.9,-26.8],[20.6,-26.5],[20.0,-25.6],
+  [19.98,-24.77],[19.98,-28.46],[19.0,-28.9],[18.0,-28.9],[17.0,-28.15],
+];
 
-const serviceAreas = [
-  { name: "Sandton", coordinates: [28.0573, -26.1076], note: "Office resets and apartments" },
-  { name: "Bryanston", coordinates: [28.0061, -26.0507], note: "Family homes and estates" },
-  { name: "Rosebank", coordinates: [28.0416, -26.1467], note: "Apartments and workspaces" },
-  { name: "Fourways", coordinates: [28.0068, -26.0206], note: "Townhouses and estates" },
-  { name: "Midrand", coordinates: [28.128, -25.9992], note: "Homes, offices and turns" },
-] satisfies Array<{ name: string; coordinates: [number, number]; note: string }>;
+/* Lesotho — an independent country entirely inside South Africa, so it is a hole in the fill.
+   Painting over it would be geographically wrong and anyone from here would notice. */
+const LESOTHO: [number, number][] = [
+  [27.0,-29.6],[27.8,-30.1],[28.7,-30.6],[29.4,-30.3],[29.3,-29.6],[28.6,-28.6],
+  [27.7,-28.6],[27.0,-29.0],
+];
 
-export const ServiceAreaMap = () => {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<MapboxMap | null>(null);
-  const [mapReady, setMapReady] = useState(false);
+/* Original Gauteng outline; highlighted launch suburbs are defined below. */
+const GAUTENG: [number, number][] = [
+  [27.0,-25.6],[27.6,-25.3],[28.0,-25.15],[28.5,-25.35],[29.0,-25.7],[29.05,-26.3],
+  [28.6,-26.9],[27.9,-27.05],[27.3,-26.85],[26.95,-26.3],
+];
 
-  useEffect(() => {
-    if (!mapboxToken || !mapContainerRef.current || mapRef.current) return;
+/* Reference suburb coordinates. Highlights come from the approved launch-region list. */
+const PLACES: [string, number, number, boolean][] = [
+  ['Pretoria', 28.188, -25.746, true],
+  ['Centurion', 28.19, -25.86, false],
+  ['Midrand', 28.13, -25.99, true],
+  ['Fourways', 28.01, -26.02, true],
+  ['Bryanston', 28.02, -26.06, true],
+  ['Sandton', 28.056, -26.107, true],
+  ['Randburg', 27.99, -26.09, false],
+  ['Rosebank', 28.041, -26.146, true],
+  ['Kempton Park', 28.23, -26.10, false],
+  ['Roodepoort', 27.87, -26.16, false],
+  ['Johannesburg', 28.047, -26.204, true],
+  ['Benoni', 28.32, -26.19, false],
+  ['Alberton', 28.12, -26.27, false],
+  ['Soweto', 27.86, -26.27, true],
+];
 
-    let disposed = false;
+/* One projector for both maps. Equirectangular with a cosine correction at the mean latitude —
+   at this extent that is visually indistinguishable from a proper conic and far simpler to reason
+   about when placing a label. */
+function makeProjector(pts: [number, number][], w: number, h: number, pad: number) {
+  const lons = pts.map(p => p[0]), lats = pts.map(p => p[1]);
+  const lon0 = Math.min(...lons), lon1 = Math.max(...lons);
+  const lat0 = Math.min(...lats), lat1 = Math.max(...lats);
+  const k = Math.cos((lat0 + lat1) / 2 * Math.PI / 180);
+  const dx = (lon1 - lon0) * k, dy = lat1 - lat0;
+  const s = Math.min((w - pad * 2) / dx, (h - pad * 2) / dy);
+  const ox = (w - dx * s) / 2, oy = (h - dy * s) / 2;
+  return (lon, lat) => [ox + (lon - lon0) * k * s, oy + (lat1 - lat) * s];
+}
 
-    const initialiseMap = async () => {
-      const { default: mapboxgl } = await import("mapbox-gl");
-      if (disposed || !mapContainerRef.current || mapRef.current) return;
+const toPath = (ring: [number, number][], P: (lon: number, lat: number) => number[]) => ring.map((p, i) => (i ? 'L' : 'M') + P(p[0], p[1]).map(n => n.toFixed(1)).join(' ')).join(' ') + ' Z';
 
-      mapboxgl.accessToken = mapboxToken;
-      const map = new mapboxgl.Map({
-        attributionControl: false,
-        bearing: -12,
-        center: [28.0473, -26.108],
-        container: mapContainerRef.current,
-        pitch: 42,
-        style: "mapbox://styles/mapbox/standard",
-        zoom: 10.25,
-      });
+export function ServiceAreaMap() {
+  const [hover, setHover] = React.useState<string | null>(null);
 
-      map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
-      map.addControl(new mapboxgl.NavigationControl({ showCompass: true, visualizePitch: true }), "bottom-right");
-      map.on("load", () => setMapReady(true));
-
-      serviceAreas.forEach((area) => {
-        const marker = document.createElement("div");
-        marker.className = "grid h-9 w-9 place-items-center rounded-full border border-white/60 bg-primary text-primary-foreground shadow-warm";
-        const markerDot = document.createElement("span");
-        markerDot.className = "h-2.5 w-2.5 rounded-full bg-current";
-        marker.appendChild(markerDot);
-
-        const popupContent = document.createElement("div");
-        const popupTitle = document.createElement("strong");
-        popupTitle.textContent = area.name;
-        const popupNote = document.createElement("span");
-        popupNote.textContent = area.note;
-        popupContent.append(popupTitle, document.createElement("br"), popupNote);
-
-        new mapboxgl.Marker({ element: marker, anchor: "center" })
-          .setLngLat(area.coordinates)
-          .setPopup(new mapboxgl.Popup({ closeButton: false, offset: 18 }).setDOMContent(popupContent))
-          .addTo(map);
-      });
-
-      mapRef.current = map;
-    };
-
-    void initialiseMap();
-
-    return () => {
-      disposed = true;
-      mapRef.current?.remove();
-      mapRef.current = null;
-    };
-  }, []);
+  const P = React.useMemo(() => makeProjector(SA, 400, 340, 14), []);
+  const Z = React.useMemo(() => makeProjector(GAUTENG, 400, 340, 46), []);
 
   return (
-    <section className="overflow-hidden border-y border-border bg-background py-14">
-      <div className="container grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+    <section id="coverage" className="xoot-public-section xoot-public-section--alt"><div className="xoot-public-inner">
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))',
+        gap: 'clamp(28px, 4vw, 48px)', alignItems: 'center',
+      }}>
         <div>
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            <LocateFixed className="h-3.5 w-3.5" />
-            Launch coverage
+          <div className="xoot-section-head" style={{maxWidth: 480}}><p className="xoot-section-eyebrow">Where we operate</p><h2 className="xoot-section-title">Starting in <span className="xoot-squiggle">Johannesburg.</span> Growing with care.</h2><p className="xoot-section-sub">Our launch suburbs are listed below. Enter your address when you book to check service coverage and available Xooters. A place on the map is a location, not a promise of live availability.</p></div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: -20 }}>
+            {approvedLaunchRegions.map(a => (
+              <span key={a}
+                onMouseEnter={() => setHover(a)} onMouseLeave={() => setHover(null)}
+                style={{
+                  padding: '8px 14px', borderRadius: 'var(--xoot-radius-pill)',
+                  background: hover?.toLowerCase() === a ? 'var(--xoot-violet-500)' : 'var(--xoot-surface-card)',
+                  color: hover === a ? '#fff' : 'inherit',
+                  boxShadow: hover === a ? 'none' : 'inset 0 0 0 1px var(--xoot-border-color)',
+                  fontSize: 'var(--xoot-body-sm)', fontWeight: 600, textTransform: 'capitalize', cursor: 'default',
+                  transition: 'all var(--xoot-dur-fast) var(--xoot-ease-out)',
+                }}>{a}</span>
+            ))}
+            <span style={{
+              padding: '8px 14px', borderRadius: 'var(--xoot-radius-pill)',
+              background: 'var(--xoot-violet-50)', color: 'var(--xoot-violet-800)',
+              fontSize: 'var(--xoot-body-sm)', fontWeight: 700,
+            }}>Availability confirmed in booking</span>
           </div>
-          <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
-            See where Xoot is launching, then book from the same flow.
-          </h2>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-            Xoot uses map-aware coverage checks for launch suburbs, contractor dispatch, ETA surfaces and safe route context. Public maps show service areas only; exact customer addresses and access notes stay inside protected booking screens.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {approvedLaunchRegions.slice(0, 8).map((region) => (
-              <span key={region} className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold capitalize text-foreground/75">
-                {region}
+        </div>
+
+        <div style={{
+          position: 'relative', aspectRatio: '4 / 3.4', borderRadius: 'var(--xoot-radius-xl)',
+          overflow: 'hidden', background: 'var(--xoot-surface-page)', boxShadow: 'var(--xoot-shadow-3)',
+        }}>
+          <svg viewBox="0 0 400 340" role="img"
+            aria-label="Map of South Africa with Gauteng highlighted, and an inset showing reference locations and selected launch suburbs"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+            <defs>
+              <clipPath id="xt-sa"><path d={toPath(SA, P)} /></clipPath>
+            </defs>
+
+            {/* The country. Lesotho is subtracted with evenodd rather than covered. */}
+            <path d={toPath(SA, P) + ' ' + toPath(LESOTHO, P)} fillRule="evenodd"
+              fill="var(--xoot-neutral-200)" stroke="var(--xoot-neutral-400)" strokeWidth="1.1"
+              strokeLinejoin="round" />
+
+            {/* Gauteng, the served province. */}
+            <path d={toPath(GAUTENG, P)} clipPath="url(#xt-sa)"
+              fill="var(--xoot-violet-500)" fillOpacity=".9"
+              stroke="var(--xoot-violet-700)" strokeWidth="1.2" strokeLinejoin="round" />
+
+            {/* A leader from the province to the inset, so the zoom is legible as a zoom. */}
+            {(() => {
+              const g = P(28.1, -26.1);
+              return (
+                <g>
+                  <circle cx={g[0]} cy={g[1]} r="16" fill="none"
+                    stroke="var(--xoot-violet-500)" strokeWidth="1.2" strokeDasharray="3 4" opacity=".8" />
+                  <line x1={g[0] - 15} y1={g[1] + 9} x2="190" y2="176"
+                    stroke="var(--xoot-violet-400)" strokeWidth="1.3" strokeDasharray="3 4" />
+                </g>
+              );
+            })()}
+
+            <text x={P(25.0, -28.2)[0]} y={P(25.0, -28.2)[1]} textAnchor="middle"
+              style={{ fontSize: 11, fontWeight: 700, fill: 'var(--xoot-text-muted)', letterSpacing: '.08em' }}>
+              SOUTH AFRICA
+            </text>
+            <text x={P(28.5, -29.5)[0]} y={P(28.5, -29.5)[1]} textAnchor="middle"
+              style={{ fontSize: 8, fontWeight: 600, fill: 'var(--xoot-text-muted)' }}>
+              LESOTHO
+            </text>
+
+            {/* ── The inset: Gauteng at scale, with the real suburbs ── */}
+            <g transform="translate(16, 178) scale(.42)">
+              <rect x="-14" y="-14" width="428" height="368" rx="26"
+                fill="var(--xoot-surface-card)" stroke="var(--xoot-violet-200)" strokeWidth="2.6" />
+              <path d={toPath(GAUTENG, Z)} fill="var(--xoot-violet-50)"
+                stroke="var(--xoot-violet-500)" strokeWidth="2.4" strokeLinejoin="round" />
+
+              {PLACES.map(([name, lon, lat]) => {
+                const priority = approvedLaunchRegions.includes(name.toLowerCase());
+                const [x, y] = Z(lon, lat);
+                const on = hover?.toLowerCase() === name.toLowerCase();
+                return (
+                  <g key={name}>
+                    {priority && <circle cx={x} cy={y} r={on ? 26 : 19} fill="var(--xoot-violet-500)" opacity={on ? '.3' : '.15'} />}
+                    <circle cx={x} cy={y} r={priority ? 9 : 6.5}
+                      fill={priority ? 'var(--xoot-violet-600)' : 'var(--xoot-surface-card)'}
+                      stroke={priority ? 'none' : 'var(--xoot-violet-500)'} strokeWidth="3" />
+                  </g>
+                );
+              })}
+
+              {/* Only the anchors are labelled — fourteen labels at this size is a smudge. */}
+              {([['Pretoria', 28.188, -25.746, 'start', 16, 5],
+                ['Sandton', 28.056, -26.107, 'end', -16, 0],
+                ['Soweto', 27.86, -26.27, 'end', -14, 12],
+                ['Benoni', 28.32, -26.19, 'start', 15, 4]] as const).map(([n, lon, lat, anchor, dx, dy]) => {
+                const [x, y] = Z(lon, lat);
+                return (
+                  <text key={n} x={x + dx} y={y + dy} textAnchor={anchor}
+                    style={{ fontSize: 21, fontWeight: 700, fill: 'var(--xoot-text-primary)' }}>{n}</text>
+                );
+              })}
+              <text x="200" y="342" textAnchor="middle"
+                style={{ fontSize: 20, fontWeight: 800, letterSpacing: '.14em', fill: 'var(--xoot-violet-700)' }}>
+                GAUTENG
+              </text>
+            </g>
+          </svg>
+
+          <div style={{
+            position: 'absolute', left: 16, bottom: 16, display: 'flex', flexDirection: 'column', gap: 7,
+            padding: '11px 15px', borderRadius: 'var(--xoot-radius-md)',
+            background: 'var(--xoot-glass-light)', backdropFilter: 'blur(var(--xoot-glass-blur))',
+            boxShadow: 'var(--xoot-shadow-glass)',
+          }}>
+            {([['var(--xoot-violet-600)', 'Launch suburb', true], ['transparent', 'Reference location', false]] as const).map(([bg, label, solid]) => (
+              <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  width: 10, height: 10, borderRadius: '50%', background: bg,
+                  boxShadow: solid ? 'none' : 'inset 0 0 0 2px var(--xoot-violet-500)',
+                }} />
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--xoot-text-secondary)' }}>{label}</span>
               </span>
             ))}
           </div>
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <Link to="/app" className="interactive-press inline-flex h-12 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground shadow-warm">
-              Check prices in my area
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-            <Link to="/care-plus" className="liquid-glass-interactive inline-flex h-12 items-center justify-center rounded-full px-5 text-sm font-bold text-foreground shadow-card">
-              Keep my favourite Xooter
-            </Link>
-          </div>
-        </div>
-
-        {/*
-          Glass and strong shadow off this panel, on purpose, and NOT off the things inside it.
-
-          `design/GLASS-SYSTEM.md` gives glass four jobs — navigation, controls, overlays, and
-          rare prominent actions. This outer element is none of them: it is the content surface
-          the map is drawn on, and `shadow-warm` on something this large is the "strong shadows
-          are reserved for temporary overlays" rule inverted.
-
-          What sits inside it keeps its glass and is correct to: the "Find full-time help"
-          button is a control, and the loading state, the no-map fallback and the bottom bar are
-          overlays drawn over the map. Stripping those too would have been the opposite mistake
-          to the one being fixed.
-        */}
-        <div className="relative min-h-88 overflow-hidden rounded-4xl border border-border bg-card">
-          {mapboxToken ? (
-            <>
-              <div ref={mapContainerRef} className="absolute inset-0" aria-label="Xoot service area map" />
-              {!mapReady && (
-                <div className="liquid-glass-readable absolute inset-4 grid place-items-center rounded-3xl bg-background/70 text-sm font-semibold text-muted-foreground">
-                  Loading service map
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="liquid-glass-readable absolute inset-0 grid place-items-center p-6">
-              <div className="max-w-sm text-center">
-                <MapPin className="mx-auto mb-4 h-8 w-8 text-primary" />
-                {/*
-                  The map is decoration over a list that is already on the page. When the map
-                  cannot render, the suburbs beside it still answer the question, so this says
-                  what the visitor can do rather than which environment variable is missing.
-                */}
-                <h3 className="font-display text-2xl font-bold">Our launch suburbs</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  The full list is beside this panel. Enter your address in the booking form to
-                  check whether we reach you.
-                </p>
-              </div>
-            </div>
-          )}
-          <div className="liquid-glass-readable absolute bottom-4 left-4 right-4 flex flex-col gap-2 rounded-3xl border border-white/35 bg-background/78 p-4 shadow-card sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-accent/15 text-accent-ink">
-                <ShieldCheck className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="text-sm font-bold">Privacy-first dispatch</p>
-                <p className="text-xs text-muted-foreground">Public coverage, private addresses.</p>
-              </div>
-            </div>
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">No live tracking on public pages</span>
-          </div>
         </div>
       </div>
-    </section>
+    </div></section>
   );
-};
+}

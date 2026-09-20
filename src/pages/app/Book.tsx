@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { XooterCard, Xooter } from "@/components/xoot/XooterCard";
-import { ChipGrid } from "@/components/kit";
+import { Logo } from "@/components/kit/Logo";
+import { loadXooterDirectory } from "@/lib/xooter-directory";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Home as HomeIcon, Building2, BedDouble, Sparkles, ArrowRight, ArrowLeft, Loader2, Wand2, Plus, Minus, ShieldCheck, Repeat, Truck, TimerReset, CheckCircle2, MapPin } from "lucide-react";
+import { Home as HomeIcon, Building2, BedDouble, Sparkles, ArrowRight, ArrowLeft, Loader2, Plus, Minus, ShieldCheck, Repeat, Truck, TimerReset, MapPin, Check, WashingMachine } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR } from "@/lib/format";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { PayFastCheckout } from "@/components/PayFastCheckout";
 import { getSmartRecurringSuggestion, requiresCompletionPhotos, sortXootersForMarketplace } from "@/lib/trust";
 import { calculateBookingQuote, isApprovedLaunchRegion } from "@/lib/operations";
@@ -27,15 +25,15 @@ import {
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sanitiseSearchParam } from "@/lib/sanitise";
 import { BookingInput } from "@/lib/validators";
+import "@/styles/auth-booking.css";
 
 const services = [
-  { id: "residential", label: "Residential", icon: HomeIcon },
-  { id: "express", label: "Express clean", icon: TimerReset },
+  { id: "residential", label: "Regular", icon: HomeIcon, available: true },
   { id: "airbnb", label: "Airbnb turnover", icon: BedDouble },
+  { id: "express", label: "Express", icon: TimerReset },
   { id: "office", label: "Office / commercial", icon: Building2 },
-  { id: "deep", label: "Deep clean", icon: Wand2 },
   { id: "moving", label: "Moving clean", icon: Truck },
-  { id: "premium", label: "Premium clean", icon: Sparkles },
+  { id: "laundry", label: "Laundry & ironing", icon: WashingMachine, available: false },
 ] as const;
 
 const HOME_SIZES = [
@@ -128,6 +126,7 @@ const REFERRAL_REFUSALS = [
 
 const Book = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preferredXooterId = sanitiseSearchParam(searchParams.get("xooter"));
   const requestedService = sanitiseSearchParam(searchParams.get("service"));
@@ -172,6 +171,8 @@ const Book = () => {
   const [workerCount, setWorkerCount] = useState(1);
   const [xooters, setXooters] = useState<Xooter[]>([]);
   const [loadingXooters, setLoadingXooters] = useState(false);
+  const [xooterLoadError, setXooterLoadError] = useState(false);
+  const [rosterAttempt, setRosterAttempt] = useState(0);
   const [picked, setPicked] = useState<Xooter[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [bookingId, setBookingId] = useState<string | null>(null);
@@ -317,9 +318,10 @@ const Book = () => {
    * booking is a far worse outcome than losing the distance ordering.
    */
   useEffect(() => {
-    if (step !== 2) return;
+    if (step !== 3) return;
     let mounted = true;
     setLoadingXooters(true);
+    setXooterLoadError(false);
 
     const applyResults = (rows: Xooter[]) => {
       if (!mounted) return;
@@ -330,8 +332,16 @@ const Book = () => {
     };
 
     const fallback = async () => {
-      const { data } = await supabase.from("xooters_public").select("*").limit(30);
-      applyResults(sortXootersForMarketplace((data ?? []) as Xooter[]));
+      try {
+        const { xooters: roster } = await loadXooterDirectory();
+        applyResults(sortXootersForMarketplace(roster));
+      } catch {
+        if (mounted) {
+          setXooters([]);
+          setXooterLoadError(true);
+          setLoadingXooters(false);
+        }
+      }
     };
 
     (async () => {
@@ -343,7 +353,7 @@ const Book = () => {
         });
         if (error) throw error;
         const ranked = (data as { ranked?: Xooter[] } | null)?.ranked;
-        if (!ranked?.length) throw new Error("no ranked results");
+        if (!Array.isArray(ranked)) throw new Error("Invalid matching response");
         applyResults(ranked);
       } catch (err) {
         console.warn("proximity matching unavailable; falling back to the plain roster", err);
@@ -354,7 +364,7 @@ const Book = () => {
     return () => {
       mounted = false;
     };
-  }, [step, preferredXooterId, address]);
+  }, [step, preferredXooterId, address, rosterAttempt]);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -366,9 +376,12 @@ const Book = () => {
 
 
   const validateStep = () => {
+    if (active === "laundry") { toast.error("Laundry bookings are not available yet."); return false; }
     if (step === 1 && !address.trim()) { toast.error("Please enter your address"); return false; }
     if (step === 1 && !isApprovedLaunchRegion(address)) { toast.error("Xoot is currently available in the approved launch suburbs only."); return false; }
-    if (step === 2 && picked.length === 0) { toast.error("Select at least one Xooter"); return false; }
+    if (step === 2 && (!isSafeDate(date) || !time || new Date(`${date}T${time}:00`).getTime() <= Date.now())) { toast.error("Choose a future date and arrival time."); return false; }
+    if (step === 2 && !isPriced(priced)) { toast.error("Choose a visit length available for this service."); return false; }
+    if (step === 3 && picked.length !== (allowsMultipleWorkers(active) ? workerCount : 1)) { toast.error("Select the required number of Xooters."); return false; }
     return true;
   };
 
@@ -485,348 +498,75 @@ const Book = () => {
     setPaymentRecordId(result?.payment_record_ids?.[0] ?? null);
     setPaymentRecordCount(result?.payment_record_ids?.length ?? 0);
     setSubmitting(false);
-    setStep(4);
+    setStep(5);
   };
 
   const maxPick = allowsMultipleWorkers(active) ? workerCount : 1;
+  const stepNames = ["Service", "Home", "When", "Xooter", "Review"];
+  const nextStep = () => { if (validateStep()) setStep((value) => Math.min(value + 1, 4)); };
+  const back = () => step === 0 ? navigate("/") : setStep((value) => value - 1);
 
   return (
-    <div className="container py-5 lg:py-10 max-w-4xl pb-32 md:pb-10">
-      <div className="flex items-start justify-between gap-3 mb-5 lg:mb-6">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 mb-2 border border-accent/20">
-            <Sparkles className="h-3 w-3 text-accent-ink" />
-            <span className="text-xs font-medium text-accent-ink">Book a clean · takes under a minute</span>
-          </div>
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Your home, handled.</h1>
-          <p className="mt-1 text-sm text-muted-foreground hidden sm:block">Four calm steps. Vetted Xooter. Price you see is the price you pay.</p>
+    <div className="xoot-booking-page">
+      {assistantStarted && <p className="xoot-booking-callout"><Sparkles aria-hidden="true" />Your {activeServiceLabel.toLowerCase()} selection is ready. Review the details before booking.</p>}
+      <div className="xoot-booking-frame">
+        <header className="xoot-booking-head">
+          {step < 5 && <button type="button" className="xoot-booking-back" aria-label={step === 0 ? "Close booking" : "Back"} onClick={back}><ArrowLeft /></button>}
+          <ol className="xoot-booking-steps" aria-label="Booking progress">
+            {stepNames.map((name, index) => <li key={name} className={`xoot-booking-step ${index === step ? "is-active" : index < step ? "is-done" : ""}`} aria-current={step === index ? "step" : undefined}>
+              {index > 0 && <span className={`xoot-booking-connector ${index <= step ? "is-done" : ""}`} aria-hidden="true" />}
+              <i aria-hidden="true">{index < step ? <Check size={13} /> : index + 1}</i><span>{name}</span>
+            </li>)}
+          </ol>
+          <Logo className="xoot-booking-logo" size={20} tone="violet" />
+        </header>
+        <div className="xoot-booking-body">
+          {step === 0 && <>
+            <h1>What needs doing?</h1><p className="xoot-booking-lede">Pick one. You can add extras in a moment.</p>
+            <div className="xoot-booking-grid">
+              {services.map(({ id, label, icon: Icon }) => <button key={id} type="button" disabled={id === "laundry"} aria-pressed={active === id} onClick={() => { setActive(id); setPicked([]); if (!allowsMultipleWorkers(id)) setWorkerCount(1); }} className={`xoot-booking-choice ${active === id ? "is-selected" : ""}`}><span className="xoot-booking-choice-icon"><Icon /></span><span>{label}</span>{id === "laundry" && <small>Not available yet</small>}</button>)}
+            </div>
+          </>}
+          {step === 1 && <>
+            <h1>Tell us about the place.</h1><p className="xoot-booking-lede">A little context helps us plan the right visit.</p>
+            <div className="xoot-booking-stack">
+              {properties.length > 0 && <fieldset><legend className="xoot-booking-label">Which property?</legend><div className="xoot-booking-pills"><button type="button" className={`xoot-booking-pill ${!propertyId ? "is-selected" : ""}`} aria-pressed={!propertyId} onClick={() => setPropertyId(null)}>Personal</button>{properties.map((property) => <button key={property.id} type="button" className={`xoot-booking-pill ${propertyId === property.id ? "is-selected" : ""}`} aria-pressed={propertyId === property.id} onClick={() => setPropertyId(property.id)}>{property.name}</button>)}</div></fieldset>}
+              <fieldset><legend className="xoot-booking-label">Home size</legend><div className="xoot-booking-cards">{HOME_SIZES.map((item) => <button key={item.id} type="button" className={`xoot-booking-card ${homeSize === item.id ? "is-selected" : ""}`} aria-pressed={homeSize === item.id} onClick={() => setHomeSize(item.id)}><strong>{item.label}</strong><span>{item.desc}</span></button>)}</div></fieldset>
+              <label className="xoot-booking-field">Address<Input autoComplete="street-address" value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Full street address and suburb" /></label>
+              <div className={`xoot-booking-map-note ${address.trim() && !inLaunchRegion ? "is-error" : ""}`}><MapPin /><p>{address.trim() ? inLaunchRegion ? "This address mentions a launch suburb. Exact coverage and availability are confirmed before dispatch." : "This address is outside our listed launch suburbs. Check the suburb before continuing." : "Enter the address where the clean will take place."}</p></div>
+              <fieldset><legend className="xoot-booking-label">Extra tasks</legend><div className="xoot-booking-pills">{EXTRAS.map((extra) => <button key={extra} type="button" aria-pressed={extras.has(extra)} className={`xoot-booking-pill ${extras.has(extra) ? "is-selected" : ""}`} onClick={() => setExtras((previous) => { const next = new Set(previous); if (next.has(extra)) next.delete(extra); else next.add(extra); return next; })}>{extra}</button>)}</div></fieldset>
+              {householdNotes && <div className="xoot-booking-callout"><HomeIcon /><p style={{ whiteSpace: "pre-wrap" }}>{householdNotes}</p></div>}
+              <label className="xoot-booking-field">Anything we should know?<Textarea rows={3} value={instructions} onChange={(event) => setInstructions(event.target.value)} placeholder="Pets, parking, products or fragile areas" /></label>
+            </div>
+          </>}
+          {step === 2 && <>
+            <h1>When works for you?</h1><p className="xoot-booking-lede">Choose a date, arrival time and visit length.</p>
+            <div className="xoot-booking-stack">
+              <fieldset><legend className="xoot-booking-label">Visit length</legend><div className="xoot-booking-cards">{SERVICE_LENGTHS.map((item) => { const available = optionBase(item.id) !== "—"; return <button key={item.id} type="button" disabled={!available} aria-pressed={serviceLength === item.id} className={`xoot-booking-card ${serviceLength === item.id ? "is-selected" : ""}`} onClick={() => setServiceLength(item.id)}><strong>{item.label}</strong><span>{item.hours} hours</span><span>{available ? item.desc : "Not available for this service"}</span></button>; })}</div></fieldset>
+              <label className="xoot-booking-field">Date<Input type="date" min={new Date().toLocaleDateString("en-CA")} value={date} onChange={(event) => setDate(event.target.value)} /></label>
+              <fieldset><legend className="xoot-booking-label">Arrival time</legend><div className="xoot-booking-stack">{TIME_GROUPS.map((group) => <div key={group.label}><p className="xoot-booking-label">{group.label}</p><div className="xoot-booking-pills">{group.slots.map((slot) => <button key={slot} type="button" className={`xoot-booking-pill ${time === slot ? "is-selected" : ""}`} aria-pressed={time === slot} onClick={() => setTime(slot)}>{slot}</button>)}</div></div>)}</div></fieldset>
+              <fieldset><legend className="xoot-booking-label">How often?</legend><div className="xoot-booking-cards">{(["one_time", "repeat"] as const).map((item) => <button key={item} type="button" className={`xoot-booking-card ${frequency === item ? "is-selected" : ""}`} aria-pressed={frequency === item} onClick={() => setFrequency(item)}><strong>{item === "one_time" ? "Just this once" : "Repeat weekly"}</strong><span>{item === "one_time" ? "One visit" : "Review the series before confirming"}</span></button>)}</div></fieldset>
+              {smartSuggestion && <p className="xoot-booking-callout"><Repeat />{smartSuggestion}</p>}
+              {allowsMultipleWorkers(active) && <fieldset><legend className="xoot-booking-label">How many Xooters?</legend><div className="xoot-booking-pills"><button type="button" aria-label="Fewer Xooters" disabled={workerCount <= 1} className="xoot-booking-pill" onClick={() => { setWorkerCount(Math.max(1, workerCount - 1)); setPicked([]); }}><Minus size={16} /></button><output aria-live="polite">{workerCount}</output><button type="button" aria-label="More Xooters" disabled={workerCount >= 5} className="xoot-booking-pill" onClick={() => { setWorkerCount(Math.min(5, workerCount + 1)); setPicked([]); }}><Plus size={16} /></button></div></fieldset>}
+            </div>
+          </>}
+          {step === 3 && <>
+            <h1>Choose your Xooter{maxPick > 1 ? "s" : ""}.</h1><p className="xoot-booking-lede">{picked.length} of {maxPick} selected. Listings come from the approved Xooter roster.</p>
+            {loadingXooters ? <div className="xoot-booking-empty" role="status"><Loader2 className="animate-spin" /><p>Loading Xooters…</p></div> : xooterLoadError ? <div className="xoot-booking-empty" role="alert"><ShieldCheck /><h2>Availability could not be loaded</h2><p>Please try again to check the current Xooter roster.</p><Button variant="outline" onClick={() => setRosterAttempt((attempt) => attempt + 1)}>Try again</Button></div> : xooters.length === 0 ? <div className="xoot-booking-empty" role="status"><ShieldCheck /><h2>No approved Xooters available yet</h2><p>Please try another time or contact support for launch-area availability.</p><Button variant="outline" onClick={() => navigate("/app/support")}>Contact support</Button></div> : <div className="xoot-booking-worker-grid">{xooters.map((xooter) => <div key={xooter.id} className={picked.some((person) => person.id === xooter.id) ? "is-selected" : ""}><XooterCard z={xooter} onBook={() => selectWorker(xooter)} /></div>)}</div>}
+          </>}
+          {step === 4 && <>
+            <h1>Everything look right?</h1><p className="xoot-booking-lede">Review the details and total before creating your booking.</p>
+            <div className="xoot-booking-stack">
+              <div className="xoot-booking-summary"><div className="xoot-booking-summary-row"><span>Service</span><span>{activeServiceLabel}</span></div><div className="xoot-booking-summary-row"><span>Address</span><span>{address}</span></div><div className="xoot-booking-summary-row"><span>Date and arrival</span><span>{new Date(`${date}T00:00:00`).toLocaleDateString("en-ZA")} · {time}</span></div><div className="xoot-booking-summary-row"><span>Reserved time</span><span>{estHours}h, including extras</span></div><div className="xoot-booking-summary-row"><span>Xooters</span><span>{picked.map((person) => person.name).join(", ")}</span></div><div className="xoot-booking-summary-row"><span>Clean and extras</span><span>{formatZAR(totalPrice)}</span></div>{discount > 0 && <div className="xoot-booking-summary-row"><span>Multi-worker discount included</span><span>{Math.round(discount * 100)}%</span></div>}{highDemandPremium > 0 && <div className="xoot-booking-summary-row"><span>High-demand slot premium</span><span>{formatZAR(highDemandPremium)}</span></div>}<div className="xoot-booking-summary-row"><span>Booking cover</span><span>{formatZAR(bookingCover)}</span></div><div className="xoot-booking-summary-row"><span>{carePlusMember ? "Booking fee waived with Care+" : "Booking fee"}</span><span>{formatZAR(serviceFee)}</span></div><div className="xoot-booking-summary-row is-total"><span>Total pending</span><span>{formatZAR(bookingTotal)}</span></div></div>
+              <button type="button" className={`xoot-booking-cover ${bookingCoverOptIn ? "is-selected" : ""}`} aria-pressed={bookingCoverOptIn} onClick={() => setBookingCoverOptIn(!bookingCoverOptIn)}><i>{bookingCoverOptIn && <Check size={16} />}</i><span><strong>Booking cover {bookingCoverOptIn ? "included" : "not included"}</strong><small>Support and review for booking issues. This is not an insurance policy.</small></span></button>
+              {photoRequired && <p className="xoot-booking-callout"><ShieldCheck />This service requires before and after completion photos.</p>}
+              <label htmlFor="referral-code" className="xoot-booking-field">Referral code (optional)<Input id="referral-code" value={referralCode} onChange={(event) => { setReferralCode(event.target.value.toUpperCase()); setReferralError(null); }} maxLength={40} autoComplete="off" spellCheck={false} aria-invalid={Boolean(referralError)} aria-describedby="referral-code-help" placeholder="Enter a friend’s code" /></label><p id="referral-code-help" className="xoot-booking-lede">{referralError || "Xoot checks referral eligibility before applying credit. No referral discount is included in the estimate above."}</p>
+            </div>
+          </>}
+          {step === 5 && <div className="xoot-booking-success"><ShieldCheck /><h1>{paymentRecordId ? "One payment left." : "Booking request received."}</h1><p>Nothing has been charged by this page. Your booking remains pending until payment is confirmed.</p>{bookingStatus && <span className="xoot-booking-status">{bookingStatus.replace(/_/g, " ")}</span>}{paymentRecordId && bookingStatus === "draft" && <PayFastCheckout paymentRecordId={paymentRecordId} label={paymentRecordCount === 1 ? "Continue to payment" : "Pay for your first visit"} />}{paymentRecordCount > 1 && <p>This request contains {paymentRecordCount} payment records. Remaining visits are payable from your bookings.</p>}<div className="xoot-booking-pills"><Button variant="outline" onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); setPaymentRecordId(null); setPaymentRecordCount(0); }}>Book another</Button><Button onClick={() => navigate(bookingId ? `/app/bookings/${bookingId}` : "/app/bookings")}>View booking</Button></div></div>}
         </div>
-        <div className="lg:block hidden"><NotificationBell /></div>
+        {step < 5 && <footer className="xoot-booking-footer"><p>Step {step + 1} of {stepNames.length}</p><div className="xoot-booking-footer-actions"><Button variant="ghost" onClick={back}>Back</Button><Button className="xoot-booking-continue" onClick={step === 4 ? handleBook : nextStep} disabled={submitting || active === "laundry" || (step === 3 && picked.length !== maxPick) || (step >= 2 && !isPriced(priced))}>{submitting ? <Loader2 className="animate-spin" /> : step === 4 ? "Confirm booking" : "Continue"}<ArrowRight /></Button></div></footer>}
       </div>
-
-      {assistantStarted && (
-        <div className="slide-up-soft mb-6 rounded-3xl border border-primary/20 bg-primary/10 p-4 text-sm shadow-card">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-display text-lg font-bold text-foreground">Voice booking started</p>
-              <p className="mt-1 text-muted-foreground">
-                Xoot heard a request for {activeServiceLabel.toLowerCase()}
-                {safeRequestedDate ? ` on ${new Date(`${safeRequestedDate}T00:00:00`).toLocaleDateString("en-ZA")}` : ""}.
-                Confirm the address, time and payment inside the app for safety.
-              </p>
-            </div>
-            <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-background px-3 py-1 text-xs font-bold text-primary">
-              Siri / Gemini safe handoff
-            </span>
-          </div>
-        </div>
-      )}
-
-      {step < 4 && (
-        <div className="mb-6">
-          <div className="flex gap-1">{["Service", "Details", "Worker", "Review"].map((s, i) => <div key={s} className={`flex-1 h-1.5 rounded-full ${i <= step ? "gradient-warm" : "bg-muted"}`} />)}</div>
-          <p className="text-xs text-muted-foreground mt-1.5">Step {step + 1} of 4 - {["Service", "Details", "Worker", "Review"][step]}</p>
-        </div>
-      )}
-
-      {step === 0 && (
-        <div className="rounded-3xl bg-card border border-border shadow-soft p-5 md:p-7 space-y-6">
-          <div>
-            <h2 className="font-display text-xl font-bold mb-3">What type of cleaning?</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {services.map((s) => {
-                const Icon = s.icon;
-                const selected = active === s.id;
-                return <button key={s.id} onClick={() => { setActive(s.id); if (!allowsMultipleWorkers(s.id)) setWorkerCount(1); }} className={`flex flex-col items-center gap-2 rounded-2xl p-4 text-sm font-medium border ${selected ? "bg-foreground text-background border-foreground shadow-warm" : "bg-muted/40 text-muted-foreground border-border hover:bg-muted"}`}><Icon className="h-5 w-5" />{s.label}</button>;
-              })}
-            </div>
-          </div>
-          <div>
-            <h2 className="font-display text-xl font-bold mb-3">How often do you need help?</h2>
-            <div className="grid grid-cols-2 gap-2">
-              {(["one_time", "repeat"] as const).map((f) => <button key={f} onClick={() => setFrequency(f)} className={`rounded-2xl p-4 text-left border ${frequency === f ? "bg-foreground text-background border-foreground" : "bg-muted/40 border-border hover:bg-muted"}`}><p className="font-semibold">{f === "one_time" ? "One time" : "Repeat"}</p><p className="text-xs opacity-80">{f === "one_time" ? "For once-off services" : "Lock a recurring rhythm"}</p></button>)}
-            </div>
-            {smartSuggestion && <p className="mt-3 rounded-2xl bg-primary/10 px-4 py-3 text-sm text-primary flex items-start gap-2"><Repeat className="h-4 w-4 mt-0.5" />{smartSuggestion}</p>}
-          </div>
-          {/* Only shown when the customer actually has property accounts, so a household
-              customer never sees it. "Personal" is an explicit choice rather than a blank,
-              because for an Airbnb host with three listings, silently defaulting to no
-              property is how a booking ends up filed against nothing. */}
-          {properties.length > 0 && <div><h2 className="font-display text-xl font-bold mb-2">Which property?</h2><div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => setPropertyId(null)} aria-pressed={propertyId === null} className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${propertyId === null ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>Personal</button>
-            {properties.map((property) => (
-              <button key={property.id} type="button" onClick={() => setPropertyId(property.id)} aria-pressed={propertyId === property.id} className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${propertyId === property.id ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{property.name}</button>
-            ))}
-          </div></div>}
-
-          {allowsMultipleWorkers(active) && <div><h2 className="font-display text-xl font-bold mb-2">How many Xooters?</h2><div className="flex items-center gap-3"><button onClick={() => setWorkerCount(Math.max(1, workerCount - 1))} className="h-9 w-9 rounded-full border grid place-items-center"><Minus className="h-4 w-4" /></button><span className="font-display text-2xl font-bold w-8 text-center">{workerCount}</span><button onClick={() => setWorkerCount(Math.min(5, workerCount + 1))} className="h-9 w-9 rounded-full border grid place-items-center"><Plus className="h-4 w-4" /></button></div></div>}
-          <Button onClick={() => setStep(1)} className="w-full rounded-2xl h-12 font-semibold">Next <ArrowRight className="h-4 w-4 ml-1" /></Button>
-        </div>
-      )}
-
-      {step === 1 && (
-        <div className="rounded-3xl bg-card border border-border shadow-soft p-5 md:p-7 space-y-5">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="font-display text-xl font-bold">Visit details</h2>
-              <p className="text-sm text-muted-foreground">Choose the time you want reserved before adding extras.</p>
-            </div>
-            <div className="rounded-2xl bg-muted/45 px-4 py-3 text-sm">
-              <span className="text-muted-foreground">Estimated visit: </span>
-              <span className="font-semibold text-foreground">{estHours}h</span>
-            </div>
-          </div>
-
-          <section className="space-y-3">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h3 className="font-semibold">Reserve the right amount of time</h3>
-                <p className="text-xs text-muted-foreground">Choose the visit shape first. Extras and home size refine the estimate below.</p>
-              </div>
-              <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{length.badge}</span>
-            </div>
-            <div className="xoot-duration-grid grid gap-3">
-              {SERVICE_LENGTHS.map((option) => {
-                const selected = serviceLength === option.id;
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => setServiceLength(option.id)}
-                    data-selected={selected ? "true" : "false"}
-                    className="xoot-duration-card liquid-glass-interactive interactive-press rounded-[1.35rem] border border-border p-4 text-left transition"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-display text-lg font-bold">{option.label}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">{option.desc}</p>
-                      </div>
-                      {selected ? <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" /> : <span className="rounded-full bg-background/70 px-2.5 py-1 text-xs font-semibold text-foreground">{option.badge}</span>}
-                    </div>
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-foreground">{option.hours} reserved hours</p>
-                      <p className="text-xs text-muted-foreground">{optionBase(option.id)} base</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-
-          <section className="space-y-3">
-            <h3 className="font-semibold">Home size</h3>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {HOME_SIZES.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setHomeSize(s.id)}
-                  className={`rounded-2xl border p-4 text-left transition ${homeSize === s.id ? "border-foreground bg-foreground text-background" : "border-border bg-muted/35 hover:bg-muted"}`}
-                >
-                  <p className="font-semibold">{s.label}</p>
-                  <p className="text-xs opacity-80">{s.desc}</p>
-                  <p className="mt-3 text-xs opacity-70">Base from {formatZAR(s.price)}</p>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <div className="grid gap-4 sm:grid-cols-[0.8fr_1.2fr]">
-            <div>
-              <Label>Date</Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 h-12 rounded-2xl" />
-            </div>
-            <div>
-              <Label>Arrival time</Label>
-              <div className="mt-1 space-y-2 rounded-2xl border border-border bg-muted/25 p-3">
-                {TIME_GROUPS.map((group) => (
-                  <div key={group.label} className="grid gap-2 sm:grid-cols-[76px_1fr] sm:items-center">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.label}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {group.slots.map((slot) => (
-                        <button
-                          key={slot}
-                          type="button"
-                          onClick={() => setTime(slot)}
-                          className={`h-9 rounded-full px-3 text-sm font-semibold transition ${time === slot ? "bg-foreground text-background shadow-card" : "bg-background text-foreground hover:bg-secondary"}`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/*
-            The kit's ChipGrid, in place of the hand-rolled one that was here. Same behaviour,
-            two things gained: the chips now carry `aria-pressed`, so a screen reader can say
-            which extras are chosen rather than reading four identical buttons, and they render
-            from `--xoot-*` so they follow the kit rather than diverging from it the next time
-            either is touched.
-          */}
-          <section>
-            <h3 className="font-semibold mb-2">Extra tasks</h3>
-            <ChipGrid
-              label="Extra tasks"
-              options={EXTRAS}
-              value={Array.from(extras)}
-              onChange={(next) => setExtras(new Set(next))}
-            />
-          </section>
-          <div className="grid gap-3">
-            <Label>Your address</Label>
-            <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full street address in Sandton, Midrand, Rosebank..." className="h-12 rounded-2xl" />
-            <div className={`xoot-map-context rounded-2xl border p-3 text-sm ${address.trim() && !inLaunchRegion ? "border-destructive/35" : "border-border"}`}>
-              <div className="flex items-start gap-2">
-                <MapPin className={`mt-0.5 h-4 w-4 shrink-0 ${address.trim() && !inLaunchRegion ? "text-destructive" : "text-sage-deep"}`} />
-                <div>
-                  <p className="font-semibold text-foreground">
-                    {address.trim()
-                      ? inLaunchRegion
-                        ? "Launch coverage confirmed"
-                        : "Coverage review needed"
-                      : "Map-aware coverage context"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {address.trim()
-                      ? inLaunchRegion
-                        ? "Xoot uses this area context to plan a calmer arrival."
-                        : "Use one of the approved launch suburbs so Xoot can match the right nearby Xooter."
-                      : "Add the address now — your Xooter's arrival window is confirmed before dispatch."}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          {householdNotes && <div className="rounded-2xl bg-accent-soft border border-accent/20 p-4 text-xs text-muted-foreground"><p className="font-semibold text-foreground mb-1">Household profile applied</p><pre className="whitespace-pre-wrap font-sans">{householdNotes}</pre></div>}
-          <div><Label>Specific instructions</Label><Textarea rows={4} value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="Keys, dogs, product preferences, fragile areas" /></div>
-          <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(0)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={() => validateStep() && setStep(2)} className="flex-1 rounded-2xl h-12 font-semibold">Choose a Xooter <ArrowRight className="h-4 w-4 ml-1" /></Button></div>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="space-y-5">
-          <div><h2 className="font-display text-2xl font-bold">Choose your Xooter{maxPick > 1 ? "s" : ""}</h2><p className="text-sm text-muted-foreground">{picked.length}/{maxPick} selected - low reliability contractors are automatically ranked lower</p></div>
-          {loadingXooters ? (
-            <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-          ) : xooters.length === 0 ? (
-            <Card className="rounded-3xl p-8 text-center">
-              <ShieldCheck className="h-8 w-8 text-sage-deep mx-auto mb-3" />
-              <h3 className="font-display text-xl font-bold mb-2">No approved Xooters available yet</h3>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                Xooters appear here only after verification, training, and activation. Please try another time or contact support for launch-area availability.
-              </p>
-            </Card>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{xooters.map((z) => <div key={z.id} className={picked.some((p) => p.id === z.id) ? "ring-2 ring-primary rounded-3xl" : ""}><XooterCard z={z} onBook={() => selectWorker(z)} /></div>)}</div>
-          )}
-          <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(1)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={() => validateStep() && setStep(3)} disabled={picked.length === 0} className="flex-1 rounded-2xl h-12 font-semibold">Review booking <ArrowRight className="h-4 w-4 ml-1" /></Button></div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="rounded-3xl bg-card border border-border shadow-soft p-5 md:p-7 space-y-5">
-          <h2 className="font-display text-2xl font-bold">Price breakdown</h2>
-          <div className="space-y-2 text-sm"><div className="flex justify-between"><span>Booking cost ({length.label}, {size.label}{totalWorkers > 1 ? ` x ${totalWorkers}` : ""})</span><span className="font-semibold">{formatZAR(totalPrice)}</span></div><div className="flex justify-between text-muted-foreground"><span>Reserved time</span><span>{estHours}h including add-ons</span></div>{discount > 0 && <div className="flex justify-between text-sage-deep"><span>Multi-worker discount</span><span>{Math.round(discount * 100)}%</span></div>}{highDemandPremium > 0 && <div className="flex justify-between"><span>High-demand slot premium</span><span>{formatZAR(highDemandPremium)}</span></div>}<div className="flex justify-between"><span>Booking cover</span><span>{formatZAR(bookingCover)}</span></div><div className="flex justify-between"><span>{carePlusMember ? "Booking fee — waived with Care+" : "Booking fee"}</span><span>{formatZAR(serviceFee)}</span></div><div className="h-px bg-border my-2" /><div className="flex justify-between font-display text-lg font-bold"><span>Total pending</span><span>{formatZAR(bookingTotal)}</span></div></div>
-          <button type="button" onClick={() => setBookingCoverOptIn((value) => !value)} className={`w-full rounded-2xl border p-4 text-left ${bookingCoverOptIn ? "border-primary bg-primary/10" : "border-border bg-muted/40"}`}>
-            <p className="font-semibold">Booking cover {bookingCoverOptIn ? "included" : "not included"}</p>
-            <p className="text-xs text-muted-foreground">Keeps a support record and admin queue available for booking issues. Payment stays pending until confirmed.</p>
-          </button>
-          {photoRequired && <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4 flex items-start gap-3"><ShieldCheck className="h-5 w-5 text-primary mt-0.5" /><p className="text-sm">This service requires before and after completion photos to reduce disputes and verify quality.</p></div>}
-          <div className="rounded-2xl bg-muted/40 p-4 text-sm space-y-1"><p><span className="text-muted-foreground">Service:</span> <span className="capitalize font-medium">{active}</span></p><p><span className="text-muted-foreground">Length:</span> {length.label} - {estHours}h reserved</p><p><span className="text-muted-foreground">Date:</span> {new Date(date).toLocaleDateString("en-ZA")} at {time}</p><p><span className="text-muted-foreground">Xooter:</span> {picked.map((z) => z.name).join(", ")}</p></div>
-          <div className="rounded-2xl border border-border bg-muted/40 p-4 space-y-2">
-            <label htmlFor="referral-code" className="text-sm font-semibold">Referral code <span className="font-normal text-muted-foreground">(optional)</span></label>
-            <input
-              id="referral-code"
-              value={referralCode}
-              onChange={(event) => {
-                // Uppercased on entry because the issued codes are uppercase and someone
-                // retyping one from a WhatsApp message will not be. The server uppercases too;
-                // this is so the field shows the customer the form that will actually be sent.
-                setReferralCode(event.target.value.toUpperCase());
-                setReferralError(null);
-              }}
-              maxLength={40}
-              autoComplete="off"
-              spellCheck={false}
-              aria-invalid={referralError ? true : undefined}
-              aria-describedby="referral-code-help"
-              className={`w-full rounded-xl border bg-background px-3 py-2 text-sm uppercase tracking-wide ${referralError ? "border-destructive" : "border-border"}`}
-              placeholder="Enter a friend's code"
-            />
-            <p id="referral-code-help" className="text-xs text-muted-foreground">
-              {referralError
-                ? referralError
-                : "Applied by Xoot when your booking is created. The credit comes off the cleaning, not the booking fee or the cover, so your total here may drop once it is confirmed."}
-            </p>
-          </div>
-          <div className="flex gap-2"><Button variant="ghost" onClick={() => setStep(2)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button><Button onClick={handleBook} disabled={submitting} className="flex-1 rounded-2xl h-12 font-semibold">{submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Confirm booking <ArrowRight className="h-4 w-4 ml-1" /></>}</Button></div>
-        </div>
-      )}
-
-      {step === 4 && (
-        <div className="rounded-3xl bg-card border border-border shadow-soft p-8 text-center space-y-5">
-          <div className="grid place-items-center h-16 w-16 rounded-full bg-sage/15 mx-auto"><Sparkles className="h-8 w-8 text-sage-deep" /></div>
-          <h2 className="font-display text-3xl font-bold">{paymentRecordId ? "Almost there — one payment left" : "Booking request received"}</h2>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            {paymentRecordId
-              ? "Your booking is held at the price you were shown. Pay to confirm it and we will assign your Xooter."
-              : "Nothing has been charged. Xoot confirms your payment before your Xooter is assigned, and your booking stays pending until then."}
-          </p>
-          {bookingStatus && <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-2 text-sm font-semibold">Status: <span className="capitalize">{bookingStatus.replace(/_/g, " ")}</span></div>}
-
-          {/*
-            Until this existed, step 4 was where the journey stopped: a draft was created and the
-            customer was told payment happens "from the provider webhook", with no way to trigger
-            one. The amount charged is the SERVER's, read from `payment_records` — the client never
-            sends a price, which is what keeps the screen and the charge in agreement.
-          */}
-          {paymentRecordId && bookingStatus === "draft" && (
-            <div className="mx-auto max-w-sm">
-              <PayFastCheckout
-                paymentRecordId={paymentRecordId}
-                label={paymentRecordCount === 1 ? `Pay ${formatZAR(bookingTotal)}` : "Pay for your first visit"}
-              />
-              {paymentRecordCount > 1 && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  This booking has {paymentRecordCount} visits. You are paying for the first one now; the rest are payable from the booking.
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
-            <Button onClick={() => { setStep(0); setPicked([]); setBookingId(null); setBookingStatus(null); setPaymentRecordId(null); setPaymentRecordCount(0); }} variant="outline" className="rounded-full">Book another</Button>
-            <Button asChild variant={paymentRecordId ? "outline" : "default"} className={paymentRecordId ? "rounded-full" : "rounded-full gradient-warm"}><a href={bookingId ? `/app/bookings/${bookingId}` : "/app/bookings"}>View booking</a></Button>
-          </div>
-        </div>
-      )}
-
-      {step < 3 && (
-        <div className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-border bg-background/95 backdrop-blur-lg shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.15)]" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-          <div className="container flex items-center justify-between gap-3 py-3">
-            <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Estimate</p>
-              <p className="font-display text-lg font-bold leading-tight truncate">{formatZAR(bookingTotal)}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{estHours}h · {length.label}</p>
-            </div>
-            <Button
-              onClick={() => {
-                if (step === 0) setStep(1);
-                else if (step === 1 && validateStep()) setStep(2);
-                else if (step === 2 && validateStep()) setStep(3);
-              }}
-              disabled={step === 2 && picked.length === 0}
-              className="rounded-2xl h-12 px-5 gradient-warm font-semibold shrink-0"
-            >
-              {step === 2 ? "Review" : "Continue"} <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

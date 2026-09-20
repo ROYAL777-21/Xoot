@@ -33,7 +33,7 @@
 
 /* Uploaded handoff fonts, subset to WOFF2 by scripts/design/subset-handoff-fonts.py.
    All variable axes and OpenType features survive, including Newsreader optical sizing.
-   The three faces total 321 KB; pinning optical size to meet the old 120 KB budget changed
+   Pinning optical size to meet the old 120 KB budget changed
    the supplied design. Font files are committed; builds never download them. */
 @font-face {
   font-family: 'Plus Jakarta Sans';
@@ -55,6 +55,22 @@
   font-family: 'Caveat';
   src: url('/fonts/caveat-latin-var.woff2') format('woff2-variations');
   font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('/fonts/dm-mono-latin-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('/fonts/dm-mono-latin-medium.woff2') format('woff2');
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }

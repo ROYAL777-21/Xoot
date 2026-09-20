@@ -5,10 +5,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
+import { Logo } from "@/components/kit/Logo";
+import { HandoffFlowerField } from "@/components/xoot/HeroArtwork";
 import { SEO } from "@/components/SEO";
 import { toast } from "sonner";
-import { AlertCircle, Eye, EyeOff, Fingerprint, KeyRound, Loader2, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowLeft, Eye, EyeOff, Fingerprint, KeyRound, Loader2, LockKeyhole, Mail, Phone, ShieldCheck } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { clearNativeQuickUnlock, enableNativeQuickUnlock, getNativeQuickUnlockEnabled, isNativeAuthPlatform } from "@/lib/native-auth";
 import {
@@ -31,6 +32,7 @@ import {
   type SocialAuthProvider,
 } from "@/lib/auth-security";
 import { checkRateLimit } from "@/lib/rate-limit";
+import "@/styles/auth-booking.css";
 
 type AuthView = "signin" | "signup" | "forgot" | "otp";
 
@@ -73,7 +75,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const [mode, setMode] = useState<AuthView>("signin");
+  const [mode, setMode] = useState<AuthView>("otp");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -359,21 +361,12 @@ const Auth = () => {
   };
 
   const passwordStrengthLabel = ["Very weak", "Weak", "Good", "Strong", "Very strong"][passwordStrength];
-  const strengthColour = passwordStrength >= 3 ? "bg-sage-deep" : passwordStrength >= 2 ? "bg-primary" : "bg-destructive";
-  const heading = mode === "signin"
-    ? "Pick up where you left off"
-    : mode === "signup"
-      ? "Let's get your home sorted"
-      : mode === "otp"
-        ? "Use an email code"
-        : "Reset your password";
-  const subheading = mode === "signin"
-    ? "Your bookings, XootCred, Care+ status and saved home profile are all here."
-    : mode === "signup"
-      ? "Set up once and booking a trusted Xooter takes a single tap after that."
-      : mode === "otp"
-        ? "Get a one-time email code or secure sign-in link for passwordless access."
-        : "Enter your email and we will send a secure reset link if the account can access Xoot.";
+  const strengthColour = passwordStrength >= 3 ? "is-strong" : passwordStrength >= 2 ? "is-good" : "is-weak";
+  const isNewAccount = mode === "signup";
+  const heading = isNewAccount ? "Let's get your home sorted." : "Pick up where you left off.";
+  const subheading = isNewAccount
+    ? "Tell us about the place once. After that, booking is quick, clear and already knows the details you chose to save."
+    : "Your places, your bookings and your usual details are all still here.";
   const submitLabel = isForgotPassword
     ? "Send reset link"
     : isOtpMode
@@ -382,279 +375,192 @@ const Auth = () => {
         ? "Continue"
         : "Get started";
 
+  const resetToEmailCode = () => {
+    setAuthMode("otp");
+  };
+
   return (
-    <div className="grid min-h-screen place-items-center overflow-hidden gradient-hero px-4 py-6 sm:p-6">
+    <main className="xoot-auth-page">
       <SEO
         title="Continue to Xoot"
         description="Continue to Xoot to manage bookings, Care+, XootCred, support and protected household details."
         canonical="/auth"
         noIndex
       />
-      <Card className="w-full max-w-92 rounded-3xl border-border p-5 shadow-warm sm:max-w-md sm:p-8">
-        <Link to="/" className="mb-5 flex items-center gap-2 sm:mb-6" aria-label="Back to Xoot home">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-warm shadow-warm">
-            <span className="font-display text-lg font-bold text-primary-foreground">X</span>
-          </span>
-          <span className="font-display text-2xl font-bold tracking-tight">Xoot</span>
-        </Link>
+      <section className="xoot-auth-shell" aria-labelledby="auth-heading">
+        <Link to="/" className="xoot-auth-close" aria-label="Back to Xoot home">×</Link>
 
-        <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">
-          {mode === "signin" ? <LockKeyhole className="h-3 w-3 shrink-0 text-accent-ink" /> : mode === "forgot" ? <Mail className="h-3 w-3 shrink-0 text-accent-ink" /> : mode === "otp" ? <KeyRound className="h-3 w-3 shrink-0 text-accent-ink" /> : <Sparkles className="h-3 w-3 shrink-0 text-accent-ink" />}
-          <span className="text-xs font-medium text-accent-ink">{mode === "signin" ? "Secure sign-in" : mode === "forgot" ? "Password recovery" : mode === "otp" ? "Email one-time code" : "Join Xoot"}</span>
+        <div className="xoot-auth-story">
+          <HandoffFlowerField className="xoot-auth-flowers" items={[
+            {size:96,palette:"lilac",left:"-8%",top:"6%",opacity:.32},
+            {size:64,palette:"petal",left:"82%",top:"-2%",opacity:.3},
+            {size:80,palette:"honey",left:"86%",top:"68%",opacity:.28},
+            {size:58,palette:"sage",left:"4%",top:"82%",opacity:.3},
+          ]} />
+          <div className="xoot-auth-story-copy">
+            <Logo size={30} tone="violet" />
+            <h1 id="auth-heading">{heading}</h1>
+            <p>{subheading}</p>
+          </div>
+          <div className="xoot-auth-proof" aria-label="What stays protected">
+            <div><ShieldCheck /><span><strong>Secure by default</strong><small>Protected sign-in and private household details</small></span></div>
+            <div><LockKeyhole /><span><strong>Your home stays private</strong><small>Access details are limited to the booking window</small></span></div>
+            <div><Mail /><span><strong>Updates in one place</strong><small>Bookings, receipts and account notices stay with your account</small></span></div>
+          </div>
         </div>
 
-        <h1 className="mb-1 font-display text-2xl font-bold sm:text-3xl">{heading}</h1>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{subheading}</p>
-
-        {!isSupabaseConfigured && (
-          <div className="mb-5 flex items-start gap-2 rounded-2xl border border-primary/25 bg-primary/10 p-3 text-sm leading-relaxed text-muted-foreground">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <span>{supabaseConfigErrorMessage} Auth actions are disabled in this local public-page preview.</span>
-          </div>
-        )}
-
-        {!isForgotPassword && !isOtpMode && (
-          <div className="mb-5 grid gap-3 sm:grid-cols-2">
-            {(["google", "apple"] as SocialAuthProvider[]).map((provider) => {
-              const Icon = provider === "google" ? GoogleLogo : AppleLogo;
-              const isProviderLoading = providerLoading === provider;
-              return (
-                <Button
-                  key={provider}
-                  type="button"
-                  variant="outline"
-                  className="h-11 rounded-xl"
-                  disabled={!isSupabaseConfigured || loading || !!providerLoading}
-                  onClick={() => void handleOAuth(provider)}
-                >
-                  {isProviderLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Icon className="mr-2 h-4 w-4" />}
-                  {providerLabels[provider]}
-                </Button>
-              );
-            })}
-          </div>
-        )}
-
-        {mode === "signin" && isMobileRuntime && quickUnlockEnabled && (
-          <Button
-            type="button"
-            variant="secondary"
-            className="mb-5 h-11 w-full rounded-xl"
-            onClick={() => void handleQuickUnlock()}
-            disabled={loading || providerLoading !== null || quickUnlockLoading}
-          >
-            {quickUnlockLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Fingerprint className="mr-2 h-4 w-4" />}
-            Continue with Face ID / Touch ID
-          </Button>
-        )}
-
-        {!isForgotPassword && !isOtpMode && (
-          <div className="mb-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            <span>Email and password</span>
-            <span className="h-px flex-1 bg-border" />
-          </div>
-        )}
-
-        {isOtpMode && (
-          <div className="mb-5 rounded-2xl border border-accent/25 bg-accent-soft p-3 text-sm leading-relaxed text-accent-ink">
-            <p className="font-semibold">Passwordless sign-in</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              The code is one-time use and should only ever be entered inside this app. Xoot will never ask you for it by phone, email or message.
-            </p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on" noValidate>
-          {mode === "signup" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="name">Full name</Label>
-              <Input
-                id="name"
-                name="name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                autoComplete="name"
-                enterKeyHint="next"
-                required
-                className="rounded-xl"
-              />
+        <div className="xoot-auth-form-panel">
+          {!isSupabaseConfigured && (
+            <div className="xoot-auth-notice" role="status">
+              <ShieldCheck />
+              <span>{supabaseConfigErrorMessage} Auth actions are disabled in this local preview.</span>
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (otpSent) {
-                  setOtpSent(false);
-                  setOtpCode("");
-                }
-              }}
-              autoCapitalize="none"
-              autoComplete={mode === "signin" ? "username" : "email"}
-              autoCorrect="off"
-              inputMode="email"
-              spellCheck={false}
-              enterKeyHint="next"
-              required
-              className="rounded-xl"
-            />
-          </div>
-
-          {isOtpMode && otpSent && (
-            <div className="space-y-1.5">
-              <Label htmlFor="otp-code">Email code</Label>
-              <Input
-                id="otp-code"
-                name="one-time-code"
-                value={otpCode}
-                onChange={(e) => setOtpCode(normaliseOtpCode(e.target.value))}
-                autoComplete="one-time-code"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                placeholder="123456"
-                enterKeyHint="done"
-                required
-                className="rounded-xl text-center font-display text-2xl tracking-[0.3em]"
-              />
-              <button
-                type="button"
-                onClick={() => void handleOtpResend()}
-                className="text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
-                disabled={loading}
-              >
-                Send a new code
+          {isOtpMode && otpSent ? (
+            <form onSubmit={handleSubmit} className="xoot-auth-form" autoComplete="on" noValidate>
+              <button type="button" className="xoot-auth-back" onClick={() => { setOtpSent(false); setOtpCode(""); }}>
+                <ArrowLeft /> Back
               </button>
-            </div>
-          )}
+              <h2>Check your email</h2>
+              <p className="xoot-auth-lede">We sent a six-digit code to <strong>{email}</strong>. No password to remember.</p>
+              <label className="xoot-auth-field">
+                <span>Email code</span>
+                <Input
+                  id="otp-code"
+                  name="one-time-code"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(normaliseOtpCode(e.target.value))}
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  placeholder="000000"
+                  enterKeyHint="done"
+                  required
+                  autoFocus
+                  className="xoot-auth-code"
+                />
+              </label>
+              {isLocked && <div className="xoot-auth-error"><AlertCircle />Too many unsuccessful attempts. Please wait 30 seconds before trying again.</div>}
+              <Button type="submit" disabled={!canSubmit} className="xoot-auth-primary">
+                {loading ? <Loader2 className="animate-spin" /> : "Sign me in"}
+              </Button>
+              <button type="button" className="xoot-auth-link centered" onClick={() => void handleOtpResend()} disabled={loading}>Send a new code</button>
+              <p className="xoot-auth-security"><ShieldCheck /> Never share this code. Xoot will not ask for it by phone, message or email.</p>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="xoot-auth-form" autoComplete="on" noValidate>
+              <span className="xoot-auth-kicker">
+                {isForgotPassword ? "Password recovery" : isNewAccount ? "A fresh start" : mode === "signin" ? "Welcome back" : "Welcome back"}
+              </span>
+              <h2>{isForgotPassword ? "Reset your password" : isNewAccount ? "Create your account" : mode === "signin" ? "Use your password" : "Continue with email"}</h2>
+              {isForgotPassword && <p className="xoot-auth-lede">Enter your email and we will send a secure reset link if the account can access Xoot.</p>}
 
-          {!isForgotPassword && !isOtpMode && (
-            <div className="space-y-1.5">
-              <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                <Label htmlFor="password">Password</Label>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  {mode === "signin" && (
-                    <button
-                      type="button"
-                      onClick={() => setAuthMode("forgot")}
-                      className="text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
-                    >
-                      Forgot password?
-                    </button>
-                  )}
-                  {mode === "signup" && (
-                    <button
-                      type="button"
-                      onClick={handleGeneratePassword}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
-                    >
-                      <KeyRound className="h-3.5 w-3.5" />
-                      Generate
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      haptic("selection");
-                      setShowPassword((value) => !value);
-                    }}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
-                    aria-controls="password"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    {showPassword ? "Hide" : "Show"}
-                  </button>
-                </div>
-              </div>
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                autoCorrect="off"
-                spellCheck={false}
-                enterKeyHint="done"
-                required
-                minLength={mode === "signup" ? 8 : undefined}
-                className="rounded-xl pr-12"
-              />
+              {isNewAccount && (
+                <label className="xoot-auth-field">
+                  <span>Full name</span>
+                  <Input id="name" name="name" value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" enterKeyHint="next" required />
+                </label>
+              )}
+
+              <label className="xoot-auth-field">
+                <span>Your email</span>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (otpSent) { setOtpSent(false); setOtpCode(""); } }}
+                  placeholder="you@example.co.za"
+                  autoCapitalize="none"
+                  autoComplete={mode === "signin" ? "username" : "email"}
+                  autoCorrect="off"
+                  inputMode="email"
+                  spellCheck={false}
+                  enterKeyHint={isOtpMode || isForgotPassword ? "done" : "next"}
+                  required
+                />
+              </label>
+
+              {!isForgotPassword && !isOtpMode && (
+                <label className="xoot-auth-field">
+                  <span className="xoot-auth-field-row">
+                    <span>Password</span>
+                    <span>
+                      {mode === "signin" && <button type="button" onClick={() => setAuthMode("forgot")}>Forgot password?</button>}
+                      {mode === "signup" && <button type="button" onClick={handleGeneratePassword}><KeyRound /> Generate</button>}
+                      <button type="button" onClick={() => setShowPassword((value) => !value)} aria-controls="password" aria-label={showPassword ? "Hide password" : "Show password"}>
+                        {showPassword ? <EyeOff /> : <Eye />}{showPassword ? "Hide" : "Show"}
+                      </button>
+                    </span>
+                  </span>
+                  <Input
+                    id="password"
+                    aria-label="Password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                    autoCorrect="off"
+                    spellCheck={false}
+                    enterKeyHint="done"
+                    required
+                    minLength={mode === "signup" ? 8 : undefined}
+                  />
+                </label>
+              )}
+
               {mode === "signup" && password && (
-                <div className="rounded-2xl bg-muted/45 p-3 text-xs text-muted-foreground">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <span>Password strength</span>
-                    <span className="font-semibold text-foreground">{passwordStrengthLabel}</span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-1" aria-hidden="true">
-                    {[0, 1, 2, 3].map((segment) => (
-                      <span
-                        key={segment}
-                        className={`h-1.5 rounded-full ${segment < passwordStrength ? strengthColour : "bg-border"}`}
-                      />
-                    ))}
-                  </div>
-                  {passwordIssues.length > 0 && (
-                    <ul className="mt-2 space-y-1">
-                      {passwordIssues.map((issue) => <li key={issue}>{issue}</li>)}
-                    </ul>
-                  )}
+                <div className="xoot-auth-strength">
+                  <span>Password strength <strong>{passwordStrengthLabel}</strong></span>
+                  <div>{[0, 1, 2, 3].map((segment) => <i key={segment} className={segment < passwordStrength ? strengthColour : ""} />)}</div>
+                  {passwordIssues.length > 0 && <ul>{passwordIssues.map((issue) => <li key={issue}>{issue}</li>)}</ul>}
                 </div>
               )}
-            </div>
-          )}
 
-          {isLocked && (
-            <div className="flex items-start gap-2 rounded-2xl border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <p>Too many unsuccessful attempts. Please wait 30 seconds before trying again.</p>
-            </div>
-          )}
+              {isLocked && <div className="xoot-auth-error"><AlertCircle />Too many unsuccessful attempts. Please wait 30 seconds before trying again.</div>}
 
-          <div className="rounded-2xl border border-border bg-muted/35 p-3 text-xs leading-relaxed text-muted-foreground">
-            <p className="flex items-start gap-2">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sage-deep" />
-              Xoot will never ask for your password, OTP, card PIN or bank login details in chat, WhatsApp, phone calls or email.
-            </p>
-          </div>
+              <Button type="submit" disabled={!canSubmit} className="xoot-auth-primary">
+                {loading ? <Loader2 className="animate-spin" /> : submitLabel}
+              </Button>
 
-          <Button type="submit" disabled={!canSubmit} className="h-12 w-full rounded-xl font-semibold">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : submitLabel}
-          </Button>
-        </form>
+              {!isForgotPassword && !isOtpMode && (
+                <>
+                  <div className="xoot-auth-divider"><span />or<span /></div>
+                  <div className="xoot-auth-socials">
+                    {(["apple", "google"] as SocialAuthProvider[]).map((provider) => {
+                      const Icon = provider === "google" ? GoogleLogo : AppleLogo;
+                      return <button key={provider} type="button" onClick={() => void handleOAuth(provider)} disabled={!isSupabaseConfigured || loading || !!providerLoading}>
+                        {providerLoading === provider ? <Loader2 className="animate-spin" /> : <Icon />}{providerLabels[provider]}
+                      </button>;
+                    })}
+                  </div>
+                </>
+              )}
 
-        <div className="mt-5 grid gap-2 text-center text-sm text-muted-foreground">
-          {mode === "signin" && (
-            <>
-              <button type="button" onClick={() => setAuthMode("otp")} className="transition-smooth hover:text-foreground">
-                Use a one-time email code
-              </button>
-              <button type="button" onClick={() => setAuthMode("signup")} className="transition-smooth hover:text-foreground">
-                New to Xoot? Create an account
-              </button>
-            </>
-          )}
-          {mode === "signup" && (
-            <button type="button" onClick={() => setAuthMode("signin")} className="transition-smooth hover:text-foreground">
-              Been here before? Pick up where you left off
-            </button>
-          )}
-          {(mode === "forgot" || mode === "otp") && (
-            <button type="button" onClick={() => setAuthMode("signin")} className="transition-smooth hover:text-foreground">
-              Back to secure sign-in
-            </button>
+              {mode === "signin" && isMobileRuntime && quickUnlockEnabled && (
+                <button type="button" className="xoot-auth-quick" onClick={() => void handleQuickUnlock()} disabled={loading || providerLoading !== null || quickUnlockLoading}>
+                  {quickUnlockLoading ? <Loader2 className="animate-spin" /> : <Fingerprint />} Continue with Face ID / Touch ID
+                </button>
+              )}
+
+              {isOtpMode && <button type="button" disabled className="xoot-auth-phone"><Phone />Continue with phone <em>Soon</em></button>}
+
+              <div className="xoot-auth-switches">
+                {isOtpMode && <button type="button" onClick={() => setAuthMode("signin")}>Use your password instead</button>}
+                {mode === "signin" && <button type="button" onClick={resetToEmailCode}>Use a one-time email code</button>}
+                {mode === "signin" && <button type="button" onClick={() => setAuthMode("signup")}>First time here? Start fresh</button>}
+                {mode === "signup" && <button type="button" onClick={resetToEmailCode}>Been here before? Pick up where you left off</button>}
+                {mode === "forgot" && <button type="button" onClick={() => setAuthMode("signin")}>Back to secure sign-in</button>}
+              </div>
+              <p className="xoot-auth-terms">By continuing you agree to our <Link to="/legal/terms">terms</Link> and <Link to="/legal/privacy">privacy notice</Link>. Household access details are protected inside your booking.</p>
+            </form>
           )}
         </div>
-      </Card>
-    </div>
+      </section>
+    </main>
   );
 };
 

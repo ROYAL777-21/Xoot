@@ -124,3 +124,33 @@ blanket ban on restyling does not supersede the founder's approved faithful port
 
 Task evidence: `outputs/xoot-visual-20260912/`; reproduce using the source receipt.
 This verifies the opening section. Full Phase 1 and production readiness remain unfinished.
+
+## 20 September implementation checkpoint
+
+This is a partial implementation checkpoint, not a production-readiness declaration.
+All seven HTML references and all uploaded ZIP contents remain in scope.
+
+- Original Caveat logo now appears in website navigation, footer, authentication and legal layouts.
+- Homepage composition now includes the source Gift/Care+ bands, illustrated map, character artwork,
+  service/trust/people/how-it-works sections and footer. Authentication and booking presentation,
+  the shared legal layout and the security-reporting page have been ported.
+- Native Today and Visits screens use actual profile/booking data, the handoff palette and bundled
+  font weights. Remaining native screens, native device comparisons and distribution are unfinished.
+- Local public-page checks covered home, auth, Care+, legal terms and security at
+  320/390/768/1024/1440/1920. No horizontal overflow or page exceptions were observed.
+  The real staging directory returned HTTP 200 with zero approved profiles; this renders an honest
+  empty state. Booking deep links reached authentication at all six widths.
+- Evidence: workspace outputs/xoot-visual-20260920/public-pages-check.json and associated screenshots.
+  These checks prove those routes and widths only; they do not prove authenticated journeys,
+  every legal document, browser zoom, landscape, native rendering or a pixel comparison of every section.
+- Automated suite: 119 files / 1,220 tests passed on 19 September. The subsequent matching privacy
+  regression and profile authenticity checks passed separately. Web/native type checks, lint,
+  the staging build and the repository security checks also passed during this checkpoint.
+- CodeRabbit attempt ended with `Connection failed: WebSocket closed`; there is no completed
+  CodeRabbit report for this batch. A completed external review remains outstanding.
+
+Outstanding: the gift recipient/payment flow still uses its older implementation and must preserve
+website bundle choices and accepted server amounts. Authenticated account/booking/crew/payment/referral
+journeys, native Search/Profile/remaining flows, remaining screen comparisons and production release
+requirements are not closed by this checkpoint. Source visuals must remain intact while those real
+contracts are completed.

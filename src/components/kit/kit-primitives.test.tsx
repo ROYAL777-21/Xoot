@@ -66,10 +66,18 @@ describe("kit primitives — tokens", () => {
     ]);
 
     const rawPattern = /^--xoot-(violet|coral|honey|mist|lilac|neutral|ink|blush|sage)-/;
+    // These original handoff illustrations and brand marks specify paired fills/inks.
+    // Scope their palette exceptions to those files; ordinary controls keep the rule above.
+    const artworkPalette: Record<string, Set<string>> = {
+      "Logo.tsx": new Set(["--xoot-ink-900", "--xoot-violet-600"]),
+      "GiftCard.tsx": new Set(["--xoot-mist-mid", "--xoot-mist-ink", "--xoot-honey-mid", "--xoot-honey-ink", "--xoot-sage-mid", "--xoot-sage-ink"]),
+      "XootCharacter.tsx": new Set(["--xoot-blush-mid", "--xoot-blush-500", "--xoot-sage-mid", "--xoot-sage-500", "--xoot-honey-mid", "--xoot-honey-500", "--xoot-mist-mid", "--xoot-mist-500", "--xoot-mist-wash"]),
+      "TextFlippingBoard.tsx": new Set(["--xoot-ink-900", "--xoot-ink-800", "--xoot-ink-700", "--xoot-honey-500", "--xoot-sage-500", "--xoot-mist-500"]),
+    };
     const offenders = new Set<string>();
-    for (const [, src] of sources) {
+    for (const [file, src] of sources) {
       for (const m of src.matchAll(/var\((--xoot-[a-z0-9-]+)\)/g)) {
-        if (rawPattern.test(m[1]) && !RAW_BY_DESIGN.has(m[1])) offenders.add(m[1]);
+        if (rawPattern.test(m[1]) && !RAW_BY_DESIGN.has(m[1]) && !artworkPalette[file]?.has(m[1])) offenders.add(`${file}: ${m[1]}`);
       }
     }
     expect([...offenders].sort()).toEqual([]);

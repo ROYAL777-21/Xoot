@@ -1,124 +1,63 @@
 import { useState, type FormEvent } from "react";
-import { MessageSquareQuote, Send, Sparkles } from "lucide-react";
+import { MessageSquareQuote, Send } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
 
-const workflows = [
-  "Booking flow",
-  "Address search",
-  "Price breakdown",
-  "Care+",
-  "Xooter application",
-  "Support chat",
-  "Installable app",
-  "Airbnb and Office",
-];
+const workflows = ["Booking flow", "Address search", "Price breakdown", "Care+", "Xooter application", "Support chat", "Installable app", "Airbnb and Office"];
 
-export const FeedbackSection = () => {
+export function FeedbackSection() {
   const { user } = useAuth();
   const [workflow, setWorkflow] = useState(workflows[0]);
   const [feedback, setFeedback] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const submit = async (event: FormEvent) => {
+  async function submit(event: FormEvent) {
     event.preventDefault();
     const body = feedback.trim();
-    if (body.length < 12) {
-      haptic("warning");
-      toast.error("Please add a little more detail so the team can understand the workflow.");
-      return;
-    }
-
-    if (!user) {
-      haptic("warning");
-      toast.error("Please sign in before sending product feedback so Xoot can follow up safely.");
-      return;
-    }
-
+    if (body.length < 12) { haptic("warning"); toast.error("Please add a little more detail so the team can understand the workflow."); return; }
+    if (!user) { haptic("warning"); toast.error("Please sign in before sending product feedback so Xoot can follow up safely."); return; }
     setSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke("create-support-ticket", {
-        body: {
-          subject: `Product feedback: ${workflow}`,
-          body,
-          category: "product_feedback",
-        },
+      const { data, error } = await supabase.functions.invoke("create-support-case", {
+        body: { subject: `Product feedback: ${workflow}`, description: body, category: "product_feedback" },
       });
-      if (error) throw error;
-
+      const result = data as { success?: boolean; error?: string } | null;
+      if (error || result?.success === false) throw error ?? new Error(result?.error ?? "Feedback could not be sent");
       haptic("success");
       toast.success("Thanks. Your feedback has been routed to Xoot support.");
       setFeedback("");
     } catch {
       haptic("warning");
       toast.error("Feedback could not be sent right now. Please try again in the app.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    } finally { setSubmitting(false); }
+  }
 
   return (
-    <section className="relative overflow-hidden border-y border-border/70 bg-secondary/45 py-16 md:py-20">
-      <div className="pointer-events-none absolute -left-10 top-10 h-32 w-32 rounded-full border border-primary/15" aria-hidden="true" />
-      <div className="container grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div>
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-background px-3 py-1.5 text-xs font-semibold text-sage-deep shadow-card">
-            <Sparkles className="h-3.5 w-3.5" />
-            Product feedback
-          </div>
-          <h2 className="font-display text-3xl font-bold tracking-tight md:text-5xl">
-            Help shape the workflows before they become habit.
-          </h2>
-          <p className="mt-4 max-w-xl text-muted-foreground">
-            Tell Xoot where a booking, support, Care+, address, or installable-app step feels unclear. Useful critique helps the product become calmer, faster and more dependable.
-          </p>
+    <section className="xoot-public-section xoot-public-section--alt" aria-labelledby="feedback-title">
+      <div className="xoot-public-inner xoot-feedback-grid">
+        <div className="xoot-section-head">
+          <p className="xoot-section-eyebrow xoot-section-eyebrow--sage">Product feedback</p>
+          <h2 id="feedback-title" className="xoot-section-title">Help shape the workflows before they become habit.</h2>
+          <p className="xoot-section-sub">Tell Xoot where a booking, support, Care+, address, or installable-app step feels unclear.</p>
         </div>
-
-        <Card className="rounded-3xl border-border bg-card/95 p-5 shadow-soft md:p-6">
-          <form onSubmit={submit} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="feedback-workflow">Workflow</Label>
-              <select
-                id="feedback-workflow"
-                value={workflow}
-                onChange={(event) => setWorkflow(event.target.value)}
-                className="h-11 rounded-xl border border-input bg-background px-3 text-sm"
-              >
-                {workflows.map((item) => <option key={item}>{item}</option>)}
-              </select>
+        <div className="xoot-card xoot-feedback-card">
+          <form className="xoot-feedback-form" onSubmit={submit}>
+            <div className="xoot-feedback-field">
+              <label htmlFor="feedback-workflow">Workflow</label>
+              <select id="feedback-workflow" value={workflow} onChange={(event) => setWorkflow(event.target.value)}>{workflows.map((item) => <option key={item}>{item}</option>)}</select>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="feedback-body">What should feel better?</Label>
-              <Textarea
-                id="feedback-body"
-                value={feedback}
-                onChange={(event) => setFeedback(event.target.value)}
-                rows={5}
-                maxLength={900}
-                placeholder="Example: The address step should explain whether my area is under active coverage or operations review..."
-                className="native-textarea rounded-2xl"
-              />
-              <p className="text-xs text-muted-foreground">
-                Please avoid sending passwords, card details, gate codes, ID numbers or private access notes.
-              </p>
+            <div className="xoot-feedback-field">
+              <label htmlFor="feedback-body">What should feel better?</label>
+              <textarea id="feedback-body" value={feedback} onChange={(event) => setFeedback(event.target.value)} rows={5} maxLength={900} placeholder="Tell us what felt unclear and where it happened…" />
+              <p className="xoot-feedback-help">Please avoid passwords, card details, gate codes, ID numbers or private access notes.</p>
             </div>
-            <Button type="submit" className="h-12 rounded-2xl" disabled={submitting}>
-              <Send className="mr-2 h-4 w-4" />
-              Send constructive feedback
-            </Button>
+            <button className="xoot-action xoot-feedback-submit" type="submit" disabled={submitting} aria-busy={submitting}>{submitting ? "Sending…" : <><Send size={17} /> Send constructive feedback</>}</button>
           </form>
-          <div className="mt-4 flex items-start gap-2 rounded-2xl bg-muted/45 p-3 text-xs text-muted-foreground">
-            <MessageSquareQuote className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            Product feedback is reviewed for patterns; urgent booking, safety or payment issues should still go through in-app support.
-          </div>
-        </Card>
+          <p className="xoot-feedback-note"><MessageSquareQuote aria-hidden="true" />Product feedback is reviewed for patterns. Urgent booking, safety or payment issues should go through in-app support.</p>
+        </div>
       </div>
     </section>
   );
-};
+}

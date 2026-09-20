@@ -1,0 +1,41 @@
+.xoot-legal { min-height: 100vh; display: flex; flex-direction: column; background: var(--xoot-surface-page); font-family: var(--xoot-font-core); color: var(--xoot-text-primary); }
+.xoot-legal-header { background: var(--xoot-ink-900); color: var(--xoot-neutral-0); }
+.xoot-legal-header-inner { max-width: 1180px; margin: 0 auto; padding: clamp(22px,3.4vw,32px) clamp(16px,4vw,40px); display: flex; flex-direction: column; gap: clamp(18px,2.6vw,26px); }
+.xoot-legal-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.xoot-legal-back { display: inline-flex; align-items: center; gap: 9px; color: inherit; }
+.xoot-legal-back > span:last-child { font-size: var(--xoot-body-sm); font-weight: 700; opacity: .72; }
+.xoot-legal-mono { font: 400 11px/1.5 var(--xoot-font-mono); letter-spacing: .13em; text-transform: uppercase; opacity: .7; }
+.xoot-legal-intro { display: flex; flex-direction: column; gap: 12px; }
+.xoot-legal-intro h1 { font: 400 clamp(30px,4.6vw,50px)/1.06 var(--xoot-font-display); letter-spacing: -.02em; }
+.xoot-legal-intro p { max-width: 64ch; font-size: var(--xoot-body-lg); line-height: 1.55; color: rgba(255,255,255,.72); text-wrap: pretty; }
+.xoot-legal-draft { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; border-radius: var(--xoot-radius-md); background: rgba(230,51,41,.16); box-shadow: inset 0 0 0 1px rgba(246,182,172,.32); }
+.xoot-legal-draft > svg { flex: 0 0 auto; color: var(--xoot-careplus-200); }
+.xoot-legal-draft p { font-size: var(--xoot-body-sm); line-height: 1.55; color: rgba(255,255,255,.9); }
+.xoot-legal-main { width: 100%; max-width: 1180px; margin: 0 auto; padding: clamp(24px,3.4vw,44px) clamp(16px,4vw,40px) clamp(60px,7vw,100px); display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,250px),1fr)); gap: clamp(24px,3.4vw,44px); align-items: start; flex: 1; }
+.xoot-legal-nav { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 5px; max-width: 300px; }
+.xoot-legal-nav > span { padding: 0 12px 8px; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--xoot-text-muted); }
+.xoot-legal-nav a { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 9px 12px; border-radius: var(--xoot-radius-sm); font-size: var(--xoot-body-sm); font-weight: 600; color: var(--xoot-text-secondary); transition: background-color 100ms; }
+.xoot-legal-nav svg { flex: 0 0 auto; }
+.xoot-legal-nav a:hover { background: var(--xoot-surface-sunken); }
+.xoot-legal-nav a.is-active { background: var(--xoot-violet-50); color: var(--xoot-violet-800); font-weight: 700; }
+.xoot-legal-nav .xoot-legal-security-link { margin-top: 8px; }
+.xoot-legal-article { display: flex; flex-direction: column; gap: clamp(20px,2.6vw,28px); min-width: 0; }
+.xoot-legal-document-head { display: flex; flex-direction: column; gap: 10px; padding-bottom: clamp(16px,2vw,22px); box-shadow: inset 0 -1px 0 var(--xoot-neutral-200); }
+.xoot-legal-document-head > span { font: 400 11px/1.5 var(--xoot-font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--xoot-violet-700); }
+.xoot-legal-document-head h2 { font: 400 clamp(26px,3.6vw,40px)/1.08 var(--xoot-font-display); letter-spacing: -.02em; }
+.xoot-legal-document-head p { max-width: 70ch; font-size: var(--xoot-body-lg); line-height: 1.55; color: var(--xoot-text-secondary); text-wrap: pretty; }
+.xoot-legal-document-head small { font: 400 11px/1.5 var(--xoot-font-mono); color: var(--xoot-text-muted); }
+.xoot-legal-clause { display: flex; flex-direction: column; gap: 11px; }
+.xoot-legal-clause h3 { font: 400 var(--xoot-title-2)/1.24 var(--xoot-font-display); letter-spacing: -.015em; }
+.xoot-legal-clause > div { display: flex; flex-direction: column; gap: 11px; }
+.xoot-legal-clause p, .xoot-legal-clause li { max-width: 72ch; font-size: var(--xoot-body); line-height: 1.62; color: var(--xoot-text-secondary); text-wrap: pretty; }
+.xoot-legal-list { display: flex; flex-direction: column; gap: 8px; margin: 2px 0 0; padding-left: 16px; list-style: disc; }
+.xoot-legal-list li::marker { color: var(--xoot-violet-400); }
+.xoot-legal-article a { color: var(--xoot-violet-700); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.xoot-legal-questions { display: flex; flex-direction: column; gap: 12px; margin-top: clamp(12px,2vw,20px); padding: clamp(20px,2.6vw,26px); border-radius: var(--xoot-radius-lg); background: var(--xoot-surface-card); box-shadow: var(--xoot-shadow-2); }
+.xoot-legal-questions h3 { font-size: var(--xoot-title-3); font-weight: 700; }
+.xoot-legal-questions p { max-width: 64ch; font-size: var(--xoot-body-sm); line-height: 1.55; color: var(--xoot-text-secondary); }
+.xoot-legal-questions a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+.xoot-legal-footer { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; padding: 24px; border-top: 1px solid var(--xoot-border-color); font-size: var(--xoot-body-sm); color: var(--xoot-text-secondary); }
+@media (max-width: 603px) { .xoot-legal-nav { position: static; max-width: none; } }
+@media (prefers-reduced-motion: reduce) { .xoot-legal-nav a { transition: none; } }

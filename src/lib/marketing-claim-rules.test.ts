@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { ADD_ON_CENTS, BOOKING_COVER_CENTS, BOOKING_FEE_CENTS, HOME_SIZE_HOURS, basePrice } from "../../supabase/functions/_shared/pricing";
 
@@ -40,7 +40,7 @@ const ANALYSIS = new Set([
   "feature-announcements.md", "creative-queue.md",
 ]);
 
-const DRAFTS = walk(MARKETING).filter((f) => !ANALYSIS.has(f.split("/").pop()!));
+const DRAFTS = walk(MARKETING).filter((f) => !ANALYSIS.has(basename(f)));
 
 /** Every rand figure the locked table permits, in whole rands. */
 const permitted = new Set<number>([
@@ -104,7 +104,7 @@ describe("marketing drafts obey the claim rules", () => {
       for (const m of text.matchAll(/R\s?(\d{2,4})\b/g)) {
         const rand = Number(m[1]);
         if (!permitted.has(rand)) {
-          offenders.push(`${file.split("/").pop()}: R${rand}`);
+          offenders.push(`${basename(file)}: R${rand}`);
         }
       }
     }

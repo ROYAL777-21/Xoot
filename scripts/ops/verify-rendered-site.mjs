@@ -107,7 +107,9 @@ try {
 
   if (new URL(page.url()).pathname !== "/auth") throw new Error(`Sign-in navigation reached ${page.url()}`);
   try {
-    await page.getByLabel("Email", { exact: true }).waitFor({ state: "visible", timeout });
+    await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
+    await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
+    await page.getByRole("button", { name: /^Use your password instead$/i }).click();
     await page.getByLabel("Password", { exact: true }).waitFor({ state: "visible", timeout });
     await page.getByRole("button", { name: /^Continue$/i }).waitFor({ state: "visible", timeout });
   } catch {

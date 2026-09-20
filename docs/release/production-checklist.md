@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **13 September 2026**. This replaces the status claims in `blocker.md`,
+Current register: **20 September 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -20,8 +20,8 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Backend delivery | 51 source functions plus six obsolete production endpoints at audit. Shared code is bundled per function. | Compare versions/source, migrate first and redeploy every affected importer. |
 | PayFast | Hosted checkout disabled; provider verification flags false in both environments at audit. | Signed webhook smoke tests, amount matching and reconciliation evidence required. |
 | Supply | Production aggregate counts: zero Xooters and zero bookings, checked 11 September. | Recruit/verify helpers and run consenting pilot; no invented availability/reviews. |
-| Supabase CLI | `projects list` reports missing access token on 12 September. Read-only MCP works. | Complete secure login flow; configure separate database credentials. |
-| CodeRabbit | Windows 0.7.6 reviewed the visual slice on 13 September: two minor findings. | Added rejected-request handling and visible roster counts/errors. |
+| Supabase CLI | GitHub credentials configured staging origins and deployed the directory/matching functions (runs 34786060963, 34829457465, 35498593092). Database linking was denied in run 34786290645. | Correct the deployment identity's database-management access and keep separate database credentials. Local `supabase login` is optional for local CLI work; it does not replace the GitHub secret. |
+| CodeRabbit | The 13 September visual slice had two minor findings, addressed then. The 19 September expanded review failed with WebSocket closed. | Expanded changes still need a completed review; earlier results do not cover them. |
 
 These are timestamped observations, not continuing monitoring. A checked build or a reachable domain
 does not prove booking, payment, data access, or operational readiness.
@@ -51,10 +51,15 @@ Record commit, environment, command/run link, date and result when closing each 
 
 1. **Hosting:** in Vercel, open the team for `xoot` and upgrade to a plan permitting commercial use
    before paid launch. The account currently reports Hobby. [Vercel plan rules](https://vercel.com/docs/plans/hobby).
-2. **Backend login:** run `supabase login` in your own terminal and finish browser sign-in. Do not paste
-   its token here. Store `SUPABASE_ACCESS_TOKEN` and separate `SUPABASE_DB_PASSWORD_PRODUCTION` /
-   `SUPABASE_DB_PASSWORD_STAGING` in secure environment settings. Never reuse staging's password as
-   a production fallback. Engineering can then run CLI migration preflight and audited delivery.
+2. **Database deployment access:** the saved GitHub token successfully configures staging origins
+   and deploys Edge Functions. Database preflight failed during project linking because that token
+   lacks privileges for the required endpoint (run 34786290645). In Supabase account access settings,
+   grant the deployment identity the required project/database-management access, then replace the
+   GitHub Actions token through secure settings if needed. Keep separate
+   `SUPABASE_DB_PASSWORD_PRODUCTION` / `SUPABASE_DB_PASSWORD_STAGING` values. The observed failure
+   occurred before password validation; it does not prove either saved password is wrong.
+   The GitHub secret is named `SUPABASE_ACCESS_TOKEN`. For local CLI work, `supabase login`
+   starts the secure login flow; logging in locally does not update that GitHub secret.
 3. **Business details:** confirm legal business name, registration/tax details if applicable, public
    support contact and invoice details. Engineering will insert approved values; no invented identity.
 4. **PayFast:** complete merchant verification, then place sandbox and live credentials in their
@@ -118,3 +123,33 @@ decisions, staffing and consenting participants cannot be completed through code
   additional WordPress infrastructure is required merely because an old checklist mentioned it.
 - Native assistant tests, deep links, notifications, payment recovery and account deletion remain
   required in addition to emulator checks. Keep production application identity `za.co.xoot.app`.
+
+## 20 September implementation checkpoint
+
+This is a partial implementation checkpoint, not a production-readiness declaration.
+All seven HTML references and all uploaded ZIP contents remain in scope.
+
+- Original Caveat logo now appears in website navigation, footer, authentication and legal layouts.
+- Homepage composition now includes the source Gift/Care+ bands, illustrated map, character artwork,
+  service/trust/people/how-it-works sections and footer. Authentication and booking presentation,
+  the shared legal layout and the security-reporting page have been ported.
+- Native Today and Visits screens use actual profile/booking data, the handoff palette and bundled
+  font weights. Remaining native screens, native device comparisons and distribution are unfinished.
+- Local public-page checks covered home, auth, Care+, legal terms and security at
+  320/390/768/1024/1440/1920. No horizontal overflow or page exceptions were observed.
+  The real staging directory returned HTTP 200 with zero approved profiles; this renders an honest
+  empty state. Booking deep links reached authentication at all six widths.
+- Evidence: workspace outputs/xoot-visual-20260920/public-pages-check.json and associated screenshots.
+  These checks prove those routes and widths only; they do not prove authenticated journeys,
+  every legal document, browser zoom, landscape, native rendering or a pixel comparison of every section.
+- Automated suite: 119 files / 1,220 tests passed on 19 September. The subsequent matching privacy
+  regression and profile authenticity checks passed separately. Web/native type checks, lint,
+  the staging build and the repository security checks also passed during this checkpoint.
+- CodeRabbit attempt ended with `Connection failed: WebSocket closed`; there is no completed
+  CodeRabbit report for this batch. A completed external review remains outstanding.
+
+Outstanding: the gift recipient/payment flow still uses its older implementation and must preserve
+website bundle choices and accepted server amounts. Authenticated account/booking/crew/payment/referral
+journeys, native Search/Profile/remaining flows, remaining screen comparisons and production release
+requirements are not closed by this checkpoint. Source visuals must remain intact while those real
+contracts are completed.

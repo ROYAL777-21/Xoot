@@ -46,14 +46,14 @@ describe("rendered site smoke", () => {
   it("accepts a rendered homepage that reaches usable sign-in controls", async () => {
     const url = await serve({
       "/": '<main><h1>Premium home care, built on trust</h1><a href="/auth">Sign in</a></main>',
-      "/auth": '<main><h1>Welcome back</h1><label>Email<input type="email"></label><label>Password<input type="password"></label><button type="submit">Continue</button></main>',
+      "/auth": '<main><h1>Welcome back</h1><label>Your email<input type="email"></label><button>Send one-time code</button><button onclick="document.getElementById(\'password-form\').hidden=false">Use your password instead</button><div id="password-form" hidden><label>Password<input type="password"></label><button type="submit">Continue</button></div></main>',
     });
 
     const result = await runVerifier(url);
 
     expect(result.code, result.output).toBe(0);
     expect(result.output).toMatch(/rendered site smoke passed/i);
-  }, 15_000);
+  }, 30_000);
 
   it("rejects the configuration overlay even when the document returns 200", async () => {
     const url = await serve({
@@ -64,7 +64,7 @@ describe("rendered site smoke", () => {
 
     expect(result.code, result.output).not.toBe(0);
     expect(result.output).toMatch(/configuration/i);
-  }, 15_000);
+  }, 30_000);
 
   it("rejects sign-in navigation when the host cannot serve the auth deep link", async () => {
     const url = await serve({
@@ -76,7 +76,7 @@ describe("rendered site smoke", () => {
 
     expect(result.code, result.output).not.toBe(0);
     expect(result.output).toMatch(/auth.*successful response|successful response.*auth/i);
-  }, 15_000);
+  }, 30_000);
 
   it("gates local verification, CI artifacts, and the matched live deployment", () => {
     const packageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")) as {

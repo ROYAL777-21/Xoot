@@ -183,7 +183,7 @@ describe("the fake distance is gone", () => {
           // A write, not a mention: `distance_mi:` as an object key is the shape that repopulates
           // the column. `types.ts` still declares it, and that is correct — it is generated from a
           // schema where the column still exists.
-          if (/\bdistance_mi\s*:/.test(source) && !full.includes("integrations/supabase/types.ts")) {
+          if (/\bdistance_mi\s*:/.test(source) && !full.replace(/\\/g, "/").includes("integrations/supabase/types.ts")) {
             offenders.push(full.replace(process.cwd() + "/", ""));
           }
         }
