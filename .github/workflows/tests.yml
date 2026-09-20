@@ -64,6 +64,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Native app typecheck
+        run: bun run mobile:typecheck
+
       # The unit suite includes browser regression tests for startup failures.
       - name: Install Chromium for rendered checks
         run: bunx playwright install --with-deps chromium

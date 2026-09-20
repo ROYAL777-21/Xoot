@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { type Href, useRouter } from 'expo-router';
+import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { AccessibilityInfo, Animated, Easing, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, Title, XootScreen } from '@/components/xoot-ui';
@@ -72,12 +72,17 @@ function RoboticStarMark() {
 export default function ConciergeScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const { question } = useLocalSearchParams<{ question?: string }>();
   const { user } = useAuth();
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(typeof question === 'string' ? question.slice(0, 1000) : '');
   const [messages, setMessages] = useState<ConciergeMessage[]>([firstMessage]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(true);
   const pulse = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (typeof question === 'string') setMessage(question.slice(0, 1000));
+  }, [question]);
 
   useEffect(() => {
     let mounted = true;

@@ -70,7 +70,7 @@ export default function TodayScreen() {
         </View>
         <View style={styles.headerActions}>
           <IconButton icon="search" label="Search" onPress={() => router.push('/search')} />
-          <IconButton badge={unreadNotifications > 0} icon="bell" label="Notifications" onPress={() => router.push('/account')} />
+          <IconButton badge={unreadNotifications > 0} icon="bell" label="Notifications" onPress={() => router.push('/notifications')} />
           <Pressable accessibilityLabel="Your profile" onPress={() => router.push('/account')} style={({ pressed }) => pressed && nativeCoreStyles.pressed}>
             <Avatar name={profile?.full_name ?? user?.email} size={44} uri={profile?.avatar_url} />
           </Pressable>

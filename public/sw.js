@@ -1,6 +1,6 @@
-const CACHE_NAME = "zoot-static-v6";
+const CACHE_NAME = "xoot-static-v7";
 const OFFLINE_URL = "/offline.html";
-const STATIC_ASSETS = ["/manifest.json", "/manifest.webmanifest", "/zoot-icon.svg", "/favicon.ico", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", OFFLINE_URL];
+const STATIC_ASSETS = ["/manifest.json", "/manifest.webmanifest", "/zoot-icon.svg", "/favicon.ico", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", "/fonts/plus-jakarta-sans-latin-var.woff2", "/fonts/newsreader-latin-var.woff2", "/fonts/caveat-latin-var.woff2", OFFLINE_URL];
 const SENSITIVE_NOTIFICATION_PATTERNS = [
   /\b(gate|alarm|lockbox|pin|code|access note|access notes|id number|passport|bank|card|payment ref|complaint)\b/i,
   /\b\d{4,}\b/,
@@ -35,14 +35,9 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
-      .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: "window" }))
-      .then((clients) => {
-        clients.forEach((client) => {
-          if (client.url && new URL(client.url).origin === self.location.origin) client.navigate(client.url);
-        });
-      }),
+      .then((keys) => Promise.all(keys.filter((key) => /^(xoot|zoot)-static-/.test(key) && key !== CACHE_NAME).map((key) => caches.delete(key))))
+      // Claim future requests without discarding an in-progress booking or sign-in form.
+      .then(() => self.clients.claim()),
   );
 });
 
@@ -95,8 +90,10 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          if (response.ok) {
+            const copy = response.clone();
+            event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)));
+          }
           return response;
         })
         .catch(() => caches.match(event.request)),

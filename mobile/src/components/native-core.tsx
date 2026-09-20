@@ -226,6 +226,8 @@ export function Screen({ children, contentStyle, refreshControl }: { children: R
     <View style={styles.screen}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         contentContainerStyle={[styles.screenContent, contentStyle]}
         refreshControl={refreshControl}
         showsVerticalScrollIndicator={false}>
