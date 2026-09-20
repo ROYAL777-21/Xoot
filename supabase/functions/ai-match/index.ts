@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { MAX_TRAVEL_KM, distanceKmToCoverage, type SuburbCentroid } from "../_shared/geo.ts";
+import { DIRECTORY_COLUMNS, publicDirectoryProfile } from "../_shared/public-directory.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -76,8 +77,12 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const query = supa.from("xooters").select("*").eq("active", true);
-    const { data: xooters } = await (safeService ? query.eq("role", safeService) : query);
+    const query = supa.from("xooters").select(DIRECTORY_COLUMNS)
+      .eq("active", true)
+      .eq("background_check_status", "approved")
+      .eq("reliability_flagged", false);
+    const { data: xooters, error: rosterError } = await (safeService ? query.eq("role", safeService) : query);
+    if (rosterError) throw rosterError;
     if (!xooters || xooters.length === 0) {
       return json({ ranked: [] }, 200, origin);
     }
@@ -137,7 +142,7 @@ Deno.serve(async (req) => {
         if (z.is_zotm) score += 8;
         if (favIds.includes(z.id)) score += 25;
         return {
-          ...z,
+          ...publicDirectoryProfile(z),
           // Returned so the UI can show a real distance instead of the seeded one.
           distance_km: distanceKm === null ? null : Math.round(distanceKm * 10) / 10,
           match_score: Math.round(score * 10) / 10,

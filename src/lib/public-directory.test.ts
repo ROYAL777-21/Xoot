@@ -23,4 +23,11 @@ describe("public marketplace data", () => {
     expect(endpoint).toContain('.eq("reliability_flagged", false)');
     expect(endpoint).toContain(".limit(24)");
   });
+  it("keeps matching responses inside the same public projection", () => {
+    const endpoint = readFileSync("supabase/functions/ai-match/index.ts", "utf8");
+    expect(endpoint).toContain(".select(DIRECTORY_COLUMNS)");
+    expect(endpoint).toContain("...publicDirectoryProfile(z)");
+    expect(endpoint).not.toMatch(/\.from\("xooters"\)\.select\("\*"\)/);
+    expect(endpoint).toContain('.eq("background_check_status", "approved")');
+  });
 });
