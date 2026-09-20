@@ -1,4 +1,4 @@
-import { DarkTheme, ThemeProvider, useGlobalSearchParams } from 'expo-router';
+import { DefaultTheme, ThemeProvider, useGlobalSearchParams } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
@@ -67,9 +67,9 @@ export default function TabLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <ThemeProvider value={DarkTheme}>
+    <ThemeProvider value={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: '#FAF9F7', card: '#FFFFFF', text: '#191716' } }}>
       <AppProviders>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <AppTabs />
         {playing ? <SplashAnimation onDone={done} /> : null}
       </AppProviders>
