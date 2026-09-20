@@ -64,6 +64,10 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      # The unit suite includes browser regression tests for startup failures.
+      - name: Install Chromium for rendered checks
+        run: bunx playwright install --with-deps chromium
+
       - name: Unit tests
         run: bun run test
 
@@ -107,9 +111,6 @@ jobs:
 
       - name: Build
         run: bun run build
-
-      - name: Install Chromium for rendered smoke
-        run: bunx playwright install --with-deps chromium
 
       - name: Verify the rendered build
         run: bun run ops:smoke:rendered:artifact

@@ -233,7 +233,9 @@ function wrapParagraph(paragraph, maxCols) {
         lines.push(line);
         line = '';
       }
-      lines.push(w.slice(0, maxCols));
+      for (let start = 0; start < w.length; start += maxCols) {
+        lines.push(w.slice(start, start + maxCols));
+      }
       continue;
     }
     if (!line) line = w;else if (line.length + 1 + w.length <= maxCols) line += ' ' + w;else {

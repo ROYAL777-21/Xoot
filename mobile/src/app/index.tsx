@@ -42,6 +42,8 @@ export default function TodayScreen() {
   const selectedBookings = bookings.filter((booking) => dayKey(new Date(booking.scheduled_at)) === selectedDay);
   const upcoming = bookings.find((booking) => new Date(booking.scheduled_at).getTime() >= Date.now() && booking.status !== 'cancelled');
   const greetingName = firstName(profile?.full_name, user?.email);
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   if (bypassLaunch) return null;
 
@@ -63,7 +65,7 @@ export default function TodayScreen() {
     <Screen refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => void refresh()} tintColor={nativePalette.violet} />}>
       <View style={styles.header}>
         <View style={styles.headerCopy}>
-          <Text selectable style={styles.greeting}>{greetingName ? `Good morning, ${greetingName}` : 'Good morning'}</Text>
+          <Text selectable style={styles.greeting}>{greetingName ? `${greeting}, ${greetingName}` : greeting}</Text>
           <DisplayTitle>{new Intl.DateTimeFormat('en-ZA', { weekday: 'long' }).format(selectedDate)}</DisplayTitle>
         </View>
         <View style={styles.headerActions}>

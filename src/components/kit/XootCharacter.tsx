@@ -388,7 +388,8 @@ export function XootCharacter({
   ...rest
 }: XootCharacterProps) {
   const Scene = SCENES[scene] || XooterAtWork;
-  const cast = XOOT_CAST[castIndex % XOOT_CAST.length];
+  const index = Number.isFinite(castIndex) ? Math.trunc(castIndex) : 0;
+  const cast = XOOT_CAST[((index % XOOT_CAST.length) + XOOT_CAST.length) % XOOT_CAST.length];
 
   /* The loop is on the whole figure, never on limbs — independently animated arms read as a
      puppet, where a subtle full-body bob reads as alive. */

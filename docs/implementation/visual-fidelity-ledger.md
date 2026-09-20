@@ -149,6 +149,32 @@ All seven HTML references and all uploaded ZIP contents remain in scope.
 - CodeRabbit attempt ended with `Connection failed: WebSocket closed`; there is no completed
   CodeRabbit report for this batch. A completed external review remains outstanding.
 
+### Hosted preview and review follow-up — 20 September 2026
+
+The retry completed against `0fd0324..e4e2385` and raised 11 issues. Eight were accepted:
+character index normalization, preserving long board text, the literal renewal-property check,
+OTP resend throttling, sticky booking-footer clipping, map-chip hover contrast, removing an inert
+native visit-card press target, and using the current time for the native greeting.
+The illustration generators include the corresponding fixes so extraction preserves them.
+
+Three suggestions were rejected after checking the source and behavior:
+
+- “Pick a Xooter, or let us” is the supplied heading; its description explains matching.
+- A successful empty matching result is authoritative. Falling back to unrelated directory
+  profiles would misrepresent availability. Transport/invalid-response failures still use the fallback.
+- `hand` belongs to the private `Arm` illustration helper, not the public `XootCharacter` props.
+
+Vercel deployment `dpl_Cy4tQskQnBfUXTGhYJrmGeihcGk5` serves `e4e2385`. The stable branch
+preview rendered the original logo and hero, the real empty roster, email-code sign-in and
+the password-mode transition. Use the stable branch alias: rotating deployment hostnames
+are intentionally outside the staging backend origin allowlist.
+
+The GitHub test job for `e4e2385` failed because Chromium was installed after the unit suite's
+browser tests. The follow-up moves installation before the suite. A regression for this order
+and four invalid character indices failed before the repair; the repaired focused run passed
+54 tests. Web/native type checks and lint passed. Hosted responsive screenshots do not replace
+the remaining native device or authenticated journey checks.
+
 Outstanding: the gift recipient/payment flow still uses its older implementation and must preserve
 website bundle choices and accepted server amounts. Authenticated account/booking/crew/payment/referral
 journeys, native Search/Profile/remaining flows, remaining screen comparisons and production release

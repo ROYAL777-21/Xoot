@@ -13,5 +13,6 @@ function select(node) {
 select(tree);
 if (selected.length !== names.size) throw new Error('Original board definitions changed; review extraction.');
 let body = selected.map(({node}) => node.getText(tree)).join('\n\n').replaceAll('/*#__PURE__*/', '');
+body = body.replace('lines.push(w.slice(0, maxCols));', 'for (let start = 0; start < w.length; start += maxCols) {\n        lines.push(w.slice(start, start + maxCols));\n      }');
 body = body.replace('function TextFlippingBoard({', 'export function TextFlippingBoard({').replace('  duration = BASE_TOTAL_S,\n  style = {}\n})', '  duration = BASE_TOTAL_S,\n  style = {}\n}: { text?: string; duration?: number; style?: React.CSSProperties })');
 writeFileSync('src/components/kit/TextFlippingBoard.tsx', '// Generated from the uploaded handoff by scripts/build/extract-flipping-board.mjs.\nimport React from "react";\n\n' + body + '\n');

@@ -76,18 +76,21 @@ export function ServiceAreaMap() {
         <div>
           <div className="xoot-section-head" style={{maxWidth: 480}}><p className="xoot-section-eyebrow">Where we operate</p><h2 className="xoot-section-title">Starting in <span className="xoot-squiggle">Johannesburg.</span> Growing with care.</h2><p className="xoot-section-sub">Our launch suburbs are listed below. Enter your address when you book to check service coverage and available Xooters. A place on the map is a location, not a promise of live availability.</p></div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: -20 }}>
-            {approvedLaunchRegions.map(a => (
+            {approvedLaunchRegions.map(a => {
+              const active = hover?.toLowerCase() === a.toLowerCase();
+              return (
               <span key={a}
                 onMouseEnter={() => setHover(a)} onMouseLeave={() => setHover(null)}
                 style={{
                   padding: '8px 14px', borderRadius: 'var(--xoot-radius-pill)',
-                  background: hover?.toLowerCase() === a ? 'var(--xoot-violet-500)' : 'var(--xoot-surface-card)',
-                  color: hover === a ? '#fff' : 'inherit',
-                  boxShadow: hover === a ? 'none' : 'inset 0 0 0 1px var(--xoot-border-color)',
+                  background: active ? 'var(--xoot-violet-500)' : 'var(--xoot-surface-card)',
+                  color: active ? '#fff' : 'inherit',
+                  boxShadow: active ? 'none' : 'inset 0 0 0 1px var(--xoot-border-color)',
                   fontSize: 'var(--xoot-body-sm)', fontWeight: 600, textTransform: 'capitalize', cursor: 'default',
                   transition: 'all var(--xoot-dur-fast) var(--xoot-ease-out)',
                 }}>{a}</span>
-            ))}
+              );
+            })}
             <span style={{
               padding: '8px 14px', borderRadius: 'var(--xoot-radius-pill)',
               background: 'var(--xoot-violet-50)', color: 'var(--xoot-violet-800)',

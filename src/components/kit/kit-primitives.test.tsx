@@ -4,6 +4,15 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import { ChipGrid, ChoiceRow, DockedCTA, SectionLabel, ServiceRow } from "./index";
+import { XootCharacter } from "./XootCharacter";
+
+describe("XootCharacter", () => {
+  it.each([-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])("renders a valid original character for cast index %s", (castIndex) => {
+    const { container } = render(<XootCharacter castIndex={castIndex} motion="none" />);
+    expect(container.querySelector("svg")).toBeInTheDocument();
+    expect(container.querySelectorAll("path").length).toBeGreaterThan(0);
+  });
+});
 
 /**
  * Two kinds of check, because the kit port can fail in two unrelated ways.

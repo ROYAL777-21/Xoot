@@ -94,6 +94,9 @@ describe("rendered site smoke", () => {
     );
     expect(packageJson.scripts.verify).toContain("npm run ops:smoke:rendered:artifact");
     expect(testsWorkflow).toContain("bun run ops:smoke:rendered:artifact");
+    expect(testsWorkflow.indexOf("playwright install --with-deps chromium")).toBeLessThan(
+      testsWorkflow.indexOf("run: bun run test"),
+    );
     expect(previewWorkflow).toContain("npm run ops:smoke:rendered:artifact");
     expect(liveWorkflow).toContain('npm run ops:smoke:rendered:live -- "$SITE"');
 

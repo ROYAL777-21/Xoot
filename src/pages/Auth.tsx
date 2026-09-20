@@ -207,6 +207,12 @@ const Auth = () => {
   };
 
   const handleOtpResend = async () => {
+    if (loading || isLocked || !isSupabaseConfigured) return;
+    if (!checkRateLimit("auth", 5, 60_000)) {
+      haptic("warning");
+      toast.error("Too many auth attempts. Please wait a minute before trying again.");
+      return;
+    }
     setLoading(true);
     try {
       await handleOtpRequest();
@@ -446,7 +452,7 @@ const Auth = () => {
               <Button type="submit" disabled={!canSubmit} className="xoot-auth-primary">
                 {loading ? <Loader2 className="animate-spin" /> : "Sign me in"}
               </Button>
-              <button type="button" className="xoot-auth-link centered" onClick={() => void handleOtpResend()} disabled={loading}>Send a new code</button>
+              <button type="button" className="xoot-auth-link centered" onClick={() => void handleOtpResend()} disabled={loading || isLocked || !isSupabaseConfigured}>Send a new code</button>
               <p className="xoot-auth-security"><ShieldCheck /> Never share this code. Xoot will not ask for it by phone, message or email.</p>
             </form>
           ) : (

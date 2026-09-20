@@ -60,7 +60,6 @@ export default function VisitsScreen() {
 
 function VisitCard({ booking, past }: { booking: NativeBooking; past: boolean }) {
   return (
-    <Pressable onPress={() => {}} style={({ pressed }) => pressed && nativeCoreStyles.pressed}>
       <Card style={styles.card}>
         <View style={styles.cardTop}>
           <View style={styles.serviceIcon}><CoreIcon color={nativePalette.blushInk} name="sparkles" size={22} /></View>
@@ -101,9 +100,8 @@ function VisitCard({ booking, past }: { booking: NativeBooking; past: boolean })
             <Text selectable style={styles.detail}>No Xooter assigned yet</Text>
           </View>
         )}
-        {past && booking.price > 0 ? <Text selectable style={styles.paid}>R{booking.price.toFixed(2)} paid</Text> : null}
+        {past && booking.price > 0 ? <Text selectable style={styles.paid}>Booking total R{booking.price.toFixed(2)}</Text> : null}
       </Card>
-    </Pressable>
   );
 }
 
