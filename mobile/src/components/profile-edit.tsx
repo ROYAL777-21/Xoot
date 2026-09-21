@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import {
   Card,
@@ -36,19 +36,85 @@ const cfg = {
 } as const;
 export function ProfileEdit({ field }: { field: Field }) {
   const { user, isLoading } = useAuth();
-  const { profile, refresh } = useNativeCoreData();
-  const c = cfg[field];
-  const [value, setValue] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    profile,
+    isLoading: profileLoading,
+    error,
+    refresh,
+  } = useNativeCoreData();
   const goBack = () => {
     if (router.canGoBack()) router.back();
     else router.replace("/account");
   };
 
-  useEffect(() => setValue(profile?.[field] ?? ""), [field, profile]);
+  if (isLoading || (user && profileLoading && !profile)) {
+    return (
+      <Screen>
+        <LoadingRows />
+      </Screen>
+    );
+  }
+
+  if (!user || !profile) {
+    return (
+      <Screen>
+        <View style={x.top}>
+          <Pressable accessibilityLabel="Back" onPress={goBack} style={x.back}>
+            <CoreIcon name="arrow-left" />
+          </Pressable>
+          <Text style={x.title}>{cfg[field].title}</Text>
+        </View>
+        <EmptyState
+          title={
+            !user
+              ? "Sign in to edit your profile"
+              : "Your profile could not be loaded"
+          }
+          detail={
+            !user
+              ? "Your account details are protected and can only be changed while signed in."
+              : error
+                ? "Please try again before editing your account details."
+                : "No profile was returned for this account. Try again or contact support."
+          }
+          action={!user ? "Go to sign in" : "Try again"}
+          onAction={
+            !user ? () => router.replace("/account") : () => void refresh()
+          }
+        />
+      </Screen>
+    );
+  }
+
+  // Mount only after the real record arrives. Background refreshes must not replace typing.
+  return (
+    <ProfileEditor
+      key={`${user.id}:${field}`}
+      field={field}
+      initialValue={profile[field] ?? ""}
+      goBack={goBack}
+    />
+  );
+}
+
+function ProfileEditor({
+  field,
+  initialValue,
+  goBack,
+}: {
+  field: Field;
+  initialValue: string;
+  goBack: () => void;
+}) {
+  const { user } = useAuth();
+  const { refresh } = useNativeCoreData();
+  const c = cfg[field];
+  const [value, setValue] = useState(initialValue);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const save = async () => {
+    if (saving) return;
     if (!user) {
       setError("Your session ended. Sign in again to save this change.");
       return;
@@ -71,46 +137,23 @@ export function ProfileEdit({ field }: { field: Field }) {
         : field === "phone"
           ? { phone: clean || null }
           : { address: clean || null };
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update(update)
-      .eq("id", user.id);
-    if (updateError) {
+    try {
+      const { data, error: updateError } = await supabase
+        .from("profiles")
+        .update(update)
+        .eq("id", user.id)
+        .select("id")
+        .maybeSingle();
+      if (updateError || !data)
+        throw new Error("Profile update did not return a record.");
+      await refresh();
+      goBack();
+    } catch {
       setError("Your change could not be saved. Try again.");
+    } finally {
       setSaving(false);
-      return;
     }
-    await refresh();
-    setSaving(false);
-    router.back();
   };
-
-  if (isLoading) {
-    return (
-      <Screen>
-        <LoadingRows />
-      </Screen>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Screen>
-        <View style={x.top}>
-          <Pressable accessibilityLabel="Back" onPress={goBack} style={x.back}>
-            <CoreIcon name="arrow-left" />
-          </Pressable>
-          <Text style={x.title}>{c.title}</Text>
-        </View>
-        <EmptyState
-          title="Sign in to edit your profile"
-          detail="Your account details are protected and can only be changed while signed in."
-          action="Go to sign in"
-          onAction={() => router.replace("/account")}
-        />
-      </Screen>
-    );
-  }
 
   return (
     <Screen>
@@ -123,7 +166,9 @@ export function ProfileEdit({ field }: { field: Field }) {
       <Card style={x.card}>
         <Text style={x.label}>{c.label}</Text>
         <TextInput
+          accessibilityLabel={c.label}
           autoFocus
+          editable={!saving}
           value={value}
           onChangeText={setValue}
           keyboardType={c.keyboard}

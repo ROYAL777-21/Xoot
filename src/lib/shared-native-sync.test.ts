@@ -19,8 +19,8 @@ const root = process.cwd();
 
 describe("shared native modules", () => {
   it.each(MODULES)("mobile/src/generated/%s is an exact copy of the source", (module) => {
-    const source = readFileSync(join(root, "src/lib", module), "utf8");
-    const copy = readFileSync(join(root, "mobile/src/generated", module), "utf8");
+    const source = readFileSync(join(root, "src/lib", module), "utf8").replace(/\r\n/g, "\n");
+    const copy = readFileSync(join(root, "mobile/src/generated", module), "utf8").replace(/\r\n/g, "\n");
 
     expect(copy.startsWith(banner(module))).toBe(true);
     expect(copy.slice(banner(module).length)).toBe(source);

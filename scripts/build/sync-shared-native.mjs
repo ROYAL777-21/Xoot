@@ -36,6 +36,9 @@ const MODULES = [
   // matters. The transport differs — @twilio/voice-sdk on web, @twilio/voice-react-native-sdk
   // on device — but the transport is what the hook wraps, not what this decides.
   "voice-call.ts",
+  // XootCred balance and expiry rules must be identical on web and native. The web adapter
+  // adds its generated Supabase Json type; this dependency-free core is safe for Metro.
+  "xootcred-core.ts",
 ];
 
 // Resolved from this file, not from the working directory — mobile's `prestart` runs
@@ -49,12 +52,17 @@ export const banner = (module) =>
   `// Copied from src/lib/${module} by scripts/build/sync-shared-native.mjs.\n` +
   `// Edit the source and run \`npm run shared:sync\`.\n\n`;
 
-mkdirSync(to, { recursive: true });
-
-for (const module of MODULES) {
-  const source = readFileSync(path.join(from, module), "utf8");
-  writeFileSync(path.join(to, module), banner(module) + source);
-  console.log(`src/lib/${module} -> mobile/src/generated/${module}`);
+export function syncSharedNativeModules() {
+  mkdirSync(to, { recursive: true });
+  for (const module of MODULES) {
+    const source = readFileSync(path.join(from, module), "utf8");
+    writeFileSync(path.join(to, module), banner(module) + source);
+    console.log(`src/lib/${module} -> mobile/src/generated/${module}`);
+  }
 }
 
+// Importing the manifest in its drift test must never repair the files before checking them.
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  syncSharedNativeModules();
+}
 export { MODULES };

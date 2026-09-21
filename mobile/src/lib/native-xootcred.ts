@@ -2,7 +2,7 @@ import {
   calculateXootCredSummary,
   type XootCredEntry,
   type XootCredLedgerRow,
-} from "../../../src/lib/xootcred";
+} from "../generated/xootcred-core";
 
 export type NativeXootCredLedgerRow = XootCredLedgerRow;
 export type NativeXootCredEntry = XootCredEntry;

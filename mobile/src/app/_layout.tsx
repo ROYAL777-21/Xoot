@@ -6,6 +6,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 import { useFonts } from 'expo-font';
 
 import AppTabs from '@/components/app-tabs';
+import { nativePalette } from '@/constants/handoff';
 import { SplashAnimation } from '@/components/splash-animation';
 import {
   getNativeLaunchMode,
@@ -67,7 +68,7 @@ export default function TabLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <ThemeProvider value={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: '#FAF9F7', card: '#FFFFFF', text: '#191716' } }}>
+    <ThemeProvider value={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: nativePalette.page, card: nativePalette.card, text: nativePalette.ink } }}>
       <AppProviders>
         <StatusBar style="dark" />
         <AppTabs />
