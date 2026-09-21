@@ -12,7 +12,7 @@ const steps = [
   { icon: Gift, title: "Choose your gift", body: "Pick the visits, service and occasion. Your choices follow you into gift setup." },
   { icon: MessageCircle, title: "Make it personal", body: "Add the recipient and your message, then review the full details." },
   { icon: CreditCard, title: "Review before payment", body: "A gift is not paid or delivered until its payment has been confirmed." },
-  { icon: CalendarCheck, title: "Keep track of the gift", body: "Your account shows the actual order status. Gift checkout and redemption are still being connected." },
+  { icon: CalendarCheck, title: "Save the request", body: "Keep the request reference after saving. Gift checkout, delivery and redemption are not available yet." },
 ];
 
 export function GiftBand() {
@@ -24,15 +24,14 @@ export function GiftBand() {
   const estimate = estimateGift(selection);
   const startGift = () => {
     const target = giftSetupPath(selection);
-    if (user) navigate(target);
-    else navigate("/auth", { state: { from: { pathname: target } } });
+    navigate(target);
   };
   return <section id="gift" className="xoot-gift-band">
     <div className="xoot-gift-inner">
       <div>
         <span className="xoot-gift-badge"><Gift size={14} strokeWidth={2} /> Gift a clean</span>
         <h2 className="xoot-gift-heading">Give someone their<br /><span>weekend back.</span></h2>
-        <p className="xoot-gift-description">A thoughtful gift of home care. Choose the visits, add a personal note and review the recipient’s details. Payment and delivery status stay visible in your account.</p>
+        <p className="xoot-gift-description">A thoughtful gift of home care. Choose the visits, add a personal note and review the recipient’s details. Save a gift request while checkout and delivery are being connected.</p>
         <div className="xoot-gift-options">
           <fieldset><legend>How many visits</legend><div className="xoot-gift-bundles">
             {giftBundles.map((bundle) => <button key={bundle.count} type="button" aria-pressed={selection.count === bundle.count} onClick={() => setSelection({ ...selection, count: bundle.count })}><strong>{bundle.label}</strong><span>{bundle.detail}</span></button>)}

@@ -79,7 +79,9 @@ describe("kit primitives — tokens", () => {
     // Scope their palette exceptions to those files; ordinary controls keep the rule above.
     const artworkPalette: Record<string, Set<string>> = {
       "Logo.tsx": new Set(["--xoot-ink-900", "--xoot-violet-600"]),
-      "GiftCard.tsx": new Set(["--xoot-mist-mid", "--xoot-mist-ink", "--xoot-honey-mid", "--xoot-honey-ink", "--xoot-sage-mid", "--xoot-sage-ink"]),
+      // The handoff's seven GiftCard tints and ServiceIcon artwork use these exact fill/ink pairs.
+      "GiftCard.tsx": new Set(["--xoot-blush-mid", "--xoot-blush-ink", "--xoot-lilac-ink", "--xoot-mist-mid", "--xoot-mist-ink", "--xoot-honey-mid", "--xoot-honey-ink", "--xoot-sage-mid", "--xoot-sage-ink"]),
+      "ServiceIcon.tsx": new Set(["--xoot-violet-50", "--xoot-violet-200"]),
       "XootCharacter.tsx": new Set(["--xoot-blush-mid", "--xoot-blush-500", "--xoot-sage-mid", "--xoot-sage-500", "--xoot-honey-mid", "--xoot-honey-500", "--xoot-mist-mid", "--xoot-mist-500", "--xoot-mist-wash"]),
       "TextFlippingBoard.tsx": new Set(["--xoot-ink-900", "--xoot-ink-800", "--xoot-ink-700", "--xoot-honey-500", "--xoot-sage-500", "--xoot-mist-500"]),
     };

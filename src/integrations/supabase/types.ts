@@ -1521,8 +1521,10 @@ export type Database = {
       }
       gift_clean_orders: {
         Row: {
+          accepted_quote: Json | null
           amount: number
           created_at: string
+          definition: Json | null
           id: string
           message: string | null
           occasion: string | null
@@ -1532,12 +1534,15 @@ export type Database = {
           recipient_name: string
           recipient_phone: string | null
           redeemed_at: string | null
+          request_key: string | null
           service_type: string
           status: string
         }
         Insert: {
+          accepted_quote?: Json | null
           amount?: number
           created_at?: string
+          definition?: Json | null
           id?: string
           message?: string | null
           occasion?: string | null
@@ -1547,12 +1552,15 @@ export type Database = {
           recipient_name: string
           recipient_phone?: string | null
           redeemed_at?: string | null
+          request_key?: string | null
           service_type?: string
           status?: string
         }
         Update: {
+          accepted_quote?: Json | null
           amount?: number
           created_at?: string
+          definition?: Json | null
           id?: string
           message?: string | null
           occasion?: string | null
@@ -1562,6 +1570,7 @@ export type Database = {
           recipient_name?: string
           recipient_phone?: string | null
           redeemed_at?: string | null
+          request_key?: string | null
           service_type?: string
           status?: string
         }
@@ -5380,6 +5389,11 @@ export type Database = {
           p_window_seconds: number
         }
         Returns: boolean
+      }
+      // Expected contract from 20260920200000; regenerate from staging after migration delivery.
+      create_reviewed_gift_order: {
+        Args: { p_user_id: string; p_request_key: string; p_definition: Json; p_current_quote: Json; p_accepted_quote: Json }
+        Returns: Json
       }
       get_accepted_xooter_job_destinations: {
         Args: { p_job_ids: string[] }

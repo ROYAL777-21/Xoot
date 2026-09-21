@@ -2,9 +2,9 @@ import { isPriced, quote, type ServiceId } from "./xoot-pricing";
 
 export const giftServices = [
   { key: "regular", serviceType: "residential", label: "Regular cleaning", hours: 5.5 },
-  { key: "airbnb", serviceType: "airbnb", label: "Airbnb cleaning", hours: 5.5 },
-  { key: "express", serviceType: "express", label: "Express cleaning", hours: 2 },
-  { key: "office", serviceType: "office", label: "Office cleaning", hours: 6 },
+  { key: "airbnb", serviceType: "airbnb", label: "Airbnb cleaning", hours: 4 },
+  { key: "express", serviceType: "express", label: "Express cleaning", hours: 1 },
+  { key: "office", serviceType: "office", label: "Office cleaning", hours: 5 },
 ] as const;
 
 export const giftBundles = [
@@ -37,5 +37,5 @@ export function estimateGift(selection: GiftSelection) {
 }
 
 export function giftSetupPath(selection: GiftSelection) {
-  return `/app/gifts?${new URLSearchParams({ service: selection.service, visits: String(selection.count), occasion: String(selection.occasion) })}`;
+  return `/gifts?${new URLSearchParams({ service: selection.service, visits: String(selection.count), occasion: String(selection.occasion) })}`;
 }

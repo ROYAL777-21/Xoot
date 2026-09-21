@@ -49,7 +49,6 @@ const EDGE_WRITERS = [
   "supabase/functions/create-booking/index.ts",
   "supabase/functions/create-booking-request/index.ts",
   "supabase/functions/care-plus-membership/index.ts",
-  "supabase/functions/ops-workflow/index.ts",
   "supabase/functions/split-booking-fare/index.ts",
 ];
 
@@ -95,6 +94,19 @@ describe("payment_records.provider lifecycle", () => {
     for (const provider of inserted) {
       expect(allowed, `${file} inserts provider "${provider}", which the constraint rejects`).toContain(provider);
     }
+  });
+
+  it("checks the gift writer after its move into the atomic database contract", () => {
+    const edge = read("supabase/functions/ops-workflow/index.ts");
+    expect(edge).toMatch(/\.rpc\("create_reviewed_gift_order"/);
+    expect(providersInsertedInto(edge)).toEqual([]);
+    const sql = read("supabase/migrations/20260920200000_gift_order_contract.sql");
+    const insert = sql.match(/insert into public\.payment_records\(([^)]+)\)\s*values\(([^;]+)\);/i);
+    expect(insert, "gift payment insert moved without updating its provider check").not.toBeNull();
+    const columns = insert![1].split(",").map((value) => value.trim());
+    // provider is a scalar value before the trailing JSON metadata constructor.
+    const provider = insert![2].split(",")[columns.indexOf("provider")].trim().replace(/^'|'$/g, "");
+    expect(allowed).toContain(provider);
   });
 
   it("src/lib/operations.ts builds a permitted provider", () => {

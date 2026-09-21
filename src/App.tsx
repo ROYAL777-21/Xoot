@@ -198,7 +198,8 @@ const App = () => (
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
                   <Route path="/app/favorites" element={<RequireAuth><AppShell><Favorites /></AppShell></RequireAuth>} />
                   <Route path="/app/loyalty" element={<RequireAuth><AppShell><Loyalty /></AppShell></RequireAuth>} />
-                  <Route path="/app/gifts" element={<RequireAuth><AppShell><GiftClean /></AppShell></RequireAuth>} />
+                  <Route path="/gifts" element={<GiftClean />} />
+                  <Route path="/app/gifts" element={<RequireAuth><GiftClean /></RequireAuth>} />
                   <Route path="/app/properties" element={<RequireAuth><AppShell><Properties /></AppShell></RequireAuth>} />
                   <Route path="/app/properties/airbnb" element={<RequireAuth><AppShell><AirbnbHostDashboard /></AppShell></RequireAuth>} />
                   <Route path="/app/properties/office" element={<RequireAuth><AppShell><OfficeDashboard /></AppShell></RequireAuth>} />

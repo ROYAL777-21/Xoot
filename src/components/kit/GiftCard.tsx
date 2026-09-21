@@ -1,6 +1,9 @@
 import type { CSSProperties } from "react";
 
 const cardTints = {
+  blush: { background: "var(--xoot-blush-mid)", color: "var(--xoot-blush-ink)" },
+  lilac: { background: "var(--xoot-lilac-mid)", color: "var(--xoot-lilac-ink)" },
+  moss: { background: "var(--xoot-moss-mid)", color: "var(--xoot-moss-ink)" },
   petal: { background: "var(--xoot-petal-mid)", color: "var(--xoot-petal-ink)" },
   mist: { background: "var(--xoot-mist-mid)", color: "var(--xoot-mist-ink)" },
   honey: { background: "var(--xoot-honey-mid)", color: "var(--xoot-honey-ink)" },
@@ -8,8 +11,10 @@ const cardTints = {
 } as const;
 
 /** Original handoff components/brand/gift-card/GiftCard.jsx artwork. */
+export const giftCardTints = ['blush', 'lilac', 'mist', 'petal', 'moss', 'sage', 'honey'] as const;
+
 export function GiftCard({ tint = "petal", title, note, from, className = "", style }: {
-  tint?: "petal" | "mist" | "honey" | "sage";
+  tint?: keyof typeof cardTints;
   title: string; note?: string; from?: string; className?: string; style?: CSSProperties;
 }) {
   const ink = cardTints[tint].color;

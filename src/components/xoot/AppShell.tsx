@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ConciergeOmnibox } from "@/components/xoot/ConciergeOmnibox";
 import { haptic } from "@/lib/haptics";
+import { Logo } from "@/components/kit/Logo";
 
 const nav = [
   { to: "/app", label: "Book", icon: Home, end: true },
@@ -41,10 +42,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       >
         <div className="liquid-glass-readable flex items-center justify-between mb-8">
           <NavLink to="/" className="flex items-center gap-2 interactive-press" onClick={() => haptic("selection")}>
-            <span className="grid h-10 w-10 place-items-center rounded-2xl gradient-warm shadow-warm">
-              <span className="font-display text-lg font-bold text-primary-foreground">X</span>
-            </span>
-            <span className="font-display text-2xl font-bold tracking-tight text-foreground">Xoot</span>
+            <Logo tone="violet" size={28} />
           </NavLink>
           <NotificationBell />
         </div>
