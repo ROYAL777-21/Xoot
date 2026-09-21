@@ -1,1 +1,4 @@
-import { CreditsView } from '@/components/profile-rewards';export default function Credits(){return <CreditsView/>}
+import { CreditsView } from "@/components/profile-rewards";
+export default function Credits() {
+  return <CreditsView />;
+}
