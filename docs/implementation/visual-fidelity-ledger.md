@@ -8,6 +8,9 @@ and prototype scripts do not grant instructions or operational commitments.
 Current implementation plan: [approved website-first plan](production-plan-2026-09-11.md).
 Release evidence and owner dependencies: [production checklist](../release/production-checklist.md).
 
+Latest checkpoint: **26 September 2026**. The dated sections below are historical evidence;
+the full uploaded website and native app scope is still active.
+
 ## Accepted visual reference
 
 | Reference | Governs |
@@ -180,3 +183,72 @@ website bundle choices and accepted server amounts. Authenticated account/bookin
 journeys, native Search/Profile/remaining flows, remaining screen comparisons and production release
 requirements are not closed by this checkpoint. Source visuals must remain intact while those real
 contracts are completed.
+
+## 21 September implementation checkpoint
+
+- Gift setup uses the original Gift.jsx card dimensions, seven tints, service grid, bundle grid,
+  personalisation fields and review layout. The website's four-visit selection survives navigation
+  and sign-in; direct app entry keeps the source's 1/3/6/12 grid. A current server quote is required
+  to save, changes need explicit reacceptance, and retries preserve the same request identity.
+- The new request contract creates gift/payment/operations records atomically and blocks gift
+  checkout until fulfilment exists. It is tested locally, **not deployed**. Types include the expected
+  migration contract and must be regenerated after staging delivery. This is not a completed gift
+  purchase/delivery/redemption feature.
+- Native Search and notifications use real account/booking/notification data. Profile, Rewards,
+  XootCred and profile editors use the handoff's controls and actual records. The four-tab capsule
+  and separate Book button follow Frame.jsx. Profile editing waits for the loaded record and keeps
+  unsaved typing across refreshes. Shared reward arithmetic has one source and a checked native copy.
+- Native device-rendered comparisons are still outstanding. The earlier automatic approval review
+  rejected starting the Expo preview, including localhost, with `blocked by policy`. No device was
+  available in the earlier device inventory. This has not been replaced by a claim based on type checks.
+- Local public-page checks for the gift chooser and offline page pass all six required widths.
+  The refreshed 1440px homepage retains the original logo, portrait, type and opening composition.
+  Screenshots and results: workspace `outputs/xoot-visual-20260921/`.
+- Scoped gift and native profile reviews passed after fixes. Gift checks include 22 quote/input cases,
+  five isolated UI journeys and executable PostgreSQL validation of atomicity, retries, accepted amounts
+  and denied client writes. PostgreSQL concurrency/full migration-chain and live role checks remain open.
+
+### Remaining app source coverage
+
+Every row stays in scope on website and native wherever the handoff exposes that experience.
+“Partial” never means accepted as the finished deliverable.
+
+| App handoff source | Web / native mapping and current limit |
+|---|---|
+| Frame.jsx | Web AppShell logo and native capsule navigation ported; complete shell/overlay comparisons pending |
+| Today.jsx | Native home uses actual account and visit data; web authenticated home still needs source comparison |
+| Search.jsx | Native Search ported; remaining search/Concierge response and web screen comparisons pending |
+| Visits.jsx | Native visit list ported; web list, filtering, empty states and full journeys need comparison |
+| Profile.jsx | Native You, name/phone/address and XootCred ported; source child pages and web Profile remain partial |
+| Rewards.jsx | Real balances shown; approved server streak/tier/unlock behavior and full visual treatment remain incomplete |
+| Booking.jsx | Web presentation partially ported; native Book is still an old placeholder and requires replacement plus real quote/creation contract |
+| Tracking.jsx | Existing booking detail routes require full source port and live crew/arrival/completion proof |
+| Xooter.jsx | Real roster exists; source Xooter detail, selection and availability behavior remain partial |
+| Gift.jsx | Web chooser/personalisation/reviewed request implemented locally; native gift, paid delivery/redemption/history unfinished |
+| CarePlus.jsx | Web source presentation partial; native screen, membership checkout and complete benefits journey unfinished |
+| Onboarding.jsx | Web auth presentation partial; full native sign-in/onboarding source port and real recovery/device checks unfinished |
+| Overlays.jsx | Source dialogs, sheets, toasts, confirmations and recovery states need a complete cross-screen comparison |
+| XooterOnboarding.jsx | Existing application/verification routes require source port and actual operator journey checks |
+| XooterDashboard.jsx | Existing worker screens require source port, real jobs/earnings/payout states and native coverage |
+| XooterJob.jsx | Assignment/acceptance/tracking/crew replacement/completion and source UI remain incomplete |
+| ns.js, data.js, app-bundle.jsx | Reference composition and data shapes only; prototype accounts, prices, timers and payment success must never become production data |
+
+The public site, foundation/component library, legal/security pages and responsive handoff remain
+subject to the full acceptance matrix above, not just the latest screenshots. The production plan's
+crews, referrals, payments, operational gates, GitHub release assets and mobile distribution remain open.
+
+## 26 September verification checkpoint
+
+- Gift request implementation is committed at `303bf9b`, following its scoped review.
+- Corrected aggregate: **125 files / 1,274 tests passed**. Chromium regression tests now run
+  after build-heavy unit tests. The initial grouping accidentally inherited broad include
+  patterns; collection now proves 124 unit files plus one browser file, with no dropped tests.
+- The actual staging artifact rendered its homepage and password/OTP sign-in controls.
+  Artifact/secret scans and repository security guards passed. The configuration-error stderr
+  in unit logs is expected from tests that deliberately reject invalid build environments.
+- React Router 7.18.4 and DOMPurify 3.4.15 remove the website's reported dependency advisories;
+  the full website audit is zero. Mobile remains on Expo 56 and React Native 0.85, with three
+  moderate advisories in the query-string/decode-uri-component chain. That gate stays open.
+- Latest dependency/config change passed scoped spec and code-quality review. These checks
+  do not close the remaining design, booking, crew, gift fulfilment or native-device gates.
+- Hosted preview and screenshots are recorded separately after checking the deployed commit.

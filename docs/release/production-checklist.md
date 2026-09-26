@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **20 September 2026**. This replaces the status claims in `blocker.md`,
+Current register: **26 September 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -12,19 +12,33 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
 | Website hosting | On 11 September, `xoot.co.za` served Vercel headers and build commit `02bb284`. | Domain resolves. Do not import the old GoDaddy zone export. |
-| Rendered startup | Shared config repair committed `b923980`; staging artifact renders home/sign-in, verified 13 September. | Local repair verified; updated hosted preview and production still need checks. |
+| Rendered startup | Shared config repair committed `b923980`; staging artifact renders home/sign-in, rechecked 26 September after dependency updates. | Local repair verified; updated hosted preview and production still need checks. |
 | Vercel access | Connector lists project `xoot`, `prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`, on 12 September. Team plan is Hobby. | Preview configuration possible; commercial hosting plan required for paid launch. |
 | Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
-| Staging schema | Supabase migration list: 82 versions, including `20260903120000`, checked 11 September. | Recheck before delivery of new migrations. |
-| Production schema | Supabase migration list: 81 versions, missing `20260903120000`, checked 11 September. | One known migration behind at audit; new implementation may add more. |
+| Staging schema | Read-only query on 21 September: 82 versions, latest `20260903120000`; gift RPC absent. | New `20260920200000_gift_order_contract.sql` not deployed. |
+| Production schema | Read-only query on 21 September: 81 versions, latest `20260902120000`. | Crew/referral and new gift migration still absent. |
 | Backend delivery | 51 source functions plus six obsolete production endpoints at audit. Shared code is bundled per function. | Compare versions/source, migrate first and redeploy every affected importer. |
 | PayFast | Hosted checkout disabled; provider verification flags false in both environments at audit. | Signed webhook smoke tests, amount matching and reconciliation evidence required. |
-| Supply | Production aggregate counts: zero Xooters and zero bookings, checked 11 September. | Recruit/verify helpers and run consenting pilot; no invented availability/reviews. |
+| Supply | Production aggregate counts: zero Xooters and zero bookings, rechecked 21 September. | Recruit/verify helpers and run consenting pilot; no invented availability/reviews. |
 | Supabase CLI | GitHub credentials configured staging origins and deployed the directory/matching functions (runs 34786060963, 34829457465, 35498593092). Database linking was denied in run 34786290645. | Correct the deployment identity's database-management access and keep separate database credentials. Local `supabase login` is optional for local CLI work; it does not replace the GitHub secret. |
-| CodeRabbit | The 13 September visual slice had two minor findings, addressed then. The 19 September expanded review failed with WebSocket closed. | Expanded changes still need a completed review; earlier results do not cover them. |
+| Reviews | CodeRabbit retry completed 20 September with 11 findings: eight addressed and three rejected with rationale in the visual ledger. Gift/native slices and the 26 September dependency/runtime slice passed scoped reviews. | Whole-branch release/security review still required before production. |
+| Dependency audit | Full npm audits on 26 September: website zero; mobile three moderate, zero high/critical. | Mobile `expo-router → query-string → decode-uri-component` remains open; do not force an Expo downgrade or incompatible module override. |
 
 These are timestamped observations, not continuing monitoring. A checked build or a reachable domain
 does not prove booking, payment, data access, or operational readiness.
+
+### Current implementation delivery sequence
+
+The reviewed gift-request slice requires `20260920200000_gift_order_contract.sql` **before**
+`ops-workflow` and `create-payment-session`. Staging still lacks that migration. The local types now
+describe its expected columns/RPC; regenerate and compare against staging after applying it.
+PGlite checks exercise the migration, provider constraint, atomic rollback and role denial locally;
+they do not prove the whole Supabase chain, concurrent requests or live customer roles.
+
+Do not enable gift checkout: paid delivery, redemption, refunds/reversal and saved-order browsing
+are still incomplete. The website describes an unpaid request and the payment endpoint refuses gifts.
+Native Search/Profile/Rewards/notifications have progressed, but native Book, remaining source screens,
+device checks and distributions are unfinished. See the source coverage matrix in the visual ledger.
 
 ## Release gates
 

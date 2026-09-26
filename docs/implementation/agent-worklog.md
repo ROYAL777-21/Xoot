@@ -23,6 +23,25 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**26 September checkpoint, same authorized cross-role Codex claim:** gift presentation/request
+contract is committed at `303bf9b`; native Search, notifications, Profile and Rewards work has passed
+scoped reviews. Dependency updates retain the existing web React and Expo SDK 56 runtimes; web
+audit reports zero advisories and mobile has three moderate findings in one dependency chain.
+The staging build, rendered homepage/sign-in artifact, artifact scan and security guards pass.
+Full-suite browser timeouts exposed resource contention; browser checks now run after unit/build
+checks. A collection check caught and corrected inherited include patterns before publication;
+the corrected run passed all 1,274 tests across 125 files. Dependency/runtime scoped review passed.
+Preview update follows verification; no production release.
+
+**21 September checkpoint, same authorized cross-role Codex claim:** native Search/notifications,
+Profile/Rewards/navigation and loaded profile editing are committed through `e2ec339` and have
+passed scoped review. Web Gift.jsx presentation plus atomic reviewed-request migration/functions
+are implemented and reviewed locally; staging delivery is pending database access. The full initial
+integration suite exposed four schema/writer/token guard issues; those are fixed and 64 focused
+checks pass. Dependency remediation and the final aggregate build/preview verification are underway.
+No production publication or new live database write. All uploaded references and remaining screens
+stay in scope; current coverage and external dependencies are in the visual ledger/release checklist.
+
 **13 September checkpoint, same Codex claim:** unified startup repair is committed at
 `b923980`; the uploaded ZIPs match the handoff already in Git. Header/hero now use the
 actual fonts, artwork and geometry. Six widths and service/auth/navigation interactions
