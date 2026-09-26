@@ -12,7 +12,7 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
 | Website hosting | On 11 September, `xoot.co.za` served Vercel headers and build commit `02bb284`. | Domain resolves. Do not import the old GoDaddy zone export. |
-| Rendered startup | Shared config repair committed `b923980`; staging artifact renders home/sign-in, rechecked 26 September after dependency updates. | Local repair verified; updated hosted preview and production still need checks. |
+| Rendered startup | Staging artifact and hosted commit `438ace3` render home/sign-in, checked 26 September after dependency updates. | Staging repair verified. Production still serves the old release and requires launch gates. |
 | Vercel access | Connector lists project `xoot`, `prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`, on 12 September. Team plan is Hobby. | Preview configuration possible; commercial hosting plan required for paid launch. |
 | Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
 | Staging schema | Read-only query on 21 September: 82 versions, latest `20260903120000`; gift RPC absent. | New `20260920200000_gift_order_contract.sql` not deployed. |
@@ -26,6 +26,10 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 
 These are timestamped observations, not continuing monitoring. A checked build or a reachable domain
 does not prove booking, payment, data access, or operational readiness.
+
+Latest reviewable checkpoint: [draft PR 46](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/46).
+The [26 September preview evidence](evidence/2026-09-26/README.md) records the verified application
+commit, hosted screenshots, responsive checks and CI results. This is not the completed production release.
 
 ### Current implementation delivery sequence
 

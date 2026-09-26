@@ -31,7 +31,9 @@ The staging build, rendered homepage/sign-in artifact, artifact scan and securit
 Full-suite browser timeouts exposed resource contention; browser checks now run after unit/build
 checks. A collection check caught and corrected inherited include patterns before publication;
 the corrected run passed all 1,274 tests across 125 files. Dependency/runtime scoped review passed.
-Preview update follows verification; no production release.
+Commit `438ace3` is now pushed and its Vercel preview is verified: hosted home/sign-in smoke,
+gift/offline layouts at six widths, GitHub Tests and Semgrep all pass. Draft PR 46 is open.
+Hosted screenshots and links are in `docs/release/evidence/2026-09-26/`. No production release.
 
 **21 September checkpoint, same authorized cross-role Codex claim:** native Search/notifications,
 Profile/Rewards/navigation and loaded profile editing are committed through `e2ec339` and have

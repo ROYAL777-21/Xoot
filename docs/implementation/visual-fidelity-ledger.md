@@ -251,4 +251,6 @@ crews, referrals, payments, operational gates, GitHub release assets and mobile 
   moderate advisories in the query-string/decode-uri-component chain. That gate stays open.
 - Latest dependency/config change passed scoped spec and code-quality review. These checks
   do not close the remaining design, booking, crew, gift fulfilment or native-device gates.
-- Hosted preview and screenshots are recorded separately after checking the deployed commit.
+- Hosted `438ace3` is verified and open in the app. Home/sign-in smoke and gift/offline checks
+  passed at all six widths. [Hosted screenshots and evidence](../release/evidence/2026-09-26/README.md)
+  identify the deployment, CI runs and source download. Draft PR 46 stays unmerged.
