@@ -38,6 +38,9 @@ verify_jwt = false
 [functions.get-booking-public-keys]
 verify_jwt = true
 
+[functions.get-booking-quote]
+verify_jwt = true
+
 [functions.send-booking-message]
 verify_jwt = true
 
