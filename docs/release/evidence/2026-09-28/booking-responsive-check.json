@@ -1,0 +1,457 @@
+[
+  {
+    "viewport": {
+      "width": 320,
+      "height": 1000
+    },
+    "stage": "service",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 294,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 320,
+      "height": 1000
+    },
+    "stage": "place",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 294,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 320,
+      "height": 1000
+    },
+    "stage": "when",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 294,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 320,
+      "height": 1000
+    },
+    "stage": "crew",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 294,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 320,
+      "height": 1000
+    },
+    "stage": "review",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 294,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "stage": "service",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 359,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "stage": "place",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 359,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "stage": "when",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 359,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "stage": "crew",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 359,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "stage": "review",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 359,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1000
+    },
+    "stage": "service",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 707,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1000
+    },
+    "stage": "place",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 707,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1000
+    },
+    "stage": "when",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 707,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1000
+    },
+    "stage": "crew",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 707,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1000
+    },
+    "stage": "review",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 707,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1024,
+      "height": 1000
+    },
+    "stage": "service",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1024,
+      "height": 1000
+    },
+    "stage": "place",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1024,
+      "height": 1000
+    },
+    "stage": "when",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1024,
+      "height": 1000
+    },
+    "stage": "crew",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1024,
+      "height": 1000
+    },
+    "stage": "review",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "stage": "service",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "stage": "place",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "stage": "when",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "stage": "crew",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "stage": "review",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "stage": "service",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "stage": "place",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "stage": "when",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "stage": "crew",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "stage": "review",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "stage": "service",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "stage": "place",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "stage": "when",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "stage": "crew",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "stage": "review",
+    "documentOverflow": false,
+    "modalOverflow": false,
+    "panelTransform": "none",
+    "headingFont": "Newsreader, Georgia, serif",
+    "width": 720,
+    "errors": []
+  }
+]

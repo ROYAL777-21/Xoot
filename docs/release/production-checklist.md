@@ -28,8 +28,12 @@ These are timestamped observations, not continuing monitoring. A checked build o
 does not prove booking, payment, data access, or operational readiness.
 
 Latest reviewable checkpoint: [draft PR 46](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/46).
-The [26 September preview evidence](evidence/2026-09-26/README.md) records the verified application
+The [28 September preview evidence](evidence/2026-09-28/README.md) records the verified application
 commit, hosted screenshots, responsive checks and CI results. This is not the completed production release.
+
+The 28 September production schema check is red for pending gift/referral changes and generated
+differences. The Claude security action did not run its scan because the Anthropic API credit balance
+was too low; its nominal success is not review evidence. A result guard now exposes that failure.
 
 ### Current implementation delivery sequence
 

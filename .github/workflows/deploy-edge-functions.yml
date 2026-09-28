@@ -315,13 +315,14 @@ jobs:
           set -euo pipefail
           if [ -z "${FUNCTIONS// }" ]; then
             echo "Deploying every function in supabase/functions/ to $PROJECT_REF"
-            supabase functions deploy --project-ref "$PROJECT_REF"
+            # CLI server-side bundling avoids Docker registry rate limits on CI runners.
+            supabase functions deploy --use-api --project-ref "$PROJECT_REF"
           else
             # Deployed one at a time rather than in one command, so a failure names the function
             # it failed on and the ones before it are already live.
             for fn in $FUNCTIONS; do
               echo "::group::$fn"
-              supabase functions deploy "$fn" --project-ref "$PROJECT_REF"
+              supabase functions deploy "$fn" --use-api --project-ref "$PROJECT_REF"
               echo "::endgroup::"
             done
           fi

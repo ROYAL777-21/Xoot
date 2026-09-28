@@ -99,6 +99,10 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      # The normal test suite includes real-browser startup regressions.
+      - name: Install Chromium for rendered checks
+        run: npx playwright install --with-deps chromium
+
       - name: Run tests
         run: npm run test
 
@@ -116,9 +120,6 @@ jobs:
 
       - name: Scan website build artifact
         run: npm run build:artifact-scan
-
-      - name: Install Chromium for rendered smoke
-        run: npx playwright install --with-deps chromium
 
       - name: Verify the rendered build
         run: npm run ops:smoke:rendered:artifact

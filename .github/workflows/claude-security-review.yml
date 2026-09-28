@@ -89,3 +89,9 @@ jobs:
           # already written the marker.
           run-every-commit: true
           exclude-directories: 'node_modules,dist,build,.claude/skills,ios/Pods,android'
+
+      # The pinned action reports provider errors as warnings and can otherwise pass
+      # with zero findings when no scan ran (observed with exhausted API credits).
+      - name: Require a completed security scan
+        if: steps.guard.outputs.run == 'true'
+        run: node scripts/security/assert-claude-review-result.mjs claudecode-results.json
