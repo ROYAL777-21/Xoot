@@ -57,6 +57,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
+    "test:booking": "tsx --test scripts/native-booking-input.test.mts",
     "config:check": "tsx scripts/validate-env.ts",
     "build:preview:ios": "npx eas-cli@20.5.0 build -p ios --profile preview",
     "build:preview:ios-simulator": "npx eas-cli@20.5.0 build -p ios --profile preview-simulator",

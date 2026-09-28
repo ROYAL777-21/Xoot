@@ -1,6 +1,6 @@
-import { ADD_ON_CENTS, BOOKING_COVER_CENTS, BOOKING_FEE_CENTS, LINEN_ON_SITE_CENTS, basePrice, crewCapFor, crewHours, crewPriceCents } from "./pricing.ts";
+import { ADD_ON_CENTS, BOOKING_COVER_CENTS, BOOKING_FEE_CENTS, LINEN_ON_SITE_CENTS, basePrice, crewCapFor, crewPriceCents } from "./pricing.ts";
 import { checkReferral, referralCreditCents, type ReferralRecord } from "./referrals.ts";
-import { BOOKING_ADD_ONS, BOOKING_FREQUENCIES, BOOKING_HOME_SIZES, BOOKING_LINEN_OPTIONS, BOOKING_PROPERTY_TYPES, BOOKING_SERVICES, type BookingAddOn, type BookingPropertyType, type BookingQuote, type BookingQuoteInput, type BookingService } from "./booking-contract.ts";
+import { BOOKING_ADD_ONS, BOOKING_FREQUENCIES, BOOKING_HOME_SIZES, BOOKING_LINEN_OPTIONS, BOOKING_PROPERTY_TYPES, BOOKING_SERVICES, bookingVisitDurationHours, type BookingAddOn, type BookingPropertyType, type BookingQuote, type BookingQuoteInput, type BookingService } from "./booking-contract.ts";
 
 /** Bump whenever the charge or eligibility rules of this contract change. */
 export const BOOKING_PRICING_VERSION = "booking-zd038-v1";
@@ -103,6 +103,8 @@ export function parseBookingQuoteInput(value: unknown, nowMs: number): BookingQu
   }
   if (actualService === "airbnb" && body.time > "14:00") return reject("time", "Airbnb starts must be between 07:00 and 14:00");
   const [hour, minute] = body.time.split(":").map(Number);
+  const duration = bookingVisitDurationHours({ service, propertyType, hours, crewSize, addOns });
+  if (hour * 60 + minute + duration * 60 > 17 * 60) return reject("time", "Choose a start time that lets this visit finish by 17:00");
   const startMs = Date.UTC(year, month - 1, day, hour - 2, minute);
   if (startMs <= nowMs) return reject("date", "Choose a future booking start in South African time");
 
@@ -188,7 +190,7 @@ export function quoteBooking(input: BookingQuoteInput, facts: BookingQuoteFacts)
   const soloHours = input.hours + input.addOns.length;
   return { contractVersion: 1, pricingVersion: BOOKING_PRICING_VERSION, currency: "ZAR", input,
     requestedService: input.service, service, serviceCorrection: correction,
-    crewSize: input.crewSize, soloHours, estimatedDurationHours: input.crewSize === 1 ? soloHours : crewHours(soloHours, input.crewSize),
+    crewSize: input.crewSize, soloHours, estimatedDurationHours: bookingVisitDurationHours(input),
     lines, baseCents, addOnsCents, highDemandCents, bookingFeeCents, coverCents,
     carePlusDiscountCents, referralDiscountCents, creditUsedCents, totalCents,
     referral: { code: input.referralCode, status: referralStatus },

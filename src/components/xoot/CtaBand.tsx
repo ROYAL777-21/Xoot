@@ -16,7 +16,7 @@ export function CtaBand() {
             <div className="xoot-app-links"><AppAvailability /></div>
           </div>
           <div className="xoot-download-band__actions">
-            <Link className="xoot-action xoot-action--lg" to="/app">Book a clean now <ArrowRight size={19} /></Link>
+            <Link className="xoot-action xoot-action--lg" to="/book">Book a clean now <ArrowRight size={19} /></Link>
             <small>No app needed.</small>
           </div>
         </div>
@@ -25,7 +25,7 @@ export function CtaBand() {
           <h2 id="closing-title">Your home. Handled.</h2>
           <p>Choose a service, confirm your address and continue through the secure booking flow.</p>
           <div className="xoot-closing-panel__actions">
-            <Link className="xoot-action xoot-action--lg" to="/app">Book a clean <ArrowRight size={20} /></Link>
+            <Link className="xoot-action xoot-action--lg" to="/book">Book a clean <ArrowRight size={20} /></Link>
             <button className="xoot-action xoot-action--lg xoot-action--outline" type="button" onClick={() => concierge?.openConcierge()}><MessageCircle size={20} /> Ask Concierge</button>
           </div>
         </div>

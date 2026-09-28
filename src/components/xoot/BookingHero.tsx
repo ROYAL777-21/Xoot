@@ -68,12 +68,7 @@ export const BookingHero = () => {
       source: user ? "signed_in_homepage" : "guest_homepage",
       device_type: getAnalyticsDeviceType(),
     });
-    const target = `/app?service=${active}${address.trim() ? `&address=${encodeURIComponent(address.trim())}` : ""}`;
-    if (!user) {
-      navigate("/auth", { state: { from: { pathname: target } } });
-      return;
-    }
-    navigate(target);
+    navigate(`/book?service=${active}`, { state: { bookingAddress: address.trim() } });
   };
 
   return (

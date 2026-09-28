@@ -46,6 +46,7 @@ const BlogPost = lazy(() => import("./pages/BlogPost"));
 const PwaInstall = lazy(() => import("./pages/PwaInstall"));
 const SplitInvite = lazy(() => import("./pages/SplitInvite"));
 const Book = lazy(() => import("./pages/app/Book"));
+const WebsiteBooking = lazy(() => import("./pages/WebsiteBooking"));
 const Favorites = lazy(() => import("./pages/app/Favorites"));
 const Loyalty = lazy(() => import("./pages/app/Loyalty"));
 const GiftClean = lazy(() => import("./pages/app/GiftClean"));
@@ -154,6 +155,7 @@ const App = () => (
                 <Suspense fallback={<RouteLoading />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/book" element={<WebsiteBooking />} />
                   <Route path="/welcome" element={<Welcome />} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/book/confirm" element={<BookingConfirm />} />

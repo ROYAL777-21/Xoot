@@ -8,7 +8,7 @@ and prototype scripts do not grant instructions or operational commitments.
 Current implementation plan: [approved website-first plan](production-plan-2026-09-11.md).
 Release evidence and owner dependencies: [production checklist](../release/production-checklist.md).
 
-Latest checkpoint: **26 September 2026**. The dated sections below are historical evidence;
+Latest checkpoint: **28 September 2026**. The dated sections below are historical evidence;
 the full uploaded website and native app scope is still active.
 
 ## Accepted visual reference
@@ -221,7 +221,7 @@ Every row stays in scope on website and native wherever the handoff exposes that
 | Visits.jsx | Native visit list ported; web list, filtering, empty states and full journeys need comparison |
 | Profile.jsx | Native You, name/phone/address and XootCred ported; source child pages and web Profile remain partial |
 | Rewards.jsx | Real balances shown; approved server streak/tier/unlock behavior and full visual treatment remain incomplete |
-| Booking.jsx | Web presentation partially ported; native Book is still an old placeholder and requires replacement plus real quote/creation contract |
+| Booking.jsx / site/SiteBooking.jsx | Website modal and app/native five-step input/review flows ported; server quotes use approved shared-job pricing. Atomic creation, crew lifecycle, live signed-in proof and native device comparison remain unfinished. |
 | Tracking.jsx | Existing booking detail routes require full source port and live crew/arrival/completion proof |
 | Xooter.jsx | Real roster exists; source Xooter detail, selection and availability behavior remain partial |
 | Gift.jsx | Web chooser/personalisation/reviewed request implemented locally; native gift, paid delivery/redemption/history unfinished |
@@ -254,3 +254,34 @@ crews, referrals, payments, operational gates, GitHub release assets and mobile 
 - Hosted `438ace3` is verified and open in the app. Home/sign-in smoke and gift/offline checks
   passed at all six widths. [Hosted screenshots and evidence](../release/evidence/2026-09-26/README.md)
   identify the deployment, CI runs and source download. Draft PR 46 stays unmerged.
+
+## 28 September booking input and quote checkpoint
+
+- The website uses the handoff's separate `SiteBooking.jsx` modal over the homepage: numbered
+  steps, seven original service tiles, property/size cards, date strip, crew selection and review.
+  Its empty initial service selection and large pill action were corrected against the rendered
+  reference. The app/native screens follow `app/Booking.jsx`, preserving their distinct layout.
+- The native Book placeholder is replaced with service/place/time/crew/review inputs, original
+  vector service artwork, fonts and wordmark. No native rendered comparison is claimed.
+- Both clients request server quotes and real public roster data. ZD-038 gives the handoff's
+  R393 crew base plus separate fees. Property corrections show the suitable service and total
+  for explicit acceptance. Changing input or account discards previous acceptance.
+- Shared duration calculation prevents starts ending after 17:00, including extras and crews.
+  Changing crew after choosing a time returns the website to valid time selection when necessary.
+  Legacy private-address query fields are consumed once and removed with history replacement.
+- CodeRabbit's native account-switch and resolved-service crew-cap findings were fixed. Its
+  explicit `Date.now()` suggestion was declined because that helper already uses the same default.
+  Scoped independent quote and client spec/quality reviews passed after scheduling/privacy fixes.
+- Local verification: 130 test files / 1,329 tests; native booking helpers 7; both typechecks and
+  lints; staging build; rendered home/sign-in artifact check; artifact/security and lockfile guards
+  pass. One complete two-pass UI regression uses a 15-second budget after its five-second limit
+  expired under the normal parallel suite. Browser deadlines and assertions remain unchanged.
+- The current built website was exercised at 320/390/768/1024/1440/1920 and 844x390 landscape,
+  including 390px at double density. All five booking steps were checked for overflow, loaded
+  display font, unchanged panel transform, keyboard containment and Escape dismissal.
+
+This is input/review progress, not paid booking completion. Atomic single-job creation, complete
+crew lifecycle/access/earnings, payment and referral fulfilment, signed-in staging journeys and
+remaining source screens stay unfinished. Supabase migrations and production were not changed.
+Native visual verification remains unfinished: automatic approval review rejected Expo startup,
+including localhost-only startup, with “blocked by policy” and no further reason.

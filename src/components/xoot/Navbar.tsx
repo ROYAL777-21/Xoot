@@ -22,6 +22,7 @@ const routePrefetchers: Record<string, () => Promise<unknown>> = {
   "/articles": () => import("@/pages/Blog"),
   "/auth": () => import("@/pages/Auth"),
   "/app": () => import("@/pages/app/Book"),
+  "/book": () => import("@/pages/WebsiteBooking"),
 };
 
 const pathFor = (href: string) => href.split("#")[0] || "/";
@@ -30,7 +31,7 @@ export const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user } = useAuth();
-  const ctaTo = user ? "/app" : "/auth";
+  const ctaTo = "/book";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8);

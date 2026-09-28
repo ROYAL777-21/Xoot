@@ -5,13 +5,13 @@ type FooterLink = { label: string; href?: string };
 
 const columns: { title: string; links: FooterLink[] }[] = [
   { title: "Cleaning services", links: [
-    { label: "Regular cleaning", href: "/app/book?service=residential" }, { label: "Airbnb turnovers", href: "/app/book?service=airbnb" },
-    { label: "Office cleaning", href: "/app/book?service=office" }, { label: "Express cleaning", href: "/app/book?service=express" },
-    { label: "Moving cleans", href: "/app/book?service=moving" }, { label: "Laundry & ironing" },
+    { label: "Regular cleaning", href: "/book?service=residential" }, { label: "Airbnb turnovers", href: "/book?service=airbnb" },
+    { label: "Office cleaning", href: "/book?service=office" }, { label: "Express cleaning", href: "/book?service=express" },
+    { label: "Moving cleans", href: "/book?service=moving" }, { label: "Laundry & ironing" },
   ] },
   { title: "Membership & accounts", links: [
     { label: "Care+ membership", href: "/care-plus" }, { label: "Full-time help" },
-    { label: "Pricing", href: "/app/book" }, { label: "Gift a clean", href: "/app/gifts" }, { label: "Refer & earn", href: "/#refer" },
+    { label: "Pricing", href: "/book" }, { label: "Gift a clean", href: "/app/gifts" }, { label: "Refer & earn", href: "/#refer" },
   ] },
   { title: "Join Xoot", links: [
     { label: "Become a Xooter", href: "/xooter/apply" }, { label: "Xooter dashboard", href: "/xooter" },

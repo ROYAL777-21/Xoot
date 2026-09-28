@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **26 September 2026**. This replaces the status claims in `blocker.md`,
+Current register: **28 September 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -41,8 +41,14 @@ they do not prove the whole Supabase chain, concurrent requests or live customer
 
 Do not enable gift checkout: paid delivery, redemption, refunds/reversal and saved-order browsing
 are still incomplete. The website describes an unpaid request and the payment endpoint refuses gifts.
-Native Search/Profile/Rewards/notifications have progressed, but native Book, remaining source screens,
-device checks and distributions are unfinished. See the source coverage matrix in the visual ledger.
+Native Search/Profile/Rewards/notifications and booking input/review have progressed. Remaining source
+screens, booking creation/fulfilment, device checks and distributions are unfinished. See the source
+coverage matrix in the visual ledger.
+
+ZD-038 approves the handoff's shared-job crew price: Airbnb 5.5 hours with two Xooters is R393 base,
+plus the separate R39 fee for a standard customer. The new server quote and clients use this rule.
+Do not connect it to the legacy per-person booking writer. Atomic single-job creation, accepted-quote
+recalculation, retries and complete crew earnings/lifecycle changes remain required before checkout.
 
 ## Release gates
 

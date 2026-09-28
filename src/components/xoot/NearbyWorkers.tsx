@@ -38,7 +38,7 @@ export function NearbyWorkers() {
             <p className="xoot-section-eyebrow xoot-section-eyebrow--sage">Nearby Xooters</p>
             <h2 id="workers-title" className="xoot-section-title">Approved Xooters appear here when they are live in your launch area.</h2>
           </div>
-          <Link className="xoot-action xoot-action--outline" to="/app">View all Xooters</Link>
+          <Link className="xoot-action xoot-action--outline" to="/book">View all Xooters</Link>
         </div>
 
         {state === "loading" && <p className="xoot-nearby__status" role="status">Checking the approved Xooter roster…</p>}
@@ -60,7 +60,7 @@ export function NearbyWorkers() {
                   </div>
                   <span style={{ display: "flex", alignItems: "center", gap: 5, color: "var(--xoot-text-secondary)", fontSize: "var(--xoot-body-sm)" }}>{worker.rating == null ? "Not yet reviewed" : <><Star size={15} fill="var(--xoot-honey-500)" color="var(--xoot-honey-500)" />{Number(worker.rating).toFixed(1)}</>}</span>
                   <p style={{ margin: 0, color: "var(--xoot-text-secondary)", fontSize: "var(--xoot-body-sm)", lineHeight: 1.5 }}><MapPin size={14} style={{ display: "inline", marginRight: 4 }} />{distance ?? worker.suburb_coverage?.slice(0, 2).join(", ") ?? "Coverage on request"}</p>
-                  <Link className="xoot-action" style={{ width: "100%", marginTop: "auto" }} to={`/app/book?xooter=${encodeURIComponent(worker.id)}`}>Book {worker.name.split(" ")[0]}</Link>
+                  <Link className="xoot-action" style={{ width: "100%", marginTop: "auto" }} to={`/book?xooter=${encodeURIComponent(worker.id)}`}>Book {worker.name.split(" ")[0]}</Link>
                 </article>
               );
             })}

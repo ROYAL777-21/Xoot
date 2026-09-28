@@ -1,30 +1,13 @@
-# Preview Deployment Status
+# Preview deployment status
 
-Current public preview:
+Use the [current production checklist](production-checklist.md) for deployment state,
+owner dependencies and the latest reviewed preview evidence. The website is hosted
+on Vercel; the former Netlify static overview is historical, not the current app.
 
-- Netlify site: https://zoot-home-care.netlify.app
-- Netlify project: https://app.netlify.com/projects/zoot-home-care
-- Current Netlify deploy ID: `6a189bd7a6082006e0ca6aed`
-- Status: live static overview preview. It is useful for showing the Xoot/Care+ direction, but it is not the full React app bundle.
+[Stable development preview](https://xoot-git-codex-xoot-production-20260911-royal777-21s-projects.vercel.app/)
+requires Vercel access or a current review link. An immutable deployment URL does not
+receive later branch updates. Verify the rendered page and build commit together.
 
-Verified full-app local preview:
-
-- Local URL during QA: `http://127.0.0.1:4192/`
-- Build source: GitHub Actions artifact `zoot-web-dist` from run `26603831935` on branch `codex/verify-runtime-preview-root-base`.
-- Runtime fixes now on `main`: removed unsafe manual vendor chunking and restored root asset base for hosted SPA routes.
-- Smoke-tested routes: `/`, `/care-plus`, `/auth`, `/app`, `/app/plans`, `/app/properties/airbnb`, `/app/properties/office`, `/zooter/apply`.
-- Expected signed-out behavior: protected routes redirect safely to `/auth` instead of blank-screening.
-
-Deployment blockers observed:
-
-- Netlify MCP upload of the full app artifact repeatedly fails with `TypeError: fetch failed` or `500 Internal Server Error`, including outside sandbox restrictions.
-- Netlify CLI is available locally but not logged in, so direct `netlify deploy --dir ...` cannot be used without a Netlify auth token or browser login.
-- Vercel connector shows the team but no existing projects. The connector only returns CLI instructions; direct Vercel deployment needs project/auth setup.
-- GitHub Pages is not currently serving the app; `https://royal777-21.github.io/zoot-your-local-helpers/` returns 404.
-
-Recommended next step for a full live app preview:
-
-1. Connect the GitHub repository to Netlify/Vercel through the provider dashboard, or provide local CLI authentication.
-2. Set production/preview environment variables for `VITE_SUPABASE_URL`, `VITE_SUPABASE_PROJECT_ID`, and `VITE_SUPABASE_PUBLISHABLE_KEY`.
-3. Deploy from `main` with `npm ci && npm run build` and publish `dist`.
-4. Run the browser route matrix from `docs/release/full-app-preview-verification.md` against the live URL before calling it fully functional.
+The [visual coverage ledger](../implementation/visual-fidelity-ledger.md) tracks every
+uploaded source and unfinished website/native surface. A working preview is not a
+declaration that payments, fulfilment, device testing or production gates are complete.

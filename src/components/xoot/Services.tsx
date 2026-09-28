@@ -38,7 +38,7 @@ export function Services() {
           </article>
         </div>
         <div className="xoot-services__actions">
-          <Link className="xoot-action xoot-action--lg" to="/app">Book a clean</Link>
+          <Link className="xoot-action xoot-action--lg" to="/book">Book a clean</Link>
           <span className="xoot-coming-soon">Find full-time help <small>Coming soon</small></span>
         </div>
       </div>

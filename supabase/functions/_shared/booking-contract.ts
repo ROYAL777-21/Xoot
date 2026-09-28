@@ -76,3 +76,16 @@ export type BookingQuote = {
 };
 
 export type ReviewedBookingQuote = BookingQuote & { fingerprint: string };
+
+export const BOOKING_REGULAR_HOME_HOURS = { small: 4, medium: 5.5, large: 8 } as const;
+
+/** Scheduling only; prices and eligibility remain server-authoritative. */
+export function bookingVisitDurationHours(input: Pick<BookingQuoteInput, "service" | "propertyType" | "hours" | "crewSize" | "addOns">): number {
+  const corrected = input.propertyType === "office" ? "office" : input.propertyType === "airbnb" ? "airbnb" : input.propertyType === "empty" ? "moving" : input.service;
+  const baseHours = corrected === input.service ? input.hours : ({ office: 5, airbnb: 4, moving: 8 } as Record<string, number>)[corrected];
+  const soloHours = baseHours + input.addOns.length;
+  if (input.crewSize === 1) return soloHours;
+  // Same half-hour duration/floor as the approved pricing.crewHours; parity is tested.
+  const overhead = [1, 1.15, 1.25, 1.4][input.crewSize - 1];
+  return Math.max(1.5, Math.round(soloHours * overhead / input.crewSize * 2) / 2);
+}

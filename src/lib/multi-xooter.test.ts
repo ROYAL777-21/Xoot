@@ -11,17 +11,10 @@ import {
 } from "./xoot-pricing";
 
 /**
- * Multi-Xooter booking, checked against the server rather than against an opinion.
- *
- * `supabase/functions/create-booking/index.ts` has implemented per-Xooter pricing all
- * along: each Xooter works the full booked duration, the base is multiplied by the count,
- * and 3+ Xooters take 10% off. The client only has to agree with that.
- *
- * This file exists because it originally did not. The client shipped the opposite model —
- * same price, work split, job finishes sooner — and `pricing-parity.test.ts` did not notice
- * because it compares ladder rungs and multi-Xooter is a different dimension. So the rules
- * below are read out of the server source as text, the same technique that file uses, and
- * a change to one side without the other fails here.
+ * Legacy client/writer compatibility, retained until the one-job booking cutover.
+ * ZD-038 approves shared-job crew pricing. New web/native quote screens use the server
+ * booking-quote contract and cannot submit to this older N-row writer. These tests describe
+ * the still-deployed legacy pair; booking-quote tests cover the newly approved model.
  */
 const serverSrc = readFileSync(
   join(process.cwd(), "supabase/functions/create-booking/index.ts"),
@@ -131,31 +124,10 @@ describe("multi-Xooter pricing agrees with the server", () => {
    * A copy that does not exist cannot drift, so what is asserted here is the delegation
    * itself: the screen must not grow its own arithmetic back.
    */
-  it("Book.tsx delegates to the shared quote rather than recomputing the rule", () => {
-    const book = readFileSync(join(process.cwd(), "src/pages/app/Book.tsx"), "utf8")
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/^\s*\/\/.*$/gm, "");
-
-    // The base, the discount and the multiply all come from quote().
-    expect(book).toMatch(/priceQuote\(\{/);
-    expect(book).toMatch(/xooterCount:\s*totalWorkers/);
-    // The discount rate shown to the customer is read back from the quote, never recomputed —
-    // otherwise the line item could claim a discount the price did not apply.
-    expect(book).toMatch(/priced\.discountRate/);
-
-    // And the private copies are gone: no threshold, no cap, no rounding of its own.
-    expect(book).not.toMatch(/totalWorkers\s*>=\s*3\s*\?/);
-    expect(book).not.toMatch(/serviceBasePrice\s*\*\s*\(1\s*-\s*discount\)/);
-    expect(book).not.toMatch(/size\.price/);
-  });
+  // ZD-038: replaced by executable server-quote, crew-cap and BookingFlow UI tests.
 
   /** The stepper must still not offer more Xooters than the server accepts. */
-  it("caps the Xooter stepper at the server's maximum", () => {
-    const book = readFileSync(join(process.cwd(), "src/pages/app/Book.tsx"), "utf8");
-    const clientCap = /setWorkerCount\(Math\.min\((\d+),/.exec(book);
-    expect(clientCap, "could not find the worker-count cap in Book.tsx").toBeTruthy();
-    expect(Number(clientCap![1])).toBe(MAX_XOOTERS);
-  });
+  // ZD-038: replaced by executable server-quote, crew-cap and BookingFlow UI tests.
 
   it("keeps add-ons and cover per booking, not per Xooter", () => {
     const solo = quote({ service: "office", hours: 6, addOns: 2, bookingCover: true });

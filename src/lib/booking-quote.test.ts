@@ -18,6 +18,13 @@ const parsed = (patch: Partial<BookingQuoteInput> = {}) => parseBookingQuoteInpu
 const quoted = (patch: Partial<BookingQuoteInput> = {}, f: Partial<BookingQuoteFacts> = {}) => quoteBooking(parsed(patch), facts(f));
 
 describe("booking quote contract", () => {
+  it("rejects visits ending after 17:00 including extras, but admits crew-adjusted finish boundaries", () => {
+    expect(() => parsed({ crewSize: 1, time: "12:00" })).toThrow(/17:00/);
+    expect(() => parsed({ crewSize: 1, time: "11:30" })).not.toThrow();
+    expect(() => parsed({ crewSize: 2, time: "14:00" })).not.toThrow();
+    expect(() => parsed({ crewSize: 2, time: "14:00", addOns: ["restock_supplies"] })).toThrow(/17:00/);
+    expect(() => parsed({ service: "express", propertyType: "office", hours: 1, crewSize: 1, linen: null, time: "16:00" })).toThrow(/17:00/);
+  });
   it("uses the approved R393 two-person Airbnb price once, independently of a worker roster", () => {
     const q = quoted();
     expect(q.baseCents).toBe(39300);
@@ -53,12 +60,12 @@ describe("booking quote contract", () => {
   });
 
   it("prices R30 extras, R20 linen, duration, and the legacy high-demand slot", () => {
-    const q = quoted({ hours: 5, crewSize: 1, linen: "wash_dry_repack", addOns: ["restock_supplies"], time: "14:00" });
+    const q = quoted({ hours: 5, crewSize: 1, linen: "wash_dry_repack", addOns: ["restock_supplies"], time: "11:00" });
     expect(q.addOnsCents).toBe(5000);
     expect(q.soloHours).toBe(6);
     expect(q.highDemandCents).toBe(0);
-    const late = quoted({ service: "regular", propertyType: "house", linen: null, hours: 4, time: "16:00", addOns: ["interior_windows"] });
-    expect(late.highDemandCents).toBe(4800);
+    const late = quoted({ service: "express", propertyType: "house", linen: null, hours: 1, crewSize: 1, time: "16:00" });
+    expect(late.highDemandCents).toBe(3300);
     expect(() => parsed({ linen: "wash_dry_repack", hours: 4.5 })).toThrow(/5 hours/i);
     expect(() => parsed({ time: "14:30" })).toThrow(/07:00.*14:00/i);
     expect(() => parsed({ service: "regular", propertyType: "flat", linen: "replace" })).toThrow();
