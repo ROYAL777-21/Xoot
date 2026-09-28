@@ -33,6 +33,33 @@ env:
   VITE_APP_ENV: development
 
 jobs:
+  sql-contracts:
+    name: Execute booking and gift SQL contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install test dependencies
+        run: npm ci --ignore-scripts --no-audit
+
+      # Keep the disposable PostgreSQL runtime outside application dependencies.
+      # A failed install/import fails this job; these checks must never silently skip.
+      - name: Install pinned isolated SQL runtime
+        run: npm install --prefix "$RUNNER_TEMP/xoot-sql-validation" --no-save --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.5.8
+
+      - name: Compare SQL booking quotes with the server contract
+        env:
+          XOOT_PGLITE_MODULE: ${{ runner.temp }}/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js
+        run: npx vitest run --project unit src/lib/booking-quote-sql.test.ts
+
+      - name: Verify gift transaction rollback and access controls
+        run: node scripts/ops/verify-gift-order-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
   test:
     name: Lint, build and unit tests
     runs-on: ubuntu-latest

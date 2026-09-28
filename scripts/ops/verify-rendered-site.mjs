@@ -13,8 +13,9 @@ const option = (name) => {
 const timeout = Number(process.env.XOOT_SMOKE_TIMEOUT_MS ?? 15_000);
 const artifact = option("--artifact");
 const requestedUrl = option("--url");
-// A stable loopback origin is already allowlisted by the backend. A random port
-// produces CORS failures even when the exact same built website works on that origin.
+// Render the actual artifact at its intended origin inside this isolated browser.
+// Production correctly rejects localhost: a build check must not widen that allowlist.
+// Only same-origin website files are intercepted; backend requests remain real.
 const artifactOrigin = new URL(process.env.XOOT_SMOKE_ARTIFACT_ORIGIN || "http://localhost:5173");
 
 if ((artifact && requestedUrl) || (!artifact && !requestedUrl)) {
@@ -34,31 +35,49 @@ const mimeTypes = {
   ".woff2": "font/woff2",
 };
 
-const createArtifactServer = async (directory) => {
-  if (artifactOrigin.protocol !== "http:" || !["localhost", "127.0.0.1"].includes(artifactOrigin.hostname) || artifactOrigin.pathname !== "/" || artifactOrigin.username || artifactOrigin.password || artifactOrigin.search || artifactOrigin.hash) {
-    throw new Error("XOOT_SMOKE_ARTIFACT_ORIGIN must be an HTTP loopback origin without a path, credentials, query or fragment");
+const createArtifactTarget = async (directory) => {
+  const secureOrLoopback = artifactOrigin.protocol === "https:" ||
+    (artifactOrigin.protocol === "http:" && ["localhost", "127.0.0.1"].includes(artifactOrigin.hostname));
+  if (!secureOrLoopback || artifactOrigin.pathname !== "/" || artifactOrigin.username || artifactOrigin.password || artifactOrigin.search || artifactOrigin.hash) {
+    throw new Error("XOOT_SMOKE_ARTIFACT_ORIGIN must be an HTTPS or HTTP loopback origin without a path, credentials, query or fragment");
   }
   const root = resolve(directory);
   const index = resolve(root, "index.html");
   if (!existsSync(index)) throw new Error(`Built artifact is missing ${index}`);
 
-  const server = createServer((request, response) => {
-    const pathname = decodeURIComponent(new URL(request.url ?? "/", "http://artifact.local").pathname);
+  const asset = (url) => {
+    const pathname = decodeURIComponent(new URL(url, artifactOrigin).pathname);
     const requested = resolve(root, `.${pathname}`);
     const insideRoot = requested === root || requested.startsWith(`${root}${sep}`);
     const file = insideRoot && existsSync(requested) && statSync(requested).isFile() ? requested : index;
-    response.statusCode = 200;
-    response.setHeader("content-type", mimeTypes[extname(file)] ?? "application/octet-stream");
-    response.end(readFileSync(file));
-  });
+    return { contentType: mimeTypes[extname(file)] ?? "application/octet-stream", body: readFileSync(file) };
+  };
 
-  await new Promise((resolveListening, reject) => {
-    server.once("error", reject);
-    server.listen(Number(artifactOrigin.port || 80), "127.0.0.1", resolveListening);
-  });
-  const address = server.address();
-  if (!address || typeof address === "string") throw new Error("Artifact server did not bind to a TCP port");
-  return { server, url: artifactOrigin.href };
+  // A real loopback document preserves Chromium's local-network boundary when a
+  // development artifact uses a local backend. HTTPS deployment checks below only
+  // substitute the website origin; all external backend traffic stays untouched.
+  if (artifactOrigin.protocol === "http:") {
+    const server = createServer((request, response) => {
+      const file = asset(request.url ?? "/");
+      response.writeHead(200, { "Content-Type": file.contentType });
+      response.end(file.body);
+    });
+    await new Promise((resolveListening, reject) => {
+      server.once("error", reject);
+      server.listen(Number(artifactOrigin.port || 80), "127.0.0.1", resolveListening);
+    });
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("Artifact server did not bind to a TCP port");
+    const url = new URL(artifactOrigin);
+    url.port = String(address.port);
+    return { server, url: url.href };
+  }
+  return {
+    url: artifactOrigin.href,
+    install: (context) => context.route((url) => url.origin === artifactOrigin.origin, async (route) => {
+      await route.fulfill({ status: 200, ...asset(route.request().url()) });
+    }),
+  };
 };
 
 const sameLocation = (actual, expected) => {
@@ -68,15 +87,17 @@ const sameLocation = (actual, expected) => {
   return actualUrl.origin === expectedUrl.origin && cleanPath(actualUrl.pathname) === cleanPath(expectedUrl.pathname);
 };
 
-let artifactServer;
 let browser;
+let artifactServer;
+const runtimeProblems = [];
 
 try {
-  const target = artifact ? await createArtifactServer(artifact) : { url: new URL(requestedUrl).href };
+  const target = artifact ? await createArtifactTarget(artifact) : { url: new URL(requestedUrl).href };
   artifactServer = target.server;
   browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-  const runtimeProblems = [];
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: "block" });
+  await target.install?.(context);
+  const page = await context.newPage();
   page.on("pageerror", (error) => runtimeProblems.push(`page error: ${error.message}`));
   page.on("console", (message) => {
     const text = message.text();
@@ -100,20 +121,42 @@ try {
 
   const signIn = page.getByRole("link", { name: /^Sign in$/i }).first();
   await signIn.waitFor({ state: "visible", timeout });
+  const authUrl = new URL("/auth", target.url).href;
   await Promise.all([
-    page.waitForURL((url) => url.pathname === "/auth", { timeout }),
+    page.waitForURL((url) => sameLocation(url.href, authUrl), { timeout }),
     signIn.click(),
   ]);
 
-  if (new URL(page.url()).pathname !== "/auth") throw new Error(`Sign-in navigation reached ${page.url()}`);
+  if (!sameLocation(page.url(), authUrl)) throw new Error(`Sign-in navigation reached ${page.url()}`);
+  let authControl = "email field";
   try {
     await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
+    authControl = "email-code action";
     await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
+  } catch {
+    throw new Error(`Auth navigation did not return a successful response with usable sign-in controls at /auth (missing ${authControl})`);
+  }
+
+  // Client-side routing can render a working form while the host returns 404 for
+  // a direct visit. Reload to prove the deployed host also serves the auth route.
+  const authResponse = await page.reload({ waitUntil: "domcontentloaded", timeout });
+  if (!authResponse || !authResponse.ok()) {
+    throw new Error(`Auth navigation did not return a successful response (${authResponse?.status() ?? "no response"})`);
+  }
+  if (!sameLocation(page.url(), authUrl)) throw new Error(`Auth deep link reached ${page.url()} instead of ${authUrl}`);
+  authControl = "email field after reload";
+  try {
+    await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
+    authControl = "email-code action after reload";
+    await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
+    authControl = "password-mode action";
     await page.getByRole("button", { name: /^Use your password instead$/i }).click();
+    authControl = "password field";
     await page.getByLabel("Password", { exact: true }).waitFor({ state: "visible", timeout });
+    authControl = "password submit action";
     await page.getByRole("button", { name: /^Continue$/i }).waitFor({ state: "visible", timeout });
   } catch {
-    throw new Error("Auth navigation did not return a successful response with usable sign-in controls at /auth");
+    throw new Error(`Auth navigation did not return a successful response with usable sign-in controls at /auth (missing ${authControl})`);
   }
 
   await page.waitForTimeout(100);
@@ -121,7 +164,9 @@ try {
 
   console.log(`Rendered site smoke passed for ${target.url}: homepage content, sign-in navigation, controls, and runtime state verified.`);
 } catch (error) {
-  console.error(`Rendered site smoke failed: ${error instanceof Error ? error.message : String(error)}`);
+  const message = error instanceof Error ? error.message : String(error);
+  const detail = runtimeProblems.length && !message.includes(runtimeProblems[0]) ? `\n${runtimeProblems[0]}` : "";
+  console.error(`Rendered site smoke failed: ${message}${detail}`);
   process.exitCode = 1;
 } finally {
   await browser?.close();

@@ -35,6 +35,22 @@ The 28 September production schema check is red for pending gift/referral change
 differences. The Claude security action did not run its scan because the Anthropic API credit balance
 was too low; its nominal success is not review evidence. A result guard now exposes that failure.
 
+The staging quote endpoint was delivered through Supabase CLI server-side bundling in run
+`36385184482`; readback shows ACTIVE v1 with JWT verification, a successful stable-preview
+preflight, and denial of unsigned requests. Signed-in quote/creation/payment proof remains open.
+The latest published Web build passes its tests/build/scans but fails its rendered check because
+its local artifact origin is not permitted by the production backend. The correction uses the
+configured public origin for isolated artifact rendering and passes locally with real backend
+requests; its next CI run remains required. Production CORS has not been loosened. Hosted home
+and sign-in on `3ec45f0` pass with a fresh protected-preview link, including a direct auth reload.
+Eight browser regressions cover the previous configuration failure and broken auth deep links.
+
+The private SQL quote calculator passes eight checks, including 1,332 complete quote comparisons
+against the shared server engine, plus scoped CodeRabbit and Codex Security reviews with zero
+findings. A required CI job executes booking SQL and gift rollback/access checks. Database
+delivery, atomic booking creation, concurrent benefit spending, crew fulfilment and payment
+verification remain open; reviewed calculation alone does not enable checkout.
+
 ### Current implementation delivery sequence
 
 The reviewed gift-request slice requires `20260920200000_gift_order_contract.sql` **before**
@@ -53,6 +69,13 @@ ZD-038 approves the handoff's shared-job crew price: Airbnb 5.5 hours with two X
 plus the separate R39 fee for a standard customer. The new server quote and clients use this rule.
 Do not connect it to the legacy per-person booking writer. Atomic single-job creation, accepted-quote
 recalculation, retries and complete crew earnings/lifecycle changes remain required before checkout.
+
+The additive private SQL calculator `20260928003000_booking_quote_calculator.sql` is prepared
+locally and not deployed. Eight executable checks cover 1,332 complete SQL/server quote pairs,
+67 invalid cases, caller grants and read-only behavior; a planted R684 regression is detected.
+The calculator does not itself authenticate, lock account facts, reserve workers or create a booking.
+The forthcoming transaction must enforce those boundaries. A separate required CI job is being
+added so SQL execution cannot be mistaken for an ordinary-suite skip.
 
 ## Release gates
 

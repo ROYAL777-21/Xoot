@@ -1,0 +1,14 @@
+{
+  "build": {
+    "commit": "3ec45f0498a55b8dc7b9b82ac5c8c14499ef2dd4",
+    "builtAt": "2026-09-28T06:11:26.442Z",
+    "pricingRule": "ZD-026",
+    "bookingFeeCents": 3900
+  },
+  "checked": [
+    "hosted home",
+    "hosted email-code sign-in"
+  ],
+  "faults": [],
+  "source": "actual hosted page, fresh anonymous browser; no API writes"
+}
