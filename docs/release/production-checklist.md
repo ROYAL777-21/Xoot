@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **28 September 2026**. This replaces the status claims in `blocker.md`,
+Current register: **29 September 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -38,18 +38,27 @@ was too low; its nominal success is not review evidence. A result guard now expo
 The staging quote endpoint was delivered through Supabase CLI server-side bundling in run
 `36385184482`; readback shows ACTIVE v1 with JWT verification, a successful stable-preview
 preflight, and denial of unsigned requests. Signed-in quote/creation/payment proof remains open.
-The latest published Web build passes its tests/build/scans but fails its rendered check because
-its local artifact origin is not permitted by the production backend. The correction uses the
-configured public origin for isolated artifact rendering and passes locally with real backend
-requests; its next CI run remains required. Production CORS has not been loosened. Hosted home
+The earlier Web build's local artifact origin was not permitted by the production backend.
+The correction uses the configured public origin for isolated artifact rendering and passes
+locally with real backend requests. Run `36452446984` instead stopped at the existing unsafe-DOM
+scan because of test fixture markup; the fixture now uses DOM creation, and the scanner plus all
+eight browser tests pass locally. The next Web build remains required. Production CORS has not
+been loosened. Hosted home
 and sign-in on `3ec45f0` pass with a fresh protected-preview link, including a direct auth reload.
 Eight browser regressions cover the previous configuration failure and broken auth deep links.
 
 The private SQL quote calculator passes eight checks, including 1,332 complete quote comparisons
 against the shared server engine, plus scoped CodeRabbit and Codex Security reviews with zero
-findings. A required CI job executes booking SQL and gift rollback/access checks. Database
+findings. The required booking SQL and gift rollback/access job passed in run `36452447053`,
+alongside the ordinary suite (132 files / 1,342 passing tests). Database
 delivery, atomic booking creation, concurrent benefit spending, crew fulfilment and payment
 verification remain open; reviewed calculation alone does not enable checkout.
+
+The creation request parser binds the accepted quote, confirmed service, crew roster, address,
+instructions and property IDs; 27 focused checks pass. It preserves old-attempt parsing for
+idempotent replay and rejects inconsistent referral discounts. It is not connected to an enabled
+writer. A local two-session PostgreSQL test reproduced overspending in the existing debit trigger
+(two R70 debits against R100 both committed); the account-lock correction is under implementation.
 
 ### Current implementation delivery sequence
 

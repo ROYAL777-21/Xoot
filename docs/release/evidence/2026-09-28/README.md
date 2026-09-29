@@ -46,18 +46,23 @@ into local drafts; no booking, payment or customer record was created by these s
   backend CORS rejection from its local artifact origin. The corrected check renders the actual
   artifact at its configured public origin in an isolated browser, leaving external backend traffic
   real. That production-configured artifact passes locally without broadening production CORS.
-  The required CI job must still pass after this correction is pushed.
+  The follow-up [Web build](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/36452446984)
+  stopped at the existing unsafe-DOM scan on static test-fixture markup. The fixture now uses DOM
+  creation and passes both the unchanged scanner and all eight browser tests locally; its next
+  CI build remains required.
 - Hosted home/sign-in now pass on `3ec45f0`, including a direct `/auth` reload, email-code controls
   and password mode. The earlier hosted failure was an expired preview share link redirecting to
   Vercel login. [Fresh capture metadata](hosted-startup.json) and the [390px sign-in screenshot](website-signin-390.png)
-  record the current deployment. No login or customer data was submitted.
+  record that deployment. No login or customer data was submitted.
 - Eight browser regression tests pass. A new client-side navigation fixture first reproduced a
   false pass when the host returned 404 for direct `/auth`; explicit reload/status/control checks
   now reject it. Scoped source review, lint and website type checking pass.
 - Private SQL calculator `3caef43a` passes eight checks including 1,332 complete SQL/TypeScript
   quote comparisons, malformed input and access controls. CodeRabbit and the immutable Codex
   Security diff review completed with zero findings for its two-file scope. This does not replace
-  whole-release review. Booking SQL and gift rollback/access checks now have a required CI job;
+  whole-release review. The required booking SQL and gift rollback/access job
+  [passed at 067f44e](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/36452447053),
+  alongside 132 files / 1,342 passing tests in the ordinary suite;
   neither the calculator nor the new booking writer has been deployed to a database.
 - [Production schema check](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/36384483558)
   is correctly red: pending gift contract/referral structures are absent, with additional generated

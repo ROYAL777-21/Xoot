@@ -9,6 +9,24 @@ const verifier = join(process.cwd(), "scripts", "ops", "verify-rendered-site.mjs
 const servers: ReturnType<typeof createServer>[] = [];
 const artifacts: string[] = [];
 const authPage = '<main><h1>Welcome back</h1><label>Your email<input type="email"></label><button>Send one-time code</button><button onclick="document.getElementById(\'password-form\').hidden=false">Use your password instead</button><div id="password-form" hidden><label>Password<input type="password"></label><button type="submit">Continue</button></div></main>';
+// Browser fixture uses ordinary DOM creation, subject to the same unsafe-DOM
+// scan as application code. No sanitizer exception is needed for these tests.
+const renderAuthScript = `function renderAuth() {
+  const main = document.createElement('main');
+  const heading = document.createElement('h1'); heading.textContent = 'Welcome back';
+  const emailLabel = document.createElement('label'); emailLabel.textContent = 'Your email';
+  const email = document.createElement('input'); email.type = 'email'; emailLabel.append(email);
+  const send = document.createElement('button'); send.textContent = 'Send one-time code';
+  const toggle = document.createElement('button'); toggle.textContent = 'Use your password instead';
+  const passwordForm = document.createElement('div'); passwordForm.hidden = true;
+  const passwordLabel = document.createElement('label'); passwordLabel.textContent = 'Password';
+  const password = document.createElement('input'); password.type = 'password'; passwordLabel.append(password);
+  const submit = document.createElement('button'); submit.type = 'submit'; submit.textContent = 'Continue';
+  passwordForm.append(passwordLabel, submit);
+  toggle.addEventListener('click', () => { passwordForm.hidden = false; });
+  main.append(heading, emailLabel, send, toggle, passwordForm);
+  document.body.replaceChildren(main);
+}`;
 
 afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => new Promise<void>((resolve) => server.close(() => resolve()))));
@@ -106,9 +124,10 @@ describe("rendered site smoke", () => {
 
   it("rejects a broken auth deep link even when client-side navigation renders the form", async () => {
     const home = `<h1>Premium home care, built on trust</h1><a href="/auth">Sign in</a><script>
+      ${renderAuthScript}
       document.querySelector('a').addEventListener('click', event => {
         event.preventDefault(); history.pushState({}, '', '/auth');
-        document.body.innerHTML = ${JSON.stringify(authPage)};
+        renderAuth();
       });
     </script>`;
     const url = await serve({ "/": home, "/auth": { body: "missing", status: 404 } });
@@ -135,7 +154,8 @@ describe("rendered site smoke", () => {
     const address = api.address();
     if (!address || typeof address === "string") throw new Error("API did not bind");
     const directory = makeArtifact(`<body><script>
-      if (location.pathname === '/auth') document.body.innerHTML = ${JSON.stringify(authPage)};
+      ${renderAuthScript}
+      if (location.pathname === '/auth') renderAuth();
       else fetch('http://127.0.0.1:${address.port}/').then(response => response.json()).then(data => {
         const heading = document.createElement('h1'); heading.textContent = data.heading;
         document.body.append(heading);
@@ -153,10 +173,15 @@ describe("rendered site smoke", () => {
 
   it("loads only the built website files at an HTTPS public origin, including the auth route", async () => {
     const origin = "https://artifact.xoot.test";
-    const home = '<h1>Premium home care, built on trust</h1><a href="/auth">Sign in</a>';
     const directory = makeArtifact(`<body><script>
+      ${renderAuthScript}
       if (location.origin !== ${JSON.stringify(origin)}) throw new Error('Wrong artifact origin');
-      document.body.innerHTML = location.pathname === '/auth' ? ${JSON.stringify(authPage)} : ${JSON.stringify(home)};
+      if (location.pathname === '/auth') renderAuth();
+      else {
+        const heading = document.createElement('h1'); heading.textContent = 'Premium home care, built on trust';
+        const link = document.createElement('a'); link.href = '/auth'; link.textContent = 'Sign in';
+        document.body.append(heading, link);
+      }
     </script></body>`);
     const result = await runVerifier(["--artifact", directory], { XOOT_SMOKE_ARTIFACT_ORIGIN: origin });
     expect(result.code, result.output).toBe(0);
