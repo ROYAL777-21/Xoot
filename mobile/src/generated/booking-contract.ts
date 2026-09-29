@@ -81,6 +81,32 @@ export type BookingQuote = {
 
 export type ReviewedBookingQuote = BookingQuote & { fingerprint: string };
 
+/** A claimed acceptance of one visit. The server must reprice under locks before writing. */
+export type BookingCreationDetails = {
+  selectedXooterIds: string[];
+  householdProfileId: string | null;
+  propertyAccountId: string | null;
+  address: string;
+  instructions: string;
+};
+
+export type CreateReviewedBookingInput = {
+  contractVersion: 1;
+  requestKey: string;
+  input: BookingQuoteInput;
+  acceptedQuote: ReviewedBookingQuote;
+  confirmedService: BookingService;
+  booking: BookingCreationDetails;
+};
+
+export type CreateReviewedBookingOutcome =
+  | { status: "created" | "replayed"; bookingId: string; paymentRecordId: string; bookingStatus: "draft"; acceptedQuote: ReviewedBookingQuote }
+  | { status: "quote_changed"; quote: ReviewedBookingQuote }
+  | { status: "request_key_reused" }
+  | { status: "assignment_unavailable" }
+  | { status: "booking_submission_unavailable" }
+  | { status: "unsupported_booking_contract" };
+
 export const BOOKING_REGULAR_HOME_HOURS = { small: 4, medium: 5.5, large: 8 } as const;
 
 /** Scheduling only; prices and eligibility remain server-authoritative. */
