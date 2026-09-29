@@ -90,6 +90,11 @@ const sameLocation = (actual, expected) => {
 let browser;
 let artifactServer;
 const runtimeProblems = [];
+const resourceProblems = new Set();
+const safeResourceUrl = (value) => {
+  const url = new URL(value);
+  return ["http:", "https:"].includes(url.protocol) ? `${url.origin}${url.pathname}` : url.protocol;
+};
 
 try {
   const target = artifact ? await createArtifactTarget(artifact) : { url: new URL(requestedUrl).href };
@@ -98,6 +103,14 @@ try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: "block" });
   await target.install?.(context);
   const page = await context.newPage();
+  page.on("response", (resource) => {
+    if (resource.status() >= 400) {
+      resourceProblems.add(`HTTP ${resource.status()} ${resource.request().method()} ${safeResourceUrl(resource.url())}`);
+    }
+  });
+  page.on("requestfailed", (request) => {
+    resourceProblems.add(`Failed ${request.method()} ${safeResourceUrl(request.url())}: ${request.failure()?.errorText ?? "request failure"}`);
+  });
   page.on("pageerror", (error) => runtimeProblems.push(`page error: ${error.message}`));
   page.on("console", (message) => {
     const text = message.text();
@@ -166,7 +179,8 @@ try {
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   const detail = runtimeProblems.length && !message.includes(runtimeProblems[0]) ? `\n${runtimeProblems[0]}` : "";
-  console.error(`Rendered site smoke failed: ${message}${detail}`);
+  const resources = [...resourceProblems].slice(0, 5).map((problem) => `\n${problem}`).join("");
+  console.error(`Rendered site smoke failed: ${message}${detail}${resources}`);
   process.exitCode = 1;
 } finally {
   await browser?.close();

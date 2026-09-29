@@ -188,6 +188,17 @@ describe("rendered site smoke", () => {
     expect(result.output).toContain(origin);
   }, 30_000);
 
+  it("identifies failed resources without disclosing their query parameters", async () => {
+    const url = await serve({
+      "/": '<h1>Premium home care, built on trust</h1><a href="/auth">Sign in</a><img alt="" src="/missing-image?access=synthetic-private-query">',
+      "/auth": authPage,
+    });
+    const result = await runVerifier(["--url", url]);
+    expect(result.code, result.output).not.toBe(0);
+    expect(result.output).toContain(`HTTP 404 GET ${new URL(url).origin}/missing-image`);
+    expect(result.output).not.toContain("synthetic-private-query");
+  }, 30_000);
+
   it("gates local verification, CI artifacts, and the matched live deployment", () => {
     const packageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")) as {
       scripts: Record<string, string>;
