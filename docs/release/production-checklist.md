@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **29 September 2026**. This replaces the status claims in `blocker.md`,
+Current register: **30 September 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -12,7 +12,7 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
 | Website hosting | On 11 September, `xoot.co.za` served Vercel headers and build commit `02bb284`. | Domain resolves. Do not import the old GoDaddy zone export. |
-| Rendered startup | Staging artifact and hosted commit `438ace3` render home/sign-in, checked 26 September after dependency updates. | Staging repair verified. Production still serves the old release and requires launch gates. |
+| Rendered startup | Hosted commit `105b926` renders home/sign-in at 1440 and 390 pixels on 30 September, without page errors or horizontal overflow. | Staging repair verified. Production still requires launch gates; this is not a production promotion. |
 | Vercel access | Connector lists project `xoot`, `prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`, on 12 September. Team plan is Hobby. | Preview configuration possible; commercial hosting plan required for paid launch. |
 | Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
 | Staging schema | Read-only query on 21 September: 82 versions, latest `20260903120000`; gift RPC absent. | New `20260920200000_gift_order_contract.sql` not deployed. |
@@ -40,12 +40,13 @@ The staging quote endpoint was delivered through Supabase CLI server-side bundli
 preflight, and denial of unsigned requests. Signed-in quote/creation/payment proof remains open.
 The earlier Web build's local artifact origin was not permitted by the production backend.
 The correction uses the configured public origin for isolated artifact rendering and passes
-locally with real backend requests. Run `36452446984` instead stopped at the existing unsafe-DOM
-scan because of test fixture markup; the fixture now uses DOM creation, and the scanner plus all
-eight browser tests pass locally. The next Web build remains required. Production CORS has not
-been loosened. Hosted home
-and sign-in on `3ec45f0` pass with a fresh protected-preview link, including a direct auth reload.
-Eight browser regressions cover the previous configuration failure and broken auth deep links.
+locally with real backend requests. The unsafe-DOM fixture failure in run `36452446984` was
+corrected with DOM creation. Web build `36528691982` then reached browser verification and
+failed on a resource 404, whose path was not reported. Commit `04f309d` adds URL-path diagnostics
+without query values; all nine browser regressions and scoped lint pass locally. The next CI
+result must identify and resolve the resource failure. Production CORS has not been loosened.
+Hosted home and direct sign-in on `105b926` render at both checked widths on 30 September;
+that observation does not replace the failing production-configured CI artifact check.
 
 The private SQL quote calculator passes eight checks, including 1,332 complete quote comparisons
 against the shared server engine, plus scoped CodeRabbit and Codex Security reviews with zero
@@ -57,8 +58,12 @@ verification remain open; reviewed calculation alone does not enable checkout.
 The creation request parser binds the accepted quote, confirmed service, crew roster, address,
 instructions and property IDs; 27 focused checks pass. It preserves old-attempt parsing for
 idempotent replay and rejects inconsistent referral discounts. It is not connected to an enabled
-writer. A local two-session PostgreSQL test reproduced overspending in the existing debit trigger
-(two R70 debits against R100 both committed); the account-lock correction is under implementation.
+writer. The reviewed account-guard foundation corrects the reproduced debit race (two R70 debits
+against R100 previously both committed). A real PostgreSQL 17.11 run passes 39 scenarios, including
+20 observed database blocking barriers, expiry while waiting, bulk rollback and role permissions.
+The fixture is synthetic and bounded; required PostgreSQL 17.6/17.11 CI, full Supabase migration
+preflight and complete transaction integration remain separate gates. This migration is not deployed
+and does not enable bookings, benefits or payments.
 
 ### Current implementation delivery sequence
 

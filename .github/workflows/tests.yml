@@ -33,6 +33,43 @@ env:
   VITE_APP_ENV: development
 
 jobs:
+  benefit-concurrency:
+    name: Booking benefit transactions (PostgreSQL ${{ matrix.postgres }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres: ["17.6", "17.11"]
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}
+        env:
+          # Disposable runner-only database. Never use application credentials here.
+          POSTGRES_PASSWORD: xoot-disposable-test
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Install isolated PostgreSQL test driver
+        run: npm install --prefix "$RUNNER_TEMP/xoot-pg-test" --no-save --ignore-scripts --no-audit --no-fund pg@8.16.3
+      - name: Prove concurrent benefit writes and permissions
+        env:
+          XOOT_PG_TEST_INTENT: booking-benefit-locks
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-pg-test/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-disposable-test
+        run: node scripts/ops/test-booking-benefit-locks.mjs
+
   sql-contracts:
     name: Execute booking and gift SQL contracts
     runs-on: ubuntu-latest
