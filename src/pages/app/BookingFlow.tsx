@@ -62,6 +62,11 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     if (draft.service === "regular") draft.hours = 5.5;
     const date = params.get("date");
     if (validDate(date) && date >= bookingDateInSast()) draft.date = date;
+    const frequency = params.get("frequency");
+    if (frequency === "weekly" || frequency === "fortnightly") {
+      draft.frequency = frequency;
+      draft.repeatDays = [bookingWeekday(draft.date)];
+    }
     return draft;
   });
   const [bedrooms, setBedrooms] = useState(2);

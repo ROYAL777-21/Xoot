@@ -3,6 +3,7 @@ import { OMNIBOX_DESTINATION_IDS, matchOmnibox } from "./omnibox-match";
 
 describe("omnibox matching", () => {
   it("finds the obvious pages by their own names", () => {
+    expect(matchOmnibox("book a clean")[0].to).toBe("/app/book");
     expect(matchOmnibox("bookings")[0].to).toBe("/app/bookings");
     expect(matchOmnibox("care+")[0].to).toBe("/app/plans");
     expect(matchOmnibox("support")[0].to).toBe("/app/support");

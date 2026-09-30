@@ -39,7 +39,7 @@ type Destination = {
  * American spellings both appear because the app is South African and both are in daily use.
  */
 const DESTINATIONS: Destination[] = [
-  { id: "book", label: "Book a clean", to: "/app", hint: "Start a new booking", keywords: ["book", "new", "clean", "cleaning", "order", "schedule"] },
+  { id: "book", label: "Book a clean", to: "/app/book", hint: "Start a new booking", keywords: ["book", "new", "clean", "cleaning", "order", "schedule"] },
   { id: "bookings", label: "Bookings", to: "/app/bookings", hint: "Your upcoming and past cleans", keywords: ["booking", "upcoming", "history", "past", "appointment"] },
   { id: "plans", label: "Care+", to: "/app/plans", hint: "Membership and plans", keywords: ["care", "care+", "careplus", "membership", "plan", "subscription"] },
   { id: "properties", label: "Properties", to: "/app/properties", hint: "Airbnb, offices and managed properties", keywords: ["property", "properties", "airbnb", "office", "landlord", "manager", "estate"] },

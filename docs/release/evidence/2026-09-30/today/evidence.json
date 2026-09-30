@@ -1,0 +1,389 @@
+{
+  "capturedAt": "2026-09-30T18:14:25.738Z",
+  "scope": "Actual Today/AppShell and search/notification components; synthetic test account only. Destination routes are stubs, not fulfilment proof. No native runtime.",
+  "browserPath": "Browser plugin not available (browser skill/runtime absent); existing Playwright used.",
+  "checks": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "mode": "returning",
+      "filename": "implemented-returning-320x844.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=returning",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 20,
+        "y": 398.03125,
+        "width": 150,
+        "height": 153.75,
+        "top": 398.03125,
+        "right": 170,
+        "bottom": 551.78125,
+        "left": 20
+      }
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "mode": "new",
+      "filename": "implemented-new-320x844.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=new",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 20,
+        "y": 742.125,
+        "width": 150,
+        "height": 153.75,
+        "top": 742.125,
+        "right": 170,
+        "bottom": 895.875,
+        "left": 20
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mode": "returning",
+      "filename": "implemented-returning-390x844.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=returning",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 20,
+        "y": 331.53125,
+        "width": 150,
+        "height": 153.75,
+        "top": 331.53125,
+        "right": 170,
+        "bottom": 485.28125,
+        "left": 20
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mode": "new",
+      "filename": "implemented-new-390x844.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=new",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 20,
+        "y": 521.328125,
+        "width": 150,
+        "height": 153.75,
+        "top": 521.328125,
+        "right": 170,
+        "bottom": 675.078125,
+        "left": 20
+      }
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "mode": "returning",
+      "filename": "implemented-returning-768x844.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=returning",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 24,
+        "y": 331.53125,
+        "width": 150,
+        "height": 153.75,
+        "top": 331.53125,
+        "right": 174,
+        "bottom": 485.28125,
+        "left": 24
+      }
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "mode": "new",
+      "filename": "implemented-new-768x844.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=new",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 24,
+        "y": 501.828125,
+        "width": 150,
+        "height": 153.75,
+        "top": 501.828125,
+        "right": 174,
+        "bottom": 655.578125,
+        "left": 24
+      }
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "mode": "returning",
+      "filename": "implemented-returning-1024x844.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=returning",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 152,
+        "y": 331.53125,
+        "width": 150,
+        "height": 153.75,
+        "top": 331.53125,
+        "right": 302,
+        "bottom": 485.28125,
+        "left": 152
+      }
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "mode": "new",
+      "filename": "implemented-new-1024x844.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=new",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 152,
+        "y": 501.828125,
+        "width": 150,
+        "height": 153.75,
+        "top": 501.828125,
+        "right": 302,
+        "bottom": 655.578125,
+        "left": 152
+      }
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "mode": "returning",
+      "filename": "implemented-returning-1440x1000.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=returning",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 360,
+        "y": 331.53125,
+        "width": 150,
+        "height": 153.75,
+        "top": 331.53125,
+        "right": 510,
+        "bottom": 485.28125,
+        "left": 360
+      }
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "mode": "new",
+      "filename": "implemented-new-1440x1000.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=new",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 360,
+        "y": 501.828125,
+        "width": 150,
+        "height": 153.75,
+        "top": 501.828125,
+        "right": 510,
+        "bottom": 655.578125,
+        "left": 360
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "mode": "returning",
+      "filename": "implemented-returning-1920x1080.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=returning",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 600,
+        "y": 331.53125,
+        "width": 150,
+        "height": 153.75,
+        "top": 331.53125,
+        "right": 750,
+        "bottom": 485.28125,
+        "left": 600
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "mode": "new",
+      "filename": "implemented-new-1920x1080.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=new",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 600,
+        "y": 501.828125,
+        "width": 150,
+        "height": 153.75,
+        "top": 501.828125,
+        "right": 750,
+        "bottom": 655.578125,
+        "left": 600
+      }
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "mode": "returning",
+      "filename": "implemented-returning-844x390.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=returning",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 62,
+        "y": 331.53125,
+        "width": 150,
+        "height": 153.75,
+        "top": 331.53125,
+        "right": 212,
+        "bottom": 485.28125,
+        "left": 62
+      }
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "mode": "new",
+      "filename": "implemented-new-844x390.png",
+      "url": "http://127.0.0.1:5187/__checks/today?mode=new",
+      "title": "Implemented Today - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "headingTransform": "none",
+      "dockTransform": "none",
+      "overlay": false,
+      "widget": {
+        "x": 62,
+        "y": 501.828125,
+        "width": 150,
+        "height": 153.75,
+        "top": 501.828125,
+        "right": 212,
+        "bottom": 655.578125,
+        "left": 62
+      }
+    },
+    {
+      "reference": true,
+      "errors": []
+    }
+  ]
+}

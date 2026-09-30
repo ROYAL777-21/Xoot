@@ -107,7 +107,8 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
     if (entry.name === "node_modules" || entry.name === "generated") continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory()) sourceFiles(full, out);
-    else if (/\.(ts|tsx)$/.test(entry.name) && !entry.name.endsWith(".test.ts")) out.push(full);
+    // Negative test fixtures deliberately contain values production writers must reject.
+    else if (/\.(ts|tsx)$/.test(entry.name) && !/\.(test|spec)\.tsx?$/.test(entry.name)) out.push(full);
   }
   return out;
 }
@@ -127,6 +128,14 @@ const AMBIGUOUS = new Set([
 
 describe("every literal a writer sends is a value its column allows", () => {
   const allowed = loadAllowed();
+
+  it("scans shipped TSX writers while excluding their negative test fixtures", () => {
+    const files = sourceFiles(join(root, "src/pages/app"));
+    expect(files).toContain(join(root, "src/pages/app/Bookings.tsx"));
+    expect(files).toContain(join(root, "src/pages/app/BookingFlow.tsx"));
+    expect(files).not.toContain(join(root, "src/pages/app/Bookings.test.tsx"));
+    expect(sourceFiles(join(root, "src/lib"))).not.toContain(join(root, "src/lib/constraint-writer-parity.test.ts"));
+  });
 
   it("parses a meaningful number of constraints", () => {
     // A parser that silently matches nothing passes every assertion below while checking none —

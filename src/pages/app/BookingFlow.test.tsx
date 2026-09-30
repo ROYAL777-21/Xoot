@@ -45,6 +45,14 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("handoff booking review (isolated UI fixtures)", () => {
+  it("takes the Today weekly suggestion into real frequency inputs without scheduling a visit", async () => {
+    mount("/app/book?service=regular&frequency=weekly&address=14%20Example%20Street%2C%20Sandton");
+    next(); next();
+    expect(screen.getByRole("button", { name: "Once a week" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("The reviewed price is per visit. Future visits need availability confirmation.")).toBeInTheDocument();
+    expect(harness.invoke).not.toHaveBeenCalled();
+    await act(async () => {});
+  });
   it("keeps the selected home's duration when returning to regular cleaning", async () => {
     mount();
     fireEvent.click(screen.getByRole("button", { name: /Express cleaning/ }));

@@ -1,122 +1,46 @@
-import { ReactNode, useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { Calendar, Crown, Gift, Heart, Home, LifeBuoy, LogOut, ShieldCheck, User, Building2 } from "lucide-react";
+import { ReactNode } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, Calendar, CircleUserRound, House, ListChecks, Trophy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { ConciergeOmnibox } from "@/components/xoot/ConciergeOmnibox";
 import { haptic } from "@/lib/haptics";
-import { Logo } from "@/components/kit/Logo";
+import "@/styles/today-handoff.css";
 
-const nav = [
-  { to: "/app", label: "Book", icon: Home, end: true },
-  { to: "/app/bookings", label: "Bookings", icon: Calendar },
-  { to: "/app/plans", label: "Care+", icon: Crown },
-  { to: "/app/properties", label: "Properties", icon: Building2 },
-  { to: "/app/favorites", label: "My Xooters", icon: Heart },
-  { to: "/app/loyalty", label: "Rewards", icon: Gift },
-  { to: "/app/gifts", label: "Gift Clean", icon: Gift },
-  { to: "/app/profile", label: "Profile", icon: User },
-  { to: "/app/support", label: "Support", icon: LifeBuoy },
-  { to: "/app/insurance", label: "Trust Policy", icon: ShieldCheck },
+const tabs = [
+  { to: "/app", label: "Home", icon: House, end: true },
+  { to: "/app/bookings", label: "Visits", icon: ListChecks },
+  { to: "/app/loyalty", label: "Rewards", icon: Trophy },
+  { to: "/app/profile", label: "You", icon: CircleUserRound },
 ];
 
 export const AppShell = ({ children }: { children: ReactNode }) => {
-  const { signOut, user } = useAuth();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
-  const [scrolled, setScrolled] = useState(false);
-  const handleSignOut = async () => { await signOut(); navigate("/"); };
+  const { signOut } = useAuth();
+  const showTabs = ["/app", "/app/bookings", "/app/loyalty", "/app/profile"].includes(pathname);
+  const hasOwnBack = pathname === "/app/book" || pathname.startsWith("/app/bookings/");
 
-  useEffect(() => {
-    const updateScrolled = () => setScrolled(window.scrollY > 12);
-    updateScrolled();
-    window.addEventListener("scroll", updateScrolled, { passive: true });
-    return () => window.removeEventListener("scroll", updateScrolled);
-  }, []);
+  const accountNav = pathname === "/app/profile" && <nav className="xoot-app-account-links" aria-label="Account destinations">
+    <NavLink to="/app/properties">Properties</NavLink><NavLink to="/app/favorites">My Xooters</NavLink>
+    <NavLink to="/app/plans">Care+</NavLink><NavLink to="/app/gifts">Gift Clean</NavLink>
+    <NavLink to="/app/insurance">Trust policy</NavLink><NavLink to="/app/support">Support</NavLink>
+    <button type="button" onClick={async () => { await signOut(); navigate("/"); }}>Sign out</button>
+  </nav>;
 
-  return (
-    <div className="min-h-screen flex bg-background">
-      <aside
-        data-scrolled={scrolled ? "true" : "false"}
-        className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-4xl p-4 sticky top-3 h-[calc(100vh-1.5rem)]"
-      >
-        <div className="liquid-glass-readable flex items-center justify-between mb-8">
-          <NavLink to="/" className="flex items-center gap-2 interactive-press" onClick={() => haptic("selection")}>
-            <Logo tone="violet" size={28} />
-          </NavLink>
-          <NotificationBell />
-        </div>
-
-        <nav className="liquid-glass-readable flex-1 space-y-1.5">
-          {nav.map((n) => {
-            const Icon = n.icon;
-            return (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.end}
-                onClick={() => haptic("selection")}
-                className={({ isActive }) =>
-                  `xoot-liquid-nav-item interactive-press liquid-glass-interactive flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    isActive
-                      ? "bg-primary/15 text-primary shadow-card"
-                      : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
-                  }`
-                }
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{n.label}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        <div className="liquid-glass-readable border-t border-border/60 pt-4 mt-4">
-          <p className="text-xs text-muted-foreground truncate mb-2">{user?.email}</p>
-          <Button variant="ghost" size="sm" onClick={handleSignOut} className="interactive-press w-full justify-start rounded-2xl">
-            <LogOut className="h-4 w-4 mr-2" /> Sign out
-          </Button>
-        </div>
-      </aside>
-
-      <nav
-        data-scrolled={scrolled ? "true" : "false"}
-        className="liquid-glass-nav lg:hidden fixed bottom-3 inset-x-3 z-40 rounded-[1.75rem] px-2 py-2"
-      >
-        <div className="liquid-glass-readable flex items-stretch justify-around gap-1">
-          {nav.slice(0, 5).map((n) => {
-            const Icon = n.icon;
-            return (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.end}
-                onClick={() => haptic("selection")}
-                className={({ isActive }) =>
-                  `xoot-liquid-nav-item interactive-press liquid-glass-interactive tap-target flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1.5 py-1 text-[10px] leading-tight font-semibold transition-colors ${
-                    isActive
-                      ? "bg-primary/15 text-primary shadow-card"
-                      : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
-                  }`
-                }
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                <span className="max-w-[58px] text-center">{n.label}</span>
-              </NavLink>
-            );
-          })}
-        </div>
+  return <div className="xoot-app-shell">
+    <main className={showTabs ? "xoot-app-main has-tabs" : "xoot-app-main"}>
+      {!showTabs && !hasOwnBack && <nav className="xoot-app-back" aria-label="Page navigation"><NavLink to="/app"><ArrowLeft size={20} aria-hidden="true" />Home</NavLink></nav>}
+      {children}{accountNav}
+    </main>
+    {showTabs && <div className="xoot-app-tab-dock">
+      <nav className="xoot-app-tabs" aria-label="Main navigation">
+        {tabs.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} onClick={() => haptic("selection")}
+          className={({ isActive }) => `xoot-app-tab${isActive ? " is-active" : ""}`} aria-label={label}>
+          <Icon size={21} strokeWidth={2.15} aria-hidden="true" /><span>{label}</span>
+        </NavLink>)}
       </nav>
-
-      <main className="flex-1 pb-28 lg:pb-0 min-w-0">
-        {/* One search field for the whole app — it navigates, and hands anything it cannot place
-            to the Concierge. Constrained to the same max width the pages use so it lines up with
-            the content rather than floating over it. */}
-        <div className="container max-w-6xl pt-4 lg:pt-6">
-          <ConciergeOmnibox />
-        </div>
-        {children}
-      </main>
-    </div>
-  );
+      <NavLink to="/app/book" className="xoot-app-book" onClick={() => haptic("selection")} aria-label="Book a visit">
+        <Calendar size={22} strokeWidth={2.2} aria-hidden="true" /><span>Book</span>
+      </NavLink>
+    </div>}
+  </div>;
 };

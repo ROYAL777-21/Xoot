@@ -22,7 +22,7 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Supply | Production aggregate counts: zero Xooters and zero bookings, rechecked 21 September. | Recruit/verify helpers and run consenting pilot; no invented availability/reviews. |
 | Supabase CLI | GitHub credentials configured staging origins and deployed the directory/matching functions (runs 34786060963, 34829457465, 35498593092). Database linking was denied in run 34786290645. | Correct the deployment identity's database-management access and keep separate database credentials. Local `supabase login` is optional for local CLI work; it does not replace the GitHub secret. |
 | Reviews | CodeRabbit retry completed 20 September with 11 findings: eight addressed and three rejected with rationale in the visual ledger. Gift/native slices and the 26 September dependency/runtime slice passed scoped reviews. | Whole-branch release/security review still required before production. |
-| Dependency audit | Full npm audits on 26 September: website zero; mobile three moderate, zero high/critical. | Mobile `expo-router → query-string → decode-uri-component` remains open; do not force an Expo downgrade or incompatible module override. |
+| Dependency audit | Website npm audit zero on 1 October after the reviewed DOMPurify 3.4.16 patch; npm/Bun locks align. Mobile audit on 26 September: three moderate, zero high/critical. | Mobile `expo-router → query-string → decode-uri-component` remains open; do not force an Expo downgrade or incompatible module override. |
 
 These are timestamped observations, not continuing monitoring. A checked build or a reachable domain
 does not prove booking, payment, data access, or operational readiness.
@@ -94,6 +94,13 @@ and confirmed owner payment amounts. Fourteen component checks, typecheck, lint 
 review pass. Six-width browser checks use isolated synthetic account records, documented in
 [Visits evidence](evidence/2026-09-30/visits/README.md). This does not close authenticated staging
 journeys, visit detail/crew behaviour or the native Visits port.
+
+Customer Home and the floating app navigation now follow the supplied Frame/Today source.
+Owner-bound paginated reads, SAST dates, legacy booking links, honest account states and keyboard
+search are covered by focused checks and a passing scoped review on 1 October. Seven-width
+[Home/navigation evidence](evidence/2026-09-30/today/README.md) uses isolated synthetic records;
+it is not proof of live authenticated journeys. Full Profile, Notifications, verified benefit
+semantics and native parity remain open.
 
 ZD-038 approves the handoff's shared-job crew price: Airbnb 5.5 hours with two Xooters is R393 base,
 plus the separate R39 fee for a standard customer. The new server quote and clients use this rule.
