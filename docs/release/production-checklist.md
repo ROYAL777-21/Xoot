@@ -30,6 +30,8 @@ does not prove booking, payment, data access, or operational readiness.
 Latest reviewable checkpoint: [draft PR 46](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/46).
 The [28 September preview evidence](evidence/2026-09-28/README.md) records the verified application
 commit, hosted screenshots, responsive checks and CI results. This is not the completed production release.
+The [30 September checkpoint](evidence/2026-09-30/README.md) adds current hosted screenshots,
+real PostgreSQL concurrency results and the passing production-configured browser build.
 
 The 28 September production schema check is red for pending gift/referral changes and generated
 differences. The Claude security action did not run its scan because the Anthropic API credit balance
@@ -43,10 +45,11 @@ The correction uses the configured public origin for isolated artifact rendering
 locally with real backend requests. The unsafe-DOM fixture failure in run `36452446984` was
 corrected with DOM creation. Web build `36528691982` then reached browser verification and
 failed on a resource 404, whose path was not reported. Commit `04f309d` adds URL-path diagnostics
-without query values; all nine browser regressions and scoped lint pass locally. The next CI
-result must identify and resolve the resource failure. Production CORS has not been loosened.
+without query values; all nine browser regressions and scoped lint pass locally. Web build
+`36643027236` at `c9a9386` now passes its production-configured rendered check. The earlier404
+did not recur and its URL remains unknown. Production CORS has not been loosened.
 Hosted home and direct sign-in on `105b926` render at both checked widths on 30 September;
-that observation does not replace the failing production-configured CI artifact check.
+the separate CI artifact check verifies the production configuration without promoting it.
 
 The private SQL quote calculator passes eight checks, including 1,332 complete quote comparisons
 against the shared server engine, plus scoped CodeRabbit and Codex Security reviews with zero
@@ -61,8 +64,9 @@ idempotent replay and rejects inconsistent referral discounts. It is not connect
 writer. The reviewed account-guard foundation corrects the reproduced debit race (two R70 debits
 against R100 previously both committed). A real PostgreSQL 17.11 run passes 39 scenarios, including
 20 observed database blocking barriers, expiry while waiting, bulk rollback and role permissions.
-The fixture is synthetic and bounded; required PostgreSQL 17.6/17.11 CI, full Supabase migration
-preflight and complete transaction integration remain separate gates. This migration is not deployed
+The required PostgreSQL 17.6/17.11 jobs passed in `36643027223`, along with 133 files /1352 ordinary
+tests and the separate SQL contracts. The fixture is synthetic and bounded; full Supabase migration
+preflight and complete transaction integration remain gates. This migration is not deployed
 and does not enable bookings, benefits or payments.
 
 ### Current implementation delivery sequence
