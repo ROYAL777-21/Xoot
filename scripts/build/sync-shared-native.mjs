@@ -39,6 +39,7 @@ const MODULES = [
   // XootCred balance and expiry rules must be identical on web and native. The web adapter
   // adds its generated Supabase Json type; this dependency-free core is safe for Metro.
   "xootcred-core.ts",
+  "xootcred-read.ts",
 ];
 
 // The booking API contract is server-owned. The native renderer needs a local copy;

@@ -62,7 +62,8 @@ const getMetaSource = (meta: unknown) => {
 };
 
 const isWelcomeCredit = (row: XootCredLedgerRow, entry: XootCredEntry) => {
-  if (entry.displayAmount <= 0 || entry.isExpired || entry.isPending)
+  if (entry.amount <= 0 || entry.isExpired || entry.isPending ||
+      (row.direction === "credit" && entry.status === "redeemed"))
     return false;
   const source = getMetaSource(row.meta);
   return (
@@ -76,11 +77,11 @@ export const calculateXootCredSummary = <TMeta>(
   rows: XootCredLedgerRow<TMeta>[],
   now = new Date(),
 ): XootCredSummary => {
-  const entries = rows
-    .map((row, index): XootCredEntry => {
+  const mapped = rows
+    .map((row, index): { row: XootCredLedgerRow<TMeta>; entry: XootCredEntry } => {
       const signedAmount = getSignedAmount(row);
       const status = row.status ?? "available";
-      return {
+      return { row, entry: {
         id: row.id ?? `${row.created_at}-${index}`,
         amount: signedAmount,
         displayAmount: Math.abs(signedAmount),
@@ -92,35 +93,26 @@ export const calculateXootCredSummary = <TMeta>(
         isExpired:
           isExpired(row.expires_at, now) || inactiveStatuses.has(status),
         isPending: pendingStatuses.has(status),
-      };
-    })
+      } };
+    });
+  const entries = mapped.map(({ entry }) => entry)
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
-  const availableBalance = entries.reduce((sum, entry) => {
-    if (entry.isExpired || entry.isPending) return sum;
-    return sum + entry.amount;
+  const availableBalance = mapped.reduce((sum, { row, entry }) => {
+    if (entry.isExpired || entry.isPending || (entry.status === "redeemed" && row.direction === "credit")) return sum;
+    return sum + Math.round(entry.amount * 100);
   }, 0);
   const pendingBalance = entries.reduce((sum, entry) => {
     if (entry.isExpired || !entry.isPending || entry.amount <= 0) return sum;
-    return sum + entry.amount;
+    return sum + Math.round(entry.amount * 100);
   }, 0);
-  const welcomeCredits = rows
-    .map((row, index) => ({
-      row,
-      entry: entries.find(
-        (entry) => entry.id === (row.id ?? `${row.created_at}-${index}`),
-      ),
-    }))
-    .filter(
-      (item): item is { row: XootCredLedgerRow<TMeta>; entry: XootCredEntry } =>
-        Boolean(item.entry),
-    )
+  const welcomeCredits = mapped
     .filter(({ row, entry }) => isWelcomeCredit(row, entry));
   const welcomeCredit = welcomeCredits.reduce(
-    (sum, { entry }) => sum + entry.amount,
+    (sum, { entry }) => sum + Math.round(entry.amount * 100),
     0,
   );
   const welcomeCreditExpiresAt =
@@ -130,9 +122,9 @@ export const calculateXootCredSummary = <TMeta>(
       .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())[0] ?? null;
 
   return {
-    availableBalance: Math.max(0, Math.round(availableBalance * 100) / 100),
-    pendingBalance: Math.max(0, Math.round(pendingBalance * 100) / 100),
-    welcomeCredit: Math.max(0, Math.round(welcomeCredit * 100) / 100),
+    availableBalance: Math.max(0, availableBalance) / 100,
+    pendingBalance: Math.max(0, pendingBalance) / 100,
+    welcomeCredit: Math.max(0, welcomeCredit) / 100,
     welcomeCreditExpiresAt,
     entries,
   };

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { CalendarClock, Check, Crown, Heart, Home, Loader2, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
 import { toast } from "sonner";
-import { formatZAR } from "@/lib/format";
+import { formatZAR, formatZARDecimal } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import { useXootCred } from "@/hooks/useXootCred";
 import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
@@ -198,7 +198,7 @@ const Plans = () => {
           )}
           {user && (
             <p className="mt-4 text-sm font-semibold text-sage-deep">
-              Current XootCred balance: {xootCred.loading ? "Loading..." : formatZAR(xootCred.availableBalance)}
+              Current XootCred balance: {xootCred.loading ? "Loading..." : xootCred.error ? "Unavailable" : formatZARDecimal(xootCred.availableBalance)}
             </p>
           )}
           <p className="mt-5 text-xs text-muted-foreground">Sensitive access notes stay inside the authenticated app and should not be exposed in push notifications, SMS or email.</p>

@@ -83,6 +83,12 @@ Native Search/Profile/Rewards/notifications and booking input/review have progre
 screens, booking creation/fulfilment, device checks and distributions are unfinished. See the source
 coverage matrix in the visual ledger.
 
+Wallet readers now load every ordered ledger page, preserve cents and hide previous-account data
+and incomplete balances on errors. Focused checks and independent review pass. These reads do not
+authorize spending. Free-clean redemption remains unavailable: the old endpoint consumes a credit
+without atomically attaching a free clean to a booking. It must be repaired and verified before
+the redemption control can be enabled; no credit is consumed by the disabled screen.
+
 ZD-038 approves the handoff's shared-job crew price: Airbnb 5.5 hours with two Xooters is R393 base,
 plus the separate R39 fee for a standard customer. The new server quote and clients use this rule.
 Do not connect it to the legacy per-person booking writer. Atomic single-job creation, accepted-quote

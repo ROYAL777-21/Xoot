@@ -33,6 +33,14 @@ describe("native XootCred presentation", () => {
           created_at: "2026-09-03T00:00:00Z",
         },
         {
+          id: "redeemed-credit",
+          amount: 50,
+          direction: "credit",
+          status: "redeemed",
+          reason: "loyalty_reward",
+          created_at: "2026-09-04T00:00:00Z",
+        },
+        {
           id: "expired",
           amount: 20,
           direction: "credit",
@@ -46,6 +54,7 @@ describe("native XootCred presentation", () => {
     );
     expect(summary.availableBalance).toBe(75);
     expect(summary.pendingBalance).toBe(40);
+    expect(summary.welcomeCredit).toBe(100);
   });
   it("turns backend reason keys into honest readable labels", () => {
     expect(xootCredReasonLabel("booking_redemption")).toBe("Used on a booking");

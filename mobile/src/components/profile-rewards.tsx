@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { router } from "expo-router";
 import {
   Pressable,
@@ -26,54 +26,83 @@ import {
 } from "@/lib/native-xootcred";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/auth-provider";
+import { readAllXootCredRows } from "@/generated/xootcred-read";
 
 type Loyalty = { points: number; total_bookings: number };
+type RewardsState = {
+  accountId: string | null;
+  loyalty: Loyalty | null;
+  ledger: NativeXootCredLedgerRow[];
+  loading: boolean;
+  error: string | null;
+};
 
 export function useNativeRewards() {
   const { user, isLoading: authLoading } = useAuth();
-  const [loyalty, setLoyalty] = useState<Loyalty | null>(null);
-  const [ledger, setLedger] = useState<NativeXootCredLedgerRow[]>([]);
-  const [loading, setLoading] = useState(Boolean(user));
-  const [error, setError] = useState<string | null>(null);
+  const accountId = authLoading ? null : user?.id ?? null;
+  const accountRef = useRef(accountId);
+  accountRef.current = accountId;
+  const requestRef = useRef(0);
+  const mountedRef = useRef(false);
+  const [state, setState] = useState<RewardsState>({
+    accountId: null, loyalty: null, ledger: [], loading: true, error: null,
+  });
   const refresh = useCallback(async () => {
-    if (!user) {
-      setLoyalty(null);
-      setLedger([]);
-      setLoading(false);
-      setError(null);
-      return;
+    if (!accountId || accountRef.current !== accountId) return;
+    const request = ++requestRef.current;
+    setState({ accountId, loyalty: null, ledger: [], loading: true, error: null });
+    try {
+      const [loyaltyResult, ledger] = await Promise.all([
+        supabase
+          .from("loyalty_points")
+          .select("points,total_bookings")
+          .eq("user_id", accountId)
+          .maybeSingle(),
+        readAllXootCredRows<NativeXootCredLedgerRow>((from, to) =>
+          supabase
+            .from("xootcred_ledger")
+            .select("id,amount,direction,status,reason,created_at,expires_at")
+            .eq("user_id", accountId)
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false })
+            .range(from, to),
+        ),
+      ]);
+      if (loyaltyResult.error) throw loyaltyResult.error;
+      if (mountedRef.current && accountRef.current === accountId && requestRef.current === request) {
+        setState({ accountId, loyalty: loyaltyResult.data, ledger, loading: false, error: null });
+      }
+    } catch {
+      if (mountedRef.current && accountRef.current === accountId && requestRef.current === request) {
+        setState({ accountId, loyalty: null, ledger: [], loading: false,
+          error: "Your rewards could not be refreshed. Try again shortly." });
+      }
     }
-    setLoading(true);
-    setError(null);
-    const [loyaltyResult, ledgerResult] = await Promise.all([
-      supabase
-        .from("loyalty_points")
-        .select("points,total_bookings")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("xootcred_ledger")
-        .select("id,amount,direction,status,reason,created_at,expires_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false }),
-    ]);
-    if (loyaltyResult.error || ledgerResult.error)
-      setError("Your rewards could not be refreshed. Try again shortly.");
-    else {
-      setLoyalty(loyaltyResult.data);
-      setLedger((ledgerResult.data ?? []) as NativeXootCredLedgerRow[]);
-    }
-    setLoading(false);
-  }, [user]);
+  }, [accountId]);
   useEffect(() => {
-    if (!authLoading) void refresh();
-  }, [authLoading, refresh]);
+    const requests = requestRef;
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; ++requests.current; };
+  }, []);
+  useEffect(() => {
+    const requests = requestRef;
+    if (authLoading || !accountId) {
+      ++requestRef.current;
+      setState({ accountId: null, loyalty: null, ledger: [], loading: authLoading, error: null });
+    } else {
+      void refresh();
+    }
+    return () => { ++requests.current; };
+  }, [authLoading, accountId, refresh]);
+  const visible = state.accountId === accountId && !authLoading
+    ? state
+    : { accountId, loyalty: null, ledger: [], loading: Boolean(accountId), error: null };
   return {
-    user,
-    loyalty,
-    ...calculateNativeXootCredSummary(ledger),
-    loading: authLoading || loading,
-    error,
+    user: authLoading ? null : user,
+    loyalty: visible.loyalty,
+    ...calculateNativeXootCredSummary(visible.ledger),
+    loading: authLoading || visible.loading,
+    error: visible.error,
     refresh,
   };
 }
