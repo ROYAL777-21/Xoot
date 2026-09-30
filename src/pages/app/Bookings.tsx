@@ -1,214 +1,243 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Calendar, Loader2, MapPin, MessageSquare, Repeat, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
-import { resolvePhoto } from "@/components/xoot/XooterCard";
-import { invokeOpsWorkflow } from "@/lib/ops-workflow";
+import * as Tabs from "@radix-ui/react-tabs";
+import { Check, Loader2, MessageCircle, Repeat2, Star } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { SectionLabel } from "@/components/kit/SectionLabel";
+import { ServiceIcon } from "@/components/kit/ServiceIcon";
+import { supabase } from "@/integrations/supabase/client";
 import { getClientVisibleStatus, normaliseBookingStatus } from "@/lib/booking-state-machine";
+import { BOOKING_SERVICE_DETAILS } from "@/lib/booking-flow";
+import type { BookingService } from "@/lib/booking-contract";
+import "@/styles/visits-handoff.css";
 
-type Booking = {
-  id: string; service: string; scheduled_at: string; status: string;
-  price: number; address: string | null; was_reassigned: boolean;
-  reassignment_acknowledged: boolean;
-  xooter_id: string | null;
-  xooter: { id: string; name: string; photo_url: string | null; rating: number; role: string } | null;
+type BookingRecord = {
+  id: string; xooter_id: string | null; service: string; service_type: string | null; scheduled_at: string;
+  duration_hours: number; status: string;
 };
-
-const statusBadge: Record<string, string> = {
-  draft: "bg-muted text-muted-foreground",
-  pending_payment: "bg-muted text-muted-foreground",
-  payment_confirmed: "bg-primary/15 text-primary",
-  awaiting_assignment: "bg-primary/15 text-primary",
-  assigned: "bg-primary/15 text-primary",
-  contractor_accepted: "bg-sage/15 text-sage-deep",
-  confirmed: "bg-sage/15 text-sage-deep",
-  pending: "bg-muted text-muted-foreground",
-  enroute: "bg-primary/15 text-primary",
-  en_route: "bg-primary/15 text-primary",
-  in_progress: "bg-primary/15 text-primary",
-  completed: "bg-sage/15 text-sage-deep",
-  rated: "bg-sage/15 text-sage-deep",
-  cancelled: "bg-destructive/15 text-destructive",
-  replacement_required: "bg-primary/15 text-primary",
-  replacement_offered: "bg-primary/15 text-primary",
-  reassigned: "bg-primary/15 text-primary",
+type XooterProfile = {
+  booking_id: string | null; id: string | null; name: string | null;
+  photo_url: string | null; verified: boolean | null;
 };
-
-const getVisibleStatus = (status: string) => {
-  const canonical = normaliseBookingStatus(status);
-  return canonical ? getClientVisibleStatus(canonical) : status.replace(/_/g, " ");
-};
-
-const activeStatuses = new Set([
-  "draft",
-  "pending_payment",
-  "payment_confirmed",
-  "awaiting_assignment",
-  "assigned",
-  "contractor_accepted",
-  "en_route",
-  "in_progress",
-  "replacement_required",
-  "replacement_offered",
-  "reassigned",
-]);
+type Visit = BookingRecord & { xooter: XooterProfile | null; rating: number | null; visitsTogether: number; paidCents: number | null };
+type ListState = { kind: "loading" | "error" | "ready"; visits: Visit[] };
+type Tab = "upcoming" | "past";
 
 const pastStatuses = new Set(["completed", "rated", "cancelled"]);
+const serviceIcons = new Set(["regular", "airbnb", "express", "office", "moving", "laundry", "lux"]);
+const prefillableServices = new Set(["regular", "airbnb", "express", "office", "moving"]);
+const dateFormatter = new Intl.DateTimeFormat("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "short", day: "numeric", month: "short" });
+const timeFormatter = new Intl.DateTimeFormat("en-ZA", { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit", hour12: false });
+const dayFormatter = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Johannesburg", year: "numeric", month: "2-digit", day: "2-digit" });
 
-const Bookings = () => {
-  const { user } = useAuth();
-  const [list, setList] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkOpen, setBulkOpen] = useState(false);
-  const [bulkDate, setBulkDate] = useState("");
-
-  const refresh = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase.from("bookings")
-      .select("id, xooter_id, service, scheduled_at, status, price, address, was_reassigned, reassignment_acknowledged")
-      .eq("user_id", user.id).order("scheduled_at", { ascending: false });
-    const bookings = (data ?? []) as Array<Omit<Booking, "xooter">>;
-    const bookingIds = bookings.map((booking) => booking.id);
-    const { data: xooters } = bookingIds.length
-      ? await supabase
-        .from("booking_xooter_profiles")
-        .select("booking_id,id,name,photo_url,rating,role")
-        .in("booking_id", bookingIds)
-      : { data: [] };
-    const xootersByBookingId = new Map(
-      ((xooters ?? []) as Array<NonNullable<Booking["xooter"]> & { booking_id: string }>)
-        .map((xooter) => [xooter.booking_id, xooter]),
-    );
-    setList(bookings.map((booking) => ({ ...booking, xooter: xootersByBookingId.get(booking.id) ?? null })) as Booking[]);
-    setLoading(false);
-  }, [user]);
-
-  useEffect(() => { refresh(); }, [refresh]);
-
-  const toggle = (id: string) => {
-    const n = new Set(selected); n.has(id) ? n.delete(id) : n.add(id); setSelected(n);
-  };
-
-  const bulkReschedule = async () => {
-    if (!bulkDate || selected.size === 0) return;
-    try {
-      await Promise.all(
-        Array.from(selected).map((bookingId) =>
-          invokeOpsWorkflow({
-            action: "booking_reschedule_requested",
-            bookingId,
-            scheduledAt: new Date(bulkDate).toISOString(),
-          }),
-        ),
-      );
-      toast.success(`Rescheduled ${selected.size} booking${selected.size === 1 ? "" : "s"}`);
-      setBulkOpen(false); setSelected(new Set()); refresh();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Reschedule failed");
+function localDay(value: Date): string {
+  const parts = Object.fromEntries(dayFormatter.formatToParts(value).map((part) => [part.type, part.value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+function weekStart(day: string): number {
+  const date = new Date(`${day}T12:00:00Z`);
+  const weekday = (date.getUTCDay() + 6) % 7;
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - weekday) / 86_400_000;
+}
+function weekGroup(visit: Visit, today: Date): string {
+  const when = new Date(visit.scheduled_at);
+  if (Number.isNaN(when.getTime())) return "Date to confirm";
+  const weeks = (weekStart(localDay(when)) - weekStart(localDay(today))) / 7;
+  if (weeks < 0) return "Earlier";
+  if (weeks === 0) return "This week";
+  if (weeks === 1) return "Next week";
+  return "Later";
+}
+function serviceTitle(service: string): string {
+  return Object.prototype.hasOwnProperty.call(BOOKING_SERVICE_DETAILS, service)
+    ? BOOKING_SERVICE_DETAILS[service as BookingService].title
+    : service.replace(/[_-]/g, " ").trim() || "Visit";
+}
+function visitService(booking: BookingRecord): string {
+  const service = booking.service_type?.trim() || booking.service.trim();
+  return ["residential", "deep", "premium"].includes(service) ? "regular" : service;
+}
+function statusLabel(status: string): string {
+  const canonical = normaliseBookingStatus(status);
+  return canonical ? getClientVisibleStatus(canonical) : status.replace(/[_-]/g, " ").trim() || "Status unavailable";
+}
+function statusTone(status: string): string {
+  const canonical = normaliseBookingStatus(status);
+  if (canonical === "completed" || canonical === "rated" || canonical === "contractor_accepted") return "success";
+  if (canonical === "cancelled") return "danger";
+  if (canonical === "awaiting_assignment" || canonical === "replacement_required" || canonical === "pending_payment") return "warning";
+  return "neutral";
+}
+function visitWhen(visit: Visit): string {
+  const when = new Date(visit.scheduled_at);
+  return Number.isNaN(when.getTime()) ? "Date to confirm" : `${dateFormatter.format(when)} · ${timeFormatter.format(when)}`;
+}
+function visitMeta(visit: Visit): string {
+  const duration = Number.isFinite(visit.duration_hours) && visit.duration_hours > 0 ? ` · ${visit.duration_hours} hrs` : "";
+  const xooter = visit.xooter?.name ? ` · ${visit.xooter.name}` : "";
+  return `${visitWhen(visit)}${duration}${xooter}`;
+}
+async function loadVisits(userId: string): Promise<Visit[]> {
+  const bookings: BookingRecord[] = [];
+  const bookingIds = new Set<string>();
+  const pageSize = 500;
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase.from("bookings")
+      .select("id,xooter_id,service,service_type,scheduled_at,duration_hours,status")
+      .eq("user_id", userId).order("scheduled_at", { ascending: false }).order("id", { ascending: false })
+      .range(from, from + pageSize - 1);
+    if (error || !Array.isArray(data)) throw error ?? new Error("Visits unavailable");
+    const page = data as BookingRecord[];
+    for (const booking of page) {
+      if (!bookingIds.has(booking.id)) { bookingIds.add(booking.id); bookings.push(booking); }
     }
-  };
-
-  const upcoming = list.filter((b) => {
-    const canonical = normaliseBookingStatus(b.status);
-    return canonical ? activeStatuses.has(canonical) : false;
-  });
-  const past = list.filter((b) => {
-    const canonical = normaliseBookingStatus(b.status);
-    return canonical ? pastStatuses.has(canonical) : false;
-  });
-
-  if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-
-  return (
-    <div className="container py-8 lg:py-12 max-w-5xl">
-      <div className="flex items-end justify-between mb-8">
-        <div>
-          <h1 className="font-display text-4xl md:text-5xl font-bold">My bookings</h1>
-          <p className="text-muted-foreground mt-2">Manage upcoming visits and review past ones.</p>
-        </div>
-        {selected.size > 0 && (
-          <Button onClick={() => setBulkOpen(true)} className="rounded-full">
-            <Repeat className="h-4 w-4 mr-1" /> Reschedule {selected.size}
-          </Button>
-        )}
+    if (page.length < pageSize) break;
+  }
+  const profiles = new Map<string, XooterProfile>();
+  const assigned = bookings.filter((booking) => booking.xooter_id);
+  for (let from = 0; from < assigned.length; from += 50) {
+    const ids = assigned.slice(from, from + 50).map((booking) => booking.id);
+    const { data, error } = await supabase.from("booking_xooter_profiles")
+      .select("booking_id,id,name,photo_url,verified").in("booking_id", ids);
+    if (error || !Array.isArray(data)) throw error ?? new Error("Xooter details unavailable");
+    for (const profile of data as XooterProfile[]) {
+      if (profile.booking_id) profiles.set(profile.booking_id, profile);
+    }
+  }
+  const ratings = new Map<string, number>();
+  const paidCents = new Map<string, number | null>();
+  const paymentIds = new Set<string>();
+  if (bookings.some((booking) => pastStatuses.has(normaliseBookingStatus(booking.status) ?? ""))) {
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await supabase.from("post_job_reviews").select("booking_id,rating")
+        .eq("user_id", userId).order("created_at", { ascending: false }).order("id", { ascending: false })
+        .range(from, from + pageSize - 1);
+      if (error || !Array.isArray(data)) throw error ?? new Error("Visit ratings unavailable");
+      for (const review of data) {
+        if (!ratings.has(review.booking_id) && Number.isInteger(review.rating) && review.rating >= 1 && review.rating <= 5)
+          ratings.set(review.booking_id, review.rating);
+      }
+      if (data.length < pageSize) break;
+    }
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await supabase.from("payment_records")
+        .select("id,booking_id,amount,currency,status,payment_kind")
+        .eq("user_id", userId).eq("payment_kind", "booking").in("status", ["paid", "admin_confirmed"])
+        .order("created_at", { ascending: false }).order("id", { ascending: false })
+        .range(from, from + pageSize - 1);
+      if (error || !Array.isArray(data)) throw error ?? new Error("Visit payments unavailable");
+      for (const payment of data) {
+        if (paymentIds.has(payment.id)) continue;
+        paymentIds.add(payment.id);
+        if (!payment.booking_id || payment.payment_kind !== "booking" || !["paid", "admin_confirmed"].includes(payment.status)) continue;
+        const cents = Math.round(payment.amount * 100);
+        const previous = paidCents.get(payment.booking_id);
+        const total = (previous ?? 0) + cents;
+        // Unknown currencies or malformed amounts must not become a partial Rand total.
+        paidCents.set(payment.booking_id, previous === null || payment.currency !== "ZAR" || typeof payment.amount !== "number" || payment.amount < 0 || !Number.isSafeInteger(cents) || !Number.isSafeInteger(total) ? null : total);
+      }
+      if (data.length < pageSize) break;
+    }
+  }
+  const visitsTogether = new Map<string, number>();
+  for (const booking of assigned) {
+    const status = normaliseBookingStatus(booking.status);
+    if (booking.xooter_id && (status === "completed" || status === "rated"))
+      visitsTogether.set(booking.xooter_id, (visitsTogether.get(booking.xooter_id) ?? 0) + 1);
+  }
+  return bookings.map((booking) => ({
+    ...booking,
+    service: visitService(booking),
+    xooter: profiles.get(booking.id)?.id === booking.xooter_id ? profiles.get(booking.id)! : null,
+    rating: ratings.get(booking.id) ?? null,
+    visitsTogether: booking.xooter_id ? visitsTogether.get(booking.xooter_id) ?? 0 : 0,
+    paidCents: paidCents.get(booking.id) ?? null,
+  }));
+}
+function VisitIcon({ service }: { service: string }) {
+  return serviceIcons.has(service)
+    ? <ServiceIcon service={service as "regular" | "airbnb" | "express" | "office" | "moving" | "laundry" | "lux"} size={40} shape="circle" />
+    : <span className="xoot-visit-icon-fallback" aria-hidden="true">✦</span>;
+}
+function UpcomingVisit({ visit }: { visit: Visit }) {
+  return <Link className="xoot-visit-task" to={`/app/bookings/${encodeURIComponent(visit.id)}`} aria-label={`Open ${serviceTitle(visit.service)} on ${visitWhen(visit)}`}>
+    <VisitIcon service={visit.service} />
+    <span className="xoot-visit-task-copy"><strong>{serviceTitle(visit.service)}</strong><small>{visitMeta(visit)}</small></span>
+    <span className={`xoot-visit-badge is-${statusTone(visit.status)}`}>{statusLabel(visit.status)}</span>
+  </Link>;
+}
+function PastVisit({ visit }: { visit: Visit }) {
+  const profile = visit.xooter;
+  const canRebook = prefillableServices.has(visit.service);
+  return <article className="xoot-visit-past">
+    <Link className="xoot-visit-past-main" to={`/app/bookings/${encodeURIComponent(visit.id)}`} aria-label={`Open ${serviceTitle(visit.service)} on ${visitWhen(visit)}`}>
+      <VisitIcon service={visit.service} />
+      <span className="xoot-visit-past-copy"><strong>{serviceTitle(visit.service)}</strong><small>{visitWhen(visit)}{visit.paidCents !== null ? ` · You paid R${(visit.paidCents / 100).toLocaleString("en-ZA", { maximumFractionDigits: 2 })}` : ""}</small></span>
+      {visit.rating !== null ? <span className="xoot-visit-rating" role="img" aria-label={`Your rating: ${visit.rating} out of 5`}>
+        {Array.from({ length: 5 }, (_, i) => <Star key={i} size={12} aria-hidden="true" fill={i < visit.rating! ? "currentColor" : "none"} style={{ color: i < visit.rating! ? "var(--xoot-honey-500)" : "var(--xoot-neutral-300)" }} />)}
+      </span> : <span className={`xoot-visit-badge is-${statusTone(visit.status)}`}>{statusLabel(visit.status)}</span>}
+    </Link>
+    {profile?.name ? <div className="xoot-visit-xooter">
+      <span className="xoot-visit-avatar" aria-hidden="true">{profile.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}
+        {profile.photo_url && <img src={profile.photo_url} alt="" onError={(event) => { event.currentTarget.hidden = true; }} />}
+        {profile.verified && <span className="xoot-visit-verified"><Check size={7} strokeWidth={3.5} /></span>}
+      </span>
+      <span className="xoot-visit-xooter-name"><strong>{profile.name}</strong>{profile.verified && <span className="sr-only">Verified Xooter</span>}<small>{visit.visitsTogether} {visit.visitsTogether === 1 ? "visit" : "visits"} together</small></span>
+      <span className="xoot-visit-actions">
+        <Link to={`/app/bookings/${encodeURIComponent(visit.id)}`} className="xoot-visit-message" aria-label={`Open visit to message ${profile.name}`}><MessageCircle size={16} /></Link>
+        {canRebook && <Link to={`/app/book?service=${encodeURIComponent(visit.service)}`} className="xoot-visit-rebook" aria-label={`Book ${serviceTitle(visit.service)} again`}><Repeat2 size={14} /> Rebook</Link>}
+      </span>
+    </div> : <div className="xoot-visit-xooter xoot-visit-xooter-unassigned"><span>Xooter details unavailable for this visit</span>{canRebook && <Link to={`/app/book?service=${encodeURIComponent(visit.service)}`} className="xoot-visit-rebook"><Repeat2 size={14} /> Rebook service</Link>}</div>}
+  </article>;
+}
+function VisitsForAccount({ userId }: { userId: string }) {
+  const [tab, setTab] = useState<Tab>("upcoming");
+  const [state, setState] = useState<ListState>({ kind: "loading", visits: [] });
+  const [attempt, setAttempt] = useState(0);
+  const retry = useCallback(() => {
+    setState({ kind: "loading", visits: [] });
+    setAttempt((current) => current + 1);
+  }, []);
+  useEffect(() => {
+    let current = true;
+    loadVisits(userId).then((visits) => {
+      if (current) setState({ kind: "ready", visits });
+    }).catch(() => {
+      if (current) setState({ kind: "error", visits: [] });
+    });
+    return () => { current = false; };
+  }, [userId, attempt]);
+  const upcoming = state.visits.filter((visit) => !pastStatuses.has(normaliseBookingStatus(visit.status) ?? ""))
+    .sort((a, b) => Date.parse(a.scheduled_at) - Date.parse(b.scheduled_at));
+  const past = state.visits.filter((visit) => pastStatuses.has(normaliseBookingStatus(visit.status) ?? ""))
+    .sort((a, b) => Date.parse(b.scheduled_at) - Date.parse(a.scheduled_at));
+  const now = new Date();
+  const groups = ["Earlier", "This week", "Next week", "Later", "Date to confirm"]
+    .map((label) => ({ label, visits: upcoming.filter((visit) => weekGroup(visit, now) === label) }))
+    .filter((group) => group.visits.length > 0);
+  return <section className="xoot-visits" aria-label="Visits">
+    <header className="xoot-visits-heading"><h1>Visits</h1></header>
+    <Tabs.Root value={tab} onValueChange={(value) => setTab(value as Tab)}>
+      <div className="xoot-visits-tabs-wrap">
+        <Tabs.List className="xoot-visits-tabs" aria-label="Visit history">
+          <Tabs.Trigger value="upcoming">Upcoming</Tabs.Trigger>
+          <Tabs.Trigger value="past">Past</Tabs.Trigger>
+        </Tabs.List>
       </div>
-
-      <h2 className="font-display text-xl font-bold mb-3">Upcoming</h2>
-      {upcoming.length === 0 ? (
-        <Card className="p-8 rounded-3xl text-center text-muted-foreground mb-8">No upcoming bookings.</Card>
-      ) : (
-        <div className="space-y-3 mb-10">
-          {upcoming.map((b) => (
-            <Card key={b.id} className="p-4 rounded-2xl flex items-center gap-4">
-              <Checkbox checked={selected.has(b.id)} onCheckedChange={() => toggle(b.id)} />
-              <img src={resolvePhoto(b.xooter?.photo_url)} alt="" className="h-14 w-14 rounded-xl object-cover" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold truncate">{b.xooter?.name ?? "Reassigning…"}</p>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${statusBadge[normaliseBookingStatus(b.status) ?? b.status] ?? "bg-muted text-muted-foreground"}`}>{getVisibleStatus(b.status)}</span>
-                  {b.was_reassigned && !b.reassignment_acknowledged && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary text-primary-foreground flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" /> NEW XOOTER
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5 capitalize">
-                  {b.service} · {new Date(b.scheduled_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-                </p>
-                {b.address && <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" /> {b.address}</p>}
-              </div>
-              <Button asChild size="sm" variant="outline" className="rounded-full">
-                <Link to={`/app/bookings/${b.id}`}><MessageSquare className="h-4 w-4 mr-1" /> Open</Link>
-              </Button>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      <h2 className="font-display text-xl font-bold mb-3">Past</h2>
-      {past.length === 0 ? (
-        <Card className="p-8 rounded-3xl text-center text-muted-foreground">No past bookings yet.</Card>
-      ) : (
-        <div className="space-y-3">
-          {past.map((b) => (
-            <Card key={b.id} className="p-4 rounded-2xl flex items-center gap-4 opacity-80">
-              <img src={resolvePhoto(b.xooter?.photo_url)} alt="" className="h-12 w-12 rounded-xl object-cover" />
-              <div className="flex-1">
-                <p className="font-semibold">{b.xooter?.name}</p>
-                <p className="text-xs text-muted-foreground capitalize">{b.service} · {new Date(b.scheduled_at).toLocaleDateString()}</p>
-              </div>
-              <CheckCircle2 className="h-5 w-5 text-sage-deep" />
-            </Card>
-          ))}
-        </div>
-      )}
-
-      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
-        <DialogContent className="rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>Reschedule {selected.size} booking{selected.size === 1 ? "" : "s"}</DialogTitle>
-          </DialogHeader>
-          <div>
-            <Label>New date & time</Label>
-            <Input type="datetime-local" value={bulkDate} onChange={(e) => setBulkDate(e.target.value)} />
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setBulkOpen(false)}>Cancel</Button>
-            <Button onClick={bulkReschedule} className="gradient-warm">Confirm</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-export default Bookings;
+      {(["upcoming", "past"] as const).map((value) => <Tabs.Content key={value} value={value} className="xoot-visits-list">
+      {state.kind === "loading" ? <p className="xoot-visits-state" role="status"><Loader2 size={20} className="animate-spin" /> Loading visits…</p>
+        : state.kind === "error" ? <div className="xoot-visits-state" role="alert"><p>Your visits could not be loaded.</p><button type="button" onClick={retry}>Try again</button></div>
+          : value === "upcoming" ? groups.length ? groups.map((group) => <div className="xoot-visit-group" key={group.label}><SectionLabel slot="plain" label={group.label} count={group.visits.length} />{group.visits.map((visit) => <UpcomingVisit key={visit.id} visit={visit} />)}</div>)
+            : <div className="xoot-visits-state"><p>No upcoming visits.</p><Link to="/app/book">Book a visit</Link></div>
+            : past.length ? past.map((visit) => <PastVisit key={visit.id} visit={visit} />)
+              : <p className="xoot-visits-state">No past visits yet.</p>}
+      </Tabs.Content>)}
+    </Tabs.Root>
+  </section>;
+}
+export default function Bookings() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="xoot-visits-state" role="status">Loading your account…</div>;
+  if (!user) return <div className="xoot-visits-state" role="status">Sign in to see your visits.</div>;
+  return <VisitsForAccount key={user.id} userId={user.id} />;
+}

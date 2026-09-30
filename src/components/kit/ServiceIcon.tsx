@@ -22,9 +22,11 @@ const services = {
 export function ServiceIcon({
   service,
   size = 56,
+  shape = "tile",
 }: {
   service: keyof typeof services;
   size?: number;
+  shape?: "tile" | "circle";
 }) {
   const { icon: Icon, tint } = services[service];
   const wash =
@@ -41,7 +43,7 @@ export function ServiceIcon({
         flex: "0 0 auto",
         width: size,
         height: size,
-        borderRadius: "var(--xoot-radius-key)",
+        borderRadius: shape === "circle" ? "50%" : "var(--xoot-radius-key)",
         background: wash,
       }}
     >

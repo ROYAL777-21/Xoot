@@ -285,3 +285,23 @@ crew lifecycle/access/earnings, payment and referral fulfilment, signed-in stagi
 remaining source screens stay unfinished. Supabase migrations and production were not changed.
 Native visual verification remains unfinished: automatic approval review rejected Expo startup,
 including localhost-only startup, with “blocked by policy” and no further reason.
+
+## 30 September Visits source port
+
+The signed-in website Visits list now uses the original `app/Visits.jsx` composition and
+`ds-bundle.js` primitives: pill tabs, grouped task rows, circular service artwork, past-visit
+cards, honey rating stars, helper avatars and the message/rebook row. Real names/statuses wrap
+instead of clipping. Only actual customer reviews, assigned profiles and confirmed owner
+payments are displayed. `service_type` supplies the actual service; `bookings.price` is never
+presented as the charged amount. “You paid” is historical gross payment, not net of refunds.
+
+Fourteen focused component tests pass, covering writer-shaped records, pagination/errors,
+account changes, payment validation and keyboard tabs; web typecheck and scoped lint pass.
+Independent spec and quality review passed after both service/amount binding findings were fixed.
+Browser captures of the actual component pass at 320, 390, 768, 1024, 1440 and 1920 pixels,
+with no overflow, page errors, heading transform or filter. The reference and implementation
+were compared at 390 pixels. [Visual evidence](../release/evidence/2026-09-30/visits/README.md)
+uses isolated synthetic account records, not a live authenticated customer session.
+
+This closes the bounded list port only. Source app navigation/Today, visit detail and ratings,
+same-helper rebooking, crews and native Visits remain separate unfinished work.

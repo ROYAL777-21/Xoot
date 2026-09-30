@@ -89,6 +89,12 @@ authorize spending. Free-clean redemption remains unavailable: the old endpoint 
 without atomically attaching a free clean to a booking. It must be repaired and verified before
 the redemption control can be enabled; no credit is consumed by the disabled screen.
 
+The website Visits list follows the source composition with real service/profile/review fields
+and confirmed owner payment amounts. Fourteen component checks, typecheck, lint and scoped
+review pass. Six-width browser checks use isolated synthetic account records, documented in
+[Visits evidence](evidence/2026-09-30/visits/README.md). This does not close authenticated staging
+journeys, visit detail/crew behaviour or the native Visits port.
+
 ZD-038 approves the handoff's shared-job crew price: Airbnb 5.5 hours with two Xooters is R393 base,
 plus the separate R39 fee for a standard customer. The new server quote and clients use this rule.
 Do not connect it to the legacy per-person booking writer. Atomic single-job creation, accepted-quote

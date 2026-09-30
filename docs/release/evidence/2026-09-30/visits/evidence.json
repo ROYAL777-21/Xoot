@@ -1,0 +1,405 @@
+{
+  "capturedAt": "2026-09-30T17:38:37.116Z",
+  "scope": "Actual Visits component only, synthetic test data. Not a real account or full AppShell/backend proof.",
+  "browserPath": "Browser skill/runtime not listed; existing Playwright used.",
+  "checks": [
+    {
+      "width": 320,
+      "state": "upcoming",
+      "filename": "implemented-upcoming-320.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 20,
+        "y": 22,
+        "width": 280,
+        "height": 37.4375,
+        "top": 22,
+        "right": 300,
+        "bottom": 59.4375,
+        "left": 20
+      },
+      "tabs": {
+        "x": 20,
+        "y": 71.4375,
+        "width": 280,
+        "height": 48,
+        "top": 71.4375,
+        "right": 300,
+        "bottom": 119.4375,
+        "left": 20
+      }
+    },
+    {
+      "width": 320,
+      "state": "past",
+      "filename": "implemented-past-320.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 20,
+        "y": 22,
+        "width": 280,
+        "height": 37.4375,
+        "top": 22,
+        "right": 300,
+        "bottom": 59.4375,
+        "left": 20
+      },
+      "tabs": {
+        "x": 20,
+        "y": 71.4375,
+        "width": 280,
+        "height": 48,
+        "top": 71.4375,
+        "right": 300,
+        "bottom": 119.4375,
+        "left": 20
+      }
+    },
+    {
+      "width": 390,
+      "state": "upcoming",
+      "filename": "implemented-upcoming-390.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 20,
+        "y": 22,
+        "width": 350,
+        "height": 37.4375,
+        "top": 22,
+        "right": 370,
+        "bottom": 59.4375,
+        "left": 20
+      },
+      "tabs": {
+        "x": 20,
+        "y": 71.4375,
+        "width": 350,
+        "height": 48,
+        "top": 71.4375,
+        "right": 370,
+        "bottom": 119.4375,
+        "left": 20
+      }
+    },
+    {
+      "width": 390,
+      "state": "past",
+      "filename": "implemented-past-390.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 20,
+        "y": 22,
+        "width": 350,
+        "height": 37.4375,
+        "top": 22,
+        "right": 370,
+        "bottom": 59.4375,
+        "left": 20
+      },
+      "tabs": {
+        "x": 20,
+        "y": 71.4375,
+        "width": 350,
+        "height": 48,
+        "top": 71.4375,
+        "right": 370,
+        "bottom": 119.4375,
+        "left": 20
+      }
+    },
+    {
+      "width": 768,
+      "state": "upcoming",
+      "filename": "implemented-upcoming-768.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 24,
+        "y": 22,
+        "width": 720,
+        "height": 37.4375,
+        "top": 22,
+        "right": 744,
+        "bottom": 59.4375,
+        "left": 24
+      },
+      "tabs": {
+        "x": 24,
+        "y": 71.4375,
+        "width": 720,
+        "height": 48,
+        "top": 71.4375,
+        "right": 744,
+        "bottom": 119.4375,
+        "left": 24
+      }
+    },
+    {
+      "width": 768,
+      "state": "past",
+      "filename": "implemented-past-768.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 24,
+        "y": 22,
+        "width": 720,
+        "height": 37.4375,
+        "top": 22,
+        "right": 744,
+        "bottom": 59.4375,
+        "left": 24
+      },
+      "tabs": {
+        "x": 24,
+        "y": 71.4375,
+        "width": 720,
+        "height": 48,
+        "top": 71.4375,
+        "right": 744,
+        "bottom": 119.4375,
+        "left": 24
+      }
+    },
+    {
+      "width": 1024,
+      "state": "upcoming",
+      "filename": "implemented-upcoming-1024.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 152,
+        "y": 22,
+        "width": 720,
+        "height": 37.4375,
+        "top": 22,
+        "right": 872,
+        "bottom": 59.4375,
+        "left": 152
+      },
+      "tabs": {
+        "x": 152,
+        "y": 71.4375,
+        "width": 720,
+        "height": 48,
+        "top": 71.4375,
+        "right": 872,
+        "bottom": 119.4375,
+        "left": 152
+      }
+    },
+    {
+      "width": 1024,
+      "state": "past",
+      "filename": "implemented-past-1024.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 152,
+        "y": 22,
+        "width": 720,
+        "height": 37.4375,
+        "top": 22,
+        "right": 872,
+        "bottom": 59.4375,
+        "left": 152
+      },
+      "tabs": {
+        "x": 152,
+        "y": 71.4375,
+        "width": 720,
+        "height": 48,
+        "top": 71.4375,
+        "right": 872,
+        "bottom": 119.4375,
+        "left": 152
+      }
+    },
+    {
+      "width": 1440,
+      "state": "upcoming",
+      "filename": "implemented-upcoming-1440.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 360,
+        "y": 22,
+        "width": 720,
+        "height": 37.4375,
+        "top": 22,
+        "right": 1080,
+        "bottom": 59.4375,
+        "left": 360
+      },
+      "tabs": {
+        "x": 360,
+        "y": 71.4375,
+        "width": 720,
+        "height": 48,
+        "top": 71.4375,
+        "right": 1080,
+        "bottom": 119.4375,
+        "left": 360
+      }
+    },
+    {
+      "width": 1440,
+      "state": "past",
+      "filename": "implemented-past-1440.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 360,
+        "y": 22,
+        "width": 720,
+        "height": 37.4375,
+        "top": 22,
+        "right": 1080,
+        "bottom": 59.4375,
+        "left": 360
+      },
+      "tabs": {
+        "x": 360,
+        "y": 71.4375,
+        "width": 720,
+        "height": 48,
+        "top": 71.4375,
+        "right": 1080,
+        "bottom": 119.4375,
+        "left": 360
+      }
+    },
+    {
+      "width": 1920,
+      "state": "upcoming",
+      "filename": "implemented-upcoming-1920.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 600,
+        "y": 22,
+        "width": 720,
+        "height": 37.4375,
+        "top": 22,
+        "right": 1320,
+        "bottom": 59.4375,
+        "left": 600
+      },
+      "tabs": {
+        "x": 600,
+        "y": 71.4375,
+        "width": 720,
+        "height": 48,
+        "top": 71.4375,
+        "right": 1320,
+        "bottom": 119.4375,
+        "left": 600
+      }
+    },
+    {
+      "width": 1920,
+      "state": "past",
+      "filename": "implemented-past-1920.png",
+      "url": "http://127.0.0.1:5186/__checks/visits",
+      "title": "Implemented Visits - isolated test records",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 600,
+        "y": 22,
+        "width": 720,
+        "height": 37.4375,
+        "top": 22,
+        "right": 1320,
+        "bottom": 59.4375,
+        "left": 600
+      },
+      "tabs": {
+        "x": 600,
+        "y": 71.4375,
+        "width": 720,
+        "height": 48,
+        "top": 71.4375,
+        "right": 1320,
+        "bottom": 119.4375,
+        "left": 600
+      }
+    },
+    {
+      "reference": true,
+      "state": "upcoming",
+      "width": 390,
+      "filename": "reference-upcoming-390.png",
+      "errors": []
+    },
+    {
+      "reference": true,
+      "state": "past",
+      "width": 390,
+      "filename": "reference-past-390.png",
+      "errors": []
+    }
+  ]
+}
