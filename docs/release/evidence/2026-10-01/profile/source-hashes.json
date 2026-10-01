@@ -1,0 +1,30 @@
+[
+  {
+    "path": "src/pages/app/Profile.tsx",
+    "sha256": "AAA347FAC8C36F58CEF52AFE3A36AAABE53B218145C40BC9AB4882D0045527DC"
+  },
+  {
+    "path": "src/pages/app/ProfileParts.tsx",
+    "sha256": "CE4D9F9360E278AEDAE420F41CB9E7F714D67C5B42A51E360941BA5E3D47CC63"
+  },
+  {
+    "path": "src/pages/app/AccountEdit.tsx",
+    "sha256": "95E3DFF14160E1712FDC2C9E6912BF2FA9CA4862DB6E5160E13BF951DFAE1CF3"
+  },
+  {
+    "path": "src/pages/app/HomeEdit.tsx",
+    "sha256": "F5179164400C1CDEBDA8DA8ECB582ECD353A6491DF5BE72103432ACD54BCBD1E"
+  },
+  {
+    "path": "src/pages/app/profile-data.ts",
+    "sha256": "F43CCA1D1B9A68F6B6FA23CE86C767F588984F26B70E09ACFF47080CFF2D4AEB"
+  },
+  {
+    "path": "src/pages/app/useProfileResource.ts",
+    "sha256": "3CFDA6C0C3CD36A3EBC82FECA48B22AE77D9A932E0E872D0CD19AD87E44A9D2B"
+  },
+  {
+    "path": "src/styles/profile-handoff.css",
+    "sha256": "4A0A123EC8AD5C55E08587C88BEDB5BA400D391792657E9332C3B29DC7619451"
+  }
+]

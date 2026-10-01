@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **30 September 2026**. This replaces the status claims in `blocker.md`,
+Current register: **1 October 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -12,7 +12,7 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
 | Website hosting | On 11 September, `xoot.co.za` served Vercel headers and build commit `02bb284`. | Domain resolves. Do not import the old GoDaddy zone export. |
-| Rendered startup | Hosted commit `105b926` renders home/sign-in at 1440 and 390 pixels on 30 September, without page errors or horizontal overflow. | Staging repair verified. Production still requires launch gates; this is not a production promotion. |
+| Rendered startup | Stable preview commit `5f1b150` renders home/sign-in at 1440 and 390 pixels on 1 October, without page/console errors or horizontal overflow; actual browser smoke passes. | Staging repair verified. Use the configured stable preview origin; one-off deployment hosts are not backend-allowed. Production still requires launch gates. |
 | Vercel access | Connector lists project `xoot`, `prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`, on 12 September. Team plan is Hobby. | Preview configuration possible; commercial hosting plan required for paid launch. |
 | Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
 | Staging schema | Read-only query on 21 September: 82 versions, latest `20260903120000`; gift RPC absent. | New `20260920200000_gift_order_contract.sql` not deployed. |
@@ -32,6 +32,9 @@ The [28 September preview evidence](evidence/2026-09-28/README.md) records the v
 commit, hosted screenshots, responsive checks and CI results. This is not the completed production release.
 The [30 September checkpoint](evidence/2026-09-30/README.md) adds current hosted screenshots,
 real PostgreSQL concurrency results and the passing production-configured browser build.
+The [1 October hosted checkpoint](evidence/2026-10-01/README.md) verifies `5f1b150`, with
+fresh screenshots and passing GitHub Tests/Web build. Schema drift and the external Claude
+scan remain failed gates; the remaining source ports and paid/native journeys are unfinished.
 
 The 28 September production schema check is red for pending gift/referral changes and generated
 differences. The Claude security action did not run its scan because the Anthropic API credit balance

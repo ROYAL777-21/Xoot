@@ -61,6 +61,8 @@ const Training = lazy(() => import("./pages/app/Training"));
 const Support = lazy(() => import("./pages/app/Support"));
 const Insurance = lazy(() => import("./pages/app/Insurance"));
 const CustomerProfile = lazy(() => import("./pages/app/Profile"));
+const AccountEdit = lazy(() => import("./pages/app/AccountEdit"));
+const HomeEdit = lazy(() => import("./pages/app/HomeEdit"));
 const CarePlus = lazy(() => import("./pages/care/CarePlus"));
 const Terms = lazy(() => import("./pages/legal/Terms"));
 const Privacy = lazy(() => import("./pages/legal/Privacy"));
@@ -211,6 +213,8 @@ const App = () => (
                   <Route path="/app/support" element={<RequireAuth><AppShell><Support /></AppShell></RequireAuth>} />
                   <Route path="/app/insurance" element={<RequireAuth><AppShell><Insurance /></AppShell></RequireAuth>} />
                   <Route path="/app/profile" element={<RequireAuth><AppShell><CustomerProfile /></AppShell></RequireAuth>} />
+                  <Route path="/app/profile/account" element={<RequireAuth><AppShell><AccountEdit /></AppShell></RequireAuth>} />
+                  <Route path="/app/profile/homes/:id" element={<RequireAuth><AppShell><HomeEdit /></AppShell></RequireAuth>} />
 
                   {/* Xooter portal */}
                   <Route path="/xooter/apply" element={<RequireAuth><XooterApply /></RequireAuth>} />

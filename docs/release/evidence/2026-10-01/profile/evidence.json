@@ -1,0 +1,571 @@
+{
+  "capturedAt": "2026-10-01T05:10:58.747Z",
+  "scope": "Real Profile, account/home forms and AppShell; synthetic auth/database/wallet adapters only. Other destinations stubbed. No live writes or native runtime.",
+  "browserPath": "Browser plugin not available (browser skill/runtime absent); existing Playwright used.",
+  "checks": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "name": "you-member",
+      "filename": "you-member-320x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "name": "you-standard",
+      "filename": "you-standard-320x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "name": "account",
+      "filename": "account-320x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 844,
+        "viewport": 844
+      }
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "name": "home",
+      "filename": "home-320x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 844,
+        "viewport": 844
+      }
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "interactions": "Confirmed account/home save adapters, real routes and theme toggles, retryable error",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "name": "you-member",
+      "filename": "you-member-390x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "name": "you-standard",
+      "filename": "you-standard-390x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "name": "account",
+      "filename": "account-390x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 844,
+        "viewport": 844
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "name": "home",
+      "filename": "home-390x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 844,
+        "viewport": 844
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "interactions": "Confirmed account/home save adapters, real routes and theme toggles, retryable error",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "name": "you-member",
+      "filename": "you-member-768x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "name": "you-standard",
+      "filename": "you-standard-768x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "name": "account",
+      "filename": "account-768x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 844,
+        "viewport": 844
+      }
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "name": "home",
+      "filename": "home-768x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 844,
+        "viewport": 844
+      }
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "interactions": "Confirmed account/home save adapters, real routes and theme toggles, retryable error",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "name": "you-member",
+      "filename": "you-member-1024x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "name": "you-standard",
+      "filename": "you-standard-1024x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "name": "account",
+      "filename": "account-1024x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 844,
+        "viewport": 844
+      }
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "name": "home",
+      "filename": "home-1024x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 844,
+        "viewport": 844
+      }
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "interactions": "Confirmed account/home save adapters, real routes and theme toggles, retryable error",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "name": "you-member",
+      "filename": "you-member-1440x1000.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "name": "you-standard",
+      "filename": "you-standard-1440x1000.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "name": "account",
+      "filename": "account-1440x1000.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 1000,
+        "viewport": 1000
+      }
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "name": "home",
+      "filename": "home-1440x1000.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 1000,
+        "viewport": 1000
+      }
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "interactions": "Confirmed account/home save adapters, real routes and theme toggles, retryable error",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "name": "you-member",
+      "filename": "you-member-1920x1080.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "name": "you-standard",
+      "filename": "you-standard-1920x1080.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "name": "account",
+      "filename": "account-1920x1080.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 1080,
+        "viewport": 1080
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "name": "home",
+      "filename": "home-1920x1080.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 1080,
+        "viewport": 1080
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "interactions": "Confirmed account/home save adapters, real routes and theme toggles, retryable error",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "name": "you-member",
+      "filename": "you-member-844x390.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "name": "you-standard",
+      "filename": "you-standard-844x390.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "36px",
+      "transform": "none",
+      "overlay": false,
+      "actions": null
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "name": "account",
+      "filename": "account-844x390.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 390,
+        "viewport": 390
+      }
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "name": "home",
+      "filename": "home-844x390.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "transform": "none",
+      "overlay": false,
+      "actions": {
+        "position": "fixed",
+        "transform": "none",
+        "filter": "none",
+        "bottom": 390,
+        "viewport": 390
+      }
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "interactions": "Confirmed account/home save adapters, real routes and theme toggles, retryable error",
+      "errors": []
+    },
+    {
+      "reference": "you",
+      "errors": []
+    }
+  ]
+}

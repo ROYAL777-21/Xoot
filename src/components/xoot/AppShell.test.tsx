@@ -41,13 +41,15 @@ describe("source app navigation", () => {
     expect(screen.getByRole("heading", { name: "Actual child screen" })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Main navigation" })).not.toBeInTheDocument();
   });
-  it("keeps all former account destinations and sign-out reachable from You", () => {
+  it("lets the Profile screen own account destinations and sign-out", () => {
     at("/app/profile");
-    const nav = screen.getByRole("navigation", { name: "Account destinations" });
-    expect(within(nav).getAllByRole("link").map(link => link.getAttribute("href"))).toEqual([
-      "/app/properties", "/app/favorites", "/app/plans", "/app/gifts", "/app/insurance", "/app/support",
-    ]);
-    expect(within(nav).getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Account destinations" })).not.toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeInTheDocument();
+  });
+  it.each(["/app/profile/account", "/app/profile/homes/new", "/app/profile/homes/synthetic-home"])("allows the editor to own the back link at %s", route => {
+    at(route);
+    expect(screen.queryByRole("navigation", { name: "Page navigation" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Main navigation" })).not.toBeInTheDocument();
   });
   it.each(["/app/properties", "/app/favorites", "/app/plans", "/app/gifts", "/app/insurance", "/app/support"])("keeps a way home from %s", route => {
     at(route);

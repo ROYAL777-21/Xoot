@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { ArrowLeft, Calendar, CircleUserRound, House, ListChecks, Trophy } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
 import "@/styles/today-handoff.css";
 
@@ -14,22 +13,13 @@ const tabs = [
 
 export const AppShell = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const { signOut } = useAuth();
   const showTabs = ["/app", "/app/bookings", "/app/loyalty", "/app/profile"].includes(pathname);
-  const hasOwnBack = pathname === "/app/book" || pathname.startsWith("/app/bookings/");
-
-  const accountNav = pathname === "/app/profile" && <nav className="xoot-app-account-links" aria-label="Account destinations">
-    <NavLink to="/app/properties">Properties</NavLink><NavLink to="/app/favorites">My Xooters</NavLink>
-    <NavLink to="/app/plans">Care+</NavLink><NavLink to="/app/gifts">Gift Clean</NavLink>
-    <NavLink to="/app/insurance">Trust policy</NavLink><NavLink to="/app/support">Support</NavLink>
-    <button type="button" onClick={async () => { await signOut(); navigate("/"); }}>Sign out</button>
-  </nav>;
+  const hasOwnBack = pathname === "/app/book" || pathname.startsWith("/app/bookings/") || pathname.startsWith("/app/profile/");
 
   return <div className="xoot-app-shell">
     <main className={showTabs ? "xoot-app-main has-tabs" : "xoot-app-main"}>
       {!showTabs && !hasOwnBack && <nav className="xoot-app-back" aria-label="Page navigation"><NavLink to="/app"><ArrowLeft size={20} aria-hidden="true" />Home</NavLink></nav>}
-      {children}{accountNav}
+      {children}
     </main>
     {showTabs && <div className="xoot-app-tab-dock">
       <nav className="xoot-app-tabs" aria-label="Main navigation">

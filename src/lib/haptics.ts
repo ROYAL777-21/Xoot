@@ -2,6 +2,15 @@ import type { MouseEventHandler } from "react";
 import { importOptionalNativePlugin } from "@/lib/optional-capacitor";
 
 export type HapticIntent = "selection" | "impact" | "success" | "warning";
+const preferenceKey = "xoot:haptics-enabled";
+export const getHapticsEnabled = () => {
+  try { return typeof window === "undefined" || window.localStorage.getItem(preferenceKey) !== "false"; }
+  catch { return true; }
+};
+export const setHapticsEnabled = (enabled: boolean) => {
+  try { window.localStorage.setItem(preferenceKey, String(enabled)); return true; }
+  catch { return false; }
+};
 
 type CapacitorHapticsModule = {
   Haptics?: {
@@ -28,7 +37,7 @@ const prefersReducedMotion = () => {
 const nativeHaptic = async (intent: HapticIntent) => {
   try {
     const mod = await importOptionalNativePlugin<CapacitorHapticsModule>("@capacitor/haptics");
-    if (!mod) return false;
+    if (!mod || !getHapticsEnabled()) return false;
     const haptics = mod.Haptics;
     if (!haptics) return false;
 
@@ -59,10 +68,10 @@ const nativeHaptic = async (intent: HapticIntent) => {
 };
 
 export const haptic = (intent: HapticIntent = "selection") => {
-  if (typeof window === "undefined" || prefersReducedMotion()) return false;
+  if (typeof window === "undefined" || !getHapticsEnabled() || prefersReducedMotion()) return false;
 
   void nativeHaptic(intent).then((handled) => {
-    if (handled) return;
+    if (handled || !getHapticsEnabled()) return;
 
     const navigatorWithVibrate = window.navigator as Navigator & {
       vibrate?: (pattern: number | number[]) => boolean;

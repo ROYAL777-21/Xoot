@@ -8,7 +8,7 @@ and prototype scripts do not grant instructions or operational commitments.
 Current implementation plan: [approved website-first plan](production-plan-2026-09-11.md).
 Release evidence and owner dependencies: [production checklist](../release/production-checklist.md).
 
-Latest checkpoint: **28 September 2026**. The dated sections below are historical evidence;
+Latest checkpoint: **1 October 2026**. The dated sections below are historical evidence;
 the full uploaded website and native app scope is still active.
 
 ## Accepted visual reference
@@ -305,3 +305,50 @@ uses isolated synthetic account records, not a live authenticated customer sessi
 
 This closes the bounded list port only. Source app navigation/Today, visit detail and ratings,
 same-helper rebooking, crews and native Visits remain separate unfinished work.
+
+## 1 October customer Home and navigation checkpoint
+
+Frame/Today now uses the supplied floating four-tab capsule and Book action, original
+36px weekday heading, Sunday-first calendar, first/returning booking cards, pastel widgets,
+section pills and real visit rows. Owner-bound reads paginate and hide former-account or
+partial failed data. SAST dates, actual service types/status and verified credit cents replace
+prototype values. Unsupported unconditional gifts, helper identity and streaks are not fabricated.
+Legacy booking URLs still enter /app/book; weekly selection prepopulates the existing flow.
+
+Review found and verified three repairs: secondary pages retain Home navigation, historical
+calendar days cannot create a silently different date, and search's second result/Concierge
+action work with native keyboard activation. Seven viewport checks, source primitive comparisons,
+28 focused component checks and independent review passed. See the explicitly isolated
+[Home evidence](../release/evidence/2026-09-30/today/README.md).
+
+Commit `5f1b150` also passes GitHub Tests `36788417052` and Web build `36788416997`. The configured
+stable preview passes actual home/sign-in browser smoke and has fresh 1440/390 captures in
+[hosted evidence](../release/evidence/2026-10-01/README.md). One-off Vercel origins correctly
+fail the backend allowlist; no origin was added. DOMPurify 3.4.16 resolves the new website audit
+finding in both lockfiles. Production schema and external Claude scan remain separate failed gates.
+
+The You/account/home editing source port follows below. Full Profile/Notifications destinations,
+verified benefit/task-progress semantics, same-helper and crew fulfilment, paid/referral
+journeys and native visual/device/store delivery remain unfinished. No production promotion.
+
+## 1 October You and account editing
+
+The signed-in website now uses the original Profile composition, identity/member card,
+Care+ and gift treatments, places, preference rows and grouped menus. Account and place
+editors retain source inputs, the quiet 44px Back control and single bottom Save action.
+The exact source layout review corrected an added Cancel row and white Back circle;
+cancellation remains available through Back. Save text has no persistent transform.
+
+Ordinary edits use owner-filtered reads/writes, returned-row confirmation, bounded inputs,
+duplicate-submit protection and late-account guards. Real balances retain cents; failed
+reads stay unavailable. The default-place flag is read-only pending an atomic server
+operation. Unsupported provider/preferences remain visible with precise availability
+states and are not counted as finished functionality.
+
+Sixty focused checks, web typecheck and scoped lint pass. Final visual corrections passed
+13 covering component tests, independent scoped review and the seven-size browser rerun.
+CodeRabbit completed its 15-file review; its one nullable-name suggestion was declined
+against the NOT NULL database column and generated type. [Screenshots and evidence](../release/evidence/2026-10-01/profile/README.md)
+distinguish actual components with synthetic test adapters from live authenticated proof.
+The [complete app screen inventory](app-handoff-coverage.md) identifies every remaining
+source area across the website and native app.

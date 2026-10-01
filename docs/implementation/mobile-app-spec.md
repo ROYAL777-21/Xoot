@@ -1,5 +1,12 @@
 # The mobile app — captured as a spec, before the design context goes cold
 
+**Historical capture, 3 September 2026.** The implementation/status claims below are no
+longer current: the repository now contains native screens and reviewed shared contracts.
+Use the [current handoff coverage](app-handoff-coverage.md),
+[visual evidence](visual-fidelity-ledger.md), and
+[production checklist](../release/production-checklist.md) for remaining work.
+This historical document does not override the founder's approved implementation plan.
+
 Written 2026-09-03. `design-port-plan.md` Phase 4 says the 16 app screens in
 `design/handoff-2026-09-03/xoot/app/` are **"a rewrite, not a port"** and defers them until the site
 is live. It also says to capture them as a spec first. This is that capture.

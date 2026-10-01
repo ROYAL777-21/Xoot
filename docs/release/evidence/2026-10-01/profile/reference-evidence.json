@@ -1,0 +1,19 @@
+{
+  "capturedAt": "2026-10-01T11:01:16.586Z",
+  "scope": "Real Profile, account/home forms and AppShell; synthetic auth/database/wallet adapters only. Other destinations stubbed. No live writes or native runtime.",
+  "browserPath": "Browser plugin not available (browser skill/runtime absent); existing Playwright used.",
+  "checks": [
+    {
+      "reference": "you",
+      "errors": []
+    },
+    {
+      "reference": "account",
+      "errors": []
+    },
+    {
+      "reference": "home",
+      "errors": []
+    }
+  ]
+}
