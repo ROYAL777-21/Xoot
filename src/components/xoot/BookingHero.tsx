@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { isSupabaseConfigured } from "@/integrations/supabase/client";
 import { loadXooterDirectory } from "@/lib/xooter-directory";
+import { resolvedPublicEnv } from "@/lib/public-environment";
 import { captureAnalyticsEvent, getAnalyticsDeviceType } from "@/lib/analytics";
 import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
 import { HeroWordFlip } from "@/components/xoot/HeroWordFlip";
@@ -157,7 +158,12 @@ export const BookingHero = () => {
           </div>
 
           <div className="xoot-hero-trust">
-            <span aria-live="polite">
+            <span
+              aria-live="polite"
+              data-xoot-roster-state={!isSupabaseConfigured ? "unconfigured" : rosterError ? "error" : activeXooters === null ? "loading" : "ready"}
+              data-xoot-app-environment={resolvedPublicEnv.VITE_APP_ENV || (import.meta.env.DEV ? "development" : "unknown")}
+              data-xoot-roster-endpoint={isSupabaseConfigured ? `${String(resolvedPublicEnv.VITE_SUPABASE_URL).trim().replace(/\/+$/, "")}/functions/v1/public-xooter-directory` : undefined}
+            >
               <strong className="text-foreground">Live roster</strong>{" "}
               {!isSupabaseConfigured || rosterError ? "temporarily unavailable" : activeXooters === null ? "checking availability" : `${activeXooters} approved Xooters`}
             </span>

@@ -11,6 +11,7 @@ const option = (name) => {
 };
 
 const timeout = Number(process.env.XOOT_SMOKE_TIMEOUT_MS ?? 15_000);
+if (!Number.isFinite(timeout) || timeout <= 0) throw new Error("XOOT_SMOKE_TIMEOUT_MS must be a positive finite number");
 const artifact = option("--artifact");
 const requestedUrl = option("--url");
 // Render the actual artifact at its intended origin inside this isolated browser.
@@ -96,6 +97,100 @@ const safeResourceUrl = (value) => {
   return ["http:", "https:"].includes(url.protocol) ? `${url.origin}${url.pathname}` : url.protocol;
 };
 
+const isDirectoryRequest = (request) => request.method() === "POST" &&
+  new URL(request.url()).pathname === "/functions/v1/public-xooter-directory";
+
+// One deadline covers request arrival, body completion, validation and React's
+// rendered settlement. Receiving headers alone does not prove a usable response.
+const verifyRoster = async (page, directoryRequests, directoryOutcomes) => {
+  const deadline = Date.now() + timeout;
+  const remaining = () => Math.max(1, deadline - Date.now());
+  const bounded = async (work, message) => {
+    let timer;
+    try {
+      return await Promise.race([
+        work,
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(typeof message === "function" ? message() : message)), remaining()); }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+  const roster = page.locator("[data-xoot-roster-state]");
+  try {
+    await roster.waitFor({ state: "visible", timeout: remaining() });
+  } catch {
+    throw new Error("Homepage roster readiness is missing; deploy a build exposing its current configuration and roster state");
+  }
+  const environment = await roster.getAttribute("data-xoot-app-environment");
+  const state = await roster.getAttribute("data-xoot-roster-state");
+  const endpoint = await roster.getAttribute("data-xoot-roster-endpoint");
+  if (!["development", "staging", "production"].includes(environment)) {
+    throw new Error("Homepage roster has an unknown app environment; check the build's public configuration");
+  }
+  if (state === "unconfigured") {
+    if (environment !== "development" || endpoint || directoryRequests.length > 0 ||
+      !/Live roster\s+temporarily unavailable/.test(await roster.innerText())) {
+      throw new Error("Only explicitly unconfigured development may skip the directory response; release environments require the real roster");
+    }
+    return "explicitly unconfigured development (real roster not checked)";
+  }
+  let url;
+  try { url = new URL(endpoint); } catch { /* Report only the public contract, never raw attribute data. */ }
+  if (!url || !["http:", "https:"].includes(url.protocol) || url.username || url.password || url.search || url.hash ||
+    url.pathname !== "/functions/v1/public-xooter-directory") {
+    throw new Error("Configured homepage roster is missing a valid public directory endpoint");
+  }
+  const matches = (request) => isDirectoryRequest(request) && request.url() === url.href;
+  const observed = directoryOutcomes.find((outcome) => matches(outcome.request));
+  let outcome = observed;
+  if (!outcome) {
+    let onResponse;
+    let onFailure;
+    try {
+      outcome = await bounded(new Promise((resolveOutcome) => {
+        onResponse = (response) => {
+          if (matches(response.request())) resolveOutcome({ request: response.request(), response });
+        };
+        onFailure = (request) => {
+          if (matches(request)) resolveOutcome({ request, failed: true });
+        };
+        page.on("response", onResponse);
+        page.on("requestfailed", onFailure);
+      }), () => directoryRequests.some(matches)
+        ? `Directory response did not settle within ${timeout}ms at ${safeResourceUrl(url.href)}; check endpoint availability and browser network access`
+        : `Configured directory request was not observed within ${timeout}ms at ${safeResourceUrl(url.href)}; check homepage loading and public backend configuration`);
+    } finally {
+      page.removeListener("response", onResponse);
+      page.removeListener("requestfailed", onFailure);
+    }
+  }
+  if (outcome.failed) throw new Error(`Directory network request failed at ${safeResourceUrl(url.href)}`);
+  if (!outcome.response.ok()) throw new Error(`Directory returned HTTP ${outcome.response.status()} at ${safeResourceUrl(url.href)}; the configured roster must succeed before leaving home`);
+  let payload;
+  try {
+    payload = await bounded(outcome.response.json(), `Directory response body did not finish within ${timeout}ms at ${safeResourceUrl(url.href)}`);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("did not finish")) throw error;
+    throw new Error(`Directory returned invalid JSON at ${safeResourceUrl(url.href)}`);
+  }
+  if (!payload || !Array.isArray(payload.xooters) || !Number.isInteger(payload.total) || payload.total < 0) {
+    throw new Error("Directory payload must contain an xooters array and a nonnegative integer total");
+  }
+  try {
+    await page.waitForFunction(({ endpoint: expectedEndpoint, total }) => {
+      const element = document.querySelector("[data-xoot-roster-state]");
+      return element?.getAttribute("data-xoot-roster-state") === "ready" &&
+        element.getAttribute("data-xoot-roster-endpoint") === expectedEndpoint &&
+        element.textContent?.replace(/\s+/g, " ").trim() === `Live roster ${total} approved Xooters`;
+    }, { endpoint: url.href, total: payload.total }, { timeout: remaining() });
+    await roster.waitFor({ state: "visible", timeout: remaining() });
+  } catch {
+    throw new Error(`Directory succeeded but homepage roster did not render its settled truthful count (${payload.total}) within ${timeout}ms`);
+  }
+  return `real directory response and settled roster (${payload.total} approved Xooters)`;
+};
+
 try {
   const target = artifact ? await createArtifactTarget(artifact) : { url: new URL(requestedUrl).href };
   artifactServer = target.server;
@@ -103,12 +198,17 @@ try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: "block" });
   await target.install?.(context);
   const page = await context.newPage();
+  const directoryRequests = [];
+  const directoryOutcomes = [];
+  page.on("request", (request) => { if (isDirectoryRequest(request)) directoryRequests.push(request); });
   page.on("response", (resource) => {
+    if (isDirectoryRequest(resource.request())) directoryOutcomes.push({ request: resource.request(), response: resource });
     if (resource.status() >= 400) {
       resourceProblems.add(`HTTP ${resource.status()} ${resource.request().method()} ${safeResourceUrl(resource.url())}`);
     }
   });
   page.on("requestfailed", (request) => {
+    if (isDirectoryRequest(request)) directoryOutcomes.push({ request, failed: true });
     resourceProblems.add(`Failed ${request.method()} ${safeResourceUrl(request.url())}: ${request.failure()?.errorText ?? "request failure"}`);
   });
   page.on("pageerror", (error) => runtimeProblems.push(`page error: ${error.message}`));
@@ -125,19 +225,23 @@ try {
 
   await page.locator("body").waitFor({ state: "visible", timeout });
   const body = await page.locator("body").innerText();
-  if (/Configuration Error|temporarily unavailable|invalid public configuration/i.test(body)) {
+  // The existing unconfigured-development roster fallback is a truthful status,
+  // not a configuration overlay. Keep the unavailable guard for all other copy.
+  if (/Configuration Error|temporarily unavailable|invalid public configuration/i.test(body.replace(/Live roster\s+temporarily unavailable/g, ""))) {
     throw new Error("Configuration failure overlay is visible on the homepage");
   }
 
   const hero = page.locator("h1:visible").filter({ hasText: /Premium home care/i }).first();
   await hero.waitFor({ state: "visible", timeout });
 
+  const rosterVerification = await verifyRoster(page, directoryRequests, directoryOutcomes);
+
   const signIn = page.getByRole("link", { name: /^Sign in$/i }).first();
   await signIn.waitFor({ state: "visible", timeout });
   const authUrl = new URL("/auth", target.url).href;
   await Promise.all([
     page.waitForURL((url) => sameLocation(url.href, authUrl), { timeout }),
-    signIn.click(),
+    signIn.click({ timeout }),
   ]);
 
   if (!sameLocation(page.url(), authUrl)) throw new Error(`Sign-in navigation reached ${page.url()}`);
@@ -163,7 +267,7 @@ try {
     authControl = "email-code action after reload";
     await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
     authControl = "password-mode action";
-    await page.getByRole("button", { name: /^Use your password instead$/i }).click();
+    await page.getByRole("button", { name: /^Use your password instead$/i }).click({ timeout });
     authControl = "password field";
     await page.getByLabel("Password", { exact: true }).waitFor({ state: "visible", timeout });
     authControl = "password submit action";
@@ -172,10 +276,9 @@ try {
     throw new Error(`Auth navigation did not return a successful response with usable sign-in controls at /auth (missing ${authControl})`);
   }
 
-  await page.waitForTimeout(100);
   if (runtimeProblems.length > 0) throw new Error(`Relevant runtime problem detected: ${runtimeProblems[0]}`);
 
-  console.log(`Rendered site smoke passed for ${target.url}: homepage content, sign-in navigation, controls, and runtime state verified.`);
+  console.log(`Rendered site smoke passed for ${target.url}: ${rosterVerification}, homepage content, sign-in navigation, controls, and runtime state verified.`);
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   const detail = runtimeProblems.length && !message.includes(runtimeProblems[0]) ? `\n${runtimeProblems[0]}` : "";
