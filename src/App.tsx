@@ -47,6 +47,7 @@ const PwaInstall = lazy(() => import("./pages/PwaInstall"));
 const SplitInvite = lazy(() => import("./pages/SplitInvite"));
 const Book = lazy(() => import("./pages/app/Book"));
 const Today = lazy(() => import("./pages/app/Today"));
+const NotificationsFeed = lazy(() => import("./pages/app/NotificationsFeed"));
 const WebsiteBooking = lazy(() => import("./pages/WebsiteBooking"));
 const Favorites = lazy(() => import("./pages/app/Favorites"));
 const Loyalty = lazy(() => import("./pages/app/Loyalty"));
@@ -198,6 +199,7 @@ const App = () => (
                   <Route path="/legal/care-plus-terms" element={<CarePlusTerms />} />
                   <Route path="/legal/xooter-terms" element={<XooterTerms />} />
                   <Route path="/app" element={<RequireAuth><AppShell><Today /></AppShell></RequireAuth>} />
+                  <Route path="/app/notifications" element={<RequireAuth><AppShell><NotificationsFeed /></AppShell></RequireAuth>} />
                   <Route path="/app/book" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />

@@ -352,3 +352,22 @@ against the NOT NULL database column and generated type. [Screenshots and eviden
 distinguish actual components with synthetic test adapters from live authenticated proof.
 The [complete app screen inventory](app-handoff-coverage.md) identifies every remaining
 source area across the website and native app.
+
+## 2 October Notifications feed
+
+The signed-in website now ports the original Search.jsx NotificationsFeed: source cards,
+icon wells, typography, spacing, Back/Home connection and read/unread treatment. Real
+owner-filtered queries replace prototype records; total unread accounting is independent
+of the visible page. Confirmed updates, keyset pagination, retry and empty states retain
+account-transition guards. Full timestamps supplement compact actual relative times.
+
+Review corrected an inaccessible unread count and removed an independent legacy native
+push listener. The source unread dot is decorative; its link has a real exact-count
+accessible description. The optional Capacitor alert entry is honestly unavailable while
+Expo/provider/token lifecycle work remains open. Ordinary auth/app deep links are preserved.
+
+The fix passed 77 focused checks and independent spec/quality re-review. Final browser QA
+passed seven sizes without overflow, runtime errors or persistent heading transform/filter.
+[Reference and actual-component captures](../release/evidence/2026-10-02/notifications/README.md)
+use isolated synthetic records, not live authenticated customers. Realtime publication,
+notification/token privilege hardening, full native parity and actual delivery remain.

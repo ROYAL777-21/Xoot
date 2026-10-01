@@ -1,0 +1,178 @@
+{
+  "checkedAt": "2026-10-01 16:50:44 UTC",
+  "scope": "Read-only catalog inspection; no customer notification or push-token rows read and no writes.",
+  "environments": [
+    {
+      "environment": "staging",
+      "project": "fxmxyabdjqviqbcxmvlp",
+      "rls": [
+        {
+          "table": "notifications",
+          "enabled": true
+        },
+        {
+          "table": "push_tokens",
+          "enabled": true
+        }
+      ],
+      "notificationPolicies": [
+        {
+          "name": "notifications_select_own",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "notifications",
+          "using": "(( SELECT auth.uid() AS uid) = user_id)",
+          "command": "SELECT"
+        },
+        {
+          "name": "notifications_update_own",
+          "check": "(( SELECT auth.uid() AS uid) = user_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "notifications",
+          "using": "(( SELECT auth.uid() AS uid) = user_id)",
+          "command": "UPDATE"
+        }
+      ],
+      "notificationUpdateColumns": [
+        {
+          "role": "authenticated",
+          "table": "notifications",
+          "column": "read"
+        }
+      ],
+      "realtimePublication": [],
+      "excessGrants": [
+        {
+          "role": "anon",
+          "table": "notifications",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "notifications",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "push_tokens",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "push_tokens",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "notifications",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "notifications",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "push_tokens",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "push_tokens",
+          "privilege": "TRUNCATE"
+        }
+      ]
+    },
+    {
+      "environment": "production",
+      "project": "mvlrkelahhsyjrwgsxaf",
+      "rls": [
+        {
+          "table": "notifications",
+          "enabled": true
+        },
+        {
+          "table": "push_tokens",
+          "enabled": true
+        }
+      ],
+      "notificationPolicies": [
+        {
+          "name": "notifications_select_own",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "notifications",
+          "using": "(( SELECT auth.uid() AS uid) = user_id)",
+          "command": "SELECT"
+        },
+        {
+          "name": "notifications_update_own",
+          "check": "(( SELECT auth.uid() AS uid) = user_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "notifications",
+          "using": "(( SELECT auth.uid() AS uid) = user_id)",
+          "command": "UPDATE"
+        }
+      ],
+      "notificationUpdateColumns": [
+        {
+          "role": "authenticated",
+          "table": "notifications",
+          "column": "read"
+        }
+      ],
+      "realtimePublication": [],
+      "excessGrants": [
+        {
+          "role": "anon",
+          "table": "notifications",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "notifications",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "table": "push_tokens",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "table": "push_tokens",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "notifications",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "notifications",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "table": "push_tokens",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "table": "push_tokens",
+          "privilege": "TRUNCATE"
+        }
+      ]
+    }
+  ]
+}

@@ -46,7 +46,7 @@ describe("source app navigation", () => {
     expect(screen.queryByRole("navigation", { name: "Account destinations" })).not.toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeInTheDocument();
   });
-  it.each(["/app/profile/account", "/app/profile/homes/new", "/app/profile/homes/synthetic-home"])("allows the editor to own the back link at %s", route => {
+  it.each(["/app/notifications", "/app/profile/account", "/app/profile/homes/new", "/app/profile/homes/synthetic-home"])("allows the screen to own the back link at %s", route => {
     at(route);
     expect(screen.queryByRole("navigation", { name: "Page navigation" })).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Main navigation" })).not.toBeInTheDocument();

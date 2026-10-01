@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **1 October 2026**. This replaces the status claims in `blocker.md`,
+Current register: **2 October 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -12,15 +12,16 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
 | Website hosting | On 11 September, `xoot.co.za` served Vercel headers and build commit `02bb284`. | Domain resolves. Do not import the old GoDaddy zone export. |
-| Rendered startup | Stable preview commit `5f1b150` renders home/sign-in at 1440 and 390 pixels on 1 October, without page/console errors or horizontal overflow; actual browser smoke passes. | Staging repair verified. Use the configured stable preview origin; one-off deployment hosts are not backend-allowed. Production still requires launch gates. |
+| Rendered startup | Stable preview commit `0ee9cb2` renders home/sign-in at 1440 and 390 pixels on 1 October without page/console errors or overflow. The reviewed [2 October verifier repair](evidence/2026-10-02/README.md) waits for the real directory response: rebuilt staging passes with zero approved profiles; production fails HTTP 404 before leaving home. | Local correction and staging artifact verified. Deliver the reviewed production backend before launch. Use the configured stable preview origin. |
 | Vercel access | Connector lists project `xoot`, `prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`, on 12 September. Team plan is Hobby. | Preview configuration possible; commercial hosting plan required for paid launch. |
 | Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
 | Staging schema | Read-only query on 21 September: 82 versions, latest `20260903120000`; gift RPC absent. | New `20260920200000_gift_order_contract.sql` not deployed. |
 | Production schema | Read-only query on 21 September: 81 versions, latest `20260902120000`. | Crew/referral and new gift migration still absent. |
-| Backend delivery | 51 source functions plus six obsolete production endpoints at audit. Shared code is bundled per function. | Compare versions/source, migrate first and redeploy every affected importer. |
+| Backend delivery | Read-only inventory on 1 October: staging 53 functions, production 57. Production lacks `public-xooter-directory` and `get-booking-quote`; staging has both. Direct directory requests: production 404/NOT_FOUND, staging 200 with zero public profiles. | Production delivery is incomplete. Compare source versions, migrate first and redeploy affected importers. Do not hide missing dependencies in the browser gate. |
+| Notification delivery/security | Read-only catalog checks on 1 October confirm owner RLS and authenticated UPDATE(read) on notifications in both environments. Notifications is absent from realtime publications. Notifications/push_tokens also retain anon/authenticated TRUNCATE/TRIGGER grants. [Catalog evidence](evidence/2026-10-01/hosted-profile/notification-metadata.json). | Publish the notifications table through reviewed CLI migration and verify signed-in delivery; remove unnecessary destructive grants through reviewed migration. Client subscriptions alone are not delivery evidence. No private records were read or changed. |
 | PayFast | Hosted checkout disabled; provider verification flags false in both environments at audit. | Signed webhook smoke tests, amount matching and reconciliation evidence required. |
 | Supply | Production aggregate counts: zero Xooters and zero bookings, rechecked 21 September. | Recruit/verify helpers and run consenting pilot; no invented availability/reviews. |
-| Supabase CLI | GitHub credentials configured staging origins and deployed the directory/matching functions (runs 34786060963, 34829457465, 35498593092). Database linking was denied in run 34786290645. | Correct the deployment identity's database-management access and keep separate database credentials. Local `supabase login` is optional for local CLI work; it does not replace the GitHub secret. |
+| Supabase CLI | GitHub credentials previously configured staging origins and deployed directory/matching functions. Fresh read-only staging preflight on 1 October, [run 36932028355](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/36932028355), passed credential-presence/setup checks but failed at `supabase link`: access token/project pair lacks the required endpoint privileges. No database changes were attempted. | Correct the deployment identity's database-management access and keep separate database credentials. Local `supabase login` is optional for local CLI work; it does not replace the GitHub secret. |
 | Reviews | CodeRabbit retry completed 20 September with 11 findings: eight addressed and three rejected with rationale in the visual ledger. Gift/native slices and the 26 September dependency/runtime slice passed scoped reviews. | Whole-branch release/security review still required before production. |
 | Dependency audit | Website npm audit zero on 1 October after the reviewed DOMPurify 3.4.16 patch; npm/Bun locks align. Mobile audit on 26 September: three moderate, zero high/critical. | Mobile `expo-router → query-string → decode-uri-component` remains open; do not force an Expo downgrade or incompatible module override. |
 
@@ -32,13 +33,19 @@ The [28 September preview evidence](evidence/2026-09-28/README.md) records the v
 commit, hosted screenshots, responsive checks and CI results. This is not the completed production release.
 The [30 September checkpoint](evidence/2026-09-30/README.md) adds current hosted screenshots,
 real PostgreSQL concurrency results and the passing production-configured browser build.
-The [1 October hosted checkpoint](evidence/2026-10-01/README.md) verifies `5f1b150`, with
-fresh screenshots and passing GitHub Tests/Web build. Schema drift and the external Claude
-scan remain failed gates; the remaining source ports and paid/native journeys are unfinished.
+The [latest 1 October hosted checkpoint](evidence/2026-10-01/hosted-profile/README.md) verifies
+`0ee9cb2`, including fresh public-page captures and 143 files / 1,444 passing tests (seven
+existing skips). Its production Web build fails on the absent directory endpoint. Schema
+drift and the external Claude scan also remain failed gates; source ports and paid/native
+journeys are unfinished. The earlier `5f1b150` evidence is retained as history.
 
 The 28 September production schema check is red for pending gift/referral changes and generated
 differences. The Claude security action did not run its scan because the Anthropic API credit balance
 was too low; its nominal success is not review evidence. A result guard now exposes that failure.
+The 1 October run `36854449608` artifact additionally records GitHub 406 while fetching the
+PR, alongside the same insufficient-credit error. A direct read-only diff request confirms
+the 300-file limit. Engineering must use paginated file retrieval or a local Git comparison;
+the owner must restore API credit. Neither repair alone establishes a completed scan.
 
 The staging quote endpoint was delivered through Supabase CLI server-side bundling in run
 `36385184482`; readback shows ACTIVE v1 with JWT verification, a successful stable-preview
@@ -50,7 +57,11 @@ corrected with DOM creation. Web build `36528691982` then reached browser verifi
 failed on a resource 404, whose path was not reported. Commit `04f309d` adds URL-path diagnostics
 without query values; all nine browser regressions and scoped lint pass locally. Web build
 `36643027236` at `c9a9386` now passes its production-configured rendered check. The earlier404
-did not recur and its URL remains unknown. Production CORS has not been loosened.
+did not recur in that run and its URL remains unknown. On 1 October, Web build `36854449284`
+identified the missing production `public-xooter-directory` endpoint. A synthetic delayed
+response probe proved the old smoke can navigate away before a slow 404 arrives: earlier
+passes were insufficient directory-readiness evidence. Repair this wait and complete the
+reviewed backend delivery; do not retry for a green result. Production CORS has not been loosened.
 Hosted home and direct sign-in on `105b926` render at both checked widths on 30 September;
 the separate CI artifact check verifies the production configuration without promoting it.
 
@@ -143,8 +154,9 @@ Record commit, environment, command/run link, date and result when closing each 
 1. **Hosting:** in Vercel, open the team for `xoot` and upgrade to a plan permitting commercial use
    before paid launch. The account currently reports Hobby. [Vercel plan rules](https://vercel.com/docs/plans/hobby).
 2. **Database deployment access:** the saved GitHub token successfully configures staging origins
-   and deploys Edge Functions. Database preflight failed during project linking because that token
-   lacks privileges for the required endpoint (run 34786290645). In Supabase account access settings,
+   and deploys Edge Functions. The fresh read-only staging preflight on 1 October failed during
+   project linking because that token lacks privileges for the required endpoint
+   ([run 36932028355](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/36932028355)). In Supabase account access settings,
    grant the deployment identity the required project/database-management access, then replace the
    GitHub Actions token through secure settings if needed. Keep separate
    `SUPABASE_DB_PASSWORD_PRODUCTION` / `SUPABASE_DB_PASSWORD_STAGING` values. The observed failure

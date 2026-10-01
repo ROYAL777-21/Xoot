@@ -24,8 +24,8 @@ export function ProfileSwitch({ label, description, checked = false, onChange, d
 export function ProfileState({ loading, error, retry }: { loading?: boolean; error?: string | null; retry?: () => void }) {
   return <div className="xoot-you-state" role={error ? "alert" : "status"}><p>{error || (loading ? "Loading your details…" : "Sign in to view your details.")}</p>{error && <button type="button" onClick={retry}>Try again</button>}</div>;
 }
-export function ProfileDetail({ title, children }: { title: string; children: ReactNode }) {
-  return <div className="xoot-you xoot-you-detail"><header className="xoot-you-topbar"><Link to="/app/profile" aria-label="Back to You"><ArrowLeft size={20} strokeWidth={2.15} aria-hidden="true" /></Link><h1>{title}</h1></header>{children}</div>;
+export function ProfileDetail({ title, children, subtitle, trailing, backTo = "/app/profile", backLabel = "Back to You" }: { title: string; children: ReactNode; subtitle?: string; trailing?: ReactNode; backTo?: string; backLabel?: string }) {
+  return <div className="xoot-you xoot-you-detail"><header className="xoot-you-topbar"><Link to={backTo} aria-label={backLabel}><ArrowLeft size={20} strokeWidth={2.15} aria-hidden="true" /></Link>{subtitle !== undefined ? <span className="xoot-notifications-heading"><h1>{title}</h1><small>{subtitle}</small></span> : <h1>{title}</h1>}{trailing}</header>{children}</div>;
 }
 
 export function ProfileInput({ label, icon: Icon, hint, ...input }: InputHTMLAttributes<HTMLInputElement> & { label: string; icon?: LucideIcon; hint?: string }) {

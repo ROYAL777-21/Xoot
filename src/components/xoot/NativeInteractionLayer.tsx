@@ -7,19 +7,10 @@ const editableSelector = 'input, textarea, select, [contenteditable="true"]';
 
 type NativeListenerHandle = { remove: () => Promise<void> | void };
 type CapacitorAppUrlOpen = { url?: string };
-type CapacitorPushNotification = { data?: unknown } & Record<string, unknown>;
 type CapacitorAppModule = {
   App?: {
     getLaunchUrl: () => Promise<{ url?: string } | null>;
     addListener: (event: "appUrlOpen", callback: (event: CapacitorAppUrlOpen) => void) => Promise<NativeListenerHandle>;
-  };
-};
-type CapacitorPushModule = {
-  PushNotifications?: {
-    addListener: (
-      event: "pushNotificationActionPerformed",
-      callback: (event: { notification?: CapacitorPushNotification }) => void,
-    ) => Promise<NativeListenerHandle>;
   };
 };
 
@@ -119,7 +110,7 @@ export const NativeInteractionLayer = () => {
 
       const remove = () => handle.remove();
       if (disposed) {
-        void remove();
+        void Promise.resolve().then(remove).catch(() => undefined);
         return;
       }
 
@@ -127,6 +118,7 @@ export const NativeInteractionLayer = () => {
     };
 
     const routeNativePayload = (payload: unknown) => {
+      if (disposed) return;
       const route = resolveNativeRoute(payload);
       if (!route) return;
       navigate(route);
@@ -139,9 +131,10 @@ export const NativeInteractionLayer = () => {
     const registerAppListeners = async () => {
       try {
         const App = (await importOptionalNativePlugin<CapacitorAppModule>("@capacitor/app"))?.App ?? null;
-        if (!App) return;
+        if (!App || disposed) return;
         const launch = await App.getLaunchUrl();
-        if (!disposed) routeNativePayload(launch?.url);
+        if (disposed) return;
+        routeNativePayload(launch?.url);
 
         const handle = await App.addListener("appUrlOpen", (event: CapacitorAppUrlOpen) => {
           routeNativePayload(event?.url);
@@ -152,32 +145,13 @@ export const NativeInteractionLayer = () => {
       }
     };
 
-    const registerPushListeners = async () => {
-      try {
-        const PushNotifications =
-          (await importOptionalNativePlugin<CapacitorPushModule>("@capacitor/push-notifications"))?.PushNotifications ?? null;
-        if (!PushNotifications) return;
-        const handle = await PushNotifications.addListener(
-          "pushNotificationActionPerformed",
-          (event) => {
-            const notification = event?.notification as unknown as CapacitorPushNotification | undefined;
-            routeNativePayload(notification?.data ?? notification);
-          },
-        );
-        addRemover(handle);
-      } catch {
-        // Browser/PWA builds should not request native push plugins.
-      }
-    };
-
     window.addEventListener("xoot:native-route", handleNativeRouteEvent);
     void registerAppListeners();
-    void registerPushListeners();
 
     return () => {
       disposed = true;
       window.removeEventListener("xoot:native-route", handleNativeRouteEvent);
-      removers.forEach((remove) => void remove());
+      removers.forEach((remove) => { void Promise.resolve().then(remove).catch(() => undefined); });
     };
   }, [navigate]);
 

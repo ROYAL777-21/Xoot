@@ -1,6 +1,6 @@
 # App handoff coverage
 
-Updated 1 October 2026. This maps the supplied editable app screens to the website's
+Updated 2 October 2026. This maps the supplied editable app screens to the website's
 signed-in experience and the Expo app. It is an implementation inventory, not a release
 certificate. The [visual ledger](visual-fidelity-ledger.md) records comparisons; the
 [production checklist](../release/production-checklist.md) remains the single register
@@ -17,7 +17,7 @@ physical-device, store distribution or complete paid journey is verified yet.
 | Frame / Today | `AppShell` and `Today`: source navigation, calendar, first/returning cards, widgets and real booking rows. Reviewed browser checks at seven sizes; [evidence](../release/evidence/2026-09-30/today/README.md). | `index.tsx` and native shell exist; data pagination/account guards and complete source/device comparison remain. |
 | Onboarding / authentication | Actual authentication and source booking entry exist; production-configured home/sign-in rendering verified. Remaining permission/phone/SSO states need complete journey coverage. | Auth and booking entry exist; complete first-run, permissions, interrupted-auth and provider/device verification remain. |
 | Search / Concierge | Real search and Concierge entry exist; keyboard selection and unsent question handling reviewed. Full source screen coverage and supported actions remain. | `search.tsx` and `concierge.tsx` exist; native journey verification remains. |
-| Notifications feed (`Search.jsx`) | Home's existing notification dropdown still needs the full source feed, owner-state/error handling and complete unread accounting. | `notifications.tsx` exists; bounded fetching, account transitions, source fidelity and device delivery remain. |
+| Notifications feed (`Search.jsx`) | Source feed, Back/Home entry, exact accessible unread count, owner-safe pagination/read actions, retry and empty states are implemented and independently reviewed. [Seven-size evidence](../release/evidence/2026-10-02/notifications/README.md) uses isolated synthetic accounts. Realtime publication/security migration and signed-in live delivery remain. | `notifications.tsx` exists; bounded fetching, account transitions, source fidelity and device delivery remain. Optional legacy web-bridge setup is explicitly unavailable. |
 | Booking / service correction / quote | Source website modal and signed-in booking inputs/review ported; shared server quote uses approved ZD-038. Atomic one-job creation, crew lifecycle, payments and referrals remain. | `book.tsx` uses source inputs/artwork and shared quote contract. Native render and the same backend fulfilment gates remain. |
 | Visits list | `Bookings.tsx` reviewed: source tabs, rows, past cards and verified payment data; [evidence](../release/evidence/2026-09-30/visits/README.md). | `bookings.tsx` exists; the exact list port, correct displayed money and complete data handling remain. |
 | Visit detail / rate / tracking / chat | Existing booking detail, chat and review behavior require the full `Visits.jsx`/`Tracking.jsx` port and crew-aware data/actions. | Dedicated source visit detail, tracking, rating and chat journeys remain. |

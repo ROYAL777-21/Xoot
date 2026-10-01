@@ -19,7 +19,8 @@
 .xoot-today-greeting { margin:0; color:var(--xoot-text-muted); font-size:var(--xoot-label); font-weight:700; letter-spacing:var(--xoot-track-label); text-transform:uppercase; }
 .xoot-today h1 { margin:6px 0 0; font-family:var(--xoot-font-display); font-size:var(--xoot-display-2); font-weight:var(--xoot-weight-display); letter-spacing:var(--xoot-track-display); line-height:1.04; }
 .xoot-today-actions { display:flex; align-items:center; flex-shrink:0; gap:4px; }
-.xoot-today-actions>button { display:grid; place-items:center; width:36px; height:36px; padding:0; border:0; border-radius:50%; background:transparent; color:var(--xoot-text-primary); cursor:pointer; }
+.xoot-today-actions>button { display:grid; place-items:center; width:44px; height:44px; padding:0; border:0; border-radius:50%; background:transparent; color:var(--xoot-text-secondary); cursor:pointer; }
+.xoot-today-actions>button:hover { background:var(--xoot-action-quiet-hover); }
 .xoot-today-actions [aria-label="Notifications"] svg { width:20px; height:20px; }
 .xoot-today-actions [aria-label="Notifications"]>span { top:6px; right:6px; width:8px; min-width:8px; height:8px; padding:0; font-size:0; box-shadow:0 0 0 2px var(--xoot-surface-page); }
 .xoot-today-avatar { display:grid; place-items:center; width:34px; height:34px; margin-left:4px; border-radius:50%; background:var(--xoot-violet-100); color:var(--xoot-violet-700); font-family:var(--xoot-font-display); font-size:13px; text-decoration:none; }
