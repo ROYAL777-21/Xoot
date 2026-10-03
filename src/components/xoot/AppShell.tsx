@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Calendar, Crown, Gift, Heart, Home, LifeBuoy, LogOut, ShieldCheck, User, Building2 } from "lucide-react";
+import { Calendar, Crown, Gift, Heart, LifeBuoy, LogOut, ShieldCheck, User, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -8,7 +8,6 @@ import { ConciergeOmnibox } from "@/components/xoot/ConciergeOmnibox";
 import { haptic } from "@/lib/haptics";
 
 const nav = [
-  { to: "/app", label: "Book", icon: Home, end: true },
   { to: "/app/bookings", label: "Bookings", icon: Calendar },
   { to: "/app/plans", label: "Care+", icon: Crown },
   { to: "/app/properties", label: "Properties", icon: Building2 },

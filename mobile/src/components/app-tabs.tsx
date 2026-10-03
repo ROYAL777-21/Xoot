@@ -28,6 +28,14 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="bookings">
+        <NativeTabs.Trigger.Label>Bookings</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require('@/assets/images/tabIcons/explore.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="care-plus">
         <NativeTabs.Trigger.Label>Care+</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon

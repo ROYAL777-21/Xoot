@@ -67,6 +67,18 @@ const PEOPLE = [
   },
 ] as const;
 
+const XootCharacter = ({ ink, wash, pose }: { ink: string; wash: string; pose: number }) => (
+  <svg viewBox="0 0 96 96" className="h-20 w-20" aria-hidden="true">
+    <circle cx="48" cy="48" r="42" fill={wash} />
+    <path d={`M30 ${67 - pose}c2-13 10-20 18-20s16 7 18 ${20 + pose}`} fill={ink} opacity=".92" />
+    <circle cx="48" cy="34" r="14" fill="hsl(var(--background))" stroke={ink} strokeWidth="3" />
+    <path d="M39 31c4-5 14-5 18 0" fill="none" stroke={ink} strokeWidth="3" strokeLinecap="round" />
+    <circle cx="43" cy="36" r="1.8" fill={ink} /><circle cx="53" cy="36" r="1.8" fill={ink} />
+    <path d="M43 42c3 3 7 3 10 0" fill="none" stroke={ink} strokeWidth="2" strokeLinecap="round" />
+    <path d="M25 68c8-5 13-7 23-7s15 2 23 7" fill="none" stroke="hsl(var(--background))" strokeWidth="3" strokeLinecap="round" opacity=".8" />
+  </svg>
+);
+
 export const PeopleBand = () => {
   return (
     <section className="py-16 sm:py-20">
@@ -84,18 +96,17 @@ export const PeopleBand = () => {
         </div>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {PEOPLE.map((person) => {
-            const Icon = person.icon;
+          {PEOPLE.map((person, index) => {
             return (
               <div
                 key={person.title}
                 className="flex h-full flex-col items-center gap-4 rounded-3xl border border-border bg-card p-6 text-center"
               >
                 <span
-                  className="grid h-16 w-16 place-items-center rounded-full"
+                  className="grid h-20 w-20 place-items-center rounded-full transition-transform duration-300 hover:-translate-y-1 hover:rotate-2"
                   style={{ background: person.wash, color: person.ink }}
                 >
-                  <Icon className="h-7 w-7" strokeWidth={1.9} aria-hidden="true" />
+                  <XootCharacter ink={person.ink} wash={person.wash} pose={index % 2} />
                 </span>
                 <h3 className="font-display text-lg font-bold tracking-tight">{person.title}</h3>
                 <p className="text-sm leading-6 text-muted-foreground">{person.body}</p>

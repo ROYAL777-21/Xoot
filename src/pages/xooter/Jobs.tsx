@@ -10,6 +10,7 @@ import { haptic } from "@/lib/haptics";
 import { invokeOpsWorkflow } from "@/lib/ops-workflow";
 import { getAcceptedXooterJobAddress, getSensitiveAccessAvailability } from "@/lib/operations";
 import { SensitiveFieldReveal } from "@/components/xoot/SensitiveFieldReveal";
+import { JobChecklist } from "@/components/xooter/JobChecklist";
 
 const Jobs = () => {
   const { user } = useAuth();
@@ -186,6 +187,7 @@ const Section = ({ title, jobs, respond, actions = false, revealAccess = false }
                   </div>
                 </div>
               )}
+              {j.state === "accepted" && <div className="mt-5 border-t border-border/70 pt-4"><JobChecklist jobId={j.id} bookingId={b.id} /></div>}
             </Card>
           );
         })}

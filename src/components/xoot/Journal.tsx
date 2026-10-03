@@ -49,10 +49,10 @@ export const Journal = () => {
             The Xoot journal
           </p>
           <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            The questions that come up before you book.
+            Practical notes before you book.
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            No filler — what a home-services booking actually involves, written plainly.
+            No filler and no invented testimonials — what a home-services booking actually involves, written plainly by the Xoot team.
           </p>
         </div>
 

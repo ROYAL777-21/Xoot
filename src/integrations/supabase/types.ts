@@ -4662,6 +4662,45 @@ export type Database = {
           },
         ]
       }
+      xooter_job_checklist: {
+        Row: {
+          booking_id: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          id: string
+          job_id: string
+          label: string
+          position: number
+          task_key: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          label: string
+          position: number
+          task_key: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          label?: string
+          position?: number
+          task_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       xooter_jobs: {
         Row: {
           booking_id: string
