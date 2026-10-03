@@ -55,7 +55,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
               <NavLink
                 key={n.to}
                 to={n.to}
-                end={n.end}
                 onClick={() => haptic("selection")}
                 className={({ isActive }) =>
                   `xoot-liquid-nav-item interactive-press liquid-glass-interactive flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors ${
@@ -91,7 +90,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
               <NavLink
                 key={n.to}
                 to={n.to}
-                end={n.end}
                 onClick={() => haptic("selection")}
                 className={({ isActive }) =>
                   `xoot-liquid-nav-item interactive-press liquid-glass-interactive tap-target flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1.5 py-1 text-[10px] leading-tight font-semibold transition-colors ${
