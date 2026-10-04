@@ -17,6 +17,10 @@ carried forward on trust.
 > questions between the roles* in `docs/implementation/agent-worklog.md` — deliberately **not**
 > resolved by either session unilaterally, and deliberately not fixed by copying the missing items
 > here, because a fourth copy is how the previous seven registers rotted.
+
+> **Current execution guide:** [`FOUNDER-PRODUCTION-HANDOFF.md`](./FOUNDER-PRODUCTION-HANDOFF.md)
+> contains the ordered provider steps, verification evidence, and stop conditions for finishing the
+> release without exposing credentials or enabling payments prematurely.
 >
 > *(Flag added by Correctness & Safety, 2026-08-14. `docs/release/**` is Release's path; only this
 > block and the #34 row below were touched.)*
