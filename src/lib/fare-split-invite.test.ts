@@ -125,6 +125,19 @@ describe("the delivery links", () => {
     expect(inviteUrlFor("https://xoot.co.za/", "abc123")).toBe("https://xoot.co.za/split/abc123");
     expect(inviteUrlFor("https://xoot.co.za", "a/b?c")).toBe("https://xoot.co.za/split/a%2Fb%3Fc");
   });
+
+  it("rejects non-web origins and control-character tokens", () => {
+    expect(inviteUrlFor("javascript:alert(1)", "abc123")).toBe("");
+    expect(inviteUrlFor("data:text/html,evil", "abc123")).toBe("");
+    expect(inviteUrlFor("https://user:pass@xoot.co.za", "abc123")).toBe("");
+    expect(inviteUrlFor("https://xoot.co.za", "abc\n123")).toBe("");
+    expect(inviteUrlFor("http://localhost:5173", "abc123")).toBe("http://localhost:5173/split/abc123");
+  });
+
+  it("rejects malformed mail recipients before constructing a mailto action", () => {
+    expect(mailtoInviteUrl({ ...DETAILS, email: "victim@example.com\r\nBcc:attacker@example.com" })).toBe("mailto:");
+    expect(mailtoInviteUrl({ ...DETAILS, email: "not-an-email" })).toBe("mailto:");
+  });
 });
 
 describe("service labels", () => {

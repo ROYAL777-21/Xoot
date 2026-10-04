@@ -36,6 +36,23 @@ export type InviteDetails = {
   inviteUrl: string;
 };
 
+const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/;
+const SAFE_EMAIL = /^[^\s@<>()[\],;:\\"']+@[^\s@<>()[\],;:\\"']+\.[^\s@<>()[\],;:\\"']+$/;
+
+/** Keep generated invite links on a real web origin, never a script/data URL sink. */
+const safeInviteOrigin = (origin: string) => {
+  try {
+    if (CONTROL_CHARACTERS.test(origin)) return null;
+    const parsed = new URL(origin);
+    if (!["https:", "http:"].includes(parsed.protocol)) return null;
+    if (parsed.username || parsed.password || parsed.search || parsed.hash) return null;
+    if (parsed.protocol === "http:" && !["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname)) return null;
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+};
+
 /**
  * The date, as a South African would say it out loud.
  *
@@ -102,8 +119,10 @@ export const whatsappInviteUrl = (details: InviteDetails): string =>
  * observability and an upgrade in actually-arriving.
  */
 export const mailtoInviteUrl = (details: InviteDetails & { email: string }): string => {
+  const recipient = details.email.trim();
+  if (!SAFE_EMAIL.test(recipient) || CONTROL_CHARACTERS.test(recipient)) return "mailto:";
   const subject = `Your share of the Xoot clean — ${formatRands(details.amountCents)}`;
-  return `mailto:${encodeURIComponent(details.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(inviteMessage(details))}`;
+  return `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(inviteMessage(details))}`;
 };
 
 /**
@@ -113,8 +132,11 @@ export const mailtoInviteUrl = (details: InviteDetails & { email: string }): str
  * `origin` is passed in rather than read from `window` so this stays a pure function and can be
  * tested without a DOM.
  */
-export const inviteUrlFor = (origin: string, token: string): string =>
-  `${origin.replace(/\/+$/, "")}/split/${encodeURIComponent(token)}`;
+export const inviteUrlFor = (origin: string, token: string): string => {
+  const safeOrigin = safeInviteOrigin(origin);
+  if (!safeOrigin || CONTROL_CHARACTERS.test(token)) return "";
+  return `${safeOrigin}/split/${encodeURIComponent(token)}`;
+};
 
 /**
  * Human labels for the internal `service_type` vocabulary.
