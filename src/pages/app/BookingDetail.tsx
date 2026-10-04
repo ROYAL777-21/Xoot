@@ -34,6 +34,7 @@ import { getClientVisibleStatus, normaliseBookingStatus, type BookingStatus } fr
 import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { toast } from "sonner";
 import { JobChecklist } from "@/components/xooter/JobChecklist";
+import { safeFileName, validateCompletionPhotoUpload } from "@/lib/upload-validation";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
 type TimelineEvent = { id: string; status: string; label: string; created_at: string };
@@ -408,9 +409,19 @@ const BookingDetail = () => {
 
   const uploadPhoto = async (photoType: "before" | "after", file: File) => {
     if (!user || !id || !booking?.xooter_id) return;
+    const validationError = validateCompletionPhotoUpload(file);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
     setUploading(photoType);
-    const path = `${id}/${photoType}-${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("booking-completion-photos").upload(path, file, { upsert: true });
+    const uploadId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const path = `${id}/${photoType}-${uploadId}-${safeFileName(file.name)}`;
+    const { error } = await supabase.storage.from("booking-completion-photos").upload(path, file, {
+      upsert: false,
+      contentType: file.type,
+      cacheControl: "0",
+    });
     if (error) { setUploading(null); toast.error(error.message); return; }
     const { error: insertError } = await supabase.from("booking_completion_photos").insert({ booking_id: id, xooter_id: booking.xooter_id, photo_type: photoType, storage_path: path });
     setUploading(null);

@@ -1,8 +1,10 @@
 export const MAX_KYC_UPLOAD_BYTES = 8 * 1024 * 1024;
 export const MAX_COMPLETION_PHOTO_BYTES = 6 * 1024 * 1024;
+export const MAX_AVATAR_UPLOAD_BYTES = 3 * 1024 * 1024;
 
 export const KYC_UPLOAD_TYPES = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 export const COMPLETION_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+export const AVATAR_UPLOAD_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export type UploadValidationOptions = {
   allowedTypes: Set<string>;
@@ -43,4 +45,11 @@ export const validateCompletionPhotoUpload = (file: File) =>
     allowedTypes: COMPLETION_PHOTO_TYPES,
     maxBytes: MAX_COMPLETION_PHOTO_BYTES,
     label: "completion photo",
+  });
+
+export const validateAvatarUpload = (file: File) =>
+  validateUploadFile(file, {
+    allowedTypes: AVATAR_UPLOAD_TYPES,
+    maxBytes: MAX_AVATAR_UPLOAD_BYTES,
+    label: "profile photo",
   });

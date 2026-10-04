@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeFileName, validateCompletionPhotoUpload, validateKycUpload } from "./upload-validation";
+import { safeFileName, validateAvatarUpload, validateCompletionPhotoUpload, validateKycUpload } from "./upload-validation";
 
 describe("upload validation helpers", () => {
   it("normalises unsafe upload filenames", () => {
@@ -21,5 +21,13 @@ describe("upload validation helpers", () => {
 
     expect(validateCompletionPhotoUpload(photo)).toBeNull();
     expect(validateCompletionPhotoUpload(pdf)).toContain("approved file types");
+  });
+
+  it("accepts small avatar images and rejects oversized files", () => {
+    const avatar = new File(["image"], "avatar.png", { type: "image/png" });
+    const oversized = new File([new Uint8Array(3 * 1024 * 1024 + 1)], "avatar.png", { type: "image/png" });
+
+    expect(validateAvatarUpload(avatar)).toBeNull();
+    expect(validateAvatarUpload(oversized)).toContain("smaller than 3MB");
   });
 });
