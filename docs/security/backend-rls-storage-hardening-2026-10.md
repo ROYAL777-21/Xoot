@@ -42,3 +42,16 @@ Apply the migration to a staging Supabase project first, then production only af
 ## Important limitation
 
 This migration is defensive code, not a penetration-test certificate. The live database, storage policy state, Auth redirect allowlist, provider secrets, rate limits, and Edge Function deployment still need verification in the Supabase project that serves production.
+
+## Edge Function hardening added — 2026-10-05
+
+- Added a 256 KiB streaming cap to the shared JSON request parser. Oversized or malformed bodies now follow the existing validation-failure path instead of being parsed without a limit.
+- Migrated the remaining browser-facing JSON handlers to the bounded parser, including booking, payment, support, Care+, Xooter application, fare-split, sensitive-access, Twilio-token, and admin workflows.
+- Replaced database error messages returned by the sensitive-access read/save endpoints with generic client-safe messages; detailed errors remain server logs only.
+- Made the shared `ALLOWED_ORIGINS` resolver fall back to the known safe defaults when the environment variable is empty or whitespace-only.
+
+### Additional live verification
+
+- Send a request body larger than 256 KiB to an authenticated JSON endpoint and confirm it returns a normal validation error without a function crash.
+- Confirm production `ALLOWED_ORIGINS` contains only owned HTTPS origins; never include wildcard, loopback, preview, or arbitrary customer-controlled domains.
+- Confirm sensitive-access failures do not return Postgres, encryption, or provider error text to the browser.

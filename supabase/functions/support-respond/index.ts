@@ -4,6 +4,7 @@ import { getConciergeCapabilities } from "../_shared/concierge-controls.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
 import { getXootKnowledgeReply, redactSupportText, sanitiseSupportText, xootKnowledgeContext, xootKnowledgeVersion } from "../_shared/xoot-knowledge.ts";
 
+import { readJson } from "../_shared/action-utils.ts";
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
@@ -319,7 +320,7 @@ Deno.serve(async (req) => {
       ? await authClient.auth.getUser().catch(() => ({ data: { user: null } }))
       : { data: { user: null } };
 
-    const requestBody = await req.json();
+    const requestBody = await readJson(req);
     const safeSubject = sanitiseSupportText(requestBody.subject, 180);
     const safeBody = sanitiseSupportText(requestBody.body);
     const safeTicketId = sanitiseUuid(requestBody.ticket_id);

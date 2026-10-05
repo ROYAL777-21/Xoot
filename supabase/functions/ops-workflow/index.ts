@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { readJson } from "../_shared/action-utils.ts";
 import {
   assertTransition,
   normaliseBookingStatus,
@@ -243,7 +244,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const body = await req.json();
+    const body = await readJson(req);
     const action = cleanText(body.action, 60);
     const userId = authData.user.id;
 

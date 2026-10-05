@@ -5,6 +5,7 @@ import {
   handlePreflight,
   ok,
   getServiceClient,
+  readJson,
   requireAuth,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
@@ -141,7 +142,7 @@ Deno.serve(async (req) => {
   const { user, supa } = auth;
 
   try {
-    const body = await req.json().catch(() => ({}));
+    const body = await readJson(req);
     const paymentRecordId = cleanText(String(body.payment_record_id ?? body.paymentRecordId ?? ""), 64);
     if (!paymentRecordId) return fail("payment_record_id required", origin, 400);
 

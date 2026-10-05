@@ -4,6 +4,7 @@ import {
   fail,
   handlePreflight,
   ok,
+  readJson,
   requireAuth,
   toNumber,
   writeAuditLog,
@@ -35,7 +36,7 @@ Deno.serve(async (req) => {
   const { user, supa } = auth as { user: any; supa: any };
 
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const bookingId = cleanId(body.bookingId ?? body.booking_id);
     const requestedAmount = Math.max(0, toNumber(body.amount, 0));
     if (!bookingId) return fail("booking_id required", origin, 400);

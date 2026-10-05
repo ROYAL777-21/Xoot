@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { readJson } from "../_shared/action-utils.ts";
 
 /**
  * Encrypts and stores the access credentials for a booking.
@@ -84,7 +85,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) return jsonResponse({ error: "Authentication required" }, 401, origin);
 
-    const { bookingId, fields } = await req.json();
+    const { bookingId, fields } = await readJson(req);
     if (!bookingId || !fields || typeof fields !== "object") return jsonResponse({ error: "bookingId and fields required" }, 400, origin);
 
     const { data: booking } = await supabase.from("bookings").select("id,user_id").eq("id", bookingId).maybeSingle();
@@ -106,7 +107,7 @@ Deno.serve(async (req) => {
       iv: encrypted.iv,
       updated_at: new Date().toISOString(),
     });
-    if (error) return jsonResponse({ error: error.message }, 500, origin);
+    if (error) return jsonResponse({ error: "Sensitive access details could not be saved" }, 500, origin);
 
     await supabase.from("sensitive_access_logs").insert({
       actor_id: user.id,

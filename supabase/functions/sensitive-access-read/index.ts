@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { readJson } from "../_shared/action-utils.ts";
 
 /**
  * Reads the encrypted access credentials for a booking — gate codes, alarm codes, entry notes.
@@ -82,7 +83,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) return jsonResponse({ error: "Authentication required" }, 401, origin);
 
-    const { bookingId, requestedFields = [] } = await req.json();
+    const { bookingId, requestedFields = [] } = await readJson(req);
     if (!bookingId) return jsonResponse({ error: "bookingId required" }, 400, origin);
 
     /*
@@ -112,7 +113,7 @@ Deno.serve(async (req) => {
       p_xooter_id: xooterRow.id,
       p_booking_id: bookingId,
     });
-    if (decisionError) return jsonResponse({ error: decisionError.message }, 500, origin);
+    if (decisionError) return jsonResponse({ error: "Sensitive access check failed" }, 500, origin);
     if (!allowed) return jsonResponse({ error: "Sensitive access is outside the booking window" }, 403, origin);
 
     const { data: vault, error } = await supabase
@@ -120,7 +121,7 @@ Deno.serve(async (req) => {
       .select("ciphertext,iv")
       .eq("booking_id", bookingId)
       .maybeSingle();
-    if (error) return jsonResponse({ error: error.message }, 500, origin);
+    if (error) return jsonResponse({ error: "Sensitive access details could not be read" }, 500, origin);
     if (!vault) return jsonResponse({ fields: {} }, 200, origin);
 
     const fields = await decryptJson(vault);

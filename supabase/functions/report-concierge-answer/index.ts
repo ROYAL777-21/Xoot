@@ -3,6 +3,7 @@ import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/govern
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
 import { redactSupportText, sanitiseSupportText } from "../_shared/xoot-knowledge.ts";
 
+import { readJson } from "../_shared/action-utils.ts";
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
@@ -82,7 +83,7 @@ Deno.serve(async (req) => {
     const feedbackEnabled = await isOperationalControlEnabled(adminClient, "support.concierge_feedback").catch(() => true);
     if (!feedbackEnabled) return json({ error: "concierge feedback disabled" }, 403, origin);
 
-    const body = await req.json();
+    const body = await readJson(req);
     const role = body.role === "xooter" ? "xooter" : "user";
     const source = allowedSources.has(body.source) ? body.source : "unknown";
     const reason = sanitiseSupportText(body.reason, 240) || "User reported this Concierge answer";

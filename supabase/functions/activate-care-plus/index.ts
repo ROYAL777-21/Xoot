@@ -6,6 +6,7 @@ import {
   insertNotification,
   insertOutbox,
   ok,
+  readJson,
   requireAuth,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
@@ -20,7 +21,7 @@ Deno.serve(async (req) => {
   const { user, supa } = auth as { user: any; supa: any };
 
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     /*
      * The Care+ placement product was retired on 2026-08-13 (ZD-031). This branch used to create
      * a `care_plus_applications` row, queue a review and notify the user.
