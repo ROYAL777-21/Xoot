@@ -182,6 +182,12 @@ export const XootSupportBot = () => {
       return;
     }
 
+    const history = [
+      ...messages
+        .filter((message) => message.role === "user" || message.role === "assistant")
+        .map((message) => ({ role: message.role, body: message.body })),
+      { role: "user" as const, body: text },
+    ].slice(-8);
     appendMessage({ role: "user", body: text });
     setBody("");
 
@@ -213,6 +219,7 @@ export const XootSupportBot = () => {
           body: text,
           role,
           guest: !user,
+          history,
         },
       });
 

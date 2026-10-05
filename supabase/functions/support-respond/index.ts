@@ -4,35 +4,7 @@ import { getConciergeCapabilities } from "../_shared/concierge-controls.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
 import { getXootKnowledgeReply, redactSupportText, sanitiseSupportText, xootKnowledgeContext, xootKnowledgeVersion } from "../_shared/xoot-knowledge.ts";
 
-import { readJson } from "../_shared/action-utils.ts";
-const defaultAllowedOrigins = [
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:4173",
-  "https://staging.xoot.co.za",
-  "https://preview.xoot.co.za",
-  "https://xoot.co.za",
-  "https://www.xoot.co.za",
-];
-
-const getAllowedOrigins = () =>
-  (Deno.env.get("ALLOWED_ORIGINS")?.split(",") ?? defaultAllowedOrigins)
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-
-const getCorsHeaders = (origin: string | null) => {
-  const allowedOrigins = getAllowedOrigins();
-  const allowedOrigin = origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
-
-  return {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Vary": "Origin",
-  };
-};
-
-const isAllowedOrigin = (origin: string | null) => !origin || getAllowedOrigins().includes(origin);
+import { getCorsHeaders, readJson } from "../_shared/action-utils.ts";
 
 const json = (body: Record<string, unknown>, status: number, origin: string | null) =>
   new Response(JSON.stringify(body), {
@@ -61,6 +33,11 @@ type AssistantResult = {
   knowledge_version?: string;
   answer_type?: string;
   confidence?: string;
+};
+
+type ConversationTurn = {
+  role: "user" | "assistant";
+  body: string;
 };
 
 const escalationKeywords = [
@@ -161,17 +138,22 @@ const buildConciergeUserTurn = ({
   body,
   role,
   signedIn,
+  history,
 }: {
   subject: string;
   body: string;
   role: UserRole;
   signedIn: boolean;
+  history: ConversationTurn[];
 }) =>
   [
     `Knowledge version: ${xootKnowledgeVersion}`,
     `Role: ${role}`,
     `Authenticated: ${signedIn ? "yes" : "no"}`,
     `Subject: ${redactSupportText(subject)}`,
+    history.length > 0
+      ? `Recent conversation:\n${history.map((turn) => `${turn.role}: ${redactSupportText(turn.body, 700)}`).join("\n")}`
+      : "Recent conversation: none",
     `Message: ${redactSupportText(body)}`,
   ].join("\n");
 
@@ -195,6 +177,7 @@ const buildOpenRouterSupportResponse = async (input: {
   body: string;
   role: UserRole;
   signedIn: boolean;
+  history: ConversationTurn[];
 }): Promise<AssistantResult | null> => {
   const apiKey = Deno.env.get("OPENROUTER_API_KEY");
   if (!apiKey) return null;
@@ -249,11 +232,13 @@ const buildOpenAiSupportResponse = async ({
   body,
   role,
   signedIn,
+  history,
 }: {
   subject: string;
   body: string;
   role: UserRole;
   signedIn: boolean;
+  history: ConversationTurn[];
 }): Promise<AssistantResult | null> => {
   const apiKey = Deno.env.get("OPENAI_API_KEY");
   if (!apiKey) return null;
@@ -278,7 +263,7 @@ const buildOpenAiSupportResponse = async ({
         input: [
           {
             role: "user",
-            content: [{ type: "input_text", text: buildConciergeUserTurn({ subject, body, role, signedIn }) }],
+            content: [{ type: "input_text", text: buildConciergeUserTurn({ subject, body, role, signedIn, history }) }],
           },
         ],
       }),
@@ -324,6 +309,16 @@ Deno.serve(async (req) => {
     const safeSubject = sanitiseSupportText(requestBody.subject, 180);
     const safeBody = sanitiseSupportText(requestBody.body);
     const safeTicketId = sanitiseUuid(requestBody.ticket_id);
+    const history: ConversationTurn[] = Array.isArray(requestBody.history)
+      ? requestBody.history
+          .filter((turn: unknown): turn is { role?: unknown; body?: unknown } => Boolean(turn && typeof turn === "object"))
+          .map((turn) => ({
+            role: turn.role === "assistant" ? "assistant" as const : "user" as const,
+            body: sanitiseSupportText(turn.body, 700),
+          }))
+          .filter((turn) => Boolean(turn.body))
+          .slice(-8)
+      : [];
     if (!safeSubject || !safeBody) return json({ error: "subject and body required" }, 400, origin);
 
     if (safeTicketId) {
@@ -461,7 +456,7 @@ Deno.serve(async (req) => {
      * switch silently does nothing, which is worse than a stale name.
      */
     const modelAnswersAllowed = supportOpenAiAllowed && concierge.modelAnswers;
-    const modelInput = { subject: safeSubject, body: safeBody, role: userRole, signedIn };
+    const modelInput = { subject: safeSubject, body: safeBody, role: userRole, signedIn, history };
     /*
      * OpenRouter first, OpenAI second (founder decision 2026-08-13).
      *

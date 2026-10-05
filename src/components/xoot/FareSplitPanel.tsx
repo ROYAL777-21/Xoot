@@ -223,7 +223,7 @@ export const FareSplitPanel = ({
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/10 text-primary">
             <Check className="h-4 w-4" />
           </span>
-          <p className="font-display text-base font-bold">Split saved — now send the links</p>
+          <p className="font-display text-base font-bold">Step 2 · Send the links</p>
         </div>
         <p className="mb-4 text-xs text-muted-foreground">
           Xoot does not email these for you. Send each person their own link and they can confirm
@@ -317,7 +317,7 @@ export const FareSplitPanel = ({
               <Users className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-display text-base font-bold">Split this booking</p>
+              <p className="font-display text-base font-bold">Split fare</p>
               <p className="text-xs text-muted-foreground">
                 Share the cost with housemates or family
               </p>
@@ -334,7 +334,7 @@ export const FareSplitPanel = ({
   return (
     <Card className="rounded-3xl p-5">
       <div className="mb-4 flex items-center justify-between">
-        <p className="font-display text-base font-bold">Split {formatZARDecimal(totalRands)}</p>
+        <p className="font-display text-base font-bold">Step 1 · Split {formatZARDecimal(totalRands)}</p>
         <Button size="icon" variant="ghost" className="rounded-full" onClick={() => setOpen(false)} aria-label="Cancel split">
           <X className="h-4 w-4" />
         </Button>
@@ -450,7 +450,7 @@ export const FareSplitPanel = ({
         onClick={submit}
       >
         {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-        Save and get the links
+        Save split &amp; get links
       </Button>
     </Card>
   );
