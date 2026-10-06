@@ -19,7 +19,7 @@ export default function SplitFareScreen() {
     const base = Math.floor(totalCents / parties);
     const remainder = totalCents - base * parties;
     return emails.map((_, index) => base + (index < remainder ? 1 : 0));
-  }, [emails.length, totalCents]);
+  }, [emails, totalCents]);
   const addPerson = () => emails.length < 5 && setEmails((current) => [...current, '']);
   const save = async () => {
     if (!user || !bookingId || emails.some((email) => !email.includes('@'))) return;

@@ -36,13 +36,16 @@ export type InviteDetails = {
   inviteUrl: string;
 };
 
-const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/;
 const SAFE_EMAIL = /^[^\s@<>()[\],;:\\"']+@[^\s@<>()[\],;:\\"']+\.[^\s@<>()[\],;:\\"']+$/;
+const hasControlCharacters = (value: string) => [...value].some((character) => {
+  const code = character.charCodeAt(0);
+  return code <= 31 || code === 127;
+});
 
 /** Keep generated invite links on a real web origin, never a script/data URL sink. */
 const safeInviteOrigin = (origin: string) => {
   try {
-    if (CONTROL_CHARACTERS.test(origin)) return null;
+    if (hasControlCharacters(origin)) return null;
     const parsed = new URL(origin);
     if (!["https:", "http:"].includes(parsed.protocol)) return null;
     if (parsed.username || parsed.password || parsed.search || parsed.hash) return null;
@@ -120,7 +123,7 @@ export const whatsappInviteUrl = (details: InviteDetails): string =>
  */
 export const mailtoInviteUrl = (details: InviteDetails & { email: string }): string => {
   const recipient = details.email.trim();
-  if (!SAFE_EMAIL.test(recipient) || CONTROL_CHARACTERS.test(recipient)) return "mailto:";
+  if (!SAFE_EMAIL.test(recipient) || hasControlCharacters(recipient)) return "mailto:";
   const subject = `Your share of the Xoot clean — ${formatRands(details.amountCents)}`;
   return `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(inviteMessage(details))}`;
 };
@@ -134,7 +137,7 @@ export const mailtoInviteUrl = (details: InviteDetails & { email: string }): str
  */
 export const inviteUrlFor = (origin: string, token: string): string => {
   const safeOrigin = safeInviteOrigin(origin);
-  if (!safeOrigin || CONTROL_CHARACTERS.test(token)) return "";
+  if (!safeOrigin || hasControlCharacters(token)) return "";
   return `${safeOrigin}/split/${encodeURIComponent(token)}`;
 };
 
