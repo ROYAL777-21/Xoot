@@ -6,11 +6,11 @@ import { useTheme } from '@/hooks/use-theme';
 import { invokeXootFunction } from '@/lib/edge-functions';
 import { useAuth } from '@/providers/auth-provider';
 
-function SplitProgress({ active }: { active: 1 | 2 }) {
+function SplitProgress({ active, borderColor }: { active: 1 | 2; borderColor: string }) {
   return (
     <View style={styles.steps} accessibilityLabel={`Split fare step ${active} of 2`}>
       <StatusPill tone={active === 1 ? 'success' : 'neutral'}>{active === 1 ? '1  Set shares' : '1  Shares set'}</StatusPill>
-      <View style={styles.stepLine} />
+      <View style={[styles.stepLine, { backgroundColor: borderColor }]} />
       <StatusPill tone={active === 2 ? 'success' : 'neutral'}>2  Send links</StatusPill>
     </View>
   );
@@ -63,7 +63,7 @@ export default function SplitFareScreen() {
       </LiquidCard>
       {links.length > 0 ? (
         <LiquidCard>
-          <SplitProgress active={2} />
+          <SplitProgress active={2} borderColor={theme.border} />
           <Eyebrow>Links ready</Eyebrow>
           <Title>Send each person their link.</Title>
           <Body muted>Xoot does not email these automatically. Copy or share each link from your device.</Body>
@@ -72,7 +72,7 @@ export default function SplitFareScreen() {
         </LiquidCard>
       ) : (
         <LiquidCard>
-          <SplitProgress active={1} />
+          <SplitProgress active={1} borderColor={theme.border} />
           <Eyebrow>Invitees</Eyebrow>
           <Body muted>Equal shares are ready by default. Adjust amounts only when your group has agreed a different split.</Body>
           {emails.map((email, index) => <View key={index} style={styles.row}><TextInput value={email} onChangeText={(value) => setEmails((current) => current.map((item, i) => i === index ? value : item))} placeholder="their@email.com" placeholderTextColor={theme.textSecondary} keyboardType="email-address" autoCapitalize="none" style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.backgroundElement }]} /><Body muted>R{(shareCents[index] / 100).toFixed(2)}</Body></View>)}
@@ -88,4 +88,4 @@ export default function SplitFareScreen() {
     </XootScreen>
   );
 }
-const styles = StyleSheet.create({ row: { gap: 8 }, inviteRow: { borderRadius: 16, gap: 8, paddingVertical: 8 }, steps: { alignItems: 'center', flexDirection: 'row', gap: 8, marginBottom: 14 }, stepLine: { backgroundColor: '#D8D0C4', flex: 1, height: 1 }, summary: { alignItems: 'center', borderRadius: 16, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', padding: 14 }, input: { borderRadius: 16, borderWidth: 1, minHeight: 48, paddingHorizontal: 14, fontSize: 16 }, });
+const styles = StyleSheet.create({ row: { gap: 8 }, inviteRow: { borderRadius: 16, gap: 8, paddingVertical: 8 }, steps: { alignItems: 'center', flexDirection: 'row', gap: 8, marginBottom: 14 }, stepLine: { flex: 1, height: 1 }, summary: { alignItems: 'center', borderRadius: 16, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', padding: 14 }, input: { borderRadius: 16, borderWidth: 1, minHeight: 48, paddingHorizontal: 14, fontSize: 16 }, });
