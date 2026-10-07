@@ -2,7 +2,7 @@
 
 **Purpose:** finish the external provider steps that cannot be performed from the repository sandbox, then hand control back to the release workflow for verification.
 
-**Current code commit:** `5a9e231` on `main`
+**Current code commit:** `3aca6c5` on `main` (7 October 2026)
 
 > Do not paste passwords, API tokens, private keys, or payment credentials into chat, GitHub issues, source files, screenshots, or terminal logs. Enter them only in the provider’s protected settings or the GitHub secret form.
 
@@ -12,8 +12,9 @@
 - Split fare is implemented in the web and mobile clients using authenticated server functions.
 - Xooter progress checklist is database-backed, server-authoritative, and visible to customers.
 - One-default-home constraints and checklist RLS/function protections are in the migration.
-- Website TypeScript, production build, tests, Semgrep, production-readiness guard, and native iOS Swift checks pass on `5a9e231`.
-- The live-deploy check is the remaining web release gate because the public domain is still serving an older build.
+- Website lint, TypeScript, production build, split-fare/native design-system tests, Semgrep, production-readiness guard, mobile TypeScript/lint, and native iOS Swift checks pass locally or on the latest successful CI runs.
+- The live-deploy check is still the remaining web release gate because `https://xoot.co.za` is serving build `02bb284b`, not the current `3aca6c5` build.
+- The latest `Tests` and `Web build` failures on `681ef71` were caused by a hardcoded mobile stepper colour; that issue is fixed in `3aca6c5` and verified locally. New GitHub checks are required before treating the commit as fully green.
 
 ## Phase A — connect the public website
 
