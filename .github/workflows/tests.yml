@@ -70,6 +70,16 @@ jobs:
           PGPASSWORD: xoot-disposable-test
         run: node scripts/ops/test-booking-benefit-locks.mjs
 
+      - name: Prove notification privileges and publication membership
+        env:
+          XOOT_PG_TEST_INTENT: notifications-realtime-permissions
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-pg-test/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-disposable-test
+        run: node scripts/ops/test-notifications-realtime-permissions.mjs
+
   sql-contracts:
     name: Execute booking and gift SQL contracts
     runs-on: ubuntu-latest

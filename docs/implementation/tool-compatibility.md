@@ -1,6 +1,6 @@
 # Requested tools: compatibility and actual use
 
-Updated 12 September 2026. A requested link is not proof that its service is installed, authenticated
+Updated 2 October 2026. A requested link is not proof that its service is installed, authenticated
 or running. This inventory distinguishes source references, local skills and active capabilities.
 Load the relevant skill/documentation when its phase begins, then update its evidence here.
 
@@ -30,6 +30,10 @@ Initial measured build: **674 files, 5,731 nodes, 50,480 edges**. A subsequent i
 reparsed three changed files. Environment impact query returned Supabase client, `env.ts`,
 `public-environment.test.ts` and `main.tsx` as additional files to inspect.
 
+The 2 October incremental update completed after the reviewed source ports: 233 files
+updated, 1,952 nodes and 23,985 edges processed; the search index contains 6,032 rows.
+Those are graph statistics, not measured token savings or runtime verification.
+
 Portable setup using an available Python 3.10+ runtime:
 
 ```powershell
@@ -48,9 +52,9 @@ expansion if newly materialized tracked files were absent from the initial spars
 
 | Source | Compatibility / status | Intended use |
 |---|---|---|
-| [obra/superpowers](https://github.com/obra/superpowers) | Installed Codex skills used for execution, isolation, debugging and verification; version 6.3.0. | Routine implementation/review workflow. |
+| [obra/superpowers](https://github.com/obra/superpowers) | Installed Codex skills used for execution, isolation, debugging and verification; current version 6.4.2. | Routine implementation/review workflow. |
 | [usestrix/strix](https://github.com/usestrix/strix) | Runtime compatibility not yet verified; not invoked. | Evaluate for scoped staging security testing if it adds coverage. |
-| [anthropics/claude-code-security-review](https://github.com/anthropics/claude-code-security-review) | Existing repository workflow/configuration requires fresh run evidence; not counted as a completed review. | Relevant security diffs alongside Codex Security. |
+| [anthropics/claude-code-security-review](https://github.com/anthropics/claude-code-security-review) | Workflow remains failed, including run 36933862732. Prior artifact diagnoses insufficient API credit and GitHub's 300-file diff retrieval limit. No completed scan claimed. | Use paginated file retrieval/local Git input and owner-funded API access before counting a review. |
 | [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) | `mem-search` / `learn-codebase` listed in skills lock. Search/filter/fetch method read; no live memory service verified. | Selective retrieval; avoid whole-codebase ingestion as routine. |
 | [every-app/open-seo](https://github.com/every-app/open-seo) | Not integrated; runtime compatibility pending. | Evaluate during SEO release gate; retain one content system. |
 | [AgriciDaniel/claude-seo](https://github.com/AgriciDaniel/claude-seo) | SEO audit/schema/technical skills in repository lock; not yet invoked this implementation. | Website technical SEO and supported structured data. |
@@ -85,13 +89,13 @@ expansion if newly materialized tracked files were absent from the initial spars
 
 | Plugin | Actual state and role |
 |---|---|
-| Context7 | Callable documentation tools; used in planning for Supabase CLI. Use current library docs when needed. |
+| Context7 | Callable documentation tools; used for Supabase CLI and current notification publication/RLS documentation on 2 October. |
 | Superpowers | Installed skills actively driving implementation and verification. |
 | GitHub | Authorized private-repository access; branch and work claim pushed. |
 | Vercel | Connected; project `xoot` verified. Hobby plan still gates paid launch. |
-| Supabase | Read-only connector works; CLI login still required for approved live writes. |
-| CodeRabbit | Signed Windows CLI 0.7.6 authenticated. Awaiting code-review run; no approval claimed. |
-| Codex Security | Tools/skills available; scoped review required before release, not yet complete. |
+| Supabase | Read-only connector works. GitHub CLI token previously deployed functions but fresh database linking fails required endpoint privileges (run 36932028355). Secure account/secret correction is required; local login alone does not update Actions. |
+| CodeRabbit | Signed Windows CLI 0.7.6 authenticated and used for source reviews, including the 15-file account port. Findings/results are recorded in the visual ledger; whole-branch release approval remains outstanding. |
+| Codex Security | Scoped calculator/account-guard reviews recorded during implementation. Whole-branch release review remains outstanding; a reviewed slice is not a repository-wide security result. |
 | Build Web Apps | Testing/debugging, frontend builder and React performance skills read. Supplied visual reference replaces a new concept; existing Vite/React app remains the target. |
 | Browser / Computer | CUA browser automation available; native computer control disabled in this environment. |
 | Sentry / PostHog | Plugins available; account/project setup and privacy verification pending. |

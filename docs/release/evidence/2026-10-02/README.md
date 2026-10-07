@@ -29,9 +29,10 @@ unconfigured development can omit that request, with a diagnostic saying it was 
 The product change is nonvisual readiness attributes on the existing roster; typography,
 artwork, layout and the original logo are unchanged.
 
-These local builds include the reviewed working-tree changes on base `0ee9cb2`; the old build
-stamp alone does not identify their uncommitted contents. Hosted checkpoint verification must
-identify the resulting published commit separately. The [previous actual hosted captures](../2026-10-01/hosted-profile/README.md)
+These local builds included the reviewed working-tree changes on base `0ee9cb2`; the old build
+stamp alone does not identify their uncommitted contents. Subsequent [hosted verification](hosted/README.md)
+identifies the published `01ec3d6` checkpoint, real staging roster result, desktop/phone captures
+and passing GitHub Tests. The [previous captures](../2026-10-01/hosted-profile/README.md)
 remain correctly attributed to `0ee9cb2`.
 
 ## Remaining release gates
