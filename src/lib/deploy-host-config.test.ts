@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -48,6 +49,24 @@ const runValidator = (env: Record<string, string>) => {
   } catch (error) {
     const failure = error as { status?: number; stdout?: string; stderr?: string };
     return { code: failure.status ?? 1, output: `${failure.stdout ?? ""}${failure.stderr ?? ""}` };
+  }
+};
+
+const runStagingModeBuild = (env: Record<string, string>) => {
+  const outputDirectory = mkdtempSync(join(tmpdir(), "xoot-staging-build-"));
+  try {
+    const vite = join(ROOT, "node_modules", "vite", "bin", "vite.js");
+    const stdout = execFileSync(process.execPath, [vite, "build", "--mode", "staging", "--outDir", outputDirectory, "--logLevel", "error"], {
+      cwd: ROOT,
+      encoding: "utf8",
+      env: { PATH: process.env.PATH ?? "", ...env },
+    });
+    return { code: 0, output: stdout };
+  } catch (error) {
+    const failure = error as { status?: number; stdout?: string; stderr?: string };
+    return { code: failure.status ?? 1, output: `${failure.stdout ?? ""}${failure.stderr ?? ""}` };
+  } finally {
+    rmSync(outputDirectory, { recursive: true, force: true });
   }
 };
 
@@ -195,4 +214,14 @@ describe("deploy host configuration", () => {
     expect(production.code, production.output).toBe(0);
     expect(production.output).toMatch(/passed for production/);
   });
+
+  it("does not let a custom staging build mode bypass the required app environment", () => {
+    const build = runStagingModeBuild({
+      VITE_SUPABASE_URL: "https://stagingproject12345.supabase.co",
+      VITE_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+    });
+
+    expect(build.code, build.output).toBe(1);
+    expect(build.output).toMatch(/VITE_APP_ENV is required/);
+  }, 30_000);
 });

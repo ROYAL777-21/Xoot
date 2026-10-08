@@ -47,6 +47,15 @@ booking fee, only Care+ does; the discount tiers below still stand pending confi
 
 All authoritative pricing, credits and discounts are server-controlled.
 
+### Crew bookings — ZD-038, approved 2026-09-27
+
+One job has one total and up to four assigned Xooters, subject to service/home-size limits.
+The base ladder price is multiplied by 1 / 1.15 / 1.25 / 1.4 for crews of one / two / three /
+four, then rounded to whole rand. A 5.5-hour Airbnb clean has a R342 solo base and a **R393
+two-Xooter base**, before fees, extras and discounts. This supersedes the held per-person price
+in the ZD-035 addendum; implementation must migrate the writer and all crew lifecycle readers
+together. The old multi-person discount is not part of this contract.
+
 ## ✅ The pricing conflict is CLOSED — ZD-037, 2026-09-03
 
 This section used to describe a conflict. **It named numbers that existed nowhere**, and that is

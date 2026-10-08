@@ -51,13 +51,13 @@ const TrustSafety = () => (
         Xoot is designed around visible verification, protected household information, on-platform communication, and fast human escalation when something needs attention.
       </p>
       <div className="mb-6 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        <span className="rounded-full bg-primary/10 px-3 py-1.5 text-primary">Operational review: 3 Oct 2026</span>
-        <span>Live product controls, not a promise of risk-free service</span>
+        <span className="rounded-full bg-primary/10 px-3 py-1.5 text-primary">How Xoot is designed</span>
+        <span>Operational verification is still in progress</span>
       </div>
       <div className="mb-10 rounded-3xl border border-border bg-card p-6 shadow-card">
         <p className="text-sm font-semibold text-sage-deep">No unsupported promises</p>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Xoot only shows guarantees, insurance, replacement timing, and background-check claims when the relevant operational support and verification evidence exist. Today, the live controls are authenticated sign-in, admin activation gates, protected booking details, logged support workflows, and server-backed booking records. If a backend workflow is still pending, the product presents it as a review or support process, not as a guarantee.
+          Xoot is designed to use authenticated sign-in, admin activation gates, protected booking details, logged support workflows and server-backed booking records. Operational verification is still in progress. These design controls do not establish guarantees, insurance, replacement timing or completed background checks.
         </p>
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

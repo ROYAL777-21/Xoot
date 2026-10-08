@@ -4,6 +4,15 @@
 
 This pass hardens the Supabase backend for the website and app. It is implemented as the migration `20261004160000_backend_rls_and_storage_hardening.sql` and is designed to be applied before the next production deploy.
 
+Integration correction, 7 October: `storage.foldername()` excludes the filename.
+The incoming migration's `= 2` folder checks therefore reject the current two-segment
+upload paths and admit an unintended extra folder. The additive
+`20261007140000_storage_upload_path_contract.sql` preserves this migration and changes
+only the five write checks to one folder. The executable isolated SQL proof is
+`scripts/ops/verify-storage-path-contract.mjs`; hosted Storage API delivery, MIME/size
+enforcement and the required CI step remain gates in the
+[production checklist](../release/production-checklist.md).
+
 ## Controls added
 
 - Revoked `anon` and `authenticated` insert/update/delete privileges from operational tables that have no client-facing write policy.

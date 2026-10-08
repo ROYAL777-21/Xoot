@@ -71,7 +71,7 @@ const stripComments = (source: string) =>
     .map((line) => line.replace(/(^|[^:])\/\/.*$/, "$1"))
     .join("\n");
 
-const typesSource = readFileSync(join(SRC, "integrations/supabase/types.ts"), "utf8");
+const typesSource = readFileSync(join(SRC, "integrations/supabase/types.ts"), "utf8").replace(/\r\n/g, "\n");
 
 const typedTables = new Set(
   [...typesSource.matchAll(/\n {6}(\w+): \{\n {8}Row:/g)].map((match) => match[1]),

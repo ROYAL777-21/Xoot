@@ -1089,3 +1089,28 @@ quietly.
 deleted in the same change, every reader that assumes one `bookings` row per Xooter rewritten (job
 list, tracking, earnings, ratings, replacement, payout), then `create-booking`,
 `create-booking-request` and `respond-xooter-job` redeployed.
+
+## ZD-038 — activate the shared-job crew price (2026-09-27)
+
+The founder explicitly chose **“Use the handoff’s R393 crew price”** after being shown the
+R684 current-price alternative for a 5.5-hour Airbnb clean with two Xooters. This supersedes
+the price hold in the ZD-035 addendum above. The one-job `booking_assignees` shape remains approved.
+
+The approved crew base is the existing hourly ladder multiplied by **1 / 1.15 / 1.25 / 1.4**
+for one / two / three / four Xooters, rounded to whole rand. Thus R342 × 1.15 becomes
+**R393**, before separately itemized fees, extras and verified discounts. The former per-person
+multiplier and 10% discount at three people do not apply to the new contract.
+
+Roll out through a server-reviewed quote and one atomic booking total with per-member
+assignments/earnings. Do not merely change the old writer's multiplier: it still creates separate
+jobs. Old clients must not submit crew jobs through that path once the new contract is enabled.
+The quote fingerprint detects changes; it does not authorize a price without fresh server checks.
+
+All other commercial rules retain their existing authority: canonical ladders; R30 standard
+extras; R20 on-site linen handling; R39 per visit waived only for Care+; verified membership,
+referral and XootCred eligibility. This decision does not approve prototype recurring discounts,
+free extras, provider activation or fabricated availability. Booking Cover requires a functioning,
+approved provider before it can be charged.
+
+Implementation and deployment evidence belongs in the current production checklist. Recording
+this decision does not mean that the new writer, migration or crew fulfilment is live.

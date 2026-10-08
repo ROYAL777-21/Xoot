@@ -1,128 +1,80 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Link, useNavigate } from "react-router-dom";
-import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
-import { Xooter, XooterCard } from "@/components/xoot/XooterCard";
+import { BadgeCheck, MapPin, ShieldCheck, Star } from "lucide-react";
+import { Link } from "react-router-dom";
+import { isSupabaseConfigured } from "@/integrations/supabase/client";
+import { loadXooterDirectory } from "@/lib/xooter-directory";
+import type { Xooter } from "@/components/xoot/XooterCard";
 import { sortXootersForMarketplace, xooterDistanceKm } from "@/lib/trust";
+import { formatDistanceKm } from "@/lib/geo";
 import { useProximity } from "@/hooks/useProximity";
 
-/**
- * The homepage's "Nearby Xooters".
- *
- * ── ⚠️ It did not rank by nearness until 2026-08-12 ─────────────────────────────
- * This section has been headed "Nearby Xooters" since it was written, and it sorted by rating.
- * The suburb-centroid work made real distance available and wired it into `ai-match`, but `ai-match`
- * is only reachable from the booking flow — so the one screen whose heading makes a proximity
- * claim was the one screen not honouring it.
- *
- * Now it ranks with `useProximity`, and the cards show the distance they were sorted by.
- *
- * ── What a signed-out visitor sees ──────────────────────────────────────────────
- * The same list, ordered by quality. They have no saved address, so distance is unknown — and
- * unknown means "fall back", never "far" and never "empty". The alternative is a geolocation
- * prompt on the homepage, which is a permission request for precise location data in exchange for
- * a sort order, and that trade is not worth making.
- */
-export const NearbyWorkers = () => {
-  const navigate = useNavigate();
+type LoadState = "loading" | "ready" | "empty" | "error";
+
+export function NearbyWorkers() {
   const [workers, setWorkers] = useState<Xooter[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<LoadState>("loading");
   const proximity = useProximity();
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setWorkers([]);
-      setLoading(false);
-      return;
-    }
-
+    if (!isSupabaseConfigured) { setState("empty"); return; }
     let mounted = true;
-    supabase
-      .from("xooters_public")
-      // Deliberately unfiltered by suburb. A candidate is never excluded here — this is a shop
-      // window, not a dispatch decision, and `ai-match` is where the 25 km cut-off belongs.
-      .select("*")
-      .order("rating", { ascending: false })
-      // Fetched wider than shown so proximity has something to reorder. Taking the top 4 by rating
-      // and then sorting those by distance would rank a set that distance had no say in choosing —
-      // the nearest Xooter in the city could be 5th by rating and never appear.
-      .limit(24)
-      .then(({ data }) => {
+    loadXooterDirectory()
+      .then(({ xooters }) => {
         if (!mounted) return;
-        setWorkers((data ?? []) as Xooter[]);
-        setLoading(false);
-      });
-    return () => {
-      mounted = false;
-    };
+        const live = xooters;
+        setWorkers(live);
+        setState(live.length ? "ready" : "empty");
+      }, () => { if (mounted) setState("error"); });
+    return () => { mounted = false; };
   }, []);
 
-  /*
-   * Ranked here rather than at fetch time, so the list reorders when the address arrives instead
-   * of freezing in whatever order it loaded in. The two are independent requests and either can
-   * win the race.
-   */
-  const ranked = useMemo(
-    () => sortXootersForMarketplace(workers, proximity).slice(0, 4),
-    [workers, proximity],
-  );
+  const ranked = useMemo(() => sortXootersForMarketplace(workers, proximity).slice(0, 4), [workers, proximity]);
 
   return (
-    <section id="workers" className="py-20 md:py-28 bg-secondary/40 border-y border-border">
-      <div className="container">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div className="max-w-xl">
-            <p className="text-sm font-semibold text-brand uppercase tracking-wider mb-3">Nearby Xooters</p>
-            <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance">
-              Approved Xooters appear here when they are live in your launch area.
-            </h2>
+    <section id="workers" className="xoot-public-section" aria-labelledby="workers-title">
+      <div className="xoot-public-inner">
+        <div className="xoot-nearby__head">
+          <div>
+            <p className="xoot-section-eyebrow xoot-section-eyebrow--sage">Nearby Xooters</p>
+            <h2 id="workers-title" className="xoot-section-title">Approved Xooters appear here when they are live in your launch area.</h2>
           </div>
-          <Button asChild variant="outline" className="rounded-full self-start md:self-auto">
-            <Link to="/app">View all Xooters</Link>
-          </Button>
+          <Link className="xoot-action xoot-action--outline" to="/book">View all Xooters</Link>
         </div>
 
-        {loading ? (
-          <div className="grid place-items-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        {state === "loading" && <p className="xoot-nearby__status" role="status">Checking the approved Xooter roster…</p>}
+        {state === "ready" && (
+          <div className="xoot-nearby__grid">
+            {ranked.map((worker) => {
+              const distance = formatDistanceKm(xooterDistanceKm(worker, proximity));
+              const initials = worker.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("");
+              const approved = Boolean(worker.verified || worker.background_checked || worker.background_check_status === "approved");
+              return (
+                <article className="xoot-card xoot-card--pad" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 11, textAlign: "center" }} key={worker.id}>
+                  <span style={{ position: "relative", display: "grid", width: 80, height: 80, placeItems: "center", overflow: "hidden", borderRadius: "50%", background: "var(--xoot-violet-100)", color: "var(--xoot-violet-700)", fontFamily: "var(--xoot-font-display)", fontSize: 28 }}>
+                    {worker.photo_url ? <img src={worker.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                    {approved && <BadgeCheck aria-label="Approved profile" style={{ position: "absolute", right: 0, bottom: 0, width: 24, height: 24, padding: 3, borderRadius: "50%", background: "var(--xoot-sage-500)", color: "white" }} />}
+                  </span>
+                  <div>
+                    <h3 style={{ margin: 0, fontFamily: "var(--xoot-font-display)", fontSize: "var(--xoot-title-3)", fontWeight: 500 }}>{worker.name}</h3>
+                    <p style={{ margin: "2px 0 0", color: "var(--xoot-text-muted)", fontSize: "var(--xoot-caption)" }}>{worker.role || "Xooter"}</p>
+                  </div>
+                  <span style={{ display: "flex", alignItems: "center", gap: 5, color: "var(--xoot-text-secondary)", fontSize: "var(--xoot-body-sm)" }}>{worker.rating == null ? "Not yet reviewed" : <><Star size={15} fill="var(--xoot-honey-500)" color="var(--xoot-honey-500)" />{Number(worker.rating).toFixed(1)}</>}</span>
+                  <p style={{ margin: 0, color: "var(--xoot-text-secondary)", fontSize: "var(--xoot-body-sm)", lineHeight: 1.5 }}><MapPin size={14} style={{ display: "inline", marginRight: 4 }} />{distance ?? worker.suburb_coverage?.slice(0, 2).join(", ") ?? "Coverage on request"}</p>
+                  <Link className="xoot-action" style={{ width: "100%", marginTop: "auto" }} to={`/book?xooter=${encodeURIComponent(worker.id)}`}>Book {worker.name.split(" ")[0]}</Link>
+                </article>
+              );
+            })}
           </div>
-        ) : ranked.length > 0 ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {ranked.map((worker) => (
-              <XooterCard
-                key={worker.id}
-                z={worker}
-                // The number the card shows is the number the list was sorted by. A list ordered on
-                // one distance and labelled with another is worse than an unordered one.
-                distanceKm={xooterDistanceKm(worker, proximity)}
-                onBook={() => navigate("/auth", { state: { from: { pathname: "/app" } } })}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card className="rounded-3xl p-8 text-center max-w-2xl mx-auto">
-            <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft">
-              <ShieldCheck className="h-6 w-6 text-accent-ink" />
-            </div>
-            {/*
-              One empty state, not two. This used to branch on whether Supabase was configured
-              and tell the visitor which piece of infrastructure was missing — "Live Xooter
-              roster needs Supabase", "running without live backend config". That is a note to
-              a developer printed on a marketing page.
-
-              What a visitor needs to know is the same either way: nobody is listed yet, and
-              why the list is short. The configuration state is ours to worry about.
-            */}
-            <h3 className="font-display text-2xl font-bold mb-2">Xooter profiles are being verified</h3>
-            <p className="text-sm text-muted-foreground">
-              Profiles appear here only after ID checks, screening, required training and admin
-              activation. We would rather show none than show one we have not checked.
-            </p>
-          </Card>
         )}
+        {(state === "empty" || state === "error") && (
+          <div className="xoot-card xoot-nearby__empty" role="status">
+            <span><ShieldCheck size={23} aria-hidden="true" /></span>
+            <h3>{state === "error" ? "The roster could not be loaded" : "Xooter profiles are being verified"}</h3>
+            <p>{state === "error" ? "Open the booking flow to check current availability for your address." : "Profiles appear here only after required checks, training and admin activation."}</p>
+          </div>
+        )}
+        <p style={{ margin: "22px 0 0", color: "var(--xoot-text-muted)", fontSize: "var(--xoot-body-sm)", textAlign: "center" }}>Profiles appear only after admin-reviewed verification, training and activation.</p>
       </div>
     </section>
   );
-};
+}

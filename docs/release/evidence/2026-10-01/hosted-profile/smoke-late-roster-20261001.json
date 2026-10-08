@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-01T16:31:56.677Z",
+  "verifierCommit": "0ee9cb28fed185183766232353ff643f88ce9a82",
+  "scope": "Synthetic slow missing-directory regression probe; no live data or product changes.",
+  "results": [
+    {
+      "delay": 0,
+      "requested": true,
+      "responseSent": true,
+      "clientClosed": false,
+      "code": 1,
+      "output": "Rendered site smoke failed: Relevant runtime problem detected: console error: Failed to load resource: the server responded with a status of 404 (Not Found)\nHTTP 404 POST http://127.0.0.1:52818/functions/v1/public-xooter-directory\n"
+    },
+    {
+      "delay": 2000,
+      "requested": true,
+      "responseSent": false,
+      "clientClosed": true,
+      "code": 0,
+      "output": "Rendered site smoke passed for http://127.0.0.1:56354/: homepage content, sign-in navigation, controls, and runtime state verified.\n"
+    }
+  ]
+}

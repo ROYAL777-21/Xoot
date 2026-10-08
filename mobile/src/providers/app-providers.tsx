@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import { mobileEnv } from '@/lib/env';
 import { MobileAnalyticsProvider } from '@/lib/analytics';
 import { scrubMobileSentryEvent } from '@/lib/monitoring-privacy';
-import { AuthProvider } from '@/providers/auth-provider';
+import { AuthProvider, useAuth } from '@/providers/auth-provider';
+import { NativeCoreDataProvider } from '@/components/native-core';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,8 +42,13 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <MobileAnalyticsProvider>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider><NativeCoreSession>{children}</NativeCoreSession></AuthProvider>
       </MobileAnalyticsProvider>
     </QueryClientProvider>
   );
+}
+
+function NativeCoreSession({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  return <NativeCoreDataProvider key={user?.id ?? 'guest'}>{children}</NativeCoreDataProvider>;
 }

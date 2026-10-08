@@ -1,14 +1,33 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import path from "path";
+import defaults from "./config/public-environments.json";
+import {
+  getPublicConfigIssue,
+  publicViteEnvironment,
+  resolvePublicEnvironment,
+} from "./config/public-environment.mjs";
 
 // https://vitejs.dev/config/
-export default defineConfig(() => {
+export default defineConfig(({ command, mode }) => {
+  const sourceEnvironment = { ...loadEnv(mode, process.cwd(), ""), ...process.env };
+  const resolution = resolvePublicEnvironment(sourceEnvironment, defaults);
+  const configIssue = getPublicConfigIssue(resolution.env, {
+    ci: Boolean(sourceEnvironment.CI),
+    prod: command === "build",
+    dev: command === "serve",
+    requireReal: sourceEnvironment.XOOT_REQUIRE_REAL_PUBLIC_ENV === "true",
+  });
+  if (configIssue) throw new Error(`Xoot environment configuration error: ${configIssue}`);
+
   const enableSentryUpload = Boolean(process.env.VITE_SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN);
 
   return {
     base: "/",
+    define: {
+      __XOOT_PUBLIC_ENV__: JSON.stringify(publicViteEnvironment(resolution.env)),
+    },
     server: {
       host: "::",
       port: 8080,

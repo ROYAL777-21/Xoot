@@ -1,0 +1,42 @@
+# App handoff coverage
+
+Updated 2 October 2026. This maps the supplied editable app screens to the website's
+signed-in experience and the Expo app. It is an implementation inventory, not a release
+certificate. The [visual ledger](visual-fidelity-ledger.md) records comparisons; the
+[production checklist](../release/production-checklist.md) remains the single register
+for launch gates and owner dependencies. The original files under
+`design/handoff-2026-09-03/xoot/app/` are unchanged visual references.
+
+“Ported” below refers only to the named screen or behavior. A linked route is not proof
+that its entire destination matches the handoff. Unavailable controls and explanatory
+copy are unfinished capabilities, not completed functionality. No native rendering,
+physical-device, store distribution or complete paid journey is verified yet.
+
+| Handoff screen or group | Website implementation and evidence | Native implementation and remaining work |
+|---|---|---|
+| Frame / Today | `AppShell` and `Today`: source navigation, calendar, first/returning cards, widgets and real booking rows. Reviewed browser checks at seven sizes; [evidence](../release/evidence/2026-09-30/today/README.md). | `index.tsx` and native shell exist; data pagination/account guards and complete source/device comparison remain. |
+| Onboarding / authentication | Actual authentication and source booking entry exist; production-configured home/sign-in rendering verified. Remaining permission/phone/SSO states need complete journey coverage. | Auth and booking entry exist; complete first-run, permissions, interrupted-auth and provider/device verification remain. |
+| Search / Concierge | Real search and Concierge entry exist; keyboard selection and unsent question handling reviewed. Full source screen coverage and supported actions remain. | `search.tsx` and `concierge.tsx` exist; native journey verification remains. |
+| Notifications feed (`Search.jsx`) | Source feed, Back/Home entry, exact accessible unread count, owner-safe pagination/read actions, retry and empty states are implemented and independently reviewed. [Seven-size evidence](../release/evidence/2026-10-02/notifications/README.md) uses isolated synthetic accounts. Realtime publication/security migration and signed-in live delivery remain. | `notifications.tsx` exists; bounded fetching, account transitions, source fidelity and device delivery remain. Optional legacy web-bridge setup is explicitly unavailable. |
+| Booking / service correction / quote | Source website modal and signed-in booking inputs/review ported; shared server quote uses approved ZD-038. Atomic one-job creation, crew lifecycle, payments and referrals remain. | `book.tsx` uses source inputs/artwork and shared quote contract. Native render and the same backend fulfilment gates remain. |
+| Visits list | `Bookings.tsx` reviewed: source tabs, rows, past cards and verified payment data; [evidence](../release/evidence/2026-09-30/visits/README.md). | `bookings.tsx` exists; the exact list port, correct displayed money and complete data handling remain. |
+| Visit detail / rate / tracking / chat | Existing booking detail, chat and review behavior require the full `Visits.jsx`/`Tracking.jsx` port and crew-aware data/actions. | Dedicated source visit detail, tracking, rating and chat journeys remain. |
+| Rewards / XootCred | Wallet reads are reviewed, paginated and preserve cents. Full `Rewards.jsx`/`CredScreen` composition and atomic benefit redemption remain. | Rewards/credits screens exist; source/device comparison and actual redemption remain. |
+| Care+ join / manage | Existing `Plans.tsx` requires the full `CarePlus.jsx` join/manage composition and verified membership fulfilment. | `care-plus.tsx` exists; complete source and paid membership/device journeys remain. |
+| Gift flow | Source gift request flow exists with reviewed unpaid-request contract. Paid delivery, redemption, reversal and order browsing remain. | Complete native `Gift.jsx` flow and the same fulfilment work remain. |
+| You / account / saved-place editor | Source `Profile`, `AccountEdit`, `HomeEdit` implementation, 60 focused checks and independent review pass; [seven-size visual evidence](../release/evidence/2026-10-01/profile/README.md) uses isolated synthetic records. Ordinary owner-bound edits use real queries; authenticated staging verification remains. | Account and separate name/phone/address edits exist; full source overview/account/home-editor parity remains. |
+| Profile preferences | Theme and device haptics are implemented. Matching preference, evening scheduling, verified email changes, avatar/language/home-type support and atomic default-place switching remain. | Full source preferences and server/device integration remain. |
+| Notifications settings (`Profile.jsx`) | Channels/event rows and persisted preferences tied to actual delivery remain; current You row accurately says unavailable. | Source settings screen and actual channel integration remain. |
+| Payment methods / receipts / invoices | You links actual visit payment details. Source saved methods, receipt list/download and company billing flow remain. No fabricated card is shown. | Source payment, receipt and company billing screens remain. |
+| Refer & earn | Approved server quote/parser and concurrency foundation exist. Source referral screen, safe redemption, paid-completion reward and reversal remain. | Referral UI and the same verified server fulfilment remain. |
+| Manage more / saved Xooters | Real properties/favourites routes exist. Full source property/business composition, screens and journeys remain. | Source property/business and saved-helper screens remain. |
+| Connected calendars / Siri / widgets | Source controls currently state unavailable. Actual calendar integrations, shortcuts and widgets remain. Concierge itself has a real entry. | Native platform capabilities, permission handling and device verification remain. |
+| Cover / Help / How / Privacy | Existing real destinations are linked. Full app-specific layouts, source privacy export/deletion and verified support/provider commitments remain. Public legal layout is tracked separately in the visual ledger. | Source account-support/privacy screens and working provider/data actions remain. |
+| Xooter onboarding / home / dashboard / job / earnings / growth | Existing contractor workflows require screen-by-screen source port, real assignment/crew access and verified earnings/payout records. | `xooter/jobs.tsx` exists; remaining source contractor screens and full journeys remain. |
+| Share / call / camera overlays | Source overlays must connect to real permitted sharing, communications and uploads; no simulated call or camera success. | Native platform implementations, permissions, interruption recovery and physical-device checks remain. |
+
+The source overview menus deliberately retain their labels even when their destination
+is unfinished. The final acceptance pass must visit every destination above, compare the
+original composition at the required sizes and exercise its real data/actions. It must
+also verify the separate public website, foundations, components, legal, security and
+responsive HTML references, rather than treating this app table as the whole deliverable.

@@ -18,6 +18,9 @@ import { Journal } from "@/components/xoot/Journal";
 import { Merch } from "@/components/xoot/Merch";
 import { TrustMechanisms } from "@/components/xoot/TrustMechanisms";
 import { ReferSection } from "@/components/xoot/ReferSection";
+import { GiftBand } from "@/components/xoot/GiftBand";
+import { CarePlusBand } from "@/components/xoot/CarePlusBand";
+import { Reviews } from "@/components/xoot/Reviews";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -33,7 +36,7 @@ const homeStructuredData = {
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="xoot-home min-h-screen bg-background">
       <SEO
         title="Xoot - Premium cleaning and home care in Johannesburg"
         description="Book vetted Xooters for cleaning, Airbnb turns, office resets, move-out cleans and Care+ home care across Johannesburg launch suburbs."
@@ -42,8 +45,9 @@ const Index = () => {
       />
       <Navbar />
       <main className="relative z-20">
-        <h1 className="sr-only">Xoot - Premium home services with trust, safety, and retention workflows</h1>
         <BookingHero />
+        <GiftBand />
+        <CarePlusBand />
         <TrustedBy />
         <ServiceAreaMap />
         <Services />
@@ -58,12 +62,13 @@ const Index = () => {
         <NearbyWorkers />
         <HowItWorks />
         <GapArrow offset={-58} rotate={-6} />
-        <BecomeXooter />
-        <HomeExpansion />
+        <Reviews />
         <Merch />
+        <BecomeXooter />
         <Journal />
-        <FeedbackSection />
         <ReferSection />
+        <HomeExpansion />
+        <FeedbackSection />
       <CtaBand />
       </main>
       <Footer />

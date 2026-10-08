@@ -46,7 +46,7 @@ const hashInputs = () => {
   const sha = createHash("sha256");
   for (const rel of INPUTS) {
     sha.update(rel);
-    sha.update(readFileSync(rel));
+    sha.update(readFileSync(rel, "utf8").replaceAll("\r\n", "\n"));
   }
   return sha.digest("hex");
 };

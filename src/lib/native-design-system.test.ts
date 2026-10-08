@@ -28,7 +28,7 @@ function nativeFiles(dir = NATIVE_ROOT, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) nativeFiles(full, out);
-    else if (/\.tsx?$/.test(full) && !EXEMPT.some((re) => re.test(full))) out.push(full);
+    else if (/\.tsx?$/.test(full) && !EXEMPT.some((re) => re.test(full.replace(/\\/g, "/")))) out.push(full);
   }
   return out;
 }

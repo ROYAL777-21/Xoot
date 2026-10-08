@@ -1,0 +1,86 @@
+[
+  {
+    "width": 320,
+    "route": "/gifts?service=airbnb&visits=4&occasion=1",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 320,
+    "route": "/offline.html",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 390,
+    "route": "/gifts?service=airbnb&visits=4&occasion=1",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 390,
+    "route": "/offline.html",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 768,
+    "route": "/gifts?service=airbnb&visits=4&occasion=1",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 768,
+    "route": "/offline.html",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 1024,
+    "route": "/gifts?service=airbnb&visits=4&occasion=1",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 1024,
+    "route": "/offline.html",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "route": "/gifts?service=airbnb&visits=4&occasion=1",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "route": "/offline.html",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 1920,
+    "route": "/gifts?service=airbnb&visits=4&occasion=1",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  },
+  {
+    "width": 1920,
+    "route": "/offline.html",
+    "overflow": false,
+    "font": "Newsreader, Georgia, serif",
+    "errors": []
+  }
+]

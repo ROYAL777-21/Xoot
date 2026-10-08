@@ -31,7 +31,14 @@ verify_jwt = false
 [functions.concierge-config]
 verify_jwt = false
 
+# Public directory returns a fixed projection of active, approved contractor profiles only.
+[functions.public-xooter-directory]
+verify_jwt = false
+
 [functions.get-booking-public-keys]
+verify_jwt = true
+
+[functions.get-booking-quote]
 verify_jwt = true
 
 [functions.send-booking-message]

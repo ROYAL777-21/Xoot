@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const codeOf = (path: string) =>
   readFileSync(join(root, path), "utf8")
+    .replace(/\r\n/g, "\n")
     // Strip comments so a rule explained in prose cannot satisfy a test looking for the rule.
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*\/\/.*$/gm, "");

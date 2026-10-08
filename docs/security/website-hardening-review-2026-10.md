@@ -6,6 +6,14 @@ React/Vite public website and authenticated browser app, including authenticatio
 
 This is a defensive engineering review, **not a substitute for an external penetration test** and not proof that the live deployment has adopted the current commit.
 
+Integration note, 7 October: the incoming main checks below describe its earlier
+source revision. The integrated branch preserves the already-tested React Router
+7.18.4 migration and DOMPurify 3.4.16 in matching npm/Bun locks. It also preserves
+the original supplied character artwork and reviewed customer navigation. Exact
+PayFast form targets and the default PostHog connection are allowed alongside the
+restrictive framing policy; environment-selected provider origins still require
+review before enablement. See the [current production checklist](../release/production-checklist.md).
+
 ## Threat model
 
 | Threat | Browser-side control | Server/live control still required |
@@ -19,7 +27,7 @@ This is a defensive engineering review, **not a substitute for an external penet
 | Private response caching | Service worker caches only allowlisted static assets and now only successful responses; app navigations are network-first | Verify CDN does not cache `/app`, `/auth`, `/admin`, or private API responses |
 | Secret exposure | Secret scan, public-env assertions, no frontend service-role writes | Rotate any previously exposed secrets and verify CI logs/artifacts |
 | Client-side privilege escalation | Frontend admin/payment write scan; authz and server-authority regression tests | Run live Supabase ACL/RLS/advisor checks in staging and production |
-| Dependency exploit | Lockfile refreshed for DOMPurify and React Router 6.30.6 | Resolve remaining advisories through an explicit React Router major-version migration or accepted risk |
+| Dependency exploit | Integrated locks retain DOMPurify 3.4.16 and React Router 7.18.4 | Review current dependency audit and CI results for the integrated revision |
 
 ## Implemented in this pass
 

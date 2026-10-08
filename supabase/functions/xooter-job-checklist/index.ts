@@ -13,22 +13,18 @@ Deno.serve(async (req) => {
     const jobId = String(body.jobId ?? body.job_id ?? '');
     const taskKey = String(body.taskKey ?? body.task_key ?? '');
     const complete = body.complete !== false;
-    if (!jobId || !allowedTasks.has(taskKey)) return fail('jobId and a valid taskKey are required', origin, 400);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(jobId) || !allowedTasks.has(taskKey)) return fail('jobId and a valid taskKey are required', origin, 400);
 
-    const { data: xooter } = await supa.from('xooters').select('id').eq('user_id', user.id).maybeSingle();
-    if (!xooter?.id) return fail('Xooter profile not found', origin, 403);
-    const { data: job } = await supa.from('xooter_jobs').select('id,xooter_id,booking_id').eq('id', jobId).maybeSingle();
-    if (!job || job.xooter_id !== xooter.id) return fail('Job not found', origin, 404);
-
-    const { data: task, error } = await supa
-      .from('xooter_job_checklist')
-      .update({ completed_at: complete ? new Date().toISOString() : null, completed_by: complete ? user.id : null, updated_at: new Date().toISOString() })
-      .eq('job_id', jobId)
-      .eq('task_key', taskKey)
-      .select('id,task_key,label,completed_at')
-      .maybeSingle();
-    if (error || !task) return fail('Checklist task not found', origin, 404);
-    return json({ ok: true, task, bookingId: job.booking_id }, 200, origin);
+    const { data, error } = await supa.rpc('update_active_xooter_checklist', {
+      p_actor_id: user.id, p_job_id: jobId, p_task_key: taskKey, p_complete: complete,
+    });
+    if (error || !data) return fail('Checklist updates are unavailable. Try again shortly.', origin, 503);
+    if (!data.ok) {
+      if (data.code === 'not_active') return fail('This visit is not active for checklist updates.', origin, 409);
+      if (data.code === 'invalid_request') return fail('Invalid checklist update', origin, 400);
+      return fail('Checklist task not found', origin, 404);
+    }
+    return json(data, 200, origin);
   } catch (error) {
     console.error('xooter-job-checklist failure', error);
     return fail('Checklist update failed', origin, 500);

@@ -1,0 +1,28 @@
+/* Search.jsx NotificationsFeedScreen and Frame.jsx TopBar/Scroll. */
+.xoot-notifications-heading { display:flex; flex:1; min-width:0; flex-direction:column; }
+.xoot-notifications-heading small { color:var(--xoot-text-muted); font-size:var(--xoot-caption); }
+.xoot-notifications-mark-all { flex:0 0 auto; max-width:90px; padding:0; border:0; background:none; cursor:pointer; font-family:var(--xoot-font-core); font-size:var(--xoot-caption); font-weight:700; color:var(--xoot-text-link); }
+.xoot-notifications-scroll { padding:0 20px calc(100px + env(safe-area-inset-bottom)); }
+.xoot-notifications-list { display:flex; flex-direction:column; gap:8px; }
+.xoot-notification { display:flex; align-items:flex-start; gap:12px; width:100%; padding:var(--xoot-space-4); border:0; border-radius:var(--xoot-radius-md); color:var(--xoot-text-primary); text-align:left; cursor:pointer; font-family:var(--xoot-font-core); }
+.xoot-notification.is-unread { background:var(--xoot-surface-card); box-shadow:var(--xoot-shadow-2); }
+.xoot-notification.is-read { background:transparent; box-shadow:inset 0 0 0 1px var(--xoot-border-color); }
+.xoot-notification-icon { display:grid; place-items:center; width:40px; height:40px; flex:0 0 auto; border-radius:var(--xoot-radius-key); color:var(--xoot-ink-900); }
+.xoot-notification-icon.is-lilac { background:var(--xoot-lilac-wash); }
+.xoot-notification-icon.is-sage { background:var(--xoot-sage-wash); }
+.xoot-notification-icon.is-blush { background:var(--xoot-blush-wash); }
+.xoot-notification-icon.is-mist { background:var(--xoot-mist-wash); }
+.xoot-notification-icon.is-honey { background:var(--xoot-honey-wash); }
+.xoot-notification-copy { display:flex; flex:1; min-width:0; flex-direction:column; gap:2px; overflow-wrap:anywhere; }
+.xoot-notification-title { display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 8px; }
+.xoot-notification-title strong { flex:1; font-size:var(--xoot-body); font-weight:700; }
+.xoot-notification-title time { flex:0 0 auto; max-width:100%; color:var(--xoot-text-muted); font-size:var(--xoot-micro); }
+.xoot-notification-body { color:var(--xoot-text-secondary); font-size:var(--xoot-body-sm); line-height:1.45; }
+.xoot-notification-dot { width:8px; height:8px; margin-top:6px; border-radius:50%; background:var(--xoot-action-brand); flex:0 0 auto; }
+.xoot-notifications-more,.xoot-notifications-state button { min-height:44px; border:0; background:transparent; color:var(--xoot-text-link); font-family:var(--xoot-font-core); font-weight:700; cursor:pointer; }
+.xoot-notifications-more { display:block; margin:12px auto; }
+.xoot-notifications-entry { position:relative; display:grid; place-items:center; width:44px; height:44px; border-radius:50%; color:var(--xoot-text-secondary); }
+.xoot-notifications-unread { position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:var(--xoot-action-brand); box-shadow:0 0 0 2px var(--xoot-surface-page); pointer-events:none; }
+.xoot-notifications-entry:hover { background:var(--xoot-action-quiet-hover); }
+.xoot-notifications-entry:focus-visible { outline:2px solid var(--xoot-violet-500); outline-offset:2px; }
+.xoot-notification:disabled,.xoot-notifications-mark-all:disabled { cursor:wait; }

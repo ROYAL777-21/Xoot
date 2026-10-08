@@ -29,24 +29,12 @@
    looks at @theme inline, so the rewire was invisible to every guard: planted, all 75 of
    their assertions still passed. */
 @import './styles/kit-tokens.css';
+@import './styles/website-handoff.css';
 
-/* ── The kit's webfonts ────────────────────────────────────────────────────────────────────────
- *
- * Plus Jakarta Sans (body) and Newsreader (display) are the families named by the kit's own
- * `--xoot-font-core` and `--xoot-font-display` tokens. Extracted from `design/Xoot_App.html` and
- * subset by `scripts/design/extract-kit-fonts.mjs`; the .woff2 files are committed, so no build
- * step and no CI job needs the extraction tooling.
- *
- * Both are VARIABLE, so one file per family covers every weight — hence the `font-weight` ranges
- * below rather than one face per weight. Measured: 31 KB and 43 KB, 73 KB total, against the
- * 120 KB ceiling the script enforces.
- *
- * ── No italics, deliberately ──────────────────────────────────────────────────────────────────
- * The bundle carries italic cuts for both families and they are NOT shipped: together they are
- * another ~70 KB, which would put the total over budget for `<em>` in blog prose. Browsers
- * synthesise an oblique. If real italics are ever wanted, they are still in the bundle — add them
- * to the script and re-measure rather than assuming there is room.
- */
+/* Uploaded handoff fonts, subset to WOFF2 by scripts/design/subset-handoff-fonts.py.
+   All variable axes and OpenType features survive, including Newsreader optical sizing.
+   Pinning optical size to meet the old 120 KB budget changed
+   the supplied design. Font files are committed; builds never download them. */
 @font-face {
   font-family: 'Plus Jakarta Sans';
   src: url('/fonts/plus-jakarta-sans-latin-var.woff2') format('woff2-variations');
@@ -59,6 +47,30 @@
   font-family: 'Newsreader';
   src: url('/fonts/newsreader-latin-var.woff2') format('woff2-variations');
   font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Caveat';
+  src: url('/fonts/caveat-latin-var.woff2') format('woff2-variations');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('/fonts/dm-mono-latin-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('/fonts/dm-mono-latin-medium.woff2') format('woff2');
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
@@ -366,6 +378,7 @@
 @utility gradient-hero {
   background: var(--gradient-hero);
 }
+
 
 @utility shadow-warm {
   box-shadow: var(--shadow-warm);

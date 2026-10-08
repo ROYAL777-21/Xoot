@@ -5,6 +5,7 @@ import {
   getPublicSecretLeaks,
   isSupabasePublicConfigComplete,
 } from "./env";
+import { renderFatalConfigError } from "./env-check";
 
 const realSupabaseEnv = {
   VITE_APP_ENV: "production",
@@ -56,6 +57,10 @@ describe("public environment validation", () => {
     ).toMatch(/VITE_APP_ENV is required/);
   });
 
+  it("allows a development preview bundle to render without backend credentials", () => {
+    expect(getPublicConfigIssueForEnv({ VITE_APP_ENV: "development" }, { prod: true })).toBeNull();
+  });
+
   it("blocks preview mode for CI and demos", () => {
     expect(
       getPublicConfigIssueForEnv(
@@ -67,6 +72,22 @@ describe("public environment validation", () => {
         { prod: true },
       ),
     ).toMatch(/VITE_APP_ENV must be one of development, staging, or production/);
+  });
+
+  it("requires staging to carry its own real public backend", () => {
+    expect(getPublicConfigIssueForEnv({ VITE_APP_ENV: "staging" }, { prod: true })).toMatch(
+      /require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY/,
+    );
+    expect(
+      getPublicConfigIssueForEnv(
+        {
+          VITE_APP_ENV: "staging",
+          VITE_SUPABASE_URL: "https://stagingproject12345.supabase.co",
+          VITE_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        },
+        { prod: true },
+      ),
+    ).toBeNull();
   });
 
   it("blocks explicit demo mode in every environment", () => {
@@ -97,5 +118,21 @@ describe("public environment validation", () => {
         { prod: true },
       ),
     ).toMatch(/Mapbox secret tokens cannot be used/);
+  });
+
+  it("renders a truthful accessible error without exposing configuration names", () => {
+    const stale = document.createElement("main");
+    stale.id = "root";
+    stale.textContent = "stale app";
+    document.body.replaceChildren(stale);
+
+    renderFatalConfigError();
+
+    const alert = document.querySelector('[role="alert"]');
+    expect(alert).not.toBeNull();
+    expect(alert?.getAttribute("aria-live")).toBe("assertive");
+    expect(alert?.textContent).toMatch(/temporarily unavailable/i);
+    expect(alert?.textContent).toMatch(/invalid public configuration/i);
+    expect(alert?.textContent).not.toMatch(/VITE_|SUPABASE|KEY|TOKEN/i);
   });
 });

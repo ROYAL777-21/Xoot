@@ -27,7 +27,7 @@ import { describe, expect, it } from "vitest";
 const read = (relative: string) => readFileSync(join(process.cwd(), relative), "utf8");
 
 const NETLIFY_TOML = "netlify.toml";
-const VALIDATOR = "scripts/config/validate-public-env.mjs";
+const VALIDATOR = "config/public-environment.mjs";
 
 /** Strip comments so a `#`-commented example never counts as a real setting. */
 const settings = (toml: string) =>

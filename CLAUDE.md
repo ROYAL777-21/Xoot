@@ -1,12 +1,12 @@
 # Working on Xoot
 
 Xoot is a South African on-demand home-services marketplace. Customers book; **Xooters** do the
-work. iOS-first. The web app is Vite + React + Tailwind on Netlify; the backend is Supabase
+work. Website first, then the native app. The web app is Vite + React + Tailwind on Vercel; the backend is Supabase
 (Postgres + Edge Functions on Deno).
 
-**Two Claude sessions work on this repo.** They cannot message each other. This file and the
-worklog it points at are the only channel between them, so both are load-bearing — read them
-before starting, update them before stopping.
+Multiple sessions may work on this repo. Read the worklog before starting and update it before
+stopping. Current launch state and owner actions live only in `docs/release/production-checklist.md`;
+historical entries in the worklog are dated evidence, not current release instructions.
 
 ---
 
@@ -107,8 +107,8 @@ These have each caused a real defect here. They are not style preferences.
 ## Verifying
 
 ```bash
-npx vitest run     # the guard layer — 77 files, 755 tests
-npx vite build     # Netlify runs `npm ci && npm run build`
+npm run typecheck
+npm run verify    # lint, tests, validated build, artifact and security scans
 ```
 
 A guard test is only worth having if it fails against the defect it describes. **Plant the bug,

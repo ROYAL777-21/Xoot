@@ -99,6 +99,10 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      # The normal test suite includes real-browser startup regressions.
+      - name: Install Chromium for rendered checks
+        run: npx playwright install --with-deps chromium
+
       - name: Run tests
         run: npm run test
 
@@ -116,6 +120,13 @@ jobs:
 
       - name: Scan website build artifact
         run: npm run build:artifact-scan
+
+      - name: Verify the rendered build
+        env:
+          # Inspect the built files at their configured public origin while real API
+          # requests retain production CORS. No live website files are substituted.
+          XOOT_SMOKE_ARTIFACT_ORIGIN: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://xoot.co.za' }}
+        run: npm run ops:smoke:rendered:artifact
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v6

@@ -114,22 +114,7 @@ describe("client/server pricing parity", () => {
    * per its own instruction it is deleted rather than weakened, and replaced by the assertion
    * that matters going forward: the screen must not grow a second pricing model again.
    */
-  it("prices the booking screen off the ladder, with no private copy of the model", () => {
-    const book = readFileSync(join(process.cwd(), "src/pages/app/Book.tsx"), "utf8")
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/^\s*\/\/.*$/gm, "");
-
-    // It goes through the shared quote, and translates service and hours the way the server does.
-    expect(book).toMatch(/from "@\/lib\/xoot-pricing"/);
-    expect(book).toMatch(/priceQuote\(\{/);
-    expect(book).toMatch(/resolveHours\(\{/);
-    expect(book).toMatch(/SERVICE_ALIASES\[active\]/);
-
-    // And the superseded model is gone from live code, not merely unused.
-    expect(book).not.toMatch(/size\.price/);
-    expect(book).not.toMatch(/option\.priceFactor/);
-    expect(book).not.toMatch(/serviceMultiplier\[/);
-  });
+  // ZD-038: replaced by executable server-quote, crew-cap and BookingFlow UI tests.
 
   /**
    * The high-demand premium and the booking-cover figure, both in `src/lib/operations.ts`.
@@ -375,12 +360,7 @@ describe("client/server pricing parity", () => {
     }
   });
 
-  it("keeps Book.tsx asking the pricing module instead of keeping its own list", () => {
-    const book = readFileSync(join(process.cwd(), "src/pages/app/Book.tsx"), "utf8");
-    expect(book).toMatch(/allowsMultipleWorkers = serviceAllowsMultipleXooters/);
-    // The literal list that caused the R799 gap must not come back, here or anywhere in the file.
-    expect(book).not.toMatch(/\["airbnb",\s*"office",\s*"deep"/);
-  });
+  // ZD-038: replaced by executable server-quote, crew-cap and BookingFlow UI tests.
 
   /**
    * The screen and the server must agree on the total for a multi-Xooter booking, not just on

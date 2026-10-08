@@ -133,7 +133,7 @@ describe("care+ pricing", () => {
     expect(carePlus).not.toMatch(/hours >= 6 \? MIN_XOOTER_PAY_FULL_DAY_CENTS/);
 
     // And re-enabling shared funding must ship with the deduction shown to the Xooter.
-    expect(carePlus).toMatch(/same commit as a\n \* line on the earnings screen showing the amount deducted/);
+    expect(carePlus).toMatch(/same commit as a\r?\n \* line on the earnings screen showing the amount deducted/);
   });
 
   /**

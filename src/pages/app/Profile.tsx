@@ -1,181 +1,58 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
+import { BookOpen, Briefcase, CalendarCheck, ChartColumn, ChevronRight, CreditCard, Gift, Handshake, House, Lightbulb, Lock, MessageCircle, Plus, ShieldCheck, Sparkles, Users, Wallet, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Loader2, User, Bell, CreditCard, Sparkles, Home, ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
-import { Link } from "react-router-dom";
-import { ProfileUpdateInput } from "@/lib/validators";
+import { useConcierge } from "@/contexts/ConciergeContext";
+import { useXootCred } from "@/hooks/useXootCred";
+import { supabase } from "@/integrations/supabase/client";
+import { getHapticsEnabled, setHapticsEnabled, haptic } from "@/lib/haptics";
+import { readProfileOverview } from "./profile-data";
+import { useProfileResource, useConfirmedSave } from "./useProfileResource";
+import { ProfileAvatar, ProfileGroup, ProfileMark, ProfileRow, ProfileState, ProfileSwitch } from "./ProfileParts";
 
-type HouseholdProfile = {
-  id?: string;
-  label: string;
-  address: string;
-  pet_notes: string;
-  parking_instructions: string;
-  gate_code: string;
-  cleaning_preferences: string;
-  fragile_areas: string;
-  favourite_products: string;
-  access_notes: string;
-  is_default: boolean;
+const dateLabel = (value: string) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
 };
 
-const defaultHousehold: HouseholdProfile = {
-  label: "Home",
-  address: "",
-  pet_notes: "",
-  parking_instructions: "",
-  gate_code: "",
-  cleaning_preferences: "",
-  fragile_areas: "",
-  favourite_products: "",
-  access_notes: "",
-  is_default: true,
-};
-
-const Profile = () => {
+export default function Profile() {
+  const resource = useProfileResource(readProfileOverview);
   const { user } = useAuth();
-  const [profile, setProfile] = useState<any>({ full_name: "", phone: "", address: "" });
-  const [household, setHousehold] = useState<HouseholdProfile>(defaultHousehold);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [savingHousehold, setSavingHousehold] = useState(false);
+  const navigate = useNavigate();
+  const { resolvedTheme, setTheme } = useTheme();
+  const concierge = useConcierge();
+  const credit = useXootCred();
+  const [haptics, setHaptics] = useState(getHapticsEnabled);
+  const [hapticError, setHapticError] = useState(false);
+  const [leaving, setLeaving] = useState<(() => boolean) | null>(null);
+  const logout = useConfirmedSave(resource.isCurrent);
+  const data = resource.data;
+  const member = data?.membership?.status === "active";
+  const membership = data?.membership;
+  const since = membership ? dateLabel(membership.started_at) : null;
+  const renewal = membership ? dateLabel(membership.next_billing_at) : null;
+  const balance = credit.error ? "Unavailable" : credit.loading ? "Loading…" : `R${credit.availableBalance.toFixed(2)}`;
 
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-      supabase.from("household_profiles").select("*").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
-    ]).then(([profileResult, householdResult]) => {
-      if (profileResult.data) setProfile(profileResult.data);
-      if (householdResult.data) setHousehold({ ...defaultHousehold, ...householdResult.data });
-      setLoading(false);
-    });
-  }, [user]);
-
-  const save = async () => {
-    if (!user) return;
-    const profileInput = ProfileUpdateInput.safeParse({
-      full_name: profile.full_name ?? "",
-      phone: profile.phone ?? "",
-      address: profile.address ?? "",
-    });
-    if (!profileInput.success) {
-      toast.error(profileInput.error.issues[0]?.message ?? "Please check your profile details.");
-      return;
-    }
-    const safeProfile = profileInput.data;
-    setSaving(true);
-    const { error } = await supabase.from("profiles").update({
-      full_name: safeProfile.full_name, phone: safeProfile.phone, address: safeProfile.address,
-    }).eq("id", user.id);
-    setSaving(false);
-    if (error) toast.error(error.message); else toast.success("Profile saved");
-  };
-
-  const saveHousehold = async () => {
-    if (!user) return;
-    setSavingHousehold(true);
-    const payload = {
-      user_id: user.id,
-      label: household.label || "Home",
-      address: household.address || profile.address || null,
-      pet_notes: household.pet_notes || null,
-      parking_instructions: household.parking_instructions || null,
-      gate_code: household.gate_code || null,
-      cleaning_preferences: household.cleaning_preferences || null,
-      fragile_areas: household.fragile_areas || null,
-      favourite_products: household.favourite_products || null,
-      access_notes: household.access_notes || null,
-      is_default: true,
-      updated_at: new Date().toISOString(),
-    };
-
-    const query = supabase.from("household_profiles");
-    const { data, error } = household.id
-      ? await query.update(payload).eq("id", household.id).select("*").single()
-      : await query.insert(payload).select("*").single();
-
-    setSavingHousehold(false);
-    if (error) return toast.error(error.message);
-    setHousehold({ ...defaultHousehold, ...data });
-    toast.success("Household profile saved");
-  };
-
-  if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-
-  return (
-    <div className="container py-8 lg:py-12 max-w-3xl">
-      <h1 className="font-display text-4xl md:text-5xl font-bold mb-8">Profile & settings</h1>
-
-      <Card className="p-6 rounded-3xl mb-6">
-        <div className="flex items-center gap-2 mb-5">
-          <User className="h-5 w-5 text-primary" />
-          <h2 className="font-display text-xl font-bold">Personal info</h2>
-        </div>
-        <div className="space-y-4">
-          <div><Label>Full name</Label><Input value={profile.full_name ?? ""} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} /></div>
-          <div><Label>Email</Label><Input value={user?.email ?? ""} disabled /></div>
-          <div><Label>Phone</Label><Input value={profile.phone ?? ""} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} /></div>
-          <div><Label>Default address</Label><Input value={profile.address ?? ""} onChange={(e) => setProfile({ ...profile, address: e.target.value })} placeholder="Used to pre-fill bookings" /></div>
-        </div>
-        <Button onClick={save} disabled={saving} className="mt-5">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}</Button>
-      </Card>
-
-      <Card className="p-6 rounded-3xl mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <Home className="h-5 w-5 text-sage-deep" />
-          <h2 className="font-display text-xl font-bold">Household profile</h2>
-        </div>
-        <p className="text-sm text-muted-foreground mb-5">Save the details that make each visit smoother: pets, parking, gate access, product preferences, and fragile areas.</p>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div><Label>Profile label</Label><Input value={household.label} onChange={(e) => setHousehold({ ...household, label: e.target.value })} /></div>
-          <div><Label>Address</Label><Input value={household.address ?? ""} onChange={(e) => setHousehold({ ...household, address: e.target.value })} placeholder={profile.address || "Full address"} /></div>
-          <div><Label>Parking instructions</Label><Input value={household.parking_instructions ?? ""} onChange={(e) => setHousehold({ ...household, parking_instructions: e.target.value })} placeholder="Visitor bay, street parking, garage code" /></div>
-          <div><Label>Gate code</Label><Input value={household.gate_code ?? ""} onChange={(e) => setHousehold({ ...household, gate_code: e.target.value })} placeholder="Optional" /></div>
-          <div className="sm:col-span-2"><Label>Pet notes</Label><Textarea rows={2} value={household.pet_notes ?? ""} onChange={(e) => setHousehold({ ...household, pet_notes: e.target.value })} placeholder="Names, temperament, rooms to avoid, feeding notes" /></div>
-          <div className="sm:col-span-2"><Label>Cleaning preferences</Label><Textarea rows={2} value={household.cleaning_preferences ?? ""} onChange={(e) => setHousehold({ ...household, cleaning_preferences: e.target.value })} placeholder="Preferred order, rooms to prioritise, laundry preferences" /></div>
-          <div><Label>Fragile areas</Label><Textarea rows={2} value={household.fragile_areas ?? ""} onChange={(e) => setHousehold({ ...household, fragile_areas: e.target.value })} placeholder="Art wall, glass table, antiques" /></div>
-          <div><Label>Favourite products</Label><Textarea rows={2} value={household.favourite_products ?? ""} onChange={(e) => setHousehold({ ...household, favourite_products: e.target.value })} placeholder="Eco products, floor cleaner, no bleach" /></div>
-          <div className="sm:col-span-2"><Label>Access notes</Label><Textarea rows={2} value={household.access_notes ?? ""} onChange={(e) => setHousehold({ ...household, access_notes: e.target.value })} placeholder="Keys, concierge, alarm notes" /></div>
-        </div>
-        <Button onClick={saveHousehold} disabled={savingHousehold} className="mt-5">
-          {savingHousehold ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save household"}
-        </Button>
-      </Card>
-
-      <Card className="p-6 rounded-3xl mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <CreditCard className="h-5 w-5 text-primary" />
-          <h2 className="font-display text-xl font-bold">Payment methods</h2>
-        </div>
-        <p className="text-sm text-muted-foreground mb-4">Online payments are not connected yet. When they are, you&apos;ll be able to save a payment method here. We never charge before a Xooter accepts.</p>
-        <Button variant="outline" disabled>Connect payment method (coming soon)</Button>
-      </Card>
-
-      <Card className="p-6 rounded-3xl mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="h-5 w-5 text-sage-deep" />
-          <h2 className="font-display text-xl font-bold">Become a Xooter</h2>
-        </div>
-        <p className="text-sm text-muted-foreground mb-4">Earn predictable income from recurring clients, premium homes, fair pay rules, fast support, and stronger vetting.</p>
-        <Button asChild variant="outline"><Link to="/xooter/apply">Apply now</Link></Button>
-      </Card>
-
-      <Card className="p-6 rounded-3xl">
-        <div className="flex items-center gap-2 mb-3">
-          <Bell className="h-5 w-5 text-primary" />
-          <h2 className="font-display text-xl font-bold">Notifications</h2>
-        </div>
-        <p className="text-sm text-muted-foreground flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-sage-deep mt-0.5" /> In-app notifications are on by default for arrivals, changes, trust incidents, and Care+ updates.</p>
-      </Card>
-    </div>
-  );
-};
-
-export default Profile;
+  return <div className="xoot-you"><h1 className="xoot-you-heading">You</h1>
+    {!data || leaving === resource.isCurrent ? <ProfileState loading={resource.authLoading || (resource.owner !== null && !resource.error)} error={resource.error} retry={resource.refresh} /> : <div className="xoot-you-content">
+      <Link to="/app/profile/account" className="xoot-you-card xoot-you-identity" onClick={() => haptic()}><ProfileAvatar name={data.profile.full_name ?? ""} src={data.profile.avatar_url} member={member} /><span><strong>{data.profile.full_name?.trim() || "Your account"}</strong><small>{member ? `Care+ member${since ? ` since ${since}` : ""}` : user?.email || "Edit your account"}</small></span><ChevronRight size={18} aria-hidden="true" /></Link>
+      <Link to="/app/plans" className={`xoot-you-card xoot-you-promo is-care${member ? " is-member" : ""}`}><ProfileMark /><span><strong>{membership ? "Care+ membership" : "Join Care+"}</strong><small>{membership ? `${membership.status.replaceAll("_", " ")}${member && renewal ? ` · next billing ${renewal}` : ""}` : "Explore the membership and current plan"}</small></span><ChevronRight size={18} aria-hidden="true" /></Link>
+      <Link to="/app/gifts" className="xoot-you-card xoot-you-promo is-gift"><i><Gift size={20} strokeWidth={1.9} /></i><span><strong>Gift a clean</strong><small>Give someone a visit — they pick the time</small></span><ChevronRight size={18} aria-hidden="true" /></Link>
+      <ProfileGroup title="Your places">{data.places.length === 0 && <p className="xoot-you-empty">No places saved yet.</p>}{data.places.map(place => <ProfileRow key={place.id} icon={House} title={place.label} detail={place.address || "Address not added"} value={place.is_default ? "Default" : undefined} to={`/app/profile/homes/${place.id}`} />)}<ProfileRow icon={Plus} title="Add a place" detail="Homes, offices or short-lets" to="/app/profile/homes/new" /></ProfileGroup>
+      <ProfileGroup title="Preferences" preferences>
+        <ProfileSwitch label="Same Xooter every time" description="Automatic preferred-Xooter matching is unavailable." disabled />
+        <ProfileSwitch label="Remind me the evening before" description="Evening reminder scheduling is unavailable." disabled />
+        <ProfileSwitch label="Haptic feedback" description="A small tap when something changes, on supported devices" checked={haptics} onChange={enabled => { const saved = setHapticsEnabled(enabled); setHapticError(!saved); if (saved) { setHaptics(enabled); haptic(); } }} />
+        {hapticError && <p role="alert" className="xoot-you-error">This device could not save your haptic preference.</p>}
+        <ProfileSwitch label="Dark mode" description="Use a darker appearance" checked={resolvedTheme === "dark"} onChange={enabled => { haptic(); setTheme(enabled ? "dark" : "light"); }} />
+      </ProfileGroup>
+      <ProfileGroup title="Money"><ProfileRow icon={Wallet} title="XootCred" detail="Use it on a booking" value={balance} to="/app/loyalty" />{credit.error && <p className="xoot-you-error">Credit could not be loaded. <button type="button" onClick={credit.refresh}>Try again</button></p>}<ProfileRow icon={CreditCard} title="Payment methods" detail="Saved payment methods are unavailable." disabled /><ProfileRow icon={BookOpen} title="Receipts & invoices" detail="Open a visit to view its payment details" to="/app/bookings" /><ProfileRow icon={Handshake} title="Refer & earn" detail="Referral tracking and fulfilment are unavailable here." disabled /></ProfileGroup>
+      <ProfileGroup title="Your app"><ProfileRow icon={Bell} title="Notifications" detail="Notification settings are unavailable; view your feed on Home." disabled /><ProfileRow icon={CalendarCheck} title="Connected calendars" detail="Calendar connections are unavailable." disabled /><ProfileRow icon={Sparkles} title="Siri & Concierge" detail="Open Concierge · Siri shortcuts are unavailable" disabled={!concierge} onClick={() => concierge?.openConcierge()} /><ProfileRow icon={ChartColumn} title="Widgets" detail="Home-screen widgets are unavailable." disabled /><ProfileRow icon={Briefcase} title="Manage more" detail="Properties and dashboards" to="/app/properties" /><ProfileRow icon={Users} title="Saved Xooters" detail="Your favourites" to="/app/favorites" /></ProfileGroup>
+      <ProfileGroup title="Support"><ProfileRow icon={ShieldCheck} title="XootCover" detail="View the trust and cover policy" to="/app/insurance" /><ProfileRow icon={MessageCircle} title="Get help" detail="Contact support" to="/app/support" /><ProfileRow icon={Lightbulb} title="How Xoot works" to="/#how" /><ProfileRow icon={Lock} title="Privacy & your data" detail="Read the privacy policy" to="/legal/privacy" /></ProfileGroup>
+      <button type="button" className="xoot-you-signout" disabled={logout.saving} onClick={() => { void logout.submit(async () => { setLeaving(() => resource.isCurrent); try { const result = await supabase.auth.signOut(); if (result.error) throw result.error; } catch { if (resource.isCurrent()) setLeaving(null); throw new Error("Sign out failed. Please try again."); } }, () => navigate("/", { replace: true })); }}>Sign out</button>
+      {logout.error && <p className="xoot-you-error" role="alert">{logout.error}</p>}
+      <span className="xoot-you-footer">Xoot · Johannesburg</span>
+    </div>}
+  </div>;
+}

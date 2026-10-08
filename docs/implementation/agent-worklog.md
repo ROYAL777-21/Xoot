@@ -23,8 +23,51 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-Nothing held. **Release released the go-live claim on 2026-09-02** — and then had to reopen it.
-Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live statement in this repo.
+**26 September checkpoint, same authorized cross-role Codex claim:** gift presentation/request
+contract is committed at `303bf9b`; native Search, notifications, Profile and Rewards work has passed
+scoped reviews. Dependency updates retain the existing web React and Expo SDK 56 runtimes; web
+audit reports zero advisories and mobile has three moderate findings in one dependency chain.
+The staging build, rendered homepage/sign-in artifact, artifact scan and security guards pass.
+Full-suite browser timeouts exposed resource contention; browser checks now run after unit/build
+checks. A collection check caught and corrected inherited include patterns before publication;
+the corrected run passed all 1,274 tests across 125 files. Dependency/runtime scoped review passed.
+Commit `438ace3` is now pushed and its Vercel preview is verified: hosted home/sign-in smoke,
+gift/offline layouts at six widths, GitHub Tests and Semgrep all pass. Draft PR 46 is open.
+Hosted screenshots and links are in `docs/release/evidence/2026-09-26/`. No production release.
+
+**21 September checkpoint, same authorized cross-role Codex claim:** native Search/notifications,
+Profile/Rewards/navigation and loaded profile editing are committed through `e2ec339` and have
+passed scoped review. Web Gift.jsx presentation plus atomic reviewed-request migration/functions
+are implemented and reviewed locally; staging delivery is pending database access. The full initial
+integration suite exposed four schema/writer/token guard issues; those are fixed and 64 focused
+checks pass. Dependency remediation and the final aggregate build/preview verification are underway.
+No production publication or new live database write. All uploaded references and remaining screens
+stay in scope; current coverage and external dependencies are in the visual ledger/release checklist.
+
+**13 September checkpoint, same Codex claim:** unified startup repair is committed at
+`b923980`; the uploaded ZIPs match the handoff already in Git. Header/hero now use the
+actual fonts, artwork and geometry. Six widths and service/auth/navigation interactions
+are checked; CodeRabbit's two minor findings are fixed. Cross-role follow-up: the rendered
+artifact check uses an existing allowlisted loopback origin, and two guard tests normalize
+Windows line endings. No backend policy, business price or production state changed.
+The full website/app fidelity goal remains active. See the visual ledger and Task 2a report.
+
+**Codex — 2026-09-11: HOLDING the approved website-first production implementation** on
+`codex/xoot-production-20260911`, based on `02bb284`.
+
+The founder explicitly approved the production plan: repair configuration and rendered deployment
+checks first, then the committed design, server quotes, crews, referrals and PayFast fulfilment,
+reviewed website release, remaining features and Expo. This crosses Release & Infrastructure and
+Correctness & Safety ownership; those owners should review their respective surfaces before merge.
+No previous local checkout is being modified. Other work must not be reverted.
+
+Verified during the 11 September planning audit: Vercel serves the current commit, but browser
+startup fails because `VITE_APP_ENV` is absent. The successful live-deploy check missed the broken
+render. The seven supplied HTML references match the committed handoff. Production is one migration
+behind staging; payment gates are closed. The older DNS and migration counts below are historical.
+Production publication remains dependent on reviewed code, release evidence and working provider
+configuration. No production migration, payment or operational action has been performed by this
+implementation session.
 
 ---
 

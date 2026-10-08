@@ -143,7 +143,7 @@ const Favorites = () => {
           <Heart className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <h3 className="font-display text-xl font-bold mb-2">No favorites yet</h3>
           <p className="text-muted-foreground mb-4">Tap the heart on any Xooter to save them here.</p>
-          <Button onClick={() => navigate("/app")} className="rounded-full">Browse Xooters</Button>
+          <Button onClick={() => navigate("/app/book")} className="rounded-full">Browse Xooters</Button>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

@@ -1,10 +1,12 @@
-import { DarkTheme, ThemeProvider, useGlobalSearchParams } from 'expo-router';
+import { DefaultTheme, ThemeProvider, useGlobalSearchParams } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
+import { useFonts } from 'expo-font';
 
 import AppTabs from '@/components/app-tabs';
+import { nativePalette } from '@/constants/handoff';
 import { SplashAnimation } from '@/components/splash-animation';
 import {
   getNativeLaunchMode,
@@ -29,6 +31,14 @@ SplashScreen.setOptions({ duration: 0, fade: false });
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function TabLayout() {
+  const [fontsLoaded, fontError] = useFonts({
+    XootJakarta: require('../../assets/fonts/XootJakarta.ttf'),
+    XootJakartaBold: require('../../assets/fonts/XootJakartaBold.ttf'),
+    XootNewsreader: require('../../assets/fonts/XootNewsreader.ttf'),
+    XootNewsreaderStrong: require('../../assets/fonts/XootNewsreaderStrong.ttf'),
+    XootCaveat: require('../../assets/fonts/XootCaveat.ttf'),
+    XootMono: require('../../assets/fonts/XootMono.ttf'),
+  });
   const params = useGlobalSearchParams();
   // Reanimated reads this synchronously from a cached value, so the decision is
   // available on the first render — `AccessibilityInfo.isReduceMotionEnabled()` is a
@@ -44,20 +54,23 @@ export default function TabLayout() {
   );
 
   useEffect(() => {
+    if (!fontsLoaded && !fontError) return;
     // Hand over on the next frame, so the app has painted behind the animation and
     // there is nothing to see underneath when it finishes.
     const id = requestAnimationFrame(() => {
       void SplashScreen.hideAsync().catch(() => {});
     });
     return () => cancelAnimationFrame(id);
-  }, []);
+  }, [fontsLoaded, fontError]);
 
   const done = useCallback(() => setPlaying(false), []);
 
+  if (!fontsLoaded && !fontError) return null;
+
   return (
-    <ThemeProvider value={DarkTheme}>
+    <ThemeProvider value={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: nativePalette.page, card: nativePalette.card, text: nativePalette.ink } }}>
       <AppProviders>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <AppTabs />
         {playing ? <SplashAnimation onDone={done} /> : null}
       </AppProviders>

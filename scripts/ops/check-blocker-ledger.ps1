@@ -1,5 +1,5 @@
 param(
-  [string]$BlockerPath = "blocker.md",
+  [string]$BlockerPath = "docs/release/production-checklist.md",
   [switch]$Json
 )
 
@@ -54,7 +54,7 @@ $requiredBlockers = @(
   [pscustomobject]@{
     id = "payments-and-payouts"
     description = "Payments and payout activation"
-    patterns = @("Stitch/Ozow", "signed webhook smoke tests", "payout")
+    patterns = @("PayFast", "Signed webhook smoke tests", "payout")
   },
   [pscustomobject]@{
     id = "twilio-live"
@@ -74,7 +74,7 @@ $requiredBlockers = @(
   [pscustomobject]@{
     id = "domain-registration"
     description = "Production domain registration"
-    patterns = @("No production domain is registered", "domain-dependent setup")
+    patterns = @("Domain resolves", "Vercel", "Do not import the old GoDaddy zone export")
   },
   [pscustomobject]@{
     id = "apple-google-eas-stores"
@@ -93,13 +93,13 @@ $requiredBlockers = @(
   },
   [pscustomobject]@{
     id = "wordpress-seo"
-    description = "WordPress SEO stack provisioning"
+    description = "SEO content publication"
     patterns = @("WordPress", "SEO/content stack", "publish/sync workflow")
   },
   [pscustomobject]@{
-    id = "hostinger-netlify"
-    description = "Hostinger and Netlify hosting verification"
-    patterns = @("Netlify", "Hostinger", "dashboard verification")
+    id = "vercel-commercial-hosting"
+    description = "Vercel commercial hosting readiness"
+    patterns = @("Vercel", "Hobby", "commercial hosting plan")
   },
   [pscustomobject]@{
     id = "k6-staging-load-proof"

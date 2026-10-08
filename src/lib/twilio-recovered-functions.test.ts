@@ -19,6 +19,7 @@ import { describe, expect, it } from "vitest";
 
 const withoutComments = (source: string) =>
   source
+    .replace(/\r\n/g, "\n")
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .split("\n")
     .map((line) => line.replace(/(^|[^:])\/\/.*$/, "$1"))

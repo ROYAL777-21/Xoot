@@ -176,6 +176,11 @@ Deno.serve(async (req) => {
     if (payment.status !== "pending") {
       return fail(`this payment is already ${payment.status}`, origin, 409);
     }
+    // Gift delivery/redemption must be verified before accepting money. The generic
+    // provider gate alone is insufficient: a paid record cannot fulfil a gift yet.
+    if (payment.payment_kind === "gift_clean") {
+      return fail("Gift checkout is not available yet. Your gift remains unpaid.", origin, 503);
+    }
     if (String(payment.currency ?? "ZAR").toUpperCase() !== "ZAR") {
       // PayFast is a ZAR-only gateway, and `confirm-payment` compares against the record's own
       // currency. Anything else could never be confirmed.

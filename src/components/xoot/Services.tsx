@@ -1,48 +1,47 @@
-import { Home, Building2, Sparkles, BedDouble, Truck, TimerReset } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BedDouble, Building2, KeyRound, Rabbit, Shirt, Sparkles } from "lucide-react";
+import { CleaningBrushIcon } from "@/components/xoot/HeroArtwork";
 import { Link } from "react-router-dom";
 
 const services = [
-  { icon: Home, title: "Residential cleaning", desc: "Weekly tidies, fortnightly deep cleans, and one-off resets.", tone: "primary" },
-  { icon: TimerReset, title: "Express cleaning", desc: "Focused resets for smaller spaces and tighter windows.", tone: "sage" },
-  { icon: Building2, title: "Office & commercial", desc: "Office, estate and small commercial cleans with admin follow-up.", tone: "sage" },
-  { icon: BedDouble, title: "Airbnb turnovers", desc: "Turnovers with host notes, readiness checks and photo proof.", tone: "primary" },
-  { icon: Truck, title: "Moving cleans", desc: "Move-in and move-out cleans with before-and-after proof.", tone: "primary" },
-  { icon: Sparkles, title: "Premium clean", desc: "Detailed home care for high-attention spaces and special resets.", tone: "sage" },
-];
+  { icon: CleaningBrushIcon, title: "Regular cleaning", desc: "Weekly tidies, fortnightly deep cleans, and one-off resets.", tint: "blush" },
+  { icon: Rabbit, title: "Express cleaning", desc: "Focused resets for smaller spaces and tighter windows.", tint: "red" },
+  { icon: Building2, title: "Office & commercial", desc: "Office, estate and small commercial cleans with admin follow-up.", tint: "mist" },
+  { icon: BedDouble, title: "Airbnb turnovers", desc: "Turnovers with host notes, readiness checks and photo proof.", tint: "lilac" },
+  { icon: KeyRound, title: "Moving cleans", desc: "Move-in and move-out cleans with before-and-after proof.", tint: "sage" },
+  { icon: Shirt, title: "Laundry & ironing", desc: "Washed, dried and pressed — folded the way you like it. Bookings open once the service is ready.", tint: "moss" },
+] as const;
 
-export const Services = () => (
-  <section id="services" className="py-20 md:py-28">
-    <div className="container">
-      <div className="max-w-2xl mb-12 md:mb-16">
-        <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">What we clean</p>
-        <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance">
-          Specialists in cleaning the spaces you live, host and work in.
-        </h2>
-        <p className="text-lg text-muted-foreground mt-4">
-          Homes, offices and Airbnbs in the current Xoot launch area, with vetting, ratings, arrival tracking and completion proof where required.
-        </p>
-      </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-        {services.map((s) => {
-          const Icon = s.icon;
-          return (
-            <article key={s.title} className="group relative rounded-3xl border border-border bg-card p-6 md:p-7 shadow-card transition-all duration-500 hover:-translate-y-1 overflow-hidden">
-              <div className="relative">
-                <div className={`inline-grid place-items-center h-12 w-12 rounded-2xl mb-5 transition-transform group-hover:scale-110 ${s.tone === "primary" ? "bg-primary/10 text-primary" : "bg-accent/15 text-accent-ink"}`}>
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h3 className="font-display text-xl font-semibold mb-1">{s.title}</h3>
-                <p className="text-sm text-muted-foreground">{s.desc}</p>
-              </div>
+export function Services() {
+  return (
+    <section id="services" className="xoot-public-section" aria-labelledby="services-title">
+      <div className="xoot-public-inner">
+        <div className="xoot-section-head">
+          <p className="xoot-section-eyebrow">What we clean</p>
+          <h2 id="services-title" className="xoot-section-title">Specialists in cleaning the spaces you <span className="xoot-squiggle">live, host and work in</span>.</h2>
+          <p className="xoot-section-sub">Homes, offices and Airbnbs in the current Xoot launch area, with vetting, ratings, arrival tracking and completion proof where required.</p>
+        </div>
+        <div className="xoot-services__grid">
+          {services.map(({ icon: Icon, title, desc, tint }, index) => (
+            <article className="xoot-card xoot-card--flat xoot-card--pad xoot-service-card" key={title}>
+              <span className={`xoot-washi xoot-washi--${index}`} aria-hidden="true" />
+              <span className={`xoot-service-icon xoot-service-icon--${tint}`} aria-hidden="true"><Icon /></span>
+              <div><h3>{title}</h3><p>{desc}</p></div>
             </article>
-          );
-        })}
+          ))}
+          <article className="xoot-card xoot-card--pad xoot-service-card" style={{ background: "var(--xoot-ink-900)", color: "#fff", boxShadow: "var(--xoot-shadow-4)" }}>
+            <span className="xoot-service-icon xoot-service-icon--moss" aria-hidden="true"><Sparkles /></span>
+            <div>
+              <h3 style={{ color: "#fff" }}>The standard, held higher</h3>
+              <p style={{ color: "rgba(255,255,255,.7)" }}>A future high-attention cleaning option for delicate finishes and homes with more detailed care requirements.</p>
+            </div>
+            <p style={{ marginTop: "auto", color: "var(--xoot-honey-mid)", fontWeight: 700 }}>Xoot Lux · availability under review</p>
+          </article>
+        </div>
+        <div className="xoot-services__actions">
+          <Link className="xoot-action xoot-action--lg" to="/book">Book a clean</Link>
+          <span className="xoot-coming-soon">Find full-time help <small>Coming soon</small></span>
+        </div>
       </div>
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-        <Button asChild size="lg" className="rounded-full"><Link to="/app">Book a clean</Link></Button>
-        <Button asChild size="lg" variant="outline" className="rounded-full"><Link to="/care-plus">Find full-time help</Link></Button>
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+}

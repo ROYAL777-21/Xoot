@@ -68,6 +68,11 @@ on:
           if you have not run this before.
         required: false
         type: string
+      configure_staging_origins:
+        description: Set only the reviewed staging website origins; skip all function deployments.
+        required: false
+        type: boolean
+        default: false
       confirm_project_ref:
         description: >-
           Required for production only. Type the project ref exactly — mvlrkelahhsyjrwgsxaf.
@@ -85,7 +90,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  configure-staging-origins:
+    if: inputs.configure_staging_origins && inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply reviewed staging origins
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_CLI_VERSION: 2.113.0
+        run: node scripts/ops/set-allowed-origins.mjs staging
   deploy:
+    if: ${{ !inputs.configure_staging_origins }}
     name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
@@ -296,13 +315,14 @@ jobs:
           set -euo pipefail
           if [ -z "${FUNCTIONS// }" ]; then
             echo "Deploying every function in supabase/functions/ to $PROJECT_REF"
-            supabase functions deploy --project-ref "$PROJECT_REF"
+            # CLI server-side bundling avoids Docker registry rate limits on CI runners.
+            supabase functions deploy --use-api --project-ref "$PROJECT_REF"
           else
             # Deployed one at a time rather than in one command, so a failure names the function
             # it failed on and the ones before it are already live.
             for fn in $FUNCTIONS; do
               echo "::group::$fn"
-              supabase functions deploy "$fn" --project-ref "$PROJECT_REF"
+              supabase functions deploy "$fn" --use-api --project-ref "$PROJECT_REF"
               echo "::endgroup::"
             done
           fi

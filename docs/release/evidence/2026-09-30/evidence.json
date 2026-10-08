@@ -1,0 +1,32 @@
+{
+  "build": {
+    "commit": "105b9264ba6ba36e1cfd705169c57cac6021a991",
+    "builtAt": "2026-09-29T05:58:34.391Z",
+    "pricingRule": "ZD-026",
+    "bookingFeeCents": 3900
+  },
+  "checked": [
+    {
+      "name": "home",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "signin",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "signin",
+      "width": 390,
+      "overflow": false
+    }
+  ],
+  "faults": [],
+  "source": "actual hosted page, fresh anonymous browser; no API writes"
+}

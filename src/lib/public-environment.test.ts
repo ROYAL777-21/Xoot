@@ -56,6 +56,40 @@ describe("committed public environment defaults", () => {
     expect(unset.VITE_SUPABASE_URL).toBeUndefined();
   });
 
+  it("derives and fills production from the Vercel build signal", () => {
+    const production = resolvePublicEnv({ VERCEL_ENV: "production" });
+
+    expect(production.VITE_APP_ENV).toBe("production");
+    expect(production.VITE_SUPABASE_URL).toMatch(/^https:\/\/[a-z0-9]{20}\.supabase\.co$/);
+    expect(production.VITE_SUPABASE_PUBLISHABLE_KEY).toBeTruthy();
+  });
+
+  it("derives development for deploy previews without inheriting production", () => {
+    for (const preview of [
+      resolvePublicEnv({ VERCEL_ENV: "preview" }),
+      resolvePublicEnv({ CONTEXT: "deploy-preview" }),
+    ]) {
+      expect(preview.VITE_APP_ENV).toBe("development");
+      expect(preview.VITE_SUPABASE_URL).toBeUndefined();
+      expect(preview.VITE_SUPABASE_PUBLISHABLE_KEY).toBeUndefined();
+    }
+  });
+
+  it("preserves an explicit staging override and its public backend", () => {
+    const staging = resolvePublicEnv({
+      VERCEL_ENV: "production",
+      VITE_APP_ENV: "staging",
+      VITE_SUPABASE_URL: "https://stagingproject12345.supabase.co",
+      VITE_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+    });
+
+    expect(staging).toMatchObject({
+      VITE_APP_ENV: "staging",
+      VITE_SUPABASE_URL: "https://stagingproject12345.supabase.co",
+      VITE_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+    });
+  });
+
   it("fills production, and lets a real environment variable win", () => {
     const filled = resolvePublicEnv({ VITE_APP_ENV: "production" });
     expect(filled.VITE_SUPABASE_URL).toMatch(/supabase\.co/);

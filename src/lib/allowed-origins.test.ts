@@ -82,6 +82,15 @@ describe("the staging value", () => {
     expect(value).toMatch(/https:\/\/staging\.xoot\.co\.za/);
     expect(value).not.toMatch(/https:\/\/(www\.)?xoot\.co\.za(,|$)/);
   });
+
+  it("accepts the verified Xoot preview branch without admitting unrelated Vercel sites", () => {
+    const branch = "https://xoot-git-codex-xoot-production-20260911-royal777-21s-projects.vercel.app";
+    expect(value.split(",")).toContain(branch);
+    expect(value.split(",")).toContain("http://127.0.0.1:4199");
+    expect(productionValue(origins).split(",")).not.toContain(branch);
+    expect(value).not.toContain("*");
+    expect(value.split(",").filter(origin => origin.includes("vercel.app"))).toEqual([branch]);
+  });
 });
 
 describe("the projects it targets", () => {

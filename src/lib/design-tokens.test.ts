@@ -13,7 +13,7 @@ import { COLOR, DURATION, EASING, MIN_TAP_TARGET, RADIUS, SPACE, TYPE, alpha, co
  * puts them side by side.
  */
 
-const css = readFileSync(join(process.cwd(), "src/index.css"), "utf8");
+const css = readFileSync(join(process.cwd(), "src/index.css"), "utf8").replace(/\r\n/g, "\n");
 
 /** Pull the `--name: value;` declarations out of one selector block. */
 function tokensIn(selector: string): Record<string, string> {

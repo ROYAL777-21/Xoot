@@ -52,14 +52,7 @@ export function AppLaunch() {
   // splash over the top of a screen the user is already using.
   const [playing, setPlaying] = useState(shouldPlay);
 
-  // Marked when the splash *finishes*, not when it mounts.
-  //
-  // The service worker reloads every client the moment it activates (`sw.js`, on
-  // `activate`), so a genuine first visit navigates twice. Marking on mount meant the
-  // first load claimed the splash, the reload arrived a few hundred milliseconds
-  // later and found it already claimed, and nobody ever saw the animation. Marking on
-  // completion is also just the honest rule: a splash the user did not see has not
-  // played.
+  // Marked on completion so an interrupted first visit can still show the full splash.
   const done = () => {
     setPlaying(false);
     try {

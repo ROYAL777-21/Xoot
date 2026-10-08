@@ -296,7 +296,7 @@ if ($null -ne $householdLayerText) {
 Test-RepoPattern "phase-3-care-plus" "src/pages/app/Plans.tsx" "useHouseholdOperatingLayer" "Care+ plan page uses shared household layer"
 Test-RepoPattern "phase-3-care-plus" "src/pages/app/OfficeDashboard.tsx" "useHouseholdOperatingLayer" "office dashboard uses shared household layer"
 Test-RepoPattern "phase-3-care-plus" "src/pages/app/AirbnbHostDashboard.tsx" "useHouseholdOperatingLayer" "host dashboard uses shared household layer"
-Test-RepoPattern "phase-3-care-plus" "src/pages/care/CarePlus.tsx" "Household operating layer" "Care+ active panel shows household operating status"
+Test-RepoPattern "phase-3-care-plus" "src/pages/care/CarePlus.tsx" "state\.membership\.renewsAt" "Care+ active panel reads the membership renewal status"
 Test-RepoFile "phase-4-invoices" "docs/implementation/phase-4-completed-booking-invoices.md" | Out-Null
 Test-RepoFile "phase-4-invoices" "supabase/functions/generate-booking-invoice/index.ts" | Out-Null
 Test-RepoFile "phase-4-invoices" "supabase/functions/resend-booking-invoice/index.ts" | Out-Null

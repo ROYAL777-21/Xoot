@@ -6,6 +6,7 @@ import {
   type BookingStatus,
 } from "../_shared/booking-state-machine.ts";
 import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
+import { quoteGift, validateGiftDraft, isGiftRequestKey } from "../_shared/gift-order.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -13,14 +14,6 @@ const defaultAllowedOrigins = [
   "https://xoot.co.za",
   "https://www.xoot.co.za",
 ];
-
-const servicePrices: Record<string, number> = {
-  residential: 270,
-  deep: 365,
-  airbnb: 315,
-  premium: 420,
-  moving: 455,
-};
 
 const bookingStatusLabels: Record<string, string> = {
   draft: "Setting up your booking",
@@ -351,76 +344,30 @@ Deno.serve(async (req) => {
     }
 
     if (action === "gift_clean_order_requested") {
-      const serviceType = servicePrices[cleanText(body.serviceType, 40)] ? cleanText(body.serviceType, 40) : "residential";
-      const amount = servicePrices[serviceType];
-      const recipientName = cleanText(body.recipientName, 120);
-      if (!recipientName) return json({ error: "recipient required" }, 400, origin);
-
-      const { data: order, error: orderError } = await supa.from("gift_clean_orders").insert({
-        purchaser_user_id: userId,
-        recipient_name: recipientName,
-        recipient_email: cleanText(body.recipientEmail, 160) || null,
-        recipient_phone: cleanText(body.recipientPhone, 80) || null,
-        occasion: cleanText(body.occasion, 120) || null,
-        message: cleanText(body.message, 600) || null,
-        service_type: serviceType,
-        amount,
-        status: "pending_payment",
-      }).select("id").single();
-      if (orderError || !order?.id) throw new Error("gift order insert failed");
-
-      const { data: payment, error: paymentError } = await supa.from("payment_records").insert({
-        user_id: userId,
-        amount,
-        currency: "ZAR",
-        status: "pending",
-        provider: "manual_pending",
-        payment_kind: "gift_clean",
-        meta: { gift_clean_order_id: order.id, service_type: serviceType, provider_required: "PayFast credentials not connected" },
-      }).select("id").single();
-      if (paymentError || !payment?.id) throw new Error("gift payment insert failed");
-
-      await supa.from("gift_clean_orders").update({ payment_record_id: payment.id }).eq("id", order.id);
-      await supa.from("admin_review_queue").insert({
-        queue_type: "payment",
-        subject_table: "gift_clean_orders",
-        subject_id: order.id,
-        user_id: userId,
-        priority: "normal",
-        summary: `Gift clean pending payment for ${recipientName}`,
-      });
-      await insertOutbox(supa, [
-        ...routeNotificationChannel("invoice_created").map((channel) => ({
-          source_table: "gift_clean_orders",
-          source_id: order.id,
-          event_type: "gift_clean_invoice_created",
-          channel,
-          owner: "Retention & Loyalty Agent",
-          stack_tool: channel === "brevo_email" ? "Brevo email queue" : "Xoot in-app notification",
-          payload: { gift_clean_order_id: order.id, amount },
-          status: "queued",
-          approval_required: false,
-          failure_mode: null,
-          created_by: userId,
-        })),
-        {
-          source_table: "payment_records",
-          source_id: payment.id,
-          event_type: "gift_clean_payment_authorisation_requested",
-          channel: "payment_provider",
-          owner: "Finance Operations",
-          stack_tool: "Payment provider queue",
-          payload: { payment_record_id: payment.id, amount },
-          status: "needs_approval",
-          approval_required: true,
-          failure_mode: "Gift order remains pending until provider callback or admin confirmation exists.",
-          created_by: userId,
-        },
-      ]);
-
-      return json({ order_id: order.id, payment_record_id: payment.id, amount, status: "pending_payment" }, 200, origin);
+      return json({ error: "Update the gift form to review the current service, visit count and price." }, 410, origin);
     }
 
+    if (action === "gift_quote" || action === "gift_order_create") {
+      const limit = await consumeRateLimit(supa, { bucket: "gifts", actor: userId, action,
+        limitCount: action === "gift_quote" ? 60 : 10, windowSeconds: 300 });
+      if (!limit.allowed) return json({ error: "Please wait a moment before trying again." }, 429, origin);
+      try {
+        if (action === "gift_quote") return json({ quote: quoteGift(body.service, body.count), checkout_available: false }, 200, origin);
+        if (!isGiftRequestKey(body.requestKey)) return json({ error: "A valid gift request key is required." }, 400, origin);
+        if (!body.draft || typeof body.draft !== "object" || Array.isArray(body.draft)) return json({ error: "Gift details are required." }, 400, origin);
+        const definition = validateGiftDraft(body.draft);
+        const currentQuote = quoteGift(definition.service, definition.count);
+        const { data, error } = await supa.rpc("create_reviewed_gift_order", {
+          p_user_id: userId, p_request_key: body.requestKey, p_definition: definition,
+          p_current_quote: currentQuote, p_accepted_quote: body.acceptedQuote ?? null,
+        });
+        if (error) return json({ error: "Gift saving is unavailable. Nothing has been charged." }, 503, origin);
+        if (!data || typeof data !== "object") return json({ error: "Gift saving could not be confirmed. Retry with the same request." }, 503, origin);
+        return json(data, data.error ? 409 : 200, origin);
+      } catch (error) {
+        return json({ error: error instanceof Error ? error.message : "Check your gift details." }, 400, origin);
+      }
+    }
     if (action === "redeem_loyalty_credit") {
       const { data: loyalty } = await supa
         .from("loyalty_points")

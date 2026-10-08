@@ -36,7 +36,7 @@ const OfficeDashboard = () => {
             <Link to="/app/properties"><DoorOpen className="mr-2 h-4 w-4" /> Manage office profile</Link>
           </Button>
           <Button asChild className="rounded-full" onClick={() => haptic("impact")}>
-            <Link to="/app"><Plus className="mr-2 h-4 w-4" /> Book office clean</Link>
+            <Link to="/app/book?service=office"><Plus className="mr-2 h-4 w-4" /> Book office clean</Link>
           </Button>
         </div>
       </div>

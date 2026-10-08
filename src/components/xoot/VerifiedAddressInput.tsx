@@ -7,6 +7,9 @@ type VerifiedAddressInputProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  inputClassName?: string;
+  label?: string;
+  showIcon?: boolean;
 };
 
 const normaliseAddress = (value: string) => value.trim().toLowerCase();
@@ -19,20 +22,21 @@ const findCoverageRegion = (value: string) => {
 
 const toDisplayRegion = (region: string) => region.replace(/\b\w/g, (character) => character.toUpperCase());
 
-export const VerifiedAddressInput = ({ value, onChange, placeholder }: VerifiedAddressInputProps) => {
+export const VerifiedAddressInput = ({ value, onChange, placeholder, inputClassName, label = "Service address", showIcon = true }: VerifiedAddressInputProps) => {
   const coverageRegion = findCoverageRegion(value);
   const hasAddress = value.trim().length > 0;
 
   return (
     <div className="space-y-2">
       <div className="relative">
-        <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        {showIcon && <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />}
         <Input
+          aria-label={label}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder ?? "Search your South African address..."}
           autoComplete="street-address"
-          className="h-12 rounded-xl pl-10 text-base"
+          className={`h-12 rounded-xl text-base ${showIcon ? "pl-10" : ""} ${inputClassName ?? ""}`}
         />
       </div>
 

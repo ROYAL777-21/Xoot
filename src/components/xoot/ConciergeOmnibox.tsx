@@ -25,7 +25,7 @@ import { haptic } from "@/lib/haptics";
  * `concierge.kill.global` — the ask affordance disappears and the search bar keeps working. A kill
  * switch on the AI should not take the app's navigation with it.
  */
-export const ConciergeOmnibox = () => {
+export const ConciergeOmnibox = ({ onAction }: { onAction?: () => void }) => {
   const navigate = useNavigate();
   const concierge = useConcierge();
   const { webEnabled } = useConciergeConfig();
@@ -46,6 +46,7 @@ export const ConciergeOmnibox = () => {
     setFocused(false);
     inputRef.current?.blur();
     navigate(to);
+    onAction?.();
   };
 
   const ask = () => {
@@ -55,6 +56,7 @@ export const ConciergeOmnibox = () => {
     setQuery("");
     setFocused(false);
     inputRef.current?.blur();
+    onAction?.();
   };
 
   const submit = (event: FormEvent) => {
@@ -72,7 +74,9 @@ export const ConciergeOmnibox = () => {
   };
 
   return (
-    <div className="relative mb-4">
+    <div className="relative mb-4" onFocus={() => setFocused(true)} onBlur={(event) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+    }}>
       <form onSubmit={submit} role="search">
         <label htmlFor="xoot-omnibox" className="sr-only">
           Search Xoot or ask the Concierge
@@ -84,10 +88,6 @@ export const ConciergeOmnibox = () => {
             ref={inputRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            onFocus={() => setFocused(true)}
-            // Delayed so a click on a result lands before the panel unmounts. Without this the
-            // blur fires first and the click hits nothing.
-            onBlur={() => window.setTimeout(() => setFocused(false), 120)}
             onKeyDown={onKeyDown}
             maxLength={200}
             autoComplete="off"
@@ -100,21 +100,17 @@ export const ConciergeOmnibox = () => {
       {showPanel && (
         <div
           className="liquid-glass-shell absolute inset-x-0 top-full z-40 mt-2 overflow-hidden rounded-3xl border border-border/60 shadow-warm"
-          role="listbox"
+          role="group"
           aria-label="Search results"
         >
           {results.map((result) => (
             <button
               key={result.id}
               type="button"
-              role="option"
-              aria-selected={false}
-              // `onMouseDown` rather than `onClick`: mousedown beats the input's blur, so the
-              // navigation happens even though the panel is about to close.
-              onMouseDown={(event) => {
-                event.preventDefault();
-                goTo(result.to);
-              }}
+              // Keep pointer focus in the search, but activate through the native click event
+              // so Enter/Space work when someone tabs onto the result.
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => goTo(result.to)}
               className="liquid-glass-interactive flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-primary/8"
             >
               <span className="min-w-0">
@@ -128,10 +124,8 @@ export const ConciergeOmnibox = () => {
           {canAsk && (
             <button
               type="button"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                ask();
-              }}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={ask}
               className="liquid-glass-interactive flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-primary/8"
             >
               <Sparkles className="h-4 w-4 shrink-0 text-primary" />

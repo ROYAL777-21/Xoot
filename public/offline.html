@@ -3,27 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#1A1A2E" />
+    <meta name="theme-color" content="#FCEEDA" />
     <title>Xoot is offline</title>
     <style>
+      @font-face { font-family: "Plus Jakarta Sans"; src: url('/fonts/plus-jakarta-sans-latin-var.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+      @font-face { font-family: Newsreader; src: url('/fonts/newsreader-latin-var.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+      @font-face { font-family: Caveat; src: url('/fonts/caveat-latin-var.woff2') format('woff2'); font-weight: 400 700; font-display: swap; }
       :root {
-        color-scheme: light dark;
-        --background: #faf4e8;
-        --foreground: #241812;
-        --muted: #74645c;
-        --primary: #c4674a;
-        --card: rgba(255, 255, 255, 0.82);
-        --border: rgba(36, 24, 18, 0.12);
-      }
-
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --background: #18100d;
-          --foreground: #fbf4eb;
-          --muted: #c7b8ad;
-          --card: rgba(38, 27, 22, 0.86);
-          --border: rgba(251, 244, 235, 0.16);
-        }
+        color-scheme: light;
+        --foreground: #151515;
+        --muted: #5f5c59;
+        --primary: #151515;
+        --card: #fff;
+        --border: rgba(20, 18, 16, 0.08);
       }
 
       * {
@@ -36,11 +28,9 @@
         display: grid;
         place-items: center;
         padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
-        background:
-          linear-gradient(135deg, rgba(196, 103, 74, 0.12), transparent 38%),
-          linear-gradient(180deg, var(--background), #f4eadf);
+        background: linear-gradient(180deg, #FCEEDA 0%, #FCE6DE 52%, #FBE3EC 100%);
         color: var(--foreground);
-        font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
         text-rendering: optimizeLegibility;
       }
@@ -51,31 +41,17 @@
         border-radius: 28px;
         padding: clamp(24px, 6vw, 42px);
         background: var(--card);
-        box-shadow: 0 28px 72px -40px rgba(36, 24, 18, 0.55);
-        backdrop-filter: blur(18px) saturate(160%);
-        -webkit-backdrop-filter: blur(18px) saturate(160%);
+        box-shadow: 0 12px 36px rgba(20, 18, 16, 0.07);
       }
 
       .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-      }
-
-      .mark {
-        display: grid;
-        width: 40px;
-        height: 40px;
-        place-items: center;
-        border-radius: 14px;
-        background: linear-gradient(135deg, var(--primary), #de9a74);
-        color: #fffaf4;
-        box-shadow: 0 18px 38px -20px rgba(196, 103, 74, 0.85);
+        font: 600 45px/1 Caveat, cursive;
+        color: #7c5cfc;
       }
 
       h1 {
+        font-family: Newsreader, Georgia, serif;
+        font-weight: 400;
         margin: 28px 0 12px;
         font-size: clamp(2.25rem, 12vw, 4rem);
         line-height: 0.98;
@@ -110,10 +86,7 @@
   </head>
   <body>
     <main>
-      <div class="brand">
-        <span class="mark">Z</span>
-        <span>zoot</span>
-      </div>
+      <div class="brand">Xoot</div>
       <h1>Xoot is offline.</h1>
       <p>Your app shell is still here. Reconnect to refresh bookings, messages, tracking, support updates, and Care+ details. Sensitive access notes are never shown on this offline screen.</p>
       <button type="button" onclick="window.location.reload()">Try again</button>

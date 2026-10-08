@@ -5,6 +5,8 @@ import { Body, Eyebrow, LiquidCard, PrimaryButton, SecondaryButton, StatusPill, 
 import { useTheme } from '@/hooks/use-theme';
 import { invokeXootFunction } from '@/lib/edge-functions';
 import { useAuth } from '@/providers/auth-provider';
+import { mobileEnv } from '@/lib/env';
+import { nativeSplitInviteUrl } from '@/lib/split-fare-invite';
 
 function SplitProgress({ active, borderColor }: { active: 1 | 2; borderColor: string }) {
   return (
@@ -24,6 +26,8 @@ export default function SplitFareScreen() {
   const [emails, setEmails] = useState<string[]>(['']);
   const [saving, setSaving] = useState(false);
   const [links, setLinks] = useState<{ email: string; amountCents: number; inviteToken: string }[]>([]);
+  const canBuildInvite = nativeSplitInviteUrl(mobileEnv.siteUrl, 'configuration-check') !== null;
+  const invitations = links.map((link) => ({ ...link, inviteUrl: nativeSplitInviteUrl(mobileEnv.siteUrl, link.inviteToken) }));
   const shareCents = useMemo(() => {
     const parties = emails.length + 1;
     const base = Math.floor(totalCents / parties);
@@ -32,7 +36,7 @@ export default function SplitFareScreen() {
   }, [emails, totalCents]);
   const addPerson = () => emails.length < 5 && setEmails((current) => [...current, '']);
   const save = async () => {
-    if (!user || !bookingId || emails.some((email) => !email.includes('@'))) return;
+    if (!user || !bookingId || !canBuildInvite || emails.some((email) => !email.includes('@'))) return;
     setSaving(true);
     try {
       const result = await invokeXootFunction<{ shares: typeof links }>('split-booking-fare', {
@@ -46,13 +50,15 @@ export default function SplitFareScreen() {
       setSaving(false);
     }
   };
-  const shareInvite = async (link: (typeof links)[number]) => {
+  const shareInvite = async (link: (typeof invitations)[number]) => {
+    if (!link.inviteUrl) return;
     await Share.share({
       title: 'Your Xoot fare share',
-      message: `You have been asked to cover R${(link.amountCents / 100).toFixed(2)} of a Xoot booking. Confirm here: https://xoot.co.za/split/${link.inviteToken}`,
+      message: `You have been asked to cover R${(link.amountCents / 100).toFixed(2)} of a Xoot booking. Confirm here: ${link.inviteUrl}`,
     });
   };
   if (!user) return <XootScreen><LiquidCard><Eyebrow>Split fare</Eyebrow><Title>Sign in first.</Title><Body muted>A real account is required to create or accept a share.</Body><PrimaryButton onPress={() => router.push('/account')}>Open account</PrimaryButton></LiquidCard></XootScreen>;
+  if (!canBuildInvite) return <XootScreen><LiquidCard><Eyebrow>Split fare</Eyebrow><Title>Invitations unavailable.</Title><Body muted>The matching website link is not configured for this app. Try again after configuration is restored.</Body><SecondaryButton onPress={() => router.back()}>Back</SecondaryButton></LiquidCard></XootScreen>;
   return (
     <XootScreen>
       <LiquidCard>
@@ -67,7 +73,7 @@ export default function SplitFareScreen() {
           <Eyebrow>Links ready</Eyebrow>
           <Title>Send each person their link.</Title>
           <Body muted>Xoot does not email these automatically. Copy or share each link from your device.</Body>
-          {links.map((link) => <View key={link.email} style={styles.inviteRow}><Body>{link.email} · R{(link.amountCents / 100).toFixed(2)}</Body><Body muted>{`https://xoot.co.za/split/${link.inviteToken}`}</Body><SecondaryButton onPress={() => shareInvite(link)}>Share this link</SecondaryButton></View>)}
+          {invitations.map((link) => <View key={link.email} style={styles.inviteRow}><Body>{link.email} · R{(link.amountCents / 100).toFixed(2)}</Body><Body muted>{link.inviteUrl ?? 'This invitation link is unavailable. Try saving the split again.'}</Body><SecondaryButton onPress={() => shareInvite(link)} disabled={!link.inviteUrl}>Share this link</SecondaryButton></View>)}
           <SecondaryButton onPress={() => router.back()}>Done</SecondaryButton>
         </LiquidCard>
       ) : (

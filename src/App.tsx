@@ -41,10 +41,14 @@ const CarePlusPaywall = lazy(() => import("./pages/CarePlusPaywall"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const AuthReset = lazy(() => import("./pages/AuthReset"));
 const Blog = lazy(() => import("./pages/Blog"));
+const BugBounty = lazy(() => import("./pages/BugBounty"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const PwaInstall = lazy(() => import("./pages/PwaInstall"));
 const SplitInvite = lazy(() => import("./pages/SplitInvite"));
 const Book = lazy(() => import("./pages/app/Book"));
+const Today = lazy(() => import("./pages/app/Today"));
+const NotificationsFeed = lazy(() => import("./pages/app/NotificationsFeed"));
+const WebsiteBooking = lazy(() => import("./pages/WebsiteBooking"));
 const Favorites = lazy(() => import("./pages/app/Favorites"));
 const Loyalty = lazy(() => import("./pages/app/Loyalty"));
 const GiftClean = lazy(() => import("./pages/app/GiftClean"));
@@ -58,6 +62,8 @@ const Training = lazy(() => import("./pages/app/Training"));
 const Support = lazy(() => import("./pages/app/Support"));
 const Insurance = lazy(() => import("./pages/app/Insurance"));
 const CustomerProfile = lazy(() => import("./pages/app/Profile"));
+const AccountEdit = lazy(() => import("./pages/app/AccountEdit"));
+const HomeEdit = lazy(() => import("./pages/app/HomeEdit"));
 const CarePlus = lazy(() => import("./pages/care/CarePlus"));
 const Terms = lazy(() => import("./pages/legal/Terms"));
 const Privacy = lazy(() => import("./pages/legal/Privacy"));
@@ -153,6 +159,7 @@ const App = () => (
                 <Suspense fallback={<RouteLoading />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/book" element={<WebsiteBooking />} />
                   <Route path="/welcome" element={<Welcome />} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/book/confirm" element={<BookingConfirm />} />
@@ -179,6 +186,7 @@ const App = () => (
                   */}
                   <Route path="/care-plus/apply" element={<Navigate to="/care-plus" replace />} />
                   <Route path="/trust-centre" element={<TrustSafety />} />
+                  <Route path="/bug-bounty" element={<BugBounty />} />
                   <Route path="/legal/terms" element={<Terms />} />
                   <Route path="/legal/privacy" element={<Privacy />} />
                   <Route path="/legal/trust-safety" element={<TrustSafety />} />
@@ -190,12 +198,15 @@ const App = () => (
                   <Route path="/legal/ai-concierge" element={<AiConciergeNotice />} />
                   <Route path="/legal/care-plus-terms" element={<CarePlusTerms />} />
                   <Route path="/legal/xooter-terms" element={<XooterTerms />} />
-                  <Route path="/app" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
+                  <Route path="/app" element={<RequireAuth><AppShell><Today /></AppShell></RequireAuth>} />
+                  <Route path="/app/notifications" element={<RequireAuth><AppShell><NotificationsFeed /></AppShell></RequireAuth>} />
+                  <Route path="/app/book" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
                   <Route path="/app/favorites" element={<RequireAuth><AppShell><Favorites /></AppShell></RequireAuth>} />
                   <Route path="/app/loyalty" element={<RequireAuth><AppShell><Loyalty /></AppShell></RequireAuth>} />
-                  <Route path="/app/gifts" element={<RequireAuth><AppShell><GiftClean /></AppShell></RequireAuth>} />
+                  <Route path="/gifts" element={<GiftClean />} />
+                  <Route path="/app/gifts" element={<RequireAuth><GiftClean /></RequireAuth>} />
                   <Route path="/app/properties" element={<RequireAuth><AppShell><Properties /></AppShell></RequireAuth>} />
                   <Route path="/app/properties/airbnb" element={<RequireAuth><AppShell><AirbnbHostDashboard /></AppShell></RequireAuth>} />
                   <Route path="/app/properties/office" element={<RequireAuth><AppShell><OfficeDashboard /></AppShell></RequireAuth>} />
@@ -204,6 +215,8 @@ const App = () => (
                   <Route path="/app/support" element={<RequireAuth><AppShell><Support /></AppShell></RequireAuth>} />
                   <Route path="/app/insurance" element={<RequireAuth><AppShell><Insurance /></AppShell></RequireAuth>} />
                   <Route path="/app/profile" element={<RequireAuth><AppShell><CustomerProfile /></AppShell></RequireAuth>} />
+                  <Route path="/app/profile/account" element={<RequireAuth><AppShell><AccountEdit /></AppShell></RequireAuth>} />
+                  <Route path="/app/profile/homes/:id" element={<RequireAuth><AppShell><HomeEdit /></AppShell></RequireAuth>} />
 
                   {/* Xooter portal */}
                   <Route path="/xooter/apply" element={<RequireAuth><XooterApply /></RequireAuth>} />

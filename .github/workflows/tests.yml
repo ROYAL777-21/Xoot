@@ -33,6 +33,86 @@ env:
   VITE_APP_ENV: development
 
 jobs:
+  benefit-concurrency:
+    name: Booking benefit transactions (PostgreSQL ${{ matrix.postgres }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres: ["17.6", "17.11"]
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}
+        env:
+          # Disposable runner-only database. Never use application credentials here.
+          POSTGRES_PASSWORD: xoot-disposable-test
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Install isolated PostgreSQL test driver
+        run: npm install --prefix "$RUNNER_TEMP/xoot-pg-test" --no-save --ignore-scripts --no-audit --no-fund pg@8.16.3
+      - name: Prove concurrent benefit writes and permissions
+        env:
+          XOOT_PG_TEST_INTENT: booking-benefit-locks
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-pg-test/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-disposable-test
+        run: node scripts/ops/test-booking-benefit-locks.mjs
+
+      - name: Prove notification privileges and publication membership
+        env:
+          XOOT_PG_TEST_INTENT: notifications-realtime-permissions
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-pg-test/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-disposable-test
+        run: node scripts/ops/test-notifications-realtime-permissions.mjs
+
+  sql-contracts:
+    name: Execute booking and gift SQL contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install test dependencies
+        run: npm ci --ignore-scripts --no-audit
+
+      # Keep the disposable PostgreSQL runtime outside application dependencies.
+      # A failed install/import fails this job; these checks must never silently skip.
+      - name: Install pinned isolated SQL runtime
+        run: npm install --prefix "$RUNNER_TEMP/xoot-sql-validation" --no-save --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.5.8
+
+      - name: Compare SQL booking quotes with the server contract
+        env:
+          XOOT_PGLITE_MODULE: ${{ runner.temp }}/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js
+        run: npx vitest run --project unit src/lib/booking-quote-sql.test.ts
+
+      - name: Verify gift transaction rollback and access controls
+        run: node scripts/ops/verify-gift-order-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
+      - name: Verify hardened storage upload paths and role isolation
+        run: node scripts/ops/verify-storage-path-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
+      - name: Verify active-job checklist mutations and service-only access
+        run: node scripts/ops/verify-checklist-state-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
   test:
     name: Lint, build and unit tests
     runs-on: ubuntu-latest
@@ -63,6 +143,16 @@ jobs:
       # which linted and built clean.
       - name: Typecheck
         run: bun run typecheck
+
+      - name: Native app typecheck
+        run: bun run mobile:typecheck
+
+      - name: Native booking contract checks
+        run: npm --prefix mobile run test:booking
+
+      # The unit suite includes browser regression tests for startup failures.
+      - name: Install Chromium for rendered checks
+        run: bunx playwright install --with-deps chromium
 
       - name: Unit tests
         run: bun run test
@@ -107,6 +197,9 @@ jobs:
 
       - name: Build
         run: bun run build
+
+      - name: Verify the rendered build
+        run: bun run ops:smoke:rendered:artifact
 
       # Does what is deployed still match what is in this repository?
       #

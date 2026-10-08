@@ -1,5 +1,12 @@
 # Connected-Service Delivery — 2026-10-08
 
+> Historical session record retained from main. The later
+> [rendered verification](evidence/2026-10-08/README.md#later-external-changes-on-8-october)
+> finds production serving `9504c11` with a missing-`VITE_APP_ENV` configuration failure.
+> A Vercel READY state does not establish website readiness. The safety-PIN change is
+> externally applied schema drift requiring reconciliation. Use the
+> [production checklist](production-checklist.md) for current launch status.
+
 ## Completed in this session
 
 ### Vercel / website

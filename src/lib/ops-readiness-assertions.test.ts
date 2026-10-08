@@ -133,9 +133,9 @@ describe("verify-production-readiness.ps1 asserts things that are true", () => {
 // check-blocker-ledger.ps1
 // ─────────────────────────────────────────────────────────────────────────────────
 
-describe("check-blocker-ledger.ps1 asserts things blocker.md says", () => {
+describe("check-blocker-ledger.ps1 covers the current production checklist", () => {
   const ledgerSource = readRepo("scripts/ops/check-blocker-ledger.ps1");
-  const blocker = readRepo("blocker.md").toLowerCase();
+  const blocker = readRepo("docs/release/production-checklist.md").toLowerCase();
   const required = [...ledgerSource.matchAll(/id = "([^"]+)"[\s\S]*?patterns = @\(([^)]*)\)/g)].map((m) => ({
     id: m[1],
     patterns: [...m[2].matchAll(/"((?:[^"]|`")*)"/g)].map((p) => unescapePwsh(p[1])),
@@ -147,10 +147,10 @@ describe("check-blocker-ledger.ps1 asserts things blocker.md says", () => {
   });
 
   it.each(required.map((entry) => [entry.id, entry.patterns] as const))(
-    "blocker.md covers %s",
+    "production checklist covers %s",
     (id, patterns) => {
       const missing = patterns.filter((pattern) => !blocker.includes(pattern.toLowerCase()));
-      expect(missing, `blocker.md is missing the literals ${id} is tracked by`).toEqual([]);
+      expect(missing, `production checklist is missing the coverage terms for ${id}`).toEqual([]);
     },
   );
 });

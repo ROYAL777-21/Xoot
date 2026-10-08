@@ -1,0 +1,311 @@
+{
+  "capturedAt": "2026-10-01T22:05:39.025Z",
+  "scope": "Actual NotificationsFeed, NotificationBell, hook/data handlers and AppShell; synthetic auth/database adapter only. No live writes or native rendering. Original reference retains its prototype records.",
+  "checks": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "filename": "notifications-320x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "cardPadding": "16px",
+      "cardGap": "12px",
+      "iconWidth": 40,
+      "cardCount": 20,
+      "overlay": false
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "bell": {
+        "width": 8,
+        "height": 8,
+        "top": 6,
+        "right": 6,
+        "linkWidth": 44,
+        "linkHeight": 44,
+        "pointerEvents": "none"
+      },
+      "accessibleName": "Notifications",
+      "accessibleDescription": "22 unread notifications"
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "interactions": "Global unread count, keyset pagination, mark-all, confirmed safe destination, empty state, source Back/Home bell, retry",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "filename": "notifications-390x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "cardPadding": "16px",
+      "cardGap": "12px",
+      "iconWidth": 40,
+      "cardCount": 20,
+      "overlay": false
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "bell": {
+        "width": 8,
+        "height": 8,
+        "top": 6,
+        "right": 6,
+        "linkWidth": 44,
+        "linkHeight": 44,
+        "pointerEvents": "none"
+      },
+      "accessibleName": "Notifications",
+      "accessibleDescription": "22 unread notifications"
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "interactions": "Global unread count, keyset pagination, mark-all, confirmed safe destination, empty state, source Back/Home bell, retry",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "filename": "notifications-768x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "cardPadding": "16px",
+      "cardGap": "12px",
+      "iconWidth": 40,
+      "cardCount": 20,
+      "overlay": false
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "bell": {
+        "width": 8,
+        "height": 8,
+        "top": 6,
+        "right": 6,
+        "linkWidth": 44,
+        "linkHeight": 44,
+        "pointerEvents": "none"
+      },
+      "accessibleName": "Notifications",
+      "accessibleDescription": "22 unread notifications"
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "interactions": "Global unread count, keyset pagination, mark-all, confirmed safe destination, empty state, source Back/Home bell, retry",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "filename": "notifications-1024x844.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "cardPadding": "16px",
+      "cardGap": "12px",
+      "iconWidth": 40,
+      "cardCount": 20,
+      "overlay": false
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "bell": {
+        "width": 8,
+        "height": 8,
+        "top": 6,
+        "right": 6,
+        "linkWidth": 44,
+        "linkHeight": 44,
+        "pointerEvents": "none"
+      },
+      "accessibleName": "Notifications",
+      "accessibleDescription": "22 unread notifications"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "interactions": "Global unread count, keyset pagination, mark-all, confirmed safe destination, empty state, source Back/Home bell, retry",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "filename": "notifications-1440x1000.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "cardPadding": "16px",
+      "cardGap": "12px",
+      "iconWidth": 40,
+      "cardCount": 20,
+      "overlay": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "bell": {
+        "width": 8,
+        "height": 8,
+        "top": 6,
+        "right": 6,
+        "linkWidth": 44,
+        "linkHeight": 44,
+        "pointerEvents": "none"
+      },
+      "accessibleName": "Notifications",
+      "accessibleDescription": "22 unread notifications"
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "interactions": "Global unread count, keyset pagination, mark-all, confirmed safe destination, empty state, source Back/Home bell, retry",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "filename": "notifications-1920x1080.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "cardPadding": "16px",
+      "cardGap": "12px",
+      "iconWidth": 40,
+      "cardCount": 20,
+      "overlay": false
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "bell": {
+        "width": 8,
+        "height": 8,
+        "top": 6,
+        "right": 6,
+        "linkWidth": 44,
+        "linkHeight": 44,
+        "pointerEvents": "none"
+      },
+      "accessibleName": "Notifications",
+      "accessibleDescription": "22 unread notifications"
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "interactions": "Global unread count, keyset pagination, mark-all, confirmed safe destination, empty state, source Back/Home bell, retry",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "filename": "notifications-844x390.png",
+      "errors": [],
+      "overflow": false,
+      "font": "Newsreader, Georgia, serif",
+      "headingSize": "20px",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "cardPadding": "16px",
+      "cardGap": "12px",
+      "iconWidth": 40,
+      "cardCount": 20,
+      "overlay": false
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "bell": {
+        "width": 8,
+        "height": 8,
+        "top": 6,
+        "right": 6,
+        "linkWidth": 44,
+        "linkHeight": 44,
+        "pointerEvents": "none"
+      },
+      "accessibleName": "Notifications",
+      "accessibleDescription": "22 unread notifications"
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "interactions": "Global unread count, keyset pagination, mark-all, confirmed safe destination, empty state, source Back/Home bell, retry",
+      "errors": []
+    },
+    {
+      "reference": "Original Search.jsx notification screen",
+      "errors": []
+    }
+  ]
+}

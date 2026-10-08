@@ -4,7 +4,7 @@ import { getConciergeCapabilities } from "../_shared/concierge-controls.ts";
 import { getClientIp, verifyTurnstile } from "../_shared/turnstile.ts";
 import { getXootKnowledgeReply, redactSupportText, sanitiseSupportText, xootKnowledgeContext, xootKnowledgeVersion } from "../_shared/xoot-knowledge.ts";
 
-import { getCorsHeaders, readJson } from "../_shared/action-utils.ts";
+import { getCorsHeaders, isAllowedOrigin, readJson } from "../_shared/action-utils.ts";
 
 const json = (body: Record<string, unknown>, status: number, origin: string | null) =>
   new Response(JSON.stringify(body), {
@@ -152,7 +152,7 @@ const buildConciergeUserTurn = ({
     `Authenticated: ${signedIn ? "yes" : "no"}`,
     `Subject: ${redactSupportText(subject)}`,
     history.length > 0
-      ? `Recent conversation:\n${history.map((turn) => `${turn.role}: ${redactSupportText(turn.body, 700)}`).join("\n")}`
+      ? `Recent conversation:\n${history.map((turn) => `${turn.role}: ${redactSupportText(turn.body)}`).join("\n")}`
       : "Recent conversation: none",
     `Message: ${redactSupportText(body)}`,
   ].join("\n");
