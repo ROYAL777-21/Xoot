@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **2 October 2026**. This replaces the status claims in `blocker.md`,
+Current register: **8 October 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -11,14 +11,15 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
-| Website hosting | On 11 September, `xoot.co.za` served Vercel headers and build commit `02bb284`. | Domain resolves. Do not import the old GoDaddy zone export. |
-| Rendered startup | Stable preview commit `01ec3d6` renders home/sign-in at 1440 and 390 pixels on 2 October without page/console errors or overflow. The reviewed [verifier repair and hosted evidence](evidence/2026-10-02/hosted/README.md) waits for the real directory response: staging passes with zero approved profiles; production fails HTTP 404 before leaving home. | Correction is published and verified on staging. Deliver the reviewed production backend before launch. Use the configured stable preview origin. |
+| Website hosting | On 7 October, `xoot.co.za` returned HTTP 200, Vercel headers and build commit `02bb284`. | Domain resolves; the public domain still serves the older release. Do not import the old GoDaddy zone export. |
+| Rendered startup | [Current preview](evidence/2026-10-07/current-preview/README.md), commit `c80fd40`, renders home/sign-in at 1440 and 390 pixels on 7 October without page/console errors or overflow. Real staging directory response: zero approved profiles. The repaired browser gate detects the missing production endpoint rather than navigating away before it fails. | Correction is published and verified on staging. Deliver the reviewed production backend before launch. Use the configured stable preview origin. |
 | Vercel access | Connector lists project `xoot`, `prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`, on 12 September. Team plan is Hobby. | Preview configuration possible; commercial hosting plan required for paid launch. |
 | Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
-| Staging schema | Read-only query on 21 September: 82 versions, latest `20260903120000`; gift RPC absent. | New `20260920200000_gift_order_contract.sql` not deployed. |
-| Production schema | Read-only query on 21 September: 81 versions, latest `20260902120000`. | Crew/referral and new gift migration still absent. |
-| Backend delivery | Read-only inventory on 1 October: staging 53 functions, production 57. Production lacks `public-xooter-directory` and `get-booking-quote`; staging has both. Direct directory requests: production 404/NOT_FOUND, staging 200 with zero public profiles. | Production delivery is incomplete. Compare source versions, migrate first and redeploy affected importers. Do not hide missing dependencies in the browser gate. |
-| Notification delivery/security | Read-only catalog checks on 1 October confirm owner RLS/read-flag grants, missing notification publication and excess client TRUNCATE/TRIGGER. [Prepared migration evidence](evidence/2026-10-02/notification-database.md): 23 local PostgreSQL assertion groups and 30 expected rejections; independent review passed 7 October. | Migration is prepared, not deployed. Check required 17.6/17.11 CI, then apply through the audited CLI and verify signed-in delivery. Client subscriptions/local SQL alone are not hosted delivery evidence. No private hosted rows were read or changed. |
+| Staging schema | 7 October read-only metadata: 83 versions, latest `20261003140000`. Exact-version lookup confirms gift, quote, benefit, notification, October 4 hardening and October 7 path migrations absent. | Reconcile the complete prepared migration sequence; a newer latest timestamp does not prove older additions were delivered. |
+| Production schema | 7 October read-only metadata: 81 versions, latest `20260902120000`; none of the eight checked September/October migration versions are recorded. | Crew/referral and the subsequent prepared migrations remain undelivered. |
+| Backend delivery | 7 October inventory: staging 54 functions, production 57. Production lacks `public-xooter-directory`, `get-booking-quote` and `xooter-job-checklist`; staging has active v1 of all three. | Production delivery is incomplete. Compare source versions, migrate first and redeploy affected importers. Do not hide missing dependencies in the browser gate. |
+| Notification delivery/security | 7 October catalog still shows missing notification publication and eight excess client TRUNCATE/TRIGGER grants. [Prepared migration evidence](evidence/2026-10-02/notification-database.md) and [CI](evidence/2026-10-07/integration-preflight.md): 23 groups/30 expected denials pass on PostgreSQL 17.6 and 17.11; independent review passed. | Migration is prepared, not deployed. Apply through the audited CLI and verify signed-in delivery. Client subscriptions/local SQL alone are not hosted delivery evidence. No private hosted rows were read or changed. |
+| Dependencies | 7 October audits on unchanged locks: web 3 findings; mobile 29, including transitive attributions. [Integration preflight](evidence/2026-10-07/integration-preflight.md). | Compatible patch work is queued. Audits are failed gates; no forced framework downgrade or unsupported clean-scan claim. |
 | PayFast | Hosted checkout disabled; provider verification flags false in both environments at audit. | Signed webhook smoke tests, amount matching and reconciliation evidence required. |
 | Supply | Production aggregate counts: zero Xooters and zero bookings, rechecked 21 September. | Recruit/verify helpers and run consenting pilot; no invented availability/reviews. |
 | Supabase CLI | GitHub credentials previously configured staging origins and deployed directory/matching functions. Fresh read-only staging preflight on 1 October, [run 36932028355](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/36932028355), passed credential-presence/setup checks but failed at `supabase link`: access token/project pair lacks the required endpoint privileges. No database changes were attempted. | Correct the deployment identity's database-management access and keep separate database credentials. Local `supabase login` is optional for local CLI work; it does not replace the GitHub secret. |
@@ -33,7 +34,7 @@ The [28 September preview evidence](evidence/2026-09-28/README.md) records the v
 commit, hosted screenshots, responsive checks and CI results. This is not the completed production release.
 The [30 September checkpoint](evidence/2026-09-30/README.md) adds current hosted screenshots,
 real PostgreSQL concurrency results and the passing production-configured browser build.
-The [latest 1 October hosted checkpoint](evidence/2026-10-01/hosted-profile/README.md) verifies
+The [1 October hosted checkpoint](evidence/2026-10-01/hosted-profile/README.md) verifies
 `0ee9cb2`, including fresh public-page captures and 143 files / 1,444 passing tests (seven
 existing skips). Its production Web build fails on the absent directory endpoint. Schema
 drift and the external Claude scan also remain failed gates; source ports and paid/native
@@ -85,6 +86,43 @@ and does not enable bookings, benefits or payments.
 
 ### Current implementation delivery sequence
 
+The 7 October engineering integration adds
+`20261003140000_company_wide_defaults_and_xooter_checklists.sql` (default-home uniqueness,
+task table, seed trigger and participant reads) and
+`20261004160000_backend_rls_and_storage_hardening.sql` (client grants, RLS and storage
+restrictions). Preserve timestamp order after the prepared September gift/quote/benefit/
+notification migrations. Apply and verify these on staging before deploying
+`xooter-job-checklist` or exercising the customer/Xooter checklist views. Redeploy all
+importers of `_shared/action-utils.ts` for bounded request parsing; a changed shared
+source file does not update existing bundles. Split-fare clients still record shares
+and offer manual invite delivery; they do not enable payment collection. These additions
+do not close hosted role/journey checks. A read-only inventory on 7 October observes
+83 staging migrations through `20261003140000` and ACTIVE v1 `xooter-job-checklist`;
+production remains at 81 migrations through `20260902120000` and lacks that function.
+The exact-version ledger check confirms the October storage/RLS migration and September
+gift/quote/benefit/notification migrations are absent. Compare actual schema effects before
+delivery; a ledger check is not a full migration or role-behavior preflight.
+
+The incoming storage hardening mistakenly counted the filename as a folder, rejecting
+current `{user_id}/{file}` and `{booking_id}/{file}` uploads while admitting an extra
+folder. Apply the additive `20261007140000_storage_upload_path_contract.sql` after
+`20261004160000`: it changes only five upload/update `WITH CHECK` predicates to one
+folder and preserves owner/member checks, MIME/size controls and completion-evidence
+overwrite denial. Local isolated SQL reproduces the defect, executes the unchanged
+storage/rename/hardening sequence, verifies the correction/replay, role isolation and
+atomic failure on missing prerequisites. The required SQL CI step and real staging
+Storage API upload/denial checks must pass before delivery is treated as verified.
+
+The reviewed checklist correction adds `20261007150000_checklist_active_job_mutation.sql`
+after the October 3 checklist schema and before deployment of the amended
+`xooter-job-checklist` endpoint. It accepts only the verified actor's accepted job on an
+active booking, rechecks state under row locks, and denies terminal/cancelled work.
+The isolated SQL contract covers 50 groups, but independent-connection PostgreSQL
+contention and actual hosted role journeys remain required before applying this change.
+The endpoint reports unavailable when the RPC has not been delivered; UI visibility is
+not server authorization. Concierge origin handling, native environment-specific invite
+links and explicit checklist retry states also received focused fixes and scoped review.
+
 The reviewed gift-request slice requires `20260920200000_gift_order_contract.sql` **before**
 `ops-workflow` and `create-payment-session`. Staging still lacks that migration. The local types now
 describe its expected columns/RPC; regenerate and compare against staging after applying it.
@@ -113,8 +151,10 @@ Customer Home and the floating app navigation now follow the supplied Frame/Toda
 Owner-bound paginated reads, SAST dates, legacy booking links, honest account states and keyboard
 search are covered by focused checks and a passing scoped review on 1 October. Seven-width
 [Home/navigation evidence](evidence/2026-09-30/today/README.md) uses isolated synthetic records;
-it is not proof of live authenticated journeys. Full Profile, Notifications, verified benefit
-semantics and native parity remain open.
+it is not proof of live authenticated journeys. The reviewed Profile overview/account/place
+editors and notification feed have subsequent evidence in the coverage matrix. Remaining
+preferences/destinations, notification settings/delivery, benefit semantics and native parity
+remain open.
 
 ZD-038 approves the handoff's shared-job crew price: Airbnb 5.5 hours with two Xooters is R393 base,
 plus the separate R39 fee for a standard customer. The new server quote and clients use this rule.
@@ -125,8 +165,8 @@ The additive private SQL calculator `20260928003000_booking_quote_calculator.sql
 locally and not deployed. Eight executable checks cover 1,332 complete SQL/server quote pairs,
 67 invalid cases, caller grants and read-only behavior; a planted R684 regression is detected.
 The calculator does not itself authenticate, lock account facts, reserve workers or create a booking.
-The forthcoming transaction must enforce those boundaries. A separate required CI job is being
-added so SQL execution cannot be mistaken for an ordinary-suite skip.
+The forthcoming transaction must enforce those boundaries. The separate required SQL-contract
+CI job passed on `c80fd40`; ordinary-suite skips are not being counted as SQL execution.
 
 ## Release gates
 
@@ -152,9 +192,10 @@ Record commit, environment, command/run link, date and result when closing each 
 ## Owner steps, in order
 
 1. **Hosting:** in Vercel, open the team for `xoot` and upgrade to a plan permitting commercial use
-   before paid launch. The account currently reports Hobby. [Vercel plan rules](https://vercel.com/docs/plans/hobby).
-2. **Database deployment access:** the saved GitHub token successfully configures staging origins
-   and deploys Edge Functions. The fresh read-only staging preflight on 1 October failed during
+   before paid launch if the current plan does not permit it. The last plan check, on 12 September,
+   reported Hobby; current billing eligibility still needs confirmation. [Vercel plan rules](https://vercel.com/docs/plans/hobby).
+2. **Database deployment access:** the saved GitHub token previously configured staging origins
+   and deployed Edge Functions. The read-only staging preflight on 1 October failed during
    project linking because that token lacks privileges for the required endpoint
    ([run 36932028355](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/36932028355)). In Supabase account access settings,
    grant the deployment identity the required project/database-management access, then replace the
@@ -165,6 +206,9 @@ Record commit, environment, command/run link, date and result when closing each 
    starts the secure login flow; logging in locally does not update that GitHub secret.
 3. **Business details:** confirm legal business name, registration/tax details if applicable, public
    support contact and invoice details. Engineering will insert approved values; no invented identity.
+   Invoice generation reads protected server settings `XOOT_INVOICE_LEGAL_ENTITY`,
+   `XOOT_INVOICE_LEGAL_ENTITY_REGISTRATION`, `XOOT_INVOICE_VAT_RATE` and, when applicable,
+   `XOOT_INVOICE_VAT_NUMBER`; use approved details and verify the generated receipt.
 4. **PayFast:** complete merchant verification, then place sandbox and live credentials in their
    separate Supabase environments. Engineering will check callback URLs, signatures and reconciliation
    before changing payment capability flags. [PayFast documentation](https://developers.payfast.co.za/).
@@ -181,6 +225,12 @@ Record commit, environment, command/run link, date and result when closing each 
    issues; no review is counted before a result exists. Sign in again only if the session expires.
 9. **Mobile:** provide Expo, Apple Developer and Google Play access, and an Android phone/iPhone for real
    device checks. Engineering handles builds, signing configuration, store materials and submissions.
+   Select the matching EAS environment for `EXPO_PUBLIC_SUPABASE_URL`,
+   `EXPO_PUBLIC_SUPABASE_PROJECT_ID`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+   `EXPO_PUBLIC_EAS_PROJECT_ID` and `EXPO_PUBLIC_SITE_URL`. Association-file generation
+   on Vercel uses `XOOT_APPLE_TEAM_ID`, `XOOT_IOS_APP_ID` and
+   `XOOT_ANDROID_SHA256_CERT_FINGERPRINTS`; rebuild and verify the real `/.well-known/`
+   files after approved signing values are supplied. Keep `za.co.xoot.app`.
 
 The engineer continues independent work while these are pending. Identity checks, contracts, business
 decisions, staffing and consenting participants cannot be completed through code alone.
@@ -224,6 +274,12 @@ decisions, staffing and consenting participants cannot be completed through code
 - Vercel is the chosen website host. Netlify/Hostinger are legacy configuration, not additional launch
   targets. Existing SEO/content stack and publish/sync workflow must produce supported claims; no
   additional WordPress infrastructure is required merely because an old checklist mentioned it.
+- The integrated Vercel/static policy retains `frame-src 'none'`, `frame-ancestors 'none'`
+  and restrictive defaults, allows only the PayFast sandbox/live `/eng/process` form
+  targets plus the current Supabase/Mapbox and default PostHog connections. Payment
+  gates remain disabled. Before enabling an environment-selected Sentry DSN, another
+  PostHog host or a real Turnstile widget, review and add only its exact required
+  connect/script/frame origins, then verify rendered provider behavior and headers.
 - Native assistant tests, deep links, notifications, payment recovery and account deletion remain
   required in addition to emulator checks. Keep production application identity `za.co.xoot.app`.
 

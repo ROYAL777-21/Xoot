@@ -7,6 +7,7 @@ import {
   insertOutbox,
   ok,
   requireAdmin,
+  readJson,
   requireAuth,
   toNumber,
 } from "../_shared/action-utils.ts";
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
   if (adminError) return adminError;
 
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const applicationId = cleanId(body.applicationId ?? body.application_id);
     if (!applicationId) return fail("application_id required", origin, 400);
     const reasonResult = requireAdminReason(body.reason, origin);

@@ -76,6 +76,7 @@ export const xootKnowledgeContext = [
   "Care+ is the Xoot membership layer. Current detailed Care+ pricing, benefits, billing and cancellation wording requires the approved Care+ policy and should be shown through the Care+ page or protected support route.",
   "XootCred is a ledger-based credit system. Credits and debits must come from audited server-side records, not editable wallet totals.",
   "Sensitive access details such as gate codes, alarm codes, lockbox codes, and private household notes must stay inside protected app flows and are never requested in chat.",
+  "Split fare is available on eligible pending bookings: the organiser chooses invitee shares, sends each private invite link, and invitees confirm with the invited account. The split feature records obligations but does not collect card payments yet; confirmed shares are settled with the organiser directly.",
   "Payments, refunds, booking changes, replacements, damage reports, complaints, and private account details require authenticated support and human review where risk exists.",
   "Xooters must complete onboarding, document checks, training, and operational readiness before live work.",
 ].join("\n");
@@ -102,6 +103,16 @@ export const getXootKnowledgeReply = (rawText: string, signedIn: boolean): XootK
     return reply(
       `Xoot is prioritising Johannesburg launch density first: ${launchAreas.join(", ")} and nearby approved suburbs. Pretoria and Cape Town are expansion targets after supply, support, payments and quality controls are ready, so live availability should still be checked in the app.`,
       "service-area-guide",
+    );
+  }
+
+  if (includesAny(text, ["split fare", "split the fare", "split booking", "share the cost", "chip in"])) {
+    return reply(
+      signedIn
+        ? "On an eligible booking with payment still pending, open the booking detail page and choose Split fare. Add invitees, review the shares, save, and send each person their private link. The feature records each obligation but does not charge cards yet; confirmed shares are settled with the organiser directly."
+        : "Split fare is an authenticated booking feature. The organiser chooses each share and sends private invite links; nobody is charged by the split feature yet, and confirmed shares are settled with the organiser directly.",
+      "split-fare-guide",
+      "safe_route",
     );
   }
 

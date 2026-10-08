@@ -25,6 +25,7 @@ export type NativeBooking = {
   scheduled_at: string;
   status: string;
   price: number;
+  payment_status: string | null;
   address: string | null;
   duration_hours: number;
   xooter_id: string | null;
@@ -82,7 +83,7 @@ export function NativeCoreDataProvider({ children }: { children: React.ReactNode
       supabase.from('profiles').select('full_name,avatar_url,address,phone').eq('id', user.id).maybeSingle(),
       supabase
         .from('bookings')
-        .select('id,service,service_type,scheduled_at,status,price,address,duration_hours,xooter_id')
+        .select('id,service,service_type,scheduled_at,status,price,payment_status,address,duration_hours,xooter_id')
         .eq('user_id', user.id)
         .order('scheduled_at', { ascending: true }),
       supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false),

@@ -8,6 +8,7 @@ import {
   insertReviewQueue,
   isApprovedLaunchRegion,
   ok,
+  readJson,
   requireAuth,
   resolveLaunchRegion,
   toNumber,
@@ -190,7 +191,7 @@ Deno.serve(async (req) => {
   const { user, supa } = auth as { user: any; supa: any };
 
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const serviceType = cleanText(body.serviceType ?? body.service_type, 40);
     const frequency = cleanText(body.frequency, 20) === "repeat" ? "repeat" : "one_time";
     const homeSizeId = cleanText(body.homeSize ?? body.home_size, 20) || "small";

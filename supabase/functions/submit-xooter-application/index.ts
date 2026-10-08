@@ -9,6 +9,7 @@ import {
   insertReviewQueue,
   isApprovedLaunchRegion,
   ok,
+  readJson,
   requireAuth,
   toNumber,
   writeAuditLog,
@@ -110,7 +111,7 @@ Deno.serve(async (req) => {
   const { user, supa } = auth as { user: any; supa: any };
 
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const mode = cleanText(body.mode, 20) || "submitted";
 
     if (mode === "document") {

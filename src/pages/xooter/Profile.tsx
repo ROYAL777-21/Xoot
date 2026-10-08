@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { TrustBadges } from "@/components/xoot/TrustBadges";
 import { resolvePhoto } from "@/components/xoot/XooterCard";
 import { deriveXooterBadges } from "@/lib/trust";
+import { safeFileName, validateAvatarUpload } from "@/lib/upload-validation";
 
 const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
 const joinList = (value?: string[] | null) => (value ?? []).join(", ");
@@ -61,8 +62,18 @@ const Profile = () => {
 
   const upload = async (file: File) => {
     if (!user || !xooter) return;
-    const path = `${user.id}/avatar-${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("xooter-avatars").upload(path, file, { upsert: true });
+    const validationError = validateAvatarUpload(file);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+    const uploadId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const path = `${user.id}/avatar-${uploadId}-${safeFileName(file.name)}`;
+    const { error } = await supabase.storage.from("xooter-avatars").upload(path, file, {
+      upsert: false,
+      contentType: file.type,
+      cacheControl: "0",
+    });
     if (error) { toast.error(error.message); return; }
     const { data: url } = supabase.storage.from("xooter-avatars").getPublicUrl(path);
     await supabase.from("xooters").update({ photo_url: url.publicUrl }).eq("id", xooter.id);

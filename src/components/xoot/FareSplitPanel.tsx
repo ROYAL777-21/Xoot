@@ -74,6 +74,20 @@ type SavedShare = {
   inviteToken: string;
 };
 
+const SplitProgress = ({ active }: { active: 1 | 2 }) => (
+  <div className="mb-4 flex items-center gap-2" aria-label={`Split fare step ${active} of 2`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${active === 1 ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
+      <span className="grid h-4 w-4 place-items-center rounded-full bg-background/80 text-[10px]">{active === 1 ? "1" : "✓"}</span>
+      Set shares
+    </span>
+    <span className="h-px flex-1 bg-border/70" />
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${active === 2 ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>
+      <span className="grid h-4 w-4 place-items-center rounded-full bg-background/80 text-[10px]">2</span>
+      Send links
+    </span>
+  </div>
+);
+
 export const FareSplitPanel = ({
   bookingId,
   totalRands,
@@ -219,11 +233,12 @@ export const FareSplitPanel = ({
   if (saved.length > 0) {
     return (
       <Card className="rounded-3xl p-5">
+        <SplitProgress active={2} />
         <div className="mb-1 flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/10 text-primary">
             <Check className="h-4 w-4" />
           </span>
-          <p className="font-display text-base font-bold">Split saved — now send the links</p>
+          <p className="font-display text-base font-bold">Step 2 · Send the links</p>
         </div>
         <p className="mb-4 text-xs text-muted-foreground">
           Xoot does not email these for you. Send each person their own link and they can confirm
@@ -317,7 +332,7 @@ export const FareSplitPanel = ({
               <Users className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-display text-base font-bold">Split this booking</p>
+              <p className="font-display text-base font-bold">Split fare</p>
               <p className="text-xs text-muted-foreground">
                 Share the cost with housemates or family
               </p>
@@ -333,12 +348,17 @@ export const FareSplitPanel = ({
 
   return (
     <Card className="rounded-3xl p-5">
+      <SplitProgress active={1} />
       <div className="mb-4 flex items-center justify-between">
-        <p className="font-display text-base font-bold">Split {formatZARDecimal(totalRands)}</p>
+        <p className="font-display text-base font-bold">Step 1 · Split {formatZARDecimal(totalRands)}</p>
         <Button size="icon" variant="ghost" className="rounded-full" onClick={() => setOpen(false)} aria-label="Cancel split">
           <X className="h-4 w-4" />
         </Button>
       </div>
+
+      <p className="mb-3 text-xs text-muted-foreground">
+        Equal split is ready by default. Adjust a person’s amount only when the group has agreed a different share.
+      </p>
 
       <div className="space-y-2">
         {emails.map((email, index) => (
@@ -450,7 +470,7 @@ export const FareSplitPanel = ({
         onClick={submit}
       >
         {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-        Save and get the links
+        Save split &amp; get links
       </Button>
     </Card>
   );

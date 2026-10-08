@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildEmailPayload } from "../_shared/email-playbook.ts";
+import { readJson } from "../_shared/action-utils.ts";
 import {
   ADD_ON_CENTS,
   BOOKING_COVER_CENTS,
@@ -114,7 +115,7 @@ Deno.serve(async (req) => {
     const { data: authData, error: authError } = await authClient.auth.getUser();
     if (authError || !authData.user) return json({ error: "authentication required" }, 401, origin);
 
-    const body = await req.json();
+    const body = await readJson(req);
     const serviceType = cleanText(body.serviceType, 40);
     const frequency = body.frequency === "repeat" ? "repeat" : "one_time";
     const homeSizeId = cleanText(body.homeSize, 20) || "small";

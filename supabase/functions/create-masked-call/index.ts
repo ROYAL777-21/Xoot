@@ -5,6 +5,7 @@ import {
   handlePreflight,
   insertOutbox,
   ok,
+  readJson,
   requireAuth,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
@@ -102,7 +103,7 @@ Deno.serve(async (req) => {
   const { user, supa } = auth as { user: any; supa: any };
 
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const bookingId = cleanId(body.bookingId ?? body.booking_id);
     if (!bookingId) return fail("booking_id required", origin, 400);
 

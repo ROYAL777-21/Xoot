@@ -89,6 +89,15 @@ export const getLocalXootConciergeReply = (rawText: string, signedIn: boolean): 
     );
   }
 
+  if (includesAny(text, ["split fare", "split the fare", "split booking", "share the cost", "housemates pay", "chip in"])) {
+    return reply(
+      signedIn
+        ? "You can split a booking from its detail page while payment is still pending. Add each person's email, review the even or custom shares, save the split, then send each private invite link by WhatsApp or email. No one is charged by the split feature yet; each person confirms their share and settles with the organiser directly for now."
+        : "Split fare is available from a signed-in booking detail page. The organiser chooses each person's share, then sends a private invite link; nobody is charged by the split feature yet, so confirmed shares are settled with the organiser directly.",
+      protectedCta(signedIn, "Open your bookings", "/app/bookings"),
+    );
+  }
+
   if (includesAny(text, ["price", "pricing", "cost", "how much", "fee"])) {
     return reply(
       "Pricing depends on service type, home size, add-ons, timing, number of Xooters and coverage. Exact totals must come from the signed-in booking flow so backend pricing and payment state stay authoritative.",

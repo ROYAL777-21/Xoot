@@ -59,6 +59,16 @@ export const getLocalXootConciergeReply = (rawText: string, signedIn: boolean): 
     );
   }
 
+  if (includesAny(text, ["split fare", "split the fare", "split booking", "share the cost", "chip in"])) {
+    return reply(
+      signedIn
+        ? "On an eligible pending booking, open the booking card and choose Split this fare. Add invitees, review the shares, save, and share each private link from your phone. The feature records each obligation but does not charge cards yet; confirmed shares are settled with the organiser directly."
+        : "Split fare is available from a signed-in booking. The organiser chooses each share and sends private invite links; nobody is charged by the split feature yet, and confirmed shares are settled directly with the organiser.",
+      false,
+      protectedCta(signedIn, "Open bookings", "/bookings"),
+    );
+  }
+
   if (includesAny(text, ["price", "pricing", "cost", "how much", "fee"])) {
     return reply(
       "Pricing depends on service type, home size, add-ons, timing, number of Xooters and coverage. Exact totals must come from the signed-in booking flow so backend pricing and payment state stay authoritative.",

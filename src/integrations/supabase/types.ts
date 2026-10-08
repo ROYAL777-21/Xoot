@@ -4671,6 +4671,45 @@ export type Database = {
           },
         ]
       }
+      xooter_job_checklist: {
+        Row: {
+          booking_id: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          id: string
+          job_id: string
+          label: string
+          position: number
+          task_key: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          label: string
+          position: number
+          task_key: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          label?: string
+          position?: number
+          task_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       xooter_jobs: {
         Row: {
           booking_id: string
@@ -5351,6 +5390,10 @@ export type Database = {
       can_activate_payment_provider: {
         Args: { p_environment?: string; p_provider: string }
         Returns: boolean
+      }
+      update_active_xooter_checklist: {
+        Args: { p_actor_id: string; p_job_id: string; p_task_key: string; p_complete: boolean }
+        Returns: Json
       }
       can_create_masked_call: {
         Args: { p_actor_id: string; p_booking_id: string }

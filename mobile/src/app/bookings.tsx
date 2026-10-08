@@ -101,6 +101,11 @@ function VisitCard({ booking, past }: { booking: NativeBooking; past: boolean })
           </View>
         )}
         {past && booking.price > 0 ? <Text selectable style={styles.paid}>Booking total R{booking.price.toFixed(2)}</Text> : null}
+        {!past && booking.payment_status === 'pending' && Number.isFinite(booking.price) && booking.price > 0 ? (
+          <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/split-fare', params: { bookingId: booking.id, total: String(booking.price) } })} style={({ pressed }) => [styles.splitFare, pressed && nativeCoreStyles.pressed]}>
+            <Text selectable={false} style={styles.splitFareText}>Split this fare</Text>
+          </Pressable>
+        ) : null}
       </Card>
   );
 }
@@ -128,4 +133,6 @@ const styles = StyleSheet.create({
   rebook: { alignItems: 'center', backgroundColor: nativePalette.ink, borderRadius: 999, flexDirection: 'row', gap: 5, minHeight: 36, paddingHorizontal: 12 },
   rebookText: { color: nativePalette.card, fontFamily: nativeFonts.bodyBold, fontSize: 11 },
   paid: { color: nativePalette.muted, fontFamily: nativeFonts.mono, fontSize: 11, textAlign: 'right' },
+  splitFare: { alignItems: 'center', borderColor: nativePalette.border, borderRadius: 999, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 16 },
+  splitFareText: { color: nativePalette.ink, fontFamily: nativeFonts.bodyBold, fontSize: 12 },
 });

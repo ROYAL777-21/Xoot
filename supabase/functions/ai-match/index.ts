@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { MAX_TRAVEL_KM, distanceKmToCoverage, type SuburbCentroid } from "../_shared/geo.ts";
 import { DIRECTORY_COLUMNS, publicDirectoryProfile } from "../_shared/public-directory.ts";
 
+import { readJson } from "../_shared/action-utils.ts";
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
@@ -55,7 +56,7 @@ Deno.serve(async (req) => {
     const { data: authData, error: authError } = await authClient.auth.getUser();
     if (authError || !authData.user) return json({ error: "authentication required" }, 401, origin);
 
-    const body = await req.json();
+    const body = await readJson(req);
     /*
      * `service` is optional as of 2026-08-12, and that is a deliberate widening.
      *

@@ -23,10 +23,13 @@ export const approvedLaunchRegions = [
   "braamfontein",
 ];
 
-export const getAllowedOrigins = () =>
-  (Deno.env.get("ALLOWED_ORIGINS")?.split(",") ?? defaultAllowedOrigins)
+export const getAllowedOrigins = () => {
+  const configured = Deno.env.get("ALLOWED_ORIGINS")
+    ?.split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+  return configured?.length ? configured : defaultAllowedOrigins;
+};
 
 export const getCorsHeaders = (origin: string | null) => {
   const allowedOrigins = getAllowedOrigins();
@@ -84,11 +87,37 @@ export const cleanArray = (value: unknown, maxItems = 12, maxLength = 80) =>
     ? value.map((item) => cleanText(item, maxLength)).filter(Boolean).slice(0, maxItems)
     : [];
 
-export const readJson = async (req: Request) => {
+/** Browser-controlled request bodies must be bounded before JSON parsing. */
+export const MAX_JSON_BODY_BYTES = 256 * 1024;
+export const readJson = async (req: Request, maxBytes = MAX_JSON_BODY_BYTES) => {
+  const declaredLength = Number(req.headers.get("content-length") ?? "");
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) return {};
+  if (!req.body) return {};
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
   try {
-    return await req.json();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        return {};
+      }
+      chunks.push(value);
+    }
+    const body = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      body.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return JSON.parse(new TextDecoder().decode(body));
   } catch {
     return {};
+  } finally {
+    reader.releaseLock();
   }
 };
 

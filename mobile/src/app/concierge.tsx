@@ -187,6 +187,13 @@ export default function ConciergeScreen() {
       return;
     }
 
+    const history = [
+      ...messages
+        .filter((item) => item.role === 'user' || item.role === 'assistant')
+        .map((item) => ({ role: item.role, body: item.body })),
+      { role: 'user' as const, body: trimmedMessage },
+    ].slice(-8);
+
     setIsSubmitting(true);
     try {
       const response = await invokeXootFunction<SupportResponse>('support-respond', {
@@ -194,6 +201,7 @@ export default function ConciergeScreen() {
         body: trimmedMessage,
         role: 'user',
         guest: !user,
+        history,
       });
       appendMessage({
         role: 'assistant',
