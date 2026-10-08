@@ -11,25 +11,28 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
-| Website hosting | On 7 October, `xoot.co.za` returned HTTP 200, Vercel headers and build commit `02bb284`. | Domain resolves; the public domain still serves the older release. Do not import the old GoDaddy zone export. |
-| Rendered startup | [Current preview](evidence/2026-10-07/current-preview/README.md), commit `c80fd40`, renders home/sign-in at 1440 and 390 pixels on 7 October without page/console errors or overflow. Real staging directory response: zero approved profiles. The repaired browser gate detects the missing production endpoint rather than navigating away before it fails. | Correction is published and verified on staging. Deliver the reviewed production backend before launch. Use the configured stable preview origin. |
+| Website hosting | On 8 October, `xoot.co.za` reports main commit `9504c11`; an actual browser check fails with the missing `VITE_APP_ENV` configuration overlay. [Evidence](evidence/2026-10-08/README.md). | Domain resolves; the public deployment is unusable. The reviewed implementation preview renders correctly. Do not import the old GoDaddy zone export. |
+| Rendered startup | [Current preview](evidence/2026-10-08/README.md), commit `8aca3d8`, renders home/sign-in at 1440 and 390 pixels on 8 October without page/console errors or overflow. Real staging directory response: zero approved profiles. The repaired browser gate detects the missing production endpoint rather than navigating away before it fails. | Correction and reviewed main integration are published and verified on staging. Deliver the reviewed production backend before launch. Use the configured stable preview origin. |
 | Vercel access | Connector lists project `xoot`, `prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`, on 12 September. Team plan is Hobby. | Preview configuration possible; commercial hosting plan required for paid launch. |
 | Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
 | Staging schema | 7 October read-only metadata: 83 versions, latest `20261003140000`. Exact-version lookup confirms gift, quote, benefit, notification, October 4 hardening and October 7 path migrations absent. | Reconcile the complete prepared migration sequence; a newer latest timestamp does not prove older additions were delivered. |
-| Production schema | 7 October read-only metadata: 81 versions, latest `20260902120000`; none of the eight checked September/October migration versions are recorded. | Crew/referral and the subsequent prepared migrations remain undelivered. |
+| Production schema | 8 October read-only metadata: 82 versions, latest `20261008011821`, an externally applied safety-PIN change absent from repository migrations. The earlier exact-version lookup found none of the eight prepared September/October versions. | Reconcile the new external ledger entry with its actual statements and reviewed PIN contract. Crew/referral and subsequent prepared delivery remain incomplete; a newer timestamp does not establish their delivery. |
 | Backend delivery | 7 October inventory: staging 54 functions, production 57. Production lacks `public-xooter-directory`, `get-booking-quote` and `xooter-job-checklist`; staging has active v1 of all three. | Production delivery is incomplete. Compare source versions, migrate first and redeploy affected importers. Do not hide missing dependencies in the browser gate. |
 | Notification delivery/security | 7 October catalog still shows missing notification publication and eight excess client TRUNCATE/TRIGGER grants. [Prepared migration evidence](evidence/2026-10-02/notification-database.md) and [CI](evidence/2026-10-07/integration-preflight.md): 23 groups/30 expected denials pass on PostgreSQL 17.6 and 17.11; independent review passed. | Migration is prepared, not deployed. Apply through the audited CLI and verify signed-in delivery. Client subscriptions/local SQL alone are not hosted delivery evidence. No private hosted rows were read or changed. |
-| Dependencies | 7 October audits on unchanged locks: web 3 findings; mobile 29, including transitive attributions. [Integration preflight](evidence/2026-10-07/integration-preflight.md). | Compatible patch work is queued. Audits are failed gates; no forced framework downgrade or unsupported clean-scan claim. |
+| Dependencies | 8 October reviewed compatible patches: web npm audit zero; mobile 26 package findings, representing three remaining advisories (23 high, 3 moderate, zero critical with parent attributions). [Disposition](../security/dependency-advisories-2026-10-07.md). | Mobile braces/node-forge lack supported patches; the fixed decoder needs compatible Expo/Metro integration proof. Native release gates remain open. No forced framework downgrade or unsupported clean-scan claim. |
 | PayFast | Hosted checkout disabled; provider verification flags false in both environments at audit. | Signed webhook smoke tests, amount matching and reconciliation evidence required. |
 | Supply | Production aggregate counts: zero Xooters and zero bookings, rechecked 21 September. | Recruit/verify helpers and run consenting pilot; no invented availability/reviews. |
-| Supabase CLI | GitHub credentials previously configured staging origins and deployed directory/matching functions. Fresh read-only staging preflight on 1 October, [run 36932028355](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/36932028355), passed credential-presence/setup checks but failed at `supabase link`: access token/project pair lacks the required endpoint privileges. No database changes were attempted. | Correct the deployment identity's database-management access and keep separate database credentials. Local `supabase login` is optional for local CLI work; it does not replace the GitHub secret. |
+| Supabase CLI | GitHub credentials previously configured staging origins and deployed directory/matching functions. Fresh read-only staging preflight on 8 October, [run 37711711676](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/37711711676), passed credential-presence/setup checks but failed at `supabase link`: access token/project pair lacks the required endpoint privileges. No database changes were attempted. | Correct the deployment identity's database-management access and keep separate database credentials. Local `supabase login` is optional for local CLI work; it does not replace the GitHub secret. |
 | Reviews | CodeRabbit retry completed 20 September with 11 findings: eight addressed and three rejected with rationale in the visual ledger. Gift/native slices and the 26 September dependency/runtime slice passed scoped reviews. | Whole-branch release/security review still required before production. |
-| Dependency audit | Website npm audit zero on 1 October after the reviewed DOMPurify 3.4.16 patch; npm/Bun locks align. Mobile audit on 26 September: three moderate, zero high/critical. | Mobile `expo-router → query-string → decode-uri-component` remains open; do not force an Expo downgrade or incompatible module override. |
 
 These are timestamped observations, not continuing monitoring. A checked build or a reachable domain
 does not prove booking, payment, data access, or operational readiness.
 
 Latest reviewable checkpoint: [draft PR 46](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/46).
+The [8 October integration checkpoint](evidence/2026-10-08/README.md) verifies `8aca3d8`
+on the actual hosted preview. Required Tests CI passed 152 files / 1,559 tests and all SQL/
+PostgreSQL jobs. Production directory, schema comparison, external review and deployment
+access remain failed gates; source coverage and paid/native journeys are still incomplete.
 The [28 September preview evidence](evidence/2026-09-28/README.md) records the verified application
 commit, hosted screenshots, responsive checks and CI results. This is not the completed production release.
 The [30 September checkpoint](evidence/2026-09-30/README.md) adds current hosted screenshots,
@@ -195,15 +198,16 @@ Record commit, environment, command/run link, date and result when closing each 
    before paid launch if the current plan does not permit it. The last plan check, on 12 September,
    reported Hobby; current billing eligibility still needs confirmation. [Vercel plan rules](https://vercel.com/docs/plans/hobby).
 2. **Database deployment access:** the saved GitHub token previously configured staging origins
-   and deployed Edge Functions. The read-only staging preflight on 1 October failed during
+   and deployed Edge Functions. The read-only staging preflight on 8 October failed during
    project linking because that token lacks privileges for the required endpoint
-   ([run 36932028355](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/36932028355)). In Supabase account access settings,
+   ([run 37711711676](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/37711711676)). In Supabase account access settings,
    grant the deployment identity the required project/database-management access, then replace the
    GitHub Actions token through secure settings if needed. Keep separate
    `SUPABASE_DB_PASSWORD_PRODUCTION` / `SUPABASE_DB_PASSWORD_STAGING` values. The observed failure
    occurred before password validation; it does not prove either saved password is wrong.
    The GitHub secret is named `SUPABASE_ACCESS_TOKEN`. For local CLI work, `supabase login`
    starts the secure login flow; logging in locally does not update that GitHub secret.
+   Follow the [short access-repair steps](evidence/2026-10-08/README.md#restore-database-deployment-access).
 3. **Business details:** confirm legal business name, registration/tax details if applicable, public
    support contact and invoice details. Engineering will insert approved values; no invented identity.
    Invoice generation reads protected server settings `XOOT_INVOICE_LEGAL_ENTITY`,
