@@ -1,0 +1,70 @@
+{
+  "capturedAt": "2026-10-08T07:34:26.854Z",
+  "deployment": "https://xoot-git-codex-xoot-production-20260911-royal777-21s-projects.vercel.app",
+  "expectedCommit": "14cc5d5c7154f1fcba4851926c0bd06f322fa0c9",
+  "scope": "Actual protected Vercel preview, real staging requests, no request interception or synthetic account data.",
+  "checks": [
+    {
+      "screen": "home",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "filename": "website-home-1440.png",
+      "path": "/",
+      "directoryTotal": 0,
+      "errors": [],
+      "overflow": false,
+      "configurationError": false,
+      "headingFont": "Newsreader, Georgia, serif"
+    },
+    {
+      "screen": "signin",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "filename": "website-signin-1440.png",
+      "path": "/auth",
+      "directoryTotal": 0,
+      "errors": [],
+      "overflow": false,
+      "configurationError": false,
+      "headingFont": "Newsreader, Georgia, serif"
+    },
+    {
+      "screen": "home",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "filename": "website-home-390.png",
+      "path": "/",
+      "directoryTotal": 0,
+      "errors": [],
+      "overflow": false,
+      "configurationError": false,
+      "headingFont": "Newsreader, Georgia, serif"
+    },
+    {
+      "screen": "signin",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "filename": "website-signin-390.png",
+      "path": "/auth",
+      "directoryTotal": 0,
+      "errors": [],
+      "overflow": false,
+      "configurationError": false,
+      "headingFont": "Newsreader, Georgia, serif"
+    }
+  ],
+  "buildInfo": {
+    "commit": "14cc5d5c7154f1fcba4851926c0bd06f322fa0c9",
+    "builtAt": "2026-10-08T07:32:25.000Z",
+    "pricingRule": "ZD-026",
+    "bookingFeeCents": 3900
+  }
+}

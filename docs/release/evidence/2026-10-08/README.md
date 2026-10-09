@@ -107,5 +107,25 @@ clear the website audit and remove mobile's critical finding while preserving ge
 byte-for-byte in the compared typography, CSS-module and application output. Fifty-three
 focused web tests, seven mobile booking tests, eight compatibility groups, web/mobile types,
 both lock formats and the development build pass. [Full disposition](../../../security/dependency-advisories-2026-10-07.md)
-records the three unresolved mobile advisories and their actual use paths. The 1,559-test CI
-run above predates these dependency patches; fresh committed CI remains required for them.
+records the three unresolved mobile advisories and their actual use paths.
+
+Published dependency checkpoint: `14cc5d5c7154f1fcba4851926c0bd06f322fa0c9`.
+[Tests 37744011522](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/37744011522)
+passed all four jobs on this commit: 152 files / 1,559 tests, seven existing SQL-runtime
+skips, web/mobile types, lint, build, rendered development checks and the separate SQL and
+PostgreSQL jobs. Semgrep, readiness and Swift checks passed. The production-configured
+[Web build](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/37744011755)
+still fails at the production directory HTTP404; the
+[schema comparison](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/37744011661)
+and [incomplete external review guard](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/37744011665)
+remain red. No release gate is waived.
+
+Actual protected staging captures at 07:34 UTC / 09:34 SAST verify this commit on home and
+sign-in at 1440 and 390 pixels, with the real empty directory, loaded fonts/images and no
+page errors or overflow. [Measurements](dependency-hosted-evidence.json). The desktop home
+and both sign-in PNGs are byte-identical to those linked above. The
+[new mobile home](dependency-home-390.png) differs at 16 pixels in a bounding box from
+`(25,14)` to `(33,75)`; it is retained separately rather than called identical. Its SHA-256
+is `C1B7F2E01D4ADD13519F410DD5D506DBE0C86ACCB82BA571FE82D4479F693D64`.
+These checks do not verify the currently uncommitted Visit/Rate work, authenticated hosted
+journeys, native rendering, or the full production deliverable.

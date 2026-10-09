@@ -1,0 +1,188 @@
+{
+  "capturedAt": "2026-10-09T14:17:02.984Z",
+  "scope": "Actual Visit/Rate components with synthetic adapters; browser sharing bridge spies and follow-up failures are isolated QA, not physical device or hosted persistence proof.",
+  "browser": "Browser plugin/skill not available; repository Playwright used.",
+  "flow": "Visit -> More -> share via supported bridge/browser/clipboard; rating -> failed/unconfirmed follow-up -> immutable saved rating with support access.",
+  "checks": [
+    {
+      "mode": "native",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate – isolated synthetic browser QA",
+      "filename": "share-native-390.png",
+      "shareCount": 1,
+      "status": [
+        "Native share options requested."
+      ],
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "mode": "clipboard",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate – isolated synthetic browser QA",
+      "filename": "share-clipboard-390.png",
+      "shareCount": 1,
+      "status": [
+        "Visit update and link copied."
+      ],
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "mode": "webshare",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate – isolated synthetic browser QA",
+      "filename": "share-webshare-390.png",
+      "shareCount": 1,
+      "status": [
+        "Visit update shared."
+      ],
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "mode": "cancelled",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate – isolated synthetic browser QA",
+      "filename": "share-cancelled-390.png",
+      "shareCount": 0,
+      "status": [
+        "Share cancelled."
+      ],
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "scenario": "followup-error",
+      "width": 390,
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=followup-error",
+      "title": "Xoot Visit/Rate – isolated synthetic browser QA",
+      "filename": "followup-error-390.png",
+      "savedRating": 1,
+      "supportLink": true,
+      "calls": [
+        {
+          "name": "submit-visit-review",
+          "body": {
+            "bookingId": "visit-qa",
+            "rating": 1,
+            "notes": null
+          }
+        },
+        {
+          "name": "ops-workflow",
+          "body": {
+            "action": "review_followup_requested",
+            "reviewId": "review-qa"
+          }
+        }
+      ],
+      "metrics": {
+        "overflow": false,
+        "transform": "none",
+        "filter": "none",
+        "frameworkOverlay": false
+      },
+      "errors": []
+    },
+    {
+      "scenario": "followup-error",
+      "width": 1440,
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=followup-error",
+      "title": "Xoot Visit/Rate – isolated synthetic browser QA",
+      "filename": "followup-error-1440.png",
+      "savedRating": 1,
+      "supportLink": true,
+      "calls": [
+        {
+          "name": "submit-visit-review",
+          "body": {
+            "bookingId": "visit-qa",
+            "rating": 1,
+            "notes": null
+          }
+        },
+        {
+          "name": "ops-workflow",
+          "body": {
+            "action": "review_followup_requested",
+            "reviewId": "review-qa"
+          }
+        }
+      ],
+      "metrics": {
+        "overflow": false,
+        "transform": "none",
+        "filter": "none",
+        "frameworkOverlay": false
+      },
+      "errors": []
+    },
+    {
+      "scenario": "followup-unconfirmed",
+      "width": 390,
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=followup-unconfirmed",
+      "title": "Xoot Visit/Rate – isolated synthetic browser QA",
+      "filename": "followup-unconfirmed-390.png",
+      "savedRating": 1,
+      "supportLink": true,
+      "calls": [
+        {
+          "name": "submit-visit-review",
+          "body": {
+            "bookingId": "visit-qa",
+            "rating": 1,
+            "notes": null
+          }
+        },
+        {
+          "name": "ops-workflow",
+          "body": {
+            "action": "review_followup_requested",
+            "reviewId": "review-qa"
+          }
+        }
+      ],
+      "metrics": {
+        "overflow": false,
+        "transform": "none",
+        "filter": "none",
+        "frameworkOverlay": false
+      },
+      "errors": []
+    },
+    {
+      "scenario": "followup-unconfirmed",
+      "width": 1440,
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=followup-unconfirmed",
+      "title": "Xoot Visit/Rate – isolated synthetic browser QA",
+      "filename": "followup-unconfirmed-1440.png",
+      "savedRating": 1,
+      "supportLink": true,
+      "calls": [
+        {
+          "name": "submit-visit-review",
+          "body": {
+            "bookingId": "visit-qa",
+            "rating": 1,
+            "notes": null
+          }
+        },
+        {
+          "name": "ops-workflow",
+          "body": {
+            "action": "review_followup_requested",
+            "reviewId": "review-qa"
+          }
+        }
+      ],
+      "metrics": {
+        "overflow": false,
+        "transform": "none",
+        "filter": "none",
+        "frameworkOverlay": false
+      },
+      "errors": []
+    }
+  ]
+}

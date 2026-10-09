@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **8 October 2026**. This replaces the status claims in `blocker.md`,
+Current register: **9 October 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -12,9 +12,10 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
 | Website hosting | On 8 October, `xoot.co.za` reports main commit `9504c11`; an actual browser check fails with the missing `VITE_APP_ENV` configuration overlay. [Evidence](evidence/2026-10-08/README.md). | Domain resolves; the public deployment is unusable. The reviewed implementation preview renders correctly. Do not import the old GoDaddy zone export. |
-| Rendered startup | [Current preview](evidence/2026-10-08/README.md), commit `8aca3d8`, renders home/sign-in at 1440 and 390 pixels on 8 October without page/console errors or overflow. Real staging directory response: zero approved profiles. The repaired browser gate detects the missing production endpoint rather than navigating away before it fails. | Correction and reviewed main integration are published and verified on staging. Deliver the reviewed production backend before launch. Use the configured stable preview origin. |
+| Rendered startup | [Current preview](evidence/2026-10-08/README.md), commit `14cc5d5`, renders home/sign-in at 1440 and 390 pixels on 8 October without page/console errors or overflow. Real staging directory response: zero approved profiles. The repaired browser gate detects the missing production endpoint rather than navigating away before it fails. | Startup correction, reviewed main integration and compatible dependency repairs are published and verified on staging. Deliver the reviewed production backend before launch. Use the configured stable preview origin. |
 | Vercel access | Connector lists project `xoot`, `prj_tz7Ai5SwguPd645qBnnDn4wxu3Jw`, on 12 September. Team plan is Hobby. | Preview configuration possible; commercial hosting plan required for paid launch. |
 | Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
+| Visit / Rating implementation | [Source comparison](evidence/2026-10-08/visit-rate/README.md): 27 browser states passed. [Reviewed corrections](evidence/2026-10-09/visit-rate-fix1/README.md) add native sharing/deep links and atomic low-rating support routing: final 1,656-test aggregate, 67 isolated SQL groups and eight additional browser cases pass. | Committed locally as `89d6fe3`; independent spec/quality re-review, staging build/rendered artifact and scans pass. Changes are not published. Migration/function delivery, concurrent/live role checks, complete crew reviews and native counterparts remain. |
 | Staging schema | 7 October read-only metadata: 83 versions, latest `20261003140000`. Exact-version lookup confirms gift, quote, benefit, notification, October 4 hardening and October 7 path migrations absent. | Reconcile the complete prepared migration sequence; a newer latest timestamp does not prove older additions were delivered. |
 | Production schema | 8 October read-only metadata: 82 versions, latest `20261008011821`, an externally applied safety-PIN change absent from repository migrations. The earlier exact-version lookup found none of the eight prepared September/October versions. | Reconcile the new external ledger entry with its actual statements and reviewed PIN contract. Crew/referral and subsequent prepared delivery remain incomplete; a newer timestamp does not establish their delivery. |
 | Backend delivery | 7 October inventory: staging 54 functions, production 57. Production lacks `public-xooter-directory`, `get-booking-quote` and `xooter-job-checklist`; staging has active v1 of all three. | Production delivery is incomplete. Compare source versions, migrate first and redeploy affected importers. Do not hide missing dependencies in the browser gate. |
@@ -29,7 +30,7 @@ These are timestamped observations, not continuing monitoring. A checked build o
 does not prove booking, payment, data access, or operational readiness.
 
 Latest reviewable checkpoint: [draft PR 46](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/46).
-The [8 October integration checkpoint](evidence/2026-10-08/README.md) verifies `8aca3d8`
+The [8 October dependency checkpoint](evidence/2026-10-08/README.md) verifies `14cc5d5`
 on the actual hosted preview. Required Tests CI passed 152 files / 1,559 tests and all SQL/
 PostgreSQL jobs. Production directory, schema comparison, external review and deployment
 access remain failed gates; source coverage and paid/native journeys are still incomplete.

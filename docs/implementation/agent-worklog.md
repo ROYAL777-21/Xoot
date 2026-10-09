@@ -23,6 +23,22 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**9 October checkpoint, same authorized cross-role Codex claim:** the original Visit/Rate
+composition is implemented with recorded booking/payment data, guarded actions and immutable
+solo reviews. Independent spec/quality review passes after repairing native sharing/deep links
+and making low-rating support routing atomic. Focused tests, real isolated SQL, browser checks,
+staging build/rendered artifact and scans pass. The final aggregate run passed 158 files /
+1,656 tests, with seven existing SQL-runtime skips. Source is committed locally at `89d6fe3`.
+Evidence and limits are in the production checklist and dated October 8/9 evidence.
+
+Cross-role surfaces for owner review: review-save and follow-up migrations, authenticated Edge
+functions, generated types and required SQL CI. They are necessary because the previous client
+review insertion and unchecked support writes could not enforce the required real behavior.
+Migrations and functions must precede the dependent client. No hosted write, production release
+or native-device claim is made. The user-approved R393 shared-job crew base remains ZD-038;
+atomic booking creation and crew fulfilment are still unfinished. Next held implementation is
+the original Tracking/Chat composition and its existing participant-bound messaging actions.
+
 **26 September checkpoint, same authorized cross-role Codex claim:** gift presentation/request
 contract is committed at `303bf9b`; native Search, notifications, Profile and Rewards work has passed
 scoped reviews. Dependency updates retain the existing web React and Expo SDK 56 runtimes; web

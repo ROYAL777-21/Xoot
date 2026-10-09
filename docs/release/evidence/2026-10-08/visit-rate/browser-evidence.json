@@ -1,0 +1,1497 @@
+{
+  "capturedAt": "2026-10-08T15:20:30.218Z",
+  "scope": "Actual BookingDetail, RateVisit and AppShell components with isolated synthetic database/auth adapters. No hosted account, native app, provider or database proof.",
+  "browser": "Browser plugin/skill not available; existing Playwright used.",
+  "flow": "Visit detail -> review completed visit -> select rating -> confirmed saved review; source controls and responsive layouts.",
+  "checks": [
+    {
+      "state": "visit",
+      "viewport": {
+        "width": 320,
+        "height": 844,
+        "scale": 1,
+        "label": "320"
+      },
+      "filename": "implemented-visit-320.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 176,
+        "height": 30,
+        "top": 33,
+        "right": 248,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [
+        {
+          "x": 20,
+          "y": 80,
+          "width": 280,
+          "height": 209.6875,
+          "top": 80,
+          "right": 300,
+          "bottom": 289.6875,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 303.6875,
+          "width": 280,
+          "height": 238.765625,
+          "top": 303.6875,
+          "right": 300,
+          "bottom": 542.453125,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 599.453125,
+          "width": 280,
+          "height": 129.5,
+          "top": 599.453125,
+          "right": 300,
+          "bottom": 728.953125,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 742.953125,
+          "width": 280,
+          "height": 285.125,
+          "top": 742.953125,
+          "right": 300,
+          "bottom": 1028.078125,
+          "left": 20
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "Your visit\nYOUR XOOTER IS ON THE WAY\nScheduled Thursday, 08 Oct, 08:00\n\nLive location and arrival estimates are unavailable.\n\nND\nNomsa Dlamini\n\n4.96\n\nHome care\n\n328 visits\nMessage\nCall\nVISIT CHECKLIST (3)\nKitchen & dishes\nBathrooms\nBed linen changed\nPAYMENT\nVisit & add-ons\nR332.00\nBooking fee\nR39.00\nPayment total · recorded\nR371.00\n\nItemized from the stored payment breakdown.\n\nVerified paid by you: R371.00\n\nReschedule\nCancel visit\nCancellation terms and any refund are reviewed from your booking records.\nRating available after completion"
+    },
+    {
+      "state": "rate-unselected",
+      "viewport": {
+        "width": 320,
+        "height": 844,
+        "scale": 1,
+        "label": "320"
+      },
+      "filename": "implemented-rate-unselected-320.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 232,
+        "height": 30,
+        "top": 33,
+        "right": 304,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nHow was your visit?\n\nChoose your rating. Your feedback is recorded against this visit.\n\nContact support about this visit\nPick a rating"
+    },
+    {
+      "state": "rate-five",
+      "viewport": {
+        "width": 320,
+        "height": 844,
+        "scale": 1,
+        "label": "320"
+      },
+      "filename": "implemented-rate-five-320.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 232,
+        "height": 30,
+        "top": 33,
+        "right": 304,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [
+        {
+          "x": 20,
+          "y": 352.5,
+          "width": 280,
+          "height": 167.28125,
+          "top": 352.5,
+          "right": 300,
+          "bottom": 519.78125,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 533.78125,
+          "width": 280,
+          "height": 146.671875,
+          "top": 533.78125,
+          "right": 300,
+          "bottom": 680.453125,
+          "left": 20
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nThat’s lovely to hear\n\nChoose your rating. Your feedback is recorded against this visit.\n\nADD A TIP? ENTIRELY UP TO YOU\nNone\nR20\nR50\nR100\n\nTipping is not available yet. No tip is selected or charged.\n\nPlan another visit\nChoose a new day and time\n\nOpens the booking flow. No repeat visit has been booked, and a particular Xooter is not guaranteed.\n\nAnything the team should know?\nContact support about this visit\nSave rating"
+    },
+    {
+      "state": "save-and-return",
+      "viewport": {
+        "width": 320,
+        "height": 844,
+        "scale": 1,
+        "label": "320"
+      },
+      "saveCount": 1
+    },
+    {
+      "state": "visit",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "scale": 1,
+        "label": "390"
+      },
+      "filename": "implemented-visit-390.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 246,
+        "height": 30,
+        "top": 33,
+        "right": 318,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [
+        {
+          "x": 20,
+          "y": 80,
+          "width": 350,
+          "height": 162.1875,
+          "top": 80,
+          "right": 370,
+          "bottom": 242.1875,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 256.1875,
+          "width": 350,
+          "height": 227.765625,
+          "top": 256.1875,
+          "right": 370,
+          "bottom": 483.953125,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 540.953125,
+          "width": 350,
+          "height": 129.5,
+          "top": 540.953125,
+          "right": 370,
+          "bottom": 670.453125,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 684.453125,
+          "width": 350,
+          "height": 230.234375,
+          "top": 684.453125,
+          "right": 370,
+          "bottom": 914.6875,
+          "left": 20
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "Your visit\nYOUR XOOTER IS ON THE WAY\nScheduled Thursday, 08 Oct, 08:00\n\nLive location and arrival estimates are unavailable.\n\nND\nNomsa Dlamini\n\n4.96\n\nHome care\n\n328 visits\nMessage\nCall\nVISIT CHECKLIST (3)\nKitchen & dishes\nBathrooms\nBed linen changed\nPAYMENT\nVisit & add-ons\nR332.00\nBooking fee\nR39.00\nPayment total · recorded\nR371.00\n\nItemized from the stored payment breakdown.\n\nVerified paid by you: R371.00\n\nReschedule\nCancel visit\nCancellation terms and any refund are reviewed from your booking records.\nRating available after completion"
+    },
+    {
+      "state": "rate-unselected",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "scale": 1,
+        "label": "390"
+      },
+      "filename": "implemented-rate-unselected-390.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 302,
+        "height": 30,
+        "top": 33,
+        "right": 374,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nHow was your visit?\n\nChoose your rating. Your feedback is recorded against this visit.\n\nContact support about this visit\nPick a rating"
+    },
+    {
+      "state": "rate-five",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "scale": 1,
+        "label": "390"
+      },
+      "filename": "implemented-rate-five-390.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 302,
+        "height": 30,
+        "top": 33,
+        "right": 374,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [
+        {
+          "x": 20,
+          "y": 352.5,
+          "width": 350,
+          "height": 167.28125,
+          "top": 352.5,
+          "right": 370,
+          "bottom": 519.78125,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 533.78125,
+          "width": 350,
+          "height": 129.28125,
+          "top": 533.78125,
+          "right": 370,
+          "bottom": 663.0625,
+          "left": 20
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nThat’s lovely to hear\n\nChoose your rating. Your feedback is recorded against this visit.\n\nADD A TIP? ENTIRELY UP TO YOU\nNone\nR20\nR50\nR100\n\nTipping is not available yet. No tip is selected or charged.\n\nPlan another visit\nChoose a new day and time\n\nOpens the booking flow. No repeat visit has been booked, and a particular Xooter is not guaranteed.\n\nAnything the team should know?\nContact support about this visit\nSave rating"
+    },
+    {
+      "state": "save-and-return",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "scale": 1,
+        "label": "390"
+      },
+      "saveCount": 1
+    },
+    {
+      "state": "visit",
+      "viewport": {
+        "width": 768,
+        "height": 844,
+        "scale": 1,
+        "label": "768"
+      },
+      "filename": "implemented-visit-768.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 76,
+        "y": 33,
+        "width": 616,
+        "height": 30,
+        "top": 33,
+        "right": 692,
+        "bottom": 63,
+        "left": 76
+      },
+      "cards": [
+        {
+          "x": 24,
+          "y": 80,
+          "width": 720,
+          "height": 112.34375,
+          "top": 80,
+          "right": 744,
+          "bottom": 192.34375,
+          "left": 24
+        },
+        {
+          "x": 24,
+          "y": 206.34375,
+          "width": 720,
+          "height": 227.765625,
+          "top": 206.34375,
+          "right": 744,
+          "bottom": 434.109375,
+          "left": 24
+        },
+        {
+          "x": 24,
+          "y": 491.109375,
+          "width": 720,
+          "height": 129.5,
+          "top": 491.109375,
+          "right": 744,
+          "bottom": 620.609375,
+          "left": 24
+        },
+        {
+          "x": 24,
+          "y": 634.609375,
+          "width": 720,
+          "height": 230.234375,
+          "top": 634.609375,
+          "right": 744,
+          "bottom": 864.84375,
+          "left": 24
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "Your visit\nYOUR XOOTER IS ON THE WAY\nScheduled Thursday, 08 Oct, 08:00\n\nLive location and arrival estimates are unavailable.\n\nND\nNomsa Dlamini\n\n4.96\n\nHome care\n\n328 visits\nMessage\nCall\nVISIT CHECKLIST (3)\nKitchen & dishes\nBathrooms\nBed linen changed\nPAYMENT\nVisit & add-ons\nR332.00\nBooking fee\nR39.00\nPayment total · recorded\nR371.00\n\nItemized from the stored payment breakdown.\n\nVerified paid by you: R371.00\n\nReschedule\nCancel visit\nCancellation terms and any refund are reviewed from your booking records.\nRating available after completion"
+    },
+    {
+      "state": "rate-unselected",
+      "viewport": {
+        "width": 768,
+        "height": 844,
+        "scale": 1,
+        "label": "768"
+      },
+      "filename": "implemented-rate-unselected-768.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 76,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 748,
+        "bottom": 63,
+        "left": 76
+      },
+      "cards": [],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nHow was your visit?\n\nChoose your rating. Your feedback is recorded against this visit.\n\nContact support about this visit\nPick a rating"
+    },
+    {
+      "state": "rate-five",
+      "viewport": {
+        "width": 768,
+        "height": 844,
+        "scale": 1,
+        "label": "768"
+      },
+      "filename": "implemented-rate-five-768.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 76,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 748,
+        "bottom": 63,
+        "left": 76
+      },
+      "cards": [
+        {
+          "x": 24,
+          "y": 352.5,
+          "width": 720,
+          "height": 149.890625,
+          "top": 352.5,
+          "right": 744,
+          "bottom": 502.390625,
+          "left": 24
+        },
+        {
+          "x": 24,
+          "y": 516.390625,
+          "width": 720,
+          "height": 111.890625,
+          "top": 516.390625,
+          "right": 744,
+          "bottom": 628.28125,
+          "left": 24
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nThat’s lovely to hear\n\nChoose your rating. Your feedback is recorded against this visit.\n\nADD A TIP? ENTIRELY UP TO YOU\nNone\nR20\nR50\nR100\n\nTipping is not available yet. No tip is selected or charged.\n\nPlan another visit\nChoose a new day and time\n\nOpens the booking flow. No repeat visit has been booked, and a particular Xooter is not guaranteed.\n\nAnything the team should know?\nContact support about this visit\nSave rating"
+    },
+    {
+      "state": "save-and-return",
+      "viewport": {
+        "width": 768,
+        "height": 844,
+        "scale": 1,
+        "label": "768"
+      },
+      "saveCount": 1
+    },
+    {
+      "state": "visit",
+      "viewport": {
+        "width": 1024,
+        "height": 844,
+        "scale": 1,
+        "label": "1024"
+      },
+      "filename": "implemented-visit-1024.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 204,
+        "y": 33,
+        "width": 616,
+        "height": 30,
+        "top": 33,
+        "right": 820,
+        "bottom": 63,
+        "left": 204
+      },
+      "cards": [
+        {
+          "x": 152,
+          "y": 80,
+          "width": 720,
+          "height": 112.34375,
+          "top": 80,
+          "right": 872,
+          "bottom": 192.34375,
+          "left": 152
+        },
+        {
+          "x": 152,
+          "y": 206.34375,
+          "width": 720,
+          "height": 227.765625,
+          "top": 206.34375,
+          "right": 872,
+          "bottom": 434.109375,
+          "left": 152
+        },
+        {
+          "x": 152,
+          "y": 491.109375,
+          "width": 720,
+          "height": 129.5,
+          "top": 491.109375,
+          "right": 872,
+          "bottom": 620.609375,
+          "left": 152
+        },
+        {
+          "x": 152,
+          "y": 634.609375,
+          "width": 720,
+          "height": 230.234375,
+          "top": 634.609375,
+          "right": 872,
+          "bottom": 864.84375,
+          "left": 152
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "Your visit\nYOUR XOOTER IS ON THE WAY\nScheduled Thursday, 08 Oct, 08:00\n\nLive location and arrival estimates are unavailable.\n\nND\nNomsa Dlamini\n\n4.96\n\nHome care\n\n328 visits\nMessage\nCall\nVISIT CHECKLIST (3)\nKitchen & dishes\nBathrooms\nBed linen changed\nPAYMENT\nVisit & add-ons\nR332.00\nBooking fee\nR39.00\nPayment total · recorded\nR371.00\n\nItemized from the stored payment breakdown.\n\nVerified paid by you: R371.00\n\nReschedule\nCancel visit\nCancellation terms and any refund are reviewed from your booking records.\nRating available after completion"
+    },
+    {
+      "state": "rate-unselected",
+      "viewport": {
+        "width": 1024,
+        "height": 844,
+        "scale": 1,
+        "label": "1024"
+      },
+      "filename": "implemented-rate-unselected-1024.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 204,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 876,
+        "bottom": 63,
+        "left": 204
+      },
+      "cards": [],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nHow was your visit?\n\nChoose your rating. Your feedback is recorded against this visit.\n\nContact support about this visit\nPick a rating"
+    },
+    {
+      "state": "rate-five",
+      "viewport": {
+        "width": 1024,
+        "height": 844,
+        "scale": 1,
+        "label": "1024"
+      },
+      "filename": "implemented-rate-five-1024.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 204,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 876,
+        "bottom": 63,
+        "left": 204
+      },
+      "cards": [
+        {
+          "x": 152,
+          "y": 352.5,
+          "width": 720,
+          "height": 149.890625,
+          "top": 352.5,
+          "right": 872,
+          "bottom": 502.390625,
+          "left": 152
+        },
+        {
+          "x": 152,
+          "y": 516.390625,
+          "width": 720,
+          "height": 111.890625,
+          "top": 516.390625,
+          "right": 872,
+          "bottom": 628.28125,
+          "left": 152
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nThat’s lovely to hear\n\nChoose your rating. Your feedback is recorded against this visit.\n\nADD A TIP? ENTIRELY UP TO YOU\nNone\nR20\nR50\nR100\n\nTipping is not available yet. No tip is selected or charged.\n\nPlan another visit\nChoose a new day and time\n\nOpens the booking flow. No repeat visit has been booked, and a particular Xooter is not guaranteed.\n\nAnything the team should know?\nContact support about this visit\nSave rating"
+    },
+    {
+      "state": "save-and-return",
+      "viewport": {
+        "width": 1024,
+        "height": 844,
+        "scale": 1,
+        "label": "1024"
+      },
+      "saveCount": 1
+    },
+    {
+      "state": "visit",
+      "viewport": {
+        "width": 1440,
+        "height": 844,
+        "scale": 1,
+        "label": "1440"
+      },
+      "filename": "implemented-visit-1440.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 412,
+        "y": 33,
+        "width": 616,
+        "height": 30,
+        "top": 33,
+        "right": 1028,
+        "bottom": 63,
+        "left": 412
+      },
+      "cards": [
+        {
+          "x": 360,
+          "y": 80,
+          "width": 720,
+          "height": 112.34375,
+          "top": 80,
+          "right": 1080,
+          "bottom": 192.34375,
+          "left": 360
+        },
+        {
+          "x": 360,
+          "y": 206.34375,
+          "width": 720,
+          "height": 227.765625,
+          "top": 206.34375,
+          "right": 1080,
+          "bottom": 434.109375,
+          "left": 360
+        },
+        {
+          "x": 360,
+          "y": 491.109375,
+          "width": 720,
+          "height": 129.5,
+          "top": 491.109375,
+          "right": 1080,
+          "bottom": 620.609375,
+          "left": 360
+        },
+        {
+          "x": 360,
+          "y": 634.609375,
+          "width": 720,
+          "height": 230.234375,
+          "top": 634.609375,
+          "right": 1080,
+          "bottom": 864.84375,
+          "left": 360
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "Your visit\nYOUR XOOTER IS ON THE WAY\nScheduled Thursday, 08 Oct, 08:00\n\nLive location and arrival estimates are unavailable.\n\nND\nNomsa Dlamini\n\n4.96\n\nHome care\n\n328 visits\nMessage\nCall\nVISIT CHECKLIST (3)\nKitchen & dishes\nBathrooms\nBed linen changed\nPAYMENT\nVisit & add-ons\nR332.00\nBooking fee\nR39.00\nPayment total · recorded\nR371.00\n\nItemized from the stored payment breakdown.\n\nVerified paid by you: R371.00\n\nReschedule\nCancel visit\nCancellation terms and any refund are reviewed from your booking records.\nRating available after completion"
+    },
+    {
+      "state": "rate-unselected",
+      "viewport": {
+        "width": 1440,
+        "height": 844,
+        "scale": 1,
+        "label": "1440"
+      },
+      "filename": "implemented-rate-unselected-1440.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 412,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 1084,
+        "bottom": 63,
+        "left": 412
+      },
+      "cards": [],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nHow was your visit?\n\nChoose your rating. Your feedback is recorded against this visit.\n\nContact support about this visit\nPick a rating"
+    },
+    {
+      "state": "rate-five",
+      "viewport": {
+        "width": 1440,
+        "height": 844,
+        "scale": 1,
+        "label": "1440"
+      },
+      "filename": "implemented-rate-five-1440.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 412,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 1084,
+        "bottom": 63,
+        "left": 412
+      },
+      "cards": [
+        {
+          "x": 360,
+          "y": 352.5,
+          "width": 720,
+          "height": 149.890625,
+          "top": 352.5,
+          "right": 1080,
+          "bottom": 502.390625,
+          "left": 360
+        },
+        {
+          "x": 360,
+          "y": 516.390625,
+          "width": 720,
+          "height": 111.890625,
+          "top": 516.390625,
+          "right": 1080,
+          "bottom": 628.28125,
+          "left": 360
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nThat’s lovely to hear\n\nChoose your rating. Your feedback is recorded against this visit.\n\nADD A TIP? ENTIRELY UP TO YOU\nNone\nR20\nR50\nR100\n\nTipping is not available yet. No tip is selected or charged.\n\nPlan another visit\nChoose a new day and time\n\nOpens the booking flow. No repeat visit has been booked, and a particular Xooter is not guaranteed.\n\nAnything the team should know?\nContact support about this visit\nSave rating"
+    },
+    {
+      "state": "save-and-return",
+      "viewport": {
+        "width": 1440,
+        "height": 844,
+        "scale": 1,
+        "label": "1440"
+      },
+      "saveCount": 1
+    },
+    {
+      "state": "visit",
+      "viewport": {
+        "width": 1920,
+        "height": 844,
+        "scale": 1,
+        "label": "1920"
+      },
+      "filename": "implemented-visit-1920.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 652,
+        "y": 33,
+        "width": 616,
+        "height": 30,
+        "top": 33,
+        "right": 1268,
+        "bottom": 63,
+        "left": 652
+      },
+      "cards": [
+        {
+          "x": 600,
+          "y": 80,
+          "width": 720,
+          "height": 112.34375,
+          "top": 80,
+          "right": 1320,
+          "bottom": 192.34375,
+          "left": 600
+        },
+        {
+          "x": 600,
+          "y": 206.34375,
+          "width": 720,
+          "height": 227.765625,
+          "top": 206.34375,
+          "right": 1320,
+          "bottom": 434.109375,
+          "left": 600
+        },
+        {
+          "x": 600,
+          "y": 491.109375,
+          "width": 720,
+          "height": 129.5,
+          "top": 491.109375,
+          "right": 1320,
+          "bottom": 620.609375,
+          "left": 600
+        },
+        {
+          "x": 600,
+          "y": 634.609375,
+          "width": 720,
+          "height": 230.234375,
+          "top": 634.609375,
+          "right": 1320,
+          "bottom": 864.84375,
+          "left": 600
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "Your visit\nYOUR XOOTER IS ON THE WAY\nScheduled Thursday, 08 Oct, 08:00\n\nLive location and arrival estimates are unavailable.\n\nND\nNomsa Dlamini\n\n4.96\n\nHome care\n\n328 visits\nMessage\nCall\nVISIT CHECKLIST (3)\nKitchen & dishes\nBathrooms\nBed linen changed\nPAYMENT\nVisit & add-ons\nR332.00\nBooking fee\nR39.00\nPayment total · recorded\nR371.00\n\nItemized from the stored payment breakdown.\n\nVerified paid by you: R371.00\n\nReschedule\nCancel visit\nCancellation terms and any refund are reviewed from your booking records.\nRating available after completion"
+    },
+    {
+      "state": "rate-unselected",
+      "viewport": {
+        "width": 1920,
+        "height": 844,
+        "scale": 1,
+        "label": "1920"
+      },
+      "filename": "implemented-rate-unselected-1920.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 652,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 1324,
+        "bottom": 63,
+        "left": 652
+      },
+      "cards": [],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nHow was your visit?\n\nChoose your rating. Your feedback is recorded against this visit.\n\nContact support about this visit\nPick a rating"
+    },
+    {
+      "state": "rate-five",
+      "viewport": {
+        "width": 1920,
+        "height": 844,
+        "scale": 1,
+        "label": "1920"
+      },
+      "filename": "implemented-rate-five-1920.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 652,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 1324,
+        "bottom": 63,
+        "left": 652
+      },
+      "cards": [
+        {
+          "x": 600,
+          "y": 352.5,
+          "width": 720,
+          "height": 149.890625,
+          "top": 352.5,
+          "right": 1320,
+          "bottom": 502.390625,
+          "left": 600
+        },
+        {
+          "x": 600,
+          "y": 516.390625,
+          "width": 720,
+          "height": 111.890625,
+          "top": 516.390625,
+          "right": 1320,
+          "bottom": 628.28125,
+          "left": 600
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nThat’s lovely to hear\n\nChoose your rating. Your feedback is recorded against this visit.\n\nADD A TIP? ENTIRELY UP TO YOU\nNone\nR20\nR50\nR100\n\nTipping is not available yet. No tip is selected or charged.\n\nPlan another visit\nChoose a new day and time\n\nOpens the booking flow. No repeat visit has been booked, and a particular Xooter is not guaranteed.\n\nAnything the team should know?\nContact support about this visit\nSave rating"
+    },
+    {
+      "state": "save-and-return",
+      "viewport": {
+        "width": 1920,
+        "height": 844,
+        "scale": 1,
+        "label": "1920"
+      },
+      "saveCount": 1
+    },
+    {
+      "state": "visit",
+      "viewport": {
+        "width": 844,
+        "height": 390,
+        "scale": 1,
+        "label": "landscape-844"
+      },
+      "filename": "implemented-visit-landscape-844.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 114,
+        "y": 33,
+        "width": 616,
+        "height": 30,
+        "top": 33,
+        "right": 730,
+        "bottom": 63,
+        "left": 114
+      },
+      "cards": [
+        {
+          "x": 62,
+          "y": 80,
+          "width": 720,
+          "height": 112.34375,
+          "top": 80,
+          "right": 782,
+          "bottom": 192.34375,
+          "left": 62
+        },
+        {
+          "x": 62,
+          "y": 206.34375,
+          "width": 720,
+          "height": 227.765625,
+          "top": 206.34375,
+          "right": 782,
+          "bottom": 434.109375,
+          "left": 62
+        },
+        {
+          "x": 62,
+          "y": 491.109375,
+          "width": 720,
+          "height": 129.5,
+          "top": 491.109375,
+          "right": 782,
+          "bottom": 620.609375,
+          "left": 62
+        },
+        {
+          "x": 62,
+          "y": 634.609375,
+          "width": 720,
+          "height": 230.234375,
+          "top": 634.609375,
+          "right": 782,
+          "bottom": 864.84375,
+          "left": 62
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "Your visit\nYOUR XOOTER IS ON THE WAY\nScheduled Thursday, 08 Oct, 08:00\n\nLive location and arrival estimates are unavailable.\n\nND\nNomsa Dlamini\n\n4.96\n\nHome care\n\n328 visits\nMessage\nCall\nVISIT CHECKLIST (3)\nKitchen & dishes\nBathrooms\nBed linen changed\nPAYMENT\nVisit & add-ons\nR332.00\nBooking fee\nR39.00\nPayment total · recorded\nR371.00\n\nItemized from the stored payment breakdown.\n\nVerified paid by you: R371.00\n\nReschedule\nCancel visit\nCancellation terms and any refund are reviewed from your booking records.\nRating available after completion"
+    },
+    {
+      "state": "rate-unselected",
+      "viewport": {
+        "width": 844,
+        "height": 390,
+        "scale": 1,
+        "label": "landscape-844"
+      },
+      "filename": "implemented-rate-unselected-landscape-844.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 114,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 786,
+        "bottom": 63,
+        "left": 114
+      },
+      "cards": [],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nHow was your visit?\n\nChoose your rating. Your feedback is recorded against this visit.\n\nContact support about this visit\nPick a rating"
+    },
+    {
+      "state": "rate-five",
+      "viewport": {
+        "width": 844,
+        "height": 390,
+        "scale": 1,
+        "label": "landscape-844"
+      },
+      "filename": "implemented-rate-five-landscape-844.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 114,
+        "y": 33,
+        "width": 672,
+        "height": 30,
+        "top": 33,
+        "right": 786,
+        "bottom": 63,
+        "left": 114
+      },
+      "cards": [
+        {
+          "x": 62,
+          "y": 352.5,
+          "width": 720,
+          "height": 149.890625,
+          "top": 352.5,
+          "right": 782,
+          "bottom": 502.390625,
+          "left": 62
+        },
+        {
+          "x": 62,
+          "y": 516.390625,
+          "width": 720,
+          "height": 111.890625,
+          "top": 516.390625,
+          "right": 782,
+          "bottom": 628.28125,
+          "left": 62
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nThat’s lovely to hear\n\nChoose your rating. Your feedback is recorded against this visit.\n\nADD A TIP? ENTIRELY UP TO YOU\nNone\nR20\nR50\nR100\n\nTipping is not available yet. No tip is selected or charged.\n\nPlan another visit\nChoose a new day and time\n\nOpens the booking flow. No repeat visit has been booked, and a particular Xooter is not guaranteed.\n\nAnything the team should know?\nContact support about this visit\nSave rating"
+    },
+    {
+      "state": "save-and-return",
+      "viewport": {
+        "width": 844,
+        "height": 390,
+        "scale": 1,
+        "label": "landscape-844"
+      },
+      "saveCount": 1
+    },
+    {
+      "state": "visit",
+      "viewport": {
+        "width": 720,
+        "height": 500,
+        "scale": 2,
+        "label": "reflow-200pct"
+      },
+      "filename": "implemented-visit-reflow-200pct.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 576,
+        "height": 30,
+        "top": 33,
+        "right": 648,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [
+        {
+          "x": 20,
+          "y": 80,
+          "width": 680,
+          "height": 112.34375,
+          "top": 80,
+          "right": 700,
+          "bottom": 192.34375,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 206.34375,
+          "width": 680,
+          "height": 227.765625,
+          "top": 206.34375,
+          "right": 700,
+          "bottom": 434.109375,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 491.109375,
+          "width": 680,
+          "height": 129.5,
+          "top": 491.109375,
+          "right": 700,
+          "bottom": 620.609375,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 634.609375,
+          "width": 680,
+          "height": 230.234375,
+          "top": 634.609375,
+          "right": 700,
+          "bottom": 864.84375,
+          "left": 20
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "Your visit\nYOUR XOOTER IS ON THE WAY\nScheduled Thursday, 08 Oct, 08:00\n\nLive location and arrival estimates are unavailable.\n\nND\nNomsa Dlamini\n\n4.96\n\nHome care\n\n328 visits\nMessage\nCall\nVISIT CHECKLIST (3)\nKitchen & dishes\nBathrooms\nBed linen changed\nPAYMENT\nVisit & add-ons\nR332.00\nBooking fee\nR39.00\nPayment total · recorded\nR371.00\n\nItemized from the stored payment breakdown.\n\nVerified paid by you: R371.00\n\nReschedule\nCancel visit\nCancellation terms and any refund are reviewed from your booking records.\nRating available after completion"
+    },
+    {
+      "state": "rate-unselected",
+      "viewport": {
+        "width": 720,
+        "height": 500,
+        "scale": 2,
+        "label": "reflow-200pct"
+      },
+      "filename": "implemented-rate-unselected-reflow-200pct.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 632,
+        "height": 30,
+        "top": 33,
+        "right": 704,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nHow was your visit?\n\nChoose your rating. Your feedback is recorded against this visit.\n\nContact support about this visit\nPick a rating"
+    },
+    {
+      "state": "rate-five",
+      "viewport": {
+        "width": 720,
+        "height": 500,
+        "scale": 2,
+        "label": "reflow-200pct"
+      },
+      "filename": "implemented-rate-five-reflow-200pct.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 632,
+        "height": 30,
+        "top": 33,
+        "right": 704,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [
+        {
+          "x": 20,
+          "y": 352.5,
+          "width": 680,
+          "height": 149.890625,
+          "top": 352.5,
+          "right": 700,
+          "bottom": 502.390625,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 516.390625,
+          "width": 680,
+          "height": 111.890625,
+          "top": 516.390625,
+          "right": 700,
+          "bottom": 628.28125,
+          "left": 20
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nThat’s lovely to hear\n\nChoose your rating. Your feedback is recorded against this visit.\n\nADD A TIP? ENTIRELY UP TO YOU\nNone\nR20\nR50\nR100\n\nTipping is not available yet. No tip is selected or charged.\n\nPlan another visit\nChoose a new day and time\n\nOpens the booking flow. No repeat visit has been booked, and a particular Xooter is not guaranteed.\n\nAnything the team should know?\nContact support about this visit\nSave rating"
+    },
+    {
+      "state": "save-and-return",
+      "viewport": {
+        "width": 720,
+        "height": 500,
+        "scale": 2,
+        "label": "reflow-200pct"
+      },
+      "saveCount": 1
+    },
+    {
+      "state": "visit",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "scale": 3,
+        "label": "density-3x"
+      },
+      "filename": "implemented-visit-density-3x.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa?case=active",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 246,
+        "height": 30,
+        "top": 33,
+        "right": 318,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [
+        {
+          "x": 20,
+          "y": 80,
+          "width": 350,
+          "height": 162.1875,
+          "top": 80,
+          "right": 370,
+          "bottom": 242.1875,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 256.1875,
+          "width": 350,
+          "height": 227.765625,
+          "top": 256.1875,
+          "right": 370,
+          "bottom": 483.953125,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 540.953125,
+          "width": 350,
+          "height": 129.5,
+          "top": 540.953125,
+          "right": 370,
+          "bottom": 670.453125,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 684.453125,
+          "width": 350,
+          "height": 230.234375,
+          "top": 684.453125,
+          "right": 370,
+          "bottom": 914.6875,
+          "left": 20
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "Your visit\nYOUR XOOTER IS ON THE WAY\nScheduled Thursday, 08 Oct, 08:00\n\nLive location and arrival estimates are unavailable.\n\nND\nNomsa Dlamini\n\n4.96\n\nHome care\n\n328 visits\nMessage\nCall\nVISIT CHECKLIST (3)\nKitchen & dishes\nBathrooms\nBed linen changed\nPAYMENT\nVisit & add-ons\nR332.00\nBooking fee\nR39.00\nPayment total · recorded\nR371.00\n\nItemized from the stored payment breakdown.\n\nVerified paid by you: R371.00\n\nReschedule\nCancel visit\nCancellation terms and any refund are reviewed from your booking records.\nRating available after completion"
+    },
+    {
+      "state": "rate-unselected",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "scale": 3,
+        "label": "density-3x"
+      },
+      "filename": "implemented-rate-unselected-density-3x.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 302,
+        "height": 30,
+        "top": 33,
+        "right": 374,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nHow was your visit?\n\nChoose your rating. Your feedback is recorded against this visit.\n\nContact support about this visit\nPick a rating"
+    },
+    {
+      "state": "rate-five",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "scale": 3,
+        "label": "density-3x"
+      },
+      "filename": "implemented-rate-five-density-3x.png",
+      "url": "http://127.0.0.1:5188/app/bookings/visit-qa/rate?case=completed",
+      "title": "Xoot Visit/Rate â€“ isolated synthetic browser QA",
+      "errors": [],
+      "externalRequests": [],
+      "overflow": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "transform": "none",
+      "filter": "none",
+      "heading": {
+        "x": 72,
+        "y": 33,
+        "width": 302,
+        "height": 30,
+        "top": 33,
+        "right": 374,
+        "bottom": 63,
+        "left": 72
+      },
+      "cards": [
+        {
+          "x": 20,
+          "y": 352.5,
+          "width": 350,
+          "height": 167.28125,
+          "top": 352.5,
+          "right": 370,
+          "bottom": 519.78125,
+          "left": 20
+        },
+        {
+          "x": 20,
+          "y": 533.78125,
+          "width": 350,
+          "height": 129.28125,
+          "top": 533.78125,
+          "right": 370,
+          "bottom": 663.0625,
+          "left": 20
+        }
+      ],
+      "frameworkOverlay": false,
+      "bodyText": "How did it go?\nThat’s lovely to hear\n\nChoose your rating. Your feedback is recorded against this visit.\n\nADD A TIP? ENTIRELY UP TO YOU\nNone\nR20\nR50\nR100\n\nTipping is not available yet. No tip is selected or charged.\n\nPlan another visit\nChoose a new day and time\n\nOpens the booking flow. No repeat visit has been booked, and a particular Xooter is not guaranteed.\n\nAnything the team should know?\nContact support about this visit\nSave rating"
+    },
+    {
+      "state": "save-and-return",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "scale": 3,
+        "label": "density-3x"
+      },
+      "saveCount": 1
+    },
+    {
+      "state": "missing-and-crew-guards",
+      "passed": true
+    }
+  ]
+}
