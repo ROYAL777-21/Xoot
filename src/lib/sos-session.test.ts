@@ -243,10 +243,9 @@ describe("the SOS control", () => {
     expect(detail).toMatch(/import \{ SosButton \}/);
     expect(detail).toMatch(/<SosButton bookingId=\{id\}/);
 
-    // Above the grid, not buried under the map and the timeline. Anything that has to be
-    // scrolled to is not an emergency control.
+    // Before the visit cards; the source layout replaced the legacy map/grid.
     const sosAt = detail.indexOf("<SosButton");
-    const gridAt = detail.indexOf('className="grid lg:grid-cols-[1fr_400px]');
+    const gridAt = detail.indexOf('className="xoot-detail-content"');
     expect(sosAt).toBeGreaterThan(-1);
     expect(sosAt).toBeLessThan(gridAt);
 

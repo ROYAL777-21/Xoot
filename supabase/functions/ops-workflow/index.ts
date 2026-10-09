@@ -657,34 +657,14 @@ Deno.serve(async (req) => {
 
     if (action === "review_followup_requested") {
       const reviewId = cleanId(body.reviewId);
-      const { data: review } = await supa
-        .from("post_job_reviews")
-        .select("id,user_id,xooter_id,booking_id,rating,notes")
-        .eq("id", reviewId)
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (!review?.id) return json({ error: "review not found" }, 404, origin);
-      if (Number(review.rating) > 2) return json({ queued: false }, 200, origin);
-
-      await supa.from("support_followups").insert({
-        booking_id: review.booking_id,
-        user_id: userId,
-        trigger_type: "low_rating",
-        priority: "high",
-        notes: cleanText(review.notes, 400) || "Low post-job rating",
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewId)) return json({ error: "review not found" }, 404, origin);
+      const { data, error } = await supa.rpc("queue_visit_review_followup", {
+        p_actor_id: userId,
+        p_review_id: reviewId,
       });
-      await supa.from("admin_review_queue").insert({
-        queue_type: "support",
-        subject_table: "post_job_reviews",
-        subject_id: review.id,
-        user_id: userId,
-        xooter_id: review.xooter_id,
-        booking_id: review.booking_id,
-        priority: "high",
-        summary: "Low post-job rating needs follow-up",
-      });
-
-      return json({ queued: true }, 200, origin);
+      if (error || !data || (data.queued !== true && data.queued !== false)) return json({ queued: false, error: "Review follow-up could not be recorded. Please contact support." }, 503, origin);
+      if (data.code === "not_found") return json({ error: "review not found" }, 404, origin);
+      return json({ queued: data.queued }, 200, origin);
     }
 
     if (action === "xooter_application_submitted") {

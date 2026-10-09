@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Copy, Loader2, Mail, MessageCircle, Plus, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -23,6 +23,7 @@ import {
   whatsappInviteUrl,
 } from "@/lib/fare-split-invite";
 import { useAuth } from "@/contexts/AuthContext";
+import type { VisitActionGuard } from "@/components/visits/action-contract";
 
 /**
  * Split this booking's cost with other people.
@@ -56,7 +57,7 @@ import { useAuth } from "@/contexts/AuthContext";
  * sums, and `organiserShareCents` returns null rather than a negative when the others over-claim.
  */
 
-type Props = {
+type Props = VisitActionGuard & {
   bookingId: string;
   /** The booking total in rands, as stored on `bookings.price`. */
   totalRands: number;
@@ -94,6 +95,8 @@ export const FareSplitPanel = ({
   paymentStatus,
   serviceType,
   scheduledAt,
+  isCurrent = () => true,
+  invoke,
 }: Props) => {
   const totalCents = Math.round(totalRands * 100);
   const { user } = useAuth();
@@ -104,6 +107,8 @@ export const FareSplitPanel = ({
   /** Non-empty once the split is saved: the panel switches from composing to sending. */
   const [saved, setSaved] = useState<SavedShare[]>([]);
   const [copied, setCopied] = useState<string | null>(null);
+  const mounted = useRef(true), pending = useRef(false);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   // Even split by default: it is what most people want and it is guaranteed to sum. A typed
   // amount overrides it for that person only.
@@ -176,24 +181,27 @@ export const FareSplitPanel = ({
     const url = inviteUrlFor(window.location.origin, share.inviteToken);
     try {
       await navigator.clipboard.writeText(url);
+      if (!mounted.current || !isCurrent()) return;
       haptic("success");
       setCopied(share.email);
-      window.setTimeout(() => setCopied(null), 2000);
+      window.setTimeout(() => { if (mounted.current && isCurrent()) setCopied(null); }, 2000);
     } catch {
       // Clipboard is permission-gated and refuses outright in some in-app browsers. Say so rather
       // than showing a tick for something that did not happen.
-      toast.error("Could not copy. Long-press the link to copy it manually.");
+      if (mounted.current && isCurrent()) toast.error("Could not copy. Long-press the link to copy it manually.");
     }
   };
 
   const submit = async () => {
-    if (validationError) return;
+    if (validationError || pending.current || !mounted.current || !isCurrent()) return;
+    pending.current = true;
     setSaving(true);
     try {
-      const { data, error } = await supabase.functions.invoke("split-booking-fare", {
-        body: { action: "create", bookingId, shares },
-      });
-      if (error) throw error;
+      const body = { action: "create", bookingId, shares };
+      let data: unknown;
+      if (invoke) data = await invoke("split-booking-fare", body);
+      else { const result = await supabase.functions.invoke("split-booking-fare", { body }); if (result.error) throw result.error; data = result.data; }
+      if (!mounted.current || !isCurrent()) return;
 
       const payload = data as { shares?: SavedShare[] } | null;
       const savedShares = Array.isArray(payload?.shares) ? payload.shares : [];
@@ -212,10 +220,10 @@ export const FareSplitPanel = ({
       // which was false: nothing drains `integration_outbox`. The panel now hands over the links.
       toast.success("Split saved. Send each person their link.");
     } catch (err) {
-      console.warn("fare split failed", err);
-      toast.error("Could not save that split. Please try again.");
+      if (mounted.current && isCurrent()) { console.warn("fare split failed", err); toast.error("Could not save that split. Please try again."); }
     } finally {
-      setSaving(false);
+      pending.current = false;
+      if (mounted.current && isCurrent()) setSaving(false);
     }
   };
 

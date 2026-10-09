@@ -203,6 +203,7 @@ const App = () => (
                   <Route path="/app/book" element={<RequireAuth><AppShell><Book /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings" element={<RequireAuth><AppShell><Bookings /></AppShell></RequireAuth>} />
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
+                  <Route path="/app/bookings/:id/rate" element={<RequireAuth><AppShell><BookingDetail rate /></AppShell></RequireAuth>} />
                   <Route path="/app/favorites" element={<RequireAuth><AppShell><Favorites /></AppShell></RequireAuth>} />
                   <Route path="/app/loyalty" element={<RequireAuth><AppShell><Loyalty /></AppShell></RequireAuth>} />
                   <Route path="/gifts" element={<GiftClean />} />

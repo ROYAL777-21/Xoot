@@ -3,6 +3,7 @@ import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import type { VisitActionGuard } from "@/components/visits/action-contract";
 
 /**
  * Hands the customer to PayFast.
@@ -28,7 +29,7 @@ type CheckoutResponse = {
   amount_cents: number;
 };
 
-type Props = {
+type Props = VisitActionGuard & {
   paymentRecordId: string;
   /** Rendered in place of the button when checkout is unavailable, so the reason is never hidden. */
   onUnavailable?: (reason: string) => void;
@@ -36,11 +37,14 @@ type Props = {
   label?: string;
 };
 
-export const PayFastCheckout = ({ paymentRecordId, onUnavailable, className, label }: Props) => {
+export const PayFastCheckout = ({ paymentRecordId, onUnavailable, className, label, isCurrent = () => true, invoke }: Props) => {
   const [checkout, setCheckout] = useState<CheckoutResponse | null>(null);
   const [starting, setStarting] = useState(false);
   const [blocked, setBlocked] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const mounted = useRef(true);
+  const pending = useRef(false);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   /*
    * Submit only once the fields are in the DOM.
@@ -49,16 +53,23 @@ export const PayFastCheckout = ({ paymentRecordId, onUnavailable, className, lab
    * rendered the hidden inputs yet. The effect runs after commit, so the fields exist.
    */
   useEffect(() => {
-    if (checkout && formRef.current) formRef.current.submit();
-  }, [checkout]);
+    if (checkout && formRef.current && mounted.current && isCurrent()) formRef.current.submit();
+  }, [checkout, isCurrent]);
 
   const start = async () => {
+    if (pending.current || !mounted.current || !isCurrent()) return;
+    pending.current = true;
     setStarting(true);
     setBlocked(null);
 
-    const { data, error } = await supabase.functions.invoke("create-payment-session", {
-      body: { payment_record_id: paymentRecordId },
-    });
+    let data: unknown, error: unknown;
+    try {
+      const body = { payment_record_id: paymentRecordId };
+      if (invoke) data = await invoke("create-payment-session", body);
+      else { const result = await supabase.functions.invoke("create-payment-session", { body }); data = result.data; error = result.error; }
+    } catch (failure) { error = failure; }
+    if (!mounted.current || !isCurrent()) return;
+    pending.current = false;
 
     if (error) {
       toast.error("Could not start the payment. Please try again.");

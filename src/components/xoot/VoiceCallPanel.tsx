@@ -3,6 +3,7 @@ import { Loader2, Mic, MicOff, PhoneCall, PhoneOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useVoiceCall } from "@/hooks/useVoiceCall";
 import { callDurationSeconds } from "@/lib/voice-call";
+import type { VisitActionGuard } from "@/components/visits/action-contract";
 
 /**
  * In-app calling over mobile data, for a booking's two parties.
@@ -20,8 +21,8 @@ import { callDurationSeconds } from "@/lib/voice-call";
 const mmss = (seconds: number) =>
   `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
-export function VoiceCallPanel({ bookingId, available }: { bookingId: string; available: boolean }) {
-  const { state, start, hangUp, toggleMute } = useVoiceCall();
+export function VoiceCallPanel({ bookingId, available, isCurrent, invoke }: { bookingId: string; available: boolean } & VisitActionGuard) {
+  const { state, start, hangUp, toggleMute } = useVoiceCall({ isCurrent, invoke });
   const [now, setNow] = useState(() => Date.now());
 
   // Ticks only while connected. A timer running behind an idle screen is a battery cost with
@@ -51,8 +52,7 @@ export function VoiceCallPanel({ bookingId, available }: { bookingId: string; av
       <div className="mx-5 mb-5 rounded-2xl border border-border bg-muted/35 p-3 text-sm">
         <p className="font-semibold">In-app calling isn't switched on yet</p>
         <p className="text-muted-foreground">
-          Use the masked call below, or keep this booking's chat going — messages reach your Xooter
-          either way.
+          Use booking messages or contact support. Masked phone calls also depend on provider availability.
         </p>
       </div>
     );

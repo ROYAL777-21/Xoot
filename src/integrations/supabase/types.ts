@@ -1034,6 +1034,8 @@ export type Database = {
       }
       bookings: {
         Row: {
+          crew_size: number
+          crew_elapsed_hours: number | null
           address: string | null
           arrived_at: string | null
           assigned_at: string | null
@@ -1081,6 +1083,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          crew_size?: number
+          crew_elapsed_hours?: number | null
           arrived_at?: string | null
           assigned_at?: string | null
           at_risk?: boolean
@@ -1127,6 +1131,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          crew_size?: number
+          crew_elapsed_hours?: number | null
           arrived_at?: string | null
           assigned_at?: string | null
           at_risk?: boolean
@@ -5393,6 +5399,14 @@ export type Database = {
       }
       update_active_xooter_checklist: {
         Args: { p_actor_id: string; p_job_id: string; p_task_key: string; p_complete: boolean }
+        Returns: Json
+      }
+      save_solo_visit_review: {
+        Args: { p_actor_id: string; p_booking_id: string; p_rating: number; p_notes: string | null }
+        Returns: Json
+      }
+      queue_visit_review_followup: {
+        Args: { p_actor_id: string; p_review_id: string }
         Returns: Json
       }
       can_create_masked_call: {

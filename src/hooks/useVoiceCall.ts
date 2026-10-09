@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { Call, Device } from "@twilio/voice-sdk";
 import { supabase } from "@/integrations/supabase/client";
+import type { VisitActionGuard } from "@/components/visits/action-contract";
 import {
   callIsLive,
   callReducer,
@@ -34,12 +35,13 @@ type UseVoiceCall = {
   reset: () => void;
 };
 
-export function useVoiceCall(): UseVoiceCall {
+export function useVoiceCall({ isCurrent, invoke }: VisitActionGuard = {}): UseVoiceCall {
   const [state, dispatch] = useReducer(callReducer, initialCallState);
 
   // Refs, not state: these are handles to release, and re-rendering on them would be noise.
   const deviceRef = useRef<Device | null>(null);
   const callRef = useRef<Call | null>(null);
+  const lifecycle = useRef({ mounted: false, version: 0, starting: false });
   // Read inside the unmount cleanup, which closes over the first render's `state` otherwise and
   // would fail to tear down a call that started later.
   const liveRef = useRef(false);
@@ -54,22 +56,28 @@ export function useVoiceCall(): UseVoiceCall {
   }, []);
 
   useEffect(() => {
+    const lifetime = lifecycle.current;
+    lifetime.mounted = true;
     // Leaving the screen mid-call must not leave the microphone open. The browser keeps the
     // recording indicator lit and the other party keeps hearing the room.
     return () => {
-      if (liveRef.current) teardown();
+      lifetime.mounted = false; lifetime.version++;
+      teardown();
     };
   }, [teardown]);
 
   const start = useCallback(
     async (bookingId: string) => {
-      if (!canStartCall(state)) return;
+      if (!canStartCall(state) || lifecycle.current.starting || !lifecycle.current.mounted || isCurrent?.() === false) return;
+      lifecycle.current.starting = true;
+      const version = lifecycle.current.version;
+      const active = () => lifecycle.current.mounted && lifecycle.current.version === version && isCurrent?.() !== false;
       dispatch({ type: "request", bookingId });
 
       try {
-        const { data, error } = await supabase.functions.invoke("twilio-token", {
-          body: { bookingId, capability: "voice" },
-        });
+        const body = { bookingId, capability: "voice" };
+        const { data, error } = invoke ? { data: await invoke<{ configured?: boolean; missing?: string[]; token?: string; identity?: string }>("twilio-token", body), error: null } : await supabase.functions.invoke("twilio-token", { body });
+        if (!active()) return;
 
         // A 200 carrying `configured: false` is the documented "not set up yet" answer, not a
         // failure — the endpoint returns it with the list of secrets that are missing.
@@ -94,28 +102,33 @@ export function useVoiceCall(): UseVoiceCall {
         });
         deviceRef.current = device;
         device.on("error", () =>
-          dispatch({ type: "failed", error: "The call dropped. Please try again." }),
+          { if (active()) dispatch({ type: "failed", error: "The call dropped. Please try again." }); },
         );
 
         // `bookingId` reaches `twilio-voice-twiml` as a parameter, which is how it resolves
         // which conference room the two parties should meet in.
         const call = await device.connect({ params: { bookingId } });
+        if (!active()) { call.disconnect(); device.destroy(); return; }
         callRef.current = call;
 
-        call.on("accept", () => dispatch({ type: "connected", at: Date.now() }));
+        call.on("accept", () => { if (active()) dispatch({ type: "connected", at: Date.now() }); });
         call.on("disconnect", () => {
+          if (!active()) return;
           dispatch({ type: "ended" });
           teardown();
         });
         call.on("cancel", () => {
+          if (!active()) return;
           dispatch({ type: "ended" });
           teardown();
         });
         call.on("error", () => {
+          if (!active()) return;
           dispatch({ type: "failed", error: "The call dropped. Please try again." });
           teardown();
         });
       } catch {
+        if (!active()) return;
         // Overwhelmingly the microphone permission prompt being dismissed, which is worth naming
         // because it is the one cause the user can actually do something about.
         dispatch({
@@ -123,12 +136,15 @@ export function useVoiceCall(): UseVoiceCall {
           error: "Could not access your microphone. Check permissions and try again.",
         });
         teardown();
+      } finally {
+        if (lifecycle.current.version === version) lifecycle.current.starting = false;
       }
     },
-    [state, teardown],
+    [state, teardown, invoke, isCurrent],
   );
 
   const hangUp = useCallback(() => {
+    lifecycle.current.version++; lifecycle.current.starting = false;
     dispatch({ type: "hang_up" });
     teardown();
     dispatch({ type: "ended" });
@@ -141,7 +157,7 @@ export function useVoiceCall(): UseVoiceCall {
     callRef.current?.mute(!state.muted);
   }, [state.muted]);
 
-  const reset = useCallback(() => dispatch({ type: "reset" }), []);
+  const reset = useCallback(() => { lifecycle.current.version++; lifecycle.current.starting = false; teardown(); dispatch({ type: "reset" }); }, [teardown]);
 
   return { state, durationFrom: state.connectedAt, start, hangUp, toggleMute, reset };
 }

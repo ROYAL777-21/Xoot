@@ -1,672 +1,84 @@
-import { useCallback, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Check, Ellipsis, MessageCircle, Phone, Repeat, Star, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle, Navigation, Share2 } from "lucide-react";
-import { resolvePhoto } from "@/components/xoot/XooterCard";
-import { TrustBadges } from "@/components/xoot/TrustBadges";
+import { ServiceIcon } from "@/components/kit/ServiceIcon";
+import { SectionLabel } from "@/components/kit/SectionLabel";
+import { DockedCTA } from "@/components/kit/DockedCTA";
+import { SosButton } from "@/components/xoot/SosButton";
 import { BookingChat } from "@/components/xoot/BookingChat";
 import { VoiceCallPanel } from "@/components/xoot/VoiceCallPanel";
-import { FareSplitPanel } from "@/components/xoot/FareSplitPanel";
-import { PayFastCheckout } from "@/components/PayFastCheckout";
-import { formatZAR } from "@/lib/format";
-import { SosButton } from "@/components/xoot/SosButton";
-import { TipCard } from "@/components/xoot/TipCard";
-import { deriveXooterBadges, requiresCompletionPhotos } from "@/lib/trust";
 import { canAccessSensitiveBookingData } from "@/lib/operations";
-import { notifyBookingLiveActivity, type XootBookingLiveActivityStatus } from "@/lib/native-live-activity";
-import {
-  buildBookingEtaShareText,
-  createNativeBookingActionPayload,
-  openBookingDirections,
-  sendNativeBookingAction,
-  type NativeBookingActionInput,
-} from "@/lib/native-booking-actions";
-import { haptic } from "@/lib/haptics";
-import { buildTipRow, canOfferTip } from "@/lib/tipping";
-import { formatRand } from "@/lib/xoot-pricing";
-import { invokeOpsWorkflow } from "@/lib/ops-workflow";
-import { isOptionalNativePlatform } from "@/lib/optional-capacitor";
-import { getClientVisibleStatus, normaliseBookingStatus, type BookingStatus } from "@/lib/booking-state-machine";
-import { captureOrSelectImage } from "@/lib/mobile-upload";
-import { toast } from "sonner";
-import { JobChecklist } from "@/components/xooter/JobChecklist";
-import { safeFileName, validateCompletionPhotoUpload } from "@/lib/upload-validation";
+import { getClientVisibleStatus, normaliseBookingStatus } from "@/lib/booking-state-machine";
+import { createNativeBookingActionPayload, sendNativeBookingAction } from "@/lib/native-booking-actions";
+import { visitNativeInput } from "@/components/visits/visit-native";
+import { useVisit } from "@/components/visits/useVisit";
+import { VisitCard, VisitHeader } from "@/components/visits/VisitPrimitives";
+import { VisitPaymentCard, VisitOptions } from "@/components/visits/VisitOptions";
+import { reviewEligible, scheduledLabel, visitService } from "@/components/visits/visit-data";
+import { RateVisit } from "./RateVisit";
+import "@/styles/visit-detail-handoff.css";
 
-type Msg = { id: string; sender_type: string; body: string; created_at: string };
-type TimelineEvent = { id: string; status: string; label: string; created_at: string };
-type CompletionPhoto = { id: string; photo_type: "before" | "after"; storage_path: string; created_at: string };
-type Review = { id: string; rating: number; notes: string | null };
-type PendingPayment = { id: string; amount: number; status: string };
-type MaskedCallDetails = {
-  call_session_id?: string;
-  status?: string;
-  proxy_numbers?: {
-    client?: string | null;
-    xooter?: string | null;
-  } | null;
-};
-
-const statusSteps = [
-  { keys: ["contractor_accepted", "confirmed"], label: "Xooter confirmed" },
-  { keys: ["en_route", "enroute"], label: "On the way" },
-  { keys: ["arrived"], label: "Arrived" },
-  { keys: ["in_progress"], label: "Job started" },
-  { keys: ["completed"], label: "Job completed" },
-];
-
-const statusLabel: Record<string, string> = {
-  confirmed: "Xooter confirmed",
-  contractor_accepted: "Xooter confirmed",
-  enroute: "On the way",
-  en_route: "On the way",
-  arrived: "Arrived",
-  in_progress: "Job started",
-  completed: "Job completed",
-  cancelled: "Cancelled",
-  reassigned: "Reassigned",
-  pending: "Pending confirmation",
-};
-
-const liveActivityStatuses: XootBookingLiveActivityStatus[] = [
-  "confirmed",
-  "enroute",
-  "arrived",
-  "in_progress",
-  "completed",
-  "cancelled",
-  "reassigned",
-  "pending",
-];
-
-const toLiveActivityStatus = (status: string): XootBookingLiveActivityStatus =>
-  status === "en_route"
-    ? "enroute"
-    : status === "contractor_accepted" || status === "assigned"
-      ? "confirmed"
-      : liveActivityStatuses.includes(status as XootBookingLiveActivityStatus)
-        ? (status as XootBookingLiveActivityStatus)
-        : "pending";
-
-const getCanonicalStatus = (status: unknown): BookingStatus | null => normaliseBookingStatus(status);
-
-const getVisibleStatusLabel = (status: unknown) => {
-  const canonical = getCanonicalStatus(status);
-  return canonical ? getClientVisibleStatus(canonical) : statusLabel[String(status)] ?? "Pending confirmation";
-};
-
-const liveActivityNextStep: Record<XootBookingLiveActivityStatus, string> = {
-  confirmed: "We will keep your booking ready and protected.",
-  enroute: "Your Xooter is on the way. Access notes stay inside the app.",
-  arrived: "Your Xooter has arrived and is preparing to begin.",
-  in_progress: "Your home-care visit is in progress.",
-  completed: "Your booking is complete. Review and photo proof are available in-app.",
-  cancelled: "Support can help review the next available option.",
-  reassigned: "Priority replacement matching is being reviewed.",
-  pending: "We are confirming your booking details.",
-};
-
-const serviceNameForBooking = (booking: any) => booking?.service_type ?? booking?.service ?? "Home care";
-
-const BookingDetail = () => {
+export default function BookingDetail({ rate = false }: { rate?: boolean }) {
   const { id } = useParams();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [booking, setBooking] = useState<any>(null);
-  const [messages, setMessages] = useState<Msg[]>([]);
-  const [events, setEvents] = useState<TimelineEvent[]>([]);
-  const [photos, setPhotos] = useState<CompletionPhoto[]>([]);
-  const [review, setReview] = useState<Review | null>(null);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewNotes, setReviewNotes] = useState("");
-  const [tipCents, setTipCents] = useState<number | null>(null);
-  const [incidentType, setIncidentType] = useState("poor_quality");
-  const [incidentNotes, setIncidentNotes] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState<string | null>(null);
-  const [requestingCall, setRequestingCall] = useState(false);
-  const [maskedCall, setMaskedCall] = useState<MaskedCallDetails | null>(null);
-  const [eta, setEta] = useState(12);
-  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);
-  const [activeJobId, setActiveJobId] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    if (!user || !id) return;
-    const [{ data }, { data: xooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }, { data: pay }] = await Promise.all([
-      supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
-      supabase.from("booking_xooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
-      supabase.from("messages").select("*").eq("booking_id", id).order("created_at"),
-      supabase.from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
-      supabase.from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
-      supabase.from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
-      /*
-       * The unpaid record for this booking, so a customer who closed the PayFast tab can come back
-       * and finish. Scoped to `user_id` as well as `booking_id`: RLS already restricts reads to
-       * the owner, but a fare-split booking can carry several people's records and only the
-       * caller's is theirs to pay.
-       */
-      supabase
-        .from("payment_records")
-        .select("id,amount,status")
-        .eq("booking_id", id)
-        .eq("user_id", user.id)
-        .eq("status", "pending")
-        .order("created_at")
-        .limit(1)
-        .maybeSingle(),
-    ]);
-    if (!data) { navigate("/app/bookings"); return; }
-    setBooking({ ...data, xooter: xooter ?? null });
-    const { data: activeJob } = await supabase.from("xooter_jobs").select("id").eq("booking_id", id).eq("state", "accepted").maybeSingle();
-    setActiveJobId(activeJob?.id ?? null);
-    setMessages((m ?? []) as Msg[]);
-    setEvents((ev ?? []) as TimelineEvent[]);
-    setPhotos((ph ?? []) as CompletionPhoto[]);
-    setReview(rv as Review | null);
-    setPendingPayment((pay as PendingPayment | null) ?? null);
-    setLoading(false);
-  }, [id, navigate, user]);
-
-  useEffect(() => { load(); }, [load]);
-
-  useEffect(() => {
-    if (!id) return;
-    const ch = supabase.channel(`messages:${id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `booking_id=eq.${id}` }, (p) => setMessages((m) => [...m, p.new as Msg]))
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [id]);
-
-  useEffect(() => {
-    if (getCanonicalStatus(booking?.status) !== "en_route") return;
-    const t = setInterval(() => setEta((e) => Math.max(1, e - 1)), 5000);
-    return () => clearInterval(t);
-  }, [booking?.status]);
-
-  const getNativeBookingActionInput = (): NativeBookingActionInput | null => {
-    if (!id || !booking) return null;
-    const canonicalStatus = getCanonicalStatus(booking.status);
-    const liveStatus = toLiveActivityStatus(canonicalStatus ?? booking.status ?? "pending");
-
-    return {
-      bookingId: id,
-      status: liveStatus,
-      statusLabel: getVisibleStatusLabel(booking.status),
-      serviceName: serviceNameForBooking(booking),
-      xooterName: booking.xooter?.name,
-      propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name,
-      suburb: booking.suburb,
-      address: booking.address,
-      etaMinutes: liveStatus === "enroute" ? eta : undefined,
-    };
-  };
-
-  const handleOpenDirections = () => {
-    const input = getNativeBookingActionInput();
-    if (!input) return;
-    haptic("selection");
-    const result = openBookingDirections(input);
-    if (!result.fallbackUrl) {
-      toast.error("No destination is saved for this booking.");
-      return;
-    }
-    toast.success(result.delivered ? "Directions sent to native app" : "Directions opened");
-  };
-
-  const shareEta = async () => {
-    const input = getNativeBookingActionInput();
-    if (!input || typeof window === "undefined") return;
-    haptic("selection");
-
-    const payload = createNativeBookingActionPayload("share_eta", input);
-    const delivered = sendNativeBookingAction(payload);
-    const shareText = buildBookingEtaShareText(payload);
-    const shareUrl = `${window.location.origin}${payload.route}`;
-    const navigatorWithShare = window.navigator as Navigator & {
-      share?: (data: ShareData) => Promise<void>;
-    };
-
-    try {
-      if (typeof navigatorWithShare.share === "function") {
-        await navigatorWithShare.share({ title: "Xoot booking update", text: shareText, url: shareUrl });
-        toast.success("ETA shared");
-        return;
-      }
-
-      if (navigatorWithShare.clipboard?.writeText) {
-        await navigatorWithShare.clipboard.writeText(`${shareText} ${shareUrl}`);
-        toast.success("ETA copied");
-        return;
-      }
-
-      if (delivered) {
-        toast.success("ETA sent to native app");
-        return;
-      }
-
-      toast.error("Sharing is unavailable on this device.");
-    } catch {
-      if (delivered) toast.success("ETA sent to native app");
-      else toast.error("Sharing was cancelled or unavailable.");
-    }
-  };
-
-  const setStatus = async (status: string) => {
-    if (!id || !booking) return;
-    try {
-      await invokeOpsWorkflow({
-        action: "booking_status_changed",
-        bookingId: id,
-        status,
-      });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Booking status update failed");
-      return;
-    }
-
-    const liveStatus = toLiveActivityStatus(status);
-    notifyBookingLiveActivity({
-      bookingId: id,
-      status: liveStatus,
-      statusLabel: statusLabel[status] ?? status,
-      serviceName: serviceNameForBooking(booking),
-      xooterName: booking.xooter?.name,
-      propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Xoot home",
-      suburb: booking.suburb,
-      scheduledAt: booking.scheduled_at,
-      etaMinutes: liveStatus === "enroute" ? eta : undefined,
-      nextStep: liveActivityNextStep[liveStatus],
-      supportState: booking.care_plus ? "priority" : "standard",
-      updatedAt: new Date().toISOString(),
-    });
-
-    toast.success(statusLabel[status] ?? `Booking marked ${status}`);
-    load();
-  };
-
-  const requestMaskedCall = async () => {
-    if (!user || !id || !booking) return;
-    if (!canAccessSensitiveBookingData({
-      scheduledAt: booking.scheduled_at,
-      status: booking.status,
-      completedAt: booking.job_completed_at,
-      cancelledAt: booking.cancelled_at,
-      durationHours: booking.duration_hours,
-    })) {
-      toast.error("Masked calls are available during the active booking window.");
-      return;
-    }
-    setRequestingCall(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-masked-call", {
-        body: { booking_id: id },
-      });
-      if (error) throw error;
-
-      const call = (data ?? {}) as MaskedCallDetails;
-      setMaskedCall(call);
-
-      const nativeInput = getNativeBookingActionInput();
-      if (nativeInput) {
-        sendNativeBookingAction(createNativeBookingActionPayload("masked_call", {
-          ...nativeInput,
-          callSessionId: call.call_session_id,
-          updatedAt: new Date().toISOString(),
-        }));
-      }
-
-      const callerProxyNumber = user.id === booking.user_id
-        ? call.proxy_numbers?.client
-        : call.proxy_numbers?.xooter;
-      if (callerProxyNumber && isOptionalNativePlatform()) {
-        window.location.href = `tel:${callerProxyNumber.replace(/[^\d+]/g, "")}`;
-      }
-    } catch (error) {
-      setRequestingCall(false);
-      toast.error(error instanceof Error ? error.message : "Masked call request failed");
-      return;
-    }
-    setRequestingCall(false);
-    haptic("success");
-    toast.success("Masked call request queued");
-  };
-
-  const submitIncident = async () => {
-    if (!user || !id || !booking?.xooter_id || !incidentNotes.trim()) return;
-    try {
-      await invokeOpsWorkflow({
-        action: "trust_incident_submitted",
-        bookingId: id,
-        incidentType,
-        notes: incidentNotes,
-      });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Trust incident submission failed");
-      return;
-    }
-    setIncidentNotes("");
-    toast.success("Incident sent to Trust & Safety");
-  };
-
-  const submitReview = async () => {
-    if (!user || !id || !booking?.xooter_id) return;
-    const { data: savedReview, error } = await supabase.from("post_job_reviews").insert({
-      booking_id: id,
-      user_id: user.id,
-      xooter_id: booking.xooter_id,
-      rating: reviewRating,
-      quality_rating: reviewRating,
-      punctuality_rating: reviewRating,
-      complaint: reviewRating <= 2,
-      notes: reviewNotes || null,
-    }).select("id, rating, notes").single();
-    if (error) return toast.error(error.message);
-    setReview(savedReview as Review);
-
-    // The tip is a second write, and deliberately not allowed to undo the first. The
-    // rating is the record that matters for trust and safety; losing it because a tip
-    // failed would be the worse outcome, so this reports and carries on rather than
-    // rolling back or blocking the follow-up routing below.
-    const tipRow =
-      canOfferTip() && booking
-        ? buildTipRow({ bookingId: id, userId: user.id, xooterId: booking.xooter_id ?? null, cents: tipCents })
-        : null;
-
-    if (tipRow) {
-      // `booking_tips`, not a column on `bookings` — RLS is row-level, so a tip stored
-      // on the booking would be readable by the assigned Xooter immediately, which is
-      // exactly what the founder ruled against. See the migration for the full reason.
-      //
-      // The `as any` that used to be here is gone: the migration is applied on both projects and
-      // the table is in the generated types, so the cast would now hide real column mismatches
-      // rather than work around a missing type.
-      //
-      // `canOfferTip()` still gates this — the schema existing is not the same as tipping being
-      // switched on, and `TIP_READINESS` remains the switch for that.
-      const { error: tipError } = await supabase.from("booking_tips").insert(tipRow);
-      if (tipError) {
-        toast.warning("Review saved. The tip did not go through — you have not been charged.");
-      } else {
-        haptic("success");
-      }
-    }
-
-    if (reviewRating <= 2) {
-      try {
-        await invokeOpsWorkflow({
-          action: "review_followup_requested",
-          reviewId: savedReview?.id,
-        });
-      } catch {
-        toast.warning("Review saved, but support follow-up routing is unavailable.");
-      }
-    }
-    toast.success("Review submitted");
-  };
-
-  const uploadPhoto = async (photoType: "before" | "after", file: File) => {
-    if (!user || !id || !booking?.xooter_id) return;
-    const validationError = validateCompletionPhotoUpload(file);
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-    setUploading(photoType);
-    const uploadId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const path = `${id}/${photoType}-${uploadId}-${safeFileName(file.name)}`;
-    const { error } = await supabase.storage.from("booking-completion-photos").upload(path, file, {
-      upsert: false,
-      contentType: file.type,
-      cacheControl: "0",
-    });
-    if (error) { setUploading(null); toast.error(error.message); return; }
-    const { error: insertError } = await supabase.from("booking_completion_photos").insert({ booking_id: id, xooter_id: booking.xooter_id, photo_type: photoType, storage_path: path });
-    setUploading(null);
-    if (insertError) return toast.error(insertError.message);
-    toast.success(`${photoType} photo uploaded`);
-    load();
-  };
-
-  const chooseAndUploadPhoto = async (photoType: "before" | "after") => {
-    const file = await captureOrSelectImage();
-    if (!file) return;
-    await uploadPhoto(photoType, file);
-  };
-
-  if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-  if (!booking) return null;
-
-  const z = booking.xooter;
-  const serviceType = serviceNameForBooking(booking);
-  const photoProofRequired = booking.completion_photo_required || requiresCompletionPhotos(serviceType);
-  const beforeDone = photos.some((p) => p.photo_type === "before");
-  const afterDone = photos.some((p) => p.photo_type === "after");
-  const canonicalStatus = getCanonicalStatus(booking.status);
-  const visibleStatus = getVisibleStatusLabel(booking.status);
-  const timeline = events.length ? events : [{ id: "current", status: canonicalStatus ?? booking.status, label: visibleStatus, created_at: booking.updated_at }];
-  const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
-  const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
-  const isAssignedXooter = Boolean(booking.xooter?.user_id && booking.xooter.user_id === user?.id);
-  /**
-   * The window where someone is on their way to, or inside, the home.
-   *
-   * The same window masked calling uses, and for the same reason. Deliberately not gated on
-   * role: `raise-sos-alert` derives customer-or-Xooter from the session, and a Xooter alone in
-   * a stranger's house needs this at least as much as the customer does.
-   *
-   * Renders nothing until `canArmSos()` is true — see `SosButton`. It is placed now so that
-   * advancing readiness is the only step left, rather than readiness plus remembering to put
-   * the control on a screen.
-   */
+  const { user, loading } = useAuth();
+  if (loading) return <VisitState text="Loading your account…" />;
+  if (!user) return <VisitState text="Sign in to view this visit." />;
+  if (!id) return <VisitState text="Visit not found." />;
+  return <AccountVisit key={`${user.id}/${id}`} id={id} owner={user.id} rate={rate} />;
+}
+function VisitState({ text, retry }: { text: string; retry?: () => void }) {
+  return <div className="xoot-detail"><VisitHeader title="Visit" back="/app/bookings" /><div className="xoot-detail-state" role={retry ? "alert" : "status"}><p>{text}</p>{retry && <button type="button" className="xoot-detail-button" onClick={retry}>Try again</button>}</div></div>;
+}
+export type VisitResource = ReturnType<typeof useVisit>;
+function AccountVisit({ id, owner, rate }: { id: string; owner: string; rate: boolean }) {
+  const resource = useVisit(id, owner);
+  const [panel, setPanel] = useState<"more" | "chat" | "call" | "reschedule" | "cancel" | null>(null);
+  const [maskedPhone, setMaskedPhone] = useState<string | null>(null);
+  if (resource.loading) return <VisitState text="Loading your visit…" />;
+  if (resource.error) return <VisitState text={resource.error} retry={() => void resource.refresh()} />;
+  if (!resource.data) return <VisitState text="Visit not found or unavailable for this account." />;
+  if (rate) return <RateVisit id={id} owner={owner} resource={resource} />;
+  const data = resource.data, { booking, xooter, tasks } = data;
+  const canonicalStatus = normaliseBookingStatus(booking.status);
   const activeVisit = Boolean(canonicalStatus && ["en_route", "in_progress"].includes(canonicalStatus));
-  const maskedCallAvailable = Boolean(canonicalStatus && ["en_route", "in_progress"].includes(canonicalStatus) && canAccessSensitiveBookingData({
-    scheduledAt: booking.scheduled_at,
-    status: booking.status,
-    completedAt: booking.job_completed_at,
-    cancelledAt: booking.cancelled_at,
-    durationHours: booking.duration_hours,
-  }));
-
-  return (
-    <div className="container py-6 lg:py-10 max-w-5xl">
-      <Button variant="ghost" onClick={() => navigate("/app/bookings")} className="mb-4 -ml-2"><ArrowLeft className="h-4 w-4 mr-1" /> All bookings</Button>
-
-      {/* Above the fold, before the map and the timeline. Anything that has to be scrolled to
-          is not an emergency control. */}
-      {activeVisit && <SosButton bookingId={id} className="mb-5" />}
-
-      <div className="grid lg:grid-cols-[1fr_400px] gap-5">
-        <div className="space-y-5">
-          <Card className="rounded-3xl overflow-hidden border-border">
-            <div className="relative h-64 bg-linear-to-br from-sage/20 via-accent-soft to-cream">
-              <svg className="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 400 250">
-                <path d="M0 120 Q100 80 200 130 T400 110" stroke="hsl(var(--sage-deep))" strokeWidth="2" fill="none" />
-                <path d="M50 0 L120 250" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.4" />
-                <path d="M280 0 L320 250" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.4" />
-              </svg>
-              <div className="absolute top-1/3 left-1/4 grid place-items-center h-10 w-10 rounded-full bg-primary text-primary-foreground shadow-warm animate-pulse"><MapPin className="h-5 w-5" /></div>
-              <div className="absolute bottom-1/4 right-1/3 grid place-items-center h-10 w-10 rounded-full bg-foreground text-background shadow-warm"><span className="text-xs font-bold">YOU</span></div>
-              <div className="absolute top-3 left-3 right-3 flex justify-between">
-                <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-card">
-                  <span className="h-2 w-2 rounded-full bg-sage animate-pulse" />{canonicalStatus === "en_route" ? `Arriving in ${eta} min` : visibleStatus}
-                </div>
-                <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold shadow-card">R{Number(booking.price).toFixed(0)}</div>
-              </div>
-            </div>
-
-            {z && (
-              <div className="p-5 flex items-center gap-4">
-                <img src={resolvePhoto(z.photo_url)} alt={z.name} className="h-16 w-16 rounded-2xl object-cover" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-display font-bold text-lg">{z.name}</p>
-                  <p className="text-sm text-muted-foreground capitalize flex items-center gap-2">{z.role}<span className="flex items-center gap-1"><Star className="h-3 w-3 fill-primary text-primary" /> {Number(z.rating).toFixed(2)}</span></p>
-                  <div className="mt-2"><TrustBadges badges={deriveXooterBadges(z)} limit={4} /></div>
-                </div>
-              </div>
-            )}
-
-            <div className="px-5 pb-5 grid grid-cols-2 gap-2">
-              {isAssignedXooter && canonicalStatus === "contractor_accepted" && <Button onClick={() => setStatus("en_route")} variant="outline" className="rounded-xl">On the way</Button>}
-              {isAssignedXooter && canonicalStatus === "en_route" && <Button onClick={() => setStatus("arrived")} variant="outline" className="rounded-xl">Arrived</Button>}
-              {isAssignedXooter && canonicalStatus === "in_progress" && hasArrivedEvent && !hasStartedEvent && <Button onClick={() => setStatus("in_progress")} variant="outline" className="rounded-xl col-span-2">Job started</Button>}
-              {isAssignedXooter && canonicalStatus === "in_progress" && (!hasArrivedEvent || hasStartedEvent) && <Button onClick={() => setStatus("completed")} disabled={photoProofRequired && (!beforeDone || !afterDone)} className="rounded-xl col-span-2"><CheckCircle2 className="h-4 w-4 mr-1" /> Complete job</Button>}
-              {maskedCallAvailable && (
-                <Button onClick={requestMaskedCall} disabled={requestingCall} variant="outline" className="rounded-xl col-span-2">
-                  {requestingCall ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Phone className="h-4 w-4 mr-1" />}
-                  Call by phone instead
-                </Button>
-              )}
-            </div>
-            {/*
-              In-app calling sits above the phone route, not beside it, because they are not equal
-              options: this one needs no number pool, costs nothing to provision and works on wifi,
-              while the masked-PSTN path rents numbers and carries the Twilio Proxy end-of-life
-              question. Same eligibility for both — `maskedCallAvailable` is passed in rather than
-              recomputed, so the two transports cannot drift into disagreeing about who may call.
-            */}
-            {id && <VoiceCallPanel bookingId={id} available={maskedCallAvailable} />}
-            {maskedCall?.proxy_numbers && (
-              <div className="mx-5 mb-5 rounded-2xl border border-border bg-muted/35 p-3 text-sm">
-                <p className="mb-2 font-semibold">Masked call proxy numbers</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <div className="rounded-xl bg-background/75 p-2">
-                    <p className="text-xs text-muted-foreground">Client proxy</p>
-                    <p className="font-medium">{maskedCall.proxy_numbers.client ?? "Assigned when the call starts"}</p>
-                  </div>
-                  <div className="rounded-xl bg-background/75 p-2">
-                    <p className="text-xs text-muted-foreground">Xooter proxy</p>
-                    <p className="font-medium">{maskedCall.proxy_numbers.xooter ?? "Assigned when the call starts"}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </Card>
-
-          {/*
-            Finish an unpaid booking.
-
-            A customer who closed the PayFast tab had no way back before this: `create-booking`
-            returned a `payment_session_url` that nothing in the app read, so an abandoned checkout
-            was an abandoned booking. The amount shown is the record's own — the server's price,
-            not a recomputed one, so this screen and the charge cannot disagree.
-          */}
-          {pendingPayment && (
-            <Card className="rounded-3xl p-5 border-primary/30 bg-primary/5">
-              <h2 className="font-display text-xl font-bold mb-1 flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-primary" /> Payment outstanding
-              </h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                This booking is held at {formatZAR(Number(pendingPayment.amount))}. It is confirmed and assigned once payment reaches us.
-              </p>
-              <PayFastCheckout
-                paymentRecordId={pendingPayment.id}
-                label={`Pay ${formatZAR(Number(pendingPayment.amount))}`}
-              />
-            </Card>
-          )}
-
-          {/* Splitting is a payment relationship, not an access grant — the panel hides itself
-              once the booking is being paid, since there is then nothing left to divide. */}
-          {id && booking && (
-            <FareSplitPanel
-              bookingId={id}
-              totalRands={Number(booking.price ?? 0)}
-              paymentStatus={booking.payment_status}
-              // Service and date only — the two fields an invitation is allowed to carry. The
-              // panel builds the WhatsApp and mail text from these, and never sees the address.
-              serviceType={booking.service_type}
-              scheduledAt={booking.scheduled_at}
-            />
-          )}
-
-          {activeJobId && id && <JobChecklist jobId={activeJobId} bookingId={id} readOnly />}
-          <Card className="rounded-3xl p-5">
-            <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Arrival tracking</h2>
-            <div className="mb-4 grid grid-cols-2 gap-2">
-              <Button onClick={handleOpenDirections} variant="outline" className="rounded-xl justify-center"><Navigation className="h-4 w-4 mr-1" /> Directions</Button>
-              <Button onClick={shareEta} variant="outline" className="rounded-xl justify-center"><Share2 className="h-4 w-4 mr-1" /> Share ETA</Button>
-            </div>
-            <div className="space-y-3">
-              {statusSteps.map((step) => {
-                const hit = timeline.find((e) => step.keys.includes(e.status) || e.label === step.label);
-                return <div key={step.keys[0]} className="flex items-center gap-3"><span className={`h-3 w-3 rounded-full ${hit ? "bg-primary" : "bg-muted"}`} /><div><p className="text-sm font-medium">{step.label}</p>{hit && <p className="text-xs text-muted-foreground">{new Date(hit.created_at).toLocaleString("en-ZA")}</p>}</div></div>;
-              })}
-            </div>
-          </Card>
-
-          {photoProofRequired && (
-            <Card className="rounded-3xl p-5">
-              <h2 className="font-display text-xl font-bold mb-2 flex items-center gap-2"><Camera className="h-5 w-5 text-primary" /> Photo completion verification</h2>
-              <p className="text-sm text-muted-foreground mb-4">Before and after photos are required for {serviceType} bookings.</p>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {(["before", "after"] as const).map((kind) => {
-                  const done = photos.some((p) => p.photo_type === kind);
-                  return (
-                    <button
-                      key={kind}
-                      type="button"
-                      onClick={() => void chooseAndUploadPhoto(kind)}
-                      disabled={Boolean(uploading)}
-                      className={`rounded-2xl border p-4 text-left transition-smooth ${done ? "border-sage bg-accent-soft" : "border-border hover:border-primary/40"}`}
-                    >
-                      <span className="flex items-center gap-2 font-semibold capitalize"><ShieldCheck className="h-4 w-4" /> {kind} photo</span>
-                      <p className="text-xs text-muted-foreground mt-1">{done ? "Uploaded" : uploading === kind ? "Uploading..." : "Tap to capture or select"}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </Card>
-          )}
-
-          {canonicalStatus === "completed" && (
-            <Card className="rounded-3xl p-5">
-              <h2 className="font-display text-xl font-bold mb-2 flex items-center gap-2"><Star className="h-5 w-5 text-primary" /> Post-clean satisfaction</h2>
-              {review ? (
-                <p className="text-sm text-muted-foreground">Review submitted: {review.rating}/5</p>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs uppercase tracking-wider text-muted-foreground">Rating</label>
-                    <select value={reviewRating} onChange={(e) => setReviewRating(Number(e.target.value))} className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm">
-                      {[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} stars</option>)}
-                    </select>
-                  </div>
-                  <Input value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} placeholder="Anything the team should know?" />
-                  <TipCard value={tipCents} onChange={setTipCents} className="pt-1" />
-                  <Button onClick={submitReview} className="rounded-xl">
-                    {tipCents === null ? "Submit review" : `Submit review and tip ${formatRand(tipCents)}`}
-                  </Button>
-                </div>
-              )}
-            </Card>
-          )}
-
-          <Card className="rounded-3xl p-5">
-            <h2 className="font-display text-xl font-bold mb-2 flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-primary" /> Trust incident</h2>
-            <p className="text-sm text-muted-foreground mb-4">Use this for lateness, disrespect, poor quality, suspicious behaviour, damages, complaints, or escalations.</p>
-            <div className="grid sm:grid-cols-[220px_1fr] gap-3">
-              <select value={incidentType} onChange={(e) => setIncidentType(e.target.value)} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
-                <option value="lateness">Lateness</option>
-                <option value="disrespect">Disrespect</option>
-                <option value="poor_quality">Poor quality</option>
-                <option value="suspicious_behaviour">Suspicious behaviour</option>
-                <option value="damages">Damages</option>
-                <option value="complaint">Complaint</option>
-                <option value="support_escalation">Support escalation</option>
-              </select>
-              <Input value={incidentNotes} onChange={(e) => setIncidentNotes(e.target.value)} placeholder="Briefly describe what happened" />
-            </div>
-            <Button onClick={submitIncident} disabled={!incidentNotes.trim()} variant="outline" className="rounded-xl mt-3">Send to Trust & Safety</Button>
-          </Card>
-        </div>
-
-        <BookingChat bookingId={id} booking={booking} xooter={z} messages={messages} currentUserId={user?.id} />
-      </div>
+  const status = canonicalStatus ? getClientVisibleStatus(canonicalStatus) : "Status unavailable";
+  const isOwner = booking.user_id === owner;
+  const assignedWorker = xooter?.user_id === owner && xooter.id === booking.xooter_id;
+  const solo = booking.crew_size === 1 && data.jobs.every(job => job.xooter_id === booking.xooter_id);
+  const eligible = reviewEligible(booking, owner, data.review) && solo;
+  const calling = activeVisit && canAccessSensitiveBookingData({ scheduledAt: booking.scheduled_at, status: booking.status, completedAt: booking.job_completed_at, cancelledAt: booking.cancelled_at, durationHours: booking.duration_hours });
+  const support = `/app/support?booking=${encodeURIComponent(id)}`;
+  return <div className="xoot-detail">
+    <VisitHeader title="Your visit" back="/app/bookings" trailing={<button type="button" className="xoot-detail-icon" aria-label="More visit options" aria-expanded={panel === "more"} onClick={() => setPanel(panel === "more" ? null : "more")}><Ellipsis size={20} /></button>} />
+    {activeVisit && <SosButton bookingId={id} className="mx-5 mb-4" />}
+    <div className="xoot-detail-content">
+      <VisitCard tone="dawn" className="xoot-detail-status"><ServiceIcon service={visitService(booking)} size={56} shape="circle" /><div><span className="xoot-label">{status}</span><h2>Scheduled {scheduledLabel(booking.scheduled_at)}</h2><p>{activeVisit ? "Live location and arrival estimates are unavailable." : "Updates reflect recorded booking events."}</p></div></VisitCard>
+      <VisitCard>
+        {xooter ? <div className="xoot-detail-xooter">
+          <span className="xoot-detail-avatar"><span className="xoot-detail-avatar-face">{xooter.photo_url ? <img src={xooter.photo_url} alt={xooter.name || "Assigned Xooter"} /> : xooter.name?.split(/\s+/).filter(Boolean).slice(0,2).map(word => word[0]).join("").toUpperCase() || <User size={26} color="var(--xoot-violet-500)" />}</span>{xooter.verified && <i aria-label="Verified"><Check size={12} strokeWidth={3.5} /></i>}</span>
+          <div><h2>{xooter.name || "Assigned Xooter"}</h2>{xooter.rating !== null && <p aria-label={`Recorded Xooter rating ${xooter.rating.toFixed(2)} out of 5`}>{[1,2,3,4,5].map(star => <Star key={star} size={14} strokeWidth={2} color={xooter.rating! >= star - .25 ? "var(--xoot-honey-500)" : "var(--xoot-neutral-300)"} fill={xooter.rating! >= star - .25 ? "var(--xoot-honey-500)" : "none"} />)}<strong>{xooter.rating.toFixed(2)}</strong></p>}{xooter.role && <p>{xooter.role}</p>}{xooter.jobs_completed !== null && <span className="xoot-detail-xooter-badges"><span className="xoot-detail-visit-badge" aria-label={`${xooter.jobs_completed} recorded visits`}><Repeat size={11} strokeWidth={2.5} />{xooter.jobs_completed} visits</span></span>}</div>
+        </div> : <p className="xoot-detail-muted">No Xooter profile is available yet.</p>}
+        {!solo && <p className="xoot-detail-caption">{booking.crew_size} Xooters requested. This profile is one assigned member; the full crew roster is unavailable here.</p>}
+        <div className="xoot-detail-action-row"><button type="button" className="xoot-detail-button is-outline" onClick={() => setPanel(panel === "chat" ? null : "chat")}><MessageCircle size={18} />Message</button><button type="button" className="xoot-detail-button is-outline" onClick={() => setPanel(panel === "call" ? null : "call")}><Phone size={18} />Call</button></div>
+      </VisitCard>
+      {panel === "chat" && (solo ? <BookingChat bookingId={id} booking={{ ...booking, xooter }} xooter={xooter} messages={data.messages} currentUserId={owner} isCurrent={resource.isCurrent} invoke={resource.invoke} /> : <VisitCard><p>Crew chat is not available yet. Contact support about your visit.</p><Link to={support}>Contact support</Link></VisitCard>)}
+      {panel === "call" && <VisitCard><p className="xoot-detail-muted">{calling ? "The call service verifies availability before connecting." : "Calling is unavailable outside the active booking window."}</p>{calling && solo && <><VoiceCallPanel bookingId={id} available={calling} isCurrent={resource.isCurrent} invoke={resource.invoke} /><button className="xoot-detail-button is-outline" type="button" disabled={resource.busy} onClick={() => void resource.act(async () => {
+        const response = await resource.invoke<{ data?: { call_session_id?:string; status?: string; proxy_numbers?: { client?: string | null; xooter?: string | null } | null } }>("create-masked-call", { booking_id: id });
+        const call = response.data, phone = isOwner ? call?.proxy_numbers?.client : call?.proxy_numbers?.xooter;
+        if (call?.status !== "active" || !phone || !/^\+?[0-9]{7,15}$/.test(phone)) return "Masked calling is unavailable. Please use booking messages or support.";
+        setMaskedPhone(phone);
+        if (call.call_session_id) sendNativeBookingAction(createNativeBookingActionPayload("masked_call", { ...visitNativeInput(data), callSessionId:call.call_session_id }));
+        return "Masked call is ready. Use the phone link to connect.";
+      })}>Request a masked phone call</button>{maskedPhone && <a className="xoot-detail-button is-outline" href={`tel:${maskedPhone}`}>Call using the masked number</a>}</>}{!solo && <p>Crew calling is not available yet. Contact support about your visit.</p>}</VisitCard>}
+      <div className="xoot-detail-checklist"><SectionLabel slot="plain" label="Visit checklist" count={tasks.length} /><VisitCard tone="flat">{tasks.length ? tasks.map(task => <div className="xoot-detail-task" key={task.id}><span className={task.completed_at ? "is-done" : ""} aria-label={task.completed_at ? "Completed" : "Not completed"}>{task.completed_at && <Check size={12} strokeWidth={3.4} />}</span><span className={task.completed_at ? "is-done" : ""}>{task.label}</span></div>) : <p className="xoot-detail-muted">No recorded checklist tasks are available yet.</p>}</VisitCard></div>
+      {isOwner && <VisitPaymentCard data={data} resource={resource} />}
+      {isOwner && <div className="xoot-detail-action-row"><button type="button" className="xoot-detail-button is-ghost" onClick={() => setPanel(panel === "reschedule" ? null : "reschedule")}>Reschedule</button><button type="button" className="xoot-detail-button is-ghost is-danger" onClick={() => setPanel(panel === "cancel" ? null : "cancel")}>Cancel visit</button></div>}
+      {(panel === "more" || panel === "reschedule" || panel === "cancel") && <VisitOptions id={id} owner={owner} data={data} resource={resource} panel={panel} assignedWorker={assignedWorker && solo} support={support} />}
+      {resource.actionMessage && <p role="status" className="xoot-detail-feedback">{resource.actionMessage}</p>}
     </div>
-  );
-};
-
-export default BookingDetail;
+    <DockedCTA note={isOwner ? "Cancellation terms and any refund are reviewed from your booking records." : undefined}>
+      {eligible || (isOwner && data.review) ? <Link className="xoot-detail-button is-primary is-large" to={`/app/bookings/${id}/rate`}>{data.review ? "View recorded rating" : "Visit finished — rate it"}<Star size={18} /></Link> : <button className="xoot-detail-button is-primary is-large" type="button" disabled>{!solo && canonicalStatus === "completed" ? "Crew ratings are not available yet" : "Rating available after completion"}</button>}
+    </DockedCTA>
+  </div>;
+}

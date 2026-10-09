@@ -113,6 +113,9 @@ jobs:
       - name: Verify active-job checklist mutations and service-only access
         run: node scripts/ops/verify-checklist-state-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
 
+      - name: Verify solo review uniqueness, immutable retry and atomic follow-up
+        run: node scripts/ops/verify-visit-review-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
   test:
     name: Lint, build and unit tests
     runs-on: ubuntu-latest
