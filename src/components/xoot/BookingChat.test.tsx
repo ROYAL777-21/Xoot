@@ -1,0 +1,143 @@
+import { StrictMode } from "react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { BookingChat } from "./BookingChat";
+import { visitData, visitBooking } from "@/test/visit-fixture";
+import { pendingKey, attemptKey, readPending, readPendingAttempts, savePending } from "@/components/visits/chat-records";
+const h=vi.hoisted(()=>({invoke:vi.fn(),read:vi.fn(),encrypt:vi.fn(),decrypt:vi.fn(),keys:vi.fn(),upsert:vi.fn(),owner:"customer-a",supported:true,queries:[] as {table:string;filters:Record<string,unknown>;or?:string;limit?:number}[]}));
+vi.mock("@/integrations/supabase/client",()=>({supabase:{auth:{getSession:async()=>({data:{session:{user:{id:h.owner}}},error:null})},from:(table:string)=>{const entry={table,filters:{}} as typeof h.queries[number];h.queries.push(entry);const q={select:()=>q,eq:(name:string,value:unknown)=>{entry.filters[name]=value;return q;},or:(value:string)=>{entry.or=value;return q;},order:()=>q,limit:(value:number)=>{entry.limit=value;return h.read(entry);},upsert:(...args:unknown[])=>h.upsert(...args)};return q;}}}));
+vi.mock("@/lib/e2ee-chat",()=>({isE2eeSupported:()=>h.supported,getOrCreateStoredDeviceKeyPair:(...args:unknown[])=>h.keys(...args),getMissingRecipientIds:(ids:string[],keys:{userId:string}[])=>ids.filter(id=>!keys.some(key=>key.userId===id)),encryptChatMessage:(...args:unknown[])=>h.encrypt(...args),decryptChatMessage:(...args:unknown[])=>h.decrypt(...args),isEncryptedChatBody:(value:string)=>value.startsWith("xoot:e2ee:v1:")}));
+const device={deviceId:"device-a",publicJwk:{kty:"EC"},privateJwk:{kty:"EC",d:"private"},keyVersion:1};
+const keys=[{id:"ka",user_id:"customer-a",device_id:"device-a",public_jwk:{kty:"EC"},key_version:1},{id:"kb",user_id:"worker-a",device_id:"device-b",public_jwk:{kty:"EC"},key_version:1}];
+const row=(changes:Record<string,unknown>={})=>({id:"message-a",sender_type:"user",body:"xoot:e2ee:v1:new",created_at:"2026-10-08T06:05:00Z",...changes});
+const props=(changes:Partial<React.ComponentProps<typeof BookingChat>>={}): React.ComponentProps<typeof BookingChat>=>({bookingId:"visit-a",booking:visitBooking({status:"in_progress"}),xooter:visitData().xooter,messages:[] as ReturnType<typeof row>[],currentUserId:h.owner,invoke:h.invoke,...changes});
+const app=(value=props(),strict=false)=><MemoryRouter>{strict?<StrictMode><BookingChat {...value}/></StrictMode>:<BookingChat {...value}/>}</MemoryRouter>;
+function deferred<T>(){let resolve!:(value:T)=>void,reject!:(reason:unknown)=>void;return{promise:new Promise<T>((done,fail)=>{resolve=done;reject=fail;}),resolve,reject};}
+const ready=()=>screen.findByText("End-to-end encrypted booking chat");
+const write=(text="See you soon")=>{fireEvent.change(screen.getByRole("textbox",{name:"Message your Xooter"}),{target:{value:text}});fireEvent.click(screen.getByRole("button",{name:"Send message"}));};
+beforeEach(()=>{localStorage.clear();h.owner="customer-a";h.supported=true;h.queries=[];h.keys.mockReset().mockResolvedValue(device);h.upsert.mockReset().mockResolvedValue({error:null});h.encrypt.mockReset().mockResolvedValue("xoot:e2ee:v1:new");h.decrypt.mockReset().mockResolvedValue("Recorded secure text");h.read.mockReset().mockResolvedValue({data:[],error:null});h.invoke.mockReset().mockImplementation(async(name:string,body:any)=>name==="get-booking-public-keys"?{data:{keys}}:name==="send-booking-message"?{success:true,data:{message:{...row(),booking_id:body.booking_id,sender_user_id:h.owner,client_message_id:body.client_message_id,body:body.encrypted_body}}}:{success:true});});
+afterEach(()=>{cleanup();vi.restoreAllMocks();localStorage.clear();});
+describe("source-shaped encrypted chat with server acknowledgements",()=>{
+ it.each([true,false])("keeps independent tab recovery through success/loss/remount (lost send committed=%s)",async committed=>{
+   const responseA=deferred<any>(),responseB=deferred<any>(), attempts:any[]=[], server=new Map<string,any>();
+   let firstB=true;
+   h.encrypt.mockResolvedValueOnce("xoot:e2ee:v1:attempt-a").mockResolvedValueOnce("xoot:e2ee:v1:attempt-b");
+   h.invoke.mockImplementation(async(name:string,payload:any)=>{
+     if(name==="get-booking-public-keys")return{data:{keys}};
+     if(name!=="send-booking-message")return{success:true};
+     attempts.push(payload);
+     const saved={...row({id:`row-${payload.client_message_id}`}),booking_id:"visit-a",sender_user_id:"customer-a",client_message_id:payload.client_message_id,body:payload.encrypted_body};
+     if(payload.encrypted_body.endsWith("attempt-a")){server.set(payload.client_message_id,saved);return responseA.promise;}
+     if(firstB){firstB=false;if(committed)server.set(payload.client_message_id,saved);return responseB.promise;}
+     if(!server.has(payload.client_message_id))server.set(payload.client_message_id,saved);
+     return{data:{message:server.get(payload.client_message_id)}};
+   });
+   const tabA=render(app()),tabB=render(app());
+   const a=within(tabA.container),b=within(tabB.container);
+   await a.findByText("End-to-end encrypted booking chat");await b.findByText("End-to-end encrypted booking chat");
+   fireEvent.change(a.getByRole("textbox"),{target:{value:"Draft A"}});fireEvent.click(a.getByRole("button",{name:"Send message"}));
+   await waitFor(()=>expect(attempts).toHaveLength(1));
+   fireEvent.change(b.getByRole("textbox"),{target:{value:"Draft B"}});fireEvent.click(b.getByRole("button",{name:"Send message"}));
+   await waitFor(()=>expect(attempts).toHaveLength(2));
+   expect(readPendingAttempts("customer-a","visit-a")).toHaveLength(2);
+   expect(Array.from({length:localStorage.length},(_,i)=>localStorage.getItem(localStorage.key(i)!)).join()).not.toMatch(/Draft A|Draft B/);
+   await act(async()=>responseA.resolve({data:{message:server.get(attempts[0].client_message_id)}}));
+   await a.findByText("Message recorded.");
+   expect(readPendingAttempts("customer-a","visit-a")).toEqual([{id:attempts[1].client_message_id,envelope:attempts[1].encrypted_body,flags:attempts[1].client_safety_flags}]);
+   await act(async()=>responseB.reject(new Error("lost response")));
+   await b.findByText(/Send status is unconfirmed/);
+   tabA.unmount();tabB.unmount();
+   render(app());await ready();
+   expect(attempts).toHaveLength(2);
+   fireEvent.click(screen.getByRole("button",{name:"Retry this message"}));
+   await screen.findByText("Message recorded.");
+   expect(attempts[2]).toEqual(attempts[1]);
+   expect(server.size).toBe(2);expect(readPendingAttempts("customer-a","visit-a")).toEqual([]);
+   expect(h.encrypt).toHaveBeenCalledTimes(2);
+ });
+ it("recovers multiple independent attempts one at a time and ignores same ciphertext with another key",async()=>{
+   savePending("customer-a","visit-a",{id:"key-a",envelope:"xoot:e2ee:v1:same",flags:[]});
+   savePending("customer-a","visit-a",{id:"key-b",envelope:"xoot:e2ee:v1:same",flags:[]});
+   render(app(props({messages:[row({body:"xoot:e2ee:v1:same",sender_user_id:"customer-a",client_message_id:"unrelated"})]})));await ready();
+   expect(screen.getByText(/2 messages are waiting/)).toBeInTheDocument();
+   expect(readPendingAttempts("customer-a","visit-a")).toHaveLength(2);
+   fireEvent.click(screen.getByRole("button",{name:"Retry this message"}));
+   await screen.findByText("A message is waiting for send confirmation.");
+   expect(readPendingAttempts("customer-a","visit-a")).toHaveLength(1);
+   fireEvent.click(screen.getByRole("button",{name:"Retry this message"}));
+   await waitFor(()=>expect(readPendingAttempts("customer-a","visit-a")).toHaveLength(0));
+   expect(h.invoke.mock.calls.filter(call=>call[0]==="send-booking-message").map(call=>call[1].client_message_id)).toEqual(["key-a","key-b"]);
+ });
+ const numbered=(i:number)=>row({id:`m-${String(i).padStart(3,"0")}`,body:`Message ${i}`,created_at:new Date(Date.UTC(2026,9,8)+i*1000).toISOString()});
+ const range=(from:number,to:number)=>Array.from({length:to-from+1},(_,i)=>numbered(from+i));
+ const readHistory=()=>h.read.mockImplementation(async(query:typeof h.queries[number])=>{
+   const cursor=Number(query.or?.match(/id\.lt\.m-(\d+)/)?.[1]);
+   return{error:null,data:range(Math.max(1,cursor-101),cursor-1).reverse()};
+ });
+ it("retrieves the interval above an acknowledged older row after an exhausted latest page slides",async()=>{
+   readHistory();
+   h.invoke.mockImplementation(async(name:string,payload:any)=>name==="get-booking-public-keys"?{data:{keys}}:name==="send-booking-message"?{data:{message:{...numbered(1),body:payload.encrypted_body,booking_id:"visit-a",sender_user_id:"customer-a",client_message_id:payload.client_message_id}}}:{success:true});
+   const value=props({messages:[numbered(2)],hasMore:false}),view=render(app(value));await ready();
+   write();await screen.findByText("Message recorded.");
+   expect(screen.queryByRole("button",{name:"Load older messages"})).not.toBeInTheDocument();
+   view.rerender(app({...value,messages:range(103,202),hasMore:true}));
+   fireEvent.click(await screen.findByRole("button",{name:"Load older messages"}));
+   await screen.findByText("Message 3");
+   expect(h.queries.find(query=>query.or)?.or).toContain("id.lt.m-103");
+   expect(screen.getAllByText("Message 2")).toHaveLength(1);
+   fireEvent.click(screen.getByRole("button",{name:"Load older messages"}));
+   await waitFor(()=>expect(screen.queryByRole("button",{name:"Load older messages"})).not.toBeInTheDocument());
+   expect(view.container.querySelectorAll(".xoot-chat-record")).toHaveLength(202);
+   expect(screen.getAllByText("Recorded secure text")).toHaveLength(1);
+ });
+ it("retains observed pages and reopens a contiguous frontier after previously exhausted older history",async()=>{
+   readHistory();const value=props({messages:range(2,101),hasMore:true}),view=render(app(value));await ready();
+   fireEvent.click(screen.getByRole("button",{name:"Load older messages"}));await screen.findByText("Message 1");
+   expect(screen.queryByRole("button",{name:"Load older messages"})).not.toBeInTheDocument();
+   view.rerender(app({...value,messages:range(203,302),hasMore:true}));
+   expect(screen.getByText("Message 2")).toBeInTheDocument();
+   for(let i=0;i<3;i++){
+     const button=view.container.querySelector<HTMLButtonElement>(".xoot-chat-older")!;
+     await waitFor(()=>expect(button).not.toBeDisabled());fireEvent.click(button);
+     await waitFor(()=>expect(h.queries.filter(query=>query.or)).toHaveLength(i+2));
+     await waitFor(()=>expect(view.container.querySelectorAll(".xoot-chat-record").length).toBe(i===0?301:302));
+     await waitFor(()=>expect(view.container.querySelector(".xoot-chat-older")?.textContent).not.toBe("Loading older messages…"));
+   }
+   expect(h.queries.filter(query=>query.or)[1].or).toContain("id.lt.m-203");
+   expect(view.container.querySelector(".xoot-chat-older")).toBeNull();
+   const text=[...view.container.querySelectorAll(".xoot-chat-bubble>p")].map(node=>node.textContent);
+   expect(text).toHaveLength(302);expect(new Set(text).size).toBe(302);
+   expect(screen.getByText("Message 102")).toBeInTheDocument();expect(screen.getByText("Message 202")).toBeInTheDocument();
+ });
+ it("does not let an older in-flight page exhaust the new latest-page frontier",async()=>{
+   const old=deferred<any>();h.read.mockReturnValueOnce(old.promise).mockResolvedValue({error:null,data:range(301,400).reverse()});
+   const value=props({messages:range(101,200),hasMore:true}),view=render(app(value));await ready();
+   fireEvent.click(screen.getByRole("button",{name:"Load older messages"}));
+   view.rerender(app({...value,messages:range(401,500),hasMore:true}));
+   await act(async()=>old.resolve({error:null,data:range(1,100).reverse()}));
+   fireEvent.click(await screen.findByRole("button",{name:"Load older messages"}));await screen.findByText("Message 301");
+   expect(h.queries.filter(query=>query.or)[1].or).toContain("id.lt.m-401");
+ });
+ it("has no seeded conversation/gate code and selects a permitted quick reply without sending",async()=>{render(app());await ready();expect(screen.getByText("No messages yet.")).toBeInTheDocument();expect(screen.queryByText(/1408|Morning!|Biscuit/)).not.toBeInTheDocument();fireEvent.click(screen.getByRole("button",{name:"Please start upstairs"}));expect(screen.getByRole("textbox")).toHaveValue("Please start upstairs");expect(h.encrypt).not.toHaveBeenCalled();expect(screen.getByRole("button",{name:"Send a photo unavailable"})).toBeDisabled();});
+ it("renders only the acknowledged row with recorded time/day and no delivered/read ticks",async()=>{const pending=deferred<any>();h.invoke.mockImplementation(async(name:string)=>name==="get-booking-public-keys"?{data:{keys}}:name==="send-booking-message"?pending.promise:{success:true});render(app());await ready();write();await waitFor(()=>expect(h.encrypt).toHaveBeenCalledTimes(1));expect(screen.queryByText("Recorded secure text")).not.toBeInTheDocument();const attempt=readPending("customer-a","visit-a")!;await act(async()=>pending.resolve({data:{message:{...row(),booking_id:"visit-a",sender_user_id:"customer-a",client_message_id:attempt.id}}}));await screen.findByText("Recorded secure text");expect(screen.getByText("Sent")).toBeInTheDocument();expect(screen.queryByText(/Delivered|Read$/)).not.toBeInTheDocument();expect(screen.getByText("08:05")).toBeInTheDocument();expect(localStorage.getItem(pendingKey("customer-a","visit-a"))).toBeNull();});
+ it("retains one encrypted envelope/key over response loss and explicit retry",async()=>{let send=0;h.invoke.mockImplementation(async(name:string,body:any)=>{if(name==="get-booking-public-keys")return{data:{keys}};if(name!=="send-booking-message")return{success:true};if(!send++)throw new Error("lost response");return{data:{message:{...row(),booking_id:body.booking_id,sender_user_id:"customer-a",client_message_id:body.client_message_id,body:body.encrypted_body}}};});render(app());await ready();write("My draft");await screen.findByText(/Send status is unconfirmed/);expect(screen.getByRole("textbox")).toHaveValue("My draft");fireEvent.click(screen.getByRole("button",{name:"Retry this message"}));await screen.findByText("Message recorded.");const sends=h.invoke.mock.calls.filter(call=>call[0]==="send-booking-message");expect(sends).toHaveLength(2);expect(sends[1][1]).toEqual(sends[0][1]);expect(h.encrypt).toHaveBeenCalledTimes(1);expect(sends[0][1].client_message_id).toMatch(/^[\da-f-]{36}$/i);});
+ it("persists only ciphertext and key, reuses them after remount without automatic send",async()=>{h.invoke.mockImplementation(async(name:string)=>name==="get-booking-public-keys"?{data:{keys}}:Promise.reject(new Error("lost")));const view=render(app());await ready();write("Private draft text");await screen.findByText(/Send status is unconfirmed/);const saved=localStorage.getItem(attemptKey("customer-a","visit-a",readPending("customer-a","visit-a")!.id))!;expect(saved).not.toContain("Private draft text");view.unmount();render(app());await ready();expect(screen.getByText("A message is waiting for send confirmation.")).toBeInTheDocument();expect(h.invoke.mock.calls.filter(call=>call[0]==="send-booking-message")).toHaveLength(1);fireEvent.click(screen.getByRole("button",{name:"Retry this message"}));await screen.findByText(/original message is kept/);const attempts=h.invoke.mock.calls.filter(call=>call[0]==="send-booking-message");expect(attempts[1][1]).toEqual(attempts[0][1]);});
+ it("reconciles a persisted message when HTTP failed without inserting again",async()=>{const attempt={id:"key-a",envelope:"xoot:e2ee:v1:new",flags:[]};localStorage.setItem(pendingKey("customer-a","visit-a"),JSON.stringify(attempt));h.read.mockResolvedValue({data:[row()],error:null});render(app());await ready();fireEvent.click(screen.getByRole("button",{name:"Check send status"}));await screen.findByText("Message recorded.");expect(h.invoke.mock.calls.some(call=>call[0]==="send-booking-message")).toBe(false);expect(h.queries.find(q=>q.table==="messages")?.filters).toMatchObject({booking_id:"visit-a",sender_user_id:"customer-a",client_message_id:"key-a",body:attempt.envelope});});
+ it("keeps an ambiguous send paused when reconciliation returns absence or read failure",async()=>{localStorage.setItem(pendingKey("customer-a","visit-a"),JSON.stringify({id:"key",envelope:"xoot:e2ee:v1:new",flags:[]}));render(app());await ready();fireEvent.click(screen.getByRole("button",{name:"Check send status"}));await screen.findByText(/Send status is still unconfirmed/);h.read.mockResolvedValue({data:null,error:{message:"unavailable"}});fireEvent.click(screen.getByRole("button",{name:"Check send status"}));await screen.findByText(/Send status could not be checked/);expect(screen.getByRole("button",{name:"Send message"})).toBeDisabled();});
+ it("keeps draft and allows retry when encryption fails before transport",async()=>{h.encrypt.mockRejectedValueOnce(new Error("crypto"));render(app());await ready();write("Hello");await screen.findByText(/Message could not be prepared/);expect(screen.getByRole("textbox")).toHaveValue("Hello");expect(localStorage.length).toBe(0);fireEvent.click(screen.getByRole("button",{name:"Send message"}));await screen.findByText("Message recorded.");});
+ it("rejects unsafe text before encryption and keeps unavailable keys explicit",async()=>{render(app());await ready();write("Gate code 1408");await screen.findByText(/Put access codes/);expect(h.encrypt).not.toHaveBeenCalled();});
+ it.each(["cancelled","rated"] as const)("retains closed %s history/report/support without composer",async status=>{render(app(props({booking:visitBooking({status}),messages:[row({sender_type:"xooter",body:"Historical message"})]})));await ready();expect(screen.getByText("This chat is closed")).toBeInTheDocument();expect(screen.getByText("Historical message")).toBeInTheDocument();expect(screen.queryByRole("textbox")).not.toBeInTheDocument();expect(screen.getByRole("link",{name:"Message the team"})).toHaveAttribute("href","/app/support?booking=visit-a");fireEvent.click(screen.getByRole("button",{name:"Report booking chat message"}));await screen.findByText("Message reported for Xoot review.");});
+ it("preserves completed messaging until rating closes it",async()=>{const value=props({booking:visitBooking({status:"completed"})});const view=render(app(value));await ready();expect(screen.getByRole("textbox")).toBeInTheDocument();view.rerender(app({...value,booking:visitBooking({status:"rated"})}));expect(screen.getByText("This chat is closed")).toBeInTheDocument();});
+ it("loads older rows with composite cursor, deduplicates and retains history on failure",async()=>{const latest=row({id:"m-100",body:"Latest",created_at:"2026-10-08T06:05:00Z"});h.read.mockResolvedValueOnce({error:{message:"offline"},data:null}).mockResolvedValueOnce({error:null,data:[row({id:"m-1",body:"Older",created_at:"2026-10-07T06:05:00Z"}),latest]});render(app(props({messages:[latest],hasMore:true})));await ready();fireEvent.click(screen.getByRole("button",{name:"Load older messages"}));await screen.findByText(/Older messages could not be loaded/);expect(screen.getByText("Latest")).toBeInTheDocument();fireEvent.click(screen.getByRole("button",{name:"Load older messages"}));await screen.findByText("Older");expect(screen.getAllByText("Latest")).toHaveLength(1);expect(h.queries.filter(q=>q.table==="messages")[0]).toMatchObject({filters:{booking_id:"visit-a"},limit:101,or:"created_at.lt.2026-10-08T06:05:00Z,and(created_at.eq.2026-10-08T06:05:00Z,id.lt.m-100)"});expect(screen.queryByRole("button",{name:"Load older messages"})).not.toBeInTheDocument();});
+ it("retries key failure and never sends while recipients are missing",async()=>{h.invoke.mockImplementation(async()=>({data:{keys:[]}}));render(app());await screen.findByText(/waiting for each booking participant/);expect(screen.getByRole("button",{name:"Send message"})).toBeDisabled();h.invoke.mockResolvedValue({data:{keys}});fireEvent.click(screen.getByRole("button",{name:"Retry secure chat"}));await ready();});
+ it("does not publish keys after account changes during device-key work A→B→A",async()=>{const pending=deferred<any>();h.keys.mockReturnValueOnce(pending.promise);const value=props();const view=render(app(value));h.owner="customer-b";view.rerender(app({...value,currentUserId:h.owner,booking:visitBooking({user_id:h.owner})}));await waitFor(()=>expect(h.upsert).toHaveBeenCalledTimes(1));h.owner="customer-a";view.rerender(app(value));await ready();const count=h.upsert.mock.calls.length;await act(async()=>pending.resolve(device));expect(h.upsert).toHaveBeenCalledTimes(count);});
+ it("ignores stale encryption after booking change and signout unmount",async()=>{const pending=deferred<string>();h.encrypt.mockReturnValueOnce(pending.promise);const value=props();const view=render(app(value));await ready();write("Hello old visit");await waitFor(()=>expect(h.encrypt).toHaveBeenCalledTimes(1));view.rerender(app({...value,bookingId:"visit-b",booking:visitBooking({id:"visit-b"})}));await ready();view.unmount();await act(async()=>pending.resolve("xoot:e2ee:v1:old"));expect(h.invoke.mock.calls.some(call=>call[0]==="send-booking-message")).toBe(false);expect(localStorage.length).toBe(0);});
+ it("invalidates StrictMode key/decryption work and ignores late acknowledgement after account change",async()=>{const ack=deferred<any>();h.invoke.mockImplementation(async(name:string)=>name==="get-booking-public-keys"?{data:{keys}}:name==="send-booking-message"?ack.promise:{success:true});const value=props();const view=render(app(value,true));await ready();write("Hello");await waitFor(()=>expect(localStorage.length).toBe(1));h.owner="customer-b";view.rerender(app({...value,currentUserId:h.owner,booking:visitBooking({user_id:h.owner})},true));await ready();const attempt=readPending("customer-a","visit-a")!;await act(async()=>ack.resolve({data:{message:{...row(),booking_id:"visit-a",sender_user_id:"customer-a",client_message_id:attempt.id}}}));expect(screen.queryByText("Message recorded.")).not.toBeInTheDocument();expect(readPending("customer-a","visit-a")).not.toBeNull();});
+ it("does not acknowledge an unrelated row returned by a failed service",async()=>{h.invoke.mockImplementation(async(name:string)=>name==="get-booking-public-keys"?{data:{keys}}:{data:{message:{...row(),booking_id:"visit-a",sender_user_id:"customer-a",client_message_id:"different"}}});render(app());await ready();write();await screen.findByText(/Send status is unconfirmed/);expect(screen.queryByText("Recorded secure text")).not.toBeInTheDocument();});
+ it("guards double taps and refuses to send without a durable pending journal",async()=>{const ack=deferred<any>();h.invoke.mockImplementation(async(name:string)=>name==="get-booking-public-keys"?{data:{keys}}:ack.promise);render(app());await ready();const store=vi.spyOn(Storage.prototype,"setItem").mockImplementation(()=>{throw new Error("blocked storage");});write("Hello");await screen.findByText(/Message could not be prepared/);expect(h.invoke.mock.calls.some(call=>call[0]==="send-booking-message")).toBe(false);store.mockRestore();fireEvent.click(screen.getByRole("button",{name:"Send message"}));fireEvent.click(screen.getByRole("button",{name:"Send message"}));await waitFor(()=>expect(h.invoke.mock.calls.filter(call=>call[0]==="send-booking-message")).toHaveLength(1));});
+ it("leaves encrypted message unavailable on wrong device and does not mark it read",async()=>{h.decrypt.mockRejectedValue(new Error("wrong key"));render(app(props({messages:[row({sender_type:"xooter"})]})));await screen.findByText("This secure message cannot be decrypted on this device.");expect(h.invoke.mock.calls.some(call=>call[0]==="mark-booking-message-read")).toBe(false);});
+ it("discards late decryption and history data across account/booking changes",async()=>{const decrypted=deferred<string>(),history=deferred<any>();h.decrypt.mockReturnValueOnce(decrypted.promise);h.read.mockReturnValueOnce(history.promise);const value=props({messages:[row()],hasMore:true});const view=render(app(value));await ready();fireEvent.click(screen.getByRole("button",{name:"Load older messages"}));h.owner="customer-b";view.rerender(app({...value,currentUserId:h.owner,bookingId:"visit-b",booking:visitBooking({user_id:h.owner}),messages:[],hasMore:false}));await ready();await act(async()=>{decrypted.resolve("Old account secret");history.resolve({data:[row({id:"old",body:"Old account history"})],error:null});});expect(screen.queryByText(/Old account/)).not.toBeInTheDocument();});
+ it("invalidates the first StrictMode key operation before publication",async()=>{const first=deferred<any>();h.keys.mockReturnValueOnce(first.promise);render(app(props(),true));await ready();const count=h.upsert.mock.calls.length;await act(async()=>first.resolve(device));expect(h.upsert).toHaveBeenCalledTimes(count);expect(h.upsert).toHaveBeenCalledTimes(1);});
+ it("shows unsupported encryption clearly with no transport calls",async()=>{h.supported=false;render(app());await screen.findByText(/needs Web Crypto support/);expect(h.invoke).not.toHaveBeenCalled();expect(screen.getByRole("button",{name:"Send message"})).toBeDisabled();}); it("keeps an unreadable pending journal explicit without overwriting it",async()=>{localStorage.setItem(pendingKey("customer-a","visit-a"),"corrupt");render(app());await ready();expect(screen.getByRole("alert")).toHaveTextContent("Pending message storage is unavailable");expect(screen.getByRole("button",{name:"Send message"})).toBeDisabled();expect(localStorage.getItem(pendingKey("customer-a","visit-a"))).toBe("corrupt");});
+});

@@ -211,12 +211,33 @@ export const writeStoredDeviceKeyPair = (
   targetStorage?.setItem(getDeviceKeyStorageKey(userId), JSON.stringify(keyPair));
 };
 
+const pendingDeviceKeys = new WeakMap<Storage, Map<string, Promise<StoredDeviceKeyPair>>>();
 export const getOrCreateStoredDeviceKeyPair = async (userId: string, storage?: Storage | null) => {
-  const stored = readStoredDeviceKeyPair(userId, storage);
+  const targetStorage = storage ?? (typeof window !== "undefined" ? window.localStorage : null);
+  if (!targetStorage) throw new Error("Secure chat needs persistent device-key storage.");
+  const stored = readStoredDeviceKeyPair(userId, targetStorage);
   if (stored) return stored;
-  const created = await createDeviceKeyPair();
-  writeStoredDeviceKeyPair(userId, created, storage);
-  return created;
+  let pending = pendingDeviceKeys.get(targetStorage);
+  if (!pending) { pending = new Map(); pendingDeviceKeys.set(targetStorage, pending); }
+  const existing = pending.get(userId);
+  if (existing) return existing;
+  const createOnce = async () => {
+    // A tab may have persisted its key while this caller waited for the origin lock.
+    const winner = readStoredDeviceKeyPair(userId, targetStorage);
+    if (winner) return winner;
+    const created = await createDeviceKeyPair();
+    // Also retain a key written during generation by an older/non-locking caller.
+    const persisted = readStoredDeviceKeyPair(userId, targetStorage);
+    if (persisted) return persisted;
+    writeStoredDeviceKeyPair(userId, created, targetStorage);
+    return created;
+  };
+  const locks = typeof navigator !== "undefined" ? navigator.locks : undefined;
+  const creation: Promise<StoredDeviceKeyPair> = (async () =>
+    locks ? await locks.request(getDeviceKeyStorageKey(userId), createOnce) : await createOnce())();
+  pending.set(userId, creation);
+  try { return await creation; }
+  finally { if (pending.get(userId) === creation) pending.delete(userId); }
 };
 
 export const isEncryptedChatBody = (body: string) => body.startsWith(E2EE_CHAT_PREFIX);

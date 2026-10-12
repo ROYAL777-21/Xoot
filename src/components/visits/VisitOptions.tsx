@@ -8,11 +8,12 @@ import { requiresCompletionPhotos } from "@/lib/trust";
 import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { safeFileName, validateCompletionPhotoUpload } from "@/lib/upload-validation";
 import { supabase } from "@/integrations/supabase/client";
-import { buildBookingEtaShareText, createNativeBookingActionPayload, openBookingDirections, sendNativeBookingAction } from "@/lib/native-booking-actions";
+import { openBookingDirections } from "@/lib/native-booking-actions";
 import { notifyBookingLiveActivity } from "@/lib/native-live-activity";
 import { visitLiveActivity, visitNativeInput } from "./visit-native";
 import type { VisitResource } from "@/pages/app/BookingDetail";
 import { money, paymentSummary, scheduledLabel, visitService, type VisitData } from "./visit-data";
+import { shareVisit } from "./share-visit";
 import { VisitCard } from "./VisitPrimitives";
 
 export function VisitPaymentCard({ data, resource }: { data: VisitData; resource: VisitResource }) {
@@ -58,26 +59,10 @@ export function VisitOptions({ id, owner, data, resource, panel, assignedWorker,
   }); }}><label htmlFor="visit-change-request">{panel === "reschedule" ? "Preferred new day/time and anything we should know" : "Tell us why you need to cancel"}</label><textarea id="visit-change-request" maxLength={1000} value={notes} onChange={event => setNotes(event.target.value)} /><button type="submit" className="xoot-detail-button is-outline" disabled={resource.busy || notes.trim().length < 8}>Send support request</button></form></VisitCard>;
   return <VisitCard tone="flat" className="xoot-detail-more"><h2>More visit options</h2>
     <div className="xoot-detail-action-row"><button type="button" className="xoot-detail-button is-outline" onClick={() => void resource.act(async () => { const result = openBookingDirections({ ...visitNativeInput(data), address: booking.address }); if (!result.fallbackUrl) throw new Error("No destination is recorded for this visit."); return "Directions opened."; })}>Directions</button><button type="button" className="xoot-detail-button is-outline" disabled={resource.busy} onClick={() => void resource.act(async () => {
-      const payload = createNativeBookingActionPayload("share_eta", visitNativeInput(data));
-      const text = buildBookingEtaShareText(payload);
-      const url = new URL(payload.route, window.location.origin).href;
-      if (!resource.isCurrent()) return null;
-      const delivered = sendNativeBookingAction(payload);
-      if (navigator.share) {
-        try { await navigator.share({ title: "Xoot visit update", text, url }); return "Visit update shared."; }
-        catch (failure) {
-          if (failure && typeof failure === "object" && "name" in failure && failure.name === "AbortError") return delivered ? "Browser share cancelled. Native share options were requested." : "Share cancelled.";
-        }
-      }
-      if (!resource.isCurrent()) return null;
-      if (navigator.clipboard?.writeText) {
-        try { await navigator.clipboard.writeText(`${text}\n${url}`); return "Visit update and link copied."; }
-        catch { /* A successful native dispatch can still open share options. */ }
-      }
-      if (delivered) return "Native share options requested.";
-      throw new Error("Sharing is unavailable on this device.");
+      return shareVisit(data, resource);
     })}>Share visit update</button></div>
     <h3>Recorded status events</h3>{data.events.length ? <ul>{data.events.map(event => <li key={event.id}>{event.label} · {scheduledLabel(event.created_at)}</li>)}</ul> : <p>No status events have been recorded.</p>}
+    {data.more?.events && <Link to={`/app/bookings/${id}/tracking`}>View older recorded updates in Tracking</Link>}
     <h3>Completion proof</h3>{data.photos.length ? <ul>{data.photos.map(photo => <li key={photo.id}>{photo.photo_type} photo recorded · {scheduledLabel(photo.created_at)}</li>)}</ul> : <p>No completion photos are recorded.</p>}
     {assignedWorker && status && !["completed", "rated", "cancelled"].includes(status) && <>
       {data.jobs.filter(job => job.state === "accepted" && job.xooter_id === booking.xooter_id).map(job => <JobChecklist key={job.id} jobId={job.id} bookingId={id} />)}

@@ -356,6 +356,7 @@ const testBookingChatActionLayer = async ({ booking, client, xooter, admin }) =>
   const sendResult = await invoke(client, "send-booking-message", {
     booking_id: booking.id,
     encrypted_body: encryptedBody,
+    client_message_id: crypto.randomUUID(),
     client_safety_flags: [],
   });
   assertNoError("send-booking-message", sendResult.error);

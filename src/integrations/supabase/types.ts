@@ -1894,6 +1894,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          client_message_id: string | null
           body: string
           booking_id: string
           client_safety_flags: string[]
@@ -1906,6 +1907,7 @@ export type Database = {
           sender_user_id: string | null
         }
         Insert: {
+          client_message_id?: string | null
           body: string
           booking_id: string
           client_safety_flags?: string[]
@@ -1918,6 +1920,7 @@ export type Database = {
           sender_user_id?: string | null
         }
         Update: {
+          client_message_id?: string | null
           body?: string
           booking_id?: string
           client_safety_flags?: string[]
@@ -5407,6 +5410,11 @@ export type Database = {
       }
       queue_visit_review_followup: {
         Args: { p_actor_id: string; p_review_id: string }
+        Returns: Json
+      }
+      // Expected contract from 20261010090000; regenerate after migration delivery.
+      send_booking_message_once: {
+        Args: { p_actor_id: string; p_booking_id: string; p_client_message_id: string; p_encrypted_body: string; p_safety_flags: string[] }
         Returns: Json
       }
       can_create_masked_call: {

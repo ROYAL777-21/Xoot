@@ -13,8 +13,9 @@ export type VisitData = {
   photos: Pick<Tables<"booking_completion_photos">, "id" | "photo_type" | "created_at">[];
   jobs: Pick<Tables<"xooter_jobs">, "id" | "xooter_id" | "state">[];
   tasks: Pick<Tables<"xooter_job_checklist">, "id" | "job_id" | "label" | "completed_at" | "position">[];
-  messages: Pick<Tables<"messages">, "id" | "sender_type" | "body" | "created_at">[];
+  messages: (Pick<Tables<"messages">, "id" | "sender_type" | "body" | "created_at"> & Partial<Pick<Tables<"messages">, "sender_user_id" | "client_message_id">>)[];
   review: VisitReview | null; payments: VisitPayment[];
+  more?: { events: boolean; photos: boolean; tasks: boolean; messages: boolean };
 };
 
 export async function loadVisit(id: string, owner: string): Promise<VisitData | null> {
@@ -28,18 +29,19 @@ export async function loadVisit(id: string, owner: string): Promise<VisitData | 
   // customer's visit through the customer route without a booking participant identity.
   if (!booking || (booking.user_id !== owner && xooter?.user_id !== owner)) return null;
   const results = await Promise.all([
-    supabase.from("booking_status_events").select("id,status,label,created_at").eq("booking_id", id).order("created_at", { ascending: false }).limit(101),
-    supabase.from("booking_completion_photos").select("id,photo_type,created_at").eq("booking_id", id).order("created_at", { ascending: false }).limit(41),
+    supabase.from("booking_status_events").select("id,status,label,created_at").eq("booking_id", id).order("created_at", { ascending: false }).order("id", { ascending: false }).limit(101),
+    supabase.from("booking_completion_photos").select("id,photo_type,created_at").eq("booking_id", id).order("created_at", { ascending: false }).order("id", { ascending: false }).limit(41),
     supabase.from("xooter_jobs").select("id,xooter_id,state").eq("booking_id", id).in("state", ["accepted", "completed"]).limit(5),
-    supabase.from("xooter_job_checklist").select("id,job_id,label,completed_at,position").eq("booking_id", id).order("position").limit(161),
-    supabase.from("messages").select("id,sender_type,body,created_at").eq("booking_id", id).order("created_at", { ascending: false }).limit(100),
+    supabase.from("xooter_job_checklist").select("id,job_id,label,completed_at,position").eq("booking_id", id).order("position").order("id").limit(161),
+    supabase.from("messages").select("id,sender_type,sender_user_id,client_message_id,body,created_at").eq("booking_id", id).order("created_at", { ascending: false }).order("id", { ascending: false }).limit(101),
     supabase.from("post_job_reviews").select("id,rating,notes").eq("booking_id", id).eq("user_id", booking.user_id).limit(2),
     booking.user_id === owner ? supabase.from("payment_records").select("id,amount,currency,status,payment_kind,meta,paid_at").eq("booking_id", id).eq("user_id", owner).order("created_at", { ascending: false }).limit(21) : Promise.resolve({ data: [], error: null }),
   ]);
   if (results.some(result => result.error)) throw new Error("Visit records failed");
   const [events, photos, jobs, tasks, messages, reviews, payments] = results.map(result => result.data ?? []) as [VisitData["events"], VisitData["photos"], VisitData["jobs"], VisitData["tasks"], VisitData["messages"], VisitReview[], VisitPayment[]];
-  if (events.length > 100 || photos.length > 40 || jobs.length > 4 || tasks.length > 160 || reviews.length > 1 || payments.length > 20) throw new Error("Visit records need support review");
-  return { booking, xooter, events, photos, jobs, tasks: tasks.filter(task => jobs.some(job => job.id === task.job_id)), messages: messages.reverse(), review: reviews[0] ?? null, payments };
+  if (photos.length > 40 || jobs.length > 4 || reviews.length > 1 || payments.length > 20) throw new Error("Visit records need support review");
+  return { booking, xooter, events: events.slice(0,100), photos: photos.slice(0,40), jobs, tasks: tasks.slice(0,160).filter(task => jobs.some(job => job.id === task.job_id)), messages: messages.slice(0,100).reverse(), review: reviews[0] ?? null, payments,
+    more: { events: events.length>100, photos: photos.length>40, tasks: tasks.length>160, messages: messages.length>100 } };
 }
 
 /** Numeric database rands become cents once; never round a fractional cent or reprice history. */
