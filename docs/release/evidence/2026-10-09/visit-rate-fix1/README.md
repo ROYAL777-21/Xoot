@@ -53,7 +53,11 @@ then-uncommitted source snapshot. The first aggregate process stopped without a 
 result; after confirming its handle and processes were gone, a fresh run completed with
 exit 0. The incomplete run is retained and is not counted as passing evidence.
 
+The additional [10 October independent PostgreSQL check](../../2026-10-10/visit-rate-concurrency/README.md)
+passes 12 scenarios with nine observed lock barriers on PostgreSQL 17.11. It closes the
+local concurrent-connection gap using a minimal synthetic schema.
+
 Delivery order remains review-save migration, atomic follow-up migration, authenticated
-review function and updated `ops-workflow`, then client. Hosted access/migration checks,
-independent PostgreSQL concurrency, provider/device proof, complete crew reviews and
-remaining handoff screens are still open in the [production checklist](../../../production-checklist.md).
+review function and updated `ops-workflow`, then client. Hosted access/migration and
+full-schema actor checks, provider/device proof, complete crew reviews and remaining
+handoff screens are still open in the [production checklist](../../../production-checklist.md).

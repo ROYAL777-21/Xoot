@@ -23,6 +23,37 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**12 October checkpoint, same authorized cross-role claim:** Tracking/Chat source is
+committed locally as `18b33f6`. Independent review approves journal ownership, history
+continuity and the missing RPC type correction. The final aggregate passes 162 files /
+1,731 tests, with seven existing SQL-runtime skips. Types, global lint, lockfile validation,
+source/artifact scans and the staging-configured build/rendered artifact pass; the real
+staging directory reports zero approved helpers. Dated evidence preserves the earlier
+failed aggregate alongside the correction. No hosted or native delivery occurred.
+
+Cross-role surfaces are the additive chat retry migration, authenticated sender, expected
+types and SQL CI: they enforce atomic replay and current participant authorization that
+client lookups cannot guarantee. Deliver the database/function before the compatible
+client. Next held implementation is the R393 one-job booking transaction foundation;
+creation stays disabled until the complete crew/payment/access lifecycle is verified.
+
+**11 October local checkpoint, same claim:** Tracking/Chat source port passes 45
+responsive/interaction records; its actual retry migration passes 15 PostgreSQL 17.11
+scenarios with 12 observed lock barriers and complete local cleanup. Device-key
+creation now preserves one account key across overlapping initialization. Independent
+review requires two corrections: shared pending-message ownership across tabs, and
+continuous history after a refreshed latest page. The original worker owns fix round 1;
+parent owns review/QA/release evidence. No hosted or native delivery occurred. The full
+handoff goal remains active, including the R393 shared-job transaction and crew lifecycle.
+
+**10 October local verification, same claim:** unchanged Visit/Rate migrations passed
+12 PostgreSQL 17.11 scenarios using four independent sessions and nine observed lock
+barriers. Synthetic database/created roles were removed, existing roles were preserved
+and the owned server was stopped. This closes the local concurrency evidence gap, not
+hosted delivery or full-schema actor validation. Tracking/Chat implementation remains
+in progress, including a narrowly scoped server retry contract so a lost response
+cannot create a duplicate message. No new code is claimed reviewed or published.
+
 **9 October checkpoint, same authorized cross-role Codex claim:** the original Visit/Rate
 composition is implemented with recorded booking/payment data, guarded actions and immutable
 solo reviews. Independent spec/quality review passes after repairing native sharing/deep links

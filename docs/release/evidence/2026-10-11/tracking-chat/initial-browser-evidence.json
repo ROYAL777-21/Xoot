@@ -1,0 +1,1136 @@
+{
+  "capturedAt": "2026-10-11T11:19:01.337Z",
+  "status": "passed",
+  "scope": "Actual Tracking/Chat and parent visit components, synthetic adapters and real browser ECDH/AES encryption. No hosted records, payment/provider/native or live-location proof.",
+  "browser": "Browser plugin/skill unavailable; installed repository Playwright fallback.",
+  "flow": "Visit -> tracking -> expand/menu/share -> private chat -> encrypted send and exact-envelope retry; closed/history/provider states.",
+  "checks": [
+    {
+      "label": "tracking-default",
+      "width": 320,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-default-320.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 1055.0625,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-expanded-default",
+      "width": 320,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-expanded-default-320.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 1187.0625,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-default",
+      "width": 320,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-default-320.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-default",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-default-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 996.875,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-expanded-default",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-expanded-default-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 1128.875,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-default",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-default-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-default",
+      "width": 768,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-default-768.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 975.125,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-expanded-default",
+      "width": 768,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-expanded-default-768.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 1107.125,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-default",
+      "width": 768,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-default-768.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-default",
+      "width": 1024,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-default-1024.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 975.125,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-expanded-default",
+      "width": 1024,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-expanded-default-1024.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 1107.125,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-default",
+      "width": 1024,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-default-1024.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-default",
+      "width": 1440,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-default-1440.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 975.125,
+        "viewportHeight": 1000
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-expanded-default",
+      "width": 1440,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-expanded-default-1440.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 1107.125,
+        "viewportHeight": 1000
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-default",
+      "width": 1440,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-default-1440.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 1000,
+        "rootBottom": 1000,
+        "viewportHeight": 1000
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-default",
+      "width": 1920,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-default-1920.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 975.125,
+        "viewportHeight": 1000
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-expanded-default",
+      "width": 1920,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-expanded-default-1920.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 1107.125,
+        "viewportHeight": 1000
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-default",
+      "width": 1920,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-default-1920.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 1000,
+        "rootBottom": 1000,
+        "viewportHeight": 1000
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-landscape",
+      "width": 844,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-landscape-844.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 975.125,
+        "viewportHeight": 390
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-expanded-landscape",
+      "width": 844,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-expanded-landscape-844.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 839.125,
+        "viewportHeight": 390
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-landscape",
+      "width": 844,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-landscape-844.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 390,
+        "rootBottom": 520,
+        "viewportHeight": 390
+      },
+      "errors": [],
+      "shortViewportReachability": {
+        "footerTop": 242.609375,
+        "footerBottom": 390,
+        "lastBottom": 178.890625,
+        "height": 390
+      }
+    },
+    {
+      "label": "tracking-high-density",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-high-density-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 996.875,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-expanded-high-density",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-expanded-high-density-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 1128.875,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-high-density",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-high-density-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-200pct-equivalent-reflow",
+      "width": 720,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-200pct-equivalent-reflow-720.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 975.125,
+        "viewportHeight": 500
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-expanded-200pct-equivalent-reflow",
+      "width": 720,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-expanded-200pct-equivalent-reflow-720.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 894.125,
+        "viewportHeight": 500
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-200pct-equivalent-reflow",
+      "width": 720,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-200pct-equivalent-reflow-720.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 500,
+        "rootBottom": 520,
+        "viewportHeight": 500
+      },
+      "errors": [],
+      "shortViewportReachability": {
+        "footerTop": 352.609375,
+        "footerBottom": 500,
+        "lastBottom": 288.890625,
+        "height": 500
+      }
+    },
+    {
+      "label": "chat-closed",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=closed",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-closed-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-cancelled",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=cancelled",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-cancelled-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-completed",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=completed",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-completed-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-empty",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=empty",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-empty-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": null,
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-keys-unavailable",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=keys-unavailable",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-keys-unavailable-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-crew",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=crew",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-crew-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Crew chat",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": null,
+        "badgeCase": null,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-history",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=history",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-history-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-retry-unconfirmed",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=retry",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-retry-unconfirmed-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": null,
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "encrypted-send-retry",
+      "count": 2,
+      "sameKey": true,
+      "sameEnvelope": true,
+      "prefix": true,
+      "stored": 1
+    },
+    {
+      "label": "chat-retry-recorded",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=retry",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-retry-recorded-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "chat-retry-before-save-unconfirmed",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=retry-before-save",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-retry-before-save-unconfirmed-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": null,
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "encrypted-send-retry-before-save",
+      "count": 2,
+      "sameKey": true,
+      "sameEnvelope": true,
+      "prefix": true,
+      "stored": 1
+    },
+    {
+      "label": "chat-retry-before-save-recorded",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=retry-before-save",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-retry-before-save-recorded-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "encrypted-send-empty",
+      "count": 1,
+      "sameKey": true,
+      "sameEnvelope": true,
+      "prefix": true,
+      "stored": 1
+    },
+    {
+      "label": "chat-empty-recorded",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/chat?case=empty",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "chat-empty-recorded-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa Mahlangu",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": null,
+        "bubbleFont": "15px",
+        "badgeCase": null,
+        "footerBottom": 844,
+        "rootBottom": 844,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-menu",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-menu-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 996.875,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-share-copied",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-share-copied-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 996.875,
+        "viewportHeight": 844
+      },
+      "errors": []
+    },
+    {
+      "label": "tracking-call-unavailable",
+      "width": 390,
+      "url": "http://127.0.0.1:5189/app/bookings/11111111-1111-4111-8111-111111111111/tracking?case=active",
+      "title": "Xoot Tracking/Chat — isolated synthetic browser QA",
+      "filename": "tracking-call-unavailable-390.png",
+      "metrics": {
+        "overflow": false,
+        "overlay": false,
+        "heading": "Nomsa is on the way",
+        "transform": "none",
+        "filter": "none",
+        "fontReady": "loaded"
+      },
+      "geometry": {
+        "topInset": "12px",
+        "profileFont": "20px",
+        "bubbleFont": null,
+        "badgeText": "ON THE WAY",
+        "badgeCase": "none",
+        "handleWidth": 30,
+        "handleHeight": 4,
+        "rootBottom": 996.875,
+        "viewportHeight": 844
+      },
+      "errors": []
+    }
+  ]
+}

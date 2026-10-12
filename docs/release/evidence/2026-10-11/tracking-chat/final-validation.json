@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-12",
+  "sourceCommit": "18b33f658c234d0bb2d1dc3a42723e41ada030fe",
+  "sourceTree": "810e59ae787d79126a18cce32abb1cb5af606f6d",
+  "buildStamp": {
+    "commit": "18b33f658c234d0bb2d1dc3a42723e41ada030fe",
+    "builtAt": "2026-10-12T08:35:42.84Z",
+    "pricingRule": "ZD-026",
+    "bookingFeeCents": 3900
+  },
+  "aggregate": {
+    "durationSeconds": 180.39,
+    "earlierResult": {
+      "corrected": true,
+      "cause": "Missing expected send_booking_message_once type",
+      "testsPassed": 1730,
+      "testsFailed": 1
+    },
+    "testsSkipped": 7,
+    "testsPassed": 1731,
+    "skippedScope": "Existing separate SQL runtime contracts",
+    "exitCode": 0,
+    "filesPassed": 162
+  },
+  "otherChecks": {
+    "typecheck": 0,
+    "sourceScan": 0,
+    "lint": 0,
+    "focusedRpcTests": 12,
+    "renderedArtifact": 0,
+    "build": 0,
+    "lockfiles": 0,
+    "artifactScan": 0
+  },
+  "renderedArtifact": {
+    "origin": "https://xoot-git-codex-xoot-production-20260911-royal777-21s-projects.vercel.app",
+    "backend": "Real staging public directory",
+    "websiteFiles": "Local dist",
+    "approvedHelpers": 0,
+    "published": false
+  },
+  "review": {
+    "fix2PackageSha256": "82425fced50a62a9f9609ee3320a04d53fc9612fc60ab4ed0f27a763797757e4",
+    "quality": "approved",
+    "scope": "Task review and scoped corrections; not whole-branch or production approval",
+    "spec": "compliant"
+  },
+  "hostedWrites": false,
+  "nativeStarted": false,
+  "remaining": [
+    "Ordered migration and function delivery",
+    "Full hosted schema and actor checks",
+    "Crew lifecycle and native routes",
+    "Actual provider location, ETA, photo and call verification",
+    "Whole-branch release gates and operational pilot"
+  ]
+}

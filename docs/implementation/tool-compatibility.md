@@ -1,6 +1,6 @@
 # Requested tools: compatibility and actual use
 
-Updated 2 October 2026. A requested link is not proof that its service is installed, authenticated
+Updated 12 October 2026. A requested link is not proof that its service is installed, authenticated
 or running. This inventory distinguishes source references, local skills and active capabilities.
 Load the relevant skill/documentation when its phase begins, then update its evidence here.
 
@@ -33,6 +33,10 @@ reparsed three changed files. Environment impact query returned Supabase client,
 The 2 October incremental update completed after the reviewed source ports: 233 files
 updated, 1,952 nodes and 23,985 edges processed; the search index contains 6,032 rows.
 Those are graph statistics, not measured token savings or runtime verification.
+
+The 11 October incremental refresh processed 125 files, 1,190 nodes and 15,220 edges.
+The subsequent chat correction update processed six files, 167 nodes and 2,849 edges;
+the index contains 6,502 rows. It is a retrieval aid, not an immutable release or review.
 
 Portable setup using an available Python 3.10+ runtime:
 
@@ -95,7 +99,7 @@ expansion if newly materialized tracked files were absent from the initial spars
 | Vercel | Connected; project `xoot` verified. Hobby plan still gates paid launch. |
 | Supabase | Read-only connector works. GitHub CLI token previously deployed functions but fresh database linking fails required endpoint privileges (run 36932028355). Secure account/secret correction is required; local login alone does not update Actions. |
 | CodeRabbit | Signed Windows CLI 0.7.6 authenticated and used for source reviews, including the 15-file account port. Findings/results are recorded in the visual ledger; whole-branch release approval remains outstanding. |
-| Codex Security | Scoped calculator/account-guard reviews recorded during implementation. Whole-branch release review remains outstanding; a reviewed slice is not a repository-wide security result. |
+| Codex Security | Scoped calculator/account-guard and Visit/Rate reviews recorded. Tracking/Chat review and scoped corrections approve tab recovery, history continuity and the expected RPC type declaration; managed risk JSON validates. Whole-branch release review remains outstanding; a reviewed slice is not a repository-wide security result. |
 | Build Web Apps | Testing/debugging, frontend builder and React performance skills read. Supplied visual reference replaces a new concept; existing Vite/React app remains the target. |
 | Browser / Computer | CUA browser automation available; native computer control disabled in this environment. |
 | Sentry / PostHog | Plugins available; account/project setup and privacy verification pending. |

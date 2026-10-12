@@ -1,0 +1,23 @@
+{
+  "capturedAt": "2026-10-11T18:58:20.258Z",
+  "status": "passed",
+  "scope": "Actual web components and real browser Web Crypto/storage in independent same-origin tabs. Synthetic in-memory transport; no hosted/provider/native proof.",
+  "cases": [
+    {
+      "name": "Two independent tabs: A acknowledged; B lost before save, reload, explicit exact-envelope retry",
+      "pass": true,
+      "serverMessages": 2,
+      "automaticResends": 0
+    },
+    {
+      "name": "Retained acknowledgement plus refreshed latest page skips over 104 messages; all recovered once",
+      "pass": true,
+      "records": 205
+    },
+    {
+      "name": "Exhausted older pages plus disjoint latest refresh reopens correct frontier and recovers every intervening row",
+      "pass": true,
+      "records": 308
+    }
+  ]
+}

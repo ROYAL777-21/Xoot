@@ -1,0 +1,91 @@
+{
+  "startedAt": "2026-10-10T13:06:23.695Z",
+  "database": "xoot_test_visit_reviews_38df094127344eadb81afa113658b35e",
+  "syntheticOnly": true,
+  "hostedWrites": false,
+  "fixture": "Minimal schema from committed verify-visit-review-contract.mjs; no full hosted schema claim.",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261008120000_safe_solo_visit_reviews.sql",
+      "sha256": "a95d2cdcf337358a7c8b85044926ba96bfdf9a5522454a994113d9408370610b"
+    },
+    {
+      "path": "supabase/migrations/20261009090000_atomic_visit_review_followup.sql",
+      "sha256": "b3ef5d60133c03e97362fedc5ee49c349b0b90fa8dc78afc211a5066065080fc"
+    }
+  ],
+  "scenarios": [
+    "Concurrent review requests serialize and return one immutable opinion after lost-response retry",
+    "Rolled-back review leaves no opinion; waiting request creates its own single committed review",
+    "Review refreshes committed cancel change after waiting on the booking lock",
+    "Review refreshes committed owner change after waiting on the booking lock",
+    "Review refreshes committed helper change after waiting on the booking lock",
+    "Independent booking review commits while another booking transaction remains open",
+    "Concurrent follow-up requests create exactly one support row and one admin queue row",
+    "Rolled-back support routing leaves no partial records; waiting retry creates one atomic pair",
+    "Concurrent retries reuse settled support records without reopening operational work",
+    "Follow-up rechecks review ownership after the row-lock wait and denies the previous actor",
+    "anon cannot execute service-only review/routing RPCs or directly insert/update opinions",
+    "authenticated cannot execute service-only review/routing RPCs or directly insert/update opinions"
+  ],
+  "barriers": [
+    {
+      "label": "competing review",
+      "waiter": 3116,
+      "blocker": 9996,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "review rollback",
+      "waiter": 3116,
+      "blocker": 9996,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "cancel before review",
+      "waiter": 3116,
+      "blocker": 9996,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "owner before review",
+      "waiter": 3116,
+      "blocker": 9996,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "helper before review",
+      "waiter": 3116,
+      "blocker": 9996,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "competing review follow-up",
+      "waiter": 3116,
+      "blocker": 9996,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "follow-up rollback",
+      "waiter": 3116,
+      "blocker": 9996,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "settled follow-up retry",
+      "waiter": 3116,
+      "blocker": 9996,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "review owner changes",
+      "waiter": 3116,
+      "blocker": 9996,
+      "waitEvent": "Lock"
+    }
+  ],
+  "cleanup": true,
+  "status": "passed",
+  "postgresVersion": 170011,
+  "finishedAt": "2026-10-10T13:06:25.115Z"
+}

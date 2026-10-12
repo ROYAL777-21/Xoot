@@ -1,0 +1,108 @@
+{
+  "startedAt": "2026-10-11T11:08:27.009Z",
+  "database": "xoot_test_chat_retries_d3ad793446194300a554bfad3da1d186",
+  "syntheticOnly": true,
+  "hostedWrites": false,
+  "fixture": "Minimal schema from committed verify-booking-chat-contract.mjs; no full hosted schema claim.",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261010090000_idempotent_booking_chat.sql",
+      "sha256": "7f14c1218193405bf3da99b68ba8d5ba19c38caebe9b22bfed7c7d093a9391d8"
+    }
+  ],
+  "scenarios": [
+    "Concurrent same-key requests bind one envelope and return the original message after a lost response",
+    "Concurrent same-key changed envelope conflicts without a second message",
+    "Concurrent same-key changed flags conflicts without a second message",
+    "Rolled-back insertion reserves neither key nor message; waiting retry creates one committed record",
+    "Send revalidates committed cancel change after waiting, without inserting a message",
+    "Send revalidates committed replacement change after waiting, without inserting a message",
+    "Send revalidates committed worker-account change after waiting, without inserting a message",
+    "Send revalidates committed customer change after waiting, without inserting a message",
+    "Permitted actor can acknowledge an existing message after closure; a new key cannot create a message",
+    "Removed helper cannot retrieve its previous message through an immutable replay",
+    "Key uniqueness is scoped by verified sender; distinct participants have distinct message records",
+    "Different booking with the same key commits independently while the first booking transaction is open",
+    "Waiting legacy solo send rejects a committed crew conversion",
+    "anon cannot invoke the service-only atomic send function",
+    "authenticated cannot invoke the service-only atomic send function"
+  ],
+  "barriers": [
+    {
+      "label": "same key replay",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "same key changed envelope",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "same key changed flags",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "message insert rollback",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "cancel before send",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "replacement before send",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "worker-account before send",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "customer before send",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "closed immutable acknowledgement",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "removed helper replay",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "same key distinct senders",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "crew conversion before send",
+      "waiter": 20008,
+      "blocker": 10260,
+      "waitEvent": "Lock"
+    }
+  ],
+  "cleanup": true,
+  "status": "passed",
+  "postgresVersion": 170011,
+  "finishedAt": "2026-10-11T11:08:29.444Z"
+}
