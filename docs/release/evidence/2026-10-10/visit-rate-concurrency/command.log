@@ -1,0 +1,14 @@
+ok 1 - Concurrent review requests serialize and return one immutable opinion after lost-response retry
+ok 2 - Rolled-back review leaves no opinion; waiting request creates its own single committed review
+ok 3 - Review refreshes committed cancel change after waiting on the booking lock
+ok 4 - Review refreshes committed owner change after waiting on the booking lock
+ok 5 - Review refreshes committed helper change after waiting on the booking lock
+ok 6 - Independent booking review commits while another booking transaction remains open
+ok 7 - Concurrent follow-up requests create exactly one support row and one admin queue row
+ok 8 - Rolled-back support routing leaves no partial records; waiting retry creates one atomic pair
+ok 9 - Concurrent retries reuse settled support records without reopening operational work
+ok 10 - Follow-up rechecks review ownership after the row-lock wait and denies the previous actor
+ok 11 - anon cannot execute service-only review/routing RPCs or directly insert/update opinions
+ok 12 - authenticated cannot execute service-only review/routing RPCs or directly insert/update opinions
+{"status":"passed","scenarios":12,"observedBlockingBarriers":9,"postgresVersion":170011,"cleanup":true,"hostedWrites":false}
+ProcessExitCode=0

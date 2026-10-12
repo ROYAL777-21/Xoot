@@ -1,0 +1,17 @@
+ok 1 - Concurrent same-key requests bind one envelope and return the original message after a lost response
+ok 2 - Concurrent same-key changed envelope conflicts without a second message
+ok 3 - Concurrent same-key changed flags conflicts without a second message
+ok 4 - Rolled-back insertion reserves neither key nor message; waiting retry creates one committed record
+ok 5 - Send revalidates committed cancel change after waiting, without inserting a message
+ok 6 - Send revalidates committed replacement change after waiting, without inserting a message
+ok 7 - Send revalidates committed worker-account change after waiting, without inserting a message
+ok 8 - Send revalidates committed customer change after waiting, without inserting a message
+ok 9 - Permitted actor can acknowledge an existing message after closure; a new key cannot create a message
+ok 10 - Removed helper cannot retrieve its previous message through an immutable replay
+ok 11 - Key uniqueness is scoped by verified sender; distinct participants have distinct message records
+ok 12 - Different booking with the same key commits independently while the first booking transaction is open
+ok 13 - Waiting legacy solo send rejects a committed crew conversion
+ok 14 - anon cannot invoke the service-only atomic send function
+ok 15 - authenticated cannot invoke the service-only atomic send function
+{"status":"passed","scenarios":15,"observedBlockingBarriers":12,"postgresVersion":170011,"cleanup":true,"hostedWrites":false}
+ProcessExitCode=0
