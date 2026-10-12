@@ -1,0 +1,70 @@
+{
+  "startedAt": "2026-10-12T08:49:50.524Z",
+  "database": "xoot_test_checklist_a53a35a3bfa94209bcec9348e9fa52b1",
+  "syntheticOnly": true,
+  "hostedWrites": false,
+  "fixture": "Minimal committed verify-checklist-state-contract.mjs scaffolding; actual migrations, not a copied RPC. Full schema/live actor checks remain.",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261003140000_company_wide_defaults_and_xooter_checklists.sql",
+      "sha256": "b00157c43121b9f23b36b3cffc0fe854d8215fb8d8da26dba41a2edd45c32734"
+    },
+    {
+      "path": "supabase/migrations/20261007150000_checklist_active_job_mutation.sql",
+      "sha256": "08c89540d63df5fed632a49dca83ba6a60ac53b9e83cfb6cb2b77a6559e7b67c"
+    }
+  ],
+  "scenarios": [
+    "Cancellation commits first; waiting checklist rejects and leaves attribution/timestamps unchanged",
+    "Checklist commits first; cancellation preserves legitimate completed work and rejects later edits",
+    "Waiting checklist rechecks the committed job transition away from accepted",
+    "Waiting checklist rechecks ownership and denies the former actor without attribution changes",
+    "Two same-booking checklist changes serialize and the later authorized clear wins",
+    "Rolled-back completion releases locks and a waiting authorized retry commits once",
+    "A different booking for the same helper completes while the first booking remains locked",
+    "anon cannot call the service-only RPC or mutate checklist rows directly",
+    "authenticated cannot call the service-only RPC or mutate checklist rows directly"
+  ],
+  "barriers": [
+    {
+      "label": "cancel before checklist",
+      "waiter": 19212,
+      "blocker": 57264,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "checklist before cancel",
+      "waiter": 19212,
+      "blocker": 57264,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "job decline before checklist",
+      "waiter": 19212,
+      "blocker": 57264,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "owner transfer before checklist",
+      "waiter": 19212,
+      "blocker": 57264,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "two checklist mutations",
+      "waiter": 19212,
+      "blocker": 57264,
+      "waitEvent": "Lock"
+    },
+    {
+      "label": "checklist rollback before retry",
+      "waiter": 19212,
+      "blocker": 57264,
+      "waitEvent": "Lock"
+    }
+  ],
+  "cleanup": true,
+  "status": "passed",
+  "postgresVersion": 170011,
+  "finishedAt": "2026-10-12T08:49:51.588Z"
+}

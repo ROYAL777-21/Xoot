@@ -1,0 +1,21 @@
+
+> xoot-home-care@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.app.json
+
+
+> xoot-home-care@0.1.0 lint
+> eslint .
+
+
+> xoot-home-care@0.1.0 lockfiles:check
+> node scripts/config/validate-lockfiles.mjs
+
+Xoot lockfile validation passed for web and mobile.
+
+> xoot-home-care@0.1.0 security:scan
+> node scripts/security/secret-scan.mjs && node scripts/security/assert-no-frontend-admin-queue-writes.mjs && node scripts/security/assert-no-unsafe-dom-apis.mjs && node scripts/security/assert-static-hosting-security.mjs
+
+No obvious committed secrets found.
+No frontend/mobile critical-table mutations found.
+No unsafe frontend DOM execution APIs found.
+Static hosting security configuration passed.

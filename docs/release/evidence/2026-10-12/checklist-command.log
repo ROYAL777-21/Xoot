@@ -1,0 +1,11 @@
+ok 1 - Cancellation commits first; waiting checklist rejects and leaves attribution/timestamps unchanged
+ok 2 - Checklist commits first; cancellation preserves legitimate completed work and rejects later edits
+ok 3 - Waiting checklist rechecks the committed job transition away from accepted
+ok 4 - Waiting checklist rechecks ownership and denies the former actor without attribution changes
+ok 5 - Two same-booking checklist changes serialize and the later authorized clear wins
+ok 6 - Rolled-back completion releases locks and a waiting authorized retry commits once
+ok 7 - A different booking for the same helper completes while the first booking remains locked
+ok 8 - anon cannot call the service-only RPC or mutate checklist rows directly
+ok 9 - authenticated cannot call the service-only RPC or mutate checklist rows directly
+{"status":"passed","scenarios":9,"observedBlockingBarriers":6,"postgresVersion":170011,"cleanup":true,"hostedWrites":false}
+ProcessExitCode=0

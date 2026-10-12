@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-12",
+  "baseCommit": "14310b55bcf20bb040f5612ecb4e97e97bac1bf7",
+  "sourceTree": "b5e4ebf7d8565cd068d427e74efc33b4a3135b70",
+  "reviewSnapshot": "b8b91dd74fd6af04f80c7a2bb2b7225ce3d47471",
+  "reviewStatus": "Spec compliant within the temporary scope ruling; quality approved. Managed review artifacts retained separately.",
+  "publicSubmissionAvailable": false,
+  "hostedDelivery": false,
+  "nativeRuntimeVerified": false,
+  "verification": {
+    "postgresVersion": 170011,
+    "scenarios": 53,
+    "observedBlockingBarriers": 9,
+    "syntheticFixtureOnly": true,
+    "cleanupVerified": true,
+    "focusedUnitFiles": 5,
+    "focusedUnitPassed": 51,
+    "focusedTypesExit": 0,
+    "focusedLintExit": 0,
+    "scope": "Worker focused checks and actual PostgreSQL output inspected; independent task review approved. Parent aggregate, global types/lint/lockfiles/scans and staging build/rendered artifact reached terminal zero. Real directory returned zero approved helpers. No hosted publication or native runtime.",
+    "aggregate": {
+      "durationSeconds": 270.99,
+      "exit": 0,
+      "files": 163,
+      "passed": 1742,
+      "skipped": 7
+    },
+    "globalTypesLintLockfilesSourceScansExit": 0,
+    "stagingBuildRenderedArtifactScanExit": 0,
+    "buildCommit": "d139dd786672ca491395220fa6fdaff67093601f"
+  },
+  "limitations": [
+    "Selected-roster acceptance and commission/boost snapshots await reservation policy.",
+    "Full schema replay, hosted role journeys, crew lifecycle and provider payment evidence remain.",
+    "PostgreSQL17.6 is wired for CI but not run locally."
+  ],
+  "sources": [
+    {
+      "path": ".github/workflows/tests.yml",
+      "sha256": "a0e2c16b9cb88b79c59d3441b0d504fb73ecf2f737d50962687d5a48f2334d1b"
+    },
+    {
+      "path": "mobile/src/generated/booking-contract.ts",
+      "sha256": "a5e06b2a6ec063d5c72d7431f89df4f03ffbd80ee6c10052c8f3e9a8295beb30"
+    },
+    {
+      "path": "src/lib/booking-contract.ts",
+      "sha256": "a5e06b2a6ec063d5c72d7431f89df4f03ffbd80ee6c10052c8f3e9a8295beb30"
+    },
+    {
+      "path": "src/integrations/supabase/types.ts",
+      "sha256": "80927a2f46455681d742a3dfa977e6169ebb3eae279d48f3e4e003a53e11e8a8"
+    },
+    {
+      "path": "supabase/functions/_shared/booking-contract.ts",
+      "sha256": "0ea453ad8804423f51c5672da37d37694bcb95dcd50918b6fd1dbec69cd5ef3d"
+    },
+    {
+      "path": "supabase/functions/_shared/booking-submission.ts",
+      "sha256": "868e9377cbac9248e171cad116cf1e4a256c0c7a341222c190dad1b5a8cf8f3a"
+    },
+    {
+      "path": "supabase/functions/create-booking/index.ts",
+      "sha256": "f100a06d5dbcbd1ed961d0c2695108f700dae4ec6ef7280303d4e874dd6e1edb"
+    },
+    {
+      "path": "supabase/functions/create-booking-request/index.ts",
+      "sha256": "a6f865cd7a60700e539b440473e59eb3170b32b719af0c273672e94858046293"
+    },
+    {
+      "path": "supabase/migrations/20261012120000_reviewed_booking_transaction.sql",
+      "sha256": "4e342af9d3aad7ecba21d448a93008a8f3dbff94b2bd96e3d593673c71134414"
+    },
+    {
+      "path": "scripts/ops/fixtures/reviewed-booking-transaction.sql",
+      "sha256": "2485bec9388eea6d7592f7d7ee21b5e208406b771e52e3e0a51cabb5f1e80184"
+    },
+    {
+      "path": "scripts/ops/test-reviewed-booking-transaction.mjs",
+      "sha256": "307eda61dcc008d34f70c3749f95f086e4391925e56cce8de9d916b8825ef8cd"
+    },
+    {
+      "path": "src/lib/booking-submission-gates.test.ts",
+      "sha256": "adba169ad45ddbd6786d47197051ea3bdde516d1df9b2748c825c81a810ed138"
+    }
+  ],
+  "sourceCommit": "d139dd786672ca491395220fa6fdaff67093601f"
+}

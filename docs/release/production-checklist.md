@@ -9,6 +9,23 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 
 ## Verified state
 
+### Phase position
+
+| Phase | Current position |
+|---|---|
+| 0 — startup | Staging and local rendered startup pass. Production delivery remains open. |
+| 1 — visuals | In progress. Several screens have source comparisons; the full website and native handoff are not yet complete. The founder's 12 October navbar, Trust, Journal and SVG corrections are next. |
+| 2 — bookings/money | Quote, parsing, benefit locking and disabled atomic creation foundations are locally verified. Complete crew fulfilment, payments, referral rewards/reversals and real role journeys remain. |
+| 3 — paid website launch | Not ready. Database delivery access, provider/operational prerequisites and full release checks remain open. |
+| 4 — remaining capabilities | Partial source implementations; complete Care+, gifts, recurring, loyalty, property/business and Concierge journeys remain. |
+| 5 — mobile | Source ports exist; complete visual, device, signing, store and operational proof remain. |
+
+No verified percentage or reliable production date is available. The founder's
+[12 October extension](../implementation/production-plan-2026-09-11.md#founder-extension--12-october-2026)
+adds company-wide final functional/security checks, real checklist progress/reminders,
+atomic default-home switching and booking-day destination access without weakening
+secret-code revocation. These are required work, not completed by this status entry.
+
 | Area | Evidence and date | Status / next closing condition |
 |---|---|---|
 | Website hosting | On 8 October, `xoot.co.za` reports main commit `9504c11`; an actual browser check fails with the missing `VITE_APP_ENV` configuration overlay. [Evidence](evidence/2026-10-08/README.md). | Domain resolves; the public deployment is unusable. The reviewed implementation preview renders correctly. Do not import the old GoDaddy zone export. |
@@ -17,12 +34,14 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Design references | Seven HTML files match; seven newly supplied ZIPs contain identical Xoot sources. [Receipt](../implementation/design-source-receipt-2026-09-13.md). | Header/hero compared at six widths; remaining layouts require the same source-based port. |
 | Visit / Rating implementation | [Source comparison](evidence/2026-10-08/visit-rate/README.md): 27 browser states passed. [Reviewed corrections](evidence/2026-10-09/visit-rate-fix1/README.md) add native sharing/deep links and atomic low-rating support routing: final 1,656-test aggregate, 67 isolated SQL groups and eight additional browser cases pass. [10 October concurrency check](evidence/2026-10-10/visit-rate-concurrency/README.md): 12 scenarios and nine observed lock barriers pass on PostgreSQL 17.11. | Committed locally as `89d6fe3`; independent spec/quality re-review, staging build/rendered artifact and scans pass. Changes are not published. Migration/function delivery, full-schema/live actor checks, complete crew reviews and native counterparts remain. |
 | Tracking / Chat implementation | [11–12 October local evidence](evidence/2026-10-11/tracking-chat/README.md): 45 rendered records, PostgreSQL 17.11 retry proof (15 scenarios, 12 lock barriers), and three actual-browser tab/history regressions pass. Independent review approves the corrected journal, history and RPC typing. | Source committed locally as `18b33f6`; final 162-file / 1,731-test aggregate, types, lint, staging build/rendered artifact and scans pass. Seven existing SQL-runtime skips remain separately covered. No publication. Live location, chat photos, access-note editing, crew/native routing and hosted delivery remain unfinished. |
+| Atomic booking foundation | [12 October evidence](evidence/2026-10-12/README.md#one-job-booking-transaction-foundation): R393 base plus R39 fee, one booking/payment and complete rollback/replay proof. PostgreSQL 17.11: 53 scenarios, nine observed barriers; independent task review approved. | Local source `d139dd7`; 163 files / 1,742 aggregate tests pass with seven existing skips. Types, lint, lockfiles, staging build/rendered artifact and scans pass. Both public writers remain disabled; selected-roster policy, assignments/commissions, payment/lifecycle integration and hosted delivery remain. |
 | Staging schema | 7 October read-only metadata: 83 versions, latest `20261003140000`. Exact-version lookup confirms gift, quote, benefit, notification, October 4 hardening and October 7 path migrations absent. | Reconcile the complete prepared migration sequence; a newer latest timestamp does not prove older additions were delivered. |
 | Production schema | 8 October read-only metadata: 82 versions, latest `20261008011821`, an externally applied safety-PIN change absent from repository migrations. The earlier exact-version lookup found none of the eight prepared September/October versions. | Reconcile the new external ledger entry with its actual statements and reviewed PIN contract. Crew/referral and subsequent prepared delivery remain incomplete; a newer timestamp does not establish their delivery. |
 | Backend delivery | 7 October inventory: staging 54 functions, production 57. Production lacks `public-xooter-directory`, `get-booking-quote` and `xooter-job-checklist`; staging has active v1 of all three. | Production delivery is incomplete. Compare source versions, migrate first and redeploy affected importers. Do not hide missing dependencies in the browser gate. |
 | Notification delivery/security | 7 October catalog still shows missing notification publication and eight excess client TRUNCATE/TRIGGER grants. [Prepared migration evidence](evidence/2026-10-02/notification-database.md) and [CI](evidence/2026-10-07/integration-preflight.md): 23 groups/30 expected denials pass on PostgreSQL 17.6 and 17.11; independent review passed. | Migration is prepared, not deployed. Apply through the audited CLI and verify signed-in delivery. Client subscriptions/local SQL alone are not hosted delivery evidence. No private hosted rows were read or changed. |
 | Dependencies | 8 October reviewed compatible patches: web npm audit zero; mobile 26 package findings, representing three remaining advisories (23 high, 3 moderate, zero critical with parent attributions). [Disposition](../security/dependency-advisories-2026-10-07.md). | Mobile braces/node-forge lack supported patches; the fixed decoder needs compatible Expo/Metro integration proof. Native release gates remain open. No forced framework downgrade or unsupported clean-scan claim. |
 | PayFast | Hosted checkout disabled; provider verification flags false in both environments at audit. | Signed webhook smoke tests, amount matching and reconciliation evidence required. |
+| Monitoring access | 12 October: PostHog discovery reports `USER_NOT_LOGGED_IN`. The local Sentry API token/org/project and public monitoring variables are absent; this is not evidence about hosted settings. | Connect the PostHog app to the Xoot project. Configure Sentry's project identity and a scoped read token securely, then verify actual error delivery, privacy filtering and the complete booking funnel. Existing SDK code alone is insufficient. |
 | Supply | Production aggregate counts: zero Xooters and zero bookings, rechecked 21 September. | Recruit/verify helpers and run consenting pilot; no invented availability/reviews. |
 | Supabase CLI | GitHub credentials previously configured staging origins and deployed directory/matching functions. Fresh read-only staging preflight on 8 October, [run 37711711676](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/37711711676), passed credential-presence/setup checks but failed at `supabase link`: access token/project pair lacks the required endpoint privileges. No database changes were attempted. | Correct the deployment identity's database-management access and keep separate database credentials. Local `supabase login` is optional for local CLI work; it does not replace the GitHub secret. |
 | Reviews | CodeRabbit retry completed 20 September with 11 findings: eight addressed and three rejected with rationale in the visual ledger. Gift/native slices and the 26 September dependency/runtime slice passed scoped reviews. | Whole-branch release/security review still required before production. |
@@ -122,8 +141,10 @@ The reviewed checklist correction adds `20261007150000_checklist_active_job_muta
 after the October 3 checklist schema and before deployment of the amended
 `xooter-job-checklist` endpoint. It accepts only the verified actor's accepted job on an
 active booking, rechecks state under row locks, and denies terminal/cancelled work.
-The isolated SQL contract covers 50 groups, but independent-connection PostgreSQL
-contention and actual hosted role journeys remain required before applying this change.
+The isolated SQL contract covers 50 groups. The [12 October PostgreSQL proof](evidence/2026-10-12/README.md)
+passes nine scenarios with six observed lock barriers on actual PostgreSQL 17.11.
+Required CI integration, complete schema compatibility and hosted role journeys remain
+delivery gates; the local synthetic fixture alone does not establish them.
 The endpoint reports unavailable when the RPC has not been delivered; UI visibility is
 not server authorization. Concierge origin handling, native environment-specific invite
 links and explicit checklist retry states also received focused fixes and scoped review.

@@ -132,3 +132,50 @@ support/notification queues and a restore/rollback exercise. Owner-only evidence
 identity, merchant approval/secure credentials, commercial hosting plan, available verified helpers,
 support/payout operators, reviewed public commitments, consenting pilot and store/device access.
 Keep current evidence in `docs/release/production-checklist.md`; old worklog entries are historical.
+
+## Founder extension — 12 October 2026
+
+This extends the original goal; it does not replace the complete handoff or paid/mobile
+deliverables. Finish the visual implementation, then complete company-wide functional
+and security verification. Do not count an unavailable control as a completed feature.
+
+1. Remove the redundant public-navbar “Book” control and retain “Book now”. Update the
+   Trust section and Journal/article presentation against the supplied source. Improve
+   the existing SVG characters' clarity and rendering while retaining the handoff's
+   identity, logo, layout and palette; the founder expressly permits this artwork polish.
+2. Use actual authentication and operational data throughout public, customer, Xooter,
+   business and admin journeys. Synthetic fixtures remain isolated to tests/previews
+   clearly identified as such; production must never receive fabricated operational data.
+3. Complete atomic default-home switching. Two concurrent switches, first-place creation,
+   owner changes and failures must never leave two defaults or silently lose a successful
+   selection. Reconcile household profiles and saved-address consumers with their actual
+   data relationships; do not infer that one partial unique index completes the feature.
+4. Xooter checklist completion must come from the assigned Xooter's actual actions,
+   persist with attribution and reach the customer's visit progress. Add a restrained,
+   accessible reminder interaction for unfinished steps. Never auto-complete tasks,
+   infer physical work from time, or claim photos exist without a successful upload.
+5. Separate the booking destination from revocable gate/alarm/access secrets. On the
+   booking date in Africa/Johannesburg, an authorized active assigned Xooter needs the
+   destination to travel there. Keep secret-code revocation effective. Check cancellation,
+   completion, reassignment, unrelated users and date boundaries on the server; no broad
+   address visibility, notification leakage or stale cached access is implied.
+6. Add and deliver all necessary database changes for the supported company workflows,
+   with reviewed migration ordering, real target-schema preflight, role checks and rollback.
+   Current deployment-credential failures remain explicit until secure access changes.
+7. Final company-wide review covers business-rule consistency, auth/session recovery,
+   customer/Xooter/admin/company permissions, database/RLS/storage, booking/crew/payment/
+   referral accounting, gifts/Care+/recurring/loyalty, default homes, communications,
+   support/payouts, privacy/deletion/retention, integrations, monitoring, dependencies,
+   deployment secrets/headers, backup restoration and incident response. Fix observed
+   contradictions; record security assessments in managed Codex Security storage.
+8. Maintain a requirement-by-requirement final checklist with actual source, runtime,
+   database, browser/device and operational evidence, plus named owner/provider blockers.
+   Give the founder exact secure steps for their remaining actions. Agent configuration
+   assistance does not replace identity checks, contractual acceptance, merchant/legal
+   approval, staffing or physical-device/pilot participation.
+
+Current execution order: preserve the reviewed booking foundation checkpoint; prioritize
+the requested public visual corrections, then default-home/checklist/address behavior and
+remaining source screens. Continue the booking/payment lifecycle and all original phases.
+Company-wide final security hardening follows the visual work; security checks on each
+individual change still apply throughout implementation.

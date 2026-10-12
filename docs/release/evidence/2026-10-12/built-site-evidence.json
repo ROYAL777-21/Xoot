@@ -1,0 +1,105 @@
+{
+  "capturedAt": "2026-10-12T08:44:07.045Z",
+  "buildInfo": {
+    "commit": "18b33f658c234d0bb2d1dc3a42723e41ada030fe",
+    "builtAt": "2026-10-12T08:35:42.840Z",
+    "pricingRule": "ZD-026",
+    "bookingFeeCents": 3900
+  },
+  "origin": "https://xoot-git-codex-xoot-production-20260911-royal777-21s-projects.vercel.app",
+  "browserPath": "Browser plugin not available; installed Playwright fallback",
+  "scope": "Local built website files at their configured origin in an isolated browser; real staging public directory; no publication, account fixture, or native rendering.",
+  "flow": "Homepage -> sign-in -> password mode -> visible password form",
+  "checks": [
+    {
+      "screen": "home",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "filename": "website-home-1440.png",
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "path": "/",
+      "directoryTotal": 0,
+      "errors": [],
+      "overflow": false,
+      "configurationError": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "fontsLoaded": true
+    },
+    {
+      "screen": "signin",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "filename": "website-signin-1440.png",
+      "title": "Continue to Xoot",
+      "path": "/auth",
+      "directoryTotal": 0,
+      "errors": [],
+      "overflow": false,
+      "configurationError": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "fontsLoaded": true
+    },
+    {
+      "screen": "password-mode",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "interaction": "Use your password instead -> Password and Continue visible",
+      "errors": []
+    },
+    {
+      "screen": "home",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "filename": "website-home-390.png",
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "path": "/",
+      "directoryTotal": 0,
+      "errors": [],
+      "overflow": false,
+      "configurationError": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "fontsLoaded": true
+    },
+    {
+      "screen": "signin",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "filename": "website-signin-390.png",
+      "title": "Continue to Xoot",
+      "path": "/auth",
+      "directoryTotal": 0,
+      "errors": [],
+      "overflow": false,
+      "configurationError": false,
+      "headingFont": "Newsreader, Georgia, serif",
+      "headingTransform": "none",
+      "headingFilter": "none",
+      "fontsLoaded": true
+    },
+    {
+      "screen": "password-mode",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "interaction": "Use your password instead -> Password and Continue visible",
+      "errors": []
+    }
+  ]
+}

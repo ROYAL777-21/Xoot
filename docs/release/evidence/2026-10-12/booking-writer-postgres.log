@@ -1,0 +1,55 @@
+ok 1 - R393+R39 creates one draft/obligation, elapsed 3h, solo 5.5h, honest two empty slots and no assignments
+ok 2 - crew 1 extras/linen preserve fixed gross allocations without invented commission/net
+ok 3 - crew 2 extras/linen preserve fixed gross allocations without invented commission/net
+ok 4 - crew 3 extras/linen preserve fixed gross allocations without invented commission/net
+ok 5 - crew 4 extras/linen preserve fixed gross allocations without invented commission/net
+ok 6 - odd cents allocate deterministically over crews 1–4 with stable slot remainder
+ok 7 - historical solo money, duration, commission and original fields unchanged
+ok 8 - membership+R100 referral+credit atomic; weekly preferences preserved; referrer reward waits for paid completion
+ok 9 - benefit combination membership=false, referral=false, credit=0 keeps full R393 allocated work
+ok 10 - benefit combination membership=false, referral=false, credit=7000 keeps full R393 allocated work
+ok 11 - benefit combination membership=false, referral=true, credit=0 keeps full R393 allocated work
+ok 12 - benefit combination membership=false, referral=true, credit=7000 keeps full R393 allocated work
+ok 13 - benefit combination membership=true, referral=false, credit=0 keeps full R393 allocated work
+ok 14 - benefit combination membership=true, referral=false, credit=7000 keeps full R393 allocated work
+ok 15 - benefit combination membership=true, referral=true, credit=0 keeps full R393 allocated work
+ok 16 - benefit combination membership=true, referral=true, credit=7000 keeps full R393 allocated work
+ok 17 - fortnightly cadence stays 14, separate from weekly 7
+ok 18 - high-demand premium stored separately and excluded from work allocation, preserving current payout treatment
+ok 19 - selected/full and partial rosters fail closed with precise policy reason, zero booking/money/benefit effects
+ok 20 - inactive selected worker rejected under stable worker lock
+ok 21 - complete accepted quote tampering in 15 fields requotes with zero effects
+ok 22 - service/schedule/end-of-day/coverage/ownership/unknown-input/duplicate-roster/fingerprint validation has zero effects
+ok 23 - owned household/property accepted and unrelated ownership rejected
+ok 24 - lost-response replay is exact after membership change; definition/quote/service reuse conflicts; another buyer never replays IDs
+ok 25 - committed attempt replays even when current pricing calculator rejects all new attempts
+ok 26 - public.bookings mandatory insert failure rolls back every creation surface
+ok 27 - public.booking_crew_slots mandatory insert failure rolls back every creation surface
+ok 28 - public.payment_records mandatory insert failure rolls back every creation surface
+ok 29 - public.booking_status_events mandatory insert failure rolls back every creation surface
+ok 30 - public.referral_redemptions mandatory insert failure rolls back every creation surface
+ok 31 - public.xootcred_ledger mandatory insert failure rolls back every creation surface
+ok 32 - public.recurring_schedules mandatory insert failure rolls back every creation surface
+ok 33 - public.admin_review_queue mandatory insert failure rolls back every creation surface
+ok 34 - public.integration_outbox mandatory insert failure rolls back every creation surface
+ok 35 - public.admin_audit_log mandatory insert failure rolls back every creation surface
+ok 36 - private.booking_creation_attempts mandatory insert failure rolls back every creation surface
+ok 37 - same request retry after failures creates exactly once
+ok 38 - duplicate attempt waits on observed request barrier; one creation, stable same IDs
+ok 39 - first-referral race waits on observed account barrier; loser requotes without orphan booking
+ok 40 - simultaneous credit spends serialize; second requotes, only one debit commits
+ok 41 - credit mutation while writer waits refreshes facts at a fresh clock and writes no booking
+ok 42 - membership mutation while writer waits refreshes facts at a fresh clock and writes no booking
+ok 43 - expiry mutation while writer waits refreshes facts at a fresh clock and writes no booking
+ok 44 - rolled-back creator releases request barrier; waiting same-key retry creates once
+ok 45 - unrelated booking progresses while other buyer transaction is held
+ok 46 - referral owner change behind barrier aborts 40001 without adding out-of-order guard; whole transaction retry succeeds
+ok 47 - absent referral code serialized against new ownership; accepted no-discount quote stays stable until commit
+ok 48 - stale higher-isolation account snapshot aborts 40001; fresh retry succeeds
+ok 49 - obsolete absent-code snapshot aborts 40001 through version-changing code guard
+ok 50 - anon cannot execute writer or read assignment/slot finances or committed attempts despite broad fixture defaults
+ok 51 - authenticated cannot execute writer or read assignment/slot finances or committed attempts despite broad fixture defaults
+ok 52 - reviewed booking and primary payment money are immutable after acceptance
+ok 53 - service cannot overfill slots or mutate accepted allocation cents
+{"status":"passed","postgresVersion":170011,"tests":53,"observedBlockingBarriers":9,"syntheticOnly":true,"selectedRosterPolicyGate":true}
+{"cleanup":"verified","ownedDatabaseRemoved":true,"preexistingRolesPreserved":true,"passed":true}

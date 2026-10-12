@@ -38,6 +38,9 @@ The 11 October incremental refresh processed 125 files, 1,190 nodes and 15,220 e
 The subsequent chat correction update processed six files, 167 nodes and 2,849 edges;
 the index contains 6,502 rows. It is a retrieval aid, not an immutable release or review.
 
+The 12 October booking transaction refresh processed 12 changed files, 133 nodes and
+1,266 edges, leaving 6,554 search rows. This was an incremental local update only.
+
 Portable setup using an available Python 3.10+ runtime:
 
 ```powershell
@@ -102,7 +105,7 @@ expansion if newly materialized tracked files were absent from the initial spars
 | Codex Security | Scoped calculator/account-guard and Visit/Rate reviews recorded. Tracking/Chat review and scoped corrections approve tab recovery, history continuity and the expected RPC type declaration; managed risk JSON validates. Whole-branch release review remains outstanding; a reviewed slice is not a repository-wide security result. |
 | Build Web Apps | Testing/debugging, frontend builder and React performance skills read. Supplied visual reference replaces a new concept; existing Vite/React app remains the target. |
 | Browser / Computer | CUA browser automation available; native computer control disabled in this environment. |
-| Sentry / PostHog | Plugins available; account/project setup and privacy verification pending. |
+| Sentry / PostHog | 12 October: PostHog discovery returns `USER_NOT_LOGGED_IN`; reconnect OAuth before project inspection. Sentry's read-only skill is installed, but this process has no token/org/project configuration and no callable Sentry connector was found. Local public monitoring variables are absent; hosted settings were not inspected. Full booking funnel and privacy/delivery verification remain. |
 | Cloudflare | Skills/tools available; DNS export is historical. Inspect actual zone before any changes. |
 | Twilio Developer Kit | Skills/tools available; sender, capability and provider verification pending. |
 | Expo | Skills/tools available; existing native project retained for mobile phase. |

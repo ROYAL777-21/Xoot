@@ -23,6 +23,21 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**12 October later checkpoint, same authorized cross-role claim:** Atomic reviewed booking
+foundation is committed locally as `d139dd7`, source tree `b5e4ebf7`. Independent task review
+approved it within the explicit temporary reservation-policy scope. Actual PostgreSQL17.11
+passes 53 scenarios/nine observed barriers with cleanup; aggregate 163 files/1,742 tests
+passes with seven existing SQL-runtime skips. Types, lint, lockfiles, staging build/rendered
+artifact and scans pass. Public submission stays disabled; no hosted/native delivery.
+Schema, shared web/native contracts, endpoint gates and CI span both roles because the
+single accepted quote/payment and atomic benefit records require one coordinated contract.
+
+The founder's new instruction extends the full goal with final company-wide security and
+functional verification. Next held source work prioritizes public navbar/Trust/Journal/SVG
+corrections; atomic default homes, real checklist nudges/customer progress and booking-day
+destination access are required follow-ups. The complete company-wide extension is in the
+approved production plan; owner identity/legal/merchant/staffing actions remain real gates.
+
 **12 October checkpoint, same authorized cross-role claim:** Tracking/Chat source is
 committed locally as `18b33f6`. Independent review approves journal ownership, history
 continuity and the missing RPC type correction. The final aggregate passes 162 files /
@@ -36,6 +51,12 @@ types and SQL CI: they enforce atomic replay and current participant authorizati
 client lookups cannot guarantee. Deliver the database/function before the compatible
 client. Next held implementation is the R393 one-job booking transaction foundation;
 creation stays disabled until the complete crew/payment/access lifecycle is verified.
+
+Additional 12 October parent QA: the unchanged checklist migrations pass nine actual
+PostgreSQL scenarios/six observed lock barriers, including cancellation in both orders,
+job/owner changes, retries and independent booking progress. Local cleanup is verified;
+CI integration/full schema/hosted roles remain. Fresh built home/sign-in screenshots at
+1440/390 are byte-identical to the earlier port. No design or hosted deployment changed.
 
 **11 October local checkpoint, same claim:** Tracking/Chat source port passes 45
 responsive/interaction records; its actual retry migration passes 15 PostgreSQL 17.11
