@@ -10,6 +10,7 @@ import {
   resolveHours,
 } from "../_shared/pricing.ts";
 import { getCarePlusDiscount, isCarePlusMember as memberOf } from "../_shared/care-plus-membership.ts";
+import { bookingSubmissionAvailable } from "../_shared/booking-submission.ts";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
@@ -114,6 +115,9 @@ Deno.serve(async (req) => {
     );
     const { data: authData, error: authError } = await authClient.auth.getUser();
     if (authError || !authData.user) return json({ error: "authentication required" }, 401, origin);
+
+    if (!bookingSubmissionAvailable()) return json({ error: "Booking submission is unavailable",
+      status: "booking_submission_unavailable", bookingSubmissionAvailable: false }, 409, origin);
 
     const body = await readJson(req);
     const serviceType = cleanText(body.serviceType, 40);

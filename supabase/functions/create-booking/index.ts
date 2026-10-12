@@ -33,6 +33,7 @@ import {
   resolveHours,
 } from "../_shared/pricing.ts";
 import { getCarePlusDiscount, isCarePlusMember as memberOf } from "../_shared/care-plus-membership.ts";
+import { bookingSubmissionAvailable } from "../_shared/booking-submission.ts";
 
 const services = new Set(["residential", "express", "airbnb", "office", "deep", "moving", "premium"]);
 // Pricing tables now live in ../_shared/pricing.ts. The multiplier model they replaced
@@ -188,6 +189,11 @@ Deno.serve(async (req) => {
 
   const auth = await requireAuth(req, origin);
   if (auth.response) return auth.response;
+  // Both public URLs stay closed until payment, crew lifecycle and access readers
+  // support the accepted one-job contract. Never fall through to the N-row writer.
+  if (!bookingSubmissionAvailable()) return fail("Booking submission is unavailable", origin, 409, {
+    status: "booking_submission_unavailable", bookingSubmissionAvailable: false,
+  });
   const { user, supa } = auth as { user: any; supa: any };
 
   try {

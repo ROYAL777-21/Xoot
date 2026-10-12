@@ -1032,10 +1032,31 @@ export type Database = {
           },
         ]
       }
+      // Expected additive contract from 20261012120000; regenerate from staging after delivery.
+      booking_crew_slots: {
+        Row: { booking_id: string; slot_no: number; gross_cents: number; allocation_version: number }
+        Insert: { booking_id: string; slot_no: number; gross_cents: number; allocation_version: number }
+        Update: { booking_id?: string; slot_no?: number; gross_cents?: number; allocation_version?: number }
+        Relationships: [{
+          foreignKeyName: "booking_crew_slots_booking_id_fkey"
+          columns: ["booking_id"]
+          isOneToOne: false
+          referencedRelation: "bookings"
+          referencedColumns: ["id"]
+        }]
+      }
       bookings: {
         Row: {
           crew_size: number
           crew_elapsed_hours: number | null
+          contract_version: number | null
+          pricing_version: string | null
+          request_key: string | null
+          definition: Json | null
+          accepted_quote: Json | null
+          total_cents: number | null
+          solo_hours: number | null
+          primary_payment_record_id: string | null
           address: string | null
           arrived_at: string | null
           assigned_at: string | null
@@ -1085,6 +1106,14 @@ export type Database = {
           address?: string | null
           crew_size?: number
           crew_elapsed_hours?: number | null
+          contract_version?: number | null
+          pricing_version?: string | null
+          request_key?: string | null
+          definition?: Json | null
+          accepted_quote?: Json | null
+          total_cents?: number | null
+          solo_hours?: number | null
+          primary_payment_record_id?: string | null
           arrived_at?: string | null
           assigned_at?: string | null
           at_risk?: boolean
@@ -1133,6 +1162,14 @@ export type Database = {
           address?: string | null
           crew_size?: number
           crew_elapsed_hours?: number | null
+          contract_version?: number | null
+          pricing_version?: string | null
+          request_key?: string | null
+          definition?: Json | null
+          accepted_quote?: Json | null
+          total_cents?: number | null
+          solo_hours?: number | null
+          primary_payment_record_id?: string | null
           arrived_at?: string | null
           assigned_at?: string | null
           at_risk?: boolean
@@ -1183,6 +1220,13 @@ export type Database = {
             columns: ["household_profile_id"]
             isOneToOne: false
             referencedRelation: "household_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_primary_payment_record_id_fkey"
+            columns: ["primary_payment_record_id"]
+            isOneToOne: false
+            referencedRelation: "payment_records"
             referencedColumns: ["id"]
           },
           {
@@ -2257,6 +2301,7 @@ export type Database = {
       }
       payment_records: {
         Row: {
+          booking_contract_version: number | null
           amount: number
           booking_id: string | null
           created_at: string
@@ -2272,6 +2317,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          booking_contract_version?: number | null
           amount?: number
           booking_id?: string | null
           created_at?: string
@@ -2287,6 +2333,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          booking_contract_version?: number | null
           amount?: number
           booking_id?: string | null
           created_at?: string
@@ -2746,6 +2793,8 @@ export type Database = {
       }
       recurring_schedules: {
         Row: {
+          source_booking_id: string | null
+          repeat_days: number[] | null
           cadence_days: number
           created_at: string
           household_profile_id: string | null
@@ -2758,6 +2807,8 @@ export type Database = {
           xooter_id: string | null
         }
         Insert: {
+          source_booking_id?: string | null
+          repeat_days?: number[] | null
           cadence_days?: number
           created_at?: string
           household_profile_id?: string | null
@@ -2770,6 +2821,8 @@ export type Database = {
           xooter_id?: string | null
         }
         Update: {
+          source_booking_id?: string | null
+          repeat_days?: number[] | null
           cadence_days?: number
           created_at?: string
           household_profile_id?: string | null
@@ -2787,6 +2840,13 @@ export type Database = {
             columns: ["household_profile_id"]
             isOneToOne: false
             referencedRelation: "household_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_schedules_source_booking_id_fkey"
+            columns: ["source_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
           {
@@ -4344,6 +4404,7 @@ export type Database = {
       }
       xootcred_ledger: {
         Row: {
+          booking_operation_key: string | null
           amount: number
           booking_id: string | null
           created_at: string
@@ -4356,6 +4417,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          booking_operation_key?: string | null
           amount?: number
           booking_id?: string | null
           created_at?: string
@@ -4368,6 +4430,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          booking_operation_key?: string | null
           amount?: number
           booking_id?: string | null
           created_at?: string
@@ -5454,6 +5517,11 @@ export type Database = {
           p_window_seconds: number
         }
         Returns: boolean
+      }
+      // Expected contract from 20261012120000; regenerate from staging after migration delivery.
+      create_reviewed_booking: {
+        Args: { p_user_id: string; p_request_key: string; p_definition: Json; p_accepted_quote: Json; p_confirmed_service: string }
+        Returns: Json
       }
       // Expected contract from 20260920200000; regenerate from staging after migration delivery.
       create_reviewed_gift_order: {

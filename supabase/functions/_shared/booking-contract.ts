@@ -99,9 +99,14 @@ export type CreateReviewedBookingOutcome =
   | { status: "created" | "replayed"; bookingId: string; paymentRecordId: string; bookingStatus: "draft"; acceptedQuote: ReviewedBookingQuote }
   | { status: "quote_changed"; quote: ReviewedBookingQuote }
   | { status: "request_key_reused" }
-  | { status: "assignment_unavailable" }
+  | { status: "assignment_unavailable"; reason?: "worker_unavailable" | "reservation_policy_unavailable" }
   | { status: "booking_submission_unavailable" }
   | { status: "unsupported_booking_contract" };
+
+/** Service RPC result before the verified Edge adapter fingerprints a revised quote. */
+export type CreateReviewedBookingTransactionOutcome =
+  | Exclude<CreateReviewedBookingOutcome, { status: "quote_changed" }>
+  | { status: "quote_changed"; quote: BookingQuote };
 
 export const BOOKING_REGULAR_HOME_HOURS = { small: 4, medium: 5.5, large: 8 } as const;
 
