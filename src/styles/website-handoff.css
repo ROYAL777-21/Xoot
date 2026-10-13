@@ -102,9 +102,6 @@
   .xoot-hero-photo { aspect-ratio: 4 / 3.4; }
   .xoot-hero-arrow { display: none; }
 }
-@media (max-width: 359px) {
-  .xoot-compact-book { display: none; }
-}
 @media (orientation: landscape) and (max-height: 500px) {
   .xoot-hero-photo { max-height: 68vh; }
 }

@@ -1,0 +1,9 @@
+/* Rendering repairs only: original paths and palette remain in the generated component. */
+.xoot-character { display: inline-block; max-width: 100%; flex-shrink: 0; line-height: 0; vertical-align: bottom; }
+.xoot-character-motion { display: block; width: 100%; transform-origin: 50% 90%; }
+.xoot-character svg { display: block; width: 100%; height: auto; aspect-ratio: 184 / 176; }
+.xoot-character-motion[data-motion="idle"] { animation: xoot-character-bob 5200ms var(--xoot-ease-in-out) infinite; }
+.xoot-character-motion[data-motion="sway"] { animation: xoot-character-sway 6400ms var(--xoot-ease-in-out) infinite; }
+@keyframes xoot-character-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes xoot-character-sway { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(1deg); } }
+@media (prefers-reduced-motion: reduce) { .xoot-character-motion { animation: none !important; } }

@@ -2,61 +2,24 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { Journal } from "./Journal";
-import { blogPosts } from "@/lib/blog-posts";
+import { getPublishedBlogPosts } from "@/lib/blog-posts";
 
-const renderJournal = () =>
-  render(
-    <MemoryRouter>
-      <Journal />
-    </MemoryRouter>,
-  );
+const show = () => render(<MemoryRouter><Journal /></MemoryRouter>);
 
 describe("Journal", () => {
-  it("links real post routes, not a hash modal", () => {
-    // The handoff opens articles at `#article-<id>` because a one-file prototype has nowhere
-    // else to put them. This repo has `/blog/:slug`. A hash link here would be a silent
-    // downgrade: unshareable, unindexable, and gone on refresh.
-    renderJournal();
-    const links = screen.getAllByRole("link");
-    const hrefs = links.map((link) => link.getAttribute("href"));
-
-    expect(hrefs).toContain("/blog");
-    for (const href of hrefs) {
-      expect(href).toMatch(/^\/blog(\/|$)/);
-      expect(href).not.toMatch(/#article-/);
-    }
+  it("links to canonical, refreshable article routes", () => {
+    show();
+    for (const link of screen.getAllByRole("link")) expect(link.getAttribute("href")).toMatch(/^\/articles(\/|$)/);
   });
-
-  it("shows the three newest posts, newest first", () => {
-    // Sorted rather than sliced off the top of the file, because the file is in authoring
-    // order. Getting this wrong shows a stale post as the lead and nobody notices for weeks.
-    const expected = [...blogPosts]
-      .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
-      .slice(0, 3);
-
-    renderJournal();
-    for (const post of expected) {
-      expect(screen.getByText(post.title)).toBeInTheDocument();
-    }
-
-    const dates = [...document.querySelectorAll("time")].map((t) => t.getAttribute("dateTime"));
-    expect(dates).toEqual([...dates].sort().reverse());
+  it("shows the six newest published articles, in release order", () => {
+    show();
+    const expected = getPublishedBlogPosts().slice(0, 6);
+    expect(screen.getAllByRole("heading", { level: 3 }).map(heading => heading.textContent)).toEqual(expected.map(post => post.title));
+    expect([...document.querySelectorAll("time")].map(time => time.dateTime)).toEqual(expected.map(post => post.publishedAt));
   });
-
-  it("claims no authorship or audience it does not have", () => {
-    // The handoff says the posts are "written by people who do this work" and answer "the
-    // questions customers actually ask". Every post's author is the Xoot team, and zero
-    // bookings have completed — there is nobody who has done the work, and no customers.
-    renderJournal();
-    const copy = document.body.textContent ?? "";
-    expect(copy).not.toMatch(/people who do this work/i);
-    expect(copy).not.toMatch(/customers actually ask/i);
-    expect(copy).not.toMatch(/our customers/i);
-  });
-
-  it("counts the articles from the data rather than a hardcoded number", () => {
-    // A number typed into copy stops being true the first time a post is added.
-    renderJournal();
-    expect(screen.getByText(new RegExp(`All ${blogPosts.length} articles`))).toBeInTheDocument();
+  it("uses the published count and avoids implementation commentary", () => {
+    show();
+    expect(screen.getByRole("link", { name: `All ${getPublishedBlogPosts().length} articles` })).toHaveAttribute("href", "/articles");
+    expect(document.body.textContent).not.toMatch(/invented testimonials|people who do this work|customers actually ask/);
   });
 });

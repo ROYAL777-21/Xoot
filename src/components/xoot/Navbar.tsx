@@ -103,13 +103,6 @@ export const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2 min-[1080px]:hidden">
-            <Button
-              asChild
-              size="sm"
-              className="xoot-compact-book h-10 rounded-full bg-foreground px-4 text-background shadow-md hover:bg-foreground/90"
-            >
-              <Link to={ctaTo} aria-label="Book now" onClick={() => setOpen(false)}>Book</Link>
-            </Button>
             <button
               type="button"
               className="grid h-10 w-10 place-items-center rounded-full bg-black/[0.07] text-foreground transition-colors hover:bg-black/[0.12]"

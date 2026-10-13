@@ -48,27 +48,27 @@ export const blogPosts: BlogPost[] = [
         heading: "Say the quiet part",
         body: [
           "Letting someone you have never met into your home, often while you are not there, is not a small thing in this country. Treating that as an irrational worry to be soothed away is insulting.",
-          "It is the correct first question. What follows is what we actually do about it, stated plainly enough that you can check it.",
+          "It is the correct first question. What follows explains the intended protections and what to check before booking.",
         ],
       },
       {
         heading: "What verification actually means here",
         body: [
-          "Identity verified against the national population register, not a photograph of a document. A liveness check, so the person who applied is the person who arrives \u2014 that gap is the real vulnerability in this industry and almost nobody closes it.",
-          "Background clearance as part of activation. And the part that matters most: a Xooter cannot record her own verification result. The system refuses the write. A badge you can award yourself is not a badge.",
+          "Xoot is preparing identity and screening reviews before bookings open. There are no approved Xooters available to book yet, so this is an approval standard rather than a completed screening record.",
+          "Approval should come from a review independent of the applicant. A badge alone does not tell you which checks have been completed.",
         ],
       },
       {
         heading: "Your access details are not in a WhatsApp thread",
         body: [
-          "Gate codes, alarm codes and entry instructions are encrypted, released only inside the booking window, and every access is logged.",
+          "Xoot is designed to keep gate codes, alarm codes and entry instructions in protected fields with timed access. This sharing flow is not available for bookings yet.",
           "That is a deliberately narrow design. The point is that even inside Xoot, this information is not casually browsable \u2014 because the realistic risk to a household is not a leaked mailing list.",
         ],
       },
       {
         heading: "What to do on your side",
         body: [
-          "Use the in-app record if you want one; both parties are told. Keep access details in the app rather than in a message thread, so they expire with the booking instead of living in someone\u2019s phone.",
+          "Agree on entry arrangements before any visit. Keep gate and alarm details out of general messages; do not assume a message will expire or that a recipient cannot save it.",
           "And if anything feels wrong, say so through the app rather than only to the Xooter. A report that exists in a thread nobody reads is not a report.",
         ],
       },
@@ -77,17 +77,17 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Are Xooters background checked?",
         answer:
-          "Background clearance is part of activation, and the result is written by the verification provider rather than by the Xooter. She cannot mark her own check as passed.",
+          "Screening is part of the planned approval process. There are no approved Xooters available to book yet; Xoot is not presenting a completed screening record.",
       },
       {
         question: "Who can see my gate code?",
         answer:
-          "It is encrypted and released only within your booking window, and each access is logged. It is not visible to staff browsing a table.",
+          "The planned access window limits sharing to the assigned Xooter for a visit. Protected access sharing is not available for bookings yet.",
       },
       {
         question: "What happens if I report a problem?",
         answer:
-          "It is recorded against the booking and reviewed. Reports cannot be edited or deleted by the person they are about \u2014 that is enforced by the database, not by policy.",
+          "Use the official support route for a concern about Xoot. If you are in immediate danger, contact local emergency services.",
       },
     ],
   },
@@ -285,7 +285,7 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Do you clean inside the oven?",
         answer:
-          "On a deep or move-out clean, yes. It is one of the few things an inspection reliably checks.",
+          "An oven interior is worth including in the brief. Confirm appliance cleaning with your provider; Xoot bookings are not open yet and a note alone does not confirm a service inclusion.",
       },
     ],
   },
@@ -352,7 +352,7 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Can I book the same Xooter every week?",
         answer:
-          "Yes, and most people do. Continuity is the default \u2014 that gives you consistency without the administration of employing someone.",
+          "Repeat visits with a preferred Xooter are planned, subject to availability. Bookings are not open yet.",
       },
     ],
   },
@@ -413,12 +413,12 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Does the same Xooter come each time?",
         answer:
-          "Yes. Booking the same person again is the default, not a premium feature, because re-explaining your home is the part people actually dread.",
+          "A preferred Xooter is part of the intended repeat-booking experience, subject to availability. Bookings are not open yet.",
       },
       {
         question: "What if my Xooter is unavailable one week?",
         answer:
-          "You are told before the day, not on it, and offered a replacement with your home notes already attached rather than a stranger with nothing.",
+          "A replacement depends on confirmed availability. Xoot cannot promise a replacement or its timing before bookings open.",
       },
     ],
   },
@@ -484,7 +484,7 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Do I need to be home?",
         answer:
-          "No. Most people are not. Arrival and completion are both recorded, so you know what happened without being there.",
+          "Being away requires an agreed entry arrangement and clear instructions. Xoot bookings and protected access sharing are not available yet.",
       },
     ],
   },
@@ -540,17 +540,17 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Can Xoot do same-day turnovers?",
         answer:
-          "Turnaround depends on availability in your suburb. The booking page shows real slots rather than an aspirational promise.",
+          "Xoot bookings are not open yet. Same-day turnovers will depend on confirmed crew availability, timing and service scope.",
       },
       {
         question: "Do Xooters handle linen?",
         answer:
-          "Linen handling is arranged per booking. Set it in your home notes once and it becomes part of the routine rather than a request each time.",
+          "Agree on linen handling with your cleaning provider before the visit. Xoot bookings are not open yet, and linen handling is not a confirmed service inclusion.",
       },
       {
         question: "What happens if a guest has damaged something?",
         answer:
-          "It is flagged and photographed at the turnover rather than discovered later, which is what gives you a case while the claim window is still open.",
+          "Ask your cleaning provider to report damage promptly and keep a dated record. This is a useful turnover practice, not a promise of a live Xoot reporting service.",
       },
     ],
   },
@@ -606,23 +606,23 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Can Xoot do after-hours office cleaning?",
         answer:
-          "Availability depends on the suburb and the slot. What is bookable is what is shown \u2014 there is no waiting list dressed up as a yes.",
+          "Xoot bookings are not open yet. After-hours work is not currently available to book.",
       },
       {
         question: "Do we get the same person each week?",
         answer:
-          "Yes, that is the default. For an office it matters more than for a home, because access and layout are learned once.",
+          "Repeat visits with a preferred Xooter are planned, subject to availability. The same person cannot be guaranteed, and bookings are not open yet.",
       },
       {
         question: "How is access handled?",
         answer:
-          "Access details are stored encrypted and released only inside the booking window, and every access is logged. It is not kept in a WhatsApp thread.",
+          "Protected access fields and a timed sharing window are planned. They are not available for bookings yet; avoid putting gate and alarm codes in general chat.",
       },
     ],
   },
   {
     slug: "becoming-a-xooter-what-the-work-is-really-like",
-    title: "What the work is really like, from the women already doing it",
+    title: "Becoming a Xooter: what the work is intended to involve",
     seoTitle: "Becoming A Xooter | Work With Xoot",
     description:
       "An honest account of what Xooter work involves, how you choose your own hours, and what the vetting actually asks of you.",
@@ -643,13 +643,13 @@ export const blogPosts: BlogPost[] = [
         heading: "You are not applying for a job",
         body: [
           "You are building a book of clients. You choose which work you take, you set when you are available, and you decline what does not fit without explaining yourself.",
-          "That freedom is real and it cuts both ways: nobody hands you a full week. The Xooters doing best are the ones who treat the first few bookings as the start of a client list rather than a shift.",
+          "The intended model gives contractors control over availability and accepted work. Bookings are not open yet, and Xoot cannot promise work or a full week.",
         ],
       },
       {
         heading: "The vetting, and why it is strict",
         body: [
-          "Identity verification, a liveness check, and background clearance. It takes longer than signing up somewhere that asks for nothing.",
+          "Identity, work eligibility, required documents, screening and training are intended to form the approval review. There are no approved Xooters available to book yet.",
           "It is strict because it is the reason a woman lets you into her home while she is at work. The badge is worth something precisely because it cannot be self-awarded \u2014 on our system a Xooter cannot mark her own checks as passed. That protects you as much as her: nobody can claim your standard without meeting it.",
         ],
       },
@@ -663,7 +663,7 @@ export const blogPosts: BlogPost[] = [
       {
         heading: "Building a book that holds",
         body: [
-          "The Xooters who make this work treat the first month as recruitment, not as shifts. A client who books you again is worth more than three who book once, so the effort goes into being the person a household wants back.",
+          "For an independent cleaning contractor, repeat clients can help build a steadier schedule. Treat early visits as an opportunity to learn the home and agree on a useful routine.",
           "Concretely: turn up when you said, say something before a problem becomes a surprise, and learn one thing about each home that means the next visit needs no briefing. That is what converts a booking into a standing arrangement, and a standing arrangement is what makes the income predictable.",
         ],
       },
@@ -688,12 +688,12 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: "xoot-is-open-johannesburg-founding-homes",
-    title: "Xoot is open. Here is what we built, and who we built it for.",
-    seoTitle: "Xoot Is Live In Johannesburg | Home Cleaning",
+    title: "Preparing Xoot for Johannesburg: what we are building",
+    seoTitle: "Xoot Johannesburg Launch Plans | Home Cleaning",
     description:
-      "Xoot is now taking bookings across Johannesburg. Vetted Xooters, the same person every time, and a company built around the women on both sides of the booking.",
+      "Xoot is preparing home care for Johannesburg. Read about the planned approval process, repeat visits and availability before bookings open.",
     excerpt:
-      "We are open. Not with a countdown or a launch party, but with a small number of Xooters we know by name and a promise we can actually keep.",
+      "Bookings are not open yet. We are preparing Xoot for Johannesburg with careful approval, access and payment workflows.",
     publishedAt: "2026-07-27",
     readingTime: "5 min read",
     author: "The Xoot team",
@@ -706,9 +706,9 @@ export const blogPosts: BlogPost[] = [
     areas: ["Johannesburg", "Sandton", "Bryanston", "Rosebank", "Midrand", "Fourways"],
     sections: [
       {
-        heading: "We are open",
+        heading: "Preparing to open",
         body: [
-          "Xoot is taking bookings across Johannesburg from today. Not everywhere, and not at any volume we cannot stand behind \u2014 a set of suburbs, and a small number of Xooters we know by name.",
+          "Xoot bookings are not open yet. Johannesburg is the launch focus, and there are no approved Xooters available to book.",
           "That is deliberate. The easy way to launch a marketplace is to sign up everyone who applies and let the ratings sort it out afterwards. That works for food delivery. It does not work when the product is a person in your home while you are at work.",
         ],
       },
@@ -723,15 +723,15 @@ export const blogPosts: BlogPost[] = [
       {
         heading: "What we actually built",
         body: [
-          "Every Xooter is identity-verified before she takes a booking, and background clearance is part of activation rather than a badge she can award herself. That last part sounds like a technicality. It is the whole thing: on our system, a Xooter cannot mark her own checks as passed, because the database will not let her.",
-          "You get the same Xooter back. Your home is not a fresh briefing every time \u2014 where the mop lives, which door sticks, that the dog is friendly but loud.",
-          "And you know when she is coming, and you know when she has arrived. No morning off work to wait.",
+          "Xooter approval is intended to require identity, document, screening and training review before work is accepted. That standard is not evidence that screening has already been completed.",
+          "Repeat booking with a preferred Xooter is planned, subject to availability. Saved home notes are intended to make later visits easier to brief.",
+          "Arrival and visit updates are part of the intended booking experience. They are not a promise of live service availability.",
         ],
       },
       {
         heading: "Who Xoot is for, on both sides",
         body: [
-          "Most of the people booking are women, and most of the Xooters are women. We did not set out to build a company for women. We built one honestly, in this market, and that is who was on both sides of it.",
+          "Xoot is being built for people who want their home cared for and independent contractors who want clear, respectful work arrangements.",
           "So we have been careful about the language. A Xooter is not help, and she is not a girl. She runs her own book of clients, sets her availability, and is paid for skilled work. The woman booking is not falling short of some standard by not doing it herself \u2014 she is deciding what her Saturday is for.",
           "Those two sentences are the company. Everything else is scheduling.",
         ],
@@ -739,9 +739,9 @@ export const blogPosts: BlogPost[] = [
       {
         heading: "What we are not saying yet",
         body: [
-          "We are in a set of Johannesburg suburbs, not the whole city and not the whole country. When we reach you, we will say so on the booking page rather than in an advert.",
+          "Johannesburg is the launch focus. Planned areas do not mean that bookings are available there yet.",
           "Some things are still being built \u2014 and we would rather tell you that than let a feature list imply otherwise. When something is ready, it appears. Until then it does not exist here.",
-          "If you are in one of the suburbs we cover, you can book today. If you are a Xooter, you can apply today. Both take a few minutes.",
+          "You can explore a visit and the Xooter application route. Booking confirmation remains unavailable until crew and payment readiness are complete.",
         ],
       },
     ],
@@ -749,28 +749,28 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Which areas of Johannesburg does Xoot cover?",
         answer:
-          "We are live in a set of northern and central Johannesburg suburbs, including Sandton, Bryanston, Rosebank, Midrand and Fourways. The booking page shows exactly what we cover \u2014 if your suburb is not there yet, we are not pretending otherwise.",
+          "The planned Johannesburg launch areas include Sandton, Bryanston, Rosebank, Midrand and Fourways. Bookings are not open yet; these areas are a launch focus rather than live coverage.",
       },
       {
         question: "How are Xooters vetted?",
         answer:
-          "Identity verification against the national population register, a liveness check so the person applying is the person who arrives, and background clearance as part of activation. A Xooter cannot record her own verification result \u2014 that is enforced by the system, not by policy.",
+          "Approval is intended to include identity, work eligibility, document, screening and training review. No approved Xooters are currently available to book.",
       },
       {
         question: "Can I get the same person each time?",
         answer:
-          "Yes. Booking the same Xooter is the default rather than a premium feature, because re-explaining your home every visit is the thing people actually hate.",
+          "A preferred Xooter can only be confirmed when availability is known. Repeat booking is planned; bookings are not open yet.",
       },
     ],
   },
   {
     slug: "xoot-launch-first-100-homes-johannesburg",
-    title: "Xoot is opening for the first 100 founding homes in Johannesburg",
+    title: "Preparing Xoot home care for Johannesburg",
     seoTitle: "Xoot Launch: Premium Cleaning Services In Johannesburg",
     description:
-      "Xoot is launching carefully in Johannesburg with vetted Xooters, premium home care, Care+, and trusted cleaning for homes, offices, Airbnb hosts, and landlords.",
+      "Xoot is preparing home-care services for Johannesburg. Read about the launch focus, planned services and what remains unavailable before bookings open.",
     excerpt:
-      "We are opening Xoot carefully in Johannesburg because great home care needs trust, not chaos. Here is what the first 100 founding homes can expect.",
+      "We are preparing Xoot carefully for Johannesburg. Here is the launch direction; bookings are not open yet.",
     publishedAt: "2026-06-08",
     readingTime: "4 min read",
     author: "Xoot Team",
@@ -788,13 +788,13 @@ export const blogPosts: BlogPost[] = [
         heading: "Why we are not launching everywhere at once",
         body: [
           "Most people do not wake up excited to manage cleaning. They want the home ready, the office reset, the guest suite handled, and the person arriving at the door to feel professional and trustworthy. That is the problem Xoot is built around.",
-          "We are opening Xoot to the first 100 founding homes in Johannesburg because trust should be built carefully. A home-care platform should not race ahead of its own quality controls. It should learn the area, support the Xooters doing the work, and make every booking feel handled from start to finish.",
+          "Xoot is preparing for Johannesburg because trust should be built carefully. Bookings remain closed while crew and payment workflows are completed.",
         ],
       },
       {
         heading: "What Xoot does differently",
         body: [
-          "Xoot connects clients with vetted independent cleaning contractors called Xooters. The product is built for once-off home cleaning, recurring home care, deep cleaning, moving cleans, Airbnb turnover cleaning, landlord handovers, and quick office resets.",
+          "Xoot is designed to connect clients with approved independent cleaning contractors called Xooters. Homes, hosts and small workplaces are planned use cases; bookings are not open yet and every service is not currently available.",
           "The goal is not to be the cheapest name in cleaning. The goal is to make quality easier to book, easier to repeat, and easier to trust. That means saved home preferences, safer in-app communication, support workflows, favourite Xooter rebooking, and Care+ for households and hosts who want their home remembered.",
         ],
       },
@@ -965,7 +965,7 @@ export const blogPosts: BlogPost[] = [
       {
         heading: "Where Xoot fits",
         body: [
-          "Xoot helps offices, studios, clinics, salons and small teams book trusted cleaning with clearer expectations. The same trust rules matter in a workplace as in a home: in-app details, role-scoped access, support routing and a preference history that makes the next clean easier.",
+          "Xoot is being built for clearer cleaning briefs for homes and small workplaces. Office bookings are not open yet.",
           "Sandton is part of Xoot's launch focus, with nearby priority areas including Rosebank, Hyde Park, Bryanston and Midrand. Availability still depends on live coverage and approved Xooters, but the product is being shaped around exactly this kind of business need: fast enough for real life, careful enough for trust.",
         ],
       },
@@ -1209,7 +1209,7 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Does Xoot offer deep cleaning in Johannesburg?",
         answer:
-          "Deep cleaning is part of Xoot's service set in approved launch areas, subject to live availability and final booking coverage.",
+          "Deep cleaning is a planned service. Xoot bookings are not open yet, and service scope must be confirmed before a visit.",
       },
     ],
   },
@@ -1274,7 +1274,7 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Can I book the same cleaner again with Xoot?",
         answer:
-          "Xoot supports favourite Xooter and preferred-team workflows where availability and service coverage allow it.",
+          "Preferred Xooter and team workflows are planned, subject to confirmed availability. Bookings are not open yet.",
       },
       {
         question: "Is recurring cleaning better than booking once-off each time?",
@@ -1626,7 +1626,7 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Does Care+ guarantee the same Xooter?",
         answer:
-          "Care+ supports favourite Xooter workflows where availability and coverage allow it, but no service should promise availability that has not been confirmed live.",
+          "No. Preferred Xooter workflows are planned, subject to confirmed availability. Bookings are not open yet.",
       },
       {
         question: "Should access codes be saved in normal notes?",
@@ -1687,7 +1687,7 @@ export const blogPosts: BlogPost[] = [
       {
         heading: "The CTA for future launch areas",
         body: [
-          "If you are searching for cleaning services in Pretoria or Cape Town, follow Xoot's launch updates and join the app when your area opens. If you are in Johannesburg launch areas, book there first and help shape the operating standard that expansion should carry.",
+          "If you are searching for cleaning services in Pretoria or Cape Town, follow official launch updates. Johannesburg is the first focus, but Xoot bookings are not open yet.",
           "The best national cleaning company will not be the loudest one. It will be the one that can keep trust local while the map gets bigger.",
         ],
       },
@@ -1892,7 +1892,7 @@ export const blogPosts: BlogPost[] = [
         heading: "What legitimacy should look like in home cleaning",
         body: [
           "A legitimate cleaning service should tell you what it can do, what it cannot promise yet, how support works and how your private information is protected. It should not ask for gate codes in public chat, mark payments successful from the frontend, or promise the same person before availability is confirmed.",
-          "For Xoot, the standard is simple: book through the app or website, keep sensitive access details inside approved workflows, use authenticated support for account-specific questions, and treat payment, refund, Care+, XootCred and Booking Cover changes as backend or human-reviewed actions.",
+          "Xoot bookings are not open yet. Use official Xoot pages for availability information and account support, and keep gate and alarm codes out of general messages.",
         ],
       },
       {
@@ -1910,10 +1910,10 @@ export const blogPosts: BlogPost[] = [
         ],
       },
       {
-        heading: "The bottom line",
+        heading: "Before you decide",
         body: [
-          "Xoot is being built to be legitimate by design: clear booking flows, vetted Xooter journeys, server-side payment confirmation, safe account support, privacy rules and structured escalation. The remaining launch work is not marketing polish. It is provider setup, live smoke testing, store credentials, domain security and final approvals.",
-          "If you want to try Xoot during launch, use the official app or website, check whether your area is active, avoid off-platform payment or support shortcuts, and keep private household access information inside the approved Xoot flow.",
+          "Xoot is being built around careful approvals, clear booking details and protected home information. Bookings remain closed while crew and payment workflows are completed.",
+          "Use the official website for launch information and check the stated availability before planning a visit. A planned service is not a confirmed booking.",
         ],
       },
     ],
@@ -1921,7 +1921,7 @@ export const blogPosts: BlogPost[] = [
       {
         question: "Is Xoot a real cleaning platform?",
         answer:
-          "Xoot is a real product being built for South African home care, but launch readiness still depends on live provider setup, service-area availability, store credentials, and verified staging or production smoke tests.",
+          "Xoot is a product being built for South African home care. Bookings are not open yet, and there are no approved Xooters available to book.",
       },
       {
         question: "Should I pay a Xooter directly?",
@@ -2062,7 +2062,7 @@ export const blogPosts: BlogPost[] = [
       {
         heading: "The practical choice",
         body: [
-          "Choose SweepSouth if its live coverage, service categories and booking model fit the immediate job. Choose Xoot if your area is active and you want a more trust-dense, premium, repeatable home-care experience with stronger memory and in-app support direction.",
+          "Choose SweepSouth if its live coverage, service categories and booking model fit the immediate job. Consider Xoot once bookings open in your area and its planned home-care approach meets your needs.",
           "The best choice is the one that matches your real risk: time pressure, privacy, recurring quality, host reviews, office reputation or support when something does not go as planned.",
         ],
       },
@@ -2087,4 +2087,14 @@ export const blogPosts: BlogPost[] = [
   },
 ];
 
-export const getBlogPost = (slug: string | undefined) => blogPosts.find((post) => post.slug === slug) ?? null;
+/** The registry contains approved articles. Future release dates stay out of every reader. */
+export const articleReleaseDate = (now = new Date()) => new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Africa/Johannesburg", year: "numeric", month: "2-digit", day: "2-digit",
+}).format(now);
+
+export const getPublishedBlogPosts = (asOf = articleReleaseDate(), posts: readonly BlogPost[] = blogPosts) =>
+  posts.filter(post => /^\d{4}-\d{2}-\d{2}$/.test(post.publishedAt) && post.publishedAt <= asOf)
+    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+
+export const getBlogPost = (slug: string | undefined, asOf = articleReleaseDate()) =>
+  getPublishedBlogPosts(asOf).find(post => post.slug === slug) ?? null;

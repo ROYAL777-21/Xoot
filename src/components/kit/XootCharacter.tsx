@@ -1,5 +1,6 @@
 // Generated from the uploaded handoff by scripts/build/extract-character-artwork.mjs.
 import React, { type CSSProperties, type HTMLAttributes } from 'react';
+import './xoot-character.css';
 
 export interface XootCharacterProps extends HTMLAttributes<HTMLSpanElement> {
   scene?: 'xooter' | 'host' | 'customer' | 'pair';
@@ -378,48 +379,17 @@ const SCENES = {
 };
 
 export function XootCharacter({
-  scene = 'xooter',
-  castIndex = 0,
-  garment,
-  size = 200,
-  motion = 'idle',
-  delay = 0,
-  style = {},
-  ...rest
+  scene = 'xooter', castIndex = 0, garment, size = 200, motion = 'idle', delay = 0,
+  style = {}, className = '', ...rest
 }: XootCharacterProps) {
   const Scene = SCENES[scene] || XooterAtWork;
   const index = Number.isFinite(castIndex) ? Math.trunc(castIndex) : 0;
   const cast = XOOT_CAST[((index % XOOT_CAST.length) + XOOT_CAST.length) % XOOT_CAST.length];
-
-  /* The loop is on the whole figure, never on limbs — independently animated arms read as a
-     puppet, where a subtle full-body bob reads as alive. */
-  const anim = motion === 'idle' ? `xoot-char-bob 5200ms var(--xoot-ease-in-out) ${delay}ms infinite` : motion === 'sway' ? `xoot-char-sway 6400ms var(--xoot-ease-in-out) ${delay}ms infinite` : 'none';
-  return React.createElement("span", Object.assign({
-    style: {
-      display: 'inline-block',
-      width: size,
-      height: size,
-      lineHeight: 0,
-      ...style
-    }
-  }, rest), React.createElement("style", null, `
-        @keyframes xoot-char-bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
-        @keyframes xoot-char-sway { 0%,100% { transform: rotate(-1.4deg) } 50% { transform: rotate(1.4deg) } }
-        @media (prefers-reduced-motion: reduce) { .xoot-char { animation: none !important } }
-      `), React.createElement("svg", {
-    viewBox: "0 0 200 200",
-    width: "100%",
-    height: "100%",
-    "aria-hidden": "true",
-    className: "xoot-char",
-    style: {
-      display: 'block',
-      overflow: 'visible',
-      animation: anim,
-      transformOrigin: '50% 90%'
-    }
-  }, React.createElement(Scene, {
-    cast: cast,
-    garment: garment
-  })));
+  return <span {...rest} className={`xoot-character ${className}`} style={{ width: `var(--xoot-character-size, ${size}px)`, ...style }}>
+    <span className="xoot-character-motion" data-motion={motion} style={{ animationDelay: `${delay}ms` }}>
+      <svg viewBox="8 32 184 176" width="184" height="176" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false" shapeRendering="geometricPrecision" strokeLinecap="round" strokeLinejoin="round">
+        <Scene cast={cast} garment={garment} />
+      </svg>
+    </span>
+  </span>;
 }

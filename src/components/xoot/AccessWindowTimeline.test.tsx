@@ -1,56 +1,47 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { AccessWindowTimeline } from "./AccessWindowTimeline";
 
-describe("AccessWindowTimeline", () => {
-  it("offers five discrete stages, not a slider", () => {
-    // There is nothing between the states — a code is not 40% released. A range input would
-    // imply intermediate values that do not exist, which is the handoff's own reasoning and
-    // the reason this is a list of buttons.
-    const { container } = render(<AccessWindowTimeline />);
-    expect(container.querySelector('input[type="range"]')).toBeNull();
-    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+describe("AccessWindowTimeline explanation", () => {
+  it("offers five discrete stages with a selected step and linked preview", () => {
+    render(<AccessWindowTimeline />);
+    const steps = screen.getAllByRole("listitem");
+    expect(steps).toHaveLength(5);
+    const opened = within(steps[1]).getByRole("button");
+    expect(opened).toHaveAttribute("aria-current", "step");
+    expect(document.getElementById(opened.getAttribute("aria-controls") ?? "")).toHaveAttribute("aria-live", "polite");
   });
 
-  it("shows codes only while the window is open", () => {
+  it("only shows example details in the open stages", () => {
     render(<AccessWindowTimeline />);
-    // Opens on the released stage, so the sample codes are visible.
-    expect(screen.getByText("1408#")).toBeInTheDocument();
-
-    // Step back to before the release: locked, and nothing readable.
-    fireEvent.click(screen.getByText("You save the details"));
-    expect(screen.queryByText("1408#")).not.toBeInTheDocument();
-    expect(screen.getByText(/Encrypted and unreadable/i)).toBeInTheDocument();
-
-    // Step forward to deletion. Matched on panel-only wording: "Not archived" alone appears
-    // in the stage list too, so it would pass for the wrong reason.
-    fireEvent.click(screen.getByText("The codes are deleted"));
-    expect(screen.queryByText("1408#")).not.toBeInTheDocument();
-    expect(screen.getByText(/Deleted seven days after the visit/i)).toBeInTheDocument();
+    expect(screen.getByText("EXAMPLE#")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /you save the details/i }));
+    expect(screen.queryByText("EXAMPLE#")).not.toBeInTheDocument();
+    expect(screen.getByText("In this explanation, the window is closed.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /access stays limited/i }));
+    expect(screen.getByText("EXAMPLE#")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /codes are removed/i }));
+    expect(screen.queryByText("EXAMPLE#")).not.toBeInTheDocument();
+    expect(screen.getByText("In this explanation, the codes have been removed.")).toBeInTheDocument();
   });
 
-  it("revokes from any stage, and says what revoking does not do", () => {
+  it("withdraws the illustration and resets when selecting another stage", () => {
     render(<AccessWindowTimeline />);
-    expect(screen.getByText("1408#")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /revoke access now/i }));
-
-    // Codes gone immediately, and the label distinguishes revoked from the routine deletion.
-    expect(screen.queryByText("1408#")).not.toBeInTheDocument();
-    expect(screen.getByText("Revoked")).toBeInTheDocument();
-    expect(screen.getByText(/withdrawn, not why/i)).toBeInTheDocument();
-
-    // The three things a customer needs to know before they dare press it.
-    const copy = document.body.textContent ?? "";
-    expect(copy).toMatch(/takes effect at the next read/i);
-    expect(copy).toMatch(/does not cancel the visit/i);
-    expect(copy).toMatch(/does not charge you/i);
+    const control = screen.getByRole("switch", { name: /illustrate withdrawn access/i });
+    fireEvent.click(control);
+    expect(control).toBeChecked();
+    expect(screen.queryByText("EXAMPLE#")).not.toBeInTheDocument();
+    expect(screen.getByText("Withdrawn")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /the window opens/i }));
+    expect(control).not.toBeChecked();
+    expect(screen.getByText("EXAMPLE#")).toBeInTheDocument();
   });
 
-  it("labels the panel as an illustration rather than a screenshot", () => {
-    // The sample codes are obviously fake and must stay that way. A demo that reads as a
-    // screenshot of a real customer's gate code is a worse problem than one nobody believes.
+  it("does not impersonate a connected booking or a live access action", () => {
     render(<AccessWindowTimeline />);
-    expect(screen.getByText(/illustration/i)).toBeInTheDocument();
+    expect(screen.getByText(/sharing and scheduled deletion are not available yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/no home or booking connected/i)).toBeInTheDocument();
+    expect(screen.getByText("Changes this explanation only.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /revoke access now/i })).not.toBeInTheDocument();
   });
 });
