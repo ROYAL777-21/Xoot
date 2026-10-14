@@ -8,7 +8,7 @@
     "dev": "vite",
     "config:check": "node scripts/config/validate-public-env.mjs",
     "lockfiles:check": "node scripts/config/validate-lockfiles.mjs",
-    "prebuild": "npm run config:check && npm run seo:validate && node scripts/build/write-native-association-files.mjs --target public",
+    "prebuild": "npm run design:check && npm run config:check && npm run seo:validate && node scripts/build/write-native-association-files.mjs --target public",
     "build": "vite build",
     "postbuild": "node scripts/build/copy-hostinger-files.mjs && node scripts/build/write-native-association-files.mjs --target dist && node scripts/build/write-build-info.mjs",
     "build:dev": "vite build --mode development",
@@ -63,7 +63,10 @@
     "ops:supabase:verify:live": "powershell -ExecutionPolicy Bypass -File scripts/ops/verify-supabase-live.ps1",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "kit:tokens": "node scripts/build/extract-kit-tokens.mjs",
-    "security:authz": "node scripts/security/authz-surface.mjs"
+    "security:authz": "node scripts/security/authz-surface.mjs",
+    "design:check": "node scripts/ops/assert-approved-handoff.mjs --self-test && node scripts/ops/assert-approved-handoff.mjs",
+    "ops:smoke:design:artifact": "node scripts/ops/verify-approved-design.mjs --artifact dist",
+    "ops:smoke:design:live": "node scripts/ops/verify-approved-design.mjs --url"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
