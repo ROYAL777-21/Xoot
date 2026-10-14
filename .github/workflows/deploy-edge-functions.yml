@@ -112,6 +112,18 @@ jobs:
 
       # The confirmation is checked in its own step, before checkout matters and before any
       # credential is used. A typo in the ref stops the run here rather than mid-upload.
+      # Production schema and function source must be exactly the approved release,
+      # never stale main or the concurrent Codex implementation branch.
+      - name: Reject deployment from an unapproved production source branch
+        if: inputs.environment == 'production'
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
+        run: |
+          if [ "$SOURCE_BRANCH" != "release/xoot-production" ]; then
+            echo "::error::Refusing a production Edge Function deploy from '$SOURCE_BRANCH'. Select release/xoot-production in the workflow branch dropdown."
+            exit 1
+          fi
+
       - name: Confirm production
         if: inputs.environment == 'production'
         env:
