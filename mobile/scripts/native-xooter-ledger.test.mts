@@ -58,6 +58,8 @@ test('native Xooter screens retain account-scoped fetch, safe job cards and boun
   const account = readFileSync(new URL('../src/app/account.tsx', import.meta.url), 'utf8');
   assert.match(account, /router\.push\("\/xooter\/jobs"\)/);
   assert.match(jobs, /get-xooter-job-cards/);
+  assert.match(jobs, /WebBrowser\.openBrowserAsync\(portal\)/);
+  assert.doesNotMatch(jobs, /Linking\.openURL\(portal\)/);
   assert.match(jobs, /\.eq\('user_id', userId\)/);
   assert.match(jobs, /key=\{user\.id\}/);
   assert.match(jobs, /parseXooterJobCards\(data, account\.id\)/);
