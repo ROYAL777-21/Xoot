@@ -63,8 +63,12 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     const date = params.get("date");
     if (validDate(date) && date >= bookingDateInSast()) draft.date = date;
     const frequency = params.get("frequency");
-    if (frequency === "weekly" || frequency === "fortnightly") {
+    if (frequency === "once" || frequency === "weekly" || frequency === "fortnightly") {
       draft.frequency = frequency;
+      draft.repeatDays = frequency === "once" ? [] : [bookingWeekday(draft.date)];
+    } else {
+      // The date may have come from a deep link. Keep the default single
+      // weekly repeat on that date's weekday, not yesterday's weekday.
       draft.repeatDays = [bookingWeekday(draft.date)];
     }
     return draft;
@@ -205,7 +209,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     setError(null); setStep(value => Math.min(4, value + 1));
   };
   const chooseDate = (date: string) => updateInput({ date, time: bookingStartSlots({ ...input, date })[0] ?? "08:00",
-    repeatDays: input.frequency === "once" ? [] : [...new Set([...input.repeatDays, bookingWeekday(date)])].filter(Number.isFinite) });
+    repeatDays: input.frequency === "once" ? [] : [bookingWeekday(date)] });
 
   const crewPicker = <fieldset><legend className="xoot-booking-label">{website ? "How many Xooters" : "Your crew"}</legend><div className="xoot-booking-crew">{Array.from({ length: maxCrew }, (_, i) => i + 1).map(size => <button key={size} type="button" aria-pressed={input.crewSize === size} onClick={() => { updateInput({ crewSize: size }); setSelectedIds([]); }} className={input.crewSize === size ? "is-selected" : ""}>{!website && <Users size={19} />}<strong>{website ? `${size} ${size === 1 ? "Xooter" : "Xooters"}` : size}</strong>{!website && <span>{size === 1 ? "Xooter" : "Xooters"}</span>}</button>)}</div><p className="xoot-booking-help">One job, shared by your crew. Review the total and estimated duration before booking.</p></fieldset>;
 
