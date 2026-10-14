@@ -100,7 +100,14 @@ function VisitCard({ booking, past }: { booking: NativeBooking; past: boolean })
             <Text selectable style={styles.detail}>No Xooter assigned yet</Text>
           </View>
         )}
-        {past && booking.price > 0 ? <Text selectable style={styles.paid}>Booking total R{booking.price.toFixed(2)}</Text> : null}
+        {/* bookings.price is not proof of a provider-settled payment.
+            Do not present it as a completed charge or receipt. */}
+        <Pressable accessibilityRole="button" accessibilityLabel={`View details for ${serviceTitle(booking)}`}
+          onPress={() => router.push({ pathname: '/visits/[id]', params: { id: booking.id } })}
+          style={({ pressed }) => [styles.viewDetails, pressed && nativeCoreStyles.pressed]}>
+          <Text style={styles.viewDetailsText}>View visit details</Text>
+          <CoreIcon name="chevron-right" color={nativePalette.violetDark} size={17} />
+        </Pressable>
         {!past && booking.payment_status === 'pending' && Number.isFinite(booking.price) && booking.price > 0 ? (
           <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/split-fare', params: { bookingId: booking.id, total: String(booking.price) } })} style={({ pressed }) => [styles.splitFare, pressed && nativeCoreStyles.pressed]}>
             <Text selectable={false} style={styles.splitFareText}>Split this fare</Text>
@@ -132,7 +139,9 @@ const styles = StyleSheet.create({
   rating: { color: nativePalette.honeyInk, fontFamily: nativeFonts.body, fontSize: 10, marginTop: 2 },
   rebook: { alignItems: 'center', backgroundColor: nativePalette.ink, borderRadius: 999, flexDirection: 'row', gap: 5, minHeight: 36, paddingHorizontal: 12 },
   rebookText: { color: nativePalette.card, fontFamily: nativeFonts.bodyBold, fontSize: 11 },
-  paid: { color: nativePalette.muted, fontFamily: nativeFonts.mono, fontSize: 11, textAlign: 'right' },
+  viewDetails: { borderTopWidth: 1, borderColor: nativePalette.border, minHeight: 43,
+    alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row', paddingTop: 10 },
+  viewDetailsText: { color: nativePalette.violetDark, fontFamily: nativeFonts.bodyBold, fontSize: 12 },
   splitFare: { alignItems: 'center', borderColor: nativePalette.border, borderRadius: 999, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 16 },
   splitFareText: { color: nativePalette.ink, fontFamily: nativeFonts.bodyBold, fontSize: 12 },
 });

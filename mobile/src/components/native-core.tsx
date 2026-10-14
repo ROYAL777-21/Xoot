@@ -59,6 +59,10 @@ const NativeCoreContext = createContext<NativeCoreState | null>(null);
 export function NativeCoreDataProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<NativeBooking[]>([]);
+  // Data remains invisible until it has been fetched for the current account.
+  // Clearing state in an effect is too late: one render can show the last user's
+  // private bookings, address and helper profiles after an auth switch.
+  const [loadedAccountId, setLoadedAccountId] = useState<string | null>(null);
   const [profile, setProfile] = useState<NativeProfile | null>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isLoading, setIsLoading] = useState(Boolean(user));
@@ -68,6 +72,7 @@ export function NativeCoreDataProvider({ children }: { children: React.ReactNode
   const refresh = useCallback(async () => {
     const version = ++refreshVersion.current;
     if (!user) {
+      setLoadedAccountId(null);
       setBookings([]);
       setProfile(null);
       setUnreadNotifications(0);
@@ -119,6 +124,7 @@ export function NativeCoreDataProvider({ children }: { children: React.ReactNode
     setProfile(profileResult.data);
     setUnreadNotifications(notificationResult.count ?? 0);
     setBookings(rawBookings.map((booking) => ({ ...booking, xooter: byBooking.get(booking.id) ?? null })));
+    setLoadedAccountId(user.id);
     } catch {
       if (version === refreshVersion.current) setError('Your Xoot details could not be refreshed. Check your connection and try again.');
     } finally {
@@ -146,9 +152,18 @@ export function NativeCoreDataProvider({ children }: { children: React.ReactNode
     };
   }, [refresh, user]);
 
+  const currentAccountId = user?.id ?? null;
+  const ownerMatched = loadedAccountId === currentAccountId;
   const value = useMemo(
-    () => ({ bookings, error, isLoading, profile, unreadNotifications, refresh }),
-    [bookings, error, isLoading, profile, unreadNotifications, refresh],
+    () => ({
+      bookings: ownerMatched ? bookings : [],
+      error: ownerMatched ? error : null,
+      isLoading: isLoading || !ownerMatched,
+      profile: ownerMatched ? profile : null,
+      unreadNotifications: ownerMatched ? unreadNotifications : 0,
+      refresh,
+    }),
+    [bookings, error, isLoading, profile, unreadNotifications, refresh, ownerMatched],
   );
 
   return <NativeCoreContext.Provider value={value}>{children}</NativeCoreContext.Provider>;

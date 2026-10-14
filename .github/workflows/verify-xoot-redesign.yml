@@ -51,6 +51,8 @@ jobs:
         run: npm --prefix mobile run test:booking
       - name: Test native gift handoff contracts
         run: npm --prefix mobile run test:gift
+      - name: Test native visit detail lifecycle and owner-scoped routing
+        run: npm --prefix mobile run test:visit
       - name: Lint
         run: npm run lint
       - name: Full web unit test suite
