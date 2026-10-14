@@ -1,6 +1,15 @@
 import { getPublicConfigIssueForEnv, getPublicSecretLeaks, isSupabasePublicConfigComplete } from "@/lib/env";
 import { resolvePublicEnv } from "@/lib/public-environment";
 
+type PublicEnvironment = Record<string, string | boolean | undefined>;
+type RuntimeFlags = { prod?: boolean; dev?: boolean };
+
+/** Keep the startup guard and Supabase client on the same resolved configuration. */
+export const inspectStartupConfig = (env: PublicEnvironment, flags: RuntimeFlags = {}) => {
+  const resolvedEnv = resolvePublicEnv(env);
+  return { resolvedEnv, issue: getPublicConfigIssueForEnv(resolvedEnv, flags) };
+};
+
 const renderFatalConfigError = () => {
   if (typeof document === "undefined" || !document.body) return;
 
@@ -18,10 +27,7 @@ const renderFatalConfigError = () => {
 };
 
 export function assertProductionEnv() {
-  // Match the Supabase client: production defaults apply when host variables are blank.
-  // Previews have no committed defaults and remain isolated from production.
-  const resolvedEnv = resolvePublicEnv(import.meta.env);
-  const issue = getPublicConfigIssueForEnv(resolvedEnv, {
+  const { resolvedEnv, issue } = inspectStartupConfig(import.meta.env, {
     prod: import.meta.env.PROD,
     dev: import.meta.env.DEV,
   });
