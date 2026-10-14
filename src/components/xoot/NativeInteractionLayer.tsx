@@ -83,7 +83,9 @@ export const NativeInteractionLayer = () => {
     viewport?.addEventListener("resize", syncViewport);
     viewport?.addEventListener("scroll", syncViewport);
     window.addEventListener("resize", syncViewport);
-    window.addEventListener("scroll", blurActiveField, { passive: true });
+    // A focused input may scroll itself into view and iOS Safari may scroll while
+    // opening the keyboard. Blurring all fields on window scroll made typing impossible.
+    // Dismiss focus on an intentional pointer press outside an editable field instead.
     document.addEventListener("pointerdown", handlePointerDown, { capture: true });
 
     return () => {
@@ -91,7 +93,7 @@ export const NativeInteractionLayer = () => {
       viewport?.removeEventListener("resize", syncViewport);
       viewport?.removeEventListener("scroll", syncViewport);
       window.removeEventListener("resize", syncViewport);
-      window.removeEventListener("scroll", blurActiveField);
+
       document.removeEventListener("pointerdown", handlePointerDown, { capture: true });
       document.body.dataset.keyboardOpen = "false";
       delete root.dataset.nativePlatform;
