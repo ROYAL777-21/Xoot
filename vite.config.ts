@@ -3,8 +3,29 @@ import react from "@vitejs/plugin-react";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import path from "path";
 
+// Prebuild verification derives production from VERCEL_ENV/CONTEXT, but those host
+// variables are not exposed to browser code. Vite must embed the *same* app environment
+// for the public configuration resolver used by the startup check and Supabase client.
+export const resolveHostAppEnvironment = (env: Record<string, string | undefined>): "production" | "development" | undefined => {
+  if (env.VERCEL_ENV) return env.VERCEL_ENV.trim().toLowerCase() === "production" ? "production" : "development";
+  if (env.CONTEXT) return env.CONTEXT.trim().toLowerCase() === "production" ? "production" : "development";
+  return undefined;
+};
+
+export const setViteAppEnvironment = (env: Record<string, string | undefined>) => {
+  const hostEnvironment = resolveHostAppEnvironment(env);
+  const explicit = env.VITE_APP_ENV?.trim().toLowerCase();
+  if (hostEnvironment === "development" && explicit === "production") {
+    throw new Error("A preview build must not use VITE_APP_ENV=production or production Supabase defaults.");
+  }
+  if (!explicit && hostEnvironment) env.VITE_APP_ENV = hostEnvironment;
+  return env.VITE_APP_ENV;
+};
+
 // https://vitejs.dev/config/
 export default defineConfig(() => {
+  const appEnvironment = setViteAppEnvironment(process.env);
+  if (appEnvironment) console.log(`[Xoot] Vite browser environment: ${appEnvironment}`);
   const enableSentryUpload = Boolean(process.env.VITE_SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN);
 
   return {
