@@ -75,10 +75,19 @@ const run = async () => {
   );
 
   // ── Private routes must not be indexable ──────────────────────────────────────────────────────
-  for (const route of ["/app", "/auth", "/admin"]) {
+  // Cover every private entry point and an otherwise unlisted nested path: protecting
+  // only known Xooter pages silently exposes any newly added private route.
+  for (const route of [
+    "/app", "/auth", "/admin", "/xooter", "/xooter/jobs",
+    "/xooter/earnings", "/xooter/kyc", "/xooter/profile",
+    "/xooter/training", "/xooter/apply", "/xooter/future-private-route",
+  ]) {
     const response = await fetchWithTimeout(`${target}${route}`);
     const robots = response.headers.get("x-robots-tag") ?? "";
-    record(`${route} is noindex`, /noindex/.test(robots), robots || "(header absent)");
+    const cache = response.headers.get("cache-control") ?? "";
+    record(`${route} responds without server failure`, response.status < 500, `HTTP ${response.status}`);
+    record(`${route} is noindex`, /(?:^|,)\\s*noindex(?:,|$)/i.test(robots), robots || "(header absent)");
+    record(`${route} is private no-store`, /\\bno-store\\b/i.test(cache) && /\\bprivate\\b/i.test(cache), cache || "(header absent)");
   }
 
   // ── Native app links must be served as real JSON, never rewritten to index.html ───────────────
