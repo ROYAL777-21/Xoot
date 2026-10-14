@@ -23,6 +23,8 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**14 October 2026 — Release branch protection and visual regression gate (GPT-6):** Holding `release/xoot-production` for production deployment-source protection and a rendered-site regression check distinguishing the approved redesign from old main. PR #46 remains separate, and no payment/voice/backend production flags are modified. Release work owns deployment protections; visual/browser checks cross into Correctness and are flagged for review.
+
 
 **26 September checkpoint, same authorized cross-role Codex claim:** gift presentation/request
 contract is committed at `303bf9b`; native Search, notifications, Profile and Rewards work has passed
