@@ -56,4 +56,6 @@ test('native Gift and Care+ show honest fulfilment and live route access', () =>
   assert.match(care, /subscription_plans/);
   assert.match(care, /user_subscriptions/);
   assert.match(care, /Confirm cancellation/);
+  assert.match(care, /active \\|\\| pending/);
+  assert.match(care, /Withdraw membership request/);
 });
