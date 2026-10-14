@@ -246,6 +246,21 @@ export default function AccountScreen() {
           detail="Payment management is not available in this app yet."
         />
       </Card>
+      <SectionLabel>Care and gifting</SectionLabel>
+      <Card style={s.list}>
+        <Row
+          icon="gift"
+          title="Gift a Clean"
+          detail="Choose visits and personalise a real gift card"
+          onPress={() => router.push("/gifts")}
+        />
+        <Row
+          icon="heart"
+          title="Care+"
+          detail="Membership benefits, status and availability"
+          onPress={() => router.push("/care-plus")}
+        />
+      </Card>
       <SectionLabel>Your app</SectionLabel>
       <Card style={s.list}>
         <Row
