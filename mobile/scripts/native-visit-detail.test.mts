@@ -6,6 +6,12 @@ import { isBookingId, LIVE_VISIT_STAGES, visitProgress, visitStatusStory } from 
 test('real booking lifecycle is source-ordered without fabricated route estimates', () => {
   assert.deepEqual([...LIVE_VISIT_STAGES], ['awaiting_assignment','assigned','contractor_accepted','en_route','arrived','in_progress','completed']);
   assert.equal(visitProgress('assigned')?.index, 1);
+  assert.equal(visitProgress('confirmed')?.index, 2);
+  assert.equal(visitProgress('enroute')?.index, 3);
+  assert.equal(visitProgress('pending'), null);
+  assert.match(visitStatusStory('confirmed').title, /accepted/i);
+  assert.match(visitStatusStory('enroute').title, /way/i);
+  assert.match(visitStatusStory('pending').title, /payment/i);
   assert.equal(visitProgress('reassigned')?.index, 1);
   assert.equal(visitProgress('rated')?.index, 6);
   assert.equal(visitProgress('cancelled'), null);
@@ -35,6 +41,8 @@ test('visit details use only owner-bound booking provider and no payment/ETA inv
   assert.match(file, /useNativeCoreData/);
   assert.match(file, /user && !authLoading/);
   assert.match(file, /booking\.status/);
+  assert.match(file, /error && !booking/);
+  assert.match(file, /Assigned Xooter details are temporarily unavailable/);
   assert.match(listing, /pathname: '\/visits\/\[id\]'/);
   assert.doesNotMatch(file, /12 min away|Paid successfully|payout completed|live map available/i);
   assert.doesNotMatch(listing, /Booking total R/);
