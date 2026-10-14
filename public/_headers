@@ -55,23 +55,11 @@
   X-Robots-Tag: noindex, noarchive, nosnippet
   Cache-Control: no-store, private, max-age=0, must-revalidate
 
-/xooter/jobs*
+/xooter
   X-Robots-Tag: noindex, noarchive, nosnippet
   Cache-Control: no-store, private, max-age=0, must-revalidate
 
-/xooter/earnings*
-  X-Robots-Tag: noindex, noarchive, nosnippet
-  Cache-Control: no-store, private, max-age=0, must-revalidate
-
-/xooter/kyc*
-  X-Robots-Tag: noindex, noarchive, nosnippet
-  Cache-Control: no-store, private, max-age=0, must-revalidate
-
-/xooter/profile*
-  X-Robots-Tag: noindex, noarchive, nosnippet
-  Cache-Control: no-store, private, max-age=0, must-revalidate
-
-/xooter/training*
+/xooter/*
   X-Robots-Tag: noindex, noarchive, nosnippet
   Cache-Control: no-store, private, max-age=0, must-revalidate
 

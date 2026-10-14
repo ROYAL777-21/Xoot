@@ -23,6 +23,7 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+
 **26 September checkpoint, same authorized cross-role Codex claim:** gift presentation/request
 contract is committed at `303bf9b`; native Search, notifications, Profile and Rewards work has passed
 scoped reviews. Dependency updates retain the existing web React and Expo SDK 56 runtimes; web
@@ -68,6 +69,12 @@ behind staging; payment gates are closed. The older DNS and migration counts bel
 Production publication remains dependent on reviewed code, release evidence and working provider
 configuration. No production migration, payment or operational action has been performed by this
 implementation session.
+
+---
+
+## ✅ RELEASED — 14 October 2026 — isolated private-route security release
+
+GPT-6 completed and released the isolated `goal/xoot-production-hardening-20261014` claim, based on the founder-selected redesigned release. [PR #50](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/50) remains separate from Codex PR #46 and `main`. Vercel production `dpl_CYGVbfpayMvcRxfS7ZSVRLgSNdBB` reported `READY` from commit `66bdf8d`; Vercel production aliases include `xoot.co.za` and `xoot.vercel.app`. Updated host policies, the static security assertions and live verifier for all `/xooter/*` paths. Cross-role security assertions changed deliberately to prevent a false pass; CodeRabbit and Vercel preview checks reported success. Browser/live HTTP verification and the independent Claude security review remain open, as do the actual PayFast, Twilio, Supabase database/function and full-handoff goals. The Claude scan failed due insufficient account credit. Direct production Supabase audit found 82 migration entries and 57 functions but no `public-xooter-directory`, `get-booking-quote`, or `xooter-job-checklist`. No production database writes, provider switches or Codex branch changes. Detailed evidence: `docs/release/evidence/2026-10-14/README.md`.
 
 ---
 

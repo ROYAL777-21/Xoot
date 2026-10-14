@@ -38,11 +38,8 @@ const requiredPrivateRoutes = [
   "/auth/*",
   "/admin",
   "/admin/*",
-  "/xooter/jobs*",
-  "/xooter/earnings*",
-  "/xooter/kyc*",
-  "/xooter/profile*",
-  "/xooter/training*",
+  "/xooter",
+  "/xooter/*",
 ];
 
 requireMatch("Netlify headers define CSP", headersText, /Content-Security-Policy:\s+.*default-src 'self'/);
@@ -70,6 +67,8 @@ requireMatch("Apache .htaccess CSP blocks framing", htaccessText, /Content-Secur
 requireMatch("Apache .htaccess CSP blocks plugins", htaccessText, /Content-Security-Policy ".*object-src 'none'/);
 requireMatch("Apache .htaccess protects private SPA routes from indexing", htaccessText, /SetEnvIf Request_URI "\^\/\(app\|auth\|admin\)\(\/\|\$\)" XOOT_NOINDEX/);
 requireMatch("Apache .htaccess marks private SPA routes no-store", htaccessText, /SetEnvIf Request_URI "\^\/\(app\|auth\|admin\)\(\/\|\$\)" XOOT_NOSTORE/);
+if (!htaccessText.includes('SetEnvIf Request_URI "^/xooter(/|$)" XOOT_NOINDEX')) findings.push("Apache all Xooter routes noindex missing");
+if (!htaccessText.includes('SetEnvIf Request_URI "^/xooter(/|$)" XOOT_NOSTORE')) findings.push("Apache all Xooter routes no-store missing");
 requireMatch("Apache .htaccess emits no-store for private routes", htaccessText, /Header always set Cache-Control "no-store, private, max-age=0, must-revalidate" env=XOOT_NOSTORE/);
 requireMatch("Apache .htaccess leaves service worker revalidating", htaccessText, /<Files "sw\.js">[\s\S]*Header set Cache-Control "no-cache"[\s\S]*<\/Files>/);
 requireMatch("Netlify build uses deterministic npm install", netlifyText, /command\s*=\s*"npm ci --no-audit --prefer-offline && npm run build"/);
@@ -118,7 +117,10 @@ if (!existsSync(vercelPath)) {
    */
   for (const route of requiredPrivateRoutes) {
     const prefix = route.replace(/[*]$/, "").replace(/\/$/, "");
-    const rules = vercelHeadersFor((source) => source === prefix || source.startsWith(`${prefix}/`) || source.startsWith(`${prefix}(`));
+    const rules = vercelHeadersFor((source) =>
+      route === "/xooter" ? source === "/xooter" :
+      route === "/xooter/*" ? source === "/xooter/(.*)" :
+      source === prefix || source.startsWith(`${prefix}/`) || source.startsWith(`${prefix}(`));
     if (!/X-Robots-Tag:\s+noindex, noarchive, nosnippet/.test(rules)) {
       findings.push(`Vercel ${route} noindex header missing`);
     }
