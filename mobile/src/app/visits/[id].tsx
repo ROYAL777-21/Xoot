@@ -14,7 +14,7 @@ export default function VisitDetailScreen() {
   const safeId = isBookingId(id) ? id : null;
   // Bookings are fetched in native-core with .eq('user_id', user.id) and are
   // invalidated when that account changes. Never use a public-ID-only query.
-  const booking = safeId && user && !authLoading && !error ? bookings.find(item => item.id === safeId) : null;
+  const booking = safeId && user && !authLoading ? bookings.find(item => item.id === safeId) : null;
   const story = booking ? visitStatusStory(booking.status) : null;
   const progress = booking ? visitProgress(booking.status) : null;
 
@@ -32,7 +32,7 @@ export default function VisitDetailScreen() {
       detail="Addresses, Xooter assignments and visit updates belong to your protected Xoot account."
       action="Sign in" onAction={() => router.push('/account')} /></Screen>;
   }
-  if (error) {
+  if (error && !booking) {
     return <Screen>{head}<EmptyState title="Visit details are unavailable"
       detail={error} action="Try again" onAction={() => void refresh()} /></Screen>;
   }
@@ -45,6 +45,7 @@ export default function VisitDetailScreen() {
   return <Screen contentStyle={s.screen} refreshControl={
     <RefreshControl refreshing={isLoading} onRefresh={() => void refresh()} tintColor={nativePalette.violet} />}>
     {head}
+    {error ? <Card style={s.notice}><Text style={s.copy}>Some related booking details are temporarily unavailable. The recorded visit information below can still be viewed.</Text></Card> : null}
     <Card style={s.hero}>
       <View style={s.heroTop}><View style={s.symbol}><CoreIcon name="sparkles" color={nativePalette.blushInk} size={30} /></View>
         <Pill tone={statusTone(booking.status)}>{visibleStatus(booking.status)}</Pill></View>
@@ -78,8 +79,8 @@ export default function VisitDetailScreen() {
           ? <Text style={s.rating}>★ {booking.xooter.rating.toFixed(1)}</Text> : null}
       </View>
     </Card> : <Card style={s.infoCard}>
-      <Text style={s.value}>Your Xooter is not assigned yet</Text>
-      <Text style={s.copy}>When Xoot has a confirmed assignment, their available profile will appear here.</Text>
+      <Text style={s.value}>{error ? 'Assigned Xooter details are temporarily unavailable' : 'Your Xooter is not assigned yet'}</Text>
+      <Text style={s.copy}>{error ? 'Try refreshing. Your visit status and scheduled information remain accessible.' : 'When Xoot has a confirmed assignment, their available profile will appear here.'}</Text>
     </Card>}
 
     <Text style={s.sectionTitle}>Journey</Text>
