@@ -43,7 +43,7 @@ describe("founder-approved weekly default across every available booking service
 describe("truthful gift bundle durations", () => {
   it("uses 52 weekly visits for an annual clean, never 12 or 32", () => {
     expect(ANNUAL_WEEKLY_VISITS).toBe(52);
-    expect(giftBundles.find(gift => gift.count === 12)?.detail).toMatch(/three months weekly/i);
+    expect(giftBundles.find(gift => gift.count === 12)?.detail).toMatch(/three months if used weekly/i);
     expect(giftAppBundles.find(gift => gift.count === 6)?.note).not.toMatch(/half a year/i);
     expect(giftAppBundles.find(gift => gift.count === 12)?.note).toMatch(/twelve weeks/i);
     expect([...giftBundles, ...giftAppBundles].filter(x => x.count === 12).every(x =>
