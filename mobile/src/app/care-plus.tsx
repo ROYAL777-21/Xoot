@@ -119,22 +119,24 @@ function CarePlusFlow({ userId }: { userId: string | null }) {
         setLoading(true);
         void refresh(() => true).catch(() => { setLoading(false); setError('Please try again shortly.'); });
       }}>Retry membership details</PrimaryAction>
-      : active ? <>
-        <Text style={s.copy}>Your membership status is loaded from your Xoot account.</Text>
+      : active || pending ? <>
+        {pending
+          ? <Card style={s.pending}><Text style={s.title}>Your request is recorded</Text>
+              <Text style={s.copy}>Care+ is not active until payment has been confirmed. You may withdraw this request.</Text>
+            </Card>
+          : <Text style={s.copy}>Your membership status is loaded from your Xoot account.</Text>}
         {!confirmCancel
           ? <Pressable accessibilityRole="button" onPress={() => setConfirmCancel(true)} style={s.cancel}>
-              <Text style={s.cancelText}>Cancel membership</Text></Pressable>
+              <Text style={s.cancelText}>{pending ? 'Withdraw membership request' : 'Cancel membership'}</Text></Pressable>
           : <Card style={s.confirm}>
-              <Text style={s.title}>Cancel Care+?</Text>
-              <Text style={s.copy}>The cancellation is processed by Xoot. Your bookings are not automatically cancelled.</Text>
+              <Text style={s.title}>{pending ? 'Withdraw Care+ request?' : 'Cancel Care+?'}</Text>
+              <Text style={s.copy}>Xoot will process the request. Your existing bookings are not automatically cancelled.</Text>
               <PrimaryAction disabled={acting} onPress={() => void submit('cancel_membership')}>
-                {acting ? 'Requesting cancellation…' : 'Confirm cancellation'}</PrimaryAction>
+                {acting ? 'Requesting cancellation…' : pending ? 'Confirm withdrawal' : 'Confirm cancellation'}</PrimaryAction>
               <Pressable accessibilityRole="button" onPress={() => setConfirmCancel(false)} style={s.cancel}>
-                <Text style={s.cancelText}>Keep my membership</Text></Pressable>
+                <Text style={s.cancelText}>{pending ? 'Keep my request' : 'Keep my membership'}</Text></Pressable>
             </Card>}
-      </> : pending ? <Card style={s.pending}><Text style={s.title}>Your request is recorded</Text>
-          <Text style={s.copy}>Care+ is not active until its payment is confirmed. You will not be charged from this screen.</Text>
-        </Card>
+      </>
       : <PrimaryAction disabled={acting} onPress={() => void submit('request_membership')}>
           {acting ? 'Sending membership request…' : 'Request Care+ membership'}</PrimaryAction>}
     <Pressable accessibilityRole="button" style={s.gift} onPress={() => router.push('/gifts')}>
