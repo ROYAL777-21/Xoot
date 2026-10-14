@@ -5,7 +5,10 @@
   "outputDirectory": "dist",
   "installCommand": "npm ci --no-audit --prefer-offline",
   "rewrites": [
-    { "source": "/((?!\\.well-known/).*)", "destination": "/index.html" }
+    {
+      "source": "/((?!\\.well-known/).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
@@ -15,142 +18,248 @@
           "key": "Content-Security-Policy",
           "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com https://us.i.posthog.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://sandbox.payfast.co.za/eng/process https://www.payfast.co.za/eng/process; upgrade-insecure-requests"
         },
-        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
         {
           "key": "Permissions-Policy",
           "value": "accelerometer=(), ambient-light-sensor=(), autoplay=(), bluetooth=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=()"
         },
-        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
-        { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
-        { "key": "Origin-Agent-Cluster", "value": "?1" },
-        { "key": "X-Permitted-Cross-Domain-Policies", "value": "none" }
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Origin-Agent-Cluster",
+          "value": "?1"
+        },
+        {
+          "key": "X-Permitted-Cross-Domain-Policies",
+          "value": "none"
+        }
       ]
     },
     {
       "source": "/(.*).js",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/(.*).css",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/manifest.webmanifest",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
     },
     {
       "source": "/manifest.json",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
     },
     {
       "source": "/icon-192.png",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/icon-512.png",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/apple-touch-icon.png",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/.well-known/apple-app-site-association",
       "headers": [
-        { "key": "Content-Type", "value": "application/json" },
-        { "key": "Cache-Control", "value": "public, max-age=300" }
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        }
       ]
     },
     {
       "source": "/.well-known/assetlinks.json",
       "headers": [
-        { "key": "Content-Type", "value": "application/json" },
-        { "key": "Cache-Control", "value": "public, max-age=300" }
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        }
       ]
     },
     {
       "source": "/sw.js",
-      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
     },
     {
       "source": "/app",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, private, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/app/(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, private, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/auth",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, private, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/auth/(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, private, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/admin",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, private, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/admin/(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, private, max-age=0, must-revalidate"
+        }
       ]
     },
     {
-      "source": "/xooter/jobs(.*)",
+      "source": "/xooter",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, private, max-age=0, must-revalidate"
+        }
       ]
     },
     {
-      "source": "/xooter/earnings(.*)",
+      "source": "/xooter/(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/xooter/kyc(.*)",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/xooter/profile(.*)",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/xooter/training(.*)",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
-        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, private, max-age=0, must-revalidate"
+        }
       ]
     }
   ]
