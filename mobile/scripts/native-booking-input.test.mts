@@ -35,7 +35,14 @@ test('date validation uses SAST midnight and a one-year upper bound', () => {
 test('date changes keep repeat days consistent and one-time visits have no repeat days', () => {
   const weekly = { ...createBookingInput('regular', NOW), frequency: 'weekly' as const, repeatDays: [1, 3] };
   const next = withBookingDate(weekly, '2026-10-02', NOW);
-  assert.deepEqual(next.repeatDays, [1, 3, 5]);
+  // The original first-visit weekday moves; the explicitly chosen extra day remains.
+  assert.deepEqual(next.repeatDays, [3, 5]);
+  const plainWeekly = createBookingInput('regular', NOW);
+  assert.equal(plainWeekly.frequency, 'weekly');
+  assert.deepEqual(plainWeekly.repeatDays, [bookingWeekday(plainWeekly.date)]);
+  const changed = withBookingDate(plainWeekly, '2026-10-02', NOW);
+  assert.deepEqual(changed.repeatDays, [bookingWeekday(changed.date)]);
+  assert.deepEqual(nativeBookingPrefill({ service: 'airbnb', date: '2026-10-02' }, NOW).input.repeatDays, [5]);
   assert.ok(next.repeatDays.includes(bookingWeekday(next.date)));
   assert.deepEqual(withBookingDate({ ...weekly, frequency: 'once' }, '2026-10-02', NOW).repeatDays, []);
   assert.equal(withBookingDate(weekly, 'bad', NOW).time, '');
