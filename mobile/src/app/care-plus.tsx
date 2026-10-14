@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
 
 type Plan = { id: string; name: string; monthly_price: number };
-type Membership = { plan_id: string; status: string };
+type Membership = { plan_id: string | null; status: string };
 const benefits = [
   { title: 'Home Memory', body: 'Keep pets, access, parking and cleaning preferences with your home.' },
   { title: 'Favourite Xooter', body: 'Rebook a trusted professional when they are available.' },
@@ -69,6 +69,7 @@ function CarePlusFlow({ userId }: { userId: string | null }) {
       setLoading(true);
       await refresh(() => true);
     } catch {
+      setLoading(false);
       setError('Your request could not be confirmed. Please try again or contact support.');
     } finally {
       setActing(false);
