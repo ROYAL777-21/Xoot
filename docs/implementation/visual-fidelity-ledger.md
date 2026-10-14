@@ -379,3 +379,7 @@ Founder override: one calendar year is approximately **52 weeks**, so twelve wee
 ## 15 October 2026 — Expo source composition slice
 
 Added native Gift a Clean `/gifts` with original `app/Gift.jsx` card-first three-step composition, responsive colour selector, editable notes and reviewed server quote (no unverified payment/delivery), plus the `app/CarePlus.jsx`-inspired membership hero/benefits and cancellation step with real plan/member status. Both routes are linked under native You. UI fidelity is based on source tokens, shape and interaction; **no real iOS/Android screenshot comparison or authenticated device journey has been completed**. Those acceptance gates remain open. Backend checkout and transaction lifecycle are unchanged.
+
+## 15 October 2026 — native visit detail composition
+
+The mobile Visits cards link to a new original-source-inspired visit detail: status hero, service/date/address, assigned Xooter, current journey and support/rebook actions. All values come from the owner-bound native booking provider, with no simulated ETA, GPS, checklist, receipt or completion timeline. Comparison against live iOS/Android captures remains **unverified**; payment settlement, signed-in test accounts and backend live tracking depend on their separate release gates.
