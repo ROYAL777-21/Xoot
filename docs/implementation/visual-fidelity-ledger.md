@@ -383,3 +383,7 @@ Added native Gift a Clean `/gifts` with original `app/Gift.jsx` card-first three
 ## 15 October 2026 — native visit detail composition
 
 The mobile Visits cards link to a new original-source-inspired visit detail: status hero, service/date/address, assigned Xooter, current journey and support/rebook actions. All values come from the owner-bound native booking provider, with no simulated ETA, GPS, checklist, receipt or completion timeline. Comparison against live iOS/Android captures remains **unverified**; payment settlement, signed-in test accounts and backend live tracking depend on their separate release gates.
+
+## 15 October 2026 — Xooter native jobs and earnings
+
+Source `app/Xooter.jsx` income-first hero, job categories and earnings rows have been implemented using native handoff type, space and palette tokens and live owner-filtered data; no sample payout sums, fabricated jobs or sensitive addresses have been ported. This remains a **code handoff**, not a live mobile pixel-parity acceptance. Device screenshots, financial receipts, job action paths and secure access grants are still gated.
