@@ -26,6 +26,6 @@
   "production": {
     "VITE_SUPABASE_URL": "https://mvlrkelahhsyjrwgsxaf.supabase.co",
     "VITE_SUPABASE_PROJECT_ID": "mvlrkelahhsyjrwgsxaf",
-    "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_fa9g4tx0elr7w_O11ZJksQ_gG0lS4Sk"
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_1DEKWv_95aDk7hHFMFtE5Q_l67tMf8L"
   }
 }

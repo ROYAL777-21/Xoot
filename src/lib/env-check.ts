@@ -1,4 +1,14 @@
 import { getPublicConfigIssueForEnv, getPublicSecretLeaks, isSupabasePublicConfigComplete } from "@/lib/env";
+import { resolvePublicEnv } from "@/lib/public-environment";
+
+type PublicEnvironment = Record<string, string | boolean | undefined>;
+type RuntimeFlags = { prod?: boolean; dev?: boolean };
+
+/** Keep the startup guard and Supabase client on the same resolved configuration. */
+export const inspectStartupConfig = (env: PublicEnvironment, flags: RuntimeFlags = {}) => {
+  const resolvedEnv = resolvePublicEnv(env);
+  return { resolvedEnv, issue: getPublicConfigIssueForEnv(resolvedEnv, flags) };
+};
 
 const renderFatalConfigError = () => {
   if (typeof document === "undefined" || !document.body) return;
@@ -17,7 +27,7 @@ const renderFatalConfigError = () => {
 };
 
 export function assertProductionEnv() {
-  const issue = getPublicConfigIssueForEnv(import.meta.env, {
+  const { resolvedEnv, issue } = inspectStartupConfig(import.meta.env, {
     prod: import.meta.env.PROD,
     dev: import.meta.env.DEV,
   });
@@ -27,9 +37,9 @@ export function assertProductionEnv() {
   const localStaticPreview =
     typeof window !== "undefined" &&
     ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname) &&
-    !isSupabasePublicConfigComplete(import.meta.env) &&
-    getPublicSecretLeaks(import.meta.env).length === 0 &&
-    import.meta.env.VITE_ENABLE_DEMO_MODE !== "true";
+    !isSupabasePublicConfigComplete(resolvedEnv) &&
+    getPublicSecretLeaks(resolvedEnv).length === 0 &&
+    resolvedEnv.VITE_ENABLE_DEMO_MODE !== "true";
 
   if (localStaticPreview) {
     console.warn(`[Xoot] Local static preview is running without live Supabase config. Backend/auth actions remain disabled. ${issue}`);
