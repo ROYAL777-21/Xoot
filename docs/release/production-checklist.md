@@ -3,6 +3,9 @@
 
 ## 14 October 2026 — release status override
 
+**Latest follow-up:** Release-verification PR #51 passed its redesign CI and was merged into `release/xoot-production` as `250c2111`. Vercel production build `dpl_87WSF9AuX1g4yzZuunHqKerRQRQs` reports `READY`. The public, read-only `public-xooter-directory` function is now `ACTIVE` (version 1) in production, but its live HTTP response still requires runner verification. `get-booking-quote` and `xooter-job-checklist` remain missing in production. The latter also depends on `20261007150000_checklist_active_job_mutation.sql`, whose service-only RPC is missing in **both** Supabase projects. Apply missing staging migrations in correct order and reconcile the production-only safety-PIN entry before production schema rollout. Paid and voice flags stay off. The separate Claude security-review run has not passed. See `docs/release/evidence/2026-10-14/goal-continuation.md`.
+
+
 This checkpoint supersedes dated **website deployment** claims below. It does not
 replace the detailed backend and operational release gates or retroactively close
 any phase in the founder's `docs/release/build-loop.md` goal.
