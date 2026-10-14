@@ -20,6 +20,20 @@ export const BOOKING_REFERRAL_MESSAGES = {
   not_a_first_booking: "Referral codes apply to a first booking only.",
 } as const;
 
+/** Move the first visit's mandatory weekday without inventing a second weekly visit.
+ * Other repeat weekdays deliberately selected by a customer remain selected.
+ */
+export function repeatDaysForNewDate(
+  input: Pick<BookingQuoteInput, "date" | "frequency" | "repeatDays">,
+  newDate: string,
+): number[] {
+  if (input.frequency === "once") return [];
+  const previousDay = bookingWeekday(input.date);
+  const firstDay = bookingWeekday(newDate);
+  return [...new Set([firstDay, ...input.repeatDays.filter(day =>
+    Number.isInteger(day) && day >= 0 && day <= 6 && day !== previousDay)])].sort((a, b) => a - b);
+}
+
 export function bookingServiceFromParam(value: unknown): BookingService {
   if (typeof value !== "string") return "regular";
   if (["residential", "deep", "premium"].includes(value)) return "regular";
