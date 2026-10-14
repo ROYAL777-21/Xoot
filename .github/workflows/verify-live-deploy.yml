@@ -68,6 +68,12 @@ jobs:
     name: Is the live site serving this commit?
     runs-on: ubuntu-latest
     steps:
+      - name: Require the approved production source branch
+        if: github.ref != 'refs/heads/release/xoot-production'
+        run: |
+          echo "::error::Select release/xoot-production to verify the live site. main is not the approved release."
+          exit 1
+
       - name: Compare the deployed build stamp against this commit
         id: stamp
         env:
@@ -130,8 +136,8 @@ jobs:
                 echo ""
                 echo "\`${EXPECTED:0:8}\` — confirmed after ${attempt} attempt(s)."
                 echo ""
-                echo "§3b's gate is satisfied: it is now safe to dispatch \`create-booking\` and"
-                echo "\`create-booking-request\`."
+                echo "The build stamp matches. Backend, payment, voice, RLS and security"
+                echo "gates remain separate checks; this stamp never authorises financial writes."
               } >> "$GITHUB_STEP_SUMMARY"
               # Read by the header check below, which is only meaningful once the live site is
               # known to be serving THIS commit. Checking headers on a stale build tells you about
@@ -345,6 +351,12 @@ jobs:
         env:
           SITE: https://xoot.co.za
         run: npm run ops:smoke:design:live -- "$SITE"
+
+      - name: Production Edge endpoints must exist and preserve auth boundaries
+        if: steps.stamp.outputs.serving == 'true'
+        run: |
+          node scripts/ops/verify-production-edge-contracts.mjs --self-test
+          node scripts/ops/verify-production-edge-contracts.mjs
 
       - name: The matched deployment must render and reach sign-in
         if: steps.stamp.outputs.serving == 'true'
