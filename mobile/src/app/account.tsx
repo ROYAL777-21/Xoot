@@ -261,6 +261,15 @@ export default function AccountScreen() {
           onPress={() => router.push("/care-plus")}
         />
       </Card>
+      <SectionLabel>Work with Xoot</SectionLabel>
+      <Card style={s.list}>
+        <Row
+          icon="briefcase"
+          title="Xooter jobs"
+          detail="Verified offers and assignments"
+          onPress={() => router.push("/xooter/jobs")}
+        />
+      </Card>
       <SectionLabel>Your app</SectionLabel>
       <Card style={s.list}>
         <Row
