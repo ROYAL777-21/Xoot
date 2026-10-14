@@ -57,12 +57,12 @@ export function parseNativeGiftQuote(value: unknown, service: NativeGiftService,
 export function nativeGiftIssue(draft: NativeGiftDefinition): string | null {
   if (!GIFT_SERVICES.some(s => s.key === draft.service) || !GIFT_BUNDLES.some(b => b.count === draft.count) ||
     !GIFT_TINTS.includes(draft.tint) || !['email', 'link'].includes(draft.delivery)) return 'Choose an available gift.';
-  const validText = (s: string, limit: number) => s.length <= limit && !/[\\u0000-\\u0008\\u000b-\\u001f\\u007f]/.test(s);
+  const validText = (s: string, limit: number) => s.length <= limit && !/[\u0000-\u0008\u000b-\u001f\u007f]/.test(s);
   if (!validText(draft.senderName, 120) || !draft.senderName.trim()) return 'Add your name to the gift.';
   if (!validText(draft.note, 90) || !validText(draft.occasion, 120)) return 'Shorten your note or occasion.';
   if (draft.delivery === 'email') {
     if (!draft.recipientName.trim() || !validText(draft.recipientName, 120)) return 'Add the recipient’s name.';
-    if (!validText(draft.recipientEmail, 254) || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(draft.recipientEmail.trim())) return 'Add a valid recipient email.';
+    if (!validText(draft.recipientEmail, 254) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.recipientEmail.trim())) return 'Add a valid recipient email.';
   }
   return null;
 }
