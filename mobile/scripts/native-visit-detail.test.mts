@@ -27,6 +27,11 @@ test('visit route IDs accept only bounded UUID references', () => {
 test('visit details use only owner-bound booking provider and no payment/ETA inventions', () => {
   const file = readFileSync(new URL('../src/app/visits/[id].tsx', import.meta.url), 'utf8');
   const listing = readFileSync(new URL('../src/app/bookings.tsx', import.meta.url), 'utf8');
+  const provider = readFileSync(new URL('../src/components/native-core.tsx', import.meta.url), 'utf8');
+  assert.match(provider, /loadedAccountId === currentAccountId/);
+  assert.match(provider, /bookings: ownerMatched \? bookings : \[\]/);
+  assert.match(provider, /profile: ownerMatched \? profile : null/);
+  assert.match(provider, /unreadNotifications: ownerMatched \? unreadNotifications : 0/);
   assert.match(file, /useNativeCoreData/);
   assert.match(file, /user && !authLoading/);
   assert.match(file, /booking\.status/);
