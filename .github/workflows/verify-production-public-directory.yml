@@ -1,0 +1,33 @@
+name: Verify production public Xooter directory
+
+# An independent read-only live check. Public directory may ship before crew
+# migrations. This does not declare other Edge Functions, payments or calling ready.
+on:
+  push:
+    branches:
+      - release/xoot-production
+  pull_request:
+    branches:
+      - release/xoot-production
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xoot-production-public-directory-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-directory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Prove negative controls fail as expected
+        run: node scripts/ops/verify-production-edge-contracts.mjs --self-test
+      - name: Verify live public function and public-only projection
+        run: node scripts/ops/verify-production-edge-contracts.mjs --directory-only

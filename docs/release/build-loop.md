@@ -12,6 +12,22 @@ survives context limits, a new chat, or a week off.
 
 ---
 
+## Release identity correction — 14 October 2026
+
+The September 2026 handoff redesign was approved by the founder for the public website.
+The reviewed web production branch is now `release/xoot-production`, **not `main`**.
+PR #46 remains the independent, ongoing Codex implementation branch. The old
+`main` wording below was the cause of repeated accidental website reversions;
+**never publish `main` as a shortcut to satisfy the live-site check**.
+
+Before treating the LIVE SITE or GREEN goals as complete, inspect the deployed
+commit, its browser-rendered design and typing, production backend functions,
+and served security headers. Build success or Vercel's `READY` state alone is
+insufficient. The canonical status and owner actions remain in
+[production-checklist.md](production-checklist.md).
+
+---
+
 ## The goal prompt
 
 Paste once, at the start of a session.
@@ -24,9 +40,11 @@ anything. Claim your work in the worklog and push the claim before you write cod
 
 The finish line is all six of these, each proven by the check named, not by reasoning:
 
-  1. LIVE SITE      Actions → "Verify live deploy" reports ✅ against the current main.
+  1. LIVE SITE      Actions → "Verify live deploy" reports ✅ for the currently promoted
+                    `release/xoot-production` commit, with no unknown/unreadable results.
                     Both the marketing site (/) and the app (/app, /xooter, /admin) build from
-                    this repo and ship together.
+                    that same reviewed release commit. PR #46 stays unmerged until its work is
+                    separately reviewed and promoted; do not publish older `main` instead.
   2. PAYMENTS       A sandbox PayFast payment completes end to end and confirm-payment records
                     it. Then payments.provider_checkout is enabled in production.
   3. VOICE          One real two-party call has connected, with two legs in one Twilio
@@ -36,12 +54,18 @@ The finish line is all six of these, each proven by the check named, not by reas
   5. SECURITY       npm run security:scan clean; every private /xooter/* route serves noindex
                     and no-store on the LIVE site; no secret in any log; RLS audited.
   6. GREEN          npm run build, npm run security:scan and npx vitest run all pass, and the
-                    deployed Edge Functions match the repo (no drift).
+                    deployed Edge Functions match the reviewed release code (no drift).
+                    The independent security review must actually complete; a provider credit
+                    failure is a BLOCKER, never a pass.
 
 Constraints that are not negotiable:
-  - Production deploys are a human act. Never dispatch one unasked.
+  - Production deploys are a human act. Never dispatch one unasked. Vercel web
+    production must use `release/xoot-production`, not `main` or Codex PR #46.
+    GitHub workflow confirmations for database/function releases still apply.
   - Migrations to production go BEFORE their functions, with no gap. db-push refuses if the
-    functions could not follow.
+    functions could not follow. Production has a live-only October safety-PIN migration;
+    never blindly repair its history, skip missing September/October migrations or deploy
+    the checklist function without its service-only update RPC.
   - The displayed price is the price (Consumer Protection Act). Over-stating is survivable;
     under-stating is not.
   - A guard test is only worth having if it fails against the defect it describes. Plant the
@@ -79,8 +103,9 @@ Continue Xoot toward the GOAL above. One pass:
 4. RECORD. Commit with a message saying what changed and why it could not wait. Push. Update
    the worklog. If you touched the other role's paths, flag it per CLAUDE.md rule 3.
 
-5. BLOCKED? Add it to /NEEDS-FOUNDER.md — what it unblocks, how it is proven done — and go
-   back to step 1 with the next item. Do not wait.
+5. BLOCKED? Add it to docs/release/production-checklist.md (linked from /NEEDS-FOUNDER.md)
+   — what it unblocks, how it is proven done — then take the next unblocked item.
+   Preserve the chosen Vercel production branch and Codex PR #46. Do not wait.
 
 6. NOTHING LEFT? Say so plainly and stop. Do not invent work. "The unblocked queue is empty
    and here is what the founder owes" is a complete and correct answer.
