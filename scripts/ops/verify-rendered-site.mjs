@@ -234,6 +234,34 @@ try {
   const hero = page.locator("h1:visible").filter({ hasText: /Premium home care/i }).first();
   await hero.waitFor({ state: "visible", timeout });
 
+  // Guard the founder-approved redesign, not merely generic headings that also existed
+  // in the old main deployment. This must fail if a later automatic deployment reverts
+  // the homepage to the pre-handoff experience.
+  const approvedHome = page.locator('[data-xoot-design-version="2026-09-handoff"]');
+  await approvedHome.waitFor({ state: "visible", timeout });
+  for (const section of ["#gift", "#careplus"]) {
+    if (await approvedHome.locator(section).count() !== 1) {
+      throw new Error(`Approved Xoot redesign section ${section} missing; deployment may have reverted`);
+    }
+  }
+  if (await approvedHome.locator("main .xoot-gift-band").count() !== 1 ||
+      await approvedHome.locator("main .xoot-care-section").count() !== 1) {
+    throw new Error("Approved Xoot gift/Care+ handoff composition missing from the homepage");
+  }
+
+  // The mobile keyboard-focus bug was caused by the browser auto-scrolling a focused
+  // field and a global scroll handler blurring it. Exercise the real controlled address
+  // field before entering authentication. This does not submit any booking or user data.
+  const addressField = page.getByRole("textbox", { name: "Service address" });
+  await addressField.waitFor({ state: "visible", timeout });
+  await addressField.fill("Sandton");
+  await page.evaluate(() => window.scrollBy(0, 90));
+  await addressField.pressSequentially(" Johannesburg");
+  if (await addressField.inputValue() !== "Sandton Johannesburg" ||
+      !(await addressField.evaluate((input) => input === document.activeElement))) {
+    throw new Error("Address field lost typed text or focus during page scroll");
+  }
+
   const rosterVerification = await verifyRoster(page, directoryRequests, directoryOutcomes);
 
   const signIn = page.getByRole("link", { name: /^Sign in$/i }).first();
@@ -278,7 +306,7 @@ try {
 
   if (runtimeProblems.length > 0) throw new Error(`Relevant runtime problem detected: ${runtimeProblems[0]}`);
 
-  console.log(`Rendered site smoke passed for ${target.url}: ${rosterVerification}, homepage content, sign-in navigation, controls, and runtime state verified.`);
+  console.log(`Rendered site smoke passed for ${target.url}: ${rosterVerification}, approved handoff, address typing, homepage content, sign-in navigation, controls, and runtime state verified.`);
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   const detail = runtimeProblems.length && !message.includes(runtimeProblems[0]) ? `\n${runtimeProblems[0]}` : "";
