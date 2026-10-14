@@ -102,7 +102,7 @@ function GiftFlow({ authPending }: { authPending: boolean }) {
     params.get("visits") === "4"
       ? [
           ...bundles.slice(0, 2),
-          { count: 4, label: "Four cleans", note: "Four weeks at once a week" },
+          { count: 4, label: "Four cleans", note: "About four weeks if used weekly" },
           ...bundles.slice(2),
         ]
       : bundles;
