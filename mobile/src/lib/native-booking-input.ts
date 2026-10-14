@@ -1,4 +1,4 @@
-import { bookingCrewCap, bookingDateInSast, bookingHomeSize, bookingServiceForProperty, bookingServiceFromParam, bookingStartSlots, bookingWeekday, changeBookingService, createBookingInput } from '../generated/booking-flow';
+import { bookingCrewCap, bookingDateInSast, bookingHomeSize, bookingServiceForProperty, bookingServiceFromParam, bookingStartSlots, bookingWeekday, repeatDaysForNewDate, changeBookingService, createBookingInput } from '../generated/booking-flow';
 import type { BookingPropertyType, BookingQuoteInput, BookingService } from '../generated/booking-contract';
 
 export type NativeBookingParams = { service?: string | string[]; date?: string | string[]; area?: string | string[]; intent?: string | string[] };
@@ -39,7 +39,7 @@ export function withBookingDate(input: BookingQuoteInput, date: string, now = Da
   const valid = validBookingDate(date, now);
   const slots = valid ? bookingStartSlots({ ...input, date }, now) : [];
   return { ...input, date, time: slots.includes(input.time) ? input.time : slots[0] ?? '',
-    repeatDays: input.frequency === 'once' ? [] : valid ? [bookingWeekday(date)] : input.repeatDays };
+    repeatDays: valid ? repeatDaysForNewDate(input, date) : input.repeatDays };
 }
 
 export function withBookingProperty(input: BookingQuoteInput, propertyType: BookingPropertyType, now = Date.now()): BookingQuoteInput {
