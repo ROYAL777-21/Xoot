@@ -19,21 +19,22 @@ const earning = { id: 'earning-1', xooter_id: owner, booking_id: 'booking-1',
   gross_amount: 500, platform_fee: 125, net_amount: 375, status: 'pending', created_at: '2026-10-14T10:00:00Z' };
 
 test('the Xooter job parser refuses other workers and strips sensitive fields', () => {
-  const parsed = parseXooterJobCards({ jobs: [job] }, owner);
+  const parsed = parseXooterJobCards({ success: true, data: { jobs: [job] } }, owner);
   assert.equal(parsed?.[0]?.job_id, job.job_id);
   assert.equal(parsed?.[0]?.service, 'regular');
   assert.ok(!('destination_address' in (parsed?.[0] || {})));
   assert.ok(!('user_id' in (parsed?.[0] || {})));
   assert.ok(!('price' in (parsed?.[0] || {})));
   assert.equal(parseXooterJobCards({ jobs: [job] }, 'someone-else'), null);
-  assert.equal(parseXooterJobCards({ jobs: [{ ...job, xooter_id: 'someone-else' }] }, owner), null);
-  assert.equal(parseXooterJobCards({ jobs: 'not-an-array' }, owner), null);
+  assert.equal(parseXooterJobCards({ success: true, data: { jobs: [{ ...job, xooter_id: 'someone-else' }] } }, owner), null);
+  assert.equal(parseXooterJobCards({ success: true, data: { jobs: 'not-an-array' } }, owner), null);
+  assert.equal(parseXooterJobCards({ success: false, data: { jobs: [job] } }, owner), null);
 });
 test('offers, accepted and other historical statuses group without invented records', () => {
-  const rows = parseXooterJobCards({ jobs: [
+  const rows = parseXooterJobCards({ success: true, data: { jobs: [
     job, { ...job, job_id: 'job-2', state: 'accepted' },
     { ...job, job_id: 'job-3', state: 'declined' },
-  ] }, owner)!;
+  ] } }, owner)!;
   const grouped = groupXooterJobs(rows);
   assert.deepEqual([grouped.offered.length, grouped.accepted.length, grouped.history.length], [1, 1, 1]);
 });
