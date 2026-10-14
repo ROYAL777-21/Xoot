@@ -24,6 +24,20 @@ export const BOOKING_REFERRAL_MESSAGES = {
   not_a_first_booking: "Referral codes apply to a first booking only.",
 } as const;
 
+/** Move the first visit's mandatory weekday without inventing a second weekly visit.
+ * Other repeat weekdays deliberately selected by a customer remain selected.
+ */
+export function repeatDaysForNewDate(
+  input: Pick<BookingQuoteInput, "date" | "frequency" | "repeatDays">,
+  newDate: string,
+): number[] {
+  if (input.frequency === "once") return [];
+  const previousDay = bookingWeekday(input.date);
+  const firstDay = bookingWeekday(newDate);
+  return [...new Set([firstDay, ...input.repeatDays.filter(day =>
+    Number.isInteger(day) && day >= 0 && day <= 6 && day !== previousDay)])].sort((a, b) => a - b);
+}
+
 export function bookingServiceFromParam(value: unknown): BookingService {
   if (typeof value !== "string") return "regular";
   if (["residential", "deep", "premium"].includes(value)) return "regular";
@@ -38,7 +52,10 @@ export function createBookingInput(service: BookingService = "regular", now = Da
     contractVersion: 1, service, propertyType: service === "office" ? "office" : service === "airbnb" ? "airbnb" : service === "moving" ? "empty" : "house",
     homeSize: "small", hours: BOOKING_SERVICE_DETAILS[service].defaultHours, crewSize: 1,
     addOns: [], linen: service === "airbnb" ? "none" : null, date: bookingDateInSast(now, 1), time: "08:00",
-    frequency: "once", repeatDays: [], referralCode: "", requestedCreditCents: 0, coverRequested: false,
+    // The first booked weekday is the sole preselected repeat day for EVERY
+    // available service. Customers can explicitly choose fortnightly or one-off.
+    frequency: "weekly", repeatDays: [bookingWeekday(bookingDateInSast(now, 1))],
+    referralCode: "", requestedCreditCents: 0, coverRequested: false,
   };
 }
 export function bookingExtrasFor(service: BookingService): BookingAddOn[] {

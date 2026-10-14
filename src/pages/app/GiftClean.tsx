@@ -14,7 +14,7 @@ import {
   type GiftDraft,
   type GiftOrderResult,
 } from "@/lib/gift-order";
-import { giftOccasions, readGiftSelection } from "@/lib/gift-selection";
+import { ANNUAL_WEEKLY_VISITS, giftAppBundles, giftOccasions, readGiftSelection } from "@/lib/gift-selection";
 import { formatRand } from "@/lib/xoot-pricing";
 import "@/styles/gift-care-handoff.css";
 import "@/styles/gift-flow.css";
@@ -26,12 +26,7 @@ const services = [
   { key: "office", label: "Office cleaning" },
   { key: "moving", label: "Moving cleaning" },
 ] as const;
-const bundles = [
-  { count: 1, label: "One clean", note: "A weekend back" },
-  { count: 3, label: "Three cleans", note: "A month of breathing room" },
-  { count: 6, label: "Six cleans", note: "Half a year, handled" },
-  { count: 12, label: "Twelve cleans", note: "A whole year" },
-];
+const bundles = giftAppBundles;
 const notes = [
   ["Just because", "Thought you could use a break."],
   ["Just because", "No occasion. You just deserve a quiet weekend."],
@@ -107,7 +102,7 @@ function GiftFlow({ authPending }: { authPending: boolean }) {
     params.get("visits") === "4"
       ? [
           ...bundles.slice(0, 2),
-          { count: 4, label: "Four cleans", note: "A month of Fridays" },
+          { count: 4, label: "Four cleans", note: "About four weeks if used weekly" },
           ...bundles.slice(2),
         ]
       : bundles;
@@ -282,6 +277,7 @@ function GiftFlow({ authPending }: { authPending: boolean }) {
                     ))}
                   </div>
                 </fieldset>
+                <p className="xoot-gift-availability">At one clean per week, {ANNUAL_WEEKLY_VISITS} visits make a full year. These gift bundles are individual visits, not a recurring annual plan; annual gifting is not available yet.</p>
                 <div className="xoot-gift-flow-total">
                   <span>
                     <strong>Total{!quoteQuery.data ? " estimate" : ""}</strong>

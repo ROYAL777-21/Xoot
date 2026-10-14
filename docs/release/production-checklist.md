@@ -375,3 +375,5 @@ website bundle choices and accepted server amounts. Authenticated account/bookin
 journeys, native Search/Profile/remaining flows, remaining screen comparisons and production release
 requirements are not closed by this checkpoint. Source visuals must remain intact while those real
 contracts are completed.
+
+**14 October founder UX request:** A correct full year of weekly cleaning is 52 visits, not 12 (or 32). Gift UI must not advertise unsupported annual gifting; it can describe 12 cleans as about three months weekly. Every bookable service defaults to once weekly, with one matching first-visit repeat weekday and an explicit one-off alternative. These are frontend defaults, not proof of a recurring booking contract or gift payment capability. Review isolated PR `feature/weekly-default-gift-design-20261014` before production promotion. Full website/native design source comparison still outstanding.

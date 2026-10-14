@@ -7,10 +7,20 @@ export const giftServices = [
   { key: "office", serviceType: "office", label: "Office cleaning", hours: 5 },
 ] as const;
 
+/** 52 weekly visits represent one year; smaller bundles are not annual plans. */
+export const ANNUAL_WEEKLY_VISITS = 52;
 export const giftBundles = [
-  { count: 1, label: "One clean", detail: "A single visit, whenever they need it" },
-  { count: 4, label: "A month of Fridays", detail: "Four visits, used at their own pace" },
-  { count: 12, label: "A season", detail: "Twelve visits, used at their own pace" },
+  { count: 1, label: "One clean", detail: "One visit, when it suits them" },
+  { count: 4, label: "Four cleans", detail: "Four visits · about one month if used weekly" },
+  { count: 12, label: "Twelve cleans", detail: "Twelve visits · about three months if used weekly" },
+] as const;
+
+/** The in-app source has additional selectable quantities; keep them honest too. */
+export const giftAppBundles = [
+  { count: 1, label: "One clean", note: "One visit, when it suits them" },
+  { count: 3, label: "Three cleans", note: "About three weeks if used weekly" },
+  { count: 6, label: "Six cleans", note: "About six weeks if used weekly" },
+  { count: 12, label: "Twelve cleans", note: "About twelve weeks if used weekly" },
 ] as const;
 
 export const giftOccasions = [

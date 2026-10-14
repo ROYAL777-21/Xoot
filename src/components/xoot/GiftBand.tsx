@@ -4,7 +4,7 @@ import { Gift, CreditCard, MessageCircle, CalendarCheck, Check } from "lucide-re
 import { useAuth } from "@/contexts/AuthContext";
 import { GiftCard } from "@/components/kit/GiftCard";
 import { HandoffNote } from "./HeroArtwork";
-import { estimateGift, giftBundles, giftOccasions, giftServices, giftSetupPath, type GiftSelection } from "@/lib/gift-selection";
+import { ANNUAL_WEEKLY_VISITS, estimateGift, giftBundles, giftOccasions, giftServices, giftSetupPath, type GiftSelection } from "@/lib/gift-selection";
 import { formatRand } from "@/lib/xoot-pricing";
 import "@/styles/gift-care-handoff.css";
 
@@ -36,6 +36,7 @@ export function GiftBand() {
           <fieldset><legend>How many visits</legend><div className="xoot-gift-bundles">
             {giftBundles.map((bundle) => <button key={bundle.count} type="button" aria-pressed={selection.count === bundle.count} onClick={() => setSelection({ ...selection, count: bundle.count })}><strong>{bundle.label}</strong><span>{bundle.detail}</span></button>)}
           </div></fieldset>
+          <p className="xoot-gift-availability">A full year at once per week means {ANNUAL_WEEKLY_VISITS} cleans. Twelve visits cover twelve weeks at that pace, not a year. Annual gift packages are not available yet.</p>
           <fieldset><legend>What kind of visit</legend><div className="xoot-gift-services">
             {giftServices.map((service) => <button key={service.key} type="button" aria-pressed={selection.service === service.key} onClick={() => setSelection({ ...selection, service: service.key })}>{service.label}</button>)}
           </div></fieldset>

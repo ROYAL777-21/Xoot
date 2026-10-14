@@ -371,3 +371,7 @@ passed seven sizes without overflow, runtime errors or persistent heading transf
 [Reference and actual-component captures](../release/evidence/2026-10-02/notifications/README.md)
 use isolated synthetic records, not live authenticated customers. Realtime publication,
 notification/token privilege hardening, full native parity and actual delivery remain.
+
+## 14 October 2026 — gift arithmetic and universal weekly default
+
+Founder override: one calendar year is approximately **52 weeks**, so twelve weekly cleans represent about twelve weeks, not a year. The source `app/Gift.jsx` and previous web implementation had incorrect annual/half-year labels; the public GiftBand and signed-in GiftClean text are being updated without inventing purchasable 52-visit fulfilment. One-weekly preselection applies to regular, Airbnb, express, office and moving services on both website and native booking flows; one-off/fortnightly remain valid explicit choices. Web/mobile source paths and regression cases are on `feature/weekly-default-gift-design-20261014` for separate review and deployment. These fixes do **not** certify completion of the app/native handoff, payments, visual screens or real recurring scheduling.

@@ -1,4 +1,4 @@
-import { bookingCrewCap, bookingDateInSast, bookingHomeSize, bookingServiceForProperty, bookingServiceFromParam, bookingStartSlots, bookingWeekday, changeBookingService, createBookingInput } from '../generated/booking-flow';
+import { bookingCrewCap, bookingDateInSast, bookingHomeSize, bookingServiceForProperty, bookingServiceFromParam, bookingStartSlots, bookingWeekday, repeatDaysForNewDate, changeBookingService, createBookingInput } from '../generated/booking-flow';
 import type { BookingPropertyType, BookingQuoteInput, BookingService } from '../generated/booking-contract';
 
 export type NativeBookingParams = { service?: string | string[]; date?: string | string[]; area?: string | string[]; intent?: string | string[] };
@@ -28,7 +28,8 @@ export function nativeBookingPrefill(params: NativeBookingParams, now = Date.now
   let input = withBookingRooms(createBookingInput(bookingServiceFromParam(params.service), now), 2, 1);
   if (typeof params.date === 'string' && validBookingDate(params.date, now)) {
     const slots = bookingStartSlots({ ...input, date: params.date }, now);
-    if (slots.length) input = { ...input, date: params.date, time: slots.includes('08:00') ? '08:00' : slots[0] };
+    if (slots.length) input = { ...input, date: params.date, time: slots.includes('08:00') ? '08:00' : slots[0],
+      repeatDays: input.frequency === 'once' ? [] : [bookingWeekday(params.date)] };
   }
   const area = typeof params.area === 'string' ? [...params.area].filter(char => char.charCodeAt(0) >= 32 && char.charCodeAt(0) !== 127).join('').trim().slice(0, 120) : '';
   return { input, area, assisted: params.intent === 'book_clean' || !!params.service || !!params.date || !!area };
@@ -38,7 +39,7 @@ export function withBookingDate(input: BookingQuoteInput, date: string, now = Da
   const valid = validBookingDate(date, now);
   const slots = valid ? bookingStartSlots({ ...input, date }, now) : [];
   return { ...input, date, time: slots.includes(input.time) ? input.time : slots[0] ?? '',
-    repeatDays: input.frequency === 'once' ? [] : valid ? [...new Set([...input.repeatDays, bookingWeekday(date)])].sort() : input.repeatDays };
+    repeatDays: valid ? repeatDaysForNewDate(input, date) : input.repeatDays };
 }
 
 export function withBookingProperty(input: BookingQuoteInput, propertyType: BookingPropertyType, now = Date.now()): BookingQuoteInput {
