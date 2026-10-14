@@ -45,6 +45,10 @@ jobs:
         run: npm run security:scan
       - name: Typecheck
         run: npm run typecheck
+      - name: Typecheck Expo native booking flow
+        run: npm run mobile:typecheck
+      - name: Test native booking helpers and deep-link cadence
+        run: npm --prefix mobile run test:booking
       - name: Lint
         run: npm run lint
       - name: Full web unit test suite
