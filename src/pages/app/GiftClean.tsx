@@ -277,7 +277,7 @@ function GiftFlow({ authPending }: { authPending: boolean }) {
                     ))}
                   </div>
                 </fieldset>
-                <p className="xoot-gift-availability">At one clean per week, ${ANNUAL_WEEKLY_VISITS} visits make a full year. These gift bundles are individual visits, not a recurring annual plan; annual gifting is not available yet.</p>
+                <p className="xoot-gift-availability">At one clean per week, {ANNUAL_WEEKLY_VISITS} visits make a full year. These gift bundles are individual visits, not a recurring annual plan; annual gifting is not available yet.</p>
                 <div className="xoot-gift-flow-total">
                   <span>
                     <strong>Total{!quoteQuery.data ? " estimate" : ""}</strong>
