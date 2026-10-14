@@ -36,7 +36,7 @@ const homeStructuredData = {
 
 const Index = () => {
   return (
-    <div className="xoot-home min-h-screen bg-background">
+    <div className="xoot-home min-h-screen bg-background" data-xoot-design-version="2026-09-handoff">
       <SEO
         title="Xoot - Premium cleaning and home care in Johannesburg"
         description="Book vetted Xooters for cleaning, Airbnb turns, office resets, move-out cleans and Care+ home care across Johannesburg launch suburbs."
