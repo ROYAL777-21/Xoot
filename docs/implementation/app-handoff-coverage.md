@@ -40,3 +40,13 @@ is unfinished. The final acceptance pass must visit every destination above, com
 original composition at the required sizes and exercise its real data/actions. It must
 also verify the separate public website, foundations, components, legal, security and
 responsive HTML references, rather than treating this app table as the whole deliverable.
+
+## 14 October 2026 — founder corrections to the design handoff (work in progress)
+
+The founder clarified two non-negotiable product requirements that supersede misleading copy in the September handoff assets, without treating the remaining screens as complete:
+
+- **Cadence:** all five bookable service types must initialise to `weekly` with precisely the chosen first visit's weekday selected on website and Expo. Customers can change to once or fortnightly; service changes preserve explicit cadence. Date changes move the mandatory first repeat day instead of adding an accidental extra weekly visit; manually selected extra days are preserved. The UI still needs live authenticated and physical-device verification.
+- **Gift a Clean:** 52 weekly visits are needed for one year. Existing selectable 1/3/4/6/12 bundles remain individual visits, with `12` correctly described as about three months at one per week, and `6` no longer described as half a year. Do **not** offer 52 visits as a payable product while server `GIFT_COUNTS` and fulfilment only support existing bundles. Source prototype `app/Gift.jsx` contains inaccurate 12/6-year copy, overridden intentionally in production components.
+- **Design acceptance remains open:** a build passing and a deployed marketing page are not proof of the full handoff. The entire table above, mobile device screenshots, source typography/dimensions/interactions, authenticated routes, crew and contractor screens, help/account screens and real provider actions must be completed and compared screen-by-screen. Do not close this ledger until every route has visual and behavioural evidence, including payment/calling unavailable states as appropriate.
+
+This change is isolated from the active Codex PR #46 and targets the founder-approved `release/xoot-production` branch. It changes UI defaults and copy only; there is **no automatic recurring booking submission**, charged annual gift or enabled provider checkout.
