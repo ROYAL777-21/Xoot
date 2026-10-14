@@ -17,9 +17,12 @@ export const xooterMoney = (value: number) =>
   new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', minimumFractionDigits: 2 }).format(value);
 
 export function parseXooterJobCards(payload: unknown, xooterId: string): XooterJobCard[] | null {
-  if (!isRecord(payload) || !Array.isArray(payload.jobs)) return null;
+  // The deployed Edge function responds { success: true, data: { jobs } }.
+  // Never accept a failed envelope or a forged cross-worker row.
+  if (!isRecord(payload) || payload.success !== true || !isRecord(payload.data) ||
+      !Array.isArray(payload.data.jobs)) return null;
   const result: XooterJobCard[] = [];
-  for (const raw of payload.jobs) {
+  for (const raw of payload.data.jobs) {
     if (!isRecord(raw) || typeof raw.job_id !== 'string' || typeof raw.booking_id !== 'string' ||
         raw.xooter_id !== xooterId || typeof raw.state !== 'string') return null;
     result.push({
