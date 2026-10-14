@@ -29,8 +29,18 @@ jobs:
         with:
           node-version: "24"
           cache: npm
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - name: Install locked dependencies
         run: npm ci --no-audit --prefer-offline
+      - name: Install native/Expo dependencies required by mobile tests
+        working-directory: mobile
+        run: bun install --frozen-lockfile
+      # Vitest includes rendered-site regression tests; browsers must be present
+      # BEFORE npx vitest run, not just before the standalone artifact smoke.
+      - name: Install Chromium for unit and rendered tests
+        run: npx playwright install --with-deps chromium
       - name: Check public/host security configuration
         run: npm run security:scan
       - name: Typecheck
@@ -45,8 +55,6 @@ jobs:
         env:
           VITE_APP_ENV: production
         run: npm run build
-      - name: Install browser for rendered design smoke
-        run: npx playwright install --with-deps chromium
       - name: Reject legacy site design and keyboard regression
         run: node scripts/ops/verify-approved-design.mjs --artifact dist
       - name: Scan production artifact
