@@ -1,0 +1,47 @@
+name: Verify approved Xoot redesign
+
+# This release gate is independent of PR #46 and does not deploy backend changes.
+# It catches a reverted marketing homepage and input/keyboard regressions, in
+# addition to the stricter rendered booking/auth smoke from the full GOAL.
+on:
+  push:
+    branches:
+      - release/xoot-production
+  pull_request:
+    branches:
+      - release/xoot-production
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xoot-redesign-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  design-and-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --prefer-offline
+      - name: Check public/host security configuration
+        run: npm run security:scan
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build with explicit production environment
+        env:
+          VITE_APP_ENV: production
+        run: npm run build
+      - name: Install browser for rendered design smoke
+        run: npx playwright install --with-deps chromium
+      - name: Reject legacy site design and keyboard regression
+        run: node scripts/ops/verify-approved-design.mjs --artifact dist
+      - name: Scan production artifact
+        run: npm run build:artifact-scan
