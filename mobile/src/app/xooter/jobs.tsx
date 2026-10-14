@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Card, CoreIcon, DisplayTitle, EmptyState, LoadingRows, Pill, PrimaryAction,
@@ -27,7 +28,7 @@ function JobCard({ job }: { job: XooterJobCard }) {
     {job.duration_hours !== null ? <Text style={s.muted}>{job.duration_hours} scheduled hours</Text> : null}
     <Text style={s.muted}>Customer address and access codes are not shown here. Sensitive details require the approved, logged access workflow.</Text>
     {state === 'offered' ? <Pressable accessibilityRole="button" style={s.link}
-      onPress={() => void Linking.openURL(portal)}>
+      onPress={() => void WebBrowser.openBrowserAsync(portal)}>
       <Text style={s.linkText}>Review and respond securely on Xoot web</Text>
       <CoreIcon name="chevron-right" color={nativePalette.violetDark} size={17} />
     </Pressable> : null}
@@ -87,7 +88,7 @@ function XooterJobsContent({ userId }: { userId: string }) {
           {groups.history.length ? groups.history.map(item => <JobCard key={item.job_id} job={item} />)
             : <Text style={s.muted}>Completed, declined and expired offers will appear here as recorded.</Text>}
           <PrimaryAction onPress={() => router.push('/xooter/earnings')} icon="wallet">View earnings</PrimaryAction>
-          <Pressable accessibilityRole="button" style={s.link} onPress={() => void Linking.openURL(portal)}>
+          <Pressable accessibilityRole="button" style={s.link} onPress={() => void WebBrowser.openBrowserAsync(portal)}>
             <Text style={s.linkText}>Open Xooter web workspace</Text>
             <CoreIcon name="chevron-right" size={17} color={nativePalette.violetDark} /></Pressable>
         </>}
