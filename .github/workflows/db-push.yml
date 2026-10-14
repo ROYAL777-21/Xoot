@@ -64,6 +64,18 @@ jobs:
 
       # Same shape as the deploy workflow: an applying run against production must be typed out in
       # full, so it cannot happen by clicking through a form with defaults.
+      # Refuse a production migration from an unrelated branch; dry runs stay usable
+      # everywhere. A reviewed release commit is still required before any apply.
+      - name: Require the approved source for production migrations
+        if: inputs.environment == 'production' && !inputs.dry_run
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
+        run: |
+          if [ "$SOURCE_BRANCH" != "release/xoot-production" ]; then
+            echo "::error::Refusing a production database write from '$SOURCE_BRANCH'. Select release/xoot-production."
+            exit 1
+          fi
+
       - name: Require an explicit confirmation to apply to production
         if: inputs.environment == 'production' && !inputs.dry_run
         env:

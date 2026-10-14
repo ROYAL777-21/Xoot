@@ -1,6 +1,12 @@
 name: Verify live deploy
 
-# Has Netlify actually published the commit on `main`?
+# RELEASE POLICY (14 October 2026): this workflow must be dispatched from
+# release/xoot-production with its exact promoted commit. PR #46 and old main
+# are not the production release. Missing stamp, blocked HTTP access, missing
+# headers, wrong design and unreadable browser are all non-green outcomes.
+# Production Vercel promotion and backend writes are separate controlled actions.
+
+# Has Vercel actually published the selected `release/xoot-production` commit?
 #
 # ── Why this workflow exists ────────────────────────────────────────────────────
 # `docs/release/go-live.md` §3b: the web app must ship before the two booking writers, and its gate
@@ -25,11 +31,11 @@ on:
       expected_commit:
         description: >-
           Commit the live site should be serving. Blank uses this workflow's own SHA, which is what
-          you want when checking `main` right after a merge.
+          you want when checking the selected production release ref after deployment.
         required: false
         type: string
-  push:
-    branches: [main]
+  # Production promotion is manual. Do not mark a branch push as live before
+  # Vercel has actually promoted the approved release build.
 
   # ── A daily heartbeat, added 2026-09-02 ─────────────────────────────────────────────────────
   #
@@ -46,8 +52,7 @@ on:
   # 06:00 UTC is 08:00 SAST — before the working day, so a failure is waiting rather than arriving
   # mid-afternoon. On a scheduled run `github.sha` is main's head, which is the right thing to
   # compare against.
-  schedule:
-    - cron: "0 6 * * *"
+  # Heartbeat/monitoring is a separate live-deployment watch, not a main SHA comparison.
 
 permissions:
   contents: read
@@ -63,6 +68,12 @@ jobs:
     name: Is the live site serving this commit?
     runs-on: ubuntu-latest
     steps:
+      - name: Require the approved production source branch
+        if: github.ref != 'refs/heads/release/xoot-production'
+        run: |
+          echo "::error::Select release/xoot-production to verify the live site. main is not the approved release."
+          exit 1
+
       - name: Compare the deployed build stamp against this commit
         id: stamp
         env:
@@ -125,8 +136,8 @@ jobs:
                 echo ""
                 echo "\`${EXPECTED:0:8}\` — confirmed after ${attempt} attempt(s)."
                 echo ""
-                echo "§3b's gate is satisfied: it is now safe to dispatch \`create-booking\` and"
-                echo "\`create-booking-request\`."
+                echo "The build stamp matches. Backend, payment, voice, RLS and security"
+                echo "gates remain separate checks; this stamp never authorises financial writes."
               } >> "$GITHUB_STEP_SUMMARY"
               # Read by the header check below, which is only meaningful once the live site is
               # known to be serving THIS commit. Checking headers on a stale build tells you about
@@ -233,8 +244,9 @@ jobs:
               echo ""
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
-            echo "serving=unknown" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "::error::No deployed build stamp was readable; the production gate cannot pass."
+            echo "serving=false" >> "$GITHUB_OUTPUT"
+            exit 1
           fi
 
           # A stamp, and it is the wrong commit. That is a real answer: Netlify is serving something
@@ -249,7 +261,7 @@ jobs:
             echo "| live now | \`${live}\` |"
             echo "| expected | \`${EXPECTED}\` |"
             echo ""
-            echo "Netlify has not published this build within ~10 minutes. Check the Netlify deploy"
+            echo "Vercel has not published the approved release build within ~10 minutes. Check the Netlify deploy"
             echo "log before treating §3b's gate as satisfied — **do not dispatch the booking"
             echo "functions**, because the server would then charge a price the live client does not"
             echo "display."
@@ -312,14 +324,14 @@ jobs:
               exit 0
               ;;
             2)
-              echo "::warning::Could not read $SITE to verify its headers (exit 2). That is an access result, not a verdict on the site."
+              echo "::error::Could not read $SITE to verify its headers (exit 2). This is unverified, never a pass."
               {
                 echo "## ➖ Could not read the served site"
                 echo ""
                 echo "Exit 2 means the script could not reach or read \`$SITE\` — not that the"
                 echo "site failed. Re-run once it is reachable."
               } >> "$GITHUB_STEP_SUMMARY"
-              exit 0
+              exit 2
               ;;
             *)
               echo "::error::The served site failed its header or routing checks (exit $status)."
@@ -333,6 +345,18 @@ jobs:
               exit "$status"
               ;;
           esac
+
+      - name: The live site must still render the founder-approved redesign and accept typing
+        if: steps.stamp.outputs.serving == 'true'
+        env:
+          SITE: https://xoot.co.za
+        run: npm run ops:smoke:design:live -- "$SITE"
+
+      - name: Production Edge endpoints must exist and preserve auth boundaries
+        if: steps.stamp.outputs.serving == 'true'
+        run: |
+          node scripts/ops/verify-production-edge-contracts.mjs --self-test
+          node scripts/ops/verify-production-edge-contracts.mjs
 
       - name: The matched deployment must render and reach sign-in
         if: steps.stamp.outputs.serving == 'true'
