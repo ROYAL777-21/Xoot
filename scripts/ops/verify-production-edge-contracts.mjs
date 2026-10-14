@@ -6,6 +6,7 @@
  * Usage:
  *   node scripts/ops/verify-production-edge-contracts.mjs
  *   node scripts/ops/verify-production-edge-contracts.mjs --self-test
+ *   node scripts/ops/verify-production-edge-contracts.mjs --directory-only
  *
  * NEVER submits a booking, triggers payments, fetches private records, or uses a
  * service-role key.  The one public response is checked for a fixed safe shape;
@@ -94,7 +95,11 @@ if (process.argv.includes("--self-test")) {
   if (directoryIssue) problems.push(directoryIssue);
   else console.log(`PASS: public directory responded with a safe roster contract (total ${directoryJson.total})`);
 
-  for (const name of ["get-booking-quote", "xooter-job-checklist"]) {
+  // The public roster can be promoted independently of the crew/checklist and quote
+  // migrations. --directory-only verifies that narrow safe release without giving
+  // the incomplete marketplace a false all-functions GREEN result.
+  const directoryOnly = process.argv.includes("--directory-only");
+  for (const name of (directoryOnly ? [] : ["get-booking-quote", "xooter-job-checklist"])) {
     const response = await call(name, "POST");
     const issue = validateAuthenticatedGate(name, response.status);
     if (issue) problems.push(issue);
