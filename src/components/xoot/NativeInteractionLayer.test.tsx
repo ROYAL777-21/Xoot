@@ -61,4 +61,20 @@ describe("actual NativeInteractionLayer app URL connection with legacy push disa
     const input = screen.getByRole("textbox", { name: "Synthetic field" }); input.focus(); expect(document.activeElement).toBe(input); fireEvent.pointerDown(screen.getByRole("button", { name: "Synthetic outside button" })); expect(document.activeElement).not.toBe(input);
     view.unmount(); expect(remove.mock.calls.map(([event]) => event)).toEqual(["resize", "scroll"]); expect(document.body.dataset.keyboardOpen).toBe("false"); expect(document.documentElement.dataset.nativePlatform).toBeUndefined();
   });
+
+  it("keeps text fields focused and editable during window scroll and iOS keyboard viewport changes", async () => {
+    const viewport = Object.assign(new EventTarget(), { height: window.innerHeight - 180, offsetTop: 0 });
+    vi.stubGlobal("visualViewport", viewport);
+    render(fixture());
+    await waitFor(() => expect(h.appListener).toHaveBeenCalledOnce());
+    const input = screen.getByRole("textbox", { name: "Synthetic field" }) as HTMLInputElement;
+    input.focus();
+    expect(document.activeElement).toBe(input);
+    fireEvent.scroll(window);
+    act(() => viewport.dispatchEvent(new Event("scroll")));
+    expect(document.activeElement).toBe(input);
+    fireEvent.change(input, { target: { value: "Typeable on mobile" } });
+    expect(input.value).toBe("Typeable on mobile");
+    expect(document.activeElement).toBe(input);
+  });
 });
