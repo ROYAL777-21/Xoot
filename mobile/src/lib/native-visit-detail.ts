@@ -1,3 +1,5 @@
+import { normaliseBookingStatus } from '../generated/booking-state-machine';
+
 /** Source-inspired Visit/Tracking presentation: only a current owner-bound booking record.
  * Not an ETA, a location tracker, a payment receipt or historical event evidence.
  */
@@ -7,7 +9,9 @@ export const LIVE_VISIT_STAGES = [
 ] as const;
 
 export function visitStatusStory(status: string): { title: string; detail: string } {
+  const canonical = normaliseBookingStatus(status);
   const copy: Record<string, { title: string; detail: string }> = {
+    draft: { title: 'Booking being prepared', detail: 'No payment or assignment has been confirmed yet.' },
     pending_payment: { title: 'Awaiting payment confirmation', detail: 'The booking record does not yet confirm payment.' },
     payment_confirmed: { title: 'Payment status updated', detail: 'Your booking is moving through confirmation.' },
     awaiting_assignment: { title: 'Finding your Xooter', detail: 'Your booking is awaiting an accepted assignment.' },
@@ -23,12 +27,14 @@ export function visitStatusStory(status: string): { title: string; detail: strin
     replacement_offered: { title: 'Replacement offered', detail: 'Your replacement must be confirmed before arrival can be assumed.' },
     reassigned: { title: 'New Xooter assigned', detail: 'Check the currently assigned person; arrival is not confirmed.' },
   };
-  return copy[status] ?? { title: 'Booking update', detail: 'Contact Xoot support if the status needs clarification.' };
+  return (canonical ? copy[canonical] : null) ?? { title: 'Booking update', detail: 'Contact Xoot support if the status needs clarification.' };
 }
 export function visitProgress(status: string): { index: number; phases: readonly string[] } | null {
-  if (status === 'cancelled' || status === 'pending_payment' || status === 'payment_confirmed' ||
-    status.startsWith('replacement_')) return null;
-  const resolved = status === 'reassigned' ? 'assigned' : status === 'rated' ? 'completed' : status;
+  const canonical = normaliseBookingStatus(status);
+  if (!canonical) return null;
+  if (canonical === 'cancelled' || canonical === 'draft' || canonical === 'pending_payment' || canonical === 'payment_confirmed' ||
+    canonical.startsWith('replacement_')) return null;
+  const resolved = canonical === 'reassigned' ? 'assigned' : canonical === 'rated' ? 'completed' : canonical;
   const index = LIVE_VISIT_STAGES.indexOf(resolved as typeof LIVE_VISIT_STAGES[number]);
   return index < 0 ? null : { index, phases: LIVE_VISIT_STAGES };
 }
