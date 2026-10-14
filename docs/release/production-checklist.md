@@ -1,5 +1,59 @@
 # Xoot production checklist
 
+
+## 14 October 2026 — release status override
+
+This checkpoint supersedes dated **website deployment** claims below. It does not
+replace the detailed backend and operational release gates or retroactively close
+any phase in the founder's `docs/release/build-loop.md` goal.
+
+- **Chosen website:** the September handoff redesign, isolated on
+  `release/xoot-production`. It includes gift/Care+ public bands, designed
+  homepage/navigation and a mobile input-focus correction.
+- **Vercel release:** production deployment `dpl_AEAJE9CFoZRR991X81rsCCrngbk2`
+  from commit `a89ddbbc2c78264717351f06c7df2b718f6eee9e`,
+  `READY` and assigned `xoot.co.za` and `xoot.vercel.app`.
+  This is Vercel API evidence, **not** a browser/DNS proof.
+- **Automatic production build guard:** Vercel's Ignored Build Step was set to
+  run production builds only from `release/xoot-production`. A simulated shell
+  check correctly skips `main` and the Codex implementation branch while
+  allowing release production and other preview builds. Recheck this host setting
+  after project/Git integration changes. Manual promotion can still override it.
+- **Visual release guard:** `npm run design:check` runs before `vite build`
+  and checks the approved homepage and typing-focus fix, including negative
+  controls. `scripts/ops/verify-approved-design.mjs` checks desktop/mobile
+  rendering and text entry without falsely claiming a working backend; the
+  `Verify approved Xoot redesign` GitHub Actions workflow runs on release
+  branch updates. Full live browser and directory smoke checks remain required.
+- **Do not merge ongoing work:** Codex PR #46 remains separate, draft and
+  incomplete. No automatic merge into `main` should be inferred from the
+  website release.
+- **Payment and voice launch gates stay closed.** There is no proof of a PayFast
+  sandbox payment confirmation or a real two-leg Twilio conference.
+- **Backend:** the 14 October read-only Supabase check counted 82 migrations
+  and 57 deployed functions in production; the production project still lacks
+  `public-xooter-directory`, `get-booking-quote` and
+  `xooter-job-checklist`. Staging has all three. Schema ledger reconciliation,
+  tested migrations, owner-authorized database deployment identity and typed
+  contract verification precede deployment.
+- **Independent security review:** failed due Anthropic account credit; do not
+  mark this security gate passed. Supabase currently advises enabling leaked
+  password protection. Existing private `/xooter/*` header policy is improved
+  but still requires an actual served-header check.
+- **Routing risk:** the older Netlify project still advertises `xoot.co.za`.
+  Vercel aliases by themselves do not establish where public DNS routes. If
+  `xoot.co.za` and `xoot.vercel.app` display different versions, resolve
+  DNS/custom-domain ownership; do not republish or reset the older `main`
+  version. The approved website host is Vercel.
+
+Full recorded provider/branch evidence:
+`docs/release/evidence/2026-10-14/README.md`. Keep the release stable while
+implementing unfinished app source screens, booking/crew/referral/payment
+fulfilment and mobile capabilities on isolated review branches.
+
+---
+
+
 Current register: **8 October 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
