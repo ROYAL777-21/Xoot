@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { BOOKING_SERVICES } from "./booking-contract";
-import { bookingWeekday, changeBookingService, createBookingInput } from "./booking-flow";
+import { bookingWeekday, repeatDaysForNewDate, changeBookingService, createBookingInput } from "./booking-flow";
 import {
   ANNUAL_WEEKLY_VISITS, giftAppBundles, giftBundles, giftSetupPath, readGiftSelection,
 } from "./gift-selection";
@@ -15,6 +15,18 @@ describe("founder-approved weekly default across every available booking service
     expect(draft.frequency).toBe("weekly");
     expect(draft.repeatDays).toEqual([bookingWeekday(draft.date)]);
     expect(draft.repeatDays).toHaveLength(1);
+  });
+
+  it("moves the first weekly repeat day with the date without inventing an extra day", () => {
+    const original = createBookingInput("regular", fixedToday);
+    const nextDate = "2026-10-19";
+    expect(repeatDaysForNewDate(original, nextDate)).toEqual([bookingWeekday(nextDate)]);
+    const extraDay = (bookingWeekday(original.date) + 2) % 7;
+    const selected = { ...original, repeatDays: [bookingWeekday(original.date), extraDay] };
+    expect(repeatDaysForNewDate(selected, nextDate))
+      .toEqual([...new Set([bookingWeekday(nextDate), extraDay])].sort((a, b) => a - b));
+    expect(repeatDaysForNewDate({ ...original, frequency: "once", repeatDays: [] }, nextDate))
+      .toEqual([]);
   });
 
   it.each(BOOKING_SERVICES)("does not reset a customer's explicit cadence when changing to %s", (service) => {
