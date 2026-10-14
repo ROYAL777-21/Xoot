@@ -38,7 +38,10 @@ export function createBookingInput(service: BookingService = "regular", now = Da
     contractVersion: 1, service, propertyType: service === "office" ? "office" : service === "airbnb" ? "airbnb" : service === "moving" ? "empty" : "house",
     homeSize: "small", hours: BOOKING_SERVICE_DETAILS[service].defaultHours, crewSize: 1,
     addOns: [], linen: service === "airbnb" ? "none" : null, date: bookingDateInSast(now, 1), time: "08:00",
-    frequency: "once", repeatDays: [], referralCode: "", requestedCreditCents: 0, coverRequested: false,
+    // The first booked weekday is the sole preselected repeat day for EVERY
+    // available service. Customers can explicitly choose fortnightly or one-off.
+    frequency: "weekly", repeatDays: [bookingWeekday(bookingDateInSast(now, 1))],
+    referralCode: "", requestedCreditCents: 0, coverRequested: false,
   };
 }
 export function bookingExtrasFor(service: BookingService): BookingAddOn[] {
