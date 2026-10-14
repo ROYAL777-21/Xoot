@@ -23,7 +23,7 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-**14 October 2026 — Release branch protection and visual regression gate (GPT-6):** Holding `release/xoot-production` for production deployment-source protection and a rendered-site regression check distinguishing the approved redesign from old main. PR #46 remains separate, and no payment/voice/backend production flags are modified. Release work owns deployment protections; visual/browser checks cross into Correctness and are flagged for review.
+**RELEASED — 14 October 2026: approved Xoot production branch.** A separate, founder-selected `release/xoot-production` now contains the handoff redesign and private Xooter route security work, leaving Codex PR #46 untouched. Vercel Ignored Build Step was configured to build production only for this release branch and the source marker/desktop-mobile Playwright design/focus guards were introduced, including planted-defect negative controls. The `npm run design:check` source guard passed in the release preview and production Vercel logs. Vercel production was confirmed READY on commit `a89ddbbc`, with `xoot.co.za` and `xoot.vercel.app` aliases. CI/browser live proof, DNS, the 6-phase GOAL, migrations, PayFast, Twilio and independent security scan remain open; no provider flags, schemas or payments were changed. Authoritative updated checklist: `docs/release/production-checklist.md` (14 October 2026 section). **Released claim**; no branch path is now held by GPT-6.
 
 
 **26 September checkpoint, same authorized cross-role Codex claim:** gift presentation/request
