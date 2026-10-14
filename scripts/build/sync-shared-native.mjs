@@ -36,6 +36,8 @@ const MODULES = [
   // matters. The transport differs — @twilio/voice-sdk on web, @twilio/voice-react-native-sdk
   // on device — but the transport is what the hook wraps, not what this decides.
   "voice-call.ts",
+  // Canonical status aliases must match the native visit detail and tracking flow.
+  "booking-state-machine.ts",
   // XootCred balance and expiry rules must be identical on web and native. The web adapter
   // adds its generated Supabase Json type; this dependency-free core is safe for Metro.
   "xootcred-core.ts",
