@@ -23,6 +23,8 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**14 October — GPT-6: isolated website production/security hardening.** Branch `goal/xoot-production-hardening-20261014` derives from redesigned release `release/redesigned-preview-20261014`, not PR #46. Holding all-private-Xooter-route HTTP noindex/no-store coverage and verification across Vercel, Netlify, Apache, and the live check. This spans Release host configs and Correctness security-guard tests; cross-role edit flagged here per CLAUDE.md rule 3. No edits to the Codex PR, live Supabase migrations, payments, voice, or provider flags. Publish only after proving test/build/security and live delivery; production feature gates remain separate.
+
 **26 September checkpoint, same authorized cross-role Codex claim:** gift presentation/request
 contract is committed at `303bf9b`; native Search, notifications, Profile and Rewards work has passed
 scoped reviews. Dependency updates retain the existing web React and Expo SDK 56 runtimes; web
