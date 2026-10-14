@@ -35,6 +35,12 @@ jobs:
         run: npm run security:scan
       - name: Typecheck
         run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Full web unit test suite
+        run: npx vitest run
+      - name: Backend readiness check planted-defect tests
+        run: node scripts/ops/verify-production-edge-contracts.mjs --self-test
       - name: Build with explicit production environment
         env:
           VITE_APP_ENV: production
