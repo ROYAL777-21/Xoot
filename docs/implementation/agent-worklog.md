@@ -23,6 +23,8 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**14 October 2026 — GPT-6 isolated release-verification gate (HOLDING).** Branch `goal/live-release-verification-20261014` from `release/xoot-production`. Scope: correct the live-deploy gate which still compares to `main`, enforce exact approved release build and active rendered homepage/headers, and record prerequisites for missing public directory function. Codex PR #46 and `main` remain unchanged. Cross-role Release/Infrastructure + Correctness read-only verification; no production schema, payment flags, or Twilio changes. Update this entry when complete.
+
 **RELEASED — 14 October 2026: approved Xoot production branch.** A separate, founder-selected `release/xoot-production` now contains the handoff redesign and private Xooter route security work, leaving Codex PR #46 untouched. Vercel Ignored Build Step was configured to build production only for this release branch and the source marker/desktop-mobile Playwright design/focus guards were introduced, including planted-defect negative controls. The `npm run design:check` source guard passed in the release preview and production Vercel logs. Vercel production was confirmed READY on commit `a89ddbbc`, with `xoot.co.za` and `xoot.vercel.app` aliases. CI/browser live proof, DNS, the 6-phase GOAL, migrations, PayFast, Twilio and independent security scan remain open; no provider flags, schemas or payments were changed. Authoritative updated checklist: `docs/release/production-checklist.md` (14 October 2026 section). **Released claim**; no branch path is now held by GPT-6.
 
 
