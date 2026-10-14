@@ -1,4 +1,5 @@
 import { getPublicConfigIssueForEnv, getPublicSecretLeaks, isSupabasePublicConfigComplete } from "@/lib/env";
+import { resolvePublicEnv } from "@/lib/public-environment";
 
 const renderFatalConfigError = () => {
   if (typeof document === "undefined" || !document.body) return;
@@ -17,7 +18,10 @@ const renderFatalConfigError = () => {
 };
 
 export function assertProductionEnv() {
-  const issue = getPublicConfigIssueForEnv(import.meta.env, {
+  // Match the Supabase client: production defaults apply when host variables are blank.
+  // Previews have no committed defaults and remain isolated from production.
+  const resolvedEnv = resolvePublicEnv(import.meta.env);
+  const issue = getPublicConfigIssueForEnv(resolvedEnv, {
     prod: import.meta.env.PROD,
     dev: import.meta.env.DEV,
   });
@@ -27,9 +31,9 @@ export function assertProductionEnv() {
   const localStaticPreview =
     typeof window !== "undefined" &&
     ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname) &&
-    !isSupabasePublicConfigComplete(import.meta.env) &&
-    getPublicSecretLeaks(import.meta.env).length === 0 &&
-    import.meta.env.VITE_ENABLE_DEMO_MODE !== "true";
+    !isSupabasePublicConfigComplete(resolvedEnv) &&
+    getPublicSecretLeaks(resolvedEnv).length === 0 &&
+    resolvedEnv.VITE_ENABLE_DEMO_MODE !== "true";
 
   if (localStaticPreview) {
     console.warn(`[Xoot] Local static preview is running without live Supabase config. Backend/auth actions remain disabled. ${issue}`);
