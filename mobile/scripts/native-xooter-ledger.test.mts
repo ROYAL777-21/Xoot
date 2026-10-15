@@ -96,7 +96,7 @@ test('native Xooter screens retain account-scoped fetch, safe job cards and boun
   assert.match(earnings, /olderXooterEarningsFilter/);
   assert.match(earnings, /Load older earnings/);
   assert.match(earnings, /Partial sum of records loaded so far/);
-  assert.match(earnings, /key=\{user\.id\}/);
+  assert.match(earnings, /key=\{\`\$\{user.id\}:\$\{period\}\`\}/);
   assert.match(earnings, /not proof of bank settlement/i);
   assert.doesNotMatch(earnings, /Paid out this week|pays out every Friday/i);
 });
