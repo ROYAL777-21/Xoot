@@ -7,7 +7,7 @@ import {
   Screen, SectionLabel, formatVisitDate, nativeFonts, nativePalette,
 } from '@/components/native-core';
 import { supabase } from '@/lib/supabase';
-import { groupXooterJobs, parseXooterJobCards, type XooterJobCard } from '@/lib/native-xooter-ledger';
+import { groupXooterJobs, isXooterJobId, parseXooterJobCards, type XooterJobCard } from '@/lib/native-xooter-ledger';
 import { useAuth } from '@/providers/auth-provider';
 
 type State = { jobs: XooterJobCard[]; xooterId: string | null; loading: boolean; error: string | null };
@@ -27,6 +27,12 @@ function JobCard({ job }: { job: XooterJobCard }) {
     </View>
     {job.duration_hours !== null ? <Text style={s.muted}>{job.duration_hours} scheduled hours</Text> : null}
     <Text style={s.muted}>Customer address and access codes are not shown here. Sensitive details require the approved, logged access workflow.</Text>
+    {isXooterJobId(job.job_id) ? <Pressable accessibilityRole="button"
+      accessibilityLabel={`View ${label} job details`} style={s.link}
+      onPress={() => router.push({ pathname: '/xooter/job/[id]', params: { id: job.job_id } })}>
+      <Text style={s.linkText}>View job details</Text>
+      <CoreIcon name="chevron-right" color={nativePalette.violetDark} size={17} />
+    </Pressable> : null}
     {state === 'offered' ? <Pressable accessibilityRole="button" style={s.link}
       onPress={() => void WebBrowser.openBrowserAsync(portal)}>
       <Text style={s.linkText}>Review and respond securely on Xoot web</Text>
