@@ -91,7 +91,9 @@ test('native Xooter screens retain account-scoped fetch, safe job cards and boun
   assert.match(jobs, /key=\{user\.id\}/);
   assert.match(jobs, /parseXooterJobCards\(data, account\.id\)/);
   assert.doesNotMatch(jobs, /\{job\.destination_address\}|\{job\.user_id\}/);
-  assert.match(earnings, /\.eq\('xooter_id', profile\.id\)/);
+  assert.match(earnings, /\.eq\('xooter_id', args\.owner\)/);
+  assert.match(earnings, /\.eq\('user_id', userId\)/);
+  assert.match(earnings, /getLedgerPage\(\{ owner: profile\.id/);
   assert.match(earnings, /\.limit\(XOOTER_EARNINGS_PAGE_SIZE \+ 1\)/);
   assert.match(earnings, /olderXooterEarningsFilter/);
   assert.match(earnings, /Load older earnings/);
