@@ -102,3 +102,12 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: xoot-referral-synthetic-test
         run: node scripts/ops/test-referral-client-privileges.mjs
+      - name: Verify production referral prerequisite before ZD035 with real PostgreSQL
+        env:
+          XOOT_PG_TEST_INTENT: referral-base-prerequisite
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-referral-pg/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-referral-synthetic-test
+        run: node scripts/ops/test-referral-base-prerequisite.mjs

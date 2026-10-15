@@ -1,5 +1,13 @@
 # Xoot production checklist
 
+## 15 October 2026 — guarded production referral predecessor prepared, not deployed
+
+A new `20260903000000_referral_base_prerequisite_convergence.sql` precedes the untouched ZD035 migration and reconstructs the missing April referral baseline **only if both tables are absent**. It validates canonical keys/columns and refuses partial/unknown policies; it creates the missing `gen_referral_code()` only when absent and enforces owner-bound RLS and least-privilege grants. PostgreSQL 17.6 integration tests exercise both missing and already-migrated paths, the unchanged ZD035 migration, and planted failure cases.
+
+**This is repository readiness, not production database delivery.** The older version needs a reviewed, exact-ordered migration operation; indiscriminate `--include-all` could apply other pending changes. Production's external `20261008011821` safety-PIN entry and GitHub database access still need reconciliation. No production migration has been dispatched. [Full dependency sequence and proof boundaries](evidence/2026-10-15/referral-baseline-reconciliation.md).
+
+---
+
 ## 15 October 2026 — live referral privilege hardening (staging only)
 
 Staging `fxmxyabdjqviqbcxmvlp` had effective client `TRUNCATE` privileges on both `public.referrals` and `public.referral_redemptions` despite RLS. The migration `20261015102137_referral_client_grants_least_privilege.sql` was **applied to staging** through Supabase, and post-apply SQL now confirms: `anon` no table privileges; `authenticated` SELECT only subject to RLS; `service_role` preserved. No staging customer data was modified by the privilege-only DDL. The same-source Postgres 17 negative controls now gate release CI. Full evidence: [15 October referral permission audit](evidence/2026-10-15/referral-privilege-verified.md).
