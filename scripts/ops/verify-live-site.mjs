@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { hasNoindex, hasPrivateNoStore } from './live-header-contract.mjs';
 /*
  * Prove a deployed Xoot site is actually correct — not merely that the build went green.
  *
@@ -86,8 +87,8 @@ const run = async () => {
     const robots = response.headers.get("x-robots-tag") ?? "";
     const cache = response.headers.get("cache-control") ?? "";
     record(`${route} responds without server failure`, response.status < 500, `HTTP ${response.status}`);
-    record(`${route} is noindex`, /(?:^|,)\\s*noindex(?:,|$)/i.test(robots), robots || "(header absent)");
-    record(`${route} is private no-store`, /\\bno-store\\b/i.test(cache) && /\\bprivate\\b/i.test(cache), cache || "(header absent)");
+    record(`${route} is noindex`, hasNoindex(robots), robots || "(header absent)");
+    record(`${route} is private no-store`, hasPrivateNoStore(cache), cache || "(header absent)");
   }
 
   // ── Native app links must be served as real JSON, never rewritten to index.html ───────────────
