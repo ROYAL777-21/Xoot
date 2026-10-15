@@ -53,6 +53,8 @@ jobs:
         run: npm --prefix mobile run test:gift
       - name: Test native visit detail lifecycle and owner-scoped routing
         run: npm --prefix mobile run test:visit
+      - name: Test native Xooter job and earnings account boundaries
+        run: npm --prefix mobile run test:xooter
       - name: Lint
         run: npm run lint
       - name: Full web unit test suite
