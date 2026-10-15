@@ -158,6 +158,11 @@ grant execute on function public.gen_referral_code() to service_role;
 
 do $postconditions$
 begin
+  if exists (select 1 from pg_class c where c.oid in
+    ('public.referrals'::regclass,'public.referral_redemptions'::regclass)
+    and not c.relrowsecurity) then
+    raise exception 'RLS disabled on reconstructed referral table';
+  end if;
   if not exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
     where n.nspname='public' and p.proname='gen_referral_code'
       and pg_get_function_identity_arguments(p.oid)='' and p.prosecdef) then
