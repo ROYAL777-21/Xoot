@@ -78,8 +78,8 @@ function TrainingForAccount({userId}:{userId:string}){
           <Text style={s.body}>{state.hasXooterProfile
             ? String(completed.size)+' of '+String(state.modules.length)+' listed modules marked complete in your Xoot record.'
             : 'You can explore the training catalogue. Completion progress appears once your Xooter profile is registered.'}</Text>
-          <Pill tone={state.hasXooterProfile&&required.every(module=>completed.has(module.id))&&required.length>0?'success':'neutral'}>
-            {state.hasXooterProfile&&required.every(module=>completed.has(module.id))&&required.length>0
+          <Pill tone={state.hasXooterProfile&&!state.limited&&required.every(module=>completed.has(module.id))&&required.length>0?'success':'neutral'}>
+            {state.hasXooterProfile&&!state.limited&&required.every(module=>completed.has(module.id))&&required.length>0
               ? 'Required modules recorded complete':'Required training status not confirmed'}
           </Pill>
         </Card>
