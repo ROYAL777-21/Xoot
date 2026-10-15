@@ -69,3 +69,36 @@ jobs:
         run: node scripts/ops/verify-approved-design.mjs --artifact dist
       - name: Scan production artifact
         run: npm run build:artifact-scan
+
+  referral-client-privileges:
+    name: Referral RLS and client privilege hardening (PostgreSQL 17)
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_PASSWORD: xoot-referral-synthetic-test
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Install isolated pinned PostgreSQL driver
+        run: npm install --prefix "$RUNNER_TEMP/xoot-referral-pg" --no-save --ignore-scripts --no-audit --no-fund pg@8.16.3
+      - name: Prove real client TRUNCATE bypass is fixed and no records are changed
+        env:
+          XOOT_PG_TEST_INTENT: referral-client-privileges
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-referral-pg/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-referral-synthetic-test
+        run: node scripts/ops/test-referral-client-privileges.mjs

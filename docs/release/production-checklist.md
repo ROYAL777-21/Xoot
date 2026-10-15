@@ -1,5 +1,13 @@
 # Xoot production checklist
 
+## 15 October 2026 — live referral privilege hardening (staging only)
+
+Staging `fxmxyabdjqviqbcxmvlp` had effective client `TRUNCATE` privileges on both `public.referrals` and `public.referral_redemptions` despite RLS. The migration `20261015102137_referral_client_grants_least_privilege.sql` was **applied to staging** through Supabase, and post-apply SQL now confirms: `anon` no table privileges; `authenticated` SELECT only subject to RLS; `service_role` preserved. No staging customer data was modified by the privilege-only DDL. The same-source Postgres 17 negative controls now gate release CI. Full evidence: [15 October referral permission audit](evidence/2026-10-15/referral-privilege-verified.md).
+
+**Production has not received this migration.** Its referral base tables AND `gen_referral_code()` are absent, although its signup handler exists. The new migration intentionally fails on missing tables and cannot substitute for reconstructing their canonical shape; do not repair-stamp it or run ZD035 blindly. Migrate the missing base tables in audited dependency order after reconciling the live-only `20261008011821` safety-PIN entry. Quote/checklist functions, production checkout/calling, live browser, and independent security gates remain open.
+
+---
+
 
 ## 14 October 2026 — release status override
 **Critical schema drift:** Production is also missing `public.referrals` and `public.referral_redemptions` entirely, even though staging contains them. This invalidates the ZD035 migration's assumption that the referral tables pre-exist, and blocks a reliable `get-booking-quote` deployment. Reconstruct and verify the full live referral schema first; never apply the current column-only migration blindly or mark it applied without equivalent data/catalog evidence.
