@@ -62,6 +62,7 @@ function TrainingForAccount({userId}:{userId:string}){
   },[retry,userId]);
   const completed=completedTrainingIds(state.progress,state.modules);
   const required=state.modules.filter(module=>module.required);
+  const optional=state.modules.filter(module=>!module.required);
   return <Screen refreshControl={<RefreshControl refreshing={state.loading} onRefresh={reload} tintColor={nativePalette.violet}/>}>
     <View style={s.header}>
       <Pressable accessibilityLabel="Back to Xooter jobs" accessibilityRole="button" style={s.back}
@@ -83,25 +84,28 @@ function TrainingForAccount({userId}:{userId:string}){
               ? 'Required modules recorded complete':'Required training status not confirmed'}
           </Pill>
         </Card>
-        <SectionLabel count={required.length}>Required foundation</SectionLabel>
         {state.modules.length===0?<EmptyState title="No published modules"
-          detail="The training service has not returned any modules yet. No completion or badge can be claimed."/>:
-          state.modules.map(module=><Card key={module.id} style={s.module}>
-            <View style={s.moduleTop}>
-              <View style={s.grow}>
-                <Text style={s.moduleTitle}>{module.title}</Text>
-                {module.description?<Text style={s.body}>{module.description}</Text>:null}
+          detail="The training service has not returned any modules yet. No completion or badge can be claimed."/>:null}
+        {([{label:'Required foundation',modules:required},{label:'Optional learning',modules:optional}] as const).map(section=>
+          section.modules.length>0?<View key={section.label} style={s.group}>
+            <SectionLabel count={section.modules.length}>{section.label}</SectionLabel>
+            {section.modules.map(module=><Card key={module.id} style={s.module}>
+              <View style={s.moduleTop}>
+                <View style={s.grow}>
+                  <Text style={s.moduleTitle}>{module.title}</Text>
+                  {module.description?<Text style={s.body}>{module.description}</Text>:null}
+                </View>
+                <Pill tone={state.hasXooterProfile&&completed.has(module.id)?'success':module.required?'warning':'neutral'}>
+                  {state.hasXooterProfile&&completed.has(module.id)?'Recorded complete':module.required?'Required':'Optional'}
+                </Pill>
               </View>
-              <Pill tone={state.hasXooterProfile&&completed.has(module.id)?'success':module.required?'warning':'neutral'}>
-                {state.hasXooterProfile&&completed.has(module.id)?'Recorded complete':module.required?'Required':'Optional'}
-              </Pill>
-            </View>
-            <View style={s.tagRow}>
-              {module.duration_min!==null?<Text style={s.tag}>{module.duration_min} min</Text>:null}
-              {module.badge_label?<Text style={s.tag}>Module: {module.badge_label}</Text>:null}
-              {module.rank_points!==null?<Text style={s.tag}>{module.rank_points} recognition points available</Text>:null}
-            </View>
-          </Card>)}
+              <View style={s.tagRow}>
+                {module.duration_min!==null?<Text style={s.tag}>{module.duration_min} min</Text>:null}
+                {module.badge_label?<Text style={s.tag}>Module: {module.badge_label}</Text>:null}
+                {module.rank_points!==null?<Text style={s.tag}>{module.rank_points} recognition points available</Text>:null}
+              </View>
+            </Card>)}
+          </View>:null)}
         {state.limited?<Text style={s.body}>Only the first 100 modules or progress rows are displayed. Open the web workspace for complete records.</Text>:null}
         <Card style={s.notice}>
           <CoreIcon name="shield" size={19} color={nativePalette.sageInk}/>
@@ -131,6 +135,7 @@ const s=StyleSheet.create({
   body:{fontFamily:nativeFonts.body,color:nativePalette.inkSoft,fontSize:12,lineHeight:19},
   hero:{backgroundColor:nativePalette.violetWash,gap:11},
   title:{fontFamily:nativeFonts.displayStrong,color:nativePalette.ink,fontSize:25},
+  group:{gap:10},
   module:{gap:12},
   moduleTop:{flexDirection:'row',alignItems:'flex-start',gap:10,flexWrap:'wrap'},
   moduleTitle:{fontFamily:nativeFonts.bodyBold,color:nativePalette.ink,fontSize:14},
