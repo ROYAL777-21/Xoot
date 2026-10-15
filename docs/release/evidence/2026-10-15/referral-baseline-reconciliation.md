@@ -18,6 +18,10 @@ New `scripts/ops/test-referral-base-prerequisite.mjs` is collected in `Verify ap
 
 **This test is not permission to bulk-push all missed production migrations** and is not a live production schema change. Production's `20261008011821` safety-PIN hardening migration is external to the repo; neither its history nor its objects may be removed to force CLI convergence.
 
+## Production-only safety-PIN delta measured separately
+
+The 8 October migration is documented in `docs/release/CONNECTED-SERVICE-DELIVERY-2026-10-08.md` and confirmed by live read-only catalogue queries on 15 October. Both projects have the same six columns and primary/foreign-key constraints for `public.user_safety_pins`; both have `SECURITY DEFINER` setter/verifier functions. **Their permissions deliberately differ**: production has one authenticated owner-SELECT RLS policy but no authenticated table SELECT grant, and only `service_role` can execute `set_safety_pin(text)`; staging has no PIN table RLS policy and allows authenticated users to execute that setter. Anonymous users cannot execute either function in either environment. Do not copy staging PIN grants into production, strip the prod-only migration entry, or mark this delta equivalent without a product decision about how signed-in users set a PIN through an audited server path. It is independent of the referral baseline repair.
+
 ## Required controlled delivery order
 
 1. Restore GitHub `SUPABASE_ACCESS_TOKEN` with working project-management rights, and the environment-scoped `SUPABASE_DB_PASSWORD_STAGING` and `SUPABASE_DB_PASSWORD_PRODUCTION` credentials. Verify with non-mutating CLI link and migration-list reads; never paste credentials into source or an issue.
