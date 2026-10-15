@@ -269,6 +269,18 @@ export default function AccountScreen() {
           detail="Verified offers and assignments"
           onPress={() => router.push("/xooter/jobs")}
         />
+        <Row
+          icon="shield"
+          title="Xooter verification"
+          detail="Review your application and document statuses"
+          onPress={() => router.push("/xooter/kyc")}
+        />
+        <Row
+          icon="trophy"
+          title="Xooter training"
+          detail="Required foundation and optional learning"
+          onPress={() => router.push("/xooter/training")}
+        />
       </Card>
       <SectionLabel>Your app</SectionLabel>
       <Card style={s.list}>
