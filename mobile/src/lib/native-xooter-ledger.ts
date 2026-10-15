@@ -24,6 +24,7 @@ export function xooterCents(value: number): number | null {
   return Number.isSafeInteger(rounded) && Math.abs(scaled - rounded) < 0.000001 ? rounded : null;
 }
 export const XOOTER_EARNINGS_PAGE_SIZE = 50;
+export const isXooterJobId = (value: unknown): value is string => typeof value === 'string' && idPattern.test(value);
 const idPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Safe PostgREST keyset filter from a previously validated DB row. */
 export function olderXooterEarningsFilter(row: Pick<XooterEarning, 'created_at' | 'id'>) {
