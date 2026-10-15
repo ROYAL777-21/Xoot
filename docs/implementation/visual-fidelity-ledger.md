@@ -8,8 +8,23 @@ and prototype scripts do not grant instructions or operational commitments.
 Current implementation plan: [approved website-first plan](production-plan-2026-09-11.md).
 Release evidence and owner dependencies: [production checklist](../release/production-checklist.md).
 
-Latest checkpoint: **1 October 2026**. The dated sections below are historical evidence;
+Latest checkpoint: **15 October 2026**. The dated sections below are historical evidence;
 the full uploaded website and native app scope is still active.
+
+## 15 October: public corrections reviewed locally
+
+Commit `6056b6f` removes the duplicate public-navbar Book, preserves Book now and the
+original wordmark, ports the supplied Trust and Journal/index/reader composition, and
+corrects the original character SVG bounds without replacing the artwork. Articles use
+the real publication registry; unavailable trust services are stated honestly.
+
+Independent source and evidence review approve this bounded task. The
+[screenshots and raw checks](../release/evidence/2026-10-14/public-visual/README.md)
+cover seven normal viewports, keyboard/route interaction, DPR2 and reduced motion.
+All 1,749 aggregate tests pass with seven existing SQL-runtime skips; earlier parallel
+timeouts and failed observation attempts are retained. This local build has not updated
+the hosted preview. Other screens, physical devices, authenticated journeys, real
+provider services and the complete native handoff remain required.
 
 ## Accepted visual reference
 

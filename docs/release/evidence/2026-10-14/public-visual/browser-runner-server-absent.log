@@ -1,0 +1,13 @@
+{"file":"responsive-metrics.json","records":0,"errors":[],"interrupted":"Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/\", waiting until \"networkidle\"\u001b[22m\n","failed":[]}
+page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/
+Call log:
+  - navigating to "http://localhost:5173/", waiting until "networkidle"
+
+    at evalmachine.<anonymous>:11:16
+    at async file:///C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/outputs/public-visual-runner-20261014.mjs:14:18 {
+  log: [
+    '  - navigating to "http://localhost:5173/", waiting until "networkidle"'
+  ],
+  name: 'Error'
+}
+EXIT_CODE: 1

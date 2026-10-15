@@ -1,0 +1,102 @@
+[
+  {
+    "id": "trust",
+    "width": 320,
+    "height": 800,
+    "sectionHeight": 4622.890625,
+    "font": "Newsreader, Georgia, serif",
+    "size": "32px",
+    "line": "36.48px",
+    "overflow": false
+  },
+  {
+    "id": "articles",
+    "width": 320,
+    "height": 800,
+    "sectionHeight": 1785.40625,
+    "font": "Newsreader, Georgia, serif",
+    "size": "32px",
+    "line": "36.48px",
+    "overflow": false
+  },
+  {
+    "id": "trust",
+    "width": 768,
+    "height": 1024,
+    "sectionHeight": 2436.171875,
+    "font": "Newsreader, Georgia, serif",
+    "size": "32px",
+    "line": "36.48px",
+    "overflow": false
+  },
+  {
+    "id": "articles",
+    "width": 768,
+    "height": 1024,
+    "sectionHeight": 998.015625,
+    "font": "Newsreader, Georgia, serif",
+    "size": "32px",
+    "line": "36.48px",
+    "overflow": false
+  },
+  {
+    "id": "trust",
+    "width": 1024,
+    "height": 768,
+    "sectionHeight": 2210.859375,
+    "font": "Newsreader, Georgia, serif",
+    "size": "34.816px",
+    "line": "39.6902px",
+    "overflow": false
+  },
+  {
+    "id": "articles",
+    "width": 1024,
+    "height": 768,
+    "sectionHeight": 1080.234375,
+    "font": "Newsreader, Georgia, serif",
+    "size": "34.816px",
+    "line": "39.6902px",
+    "overflow": false
+  },
+  {
+    "id": "trust",
+    "width": 1920,
+    "height": 1080,
+    "sectionHeight": 1946.84375,
+    "font": "Newsreader, Georgia, serif",
+    "size": "46px",
+    "line": "52.44px",
+    "overflow": false
+  },
+  {
+    "id": "articles",
+    "width": 1920,
+    "height": 1080,
+    "sectionHeight": 957.640625,
+    "font": "Newsreader, Georgia, serif",
+    "size": "46px",
+    "line": "52.44px",
+    "overflow": false
+  },
+  {
+    "id": "trust",
+    "width": 844,
+    "height": 390,
+    "sectionHeight": 2342.4375,
+    "font": "Newsreader, Georgia, serif",
+    "size": "32px",
+    "line": "36.48px",
+    "overflow": false
+  },
+  {
+    "id": "articles",
+    "width": 844,
+    "height": 390,
+    "sectionHeight": 1000.90625,
+    "font": "Newsreader, Georgia, serif",
+    "size": "32px",
+    "line": "36.48px",
+    "overflow": false
+  }
+]

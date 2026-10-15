@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-Current register: **12 October 2026**. This replaces the status claims in `blocker.md`,
+Current register: **15 October 2026**. This replaces the status claims in `blocker.md`,
 `NEEDS-FOUNDER.md`, `founder-todo.md`, `next-session.md`, `go-live.md` and the old readiness guide.
 Historical investigations remain in Git; they are not instructions to repeat migrations or change DNS.
 
@@ -14,7 +14,7 @@ Engineering source: this private repository. Visual source: `design/handoff-2026
 | Phase | Current position |
 |---|---|
 | 0 — startup | Staging and local rendered startup pass. Production delivery remains open. |
-| 1 — visuals | In progress. Several screens have source comparisons; the full website and native handoff are not yet complete. The founder's 12 October navbar, Trust, Journal and SVG corrections are next. |
+| 1 — visuals | In progress. The founder's navbar, Trust, Journal and SVG corrections are implemented locally as `6056b6f`; [seven-size, keyboard and DPR2 evidence](evidence/2026-10-14/public-visual/README.md) passes. Independent source and evidence review approve this bounded task on 15 October. The full website and native handoff remain incomplete. |
 | 2 — bookings/money | Quote, parsing, benefit locking and disabled atomic creation foundations are locally verified. Complete crew fulfilment, payments, referral rewards/reversals and real role journeys remain. |
 | 3 — paid website launch | Not ready. Database delivery access, provider/operational prerequisites and full release checks remain open. |
 | 4 — remaining capabilities | Partial source implementations; complete Care+, gifts, recurring, loyalty, property/business and Concierge journeys remain. |

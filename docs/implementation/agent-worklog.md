@@ -23,6 +23,21 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**15 October checkpoint, same authorized cross-role claim:** Public navbar, Trust,
+Journal and original SVG corrections are committed locally as `6056b6f`. Independent
+source and evidence review approve this bounded task. Aggregate 165 files/1,749 tests,
+types/lint/lockfiles, source scans, staging build/rendered artifact and artifact scan pass;
+seven existing SQL-runtime skips and two earlier parallel timeouts remain disclosed.
+Seven normal viewport records, 21 real public interactions and five density/motion
+records pass. Screenshots and raw results are in the dated public-visual evidence folder.
+No hosted or native delivery occurred. Full website/app and company-wide gates remain.
+
+Next held implementation is atomic default-home selection across the existing household
+and saved-address readers. Database, shared web/native contracts, UI controls and required
+SQL CI span both roles because a single authoritative selection must remain consistent
+under concurrent writes. Existing records and access secrets must be preserved. The
+checklist progress/nudge, booking-day destination and other approved tasks remain queued.
+
 **12 October later checkpoint, same authorized cross-role claim:** Atomic reviewed booking
 foundation is committed locally as `d139dd7`, source tree `b5e4ebf7`. Independent task review
 approved it within the explicit temporary reservation-policy scope. Actual PostgreSQL17.11

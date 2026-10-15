@@ -1,0 +1,30 @@
+Frozen source tree fe43c0e370d1181eebe7633cac1989361247fb66
+COMMAND: npm run typecheck
+
+> xoot-home-care@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.app.json
+
+EXIT_CODE: 0
+COMMAND: npm run lint
+
+> xoot-home-care@0.1.0 lint
+> eslint .
+
+EXIT_CODE: 0
+COMMAND: npm run lockfiles:check
+
+> xoot-home-care@0.1.0 lockfiles:check
+> node scripts/config/validate-lockfiles.mjs
+
+Xoot lockfile validation passed for web and mobile.
+EXIT_CODE: 0
+COMMAND: npm run security:scan
+
+> xoot-home-care@0.1.0 security:scan
+> node scripts/security/secret-scan.mjs && node scripts/security/assert-no-frontend-admin-queue-writes.mjs && node scripts/security/assert-no-unsafe-dom-apis.mjs && node scripts/security/assert-static-hosting-security.mjs
+
+No obvious committed secrets found.
+No frontend/mobile critical-table mutations found.
+No unsafe frontend DOM execution APIs found.
+Static hosting security configuration passed.
+EXIT_CODE: 0

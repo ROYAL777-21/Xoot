@@ -1,0 +1,1729 @@
+{
+  "commit": "6056b6f1e6aa531a0f3ec3b49281fcf4b27d218a",
+  "at": "2026-10-14T14:05:55.095Z",
+  "records": [
+    {
+      "width": 320,
+      "height": 800,
+      "url": "http://localhost:5173/",
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "heading": "Premium home care,\n\nBuilt on trust",
+      "visibleBooks": 1,
+      "duplicate": 0,
+      "overflow": false,
+      "overlay": false,
+      "trust": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "32px",
+        "line": "36.48px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journal": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "32px",
+        "line": "36.48px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCard": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "20px",
+        "line": "23.2px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCards": 6,
+      "trustColumns": "288px",
+      "journalColumns": "288px",
+      "characters": [
+        {
+          "rect": {
+            "x": 94,
+            "y": -10909.75,
+            "width": 132,
+            "height": 126.25,
+            "right": 226,
+            "bottom": -10783.5
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 94,
+            "y": -10577.703125,
+            "width": 132,
+            "height": 126.25,
+            "right": 226,
+            "bottom": -10451.453125
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 94,
+            "y": -10268.90625,
+            "width": 132,
+            "height": 126.25,
+            "right": 226,
+            "bottom": -10142.65625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 94,
+            "y": -9960.109375,
+            "width": 132,
+            "height": 126.25,
+            "right": 226,
+            "bottom": -9833.859375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 94,
+            "y": 154.046875,
+            "width": 132,
+            "height": 126.25,
+            "right": 226,
+            "bottom": 280.296875
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        }
+      ],
+      "how": [
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        }
+      ],
+      "rootOverflow": false,
+      "characterVisibility": [
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": true,
+          "display": "inline-block"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "url": "http://localhost:5173/",
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "heading": "Premium home care,\n\nBuilt on trust",
+      "visibleBooks": 1,
+      "duplicate": 0,
+      "overflow": false,
+      "overlay": false,
+      "trust": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "32px",
+        "line": "36.48px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journal": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "32px",
+        "line": "36.48px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCard": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "20px",
+        "line": "23.2px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCards": 6,
+      "trustColumns": "358px",
+      "journalColumns": "358px",
+      "characters": [
+        {
+          "rect": {
+            "x": 129,
+            "y": -9752.5,
+            "width": 132,
+            "height": 126.25,
+            "right": 261,
+            "bottom": -9626.25
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 129,
+            "y": -9443.703125,
+            "width": 132,
+            "height": 126.25,
+            "right": 261,
+            "bottom": -9317.453125
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 129,
+            "y": -9158.15625,
+            "width": 132,
+            "height": 126.25,
+            "right": 261,
+            "bottom": -9031.90625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 129,
+            "y": -8849.359375,
+            "width": 132,
+            "height": 126.25,
+            "right": 261,
+            "bottom": -8723.109375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 129,
+            "y": 138.328125,
+            "width": 132,
+            "height": 126.25,
+            "right": 261,
+            "bottom": 264.578125
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        }
+      ],
+      "how": [
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        }
+      ],
+      "rootOverflow": false,
+      "characterVisibility": [
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": true,
+          "display": "inline-block"
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "url": "http://localhost:5173/",
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "heading": "Premium home care,\n\nBuilt on trust",
+      "visibleBooks": 1,
+      "duplicate": 0,
+      "overflow": false,
+      "overlay": false,
+      "trust": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "32px",
+        "line": "36.48px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journal": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "32px",
+        "line": "36.48px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCard": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "20px",
+        "line": "23.2px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCards": 6,
+      "trustColumns": "345.281px 345.281px",
+      "journalColumns": "344.281px 344.281px",
+      "characters": [
+        {
+          "rect": {
+            "x": 136.359375,
+            "y": -6860.921875,
+            "width": 132,
+            "height": 126.25,
+            "right": 268.359375,
+            "bottom": -6734.671875
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 499.640625,
+            "y": -6860.921875,
+            "width": 132,
+            "height": 126.25,
+            "right": 631.640625,
+            "bottom": -6734.671875
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 136.359375,
+            "y": -6544.125,
+            "width": 132,
+            "height": 126.25,
+            "right": 268.359375,
+            "bottom": -6417.875
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 499.640625,
+            "y": -6544.125,
+            "width": 132,
+            "height": 126.25,
+            "right": 631.640625,
+            "bottom": -6417.875
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 318,
+            "y": 344.515625,
+            "width": 132,
+            "height": 126.25,
+            "right": 450,
+            "bottom": 470.765625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        }
+      ],
+      "how": [
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        }
+      ],
+      "rootOverflow": false,
+      "characterVisibility": [
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": true,
+          "display": "inline-block"
+        }
+      ]
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "url": "http://localhost:5173/",
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "heading": "Premium home care,\n\nBuilt on trust",
+      "visibleBooks": 1,
+      "duplicate": 0,
+      "overflow": false,
+      "overlay": false,
+      "trust": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "34.816px",
+        "line": "39.6902px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journal": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "34.816px",
+        "line": "39.6902px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCard": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "23.552px",
+        "line": "27.3203px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCards": 6,
+      "trustColumns": "464px 464px",
+      "journalColumns": "463px 463px",
+      "characters": [
+        {
+          "rect": {
+            "x": 124.65625,
+            "y": -6680.234375,
+            "width": 132,
+            "height": 126.25,
+            "right": 256.65625,
+            "bottom": -6553.984375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 445.984375,
+            "y": -6680.234375,
+            "width": 132,
+            "height": 126.25,
+            "right": 577.984375,
+            "bottom": -6553.984375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 767.328125,
+            "y": -6680.234375,
+            "width": 132,
+            "height": 126.25,
+            "right": 899.328125,
+            "bottom": -6553.984375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 124.65625,
+            "y": -6363.4375,
+            "width": 132,
+            "height": 126.25,
+            "right": 256.65625,
+            "bottom": -6237.1875
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 868,
+            "y": -5335.375,
+            "width": 92,
+            "height": 88,
+            "right": 960,
+            "bottom": -5247.375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 868,
+            "y": -5089.125,
+            "width": 92,
+            "height": 88,
+            "right": 960,
+            "bottom": -5001.125
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 868,
+            "y": -4896.125,
+            "width": 92,
+            "height": 88,
+            "right": 960,
+            "bottom": -4808.125
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 446,
+            "y": 213.984375,
+            "width": 132,
+            "height": 126.25,
+            "right": 578,
+            "bottom": 340.234375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        }
+      ],
+      "how": [
+        {
+          "figureInside": true,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": true,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": true,
+          "copyOverlap": false
+        }
+      ],
+      "rootOverflow": false,
+      "characterVisibility": [
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "inline-block"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "url": "http://localhost:5173/",
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "heading": "Premium home care,\n\nBuilt on trust",
+      "visibleBooks": 1,
+      "duplicate": 0,
+      "overflow": false,
+      "overlay": false,
+      "trust": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "46px",
+        "line": "52.44px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journal": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "46px",
+        "line": "52.44px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCard": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "25px",
+        "line": "29px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCards": 6,
+      "trustColumns": "376px 376px 376px",
+      "journalColumns": "374.656px 374.672px 374.656px",
+      "characters": [
+        {
+          "rect": {
+            "x": 211.5,
+            "y": -6363.84375,
+            "width": 132,
+            "height": 126.25,
+            "right": 343.5,
+            "bottom": -6237.59375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 506.5,
+            "y": -6363.84375,
+            "width": 132,
+            "height": 126.25,
+            "right": 638.5,
+            "bottom": -6237.59375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 801.5,
+            "y": -6363.84375,
+            "width": 132,
+            "height": 126.25,
+            "right": 933.5,
+            "bottom": -6237.59375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 1096.5,
+            "y": -6363.84375,
+            "width": 132,
+            "height": 126.25,
+            "right": 1228.5,
+            "bottom": -6237.59375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 1184,
+            "y": -5191.890625,
+            "width": 92,
+            "height": 88,
+            "right": 1276,
+            "bottom": -5103.890625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 1184,
+            "y": -5022.140625,
+            "width": 92,
+            "height": 88,
+            "right": 1276,
+            "bottom": -4934.140625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 1184,
+            "y": -4852.390625,
+            "width": 92,
+            "height": 88,
+            "right": 1276,
+            "bottom": -4764.390625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 654,
+            "y": 172.0625,
+            "width": 132,
+            "height": 126.25,
+            "right": 786,
+            "bottom": 298.3125
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        }
+      ],
+      "how": [
+        {
+          "figureInside": true,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": true,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": true,
+          "copyOverlap": false
+        }
+      ],
+      "rootOverflow": false,
+      "characterVisibility": [
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "inline-block"
+        }
+      ]
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "url": "http://localhost:5173/",
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "heading": "Premium home care,\n\nBuilt on trust",
+      "visibleBooks": 1,
+      "duplicate": 0,
+      "overflow": false,
+      "overlay": false,
+      "trust": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "46px",
+        "line": "52.44px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journal": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "46px",
+        "line": "52.44px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCard": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "25px",
+        "line": "29px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCards": 6,
+      "trustColumns": "376px 376px 376px",
+      "journalColumns": "374.656px 374.672px 374.656px",
+      "characters": [
+        {
+          "rect": {
+            "x": 451.5,
+            "y": -6172.8125,
+            "width": 132,
+            "height": 126.25,
+            "right": 583.5,
+            "bottom": -6046.5625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 746.5,
+            "y": -6172.8125,
+            "width": 132,
+            "height": 126.25,
+            "right": 878.5,
+            "bottom": -6046.5625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 1041.5,
+            "y": -6172.8125,
+            "width": 132,
+            "height": 126.25,
+            "right": 1173.5,
+            "bottom": -6046.5625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 1336.5,
+            "y": -6172.8125,
+            "width": 132,
+            "height": 126.25,
+            "right": 1468.5,
+            "bottom": -6046.5625
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 1424,
+            "y": -5000.859375,
+            "width": 92,
+            "height": 88,
+            "right": 1516,
+            "bottom": -4912.859375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 1424,
+            "y": -4831.109375,
+            "width": 92,
+            "height": 88,
+            "right": 1516,
+            "bottom": -4743.109375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 1424,
+            "y": -4661.359375,
+            "width": 92,
+            "height": 88,
+            "right": 1516,
+            "bottom": -4573.359375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 894,
+            "y": 363.09375,
+            "width": 132,
+            "height": 126.25,
+            "right": 1026,
+            "bottom": 489.34375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        }
+      ],
+      "how": [
+        {
+          "figureInside": true,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": true,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": true,
+          "copyOverlap": false
+        }
+      ],
+      "rootOverflow": false,
+      "characterVisibility": [
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "inline-block"
+        }
+      ]
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "url": "http://localhost:5173/",
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "heading": "Premium home care,\n\nBuilt on trust",
+      "visibleBooks": 1,
+      "duplicate": 0,
+      "overflow": false,
+      "overlay": false,
+      "trust": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "32px",
+        "line": "36.48px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journal": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "32px",
+        "line": "36.48px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCard": {
+        "font": "Newsreader, Georgia, serif",
+        "size": "20px",
+        "line": "23.2px",
+        "transform": "none",
+        "filter": "none"
+      },
+      "journalCards": 6,
+      "trustColumns": "380.25px 380.25px",
+      "journalColumns": "379.25px 379.25px",
+      "characters": [
+        {
+          "rect": {
+            "x": 90.5,
+            "y": -7229.625,
+            "width": 132,
+            "height": 126.25,
+            "right": 222.5,
+            "bottom": -7103.375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 356,
+            "y": -7229.625,
+            "width": 132,
+            "height": 126.25,
+            "right": 488,
+            "bottom": -7103.375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 46.6363639831543,
+            "y": 48,
+            "width": 107.36363220214844,
+            "height": 152
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 621.5,
+            "y": -7229.625,
+            "width": 132,
+            "height": 126.25,
+            "right": 753.5,
+            "bottom": -7103.375
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 12,
+            "y": 56,
+            "width": 157.15524291992188,
+            "height": 144
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 90.5,
+            "y": -6841.53125,
+            "width": 132,
+            "height": 126.25,
+            "right": 222.5,
+            "bottom": -6715.28125
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 16,
+            "y": 57,
+            "width": 168,
+            "height": 143
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "boundsInside": false,
+          "animation": "none",
+          "transform": "none"
+        },
+        {
+          "rect": {
+            "x": 356,
+            "y": 27.328125,
+            "width": 132,
+            "height": 126.25,
+            "right": 488,
+            "bottom": 153.578125
+          },
+          "viewBox": "8 32 184 176",
+          "artBounds": {
+            "x": 40.051998138427734,
+            "y": 41,
+            "width": 131.947998046875,
+            "height": 159
+          },
+          "boundsInside": true,
+          "animation": "none",
+          "transform": "none"
+        }
+      ],
+      "how": [
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        },
+        {
+          "figureInside": false,
+          "copyOverlap": false
+        }
+      ],
+      "rootOverflow": false,
+      "characterVisibility": [
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": true,
+          "display": "block"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": false,
+          "display": "none"
+        },
+        {
+          "visible": true,
+          "display": "inline-block"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

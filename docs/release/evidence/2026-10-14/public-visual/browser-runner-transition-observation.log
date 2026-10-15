@@ -1,0 +1,3 @@
+{"file":"responsive-metrics.json","records":7,"errors":[],"failed":[]}
+{"file":"interactions.json","records":21,"errors":[],"failed":[{"name":"unknown article returns to index","pass":false}]}
+EXIT_CODE: 1

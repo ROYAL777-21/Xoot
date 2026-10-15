@@ -1,5 +1,10 @@
 # Xoot Feature Completion Audit
 
+> Historical snapshot from June 2026. Its “Done” labels are not current release evidence.
+> Use the [production checklist](release/production-checklist.md) for launch status and
+> owner steps, and the [handoff coverage map](implementation/app-handoff-coverage.md)
+> for the remaining website and native screen work.
+
 Branch: `codex/full-zoot-iphone-pwa-auth-security`
 Date: 2026-06-08
 
