@@ -101,7 +101,7 @@ function XooterJobDetail({ userId, jobId }: { userId: string; jobId: string }) {
                     <Text style={s.muted}>{job.scheduled_at ? formatVisitDate(job.scheduled_at, true) :
                       'To be confirmed by Xoot'}</Text></View>
                 </View>
-                <View style={s.fact}><CoreIcon name="clock" color={nativePalette.violet} size={19} />
+                <View style={s.fact}><CoreIcon name="briefcase" color={nativePalette.violet} size={19} />
                   <View style={s.flex}><Text style={s.factTitle}>Expected duration</Text>
                     <Text style={s.muted}>{job.duration_hours !== null ?
                       `${job.duration_hours} scheduled hours` : 'Not yet confirmed'}</Text></View>
