@@ -3,7 +3,7 @@ begin;
 -- Active job-scoped position only: no historical GPS trail, no public client access.
 -- Coordinates are intentionally NOT published to Supabase Realtime.
 -- Edge function xoot-job-location is the sole read/write boundary and rechecks job ownership.
-create table if not exists public.xoot_job_live_positions (
+create table public.xoot_job_live_positions (
   booking_id uuid primary key references public.bookings(id) on delete cascade,
   xooter_id uuid not null references public.xooters(id) on delete cascade,
   latitude numeric(9,6) not null check (latitude between -90 and 90),
