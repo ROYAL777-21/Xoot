@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { isEligibleXooterProfile, parseWebXooterJobCards } from './xooter-web-job-cards';
 
@@ -47,6 +48,16 @@ describe('authenticated Xooter job-card web contract', () => {
     expect(parseWebXooterJobCards(wrapped(new Array(501).fill(job)), workerId)).toBeNull();
     expect(parseWebXooterJobCards(wrapped([job]), '../unsafe')).toBeNull();
   });
+  it('connects the parsed response to the actual account-keyed Jobs UI and avoids booking-price pay claims', () => {
+    const source = readFileSync('src/pages/xooter/Jobs.tsx', 'utf8');
+    expect(source).toContain('parseWebXooterJobCards(data, worker.id)');
+    expect(source).toContain('isEligibleXooterProfile(worker, userId)');
+    expect(source).toContain("key={user?.id ?? 'guest'}");
+    expect(source).not.toContain('data?.jobs ?? []');
+    expect(source).not.toContain('formatZAR(Number(b.price))');
+    expect(source).toContain("respondingJobId !== null");
+  });
+
   it('requires an approved, active, owner-matched Xooter before enabling offers', () => {
     const profile = { id: workerId, user_id: userId, active: true, background_check_status: 'approved' };
     expect(isEligibleXooterProfile(profile, userId)).toBe(true);
