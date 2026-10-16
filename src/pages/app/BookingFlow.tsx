@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, BedDouble, BriefcaseBusiness, Building2, Check, Clock3, House, Loader2, Minus, Plus, ShieldCheck, Sparkles, Truck, Users, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/kit/Logo";
+import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
 import { ServiceIcon } from "@/components/kit/ServiceIcon";
 import { Button } from "@/components/ui/button";
 import { loadXooterDirectory, type XooterDirectory } from "@/lib/xooter-directory";
@@ -228,7 +229,13 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
       </div>}
       {step === 1 && <div className="xoot-booking-stack"><h1>{website ? "Where are we going?" : "Tell us about your place"}</h1>
         {website && <p className="xoot-booking-lede">Add your address and tell us about the space.</p>}
-        <div className={website ? "xoot-site-address" : undefined}><label className="xoot-booking-field">{website ? "Street address" : "Where do you need us?"}<input autoComplete="street-address" maxLength={240} value={address} onChange={event => { addressEdited.current = true; setAddress(event.target.value); setAcceptedFingerprint(null); }} placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} /></label>
+        <div className={website ? "xoot-site-address" : undefined}><div className="xoot-booking-field">
+          <span>{website ? "Street address" : "Where do you need us?"}</span>
+          <VerifiedAddressInput value={address} label={website ? "Street address" : "Service address"}
+            showIcon={false} inputClassName="xoot-booking-service-address"
+            onChange={next => { addressEdited.current = true; setAddress(next); setAcceptedFingerprint(null); }}
+            placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} />
+        </div>
         {website && <label className="xoot-booking-field">Suburb<input list="booking-suburbs" autoComplete="address-level3" maxLength={80} placeholder="Search suburbs" value={suburb} onChange={event => { setSuburb(event.target.value); setAcceptedFingerprint(null); }} /><datalist id="booking-suburbs">{approvedLaunchRegions.map(region => <option key={region} value={region.replace(/\b\w/g, letter => letter.toUpperCase())} />)}</datalist></label>}</div>
         {savedDetailsError && <p className="xoot-booking-help">Saved details could not be loaded. You can enter the address above.</p>}
         {properties.length > 0 && <label className="xoot-booking-field">Property account<select value={propertyId} onChange={event => { setPropertyId(event.target.value); setAcceptedFingerprint(null); }}><option value="">Personal booking</option>{properties.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label>}
