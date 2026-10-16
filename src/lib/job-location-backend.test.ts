@@ -96,7 +96,7 @@ describe("back-end fail-closed implementation guards", () => {
     expect(edge).toContain('Deno.env.get("XOOT_ENABLE_LIVE_LOCATION") !== "true"');
     expect(edge).toContain("canReadJobPosition(actorId");
     expect(edge).toContain("canPublishJobPosition(actorId");
-    expect(edge).toContain('sharingConsent: true').toBe(false);
+    expect(edge).not.toContain('sharingConsent: true,');
     expect(edge).toContain("validWorkerLocation(position)");
     expect(edge).not.toMatch(/\.from\("user_roles"\).*\.select\("\*"\)/);
     expect(edge).not.toMatch(/console\.log\([^)]*(position|latitude|longitude)/);
