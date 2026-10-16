@@ -1,0 +1,57 @@
+name: Verify Xooter training progress privacy
+
+# PostgreSQL 17 negative/positive controls. Does not touch live Supabase data.
+on:
+  pull_request:
+    branches: [release/xoot-production]
+  push:
+    branches: [release/xoot-production]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  owner-scoped-training-progress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_PASSWORD: local-xoot-synthetic-rls
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: local-xoot-synthetic-rls
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure PostgreSQL client is available
+        run: command -v psql || (sudo apt-get update && sudo apt-get install -y postgresql-client)
+      - name: Reproduce the known-public and TRUNCATE-permitted baseline
+        run: psql -v ON_ERROR_STOP=1 -f scripts/security/sql/training-progress-privacy-fixture.sql
+      - name: Negative control must detect the vulnerable original schema
+        run: |
+          if psql -v ON_ERROR_STOP=1 -f scripts/security/sql/assert-training-progress-private.sql > /tmp/xoot-training-negative.log 2>&1; then
+            echo "::error::The security check did not catch the leaked baseline"
+            exit 1
+          fi
+          if ! grep -q "unsafe anonymous or client training-progress privilege" /tmp/xoot-training-negative.log; then
+            cat /tmp/xoot-training-negative.log
+            echo "::error::Negative fixture failed for an unrelated reason"
+            exit 1
+          fi
+          echo "PASS: planted anonymous read/TRUNCATE leak detected"
+      - name: Apply reviewed privacy migration to synthetic database only
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261016210000_xooter_training_progress_private_read.sql
+      - name: Verify anonymous deny, worker isolation, admin and service-role paths
+        run: psql -v ON_ERROR_STOP=1 -f scripts/security/sql/assert-training-progress-private.sql
