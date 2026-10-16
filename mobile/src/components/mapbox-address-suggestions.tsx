@@ -17,6 +17,12 @@ export function MobileMapboxAddressSuggestions({ value, onSelect }: { value: str
   const chosen = useRef<AbortController | null>(null);
 
   useEffect(() => () => chosen.current?.abort(), []);
+  // A changed address invalidates an outstanding Permanent Geocoding confirmation.
+  // A slow provider response must not overwrite newer customer-typed text.
+  useEffect(() => {
+    chosen.current?.abort();
+    setConfirming(false);
+  }, [value]);
 
   useEffect(() => {
     const url = enabled && selected !== value ? nativeMapboxSearchUrl(value, token) : null;
