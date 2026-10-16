@@ -120,7 +120,7 @@ function NotificationsForOwner({ userId }: { userId: string }) {
     </View>
     {actionError ? <Text accessibilityRole="alert" style={styles.error}>{actionError}</Text> : null}
     {feed.isPending ? <LoadingRows />
-      : feed.isError || !verified
+      : (feed.isError && !feed.isFetchNextPageError) || !verified
         ? <EmptyState title="Updates could not be verified"
             detail="Your notification history is temporarily unavailable. No read status was changed."
             action="Try again" onAction={refresh} />
