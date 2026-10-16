@@ -1,5 +1,7 @@
 # Xoot Expo Mobile Release Configuration
 
+> **Current status — 16 October 2026:** This June reference is historical and contains pre-rename app IDs and obsolete payment provider names. The authoritative app IDs are in `mobile/app.config.ts`; current launch gates are in `docs/release/production-checklist.md`. The approved website now uses the source-authentic SVG `ServiceAreaMap`, **not** a live `mapbox-gl` service map. Expo native Mapbox requires a correctly restricted EAS public token and physical-device proof; newer RNMapbox builds generally do not require the historic private SDK download token, so follow the pinned SDK and build evidence. See [`docs/release/evidence/2026-10-16/maps-and-access-readiness.md`](release/evidence/2026-10-16/maps-and-access-readiness.md). Do not use the older token/provider checklist below to launch.
+
 Reviewed: 2026-06-19
 
 The Xoot mobile app is now planned as a separate Expo app in `/mobile`. The existing React/Vite website remains in place and must not be deleted or converted.

@@ -51,7 +51,7 @@ export const getPublicSecretLeaks = (env: PublicEnvironment) =>
 
 export const isUnsafePublicMapboxToken = (value?: string) => {
   const token = value?.trim() ?? '';
-  return token.startsWith('sk.');
+  return Boolean(token) && !token.startsWith('pk.');
 };
 
 export const getUnsafePublicMapboxTokenNames = (env: PublicEnvironment) =>
@@ -76,7 +76,7 @@ export const getMobileConfigIssue = (env: PublicEnvironment = process.env) => {
   }
 
   if (unsafeMapboxTokens.length > 0) {
-    return `Mapbox secret tokens cannot be used in public EXPO_PUBLIC_ variables: ${unsafeMapboxTokens.join(', ')}. Use restricted public pk.* tokens instead.`;
+    return `Mapbox values in public EXPO_PUBLIC_ variables must use restricted public pk.* tokens, not secret or malformed tokens: ${unsafeMapboxTokens.join(', ')}.`;
   }
 
   if (unsafePostHogTokens.length > 0) {
