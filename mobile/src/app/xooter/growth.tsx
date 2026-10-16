@@ -45,7 +45,7 @@ function ModuleCard({ module, completed }: {
 }) {
   return <Card style={s.module}>
     <View style={s.moduleIcon}>
-      <CoreIcon name={completed ? 'check' : 'book-open'}
+      <CoreIcon name={completed ? 'check' : 'trophy'}
         color={completed ? nativePalette.sageInk : nativePalette.violetDark} size={21}/>
     </View>
     <View style={s.flex}>
@@ -209,7 +209,7 @@ function XooterGrowthForAccount({ userId }: { userId: string }) {
               produce recognition here. Tapping a badge cannot award it; quizzes and grading
               happen in the approved training workspace.</Text></View>
         </Card>
-        <PrimaryAction icon="book-open" onPress={() => router.push('/xooter/training')}>
+        <PrimaryAction icon="trophy" onPress={() => router.push('/xooter/training')}>
           Explore training
         </PrimaryAction>
       </>}
