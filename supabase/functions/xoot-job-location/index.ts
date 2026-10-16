@@ -141,8 +141,10 @@ Deno.serve(async req => {
     latitude: body.latitude,
     longitude: body.longitude,
     accuracy_m: body.accuracyM,
-    recorded_at: new Date(now).toISOString(),
-    expires_at: new Date(now + POSITION_MAX_AGE_MS).toISOString(),
+    // Preserve the actual GPS capture time, not the HTTP receipt time.
+    // A valid but 25-second-old fix must not remain visible for another 60 seconds.
+    recorded_at: new Date(recorded).toISOString(),
+    expires_at: new Date(Math.min(now, recorded) + POSITION_MAX_AGE_MS).toISOString(),
     updated_at: new Date(now).toISOString(),
   };
   const { error: writeError } = await db.from("xoot_job_live_positions").upsert(update, {
