@@ -106,7 +106,6 @@ export const VerifiedAddressInput = ({
           aria-autocomplete={searchEnabled ? "list" : "none"}
           aria-controls={suggestionsId}
           aria-expanded={suggestions.length > 0}
-          role="combobox"
           value={value}
           onChange={event => updateValue(event.target.value)}
           placeholder={placeholder ?? "Enter your South African address..."}
