@@ -210,7 +210,7 @@ export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress
     <section aria-label="Private live job journey" className="rounded-2xl border border-border bg-background p-4">
       <h3 className="mb-2 flex items-center gap-2 text-sm font-bold"><Navigation size={18} /> Private journey</h3>
       {isAssignedWorker ? <>
-        <p className="mb-3 text-xs text-muted-foreground">Optional foreground-only sharing for this accepted job. While this page is visible, your current location is sent to Xoot. Your assigned customer can view a fresh position; location is cleared after the journey or when you stop sharing.</p>
+        <p className="mb-3 text-xs text-muted-foreground">Optional foreground-only sharing for this accepted job. While this page is visible, your current location is sent to Xoot. Your assigned customer and MFA-verified Xoot dispatch administrators can view a fresh position; location is cleared after the journey or when you stop sharing.</p>
         <button type="button" className="rounded-full border border-border px-4 py-2 text-sm font-semibold"
           onClick={() => sharing ? void stopSharing() : startSharing()}>
           {sharing ? "Stop sharing my location" : "Share my location for this booking"}
