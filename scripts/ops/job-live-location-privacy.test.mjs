@@ -14,6 +14,16 @@ const hasMinimumTableGate = (sql) =>
   /grant select, insert, update, delete on table public\.xoot_job_live_positions to service_role/i.test(sql) &&
   !/grant [\s\S]{0,100} on (?:table )?public\.xoot_job_live_positions to (?:anon|authenticated)/i.test(sql);
 
+test('atomic GPS RPC also has a complete SQL dollar-quoted function body', () => {
+  const begin = migration.indexOf('create or replace function public.xoot_publish_private_job_location(');
+  const finish = migration.indexOf('revoke all on function public.xoot_publish_private_job_location(', begin);
+  assert.ok(begin >= 0 && finish > begin, 'RPC DDL must exist');
+  const body = migration.slice(begin, finish);
+  assert.match(body, /security invoker\s+set search_path = ''\s+as \$\$\s+declare/);
+  assert.match(body, /\n\$\$;\s*$/);
+  assert.doesNotMatch(body, /\bas \$\s*\ndeclare/);
+});
+
 test('all private GPS trigger bodies use valid PostgreSQL dollar-quote delimiters', () => {
   const bodies = [...migration.matchAll(/language plpgsql security definer set search_path = '' as \$\$([\s\S]*?)\$\$;/gi)];
   assert.equal(bodies.length, 2, 'Both trigger functions must have complete $$ bodies');
