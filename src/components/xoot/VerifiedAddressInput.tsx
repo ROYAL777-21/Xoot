@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { MapPin, ShieldCheck } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ export const VerifiedAddressInput = ({
   const confirmation = useRef<AbortController | null>(null);
   useEffect(() => () => confirmation.current?.abort(), []);
   const requestId = useRef(0);
+  const suggestionsId = useId();
   const hasAddress = value.trim().length > 0;
 
   useEffect(() => {
@@ -103,7 +104,7 @@ export const VerifiedAddressInput = ({
         <Input
           aria-label={label}
           aria-autocomplete={searchEnabled ? "list" : "none"}
-          aria-controls="xoot-address-suggestions"
+          aria-controls={suggestionsId}
           aria-expanded={suggestions.length > 0}
           role="combobox"
           value={value}
@@ -125,7 +126,7 @@ export const VerifiedAddressInput = ({
         </div>
       )}
       {suggestions.length > 0 && (
-        <ul id="xoot-address-suggestions" role="listbox" aria-label="South African address suggestions"
+        <ul id={suggestionsId} role="listbox" aria-label="South African address suggestions"
           className="max-h-60 overflow-y-auto rounded-xl border border-border bg-background shadow-md">
           {suggestions.map(suggestion => (
             <li key={suggestion.id} role="presentation">
