@@ -30,14 +30,14 @@ export const isXooterJobId = (value: unknown): value is string => typeof value =
  * Date.toISOString() truncates PostgreSQL's six-digit fractional seconds and
  * can skip or duplicate records at a keyset page boundary.
  */
-const sqlTimestampPattern = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$/;
+const sqlTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/;
 function validSqlTimestamp(value: unknown): value is string {
   return typeof value === 'string' && sqlTimestampPattern.test(value) &&
     Number.isFinite(Date.parse(value));
 }
 function timestampMicros(value: string): number {
   const milliseconds = Date.parse(value);
-  const fraction = /\\.(\\d{1,6})(?:Z|[+-]\\d{2}:\\d{2})$/.exec(value)?.[1] ?? '';
+  const fraction = /\.(\d{1,6})(?:Z|[+-]\d{2}:\d{2})$/.exec(value)?.[1] ?? '';
   const micros = Number(fraction.padEnd(6, '0')) % 1000;
   return milliseconds * 1000 + micros;
 }
