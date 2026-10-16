@@ -55,7 +55,7 @@ export function WorkerLiveSharing({ jobId }: { jobId: string }) {
   }, [jobId]);
 
   async function start() {
-    if (state === "starting" || state === "sharing") return;
+    if (state === "starting" || session.current) return;
     if (!navigator.geolocation || !idShape.test(jobId)) {
       setMessage("Location access is not available. You can still update your booking status.");
       setState("error");
@@ -91,7 +91,7 @@ export function WorkerLiveSharing({ jobId }: { jobId: string }) {
           if (uploadError || result?.success !== true) {
             stopDevice();
             setState("error");
-            setMessage("Location stopped because the job or connection could not be verified. Previous coordinates expire automatically.");
+            setMessage("Location updates paused. Tap Stop to revoke your sharing session; previously sent coordinates expire automatically.");
           }
         }).finally(() => { publishing.current = false; });
       },
@@ -99,7 +99,7 @@ export function WorkerLiveSharing({ jobId }: { jobId: string }) {
         stopDevice();
         if (mounted.current) {
           setState("error");
-          setMessage("Location permission or GPS was unavailable. Sharing stopped on this device.");
+          setMessage("GPS updates stopped on this device. Tap Stop to revoke any active sharing session.");
         }
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
@@ -109,10 +109,10 @@ export function WorkerLiveSharing({ jobId }: { jobId: string }) {
   return <section className="rounded-2xl border border-border bg-background p-4" aria-label="Xooter location sharing">
     <h3 className="mb-2 flex items-center gap-2 text-sm font-bold"><RadioTower size={17}/> Optional live journey sharing</h3>
     <p className="mb-3 text-xs text-muted-foreground">Only the customer assigned to this active job can see your recent position. Your location is not used for the public Xooter directory. Sharing expires and stops at cancellation, reassignment or arrival.</p>
-    <button type="button" onClick={() => void (state === "sharing" ? stop() : start())}
+    <button type="button" onClick={() => void (session.current ? stop() : start())}
       disabled={state === "starting" || state === "stopping"}
-      aria-pressed={state === "sharing"} className="rounded-full border border-border px-4 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-      <span className="inline-flex items-center gap-2"><MapPin size={15}/>{state === "sharing" ? "Stop sharing location" : state === "starting" ? "Starting…" : "Start sharing for this visit"}</span>
+      aria-pressed={Boolean(session.current)} className="rounded-full border border-border px-4 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+      <span className="inline-flex items-center gap-2"><MapPin size={15}/>{session.current ? "Stop sharing location" : state === "starting" ? "Starting…" : "Start sharing for this visit"}</span>
     </button>
     {message && <p className="mt-3 text-xs text-muted-foreground" role="status">{message}</p>}
     <p className="mt-2 text-xs text-muted-foreground">Foreground web sharing requires device permission and a verified, active job; no background location is requested.</p>
