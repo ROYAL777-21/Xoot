@@ -43,6 +43,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Check public/host security configuration
         run: npm run security:scan
+      - name: Test Supabase migration access diagnostics against synthetic failures
+        run: node --test scripts/ops/db-push-link-diagnostics.test.mjs
       - name: Typecheck
         run: npm run typecheck
       - name: Typecheck Expo native booking flow
