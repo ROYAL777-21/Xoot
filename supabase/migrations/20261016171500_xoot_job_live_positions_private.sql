@@ -83,6 +83,80 @@ create trigger xoot_remove_location_on_job_change
 after update or delete on public.xooter_jobs for each row
 execute function private.xoot_clear_live_location_on_job_change();
 
+-- The only service-role publish path. Atomic ON CONFLICT protects against simultaneous
+-- reports bypassing an Edge read-then-write throttle. Lock both lifecycle rows
+-- to serialize writes against booking cancellation, reassignment and job completion.
+-- This function remains unreachable to anon/authenticated PostgREST clients.
+create or replace function public.xoot_publish_private_job_location(
+  p_booking_id uuid,
+  p_xooter_id uuid,
+  p_latitude numeric,
+  p_longitude numeric,
+  p_accuracy_m numeric,
+  p_captured_at timestamptz
+) returns boolean
+language plpgsql
+security invoker
+set search_path = ''
+as $
+declare
+  wrote integer;
+  current_time timestamptz := clock_timestamp();
+begin
+  if p_captured_at is null or p_captured_at < current_time - interval '30 seconds'
+    or p_captured_at > current_time + interval '30 seconds'
+    or p_latitude is null or p_latitude not between -90 and 90
+    or p_longitude is null or p_longitude not between -180 and 180
+    or p_accuracy_m is null or p_accuracy_m <= 0 or p_accuracy_m > 100
+  then
+    return false;
+  end if;
+
+  with allowed as materialized (
+    select b.id
+    from public.bookings b
+    join public.xooter_jobs j on j.booking_id = b.id
+      and j.xooter_id = b.xooter_id and j.state = 'accepted'
+    join public.xooters x on x.id = j.xooter_id
+      and x.active is true and x.background_check_status = 'approved'
+    where b.id = p_booking_id and b.xooter_id = p_xooter_id
+      and b.status::text in ('en_route','enroute')
+      and b.cancelled_at is null and b.completed_at is null
+      and b.sensitive_data_revoked_at is null
+    for update of b, j
+  ),
+  saved as (
+    insert into public.xoot_job_live_positions
+      (booking_id,xooter_id,latitude,longitude,accuracy_m,recorded_at,expires_at,updated_at)
+    select id,p_xooter_id,p_latitude,p_longitude,p_accuracy_m,p_captured_at,
+      least(p_captured_at,current_time) + interval '60 seconds', current_time
+    from allowed
+    on conflict (booking_id) do update
+      set xooter_id = excluded.xooter_id,
+          latitude = excluded.latitude,
+          longitude = excluded.longitude,
+          accuracy_m = excluded.accuracy_m,
+          recorded_at = excluded.recorded_at,
+          expires_at = excluded.expires_at,
+          updated_at = excluded.updated_at
+      where public.xoot_job_live_positions.updated_at <= current_time - interval '10 seconds'
+    returning booking_id
+  )
+  select count(*) into wrote from saved;
+  return wrote = 1;
+end;
+$;
+revoke all on function public.xoot_publish_private_job_location(
+  uuid,uuid,numeric,numeric,numeric,timestamptz
+) from public, anon, authenticated;
+grant execute on function public.xoot_publish_private_job_location(
+  uuid,uuid,numeric,numeric,numeric,timestamptz
+) to service_role;
+
+comment on function public.xoot_publish_private_job_location(
+  uuid,uuid,numeric,numeric,numeric,timestamptz
+) is 'Atomic service-only verified active-job GPS publish; row-lock lifecycle and 10-second throttle.';
+
 -- Physical deletion, not merely filtering stale rows at read time. Both existing Xoot
 -- projects have pg_cron installed. Abort the migration on a fresh project without it.
 do $xoot_cleanup$
