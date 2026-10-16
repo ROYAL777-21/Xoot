@@ -1,5 +1,20 @@
 # Xoot Mapbox production acceptance — 16 October 2026
 
+## Current integration phase — 16 October 2026 (PR #69)
+
+The founder confirms creating Mapbox public keys and configuring Vercel/EAS environments, but this workspace cannot read Mapbox account scopes, Expo/EAS secrets, actual Mapbox billing entitlement or inspect a physical iOS/Android app. Vercel confirms **environment-variable names only**; this is **not** a successful provider/API call.
+
+The following additional integration is source-implemented for review, subject to CI and **live-provider** checks:
+
+- Web homepage launch-coverage section retains its approved SVG; the **customer booking's location step** optionally loads a real Mapbox GL JS map with five non-sensitive neighbourhood reference pins and mandatory attribution. No home coordinates/worker position are displayed as live.
+- Website homepage and actual web booking input, plus native booking, now offer **explicitly opt-in** geocoding of South African addresses using Mapbox v6 with bounded autocomplete requests. Typed searches are disclosed to customers; temporary result objects are not stored or logged. Selecting a suggestion requires a *separate Permanent Geocoding* request before any derived display address may be persisted. **Verify the account's Permanent Geocoding billing entitlement and request pricing**, otherwise maintain manual address entry.
+- The web booking-detail view formerly showed an **invented 12-minute countdown that decremented every five seconds**, plus fake worker/home markers. Removed. Actual GPS/ETA sharing to customers remains **disabled** pending authorised job-scoped telemetry. Separately, an **assigned Xooter only** can explicitly request a real one-off Mapbox `driving-traffic` road estimate from their current browser location to their authorised active job address. That request uses session-only Temporary Geocoding (no persisted Mapbox coordinates), explicit foreground device location permission, ≤200m reported accuracy, abortable requests, and displays an estimate at request time—not a live arrival commitment. When Mapbox or device location is unavailable, the existing directions link remains the fallback.
+- The existing substring-based launch-region matching is **not an authenticated service-coverage engine**. Mapbox suggestions and suburb pins never guarantee a serviceable booking. Server-confirmed eligibility, definitive suburb polygons/approved boundaries and workforce availability still require a separate implementation and verification.
+- Supabase production and staging currently contain saved addresses, centroid table, and bookings, but not a dedicated per-job GPS location table, permissioned updates, finite retention or independently tested cross-account RLS. **Do not activate any worker-tracking labels or real-time coordinates until those foundations are implemented**.
+- Native Mapbox preview and website public-token scopes have only configuration-shape proof. User must run a real browser map request and native installed preview build with telemetry/privacy and failure-path tests before publishing.
+
+For user-visible **location** readiness, do not confuse a green TypeScript/unit suite with E2E Mapbox credentials, Permanent Geocoding billing, Maps SDK telemetry, iOS/Android permissions or realtime GPS. Staging database migration history remains divergent and must be reconciled before new location storage schema can be applied. No data migration is performed by the web/native source PR.
+
 ## Release decision and non-negotiable scope
 
 Mapbox is **an optional, user-opened reference-area viewer** in native booking, not a home geocoder, Xooter tracker, live ETA or coverage guarantee. The approved website homepage retains its visually approved South Africa/Gauteng SVG and does not fetch Mapbox tiles. Do **not** swap it for the old main-branch Mapbox GL JS component, or declare the web illustration proof of a working map API.

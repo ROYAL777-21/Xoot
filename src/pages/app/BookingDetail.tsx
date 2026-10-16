@@ -34,6 +34,7 @@ import { getClientVisibleStatus, normaliseBookingStatus, type BookingStatus } fr
 import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { toast } from "sonner";
 import { JobChecklist } from "@/components/xooter/JobChecklist";
+import { WorkerRoadEstimate } from "@/components/xoot/WorkerRoadEstimate";
 import { safeFileName, validateCompletionPhotoUpload } from "@/lib/upload-validation";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
@@ -129,7 +130,6 @@ const BookingDetail = () => {
   const [uploading, setUploading] = useState<string | null>(null);
   const [requestingCall, setRequestingCall] = useState(false);
   const [maskedCall, setMaskedCall] = useState<MaskedCallDetails | null>(null);
-  const [eta, setEta] = useState(12);
   const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
@@ -180,12 +180,6 @@ const BookingDetail = () => {
     return () => { supabase.removeChannel(ch); };
   }, [id]);
 
-  useEffect(() => {
-    if (getCanonicalStatus(booking?.status) !== "en_route") return;
-    const t = setInterval(() => setEta((e) => Math.max(1, e - 1)), 5000);
-    return () => clearInterval(t);
-  }, [booking?.status]);
-
   const getNativeBookingActionInput = (): NativeBookingActionInput | null => {
     if (!id || !booking) return null;
     const canonicalStatus = getCanonicalStatus(booking.status);
@@ -200,7 +194,6 @@ const BookingDetail = () => {
       propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name,
       suburb: booking.suburb,
       address: booking.address,
-      etaMinutes: liveStatus === "enroute" ? eta : undefined,
     };
   };
 
@@ -232,18 +225,18 @@ const BookingDetail = () => {
     try {
       if (typeof navigatorWithShare.share === "function") {
         await navigatorWithShare.share({ title: "Xoot booking update", text: shareText, url: shareUrl });
-        toast.success("ETA shared");
+        toast.success("Booking update shared");
         return;
       }
 
       if (navigatorWithShare.clipboard?.writeText) {
         await navigatorWithShare.clipboard.writeText(`${shareText} ${shareUrl}`);
-        toast.success("ETA copied");
+        toast.success("Booking update copied");
         return;
       }
 
       if (delivered) {
-        toast.success("ETA sent to native app");
+        toast.success("Booking update sent to native app");
         return;
       }
 
@@ -277,7 +270,6 @@ const BookingDetail = () => {
       propertyName: booking.property_name ?? booking.address_label ?? booking.property?.name ?? "Xoot home",
       suburb: booking.suburb,
       scheduledAt: booking.scheduled_at,
-      etaMinutes: liveStatus === "enroute" ? eta : undefined,
       nextStep: liveActivityNextStep[liveStatus],
       supportState: booking.care_plus ? "priority" : "standard",
       updatedAt: new Date().toISOString(),
@@ -487,11 +479,12 @@ const BookingDetail = () => {
                 <path d="M50 0 L120 250" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.4" />
                 <path d="M280 0 L320 250" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.4" />
               </svg>
-              <div className="absolute top-1/3 left-1/4 grid place-items-center h-10 w-10 rounded-full bg-primary text-primary-foreground shadow-warm animate-pulse"><MapPin className="h-5 w-5" /></div>
-              <div className="absolute bottom-1/4 right-1/3 grid place-items-center h-10 w-10 rounded-full bg-foreground text-background shadow-warm"><span className="text-xs font-bold">YOU</span></div>
+              <div className="absolute inset-x-6 top-1/3 rounded-2xl border border-border bg-background/95 p-4 text-center text-sm font-medium text-foreground shadow-card" role="status">
+                Live location is not available for this visit yet. The timeline below shows recorded booking events, not GPS movements.
+              </div>
               <div className="absolute top-3 left-3 right-3 flex justify-between">
                 <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-card">
-                  <span className="h-2 w-2 rounded-full bg-sage animate-pulse" />{canonicalStatus === "en_route" ? `Arriving in ${eta} min` : visibleStatus}
+                  <span className="h-2 w-2 rounded-full bg-sage" />{canonicalStatus === "en_route" ? "On the way — ETA not available" : visibleStatus}
                 </div>
                 <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold shadow-card">R{Number(booking.price).toFixed(0)}</div>
               </div>
@@ -587,8 +580,11 @@ const BookingDetail = () => {
             <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Arrival tracking</h2>
             <div className="mb-4 grid grid-cols-2 gap-2">
               <Button onClick={handleOpenDirections} variant="outline" className="rounded-xl justify-center"><Navigation className="h-4 w-4 mr-1" /> Directions</Button>
-              <Button onClick={shareEta} variant="outline" className="rounded-xl justify-center"><Share2 className="h-4 w-4 mr-1" /> Share ETA</Button>
+              <Button onClick={shareEta} variant="outline" className="rounded-xl justify-center"><Share2 className="h-4 w-4 mr-1" /> Share booking update</Button>
             </div>
+            <p className="mb-3 text-xs text-muted-foreground">No live GPS feed or calculated arrival time is connected to this booking. An en-route status is not proof of current worker position.</p>
+            {isAssignedXooter && activeVisit && typeof booking.address === "string" && booking.address.trim().length >= 4 && id &&
+              <div className="mb-4"><WorkerRoadEstimate bookingId={id} destinationAddress={booking.address} /></div>}
             <div className="space-y-3">
               {statusSteps.map((step) => {
                 const hit = timeline.find((e) => step.keys.includes(e.status) || e.label === step.label);

@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar, Card, CoreIcon, DisplayTitle, nativeFonts, Wordmark } from '@/components/native-core';
 import { ServiceIcon, type ServiceIconName } from '@/components/service-icon';
+import { MobileMapboxAddressSuggestions } from '@/components/mapbox-address-suggestions';
 import { ServiceAreaMap } from '@/components/service-area-map';
 import { nativePalette as p } from '@/constants/handoff';
 import { BOOKING_ADD_ONS, BOOKING_LINEN_OPTIONS, BOOKING_PROPERTY_TYPES, type BookingQuoteInput, type BookingService } from '@/generated/booking-contract';
@@ -191,6 +192,7 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
     {stage === 1 && <>
       <DisplayTitle>Tell us about your place</DisplayTitle>
       <Field label="Where do you need us? Full address" value={address} onChange={value => { clearConsent(); setAddress(value); }} placeholder="Street address, suburb and city" />
+      <MobileMapboxAddressSuggestions value={address} onSelect={verifiedAddress => { clearConsent(); setAddress(verifiedAddress); }} />
       <Field label="Area / suburb" value={area} onChange={value => { clearConsent(); setArea(value); }} maxLength={120} />
       <Copy>Your address and access notes stay in this form until a booking can be submitted.</Copy>
       <Pressable accessibilityRole="button" accessibilityLabel={showServiceAreas ? 'Hide service area map' : 'View service area map'}

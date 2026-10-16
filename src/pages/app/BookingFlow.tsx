@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, BedDouble, BriefcaseBusiness, Building2, Check, Clock3, House, Loader2, Minus, Plus, ShieldCheck, Sparkles, Truck, Users, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/kit/Logo";
+import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
+import { InteractiveServiceAreaMap } from "@/components/xoot/InteractiveServiceAreaMap";
 import { ServiceIcon } from "@/components/kit/ServiceIcon";
 import { Button } from "@/components/ui/button";
 import { loadXooterDirectory, type XooterDirectory } from "@/lib/xooter-directory";
@@ -76,6 +78,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const [bedrooms, setBedrooms] = useState(2);
   const [bathrooms, setBathrooms] = useState(1);
   const [address, setAddress] = useState(() => safePrefill(initialAddress || params.get("address") || params.get("area")));
+  const [showAreaMap, setShowAreaMap] = useState(false);
   const [suburb, setSuburb] = useState("");
   const [notes, setNotes] = useState("");
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
@@ -228,8 +231,19 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
       </div>}
       {step === 1 && <div className="xoot-booking-stack"><h1>{website ? "Where are we going?" : "Tell us about your place"}</h1>
         {website && <p className="xoot-booking-lede">Add your address and tell us about the space.</p>}
-        <div className={website ? "xoot-site-address" : undefined}><label className="xoot-booking-field">{website ? "Street address" : "Where do you need us?"}<input autoComplete="street-address" maxLength={240} value={address} onChange={event => { addressEdited.current = true; setAddress(event.target.value); setAcceptedFingerprint(null); }} placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} /></label>
+        <div className={website ? "xoot-site-address" : undefined}><div className="xoot-booking-field">
+          <span>{website ? "Street address" : "Where do you need us?"}</span>
+          <VerifiedAddressInput value={address} label={website ? "Street address" : "Where do you need us?"}
+            showIcon={false} inputClassName="xoot-booking-service-address"
+            onChange={next => { addressEdited.current = true; setAddress(next); setAcceptedFingerprint(null); }}
+            placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} />
+        </div>
         {website && <label className="xoot-booking-field">Suburb<input list="booking-suburbs" autoComplete="address-level3" maxLength={80} placeholder="Search suburbs" value={suburb} onChange={event => { setSuburb(event.target.value); setAcceptedFingerprint(null); }} /><datalist id="booking-suburbs">{approvedLaunchRegions.map(region => <option key={region} value={region.replace(/\b\w/g, letter => letter.toUpperCase())} />)}</datalist></label>}</div>
+        <button type="button" className="xoot-booking-pill" aria-expanded={showAreaMap} aria-controls="xoot-booking-service-map"
+          onClick={() => setShowAreaMap(open => !open)}>
+          {showAreaMap ? "Hide interactive area map" : "View interactive area map"}
+        </button>
+        {showAreaMap && <div id="xoot-booking-service-map"><InteractiveServiceAreaMap /></div>}
         {savedDetailsError && <p className="xoot-booking-help">Saved details could not be loaded. You can enter the address above.</p>}
         {properties.length > 0 && <label className="xoot-booking-field">Property account<select value={propertyId} onChange={event => { setPropertyId(event.target.value); setAcceptedFingerprint(null); }}><option value="">Personal booking</option>{properties.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label>}
         <fieldset><legend className="xoot-booking-label">{website ? "What kind of place is it?" : "What kind of place?"}</legend><div className="xoot-booking-property-grid">{Object.entries(BOOKING_PROPERTY_LABELS).map(([id, label]) => { const Icon = propertyIcons[id as keyof typeof propertyIcons]; return <button type="button" key={id} className={`xoot-booking-card ${input.propertyType === id ? "is-selected" : ""}`} aria-pressed={input.propertyType === id} onClick={() => chooseProperty(id as BookingQuoteInput["propertyType"])}>{website && <Icon size={17} />}<strong>{website ? websitePropertyLabels[id as keyof typeof websitePropertyLabels] : label}</strong></button>; })}</div></fieldset>
