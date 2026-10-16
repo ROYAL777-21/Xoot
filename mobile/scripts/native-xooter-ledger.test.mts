@@ -102,6 +102,12 @@ test('native Xooter screens retain account-scoped fetch, safe job cards and boun
   assert.match(jobDetail, /isXooterJobId\(params.id\)/);
   assert.match(jobDetail, /key=\{\`\$\{user.id\}:\$\{params.id\}\`\}/);
   assert.doesNotMatch(jobDetail, /destination_address|gate_code|alarm_code|customer_id/);
+  // Home, Jobs and Job Detail agree that a profile alone is not
+  // verification. Never request offers for inactive/unapproved workers.
+  assert.match(jobs, /hasVerifiedXooterHomeAccess\(profile\)/);
+  assert.match(jobs, /readXooterHomeProfile\(account, userId\)/);
+  assert.match(jobDetail, /hasVerifiedXooterHomeAccess\(profile\)/);
+  assert.match(jobDetail, /readXooterHomeProfile\(owner, userId\)/);
   assert.match(jobs, /get-xooter-job-cards/);
   assert.match(jobs, /WebBrowser\.openBrowserAsync\(portal\)/);
   assert.doesNotMatch(jobs, /Linking\.openURL\(portal\)/);
