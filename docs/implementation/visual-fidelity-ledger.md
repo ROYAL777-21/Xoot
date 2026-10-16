@@ -387,3 +387,7 @@ The mobile Visits cards link to a new original-source-inspired visit detail: sta
 ## 15 October 2026 — Xooter native jobs and earnings
 
 Source `app/Xooter.jsx` income-first hero, job categories and earnings rows have been implemented using native handoff type, space and palette tokens and live owner-filtered data; no sample payout sums, fabricated jobs or sensitive addresses have been ported. This remains a **code handoff**, not a live mobile pixel-parity acceptance. Device screenshots, financial receipts, job action paths and secure access grants are still gated.
+
+## 16 October 2026 — native Xooter job/earnings source composition
+
+New Expo Xooter Jobs screen follows the original offer/active/history card hierarchy without prototype sample wages, access codes or fabricated assignment claims. Earnings uses the dark ledger summary with rolling 7/30-day tabs, recorded money breakdown and safe payout disclaimers. Both use the shared native handoff palette/type and offer empty, loading, permission and error states. These screens have **not** yet received iOS/Android device screenshot parity reviews or worker-authorised end-to-end operational verification. Accept/decline stays in the web workspace.
