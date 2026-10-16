@@ -407,3 +407,7 @@ Expo `/xooter/growth` uses the reference's recognition hero, progress track, req
 ## 17 October 2026 — owner-safe native You and Xooter Earnings states
 
 The native account's saved-place loading/error states now preserve the currently signed-in user's privacy even during immediate authentication changes. The earnings history now has explicit fail-closed integrity states for out-of-order/duplicate pages and cent-overflow errors. These changes refine interaction and truthful financial presentation without replacing the approved source visual hierarchy. Actual iOS/Android two-account screenshot and accessibility comparison remains outstanding.
+
+## 17 October 2026 — native Notifications history
+
+The native Notifications screen now follows `design/handoff-2026-09-03/xoot/app/Search.jsx` layout hierarchy: header/unread count/read-all action, service-specific icon cards, unread contrast, action links and genuine empty/loading/error states. Unlike the reference's five synthetic alerts, only currently authenticated owner records are displayed. Exact owner-keyset 40-item history and verified read transitions are implemented in source. Physical-device screenshots, haptic and assistive-technology audits, real server-event injection and delivery-channel verification are outstanding.
