@@ -15,9 +15,9 @@ const hasMinimumTableGate = (sql) =>
   !/grant [\s\S]{0,100} on (?:table )?public\.xoot_job_live_positions to (?:anon|authenticated)/i.test(sql);
 
 test('all private GPS trigger bodies use valid PostgreSQL dollar-quote delimiters', () => {
-  const bodies = [...migration.matchAll(/language plpgsql security definer set search_path = '' as \\$\\$([\\s\\S]*?)\\$\\$;/gi)];
-  assert.equal(bodies.length, 2, 'Both trigger functions must have complete $ bodies');
-  assert.doesNotMatch(migration, /\\bas \\$\\s*\\nbegin/i, 'Single-dollar PL/pgSQL bodies are invalid');
+  const bodies = [...migration.matchAll(/language plpgsql security definer set search_path = '' as \$\$([\s\S]*?)\$\$;/gi)];
+  assert.equal(bodies.length, 2, 'Both trigger functions must have complete $$ bodies');
+  assert.doesNotMatch(migration, /\bas \$\s*\nbegin/i, 'Single-dollar PL/pgSQL bodies are invalid');
   assert.equal(bodies.every((match) => match[1].includes('begin') && match[1].includes('end;')), true);
 });
 
@@ -29,10 +29,10 @@ test('inactive bookings do not reveal private lifecycle state to unauthorised ca
 });
 
 test('foreground stop waits for any outstanding position upload before deletion', () => {
-  assert.match(web, /const pending = inFlightPublish\\.current/);
-  assert.match(web, /if \\(pending\\) await pending\\.catch/);
-  assert.match(web, /if \\(!sharingActive\\.current\\) return/);
-  assert.match(web, /if \\(enabled && position\\) return/);
+  assert.match(web, /const pending = inFlightPublish\.current/);
+  assert.match(web, /if \(pending\) await pending\.catch/);
+  assert.match(web, /if \(!sharingActive\.current\) return/);
+  assert.match(web, /if \(enabled && position\) return/);
 });
 
 test('only service-role Edge transport can access GPS table; no direct client or realtime public access', () => {
