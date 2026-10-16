@@ -73,7 +73,7 @@ export const VerifiedAddressInput = ({
     // label into booking state after a separate licensed PERMANENT Geocoding confirmation.
     // A failed Permanent request leaves the original user input intact for manual entry.
     confirmation.current?.abort();
-    const url = mapboxPermanentAddressUrl(suggestion.id, browserToken);
+    const url = mapboxPermanentAddressUrl(suggestion.label, browserToken);
     if (!url) { setSearchState("error"); return; }
     const controller = new AbortController();
     confirmation.current = controller;
