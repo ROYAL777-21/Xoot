@@ -60,15 +60,21 @@ execute function private.xoot_clear_live_location_on_booking_update();
 create or replace function private.xoot_clear_live_location_on_job_change()
 returns trigger language plpgsql security definer set search_path = '' as $
 begin
+  if tg_op = 'DELETE' then
+    if old.state = 'accepted' then
+      delete from public.xoot_job_live_positions
+        where booking_id = old.booking_id and xooter_id = old.xooter_id;
+    end if;
+    return old;
+  end if;
   if old.state = 'accepted' and (
-    tg_op = 'DELETE' or new.state is distinct from old.state
+    new.state is distinct from old.state
     or new.xooter_id is distinct from old.xooter_id
     or new.booking_id is distinct from old.booking_id
   ) then
     delete from public.xoot_job_live_positions
       where booking_id = old.booking_id and xooter_id = old.xooter_id;
   end if;
-  if tg_op = 'DELETE' then return old; end if;
   return new;
 end;
 $;
