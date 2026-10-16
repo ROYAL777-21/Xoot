@@ -5,6 +5,8 @@ export const defaultAllowedOrigins = [
   "http://127.0.0.1:5173",
   "http://127.0.0.1:4173",
   "https://xoot.co.za",
+  "https://staging.xoot.co.za",
+  "https://preview.xoot.co.za",
   "https://www.xoot.co.za",
 ];
 
