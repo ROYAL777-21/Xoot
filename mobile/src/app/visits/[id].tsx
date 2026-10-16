@@ -6,6 +6,7 @@ import {
 } from '@/components/native-core';
 import { isBookingId, visitProgress, visitStatusStory } from '@/lib/native-visit-detail';
 import { useAuth } from '@/providers/auth-provider';
+import { PrivateJobJourney } from '@/components/private-job-journey';
 
 export default function VisitDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
@@ -84,6 +85,11 @@ export default function VisitDetailScreen() {
     </Card>}
 
     <Text style={s.sectionTitle}>Journey</Text>
+    {/* The native Mapbox viewer stays absent unless the release flag is enabled.
+        The booking feed has already been scoped to this authenticated customer,
+        and the Edge endpoint repeats that check for every location read. */}
+    {(booking.status === 'en_route' || booking.status === 'enroute') &&
+      <PrivateJobJourney bookingId={booking.id} />}
     {progress ? <Card style={s.infoCard}>
       <Text style={s.copy}>An indication of the current booking stage. These steps are not a historical event log or live GPS tracking.</Text>
       {progress.phases.map((step, index) =>
@@ -100,7 +106,7 @@ export default function VisitDetailScreen() {
 
     <Card style={s.notice}><CoreIcon name="shield" color={nativePalette.sageInk} size={21} />
       <View style={s.flex}><Text style={s.label}>About tracking and contact</Text>
-        <Text style={s.copy}>Live map, exact arrival time, direct calling and task-level checklists are unavailable until their verified services are enabled. No simulated activity is shown.</Text></View></Card>
+        <Text style={s.copy}>A live location map appears only when enabled and when your Xooter shares an authorised, fresh location. Exact arrival times are not provided. Other contact and task features require their separate verification.</Text></View></Card>
 
     <PrimaryAction icon="repeat" onPress={() => router.push({
       pathname: '/book', params: { service: booking.service_type || booking.service },
