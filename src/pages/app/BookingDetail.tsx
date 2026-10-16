@@ -583,7 +583,9 @@ const BookingDetail = () => {
               <Button onClick={handleOpenDirections} variant="outline" className="rounded-xl justify-center"><Navigation className="h-4 w-4 mr-1" /> Directions</Button>
               <Button onClick={shareEta} variant="outline" className="rounded-xl justify-center"><Share2 className="h-4 w-4 mr-1" /> Share booking update</Button>
             </div>
-            <p className="mb-3 text-xs text-muted-foreground">No live GPS feed or calculated arrival time is connected to this booking. An en-route status is not proof of current worker position.</p>
+            <p className="mb-3 text-xs text-muted-foreground">{import.meta.env.VITE_ENABLE_LIVE_JOURNEY === "true"
+              ? "A location appears only when an assigned Xooter actively shares a recent foreground position. No arrival-time guarantee is offered."
+              : "No live GPS feed or calculated arrival time is connected to this booking. An en-route status is not proof of current worker position."}</p>
             {isAssignedXooter && activeVisit && typeof booking.address === "string" && booking.address.trim().length >= 4 && id &&
               <div className="mb-4"><WorkerRoadEstimate bookingId={id} destinationAddress={booking.address} /></div>}
             {id && canonicalStatus === "en_route" && <LiveJobJourney bookingId={id} isAssignedWorker={isAssignedXooter} />}
