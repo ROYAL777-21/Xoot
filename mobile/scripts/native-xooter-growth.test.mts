@@ -25,8 +25,12 @@ test('counts only stored completions, separating required learning from optional
   assert.equal(summary!.optionalCompleted, 0);
   assert.equal(summary!.earnedPoints, 40);
   assert.equal(summary!.availablePoints, 65);
-  assert.deepEqual(summary!.badges, [
-    { moduleId: required.id, title: required.title, label: 'Standard' },
+  assert.deepEqual(summary!.badges, [], 'required training is not a collectible badge');
+  const allComplete = summariseXooterGrowth([required, optional], [
+    completed, { module_id: optional.id, completed: true, completed_at: '2026-10-16T10:00:00Z' },
+  ]);
+  assert.deepEqual(allComplete?.badges, [
+    { moduleId: optional.id, title: optional.title, label: 'Client Care' },
   ]);
   assert.deepEqual([...summary!.completeModuleIds], [required.id]);
 });
