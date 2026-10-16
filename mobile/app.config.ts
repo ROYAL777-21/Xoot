@@ -178,7 +178,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       appEnv,
       siteUrl: process.env.EXPO_PUBLIC_SITE_URL,
       supabaseProjectId: process.env.EXPO_PUBLIC_SUPABASE_PROJECT_ID,
-      mapboxEnabled: Boolean(process.env.EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN),
+      mapboxEnabled: Boolean(process.env.EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN?.trim().startsWith('pk.')),
       turnstileEnabled: Boolean(process.env.EXPO_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY),
     },
   },
