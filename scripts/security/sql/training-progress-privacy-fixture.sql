@@ -37,6 +37,17 @@ create policy "zooters_select_self_or_admin" on public.xooters
 -- The leaked original policy under test (must fail before migration).
 create policy "training progress visible" on public.xooter_training_progress
   for select to public using (true);
+-- Reproduce the old full-history schema too, which carried a SELECT policy
+-- implicitly granted TO public plus separate client write policies.
+create policy "training_progress_own" on public.xooter_training_progress
+  for select using (
+    exists(select 1 from public.xooters z
+      where z.id = xooter_training_progress.xooter_id and z.user_id = auth.uid())
+  );
+create policy "training_progress_insert_own" on public.xooter_training_progress
+  for insert with check (true);
+create policy "training_progress_update_own" on public.xooter_training_progress
+  for update using (true) with check (true);
 grant select on public.xooters to authenticated;
 grant select, truncate, trigger, references
   on public.xooter_training_progress to anon, authenticated;
