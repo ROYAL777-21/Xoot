@@ -1,0 +1,154 @@
+{
+  "checkedAt": "2026-10-16T13:20:48.310Z",
+  "scope": "Actual web HomeEdit/Profile/AppShell, isolated synthetic auth/database/wallet adapters. Real browser keyboard/layout only. No hosted requests/writes, auth success, SQL or native-device claim.",
+  "checks": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "screenshot": "home-edit-320x844.png",
+      "metrics": {
+        "documentOverflow": false,
+        "rootOverflow": false,
+        "headingFont": "Newsreader, Georgia, serif",
+        "headingTransform": "none",
+        "headingFilter": "none",
+        "actionsPosition": "fixed",
+        "actionsBottom": 844,
+        "viewportHeight": 844
+      },
+      "case": "actual keyboard toggle/save/confirmed default",
+      "result": "passed",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "case": "pending/failure/draft/retry",
+      "result": "passed"
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "screenshot": "home-edit-390x844.png",
+      "metrics": {
+        "documentOverflow": false,
+        "rootOverflow": false,
+        "headingFont": "Newsreader, Georgia, serif",
+        "headingTransform": "none",
+        "headingFilter": "none",
+        "actionsPosition": "fixed",
+        "actionsBottom": 844,
+        "viewportHeight": 844
+      },
+      "case": "actual keyboard toggle/save/confirmed default",
+      "result": "passed",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 844
+      },
+      "screenshot": "home-edit-768x844.png",
+      "metrics": {
+        "documentOverflow": false,
+        "rootOverflow": false,
+        "headingFont": "Newsreader, Georgia, serif",
+        "headingTransform": "none",
+        "headingFilter": "none",
+        "actionsPosition": "fixed",
+        "actionsBottom": 844,
+        "viewportHeight": 844
+      },
+      "case": "actual keyboard toggle/save/confirmed default",
+      "result": "passed",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 844
+      },
+      "screenshot": "home-edit-1024x844.png",
+      "metrics": {
+        "documentOverflow": false,
+        "rootOverflow": false,
+        "headingFont": "Newsreader, Georgia, serif",
+        "headingTransform": "none",
+        "headingFilter": "none",
+        "actionsPosition": "fixed",
+        "actionsBottom": 844,
+        "viewportHeight": 844
+      },
+      "case": "actual keyboard toggle/save/confirmed default",
+      "result": "passed",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "home-edit-1440x1000.png",
+      "metrics": {
+        "documentOverflow": false,
+        "rootOverflow": false,
+        "headingFont": "Newsreader, Georgia, serif",
+        "headingTransform": "none",
+        "headingFilter": "none",
+        "actionsPosition": "fixed",
+        "actionsBottom": 1000,
+        "viewportHeight": 1000
+      },
+      "case": "actual keyboard toggle/save/confirmed default",
+      "result": "passed",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "screenshot": "home-edit-1920x1080.png",
+      "metrics": {
+        "documentOverflow": false,
+        "rootOverflow": false,
+        "headingFont": "Newsreader, Georgia, serif",
+        "headingTransform": "none",
+        "headingFilter": "none",
+        "actionsPosition": "fixed",
+        "actionsBottom": 1080,
+        "viewportHeight": 1080
+      },
+      "case": "actual keyboard toggle/save/confirmed default",
+      "result": "passed",
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "screenshot": "home-edit-844x390.png",
+      "metrics": {
+        "documentOverflow": false,
+        "rootOverflow": false,
+        "headingFont": "Newsreader, Georgia, serif",
+        "headingTransform": "none",
+        "headingFilter": "none",
+        "actionsPosition": "fixed",
+        "actionsBottom": 390,
+        "viewportHeight": 390
+      },
+      "case": "actual keyboard toggle/save/confirmed default",
+      "result": "passed",
+      "errors": []
+    }
+  ]
+}

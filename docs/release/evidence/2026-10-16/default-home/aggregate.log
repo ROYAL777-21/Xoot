@@ -1,0 +1,76 @@
+
+> xoot-home-care@0.1.0 test
+> vitest run --no-file-parallelism --maxWorkers=1
+
+
+ RUN  v4.1.11 C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation
+
+Xoot environment configuration error: CI builds must set VITE_APP_ENV explicitly. No host signal was found; checked VERCEL_ENV and CONTEXT. See docs/release/deploy-hosts.md.
+Xoot environment configuration error: Builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values for staging and production.
+failed to load config from C:\Users\Buti\Documents\Codex\2026-09-11\i-x20\work\xoot-implementation\vite.config.ts
+error during build:
+Error: Xoot environment configuration error: VITE_APP_ENV is required for CI and production-mode builds.
+    at file:///C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation/node_modules/.vite-temp/vite.config.ts.timestamp-1792138026064-a482ff71e32ab8.mjs:149:25
+    at loadConfigFromFile (file:///C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation/node_modules/vite/dist/node/chunks/node.js:34841:62)
+    at async resolveConfig (file:///C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation/node_modules/vite/dist/node/chunks/node.js:34465:22)
+    at async createBuilder (file:///C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation/node_modules/vite/dist/node/chunks/node.js:33650:17)
+    at async CAC.<anonymous> (file:///C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation/node_modules/vite/dist/node/cli.js:766:19)
+[Xoot mobile config] EXPO_PUBLIC_SUPABASE_URL must be a real value for production builds.
+ ❯ |unit| src/lib/ops-readiness-assertions.test.ts (135 tests | 1 failed) 187ms
+     × production checklist covers domain-registration 11ms
+ ❯ |unit| src/lib/security-definer-grants.test.ts (3 tests | 1 failed) 21ms
+     × finds no SECURITY DEFINER function left callable by anon or authenticated 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/lib/ops-readiness-assertions.test.ts > check-blocker-ledger.ps1 covers the current production checklist > production checklist covers domain-registration
+AssertionError: production checklist is missing the coverage terms for domain-registration: expected [ 'Domain resolves', …(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Domain resolves",
++   "Do not import the old GoDaddy zone export",
++ ]
+
+ ❯ src/lib/ops-readiness-assertions.test.ts:153:87
+    151|     (id, patterns) => {
+    152|       const missing = patterns.filter((pattern) => !blocker.includes(p…
+    153|       expect(missing, `production checklist is missing the coverage te…
+       |                                                                                       ^
+    154|     },
+    155|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| src/lib/security-definer-grants.test.ts > no SECURITY DEFINER function in public is callable by a client role > finds no SECURITY DEFINER function left callable by anon or authenticated
+AssertionError: A SECURITY DEFINER function in `public` is callable from a browser holding only the publishable key. `revoke ... from public` does NOT remove anon/authenticated — name the roles: `revoke all on function ... from public, anon, authenticated;`: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "delete_home — is callable at /rest/v1/rpc/delete_home, held by anon, authenticated",
++   "save_home — is callable at /rest/v1/rpc/save_home, held by anon, authenticated",
++   "set_default_home — is callable at /rest/v1/rpc/set_default_home, held by anon, authenticated",
++ ]
+
+ ❯ src/lib/security-definer-grants.test.ts:176:7
+    174|         "publishable key. `revoke ... from public` does NOT remove ano…
+    175|         "roles: `revoke all on function ... from public, anon, authent…
+    176|     ).toEqual([]);
+       |       ^
+    177|   });
+    178| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 164 passed (166)
+      Tests  2 failed | 1766 passed | 7 skipped (1775)
+   Start at  10:05:31
+   Duration  340.86s (transform 4.75s, setup 23.25s, import 22.48s, tests 117.73s, environment 128.82s)
+

@@ -1,0 +1,6 @@
+
+> xoot-home-care@0.1.0 ops:smoke:rendered:artifact
+> node scripts/ops/verify-rendered-site.mjs --artifact dist
+
+Rendered site smoke passed for http://localhost:5173/: real directory response and settled roster (0 approved Xooters), homepage content, sign-in navigation, controls, and runtime state verified.
+Exit code: 0

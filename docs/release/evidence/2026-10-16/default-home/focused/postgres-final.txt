@@ -1,0 +1,32 @@
+ok 1 - explicit import preserves duplicate-looking distinct places, metadata and household-first/legacy-second precedence
+ok 2 - owner without a marked home has no fabricated default
+ok 3 - ordinary new save does not overwrite the selected home
+ok 4 - atomic switch and retry confirm a single canonical home
+ok 5 - expected owner is only an auth guard; unrelated targets denied even with broad admin RLS
+ok 6 - direct table/historical column writes and incompatible legacy reads fail closed
+ok 7 - anonymous and missing authenticated identity denied
+ok 8 - mandatory failure rolls back clearing and creation; retry succeeds
+{"barrier":1,"waitingPid":75276,"blockingPid":74884,"observed":{"state":"active","wait_event_type":"Lock","blockers":[74884]}}
+ok 9 - simultaneous different-home switches block per owner while unrelated owner progresses
+{"barrier":2,"waitingPid":75276,"blockingPid":74884,"observed":{"state":"active","wait_event_type":"Lock","blockers":[74884]}}
+ok 10 - concurrent first-default creations serialize before any home exists
+{"barrier":3,"waitingPid":75276,"blockingPid":74884,"observed":{"state":"active","wait_event_type":"Lock","blockers":[74884]}}
+ok 11 - switch then delete archives selected place, leaves no fabricated default, preserves booking FK
+{"barrier":4,"waitingPid":75276,"blockingPid":74884,"observed":{"state":"active","wait_event_type":"Lock","blockers":[74884]}}
+ok 12 - delete then switch rejects archived target after observed lock barrier
+{"barrier":5,"waitingPid":75276,"blockingPid":74884,"observed":{"state":"active","wait_event_type":"Lock","blockers":[74884]}}
+ok 13 - ownership-move race cannot transfer a selected home or authorize another owner
+ok 14 - service direct default/deletion and legacy mutation also fail closed
+{"barrier":6,"waitingPid":75276,"blockingPid":74884,"observed":{"state":"active","wait_event_type":"Lock","blockers":[74884]}}
+ok 15 - detail edits preserve concurrent default changes
+{"barrier":7,"waitingPid":75276,"blockingPid":74884,"observed":{"state":"active","wait_event_type":"Lock","blockers":[74884]}}
+ok 16 - switch-first ownership race waits then rejects transfer
+{"barrier":8,"waitingPid":75276,"blockingPid":74884,"observed":{"state":"active","wait_event_type":"Lock","blockers":[74884]}}
+ok 17 - rolled-back competing switch leaves prior committed selection intact for waiting retry
+ok 18 - explicit deselection leaves no default and next selection restores it
+ok 19 - lost creation reply retry with caller-stable UUID does not duplicate the home
+ok 20 - partial unique index remains a database backstop even for table owner
+ok 21 - save/default replies contain no gate, alarm or access values
+ok 22 - auth-user cascade remains compatible with additive legacy FK and archival controls
+{"status":"passed","postgresVersion":170011,"tests":22,"observedBlockingBarriers":8,"syntheticOnly":true}
+{"cleanup":"verified","ownedDatabaseRemoved":true,"preexistingRolesPreserved":true,"passed":true}

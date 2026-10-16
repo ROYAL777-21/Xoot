@@ -1,0 +1,6 @@
+
+> xoot-home-care@0.1.0 lockfiles:check
+> node scripts/config/validate-lockfiles.mjs
+
+Xoot lockfile validation passed for web and mobile.
+Exit code: 0

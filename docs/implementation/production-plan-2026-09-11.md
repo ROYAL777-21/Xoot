@@ -179,3 +179,34 @@ the requested public visual corrections, then default-home/checklist/address beh
 remaining source screens. Continue the booking/payment lifecycle and all original phases.
 Company-wide final security hardening follows the visual work; security checks on each
 individual change still apply throughout implementation.
+
+## Founder steering — 16 October 2026
+
+Continue the full goal, website first. The founder clarified that no subscription deadline
+has been established; do not assume a renewal date. Keep sessions efficient through selective
+retrieval, one evidence register and reuse of independently completed work.
+
+- Reconcile current `main` and `release/xoot-production` work before repeating any native,
+  configuration or map implementation. Preserve the other chat's native map safeguards,
+  typing fix and screen ports. Its readiness statements remain claims to verify.
+- Complete Mapbox address search, confirmed booking destinations, permitted navigation and
+  real tracking across web/native. The existing reference-area viewer is only a starting
+  point. Keep the handoff's public SVG and address-entry composition. Use real coordinates,
+  appropriate provider storage permissions, explicit device-location actions, role-scoped
+  access and truthful offline/permission/error states. Never animate fictional positions.
+- Allow users outside initial launch suburbs to use the product and request service.
+  Replace hard geography rejection with truthful matching/availability handling; do not
+  promise unstaffed fulfilment or charge without the approved booking/payment conditions.
+- Verify typing in the actual browser and reuse the incoming focus repair. First-time
+  visitors must receive a neutral or first-use greeting; reserve returning-user language
+  for known returning customers. Hide the visual side scrollbar while preserving touch,
+  wheel and keyboard scrolling, focus visibility and zoom usability.
+- Recheck Trust, Journal and Concierge against the supplied handoff and the actual served
+  release. Earlier bounded local evidence is not acceptance of a different live page.
+  Concierge must complete supported real tasks or provide an honest, working handoff.
+- Prioritize complete maps and PayFast journeys after source reconciliation, with the
+  checklist/progress nudge, booking-day address and all original phases still required.
+
+Owner-reported Mapbox setup steps 1–4 in the other chat are recorded as completed by the
+owner, pending provider/configuration/device verification. Check those settings before
+asking for them again. Never request credentials in chat.

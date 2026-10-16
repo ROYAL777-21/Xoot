@@ -1,0 +1,105 @@
+{
+  "checkedAt": "2026-10-15T15:35:22.425Z",
+  "scope": "Read-only actual public production home/sign-in. No request interception, credentials, accounts, messages or hosted writes. Browser plugin/skill unavailable; installed Playwright used.",
+  "checks": [
+    {
+      "screen": "home",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "url": "https://xoot.co.za/",
+      "status": 200,
+      "filename": "production-home-1440.png",
+      "errors": [],
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "heading": "Premium home care,Built on trustBuilt on trust",
+      "configurationError": false,
+      "overlay": false,
+      "documentOverflow": false,
+      "rootOverflow": false,
+      "emailInput": false,
+      "headerBookLabels": [
+        "Book now"
+      ],
+      "headingFont": "Newsreader, Georgia, serif"
+    },
+    {
+      "screen": "home-to-signin",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "url": "https://xoot.co.za/auth",
+      "emailVisible": true
+    },
+    {
+      "screen": "signin",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "url": "https://xoot.co.za/auth",
+      "status": 200,
+      "filename": "production-signin-1440.png",
+      "errors": [],
+      "title": "Continue to Xoot",
+      "heading": "Pick up where you left off.",
+      "configurationError": false,
+      "overlay": false,
+      "documentOverflow": false,
+      "rootOverflow": false,
+      "emailInput": true,
+      "headerBookLabels": [],
+      "headingFont": "Newsreader, Georgia, serif"
+    },
+    {
+      "screen": "home",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "https://xoot.co.za/",
+      "status": 200,
+      "filename": "production-home-390.png",
+      "errors": [],
+      "title": "Xoot - Premium cleaning and home care in Johannesburg",
+      "heading": "Premium home care,Built on trustBuilt on trust",
+      "configurationError": false,
+      "overlay": false,
+      "documentOverflow": false,
+      "rootOverflow": false,
+      "emailInput": false,
+      "headerBookLabels": [
+        "Book",
+        "Book now"
+      ],
+      "headingFont": "Newsreader, Georgia, serif"
+    },
+    {
+      "screen": "signin",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "https://xoot.co.za/auth",
+      "status": 200,
+      "filename": "production-signin-390.png",
+      "errors": [],
+      "title": "Continue to Xoot",
+      "heading": "Pick up where you left off.",
+      "configurationError": false,
+      "overlay": false,
+      "documentOverflow": false,
+      "rootOverflow": false,
+      "emailInput": true,
+      "headerBookLabels": [],
+      "headingFont": "Newsreader, Georgia, serif"
+    }
+  ],
+  "buildInfo": {
+    "commit": "5aebf7d34dde046b5c56cc5c94283f91104df98a",
+    "builtAt": "2026-10-14T23:38:19.783Z",
+    "pricingRule": "ZD-026"
+  }
+}

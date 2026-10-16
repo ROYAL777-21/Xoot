@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation
+
+
+ Test Files  1 passed (1)
+      Tests  135 passed (135)
+   Start at  10:12:35
+   Duration  1.23s (transform 57ms, setup 149ms, import 70ms, tests 118ms, environment 655ms)
+

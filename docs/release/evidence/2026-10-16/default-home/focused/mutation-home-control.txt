@@ -1,0 +1,40 @@
+
+ RUN  v4.1.11 C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation
+
+ ❯ |unit| src/pages/app/Profile.test.tsx (17 tests | 1 failed | 16 skipped) 166ms
+     × commits the checkbox selection and details once, waiting for the server before returning 163ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 skipped (17)
+   Start at  00:12:19
+   Duration  1.67s (transform 255ms, setup 137ms, import 501ms, tests 166ms, environment 627ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/pages/app/Profile.test.tsx > Atomic default-home control > commits the checkbox selection and details once, waiting for the server before returning
+AssertionError: expected { p_expected_owner: 'owner-a', …(3) } to match object { p_home_id: 'place-a', …(3) }
+
+- Expected
++ Received
+
+@@ -2,7 +2,7 @@
+    "p_details": {
+      "label": "Office",
+    },
+    "p_expected_owner": "owner-a",
+    "p_home_id": "place-a",
+-   "p_selected": true,
++   "p_selected": null,
+  }
+
+ ❯ src/pages/app/Profile.test.tsx:191:42
+    189|     const save = screen.getByRole("button", { name: "Save this place" …
+    190|     expect(harness.rpc).toHaveBeenCalledOnce(); expect(control).toBeDi…
+    191|     expect(harness.rpc.mock.calls[0][1]).toMatchObject({ p_home_id: "p…
+       |                                          ^
+    192|     expect(screen.getByTestId("location")).toHaveTextContent("/app/pro…
+    193|     await act(async () => { pending.resolve(ok({ id: "place-a", is_def…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

@@ -1,0 +1,84 @@
+{
+  "scope": "Read-only catalogs and publishable-key identity checks; no private rows, secrets, database or deployment writes",
+  "environments": [
+    {
+      "environment": "staging",
+      "projectId": "fxmxyabdjqviqbcxmvlp",
+      "checked_at": "2026-10-15T22:08:22.99038+00:00",
+      "migration_count": 85,
+      "recent_migrations": [
+        {
+          "name": "finish_zd028_rename_in_constraint_names",
+          "version": "20260902120000"
+        },
+        {
+          "name": "zd035_crew_and_zd036_referrals",
+          "version": "20260903120000"
+        },
+        {
+          "name": "company_wide_defaults_and_xooter_checklists",
+          "version": "20261003140000"
+        },
+        {
+          "name": "referral_client_grants_least_privilege",
+          "version": "20261015102137"
+        },
+        {
+          "name": "checklist_active_job_mutation",
+          "version": "20261015155437"
+        }
+      ],
+      "referrals_present": true,
+      "checklist_functions": [
+        {
+          "args": "p_actor_id uuid, p_job_id uuid, p_task_key text, p_complete boolean",
+          "name": "update_active_xooter_checklist",
+          "anon_execute": false,
+          "definition_md5": "86995f6016f3ca63e9f8c23f983f42c7",
+          "service_role_execute": true,
+          "authenticated_execute": false
+        }
+      ],
+      "referral_redemptions_present": true
+    },
+    {
+      "environment": "production",
+      "projectId": "mvlrkelahhsyjrwgsxaf",
+      "checked_at": "2026-10-15T22:08:25.689107+00:00",
+      "migration_count": 82,
+      "recent_migrations": [
+        {
+          "name": "finish_zd028_rename_in_constraint_names",
+          "version": "20260902120000"
+        },
+        {
+          "name": "live_security_advisor_safety_pin_hardening",
+          "version": "20261008011821"
+        }
+      ],
+      "referrals_present": false,
+      "checklist_functions": null,
+      "referral_redemptions_present": false
+    }
+  ],
+  "productionKeyCheck": {
+    "checkedDateUtc": "2026-10-15",
+    "activeModernKeyCount": 1,
+    "matchesCurrentBranchProductionDefaults": true,
+    "matchesOriginMainReplacement": false,
+    "valuesOmitted": true
+  },
+  "productionFunctions": {
+    "checkedDateUtc": "2026-10-15",
+    "count": 58,
+    "directory": {
+      "name": "public-xooter-directory",
+      "version": 1,
+      "status": "ACTIVE"
+    },
+    "absent": [
+      "get-booking-quote",
+      "xooter-job-checklist"
+    ]
+  }
+}

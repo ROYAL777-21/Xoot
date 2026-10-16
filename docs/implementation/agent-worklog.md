@@ -23,6 +23,38 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**16 October, 15:20 SAST — same authorized cross-role Codex claim:** Atomic-home fix
+review now approves source and quality; final aggregate passes 166 files / 1,774 tests
+with seven existing SQL-runtime skips. Final browser/build checks are underway. Next
+held work is ancestry-preserving integration of `main` `1062bdb` and release `9f647bd`,
+including the other chat's PRs 66–68 native Xooter/map/PAT improvements. Read-only
+integration preparation is in progress; no second product writer or hosted change.
+The separate idle audit checkout's staged fixes are being inspected without changing it.
+
+Founder explicitly requires full Mapbox functionality, website first, wider-area service
+requests, typing, first-use greetings, hidden side scrollbars, and handoff-faithful
+Trust/Journal/Concierge. These extend rather than remove the existing goal. Native reference
+pins alone do not complete the map requirement. Owner reports Mapbox setup steps 1–4 done;
+Vercel token-setting presence is verified, its sensitive value/API access is not. Existing
+incoming map safeguards will be retained. Canonical plan records the new acceptance scope.
+
+**16 October checkpoint, same authorized cross-role claim:** Atomic default-home
+implementation is undergoing focused verification, with independent review still due.
+Preserve its working changes. Fresh actual production home/sign-in captures identify
+`5aebf7d`; the earlier startup overlay is gone at desktop/phone sizes, but the mobile
+extra Book control remains. Canonical live-state evidence is dated 16 October SAST.
+Staging now records 85 migrations including the checklist RPC; production remains at
+82 with missing referral tables/RPC. The directory endpoint is now active. Fresh staging
+CLI dry run `38815125826` fails on token/project endpoint privileges before any migration
+or repair; no hosted changes were made. Owner access-repair steps are in the checklist.
+
+Next, reconcile meaningful incoming `main` (`a87ea78`) and release (`6487d78`) work after
+the current default-home review, preserving both histories and all compatible native/
+release changes. This spans both roles to keep database, app contracts and release gates
+consistent. Keep the verified production project/key pairing during startup integration.
+Checklist progress/nudges, booking-day access and the complete production plan remain
+required. Public visual task `6056b6f` remains locally reviewed, not yet published.
+
 **15 October checkpoint, same authorized cross-role claim:** Public navbar, Trust,
 Journal and original SVG corrections are committed locally as `6056b6f`. Independent
 source and evidence review approve this bounded task. Aggregate 165 files/1,749 tests,

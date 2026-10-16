@@ -1,0 +1,42 @@
+
+> xoot-home-care@0.1.0 test
+> vitest run src/lib/ops-readiness-assertions.test.ts src/lib/twilio-secrets-contract.test.ts
+
+
+ RUN  v4.1.11 C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation
+
+ ❯ |unit| src/lib/ops-readiness-assertions.test.ts (135 tests | 1 failed) 96ms
+     × production checklist covers mapbox-restricted-tokens 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/lib/ops-readiness-assertions.test.ts > check-blocker-ledger.ps1 covers the current production checklist > production checklist covers mapbox-restricted-tokens
+AssertionError: production checklist is missing the coverage terms for mapbox-restricted-tokens: expected [ 'Restricted Mapbox tokens', …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Restricted Mapbox tokens",
++   "browser token",
++   "secret downloads token",
++ ]
+
+ ❯ src/lib/ops-readiness-assertions.test.ts:153:87
+    151|     (id, patterns) => {
+    152|       const missing = patterns.filter((pattern) => !blocker.includes(p…
+    153|       expect(missing, `production checklist is missing the coverage te…
+       |                                                                                       ^
+    154|     },
+    155|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 142 passed (143)
+   Start at  15:27:48
+   Duration  1.70s (transform 124ms, setup 477ms, import 133ms, tests 111ms, environment 2.03s)
+
+Exit code: 1

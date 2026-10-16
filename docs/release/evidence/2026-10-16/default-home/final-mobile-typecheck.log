@@ -1,0 +1,9 @@
+
+> xoot-home-care@0.1.0 mobile:typecheck
+> npm --prefix mobile run typecheck
+
+
+> xoot-mobile@0.1.0 typecheck
+> tsc --noEmit
+
+Exit code: 0

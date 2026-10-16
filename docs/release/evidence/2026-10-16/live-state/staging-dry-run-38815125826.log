@@ -1,0 +1,161 @@
+Dry run on staging	Link and push	﻿2026-10-15T22:09:31.4233473Z ##[group]Run set -uo pipefail
+Dry run on staging	Link and push	2026-10-15T22:09:31.4234239Z ^[[36;1mset -uo pipefail^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4234491Z ^[[36;1m^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4234941Z ^[[36;1m# Everything is written twice, on purpose: once to the step summary (readable, formatted,^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4235576Z ^[[36;1m# pasteable) and once to the log (readable from the API, which the summary is NOT).^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4235996Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4236386Z ^[[36;1m# This repo has now paid for that distinction three times — `verify-secrets.yml` reported^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4237065Z ^[[36;1m# a missing-secret COUNT with the names only in the summary; `verify-types.yml` reported^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4237674Z ^[[36;1m# "does not match" with the diff only in the summary; and this workflow reported nothing^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4238255Z ^[[36;1m# at all. Each time, the one thing needed to act on the failure was the one thing not in^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4238687Z ^[[36;1m# the log.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4238904Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4239302Z ^[[36;1m# Safe to print: migration version numbers and file names. No data, no credential.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4240032Z ^[[36;1msay() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4240401Z ^[[36;1mboth() { tee -a "$GITHUB_STEP_SUMMARY"; }^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4240728Z ^[[36;1m^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4241033Z ^[[36;1mif ! supabase link --project-ref "$PROJECT_REF" 2>&1 | both; then^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4242380Z ^[[36;1m  echo "::error::Could not link to $PROJECT_REF. On SQLSTATE 28P01 the stored password belongs to a different project - add a per-environment secret (SUPABASE_DB_PASSWORD_PRODUCTION / _STAGING) rather than overwriting the shared one."^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4243327Z ^[[36;1m  exit 1^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4243534Z ^[[36;1mfi^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4243722Z ^[[36;1m^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4243951Z ^[[36;1msay "## \`db push\` on \`$PROJECT_REF\`"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4244251Z ^[[36;1msay ""^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4244449Z ^[[36;1m^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4244793Z ^[[36;1m# ── The orphan ledger rows ───────────────────────────────────────────────────^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4245207Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4245559Z ^[[36;1m# Measured 2026-08-12. The first honest dry run refused before planning anything:^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4245974Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4246299Z ^[[36;1m#   Remote migration versions not found in local migrations directory.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4246811Z ^[[36;1m#   supabase migration repair --status reverted <versions>^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4247199Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4247570Z ^[[36;1m# `db push` refuses outright when the remote ledger claims a version the local directory^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4248189Z ^[[36;1m# has no file for. Both projects had such rows. They are all the same class of artefact —^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4248797Z ^[[36;1m# a migration that WAS applied, whose file was then written under a different version^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4249406Z ^[[36;1m# number — and in every case the object it created still exists and its definition lives^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4249891Z ^[[36;1m# in a repo file under that other number.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4250187Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4250579Z ^[[36;1m# STAGING — 3 rows, all the `apply_migration` version-rename trap. The MCP stamps its own^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4251186Z ^[[36;1m# wall-clock version and ignores the filename, so three MCP calls at 15:56/15:58/16:00^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4251788Z ^[[36;1m# became three ledger rows, and the capture-to-file step wrote them as ONE consolidated^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4252749Z ^[[36;1m# 674-line file, `20260630155159_connector_safe_invoice_xoot_black_schema.sql`.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4253164Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4253461Z ^[[36;1m#   20260630155643  connector_safe_booking_invoice_public_schema^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4253901Z ^[[36;1m#   20260630155818  connector_safe_xoot_black_core_schema^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4254341Z ^[[36;1m#   20260630160047  connector_safe_xoot_black_certificate_schema^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4254902Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4255136Z ^[[36;1m# PRODUCTION — 8 rows, in three groups.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4255433Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4255803Z ^[[36;1m#   The same trio, at different wall-clock stamps (the MCP timed each project separately,^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4256407Z ^[[36;1m#   which is itself a good illustration of why filename-derived versions matter):^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4256926Z ^[[36;1m#     20260630155714  connector_safe_booking_invoice_public_schema^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4257361Z ^[[36;1m#     20260630155930  connector_safe_xoot_black_core_schema^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4257797Z ^[[36;1m#     20260630160205  connector_safe_xoot_black_certificate_schema^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4258146Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4258512Z ^[[36;1m#   The May launch schema, re-applied onto production after the project was created. Its^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4259117Z ^[[36;1m#   objects are the repo's canonical history under 20260421080011 (the `app_role` and^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4259702Z ^[[36;1m#   `booking_status` enums, `has_role`, `touch_updated_at`) and 20260621000000 (the^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4260325Z ^[[36;1m#   `private` schema and the `has_role` hardening):^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4260685Z ^[[36;1m#     20260519115337  xoot_launch_schema_core^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4261042Z ^[[36;1m#     20260519115514  xoot_launch_rls_functions_indexes^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4261407Z ^[[36;1m#     20260519115624  xoot_launch_api_grants^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4261747Z ^[[36;1m#     20260519121041  security_advisor_hardening^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4262298Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4262665Z ^[[36;1m#   And one duplicate of a table the repo creates at 20260605000000_push_tokens.sql:^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4263125Z ^[[36;1m#     20260615010317  phase_10_push_tokens^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4263429Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4263798Z ^[[36;1m# CHECKED BEFORE WRITING THIS, on production, by querying the database:^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4264207Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4264556Z ^[[36;1m#   app_role ✅  booking_status ✅  has_role ✅  touch_updated_at ✅  schema private ✅^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4265101Z ^[[36;1m#   push_tokens ✅  booking_invoices ✅  booking_service_line_items ✅^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4265512Z ^[[36;1m#   xoot_black_completion_certificates ✅^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4265808Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4266171Z ^[[36;1m# Every object these rows claim to have created exists. So marking them reverted removes^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4266777Z ^[[36;1m# a duplicate CLAIM, not a real piece of history — and the arithmetic closes exactly:^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4267352Z ^[[36;1m# production has 75 ledger rows, the repo has 68 files, 75 − 8 = 67 = 68 − 1 pending.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4267772Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4268143Z ^[[36;1m# `--status reverted` deletes ledger rows. It runs no SQL against the schema and drops no^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4268642Z ^[[36;1m# object. Every table stays exactly where it is.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4268963Z ^[[36;1m#^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4269335Z ^[[36;1m# ⚠️ Hard-coded per project, not a free-text input. A "which versions to repair" box on a^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4269981Z ^[[36;1m# workflow that edits a migration ledger is a footgun with a nice label. Each orphan needs^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4270590Z ^[[36;1m# its own evidence, and the place to record that is here, in the diff, where someone has^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4271073Z ^[[36;1m# to read it before adding to the list.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4271378Z ^[[36;1mcase "$PROJECT_REF" in^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4271646Z ^[[36;1m  fxmxyabdjqviqbcxmvlp)^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4272223Z ^[[36;1m    REPAIRABLE="20260630155643 20260630155818 20260630160047" ;;^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4272598Z ^[[36;1m  mvlrkelahhsyjrwgsxaf)^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4273170Z ^[[36;1m    REPAIRABLE="20260519115337 20260519115514 20260519115624 20260519121041 20260615010317 20260630155714 20260630155930 20260630160205" ;;^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4273743Z ^[[36;1m  *)^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4274128Z ^[[36;1m    REPAIRABLE="" ;;^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4274373Z ^[[36;1mesac^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4274570Z ^[[36;1m^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4274773Z ^[[36;1mif [ "false" = "true" ]; then^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4275059Z ^[[36;1m  if [ -z "$REPAIRABLE" ]; then^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4275553Z ^[[36;1m    echo "::error::No evidenced orphan list for $PROJECT_REF. Refusing to guess at a migration ledger."^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4276049Z ^[[36;1m    exit 1^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4276260Z ^[[36;1m  fi^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4276476Z ^[[36;1m  say "### Repairing the ledger"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4276751Z ^[[36;1m  say ""^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4277083Z ^[[36;1m  say "Marking as reverted (deletes ledger rows, touches no schema):"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4277462Z ^[[36;1m  say ""^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4277662Z ^[[36;1m  say '```'^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4277905Z ^[[36;1m  echo "----- migration repair -----"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4278212Z ^[[36;1m  # shellcheck disable=SC2086^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4278603Z ^[[36;1m  supabase migration repair --status reverted $REPAIRABLE 2>&1 | both^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4279012Z ^[[36;1m  repair_status=${PIPESTATUS[0]}^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4279410Z ^[[36;1m  say '```'^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4279672Z ^[[36;1m  echo "----- end (exit $repair_status) -----"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4280009Z ^[[36;1m  if [ "$repair_status" -ne 0 ]; then^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4280365Z ^[[36;1m    echo "::error::Ledger repair failed. Nothing was pushed."^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4280727Z ^[[36;1m    exit "$repair_status"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4280976Z ^[[36;1m  fi^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4281176Z ^[[36;1m  say ""^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4281373Z ^[[36;1mfi^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4281559Z ^[[36;1m^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4282112Z ^[[36;1m# Always print what the remote already has. A push that surprises someone is usually a^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4282636Z ^[[36;1m# push against a ledger they had not looked at.^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4283001Z ^[[36;1msay "### Migrations the remote already records"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4283314Z ^[[36;1msay '```'^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4283546Z ^[[36;1mecho "----- migration list -----"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4283939Z ^[[36;1msupabase migration list --linked 2>&1 | tail -100 | both || true^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4284313Z ^[[36;1msay '```'^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4284525Z ^[[36;1m^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4284727Z ^[[36;1mif [ "true" = "true" ]; then^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4284984Z ^[[36;1m  say ""^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4285231Z ^[[36;1m  say "### Dry run — nothing was applied"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4285527Z ^[[36;1m  say '```'^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4285768Z ^[[36;1m  echo "----- db push --dry-run -----"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4286108Z ^[[36;1m  supabase db push --dry-run 2>&1 | both^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4286428Z ^[[36;1m  plan_status=${PIPESTATUS[0]}^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4286694Z ^[[36;1m  say '```'^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4286912Z ^[[36;1m  echo "----- end -----"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4287187Z ^[[36;1m  if [ "$plan_status" -ne 0 ]; then^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4287617Z ^[[36;1m    # A dry run that cannot even produce a plan is a real failure and must not be^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4288054Z ^[[36;1m    # reported as "nothing to do".^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4288532Z ^[[36;1m    echo "::error::The dry run itself failed (exit $plan_status). The plan above is incomplete."^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4289002Z ^[[36;1m    exit "$plan_status"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4289251Z ^[[36;1m  fi^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4289639Z ^[[36;1m  echo "Dry run complete. Read the plan above, then re-run with dry_run unchecked to apply."^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4290090Z ^[[36;1m  exit 0^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4290286Z ^[[36;1mfi^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4290476Z ^[[36;1m^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4290665Z ^[[36;1msay ""^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4290873Z ^[[36;1msay "### Applying"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4291107Z ^[[36;1msay '```'^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4291327Z ^[[36;1mecho "----- db push -----"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4291604Z ^[[36;1msupabase db push 2>&1 | both^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4292065Z ^[[36;1mstatus=${PIPESTATUS[0]}^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4292526Z ^[[36;1msay '```'^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4292775Z ^[[36;1mecho "----- end (exit $status) -----"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4293078Z ^[[36;1mexit "$status"^[[0m
+Dry run on staging	Link and push	2026-10-15T22:09:31.4362493Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Dry run on staging	Link and push	2026-10-15T22:09:31.4362874Z env:
+Dry run on staging	Link and push	2026-10-15T22:09:31.4363276Z   SUPABASE_ACCESS_TOKEN: ***
+Dry run on staging	Link and push	2026-10-15T22:09:31.4363589Z   SUPABASE_DB_PASSWORD: ***
+Dry run on staging	Link and push	2026-10-15T22:09:31.4363858Z   PROJECT_REF: fxmxyabdjqviqbcxmvlp
+Dry run on staging	Link and push	2026-10-15T22:09:31.4364128Z ##[endgroup]
+Dry run on staging	Link and push	2026-10-15T22:09:33.2838426Z ^[[31mAuthorization failed for the access token and project ref pair: {"message":"Your account does not have the necessary privileges to access this endpoint. For more details, refer to our documentation https://supabase.com/docs/guides/platform/access-control"}^[[39m
+Dry run on staging	Link and push	2026-10-15T22:09:33.2852992Z Try rerunning the command with --debug to troubleshoot the error.
+Dry run on staging	Link and push	2026-10-15T22:09:33.2954323Z ##[error]Could not link to fxmxyabdjqviqbcxmvlp. On SQLSTATE 28P01 the stored password belongs to a different project - add a per-environment secret (SUPABASE_DB_PASSWORD_PRODUCTION / _STAGING) rather than overwriting the shared one.
+Dry run on staging	Link and push	2026-10-15T22:09:33.2959123Z ##[error]Process completed with exit code 1.

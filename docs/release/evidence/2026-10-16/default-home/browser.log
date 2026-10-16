@@ -1,0 +1,11 @@
+15:20:48 [vite] (client) Re-optimizing dependencies because vite config has changed
+15:20:49 [vite] (client) [optimizer] scanning dependencies...
+15:20:54 [vite] (client) [optimizer] bundling dependencies...
+HomeEdit actual keyboard/layout 320x844 passed
+HomeEdit actual keyboard/layout 390x844 passed
+HomeEdit actual keyboard/layout 768x844 passed
+HomeEdit actual keyboard/layout 1024x844 passed
+HomeEdit actual keyboard/layout 1440x1000 passed
+HomeEdit actual keyboard/layout 1920x1080 passed
+HomeEdit actual keyboard/layout 844x390 passed
+Exit code: 0

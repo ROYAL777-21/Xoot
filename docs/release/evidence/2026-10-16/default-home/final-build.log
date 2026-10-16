@@ -1,0 +1,10 @@
+
+> xoot-home-care@0.1.0 prebuild
+> npm run config:check && npm run seo:validate && node scripts/build/write-native-association-files.mjs --target public
+
+
+> xoot-home-care@0.1.0 config:check
+> node scripts/config/validate-public-env.mjs
+
+Xoot environment configuration error: Builds require real VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY values for staging and production.
+Exit code: 1

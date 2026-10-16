@@ -1,0 +1,6 @@
+
+> xoot-home-care@0.1.0 build:artifact-scan
+> node scripts/security/scan-build-artifacts.mjs dist
+
+Build artifact security scan passed for dist.
+Exit code: 0

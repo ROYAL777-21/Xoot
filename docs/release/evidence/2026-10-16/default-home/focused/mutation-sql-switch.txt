@@ -1,0 +1,34 @@
+ok 1 - explicit import preserves duplicate-looking distinct places, metadata and household-first/legacy-second precedence
+ok 2 - owner without a marked home has no fabricated default
+ok 3 - ordinary new save does not overwrite the selected home
+{"cleanup":"verified","ownedDatabaseRemoved":true,"preexistingRolesPreserved":true,"passed":false}
+C:\Users\Buti\Documents\Codex\2026-09-11\i-x20\work\tooling\sql-validation\node_modules\pg\lib\client.js:545
+          Error.captureStackTrace(err)
+                ^
+
+error: duplicate key value violates unique constraint "household_profiles_one_default_per_user"
+    at C:\Users\Buti\Documents\Codex\2026-09-11\i-x20\work\tooling\sql-validation\node_modules\pg\lib\client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async select (file:///C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation/scripts/ops/test-atomic-default-home.mjs:44:49)
+    at async file:///C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation/scripts/ops/test-atomic-default-home.mjs:50:2 {
+  length: 472,
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Key (user_id)=(5302a45b-1802-4ca2-ae61-5025ba231070) already exists.',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: 'SQL statement "update public.household_profiles set is_default=p_selected where id=p_home_id"\n' +
+    'PL/pgSQL function public.set_default_home(uuid,uuid,boolean) line 10 at SQL statement',
+  schema: 'public',
+  table: 'household_profiles',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'household_profiles_one_default_per_user',
+  file: 'nbtinsert.c',
+  line: '673',
+  routine: '_bt_check_unique'
+}
+
+Node.js v24.16.0

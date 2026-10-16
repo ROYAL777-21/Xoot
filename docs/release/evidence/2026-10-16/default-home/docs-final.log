@@ -1,0 +1,21 @@
+
+> xoot-home-care@0.1.0 test
+> vitest run src/lib/production-readiness.test.ts src/lib/founder-readiness.test.ts --passWithNoTests
+
+
+ RUN  v4.1.11 C:/Users/Buti/Documents/Codex/2026-09-11/i-x20/work/xoot-implementation
+
+No test files found, exiting with code 0
+
+filter: src/lib/production-readiness.test.ts, src/lib/founder-readiness.test.ts
+
+|unit| 
+
+include: src/**/*.{test,spec}.{ts,tsx}, supabase/functions/**/*.{test,spec}.{ts,tsx}
+exclude:  **/node_modules/**, **/.git/**, supabase/functions/_shared/twilio-webhook.test.ts, **/node_modules/**, **/.git/**, supabase/functions/_shared/twilio-webhook.test.ts, src/lib/rendered-site-smoke.test.ts
+
+|rendered| 
+
+include: src/lib/rendered-site-smoke.test.ts
+exclude:  **/node_modules/**, **/.git/**, supabase/functions/_shared/twilio-webhook.test.ts
+
