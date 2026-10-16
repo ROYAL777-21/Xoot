@@ -112,6 +112,15 @@ function TrainingForAccount({userId}:{userId:string}){
           <View style={s.grow}><Text style={s.moduleTitle}>Real grading happens on Xoot</Text>
             <Text style={s.body}>This mobile overview does not contain quiz answers, grade locally or award certification. Open the secure training workspace to complete a module.</Text></View>
         </Card>
+        <Pressable accessibilityRole="button" accessibilityLabel="View verified growth and badges"
+          onPress={()=>router.push('/xooter/growth')} style={s.growthLink}>
+          <CoreIcon name="trophy" size={19} color={nativePalette.violetDark}/>
+          <View style={s.grow}>
+            <Text style={s.moduleTitle}>Your growth and badges</Text>
+            <Text style={s.body}>Recognition from recorded completions only</Text>
+          </View>
+          <CoreIcon name="chevron-right" size={17} color={nativePalette.violetDark}/>
+        </Pressable>
         <PrimaryAction icon="trophy" onPress={()=>void WebBrowser.openBrowserAsync(trainingPortal)}>
           Open training and quizzes
         </PrimaryAction>
@@ -143,4 +152,6 @@ const s=StyleSheet.create({
   tag:{fontFamily:nativeFonts.body,color:nativePalette.muted,fontSize:11,
     paddingHorizontal:10,paddingVertical:6,backgroundColor:nativePalette.sunken,borderRadius:14},
   notice:{flexDirection:'row',alignItems:'flex-start',gap:10,backgroundColor:nativePalette.sageWash},
+  growthLink:{flexDirection:'row',alignItems:'center',gap:11,borderWidth:1,
+    borderColor:nativePalette.border,backgroundColor:nativePalette.card,padding:15,borderRadius:17},
 });
