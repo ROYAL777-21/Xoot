@@ -70,6 +70,7 @@ describe("Mapbox temporary South African address search", () => {
 describe("Mapbox consumer safety regressions", () => {
   const detail = readFileSync(new URL("../pages/app/BookingDetail.tsx", import.meta.url), "utf8");
   const address = readFileSync(new URL("../components/xoot/VerifiedAddressInput.tsx", import.meta.url), "utf8");
+  const booking = readFileSync(new URL("../pages/app/BookingFlow.tsx", import.meta.url), "utf8");
 
   it("never fabricates live Xooter coordinates or starts a 12-minute ticking ETA", () => {
     expect(detail).not.toContain("setEta");
@@ -86,11 +87,17 @@ describe("Mapbox consumer safety regressions", () => {
     expect(address).not.toContain("is in active Xoot coverage");
     expect(address).not.toContain("address.includes(region)");
     expect(address).toContain("Address lookup or confirmation is unavailable");
+    expect(address).toContain("Enable Mapbox suggestions");
+    expect(address).toContain("searchEnabled && selectedText !== value");
+    expect(address).toContain("Optional: sends what you type to Mapbox");
+    expect(address).toContain("aria-pressed={searchEnabled}");
     expect(address).toContain("availability are not yet confirmed");
     expect(address).toContain("no exact coordinates are stored");
     expect(address).toContain("mapboxPermanentAddressUrl(suggestion.id, browserToken)");
     expect(address).toContain("const confirmed = parseMapboxAddressSuggestions(body)");
     expect(address).not.toContain("onChange(suggestion.label)");
+    expect(booking).toContain("<VerifiedAddressInput value={address}");
+    expect(booking).toContain("addressEdited.current = true");
     expect(address).toContain("controller.abort()");
     expect(address).toContain("cache: \"no-store\"");
   });
