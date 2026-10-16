@@ -158,7 +158,7 @@ function EarningHistory({ userId, period, setPeriod }: {
           No earnings recorded for this period.</Text></Card>
           : state.rows.map(row => <Card key={row.id} style={s.entry}>
             <View style={s.entryHead}><View style={s.flex}>
-              <Text style={s.entryTitle}>Cleaning job</Text>
+              <Text style={s.entryTitle}>{row.booking_id ? 'Cleaning job' : 'Earnings ledger entry'}</Text>
               <Text style={s.small}>{new Intl.DateTimeFormat('en-ZA', {
                 day: 'numeric', month: 'short', year: 'numeric',
               }).format(new Date(row.created_at))}</Text>
