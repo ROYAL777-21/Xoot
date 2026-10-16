@@ -101,10 +101,10 @@ set search_path = ''
 as $
 declare
   wrote integer;
-  current_time timestamptz := clock_timestamp();
+  v_now timestamptz := clock_timestamp();
 begin
-  if p_captured_at is null or p_captured_at < current_time - interval '30 seconds'
-    or p_captured_at > current_time + interval '30 seconds'
+  if p_captured_at is null or p_captured_at < v_now - interval '30 seconds'
+    or p_captured_at > v_now + interval '30 seconds'
     or p_latitude is null or p_latitude not between -90 and 90
     or p_longitude is null or p_longitude not between -180 and 180
     or p_accuracy_m is null or p_accuracy_m <= 0 or p_accuracy_m > 100
@@ -129,7 +129,7 @@ begin
     insert into public.xoot_job_live_positions
       (booking_id,xooter_id,latitude,longitude,accuracy_m,recorded_at,expires_at,updated_at)
     select id,p_xooter_id,p_latitude,p_longitude,p_accuracy_m,p_captured_at,
-      least(p_captured_at,current_time) + interval '60 seconds', current_time
+      least(p_captured_at,v_now) + interval '60 seconds', v_now
     from allowed
     on conflict (booking_id) do update
       set xooter_id = excluded.xooter_id,
@@ -139,7 +139,7 @@ begin
           recorded_at = excluded.recorded_at,
           expires_at = excluded.expires_at,
           updated_at = excluded.updated_at
-      where public.xoot_job_live_positions.updated_at <= current_time - interval '10 seconds'
+      where public.xoot_job_live_positions.updated_at <= v_now - interval '10 seconds'
     returning booking_id
   )
   select count(*) into wrote from saved;
