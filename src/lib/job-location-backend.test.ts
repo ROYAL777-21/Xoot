@@ -88,6 +88,13 @@ describe("back-end fail-closed implementation guards", () => {
     expect(sql).toContain("purge_live_job_position_on_job_change");
     expect(sql).toContain("for update of j, b");
     expect(sql).toContain("location rate too high");
+    expect(sql).toContain("create table if not exists public.job_location_sharing_sessions");
+    expect(sql).toContain("revoke all on public.job_location_sharing_sessions from public, anon, authenticated");
+    expect(sql).toContain("location sharing session revoked");
+    expect(sql).toContain("s.session_id = new.session_id");
+    expect(sql).toContain("s.stopped_at is null");
+    expect(sql).toContain("xoot-expire-job-live-positions");
+    expect(sql).toContain("update public.job_location_sharing_sessions set stopped_at = now()");
     expect(sql).toContain("location job no longer eligible");
   });
   it("authenticates on every request, defers to current DB job and defaults feature off", () => {
@@ -98,6 +105,16 @@ describe("back-end fail-closed implementation guards", () => {
     expect(edge).toContain("canPublishJobPosition(actorId");
     expect(edge).not.toContain('sharingConsent: true,');
     expect(edge).toContain("validWorkerLocation(position)");
+    expect(edge).toContain('body?.sharingConsent !== true');
+    expect(edge).toContain('action === "start"');
+    expect(edge).toContain('action === "stop"');
+    expect(edge).toContain('action === "read"');
+    expect(edge).toContain('session_id: freshSessionId');
+    expect(edge).toContain('session_id: sessionId!');
+    expect(edge).toContain('sessionId: freshSessionId');
+    expect(edge).toContain('"location session expired or stopped"');
+    expect(edge).toContain('.eq("session_id", sessionId!)');
+    expect(edge).toContain("revokeError");
     expect(edge).not.toMatch(/\.from\("user_roles"\).*\.select\("\*"\)/);
     expect(edge).not.toMatch(/console\.log\([^)]*(position|latitude|longitude)/);
     expect(edge).toContain('const now = Date.now();');
