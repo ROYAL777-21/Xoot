@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { MapPin, ShieldCheck } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
-import { mapboxAddressSearchUrl, parseMapboxAddressSuggestions, type MapboxAddressSuggestion } from "@/lib/mapbox-geocoding";
+import { mapboxAddressSearchUrl, mapboxPermanentAddressUrl, parseMapboxAddressSuggestions, type MapboxAddressSuggestion } from "@/lib/mapbox-geocoding";
 
 type VerifiedAddressInputProps = {
   value: string;
@@ -23,6 +23,9 @@ export const VerifiedAddressInput = ({
   const [suggestions, setSuggestions] = useState<MapboxAddressSuggestion[]>([]);
   const [searchState, setSearchState] = useState<"idle" | "loading" | "results" | "empty" | "error">("idle");
   const [selectedText, setSelectedText] = useState("");
+  const [confirming, setConfirming] = useState(false);
+  const confirmation = useRef<AbortController | null>(null);
+  useEffect(() => () => confirmation.current?.abort(), []);
   const requestId = useRef(0);
   const hasAddress = value.trim().length > 0;
 
@@ -57,17 +60,39 @@ export const VerifiedAddressInput = ({
   }, [selectedText, value]);
 
   const updateValue = (next: string) => {
+    confirmation.current?.abort();
+    setConfirming(false);
     setSelectedText("");
     onChange(next);
   };
 
-  const chooseSuggestion = (suggestion: MapboxAddressSuggestion) => {
-    // Human-readable text only. We do not persist Mapbox result coordinates, IDs or the
-    // response itself; temporary geocoding results must not become a stored location DB.
-    setSelectedText(suggestion.label);
+  const chooseSuggestion = async (suggestion: MapboxAddressSuggestion) => {
+    // Autocomplete suggestions are TEMPORARY and may not be persisted. Only accept their
+    // label into booking state after a separate licensed PERMANENT Geocoding confirmation.
+    // A failed Permanent request leaves the original user input intact for manual entry.
+    confirmation.current?.abort();
+    const url = mapboxPermanentAddressUrl(suggestion.id, browserToken);
+    if (!url) { setSearchState("error"); return; }
+    const controller = new AbortController();
+    confirmation.current = controller;
+    requestId.current += 1;
     setSuggestions([]);
-    setSearchState("idle");
-    onChange(suggestion.label);
+    setConfirming(true);
+    try {
+      const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
+      if (!response.ok) throw new Error("Permanent Mapbox geocoding unavailable");
+      const body: unknown = await response.json();
+      if (controller.signal.aborted) return;
+      const confirmed = parseMapboxAddressSuggestions(body).find(item => item.id === suggestion.id);
+      if (!confirmed) throw new Error("Unable to verify South African address");
+      setSelectedText(confirmed.label);
+      setSearchState("idle");
+      onChange(confirmed.label);
+    } catch {
+      if (!controller.signal.aborted) setSearchState("error");
+    } finally {
+      if (!controller.signal.aborted) setConfirming(false);
+    }
   };
 
   return (
@@ -94,7 +119,7 @@ export const VerifiedAddressInput = ({
           {suggestions.map(suggestion => (
             <li key={suggestion.id} role="presentation">
               <button type="button" role="option" aria-selected={false}
-                onClick={() => chooseSuggestion(suggestion)}
+                onClick={() => void chooseSuggestion(suggestion)}
                 className="w-full px-3 py-2.5 text-left text-sm hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
                 {suggestion.label}
               </button>
@@ -112,11 +137,12 @@ export const VerifiedAddressInput = ({
           </span>
         </div>
       )}
-      {searchState === "loading" && <p role="status" className="text-xs text-muted-foreground">Finding nearby addresses…</p>}
-      {searchState === "error" && <p role="status" className="text-xs text-muted-foreground">Address suggestions are unavailable. You can enter your address manually.</p>}
+      {confirming && <p role="status" className="text-xs text-muted-foreground">Confirming selected address…</p>}
+      {searchState === "loading" && !confirming && <p role="status" className="text-xs text-muted-foreground">Finding nearby addresses…</p>
+      {searchState === "error" && <p role="status" className="text-xs text-muted-foreground">Address lookup or confirmation is unavailable. You can enter your address manually.</p>}
       {searchState === "empty" && <p role="status" className="text-xs text-muted-foreground">No suggestions found. Check the address manually in booking.</p>}
       {browserToken.startsWith("pk.") && hasAddress && (
-        <p className="text-xs text-muted-foreground">When you type, address search is sent to Mapbox. No exact coordinates are stored by this search.</p>
+        <p className="text-xs text-muted-foreground">Typing sends your address search to Mapbox. Selected suggestions are confirmed under Permanent Geocoding before booking; no exact coordinates are stored here.</p>
       )}
     </div>
   );
