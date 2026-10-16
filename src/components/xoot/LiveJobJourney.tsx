@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MapPin, Navigation, ShieldCheck } from "lucide-react";
 import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,21 +39,27 @@ export function LiveJobJourney({ bookingId, isAssignedWorker }: { bookingId: str
   const lastPublish = useRef(0);
   const saving = useRef(false);
   const reading = useRef(false);
+  const sharingActive = useRef(false);
+  const inFlightPublish = useRef<Promise<unknown> | null>(null);
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<MapboxMap | null>(null);
   const marker = useRef<MapboxMarker | null>(null);
 
-  async function stopSharing() {
+  const stopSharing = useCallback(async () => {
+    // Stop accepting GPS callbacks first, then wait for any in-flight report before
+    // revoking the server row. Otherwise a late publish could undo Stop sharing.
+    sharingActive.current = false;
     if (watch.current !== null && navigator.geolocation) {
       navigator.geolocation.clearWatch(watch.current);
       watch.current = null;
     }
     setSharing(false);
     lastPublish.current = 0;
-    // Stop is best effort; Edge read also fails closed for stale/cancelled jobs and
-    // the DB deletes positions on lifecycle changes and short expiry.
+    const pending = inFlightPublish.current;
+    if (pending) await pending.catch(() => null);
+    // Stop is best effort; server expiry and booking lifecycle also revoke access.
     await supabase.functions.invoke("xoot-job-location", { body: { action: "stop", bookingId } }).catch(() => null);
-  }
+  }, [bookingId]);
 
   useEffect(() => {
     return () => {
@@ -80,15 +86,16 @@ export function LiveJobJourney({ bookingId, isAssignedWorker }: { bookingId: str
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
-  }, [sharing, bookingId]);
+  }, [sharing, stopSharing]);
 
-  // Remove the provider map and its precise marker when the customer hides sharing.
+  // A stale fix removes the marker and map immediately. The map container is
+  // conditionally mounted, so reusing the old Mapbox instance would leave a blank map.
   useEffect(() => {
-    if (enabled) return;
+    if (enabled && position) return;
     map.current?.remove();
     map.current = null;
     marker.current = null;
-  }, [enabled]);
+  }, [enabled, position]);
 
   useEffect(() => {
     if (!enabled || isAssignedWorker) return;
@@ -147,25 +154,29 @@ export function LiveJobJourney({ bookingId, isAssignedWorker }: { bookingId: str
     setEnabled(true);
     setSharing(true);
     setStatus("Requesting your location for this one active booking…");
+    sharingActive.current = true;
     watch.current = navigator.geolocation.watchPosition(async fix => {
-      if (document.visibilityState !== "visible" || saving.current || Date.now() - lastPublish.current < REPORT_SPACING_MS) return;
+      if (!sharingActive.current || document.visibilityState !== "visible" || saving.current || Date.now() - lastPublish.current < REPORT_SPACING_MS) return;
       if (!Number.isFinite(fix.coords.accuracy) || fix.coords.accuracy > 100) {
         setStatus("Waiting for a more accurate location fix…");
         return;
       }
       saving.current = true;
       lastPublish.current = Date.now();
+      const request = supabase.functions.invoke("xoot-job-location", {
+        body: { action: "publish", bookingId, consent: true,
+          latitude: fix.coords.latitude, longitude: fix.coords.longitude,
+          accuracyM: fix.coords.accuracy, capturedAt: new Date(fix.timestamp).toISOString() },
+      });
+      inFlightPublish.current = request;
       try {
-        const { data, error } = await supabase.functions.invoke("xoot-job-location", {
-          body: { action: "publish", bookingId, consent: true,
-            latitude: fix.coords.latitude, longitude: fix.coords.longitude,
-            accuracyM: fix.coords.accuracy, capturedAt: new Date(fix.timestamp).toISOString() },
-        });
+        const { data, error } = await request;
+        if (!sharingActive.current) return;
         if (error || !(data as JourneyPayload | null)?.success || (data as JourneyPayload).data?.state !== "accepted") {
           setStatus("Location sharing could not be confirmed. Check your connection.");
         } else setStatus("Position shared for this booking while the page is open.");
-      } catch { setStatus("Location sharing unavailable. Try again."); }
-      finally { saving.current = false; }
+      } catch { if (sharingActive.current) setStatus("Location sharing unavailable. Try again."); }
+      finally { if (inFlightPublish.current === request) inFlightPublish.current = null; saving.current = false; }
     }, () => { setStatus("Location permission denied or position unavailable."); void stopSharing(); },
     { enableHighAccuracy: true, maximumAge: 0, timeout: 10_000 });
   };
