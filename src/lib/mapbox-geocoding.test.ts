@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { mapboxAddressSearchUrl, parseMapboxAddressSuggestions } from "./mapbox-geocoding";
+import { mapboxAddressSearchUrl, mapboxPermanentAddressUrl, parseMapboxAddressSuggestions } from "./mapbox-geocoding";
 
 const suggestion = (id: string, label: string, country = "ZA", feature_type = "address") => ({
   properties: { mapbox_id: id, full_address: label, feature_type,
@@ -19,6 +19,17 @@ describe("Mapbox temporary South African address search", () => {
     expect(parsed.searchParams.get("permanent")).toBe("false");
     expect(parsed.searchParams.get("limit")).toBe("5");
     expect(parsed.searchParams.get("access_token")).toBe("pk.test");
+  });
+
+  it("only permits saving a Mapbox-suggested address after Permanent Geocoding confirmation", () => {
+    const temporary = mapboxAddressSearchUrl("Midrand South Africa", "pk.test");
+    const permanent = mapboxPermanentAddressUrl("dXJuOm1ieGFkcjpzeW50aGV0aWM", "pk.test");
+    expect(new URL(temporary!).searchParams.get("permanent")).toBe("false");
+    expect(new URL(permanent!).searchParams.get("permanent")).toBe("true");
+    expect(new URL(permanent!).searchParams.get("autocomplete")).toBe("false");
+    expect(new URL(permanent!).searchParams.get("country")).toBe("za");
+    expect(mapboxPermanentAddressUrl("abc", "sk.secret")).toBeNull();
+    expect(mapboxPermanentAddressUrl("a;b", "pk.test")).toBeNull();
   });
 
   it("never queries with absent, private or oversized unbounded input", () => {
@@ -74,9 +85,12 @@ describe("Mapbox consumer safety regressions", () => {
   it("manual address fallback is available and substring matching cannot confirm coverage", () => {
     expect(address).not.toContain("is in active Xoot coverage");
     expect(address).not.toContain("address.includes(region)");
-    expect(address).toContain("Address suggestions are unavailable");
+    expect(address).toContain("Address lookup or confirmation is unavailable");
     expect(address).toContain("availability are not yet confirmed");
-    expect(address).toContain("No exact coordinates are stored");
+    expect(address).toContain("no exact coordinates are stored");
+    expect(address).toContain("mapboxPermanentAddressUrl(suggestion.id, browserToken)");
+    expect(address).toContain("const confirmed = parseMapboxAddressSuggestions(body)");
+    expect(address).not.toContain("onChange(suggestion.label)");
     expect(address).toContain("controller.abort()");
     expect(address).toContain("cache: \"no-store\"");
   });
