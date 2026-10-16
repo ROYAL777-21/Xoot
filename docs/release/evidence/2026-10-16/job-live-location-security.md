@@ -1,6 +1,6 @@
 # Job-scoped Xooter live location — deployment and privacy gate (16 October 2026)
 
-STATUS: Source implementation under review. NOT deployed to either Xoot database or client. Merged Mapbox booking PR #69 remains a different workstream.
+STATUS: GPS schema and JWT-verified Edge Function deployed to **staging only** on 17 October 2026. Production and client feature flags remain OFF; end-to-end account/device acceptance is not complete. Merged Mapbox booking PR #69 remains a different workstream.
 
 ## Intended first release
 
@@ -30,7 +30,15 @@ PR #71 now includes these additional, reviewable changes:
 5. Secure privacy/legal and external security approval for **POPIA** and provider SDK telemetry, plus owner approval of Mapbox billing and Geocoding Permanent entitlement. An incomplete Claude audit caused by low credits is a failed security gate, not an approval.
 6. Verify a preview deployed from the **exact current PR head**, full green CI, mobile build and both devices before approving release. Enabling the flags and merging is a separate explicit production launch decision. No precise tracking, route geometry or unverified ETA claims before approval.
 
-## Preconditions for applying even to staging
+## 17 October 2026 staging verification evidence
+
+Supabase staging `fxmxyabdjqviqbcxmvlp` has the new `xoot_job_live_positions` table and `xoot_publish_private_job_location` RPC installed from migration `20261016171500` via a tracked database migration. Live catalogue read-back: RLS enabled; **zero** policies; no public Realtime publications; anon and authenticated `SELECT` denied; service-role CRUD and RPC granted; authenticated RPC execution denied; both booking and accepted-job cleanup triggers installed. Scheduled `xoot-live-location-expiry` is active at `* * * * *`, and `cron.job_run_details` reports a **succeeded** execution. This confirms the scheduled statement runs, not a physical expired-record deletion test with a seeded booking.
+
+The `xoot-job-location` Edge Function is deployed to staging as **version 2** with `verify_jwt=true`, bundling `_shared/action-utils.ts` and `_shared/live-dispatch.ts`. No worker/customer/administrator JWT end-to-end test or Mapbox provider request was performed. Native and website flags are OFF. Production Supabase `mvlrkelahhsyjrwgsxaf` has not been modified; the table/RPC and Edge function are absent there. The production live-generated-types gate still fails as expected.
+
+Source PR now includes an opt-in user/customer traffic-routing estimate and an administrator dispatch viewer, using AAL2 admin MFA and job lifecycle / fresh-GPS checks. Both are still release gated. Proposed privacy and POPIA notices are included for legal review before launch.
+
+## Outstanding production acceptance gates (staging schema/Edge already installed)
 
 1. Reconcile staging and production migration-history drift first. Do not blindly apply this migration to production or repair migration history. Both current projects have PostgreSQL 17 and pg_cron 1.6.4 installed in the live catalogue.
 2. Execute the migration on disposable PostgreSQL. Confirm pg_cron retention runs, RLS and GRANT semantics, and negative anon/authenticated direct reads/writes. Run Supabase database/security advisors.
