@@ -11,6 +11,10 @@ Scope: read-only Supabase catalogue, non-decrypted Vercel env metadata, reviewed
 - EAS `EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN` and private `RNMAPBOX_MAPS_DOWNLOAD_TOKEN` availability have **not** been verified in connected Expo account. An unrelated Vercel setting does not configure an EAS build.
 - The original native MapView disabled Mapbox logo and attribution, which Mapbox requires for its tiles. This branch enables both and moves the overlay to the top, away from the footer credits; native and web fallback text no longer instructs customers to add engineering credentials or claims unproven ETA capabilities. The public token guard rejects secret/malformed non-`pk.` values, and CI includes targeted regression tests.
 
+## Continuation — actual booking map integration
+
+The live-release acceptance and EAS token instructions are now maintained in [`mapbox-production-runbook.md`](../../mapbox-production-runbook.md). On-demand mobile booking map loading and production token gating are under a separate reviewed PR; this original evidence remains historical and does not prove a working installed iOS/Android map.
+
 ## Remaining maps acceptance before declaring launch-ready
 
 1. Owner creates **separate restricted public Mapbox tokens** for website and native in the [Mapbox account](https://account.mapbox.com/access-tokens/). Keep `sk.` credentials private; previous secret exposure requires rotation. Verify account billing, URL/app restrictions and cost caps. **Do not create a private download token merely by following older instructions**: RNMapbox maintainers stated in December 2025 that the download token is deprecated and no longer required in current SDK builds; confirm against the actually pinned native SDK and any EAS build logs.
