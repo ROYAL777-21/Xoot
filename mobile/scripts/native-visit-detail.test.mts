@@ -49,3 +49,26 @@ test('visit details use only owner-bound booking provider and no payment/ETA inv
   assert.match(file, /Book this service again/);
   assert.match(file, /Need help with this visit/);
 });
+
+
+test('private native journey is owner-scoped, opt-in, ephemeral, and does not invent an ETA', () => {
+  const view = readFileSync(new URL('../src/components/private-job-journey.native.tsx', import.meta.url), 'utf8');
+  const fallback = readFileSync(new URL('../src/components/private-job-journey.tsx', import.meta.url), 'utf8');
+  const visit = readFileSync(new URL('../src/app/visits/[id].tsx', import.meta.url), 'utf8');
+  assert.match(view, /EXPO_PUBLIC_ENABLE_LIVE_JOURNEY === 'true'/);
+  assert.match(view, /const \[viewing, setViewing\] = useState\(false\)/);
+  assert.match(view, /AppState\.addEventListener\('change'/);
+  assert.match(view, /setViewing\(false\)/);
+  assert.match(view, /state !== 'active'/);
+  assert.match(view, /action: 'read', bookingId/);
+  assert.match(view, /MAX_FIX_AGE_MS = 60_000/);
+  assert.match(view, /Date\.parse\(point\.expiresAt\) - Date\.now\(\)/);
+  assert.match(view, /setPoint\(null\)/);
+  assert.match(view, /logoEnabled attributionEnabled/);
+  assert.match(view, /Opening this map sends its/);
+  assert.match(view, /No exact arrival time is promised/);
+  assert.doesNotMatch(view, /localStorage|AsyncStorage|SecureStore|backgroundLocation|etaMinutes|action: 'publish'/);
+  assert.match(visit, /bookings\.find\(item => item\.id === safeId\)/);
+  assert.match(visit, /<PrivateJobJourney bookingId=\{booking\.id\}/);
+  assert.match(fallback, /return null/);
+});
