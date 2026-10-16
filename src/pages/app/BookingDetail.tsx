@@ -35,6 +35,7 @@ import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { toast } from "sonner";
 import { JobChecklist } from "@/components/xooter/JobChecklist";
 import { WorkerRoadEstimate } from "@/components/xoot/WorkerRoadEstimate";
+import { LiveJobJourney } from "@/components/xoot/LiveJobJourney";
 import { safeFileName, validateCompletionPhotoUpload } from "@/lib/upload-validation";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
@@ -585,6 +586,7 @@ const BookingDetail = () => {
             <p className="mb-3 text-xs text-muted-foreground">No live GPS feed or calculated arrival time is connected to this booking. An en-route status is not proof of current worker position.</p>
             {isAssignedXooter && activeVisit && typeof booking.address === "string" && booking.address.trim().length >= 4 && id &&
               <div className="mb-4"><WorkerRoadEstimate bookingId={id} destinationAddress={booking.address} /></div>}
+            {id && canonicalStatus === "en_route" && <LiveJobJourney bookingId={id} isAssignedWorker={isAssignedXooter} />}
             <div className="space-y-3">
               {statusSteps.map((step) => {
                 const hit = timeline.find((e) => step.keys.includes(e.status) || e.label === step.label);
