@@ -32,13 +32,13 @@ export function ServiceAreaMap() {
     [],
   );
 
-  if (!token) {
+  if (!token || !token.startsWith('pk.')) {
     return (
       <View style={styles.fallback}>
-        <Text style={styles.kicker}>Mapbox service map</Text>
-        <Text style={styles.title}>Add `EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN` to activate native maps.</Text>
+        <Text style={styles.kicker}>Your neighbourhood</Text>
+        <Text style={styles.title}>Map preview unavailable</Text>
         <Text style={styles.body}>
-          Maps are configured for EAS development, preview and production builds. Expo Go cannot load this native Mapbox module.
+          Browse our service areas while we make the interactive map available. Your booking address remains private.
         </Text>
       </View>
     );
@@ -48,7 +48,7 @@ export function ServiceAreaMap() {
 
   return (
     <View style={styles.shell}>
-      <Mapbox.MapView style={styles.map} logoEnabled={false} attributionEnabled={false} compassEnabled scaleBarEnabled={false}>
+      <Mapbox.MapView style={styles.map} logoEnabled attributionEnabled compassEnabled scaleBarEnabled={false}>
         <Mapbox.Camera centerCoordinate={center} zoomLevel={10.2} pitch={34} animationMode="flyTo" animationDuration={850} />
         <Mapbox.ShapeSource id="xoot-launch-areas" shape={shape}>
           <Mapbox.CircleLayer
@@ -98,11 +98,11 @@ const styles = StyleSheet.create({
     borderColor: alpha('dark', 'foreground', 0.16),
     borderRadius: 20,
     borderWidth: 1,
-    bottom: Spacing.lg,
+    top: Spacing.lg,
     left: Spacing.lg,
     padding: Spacing.lg,
     position: 'absolute',
-    right: Spacing.lg,
+    right: 68, // Leave the native compass accessible at the upper-right corner.
   },
   fallback: {
     backgroundColor: alpha('dark', 'foreground', 0.06),
