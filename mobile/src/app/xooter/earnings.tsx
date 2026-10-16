@@ -13,15 +13,15 @@ import {
 import { useAuth } from '@/providers/auth-provider';
 
 type Period = 'week' | 'month';
-type State = { loading: boolean; rows: XooterEarning[]; xooterId: string | null; error: string | null; limited: boolean };
+type State = { period: Period; loading: boolean; rows: XooterEarning[]; xooterId: string | null; error: string | null; limited: boolean };
 function EarningHistory({ userId }: { userId: string }) {
   const [period, setPeriod] = useState<Period>('week');
-  const [state, setState] = useState<State>({ loading: true, rows: [], xooterId: null, error: null, limited: false });
+  const [state, setState] = useState<State>({ period, loading: true, rows: [], xooterId: null, error: null, limited: false });
   const [retry, setRetry] = useState(0);
   const reload = useCallback(() => setRetry(count => count + 1), []);
   useEffect(() => {
     let active = true;
-    setState({ loading: true, rows: [], xooterId: null, error: null, limited: false });
+    setState({ period, loading: true, rows: [], xooterId: null, error: null, limited: false });
     void (async () => {
       try {
         const { data: profile, error: profileError } = await supabase.from('xooters')
@@ -29,7 +29,7 @@ function EarningHistory({ userId }: { userId: string }) {
         if (!active) return;
         if (profileError) throw profileError;
         if (!profile || profile.user_id !== userId) {
-          setState({ loading: false, rows: [], xooterId: null, error: null, limited: false });
+          setState({ period, loading: false, rows: [], xooterId: null, error: null, limited: false });
           return;
         }
         const { data, error } = await supabase.from('xooter_earnings')
@@ -43,17 +43,20 @@ function EarningHistory({ userId }: { userId: string }) {
         const earnings = data.map(row => getXooterEarningsRow(row, profile.id));
         if (earnings.some(row => row === null)) throw new Error('Malformed earnings record');
         const visible = earnings.slice(0, 100) as XooterEarning[];
-        setState({ loading: false, rows: visible, xooterId: profile.id, error: null, limited: data.length > 100 });
+        setState({ period, loading: false, rows: visible, xooterId: profile.id, error: null, limited: data.length > 100 });
       } catch {
-        if (active) setState({ loading: false, rows: [], xooterId: null,
+        if (active) setState({ period, loading: false, rows: [], xooterId: null,
           error: 'Your recorded earnings could not be verified. Please retry.', limited: false });
       }
     })();
     return () => { active = false; };
   }, [period, retry, userId]);
 
-  const totals = useMemo(() => summariseRecordedEarnings(state.rows), [state.rows]);
-  return <Screen refreshControl={<RefreshControl refreshing={state.loading} onRefresh={reload} tintColor={nativePalette.violet} />}>
+  // A tab change must never show the previous period's ledger under a new label
+  // before the refresh effect has run.
+  const displayed = state.period === period ? state : { ...state, loading: true, rows: [], xooterId: null, error: null, limited: false };
+  const totals = useMemo(() => summariseRecordedEarnings(displayed.rows), [displayed.rows]);
+  return <Screen refreshControl={<RefreshControl refreshing={displayed.loading} onRefresh={reload} tintColor={nativePalette.violet} />}>
     <View style={s.header}><Pressable accessibilityLabel="Back to Xooter jobs" accessibilityRole="button"
       style={s.back} onPress={() => router.back()}><CoreIcon name="arrow-left" size={19} /></Pressable>
       <View style={s.flex}><Text style={s.eyebrow}>XOOTER WORKSPACE</Text><DisplayTitle>Earnings</DisplayTitle></View></View>
@@ -65,24 +68,24 @@ function EarningHistory({ userId }: { userId: string }) {
         <Text style={[s.tabText, period === value && s.tabTextSelected]}>
           {value === 'week' ? 'Last 7 days' : 'Last 30 days'}</Text></Pressable>)}
     </View>
-    {state.loading ? <LoadingRows /> : state.error
-      ? <EmptyState title="Earnings unavailable" detail={state.error} action="Try again" onAction={reload} />
-      : !state.xooterId ? <EmptyState title="Xooter verification required" detail="This account does not yet have a Xooter earnings profile."
+    {displayed.loading ? <LoadingRows /> : displayed.error
+      ? <EmptyState title="Earnings unavailable" detail={displayed.error} action="Try again" onAction={reload} />
+      : !displayed.xooterId ? <EmptyState title="Xooter verification required" detail="This account does not yet have a Xooter earnings profile."
           action="Back to jobs" onAction={() => router.push('/xooter/jobs')} />
       : <>
         <Card style={s.hero}>
           <Text style={s.heroLabel}>Recorded net · {period === 'week' ? '7 days' : '30 days'}</Text>
           <Text style={s.heroMoney}>{xooterMoney(totals.recordedNet)}</Text>
-          <Text style={s.heroCaption}>{state.limited
+          <Text style={s.heroCaption}>{displayed.limited
             ? 'Partial sum — only the latest 100 entries are shown. This is not your full period total.'
             : 'Recorded net amounts; not proof of bank settlement or cleared funds.'}</Text>
           <View style={s.pillRow}><Pill tone="warning">Pending {xooterMoney(totals.pendingNet)}</Pill>
             <Pill>{totals.entries} ledger entries shown</Pill></View>
         </Card>
         <SectionLabel count={totals.entries}>Recent entries</SectionLabel>
-        {state.rows.length === 0 ? <Card style={s.entry}><Text style={s.description}>
+        {displayed.rows.length === 0 ? <Card style={s.entry}><Text style={s.description}>
           No earnings recorded for this period.</Text></Card>
-        : state.rows.map(row => <Card key={row.id} style={s.entry}>
+        : displayed.rows.map(row => <Card key={row.id} style={s.entry}>
           <View style={s.entryHead}><View style={s.flex}>
             <Text style={s.entryTitle}>Cleaning job</Text>
             <Text style={s.small}>{new Intl.DateTimeFormat('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(row.created_at))}</Text>
