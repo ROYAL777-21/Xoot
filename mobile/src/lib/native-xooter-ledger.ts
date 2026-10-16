@@ -5,7 +5,7 @@ export type XooterJobCard = {
   duration_hours: number | null; status: string | null; offered_at: string | null;
 };
 export type XooterEarning = {
-  id: string; xooter_id: string; booking_id: string; net_amount: number;
+  id: string; xooter_id: string; booking_id: string | null; net_amount: number;
   gross_amount: number; platform_fee: number; status: string; created_at: string;
 };
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -40,10 +40,15 @@ export function parseXooterJobCards(payload: unknown, xooterId: string): XooterJ
   // Never accept a failed envelope or a forged cross-worker row.
   if (!isRecord(payload) || payload.success !== true || !isRecord(payload.data) ||
       !Array.isArray(payload.data.jobs)) return null;
+  if (payload.data.jobs.length > 500) return null;
   const result: XooterJobCard[] = [];
+  const seen = new Set<string>();
   for (const raw of payload.data.jobs) {
     if (!isRecord(raw) || typeof raw.job_id !== 'string' || typeof raw.booking_id !== 'string' ||
-        raw.xooter_id !== xooterId || typeof raw.state !== 'string') return null;
+        raw.xooter_id !== xooterId ||
+        !['offered', 'accepted', 'declined', 'expired', 'completed'].includes(String(raw.state)) ||
+        seen.has(raw.job_id)) return null;
+    seen.add(raw.job_id);
     result.push({
       job_id: raw.job_id, booking_id: raw.booking_id, xooter_id: xooterId, state: raw.state,
       service: typeof raw.service === 'string' ? raw.service : null,
@@ -91,7 +96,10 @@ export function startOfNativeEarningsPeriod(period: 'week' | 'month', now = new 
 export function getXooterEarningsRow(raw: unknown, ownerId: string): XooterEarning | null {
   if (!isRecord(raw) || raw.xooter_id !== ownerId ||
       typeof raw.id !== 'string' || !idPattern.test(raw.id) ||
-      typeof raw.booking_id !== 'string' || !idPattern.test(raw.booking_id) ||
+      // The production column is nullable. Non-booking adjustments are valid
+      // ledger entries and must not cause the entire worker statement to fail.
+      !(raw.booking_id === null ||
+        (typeof raw.booking_id === 'string' && idPattern.test(raw.booking_id))) ||
       !finite(raw.net_amount) || !finite(raw.gross_amount) || !finite(raw.platform_fee) ||
       xooterCents(raw.net_amount) === null || xooterCents(raw.gross_amount) === null ||
       xooterCents(raw.platform_fee) === null ||
