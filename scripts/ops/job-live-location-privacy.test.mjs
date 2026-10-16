@@ -49,6 +49,8 @@ test('Edge JWT, accepted booking, current worker and explicit consent are all ma
 
 test('non-participants and stale records never see GPS, nor does API report an invented ETA', () => {
   assert.match(handler, /if \(!isWorker && !isCustomer\) return fail\("booking unavailable", origin, 404\)/);
+  assert.match(handler, /Cache-Control", "private, no-store"/);
+  assert.match(handler, /!candidate \|\| typeof candidate !== "object" \|\| Array\.isArray\(candidate\)/);
   assert.match(handler, /point\.xooter_id !== worker\.id/);
   assert.match(handler, /now > expiry \|\| now - captured > POSITION_MAX_AGE_MS/);
   assert.match(handler, /return ok\(\{ state: "unavailable" \}, origin\)/);
