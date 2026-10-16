@@ -28,13 +28,15 @@ const initial: GrowthState = {
   hasXooterProfile: false, truncated: false,
 };
 
-function ProgressBar({ done, total, label }: { done: number; total: number; label: string }) {
+function ProgressBar({ done, total, label, kind = 'modules' }: {
+  done: number; total: number; label: string; kind?: 'points' | 'modules';
+}) {
   const progress = xooterGrowthPercentage(done, total);
   return <View accessible accessibilityLabel={`${label}: ${done} of ${total} complete`} style={s.barContainer}>
     <View style={s.barTrack}>
       <View style={[s.barFill, { width: `${progress}%` }]} />
     </View>
-    <Text style={s.small}>{done} of {total} completed</Text>
+    <Text style={s.small}>{done} of {total} {kind === 'points' ? 'recognition points recorded' : 'modules completed'}</Text>
   </View>;
 }
 
@@ -154,8 +156,10 @@ function XooterGrowthForAccount({ userId }: { userId: string }) {
             <>
               <Text style={s.points}>{summary.earnedPoints} points</Text>
               <Text style={s.body}>Recorded recognition points from your completed modules.</Text>
-              <ProgressBar label="Recognised learning"
-                done={summary.earnedPoints} total={summary.availablePoints}/>
+              {summary.availablePoints > 0
+                ? <ProgressBar label="Recognised learning" kind="points"
+                    done={summary.earnedPoints} total={summary.availablePoints}/>
+                : <Text style={s.small}>No point-rated modules are published in this catalogue.</Text>}
               <Pill tone={summary.requiredTotal > 0 &&
                 summary.requiredCompleted === summary.requiredTotal ? 'success' : 'warning'}>
                 {summary.requiredTotal > 0 && summary.requiredCompleted === summary.requiredTotal
