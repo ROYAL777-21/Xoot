@@ -5433,6 +5433,19 @@ export type Database = {
       }
     }
     Functions: {
+      // Pending service-role-only RPC; not deployed to staging/production.
+      // Generated live-schema reconciliation must stay red until migration delivery.
+      xoot_publish_private_job_location: {
+        Args: {
+          p_booking_id: string
+          p_xooter_id: string
+          p_latitude: number
+          p_longitude: number
+          p_accuracy_m: number
+          p_captured_at: string
+        }
+        Returns: boolean
+      }
       can_access_sensitive_data: {
         Args: { p_booking_id: string; p_xooter_id: string }
         Returns: boolean
