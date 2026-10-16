@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { nativeMapboxSearchUrl, parseNativeMapboxSuggestions } from '../src/lib/mapbox-geocoding';
 import {
   getMobileConfigIssue,
   getUnsafePublicMapboxTokenNames,
@@ -8,6 +9,8 @@ import {
 } from '../src/lib/env';
 
 const nativeMap = readFileSync(new URL('../src/components/service-area-map.native.tsx', import.meta.url), 'utf8');
+const nativeBooking = readFileSync(new URL('../src/components/booking-flow.tsx', import.meta.url), 'utf8');
+const nativeSuggestions = readFileSync(new URL('../src/components/mapbox-address-suggestions.tsx', import.meta.url), 'utf8');
 const webMap = readFileSync(new URL('../src/components/service-area-map.tsx', import.meta.url), 'utf8');
 const easPreflight = readFileSync(new URL('./validate-env.ts', import.meta.url), 'utf8');
 const booking = readFileSync(new URL('../src/components/booking-flow.tsx', import.meta.url), 'utf8');
@@ -87,4 +90,31 @@ test('production native config rejects missing token and preview remains usable'
   assert.match(easPreflight, /text\('EAS_BUILD_PROFILE'\) === 'production' && appEnv !== 'production'/);
   assert.match(appConfig, /MGLMapboxMetricsEnabledSettingShownInApp: true/);
   assert.match(appConfig, /mapboxEnabled: Boolean\(process\.env\.EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN\?\.trim\(\)\.startsWith\('pk\.'\)\)/);
+});
+
+test('native and website address selection use licensed permanent Geocoding only after opt-in', () => {
+  const temporary = nativeMapboxSearchUrl('14 Fredman Drive, Sandton', 'pk.synthetic');
+  const permanent = nativeMapboxSearchUrl('dXJuOm1ieGFkcjpzeW50aGV0aWM', 'pk.synthetic', true);
+  assert.equal(new URL(temporary!).searchParams.get('permanent'), 'false');
+  assert.equal(new URL(permanent!).searchParams.get('permanent'), 'true');
+  assert.equal(new URL(temporary!).searchParams.get('country'), 'za');
+  assert.equal(nativeMapboxSearchUrl('14 Fredman Drive, Sandton', 'sk.private'), null);
+  const results = parseNativeMapboxSuggestions({ features: [
+    { properties: { mapbox_id: 'id-one', full_address: '14 Fredman Drive, Sandton, South Africa',
+      feature_type: 'address', context: { country: { country_code: 'ZA' } } },
+      geometry: { coordinates: [28.1, -26.1] } },
+    { properties: { mapbox_id: 'foreign', full_address: '1 Other Road, France',
+      feature_type: 'address', context: { country: { country_code: 'FR' } } } },
+  ] });
+  assert.deepEqual(results, [{id: 'id-one', label: '14 Fredman Drive, Sandton, South Africa'}]);
+  assert.doesNotMatch(JSON.stringify(results), /28\.1/);
+
+  assert.match(nativeBooking, /<MobileMapboxAddressSuggestions value=\{address\}/);
+  assert.match(nativeSuggestions, /accessibilityLabel=\{enabled \? 'Disable Mapbox address suggestions'/);
+  assert.match(nativeSuggestions, /nativeMapboxSearchUrl\(item.id, token, true\)/);
+  assert.match(nativeSuggestions, /parseNativeMapboxSuggestions\(body\)/);
+  assert.doesNotMatch(nativeSuggestions, /onSelect\(item.label\)/);
+  assert.match(nativeSuggestions, /chosen\.current\?\.abort\(\)/);
+  assert.match(nativeSuggestions, /Enter your address manually/);
+  assert.doesNotMatch(nativeSuggestions, /watchPosition|Location\.watch|UserLocation/);
 });
