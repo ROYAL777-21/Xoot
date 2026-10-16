@@ -37,7 +37,7 @@ describe("PayFast payment acceptance invariant — provider message is never a r
   it.each(["VALIDATION FAILED", "VALID but not really", "VALID\nINVALID"])(
     "refuses spoofable PayFast validation responses (%s)", async message => {
       const response = await validateWithPayFast("amount_gross=125.01", "https://example.test/validate",
-        (async () => ({ ok: true, text: async () => message })) as typeof fetch);
+        async () => new Response(message, { status: 200 }));
       expect(response.ok).toBe(false);
     },
   );
