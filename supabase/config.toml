@@ -227,3 +227,6 @@ verify_jwt = true
 
 [functions.training-module]
 verify_jwt = true
+
+[functions.job-live-location]
+verify_jwt = true
