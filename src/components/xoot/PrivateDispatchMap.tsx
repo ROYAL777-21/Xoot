@@ -43,8 +43,6 @@ export function PrivateDispatchMap() {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapboxMap | null>(null);
   const markers = useRef<MapboxMarker[]>([]);
-  const latest = useRef<DispatchPoint[]>([]);
-  latest.current = points;
 
   useEffect(() => {
     if (!show) { setPoints([]); return; }
