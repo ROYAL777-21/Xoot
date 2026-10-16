@@ -88,6 +88,9 @@ export function PrivateJobJourney({ bookingId }: { bookingId: string }) {
   }) : null, [point]);
 
   if (!configured) return null;
+  // Native map credentials belong to the installed SDK, not a browser token
+  // or an unauthenticated HTTP request. Match the proven service-area map setup.
+  Mapbox.setAccessToken(token);
   return <View style={styles.shell}>
     <Text style={styles.heading}>Private journey</Text>
     <Text style={styles.description}>If your Xooter chooses to share while travelling,
