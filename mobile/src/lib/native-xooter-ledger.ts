@@ -26,11 +26,60 @@ export function xooterCents(value: number): number | null {
 export const XOOTER_EARNINGS_PAGE_SIZE = 50;
 const idPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isXooterJobId = (value: unknown): value is string => typeof value === 'string' && idPattern.test(value);
+/** Strict, injection-safe ISO timestamp, preserving database microseconds.
+ * Date.toISOString() truncates PostgreSQL's six-digit fractional seconds and
+ * can skip or duplicate records at a keyset page boundary.
+ */
+const sqlTimestampPattern = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$/;
+function validSqlTimestamp(value: unknown): value is string {
+  return typeof value === 'string' && sqlTimestampPattern.test(value) &&
+    Number.isFinite(Date.parse(value));
+}
+function timestampMicros(value: string): number {
+  const milliseconds = Date.parse(value);
+  const fraction = /\\.(\\d{1,6})(?:Z|[+-]\\d{2}:\\d{2})$/.exec(value)?.[1] ?? '';
+  const micros = Number(fraction.padEnd(6, '0')) % 1000;
+  return milliseconds * 1000 + micros;
+}
 /** Safe PostgREST keyset filter from a previously validated DB row. */
 export function olderXooterEarningsFilter(row: Pick<XooterEarning, 'created_at' | 'id'>) {
-  if (!idPattern.test(row.id) || !dateOrNull(row.created_at)) return null;
-  const timestamp = new Date(row.created_at).toISOString();
+  if (!idPattern.test(row.id) || !validSqlTimestamp(row.created_at)) return null;
+  // Keep the full DB precision, and normalise only timestamps with no fraction
+  // to maintain the existing stable cursor contract.
+  const timestamp = row.created_at.includes('.') ? row.created_at : new Date(row.created_at).toISOString();
   return `created_at.lt.${timestamp},and(created_at.eq.${timestamp},id.lt.${row.id})`;
+}
+/** Reject duplicate, unordered, out-of-window or mixed-owner money pages.
+ * Never sum rows until the whole page passes the exact server ordering check.
+ */
+export function validateXooterEarningsPage(
+  rows: readonly XooterEarning[],
+  args: { owner: string; from: string; snapshot: string; cursor?: Pick<XooterEarning, 'created_at' | 'id'> },
+): boolean {
+  if (rows.length > XOOTER_EARNINGS_PAGE_SIZE + 1 ||
+      !validSqlTimestamp(args.from) || !validSqlTimestamp(args.snapshot)) return false;
+  const start = timestampMicros(args.from);
+  const finish = timestampMicros(args.snapshot);
+  if (start > finish) return false;
+  let prior: Pick<XooterEarning, 'created_at' | 'id'> | undefined = args.cursor;
+  if (prior && (!idPattern.test(prior.id) || !validSqlTimestamp(prior.created_at))) return false;
+  const seen = new Set<string>();
+  for (const row of rows) {
+    if (row.xooter_id !== args.owner || !idPattern.test(row.id) ||
+        !validSqlTimestamp(row.created_at) || seen.has(row.id.toLowerCase())) return false;
+    const moment = timestampMicros(row.created_at);
+    if (moment < start || moment > finish) return false;
+    if (prior) {
+      const previous = timestampMicros(prior.created_at);
+      // DB order is created_at DESC, id DESC. Identical millisecond timestamps
+      // may differ in microseconds, which must be compared before UUID order.
+      if (moment > previous || (moment === previous &&
+        row.id.toLowerCase() >= prior.id.toLowerCase())) return false;
+    }
+    seen.add(row.id.toLowerCase());
+    prior = row;
+  }
+  return true;
 }
 export const xooterMoney = (value: number) =>
   new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', minimumFractionDigits: 2 }).format(value);
