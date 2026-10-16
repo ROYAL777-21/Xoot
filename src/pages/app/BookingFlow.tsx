@@ -233,7 +233,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
         {website && <p className="xoot-booking-lede">Add your address and tell us about the space.</p>}
         <div className={website ? "xoot-site-address" : undefined}><div className="xoot-booking-field">
           <span>{website ? "Street address" : "Where do you need us?"}</span>
-          <VerifiedAddressInput value={address} label={website ? "Street address" : "Service address"}
+          <VerifiedAddressInput value={address} label={website ? "Street address" : "Where do you need us?"}
             showIcon={false} inputClassName="xoot-booking-service-address"
             onChange={next => { addressEdited.current = true; setAddress(next); setAcceptedFingerprint(null); }}
             placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} />
