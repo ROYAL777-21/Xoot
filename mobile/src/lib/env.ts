@@ -109,6 +109,12 @@ export const getMobileConfigIssue = (env: PublicEnvironment = process.env) => {
     return 'EXPO_PUBLIC_EAS_PROJECT_ID is required for preview/staging/production builds.';
   }
 
+  // Store builds must not silently replace the advertised map with a fallback.
+  // Preview/development deliberately allow a missing token so other journeys remain testable.
+  if (appEnv === 'production' && !envText(env, 'EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN')) {
+    return 'EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN is required for a production native build. Use a public pk.* token without browser-only URL restrictions.';
+  }
+
   return null;
 };
 
