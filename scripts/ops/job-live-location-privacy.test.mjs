@@ -5,6 +5,8 @@ import test from 'node:test';
 const migration = readFileSync(new URL('../../supabase/migrations/20261016171500_xoot_job_live_positions_private.sql', import.meta.url), 'utf8');
 const handler = readFileSync(new URL('../../supabase/functions/xoot-job-location/index.ts', import.meta.url), 'utf8');
 const config = readFileSync(new URL('../../supabase/config.toml', import.meta.url), 'utf8');
+const web = readFileSync(new URL('../../src/components/xoot/LiveJobJourney.tsx', import.meta.url), 'utf8');
+const detail = readFileSync(new URL('../../src/pages/app/BookingDetail.tsx', import.meta.url), 'utf8');
 
 const hasMinimumTableGate = (sql) =>
   /alter table public\.xoot_job_live_positions enable row level security/i.test(sql) &&
@@ -67,4 +69,24 @@ test('non-participants and stale records never see GPS, nor does API report an i
   assert.match(handler, /now > expiry \|\| now - captured > POSITION_MAX_AGE_MS/);
   assert.match(handler, /return ok\(\{ state: "unavailable" \}, origin\)/);
   assert.doesNotMatch(handler, /etaMinutes|routeDuration|Mapbox|console\.log\([^)]*(?:latitude|longitude)/);
+});
+
+test('web job journey is disabled by default and requires explicit foreground worker consent', () => {
+  assert.match(web, /VITE_ENABLE_LIVE_JOURNEY === "true"/);
+  assert.match(web, /if \(!ENABLED \|\| !mapboxToken\.startsWith\("pk\."\)\) return null/);
+  assert.match(web, /Share my location for this booking/);
+  assert.match(web, /View en-route location/);
+  assert.match(web, /consent: true/);
+  assert.match(web, /getCurrentPosition|watchPosition/);
+  assert.match(web, /document\.visibilityState === "hidden"/);
+  assert.match(web, /navigator\.geolocation\.clearWatch/);
+  assert.match(web, /action: "stop"/);
+  assert.match(web, /action: "read"/);
+  assert.match(web, /action: "publish"/);
+  assert.match(web, /attributionControl: true/);
+  assert.match(web, /60_000/);
+  assert.doesNotMatch(web, /localStorage|sessionStorage|saveGPS|backgroundLocation|etaMinutes/);
+  assert.match(detail, /<LiveJobJourney bookingId=\{id\} isAssignedWorker=\{isAssignedXooter\}/);
+  assert.match(detail, /VITE_ENABLE_LIVE_JOURNEY === "true"/);
+  assert.match(detail, /No live GPS feed or calculated arrival time/);
 });
