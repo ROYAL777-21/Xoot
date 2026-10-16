@@ -105,3 +105,16 @@ The approved 3 September Xooter design includes a worker Home screen, but the ex
 - **Tests:** `mobile/scripts/native-xooter-dashboard.test.mts` checks owner eligibility, malformed worker projection, SAST dates, scheduled job truth, source navigation and absence of fictional payouts/private household details. Expo typecheck and full website/native CI remain release gates.
 
 **Still open:** live signed-in worker/device acceptance, screen-by-screen native captures on iOS/Android, real Xooter bank settlement, location and timed access, full job-response transactions, app-store publication, and remaining handoff areas in this ledger. Prototype claims of "paid out every Friday", invented worker earnings and performance metrics are deliberately not copied.
+
+## 16 October 2026 — native Xooter Growth and Badges design handoff
+
+The original `XooterGrowthScreen` reference had a recognition hero, separate required `Xoot Standard` foundation and optional specialisms. Expo now has a dedicated `/xooter/growth` route with that source structure, native design tokens, a bounded progress bar, role-protected owner data, accessible course states, honest empty/offline handling and links from the worker dashboard and native Training.
+
+- Source-of-truth: `training_modules` (only `id,title,description,required,duration_min,badge_label,rank_points`) and `xooter_training_progress` filtered by the signed-in user's resolved `xooters.id`. No quiz questions, answer keys, banking, addresses or private reviewer notes are queried.
+- Recorded progress is derived from actual completions, not taps, mock data or prototype names/points. Duplicate module IDs or duplicate progress invalidate the summary. Orphan completions never earn points/badges. Percentages are bounded; unsafe point totals fail closed.
+- A full catalogue and progress list are required to claim an exact badge/points total. Any server truncation above 100 records suppresses the summary with an explicit warning, rather than implying full completion.
+- `Xoot Standard` required modules remain distinct from optional recognition. Points/badges never imply increased pay, financial transfer, verified onboarding, eligibility for assignments or automatic certification.
+- Auth switching remounts the screen and discards the previous worker's catalogue/progress. Invalid reads show retry. The route does not grant progress writes or self-awarded badges.
+- Negative source/data tests reside in `mobile/scripts/native-xooter-growth.test.mts` and are mandatory in `Verify approved Xoot redesign` CI.
+
+**Still unverified:** physical iOS/Android screenshot parity with `design/handoff-2026-09-03/xoot/app/Xooter.jsx`, real logged-in training progression across staging/production, complete catalogue pagination beyond the current 100-record presentation cap, and native store distribution. This is not certification of the entire handoff.

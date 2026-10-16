@@ -61,6 +61,8 @@ jobs:
         run: npm --prefix mobile run test:xooter-home
       - name: Test native Xooter verification and training privacy
         run: npm --prefix mobile run test:xooter-trust
+      - name: Test native Xooter Growth and real badge records
+        run: npm --prefix mobile run test:growth
       - name: Test native Mapbox attribution and token readiness
         run: npm --prefix mobile run test:maps
       - name: Lint
