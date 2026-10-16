@@ -47,6 +47,8 @@ jobs:
         run: node --test scripts/ops/db-push-link-diagnostics.test.mjs
       - name: Test short-lived Xooter live-location privacy and participant boundaries
         run: node --test scripts/ops/job-live-location-privacy.test.mjs
+      - name: Enforce MFA-only private dispatch location access
+        run: node --test scripts/ops/job-private-dispatch.test.mjs
       - name: Typecheck
         run: npm run typecheck
       - name: Typecheck Expo native booking flow
