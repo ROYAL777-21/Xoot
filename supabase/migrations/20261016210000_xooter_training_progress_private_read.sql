@@ -14,6 +14,11 @@ begin;
 
 alter table public.xooter_training_progress enable row level security;
 
+-- Remove inherited grants to all roles too; a future PUBLIC grant must
+-- not reactivate anonymous access even if a policy is accidentally relaxed.
+revoke select, insert, update, delete, truncate, trigger, references
+  on table public.xooter_training_progress from public;
+
 -- Never grant anonymous access or client-wide table operations.
 revoke select, insert, update, delete, truncate, trigger, references
   on table public.xooter_training_progress from anon;
