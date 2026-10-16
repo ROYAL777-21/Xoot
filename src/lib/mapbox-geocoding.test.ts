@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { mapboxAddressSearchUrl, mapboxPermanentAddressUrl, parseMapboxAddressSuggestions } from "./mapbox-geocoding";
 
 const suggestion = (id: string, label: string, country = "ZA", feature_type = "address") => ({
@@ -68,10 +69,10 @@ describe("Mapbox temporary South African address search", () => {
 });
 
 describe("Mapbox consumer safety regressions", () => {
-  const detail = readFileSync(new URL("../pages/app/BookingDetail.tsx", import.meta.url), "utf8");
-  const address = readFileSync(new URL("../components/xoot/VerifiedAddressInput.tsx", import.meta.url), "utf8");
-  const booking = readFileSync(new URL("../pages/app/BookingFlow.tsx", import.meta.url), "utf8");
-  const areaMap = readFileSync(new URL("../components/xoot/InteractiveServiceAreaMap.tsx", import.meta.url), "utf8");
+  const detail = readFileSync(join(process.cwd(), "src/pages/app/BookingDetail.tsx"), "utf8");
+  const address = readFileSync(join(process.cwd(), "src/components/xoot/VerifiedAddressInput.tsx"), "utf8");
+  const booking = readFileSync(join(process.cwd(), "src/pages/app/BookingFlow.tsx"), "utf8");
+  const areaMap = readFileSync(join(process.cwd(), "src/components/xoot/InteractiveServiceAreaMap.tsx"), "utf8");
 
   it("never fabricates live Xooter coordinates or starts a 12-minute ticking ETA", () => {
     expect(detail).not.toContain("setEta");
