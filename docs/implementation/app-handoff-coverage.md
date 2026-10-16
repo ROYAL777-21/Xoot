@@ -118,3 +118,13 @@ The original `XooterGrowthScreen` reference had a recognition hero, separate req
 - Negative source/data tests reside in `mobile/scripts/native-xooter-growth.test.mts` and are mandatory in `Verify approved Xoot redesign` CI.
 
 **Still unverified:** physical iOS/Android screenshot parity with `design/handoff-2026-09-03/xoot/app/Xooter.jsx`, real logged-in training progression across staging/production, complete catalogue pagination beyond the current 100-record presentation cap, and native store distribution. This is not certification of the entire handoff.
+
+## 17 October 2026 — native saved-place privacy and worker-ledger accuracy
+
+The previously deployed Xooter Jobs, Earnings, job detail, Growth and training flows were already merged via PRs #62/#64/#66/#73. Obsolete development branch `design/native-xooter-jobs-earnings-20261015` must not be resurrected. This new isolated corrective slice `security/native-account-earnings-integrity-20261017` addresses two remaining owner-visible issues:
+
+- Expo You: household profile addresses were fetched with a correct `user_id` filter, but old React state could remain visible briefly while a different account loaded, and stale requests had no cancellation guard. The UI now tags household snapshots with the owning auth user, hides mismatched data synchronously on account change, shows a real loading state instead of "no saved places", and ignores obsolete network responses/errors. No customer address is placed into logs, global state, job cards or URL parameters.
+- Xooter Earnings: validate every server page against the authenticated Xooter, exact time window, unique ledger IDs, descending `created_at/id` order and current keyset cursor. Preserve PostgreSQL microsecond timestamps when building the next PostgREST cursor to prevent boundary skips. Duplicate/replayed cross-page data is now an explicit verification error, not a silently deduplicated "complete" subtotal. Aggregation overflow/invalid sums show a recoverable integrity error instead of crashing the native screen or inventing a financial amount.
+- New native regression cases exercise same-millisecond microsecond ordering, duplicated pages, swapped owner, out-of-window records, invalid cursors, sum overflow and saved-place account isolation. The approved release CI runs this suite with existing Expo/web tests.
+
+**Not verified by static tests alone:** physical-device two-account sign-in/switch, a real paginated earnings ledger with bank-reconciled transfers, iOS/Android store distribution, accessibility screenshots, actual payout provider settlement and post-deploy financial data reconciliation. No database schema or money-transfer API changes were made.
