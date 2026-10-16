@@ -20,6 +20,7 @@ const browserToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN?.trim() ?? "";
 export const VerifiedAddressInput = ({
   value, onChange, placeholder, inputClassName, label = "Service address", showIcon = true,
 }: VerifiedAddressInputProps) => {
+  const [searchEnabled, setSearchEnabled] = useState(false);
   const [suggestions, setSuggestions] = useState<MapboxAddressSuggestion[]>([]);
   const [searchState, setSearchState] = useState<"idle" | "loading" | "results" | "empty" | "error">("idle");
   const [selectedText, setSelectedText] = useState("");
@@ -30,7 +31,7 @@ export const VerifiedAddressInput = ({
   const hasAddress = value.trim().length > 0;
 
   useEffect(() => {
-    const url = selectedText === value ? null : mapboxAddressSearchUrl(value, browserToken);
+    const url = searchEnabled && selectedText !== value ? mapboxAddressSearchUrl(value, browserToken) : null;
     if (!url) {
       setSearchState("idle");
       setSuggestions([]);
@@ -57,7 +58,7 @@ export const VerifiedAddressInput = ({
         });
     }, 400);
     return () => { window.clearTimeout(timer); controller.abort(); requestId.current += 1; };
-  }, [selectedText, value]);
+  }, [searchEnabled, selectedText, value]);
 
   const updateValue = (next: string) => {
     confirmation.current?.abort();
@@ -101,7 +102,7 @@ export const VerifiedAddressInput = ({
         {showIcon && <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />}
         <Input
           aria-label={label}
-          aria-autocomplete={browserToken.startsWith("pk.") ? "list" : "none"}
+          aria-autocomplete={searchEnabled ? "list" : "none"}
           aria-controls="xoot-address-suggestions"
           aria-expanded={suggestions.length > 0}
           role="combobox"
@@ -113,6 +114,16 @@ export const VerifiedAddressInput = ({
           className={`h-12 rounded-xl text-base ${showIcon ? "pl-10" : ""} ${inputClassName ?? ""}`}
         />
       </div>
+      {browserToken.startsWith("pk.") && (
+        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+          <button type="button" aria-pressed={searchEnabled}
+            className="shrink-0 rounded-full border border-border px-3 py-1.5 font-semibold text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            onClick={() => { setSearchEnabled(current => !current); setSuggestions([]); setSearchState("idle"); }}>
+            {searchEnabled ? "Disable Mapbox suggestions" : "Enable Mapbox suggestions"}
+          </button>
+          <span>{searchEnabled ? "Your address search is being sent to Mapbox." : "Optional: sends what you type to Mapbox for South African address suggestions."}</span>
+        </div>
+      )}
       {suggestions.length > 0 && (
         <ul id="xoot-address-suggestions" role="listbox" aria-label="South African address suggestions"
           className="max-h-60 overflow-y-auto rounded-xl border border-border bg-background shadow-md">
@@ -141,8 +152,8 @@ export const VerifiedAddressInput = ({
       {searchState === "loading" && !confirming && <p role="status" className="text-xs text-muted-foreground">Finding nearby addresses…</p>}
       {searchState === "error" && <p role="status" className="text-xs text-muted-foreground">Address lookup or confirmation is unavailable. You can enter your address manually.</p>}
       {searchState === "empty" && <p role="status" className="text-xs text-muted-foreground">No suggestions found. Check the address manually in booking.</p>}
-      {browserToken.startsWith("pk.") && hasAddress && (
-        <p className="text-xs text-muted-foreground">Typing sends your address search to Mapbox. Selected suggestions are confirmed under Permanent Geocoding before booking; no exact coordinates are stored here.</p>
+      {searchEnabled && hasAddress && (
+        <p className="text-xs text-muted-foreground">Selected suggestions are confirmed under licensed Permanent Geocoding before booking; no exact coordinates are stored here.</p>
       )}
     </div>
   );
