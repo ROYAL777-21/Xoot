@@ -265,6 +265,12 @@ export default function AccountScreen() {
       <Card style={s.list}>
         <Row
           icon="briefcase"
+          title="Xooter workspace"
+          detail="Your assignments, earnings and growth tools"
+          onPress={() => router.push("/xooter")}
+        />
+        <Row
+          icon="briefcase"
           title="Xooter jobs"
           detail="Verified offers and assignments"
           onPress={() => router.push("/xooter/jobs")}

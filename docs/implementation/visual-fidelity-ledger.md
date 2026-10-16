@@ -395,3 +395,7 @@ The Xooter source prioritises compact, factual schedule and earnings over decora
 ## 16 October 2026 — native Xooter ledger integrity correction
 
 The release already contains approved Jobs, Earnings, job-detail, training and verification compositions. A production-schema correction distinguishes non-booking ledger entries (nullable booking ID) without disguising them as completed cleaning jobs or changing the visual hierarchy. Strict worker job response validation remains fail-closed. Physical device parity and signed-in staging validation remain outstanding.
+
+## 16 October 2026 — native Xooter Home source-inspired structure
+
+Added dedicated `/xooter` dashboard following prototype hierarchy: greeting, lead work card, compact current counts, SAST daily work list and shortcuts to jobs, earnings, verification and training. Real verified worker status and authenticated owner-scoped job-card responses replace the prototype's fictitious payout hero and sample daily addresses/pay. Actual icon placement, spacing, typography and interactivity are in source with handoff fonts/tokens; physical-device screenshot comparison and real signed-in worker sessions are **not yet proven**. No fake GPS, earnings, client access or bank receipts are displayed.
