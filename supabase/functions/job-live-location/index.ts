@@ -29,9 +29,11 @@ Deno.serve(async (req) => {
   const action = body?.action;
   const bookingId = shortId(body?.bookingId);
   const jobId = shortId(body?.jobId);
+  const sessionId = shortId(body?.sessionId);
 
-  if (!["read", "publish", "stop"].includes(String(action)) ||
-      (action === "read" && !bookingId) || (action !== "read" && !jobId)) {
+  if (!["read", "start", "publish", "stop"].includes(String(action)) ||
+      (action === "read" && !bookingId) || (action !== "read" && !jobId) ||
+      (["publish", "stop"].includes(String(action)) && !sessionId)) {
     return fail("invalid location request", origin, 400);
   }
 
@@ -63,9 +65,15 @@ Deno.serve(async (req) => {
     if (!canReadJobPosition(actorId, cleanBooking, cleanJob, cleanWorker)) {
       return fail("location unavailable", origin, 404);
     }
+    const { data: session, error: sessionError } = await supa.from("job_location_sharing_sessions")
+      .select("session_id,stopped_at,expires_at").eq("job_id", cleanJob.id)
+      .is("stopped_at", null).gt("expires_at", new Date().toISOString()).maybeSingle();
+    if (sessionError) return fail("location temporarily unavailable", origin, 503);
+    if (!session) return ok({ available: false, position: null }, origin);
     const { data: loc, error } = await supa.from("job_live_positions")
       .select("latitude,longitude,accuracy_m,received_at,expires_at")
-      .eq("job_id", cleanJob.id).gt("expires_at", new Date().toISOString()).maybeSingle();
+      .eq("job_id", cleanJob.id).eq("session_id", session.session_id)
+      .gt("expires_at", new Date().toISOString()).maybeSingle();
     if (error) return fail("location temporarily unavailable", origin, 503);
     if (!loc || !freshLivePosition(loc.received_at, loc.expires_at, Date.now())) {
       return ok({ available: false, position: null }, origin);
@@ -82,16 +90,50 @@ Deno.serve(async (req) => {
     return fail("location unavailable", origin, 404);
   }
   if (action === "stop") {
-    const { error } = await supa.from("job_live_positions")
-      .delete().eq("job_id", cleanJob.id).eq("xooter_id", cleanWorker.id);
-    if (error) return fail("could not stop location", origin, 503);
+    // Revocation is a durable session change, not merely deletion of a GPS row:
+    // old in-flight requests cannot resurrect sharing with their stale session ID.
+    const { data: revoked, error: revokeError } = await supa.from("job_location_sharing_sessions")
+      .update({ stopped_at: new Date().toISOString() })
+      .eq("job_id", cleanJob.id).eq("session_id", sessionId!)
+      .eq("xooter_id", cleanWorker.id).is("stopped_at", null)
+      .select("job_id").maybeSingle();
+    if (revokeError) return fail("could not stop location", origin, 503);
+    if (revoked) {
+      const { error } = await supa.from("job_live_positions")
+        .delete().eq("job_id", cleanJob.id).eq("session_id", sessionId!);
+      if (error) return fail("location revocation pending expiry", origin, 503);
+    }
     return ok({ sharing: false }, origin);
   }
 
   if (!canPublishJobPosition(actorId, cleanBooking, cleanJob, cleanWorker)) {
     return fail("location sharing not available for this job", origin, 409);
   }
-  // Explicit consent is part of EACH publish request. No silent tracking.
+  if (action === "start") {
+    if (body?.sharingConsent !== true) return fail("explicit sharing consent required", origin, 400);
+    const freshSessionId = crypto.randomUUID();
+    const now = Date.now();
+    // Clear the old session's coordinates before rotating its token.
+    const { error: clearError } = await supa.from("job_live_positions")
+      .delete().eq("job_id", cleanJob.id);
+    if (clearError) return fail("location start unavailable", origin, 503);
+    const { error } = await supa.from("job_location_sharing_sessions").upsert({
+      job_id: cleanJob.id, booking_id: cleanBooking.id, xooter_id: cleanWorker.id,
+      session_id: freshSessionId,
+      started_at: new Date(now).toISOString(),
+      expires_at: new Date(now + 2 * 60 * 60_000).toISOString(),
+      stopped_at: null,
+    }, { onConflict: "job_id" });
+    if (error) return fail("location start unavailable", origin, 503);
+    return ok({ sharing: true, sessionId: freshSessionId, expiresInSeconds: 7200 }, origin);
+  }
+
+  const { data: activeSession, error: activeError } = await supa.from("job_location_sharing_sessions")
+    .select("session_id").eq("job_id", cleanJob.id).eq("session_id", sessionId!)
+    .is("stopped_at", null).gt("expires_at", new Date().toISOString()).maybeSingle();
+  if (activeError || !activeSession) return fail("location session expired or stopped", origin, 409);
+
+  // Worker must still affirm consent for each foreground position. No silent tracking.
   const position = body?.position;
   if (!validWorkerLocation(position)) {
     return fail("invalid or unconsented location", origin, 400);
@@ -103,6 +145,7 @@ Deno.serve(async (req) => {
     job_id: cleanJob.id,
     booking_id: cleanBooking.id,
     xooter_id: cleanWorker.id,
+    session_id: sessionId!,
     latitude: position.latitude,
     longitude: position.longitude,
     accuracy_m: position.accuracy_m,
