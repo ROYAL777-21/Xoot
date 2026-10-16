@@ -43,6 +43,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Check public/host security configuration
         run: npm run security:scan
+      - name: Test Supabase migration access diagnostics against synthetic failures
+        run: node --test scripts/ops/db-push-link-diagnostics.test.mjs
       - name: Typecheck
         run: npm run typecheck
       - name: Typecheck Expo native booking flow
@@ -59,6 +61,8 @@ jobs:
         run: npm --prefix mobile run test:xooter-home
       - name: Test native Xooter verification and training privacy
         run: npm --prefix mobile run test:xooter-trust
+      - name: Test native Mapbox attribution and token readiness
+        run: npm --prefix mobile run test:maps
       - name: Lint
         run: npm run lint
       - name: Full web unit test suite
