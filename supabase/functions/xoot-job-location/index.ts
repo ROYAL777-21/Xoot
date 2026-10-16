@@ -53,20 +53,26 @@ Deno.serve(async req => {
     .eq("id", bookingId).maybeSingle();
   if (bookingError || !booking) return fail("booking unavailable", origin, 404);
 
+  const isCustomer = booking.user_id === actorId;
   const { data: job, error: jobError } = await db.from("xooter_jobs")
     .select("id,xooter_id,state").eq("booking_id", bookingId)
     .eq("xooter_id", booking.xooter_id).eq("state", "accepted").maybeSingle();
-  if (jobError || !job) return ok({ state: "unavailable" }, origin);
+  // Non-participants must not be able to distinguish an unassigned or revoked
+  // booking from a booking they were never authorised to see.
+  if (jobError || !job) return isCustomer
+    ? ok({ state: "unavailable" }, origin)
+    : fail("booking unavailable", origin, 404);
 
   const { data: worker, error: workerError } = await db.from("xooters")
     .select("id,user_id,active,background_check_status")
     .eq("id", job.xooter_id).maybeSingle();
   if (workerError || !worker || !worker.active || worker.background_check_status !== "approved") {
-    return ok({ state: "unavailable" }, origin);
+    return isCustomer
+      ? ok({ state: "unavailable" }, origin)
+      : fail("booking unavailable", origin, 404);
   }
 
   const isWorker = worker.user_id === actorId;
-  const isCustomer = booking.user_id === actorId;
   if (!isWorker && !isCustomer) return fail("booking unavailable", origin, 404);
 
   // Check participant identity before disclosing even the state of a private booking.
