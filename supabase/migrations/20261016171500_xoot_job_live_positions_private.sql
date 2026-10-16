@@ -98,7 +98,7 @@ create or replace function public.xoot_publish_private_job_location(
 language plpgsql
 security invoker
 set search_path = ''
-as $
+as $$
 declare
   wrote integer;
   v_now timestamptz := clock_timestamp();
@@ -145,7 +145,7 @@ begin
   select count(*) into wrote from saved;
   return wrote = 1;
 end;
-$;
+$$;
 revoke all on function public.xoot_publish_private_job_location(
   uuid,uuid,numeric,numeric,numeric,timestamptz
 ) from public, anon, authenticated;
