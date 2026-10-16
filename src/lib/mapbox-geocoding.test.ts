@@ -71,6 +71,7 @@ describe("Mapbox consumer safety regressions", () => {
   const detail = readFileSync(new URL("../pages/app/BookingDetail.tsx", import.meta.url), "utf8");
   const address = readFileSync(new URL("../components/xoot/VerifiedAddressInput.tsx", import.meta.url), "utf8");
   const booking = readFileSync(new URL("../pages/app/BookingFlow.tsx", import.meta.url), "utf8");
+  const areaMap = readFileSync(new URL("../components/xoot/InteractiveServiceAreaMap.tsx", import.meta.url), "utf8");
 
   it("never fabricates live Xooter coordinates or starts a 12-minute ticking ETA", () => {
     expect(detail).not.toContain("setEta");
@@ -81,6 +82,22 @@ describe("Mapbox consumer safety regressions", () => {
     expect(detail).toContain("No live GPS feed or calculated arrival time");
     expect(detail).toContain("Live location is not available");
     expect(detail).not.toContain("Share ETA</Button>");
+  });
+
+  it("interactive website map uses Mapbox real tiles, mandatory branding and public suburb pins only", () => {
+    expect(booking).toContain("showAreaMap && <div id=\"xoot-booking-service-map\"><InteractiveServiceAreaMap />");
+    expect(booking).toContain('View interactive area map');
+    expect(areaMap).toContain('void import("mapbox-gl")');
+    expect(areaMap).toContain('mapbox://styles/mapbox/streets-v12');
+    expect(areaMap).toContain('attributionControl: true');
+    expect(areaMap).toContain('map?.remove()');
+    expect(areaMap).toContain('window.clearTimeout(watchdog)');
+    expect(areaMap).toContain('Try map again');
+    expect(areaMap).toContain('not customer addresses or proof');
+    expect(areaMap).not.toContain('navigator.geolocation');
+    expect(areaMap).not.toContain('booking.address');
+    expect(areaMap).not.toContain('worker.coordinates');
+    expect(areaMap).not.toContain('attributionControl: false');
   });
 
   it("manual address fallback is available and substring matching cannot confirm coverage", () => {
