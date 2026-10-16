@@ -138,7 +138,7 @@ export const VerifiedAddressInput = ({
         </div>
       )}
       {confirming && <p role="status" className="text-xs text-muted-foreground">Confirming selected address…</p>}
-      {searchState === "loading" && !confirming && <p role="status" className="text-xs text-muted-foreground">Finding nearby addresses…</p>
+      {searchState === "loading" && !confirming && <p role="status" className="text-xs text-muted-foreground">Finding nearby addresses…</p>}
       {searchState === "error" && <p role="status" className="text-xs text-muted-foreground">Address lookup or confirmation is unavailable. You can enter your address manually.</p>}
       {searchState === "empty" && <p role="status" className="text-xs text-muted-foreground">No suggestions found. Check the address manually in booking.</p>}
       {browserToken.startsWith("pk.") && hasAddress && (
