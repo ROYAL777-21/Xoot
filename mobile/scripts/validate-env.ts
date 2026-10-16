@@ -77,6 +77,9 @@ const deriveAppEnv = () => {
 const explicitAppEnv = text('EXPO_PUBLIC_APP_ENV');
 const derivedAppEnv = explicitAppEnv ? '' : deriveAppEnv();
 const appEnv = explicitAppEnv || derivedAppEnv || 'development';
+if (text('EAS_BUILD_PROFILE') === 'production' && appEnv !== 'production') {
+  fail('EAS production builds must set EXPO_PUBLIC_APP_ENV=production, not preview or development.');
+}
 const publicLeaks = Object.keys(process.env)
   .filter((name) => name.startsWith('EXPO_PUBLIC_'))
   .filter((name) => publicSecretNamePattern.test(name) && !allowedPublicSecretLikeNames.has(name));
@@ -117,6 +120,10 @@ if (appEnv === 'preview' || appEnv === 'staging' || appEnv === 'production') {
 
 if (appEnv === 'production' && !text('EXPO_PUBLIC_EAS_PROJECT_ID')) {
   fail('EXPO_PUBLIC_EAS_PROJECT_ID is required for production push notifications and EAS release tracing.');
+}
+
+if (appEnv === 'production' && !text('EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN')) {
+  fail('EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN is required for a production native build. Use a public pk.* token without browser-only URL restrictions.');
 }
 
 const provenance = derivedAppEnv ? ` (derived from EAS_BUILD_PROFILE="${text('EAS_BUILD_PROFILE')}")` : '';

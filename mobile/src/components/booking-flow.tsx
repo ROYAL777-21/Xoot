@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar, Card, CoreIcon, DisplayTitle, nativeFonts, Wordmark } from '@/components/native-core';
 import { ServiceIcon, type ServiceIconName } from '@/components/service-icon';
+import { ServiceAreaMap } from '@/components/service-area-map';
 import { nativePalette as p } from '@/constants/handoff';
 import { BOOKING_ADD_ONS, BOOKING_LINEN_OPTIONS, BOOKING_PROPERTY_TYPES, type BookingQuoteInput, type BookingService } from '@/generated/booking-contract';
 import { BOOKING_FREQUENCY_LABELS, BOOKING_LINEN_LABELS, BOOKING_PROPERTY_LABELS, BOOKING_REFERRAL_MESSAGES, BOOKING_SERVICE_DETAILS, bookingCrewCap, bookingDateInSast, bookingExtrasFor, bookingServiceForProperty, bookingStartSlots, bookingWeekday, formatBookingMoney, type BookingQuoteResponse } from '@/generated/booking-flow';
@@ -75,6 +76,7 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
   const [input, setInput] = useState(prefill.input);
   const [address, setAddress] = useState('');
   const [area, setArea] = useState(prefill.area);
+  const [showServiceAreas, setShowServiceAreas] = useState(false);
   const [notes, setNotes] = useState('');
   const [access, setAccess] = useState("I'll be home");
   const [bedrooms, setBedrooms] = useState(2);
@@ -191,6 +193,17 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
       <Field label="Where do you need us? Full address" value={address} onChange={value => { clearConsent(); setAddress(value); }} placeholder="Street address, suburb and city" />
       <Field label="Area / suburb" value={area} onChange={value => { clearConsent(); setArea(value); }} maxLength={120} />
       <Copy>Your address and access notes stay in this form until a booking can be submitted.</Copy>
+      <Pressable accessibilityRole="button" accessibilityLabel={showServiceAreas ? 'Hide service area map' : 'View service area map'}
+        accessibilityState={{ expanded: showServiceAreas }}
+        onPress={() => setShowServiceAreas(showing => !showing)}
+        style={s.choice}>
+        <View style={s.grow}>
+          <Text style={s.choiceText}>{showServiceAreas ? 'Hide neighbourhood map' : 'View neighbourhood map'}</Text>
+          <Text style={s.detail}>Public reference areas only — your home address is never sent to the map.</Text>
+        </View>
+        <CoreIcon name="chevron-right" size={19} color={p.inkSoft} />
+      </Pressable>
+      {showServiceAreas && <ServiceAreaMap />}
       <Label>What kind of place is it?</Label>
       <View style={s.tiles}>{BOOKING_PROPERTY_TYPES.map(property => <View key={property} style={s.tile}>
         <Choice label={BOOKING_PROPERTY_LABELS[property]} selected={input.propertyType === property} onPress={() => {

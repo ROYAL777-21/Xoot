@@ -294,7 +294,7 @@ Record commit, environment, command/run link, date and result when closing each 
 5. **Helpers and operations:** recruit the first helpers; identify who verifies them, manages bookings,
    answers support and authorizes payouts. Prepare a small consenting customer/helper pilot.
 6. **Provider access:** connect email, Mapbox, Cloudflare/Turnstile, Sentry and PostHog.
-   Restricted Mapbox tokens need separate browser token and native Expo token; a secret downloads token stays build-only.
+   Follow [Mapbox production runbook](mapbox-production-runbook.md): the browser token can use URL restrictions, but native iOS/Android tokens **cannot**; Expo native token must be public `pk.`, and real-device tile load is a release gate. Native SDK downloads tokens are only necessary when a pinned build demonstrably requires one.
    Confirm monitored delivery/incident queues. Twilio Verify/voice/WhatsApp sender/regulatory setup is
    required only for enabled capabilities, never assumed from an installed plugin.
 7. **Legal review:** approve policies and public commitments; complete applicable registrations in the

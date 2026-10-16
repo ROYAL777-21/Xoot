@@ -10,6 +10,8 @@ import {
 const nativeMap = readFileSync(new URL('../src/components/service-area-map.native.tsx', import.meta.url), 'utf8');
 const webMap = readFileSync(new URL('../src/components/service-area-map.tsx', import.meta.url), 'utf8');
 const easPreflight = readFileSync(new URL('./validate-env.ts', import.meta.url), 'utf8');
+const booking = readFileSync(new URL('../src/components/booking-flow.tsx', import.meta.url), 'utf8');
+const appConfig = readFileSync(new URL('../app.config.ts', import.meta.url), 'utf8');
 
 test('Mapbox native map displays mandatory credits and does not occlude footer controls', () => {
   assert.match(nativeMap, /<Mapbox\.MapView[^>]+\blogoEnabled\b[^>]+\battributionEnabled\b/);
@@ -47,4 +49,42 @@ test('native public config rejects secret and malformed map credentials', () => 
     EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN: 'pk.example',
   }), null);
   assert.match(easPreflight, /!text\(name\)\.startsWith\('pk\.'\)/);
+});
+
+test('booking opens only the public map on opt-in without forwarding typed address, notes or access', () => {
+  assert.match(booking, /const \[showServiceAreas, setShowServiceAreas\] = useState\(false\)/);
+  assert.match(booking, /accessibilityLabel=\{showServiceAreas \? 'Hide service area map' : 'View service area map'\}/);
+  assert.match(booking, /\{showServiceAreas && <ServiceAreaMap \/>\}/);
+  assert.doesNotMatch(booking, /<ServiceAreaMap[^>]+(address|access|notes)=/);
+  assert.doesNotMatch(nativeMap, /onUserLocationUpdate|UserLocation|LocationPuck|watchPosition|reverseGeocode/);
+  assert.match(nativeMap, /Reference locations only|Reference locations|Booking confirms availability/);
+});
+
+test('offline and blocked map loads recover without leaking provider errors or claiming live GPS', () => {
+  assert.match(nativeMap, /onMapLoadingError=\{\(\) => setMapStatus\(current => current === 'ready' \? current : 'error'\)\}/);
+  assert.match(nativeMap, /onDidFinishLoadingMap=\{\(\) => setMapStatus\('ready'\)\}/);
+  assert.match(nativeMap, /setTimeout\(\(\) => setMapStatus/);
+  assert.match(nativeMap, /clearTimeout\(timeout\)/);
+  assert.match(nativeMap, /key=\{attempt\}/);
+  assert.match(nativeMap, /Retry service area map/);
+  assert.match(nativeMap, /You can still enter your address and continue your booking/);
+  assert.doesNotMatch(nativeMap, /live ETA|live GPS|customer pin|onUserLocationUpdate/);
+});
+
+test('production native config rejects missing token and preview remains usable', () => {
+  const env = {
+    EXPO_PUBLIC_APP_ENV: 'production',
+    EXPO_PUBLIC_SUPABASE_PROJECT_ID: 'fxmxyabdjqviqbcxmvlp',
+    EXPO_PUBLIC_SUPABASE_URL: 'https://fxmxyabdjqviqbcxmvlp.supabase.co',
+    EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_synthetic-test-not-secret',
+    EXPO_PUBLIC_EAS_PROJECT_ID: 'synthetic-eas-project',
+  };
+  assert.match(getMobileConfigIssue(env) ?? '', /EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN is required/);
+  assert.equal(getMobileConfigIssue({ ...env, EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN: 'pk.synthetic-public-only' }), null);
+  assert.match(getMobileConfigIssue({ ...env, EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN: 'sk.private' }) ?? '', /restricted public pk\.\* tokens/);
+  assert.equal(getMobileConfigIssue({ ...env, EXPO_PUBLIC_APP_ENV: 'preview' }), null);
+  assert.match(easPreflight, /appEnv === 'production' && !text\('EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN'\)/);
+  assert.match(easPreflight, /text\('EAS_BUILD_PROFILE'\) === 'production' && appEnv !== 'production'/);
+  assert.match(appConfig, /MGLMapboxMetricsEnabledSettingShownInApp: true/);
+  assert.match(appConfig, /mapboxEnabled: Boolean\(process\.env\.EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN\?\.trim\(\)\.startsWith\('pk\.'\)\)/);
 });
