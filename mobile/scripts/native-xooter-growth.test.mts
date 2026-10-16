@@ -66,6 +66,9 @@ test('the native growth route is owner-bound, excludes exam keys and has honest 
   assert.match(growth, /\.eq\('user_id', userId\)/);
   assert.match(growth, /\.eq\('xooter_id', owner\.data\.id\)/);
   assert.match(growth, /\.limit\(101\)/);
+  assert.match(growth, /count: 'exact'/);
+  assert.match(growth, /catalog\.count === null \|\| catalog\.count > 100/);
+  assert.match(growth, /result\.count === null \|\| result\.count > 100/);
   assert.match(growth, /!state\.truncated && state\.hasXooterProfile/);
   assert.match(growth, /summariseXooterGrowth/);
   assert.match(growth, /not an automatic pay rise/i);
