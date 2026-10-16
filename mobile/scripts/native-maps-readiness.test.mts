@@ -94,7 +94,7 @@ test('production native config rejects missing token and preview remains usable'
 
 test('native and website address selection use licensed permanent Geocoding only after opt-in', () => {
   const temporary = nativeMapboxSearchUrl('14 Fredman Drive, Sandton', 'pk.synthetic');
-  const permanent = nativeMapboxSearchUrl('dXJuOm1ieGFkcjpzeW50aGV0aWM', 'pk.synthetic', true);
+  const permanent = nativeMapboxSearchUrl('14 Fredman Drive, Sandton, South Africa', 'pk.synthetic', true);
   assert.equal(new URL(temporary!).searchParams.get('permanent'), 'false');
   assert.equal(new URL(permanent!).searchParams.get('permanent'), 'true');
   assert.equal(new URL(temporary!).searchParams.get('country'), 'za');
@@ -111,7 +111,7 @@ test('native and website address selection use licensed permanent Geocoding only
 
   assert.match(nativeBooking, /<MobileMapboxAddressSuggestions value=\{address\}/);
   assert.match(nativeSuggestions, /accessibilityLabel=\{enabled \? 'Disable Mapbox address suggestions'/);
-  assert.match(nativeSuggestions, /nativeMapboxSearchUrl\(item.id, token, true\)/);
+  assert.match(nativeSuggestions, /nativeMapboxSearchUrl\(item.label, token, true\)/);
   assert.match(nativeSuggestions, /parseNativeMapboxSuggestions\(body\)/);
   assert.doesNotMatch(nativeSuggestions, /onSelect\(item.label\)/);
   assert.match(nativeSuggestions, /chosen\.current\?\.abort\(\)/);
