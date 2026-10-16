@@ -14,6 +14,9 @@ import {
   PAYFAST_VALIDATE_URL_LIVE,
   PAYFAST_VALIDATE_URL_SANDBOX,
   normaliseStatus,
+  amountMatches,
+  merchantMatches,
+  recordAmountCents,
   sourceAllowed,
   validateWithPayFast,
   verifySignature,
@@ -81,6 +84,14 @@ Deno.serve(async (req) => {
 
   const signatureResult = verifySignature(params, passphrase);
   if (!signatureResult.ok) return fail(signatureResult.reason, origin, 401);
+  // A real signature does not authorise the transfer to another merchant.
+  if (!merchantMatches(params.get("merchant_id"), Deno.env.get("PAYFAST_MERCHANT_ID"))) {
+    return fail("PayFast merchant account mismatch or not configured", origin, 401);
+  }
+  // Stop ambiguous duplicate fields before any lookup or provider verification.
+  for (const field of ["merchant_id", "m_payment_id", "amount_gross", "payment_status", "signature"]) {
+    if (params.getAll(field).length !== 1) return fail("duplicate or missing PayFast field", origin, 400);
+  }
 
   // Additive layer. Skips loudly when unconfigured rather than failing closed on a list that could
   // not be read from PayFast's own documentation — see `_shared/payfast.ts`.
@@ -132,11 +143,11 @@ Deno.serve(async (req) => {
     const payload = Object.fromEntries(params.entries()) as Record<string, unknown>;
     const providerReference = String(params.get("m_payment_id") ?? "").trim();
     const status = String(params.get("payment_status") ?? "").trim();
-    const amount = Number(params.get("amount_gross"));
+    const grossAmount = params.get("amount_gross");
     const currency = "ZAR";
     if (!providerReference) return fail("payment reference required", origin, 400);
     if (!isPaidStatus(status)) return fail("payment webhook status is not paid", origin, 400);
-    if (!Number.isFinite(amount) || amount < 0) return fail("payment amount required", origin, 400);
+    if (!grossAmount || !Number.isSafeInteger(recordAmountCents(grossAmount))) return fail("invalid PayFast gross amount", origin, 400);
 
     supa = getServiceClient();
     const { data: payment, error: paymentError } = await supa
@@ -147,7 +158,11 @@ Deno.serve(async (req) => {
 
     if (paymentError || !payment?.id) return fail("payment record not found", origin, 404);
     if (String(payment.currency ?? "ZAR").toUpperCase() !== currency) return fail("payment currency mismatch", origin, 409);
-    if (Math.round(Number(payment.amount) * 100) !== Math.round(amount * 100)) return fail("payment amount mismatch", origin, 409);
+    const expectedCents = recordAmountCents(payment.amount);
+    if (expectedCents === null || !amountMatches(grossAmount, expectedCents).ok) {
+      return fail("payment amount mismatch", origin, 409);
+    }
+    if (payment.provider !== "payfast") return fail("payment provider mismatch", origin, 409);
     /*
      * `admin_confirmed` counts as already handled, not just `paid`.
      *
@@ -192,14 +207,18 @@ Deno.serve(async (req) => {
         booking_id: payment.booking_id,
         currency,
         status,
+        pf_payment_id: String(params.get("pf_payment_id") ?? "").slice(0, 120),
       },
     });
     providerEventId = providerEvent.providerEventId;
     if (providerEvent.alreadySeen) {
-      return ok({ payment_record_id: payment.id, booking_id: payment.booking_id, idempotent: true }, origin);
+      // A claimed event is NOT proof that all financial and booking writes
+      // completed. If it is still pending, alert operations and let PayFast
+      // retry rather than falsely acknowledging a successful settlement.
+      return fail("payment notification was previously claimed but not settled", origin, 409);
     }
 
-    await supa
+    const { data: markedPayment, error: markingError } = await supa
       .from("payment_records")
       .update({
         status: "paid",
@@ -209,9 +228,17 @@ Deno.serve(async (req) => {
           ...(payment.meta ?? {}),
           webhook_confirmed_at: new Date().toISOString(),
           webhook_status: status,
+          pf_payment_id: String(params.get("pf_payment_id") ?? "").slice(0, 120),
         },
       })
-      .eq("id", payment.id);
+      .eq("id", payment.id)
+      .eq("status", "pending")
+      .eq("provider", "payfast")
+      .select("id")
+      .maybeSingle();
+    if (markingError || !markedPayment?.id) {
+      throw new Error("payment record was not marked paid; callback must be retried or reconciled");
+    }
 
     /*
      * Everything that follows the money — booking row, status event, job offer, notification and
@@ -237,7 +264,7 @@ Deno.serve(async (req) => {
       action: "confirm_payment_webhook",
       targetTable: "payment_records",
       targetId: payment.id,
-      changes: { status: "paid", provider_reference: providerReference, amount },
+      changes: { status: "paid", provider_reference: providerReference, amount_cents: recordAmountCents(grossAmount) },
       reason: "Payment provider webhook verified by signature",
       ipAddress: req.headers.get("x-forwarded-for"),
     });
