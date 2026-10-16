@@ -44,13 +44,17 @@ export function parseXooterJobCards(payload: unknown, xooterId: string): XooterJ
   const result: XooterJobCard[] = [];
   const seen = new Set<string>();
   for (const raw of payload.data.jobs) {
-    if (!isRecord(raw) || typeof raw.job_id !== 'string' || typeof raw.booking_id !== 'string' ||
-        raw.xooter_id !== xooterId ||
-        !['offered', 'accepted', 'declined', 'expired', 'completed'].includes(String(raw.state)) ||
-        seen.has(raw.job_id)) return null;
-    seen.add(raw.job_id);
+    if (!isRecord(raw)) return null;
+    const jobId = raw.job_id;
+    const bookingId = raw.booking_id;
+    const state = raw.state;
+    if (typeof jobId !== 'string' || typeof bookingId !== 'string' ||
+        raw.xooter_id !== xooterId || typeof state !== 'string' ||
+        !['offered', 'accepted', 'declined', 'expired', 'completed'].includes(state)) return null;
+    if (seen.has(jobId)) return null;
+    seen.add(jobId);
     result.push({
-      job_id: raw.job_id, booking_id: raw.booking_id, xooter_id: xooterId, state: raw.state,
+      job_id: jobId, booking_id: bookingId, xooter_id: xooterId, state,
       service: typeof raw.service === 'string' ? raw.service : null,
       service_type: typeof raw.service_type === 'string' ? raw.service_type : null,
       scheduled_at: dateOrNull(raw.scheduled_at),
