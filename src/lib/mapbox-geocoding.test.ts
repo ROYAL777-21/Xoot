@@ -24,13 +24,14 @@ describe("Mapbox temporary South African address search", () => {
 
   it("only permits saving a Mapbox-suggested address after Permanent Geocoding confirmation", () => {
     const temporary = mapboxAddressSearchUrl("Midrand South Africa", "pk.test");
-    const permanent = mapboxPermanentAddressUrl("dXJuOm1ieGFkcjpzeW50aGV0aWM", "pk.test");
+    const permanent = mapboxPermanentAddressUrl("14 Fredman Drive, Sandton, South Africa", "pk.test");
     expect(new URL(temporary!).searchParams.get("permanent")).toBe("false");
     expect(new URL(permanent!).searchParams.get("permanent")).toBe("true");
     expect(new URL(permanent!).searchParams.get("autocomplete")).toBe("false");
     expect(new URL(permanent!).searchParams.get("country")).toBe("za");
     expect(mapboxPermanentAddressUrl("abc", "sk.secret")).toBeNull();
     expect(mapboxPermanentAddressUrl("a;b", "pk.test")).toBeNull();
+    expect(new URL(permanent!).searchParams.get("q")).toBe("14 Fredman Drive, Sandton, South Africa");
   });
 
   it("never queries with absent, private or oversized unbounded input", () => {
@@ -111,7 +112,7 @@ describe("Mapbox consumer safety regressions", () => {
     expect(address).toContain("aria-pressed={searchEnabled}");
     expect(address).toContain("availability are not yet confirmed");
     expect(address).toContain("no exact coordinates are stored");
-    expect(address).toContain("mapboxPermanentAddressUrl(suggestion.id, browserToken)");
+    expect(address).toContain("mapboxPermanentAddressUrl(suggestion.label, browserToken)");
     expect(address).toContain("const confirmed = parseMapboxAddressSuggestions(body)");
     expect(address).not.toContain("onChange(suggestion.label)");
     expect(booking).toContain("<VerifiedAddressInput value={address}");
