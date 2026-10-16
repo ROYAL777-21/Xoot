@@ -22,7 +22,7 @@ import {
 } from "@/lib/apple-auth";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/auth-provider";
-type Place = { id: string; label: string; address: string | null };
+import { placeSummaryColumns, readAllPlaces, type PlaceSummary } from "@/generated/saved-places";
 function Row({
   icon,
   title,
@@ -55,9 +55,11 @@ function Row({
   );
 }
 export default function AccountScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isLoading: authLoading } = useAuth();
+  const owner = authLoading ? null : user?.id ?? null;
   const { profile, isLoading } = useNativeCoreData();
-  const [places, setPlaces] = useState<Place[]>([]);
+  const [placeState, setPlaceState] = useState<{owner: string | null; places: PlaceSummary[]}>({owner:null,places:[]});
+  const places = placeState.owner === owner ? placeState.places : [];
   const [placeError, setPlaceError] = useState(false);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -77,17 +79,15 @@ export default function AccountScreen() {
     };
   }, []);
   useEffect(() => {
-    if (!user) return;
-    void supabase
-      .from("household_profiles")
-      .select("id,label,address")
-      .eq("user_id", user.id)
-      .order("is_default", { ascending: false })
-      .then(({ data, error }) => {
-        setPlaceError(Boolean(error));
-        if (!error) setPlaces((data ?? []) as Place[]);
-      });
-  }, [user]);
+    let active = true;
+    if (!owner) { setPlaceState({owner:null,places:[]}); return; }
+    setPlaceError(false);
+    void readAllPlaces((start,end) => supabase.from("household_profiles").select(placeSummaryColumns)
+      .eq("user_id", owner).is("archived_at",null).order("is_default",{ascending:false}).order("id").range(start,end))
+      .then(places => { if (active) setPlaceState({owner,places}); })
+      .catch(() => { if (active) { setPlaceState({owner,places:[]}); setPlaceError(true); } });
+    return () => { active = false; };
+  }, [owner]);
   const magic = async () => {
     setSubmitting(true);
     setStatus(null);
@@ -191,14 +191,14 @@ export default function AccountScreen() {
       </Pressable>
       <SectionLabel count={places.length}>Your places</SectionLabel>
       <Card style={s.list}>
-        {placeError ? (
+        {placeState.owner === owner && placeError ? (
           <Text style={s.empty}>Saved places are temporarily unavailable.</Text>
         ) : places.length ? (
           places.map((p) => (
             <Row
               key={p.id}
               icon="home"
-              title={p.label || "Saved place"}
+              title={`${p.label || "Saved place"}${p.is_default ? " · Default" : ""}`}
               detail={p.address}
             />
           ))

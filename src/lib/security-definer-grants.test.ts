@@ -55,16 +55,24 @@ const CLIENT_ROLES = ["anon", "authenticated"] as const;
  * Functions deliberately callable by a client role, each with the migration that intends it.
  * Adding a name here is a security decision and must cite its migration.
  */
-const INTENTIONALLY_CLIENT_CALLABLE = new Map<string, string>([
-  ["lookup_referral_code", "20260601000000:139 — public referral-code lookup, granted to anon, authenticated"],
-  ["set_safety_pin", "20260802170000:71 — a user sets their own PIN; revoked from anon, granted to authenticated"],
-  ["has_role", "20260621000000:53 — role check used by RLS policies, which evaluate as the calling role"],
+type ClientRole = typeof CLIENT_ROLES[number];
+const INTENTIONALLY_CLIENT_CALLABLE = new Map<string, { roles: readonly ClientRole[]; reason: string }>([
+  ["lookup_referral_code", { roles: ["anon", "authenticated"], reason: "20260601000000:139 — public referral-code lookup" }],
+  ["set_safety_pin", { roles: ["authenticated"], reason: "20260802170000:71 — verified user sets their own PIN" }],
+  ["has_role", { roles: ["anon", "authenticated"], reason: "20260621000000:53 — role check used by caller-role RLS policies" }],
+  ["set_default_home", { roles: ["authenticated"], reason: "20261015153244 — auth.uid() owner lock, expected-account mismatch rejection and owned active target" }],
+  ["save_home", { roles: ["authenticated"], reason: "20261015153244 — auth.uid() owner lock, bounded details and immutable owner/identity" }],
+  ["delete_home", { roles: ["authenticated"], reason: "20261015153244 — auth.uid() owner lock, archives only the verified owner's active home" }],
 ]);
 
 /** Strip `--` line comments so prose about `security definer` is not read as code. */
 const stripComments = (sql: string) => sql.replace(/--[^\n]*/g, "");
 
 type State = { secdef: boolean; trigger: boolean; holders: Set<string> };
+const unexpectedClientRoles = (name: string, holders: Set<string>) => {
+  const allowed = INTENTIONALLY_CLIENT_CALLABLE.get(name)?.roles ?? [];
+  return CLIENT_ROLES.filter(role => (holders.has(role) || holders.has("public")) && !allowed.includes(role));
+};
 
 /**
  * Replay every migration in filename order and return the surviving grant state per function.
@@ -72,12 +80,10 @@ type State = { secdef: boolean; trigger: boolean; holders: Set<string> };
  * Later migrations supersede earlier ones — the same reasoning `constraint-writer-parity.test.ts`
  * uses, and the reason six constraint defects were invisible to a per-file reading.
  */
-function finalState(): Map<string, State> {
+function finalState(sources = readdirSync(MIGRATIONS).filter(f => f.endsWith(".sql")).sort().map(file => readFileSync(join(MIGRATIONS, file), "utf8"))): Map<string, State> {
   const state = new Map<string, State>();
-  const files = readdirSync(MIGRATIONS).filter((f) => f.endsWith(".sql")).sort();
-
-  for (const file of files) {
-    const sql = stripComments(readFileSync(join(MIGRATIONS, file), "utf8"));
+  for (const source of sources) {
+    const sql = stripComments(source);
 
     // Every `create function` in `public`, and whether its header says `security definer`.
     // The region runs to the next `create ... function`, which is where the header must appear.
@@ -99,33 +105,31 @@ function finalState(): Map<string, State> {
         previous.trigger = trigger;
       } else {
         // A fresh `create` resets the ACL to the platform defaults. This is the mechanism.
-        state.set(name, { secdef, trigger, holders: new Set(CLIENT_ROLES) });
+        state.set(name, { secdef, trigger, holders: new Set(["public", ...CLIENT_ROLES]) });
       }
     }
 
-    for (const m of sql.matchAll(
-      /revoke\s+(?:all|execute)[^;]*?\s+on\s+function\s+(?:public\.)?([a-z0-9_]+)\s*\([^)]*\)\s*from\s+([^;]+);/gi,
-    )) {
-      const entry = state.get(m[1]);
-      if (!entry) continue;
-      for (const role of m[2].split(",").map((r) => r.trim().toLowerCase())) entry.holders.delete(role);
-    }
-
-    for (const m of sql.matchAll(
-      /grant\s+execute\s+on\s+function\s+(?:public\.)?([a-z0-9_]+)\s*\([^)]*\)\s*to\s+([^;]+);/gi,
-    )) {
-      const entry = state.get(m[1]);
-      if (!entry) continue;
-      for (const role of m[2].split(",").map((r) => r.trim().toLowerCase())) {
-        if ((CLIENT_ROLES as readonly string[]).includes(role)) entry.holders.add(role);
+    // SQL permits a comma-separated list of function signatures, including commas
+    // inside argument lists. Replay GRANT/REVOKE statements in their source order.
+    for (const m of sql.matchAll(/\b(revoke|grant)\s+(?:all(?:\s+privileges)?|execute)\s+on\s+function\s+([^;]+?)\s+(?:from|to)\s+([^;]+);/gi)) {
+      const roles = m[3].split(",").map(role => role.trim().toLowerCase());
+      for (const signature of m[2].matchAll(/(?:([a-z0-9_]+)\.)?([a-z0-9_]+)\s*\([^)]*\)/gi)) {
+        if (signature[1] && signature[1].toLowerCase() !== "public") continue;
+        const entry = state.get(signature[2].toLowerCase());
+        if (!entry) continue;
+        for (const role of roles) {
+          if (m[1].toLowerCase() === "revoke") entry.holders.delete(role);
+          else entry.holders.add(role);
+        }
       }
     }
+
   }
 
   return state;
 }
 
-describe("no SECURITY DEFINER function in public is callable by a client role", () => {
+describe("no SECURITY DEFINER function in public is callable by an unapproved client role", () => {
   const state = finalState();
 
   it("parses a meaningful number of functions", () => {
@@ -153,12 +157,49 @@ describe("no SECURITY DEFINER function in public is callable by a client role", 
     expect(state.get("can_release_xooter_payout")?.secdef, "can_release_xooter_payout is SECURITY DEFINER").toBe(true);
   });
 
-  it("finds no SECURITY DEFINER function left callable by anon or authenticated", () => {
+  it("models every atomic-home RPC as authenticated-only, without PUBLIC or anonymous execution", () => {
+    for (const name of ["set_default_home", "save_home", "delete_home"]) {
+      expect(state.get(name)?.secdef).toBe(true);
+      expect([...state.get(name)!.holders].filter(role => ["anon", "authenticated", "public"].includes(role))).toEqual(["authenticated"]);
+      expect(INTENTIONALLY_CLIENT_CALLABLE.get(name)?.roles).toEqual(["authenticated"]);
+      expect(INTENTIONALLY_CLIENT_CALLABLE.get(name)?.reason).toContain("20261015153244");
+    }
+  });
+
+  it("replays multi-function grants/revokes, preserves schemas and statement order, and detects omitted role revocation", () => {
+    const definitions = "create function public.first(uuid,uuid) returns jsonb language sql security definer as 'select null'; create function public.second(uuid,jsonb,boolean) returns jsonb language sql security definer as 'select null';";
+    const acl = "revoke all on function public.first(uuid,uuid), public.second(uuid,jsonb,boolean) from public,anon,authenticated; grant execute on function public.first(uuid,uuid), public.second(uuid,jsonb,boolean) to authenticated;";
+    const clean = finalState([definitions + acl]);
+    expect([...clean.get("first")!.holders]).toEqual(["authenticated"]);
+    expect([...clean.get("second")!.holders]).toEqual(["authenticated"]);
+    const omitted = finalState([definitions + acl.replace("from public,anon,authenticated", "from public,authenticated")]);
+    for (const name of ["first", "second"]) expect(omitted.get(name)?.holders.has("anon")).toBe(true);
+    const ordered = finalState([definitions + acl + " revoke execute on function public.first(uuid,uuid),public.second(uuid,jsonb,boolean) from authenticated;"]);
+    expect([...ordered.get("first")!.holders]).toEqual([]);expect([...ordered.get("second")!.holders]).toEqual([]);
+    const otherSchema = finalState([definitions + "revoke all on function private.first(uuid,uuid),public.second(uuid,jsonb,boolean) from public,anon,authenticated;"]);
+    expect(otherSchema.get("first")?.holders.has("anon")).toBe(true);expect([...otherSchema.get("second")!.holders]).toEqual([]);
+  });
+
+  it("rejects anonymous exposure in the actual home migration despite its deliberate authenticated allowance", () => {
+    const sources = readdirSync(MIGRATIONS).filter(file => file.endsWith(".sql")).sort()
+      .map(file => ({ file, sql: readFileSync(join(MIGRATIONS, file), "utf8") }));
+    const missingAnonRevoke = finalState(sources.map(({ file, sql }) => file === "20261015153244_atomic_default_home.sql"
+      ? sql.split("from public,anon,authenticated,service_role;").join("from public,authenticated,service_role;")
+      : sql));
+    for (const name of ["set_default_home", "save_home", "delete_home"]) {
+      expect(unexpectedClientRoles(name, state.get(name)!.holders)).toEqual([]);
+      expect(unexpectedClientRoles(name, missingAnonRevoke.get(name)!.holders)).toEqual(["anon"]);
+    }
+    const publicRegrant = finalState([...sources.map(source => source.sql), "grant execute on function public.set_default_home(uuid,uuid,boolean),public.save_home(uuid,uuid,jsonb,boolean),public.delete_home(uuid,uuid) to public;"]);
+    for (const name of ["set_default_home", "save_home", "delete_home"])
+      expect(unexpectedClientRoles(name, publicRegrant.get(name)!.holders)).toEqual(["anon"]);
+  });
+
+  it("finds no SECURITY DEFINER function left callable by an unapproved anon or authenticated role", () => {
     const exposed: string[] = [];
     for (const [name, { secdef, trigger, holders }] of state) {
       if (!secdef) continue;
-      if (INTENTIONALLY_CLIENT_CALLABLE.has(name)) continue;
-      const held = CLIENT_ROLES.filter((role) => holders.has(role));
+      const held = unexpectedClientRoles(name, holders);
       if (!held.length) continue;
       // A trigger function is not reachable through PostgREST; say so rather than calling it
       // reachable, or the next person spends a day chasing an exposure that does not exist.

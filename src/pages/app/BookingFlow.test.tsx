@@ -7,13 +7,16 @@ import Book from "./Book";
 
 const harness = vi.hoisted(() => ({
   auth: { user: { id: "buyer" } as { id: string } | null, loading: false },
-  invoke: vi.fn(), roster: vi.fn(),
+  invoke: vi.fn(), roster: vi.fn(), read: vi.fn(),
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => harness.auth }));
 vi.mock("@/lib/xooter-directory", () => ({ loadXooterDirectory: harness.roster }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {
   functions: { invoke: harness.invoke },
-  from: () => { const chain = { select: () => chain, eq: () => chain, order: () => Promise.resolve({ data: [], error: null }), maybeSingle: () => Promise.resolve({ data: null, error: null }) }; return chain; },
+  from: (table: string) => {
+    const query = {table, filters: [] as [string,unknown][]};
+    const chain = {select: () => chain, eq: (field: string,value: unknown) => {query.filters.push([field,value]);return chain;}, is: (field: string,value: unknown) => {query.filters.push([field,value]);return chain;}, order: () => Promise.resolve({data:[],error:null}), maybeSingle: () => harness.read(query)}; return chain;
+  },
 } }));
 
 async function response(body: unknown) {
@@ -39,6 +42,7 @@ async function toReview() {
 }
 beforeEach(() => {
   vi.clearAllMocks(); harness.auth = { user: { id: "buyer" }, loading: false };
+  harness.read.mockReset().mockResolvedValue({data:null,error:null});
   harness.roster.mockResolvedValue({ xooters: [], total: 0 });
   harness.invoke.mockImplementation(async (_name, options) => response(options.body));
 });
@@ -184,5 +188,28 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     harness.auth.loading = true; mount();
     expect(screen.getByRole("status")).toHaveTextContent("Loading your account");
     expect(harness.invoke).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("Canonical booking address", () => {
+  it("prefills only the explicit active household default without changing it", async () => {
+    harness.read.mockResolvedValue({data:{address:"100 Canonical Road, Sandton"},error:null});
+    mount(); next();
+    await waitFor(() => expect(screen.getByLabelText("Where do you need us?")).toHaveValue("100 Canonical Road, Sandton"));
+    expect(harness.read).toHaveBeenCalledWith({table:"household_profiles",filters:[["user_id","buyer"],["is_default",true],["archived_at",null]]});
+    fireEvent.change(screen.getByLabelText("Where do you need us?"),{target:{value:"200 This booking only, Sandton"}});
+    expect(harness.read).toHaveBeenCalledOnce();
+  });
+  it("leaves the address blank when there is no selected home and allows explicit entry", async () => {
+    mount(); next(); await act(async () => {});
+    expect(screen.getByLabelText("Where do you need us?")).toHaveValue("");
+  });
+  it("does not overwrite an explicit booking address when the default reply arrives late", async () => {
+    let resolve!:(value: unknown)=>void;
+    harness.read.mockReturnValueOnce(new Promise(done => { resolve=done; }));
+    mount();next();fireEvent.change(screen.getByLabelText("Where do you need us?"),{target:{value:"200 Explicit Road, Sandton"}});
+    await act(async () => {resolve({data:{address:"100 Canonical Road, Sandton"},error:null});});
+    expect(screen.getByLabelText("Where do you need us?")).toHaveValue("200 Explicit Road, Sandton");
   });
 });

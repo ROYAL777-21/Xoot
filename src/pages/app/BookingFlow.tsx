@@ -131,7 +131,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     if (!buyerId) return;
     let active = true;
     Promise.all([
-      supabase.from("profiles").select("address").eq("id", buyerId).maybeSingle(),
+      supabase.from("household_profiles").select("address").eq("user_id", buyerId).eq("is_default", true).is("archived_at", null).maybeSingle(),
       supabase.from("property_accounts").select("id,name").eq("user_id", buyerId).eq("status", "active").order("created_at"),
     ]).then(([profile, accounts]) => {
       if (!active) return;

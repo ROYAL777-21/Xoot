@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { FavouriteXooter, PropertyProfile, SmartReminder } from "@/types/care-plus";
@@ -11,7 +11,7 @@ type HouseholdProfileRow = {
   cleaning_preferences?: string | null;
   fragile_areas?: string | null;
   favourite_products?: string | null;
-  access_notes?: string | null;
+  has_access_notes?: boolean | null;
   is_default?: boolean | null;
   updated_at?: string | null;
 };
@@ -170,7 +170,7 @@ export const getHomeMemoryReadinessScore = (row: HouseholdProfileRow | null) => 
     hasText(row.cleaning_preferences),
     hasText(row.fragile_areas),
     hasText(row.favourite_products),
-    hasText(row.access_notes),
+    row.has_access_notes === true,
   ];
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 };
@@ -196,7 +196,7 @@ const mapHomeMemory = (row: HouseholdProfileRow | null): HomeMemorySnapshot | nu
     cleaningPreferences: row.cleaning_preferences?.trim() || "No cleaning preferences saved yet.",
     fragileAreas: row.fragile_areas?.trim() || "No fragile areas saved yet.",
     favouriteProducts: row.favourite_products?.trim() || "No product preferences saved yet.",
-    hasAccessNotes: hasText(row.access_notes),
+    hasAccessNotes: row.has_access_notes === true,
     readinessScore: getHomeMemoryReadinessScore(row),
     updatedAt: row.updated_at ?? null,
   };
@@ -411,6 +411,11 @@ const resolveXooters = async (favorites: FavouriteRow[]) => {
 
 export const useHouseholdOperatingLayer = () => {
   const { user, loading: authLoading } = useAuth();
+  const owner = authLoading ? null : user?.id ?? null;
+  const identity = useRef({ owner, version: 0 });
+  const requests = useRef(0);
+  if (identity.current.owner !== owner) identity.current = { owner, version: identity.current.version + 1 };
+  const [layerOwner, setLayerOwner] = useState<string | null>(null);
   const [layer, setLayer] = useState<HouseholdOperatingLayer>(emptyLayer);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -424,6 +429,9 @@ export const useHouseholdOperatingLayer = () => {
       return;
     }
 
+    const scope = identity.current;
+    const sequence = ++requests.current;
+    const current = () => identity.current === scope && requests.current === sequence;
     setLoading(true);
     setError(null);
 
@@ -431,9 +439,9 @@ export const useHouseholdOperatingLayer = () => {
       const [householdResult, propertyResult, bookingResult, favoriteResult, supportResult] = await Promise.all([
         supabase
           .from("household_profiles")
-          .select("id,label,pet_notes,parking_instructions,cleaning_preferences,fragile_areas,favourite_products,access_notes,is_default,updated_at")
+          .select("id,label,pet_notes,parking_instructions,cleaning_preferences,fragile_areas,favourite_products,has_access_notes,is_default,updated_at")
           .eq("user_id", user.id)
-          .order("is_default", { ascending: false })
+          .eq("is_default", true).is("archived_at", null)
           .order("updated_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
@@ -466,6 +474,7 @@ export const useHouseholdOperatingLayer = () => {
       const firstError = [householdResult, propertyResult, bookingResult, favoriteResult, supportResult]
         .map((result) => result.error?.message)
         .find(Boolean);
+      if (!current()) return;
       if (firstError) setError(firstError);
 
       const homeMemory = mapHomeMemory((householdResult.data as HouseholdProfileRow | null) ?? null);
@@ -479,6 +488,8 @@ export const useHouseholdOperatingLayer = () => {
       const xooters = await resolveXooters(favorites);
       const tickets = Array.isArray(supportResult.data) ? (supportResult.data as SupportTicketRow[]) : [];
 
+      if (!current()) return;
+      setLayerOwner(owner);
       setLayer({
         homeMemory,
         propertyProfiles: properties,
@@ -494,24 +505,28 @@ export const useHouseholdOperatingLayer = () => {
         lifecycleTriggers: buildLifecycleTriggers(bookings[0]?.scheduledAt ?? null, properties.length, homeMemory?.readinessScore ?? 0),
       });
     } catch (refreshError) {
+      if (!current()) return;
+      setLayerOwner(owner);
       setLayer(emptyLayer);
       setError(refreshError instanceof Error ? refreshError.message : "Household operating data could not load.");
     } finally {
-      setLoading(false);
+      if (current()) setLoading(false);
     }
-  }, [authLoading, user]);
+  }, [authLoading, user, owner]);
 
   useEffect(() => {
-    refresh();
+    void refresh();
+    const pending = requests;
+    return () => { ++pending.current; };
   }, [refresh]);
 
   return useMemo(
     () => ({
-      ...layer,
-      loading: authLoading || loading,
-      error,
+      ...(layerOwner === owner ? layer : emptyLayer),
+      loading: authLoading || loading || !!owner && layerOwner !== owner,
+      error: layerOwner === owner ? error : null,
       refresh,
     }),
-    [authLoading, error, layer, loading, refresh],
+    [authLoading, error, layer, layerOwner, owner, loading, refresh],
   );
 };

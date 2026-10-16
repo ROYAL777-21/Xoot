@@ -1,3 +1,4 @@
+import { readPlaces } from "@/lib/saved-places-client";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -18,14 +19,7 @@ export async function readIdentity(owner: string): Promise<Identity> {
 
 export async function readProfileOverview(owner: string) {
   const profile = await readIdentity(owner);
-  const places: PlaceSummary[] = [];
-  for (let start = 0; ; start += pageSize) {
-    const result = await supabase.from("household_profiles").select("id,label,address,is_default")
-      .eq("user_id", owner).order("is_default", { ascending: false }).order("id", { ascending: true }).range(start, start + pageSize - 1);
-    if (result.error || !result.data) throw new Error("Your places could not be loaded.");
-    places.push(...result.data);
-    if (result.data.length < pageSize) break;
-  }
+  const places = await readPlaces(owner);
   // Only the real Care+ plan is a membership; other subscription products are not.
   const subscriptions = [];
   for (let start = 0; ; start += pageSize) {
@@ -61,20 +55,16 @@ export const HomeInput = z.object({
 });
 
 export async function readHome(owner: string, id: string): Promise<HomeDraft> {
-  const result = await supabase.from("household_profiles").select(homeColumns).eq("id", id).eq("user_id", owner).maybeSingle();
+  const result = await supabase.from("household_profiles").select(homeColumns).eq("id", id).eq("user_id", owner).is("archived_at", null).maybeSingle();
   if (result.error || !result.data) throw new Error("This place could not be loaded. It may no longer be available.");
   return result.data;
 }
 
-export async function saveHome(owner: string, id: string | null, draft: HomeDraft) {
-  // Default selection needs an atomic backend operation; ordinary editing must
-  // not overwrite a concurrent default change or create another default.
+export async function saveHome(owner: string, id: string, draft: HomeDraft, selected: boolean | null = null) {
   const parsed = HomeInput.omit({ is_default: true }).safeParse(draft);
   if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Check your place details.");
-  const payload = { ...parsed.data, updated_at: new Date().toISOString() };
-  const result = id
-    ? await supabase.from("household_profiles").update(payload).eq("id", id).eq("user_id", owner).select("id").maybeSingle()
-    : await supabase.from("household_profiles").insert({ ...payload, is_default: false, user_id: owner }).select("id").maybeSingle();
-  if (result.error || !result.data?.id || (id && result.data.id !== id)) throw new Error("This place was not saved. Please try again.");
-  return result.data.id;
+  const { data, error } = await supabase.rpc("save_home", { p_expected_owner: owner, p_home_id: id, p_details: parsed.data, p_selected: selected });
+  if (error || !data || typeof data !== "object" || Array.isArray(data) || data.id !== id || typeof data.is_default !== "boolean" || selected !== null && data.is_default !== selected)
+    throw new Error("This place was not saved or confirmation was lost. Reload your places before trying again.");
+  return data.id;
 }

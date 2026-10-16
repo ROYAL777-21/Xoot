@@ -9,7 +9,7 @@ import { blankHome } from "./profile-data";
 type Query = { table: string; filters: [string, string][]; payload?: unknown; write?: "update" | "insert" };
 const harness = vi.hoisted(() => ({
   auth: { user: { id: "owner-a", email: "synthetic@example.invalid" } as { id: string; email: string } | null, loading: false },
-  read: vi.fn(), write: vi.fn(), signOut: vi.fn(), creditRefresh: vi.fn(), concierge: vi.fn(), theme: vi.fn(),
+  read: vi.fn(), rpc: vi.fn(), write: vi.fn(), signOut: vi.fn(), creditRefresh: vi.fn(), concierge: vi.fn(), theme: vi.fn(),
   credit: { availableBalance: 12.34, loading: false, error: null as string | null },
   queries: [] as Query[],
 }));
@@ -17,11 +17,11 @@ vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => harness.auth }));
 vi.mock("@/contexts/ConciergeContext", () => ({ useConcierge: () => ({ openConcierge: harness.concierge }) }));
 vi.mock("next-themes", () => ({ useTheme: () => ({ resolvedTheme: "dark", setTheme: harness.theme }) }));
 vi.mock("@/hooks/useXootCred", () => ({ useXootCred: () => ({ ...harness.credit, refresh: harness.creditRefresh }) }));
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { signOut: () => harness.signOut() }, from: (table: string) => {
+vi.mock("@/integrations/supabase/client", () => ({ supabase: { rpc: (...args: unknown[]) => harness.rpc(...args), auth: { signOut: () => harness.signOut() }, from: (table: string) => {
   const record: Query = { table, filters: [] }; harness.queries.push(record);
   const finish = () => record.write ? harness.write(record) : harness.read(record);
   const chain = { select: () => chain, eq: (field: string, value: string) => { record.filters.push([field, value]); return chain; },
-    order: () => chain, range: finish, maybeSingle: finish,
+    is: () => chain, order: () => chain, range: finish, maybeSingle: finish,
     update: (payload: unknown) => { record.payload = payload; record.write = "update"; return chain; },
     insert: (payload: unknown) => { record.payload = payload; record.write = "insert"; return chain; },
   }; return chain;
@@ -41,8 +41,9 @@ beforeEach(() => {
   localStorage.clear(); harness.queries = [];
   harness.auth = { user: { id: "owner-a", email: "synthetic@example.invalid" }, loading: false };
   harness.credit = { availableBalance: 12.34, loading: false, error: null };
-  for (const mock of [harness.write, harness.signOut, harness.creditRefresh, harness.concierge, harness.theme]) mock.mockReset();
+  for (const mock of [harness.rpc, harness.write, harness.signOut, harness.creditRefresh, harness.concierge, harness.theme]) mock.mockReset();
   harness.signOut.mockResolvedValue({ error: null });
+  harness.rpc.mockImplementation((_name, args) => Promise.resolve(ok({ id: args.p_home_id, is_default: args.p_selected ?? false })));
   harness.write.mockResolvedValue(ok({ id: "owner-a" }));
   harness.read.mockReset().mockImplementation((query: Query) => Promise.resolve(ok(query.table === "profiles" ? identity : query.table === "user_subscriptions" ? [] : query.filters.some(([field]) => field === "id") ? home : [{ id: "place-a", label: home.label, address: home.address, is_default: false }])));
 });
@@ -154,24 +155,71 @@ describe("Account and place editors", () => {
     expect(screen.getByTestId("location")).toHaveTextContent("/app/profile/account"); expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
   it("creates places from validated inputs and the auth owner without reading private place data", async () => {
-    harness.write.mockResolvedValueOnce(ok({ id: "created-place" })); render(<Fixture url="/app/profile/homes/new" />);
+    render(<Fixture url="/app/profile/homes/new" />);
     const name = await screen.findByLabelText("Place name"); expect(harness.read).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Save this place" })); expect(await screen.findByRole("alert")).toHaveTextContent("Name this place"); expect(harness.write).not.toHaveBeenCalled();
     fireEvent.change(name, { target: { value: "New Synthetic place" } }); fireEvent.change(screen.getByLabelText("Address"), { target: { value: home.address } });
     fireEvent.change(screen.getByLabelText("Pets"), { target: { value: "Synthetic pet" } }); fireEvent.click(screen.getByRole("button", { name: "Save this place" }));
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(/^\/app\/profile$/));
-    expect(harness.write.mock.calls[0][0]).toMatchObject({ write: "insert", payload: { user_id: "owner-a", label: "New Synthetic place", pet_notes: "Synthetic pet" } });
+    expect(harness.rpc.mock.calls[0]).toEqual(["save_home", expect.objectContaining({ p_expected_owner: "owner-a", p_selected: null, p_details: expect.objectContaining({label: "New Synthetic place", pet_notes: "Synthetic pet"}) })]);
   });
   it("preserves home fields, reports denied updates and allows cancel without another write", async () => {
-    harness.write.mockResolvedValueOnce(denied); harness.read.mockResolvedValueOnce(ok({ ...home, is_default: true })); render(<Fixture url="/app/profile/homes/place-a" />);
+    harness.rpc.mockResolvedValueOnce(denied); harness.read.mockResolvedValueOnce(ok({ ...home, is_default: true })); render(<Fixture url="/app/profile/homes/place-a" />);
     expect(await screen.findByLabelText("Pets")).toHaveValue("Synthetic pet note");
-    expect(screen.getByLabelText(/Default place/)).toBeDisabled();
+    expect(screen.getByLabelText(/Default place/)).toBeEnabled();
     expect(screen.getByLabelText(/Default place/)).toBeChecked();
     expect(screen.getByRole("combobox", { name: /What is it/ })).toBeDisabled();
     fireEvent.change(screen.getByLabelText("Gate code"), { target: { value: "synthetic-code" } }); fireEvent.click(screen.getByRole("button", { name: "Save this place" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("not saved"); expect(screen.getByLabelText("Gate code")).toHaveValue("synthetic-code");
-    expect(harness.write.mock.calls[0][0]).toMatchObject({ filters: [["id", "place-a"], ["user_id", "owner-a"]], payload: { pet_notes: "Synthetic pet note", gate_code: "synthetic-code" } });
-    expect(harness.write.mock.calls[0][0].payload).not.toHaveProperty("is_default");
-    fireEvent.click(screen.getByRole("link", { name: "Back to You" })); await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(/^\/app\/profile$/)); expect(harness.write).toHaveBeenCalledOnce();
+    expect(harness.rpc.mock.calls[0][1]).toMatchObject({ p_expected_owner: "owner-a", p_home_id: "place-a", p_selected: null, p_details: { pet_notes: "Synthetic pet note", gate_code: "synthetic-code" } });
+    expect(harness.rpc.mock.calls[0][1].p_details).not.toHaveProperty("is_default");
+    fireEvent.click(screen.getByRole("link", { name: "Back to You" })); await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(/^\/app\/profile$/)); expect(harness.rpc).toHaveBeenCalledOnce();
+  });
+});
+
+
+describe("Atomic default-home control", () => {
+  it("commits the checkbox selection and details once, waiting for the server before returning", async () => {
+    const pending = deferred<ReturnType<typeof ok>>(); harness.rpc.mockReturnValueOnce(pending.promise);
+    render(<Fixture url="/app/profile/homes/place-a" />);
+    const control = await screen.findByRole("switch", { name: /Default place/ });
+    expect(control).toHaveAttribute("type", "checkbox");
+    control.focus(); expect(control).toHaveFocus(); fireEvent.click(control);
+    fireEvent.change(screen.getByLabelText("Place name"), { target: { value: "Office" } });
+    const save = screen.getByRole("button", { name: "Save this place" }); fireEvent.click(save); fireEvent.click(save);
+    expect(harness.rpc).toHaveBeenCalledOnce(); expect(control).toBeDisabled();
+    expect(harness.rpc.mock.calls[0][1]).toMatchObject({ p_home_id: "place-a", p_expected_owner: "owner-a", p_selected: true, p_details: { label: "Office" } });
+    expect(screen.getByTestId("location")).toHaveTextContent("/app/profile/homes/place-a");
+    await act(async () => { pending.resolve(ok({ id: "place-a", is_default: true })); await pending.promise; });
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(/^\/app\/profile$/));
+  });
+  it("retains a new home's draft and UUID when the RPC is undelivered, then retries honestly", async () => {
+    harness.rpc.mockResolvedValueOnce({ data: null, error: { code: "PGRST202" } });
+    render(<Fixture url="/app/profile/homes/new" />);
+    fireEvent.change(await screen.findByLabelText("Place name"), { target: { value: "Office" } });
+    fireEvent.change(screen.getByLabelText("Address"), { target: { value: home.address } });
+    fireEvent.click(screen.getByRole("switch", { name: /Default place/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Save this place" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("confirmation was lost");
+    expect(screen.getByLabelText("Place name")).toHaveValue("Office");
+    expect(screen.getByTestId("location")).toHaveTextContent("/app/profile/homes/new");
+    fireEvent.click(screen.getByRole("button", { name: "Save this place" }));
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(/^\/app\/profile$/));
+    expect(harness.rpc.mock.calls[0]).toEqual(harness.rpc.mock.calls[1]);
+  });
+  it.each([true, false])("ignores a stale default %s reply across an account transition", async success => {
+    const pending = deferred<ReturnType<typeof ok>>(); harness.rpc.mockReturnValueOnce(pending.promise);
+    const view = render(<Fixture url="/app/profile/homes/place-a" />);
+    fireEvent.click(await screen.findByRole("switch", { name: /Default place/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Save this place" }));
+    harness.auth.loading = true; view.rerender(<Fixture url="/app/profile/homes/place-a" />);
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+    harness.auth = { user: {id:"owner-b",email:"b@example.invalid"}, loading:false };
+    view.rerender(<Fixture url="/app/profile/homes/place-a" />);
+    await screen.findByRole("switch", { name: /Default place/ });
+    await act(async () => { pending.resolve(success ? ok({ id:"place-a",is_default:true }) : denied); await pending.promise; });
+    expect(screen.getByTestId("location")).toHaveTextContent("/app/profile/homes/place-a");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: /Default place/ })).not.toBeChecked();
   });
 });

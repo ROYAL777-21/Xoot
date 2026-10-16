@@ -20,7 +20,7 @@ describe("household operating layer helpers", () => {
       cleaning_preferences: "Low scent",
       fragile_areas: "Dining cabinet",
       favourite_products: "Client supplies",
-      access_notes: "Ask at reception",
+      has_access_notes: true,
     })).toBe(100);
   });
 

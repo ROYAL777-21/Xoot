@@ -1636,6 +1636,11 @@ export type Database = {
       }
       household_profiles: {
         Row: {
+          has_access_notes: boolean | null
+          source_saved_address_id: string | null
+          city: string | null
+          postal_code: string | null
+          archived_at: string | null
           access_instructions: string | null
           access_notes: string | null
           address: string | null
@@ -1654,6 +1659,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          has_access_notes?: never
+          source_saved_address_id?: string | null
+          city?: string | null
+          postal_code?: string | null
+          archived_at?: string | null
           access_instructions?: string | null
           access_notes?: string | null
           address?: string | null
@@ -1672,6 +1682,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          has_access_notes?: never
+          source_saved_address_id?: string | null
+          city?: string | null
+          postal_code?: string | null
+          archived_at?: string | null
           access_instructions?: string | null
           access_notes?: string | null
           address?: string | null
@@ -1689,7 +1704,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [{ foreignKeyName: "household_profiles_source_saved_address_id_fkey"; columns: ["source_saved_address_id"]; isOneToOne: true; referencedRelation: "saved_addresses"; referencedColumns: ["id"] }]
       }
       integration_outbox: {
         Row: {
@@ -3037,6 +3052,7 @@ export type Database = {
       }
       saved_addresses: {
         Row: {
+          legacy_default_at_cutover: boolean | null
           address: string
           city: string | null
           created_at: string
@@ -3047,6 +3063,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          legacy_default_at_cutover?: boolean | null
           address: string
           city?: string | null
           created_at?: string
@@ -3057,6 +3074,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          legacy_default_at_cutover?: boolean | null
           address?: string
           city?: string | null
           created_at?: string
@@ -5455,6 +5473,9 @@ export type Database = {
       }
     }
     Functions: {
+      set_default_home: { Args: { p_expected_owner: string; p_home_id: string; p_selected?: boolean }; Returns: Json }
+      save_home: { Args: { p_expected_owner: string; p_home_id: string; p_details: Json; p_selected?: boolean | null }; Returns: Json }
+      delete_home: { Args: { p_expected_owner: string; p_home_id: string }; Returns: Json }
       can_access_sensitive_data: {
         Args: { p_booking_id: string; p_xooter_id: string }
         Returns: boolean
