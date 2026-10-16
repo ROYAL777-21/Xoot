@@ -115,6 +115,7 @@ test('native and website address selection use licensed permanent Geocoding only
   assert.match(nativeSuggestions, /parseNativeMapboxSuggestions\(body\)/);
   assert.doesNotMatch(nativeSuggestions, /onSelect\(item.label\)/);
   assert.match(nativeSuggestions, /chosen\.current\?\.abort\(\)/);
+  assert.match(nativeSuggestions, /A changed address invalidates an outstanding Permanent Geocoding confirmation/);
   assert.match(nativeSuggestions, /Enter your address manually/);
   assert.doesNotMatch(nativeSuggestions, /watchPosition|Location\.watch|UserLocation/);
 });
