@@ -89,7 +89,7 @@ export default function VisitDetailScreen() {
         The booking feed has already been scoped to this authenticated customer,
         and the Edge endpoint repeats that check for every location read. */}
     {(booking.status === 'en_route' || booking.status === 'enroute') &&
-      <PrivateJobJourney bookingId={booking.id} />}
+      <PrivateJobJourney bookingId={booking.id} destinationAddress={booking.address} />}
     {progress ? <Card style={s.infoCard}>
       <Text style={s.copy}>An indication of the current booking stage. These steps are not a historical event log or live GPS tracking.</Text>
       {progress.phases.map((step, index) =>
