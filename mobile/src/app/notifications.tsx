@@ -86,8 +86,12 @@ function NotificationsForOwner({ userId }: { userId: string }) {
       let update = supabase.from('notifications')
         .update({ read: true }).eq('user_id', userId).eq('read', false);
       if (item) update = update.eq('id', item.id);
-      const { error } = await update;
-      if (error) throw error;
+      // A successful HTTP response with zero modified rows is not confirmation
+      // that a specific unread notification was marked read.
+      const { data, error } = await update.select('id');
+      if (error || (item && (data?.length !== 1 || data[0].id !== item.id))) {
+        throw new Error('Notification read was not confirmed for this owner');
+      }
       if (!active.current) return;
       setRefreshNumber(value => value + 1);
       await refreshCore();
