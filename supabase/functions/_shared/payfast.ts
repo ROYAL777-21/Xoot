@@ -179,7 +179,7 @@ export const verifySignature = (params: URLSearchParams, passphrase: string) => 
 export const recordAmountCents = (amount: unknown): number | null => {
   if (typeof amount !== "number" && typeof amount !== "string") return null;
   const value = String(amount).trim();
-  if (!/^(?:0|[1-9]\\d{0,12})(?:\\.\\d{1,2})?$/.test(value)) return null;
+  if (!/^(?:0|[1-9]\d{0,12})(?:\.\d{1,2})?$/.test(value)) return null;
   const [whole, decimal = ""] = value.split(".");
   const cents = Number(whole) * 100 + Number(decimal.padEnd(2, "0"));
   return Number.isSafeInteger(cents) && cents >= 0 ? cents : null;
@@ -191,7 +191,7 @@ export const recordAmountCents = (amount: unknown): number | null => {
  * there is no permission to underpay even by one cent.
  */
 export const payfastGrossCents = (gross: unknown): number | null => {
-  if (typeof gross !== "string" || !/^(?:0|[1-9]\\d{0,12})\\.\\d{2}$/.test(gross)) return null;
+  if (typeof gross !== "string" || !/^(?:0|[1-9]\d{0,12})\.\d{2}$/.test(gross)) return null;
   return recordAmountCents(gross);
 };
 
@@ -206,7 +206,7 @@ export const amountMatches = (grossFromItn: unknown, expectedCents: number) => {
 
 export const merchantMatches = (merchantFromItn: unknown, configuredMerchantId: unknown) =>
   typeof merchantFromItn === "string" && typeof configuredMerchantId === "string" &&
-  /^\\d{8}$/.test(configuredMerchantId.trim()) &&
+  /^\d{8}$/.test(configuredMerchantId.trim()) &&
   merchantFromItn === configuredMerchantId.trim();
 
 /**
