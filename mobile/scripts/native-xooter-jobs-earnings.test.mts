@@ -90,6 +90,8 @@ test('native Xooter jobs and earnings routes retain owner, RLS and write boundar
   assert.match(earnings, /\.eq\('xooter_id', profile\.id\)/);
   assert.match(earnings, /\.eq\('user_id', userId\)/);
   assert.match(earnings, /key=\{user\.id\}/);
+  assert.match(earnings, /state\.period === period/);
+  assert.match(earnings, /only the latest 100 entries are shown/);
   assert.match(earnings, /not proof of bank settlement/);
   assert.match(account, /router\.push\("\/xooter\/jobs"\)/);
   assert.doesNotMatch(jobs, /customer_access_code|direct access pin/i);
