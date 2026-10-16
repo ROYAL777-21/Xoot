@@ -36,7 +36,7 @@ comment on table public.xoot_job_live_positions is
 -- rely only on the TTL. This trigger runs with DB privileges after the protected
 -- booking status change, never with arbitrary client-supplied actor IDs.
 create or replace function private.xoot_clear_live_location_on_booking_update()
-returns trigger language plpgsql security definer set search_path = '' as $
+returns trigger language plpgsql security definer set search_path = '' as $$
 begin
   if new.status::text not in ('en_route','enroute')
     or new.xooter_id is distinct from old.xooter_id
@@ -48,7 +48,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 revoke all on function private.xoot_clear_live_location_on_booking_update() from public, anon, authenticated;
 create trigger xoot_remove_location_on_booking_change
 after update of status,xooter_id,cancelled_at,completed_at,sensitive_data_revoked_at
@@ -58,7 +58,7 @@ execute function private.xoot_clear_live_location_on_booking_update();
 -- A worker unassignment may be represented in xooter_jobs before bookings is
 -- updated. Remove the old job's position at that point as well.
 create or replace function private.xoot_clear_live_location_on_job_change()
-returns trigger language plpgsql security definer set search_path = '' as $
+returns trigger language plpgsql security definer set search_path = '' as $$
 begin
   if tg_op = 'DELETE' then
     if old.state = 'accepted' then
@@ -77,7 +77,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 revoke all on function private.xoot_clear_live_location_on_job_change() from public, anon, authenticated;
 create trigger xoot_remove_location_on_job_change
 after update or delete on public.xooter_jobs for each row
