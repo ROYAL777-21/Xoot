@@ -35,6 +35,8 @@ import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { toast } from "sonner";
 import { JobChecklist } from "@/components/xooter/JobChecklist";
 import { WorkerRoadEstimate } from "@/components/xoot/WorkerRoadEstimate";
+import { WorkerLiveSharing } from "@/components/xoot/WorkerLiveSharing";
+import { LiveWorkerJourney } from "@/components/xoot/LiveWorkerJourney";
 import { safeFileName, validateCompletionPhotoUpload } from "@/lib/upload-validation";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
@@ -442,6 +444,9 @@ const BookingDetail = () => {
   const hasArrivedEvent = timeline.some((event) => event.status === "arrived");
   const hasStartedEvent = timeline.some((event) => event.status === "in_progress");
   const isAssignedXooter = Boolean(booking.xooter?.user_id && booking.xooter.user_id === user?.id);
+  // The live GPS backend is OFF by default, independently gated by Supabase's
+  // XOOT_ENABLE_LIVE_LOCATION flag and required physical/privacy acceptance.
+  const locationEnabled = import.meta.env.VITE_ENABLE_LIVE_LOCATION === "true";
   /**
    * The window where someone is on their way to, or inside, the home.
    *
@@ -582,9 +587,13 @@ const BookingDetail = () => {
               <Button onClick={handleOpenDirections} variant="outline" className="rounded-xl justify-center"><Navigation className="h-4 w-4 mr-1" /> Directions</Button>
               <Button onClick={shareEta} variant="outline" className="rounded-xl justify-center"><Share2 className="h-4 w-4 mr-1" /> Share booking update</Button>
             </div>
-            <p className="mb-3 text-xs text-muted-foreground">No live GPS feed or calculated arrival time is connected to this booking. An en-route status is not proof of current worker position.</p>
+            {!locationEnabled && <p className="mb-3 text-xs text-muted-foreground">No live GPS feed or calculated arrival time is connected to this booking. An en-route status is not proof of current worker position.</p>}
             {isAssignedXooter && activeVisit && typeof booking.address === "string" && booking.address.trim().length >= 4 && id &&
               <div className="mb-4"><WorkerRoadEstimate bookingId={id} destinationAddress={booking.address} /></div>}
+            {locationEnabled && canonicalStatus === "en_route" && isAssignedXooter && activeJobId &&
+              <div className="mb-4"><WorkerLiveSharing key={activeJobId} jobId={activeJobId} /></div>}
+            {locationEnabled && canonicalStatus === "en_route" && user?.id === booking.user_id && id &&
+              <div className="mb-4"><LiveWorkerJourney key={id} bookingId={id} /></div>}
             <div className="space-y-3">
               {statusSteps.map((step) => {
                 const hit = timeline.find((e) => step.keys.includes(e.status) || e.label === step.label);
