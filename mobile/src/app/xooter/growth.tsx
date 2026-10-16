@@ -77,7 +77,7 @@ function XooterGrowthForAccount({ userId }: { userId: string }) {
         const [catalog, owner] = await Promise.all([
           // Never request quiz_questions or marking keys.
           supabase.from('training_modules')
-            .select('id,title,description,required,duration_min,badge_label,rank_points')
+            .select('id,title,description,required,duration_min,badge_label,rank_points', { count: 'exact' })
             .order('required', { ascending: false })
             .order('title', { ascending: true }).limit(101),
           supabase.from('xooters')
@@ -90,17 +90,17 @@ function XooterGrowthForAccount({ userId }: { userId: string }) {
         if (parsedModules.some(module => !module)) throw new Error('Malformed training catalogue');
 
         let progress: XooterTrainingProgress[] = [];
-        let truncated = catalog.data.length > 100;
+        let truncated = catalog.count === null || catalog.count > 100 || catalog.data.length > 100;
         if (owner.data) {
           const result = await supabase.from('xooter_training_progress')
-            .select('module_id,completed,completed_at')
+            .select('module_id,completed,completed_at', { count: 'exact' })
             .eq('xooter_id', owner.data.id).limit(101);
           if (!alive) return;
           if (result.error || !result.data) throw new Error('Training progress unavailable');
           const parsedProgress = result.data.map(row => parseTrainingProgress(row));
           if (parsedProgress.some(row => !row)) throw new Error('Malformed progress data');
           progress = parsedProgress.slice(0, 100) as XooterTrainingProgress[];
-          truncated ||= result.data.length > 100;
+          truncated ||= result.count === null || result.count > 100 || result.data.length > 100;
         }
         const modules = parsedModules.slice(0, 100) as XooterTrainingModule[];
         // When a server response is incomplete, do NOT claim an exact sum/badge
