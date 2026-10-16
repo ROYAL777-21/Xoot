@@ -231,8 +231,23 @@ jobs:
           say() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
           both() { tee -a "$GITHUB_STEP_SUMMARY"; }
 
-          if ! supabase link --project-ref "$PROJECT_REF" 2>&1 | both; then
-            echo "::error::Could not link to $PROJECT_REF. On SQLSTATE 28P01 the stored password belongs to a different project - add a per-environment secret (SUPABASE_DB_PASSWORD_PRODUCTION / _STAGING) rather than overwriting the shared one."
+          # A Supabase Management API authorization error occurs BEFORE Postgres authentication.
+          # Do not misdiagnose it as a wrong password (the October 15 staging run did precisely this).
+          if link_output="$(supabase link --project-ref "$PROJECT_REF" 2>&1)"; then
+            printf '%s\n' "$link_output" | both
+          else
+            printf '%s\n' "$link_output" | both
+            case "$link_output" in
+              *"does not have the necessary privileges"*|*"Authorization failed for the access token"*)
+                echo "::error::Supabase management-token authorization failed for $PROJECT_REF BEFORE checking the database password. Grant the GitHub SUPABASE_ACCESS_TOKEN identity access to this project; supabase link requires Project Settings, API Keys and API Key Secrets read permissions. Reissue/update the scoped PAT in GitHub Actions; do not rotate a database password to fix this error."
+                ;;
+              *"28P01"*|*"password authentication failed"*)
+                echo "::error::Database password authentication failed for $PROJECT_REF. Set this environment's SUPABASE_DB_PASSWORD_STAGING or SUPABASE_DB_PASSWORD_PRODUCTION separately. Keep the other project's known-good password."
+                ;;
+              *)
+                echo "::error::Could not link to $PROJECT_REF. Review the Supabase CLI output above. Do not repair migration history or apply SQL on an unidentified connection failure."
+                ;;
+            esac
             exit 1
           fi
 
