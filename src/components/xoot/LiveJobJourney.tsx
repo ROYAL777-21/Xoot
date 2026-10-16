@@ -38,6 +38,7 @@ export function LiveJobJourney({ bookingId, isAssignedWorker }: { bookingId: str
   const watch = useRef<number | null>(null);
   const lastPublish = useRef(0);
   const saving = useRef(false);
+  const reading = useRef(false);
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<MapboxMap | null>(null);
   const marker = useRef<MapboxMarker | null>(null);
@@ -68,18 +69,44 @@ export function LiveJobJourney({ bookingId, isAssignedWorker }: { bookingId: str
     };
   }, [bookingId, isAssignedWorker]);
 
+  // A hidden tab must never continue publishing foreground positions.
+  useEffect(() => {
+    if (!sharing) return;
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        void stopSharing();
+        setStatus("Sharing stopped when the page was hidden.");
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [sharing, bookingId]);
+
+  // Remove the provider map and its precise marker when the customer hides sharing.
+  useEffect(() => {
+    if (enabled) return;
+    map.current?.remove();
+    map.current = null;
+    marker.current = null;
+  }, [enabled]);
+
   useEffect(() => {
     if (!enabled || isAssignedWorker) return;
     let cancelled = false;
     const read = async () => {
-      if (document.visibilityState === "hidden") return;
-      const { data, error } = await supabase.functions.invoke("xoot-job-location", {
-        body: { action: "read", bookingId },
-      });
-      if (cancelled) return;
-      const current = !error ? validPoint(data) : null;
-      setPosition(current);
-      setStatus(current ? "Recent en-route position — not a guaranteed arrival time" : "Live location unavailable");
+      if (document.visibilityState === "hidden" || reading.current) return;
+      reading.current = true;
+      try {
+        const { data, error } = await supabase.functions.invoke("xoot-job-location", {
+          body: { action: "read", bookingId },
+        });
+        if (cancelled) return;
+        const current = !error ? validPoint(data) : null;
+        setPosition(current);
+        setStatus(current ? "Recent en-route position — not a guaranteed arrival time" : "Live location unavailable");
+      } catch {
+        if (!cancelled) { setPosition(null); setStatus("Live location unavailable"); }
+      } finally { reading.current = false; }
     };
     void read();
     const timer = window.setInterval(() => void read(), READ_SPACING_MS);
