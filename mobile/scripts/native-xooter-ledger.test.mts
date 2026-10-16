@@ -38,6 +38,24 @@ test('offers, accepted and other historical statuses group without invented reco
   const grouped = groupXooterJobs(rows);
   assert.deepEqual([grouped.offered.length, grouped.accepted.length, grouped.history.length], [1, 1, 1]);
 });
+test('real production nullable booking references remain valid ledger entries', () => {
+  const adjustment = { ...earning, booking_id: null };
+  assert.deepEqual(getXooterEarningsRow(adjustment, owner), adjustment);
+  assert.equal(getXooterEarningsRow({ ...adjustment, booking_id: '../other-account' }, owner), null);
+  assert.equal(getXooterEarningsRow({ ...adjustment, xooter_id: 'another-worker' }, owner), null);
+  assert.deepEqual(summariseRecordedEarnings([getXooterEarningsRow(adjustment, owner)!]), {
+    recordedNet: 375, pendingNet: 375, entries: 1,
+  });
+});
+
+test('malformed, replayed and overlarge worker job replies fail closed', () => {
+  const result = (jobs: unknown[]) => ({ success: true, data: { jobs } });
+  assert.equal(parseXooterJobCards(result([job, job]), owner), null);
+  assert.equal(parseXooterJobCards(result([{ ...job, state: 'fake_payout' }]), owner), null);
+  assert.equal(parseXooterJobCards(result(Array(501).fill(job)), owner), null);
+  assert.equal(parseXooterJobCards(result([job]), owner)?.length, 1);
+});
+
 test('earnings only accept own finite records and do not imply provider settlement', () => {
   assert.deepEqual(getXooterEarningsRow(earning, owner), earning);
   assert.equal(getXooterEarningsRow({ ...earning, xooter_id: 'other' }, owner), null);
@@ -99,6 +117,7 @@ test('native Xooter screens retain account-scoped fetch, safe job cards and boun
   assert.match(earnings, /Load older earnings/);
   assert.match(earnings, /Partial sum of records loaded so far/);
   assert.match(earnings, /key=\{\`\$\{user.id\}:\$\{period\}\`\}/);
+  assert.match(earnings, /Earnings ledger entry/);
   assert.match(earnings, /not proof of bank settlement/i);
   assert.doesNotMatch(earnings, /Paid out this week|pays out every Friday/i);
 });
