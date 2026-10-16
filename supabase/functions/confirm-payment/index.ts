@@ -207,14 +207,18 @@ Deno.serve(async (req) => {
         booking_id: payment.booking_id,
         currency,
         status,
+        pf_payment_id: String(params.get("pf_payment_id") ?? "").slice(0, 120),
       },
     });
     providerEventId = providerEvent.providerEventId;
     if (providerEvent.alreadySeen) {
-      return ok({ payment_record_id: payment.id, booking_id: payment.booking_id, idempotent: true }, origin);
+      // A claimed event is NOT proof that all financial and booking writes
+      // completed. If it is still pending, alert operations and let PayFast
+      // retry rather than falsely acknowledging a successful settlement.
+      return fail("payment notification was previously claimed but not settled", origin, 409);
     }
 
-    await supa
+    const { data: markedPayment, error: markingError } = await supa
       .from("payment_records")
       .update({
         status: "paid",
@@ -224,9 +228,17 @@ Deno.serve(async (req) => {
           ...(payment.meta ?? {}),
           webhook_confirmed_at: new Date().toISOString(),
           webhook_status: status,
+          pf_payment_id: String(params.get("pf_payment_id") ?? "").slice(0, 120),
         },
       })
-      .eq("id", payment.id);
+      .eq("id", payment.id)
+      .eq("status", "pending")
+      .eq("provider", "payfast")
+      .select("id")
+      .maybeSingle();
+    if (markingError || !markedPayment?.id) {
+      throw new Error("payment record was not marked paid; callback must be retried or reconciled");
+    }
 
     /*
      * Everything that follows the money — booking row, status event, job offer, notification and
