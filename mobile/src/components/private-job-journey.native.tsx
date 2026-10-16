@@ -4,32 +4,12 @@ import Mapbox from '@rnmapbox/maps';
 
 import { mobileEnv } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
+import { readFreshJobPosition, type FreshJobPosition } from '@/lib/private-job-journey';
 
 // Deliberately opt-in twice: the release must enable this flag, and the
 // authenticated customer must explicitly choose to open the private map.
 const ENABLED = process.env.EXPO_PUBLIC_ENABLE_LIVE_JOURNEY === 'true';
 const POLL_MS = 15_000;
-const MAX_FIX_AGE_MS = 60_000;
-type Point = { latitude: number; longitude: number; expiresAt: string };
-
-function readFreshPosition(payload: unknown): Point | null {
-  if (!payload || typeof payload !== 'object') return null;
-  const envelope = payload as { success?: unknown; data?: unknown };
-  if (envelope.success !== true || !envelope.data || typeof envelope.data !== 'object') return null;
-  const fix = envelope.data as Record<string, unknown>;
-  if (fix.state !== 'current' || typeof fix.latitude !== 'number' ||
-      typeof fix.longitude !== 'number' || !Number.isFinite(fix.latitude) ||
-      !Number.isFinite(fix.longitude) || Math.abs(fix.latitude) > 90 ||
-      Math.abs(fix.longitude) > 180 || typeof fix.recordedAt !== 'string' ||
-      typeof fix.expiresAt !== 'string') return null;
-  const recorded = Date.parse(fix.recordedAt);
-  const expires = Date.parse(fix.expiresAt);
-  const now = Date.now();
-  if (!Number.isFinite(recorded) || !Number.isFinite(expires) ||
-      recorded > now + 30_000 || now - recorded > MAX_FIX_AGE_MS || expires <= now) return null;
-  return { latitude: fix.latitude, longitude: fix.longitude, expiresAt: fix.expiresAt };
-}
-
 /**
  * Customer-only native viewer. The route supplies an owner-scoped booking ID,
  * but the Edge Function independently verifies the JWT and booking owner.
@@ -37,7 +17,7 @@ function readFreshPosition(payload: unknown): Point | null {
  */
 export function PrivateJobJourney({ bookingId }: { bookingId: string }) {
   const [viewing, setViewing] = useState(false);
-  const [point, setPoint] = useState<Point | null>(null);
+  const [point, setPoint] = useState<FreshJobPosition | null>(null);
   const [message, setMessage] = useState('Live location not requested');
   const token = mobileEnv.mapboxPublicToken;
   const configured = ENABLED && token.startsWith('pk.');
@@ -67,7 +47,7 @@ export function PrivateJobJourney({ bookingId }: { bookingId: string }) {
           body: { action: 'read', bookingId },
         });
         if (cancelled) return;
-        const next = !error ? readFreshPosition(data) : null;
+        const next = !error ? readFreshJobPosition(data) : null;
         setPoint(next);
         setMessage(next ? 'Latest available position — not an arrival estimate' :
           'Live location is currently unavailable');
