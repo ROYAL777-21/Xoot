@@ -30,6 +30,23 @@ grant select, insert, update, delete on table public.xoot_job_live_positions to 
 comment on table public.xoot_job_live_positions is
   'Live active-job Xooter GPS only. Service-only, no direct client/RLS policies. '
   'Expiry <=90 seconds, never in Realtime publication. Clear upon stop/cancel/reassignment; '
-  'authorised reads additionally reject stale/cancelled jobs. Requires lifecycle cleanup.';
+  'authorised reads additionally reject stale/cancelled jobs. Retention cleared every minute.';
+
+-- Physical deletion, not merely filtering stale rows at read time. Both existing Xoot
+-- projects have pg_cron installed. Abort the migration on a fresh project without it.
+do $xoot_cleanup$
+begin
+  if not exists (select 1 from pg_extension where extname = 'pg_cron') then
+    raise exception 'pg_cron must be installed for short-lived GPS retention';
+  end if;
+  if not exists (select 1 from cron.job where jobname = 'xoot-live-location-expiry') then
+    perform cron.schedule(
+      'xoot-live-location-expiry',
+      '* * * * *',
+      $job$delete from public.xoot_job_live_positions where expires_at <= now()$job$
+    );
+  end if;
+end;
+$xoot_cleanup$;
 
 commit;
