@@ -27,7 +27,9 @@ export function xooterHomeSnapshot(jobs: readonly XooterJobCard[], now: Date = n
     accepted: accepted.length,
     today,
     upcoming,
-    next: today[0] ?? upcoming[0] ?? null,
+    // "Next" must not point to an earlier booking today if the owner has
+    // not yet updated its state. Leave it in Today's list instead.
+    next: today.find(job => new Date(job.scheduled_at!).getTime() >= now.getTime()) ?? upcoming[0] ?? null,
   };
 }
 
