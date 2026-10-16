@@ -119,5 +119,14 @@ create trigger purge_live_job_position_on_job_change
 after update of state, xooter_id on public.xooter_jobs
 for each row execute function public.purge_live_job_position_on_job_change();
 
+-- Both Xoot environments already have pg_cron v1.6.4. On verified staging,
+-- this job physically deletes expired coordinates within a minute, even after
+-- a worker force-quits, goes offline or never explicitly taps Stop.
+select cron.schedule(
+  'xoot-expire-job-live-positions',
+  '* * * * *',
+  $cron$delete from public.job_live_positions where expires_at <= now();$cron$
+);
+
 comment on table public.job_live_positions is
   'Service-role-only, job-scoped, expiring, consented foreground worker GPS. No client grants or direct Realtime. Poll via authenticated edge access gate only.';
