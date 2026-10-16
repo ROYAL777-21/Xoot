@@ -61,9 +61,17 @@ export const groupXooterJobs = (jobs: XooterJobCard[]) => ({
 export function summariseRecordedEarnings(rows: XooterEarning[]) {
   // Financial totals must accumulate *integer cents*, not floating point rand.
   // Rows reaching here were validated by getXooterEarningsRow.
-  const netCents = rows.reduce((sum, row) => sum + (exactRandCents(row.net_amount) ?? 0), 0);
+  const cents = (amount: number) => {
+    const value = exactRandCents(amount);
+    if (value === null) throw new Error('Unverified currency amount in earnings ledger');
+    return value;
+  };
+  const netCents = rows.reduce((sum, row) => sum + cents(row.net_amount), 0);
   const pendingCents = rows.filter(row => row.status === 'pending')
-    .reduce((sum, row) => sum + (exactRandCents(row.net_amount) ?? 0), 0);
+    .reduce((sum, row) => sum + cents(row.net_amount), 0);
+  if (!Number.isSafeInteger(netCents) || !Number.isSafeInteger(pendingCents)) {
+    throw new Error('Unsafe amount total in earnings ledger');
+  }
   // A ledger row never independently proves bank settlement.
   return { recordedNet: netCents / 100, pendingNet: pendingCents / 100, entries: rows.length };
 }
