@@ -53,7 +53,7 @@ Deno.serve(async req => {
     .eq("id", bookingId).maybeSingle();
   if (bookingError || !booking) return fail("booking unavailable", origin, 404);
 
-  const active = String(booking.status) === "en_route" &&
+  const active = ["en_route", "enroute"].includes(String(booking.status)) &&
     !booking.cancelled_at && !booking.completed_at && !booking.sensitive_data_revoked_at;
   if (!active) return ok({ state: "unavailable" }, origin);
 
