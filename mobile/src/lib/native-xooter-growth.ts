@@ -45,7 +45,8 @@ export function summariseXooterGrowth(
     if (module.required) requiredCompleted++; else optionalCompleted++;
     earnedPoints += points;
     if (!Number.isSafeInteger(earnedPoints)) return null;
-    if (module.badge_label) {
+    // Foundational Xoot Standard is a required prerequisite, not a collectible badge.
+    if (!module.required && module.badge_label) {
       badges.push({ moduleId: module.id, label: module.badge_label, title: module.title });
     }
   }
