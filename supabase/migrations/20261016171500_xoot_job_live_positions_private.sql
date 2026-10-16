@@ -32,6 +32,51 @@ comment on table public.xoot_job_live_positions is
   'Expiry <=90 seconds, never in Realtime publication. Clear upon stop/cancel/reassignment; '
   'authorised reads additionally reject stale/cancelled jobs. Retention cleared every minute.';
 
+-- Cancelled, reassigned and completed bookings must clear positions immediately, not
+-- rely only on the TTL. This trigger runs with DB privileges after the protected
+-- booking status change, never with arbitrary client-supplied actor IDs.
+create or replace function private.xoot_clear_live_location_on_booking_update()
+returns trigger language plpgsql security definer set search_path = '' as $
+begin
+  if new.status::text not in ('en_route','enroute')
+    or new.xooter_id is distinct from old.xooter_id
+    or new.cancelled_at is not null
+    or new.completed_at is not null
+    or new.sensitive_data_revoked_at is not null
+  then
+    delete from public.xoot_job_live_positions where booking_id = new.id;
+  end if;
+  return new;
+end;
+$;
+revoke all on function private.xoot_clear_live_location_on_booking_update() from public, anon, authenticated;
+create trigger xoot_remove_location_on_booking_change
+after update of status,xooter_id,cancelled_at,completed_at,sensitive_data_revoked_at
+on public.bookings for each row
+execute function private.xoot_clear_live_location_on_booking_update();
+
+-- A worker unassignment may be represented in xooter_jobs before bookings is
+-- updated. Remove the old job's position at that point as well.
+create or replace function private.xoot_clear_live_location_on_job_change()
+returns trigger language plpgsql security definer set search_path = '' as $
+begin
+  if old.state = 'accepted' and (
+    tg_op = 'DELETE' or new.state is distinct from old.state
+    or new.xooter_id is distinct from old.xooter_id
+    or new.booking_id is distinct from old.booking_id
+  ) then
+    delete from public.xoot_job_live_positions
+      where booking_id = old.booking_id and xooter_id = old.xooter_id;
+  end if;
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
+end;
+$;
+revoke all on function private.xoot_clear_live_location_on_job_change() from public, anon, authenticated;
+create trigger xoot_remove_location_on_job_change
+after update or delete on public.xooter_jobs for each row
+execute function private.xoot_clear_live_location_on_job_change();
+
 -- Physical deletion, not merely filtering stale rows at read time. Both existing Xoot
 -- projects have pg_cron installed. Abort the migration on a fresh project without it.
 do $xoot_cleanup$
