@@ -89,19 +89,20 @@ export default function AccountScreen() {
     }
     let active = true;
     setPlaceSnapshot({ ownerId: currentOwner, places: [], error: false, loading: true });
-    void supabase
-      .from("household_profiles")
-      .select("id,label,address")
-      .eq("user_id", currentOwner)
-      .order("is_default", { ascending: false })
-      .then(({ data, error }) => {
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("household_profiles")
+          .select("id,label,address")
+          .eq("user_id", currentOwner)
+          .order("is_default", { ascending: false });
         if (!active) return;
         setPlaceSnapshot({ ownerId: currentOwner, places: error ? [] : (data ?? []) as Place[],
           error: Boolean(error), loading: false });
-      })
-      .catch(() => {
+      } catch {
         if (active) setPlaceSnapshot({ ownerId: currentOwner, places: [], error: true, loading: false });
-      });
+      }
+    })();
     return () => { active = false; };
   }, [currentOwner]);
   // Guard synchronously, before the next effect runs. Even if an obsolete request
