@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   retryText: {
-    color: Colors.dark.background,
+    color: Colors.dark.accentText,
     fontWeight: '800',
     fontSize: 14,
   },
