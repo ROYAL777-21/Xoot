@@ -31,7 +31,11 @@ Deno.serve(async req => {
   const actorId = auth.user.id;
   let body: Record<string, unknown>;
   try {
-    body = await readJson(req);
+    const candidate: unknown = await readJson(req);
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+      return fail("invalid request", origin, 400);
+    }
+    body = candidate as Record<string, unknown>;
   } catch {
     return fail("invalid request", origin, 400);
   }
@@ -81,8 +85,16 @@ Deno.serve(async req => {
         now > expiry || now - captured > POSITION_MAX_AGE_MS || captured > now + CLOCK_SKEW_MS) {
       return ok({ state: "unavailable" }, origin);
     }
-    return ok({ state: "current", latitude: point.latitude, longitude: point.longitude,
-      accuracyM: point.accuracy_m, recordedAt: point.recorded_at, expiresAt: point.expires_at }, origin);
+    const latitude = Number(point.latitude);
+    const longitude = Number(point.longitude);
+    const accuracyM = Number(point.accuracy_m);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || !Number.isFinite(accuracyM) ||
+        latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 ||
+        accuracyM <= 0 || accuracyM > 200) return ok({ state: "unavailable" }, origin);
+    const response = ok({ state: "current", latitude, longitude,
+      accuracyM, recordedAt: point.recorded_at, expiresAt: point.expires_at }, origin);
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
   }
 
   if (!isWorker) return fail("booking unavailable", origin, 404);
