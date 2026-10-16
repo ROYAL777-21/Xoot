@@ -1,10 +1,28 @@
 -- Protected, short-lived job location. Source-only until staging migration history is
 -- reconciled and worker/customer two-account negative checks pass.
 -- NEVER add this table to a public directory or unrestricted Realtime publication.
+-- A separate, revocable session fences in-flight publish requests after Stop.
+-- A worker must start a new session explicitly, and a stopped token cannot resume.
+create table if not exists public.job_location_sharing_sessions (
+  job_id uuid primary key references public.xooter_jobs(id) on delete cascade,
+  booking_id uuid not null references public.bookings(id) on delete cascade,
+  xooter_id uuid not null references public.xooters(id) on delete cascade,
+  session_id uuid not null,
+  started_at timestamptz not null,
+  expires_at timestamptz not null,
+  stopped_at timestamptz,
+  constraint job_location_sessions_window check (expires_at > started_at and expires_at <= started_at + interval '3 hours')
+);
+alter table public.job_location_sharing_sessions enable row level security;
+revoke all on public.job_location_sharing_sessions from public, anon, authenticated;
+grant select, insert, update, delete on public.job_location_sharing_sessions to service_role;
+create index if not exists job_location_sessions_expiry_idx on public.job_location_sharing_sessions(expires_at);
+
 create table if not exists public.job_live_positions (
   job_id uuid primary key references public.xooter_jobs(id) on delete cascade,
   booking_id uuid not null references public.bookings(id) on delete cascade,
   xooter_id uuid not null references public.xooters(id) on delete cascade,
+  session_id uuid not null,
   latitude double precision not null check (latitude between -35.0 and -22.0),
   longitude double precision not null check (longitude between 16.0 and 33.5),
   accuracy_m double precision not null check (accuracy_m between 1 and 200),
@@ -50,6 +68,18 @@ begin
     end if;
   end if;
 
+  -- Stop is a durable revocation barrier: a delayed publish with the old
+  -- session_id must fail even if it was already in-flight before Stop.
+  if not exists (
+    select 1 from public.job_location_sharing_sessions s
+    where s.job_id = new.job_id and s.booking_id = new.booking_id
+      and s.xooter_id = new.xooter_id and s.session_id = new.session_id
+      and s.stopped_at is null and s.expires_at > now()
+    for update
+  ) then
+    raise exception 'location sharing session revoked' using errcode = '23514';
+  end if;
+
   -- Row locks serialize publication with job reassignment and booking cancellation.
   select true into v_valid
   from public.xooter_jobs j
@@ -90,6 +120,8 @@ begin
     or new.sensitive_data_revoked_at is not null
     or new.xooter_id is distinct from old.xooter_id then
     delete from public.job_live_positions where booking_id = new.id;
+    update public.job_location_sharing_sessions set stopped_at = now()
+    where booking_id = new.id and stopped_at is null;
   end if;
   return new;
 end;
@@ -108,6 +140,8 @@ as $$
 begin
   if new.state <> 'accepted' or new.xooter_id is distinct from old.xooter_id then
     delete from public.job_live_positions where job_id = new.id;
+    update public.job_location_sharing_sessions set stopped_at = now()
+    where job_id = new.id and stopped_at is null;
   end if;
   return new;
 end;
@@ -125,7 +159,11 @@ for each row execute function public.purge_live_job_position_on_job_change();
 select cron.schedule(
   'xoot-expire-job-live-positions',
   '* * * * *',
-  $cron$delete from public.job_live_positions where expires_at <= now();$cron$
+  $cron$
+    delete from public.job_live_positions where expires_at <= now();
+    delete from public.job_location_sharing_sessions
+      where expires_at <= now() or stopped_at < now() - interval '1 minute';
+  $cron$
 );
 
 comment on table public.job_live_positions is
