@@ -85,9 +85,9 @@ if (publicLeaks.length > 0) {
   fail(`public Expo variables cannot contain secret-like names: ${publicLeaks.join(', ')}`);
 }
 
-const unsafeMapboxTokens = publicMapboxTokenNames.filter((name) => text(name).startsWith('sk.'));
+const unsafeMapboxTokens = publicMapboxTokenNames.filter((name) => Boolean(text(name)) && !text(name).startsWith('pk.'));
 if (unsafeMapboxTokens.length > 0) {
-  fail(`Mapbox secret tokens cannot be used in public EXPO_PUBLIC_ variables: ${unsafeMapboxTokens.join(', ')}. Use restricted public pk.* tokens instead.`);
+  fail(`Mapbox values in public EXPO_PUBLIC_ variables must use restricted public pk.* tokens, not secret or malformed tokens: ${unsafeMapboxTokens.join(', ')}.`);
 }
 
 const unsafePostHogTokens = publicPostHogTokenNames.filter((name) => text(name).startsWith('phx_'));
