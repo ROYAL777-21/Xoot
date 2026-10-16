@@ -64,6 +64,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       usesNonExemptEncryption: false,
     },
     infoPlist: {
+      // RNMapbox iOS requires this key when its attribution/telemetry settings are visible.
+      // Do not remove the built-in attribution control or claim SDK telemetry is disabled.
+      MGLMapboxMetricsEnabledSettingShownInApp: true,
       NSCameraUsageDescription: 'Xoot uses the camera only when you choose to upload service or verification photos.',
       NSPhotoLibraryUsageDescription: 'Xoot uses your photo library only when you choose to upload service or verification photos.',
       NSLocationWhenInUseUsageDescription:
