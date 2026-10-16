@@ -4,9 +4,11 @@
  */
 export type NativeMapboxSuggestion = { id: string; label: string };
 export const nativeMapboxSearchUrl = (value: string, token: string, permanent = false) => {
+  // Mapbox v6 Forward Geocoding requires a human-readable query. For permanent
+  // storage rights re-query the selected full_address rather than the mapbox_id.
   const q = value.trim().replace(/\s+/g, ' ');
   if (!token.startsWith('pk.') || q.length < 4 || q.length > (permanent ? 256 : 160) ||
-      (!permanent && q.split(' ').length > 20) || /[;\n\r]/.test(q)) return null;
+      q.split(' ').length > 20 || /[;\n\r]/.test(q)) return null;
   const params = new URLSearchParams({
     q, country: 'za', language: 'en', limit: permanent ? '1' : '5',
     autocomplete: permanent ? 'false' : 'true',
