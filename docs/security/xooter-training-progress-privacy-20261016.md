@@ -12,9 +12,9 @@ The training catalogue `training_modules` remains available. Grading and complet
 
 `supabase/migrations/20261016210000_xooter_training_progress_private_read.sql`:
 
-- Removes the historical `training progress visible` SELECT policy with `USING (true)`.
+- Removes the historical production `training progress visible` SELECT policy with `USING (true)` and the staging/full-history `training_progress_own`, `training_progress_insert_own` and `training_progress_update_own` policies. The migration handles both environments' differing policy histories.
 - Replaces it with a policy limited to `authenticated`, reading only rows belonging to an `xooters` record whose `user_id = auth.uid()`; retains the existing approved administrator role check.
-- Revokes anonymous SELECT and unnecessary client INSERT/UPDATE/DELETE/TRUNCATE/TRIGGER/REFERENCES grants while retaining authenticated SELECT for own progress. It does not alter the `training_modules` catalogue or `service_role` privileges.
+- Revokes anonymous and inherited `PUBLIC` SELECT and unnecessary client INSERT/UPDATE/DELETE/TRUNCATE/TRIGGER/REFERENCES grants while retaining authenticated SELECT for own progress. It does not alter the `training_modules` catalogue or `service_role` privileges.
 - Does not expose grading keys or grant self-completion writes.
 
 `scripts/security/sql/training-progress-privacy-fixture.sql` deliberately reproduces the unsafe public policy in PostgreSQL 17. `scripts/security/sql/assert-training-progress-private.sql` must **fail** on the planted vulnerable fixture, then **pass** after the migration for anonymous rights, two different workers, a non-worker, an admin and service role. The workflow `verify-training-progress-privacy.yml` only operates on this isolated CI database.
