@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { mobileEnv } from '@/lib/env';
 import { nativeMapboxSearchUrl, parseNativeMapboxSuggestions, type NativeMapboxSuggestion } from '@/lib/mapbox-geocoding';
-import { nativePalette as p, nativeFonts } from '@/constants/handoff';
+import { nativePalette as p } from '@/constants/handoff';
+import { nativeFonts } from '@/components/native-core';
 
 /** Optional user-consented search. Existing native address TextInput remains the fallback. */
 export function MobileMapboxAddressSuggestions({ value, onSelect }: { value: string; onSelect: (address: string) => void }) {
