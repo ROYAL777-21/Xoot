@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 
+import { nativePalette } from '@/components/native-core';
 import { mobileEnv } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 import { readFreshJobPosition, type FreshJobPosition } from '@/lib/private-job-journey';
@@ -112,9 +113,9 @@ export function PrivateJobJourney({ bookingId }: { bookingId: string }) {
           <Mapbox.ShapeSource id="private-xooter-location" shape={shape}>
             <Mapbox.CircleLayer id="private-xooter-point" style={{
               circleRadius: 8,
-              circleColor: '#6855BB',
+              circleColor: nativePalette.violet,
               circleStrokeWidth: 3,
-              circleStrokeColor: '#FFFFFF',
+              circleStrokeColor: nativePalette.card,
             }} />
           </Mapbox.ShapeSource>
         </Mapbox.MapView>
@@ -124,13 +125,13 @@ export function PrivateJobJourney({ bookingId }: { bookingId: string }) {
 }
 
 const styles = StyleSheet.create({
-  shell: { backgroundColor: '#F6F3FA', borderRadius: 20, gap: 10, padding: 16 },
-  heading: { fontSize: 18, fontWeight: '700', color: '#1F1C25' },
-  description: { fontSize: 12, color: '#55505B', lineHeight: 19 },
-  action: { borderRadius: 22, borderWidth: 1, borderColor: '#D7CFE8',
+  shell: { backgroundColor: nativePalette.violetWash, borderRadius: 20, gap: 10, padding: 16 },
+  heading: { fontSize: 18, fontWeight: '700', color: nativePalette.ink },
+  description: { fontSize: 12, color: nativePalette.inkSoft, lineHeight: 19 },
+  action: { borderRadius: 22, borderWidth: 1, borderColor: nativePalette.border,
     paddingVertical: 12, paddingHorizontal: 18, alignSelf: 'flex-start' },
-  actionText: { fontSize: 13, fontWeight: '700', color: '#59419D' },
-  status: { fontSize: 12, color: '#55505B' },
+  actionText: { fontSize: 13, fontWeight: '700', color: nativePalette.violetDark },
+  status: { fontSize: 12, color: nativePalette.inkSoft },
   mapFrame: { height: 245, borderRadius: 14, overflow: 'hidden' },
   map: { flex: 1 },
 });
