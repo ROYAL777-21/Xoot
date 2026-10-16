@@ -165,6 +165,8 @@ function XooterHomeForAccount({ userId, firstName }: { userId: string; firstName
         icon="shield" onPress={() => router.push('/xooter/kyc')}/>
       <Shortcut title="Training" subtitle="Required and optional modules"
         icon="trophy" onPress={() => router.push('/xooter/training')}/>
+      <Shortcut title="Growth and badges" subtitle="Recorded recognition, separate from pay"
+        icon="trophy" onPress={() => router.push('/xooter/growth')}/>
     </Card>
     <Text style={styles.footnote}>Customer addresses, access codes, worker bank details, payout confirmation and live GPS tracking are never shown without their separate authorised workflows.</Text>
   </Screen>;

@@ -399,3 +399,11 @@ The release already contains approved Jobs, Earnings, job-detail, training and v
 ## 16 October 2026 — native Xooter Home source-inspired structure
 
 Added dedicated `/xooter` dashboard following prototype hierarchy: greeting, lead work card, compact current counts, SAST daily work list and shortcuts to jobs, earnings, verification and training. Real verified worker status and authenticated owner-scoped job-card responses replace the prototype's fictitious payout hero and sample daily addresses/pay. Actual icon placement, spacing, typography and interactivity are in source with handoff fonts/tokens; physical-device screenshot comparison and real signed-in worker sessions are **not yet proven**. No fake GPS, earnings, client access or bank receipts are displayed.
+
+## 16 October 2026 — native Xooter Growth visual composition
+
+Expo `/xooter/growth` uses the reference's recognition hero, progress track, required Xoot Standard section and optional specialism cards with Xoot palette/typography, dynamically sourced badges and approved training links. Unlike the static reference, no sample 150-point ceiling or tap-to-complete interaction is used: the screen shows owner-bound recorded progress only, and warns on incomplete catalogues. Real handset screenshots and exact visual/device fidelity comparisons remain outstanding.
+
+## 17 October 2026 — owner-safe native You and Xooter Earnings states
+
+The native account's saved-place loading/error states now preserve the currently signed-in user's privacy even during immediate authentication changes. The earnings history now has explicit fail-closed integrity states for out-of-order/duplicate pages and cent-overflow errors. These changes refine interaction and truthful financial presentation without replacing the approved source visual hierarchy. Actual iOS/Android two-account screenshot and accessibility comparison remains outstanding.
