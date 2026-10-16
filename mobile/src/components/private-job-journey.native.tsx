@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 
@@ -6,6 +6,7 @@ import { nativePalette } from '@/components/native-core';
 import { mobileEnv } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 import { readFreshJobPosition, type FreshJobPosition } from '@/lib/private-job-journey';
+import { requestLiveRoadEstimate, type LiveRoadEstimate } from '../../../../src/lib/mapbox-live-routing';
 
 // Deliberately opt-in twice: the release must enable this flag, and the
 // authenticated customer must explicitly choose to open the private map.
@@ -16,10 +17,12 @@ const POLL_MS = 15_000;
  * but the Edge Function independently verifies the JWT and booking owner.
  * Never query public GPS tables or retain a location beyond this component.
  */
-export function PrivateJobJourney({ bookingId }: { bookingId: string }) {
+export function PrivateJobJourney({ bookingId, destinationAddress }: { bookingId: string; destinationAddress?: string | null }) {
   const [viewing, setViewing] = useState(false);
   const [point, setPoint] = useState<FreshJobPosition | null>(null);
   const [message, setMessage] = useState('Live location not requested');
+  const [roadEstimate, setRoadEstimate] = useState<LiveRoadEstimate | null>(null);
+  const lastRouteAt = useRef(0);
   const token = mobileEnv.mapboxPublicToken;
   const configured = ENABLED && token.startsWith('pk.');
 
@@ -76,6 +79,28 @@ export function PrivateJobJourney({ bookingId }: { bookingId: string }) {
     return () => clearTimeout(timeout);
   }, [point]);
 
+  // A private road-time request uses the fresh verified fix and the customer's
+  // own booking address only after they explicitly open the viewer. Nothing
+  // is stored. A new calculation is permitted at most once a minute.
+  useEffect(() => {
+    if (!viewing || !point || !destinationAddress?.trim() || !configured) {
+      setRoadEstimate(null);
+      if (!point || !viewing) lastRouteAt.current = 0;
+      return;
+    }
+    if (Date.now() - lastRouteAt.current < 60_000) return;
+    lastRouteAt.current = Date.now();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12_000);
+    void requestLiveRoadEstimate(
+      { latitude: point.latitude, longitude: point.longitude },
+      destinationAddress, token, new Date(Date.parse(point.expiresAt) - 60_000).toISOString(),
+      controller.signal,
+    ).then(result => { if (!controller.signal.aborted) setRoadEstimate(result); })
+      .finally(() => clearTimeout(timeout));
+    return () => { controller.abort(); clearTimeout(timeout); };
+  }, [bookingId, destinationAddress, point, viewing, configured, token]);
+
   const shape = useMemo(() => point ? ({
     type: 'FeatureCollection' as const,
     features: [{
@@ -106,6 +131,12 @@ export function PrivateJobJourney({ bookingId }: { bookingId: string }) {
     </Pressable>
     {viewing ? <>
       <Text accessibilityLiveRegion="polite" style={styles.status}>{message}</Text>
+      {shape && roadEstimate ? <Text style={styles.eta}>
+        Traffic-based estimate: about {roadEstimate.minutes} minutes · {roadEstimate.kilometres} km.
+        Calculated at {new Date(roadEstimate.calculatedAt).toLocaleTimeString('en-ZA')}.
+        Not a guaranteed arrival time.
+      </Text> : null}
+      {shape && !roadEstimate ? <Text style={styles.status}>Road estimate unavailable.</Text> : null}
       {shape ? <View style={styles.mapFrame}>
         <Mapbox.MapView style={styles.map} logoEnabled attributionEnabled
           onMapLoadingError={() => setMessage('Map tiles unavailable; visit details remain accessible.')}>
@@ -132,6 +163,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12, paddingHorizontal: 18, alignSelf: 'flex-start' },
   actionText: { fontSize: 13, fontWeight: '700', color: nativePalette.violetDark },
   status: { fontSize: 12, color: nativePalette.inkSoft },
+  eta: { fontSize: 13, fontWeight: '700', color: nativePalette.ink, lineHeight: 20 },
   mapFrame: { height: 245, borderRadius: 14, overflow: 'hidden' },
   map: { flex: 1 },
 });
