@@ -23,6 +23,10 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/auth-provider";
 type Place = { id: string; label: string; address: string | null };
+// Only project saved household data after it has been fetched for the current
+// authenticated user. An effect-only reset can leak the previous user's address
+// during the first render after a fast account switch.
+type PlaceSnapshot = { ownerId: string | null; places: Place[]; error: boolean; loading: boolean };
 function Row({
   icon,
   title,
@@ -57,8 +61,9 @@ function Row({
 export default function AccountScreen() {
   const { user, signOut } = useAuth();
   const { profile, isLoading } = useNativeCoreData();
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [placeError, setPlaceError] = useState(false);
+  const [placeSnapshot, setPlaceSnapshot] = useState<PlaceSnapshot>({
+    ownerId: null, places: [], error: false, loading: false,
+  });
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -76,18 +81,36 @@ export default function AccountScreen() {
       mounted = false;
     };
   }, []);
+  const currentOwner = user?.id ?? null;
   useEffect(() => {
-    if (!user) return;
-    void supabase
-      .from("household_profiles")
-      .select("id,label,address")
-      .eq("user_id", user.id)
-      .order("is_default", { ascending: false })
-      .then(({ data, error }) => {
-        setPlaceError(Boolean(error));
-        if (!error) setPlaces((data ?? []) as Place[]);
-      });
-  }, [user]);
+    if (!currentOwner) {
+      setPlaceSnapshot({ ownerId: null, places: [], error: false, loading: false });
+      return;
+    }
+    let active = true;
+    setPlaceSnapshot({ ownerId: currentOwner, places: [], error: false, loading: true });
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("household_profiles")
+          .select("id,label,address")
+          .eq("user_id", currentOwner)
+          .order("is_default", { ascending: false });
+        if (!active) return;
+        setPlaceSnapshot({ ownerId: currentOwner, places: error ? [] : (data ?? []) as Place[],
+          error: Boolean(error), loading: false });
+      } catch {
+        if (active) setPlaceSnapshot({ ownerId: currentOwner, places: [], error: true, loading: false });
+      }
+    })();
+    return () => { active = false; };
+  }, [currentOwner]);
+  // Guard synchronously, before the next effect runs. Even if an obsolete request
+  // resolves, previous-account household addresses cannot enter this render.
+  const placeOwnerMatches = placeSnapshot.ownerId === currentOwner;
+  const places = placeOwnerMatches ? placeSnapshot.places : [];
+  const placeError = placeOwnerMatches && placeSnapshot.error;
+  const placeLoading = !placeOwnerMatches || placeSnapshot.loading;
   const magic = async () => {
     setSubmitting(true);
     setStatus(null);
@@ -191,7 +214,9 @@ export default function AccountScreen() {
       </Pressable>
       <SectionLabel count={places.length}>Your places</SectionLabel>
       <Card style={s.list}>
-        {placeError ? (
+        {placeLoading ? (
+          <Text style={s.empty}>Loading your saved places…</Text>
+        ) : placeError ? (
           <Text style={s.empty}>Saved places are temporarily unavailable.</Text>
         ) : places.length ? (
           places.map((p) => (

@@ -8,7 +8,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import {
   getXooterEarningsRow, olderXooterEarningsFilter, startOfNativeEarningsPeriod,
-  summariseRecordedEarnings, xooterMoney, XOOTER_EARNINGS_PAGE_SIZE,
+  summariseRecordedEarnings, validateXooterEarningsPage, xooterMoney, XOOTER_EARNINGS_PAGE_SIZE,
   type XooterEarning,
 } from '@/lib/native-xooter-ledger';
 import { useAuth } from '@/providers/auth-provider';
@@ -45,6 +45,10 @@ async function getLedgerPage(args: {
   const parsed = data.map(row => getXooterEarningsRow(row, args.owner));
   if (parsed.some(row => row === null)) throw new Error('Unverifiable earnings amount or record');
   const rows = parsed as XooterEarning[];
+  if (!validateXooterEarningsPage(rows, { owner: args.owner, from: args.periodStart,
+    snapshot: args.snapshot, cursor: args.cursor })) {
+    throw new Error('Earnings page did not match the owner, time window or keyset order');
+  }
   return { rows: rows.slice(0, XOOTER_EARNINGS_PAGE_SIZE), hasMore: rows.length > XOOTER_EARNINGS_PAGE_SIZE };
 }
 
@@ -105,17 +109,17 @@ function EarningHistory({ userId, period, setPeriod }: {
         owner: state.xooterId, periodStart: state.from, snapshot: state.snapshot, cursor: tail,
       });
       if (epoch.current !== requestId) return;
-      // Defensive deduplication if a server page overlaps a previously displayed entry.
       setState(previous => {
-        const seen = new Set(previous.rows.map(row => row.id));
-        const appended = next.rows.filter(row => !seen.has(row.id));
-        const combined = [...previous.rows, ...appended];
-        // A non-advancing cursor is an error, not an infinite "Load more" loop.
-        if (!appended.length && next.hasMore) return {
-          ...previous, loadingMore: false, pagingError: 'Earnings history could not advance. Refresh to try again.',
+        const seen = new Set(previous.rows.map(row => row.id.toLowerCase()));
+        // Duplicate IDs invalidate the whole page: a silent dedup could make
+        // the recorded subtotal appear complete when the server data is not.
+        if (next.rows.some(row => seen.has(row.id.toLowerCase()))) return {
+          ...previous, loadingMore: false,
+          pagingError: 'Earnings history overlapped an earlier page. Refresh to verify the ledger.',
         };
         return {
-          ...previous, loadingMore: false, pagingError: null, rows: combined, hasMore: next.hasMore,
+          ...previous, loadingMore: false, pagingError: null,
+          rows: [...previous.rows, ...next.rows], hasMore: next.hasMore,
         };
       });
     } catch {
@@ -125,7 +129,10 @@ function EarningHistory({ userId, period, setPeriod }: {
       }));
     }
   };
-  const totals = useMemo(() => summariseRecordedEarnings(state.rows), [state.rows]);
+  const totals = useMemo(() => {
+    try { return summariseRecordedEarnings(state.rows); }
+    catch { return null; }
+  }, [state.rows]);
   return <Screen refreshControl={<RefreshControl refreshing={state.loading} onRefresh={reload} tintColor={nativePalette.violet} />}>
     <View style={s.header}><Pressable accessibilityLabel="Back to Xooter jobs" accessibilityRole="button"
       style={s.back} onPress={() => router.back()}><CoreIcon name="arrow-left" size={19} /></Pressable>
@@ -143,6 +150,9 @@ function EarningHistory({ userId, period, setPeriod }: {
       : !state.xooterId ? <EmptyState title="Xooter verification required"
           detail="This account does not yet have a Xooter earnings profile."
           action="Back to jobs" onAction={() => router.push('/xooter/jobs')} />
+      : totals === null ? <EmptyState title="Earnings need verification"
+          detail="The recorded totals could not be calculated accurately. No payout amount is being displayed."
+          action="Refresh ledger" onAction={reload} />
       : <>
         <Card style={s.hero}>
           <Text style={s.heroLabel}>Recorded net · {period === 'week' ? '7 days' : '30 days'}</Text>

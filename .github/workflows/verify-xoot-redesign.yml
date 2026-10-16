@@ -57,6 +57,8 @@ jobs:
         run: npm --prefix mobile run test:visit
       - name: Test native Xooter job and earnings account boundaries
         run: npm --prefix mobile run test:xooter
+      - name: Test native account privacy and financial integrity
+        run: npm --prefix mobile run test:account-finance
       - name: Test native Xooter Home owner access and SAST scheduling
         run: npm --prefix mobile run test:xooter-home
       - name: Test native Xooter verification and training privacy
