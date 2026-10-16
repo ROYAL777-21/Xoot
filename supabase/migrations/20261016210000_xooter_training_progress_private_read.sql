@@ -22,6 +22,13 @@ revoke insert, update, delete, truncate, trigger, references
 
 -- Ensure no insecure policy survives a re-run or a historical alias.
 drop policy if exists "training progress visible" on public.xooter_training_progress;
+-- Existing staging/full-history schemas may carry these pre-rename policies.
+-- They are still TO public even when their predicate is owner-specific.
+drop policy if exists "training_progress_public" on public.xooter_training_progress;
+drop policy if exists "anyone views progress" on public.xooter_training_progress;
+drop policy if exists "training_progress_own" on public.xooter_training_progress;
+drop policy if exists "training_progress_insert_own" on public.xooter_training_progress;
+drop policy if exists "training_progress_update_own" on public.xooter_training_progress;
 drop policy if exists "xooter_training_progress_owner_admin_read" on public.xooter_training_progress;
 
 -- Exact owner via the existing Xooter identity, plus approved admins.
