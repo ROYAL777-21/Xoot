@@ -105,7 +105,7 @@ export function PrivateJobLocationPublisher({ bookingId }: { bookingId: string }
   return <View style={styles.shell}>
     <Text style={styles.heading}>Share your journey</Text>
     <Text style={styles.detail}>Optional, only while you are on your way to this accepted
-      booking. Your customer can see a recent position while this screen is open.
+      booking. Your customer and MFA-verified Xoot dispatch administrators can see a recent position while this screen is open.
       No past route is stored. Switching apps or stopping sharing revokes the current position.</Text>
     <Pressable accessibilityRole="button"
       accessibilityLabel={sharing ? 'Stop sharing location' : 'Start sharing location'}
