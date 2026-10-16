@@ -78,7 +78,12 @@ test('Edge JWT, accepted booking, current worker and explicit consent are all ma
   assert.match(handler, /if \(!isWorker\) return fail/);
   assert.match(handler, /body\.consent !== true/);
   assert.match(handler, /Math\.abs\(now - recorded\) > CLOCK_SKEW_MS/);
-  assert.match(handler, /now - Date\.parse\(previous\.updated_at\) < REPORT_MIN_INTERVAL_MS/);
+  assert.match(handler, /db\\.rpc\\("xoot_publish_private_job_location"/);
+  assert.match(migration, /where public\\.xoot_job_live_positions\\.updated_at <= current_time - interval '10 seconds'/);
+  assert.match(migration, /for update of b, j/);
+  assert.match(migration, /revoke all on function public\\.xoot_publish_private_job_location/);
+  assert.match(migration, /to service_role;/);
+  assert.doesNotMatch(handler, /\\.upsert\\(update/);
   assert.match(handler, /if \(action === "stop"\)/);
 });
 
