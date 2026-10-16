@@ -407,3 +407,7 @@ Expo `/xooter/growth` uses the reference's recognition hero, progress track, req
 ## 17 October 2026 — owner-safe native You and Xooter Earnings states
 
 The native account's saved-place loading/error states now preserve the currently signed-in user's privacy even during immediate authentication changes. The earnings history now has explicit fail-closed integrity states for out-of-order/duplicate pages and cent-overflow errors. These changes refine interaction and truthful financial presentation without replacing the approved source visual hierarchy. Actual iOS/Android two-account screenshot and accessibility comparison remains outstanding.
+
+## 17 October 2026 — Xooter Jobs truthfulness regression
+
+The web source's job-card response mismatch was corrected and workers must now be active/approved for offers across web and native. Signed-in Jobs cards retain the approved design, but `bookings.price` is removed as an unsupported Xooter earnings promise; recorded ledger earnings remain separately available. Public/customer fields are not leaked into the web display model. No real signed-in multi-role browser or handset screenshot has been captured yet; visual and behavioural parity are still not fully certified.
