@@ -16,6 +16,15 @@ export function mapboxAddressSearchUrl(raw: string, token: string): string | nul
   return `https://api.mapbox.com/search/geocode/v6/forward?${params.toString()}`;
 }
 
+export function mapboxPermanentAddressUrl(mapboxId: string, token: string): string | null {
+  if (!token.startsWith('pk.') || !mapboxId || mapboxId.length > 256 || /[;\n\r]/.test(mapboxId)) return null;
+  const params = new URLSearchParams({
+    q: mapboxId, country: 'za', language: 'en', limit: '1',
+    autocomplete: 'false', permanent: 'true', access_token: token,
+  });
+  return `https://api.mapbox.com/search/geocode/v6/forward?${params.toString()}`;
+}
+
 export function parseMapboxAddressSuggestions(body: unknown): MapboxAddressSuggestion[] {
   if (!body || typeof body !== 'object' || !('features' in body) || !Array.isArray(body.features)) return [];
   const output: MapboxAddressSuggestion[] = [];
