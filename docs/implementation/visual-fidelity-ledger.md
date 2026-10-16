@@ -391,3 +391,7 @@ Source `app/Xooter.jsx` income-first hero, job categories and earnings rows have
 ## 15 October 2026 — Xooter native job-detail and earnings fidelity
 
 The Xooter source prioritises compact, factual schedule and earnings over decorative customer-home cards. The worker's native detail view now follows that hierarchy with a real schedule/status card, owner-only identity recheck, and explicit locked address/pay/task states. Earnings records now paginate with worker ID and stable created-at/UUID keyset, exact-cent sums and clear *partial vs fully loaded* language rather than a fictional settled-payout number. This is source-driven interaction/composition work, **not** physical Android/iOS screenshot parity or authenticated live-device acceptance. Production provider payout, location and contractor-response dependencies remain gated.
+
+## 16 October 2026 — native Xooter ledger integrity correction
+
+The release already contains approved Jobs, Earnings, job-detail, training and verification compositions. A production-schema correction distinguishes non-booking ledger entries (nullable booking ID) without disguising them as completed cleaning jobs or changing the visual hierarchy. Strict worker job response validation remains fail-closed. Physical device parity and signed-in staging validation remain outstanding.
