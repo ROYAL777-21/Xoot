@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     left: Spacing.lg,
     padding: Spacing.lg,
     position: 'absolute',
-    right: Spacing.lg,
+    right: 68, // Leave the native compass accessible at the upper-right corner.
   },
   fallback: {
     backgroundColor: alpha('dark', 'foreground', 0.06),
