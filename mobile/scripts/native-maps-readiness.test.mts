@@ -85,5 +85,6 @@ test('production native config rejects missing token and preview remains usable'
   assert.equal(getMobileConfigIssue({ ...env, EXPO_PUBLIC_APP_ENV: 'preview' }), null);
   assert.match(easPreflight, /appEnv === 'production' && !text\('EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN'\)/);
   assert.match(easPreflight, /text\('EAS_BUILD_PROFILE'\) === 'production' && appEnv !== 'production'/);
+  assert.match(appConfig, /MGLMapboxMetricsEnabledSettingShownInApp: true/);
   assert.match(appConfig, /mapboxEnabled: Boolean\(process\.env\.EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN\?\.trim\(\)\.startsWith\('pk\.'\)\)/);
 });
