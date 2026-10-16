@@ -16,10 +16,14 @@ export function mapboxAddressSearchUrl(raw: string, token: string): string | nul
   return `https://api.mapbox.com/search/geocode/v6/forward?${params.toString()}`;
 }
 
-export function mapboxPermanentAddressUrl(mapboxId: string, token: string): string | null {
-  if (!token.startsWith('pk.') || !mapboxId || mapboxId.length > 256 || /[;\n\r]/.test(mapboxId)) return null;
+export function mapboxPermanentAddressUrl(addressText: string, token: string): string | null {
+  // Geocoding v6 /forward expects an address SEARCH TEXT, not the opaque mapbox_id.
+  // Re-query the user-selected full address with permanent=true before saving it.
+  const query = addressText.trim().replace(/\s+/g, ' ');
+  if (!token.startsWith('pk.') || query.length < 4 || query.length > 256 ||
+      query.split(' ').length > 20 || /[;\n\r]/.test(query)) return null;
   const params = new URLSearchParams({
-    q: mapboxId, country: 'za', language: 'en', limit: '1',
+    q: query, country: 'za', language: 'en', limit: '5',
     autocomplete: 'false', permanent: 'true', access_token: token,
   });
   return `https://api.mapbox.com/search/geocode/v6/forward?${params.toString()}`;
