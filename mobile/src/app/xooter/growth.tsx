@@ -57,7 +57,7 @@ function ModuleCard({ module, completed }: {
           {completed ? '+' : ''}{module.rank_points} recognition points
         </Text> : null}
       </View>
-      {module.badge_label ? <Text style={s.badge}>
+      {!module.required && module.badge_label ? <Text style={s.badge}>
         {completed ? 'Earned recognition: ' : 'Recognition available: '}{module.badge_label}
       </Text> : null}
     </View>
