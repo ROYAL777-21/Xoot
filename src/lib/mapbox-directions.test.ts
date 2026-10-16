@@ -57,7 +57,7 @@ describe("route UX privacy", () => {
     expect(page).toContain("WorkerRoadEstimate bookingId={id} destinationAddress={booking.address}");
     expect(page).toContain("Live location is not available for this visit yet");
     expect(worker).toContain("getCurrentPosition(resolve, reject");
-    expect(worker).toContain("enabledHighAccuracy").toBe(false);
+    expect(worker).toContain("enableHighAccuracy: true");
     expect(worker).toContain("currentRequest.current?.abort()");
     expect(worker).toContain("Location permission");
     expect(worker).toContain("Neither is stored by this feature");
