@@ -71,6 +71,7 @@ test('UI fetches owner records, offers a load-older state and confirms updates',
   assert.match(file, /key=\{user\.id\}/);
   assert.match(file, /\.eq\('user_id', userId\)/);
   assert.match(file, /getNextPageParam/);
+  assert.match(file, /feed\.isError && !feed\.isFetchNextPageError/);
   assert.match(file, /validateNativeNotificationHistory/);
   assert.match(file, /Load older updates/);
   assert.match(file, /eq\('read', false\)/);
