@@ -203,7 +203,7 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
         </View>
         <CoreIcon name="chevron-right" size={19} color={p.inkSoft} />
       </Pressable>
-      {showServiceAreas && <ServiceAreaMap />
+      {showServiceAreas && <ServiceAreaMap />}
       <Label>What kind of place is it?</Label>
       <View style={s.tiles}>{BOOKING_PROPERTY_TYPES.map(property => <View key={property} style={s.tile}>
         <Choice label={BOOKING_PROPERTY_LABELS[property]} selected={input.propertyType === property} onPress={() => {
