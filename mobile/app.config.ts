@@ -70,7 +70,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSCameraUsageDescription: 'Xoot uses the camera only when you choose to upload service or verification photos.',
       NSPhotoLibraryUsageDescription: 'Xoot uses your photo library only when you choose to upload service or verification photos.',
       NSLocationWhenInUseUsageDescription:
-        'Xoot uses your location only when you choose location-assisted address or arrival features.',
+        'Xoot uses foreground location only when you choose address assistance or explicitly share your journey for an active job.',
     },
   },
   android: {
@@ -117,7 +117,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         category: ['BROWSABLE', 'DEFAULT'],
       },
     ],
-    permissions: ['POST_NOTIFICATIONS'],
+    // Foreground opt-in journey only; never request background location.
+    permissions: ['POST_NOTIFICATIONS', 'ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION'],
     predictiveBackGestureEnabled: true,
   },
   web: {
