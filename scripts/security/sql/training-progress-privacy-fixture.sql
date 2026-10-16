@@ -51,6 +51,8 @@ create policy "training_progress_update_own" on public.xooter_training_progress
 grant select on public.xooters to authenticated;
 grant select, truncate, trigger, references
   on public.xooter_training_progress to anon, authenticated;
+-- A planted inherited PUBLIC grant must also be removed by the fix.
+grant select on public.xooter_training_progress to public;
 grant select on public.xooter_training_progress to service_role;
 
 insert into public.xooters (id,user_id) values
