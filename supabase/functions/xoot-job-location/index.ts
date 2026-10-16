@@ -8,19 +8,7 @@ import {
  * No automatic/background tracking is enabled by this function.
  */
 const POSITION_MAX_AGE_MS = 60_000;
-const REPORT_MIN_INTERVAL_MS = 10_000;
 const CLOCK_SKEW_MS = 30_000;
-type LivePosition = {
-  booking_id: string;
-  xooter_id: string;
-  latitude: number;
-  longitude: number;
-  accuracy_m: number;
-  recorded_at: string;
-  expires_at: string;
-  updated_at: string;
-};
-
 Deno.serve(async req => {
   const origin = req.headers.get("Origin");
   const preflight = handlePreflight(req, origin);
@@ -129,28 +117,20 @@ Deno.serve(async req => {
     return fail("stale location report", origin, 400);
   }
 
-  const { data: previous, error: priorError } = await db.from("xoot_job_live_positions")
-    .select("updated_at").eq("booking_id", bookingId).maybeSingle();
-  if (priorError) return fail("location unavailable", origin, 500);
-  if (previous && now - Date.parse(previous.updated_at) < REPORT_MIN_INTERVAL_MS) {
-    return fail("location update too frequent", origin, 429);
-  }
-  const update: LivePosition = {
-    booking_id: bookingId,
-    xooter_id: worker.id,
-    latitude: body.latitude,
-    longitude: body.longitude,
-    accuracy_m: body.accuracyM,
-    // Preserve the actual GPS capture time, not the HTTP receipt time.
-    // A valid but 25-second-old fix must not remain visible for another 60 seconds.
-    recorded_at: new Date(recorded).toISOString(),
-    expires_at: new Date(Math.min(now, recorded) + POSITION_MAX_AGE_MS).toISOString(),
-    updated_at: new Date(now).toISOString(),
-  };
-  const { error: writeError } = await db.from("xoot_job_live_positions").upsert(update, {
-    onConflict: "booking_id",
+  // This database RPC atomically rechecks accepted job + booking lifecycle
+  // under row locks, and handles simultaneous requests with a 10-second
+  // ON CONFLICT throttle. A read-then-upsert here would be racy.
+  const { data: saved, error: publishError } = await db.rpc("xoot_publish_private_job_location", {
+    p_booking_id: bookingId,
+    p_xooter_id: worker.id,
+    p_latitude: body.latitude,
+    p_longitude: body.longitude,
+    p_accuracy_m: body.accuracyM,
+    p_captured_at: new Date(recorded).toISOString(),
   });
-  if (writeError) return fail("location unavailable", origin, 500);
+  if (publishError) return fail("location unavailable", origin, 500);
+  if (saved !== true) return fail("location unavailable or update too frequent", origin, 409);
+  const expiresAt = new Date(Math.min(now, recorded) + POSITION_MAX_AGE_MS).toISOString();
   // Never echo position to unauthorised callers or log coordinates.
-  return ok({ state: "accepted", expiresAt: update.expires_at }, origin);
+  return ok({ state: "accepted", expiresAt }, origin);
 });
