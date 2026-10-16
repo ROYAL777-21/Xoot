@@ -63,8 +63,8 @@ $requiredBlockers = @(
   },
   [pscustomobject]@{
     id = "mapbox-restricted-tokens"
-    description = "Restricted Mapbox tokens"
-    patterns = @("Restricted Mapbox tokens", "browser token", "native Expo token", "secret downloads token")
+    description = "Mapbox browser/native least-privilege and real-device release gate"
+    patterns = @("Mapbox production runbook", "browser token", "native iOS/Android tokens", "real-device tile load")
   },
   [pscustomobject]@{
     id = "cloudflare-zone"
