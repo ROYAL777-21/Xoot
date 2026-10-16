@@ -30,6 +30,18 @@ test('pg_cron physically deletes expired GPS rather than only obscuring stale ro
   assert.match(migration, /delete from public\.xoot_job_live_positions where expires_at <= now\(\)/);
 });
 
+test('cancellation, completion and reassignment proactively clear live GPS', () => {
+  assert.match(migration, /create trigger xoot_remove_location_on_booking_change/);
+  assert.match(migration, /create trigger xoot_remove_location_on_job_change/);
+  assert.match(migration, /new\.xooter_id is distinct from old\.xooter_id/);
+  assert.match(migration, /new\.cancelled_at is not null/);
+  assert.match(migration, /new\.completed_at is not null/);
+  assert.match(migration, /new\.sensitive_data_revoked_at is not null/);
+  assert.match(migration, /tg_op = 'DELETE'/);
+  assert.match(migration, /revoke all on function private\.xoot_clear_live_location_on_booking_update\(\) from public, anon, authenticated/);
+  assert.match(migration, /revoke all on function private\.xoot_clear_live_location_on_job_change\(\) from public, anon, authenticated/);
+});
+
 test('Edge JWT, accepted booking, current worker and explicit consent are all mandatory', () => {
   assert.match(config, /\[functions\.xoot-job-location\]\s*verify_jwt = true/);
   assert.match(handler, /await requireAuth\(req, origin\)/);
