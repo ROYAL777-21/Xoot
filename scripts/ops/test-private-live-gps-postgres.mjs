@@ -50,10 +50,11 @@ try {
   await admin.query('create database "'+dbname+'"');created=true;
   db=new pg.Client({...config,database:dbname});await db.connect();
   await db.query('create schema private');
-  await db.query('create table public.xooters(id uuid primary key)');
+  await db.query("create table public.xooters(id uuid primary key,active boolean not null default true,background_check_status text not null default 'approved')");
   await db.query("create table public.bookings(id uuid primary key,xooter_id uuid,status text not null,cancelled_at timestamptz,completed_at timestamptz,sensitive_data_revoked_at timestamptz)");
   await db.query('create table public.xooter_jobs(id uuid primary key,booking_id uuid not null,xooter_id uuid not null,state text not null)');
   await db.query(ddl);
+  await db.query('grant select, update on table public.bookings, public.xooters, public.xooter_jobs to service_role');
   ok('actual PostgreSQL accepts private GPS table and both trigger functions');
   const q=async sql=>(await db.query(sql)).rows[0];
   assert.equal((await q("select relrowsecurity from pg_class where oid='public.xoot_job_live_positions'::regclass")).relrowsecurity,true);
@@ -74,7 +75,26 @@ try {
     [bookingA,workerA,bookingB,workerB,bookingC]);
   await db.query("insert into public.xooter_jobs(id,booking_id,xooter_id,state) values($1,$2,$3,'accepted'),($4,$5,$6,'accepted')",
     [jobA,bookingA,workerA,jobB,bookingB,workerB]);
-  await fix(bookingA,workerA);await fix(bookingB,workerB);await fix(bookingC,workerA);
+  // Prove the actual SQL RPC is available only to service_role and enforces
+  // simultaneous report throttling and owner/booking checks atomically.
+  const rpc='select public.xoot_publish_private_job_location($1,$2,$3,$4,$5,$6) as saved';
+  for(const role of ['anon','authenticated']){
+    const p=await db.query("select has_function_privilege($1,'public.xoot_publish_private_job_location(uuid,uuid,numeric,numeric,numeric,timestamptz)','EXECUTE') as permitted",[role]);
+    assert.equal(p.rows[0].permitted,false);
+  }
+  await db.query('begin');
+  await db.query('set local role service_role');
+  const args=[bookingA,workerA,-26.1,28.04,12,new Date().toISOString()];
+  const first=await db.query(rpc,args);
+  const second=await db.query(rpc,args);
+  assert.equal(first.rows[0].saved,true);
+  assert.equal(second.rows[0].saved,false);
+  assert.equal((await db.query(rpc,[bookingB,workerA,-26.1,28.04,12,new Date().toISOString()])).rows[0].saved,false);
+  assert.equal((await db.query(rpc,[bookingB,workerB,-26.1,28.04,12,new Date(Date.now()-35_000).toISOString()])).rows[0].saved,false);
+  await db.query('commit');
+  assert.equal(await count(bookingA),1);
+  ok('service-only atomic publish grants, accepted worker checks and 10-second concurrency throttle');
+  await fix(bookingB,workerB);await fix(bookingC,workerA);
   await db.query("update public.bookings set status='arrived' where id=$1",[bookingA]);
   assert.equal(await count(bookingA),0);assert.equal(await count(bookingB),1);
   ok('arrival deletes only the affected worker coordinate');
