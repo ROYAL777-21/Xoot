@@ -19,6 +19,11 @@ Deno.serve(async (req) => {
   if (auth.response || !auth.user || !auth.supa) return auth.response;
   const actorId = auth.user.id;
   const supa = auth.supa;
+  // Default OFF, independently of any public client flags, until real device and
+  // two-account RLS tests, POPIA disclosure and physical worker consent are signed off.
+  if (Deno.env.get("XOOT_ENABLE_LIVE_LOCATION") !== "true") {
+    return fail("location sharing not enabled", origin, 503);
+  }
 
   const body = await readJson(req, 4096);
   const action = body?.action;
