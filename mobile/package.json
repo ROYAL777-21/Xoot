@@ -68,7 +68,7 @@
     "eas-build-post-install": "npm run config:check",
     "test:gift": "tsx --test scripts/native-gift.test.mts",
     "test:visit": "tsx --test scripts/native-visit-detail.test.mts",
-    "test:xooter": "tsx --test scripts/native-xooter-ledger.test.mts"
+    "test:xooter": "tsx --test scripts/native-xooter-jobs-earnings.test.mts"
   },
   "overrides": {
     "uuid": "^11.1.1",
