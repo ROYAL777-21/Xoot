@@ -53,10 +53,6 @@ Deno.serve(async req => {
     .eq("id", bookingId).maybeSingle();
   if (bookingError || !booking) return fail("booking unavailable", origin, 404);
 
-  const active = ["en_route", "enroute"].includes(String(booking.status)) &&
-    !booking.cancelled_at && !booking.completed_at && !booking.sensitive_data_revoked_at;
-  if (!active) return ok({ state: "unavailable" }, origin);
-
   const { data: job, error: jobError } = await db.from("xooter_jobs")
     .select("id,xooter_id,state").eq("booking_id", bookingId)
     .eq("xooter_id", booking.xooter_id).eq("state", "accepted").maybeSingle();
@@ -72,6 +68,11 @@ Deno.serve(async req => {
   const isWorker = worker.user_id === actorId;
   const isCustomer = booking.user_id === actorId;
   if (!isWorker && !isCustomer) return fail("booking unavailable", origin, 404);
+
+  // Check participant identity before disclosing even the state of a private booking.
+  const active = ["en_route", "enroute"].includes(String(booking.status)) &&
+    !booking.cancelled_at && !booking.completed_at && !booking.sensitive_data_revoked_at;
+  if (!active) return ok({ state: "unavailable" }, origin);
 
   if (action === "read") {
     const { data: point, error } = await db.from("xoot_job_live_positions")
