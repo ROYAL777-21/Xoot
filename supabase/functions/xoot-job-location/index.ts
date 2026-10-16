@@ -1,6 +1,7 @@
 import {
   cleanId, fail, getServiceClient, handlePreflight, ok, readJson, requireAuth,
 } from "../_shared/action-utils.ts";
+import { servePrivateDispatch } from "../_shared/live-dispatch.ts";
 
 /**
  * Exact location is never a public table API or a Realtime publication.
@@ -28,6 +29,9 @@ Deno.serve(async req => {
     return fail("invalid request", origin, 400);
   }
   const action = body.action;
+  // Dispatch does not accept arbitrary booking or actor IDs and cannot be used
+  // without both a verified admin JWT role and MFA AAL2 assurance.
+  if (action === "dispatch") return servePrivateDispatch(req, actorId, origin);
   const bookingId = cleanId(body.bookingId);
   if (!bookingId || !["publish", "read", "stop"].includes(String(action))) {
     return fail("invalid request", origin, 400);
