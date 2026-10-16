@@ -42,7 +42,7 @@ export function MobileMapboxAddressSuggestions({ value, onSelect }: { value: str
   async function choose(item: NativeMapboxSuggestion) {
     // Temporary results are never stored: reconfirm selected ID under Permanent Geocoding.
     chosen.current?.abort();
-    const url = nativeMapboxSearchUrl(item.id, token, true);
+    const url = nativeMapboxSearchUrl(item.label, token, true);
     if (!url) { setState('error'); return; }
     const controller = new AbortController();
     chosen.current = controller;
