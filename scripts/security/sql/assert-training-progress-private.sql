@@ -15,8 +15,9 @@ begin
   end if;
   if exists(select 1 from pg_policies where schemaname='public'
     and tablename='xooter_training_progress'
-    and (policyname='training progress visible' or
-         (cmd='SELECT' and roles @> array['public']::name[])))
+    and (policyname in ('training progress visible', 'training_progress_own',
+                        'training_progress_insert_own', 'training_progress_update_own') or
+         roles @> array['public']::name[]))
   then
     raise exception 'public training progress SELECT policy remains';
   end if;
