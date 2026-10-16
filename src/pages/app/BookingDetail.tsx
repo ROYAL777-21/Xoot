@@ -588,7 +588,7 @@ const BookingDetail = () => {
               : "No live GPS feed or calculated arrival time is connected to this booking. An en-route status is not proof of current worker position."}</p>
             {isAssignedXooter && activeVisit && typeof booking.address === "string" && booking.address.trim().length >= 4 && id &&
               <div className="mb-4"><WorkerRoadEstimate bookingId={id} destinationAddress={booking.address} /></div>}
-            {id && canonicalStatus === "en_route" && <LiveJobJourney bookingId={id} isAssignedWorker={isAssignedXooter} />}
+            {id && canonicalStatus === "en_route" && <LiveJobJourney bookingId={id} isAssignedWorker={isAssignedXooter} destinationAddress={typeof booking.address === "string" ? booking.address : undefined} />}
             <div className="space-y-3">
               {statusSteps.map((step) => {
                 const hit = timeline.find((e) => step.keys.includes(e.status) || e.label === step.label);
