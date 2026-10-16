@@ -1,17 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Colors, Spacing, alpha } from '@/constants/theme';
-import { mobileEnv } from '@/lib/env';
 
 const launchAreas = ['Sandton', 'Bryanston', 'Rosebank', 'Fourways', 'Midrand'];
 
 export function ServiceAreaMap() {
   return (
     <View style={styles.fallback}>
-      <Text style={styles.kicker}>Mapbox service map</Text>
-      <Text style={styles.title}>{mobileEnv.mapboxPublicToken ? 'Native map ready in development builds.' : 'Add a public Mapbox token to activate maps.'}</Text>
+      <Text style={styles.kicker}>Your neighbourhood</Text>
+      <Text style={styles.title}>Service areas</Text>
       <Text style={styles.body}>
-        Xoot maps show service coverage, safe ETA context and dispatch readiness. Exact addresses and access instructions stay inside protected booking screens.
+        These are reference locations, not a promise of live availability or a real-time journey. Your exact booking address and access instructions remain private.
       </Text>
       <View style={styles.areas}>
         {launchAreas.map((area) => (
