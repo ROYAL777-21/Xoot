@@ -4333,6 +4333,56 @@ export type Database = {
         }
         Relationships: []
       }
+      // Forward declaration matching 20261016171500; regenerate from the deployed schema
+      // after staging/production migration verification. No client permissions are implied.
+      xoot_job_live_positions: {
+        Row: {
+          accuracy_m: number
+          booking_id: string
+          expires_at: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          updated_at: string
+          xooter_id: string
+        }
+        Insert: {
+          accuracy_m: number
+          booking_id: string
+          expires_at: string
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          updated_at?: string
+          xooter_id: string
+        }
+        Update: {
+          accuracy_m?: number
+          booking_id?: string
+          expires_at?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          updated_at?: string
+          xooter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xoot_job_live_positions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "xooters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       xootcred_ledger: {
         Row: {
           amount: number
