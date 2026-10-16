@@ -51,7 +51,12 @@ export function LiveWorkerJourney({ bookingId }: { bookingId: string }) {
   }, [bookingId, open]);
 
   useEffect(() => {
-    if (!open || !position || !token.startsWith("pk.")) return;
+    if (!open || !position || !token.startsWith("pk.")) {
+      // Never leave an expired position visible on an old map.
+      marker.current?.remove(); marker.current = null;
+      map.current?.remove(); map.current = null;
+      return;
+    }
     if (map.current) {
       map.current.setCenter([position.longitude, position.latitude]);
       marker.current?.setLngLat([position.longitude, position.latitude]);
