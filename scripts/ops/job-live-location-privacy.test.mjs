@@ -34,7 +34,7 @@ test('Edge JWT, accepted booking, current worker and explicit consent are all ma
   assert.match(config, /\[functions\.xoot-job-location\]\s*verify_jwt = true/);
   assert.match(handler, /await requireAuth\(req, origin\)/);
   assert.match(handler, /const actorId = auth\.user\.id/);
-  assert.match(handler, /booking\.status\) === "en_route"/);
+  assert.match(handler, /\["en_route", "enroute"\]\.includes\(String\(booking\.status\)\)/);
   assert.match(handler, /!booking\.cancelled_at && !booking\.completed_at && !booking\.sensitive_data_revoked_at/);
   assert.match(handler, /\.eq\("booking_id", bookingId\)\s*\.eq\("xooter_id", booking\.xooter_id\)\.eq\("state", "accepted"\)/);
   assert.match(handler, /worker\.user_id === actorId/);
