@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import {
   mapboxDirectionsUrl, mapboxRoutingDestinationUrl,
@@ -14,14 +14,19 @@ export function WorkerRoadEstimate({ destinationAddress, bookingId }: {
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [estimate, setEstimate] = useState<{ minutes: number; kilometres: number } | null>(null);
   const [message, setMessage] = useState("");
+  const currentRequest = useRef<AbortController | null>(null);
+  useEffect(() => () => currentRequest.current?.abort(), []);
   useEffect(() => {
+    currentRequest.current?.abort();
     setEstimate(null); setState("idle"); setMessage("");
   }, [bookingId, destinationAddress]);
 
   const calculate = async () => {
     if (state === "loading") return;
     setState("loading"); setEstimate(null); setMessage("");
+    currentRequest.current?.abort();
     const controller = new AbortController();
+    currentRequest.current = controller;
     const timeout = window.setTimeout(() => controller.abort(), 12000);
     try {
       if (!navigator.geolocation) throw new Error("Location permission unavailable");
@@ -48,12 +53,18 @@ export function WorkerRoadEstimate({ destinationAddress, bookingId }: {
       if (!result.ok) throw new Error("Road routing unavailable");
       const road = parseMapboxRoadEstimate(await result.json());
       if (!road) throw new Error("No supported driving route");
+      if (controller.signal.aborted) return;
       setEstimate(road);
       setState("ready");
     } catch {
-      setMessage("Route estimate unavailable. You can use the Directions link or try again.");
-      setState("error");
-    } finally { window.clearTimeout(timeout); }
+      if (!controller.signal.aborted) {
+        setMessage("Route estimate unavailable. You can use the Directions link or try again.");
+        setState("error");
+      }
+    } finally {
+      window.clearTimeout(timeout);
+      if (currentRequest.current === controller) currentRequest.current = null;
+    }
   };
 
   if (!mapboxToken.startsWith("pk.")) return null;
