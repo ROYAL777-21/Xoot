@@ -225,3 +225,11 @@ content. Worth keeping honest about.
 4. **The Four Cs become the intro structure** for every company video script.
 5. **The waterfall method** governs how the one long-form YouTube asset is broken up.
 6. **Contextual credibility replaces general credibility** in every draft.
+
+
+## 2026-10-13 — incoming references and production adaptation
+
+- Xoot Instagram: https://youtu.be/w6qpJ0eTB68?si=zd6SW1njGhReWr35
+- Founder personal brand: https://youtu.be/7NbBPg1w6Zk?si=DGqu6jGRz4_1EPIx
+
+**Reading status: not yet verified.** Exact source transcripts were unavailable at this review. These videos are entered as reference inputs, **not** sources of paraphrased recommendations. Do not count them among read transcripts or assign titles/outlier scores without evidence. The new original Xoot AI-presenter five-Reel scripts and testing plan are in [ai-lifestyle-reels-production-pack-2026-10.md](ai-lifestyle-reels-production-pack-2026-10.md); source of verified previously read frameworks remains the September reference table above.
