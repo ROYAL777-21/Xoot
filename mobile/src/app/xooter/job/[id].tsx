@@ -10,6 +10,7 @@ import { isXooterJobId, parseXooterJobCards, type XooterJobCard } from '@/lib/na
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
 import { PrivateJobLocationPublisher } from '@/components/private-job-location-publisher';
+import { PrivateWorkerDirections } from '@/components/private-worker-directions';
 
 const JOB_WORKSPACE = 'https://xoot.co.za/xooter/jobs';
 type JobDetailState = {
@@ -112,7 +113,10 @@ function XooterJobDetail({ userId, jobId }: { userId: string; jobId: string }) {
                   publisher independently verifies the accepted job and worker.
                   Never show this for offers, completed or revoked visits. */}
               {accepted && ['en_route', 'enroute'].includes(job.status ?? '') &&
-                <PrivateJobLocationPublisher bookingId={job.booking_id} />}
+                <>
+                  <PrivateJobLocationPublisher bookingId={job.booking_id} />
+                  <PrivateWorkerDirections jobId={job.job_id} bookingId={job.booking_id} />
+                </>}
               <Text style={s.section}>Address and household access</Text>
               <Card style={s.notice}>
                 <CoreIcon name="shield" color={nativePalette.sageInk} size={22} />
