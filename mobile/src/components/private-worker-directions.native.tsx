@@ -6,7 +6,7 @@ import { nativePalette } from '@/components/native-core';
 import { mobileEnv } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 import { validateForegroundWorkerFix } from '@/lib/private-job-location-publisher';
-import { requestLiveRoadEstimate, type LiveRoadEstimate } from '../../../src/lib/mapbox-live-routing';
+import { requestLiveRoadEstimate, type LiveRoadEstimate } from '@/lib/mapbox-live-routing';
 
 const ENABLED = process.env.EXPO_PUBLIC_ENABLE_LIVE_JOURNEY === 'true';
 
