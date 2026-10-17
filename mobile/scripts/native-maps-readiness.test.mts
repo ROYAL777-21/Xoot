@@ -163,3 +163,23 @@ test('native worker GPS input refuses old, inaccurate and invalid sensor reading
     { ...fix, coords: { ...fix.coords, accuracy: NaN } },
   ]) assert.equal(validateForegroundWorkerFix(bad, now), null);
 });
+
+
+test('native worker one-off route preserves accepted-job scope and zero retained destination', () => {
+  const route = readFileSync(new URL('../src/components/private-worker-directions.native.tsx', import.meta.url), 'utf8');
+  const fallback = readFileSync(new URL('../src/components/private-worker-directions.tsx', import.meta.url), 'utf8');
+  const job = readFileSync(new URL('../src/app/xooter/job/[id].tsx', import.meta.url), 'utf8');
+  assert.match(route, /EXPO_PUBLIC_ENABLE_LIVE_JOURNEY === 'true'/);
+  assert.match(route, /requestAndroidLocationPermissions\(\)/);
+  assert.match(route, /get-xooter-job-cards/);
+  assert.match(route, /item\.job_id === jobId && item\.booking_id === bookingId && item\.state === 'accepted'/);
+  assert.match(route, /destination_address/);
+  assert.match(route, /requestLiveRoadEstimate\(/);
+  assert.match(route, /validateForegroundWorkerFix\(sensor\)/);
+  assert.match(route, /AppState\.currentState !== 'active'/);
+  assert.match(route, /requestsAlwaysUse=\{false\}/);
+  assert.match(route, /logoEnabled attributionEnabled/);
+  assert.doesNotMatch(route, /AsyncStorage|SecureStore|localStorage|watchPosition|backgroundLocation/);
+  assert.match(job, /<PrivateWorkerDirections jobId=\{job\.job_id\} bookingId=\{job\.booking_id\}/);
+  assert.match(fallback, /return null/);
+});
