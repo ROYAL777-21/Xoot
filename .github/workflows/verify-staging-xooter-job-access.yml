@@ -3,6 +3,9 @@ name: Verify staging Xooter job access
 # Independent, read-only role contract check. Never seeds accounts or touches
 # production data; uses existing staging-only GitHub secrets.
 on:
+  pull_request:
+    branches:
+      - release/xoot-production
   workflow_dispatch:
 
 permissions:
