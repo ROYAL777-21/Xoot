@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { requestLiveRoadEstimate } from "./mapbox-live-routing";
 
 afterEach(() => { vi.unstubAllGlobals(); });
@@ -52,4 +54,15 @@ describe("Mapbox live customer traffic estimates", () => {
     })));
     expect(await requestLiveRoadEstimate(worker, address, "pk.test", captured, new AbortController().signal, clock)).toBeNull();
   });
+});
+
+describe("Mapbox route helpers remain identical on native and web", () => {
+  for (const module of ["mapbox-directions.ts", "mapbox-live-routing.ts"]) {
+    it(module + " is a tested mirror, not an unsynchronised algorithm", () => {
+      const source = readFileSync(join(process.cwd(), "src/lib", module), "utf8");
+      const native = readFileSync(join(process.cwd(), "mobile/src/lib", module), "utf8");
+      expect(native).toBe("// Exact native mirror of src/lib/" + module +
+        "; parity enforced by mapbox-live-routing.test.ts.\\n" + source);
+    });
+  }
 });
