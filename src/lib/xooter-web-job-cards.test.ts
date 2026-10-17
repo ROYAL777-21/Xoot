@@ -58,6 +58,22 @@ describe('authenticated Xooter job-card web contract', () => {
     expect(source).toContain("respondingJobId !== null");
   });
 
+  it('requires eligibility in the privileged Edge handler before the service-role RPC', () => {
+    const source = readFileSync('supabase/functions/get-xooter-job-cards/index.ts', 'utf8');
+    const authAt = source.indexOf('requireAuth(req, origin)');
+    const profileAt = source.indexOf('.eq("user_id", user.id)');
+    const activeAt = source.indexOf('!profile?.active');
+    const approvedAt = source.indexOf('profile.background_check_status !== "approved"');
+    const denyAt = source.indexOf('403);', approvedAt);
+    const rpcAt = source.indexOf('supa.rpc("get_xooter_job_cards_for_user"');
+    expect([authAt, profileAt, activeAt, approvedAt, denyAt, rpcAt].every(at => at >= 0)).toBe(true);
+    expect(authAt).toBeLessThan(profileAt);
+    expect(profileAt).toBeLessThan(activeAt);
+    expect(activeAt).toBeLessThan(denyAt);
+    expect(denyAt).toBeLessThan(rpcAt);
+    expect(source).toContain('Xooter verification unavailable');
+  });
+
   it('requires an approved, active, owner-matched Xooter before enabling offers', () => {
     const profile = { id: workerId, user_id: userId, active: true, background_check_status: 'approved' };
     expect(isEligibleXooterProfile(profile, userId)).toBe(true);
