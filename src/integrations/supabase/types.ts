@@ -4371,6 +4371,20 @@ export type Database = {
             foreignKeyName: "xoot_job_live_positions_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: true
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
@@ -4378,7 +4392,28 @@ export type Database = {
             foreignKeyName: "xoot_job_live_positions_xooter_id_fkey"
             columns: ["xooter_id"]
             isOneToOne: false
+            referencedRelation: "analytics_contractor_quality"
+            referencedColumns: ["xooter_id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
             referencedRelation: "xooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "xooters_public"
             referencedColumns: ["id"]
           },
         ]
@@ -5437,12 +5472,12 @@ export type Database = {
       // Generated live-schema reconciliation must stay red until migration delivery.
       xoot_publish_private_job_location: {
         Args: {
+          p_accuracy_m: number
           p_booking_id: string
-          p_xooter_id: string
+          p_captured_at: string
           p_latitude: number
           p_longitude: number
-          p_accuracy_m: number
-          p_captured_at: string
+          p_xooter_id: string
         }
         Returns: boolean
       }
