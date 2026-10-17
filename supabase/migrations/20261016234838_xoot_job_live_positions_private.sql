@@ -1,3 +1,4 @@
+-- Applied to staging as 20261016234838; preserve this version in repo migration history.
 begin;
 
 -- Active job-scoped position only: no historical GPS trail, no public client access.

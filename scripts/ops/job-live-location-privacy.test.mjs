@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const migration = readFileSync(new URL('../../supabase/migrations/20261016171500_xoot_job_live_positions_private.sql', import.meta.url), 'utf8');
+const migration = readFileSync(new URL('../../supabase/migrations/20261016234838_xoot_job_live_positions_private.sql', import.meta.url), 'utf8');
 const handler = readFileSync(new URL('../../supabase/functions/xoot-job-location/index.ts', import.meta.url), 'utf8');
 const config = readFileSync(new URL('../../supabase/config.toml', import.meta.url), 'utf8');
 const web = readFileSync(new URL('../../src/components/xoot/LiveJobJourney.tsx', import.meta.url), 'utf8');

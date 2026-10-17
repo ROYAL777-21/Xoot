@@ -4333,7 +4333,7 @@ export type Database = {
         }
         Relationships: []
       }
-      // Forward declaration matching 20261016171500; regenerate from the deployed schema
+      // Forward declaration matching 20261016234838; regenerate from the deployed schema
       // after staging/production migration verification. No client permissions are implied.
       xoot_job_live_positions: {
         Row: {

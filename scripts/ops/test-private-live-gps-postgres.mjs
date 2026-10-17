@@ -16,7 +16,7 @@ const { default: pg } = await import(pathToFileURL(resolve(process.env.XOOT_PG_M
 const config = { host:process.env.PGHOST,port:Number(process.env.PGPORT),
   user:process.env.PGUSER,password:process.env.PGPASSWORD,database:'postgres',
   ssl:false,connectionTimeoutMillis:12000,statement_timeout:10000 };
-const original = readFileSync(new URL('../../supabase/migrations/20261016171500_xoot_job_live_positions_private.sql',import.meta.url),'utf8');
+const original = readFileSync(new URL('../../supabase/migrations/20261016234838_xoot_job_live_positions_private.sql',import.meta.url),'utf8');
 assert.match(original,/pg_cron must be installed for short-lived GPS retention/);
 assert.match(original,/perform cron\.schedule\(/);
 assert.match(original,/delete from public\.xoot_job_live_positions where expires_at <= now\(\)/);
