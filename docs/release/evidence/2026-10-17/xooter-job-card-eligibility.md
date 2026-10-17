@@ -30,3 +30,11 @@ GitHub `Verify approved Xoot redesign` (web/native/type/lint/build/rendered chec
 An actual authenticated staging test must demonstrate that an approved active Xooter receives their own job-card projection, while an inactive/unapproved Xooter and a customer get a forbidden or empty outcome and cannot read another worker's data. This test requires approved staging-only test identities; no real worker accounts or production rows should be modified just to manufacture a test pass.
 
 After a signed-in staging role test and completed review, merge the reviewed commit to `release/xoot-production`, redeploy **this exact** function with all matching bundled dependencies, then verify production function version/JWT and live browser behaviour. The old function currently remains active in production. Do not enable payment, calling or payout flags as part of this repair.
+
+## CI role-test outcome on PR #77
+
+The new read-only `Verify staging Xooter job access` check ran on [GitHub Actions run 38985118481](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/38985118481) and failed **before authentication** (exit code 2), because these exact staging-only GitHub Actions secrets were absent: `XOOT_STAGING_SUPABASE_PUBLISHABLE_KEY`, `XOOT_SMOKE_XOOTER_EMAIL`, `XOOT_SMOKE_XOOTER_PASSWORD`, `XOOT_SMOKE_CLIENT_EMAIL`, `XOOT_SMOKE_CLIENT_PASSWORD`. No Xooter or customer permission assertion ran. This is **not** evidence of a working or broken live authorisation check.
+
+The staging Xooter fixture must additionally have current approved/active verification, not the obsolete `passed` label; do not silently relax production authorisation or upgrade an actual worker based only on a test.
+
+Once the owner configures these staging-only secrets and an authorised approved fixture, the workflow must return success after a real Xooter 200 owner-scope result and a customer denial. Keep PR #77 and its Edge security change unmerged/unpublished until this is proven and the independent security/preview gates are addressed.
