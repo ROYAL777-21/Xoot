@@ -6,7 +6,7 @@ import { nativePalette } from '@/components/native-core';
 import { mobileEnv } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 import { readFreshJobPosition, type FreshJobPosition } from '@/lib/private-job-journey';
-import { requestLiveRoadEstimate, type LiveRoadEstimate } from '../../../src/lib/mapbox-live-routing';
+import { requestLiveRoadEstimate, type LiveRoadEstimate } from '@/lib/mapbox-live-routing';
 
 // Deliberately opt-in twice: the release must enable this flag, and the
 // authenticated customer must explicitly choose to open the private map.
