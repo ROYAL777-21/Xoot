@@ -62,7 +62,7 @@ describe("Mapbox route helpers remain identical on native and web", () => {
       const source = readFileSync(join(process.cwd(), "src/lib", module), "utf8");
       const native = readFileSync(join(process.cwd(), "mobile/src/lib", module), "utf8");
       expect(native).toBe("// Exact native mirror of src/lib/" + module +
-        "; parity enforced by mapbox-live-routing.test.ts.\\n" + source);
+        "; parity enforced by mapbox-live-routing.test.ts.\n" + source);
     });
   }
 });
