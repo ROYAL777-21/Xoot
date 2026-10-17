@@ -5,8 +5,6 @@ export const defaultAllowedOrigins = [
   "http://127.0.0.1:5173",
   "http://127.0.0.1:4173",
   "https://xoot.co.za",
-  "https://staging.xoot.co.za",
-  "https://preview.xoot.co.za",
   "https://www.xoot.co.za",
 ];
 
@@ -30,7 +28,12 @@ export const getAllowedOrigins = () => {
     ?.split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
-  return configured?.length ? configured : defaultAllowedOrigins;
+  // Staging hosts are deliberately NOT part of defaultAllowedOrigins: that
+  // array drives the production ALLOWED_ORIGINS value and must remain production-only.
+  // Accept additional staging browser origins on the staging Supabase project alone.
+  const permitted = configured?.length ? configured : defaultAllowedOrigins;
+  const isStaging = Deno.env.get("SUPABASE_URL") === "https://fxmxyabdjqviqbcxmvlp.supabase.co";
+  return isStaging ? [...new Set([...permitted, "https://staging.xoot.co.za", "https://preview.xoot.co.za"])] : permitted;
 };
 
 export const getCorsHeaders = (origin: string | null) => {
