@@ -6,7 +6,7 @@ create table if not exists public.llm_booking_intents (
   oauth_client_id text not null,
   idempotency_key text not null,
   saved_address_id uuid not null references public.saved_addresses(id),
-  service_type text not null check (service_type in ('regular','express','office','airbnb','moving')),
+  service_key text not null check (service_key in ('regular','express','office','airbnb','moving')),
   hours numeric(4,1) not null check (hours >= 1 and hours <= 10),
   booking_date date not null,
   booking_time text not null,
