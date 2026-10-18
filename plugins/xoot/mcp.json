@@ -9,7 +9,7 @@
           "auth": {
             "type": "mixed",
             "client": {
-              "mode": "dynamic"
+              "mode": "dcr"
             },
             "baseScopes": [
               "openid",
