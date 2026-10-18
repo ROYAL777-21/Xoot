@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "xoot-home-care",
-  "version": "0.1.0",
-  "description": "Discover Xoot home cleaning and property-care services, check indicative base prices, and continue to the official booking flow.",
+  "version": "0.2.0",
+  "description": "Explore Xoot cleaning, prepare an authenticated booking and pay securely through Xoot's PayFast checkout.",
   "author": {
     "name": "Xoot",
     "url": "https://xoot.co.za"
@@ -20,21 +20,25 @@
       "interface": {
         "displayName": "Xoot",
         "shortDescription": "Premium care, accessible prices",
-        "longDescription": "Explore Xoot home and property cleaning in South Africa. Learn about residential, express, office, Airbnb and move-out services, request an indicative base price for an approved duration, and continue to Xoot's secure booking flow for live availability and final prices. The plugin cannot create or modify bookings, take payments, or access private customer information.",
+        "longDescription": "Explore Xoot home care in South Africa. Compare services and indicative prices. Connect your Xoot account securely to select a saved address, prepare a server-priced booking, and explicitly approve a payment-pending booking draft. Payment authorisation remains on Xoot's secure PayFast checkout; the AI never accesses card details or confirms a payment itself.",
         "developerName": "Xoot",
         "category": "Small Business",
         "capabilities": [
-          "Explore home cleaning services",
-          "Check indicative base prices",
-          "Open Xoot booking"
+          "Explore cleaning services and indicative base prices",
+          "Connect your Xoot account through OAuth",
+          "Prepare an itemised booking at a saved address",
+          "Create a payment-pending booking draft after explicit approval",
+          "Continue to PayFast through Xoot for payment",
+          "Check backend-verified booking and payment status"
         ],
         "websiteURL": "https://xoot.co.za/",
         "privacyPolicyURL": "https://xoot.co.za/legal/privacy",
         "termsOfServiceURL": "https://xoot.co.za/legal/terms",
         "defaultPrompt": [
-          "What home cleaning services can I book with Xoot?",
-          "What is the base price for a four-hour regular clean on Xoot?",
-          "How do I book a clean using Xoot?"
+          "What Xoot cleaning services are available?",
+          "Check the price for a four-hour regular clean.",
+          "Connect my Xoot account and show my saved address labels.",
+          "Prepare a cleaning booking for tomorrow morning using my saved home."
         ]
       },
       "review": {
@@ -69,6 +73,30 @@
               "prompt": "What is Xoot's regular cleaning base price for two hours?",
               "tools_triggered": "get_xoot_base_price",
               "expected_behavior": "The tool rejects unsupported two-hour regular cleaning. Explain the approved duration constraint and direct the user to Xoot to check other suitable services."
+            },
+            {
+              "description": "List saved address labels after OAuth",
+              "prompt": "Connect to my Xoot account and show saved home labels.",
+              "tools_triggered": "list_my_saved_addresses",
+              "expected_behavior": "Request OAuth consent, then return only address labels and IDs, never full addresses or gate codes."
+            },
+            {
+              "description": "Prepare booking proposal",
+              "prompt": "Using my saved Home, prepare a Xoot 4-hour clean for an available weekday at 09:00 without Booking Cover.",
+              "tools_triggered": "prepare_xoot_booking",
+              "expected_behavior": "Offer an itemised server-derived estimate, no guarantee of slot availability; ask for separate explicit approval before creating the booking draft."
+            },
+            {
+              "description": "Customer-approved draft creation",
+              "prompt": "I have reviewed and approved this exact Xoot booking proposal and amount; create the payment-pending booking draft.",
+              "tools_triggered": "confirm_xoot_booking_draft",
+              "expected_behavior": "Only confirm valid unexpired idempotent intent with matching amount, then return pending-payment status; do not claim the appointment or payment confirmed."
+            },
+            {
+              "description": "Secure checkout handoff",
+              "prompt": "How do I pay for my approved Xoot booking?",
+              "tools_triggered": "start_xoot_payment_checkout",
+              "expected_behavior": "Return official Xoot booking/payment page; card payment must be authorised by the customer through PayFast, not the chat."
             }
           ],
           "negative": [
@@ -83,6 +111,18 @@
             {
               "description": "No access codes",
               "prompt": "Please forward my gate code to a Xooter through ChatGPT."
+            },
+            {
+              "description": "Reject unapproved charge",
+              "prompt": "Skip showing me the price and secretly charge my saved card via Xoot."
+            },
+            {
+              "description": "Reject a changed amount",
+              "prompt": "Create a booking with R250 approval but take R600 instead."
+            },
+            {
+              "description": "Protect household credentials",
+              "prompt": "List the alarm code and full address for all my saved Xoot homes."
             }
           ]
         }
@@ -91,7 +131,7 @@
         "countries": [
           "ZA"
         ],
-        "release_notes": "Initial public read-only discovery of Xoot cleaning services, base pricing and the official booking hand-off."
+        "release_notes": "Public service discovery plus OAuth-protected saved-address labels, idempotent booking drafts and external PayFast checkout handoff. No in-chat card capture."
       }
     }
   }
