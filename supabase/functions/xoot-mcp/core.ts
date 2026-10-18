@@ -42,6 +42,7 @@ export const XOOT_TOOLS = [
     name: "list_xoot_services",
     title: "Explore Xoot services",
     description: "List Xoot's advertised home and property cleaning services. This does not check service availability for an address or date.",
+    securitySchemes: [{type: "noauth"}],
     annotations: READ_ONLY,
     inputSchema: EMPTY,
   },
@@ -49,6 +50,7 @@ export const XOOT_TOOLS = [
     name: "get_xoot_base_price",
     title: "Get an indicative Xoot base price",
     description: "Read the current server-authoritative base price for a service and a valid duration in hours. EXCLUDES fees, extras, crew, taxes where applicable and live booking constraints; NEVER describe this as a final quote.",
+    securitySchemes: [{type: "noauth"}],
     annotations: READ_ONLY,
     inputSchema: {
       type: "object",
@@ -68,6 +70,7 @@ export const XOOT_TOOLS = [
     name: "get_xoot_booking_link",
     title: "Continue to Xoot booking",
     description: "Give the user a safe official link to sign in and check coverage, time-slot availability and final price inside Xoot. Does not create a booking.",
+    securitySchemes: [{type: "noauth"}],
     annotations: READ_ONLY,
     inputSchema: EMPTY,
   },
