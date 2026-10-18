@@ -39,7 +39,7 @@ Deno.serve(async(request:Request):Promise<Response>=>{
   if(request.method==="OPTIONS")return new Response(null,{status:204,headers});
 
   // RFC 9728 metadata is accessible to MCP clients but never contains credentials.
-  if(request.method==="GET"&&new URL(request.url).pathname.endsWith("/.well-known/oauth-protected-resource")){
+  if(request.method==="GET"&&new URL(request.url).pathname.endsWith("/oauth-protected-resource")){
     const issuer=(Deno.env.get("SUPABASE_URL")??"").replace(/\/$/,"")+"/auth/v1";
     return responseJson({
       resource:serverUrl(),authorization_servers:[issuer],
@@ -84,7 +84,7 @@ Deno.serve(async(request:Request):Promise<Response>=>{
     }
     const auth=await getCommerceAuth(request.headers.get("Authorization"));
     if(!auth){
-      const metadata=serverUrl()+"/.well-known/oauth-protected-resource";
+      const metadata=serverUrl()+"/oauth-protected-resource";
       headers["WWW-Authenticate"]='Bearer resource_metadata="'+metadata+'", error="invalid_token"';
       return responseJson({
         jsonrpc:"2.0",id,error:{code:-32001,message:"Connect and authorise your Xoot account using OAuth 2.1"},
