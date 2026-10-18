@@ -7,7 +7,14 @@
       "extensions": {
         "com.openai": {
           "auth": {
-            "type": "none"
+            "type": "mixed",
+            "client": {
+              "mode": "dynamic"
+            },
+            "baseScopes": [
+              "openid",
+              "email"
+            ]
           }
         }
       }
