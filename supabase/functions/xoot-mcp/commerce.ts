@@ -103,7 +103,7 @@ async function invokeCustomerEndpoint(auth:Auth,path:string,data:Record<string,u
 }
 const quoteShape=(row:Record<string,unknown>)=>({
   intent_id:row.id,expires_at:row.expires_at,
-  service_type:row.service_type,date:row.booking_date,time:row.booking_time,
+  service_type:row.service_key,date:row.booking_date,time:row.booking_time,
   hours:row.hours,cover_opt_in:row.booking_cover_opt_in,
   total_cents:row.quote_total_cents,breakdown:row.quote_breakdown,
   status:row.status,currency:"ZAR",
@@ -136,7 +136,7 @@ export async function runCommerce(name:string,args:ToolArgs,auth:Auth) {
       .eq("user_id",auth.userId).eq("oauth_client_id",auth.clientId)
       .eq("idempotency_key",choice.idempotency_key).maybeSingle();
     const matches=(r:Record<string,unknown>)=>
-      r.saved_address_id===choice.saved_address_id&&r.service_type===choice.service_type&&
+      r.saved_address_id===choice.saved_address_id&&r.service_key===choice.service_type&&
       Number(r.hours)===choice.hours&&r.booking_date===choice.date&&r.booking_time===choice.time&&
       r.booking_cover_opt_in===choice.booking_cover_opt_in;
     if(prior){
@@ -153,7 +153,7 @@ export async function runCommerce(name:string,args:ToolArgs,auth:Auth) {
     const {data:row,error:insertError}=await supa.from("llm_booking_intents").insert({
       user_id:auth.userId,oauth_client_id:auth.clientId,
       idempotency_key:choice.idempotency_key,saved_address_id:choice.saved_address_id,
-      service_type:choice.service_type,hours:choice.hours,
+      service_key:choice.service_type,hours:choice.hours,
       booking_date:choice.date,booking_time:choice.time,
       booking_cover_opt_in:choice.booking_cover_opt_in,
       quote_total_cents:quote.total_cents,quote_breakdown:quote,
@@ -191,7 +191,7 @@ export async function runCommerce(name:string,args:ToolArgs,auth:Auth) {
         .eq("id",row.saved_address_id).eq("user_id",auth.userId).maybeSingle();
       if(addressError||!address||!isApprovedLaunchRegion(address.address))throw new Error("Saved address no longer valid");
       const created=await invokeCustomerEndpoint(auth,"create-booking",{
-        serviceType:row.service_type==="regular"?"residential":row.service_type,
+        serviceType:row.service_key==="regular"?"residential":row.service_key,
         frequency:"one_time",homeSize:"small",serviceLength:"standard",
         date:row.booking_date,time:row.booking_time,hours:Number(row.hours),
         address:address.address,
