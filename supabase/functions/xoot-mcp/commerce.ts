@@ -13,15 +13,16 @@ const ROOT = "https://xoot.co.za";
 const RELEASE_FLAG = "XOOT_MCP_COMMERCE_ENABLED";
 const writeAnnotations = { readOnlyHint:false, destructiveHint:true, idempotentHint:false, openWorldHint:true };
 const readAnnotations = { readOnlyHint:true, destructiveHint:false, idempotentHint:true, openWorldHint:false };
+const COMMERCE_OAUTH = [{type:"oauth2",scopes:["openid","email"]}];
 const SCHEMA_ID = {type:"string",pattern:"^[0-9a-fA-F-]{36}$"};
 
 export const XOOT_COMMERCE_TOOLS = [
  {name:"list_my_saved_addresses",title:"Choose a saved Xoot home",
   description:"After linking Xoot through OAuth, list labels and opaque IDs for this customer's saved addresses. Never disclose the street address to the assistant.",
-  annotations:readAnnotations,inputSchema:{type:"object",properties:{},additionalProperties:false}},
+  securitySchemes:COMMERCE_OAUTH,annotations:readAnnotations,inputSchema:{type:"object",properties:{},additionalProperties:false}},
  {name:"prepare_xoot_booking",title:"Preview a Xoot booking for approval",
   description:"Requires Xoot sign-in. Create a 15-minute, idempotent booking intent for one Xooter at a SAVED address. Return a server-priced amount and breakdown before any booking is created. Price may change before final confirmation. Dates/times and the saved-address ID must be supplied. A booking slot is NOT guaranteed.",
-  annotations:{...writeAnnotations,destructiveHint:false},
+  securitySchemes:COMMERCE_OAUTH,annotations:{...writeAnnotations,destructiveHint:false},
   inputSchema:{type:"object",properties:{
     saved_address_id:SCHEMA_ID,
     service_type:{type:"string",enum:["regular","express","office","airbnb","moving"]},
@@ -32,13 +33,13 @@ export const XOOT_COMMERCE_TOOLS = [
   },required:["saved_address_id","service_type","hours","date","time","booking_cover_opt_in","idempotency_key"],additionalProperties:false}},
  {name:"confirm_xoot_booking_draft",title:"Confirm a reviewed booking draft",
   description:"MUTATION. Only call after the customer explicitly approves this particular quote, total and date/time. Must provide prepared intent ID and the exact displayed total in ZAR cents. This creates a PENDING-PAYMENT DRAFT, not a paid, assigned or confirmed appointment. Returns a payment handoff; never charges a card.",
-  annotations:writeAnnotations,inputSchema:{type:"object",properties:{
+  securitySchemes:COMMERCE_OAUTH,annotations:writeAnnotations,inputSchema:{type:"object",properties:{
     intent_id:SCHEMA_ID,approved_total_cents:{type:"integer",minimum:5000},
     confirm:{type:"boolean",const:true,description:"Only true after explicit customer approval for this intent and amount."}
   },required:["intent_id","approved_total_cents","confirm"],additionalProperties:false}},
  {name:"start_xoot_payment_checkout",title:"Continue to secure Xoot payment",
   description:"After a booking draft is created, verify ownership and pending payment, and return the official Xoot checkout page. PayFast payment authorisation happens OUTSIDE the LLM through an HTTPS checkout form and verified provider notification. Does not transmit card details or initiate a charge in the assistant.",
-  annotations:readAnnotations,inputSchema:{type:"object",properties:{intent_id:SCHEMA_ID},required:["intent_id"],additionalProperties:false}},
+  securitySchemes:COMMERCE_OAUTH,annotations:readAnnotations,inputSchema:{type:"object",properties:{intent_id:SCHEMA_ID},required:["intent_id"],additionalProperties:false}},
  {name:"get_xoot_booking_payment_status",title:"Check payment status",
   description:"For a booking created through this plugin, read only this customer's server-recorded payment and booking state. Only a verified provider notification establishes payment success; never infer it from a return URL.",
   annotations:readAnnotations,inputSchema:{type:"object",properties:{intent_id:SCHEMA_ID},required:["intent_id"],additionalProperties:false}}
