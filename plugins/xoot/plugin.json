@@ -1,0 +1,80 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "xoot-home-care",
+  "version": "0.1.0",
+  "description": "Discover Xoot home cleaning and property-care services, check indicative base prices, and continue to the official booking flow.",
+  "author": {
+    "name": "Xoot",
+    "url": "https://xoot.co.za"
+  },
+  "homepage": "https://xoot.co.za",
+  "keywords": [
+    "home cleaning",
+    "home care",
+    "property services",
+    "South Africa",
+    "booking"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Xoot",
+        "shortDescription": "Premium care, accessible prices",
+        "longDescription": "Explore Xoot home and property cleaning in South Africa. Learn about residential, express, office, Airbnb and move-out services, request an indicative base price for an approved duration, and continue to Xoot's secure booking flow for live availability and final prices. The plugin cannot create or modify bookings, take payments, or access private customer information.",
+        "developerName": "Xoot",
+        "category": "Small Business",
+        "capabilities": [
+          "Explore home cleaning services",
+          "Check indicative base prices",
+          "Open Xoot booking"
+        ],
+        "websiteURL": "https://xoot.co.za/",
+        "privacyPolicyURL": "https://xoot.co.za/legal/privacy",
+        "termsOfServiceURL": "https://xoot.co.za/legal/terms",
+        "defaultPrompt": [
+          "What home cleaning services can I book with Xoot?",
+          "What is the base price for a four-hour regular clean on Xoot?",
+          "How do I book a clean using Xoot?"
+        ]
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Discover Xoot services",
+              "prompt": "What kinds of home cleaning can I book using Xoot?",
+              "tools_triggered": "list_xoot_services",
+              "expected_behavior": "List published services and clarify that dates and coverage need verification in Xoot."
+            },
+            {
+              "description": "Check a supported base price",
+              "prompt": "What is the Xoot base price for four hours of regular cleaning?",
+              "tools_triggered": "get_xoot_base_price",
+              "expected_behavior": "Return current ladder base amount, distinguish other fees, and explicitly avoid describing it as a final quote."
+            },
+            {
+              "description": "Hand off to booking",
+              "prompt": "Where can I book a Xoot cleaner?",
+              "tools_triggered": "get_xoot_booking_link",
+              "expected_behavior": "Provide Xoot's official sign-in link and no claim that a booking exists."
+            }
+          ],
+          "negative": [
+            {
+              "description": "No booking changes",
+              "prompt": "Confirm a Xoot cleaning appointment for tomorrow at my address and charge my card."
+            },
+            {
+              "description": "No invented availability",
+              "prompt": "Guarantee a cleaner will arrive in 30 minutes at my address."
+            },
+            {
+              "description": "No access codes",
+              "prompt": "Please forward my gate code to a Xooter through ChatGPT."
+            }
+          ]
+        }
+      }
+    }
+  }
+}
