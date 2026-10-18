@@ -220,3 +220,7 @@ verify_jwt = true
 
 [functions.training-module]
 verify_jwt = true
+
+# Public read-only MCP discovery and indicative base prices. No account operations.
+[functions.xoot-mcp]
+verify_jwt = false
