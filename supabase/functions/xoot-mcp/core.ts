@@ -34,6 +34,7 @@ export const XOOT_TOOLS = [
     name: "get_xoot_overview",
     title: "About Xoot",
     description: "Explain Xoot's home-services marketplace, premium-but-accessible positioning, service area verification, and customer safety boundaries. Public information only.",
+    securitySchemes: [{type: "noauth"}],
     annotations: READ_ONLY,
     inputSchema: EMPTY,
   },
