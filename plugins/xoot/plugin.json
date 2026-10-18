@@ -57,6 +57,18 @@
               "prompt": "Where can I book a Xoot cleaner?",
               "tools_triggered": "get_xoot_booking_link",
               "expected_behavior": "Provide Xoot's official sign-in link and no claim that a booking exists."
+            },
+            {
+              "description": "Explain Xoot's premium and accessible service positioning",
+              "prompt": "Why does Xoot call itself premium if it isn't meant to be expensive?",
+              "tools_triggered": "get_xoot_overview",
+              "expected_behavior": "Explain that premium describes booking clarity, service quality and care without promising lowest prices, unverified discounts or price comparisons."
+            },
+            {
+              "description": "Explain an invalid price request without inventing figures",
+              "prompt": "What is Xoot's regular cleaning base price for two hours?",
+              "tools_triggered": "get_xoot_base_price",
+              "expected_behavior": "The tool rejects unsupported two-hour regular cleaning. Explain the approved duration constraint and direct the user to Xoot to check other suitable services."
             }
           ],
           "negative": [
@@ -74,6 +86,12 @@
             }
           ]
         }
+      },
+      "publication": {
+        "countries": [
+          "ZA"
+        ],
+        "release_notes": "Initial public read-only discovery of Xoot cleaning services, base pricing and the official booking hand-off."
       }
     }
   }
