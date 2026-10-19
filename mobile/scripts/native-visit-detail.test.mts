@@ -85,7 +85,7 @@ test('native GPS response validation refuses stale, forged or malformed fixes', 
   } };
   assert.equal(MAX_FIX_AGE_MS, 60_000);
   assert.deepEqual(readFreshJobPosition(good, now), {
-    latitude: -26.1, longitude: 28.03, expiresAt: good.data.expiresAt,
+    latitude: -26.1, longitude: 28.03, recordedAt: good.data.recordedAt, expiresAt: good.data.expiresAt,
   });
   for (const invalid of [
     null, [], {}, { ...good, success: false },
