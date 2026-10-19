@@ -51,6 +51,8 @@ jobs:
         run: node --check scripts/ops/test-mapbox-private-journey-staging.mjs
       - name: Enforce MFA-only private dispatch location access
         run: node --test scripts/ops/job-private-dispatch.test.mjs
+      - name: Test live Mapbox journey acceptance runner refuses unsafe environments
+        run: node scripts/ops/verify-live-mapbox-journey.mjs --self-test
       - name: Typecheck
         run: npm run typecheck
       - name: Typecheck Expo native booking flow

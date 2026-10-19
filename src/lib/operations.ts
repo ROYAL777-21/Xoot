@@ -199,10 +199,22 @@ const BOOKING_COVER = BOOKING_COVER_PRICE_ZAR;
 const BOOKING_FEE = BOOKING_FEE_ZAR;
 const HIGH_DEMAND_RATE = HIGH_DEMAND_SLOT_RATE;
 
-export const isApprovedLaunchRegion = (input: string) => {
-  const value = input.toLowerCase();
-  return approvedLaunchRegions.some((region) => value.includes(region));
+/**
+ * Conservative first-pass text eligibility, NOT proof that a geographical point falls
+ * within an approved service zone. Actual dispatch still needs server-validated
+ * coverage geometry, capacity and a confirmed Xooter. Match complete tokens only:
+ * "Sandtonville" must never pass simply because it contains "sandton".
+ */
+export const resolveLaunchRegion = (input: string): string => {
+  const tokens = input.normalize("NFKC").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  return approvedLaunchRegions.find((region) => {
+    const parts = region.split(" ");
+    return tokens.some((_, index) => parts.every((part, offset) => tokens[index + offset] === part));
+  }) ?? "";
 };
+
+export const isApprovedLaunchRegion = (input: string): boolean =>
+  resolveLaunchRegion(input) !== "";
 
 export const isHighDemandSlot = (time: string) => {
   const hour = Number(time.split(":")[0] ?? 0);

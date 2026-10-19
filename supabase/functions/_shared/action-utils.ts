@@ -167,15 +167,21 @@ export const requireAdmin = async (supa: ReturnType<typeof getServiceClient>, us
   return fail("admin role required", origin, 403);
 };
 
-export const isApprovedLaunchRegion = (input: string) => {
-  const value = input.toLowerCase();
-  return approvedLaunchRegions.some((region) => value.includes(region));
+/**
+ * Preliminary region-name matching only. A complete name-token match is necessary,
+ * not sufficient, for actual service availability. Accurate geofence/roster checks
+ * require confirmed geographical coordinates and approved operating polygons.
+ */
+export const resolveLaunchRegion = (input: string): string => {
+  const tokens = input.normalize("NFKC").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  return approvedLaunchRegions.find((region) => {
+    const parts = region.split(" ");
+    return tokens.some((_, index) => parts.every((part, offset) => tokens[index + offset] === part));
+  }) ?? "";
 };
 
-export const resolveLaunchRegion = (input: string) => {
-  const value = input.toLowerCase();
-  return approvedLaunchRegions.find((region) => value.includes(region)) ?? "";
-};
+export const isApprovedLaunchRegion = (input: string): boolean =>
+  resolveLaunchRegion(input) !== "";
 
 export const getPriority = (text: string) => {
   const normalized = text.toLowerCase();
