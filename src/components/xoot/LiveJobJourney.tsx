@@ -66,11 +66,21 @@ export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress
 
   useEffect(() => {
     return () => {
-      if (watch.current !== null && navigator.geolocation) navigator.geolocation.clearWatch(watch.current);
-      // No asynchronous teardown dependency. Even if this network call fails, server-side
-      // expiry and booking status gates revoke access within a minute.
-      if (isAssignedWorker && watch.current !== null) {
-        void supabase.functions.invoke("xoot-job-location", { body: { action: "stop", bookingId } });
+      // Capture the sharing state BEFORE clearing the watch. Otherwise the previous
+      // cleanup checked watch.current after clearing it, and never revoked GPS on unmount.
+      const mustRevoke = isAssignedWorker &&
+        (sharingActive.current || watch.current !== null || inFlightPublish.current !== null);
+      sharingActive.current = false;
+      if (watch.current !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watch.current);
+        watch.current = null;
+      }
+      if (mustRevoke) {
+        const outstanding = inFlightPublish.current;
+        // A delayed publish must finish before STOP, or it could recreate a row.
+        void Promise.resolve(outstanding).catch(() => null).then(() =>
+          supabase.functions.invoke("xoot-job-location", { body: { action: "stop", bookingId } })
+        ).catch(() => null);
       }
       map.current?.remove();
       map.current = null;
@@ -90,6 +100,31 @@ export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, [sharing, stopSharing]);
+
+  // Don't retain a private map when the customer leaves this page.
+  useEffect(() => {
+    if (!enabled || isAssignedWorker) return;
+    const hidden = () => {
+      if (document.visibilityState === "hidden") {
+        setEnabled(false);
+        setPosition(null);
+        setRoadEstimate(null);
+        setStatus("Private journey closed when the page was hidden.");
+      }
+    };
+    document.addEventListener("visibilitychange", hidden);
+    return () => document.removeEventListener("visibilitychange", hidden);
+  }, [enabled, isAssignedWorker]);
+
+  // A point must disappear at its server expiration even if polling is blocked.
+  useEffect(() => {
+    if (!position) return;
+    const expireAt = Math.min(Date.parse(position.expiresAt), Date.parse(position.recordedAt) + 60_000);
+    const remaining = expireAt - Date.now();
+    if (remaining <= 0) { setPosition(null); setRoadEstimate(null); return; }
+    const timer = window.setTimeout(() => { setPosition(null); setRoadEstimate(null); }, remaining);
+    return () => window.clearTimeout(timer);
+  }, [position]);
 
   // A stale fix removes the marker and map immediately. The map container is
   // conditionally mounted, so reusing the old Mapbox instance would leave a blank map.
@@ -168,6 +203,28 @@ export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress
     return () => { cancelled = true; };
   }, [enabled, position]);
 
+  const freshEta = position && roadEstimate &&
+    Number.isFinite(Date.parse(roadEstimate.calculatedAt)) &&
+    Date.now() - Date.parse(roadEstimate.calculatedAt) < 60_000 &&
+    Date.parse(roadEstimate.fixRecordedAt) >= Date.parse(position.recordedAt) - 60_000
+    ? roadEstimate : null;
+
+  const shareEta = async () => {
+    if (!freshEta || !position || document.visibilityState !== "visible") return;
+    const time = new Date(freshEta.calculatedAt).toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+    const message = `Xoot travel update: estimated driving time about ${freshEta.minutes} minutes (${freshEta.kilometres} km), calculated at ${time}. Traffic and arrival can change. Booking participants can see the latest status in Xoot.`;
+    // Deliberately do not share precise coordinates, booking address or access codes.
+    try {
+      if (navigator.share) await navigator.share({ title: "Xoot travel update", text: message });
+      else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(message);
+        setStatus("Latest travel estimate copied without sharing any exact location.");
+      } else setStatus("Sharing is unavailable in this browser.");
+    } catch {
+      setStatus("Sharing was cancelled or unavailable. Your journey remains private.");
+    }
+  };
+
   if (!ENABLED || !mapboxToken.startsWith("pk.")) return null;
 
   const startSharing = () => {
@@ -221,13 +278,17 @@ export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress
           aria-pressed={enabled} onClick={() => { setEnabled(value => !value); setPosition(null); }}>
           {enabled ? "Hide live journey" : "View en-route location"}
         </button>
-        {enabled && position && roadEstimate && <p role="status" className="mb-3 text-sm font-semibold">
-          Traffic-based driving estimate: about {roadEstimate.minutes} minutes · {roadEstimate.kilometres} km
+        {enabled && position && freshEta && <p role="status" className="mb-3 text-sm font-semibold">
+          Traffic-based driving estimate: about {freshEta.minutes} minutes · {freshEta.kilometres} km
           <span className="block text-xs font-normal text-muted-foreground">
-            Calculated {new Date(roadEstimate.calculatedAt).toLocaleTimeString("en-ZA")} from the latest authorised location. Traffic may change.
+            Calculated {new Date(freshEta.calculatedAt).toLocaleTimeString("en-ZA")} from the latest authorised location. Traffic may change.
           </span>
         </p>}
-        {enabled && position && !roadEstimate && <p className="mb-3 text-xs text-muted-foreground">Driving estimate currently unavailable.</p>}
+        {enabled && position && freshEta && <button type="button" onClick={() => void shareEta()}
+          className="mb-3 rounded-full border border-border px-4 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+          Share current travel estimate
+        </button>}
+        {enabled && position && !freshEta && <p className="mb-3 text-xs text-muted-foreground">Driving estimate currently unavailable.</p>}
         {enabled && position && <div ref={mapContainer} role="region" aria-label="Latest authorised Xooter location, not a live arrival ETA"
           className="mt-3 h-64 overflow-hidden rounded-xl" />}
       </>}
