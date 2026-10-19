@@ -6,7 +6,7 @@ import { nativePalette } from '@/components/native-core';
 import { mobileEnv } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 import { readFreshJobPosition, type FreshJobPosition } from '@/lib/private-job-journey';
-import { buildSafeTravelUpdate, requestLiveRoadEstimate, type LiveRoadEstimate } from '@/lib/mapbox-live-routing';
+import { buildSafeTravelUpdate, readPrivateRoadEstimate, type LiveRoadEstimate } from '@/lib/mapbox-live-routing';
 
 // Deliberately opt-in twice: the release must enable this flag, and the
 // authenticated customer must explicitly choose to open the private map.
@@ -17,7 +17,7 @@ const POLL_MS = 15_000;
  * but the Edge Function independently verifies the JWT and booking owner.
  * Never query public GPS tables or retain a location beyond this component.
  */
-export function PrivateJobJourney({ bookingId, destinationAddress }: { bookingId: string; destinationAddress?: string | null }) {
+export function PrivateJobJourney({ bookingId }: { bookingId: string; destinationAddress?: string | null }) {
   const [viewing, setViewing] = useState(false);
   const [point, setPoint] = useState<FreshJobPosition | null>(null);
   const [message, setMessage] = useState('Live location not requested');
@@ -79,11 +79,11 @@ export function PrivateJobJourney({ bookingId, destinationAddress }: { bookingId
     return () => clearTimeout(timeout);
   }, [point]);
 
-  // A private road-time request uses the fresh verified fix and the customer's
-  // own booking address only after they explicitly open the viewer. Nothing
-  // is stored. A new calculation is permitted at most once a minute.
+  // Client submits only the booking ID: authenticated Xoot Edge reads the
+  // accepted job, current shared fix and saved destination on the server.
+  // No untrusted client-supplied coordinates/address can alter the ETA.
   useEffect(() => {
-    if (!viewing || !point || !destinationAddress?.trim() || !configured) {
+    if (!viewing || !point || !configured) {
       setRoadEstimate(null);
       if (!point || !viewing) lastRouteAt.current = 0;
       return;
@@ -92,14 +92,15 @@ export function PrivateJobJourney({ bookingId, destinationAddress }: { bookingId
     lastRouteAt.current = Date.now();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12_000);
-    void requestLiveRoadEstimate(
-      { latitude: point.latitude, longitude: point.longitude },
-      destinationAddress, token, point.recordedAt,
-      controller.signal,
-    ).then(result => { if (!controller.signal.aborted) setRoadEstimate(result); })
-      .finally(() => clearTimeout(timeout));
+    void supabase.functions.invoke('xoot-job-location', {
+      body: { action: 'eta', bookingId }, signal: controller.signal,
+    }).then(({ data, error }) => {
+      if (!controller.signal.aborted) setRoadEstimate(!error ? readPrivateRoadEstimate(data) : null);
+    }).catch(() => {
+      if (!controller.signal.aborted) setRoadEstimate(null);
+    }).finally(() => clearTimeout(timeout));
     return () => { controller.abort(); clearTimeout(timeout); };
-  }, [bookingId, destinationAddress, point, viewing, configured, token]);
+  }, [bookingId, point, viewing, configured]);
 
   const freshEta = point && roadEstimate && Number.isFinite(Date.parse(roadEstimate.calculatedAt)) &&
     Date.now() - Date.parse(roadEstimate.calculatedAt) < 60_000 &&
