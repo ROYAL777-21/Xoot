@@ -40,6 +40,9 @@ describe("private GPS-to-road ETA backend", () => {
     const params = new URL(url!).searchParams;
     expect(params.get("permanent")).toBe("false");
     expect(params.get("country")).toBe("za");
+    expect(params.get("types")).toBe("address");
+    const words = Array.from({ length: 21 }, (_, index) => "word" + index).join(" ");
+    expect(permanentFreeGeocodeUrl(words, "pk.routing-test")).toBeNull();
     expect(params.get("limit")).toBe("1");
     expect(permanentFreeGeocodeUrl("x", "pk.routing-test")).toBeNull();
     expect(permanentFreeGeocodeUrl("14 Fredman Drive", "invalid-token")).toBeNull();
