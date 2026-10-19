@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { MapPin, Navigation, ShieldCheck } from "lucide-react";
 import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { supabase } from "@/integrations/supabase/client";
-import { buildSafeTravelUpdate, requestLiveRoadEstimate, type LiveRoadEstimate } from "@/lib/mapbox-live-routing";
+import { buildSafeTravelUpdate, readPrivateRoadEstimate, type LiveRoadEstimate } from "@/lib/mapbox-live-routing";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const mapboxToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN?.trim() ?? "";
@@ -31,7 +31,7 @@ function validPoint(value: unknown): LivePoint | null {
 }
 
 /** Authenticated, job-scoped transport; OFF by default until real RLS/device sign-off. */
-export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress }: { bookingId: string; isAssignedWorker: boolean; destinationAddress?: string }) {
+export function LiveJobJourney({ bookingId, isAssignedWorker }: { bookingId: string; isAssignedWorker: boolean; destinationAddress?: string }) {
   const [enabled, setEnabled] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [position, setPosition] = useState<LivePoint | null>(null);
@@ -158,11 +158,11 @@ export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress
     return () => { cancelled = true; window.clearInterval(timer); setPosition(null); };
   }, [bookingId, enabled, isAssignedWorker]);
 
-  // Customer consent is collected at "View en-route location". Send only the
-  // current verified fix and the booking owner's destination to Mapbox, at most
-  // once per minute. Never store either coordinate or provider response.
+  // Only the booking ID reaches Xoot Edge: the server obtains its own fresh
+  // authorised GPS fix and booking address, and rate-limits Mapbox requests.
+  // Neither private position nor address is sent from the client to ETA APIs.
   useEffect(() => {
-    if (!enabled || isAssignedWorker || !position || !destinationAddress?.trim()) {
+    if (!enabled || isAssignedWorker || !position) {
       setRoadEstimate(null);
       if (!enabled || !position) lastRouteAt.current = 0;
       return;
@@ -171,14 +171,15 @@ export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress
     lastRouteAt.current = Date.now();
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 12_000);
-    void requestLiveRoadEstimate(
-      { latitude: position.latitude, longitude: position.longitude },
-      destinationAddress, mapboxToken, position.recordedAt, controller.signal,
-    ).then(result => {
-      if (!controller.signal.aborted) setRoadEstimate(result);
+    void supabase.functions.invoke("xoot-job-location", {
+      body: { action: "eta", bookingId }, signal: controller.signal,
+    }).then(({ data, error }) => {
+      if (!controller.signal.aborted) setRoadEstimate(!error ? readPrivateRoadEstimate(data) : null);
+    }).catch(() => {
+      if (!controller.signal.aborted) setRoadEstimate(null);
     }).finally(() => window.clearTimeout(timeout));
     return () => { controller.abort(); window.clearTimeout(timeout); };
-  }, [bookingId, enabled, isAssignedWorker, destinationAddress, position]);
+  }, [bookingId, enabled, isAssignedWorker, position]);
 
   useEffect(() => {
     if (!enabled || !position || !mapContainer.current || !mapboxToken.startsWith("pk.")) return;
@@ -273,7 +274,7 @@ export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress
           {sharing ? "Stop sharing my location" : "Share my location for this booking"}
         </button>
       </> : <>
-        <p className="mb-3 text-xs text-muted-foreground">Only for your currently assigned Xooter while en route. When enabled, the latest location and this booking address are sent to Mapbox for map tiles and a road-time calculation approximately once a minute. Traffic estimates are not arrival promises.</p>
+        <p className="mb-3 text-xs text-muted-foreground">Only for your currently assigned Xooter while en route. When enabled, Mapbox receives the displayed map position for map tiles. Xoot securely requests the driving estimate server-side from the current accepted-job fix and booking address, at most once a minute. Traffic estimates are not arrival promises.</p>
         <button type="button" className="rounded-full border border-border px-4 py-2 text-sm font-semibold"
           aria-pressed={enabled} onClick={() => { setEnabled(value => !value); setPosition(null); }}>
           {enabled ? "Hide live journey" : "View en-route location"}
