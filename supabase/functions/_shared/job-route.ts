@@ -32,9 +32,9 @@ const validToken = (value: string) => /^(?:pk|sk)\.[A-Za-z0-9._-]+$/.test(value)
 export function permanentFreeGeocodeUrl(address: unknown, token: string): string | null {
   if (typeof address !== "string" || !validToken(token)) return null;
   const q = address.trim().replace(/\s+/g, " ");
-  if (q.length < 4 || q.length > 256 || q.split(" ").length > 24 || /[;\n\r]/.test(q)) return null;
+  if (q.length < 4 || q.length > 256 || q.split(" ").length > 20 || /[;\n\r]/.test(q)) return null;
   const search = new URLSearchParams({
-    q, country: "za", language: "en", autocomplete: "false", permanent: "false",
+    q, country: "za", language: "en", types: "address", autocomplete: "false", permanent: "false",
     limit: "1", access_token: token,
   });
   return "https://api.mapbox.com/search/geocode/v6/forward?" + search.toString();
