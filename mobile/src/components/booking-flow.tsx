@@ -244,7 +244,7 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
         {visibleCoverage && <Text selectable accessibilityLiveRegion="polite" style={s.detail}>{visibleCoverage.message}</Text>}
         <Copy>Area coverage does not guarantee that a Xooter is available for your date.</Copy>
       </Card>}
-      <Copy>Your address and access notes stay in this form until a booking can be submitted.</Copy>
+      <Copy>Your access notes are not sent to maps. Your address remains in this form unless you opt into Mapbox suggestions or the verified coverage check; those share only the address with Mapbox.</Copy>
       <Pressable accessibilityRole="button" accessibilityLabel={showServiceAreas ? 'Hide service area map' : 'View service area map'}
         accessibilityState={{ expanded: showServiceAreas }}
         onPress={() => setShowServiceAreas(showing => !showing)}
