@@ -22,3 +22,9 @@ Both booking writers have an optional strict server gate, controlled by XOOT_STR
 6. Only after working end-to-end tests, enable the client display and both server booking gates in staging, verify real roster availability separately, then release matched production schema, Edge code and deployment behind the reviewed switches.
 
 A positive polygon check proves only that an accurately geocoded point falls in an approved operating area. It does not prove that a Xooter is available, the slot can be fulfilled or a route/ETA is current.
+
+## 19 October 2026 — all-zone validation hardening
+
+PR #81 now evaluates **all** active, approved, service-matching polygons before returning a positive coverage verdict. This prevents a malformed active geometry placed later in the database query from being bypassed by an earlier valid zone. The synthetic regression tests cover both row orders and a malformed zone belonging to an unrelated service.
+
+**Important:** no operational boundaries are assumed or seeded. A polygon import must be explicitly founder-approved and reviewed for self-intersection, holes, boundary provenance and WGS84 longitude/latitude order; this service evaluator is not a substitute for GIS review. It is intentionally NOT enabled or deployed to production. The accepted-job GPS and road-ETA functionality on PR #71 is independent of these polygons and continues across service-area edges.
