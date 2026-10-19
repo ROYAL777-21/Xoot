@@ -119,3 +119,18 @@ test('native and website address selection use licensed permanent Geocoding only
   assert.match(nativeSuggestions, /Enter your address manually/);
   assert.doesNotMatch(nativeSuggestions, /watchPosition|Location\.watch|UserLocation/);
 });
+
+
+test('native booking verifies approved server coverage only after explicit opt-in', () => {
+  assert.match(nativeBooking, /EXPO_PUBLIC_VERIFIED_COVERAGE === 'true'/);
+  assert.match(nativeBooking, /Check verified service coverage/);
+  assert.match(nativeBooking, /supabase\.functions\.invoke\('check-service-coverage'/);
+  assert.match(nativeBooking, /body: \{ address: fullCoverageAddress, service: input\.service \}/);
+  assert.match(nativeBooking, /currentCoverageKey\.current !== key/);
+  assert.match(nativeBooking, /currentCoverageKey\.current === key/);
+  assert.match(nativeBooking, /Mapbox's Permanent Geocoding API/);
+  assert.match(nativeBooking, /Xooter is available for your date/);
+  assert.doesNotMatch(nativeBooking, /<ServiceAreaMap[^>]+(address|access|notes)=/);
+  assert.doesNotMatch(nativeBooking, /checkServiceCoverage\([^)]*(?:latitude|longitude)/);
+});
+
