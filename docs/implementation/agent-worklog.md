@@ -23,7 +23,7 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
-**HOLDING — 19 October 2026 — GPT-6 native verified Mapbox coverage parity on PR #81.** Only the signed-in native booking's opt-in coverage check, privacy wording, synthetic source tests and disabled feature flag are in scope. No actual polygons, client token leaks, backend flag activation, production changes, PR #71 edits or homepage alterations. Release claim after source changes.
+**RELEASED CLAIM — 19 October 2026 — GPT-6 native verified Mapbox coverage parity (PR #81).** Added opt-in signed-in Expo booking verification against `check-service-coverage` with `EXPO_PUBLIC_VERIFIED_COVERAGE=false` by default, per-address/service stale-response guard, explicit third-party Permanent Geocoding/privacy wording, clear separation from the public neighbourhood map, disabled EAS/env examples and native source tests. No approved real polygons, migration, stage/prod Edge deployment, native binary, operational feature flags, customer data, homepage or PR #71 changed. Founder GeoJSON/Mapbox billing, exact-head CI, real staging and installed-device acceptance remain; claim released.
 
 
 **RELEASED CLAIM — 19 October 2026 — GPT-6 fail-closed geo-zone review (PR #81).** The geometry checker now prevalidates every matching active/approved service zone before granting availability, so a corrupted later row cannot be bypassed by an earlier valid result. Added regression cases in both database row orders and updated Mapbox zone runbook. No founder-approved zone polygons have been supplied; no zone migration or client/backend coverage flag was deployed/enabled, and GPS PR #71 remains independent. This is source-only pending CI, security sign-off and real GIS-approved boundaries. Claim released.
