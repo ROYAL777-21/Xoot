@@ -8,7 +8,10 @@ create table public.xoot_service_zones (
   id uuid primary key default gen_random_uuid(),
   name text not null unique check (char_length(name) between 2 and 80),
   geometry jsonb not null check (jsonb_typeof(geometry) = 'object'),
-  service_types text[] not null check (array_length(service_types, 1) between 1 and 12),
+  service_types text[] not null check (
+    cardinality(service_types) between 1 and 12
+    and array_position(service_types, null) is null
+  ),
   active boolean not null default false,
   approved_at timestamptz,
   approved_by uuid references auth.users(id),
