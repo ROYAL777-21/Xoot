@@ -13,6 +13,7 @@ import {
   getAcceptedXooterJobAddress,
   getSensitiveAccessAvailability,
   isApprovedLaunchRegion,
+  resolveLaunchRegion,
   routeNotificationChannel,
 } from "./operations";
 
@@ -21,6 +22,30 @@ describe("Xoot operating rules", () => {
     expect(isApprovedLaunchRegion("12 Alice Lane, Sandton")).toBe(true);
     expect(isApprovedLaunchRegion("Dainfern Valley Estate")).toBe(true);
     expect(isApprovedLaunchRegion("Cape Town CBD")).toBe(false);
+  });
+
+  it("rejects embedded or spoofed launch-area names, but accepts full suburb tokens", () => {
+    for (const bad of [
+      "12 Example Lane, NotSandton",
+      "Sandtonville, Cape Town",
+      "Somewhere near Fourwaysville",
+      "Rosebanking Street, Durban",
+      "UnderHyde Park Avenue",
+      "Mymidrand Address",
+      "",
+    ]) {
+      expect(isApprovedLaunchRegion(bad), bad).toBe(false);
+      expect(resolveLaunchRegion(bad), bad).toBe("");
+    }
+    for (const [address, expected] of [
+      ["14 Fredman Drive, Sandton, Gauteng", "sandton"],
+      ["Unit 3, Hyde Park, Johannesburg", "hyde park"],
+      ["6 My Road, Dainfern Valley Estate", "dainfern"],
+      ["12 road, Rosebank", "rosebank"],
+      ["Suite, Braamfontein, Johannesburg", "braamfontein"],
+    ]) {
+      expect(resolveLaunchRegion(address)).toBe(expected);
+    }
   });
 
   it("calculates booking price with add-ons, booking cover, service fee, and high-demand premium", () => {
