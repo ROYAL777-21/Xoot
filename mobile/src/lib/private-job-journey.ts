@@ -1,5 +1,5 @@
 /** Only the authenticated booking customer's latest, expiring Edge response is renderable. */
-export type FreshJobPosition = { latitude: number; longitude: number; expiresAt: string };
+export type FreshJobPosition = { latitude: number; longitude: number; recordedAt: string; expiresAt: string };
 export const MAX_FIX_AGE_MS = 60_000;
 
 export function readFreshJobPosition(payload: unknown, now = Date.now()): FreshJobPosition | null {
@@ -19,5 +19,5 @@ export function readFreshJobPosition(payload: unknown, now = Date.now()): FreshJ
   if (!Number.isFinite(recorded) || !Number.isFinite(expires) ||
       recorded > now + 30_000 || now - recorded > MAX_FIX_AGE_MS ||
       expires <= now || expires > recorded + 90_000) return null;
-  return { latitude: fix.latitude, longitude: fix.longitude, expiresAt: fix.expiresAt };
+  return { latitude: fix.latitude, longitude: fix.longitude, recordedAt: fix.recordedAt, expiresAt: fix.expiresAt };
 }
