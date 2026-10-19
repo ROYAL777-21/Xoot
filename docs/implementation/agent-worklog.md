@@ -23,6 +23,8 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**HOLDING — 19 October 2026 — Codex Gauteng Mapbox continuation (PRs #71 and #81).** Founder authorised Gauteng geography and implementation/testing. Scope: licensed MDB/OCHA boundary provenance and exact-polygon validation/import tooling, coverage separation from worker capacity, GPS conflict resolution and acceptance evidence. Cross-role edits in geo coverage, GPS tests, workflows and release documentation are required for this review. No production merge, tracking activation, homepage or unrelated PR changes. Real staging identities, Mapbox entitlement and signed-device evidence remain required.
+
 **RELEASED CLAIM — 19 October 2026 — GPT-6 native verified Mapbox coverage parity (PR #81).** Added opt-in signed-in Expo booking verification against `check-service-coverage` with `EXPO_PUBLIC_VERIFIED_COVERAGE=false` by default, per-address/service stale-response guard, explicit third-party Permanent Geocoding/privacy wording, clear separation from the public neighbourhood map, disabled EAS/env examples and native source tests. No approved real polygons, migration, stage/prod Edge deployment, native binary, operational feature flags, customer data, homepage or PR #71 changed. Founder GeoJSON/Mapbox billing, exact-head CI, real staging and installed-device acceptance remain; claim released.
 
 
