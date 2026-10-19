@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { requestLiveRoadEstimate } from "./mapbox-live-routing";
+import { buildSafeTravelUpdate, requestLiveRoadEstimate } from "./mapbox-live-routing";
 
 afterEach(() => { vi.unstubAllGlobals(); });
 
@@ -53,6 +53,38 @@ describe("Mapbox live customer traffic estimates", () => {
       json: async () => ({ features: [{ properties: { feature_type: "place", context: { country: { country_code: "FR" } } }, geometry: { coordinates: [2, 48] } }] }),
     })));
     expect(await requestLiveRoadEstimate(worker, address, "pk.test", captured, new AbortController().signal, clock)).toBeNull();
+  });
+});
+
+describe("private ETA sharing contract", () => {
+  const now = Date.parse("2026-10-19T10:00:00Z");
+  const route = {
+    minutes: 19,
+    kilometres: 7.3,
+    calculatedAt: new Date(now - 10_000).toISOString(),
+    fixRecordedAt: new Date(now - 18_000).toISOString(),
+  };
+
+  it("allows sharing a newly calculated authorised duration but no private coordinates or address", () => {
+    const message = buildSafeTravelUpdate(route, now);
+    expect(message).toContain("about 19 minutes (7.3 km)");
+    expect(message).toContain("Traffic and arrival can change");
+    expect(message).toContain("Booking participants");
+    expect(message).not.toContain("Fredman");
+    expect(message).not.toContain("28.056");
+    expect(message).not.toContain("-26.107");
+    expect(message).not.toContain("bookingId");
+    expect(message).not.toContain("http");
+  });
+
+  it("rejects stale ETA, stale GPS fix, future/invalid time, implausible routes", () => {
+    expect(buildSafeTravelUpdate(route, now + 60_000)).toBeNull();
+    expect(buildSafeTravelUpdate({ ...route, fixRecordedAt: new Date(now - 61_000).toISOString() }, now)).toBeNull();
+    expect(buildSafeTravelUpdate({ ...route, calculatedAt: "nonsense" }, now)).toBeNull();
+    expect(buildSafeTravelUpdate({ ...route, minutes: Number.NaN }, now)).toBeNull();
+    expect(buildSafeTravelUpdate({ ...route, minutes: -2 }, now)).toBeNull();
+    expect(buildSafeTravelUpdate({ ...route, kilometres: Infinity }, now)).toBeNull();
+    expect(buildSafeTravelUpdate({ ...route, kilometres: 1001 }, now)).toBeNull();
   });
 });
 
