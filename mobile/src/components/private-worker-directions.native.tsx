@@ -25,6 +25,14 @@ export function PrivateWorkerDirections({ jobId, bookingId }: { jobId: string; b
     abort.current?.abort(); abort.current = null;
     setAddress(null); setEstimate(null); setOpen(false);
   };
+  // A one-off route calculation is a snapshot, never a permanently current ETA.
+  useEffect(() => {
+    if (!estimate) return;
+    const ttl = Math.max(0, Date.parse(estimate.calculatedAt) + 60_000 - Date.now());
+    const timer = setTimeout(() => setEstimate(null), ttl);
+    return () => clearTimeout(timer);
+  }, [estimate]);
+
   useEffect(() => {
     const listener = AppState.addEventListener('change', state => {
       if (state !== 'active') hide();
@@ -75,6 +83,7 @@ export function PrivateWorkerDirections({ jobId, bookingId }: { jobId: string; b
     if (!ctrl || ctrl.signal.aborted) return;
     loading.current = true;
     setStatus('Calculating Mapbox road traffic…');
+    const timeout = setTimeout(() => ctrl.abort(), 12_000);
     void requestLiveRoadEstimate(
       { latitude: origin.latitude, longitude: origin.longitude },
       address, token, origin.capturedAt, ctrl.signal,
@@ -85,7 +94,12 @@ export function PrivateWorkerDirections({ jobId, bookingId }: { jobId: string; b
         'Driving estimate unavailable. Try again or use the authorised web workspace.');
       // This is a one-off journey check, not ongoing GPS tracking.
       setOpen(false); setAddress(null);
-    }).finally(() => { loading.current = false; });
+    }).catch(() => {
+      if (!ctrl.signal.aborted) setStatus('Route calculation failed. Try again.');
+      setEstimate(null);
+      setOpen(false);
+      setAddress(null);
+    }).finally(() => { clearTimeout(timeout); loading.current = false; });
   };
 
   if (!ready) return null;
@@ -100,7 +114,7 @@ export function PrivateWorkerDirections({ jobId, bookingId }: { jobId: string; b
       <Text style={styles.actionText}>{open ? 'Cancel route request' : 'Calculate route'}</Text>
     </Pressable>
     <Text accessibilityLiveRegion="polite" style={styles.copy}>{status}</Text>
-    {estimate && <Text style={styles.eta}>Approximately {estimate.minutes} minutes · {estimate.kilometres} km by road.</Text>}
+    {estimate && <Text style={styles.eta}>Approximately {estimate.minutes} minutes · {estimate.kilometres} km by road, calculated at {new Date(estimate.calculatedAt).toLocaleTimeString('en-ZA')}. Recalculate before travelling.</Text>}
     {open && <View style={styles.mapFrame}>
       <Mapbox.MapView style={styles.map} logoEnabled attributionEnabled>
         <Mapbox.Camera followUserLocation followZoomLevel={14} />
