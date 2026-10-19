@@ -274,7 +274,7 @@ export function LiveJobJourney({ bookingId, isAssignedWorker }: { bookingId: str
           {sharing ? "Stop sharing my location" : "Share my location for this booking"}
         </button>
       </> : <>
-        <p className="mb-3 text-xs text-muted-foreground">Only for your currently assigned Xooter while en route. When enabled, Mapbox receives the displayed map position for map tiles. Xoot securely requests the driving estimate server-side from the current accepted-job fix and booking address, at most once a minute. Traffic estimates are not arrival promises.</p>
+        <p className="mb-3 text-xs text-muted-foreground">Only for your currently assigned Xooter while en route. When enabled, Mapbox receives the displayed map position for map tiles. For driving estimates, Xoot sends the currently authorised Xooter position and this booking address to Mapbox from its secure backend, at most once a minute. Traffic estimates are not arrival promises.</p>
         <button type="button" className="rounded-full border border-border px-4 py-2 text-sm font-semibold"
           aria-pressed={enabled} onClick={() => { setEnabled(value => !value); setPosition(null); }}>
           {enabled ? "Hide live journey" : "View en-route location"}
