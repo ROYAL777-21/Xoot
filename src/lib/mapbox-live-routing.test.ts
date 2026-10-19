@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { buildSafeTravelUpdate, requestLiveRoadEstimate } from "./mapbox-live-routing";
+import { buildSafeTravelUpdate, requestLiveRoadEstimate, readPrivateRoadEstimate } from "./mapbox-live-routing";
 
 afterEach(() => { vi.unstubAllGlobals(); });
 
@@ -53,6 +53,26 @@ describe("Mapbox live customer traffic estimates", () => {
       json: async () => ({ features: [{ properties: { feature_type: "place", context: { country: { country_code: "FR" } } }, geometry: { coordinates: [2, 48] } }] }),
     })));
     expect(await requestLiveRoadEstimate(worker, address, "pk.test", captured, new AbortController().signal, clock)).toBeNull();
+  });
+});
+
+describe("authenticated server ETA envelopes", () => {
+  const now = Date.parse("2026-10-19T10:00:00Z");
+  const data = { state: "current", minutes: 19, kilometres: 7.3,
+    calculatedAt: new Date(now - 9_000).toISOString(),
+    fixRecordedAt: new Date(now - 18_000).toISOString() };
+  it("rejects arbitrary, inaccurate or expired ETA results", () => {
+    expect(readPrivateRoadEstimate({ success: true, data }, now)).toEqual({
+      minutes: 19, kilometres: 7.3, calculatedAt: data.calculatedAt,
+      fixRecordedAt: data.fixRecordedAt,
+    });
+    for (const invalid of [
+      null, { success: false, data }, { success: true, data: { ...data, state: "unavailable" } },
+      { success: true, data: { ...data, minutes: "19" } },
+      { success: true, data: { ...data, kilometres: NaN } },
+      { success: true, data: { ...data, calculatedAt: new Date(now - 60_000).toISOString() } },
+      { success: true, data: { ...data, fixRecordedAt: new Date(now - 60_000).toISOString() } },
+    ]) expect(readPrivateRoadEstimate(invalid, now)).toBeNull();
   });
 });
 
