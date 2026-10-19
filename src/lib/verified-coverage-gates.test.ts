@@ -33,7 +33,7 @@ describe("server-controlled Mapbox geofence rollout contract", () => {
     expect(sql).toContain("revoke all on function public.xoot_consume_coverage_query(uuid) from public, anon, authenticated");
     expect(sql).toContain("grant execute on function public.xoot_consume_coverage_query(uuid) to service_role");
     expect(verify).toContain('db.rpc("xoot_consume_coverage_query"');
-    expect(verify).toContain('token: Deno.env.get("MAPBOX_GEOCODING_TOKEN")');
+    expect(edge).toContain('token: Deno.env.get("MAPBOX_GEOCODING_TOKEN")');
   });
 
   it("checks the real Mapbox result on the server, not client coordinates or suburb text", () => {
@@ -54,7 +54,7 @@ describe("server-controlled Mapbox geofence rollout contract", () => {
     expect(config).toMatch(/\[functions\.check-service-coverage\]\s*verify_jwt = true/);
     expect(edge).toContain("await requireAuth(req, origin)");
     expect(edge).toContain("actorId: auth.user.id");
-    expect(edge).toContain('body: { address: fullAddress') === false;
+    expect(edge).not.toContain('body: { address: fullAddress');
     expect(edge).toContain('Cache-Control", "private, no-store"');
     expect(edge).not.toContain("console.log");
     expect(edge).not.toContain("console.warn");
@@ -78,6 +78,6 @@ describe("server-controlled Mapbox geofence rollout contract", () => {
     expect(booking).toContain('JSON.stringify([fullAddress, actualService])');
     expect(booking).toContain('await supabase.functions.invoke("check-service-coverage"');
     expect(booking).toContain("Xooter availability for your date is confirmed separately");
-    expect(booking).toContain("Manual review");
+    expect(booking).toContain("manual area review");
   });
 });
