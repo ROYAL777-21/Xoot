@@ -65,7 +65,9 @@ test('private native journey is owner-scoped, opt-in, ephemeral, and does not in
   assert.match(view, /action: 'read', bookingId/);
   assert.match(helper, /MAX_FIX_AGE_MS = 60_000/);
   assert.match(view, /Date\.parse\(point\.expiresAt\) - Date\.now\(\)/);
-  assert.match(view, /destinationAddress, token, point\.recordedAt/);
+  assert.match(view, /action: 'eta', bookingId/);
+  assert.match(view, /readPrivateRoadEstimate\(data\)/);
+  assert.doesNotMatch(view, /requestLiveRoadEstimate\(|destinationAddress, token, point\.recordedAt/);
   assert.doesNotMatch(view, /Date\.parse\(point\.expiresAt\) - 60_000/);
   assert.match(view, /Date\.now\(\) - Date\.parse\(roadEstimate\.calculatedAt\) < 60_000/);
   assert.match(view, /Share\.share\(\{ message, title: 'Xoot travel update' \}\)/);
