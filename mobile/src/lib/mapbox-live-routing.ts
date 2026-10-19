@@ -13,6 +13,22 @@ export type LiveRoadEstimate = {
 };
 
 /** Customer consent must be explicitly collected by the caller before invoking this. */
+/** A shareable estimate contains no address, coordinates, customer identity or tracking URL.
+ * It expires after a minute; historic route results must never be presented as live.
+ */
+export function buildSafeTravelUpdate(estimate: LiveRoadEstimate, now = Date.now()): string | null {
+  const calculated = Date.parse(estimate.calculatedAt);
+  const fixTime = Date.parse(estimate.fixRecordedAt);
+  if (!Number.isFinite(calculated) || !Number.isFinite(fixTime) ||
+      calculated > now + 30_000 || now - calculated >= 60_000 ||
+      fixTime > now + 30_000 || now - fixTime >= 60_000 ||
+      !Number.isInteger(estimate.minutes) || estimate.minutes < 1 || estimate.minutes > 1440 ||
+      !Number.isFinite(estimate.kilometres) || estimate.kilometres < 0 ||
+      estimate.kilometres > 1000) return null;
+  const time = new Date(calculated).toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+  return `Xoot travel update: estimated driving time about ${estimate.minutes} minutes (${estimate.kilometres} km), calculated at ${time}. Traffic and arrival can change. Booking participants can see the latest status in Xoot.`;
+}
+
 export async function requestLiveRoadEstimate(
   origin: MapboxCoordinate,
   destinationAddress: string,
