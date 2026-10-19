@@ -97,14 +97,21 @@ export function checkApprovedCoverage(point: unknown, service: string, zones: un
     Number.isFinite(Date.parse(zone.approved_at)) && Date.parse(zone.approved_at) <= Date.now() &&
     Array.isArray(zone.service_types) && zone.service_types.includes(service));
   if (!matching.length) return { state: "review", reason: "no_approved_zone" };
+  // Validate ALL matching approved zone geometries before asserting availability.
+  // Previously a first valid polygon could return "available" while a later
+  // malformed active polygon was silently ignored (order-dependent fail-open).
+  const validated: Array<{ id: string; name: string; shape: Geometry }> = [];
   for (const record of matching) {
     if (typeof record.id !== "string" || typeof record.name !== "string" ||
-      record.name.length > 80) return { state: "review", reason: "invalid_zone" };
+      record.name.length < 2 || record.name.length > 80) {
+      return { state: "review", reason: "invalid_zone" };
+    }
     const shape = parseCoverageGeometry(record.geometry);
     if (!shape) return { state: "review", reason: "invalid_zone" };
-    if (pointInsideCoverageGeometry(point, shape)) {
-      return { state: "available", zoneId: record.id, zoneName: record.name };
-    }
+    validated.push({ id: record.id, name: record.name, shape });
   }
-  return { state: "review", reason: "outside_approved_zones" };
+  const found = validated.find(record => pointInsideCoverageGeometry(point, record.shape));
+  return found
+    ? { state: "available", zoneId: found.id, zoneName: found.name }
+    : { state: "review", reason: "outside_approved_zones" };
 }
