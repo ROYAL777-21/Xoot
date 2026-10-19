@@ -45,6 +45,28 @@ test('foreground stop waits for any outstanding position upload before deletion'
   assert.match(web, /if \(enabled && position\) return/);
 });
 
+test('web stop sharing and unmount revoke the GPS row after any in-flight report', () => {
+  assert.match(web, /const mustRevoke = isAssignedWorker &&/);
+  assert.match(web, /sharingActive\.current = false/);
+  assert.match(web, /Promise\.resolve\(outstanding\)\.catch\(\(\) => null\)\.then/);
+  assert.match(web, /action: "stop", bookingId/);
+  const cleanup = web.slice(web.indexOf('const mustRevoke'), web.indexOf('map.current?.remove();', web.indexOf('const mustRevoke')));
+  assert.ok(cleanup.indexOf('const mustRevoke') < cleanup.indexOf('watch.current = null'),
+    'Unmount must capture sharing state BEFORE clearing watch');
+});
+
+test('web customer marker and ETA expire and can share only a recent estimate without coordinates', () => {
+  assert.match(web, /const expireAt = Math\.min\(Date\.parse\(position\.expiresAt\), Date\.parse\(position\.recordedAt\) \+ 60_000\)/);
+  assert.match(web, /setPosition\(null\); setRoadEstimate\(null\);/);
+  assert.match(web, /const freshEta = position && roadEstimate/);
+  assert.match(web, /Date\.now\(\) - Date\.parse\(roadEstimate\.calculatedAt\) < 60_000/);
+  assert.match(web, /Share current travel estimate/);
+  assert.match(web, /navigator\.share/);
+  assert.match(web, /navigator\.clipboard\?\.writeText/);
+  assert.match(web, /do not share precise coordinates, booking address or access codes/);
+  assert.doesNotMatch(web, /geolocation\.watchPosition\([^)]*sendMessage/);
+});
+
 test('only service-role Edge transport can access GPS table; no direct client or realtime public access', () => {
   assert.equal(hasMinimumTableGate(migration), true);
   assert.match(migration, /xooter_id uuid not null references public\.xooters/);
