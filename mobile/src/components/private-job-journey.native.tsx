@@ -136,7 +136,7 @@ export function PrivateJobJourney({ bookingId }: { bookingId: string; destinatio
     <Text style={styles.heading}>Private journey</Text>
     <Text style={styles.description}>If your Xooter chooses to share while travelling,
       you can view their recent location for this booking. Opening this map sends its
-      displayed coordinates to Mapbox. No exact arrival time is promised.</Text>
+      displayed coordinates to Mapbox. For an optional driving estimate, Xoot also sends the current location and booking address to Mapbox from its secure server. No exact arrival time is promised.</Text>
     <Pressable accessibilityRole="button"
       accessibilityLabel={viewing ? 'Hide private live journey' : 'View private live journey'}
       accessibilityState={{ selected: viewing }}
