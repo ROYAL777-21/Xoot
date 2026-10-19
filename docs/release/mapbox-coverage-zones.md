@@ -1,0 +1,24 @@
+# Mapbox verified service zones — production acceptance
+
+Status: NOT DEPLOYED, NOT ENABLED, NO APPROVED POLYGONS LOADED.
+
+The existing suburb_centroids table contains reference points, not approved business coverage polygons. Geographic service eligibility cannot be declared based on a postcode, suburb text or arbitrary radius. PostGIS is not installed in Xoot's current Supabase projects.
+
+## Source implementation
+
+The proposed xoot_service_zones table stores explicit founder-approved GeoJSON Polygon/MultiPolygon shapes, services, reviewer identity and boundary source. The geo-coverage module verifies bounded coordinates, closed rings, holes and disjoint polygons, and fails closed for missing or invalid geometry.
+
+The new JWT-protected check-service-coverage function checks active zones before any billable request, atomically limits customers to 12 Mapbox lookups an hour, and independently uses Mapbox Geocoding v6 Permanent for the actual submitted address. It requires a South African address result with sufficient quality and checks the resulting coordinates against the approved service zone. It stores no new customer GPS coordinates or raw geocoder responses.
+
+Both booking writers have an optional strict server gate, controlled by XOOT_STRICT_GEO_COVERAGE=true. The website's optional verification control is controlled by VITE_VERIFIED_COVERAGE=true. **Both flags must remain false** until deployment and verification are complete.
+
+## Required owner-supplied operational evidence
+
+1. Approve actual launch service-zone boundaries as trusted GeoJSON in WGS84 longitude/latitude order. For each polygon, provide an operating zone name, supported services, boundary source, reviewer and approval date. Do not fabricate zones from centroid circles or use unlicensed external geometry. Missing zones result in review required, never an available claim.
+2. Confirm Mapbox Permanent Geocoding licensing and pricing. Temporary Geocoding results cannot be stored long term. Permanent requests are separately billable. Provide a dedicated server token in Supabase Edge secrets under MAPBOX_GEOCODING_TOKEN, NOT merely Vercel; never put it in a browser or chat if it is secret.
+3. Reconcile existing staging/production migration-history divergence first, then apply the reviewed zone migration to a disposable Postgres database. Verify grants and rate limiting; deploy to staging and recheck live schema. No blind production migration repairs.
+4. Import reviewed boundaries using service-side administrative access with approval audit trails. Never expose a service-role key in a browser or mobile application.
+5. In staging, test authenticated inside-zone, outside-zone, wrong-country, fake suburb substring, poor-accuracy result, missing-zone result, no JWT, rate limit, Mapbox 403, outage and latency cases. Run a real browser and native device acceptance session with authorised test accounts.
+6. Only after working end-to-end tests, enable the client display and both server booking gates in staging, verify real roster availability separately, then release matched production schema, Edge code and deployment behind the reviewed switches.
+
+A positive polygon check proves only that an accurately geocoded point falls in an approved operating area. It does not prove that a Xooter is available, the slot can be fulfilled or a route/ETA is current.
