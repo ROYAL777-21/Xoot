@@ -41,6 +41,10 @@ verify_jwt = true
 [functions.get-booking-quote]
 verify_jwt = true
 
+# Authenticated, rate-limited server-side Permanent Geocoding and approved area polygons.
+[functions.check-service-coverage]
+verify_jwt = true
+
 [functions.send-booking-message]
 verify_jwt = true
 
