@@ -45,6 +45,8 @@ jobs:
         run: npm run security:scan
       - name: Test Supabase migration access diagnostics against synthetic failures
         run: node --test scripts/ops/db-push-link-diagnostics.test.mjs
+      - name: Test live Mapbox journey acceptance runner refuses unsafe environments
+        run: node scripts/ops/verify-live-mapbox-journey.mjs --self-test
       - name: Typecheck
         run: npm run typecheck
       - name: Typecheck Expo native booking flow
