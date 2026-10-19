@@ -81,6 +81,26 @@ describe("privacy-safe verified Mapbox service coverage geometry", () => {
     });
   });
 
+  it("fails closed across all matching polygons regardless of database row order", () => {
+    const valid = zone({ type: "Polygon", coordinates: [outsideRing] });
+    const corrupt = zone({ type: "Polygon", coordinates: [] }, {
+      id: "corrupt-zone", name: "Corrupt approved geometry",
+    });
+    expect(checkApprovedCoverage([28.05, -26.1], "regular", [valid, corrupt])).toEqual({
+      state: "review", reason: "invalid_zone",
+    });
+    expect(checkApprovedCoverage([28.05, -26.1], "regular", [corrupt, valid])).toEqual({
+      state: "review", reason: "invalid_zone",
+    });
+    // A malformed polygon for a different service does not invalidate a
+    // separately reviewed operational zone for the requested service.
+    expect(checkApprovedCoverage([28.05, -26.1], "regular", [
+      valid, zone({}, { id: "moving-zone", service_types: ["moving"] }),
+    ])).toEqual({
+      state: "available", zoneId: "synthetic-reviewed-zone", zoneName: "Synthetic test zone",
+    });
+  });
+
   it("marks a point available ONLY within an active, approved, service-matching zone", () => {
     const outcome = checkApprovedCoverage([28.05, -26.1], "regular",
       [zone({ type: "Polygon", coordinates: [outsideRing] })]);
