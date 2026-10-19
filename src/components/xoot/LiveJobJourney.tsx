@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { MapPin, Navigation, ShieldCheck } from "lucide-react";
 import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { supabase } from "@/integrations/supabase/client";
-import { requestLiveRoadEstimate, type LiveRoadEstimate } from "@/lib/mapbox-live-routing";
+import { buildSafeTravelUpdate, requestLiveRoadEstimate, type LiveRoadEstimate } from "@/lib/mapbox-live-routing";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const mapboxToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN?.trim() ?? "";
@@ -211,8 +211,8 @@ export function LiveJobJourney({ bookingId, isAssignedWorker, destinationAddress
 
   const shareEta = async () => {
     if (!freshEta || !position || document.visibilityState !== "visible") return;
-    const time = new Date(freshEta.calculatedAt).toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
-    const message = `Xoot travel update: estimated driving time about ${freshEta.minutes} minutes (${freshEta.kilometres} km), calculated at ${time}. Traffic and arrival can change. Booking participants can see the latest status in Xoot.`;
+    const message = buildSafeTravelUpdate(freshEta);
+    if (!message) { setRoadEstimate(null); setStatus("Estimate expired. Wait for a fresh route."); return; }
     // Deliberately do not share precise coordinates, booking address or access codes.
     try {
       if (navigator.share) await navigator.share({ title: "Xoot travel update", text: message });
