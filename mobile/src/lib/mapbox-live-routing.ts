@@ -12,6 +12,28 @@ export type LiveRoadEstimate = {
   fixRecordedAt: string;
 };
 
+/** Parse only a current, authenticated server ETA; never accept a client estimate. */
+export function readPrivateRoadEstimate(payload: unknown, now = Date.now()): LiveRoadEstimate | null {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+  const envelope = payload as { success?: unknown; data?: unknown };
+  if (envelope.success !== true || !envelope.data || typeof envelope.data !== "object" ||
+      Array.isArray(envelope.data)) return null;
+  const result = envelope.data as Record<string, unknown>;
+  if (result.state !== "current" || !Number.isInteger(result.minutes) ||
+      (result.minutes as number) < 1 || (result.minutes as number) > 1440 ||
+      typeof result.kilometres !== "number" || !Number.isFinite(result.kilometres) ||
+      result.kilometres < 0 || result.kilometres > 1000 ||
+      typeof result.calculatedAt !== "string" || typeof result.fixRecordedAt !== "string") return null;
+  const calculated = Date.parse(result.calculatedAt), captured = Date.parse(result.fixRecordedAt);
+  if (!Number.isFinite(calculated) || !Number.isFinite(captured) ||
+      calculated > now + 30_000 || now - calculated >= 60_000 ||
+      captured > now + 30_000 || now - captured >= 60_000) return null;
+  return {
+    minutes: result.minutes as number, kilometres: result.kilometres,
+    calculatedAt: result.calculatedAt, fixRecordedAt: result.fixRecordedAt,
+  };
+}
+
 /** Customer consent must be explicitly collected by the caller before invoking this. */
 /** A shareable estimate contains no address, coordinates, customer identity or tracking URL.
  * It expires after a minute; historic route results must never be presented as live.
