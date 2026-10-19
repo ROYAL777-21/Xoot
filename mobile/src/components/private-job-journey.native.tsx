@@ -6,7 +6,7 @@ import { nativePalette } from '@/components/native-core';
 import { mobileEnv } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 import { readFreshJobPosition, type FreshJobPosition } from '@/lib/private-job-journey';
-import { requestLiveRoadEstimate, type LiveRoadEstimate } from '@/lib/mapbox-live-routing';
+import { buildSafeTravelUpdate, requestLiveRoadEstimate, type LiveRoadEstimate } from '@/lib/mapbox-live-routing';
 
 // Deliberately opt-in twice: the release must enable this flag, and the
 // authenticated customer must explicitly choose to open the private map.
@@ -108,8 +108,8 @@ export function PrivateJobJourney({ bookingId, destinationAddress }: { bookingId
 
   const shareEta = async () => {
     if (!freshEta || !point || AppState.currentState !== 'active') return;
-    const time = new Date(freshEta.calculatedAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
-    const message = `Xoot travel update: estimated driving time about ${freshEta.minutes} minutes (${freshEta.kilometres} km), calculated at ${time}. Traffic and arrival can change. Booking participants can see the latest status in Xoot.`;
+    const message = buildSafeTravelUpdate(freshEta);
+    if (!message) { setRoadEstimate(null); setMessage('Estimate expired. Wait for a fresh route.'); return; }
     // Do not include a GPS coordinate, household address, or public private-tracking URL.
     try { await Share.share({ message, title: 'Xoot travel update' }); }
     catch { setMessage('Could not open sharing. Your private journey remains available.'); }
