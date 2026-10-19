@@ -1,5 +1,21 @@
 # Xoot production checklist
 
+## 19 October 2026 — Mapbox steps 5–12 guarded staging checkpoint
+
+**No Mapbox GPS/ETA or verified coverage production launch is approved.** Web Geocoding PR #69 is merged; isolated GPS/ETA/dispatch PR #71 and Polygon coverage PR #81 remain OPEN. The approved website stays on `release/xoot-production`, not `main` or Codex PR #46.
+
+- **Staging GPS/ETA:** Supabase `fxmxyabdjqviqbcxmvlp` has private `xoot_job_live_positions`, service-only atomic publish RPC, RLS on with zero direct client policies, no client table SELECT, no Realtime publication and one active pg_cron expiry job. `xoot-job-location` Edge **version 5** is deployed with `verify_jwt=true`, byte-matched against PR #71 handler and bundled files; the new `eta` action uses the server's accepted-job GPS and booking address and does not query a coverage polygon. This proves source deployment and catalogue grants, NOT live Mapbox route success or two-pair JWT acceptance.
+- **Staging release tests:** `scripts/ops/test-mapbox-private-journey-staging.mjs` now requires four distinct consenting synthetic account JWTs and two accepted staging bookings, enforces staging URL only and validates cross-account GPS, outside-zone ETA, stop sharing, stale/poor fixes and optional AAL2 dispatch. **Not yet run** because approved synthetic identities, Mapbox Edge secret entitlement and staging booking fixtures have not been supplied. Never use real customers.
+- **Coverage:** PR #81 provides new-booking polygon verification and source-level native + website opt-in checks, both OFF by default. No founder-approved service polygons exist; staging/production have not received this zone migration or `check-service-coverage` Edge code. Geometry checker rejects a mixed valid/malformed matching zone set regardless of record order. Never infer a polygon from suburb-centroid pins or block an already accepted en-route GPS journey for leaving a booking service zone.
+- **Production:** `mvlrkelahhsyjrwgsxaf` still has no private GPS table/RPC/Edge handler. Migration histories diverge (production-only safety-PIN patch and multiple staging-only dependencies); do not repair-stamp or blindly push migrations. Live GPS, coverage and preview flags remain disabled; no PayFast/Twilio or homepage changes.
+- **External hard gates:** owner-approved actual GeoJSON boundaries and related service list; Mapbox Permanent Geocoding and Directions API billing/token proof with Edge-only `MAPBOX_DIRECTIONS_TOKEN` and `MAPBOX_GEOCODING_TOKEN` in staging; signed-in two-pair staging tests; EAS installed iOS/Android physical permission/map/battery/offline tests; provider telemetry and POPIA/security legal review; exact new GitHub CI head and site deployed-commit verification; explicit founder prod migration and release approval. Current Vercel preview and CodeRabbit statuses alone do not meet these gates.
+- **Additional platform security notices (not introduced by Mapbox):** both Supabase projects report leaked-password protection disabled, and staging reports a callable `public.set_safety_pin` SECURITY DEFINER function. See Supabase security advisors for [password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) and [definer-function privileges](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable); confirm intent with the owner before changes.
+
+The detailed acceptance matrix and safe staging test prerequisites are in [Mapbox steps 5–12 acceptance](mapbox-steps-5-12-acceptance.md). **Source-only work and an active staging Edge version must not be mistaken for real-device or production launch completion.**
+
+---
+
+
 ## 15 October 2026 — guarded production referral predecessor prepared, not deployed
 
 A new `20260903000000_referral_base_prerequisite_convergence.sql` precedes the untouched ZD035 migration and reconstructs the missing April referral baseline **only if both tables are absent**. It validates canonical keys/columns and refuses partial/unknown policies; it creates the missing `gen_referral_code()` only when absent and enforces owner-bound RLS and least-privilege grants. PostgreSQL 17.6 integration tests exercise both missing and already-migrated paths, the unchanged ZD035 migration, and planted failure cases.
