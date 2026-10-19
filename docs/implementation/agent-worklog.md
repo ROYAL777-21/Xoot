@@ -23,6 +23,8 @@ other has already tried.
 
 ## 🟢 HOLDING — work in progress right now
 
+**HOLDING — 19 October 2026 — Codex GPS acceptance and conflict continuation (PR #71).** Founder authorised implementation and testing. Resolve CI conflict by retaining both branches checks; inspect staging GPS privacy controls, improve acceptance tests and evidence. Cross-role tests/workflow/backend changes required for safe validation. Preserve release homepage, no production merge or enablement, no unapproved real accounts.
+
 **RELEASED CLAIM — 19 October 2026 — GPT-6 Mapbox Steps 5–12 staging continuation.** Deployed the exact PR #71 GPS/ETA Edge handler with preserved shared dependencies to **staging v5**, JWT verified; later Mapbox v6 address-only and 20-word-limit fix included. Staging readback shows RLS enforced, zero client policies and Realtime GPS publications, anon/authenticated direct SELECT and RPC EXECUTE denied, active pg_cron expiry. Added manual two-unrelated-pair consented staging JWT/GPS/ETA/STOP and optional AAL2 admin security harness (not run without test credentials), workflow syntax guard, backend source tests, documented Mapbox-only Edge secret requirement and canonical 12-step no-go release matrix. Verified Vercel public token variable exists by NAME only; actual provider/billing not verified. PR #81 added fail-closed all-zone geometry and native explicit-opt-in coverage parity separately, with zones and flags OFF. No production writes, client switch activation, real user locations, polygon assumptions, merge, main/Codex #46 changes or homepage changes. Full exact-head CI and independent security/POPIA/device staging tests and safe production migration reconciliation remain. Claim released.
 
 
