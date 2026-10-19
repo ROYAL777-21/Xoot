@@ -55,6 +55,18 @@ test('web stop sharing and unmount revoke the GPS row after any in-flight report
     'Unmount must capture sharing state BEFORE clearing watch');
 });
 
+test('authenticated ETA reads current server GPS and has no service-zone restriction', () => {
+  assert.match(handler, /action === "eta"/);
+  assert.match(handler, /booking\.address/);
+  assert.match(handler, /MAPBOX_DIRECTIONS_TOKEN/);
+  assert.match(handler, /db\.rpc\("consume_rate_limit"/);
+  assert.match(handler, /currentPoint\.recorded_at !== fix\.recordedAt/);
+  assert.doesNotMatch(handler, /isApprovedLaunchRegion|XOOT_STRICT_GEO_COVERAGE|body\.destinationAddress|body\.origin/);
+  assert.match(web, /action: "eta", bookingId/);
+  assert.match(web, /readPrivateRoadEstimate\(data\)/);
+  assert.doesNotMatch(web, /requestLiveRoadEstimate\(/);
+});
+
 test('web customer marker and ETA expire and can share only a recent estimate without coordinates', () => {
   assert.match(web, /const expireAt = Math\.min\(Date\.parse\(position\.expiresAt\), Date\.parse\(position\.recordedAt\) \+ 60_000\)/);
   assert.match(web, /setPosition\(null\); setRoadEstimate\(null\);/);
@@ -126,7 +138,7 @@ test('non-participants and stale records never see GPS, nor does API report an i
   assert.match(handler, /point\.xooter_id !== worker\.id/);
   assert.match(handler, /now > expiry \|\| now - captured > POSITION_MAX_AGE_MS/);
   assert.match(handler, /return ok\(\{ state: "unavailable" \}, origin\)/);
-  assert.doesNotMatch(handler, /etaMinutes|routeDuration|Mapbox|console\.log\([^)]*(?:latitude|longitude)/);
+  assert.doesNotMatch(handler, /etaMinutes|routeDuration|console\.log\([^)]*(?:latitude|longitude)/);
 });
 
 test('web job journey is disabled by default and requires explicit foreground worker consent', () => {
