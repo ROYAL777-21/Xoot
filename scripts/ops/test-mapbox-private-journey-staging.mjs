@@ -116,12 +116,48 @@ try {
   denied(await call(tokens.customerA, { action: 'publish', bookingId: bookingA, consent: true }));
   console.log('PASS: missing JWT, unrelated customers/workers, and forged customer publish denied');
 
+  for (const invalid of [
+    { consent: false, latitude: -29.8587, longitude: 31.0218, accuracyM: 12,
+      capturedAt: new Date().toISOString() },
+    { consent: true, latitude: -29.8587, longitude: 31.0218, accuracyM: 999,
+      capturedAt: new Date().toISOString() },
+    { consent: true, latitude: -29.8587, longitude: 31.0218, accuracyM: 12,
+      capturedAt: new Date(Date.now() - 91_000).toISOString() },
+  ]) {
+    const invalidPublish = await call(tokens.workerA, {
+      action: 'publish', bookingId: bookingA, ...invalid,
+    });
+    assert.equal(invalidPublish.status, 400, 'bad consent, accuracy or capture time must be rejected');
+  }
+  console.log('PASS: missing consent, poor accuracy and replayed GPS rejected');
+
   await publish(tokens.workerA, bookingA); publishedA = true;
   await publish(tokens.workerB, bookingB); publishedB = true;
   pointWithNoHistory(await call(tokens.customerA, { action: 'read', bookingId: bookingA }));
   pointWithNoHistory(await call(tokens.customerB, { action: 'read', bookingId: bookingB }));
   denied(await call(tokens.customerB, { action: 'read', bookingId: bookingA }));
   console.log('PASS: distinct accepted Xooters publish; only assigned customers read fresh private GPS');
+
+  const adminAal1 = process.env.XOOT_TEST_ADMIN_AAL1_JWT;
+  const adminAal2 = process.env.XOOT_TEST_ADMIN_AAL2_JWT;
+  if (Boolean(adminAal1) !== Boolean(adminAal2)) {
+    throw new Error('Provide both staging admin AAL1 and AAL2 JWTs or neither');
+  }
+  if (adminAal1 && adminAal2) {
+    denied(await call(adminAal1, { action: 'dispatch' }));
+    const dispatch = await call(adminAal2, { action: 'dispatch' });
+    state(dispatch, 'available');
+    assert.ok(Array.isArray(dispatch.json.data.points));
+    assert.ok(dispatch.cache?.includes('no-store'));
+    for (const p of dispatch.json.data.points) {
+      assert.equal(p.address, undefined);
+      assert.equal(p.customerName, undefined);
+      assert.equal(p.history, undefined);
+    }
+    console.log('PASS: AAL1 denied and AAL2 admin dispatch feed private and no-store');
+  } else {
+    console.log('NOT TESTED: admin AAL1/AAL2 dispatch acceptance (two optional admin JWTs absent)');
+  }
 
   const eta = await call(tokens.customerA, { action: 'eta', bookingId: bookingA });
   state(eta, 'current');
