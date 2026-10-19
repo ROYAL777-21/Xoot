@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AppState, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 
 import { nativePalette } from '@/components/native-core';
@@ -94,12 +94,26 @@ export function PrivateJobJourney({ bookingId, destinationAddress }: { bookingId
     const timeout = setTimeout(() => controller.abort(), 12_000);
     void requestLiveRoadEstimate(
       { latitude: point.latitude, longitude: point.longitude },
-      destinationAddress, token, new Date(Date.parse(point.expiresAt) - 60_000).toISOString(),
+      destinationAddress, token, point.recordedAt,
       controller.signal,
     ).then(result => { if (!controller.signal.aborted) setRoadEstimate(result); })
       .finally(() => clearTimeout(timeout));
     return () => { controller.abort(); clearTimeout(timeout); };
   }, [bookingId, destinationAddress, point, viewing, configured, token]);
+
+  const freshEta = point && roadEstimate && Number.isFinite(Date.parse(roadEstimate.calculatedAt)) &&
+    Date.now() - Date.parse(roadEstimate.calculatedAt) < 60_000 &&
+    Date.parse(roadEstimate.fixRecordedAt) >= Date.parse(point.recordedAt) - 60_000
+    ? roadEstimate : null;
+
+  const shareEta = async () => {
+    if (!freshEta || !point || AppState.currentState !== 'active') return;
+    const time = new Date(freshEta.calculatedAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+    const message = `Xoot travel update: estimated driving time about ${freshEta.minutes} minutes (${freshEta.kilometres} km), calculated at ${time}. Traffic and arrival can change. Booking participants can see the latest status in Xoot.`;
+    // Do not include a GPS coordinate, household address, or public private-tracking URL.
+    try { await Share.share({ message, title: 'Xoot travel update' }); }
+    catch { setMessage('Could not open sharing. Your private journey remains available.'); }
+  };
 
   const shape = useMemo(() => point ? ({
     type: 'FeatureCollection' as const,
@@ -131,12 +145,14 @@ export function PrivateJobJourney({ bookingId, destinationAddress }: { bookingId
     </Pressable>
     {viewing ? <>
       <Text accessibilityLiveRegion="polite" style={styles.status}>{message}</Text>
-      {shape && roadEstimate ? <Text style={styles.eta}>
-        Traffic-based estimate: about {roadEstimate.minutes} minutes · {roadEstimate.kilometres} km.
-        Calculated at {new Date(roadEstimate.calculatedAt).toLocaleTimeString('en-ZA')}.
+      {shape && freshEta ? <Text style={styles.eta}>
+        Traffic-based estimate: about {freshEta.minutes} minutes · {freshEta.kilometres} km.
+        Calculated at {new Date(freshEta.calculatedAt).toLocaleTimeString('en-ZA')}.
         Not a guaranteed arrival time.
       </Text> : null}
-      {shape && !roadEstimate ? <Text style={styles.status}>Road estimate unavailable.</Text> : null}
+      {shape && freshEta && <Pressable accessibilityRole="button" accessibilityLabel="Share current estimated travel time" style={styles.action}
+        onPress={() => void shareEta()}><Text style={styles.actionText}>Share travel estimate</Text></Pressable>}
+      {shape && !freshEta ? <Text style={styles.status}>Road estimate unavailable.</Text> : null}
       {shape ? <View style={styles.mapFrame}>
         <Mapbox.MapView style={styles.map} logoEnabled attributionEnabled
           onMapLoadingError={() => setMessage('Map tiles unavailable; visit details remain accessible.')}>
