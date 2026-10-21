@@ -111,8 +111,8 @@ describe("private ETA sharing contract", () => {
 describe("Mapbox route helpers remain identical on native and web", () => {
   for (const module of ["mapbox-directions.ts", "mapbox-live-routing.ts"]) {
     it(module + " is a tested mirror, not an unsynchronised algorithm", () => {
-      const source = readFileSync(join(process.cwd(), "src/lib", module), "utf8").replaceAll("\r\n", "\n");
-      const native = readFileSync(join(process.cwd(), "mobile/src/lib", module), "utf8").replaceAll("\r\n", "\n");
+      const source = readFileSync(join(process.cwd(), "src/lib", module), "utf8").replace(/\r\n/g, "\n");
+      const native = readFileSync(join(process.cwd(), "mobile/src/lib", module), "utf8").replace(/\r\n/g, "\n");
       expect(native).toBe("// Exact native mirror of src/lib/" + module +
         "; parity enforced by mapbox-live-routing.test.ts.\n" + source);
     });

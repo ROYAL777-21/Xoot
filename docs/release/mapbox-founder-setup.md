@@ -12,7 +12,7 @@ The signed-in Mapbox account is `don-pacho`. The connected Expo account is `don-
 4. Check [Mapbox billing/settings](https://console.mapbox.com/account/settings/) and confirm Permanent Geocoding entitlement and Directions usage pricing. Coverage sends Geocoding v6 `permanent=true`; Mapbox documents a valid payment method or active enterprise contract as a prerequisite. Token presence alone does not prove entitlement. Temporary results must not be persisted as a workaround.
 5. After saving, report only **keys saved**. Verify names/digests without displaying values, then run the authorised staging requests. Supabase Edge secrets are independent of Vercel and EAS.
 
-At the 21 October dashboard inspection, both Mapbox server secret names were absent. Forms were prepared with the two names and empty masked values. No value was created, copied or submitted by the agent.
+Completed 21 October: the owner created the staging backend token and saved both fields. Dashboard readback confirms both names in **Zoot Staging** and equal SHA-256 digests, without opening their values. Mapbox displays a default payment method whose expiry is after the current client month. This establishes configuration and billing prerequisites, not a successful provider request or actual user-JWT test. No key value was read, copied or submitted by the agent.
 
 ## Website and mobile keys
 

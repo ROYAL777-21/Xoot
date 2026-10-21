@@ -31,6 +31,10 @@ Documented `MAPBOX_DIRECTIONS_TOKEN` in the Edge template. Repaired the Expo slu
 
 ## Release blockers
 
-Missing real user sessions and two approved Xooters, Mapbox secret/billing entitlement and real API success, AAL1/AAL2 admin tests, physical expiry and lifecycle acceptance, POPIA/provider telemetry/security review, identified boundary review and separately verified worker capacity, current signed Android/iPhone builds and device permission/offline/STOP checks, reviewed backup/migration order and production release approval.
+The owner has now saved both staging Mapbox server secrets; names and matching digests were verified without opening values, and the Mapbox account has a default unexpired payment method. Actual provider success remains to be verified.
+
+Missing real user sessions and two approved Xooters, actual Mapbox API success, AAL1/AAL2 admin tests, physical expiry and lifecycle acceptance, POPIA/provider telemetry/security review, identified boundary review and separately verified worker capacity, current signed Android/iPhone builds and device permission/offline/STOP checks, reviewed backup/migration order and production release approval.
+
+Published Linux CI exposed test-only `String.replaceAll` usage outside the declared ES2020 library. Replaced it with equivalent CRLF regex normalisation; root TypeScript and all eight routing mirror tests passed. No runtime behaviour or compiler/security setting changed.
 
 No production function, credential, flag or homepage was changed. No production launch or merge is inferred from source tests, an ACTIVE Edge version or Vercel READY.
