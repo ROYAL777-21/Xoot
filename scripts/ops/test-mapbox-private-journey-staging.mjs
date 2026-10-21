@@ -3,6 +3,7 @@
 // Requires four unrelated consented synthetic identities and two accepted en-route
 // synthetic bookings. No service-role key, real users, secret logging or route history.
 import assert from 'node:assert/strict';
+import { verifyStagingTestIdentities } from './verify-staging-test-identities.mjs';
 
 const STAGING_REF = 'fxmxyabdjqviqbcxmvlp';
 const required = [
@@ -109,6 +110,8 @@ async function stop(workerToken, bookingId) {
 
 let publishedA = false, publishedB = false;
 try {
+  await verifyStagingTestIdentities({ base, key, tokens });
+  console.log('PASS: staging Auth verified four distinct non-anonymous test identities');
   denied(await call('', { action: 'read', bookingId: bookingA }));
   denied(await call(tokens.customerB, { action: 'read', bookingId: bookingA }));
   denied(await call(tokens.workerB, { action: 'read', bookingId: bookingA }));
@@ -131,8 +134,9 @@ try {
   }
   console.log('PASS: missing consent, poor accuracy and replayed GPS rejected');
 
-  await publish(tokens.workerA, bookingA); publishedA = true;
-  await publish(tokens.workerB, bookingB); publishedB = true;
+  // Mark before upload: a timeout may occur after a successful server write.
+  publishedA = true; await publish(tokens.workerA, bookingA);
+  publishedB = true; await publish(tokens.workerB, bookingB);
   pointWithNoHistory(await call(tokens.customerA, { action: 'read', bookingId: bookingA }));
   pointWithNoHistory(await call(tokens.customerB, { action: 'read', bookingId: bookingB }));
   denied(await call(tokens.customerB, { action: 'read', bookingId: bookingA }));
@@ -182,6 +186,12 @@ try {
   process.exitCode = 1;
 } finally {
   // Clear both synthetic job positions on exit. Never report any GPS values.
-  if (publishedA) await stop(tokens.workerA, bookingA).catch(() => null);
-  if (publishedB) await stop(tokens.workerB, bookingB).catch(() => null);
+  for (const [attempted, token, booking, label] of [
+    [publishedA, tokens.workerA, bookingA, 'A'], [publishedB, tokens.workerB, bookingB, 'B'],
+  ]) {
+    if (attempted) await stop(token, booking).catch(() => {
+      console.error('CLEANUP NOT CONFIRMED for staging fixture ' + label + '; verify expiry before further tests.');
+      process.exitCode = 1;
+    });
+  }
 }

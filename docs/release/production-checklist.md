@@ -1,5 +1,15 @@
 # Xoot production checklist
 
+## 21 October 2026 — Mapbox staging status
+
+**Production launch remains blocked.** Gauteng Province is the approved intended geography. PR #81 now includes the exact licensed MDB/OCHA ZA7 source (5,690 vertices), provenance and checksums. Staging has zone migration `20261019185331`, JWT-protected `check-service-coverage` v2 and one inactive Gauteng candidate; approval identity/date are NULL and no worker availability is asserted. PR #71 staging `xoot-job-location` v6 remains JWT protected. Source and PostgreSQL checks do not substitute for authorised JWT/provider/device acceptance.
+
+The connected Expo project is `@don-pacho777/zoot`; the local slug mismatch is fixed. Current native token, real signed Android/iPhone builds, Apple team and device evidence remain outstanding. Owner-provided emails identified one existing staging customer and one absent account; no Xooter activation or role assignment was performed. The [founder setup guide](mapbox-founder-setup.md) provides the exact protected key form and genuine test prerequisites.
+
+Live ledger inspection: staging **88** entries, production **82**, with seven staging-only entries and production-only safety-PIN migration `20261008011821`. These require schema/dependency reconciliation and a backup/rollback plan before a narrowly reviewed production operation. Neither branch was merged, and the approved release homepage is preserved. Production GPS/zone schema remains absent; no production functions, credentials or switches were modified.
+
+The existing Claude security CI failed for insufficient provider credits, and production schema-parity CI reports actual database/type drift. Neither is a clean acceptance result. Exact updated PR checks must be reviewed after publishing these changes. Independent POPIA/security, Mapbox licence/billing, identified boundary review, real user access isolation, MFA, physical retention and installed-device acceptance remain required.
+
 ## 19 October 2026 — Mapbox steps 5–12 guarded staging checkpoint
 
 **No Mapbox GPS/ETA or verified coverage production launch is approved.** Web Geocoding PR #69 is merged; isolated GPS/ETA/dispatch PR #71 and Polygon coverage PR #81 remain OPEN. The approved website stays on `release/xoot-production`, not `main` or Codex PR #46.

@@ -135,8 +135,9 @@ test('non-participants and stale records never see GPS, nor does API report an i
   assert.match(handler, /if \(!isWorker && !isCustomer\) return fail\("booking unavailable", origin, 404\)/);
   assert.match(handler, /Cache-Control", "private, no-store"/);
   assert.match(handler, /!candidate \|\| typeof candidate !== "object" \|\| Array\.isArray\(candidate\)/);
-  assert.match(handler, /point\.xooter_id !== worker\.id/);
-  assert.match(handler, /now > expiry \|\| now - captured > POSITION_MAX_AGE_MS/);
+  // Ownership, expiry and age moved into the independently exercised parser.
+  assert.match(handler, /readFreshStoredJobFix\(point, worker\.id\)/);
+  assert.match(handler, /if \(!fix\) return unavailable\(\)/);
   assert.match(handler, /return ok\(\{ state: "unavailable" \}, origin\)/);
   assert.doesNotMatch(handler, /etaMinutes|routeDuration|console\.log\([^)]*(?:latitude|longitude)/);
 });

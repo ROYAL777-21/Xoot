@@ -49,6 +49,8 @@ jobs:
         run: node --test scripts/ops/job-live-location-privacy.test.mjs
       - name: Check staging-only live Mapbox acceptance harness syntax
         run: node --check scripts/ops/test-mapbox-private-journey-staging.mjs
+      - name: Verify staging acceptance resolves distinct real identities before writes
+        run: node --test scripts/ops/verify-staging-test-identities.test.mjs
       - name: Enforce MFA-only private dispatch location access
         run: node --test scripts/ops/job-private-dispatch.test.mjs
       - name: Test live Mapbox journey acceptance runner refuses unsafe environments
