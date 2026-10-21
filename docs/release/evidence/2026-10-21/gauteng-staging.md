@@ -27,7 +27,7 @@ Project `fxmxyabdjqviqbcxmvlp`:
 - `check-service-coverage` **v2**, ACTIVE, `verify_jwt=true`; every returned deployed source file matches the local source after line-ending normalisation. The API returns five bundled files; the uploaded Deno config is not returned and is not claimed as a sixth readback match.
 - No active zone, strict booking switch, website/mobile coverage switch or production Mapbox rollout was enabled. Both booking writers still require separate staged end-to-end strict-gate acceptance.
 - Missing JWT and malformed JWT probes return HTTP 401 without coordinates. This does not prove authorised account behaviour.
-- The Mapbox secrets form inspection on 21 October found both server names absent. Protected fields were prepared for owner entry; no value was read or submitted by the agent.
+- The owner saved both Mapbox server secrets after the protected form was prepared. Dashboard readback confirmed both names and matching digests, without opening values. Mapbox shows a default unexpired payment method. Provider success and actual user-JWT acceptance are still separate requirements.
 
 Production `mvlrkelahhsyjrwgsxaf` has no GPS/zone tables at inspection. Ledger drift is seven staging-only entries versus the production-only safety-PIN entry `20261008011821` (staging 88 / production 82 total). Preserve the production patch and reconcile actual schemas/dependencies before an ordered backup-backed migration. No bulk push/repair was run.
 
