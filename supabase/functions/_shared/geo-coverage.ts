@@ -29,10 +29,15 @@ export function validLngLat(value: unknown): value is Point {
 }
 
 const EPS = 1e-10;
+// The unsimplified, licensed Gauteng source has 5,690 vertices in one ring.
+// Keep explicit finite limits; never simplify an operating boundary to fit them.
+export const MAX_RING_VERTICES = 10_000;
+export const MAX_GEOMETRY_VERTICES = 20_000;
+const MAX_QUERY_VERTICES = 200_000;
 const equal = (a: Point, b: Point) => Math.abs(a[0] - b[0]) < EPS && Math.abs(a[1] - b[1]) < EPS;
 
 function validRing(value: unknown): value is Ring {
-  if (!Array.isArray(value) || value.length < 4 || value.length > 1000 ||
+  if (!Array.isArray(value) || value.length < 4 || value.length > MAX_RING_VERTICES ||
     !value.every(validLngLat) || !equal(value[0], value[value.length - 1])) return false;
   let signedDoubleArea = 0;
   for (let i = 0; i < value.length - 1; i++) {
@@ -43,7 +48,7 @@ function validRing(value: unknown): value is Ring {
 
 function validPolygon(value: unknown): value is Polygon {
   return Array.isArray(value) && value.length > 0 && value.length <= 20 &&
-    value.every(validRing) && value.reduce((n, ring) => n + ring.length, 0) <= 4000;
+    value.every(validRing) && value.reduce((n, ring) => n + ring.length, 0) <= MAX_GEOMETRY_VERTICES;
 }
 
 export function parseCoverageGeometry(value: unknown): Geometry | null {
@@ -56,7 +61,7 @@ export function parseCoverageGeometry(value: unknown): Geometry | null {
     candidate.coordinates.length > 0 && candidate.coordinates.length <= 20 &&
     candidate.coordinates.every(validPolygon) &&
     candidate.coordinates.reduce((n, polygon) =>
-      n + polygon.reduce((m, ring) => m + ring.length, 0), 0) <= 4000) {
+      n + polygon.reduce((m, ring) => m + ring.length, 0), 0) <= MAX_GEOMETRY_VERTICES) {
     return { type: "MultiPolygon", coordinates: candidate.coordinates };
   }
   return null;
@@ -101,6 +106,7 @@ export function checkApprovedCoverage(point: unknown, service: string, zones: un
   // Previously a first valid polygon could return "available" while a later
   // malformed active polygon was silently ignored (order-dependent fail-open).
   const validated: Array<{ id: string; name: string; shape: Geometry }> = [];
+  let vertices = 0;
   for (const record of matching) {
     if (typeof record.id !== "string" || typeof record.name !== "string" ||
       record.name.length < 2 || record.name.length > 80) {
@@ -108,6 +114,9 @@ export function checkApprovedCoverage(point: unknown, service: string, zones: un
     }
     const shape = parseCoverageGeometry(record.geometry);
     if (!shape) return { state: "review", reason: "invalid_zone" };
+    const polygons = shape.type === "Polygon" ? [shape.coordinates] : shape.coordinates;
+    vertices += polygons.reduce((sum, polygon) => sum + polygon.reduce((n, ring) => n + ring.length, 0), 0);
+    if (vertices > MAX_QUERY_VERTICES) return { state: "review", reason: "invalid_zone" };
     validated.push({ id: record.id, name: record.name, shape });
   }
   const found = validated.find(record => pointInsideCoverageGeometry(point, record.shape));

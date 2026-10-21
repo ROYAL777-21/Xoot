@@ -1,4 +1,3 @@
-import { getServiceClient } from "./action-utils.ts";
 import { checkApprovedCoverage, type CoverageResult, validLngLat } from "./geo-coverage.ts";
 
 /**
@@ -8,7 +7,19 @@ import { checkApprovedCoverage, type CoverageResult, validLngLat } from "./geo-c
  * Verified coordinates remain ephemeral in this request. We store neither raw
  * Mapbox results nor a new copy of customer coordinates.
  */
-type Database = ReturnType<typeof getServiceClient>;
+// Narrow structural contract keeps this provider logic testable without importing
+// the Deno runtime or constructing a privileged client in a test/browser bundle.
+type Database = {
+  from(table: "xoot_service_zones"): {
+    select(columns: string): {
+      eq(column: string, value: boolean): {
+        limit(count: number): PromiseLike<{ data: unknown[] | null; error: unknown }>;
+      };
+    };
+  };
+  rpc(name: "xoot_consume_coverage_query", args: { p_user_id: string }):
+    PromiseLike<{ data: unknown; error: unknown }>;
+};
 export type VerifiedCoverageState =
   | { state: "available"; zoneId: string; zoneName: string }
   | { state: "review"; reason: string }

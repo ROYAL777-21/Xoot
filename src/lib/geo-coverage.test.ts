@@ -31,11 +31,17 @@ describe("privacy-safe verified Mapbox service coverage geometry", () => {
     for (const geometry of [
       null, {}, { type: "Feature", geometry: { type: "Polygon", coordinates: [outsideRing] } },
       { type: "Polygon", coordinates: [[...outsideRing.slice(0, 4)]] },
-      { type: "Polygon", coordinates: [[...outsideRing.slice(0, 3), outsideRing[0]]] },
+      { type: "Polygon", coordinates: [[...outsideRing.slice(0, 2), outsideRing[0]]] },
       { type: "Polygon", coordinates: [[[1, 1], [2, 2], [3, 3], [1, 1]]] },
       { type: "Polygon", coordinates: [] },
       { type: "MultiPolygon", coordinates: [] },
     ]) expect(parseCoverageGeometry(geometry)).toBeNull();
+  });
+
+  it("accepts a non-degenerate closed triangle (three distinct vertices)", () => {
+    expect(parseCoverageGeometry({ type: "Polygon", coordinates: [
+      [...outsideRing.slice(0, 3), outsideRing[0]],
+    ] })).not.toBeNull();
   });
 
   it("uses a closed outer boundary and excludes an interior hole", () => {

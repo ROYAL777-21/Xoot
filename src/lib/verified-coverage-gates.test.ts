@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
-const sql = read("supabase/migrations/20261019090000_xoot_approved_service_zones.sql");
+const sql = read("supabase/migrations/20261019185331_xoot_approved_service_zones.sql");
 const edge = read("supabase/functions/check-service-coverage/index.ts");
 const verify = read("supabase/functions/_shared/verified-coverage.ts");
 const writer = read("supabase/functions/create-booking/index.ts");

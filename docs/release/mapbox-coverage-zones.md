@@ -1,6 +1,8 @@
 # Mapbox verified service zones — production acceptance
 
-Status: NOT DEPLOYED, NOT ENABLED, NO APPROVED POLYGONS LOADED.
+Status, 21 October 2026: STAGING ONLY. Schema `20261019185331` and JWT-protected `check-service-coverage` v2 are deployed. The exact MDB/OCHA Gauteng polygon is loaded as an INACTIVE candidate, with no reviewer/date fabricated. No active approved zone, production deployment or switch activation has occurred.
+
+The founder approved Gauteng Province as intended geography. All 5,690 source vertices are retained with [provenance, licence and reproducible extraction](../../data/service-zones/gauteng/README.md). Automated GEOS topology and the production evaluator pass; independent current-boundary/release review is outstanding. [Exact owner setup and acceptance](mapbox-founder-setup.md) records remaining credentials, identities and devices. Earlier dated source-only statements below describe historical checkpoints.
 
 The existing suburb_centroids table contains reference points, not approved business coverage polygons. Geographic service eligibility cannot be declared based on a postcode, suburb text or arbitrary radius. PostGIS is not installed in Xoot's current Supabase projects.
 
