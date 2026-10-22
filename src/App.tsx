@@ -9,7 +9,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RequireAuth } from "@/components/RequireAuth";
-import { AppLaunch } from "@/components/xoot/AppLaunch";
 import { AppShell } from "@/components/xoot/AppShell";
 import { NativeInteractionLayer } from "@/components/xoot/NativeInteractionLayer";
 import { XootSupportBot } from "@/components/xoot/XootSupportBot";
@@ -148,7 +147,6 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <AppLaunch />
               <NativeInteractionLayer />
               <PreloadCoreRoutes />
               <ScrollToTop />
