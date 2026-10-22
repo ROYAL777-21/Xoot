@@ -1,5 +1,13 @@
 # Xoot production checklist
 
+## 22 October 2026 — website opens directly without the floating-heart splash
+
+The founder requested removal of the heart animation at website launch. This release removes the `AppLaunch` import and mount from `src/App.tsx`; the router, authentication providers and approved homepage remain in place. Native startup and the shared/video animation assets are outside this website-only change. Website TypeScript, targeted App lint, approved-design/negative-control checks and eight existing routing/splash-parity tests passed. [Scope and evidence](evidence/2026-10-22/website-launch-overlay-removal.md). Verify the production deployment and public [build record](https://xoot.co.za/build-info.json) against the merged release revision before claiming publication.
+
+The public Mapbox website key is already saved in Production Config and its first published build was verified at `56d7c7386c1195b3bea398bb873a20c10f653176`, Vercel `dpl_38BF3JviceQi7hCfY3SkhycxFsx9`. The inspected entry/booking assets contain a public `pk.` token-shaped literal and no `sk.` token-shaped literal; no token was printed. The served booking route uses `strict-origin-when-cross-origin` and retains CSP support for Mapbox API/tiles/events and blob workers. Mapbox's official matching rules allow the configured exact origins to cover site subpaths; this is configuration evidence, not a successful provider request. Paid address suggestions remain explicitly off. **The entire GPS/ETA/service-zone integration is not yet production accepted:** real authorised JWT/MFA/provider/device checks, worker availability, privacy/licensing review and exact migration reconciliation remain required; PRs #71/#81 stay separate and disabled. No further browser key is needed from the founder for this web release.
+
+---
+
 ## 22 October 2026 — monochrome map release and cost containment
 
 Founder authorised a visual production release without another acceptance cycle and requested minimum Mapbox costs after a reported USD 6 invoice. The connected Mapbox billing notification identifies Permanent Geocoding; exact invoice quantities/tax remain uninspected. Web/native booking map source now uses a clean monochrome style and preserves attribution. Manual address entry remains available, and the paid suggestion/confirmation flow is **off by default**. Vercel's new `VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED` is saved as `false` for production and preview. Native changes require a separate signed build; no paid build was started.
