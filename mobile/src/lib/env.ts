@@ -32,6 +32,7 @@ export const mobileEnv = {
   easProjectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID?.trim() ?? '',
   sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN?.trim() ?? '',
   mapboxPublicToken: process.env.EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN?.trim() ?? '',
+  mapboxAddressSuggestionsEnabled: process.env.EXPO_PUBLIC_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED === 'true',
   cloudflareTurnstileSiteKey: process.env.EXPO_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY?.trim() ?? '',
   posthogProjectToken: process.env.EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN?.trim() ?? '',
   posthogHost: process.env.EXPO_PUBLIC_POSTHOG_HOST?.trim() || 'https://us.i.posthog.com',

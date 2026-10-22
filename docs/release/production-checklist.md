@@ -1,5 +1,15 @@
 # Xoot production checklist
 
+## 22 October 2026 — monochrome map release and cost containment
+
+Founder authorised a visual production release without another acceptance cycle and requested minimum Mapbox costs after a reported USD 6 invoice. The connected Mapbox billing notification identifies Permanent Geocoding; exact invoice quantities/tax remain uninspected. Web/native booking map source now uses a clean monochrome style and preserves attribution. Manual address entry remains available, and the paid suggestion/confirmation flow is **off by default**. Vercel's new `VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED` is saved as `false` for production and preview. Native changes require a separate signed build; no paid build was started.
+
+This web release does not enable private GPS/ETA, activate Gauteng service zones, apply production migrations or change payment/voice flags. PRs [#71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71) and [#81](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/81) remain separate. The founder reports replacing both staging Mapbox credentials with the prepared public-scope token; the current browser connection cannot yet independently verify that replacement. Existing genuine-user JWT/MFA, physical-device, privacy/provider and exact production migration requirements remain open for tracking/coverage activation.
+
+Web/native compilation passed. No new acceptance suite or real provider request was run under the founder's latest instruction. A source commit is not deployment proof: inspect the target production deployment and public `build-info.json` before describing the website as live. [Scope, cost rates and evidence limits](evidence/2026-10-22/monochrome-and-cost-controls.md).
+
+---
+
 ## 15 October 2026 — guarded production referral predecessor prepared, not deployed
 
 A new `20260903000000_referral_base_prerequisite_convergence.sql` precedes the untouched ZD035 migration and reconstructs the missing April referral baseline **only if both tables are absent**. It validates canonical keys/columns and refuses partial/unknown policies; it creates the missing `gen_referral_code()` only when absent and enforces owner-bound RLS and least-privilege grants. PostgreSQL 17.6 integration tests exercise both missing and already-migrated paths, the unchanged ZD035 migration, and planted failure cases.
