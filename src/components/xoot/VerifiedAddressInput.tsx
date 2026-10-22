@@ -16,6 +16,9 @@ type VerifiedAddressInputProps = {
 // Public browser token bundled by Vite. A token name in Vercel is not proof of permission
 // to call Geocoding; failed/blocked requests must leave manual entry fully usable.
 const browserToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN?.trim() ?? "";
+// Selected suggestions require paid Permanent Geocoding before they can be saved.
+// Manual entry remains the default until the owner approves that operating cost.
+const mapboxAddressSuggestionsEnabled = import.meta.env.VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED === "true";
 
 export const VerifiedAddressInput = ({
   value, onChange, placeholder, inputClassName, label = "Service address", showIcon = true,
@@ -32,7 +35,7 @@ export const VerifiedAddressInput = ({
   const hasAddress = value.trim().length > 0;
 
   useEffect(() => {
-    const url = searchEnabled && selectedText !== value ? mapboxAddressSearchUrl(value, browserToken) : null;
+    const url = searchEnabled && selectedText !== value && mapboxAddressSuggestionsEnabled ? mapboxAddressSearchUrl(value, browserToken) : null;
     if (!url) {
       setSearchState("idle");
       setSuggestions([]);
@@ -69,6 +72,7 @@ export const VerifiedAddressInput = ({
   };
 
   const chooseSuggestion = async (suggestion: MapboxAddressSuggestion) => {
+    if (!mapboxAddressSuggestionsEnabled) return;
     // Autocomplete suggestions are TEMPORARY and may not be persisted. Only accept their
     // label into booking state after a separate licensed PERMANENT Geocoding confirmation.
     // A failed Permanent request leaves the original user input intact for manual entry.
@@ -114,7 +118,7 @@ export const VerifiedAddressInput = ({
           className={`h-12 rounded-xl text-base ${showIcon ? "pl-10" : ""} ${inputClassName ?? ""}`}
         />
       </div>
-      {browserToken.startsWith("pk.") && (
+      {mapboxAddressSuggestionsEnabled && browserToken.startsWith("pk.") && (
         <div className="flex items-start gap-2 text-xs text-muted-foreground">
           <button type="button" aria-pressed={searchEnabled}
             className="shrink-0 rounded-full border border-border px-3 py-1.5 font-semibold text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"

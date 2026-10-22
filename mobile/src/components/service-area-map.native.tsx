@@ -1,9 +1,10 @@
-import { COLOR, hsl, alpha, Colors, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 
 import { mobileEnv } from '@/lib/env';
+import { MONOCHROME_MAP_STYLE_JSON } from '@/lib/mapbox-theme';
 
 const center: [number, number] = [28.0473, -26.108];
 const launchAreas = [
@@ -73,27 +74,27 @@ export function ServiceAreaMap() {
 
   return (
     <View style={styles.shell}>
-      <Mapbox.MapView key={attempt} style={styles.map} logoEnabled attributionEnabled compassEnabled scaleBarEnabled={false}
+      <Mapbox.MapView key={attempt} style={styles.map} styleJSON={MONOCHROME_MAP_STYLE_JSON} logoEnabled attributionEnabled compassEnabled scaleBarEnabled={false}
         onDidFinishLoadingMap={() => setMapStatus('ready')}
         onMapLoadingError={() => setMapStatus(current => current === 'ready' ? current : 'error')}>
-        <Mapbox.Camera centerCoordinate={center} zoomLevel={10.2} pitch={34} animationMode="flyTo" animationDuration={850} />
+        <Mapbox.Camera centerCoordinate={center} zoomLevel={10.2} pitch={0} animationMode="flyTo" animationDuration={850} />
         <Mapbox.ShapeSource id="xoot-launch-areas" shape={shape}>
           <Mapbox.CircleLayer
             id="xoot-launch-points"
             style={{
-              circleColor: Colors.dark.accent,
+              circleColor: '#111111',
               circleOpacity: 0.92,
               circleRadius: 8,
-              circleStrokeColor: hsl(COLOR.dark.foreground),
+              circleStrokeColor: '#ffffff',
               circleStrokeWidth: 2,
             }}
           />
           <Mapbox.SymbolLayer
             id="xoot-launch-labels"
             style={{
-              textColor: Colors.dark.text,
+              textColor: '#111111',
               textField: ['get', 'name'],
-              textHaloColor: hsl(COLOR.dark.background),
+              textHaloColor: '#ffffff',
               textHaloWidth: 1.5,
               textOffset: [0, 1.25],
               textSize: 12,
@@ -106,7 +107,7 @@ export function ServiceAreaMap() {
         <Text style={styles.body}>Reference locations only. Booking confirms availability.</Text>
       </View>
       {mapStatus === 'loading' && <View pointerEvents="none" style={styles.loading}>
-        <ActivityIndicator color={Colors.dark.accent} />
+        <ActivityIndicator color="#111111" />
         <Text style={styles.body} accessibilityLiveRegion="polite">Loading service area map…</Text>
       </View>}
     </View>
@@ -115,19 +116,20 @@ export function ServiceAreaMap() {
 
 const styles = StyleSheet.create({
   shell: {
-    borderColor: alpha('dark', 'foreground', 0.14),
-    borderRadius: 24,
+    borderColor: '#e5e5e5',
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
     borderWidth: 1,
-    height: 260,
+    height: 320,
     overflow: 'hidden',
   },
   map: {
     flex: 1,
   },
   overlay: {
-    backgroundColor: alpha('dark', 'background', 0.72),
-    borderColor: alpha('dark', 'foreground', 0.16),
-    borderRadius: 20,
+    backgroundColor: '#fffffff2',
+    borderColor: '#e5e5e5',
+    borderRadius: 16,
     borderWidth: 1,
     top: Spacing.lg,
     left: Spacing.lg,
@@ -144,11 +146,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: alpha('dark', 'background', 0.86),
+    backgroundColor: '#fffffff2',
   },
   retry: {
     alignSelf: 'flex-start',
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: '#111111',
     borderRadius: 22,
     minHeight: 44,
     paddingHorizontal: Spacing.lg,
@@ -156,13 +158,13 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   retryText: {
-    color: Colors.dark.accentText,
+    color: '#ffffff',
     fontWeight: '800',
     fontSize: 14,
   },
   fallback: {
-    backgroundColor: alpha('dark', 'foreground', 0.06),
-    borderColor: alpha('dark', 'foreground', 0.14),
+    backgroundColor: '#ffffff',
+    borderColor: '#e5e5e5',
     borderRadius: 24,
     borderWidth: 1,
     gap: Spacing.sm,
@@ -170,18 +172,18 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
   },
   kicker: {
-    color: Colors.dark.accent,
+    color: '#525252',
     fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase',
   },
   title: {
-    color: Colors.dark.text,
+    color: '#111111',
     fontSize: 20,
     fontWeight: '800',
   },
   body: {
-    color: Colors.dark.textSecondary,
+    color: '#525252',
     fontSize: 14,
     lineHeight: 21,
   },

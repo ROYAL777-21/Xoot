@@ -90,7 +90,7 @@ describe("Mapbox consumer safety regressions", () => {
     expect(booking).toContain("showAreaMap && <div id=\"xoot-booking-service-map\"><InteractiveServiceAreaMap />");
     expect(booking).toContain('View interactive area map');
     expect(areaMap).toContain('void import("mapbox-gl")');
-    expect(areaMap).toContain('mapbox://styles/mapbox/streets-v12');
+    expect(areaMap).toContain('style: MONOCHROME_MAP_STYLE');
     expect(areaMap).toContain('attributionControl: true');
     expect(areaMap).toContain('map?.remove()');
     expect(areaMap).toContain('window.clearTimeout(watchdog)');

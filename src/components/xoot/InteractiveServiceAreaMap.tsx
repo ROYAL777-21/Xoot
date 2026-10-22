@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { Map as MapboxMap } from "mapbox-gl";
+import { MONOCHROME_MAP_STYLE } from "@/lib/mapbox-theme";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "@/styles/mapbox-monochrome.css";
 
 const token = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN?.trim() ?? "";
 
@@ -33,18 +35,19 @@ export function InteractiveServiceAreaMap() {
       mapboxgl.accessToken = token;
       map = new mapboxgl.Map({
         container: element.current,
-        style: "mapbox://styles/mapbox/streets-v12",
+        style: MONOCHROME_MAP_STYLE,
         center: [28.06, -26.08],
         zoom: 10.2,
         attributionControl: true,
       });
+      map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
       map.on("load", () => { if (!disposed) { window.clearTimeout(watchdog); setStatus("ready"); } });
       map.on("error", () => { if (!disposed) setStatus(current => current === "ready" ? current : "error"); });
       neighbourhoods.forEach(area => {
         const pin = document.createElement("span");
         pin.title = area.name;
         pin.setAttribute("aria-label", `${area.name} reference location`);
-        pin.style.cssText = "display:block;width:13px;height:13px;border-radius:100%;border:2px solid #fff;background:#6954be;box-shadow:0 1px 5px #0006";
+        pin.style.cssText = "display:block;width:17px;height:17px;border-radius:50%;border:3px solid #fff;background:#111;box-shadow:0 1px 6px #0003";
         new mapboxgl.Marker({ element: pin }).setLngLat([area.lng, area.lat]).addTo(map!);
       });
     }).catch(() => { if (!disposed) setStatus("error"); });
@@ -58,15 +61,15 @@ export function InteractiveServiceAreaMap() {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">Interactive Mapbox reference map. These five pins are neighbourhood centres, not customer addresses or proof a Xooter is available.</p>
-      <div className="relative overflow-hidden rounded-xl border border-border" style={{ height: 260 }}>
+      <p className="text-xs leading-relaxed text-neutral-600">Interactive Mapbox reference map. These five pins are neighbourhood centres, not customer addresses or proof a Xooter is available.</p>
+      <div className="xoot-monochrome-map relative overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm" style={{ height: 320 }}>
         <div ref={element} role="region" aria-label="Interactive Mapbox map showing five Johannesburg reference suburbs"
           className="h-full w-full" />
         {status !== "ready" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/95 p-5 text-center text-sm" role="status">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/95 p-5 text-center text-sm text-neutral-700" role="status">
             <span>{status === "loading" ? "Loading Johannesburg map…" : "Interactive map unavailable. You can continue to book without it."}</span>
             {status === "error" && <button type="button" onClick={() => setAttempt(v => v + 1)}
-              className="rounded-full border border-border px-4 py-2 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">Try map again</button>}
+              className="min-h-11 rounded-full bg-neutral-950 px-5 py-2 font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">Try map again</button>}
           </div>
         )}
       </div>

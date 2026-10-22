@@ -8,6 +8,7 @@ import { nativeFonts } from '@/components/native-core';
 /** Optional user-consented search. Existing native address TextInput remains the fallback. */
 export function MobileMapboxAddressSuggestions({ value, onSelect }: { value: string; onSelect: (address: string) => void }) {
   const token = mobileEnv.mapboxPublicToken;
+  const paidLookupsEnabled = mobileEnv.mapboxAddressSuggestionsEnabled;
   const [enabled, setEnabled] = useState(false);
   const [items, setItems] = useState<NativeMapboxSuggestion[]>([]);
   const [state, setState] = useState<'idle'|'loading'|'empty'|'error'>('idle');
@@ -25,7 +26,7 @@ export function MobileMapboxAddressSuggestions({ value, onSelect }: { value: str
   }, [value]);
 
   useEffect(() => {
-    const url = enabled && selected !== value ? nativeMapboxSearchUrl(value, token) : null;
+    const url = enabled && selected !== value && paidLookupsEnabled ? nativeMapboxSearchUrl(value, token) : null;
     if (!url) { setItems([]); setState('idle'); return; }
     const controller = new AbortController();
     const current = ++seq.current;
@@ -43,9 +44,10 @@ export function MobileMapboxAddressSuggestions({ value, onSelect }: { value: str
       });
     }, 450);
     return () => { clearTimeout(timer); controller.abort(); seq.current += 1; };
-  }, [enabled, selected, token, value]);
+  }, [enabled, selected, token, value, paidLookupsEnabled]);
 
   async function choose(item: NativeMapboxSuggestion) {
+    if (!paidLookupsEnabled) return;
     // Temporary results are never stored: reconfirm selected ID under Permanent Geocoding.
     chosen.current?.abort();
     const url = nativeMapboxSearchUrl(item.label, token, true);
@@ -68,7 +70,7 @@ export function MobileMapboxAddressSuggestions({ value, onSelect }: { value: str
     finally { if (!controller.signal.aborted) setConfirming(false); }
   }
 
-  if (!token.startsWith('pk.')) return null;
+  if (!paidLookupsEnabled || !token.startsWith('pk.')) return null;
   return <View style={s.group}>
     <Pressable accessibilityRole="button" accessibilityState={{ selected: enabled }}
       accessibilityLabel={enabled ? 'Disable Mapbox address suggestions' : 'Enable Mapbox address suggestions'}
