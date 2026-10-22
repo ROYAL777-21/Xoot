@@ -1,11 +1,9 @@
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AppAvailability } from "@/components/xoot/AppAvailability";
-import { useConcierge } from "@/contexts/ConciergeContext";
 import { XootCharacter } from "@/components/kit/XootCharacter";
 
 export function CtaBand() {
-  const concierge = useConcierge();
   return (
     <section className="xoot-public-section" aria-labelledby="closing-title">
       <div className="xoot-public-inner">
@@ -26,7 +24,7 @@ export function CtaBand() {
           <p>Choose a service, confirm your address and continue through the secure booking flow.</p>
           <div className="xoot-closing-panel__actions">
             <Link className="xoot-action xoot-action--lg" to="/book">Book a clean <ArrowRight size={20} /></Link>
-            <button className="xoot-action xoot-action--lg xoot-action--outline" type="button" onClick={() => concierge?.openConcierge()}><MessageCircle size={20} /> Ask Concierge</button>
+            <Link className="xoot-action xoot-action--lg xoot-action--outline" to="/app/support"><MessageCircle size={20} /> Contact support</Link>
           </div>
         </div>
       </div>

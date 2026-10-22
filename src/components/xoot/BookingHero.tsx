@@ -144,7 +144,6 @@ export const BookingHero = () => {
             <HandoffNote>arrival timing &amp; access instructions — all in your booking</HandoffNote>
 
             <div className="xoot-hero-secondary-actions">
-              <Link to="/?xootBot=open&intent=concierge" className="inline-flex min-h-9 items-center justify-center rounded-xl border border-foreground/25 px-3 text-center text-sm font-bold text-foreground transition-colors hover:bg-foreground/[0.05]">Ask Concierge first</Link>
               <Link to="/app/properties/office" className="inline-flex min-h-9 items-center justify-center rounded-xl border border-foreground/25 px-3 text-center text-sm font-bold text-foreground transition-colors hover:bg-foreground/[0.05]">Plan office or Airbnb cleaning</Link>
             </div>
 

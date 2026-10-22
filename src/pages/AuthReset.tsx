@@ -1,3 +1,4 @@
+import { Logo } from "@/components/kit/Logo";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, KeyRound, Loader2, LockKeyhole, ShieldCheck } from "lucide-react";
@@ -106,7 +107,7 @@ const AuthReset = () => {
           <span className="grid h-9 w-9 place-items-center rounded-xl gradient-warm shadow-warm">
             <span className="font-display text-lg font-bold text-primary-foreground">X</span>
           </span>
-          <span className="font-display text-2xl font-bold tracking-tight">Xoot</span>
+          <Logo size={26} tone="violet" />
         </Link>
 
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1">

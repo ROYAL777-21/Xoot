@@ -14,33 +14,32 @@ const renderJournal = () =>
 describe("Journal", () => {
   it("links real post routes, not a hash modal", () => {
     // The handoff opens articles at `#article-<id>` because a one-file prototype has nowhere
-    // else to put them. This repo has `/blog/:slug`. A hash link here would be a silent
+    // else to put them. This repo has `/articles/:slug`. A hash link here would be a silent
     // downgrade: unshareable, unindexable, and gone on refresh.
     renderJournal();
     const links = screen.getAllByRole("link");
     const hrefs = links.map((link) => link.getAttribute("href"));
 
-    expect(hrefs).toContain("/blog");
+    expect(hrefs).toContain("/articles");
     for (const href of hrefs) {
-      expect(href).toMatch(/^\/blog(\/|$)/);
+      expect(href).toMatch(/^\/articles(\/|$)/);
       expect(href).not.toMatch(/#article-/);
     }
   });
 
-  it("shows the three newest posts, newest first", () => {
+  it("shows six recent posts at their canonical routes", () => {
     // Sorted rather than sliced off the top of the file, because the file is in authoring
     // order. Getting this wrong shows a stale post as the lead and nobody notices for weeks.
     const expected = [...blogPosts]
       .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
-      .slice(0, 3);
+      .slice(0, 6);
 
     renderJournal();
     for (const post of expected) {
       expect(screen.getByText(post.title)).toBeInTheDocument();
     }
 
-    const dates = [...document.querySelectorAll("time")].map((t) => t.getAttribute("dateTime"));
-    expect(dates).toEqual([...dates].sort().reverse());
+    expect(screen.getAllByRole("link").slice(0, 6).map(link => link.getAttribute("href"))).toEqual(expected.map(post => `/articles/${post.slug}`));
   });
 
   it("claims no authorship or audience it does not have", () => {

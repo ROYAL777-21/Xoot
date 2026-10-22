@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { MapPin, ShieldCheck } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { mapboxAddressSearchUrl, mapboxPermanentAddressUrl, parseMapboxAddressSuggestions, type MapboxAddressSuggestion } from "@/lib/mapbox-geocoding";
@@ -142,16 +142,7 @@ export const VerifiedAddressInput = ({
           ))}
         </ul>
       )}
-      {hasAddress && (
-        <div className="flex items-start gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 text-xs font-medium text-foreground">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="min-w-0">
-            {selectedText === value && selectedText
-              ? "Suggested by Mapbox. Confirm the street, unit or entrance in booking; coverage and Xooter availability are not yet confirmed."
-              : "Enter your address to continue. Xoot confirms actual service coverage and available Xooters during booking."}
-          </span>
-        </div>
-      )}
+      {selectedText === value && selectedText && <p className="text-xs text-muted-foreground">Address found. Check the unit and entrance details.</p>}
       {confirming && <p role="status" className="text-xs text-muted-foreground">Confirming selected address…</p>}
       {searchState === "loading" && !confirming && <p role="status" className="text-xs text-muted-foreground">Finding nearby addresses…</p>}
       {searchState === "error" && <p role="status" className="text-xs text-muted-foreground">Address lookup or confirmation is unavailable. You can enter your address manually.</p>}

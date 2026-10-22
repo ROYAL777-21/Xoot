@@ -11,8 +11,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RequireAuth } from "@/components/RequireAuth";
 import { AppShell } from "@/components/xoot/AppShell";
 import { NativeInteractionLayer } from "@/components/xoot/NativeInteractionLayer";
-import { XootSupportBot } from "@/components/xoot/XootSupportBot";
-import { ConciergeProvider } from "@/contexts/ConciergeContext";
 import { XooterShell } from "@/components/xooter/XooterShell";
 import { RequireRole } from "@/components/RequireRole";
 import { XootAnalyticsProvider } from "@/lib/analytics";
@@ -151,9 +149,6 @@ const App = () => (
               <PreloadCoreRoutes />
               <ScrollToTop />
               <AuthProvider>
-                {/* Wraps the routes AND the launcher, so the omnibox inside AppShell and the
-                    Concierge panel at the root share one open state. */}
-                <ConciergeProvider>
                 <Suspense fallback={<RouteLoading />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
@@ -163,6 +158,8 @@ const App = () => (
                   <Route path="/book/confirm" element={<BookingConfirm />} />
                   <Route path="/care-plus/join" element={<CarePlusPaywall />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/signup" element={<Navigate to="/auth?mode=signup" replace />} />
+                  <Route path="/signin" element={<Navigate to="/auth?mode=signin" replace />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/auth/reset" element={<AuthReset />} />
                   <Route path="/articles" element={<Blog />} />
@@ -237,8 +234,6 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 </Suspense>
-                <XootSupportBot />
-                </ConciergeProvider>
               </AuthProvider>
             </BrowserRouter>
           </ErrorBoundary>

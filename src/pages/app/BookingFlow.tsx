@@ -239,11 +239,11 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
             placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} />
         </div>
         {website && <label className="xoot-booking-field">Suburb<input list="booking-suburbs" autoComplete="address-level3" maxLength={80} placeholder="Search suburbs" value={suburb} onChange={event => { setSuburb(event.target.value); setAcceptedFingerprint(null); }} /><datalist id="booking-suburbs">{approvedLaunchRegions.map(region => <option key={region} value={region.replace(/\b\w/g, letter => letter.toUpperCase())} />)}</datalist></label>}</div>
-        <button type="button" className="xoot-booking-pill" aria-expanded={showAreaMap} aria-controls="xoot-booking-service-map"
+        {!website && <button type="button" className="xoot-booking-pill" aria-expanded={showAreaMap} aria-controls="xoot-booking-service-map"
           onClick={() => setShowAreaMap(open => !open)}>
           {showAreaMap ? "Hide interactive area map" : "View interactive area map"}
-        </button>
-        {showAreaMap && <div id="xoot-booking-service-map"><InteractiveServiceAreaMap /></div>}
+        </button>}
+        {!website && showAreaMap && <div id="xoot-booking-service-map"><InteractiveServiceAreaMap /></div>}
         {savedDetailsError && <p className="xoot-booking-help">Saved details could not be loaded. You can enter the address above.</p>}
         {properties.length > 0 && <label className="xoot-booking-field">Property account<select value={propertyId} onChange={event => { setPropertyId(event.target.value); setAcceptedFingerprint(null); }}><option value="">Personal booking</option>{properties.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label>}
         <fieldset><legend className="xoot-booking-label">{website ? "What kind of place is it?" : "What kind of place?"}</legend><div className="xoot-booking-property-grid">{Object.entries(BOOKING_PROPERTY_LABELS).map(([id, label]) => { const Icon = propertyIcons[id as keyof typeof propertyIcons]; return <button type="button" key={id} className={`xoot-booking-card ${input.propertyType === id ? "is-selected" : ""}`} aria-pressed={input.propertyType === id} onClick={() => chooseProperty(id as BookingQuoteInput["propertyType"])}>{website && <Icon size={17} />}<strong>{website ? websitePropertyLabels[id as keyof typeof websitePropertyLabels] : label}</strong></button>; })}</div></fieldset>
