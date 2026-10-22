@@ -1,5 +1,20 @@
 # Xoot production checklist
 
+## 22 October 2026 — website delivery verified
+
+[PR #82](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/82) merged as `b6459eca0e1840495ebc1f63b3cb0bee5d757a55`. Vercel production `dpl_5VRTJcw7E2w3EKVyfy8h247v6HDq` is READY and owns `xoot.co.za`/`xoot.vercel.app`; the public [build record](https://xoot.co.za/build-info.json) matches that exact commit (built 22 October 08:59:58 UTC). Monochrome map styling and default-off paid suggestions are delivered as source in the public web build. The relevant built map code has no usable public browser token and retains its unavailable fallback; an existing secret NAME in Vercel does not establish a working map. Owner needs to save a separate restricted public web token, then rebuild. No live tiles/device acceptance or GPS/coverage production activation is claimed.
+
+
+## 22 October 2026 — monochrome map release and cost containment
+
+Founder authorised a visual production release without another acceptance cycle and requested minimum Mapbox costs after a reported USD 6 invoice. The connected Mapbox billing notification identifies Permanent Geocoding; exact invoice quantities/tax remain uninspected. Web/native booking map source now uses a clean monochrome style and preserves attribution. Manual address entry remains available, and the paid suggestion/confirmation flow is **off by default**. Vercel's new `VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED` is saved as `false` for production and preview. Native changes require a separate signed build; no paid build was started.
+
+This web release does not enable private GPS/ETA, activate Gauteng service zones, apply production migrations or change payment/voice flags. PRs [#71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71) and [#81](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/81) remain separate. The founder reports replacing both staging Mapbox credentials with the prepared public-scope token; the current browser connection cannot yet independently verify that replacement. Existing genuine-user JWT/MFA, physical-device, privacy/provider and exact production migration requirements remain open for tracking/coverage activation.
+
+Web/native compilation passed. No new acceptance suite or real provider request was run under the founder's latest instruction. A source commit is not deployment proof: inspect the target production deployment and public `build-info.json` before describing the website as live. [Scope, cost rates and evidence limits](evidence/2026-10-22/monochrome-and-cost-controls.md).
+
+---
+
 ## 21 October 2026 — Mapbox staging status
 
 **Production launch remains blocked.** Gauteng Province is the approved intended geography. PR #81 now includes the exact licensed MDB/OCHA ZA7 source (5,690 vertices), provenance and checksums. Staging has zone migration `20261019185331`, JWT-protected `check-service-coverage` v2 and one inactive Gauteng candidate; approval identity/date are NULL and no worker availability is asserted. PR #71 staging `xoot-job-location` v6 remains JWT protected. Source and PostgreSQL checks do not substitute for authorised JWT/provider/device acceptance.

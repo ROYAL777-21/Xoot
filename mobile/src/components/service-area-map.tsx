@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Colors, Spacing, alpha } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 
 const launchAreas = ['Sandton', 'Bryanston', 'Rosebank', 'Fourways', 'Midrand'];
 
@@ -25,8 +25,8 @@ export function ServiceAreaMap() {
 
 const styles = StyleSheet.create({
   fallback: {
-    backgroundColor: alpha('dark', 'foreground', 0.06),
-    borderColor: alpha('dark', 'foreground', 0.14),
+    backgroundColor: '#ffffff',
+    borderColor: '#e5e5e5',
     borderRadius: 24,
     borderWidth: 1,
     gap: Spacing.sm,
@@ -35,18 +35,18 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
   },
   kicker: {
-    color: Colors.dark.accent,
+    color: '#525252',
     fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase',
   },
   title: {
-    color: Colors.dark.text,
+    color: '#111111',
     fontSize: 20,
     fontWeight: '800',
   },
   body: {
-    color: Colors.dark.textSecondary,
+    color: '#525252',
     fontSize: 14,
     lineHeight: 21,
   },
@@ -57,10 +57,10 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.sm,
   },
   area: {
-    borderColor: alpha('dark', 'accent', 0.34),
+    borderColor: '#e5e5e5',
     borderRadius: 999,
     borderWidth: 1,
-    color: Colors.dark.text,
+    color: '#111111',
     fontSize: 12,
     fontWeight: '800',
     paddingHorizontal: Spacing.lg,
