@@ -1,9 +1,18 @@
 # Xoot production checklist
 
-## 22 October 2026 — website delivery verified
+## 22 October 2026 — current public website delivery verified
 
-[PR #82](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/82) merged as `b6459eca0e1840495ebc1f63b3cb0bee5d757a55`. Vercel production `dpl_5VRTJcw7E2w3EKVyfy8h247v6HDq` is READY and owns `xoot.co.za`/`xoot.vercel.app`; the public [build record](https://xoot.co.za/build-info.json) matches that exact commit (built 22 October 08:59:58 UTC). Monochrome map styling and default-off paid suggestions are delivered as source in the public web build. The relevant built map code has no usable public browser token and retains its unavailable fallback; an existing secret NAME in Vercel does not establish a working map. Owner needs to save a separate restricted public web token, then rebuild. No live tiles/device acceptance or GPS/coverage production activation is claimed.
+[PR #84](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/84) merged the founder-requested launch-overlay removal as `805c02d33a9bca5e047eb7c60e40f93c2770d982`. Vercel `dpl_5K3537fPK2HLJepbLz6pQcEc3Bwr` is READY with `xoot.co.za`/`xoot.vercel.app`; the public build record matches that revision (22 October 14:12:41.711 UTC). Homepage HTTP 200 and absence of the old splash markers in the live startup asset were verified. Public `pk.` token-shaped literals remain in inspected entry/booking assets; no `sk.` literal appeared there. The earlier `b6459eca` delivery lacked the website key; that owner action is now completed and its earlier instruction is superseded. Paid address suggestions remain off. Actual Mapbox loading and private GPS/coverage acceptance remain unverified; their production gates stay closed.
 
+---
+
+## 22 October 2026 — website opens directly without the floating-heart splash
+
+The founder requested removal of the heart animation at website launch. This release removes the `AppLaunch` import and mount from `src/App.tsx`; the router, authentication providers and approved homepage remain in place. Native startup and the shared/video animation assets are outside this website-only change. Website TypeScript, targeted App lint, approved-design/negative-control checks and eight existing routing/splash-parity tests passed. [Scope and evidence](evidence/2026-10-22/website-launch-overlay-removal.md). Verify the production deployment and public [build record](https://xoot.co.za/build-info.json) against the merged release revision before claiming publication.
+
+The public Mapbox website key is already saved in Production Config and its first published build was verified at `56d7c7386c1195b3bea398bb873a20c10f653176`, Vercel `dpl_38BF3JviceQi7hCfY3SkhycxFsx9`. The inspected entry/booking assets contain a public `pk.` token-shaped literal and no `sk.` token-shaped literal; no token was printed. The served booking route uses `strict-origin-when-cross-origin` and retains CSP support for Mapbox API/tiles/events and blob workers. Mapbox's official matching rules allow the configured exact origins to cover site subpaths; this is configuration evidence, not a successful provider request. Paid address suggestions remain explicitly off. **The entire GPS/ETA/service-zone integration is not yet production accepted:** real authorised JWT/MFA/provider/device checks, worker availability, privacy/licensing review and exact migration reconciliation remain required; PRs #71/#81 stay separate and disabled. No further browser key is needed from the founder for this web release.
+
+---
 
 ## 22 October 2026 — monochrome map release and cost containment
 
