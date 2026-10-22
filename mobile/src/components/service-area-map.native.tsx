@@ -1,4 +1,4 @@
-import { Spacing } from '@/constants/theme';
+import { Colors, Spacing, alpha } from '@/constants/theme';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
@@ -82,19 +82,19 @@ export function ServiceAreaMap() {
           <Mapbox.CircleLayer
             id="xoot-launch-points"
             style={{
-              circleColor: '#111111',
+              circleColor: Colors.light.text,
               circleOpacity: 0.92,
               circleRadius: 8,
-              circleStrokeColor: '#ffffff',
+              circleStrokeColor: Colors.light.backgroundElement,
               circleStrokeWidth: 2,
             }}
           />
           <Mapbox.SymbolLayer
             id="xoot-launch-labels"
             style={{
-              textColor: '#111111',
+              textColor: Colors.light.text,
               textField: ['get', 'name'],
-              textHaloColor: '#ffffff',
+              textHaloColor: Colors.light.backgroundElement,
               textHaloWidth: 1.5,
               textOffset: [0, 1.25],
               textSize: 12,
@@ -107,7 +107,7 @@ export function ServiceAreaMap() {
         <Text style={styles.body}>Reference locations only. Booking confirms availability.</Text>
       </View>
       {mapStatus === 'loading' && <View pointerEvents="none" style={styles.loading}>
-        <ActivityIndicator color="#111111" />
+        <ActivityIndicator color={Colors.light.text} />
         <Text style={styles.body} accessibilityLiveRegion="polite">Loading service area map…</Text>
       </View>}
     </View>
@@ -116,8 +116,8 @@ export function ServiceAreaMap() {
 
 const styles = StyleSheet.create({
   shell: {
-    borderColor: '#e5e5e5',
-    backgroundColor: '#ffffff',
+    borderColor: alpha('light', 'foreground', 0.14),
+    backgroundColor: Colors.light.backgroundElement,
     borderRadius: 20,
     borderWidth: 1,
     height: 320,
@@ -127,8 +127,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   overlay: {
-    backgroundColor: '#fffffff2',
-    borderColor: '#e5e5e5',
+    backgroundColor: alpha('light', 'card', 0.95),
+    borderColor: alpha('light', 'foreground', 0.14),
     borderRadius: 16,
     borderWidth: 1,
     top: Spacing.lg,
@@ -146,11 +146,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fffffff2',
+    backgroundColor: alpha('light', 'card', 0.95),
   },
   retry: {
     alignSelf: 'flex-start',
-    backgroundColor: '#111111',
+    backgroundColor: Colors.light.text,
     borderRadius: 22,
     minHeight: 44,
     paddingHorizontal: Spacing.lg,
@@ -158,13 +158,13 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   retryText: {
-    color: '#ffffff',
+    color: Colors.light.backgroundElement,
     fontWeight: '800',
     fontSize: 14,
   },
   fallback: {
-    backgroundColor: '#ffffff',
-    borderColor: '#e5e5e5',
+    backgroundColor: Colors.light.backgroundElement,
+    borderColor: alpha('light', 'foreground', 0.14),
     borderRadius: 24,
     borderWidth: 1,
     gap: Spacing.sm,
@@ -172,18 +172,18 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
   },
   kicker: {
-    color: '#525252',
+    color: alpha('light', 'foreground', 0.72),
     fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase',
   },
   title: {
-    color: '#111111',
+    color: Colors.light.text,
     fontSize: 20,
     fontWeight: '800',
   },
   body: {
-    color: '#525252',
+    color: alpha('light', 'foreground', 0.72),
     fontSize: 14,
     lineHeight: 21,
   },
