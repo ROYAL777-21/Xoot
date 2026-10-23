@@ -1,11 +1,12 @@
 import type { CSSProperties, ReactNode, SVGProps } from "react";
+import { CarePlusSymbol } from "@/components/care-plus/CarePlusSymbol";
 
 export function CleaningBrushIcon({ className, size = 24, ...props }: SVGProps<SVGSVGElement> & { size?: number }) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}><path d="m16 22-1-4" /><path d="M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1" /><path d="M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z" /><path d="m8 22 1-4" /></svg>;
 }
 
 export function CarePlusGlyph() {
-  return <svg viewBox="0 0 32 32" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><g transform="translate(-1 7) scale(0.7) rotate(-6 13.6 17)"><path d="M13.6,27.2 C8.4,23 3,18.6 3,13.4 C3,9.6 5.8,7 9.2,7 C11.4,7 13,8.4 13.8,10.4 C14.6,8.5 16.3,7.2 18.5,7.2 C21.8,7.2 24.3,9.8 24.2,13.4 C24.1,18.4 19,22.9 13.6,27.2 Z" /></g><path d="M24.25,1.5 V14 M18,7.75 H30.5" /></svg>;
+  return <CarePlusSymbol width={11} />;
 }
 
 // Geometry and colours from the uploaded Bloom and WashiTape components.

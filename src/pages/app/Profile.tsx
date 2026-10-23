@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
-import { BookOpen, Briefcase, CalendarCheck, ChartColumn, ChevronRight, CreditCard, Gift, Handshake, House, Lightbulb, Lock, MessageCircle, Plus, ShieldCheck, Sparkles, Users, Wallet, Bell } from "lucide-react";
+import { BookOpen, Briefcase, CalendarCheck, ChartColumn, ChevronRight, CreditCard, Gift, Handshake, House, Lightbulb, Lock, MessageCircle, Plus, ShieldCheck, Users, Wallet, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useConcierge } from "@/contexts/ConciergeContext";
 import { useXootCred } from "@/hooks/useXootCred";
-import { supabase } from "@/integrations/supabase/client";
 import { getHapticsEnabled, setHapticsEnabled, haptic } from "@/lib/haptics";
 import { readProfileOverview } from "./profile-data";
 import { useProfileResource, useConfirmedSave } from "./useProfileResource";
@@ -18,10 +16,9 @@ const dateLabel = (value: string) => {
 
 export default function Profile() {
   const resource = useProfileResource(readProfileOverview);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
-  const concierge = useConcierge();
   const credit = useXootCred();
   const [haptics, setHaptics] = useState(getHapticsEnabled);
   const [hapticError, setHapticError] = useState(false);
@@ -48,9 +45,9 @@ export default function Profile() {
         <ProfileSwitch label="Dark mode" description="Use a darker appearance" checked={resolvedTheme === "dark"} onChange={enabled => { haptic(); setTheme(enabled ? "dark" : "light"); }} />
       </ProfileGroup>
       <ProfileGroup title="Money"><ProfileRow icon={Wallet} title="XootCred" detail="Use it on a booking" value={balance} to="/app/loyalty" />{credit.error && <p className="xoot-you-error">Credit could not be loaded. <button type="button" onClick={credit.refresh}>Try again</button></p>}<ProfileRow icon={CreditCard} title="Payment methods" detail="Saved payment methods are unavailable." disabled /><ProfileRow icon={BookOpen} title="Receipts & invoices" detail="Open a visit to view its payment details" to="/app/bookings" /><ProfileRow icon={Handshake} title="Refer & earn" detail="Referral tracking and fulfilment are unavailable here." disabled /></ProfileGroup>
-      <ProfileGroup title="Your app"><ProfileRow icon={Bell} title="Notifications" detail="Notification settings are unavailable; view your feed on Home." disabled /><ProfileRow icon={CalendarCheck} title="Connected calendars" detail="Calendar connections are unavailable." disabled /><ProfileRow icon={Sparkles} title="Siri & Concierge" detail="Open Concierge · Siri shortcuts are unavailable" disabled={!concierge} onClick={() => concierge?.openConcierge()} /><ProfileRow icon={ChartColumn} title="Widgets" detail="Home-screen widgets are unavailable." disabled /><ProfileRow icon={Briefcase} title="Manage more" detail="Properties and dashboards" to="/app/properties" /><ProfileRow icon={Users} title="Saved Xooters" detail="Your favourites" to="/app/favorites" /></ProfileGroup>
+      <ProfileGroup title="Your app"><ProfileRow icon={Bell} title="Notifications" detail="Notification settings are unavailable; view your feed on Home." disabled /><ProfileRow icon={CalendarCheck} title="Connected calendars" detail="Calendar connections are unavailable." disabled /><ProfileRow icon={ChartColumn} title="Widgets" detail="Home-screen widgets are unavailable." disabled /><ProfileRow icon={Briefcase} title="Manage more" detail="Properties and dashboards" to="/app/properties" /><ProfileRow icon={Users} title="Saved Xooters" detail="Your favourites" to="/app/favorites" /></ProfileGroup>
       <ProfileGroup title="Support"><ProfileRow icon={ShieldCheck} title="XootCover" detail="View the trust and cover policy" to="/app/insurance" /><ProfileRow icon={MessageCircle} title="Get help" detail="Contact support" to="/app/support" /><ProfileRow icon={Lightbulb} title="How Xoot works" to="/#how" /><ProfileRow icon={Lock} title="Privacy & your data" detail="Read the privacy policy" to="/legal/privacy" /></ProfileGroup>
-      <button type="button" className="xoot-you-signout" disabled={logout.saving} onClick={() => { void logout.submit(async () => { setLeaving(() => resource.isCurrent); try { const result = await supabase.auth.signOut(); if (result.error) throw result.error; } catch { if (resource.isCurrent()) setLeaving(null); throw new Error("Sign out failed. Please try again."); } }, () => navigate("/", { replace: true })); }}>Sign out</button>
+      <button type="button" className="xoot-you-signout" disabled={logout.saving} onClick={() => { void logout.submit(async () => { setLeaving(() => resource.isCurrent); try { await signOut(); } catch { if (resource.isCurrent()) setLeaving(null); throw new Error("Sign out failed. Please try again."); } }, () => navigate("/", { replace: true })); }}>Sign out</button>
       {logout.error && <p className="xoot-you-error" role="alert">{logout.error}</p>}
       <span className="xoot-you-footer">Xoot · Johannesburg</span>
     </div>}

@@ -79,7 +79,7 @@ export const ConciergeOmnibox = ({ onAction }: { onAction?: () => void }) => {
     }}>
       <form onSubmit={submit} role="search">
         <label htmlFor="xoot-omnibox" className="sr-only">
-          Search Xoot or ask the Concierge
+          Search Xoot
         </label>
         <div className="relative">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -91,7 +91,7 @@ export const ConciergeOmnibox = ({ onAction }: { onAction?: () => void }) => {
             onKeyDown={onKeyDown}
             maxLength={200}
             autoComplete="off"
-            placeholder={webEnabled ? "Search Xoot, or ask a question..." : "Search Xoot..."}
+            placeholder={canAsk ? "Search Xoot, or ask a question..." : "Search Xoot..."}
             className="native-input rounded-full bg-card/80 pl-10"
           />
         </div>

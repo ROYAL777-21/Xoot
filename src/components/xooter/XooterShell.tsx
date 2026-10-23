@@ -1,8 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Briefcase, GraduationCap, Wallet, ShieldCheck, User, LogOut, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const nav = [
   { to: "/xooter", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -16,7 +17,20 @@ const nav = [
 export const XooterShell = ({ children }: { children: ReactNode }) => {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
-  const handleSignOut = async () => { await signOut(); navigate("/"); };
+  const [signingOut, setSigningOut] = useState(false);
+  const currentOwner = useRef(user?.id);
+  currentOwner.current = user?.id;
+  const handleSignOut = async () => {
+    if (signingOut) return;
+    const owner = user?.id;
+    setSigningOut(true);
+    try {
+      await signOut();
+      if (!currentOwner.current || currentOwner.current === owner) navigate("/", { replace: true });
+    } catch {
+      if (currentOwner.current === owner) toast.error("Sign out failed. Please try again.");
+    } finally { setSigningOut(false); }
+  };
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -55,8 +69,8 @@ export const XooterShell = ({ children }: { children: ReactNode }) => {
 
         <div className="liquid-glass-readable border-t border-border/60 pt-4 mt-4">
           <p className="text-xs text-muted-foreground truncate mb-2">{user?.email}</p>
-          <Button variant="ghost" size="sm" onClick={handleSignOut} className="interactive-press liquid-glass-interactive w-full justify-start rounded-2xl">
-            <LogOut className="h-4 w-4 mr-2" /> Sign out
+          <Button variant="ghost" size="sm" disabled={signingOut} onClick={() => void handleSignOut()} className="interactive-press liquid-glass-interactive w-full justify-start rounded-2xl">
+            <LogOut className="h-4 w-4 mr-2" /> {signingOut ? "Signing out…" : "Sign out"}
           </Button>
         </div>
       </aside>

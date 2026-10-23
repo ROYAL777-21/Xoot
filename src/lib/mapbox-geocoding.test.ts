@@ -110,7 +110,8 @@ describe("Mapbox consumer safety regressions", () => {
     expect(address).toContain("searchEnabled && selectedText !== value");
     expect(address).toContain("Optional: sends what you type to Mapbox");
     expect(address).toContain("aria-pressed={searchEnabled}");
-    expect(address).toContain("availability are not yet confirmed");
+    expect(address).not.toContain("Xoot confirms actual service coverage");
+    expect(address).not.toContain("ShieldCheck");
     expect(address).toContain("no exact coordinates are stored");
     expect(address).toContain("mapboxPermanentAddressUrl(suggestion.label, browserToken)");
     expect(address).toContain("const confirmed = parseMapboxAddressSuggestions(body)");
