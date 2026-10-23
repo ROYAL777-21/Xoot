@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card, CoreIcon, DisplayTitle, Pill, PrimaryAction, Screen, nativeFonts, nativePalette } from '@/components/native-core';
+import { CarePlusBrand } from '@/components/care-plus-brand';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -89,7 +90,7 @@ function CarePlusFlow({ userId }: { userId: string | null }) {
     </View>
     <Card style={s.hero}>
       <View style={s.mark}><CoreIcon name="heart" color={nativePalette.careInk} size={26} /></View>
-      <Text style={s.brand}>Care+</Text>
+      <CarePlusBrand size={34} />
       <DisplayTitle>A calmer home-care rhythm.</DisplayTitle>
       <Text style={s.lede}>Your home has a way of being yours. Care+ helps keep the details, your preferences and your visits connected.</Text>
       {loading ? <ActivityIndicator color={nativePalette.care} /> :
@@ -160,7 +161,6 @@ const s = StyleSheet.create({
   hero: { backgroundColor: nativePalette.careWash, alignItems: 'flex-start', gap: 13, borderRadius: 24, padding: 24 },
   mark: { width: 53, height: 53, borderRadius: 17, backgroundColor: nativePalette.card,
     alignItems: 'center', justifyContent: 'center' },
-  brand: { fontFamily: nativeFonts.displayStrong, fontSize: 34, color: nativePalette.careInk },
   lede: { fontFamily: nativeFonts.body, fontSize: 14, lineHeight: 22, color: nativePalette.inkSoft },
   price: { fontFamily: nativeFonts.displayStrong, fontSize: 24, color: nativePalette.careInk },
   sectionTitle: { fontFamily: nativeFonts.displayStrong, color: nativePalette.ink, fontSize: 26 },

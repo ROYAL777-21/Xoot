@@ -23,13 +23,18 @@ describe("auth security helpers", () => {
   });
 
   it("normalises pasted email OTP input", () => {
-    expect(normaliseOtpCode(" 12 3-4a5b678 ")).toBe("123456");
+    expect(normaliseOtpCode(" 12 3-4a5b678 ")).toBe("12345678");
   });
 
-  it("validates six-digit email OTP codes", () => {
-    expect(getOtpCodeIssue("")).toBe("Enter the 6-digit email code.");
-    expect(getOtpCodeIssue("12345")).toBe("Enter all 6 digits from your email.");
-    expect(getOtpCodeIssue("123456")).toBeNull();
+  it("accepts the provider's complete email codes without truncating a longer code", () => {
+    expect(getOtpCodeIssue("")).toBe("Enter the code from your email.");
+    expect(getOtpCodeIssue("12345")).toBe("Enter the complete code from your email.");
+    for (const code of ["123456", "1234567", "12345678", "123456789", "1234567890"]) {
+      expect(normaliseOtpCode(code)).toBe(code);
+      expect(getOtpCodeIssue(code)).toBeNull();
+    }
+    expect(normaliseOtpCode("12345678901")).toBe("12345678901");
+    expect(getOtpCodeIssue("12345678901")).toBe("Enter the complete code from your email.");
   });
 
   it("requires stronger passwords for signup", () => {

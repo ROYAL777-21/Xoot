@@ -1,0 +1,15 @@
+# Xoot authentication email templates
+
+The production founder acceptance check on 22 October found that Supabase sent the default Magic Link email while the website requested an OTP. `magic-link.html` uses the documented `{{ .Token }}` variable. Its subject is **Your Xoot sign-in code**. A subsequent check confirmed the provider issues **eight digits** while the old client truncated to six. Keep the stronger provider setting and accept the complete code on the client. The template now says complete code and fits longer values. It was saved through the authenticated production dashboard; no user code or email login link is stored here.
+
+Hosted settings: Authentication → Emails → Magic link or OTP. Staging and production must each be configured explicitly; committing HTML does not update a hosted project. Preserve password-recovery and account-confirmation link semantics when changing their branding.
+
+The complete code remains the main website action. A secondary `{{ .ConfirmationURL }}` link preserves compatibility with the current native account screen, which requests email links and has no code input. Neither template variable is a real user credential in source. Native PKCE/deep-link handling still needs a separate signed-device acceptance; this fallback does not certify it.
+
+The production SMTP screen was still using Supabase's built-in email service at inspection. The prepared custom sender is **Xoot <no-reply@xoot.co.za>**, with Brevo SMTP host `smtp-relay.brevo.com` and port `587`. This form is a draft until the founder's provider access, verified sending domain and SMTP credentials are ready. Never save an incomplete SMTP form. SMTP keys are distinct from Brevo API keys; keep them only in the provider and Supabase SMTP password field.
+
+The free Brevo plan has a 300-emails-per-day allowance and a provider footer. Do not purchase an upgrade automatically. Verify `xoot.co.za` in the provider with its exact supplied DNS records, preserve existing DNS/mail records, then save and verify the actual From name/address with a consenting founder. A successful template save alone is not sender authentication or delivered-email acceptance.
+
+On 22 October, the live Brevo Free account, `xoot.co.za` domain authentication and **Xoot <no-reply@xoot.co.za>** sender verification were confirmed. Four additive DNS records preserved all five existing website records. The founder generated/pasted the dedicated SMTP key and saved the production configuration; a reload confirms it is enabled with Xoot sender and Brevo host. The founder specifically approved disabling only SMTP IP restrictions; API IP restrictions remain enabled. No key was read back. These configuration checks still require a fresh owner-completed delivered-code/sign-in test after the client fix is published.
+
+Official references: [Supabase templates](https://supabase.com/docs/guides/auth/auth-email-templates), [Brevo → Supabase SMTP](https://developers.brevo.com/docs/supabase-smtp-integration), [Brevo free-plan limits](https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan).

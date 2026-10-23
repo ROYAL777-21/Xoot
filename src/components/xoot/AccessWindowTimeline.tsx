@@ -83,8 +83,8 @@ export const AccessWindowTimeline = () => {
     shown === "open" ? "Unlocked" : shown === "gone" ? (revoked ? "Revoked" : "Deleted") : "Locked";
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-lg sm:p-8">
-      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+    <div className="xoot-access-window rounded-3xl border border-border bg-card p-6 shadow-lg sm:p-8">
+      <div className="xoot-access-window__grid">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Access window
@@ -135,6 +135,7 @@ export const AccessWindowTimeline = () => {
 
         <div>
           <div
+            data-window-state={shown}
             className={`min-h-[232px] rounded-3xl p-6 transition-colors ${
               shown === "open"
                 ? "bg-background ring-2 ring-primary/30"

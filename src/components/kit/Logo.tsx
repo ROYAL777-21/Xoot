@@ -1,4 +1,5 @@
 import type { CSSProperties, HTMLAttributes } from "react";
+import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 
 const tones = {
   ink: { fg: "var(--xoot-ink-900)", tile: "var(--xoot-violet-500)", tileFg: "#FFFFFF" },
@@ -39,6 +40,6 @@ export function Logo({ variant = "wordmark", size = 32, tone = "ink", member = f
   }
   return <span style={{ display: "inline-flex", alignItems: "center", gap: Math.round(size * .28), ...style }} {...rest}>
     <span style={wordStyle}>Xoot</span>
-    {(variant === "lockup" || member) && <span style={{ display: "inline-flex", alignItems: "center", padding: `${Math.round(size * .11)}px ${Math.round(size * .26)}px`, borderRadius: "var(--xoot-radius-pill)", background: "var(--xoot-careplus-500)", color: "#FFFFFF", fontFamily: "var(--xoot-font-core)", fontSize: Math.max(9, Math.round(size * .32)), fontWeight: 700, letterSpacing: "var(--xoot-track-label)", textTransform: "uppercase", lineHeight: 1 }}>Care<span style={{ fontSize: "1.15em", lineHeight: 1 }}>+</span></span>}
+    {(variant === "lockup" || member) && <span style={{ display: "inline-flex", alignItems: "center", padding: `${Math.round(size * .11)}px ${Math.round(size * .26)}px`, borderRadius: "var(--xoot-radius-pill)", background: "var(--xoot-careplus-500)", color: "#FFFFFF", fontFamily: "var(--xoot-font-core)", fontSize: Math.max(9, Math.round(size * .32)), fontWeight: 700, letterSpacing: "var(--xoot-track-label)", textTransform: "uppercase", lineHeight: 1 }}><CarePlusMark plusClassName="text-inherit" /></span>}
   </span>;
 }

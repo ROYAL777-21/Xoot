@@ -433,3 +433,4 @@
 @media (prefers-reduced-motion: reduce) {
   .xoot-booking-handoff *, .xoot-booking-handoff *::before, .xoot-booking-handoff *::after { animation: none !important; transition: none !important; }
 }
+.xoot-auth-mfa-qr { display: block; width: 220px; max-width: 100%; padding: 12px; border-radius: 14px; background: white; }

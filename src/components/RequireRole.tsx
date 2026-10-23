@@ -7,36 +7,45 @@ import { Loader2 } from "lucide-react";
 type Role = "admin" | "user" | "xooter";
 
 export const RequireRole = ({ role, children }: { role: Role; children: ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, session } = useAuth();
   const location = useLocation();
-  const [hasRole, setHasRole] = useState<boolean | null>(null);
+  const [result, setResult] = useState<{ owner: string; role: Role; allowed: boolean; mfaRequired: boolean; session: typeof session } | null>(null);
 
   useEffect(() => {
-    if (loading) {
-      setHasRole(null);
-      return;
-    }
-    if (!user) { setHasRole(false); return; }
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", role)
-      .maybeSingle()
-      .then(({ data }) => setHasRole(!!data));
-  }, [loading, user, role]);
+    if (loading || !user) return;
+    let active = true;
+    const owner = user.id;
+    void (async () => {
+      try {
+        const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", owner).eq("role", role).maybeSingle();
+        if (!active) return;
+        const allowed = !error && !!data;
+        let mfaRequired = false;
+        if (allowed && role === "admin") {
+          const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (!active) return;
+          mfaRequired = !!assurance.error || assurance.data.currentLevel !== "aal2";
+        }
+        setResult({ owner, role, allowed, mfaRequired, session });
+      } catch {
+        if (active) setResult({ owner, role, allowed: false, mfaRequired: false, session });
+      }
+    })();
+    return () => { active = false; };
+  }, [loading, user, role, session]);
 
-  if (loading || hasRole === null) {
+  if (!loading && !user) return <Navigate to="/auth" state={{ from: location }} replace />;
+  if (loading || !user || result?.owner !== user.id || result.role !== role || result.session !== session) {
     return (
       <div className="min-h-screen grid place-items-center">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
-  if (!user) return <Navigate to="/auth" state={{ from: location }} replace />;
-  if (!hasRole) {
+  if (!result.allowed) {
     if (role === "xooter") return <Navigate to="/xooter/apply" replace />;
     return <Navigate to="/app" replace />;
   }
+  if (result.mfaRequired) return <Navigate to="/auth?reauth=admin-mfa" state={{ from: location }} replace />;
   return <>{children}</>;
 };
