@@ -26,6 +26,75 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "premium-cleaning-doesnt-mean-expensive",
+    title: "Premium doesn't have to mean expensive. And Xoot is proof.",
+    seoTitle: "Premium Cleaning Doesn't Have to Be Expensive | Xoot",
+    description: "Premium cleaning should be about thoughtful service, not an intimidating price tag. Discover Xoot's approach to accessible, professional home care.",
+    excerpt: "Somewhere along the way, we started confusing premium with expensive. At Xoot, we see things differently.",
+    publishedAt: "2026-10-23",
+    readingTime: "4 min read",
+    author: "The Xoot team",
+    primaryKeyword: "affordable premium cleaning South Africa",
+    secondaryKeywords: ["premium cleaning Johannesburg","affordable home cleaning South Africa","professional home cleaning Johannesburg"],
+    areas: ["Johannesburg","Sandton","Bryanston","Rosebank"],
+    sections: [
+      {
+        heading: "Premium is how we treat you. Not how much we charge you.",
+        body: [
+          "Somewhere along the way, we started confusing premium with expensive. A beautiful website? Must cost more. A professional service? Probably not for everyone. Attention to the little details? Surely that is a luxury.",
+          "But at Xoot, premium is not about marble floors or charging more because we can. It is about being able to book home cleaning without spending the afternoon chasing replies. Knowing what you requested. Having a record of your booking. And knowing where to ask for help when something is not right.",
+          "When you find a Xooter who understands your home, having a way to request that person again matters too. Those details sound small until you have dealt with a service where they are missing.",
+        ],
+      },
+      {
+        heading: "A well-looked-after home should not be reserved for the wealthy.",
+        body: [
+          "You should not need an enormous disposable income to have a clean, comfortable home. Maybe you work long hours and want your weekends back. Maybe you are balancing family, studies and everything in between. Maybe you just want one thing off your list.",
+          "Xoot is built around a simple idea: make quality home care easier to access without treating care and professionalism as optional extras.",
+          "The price depends on the type of service, duration and booking details. You can review the applicable amount in the Xoot booking flow before committing. The word premium should not make you assume a service is automatically outside your budget.",
+        ],
+      },
+      {
+        heading: "We are not trying to be the cheapest. We are trying to be worth it.",
+        body: [
+          "The cheapest option is not always the one that gives you the best experience, and the most expensive option is not guaranteed to be the best either. What matters is what you get for your money.",
+          "Xoot is building an experience around home care delivered by vetted independent Xooters, clear booking information and support when you need it. A good service should not leave you doing all the organising yourself.",
+          "And the professionals doing the work deserve to be treated as professionals too. Accessible prices and respect for skilled work should belong in the same conversation.",
+        ],
+      },
+      {
+        heading: "The real luxury is getting your time back.",
+        body: [
+          "Think about your Saturday. The floors need attention. The bathrooms need cleaning. There is laundry to get through, and somehow the kitchen is already a mess again.",
+          "Now imagine being able to use some of that time for something else: seeing friends, taking your family out, resting, or simply doing nothing for once.",
+          "That is the value Xoot wants to create. Not a service you book to impress someone else, but one that makes your own life easier.",
+        ],
+      },
+      {
+        heading: "Your home. Handled.",
+        body: [
+          "We are building Xoot for people who appreciate good service but still care about what they spend. People who want quality without unnecessary extravagance.",
+          "Because premium should describe the standard you experience, not the size of the bill. That is Xoot. Your home. Handled.",
+          "Explore services and check your actual booking price at https://xoot.co.za/.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Does premium cleaning always cost more?",
+        answer: "No. Premium describes an approach to service and care, not a fixed price level. Compare the service scope, booking terms and final total rather than judging by the label alone.",
+      },
+      {
+        question: "How much does a Xoot clean cost?",
+        answer: "Pricing depends on the service, duration, add-ons, booking fees and other details. Check the current total in the Xoot booking flow before confirming; article prices can become outdated.",
+      },
+      {
+        question: "Can I book a Xooter again?",
+        answer: "Xoot supports repeat-booking and favourite-Xooter workflows, subject to the provider's actual availability. A particular Xooter is not guaranteed.",
+      },
+    ],
+  },
+  {
     slug: "stranger-in-your-home-safety-women-south-africa",
     title: "A stranger in your home: the objection nobody wants to say out loud",
     seoTitle: "Home Cleaning Safety For Women | Xoot",
