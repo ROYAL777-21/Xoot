@@ -33,7 +33,10 @@ describe("AccessWindowTimeline", () => {
     render(<AccessWindowTimeline />);
     expect(screen.getByText("1408#")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /revoke access now/i }));
+    const revoke = screen.getByRole("switch", { name: /revoke this Xooter.s access/i });
+    expect(revoke).not.toBeChecked();
+    fireEvent.click(revoke);
+    expect(revoke).toBeChecked();
 
     // Codes gone immediately, and the label distinguishes revoked from the routine deletion.
     expect(screen.queryByText("1408#")).not.toBeInTheDocument();
@@ -45,6 +48,15 @@ describe("AccessWindowTimeline", () => {
     expect(copy).toMatch(/takes effect at the next read/i);
     expect(copy).toMatch(/does not cancel the visit/i);
     expect(copy).toMatch(/does not charge you/i);
+
+    // Turning the illustration back off restores the selected stage, not a sixth stage.
+    fireEvent.click(revoke);
+    expect(revoke).not.toBeChecked();
+    expect(screen.getByText("1408#")).toBeInTheDocument();
+    fireEvent.click(revoke);
+    fireEvent.click(screen.getByText("You save the details"));
+    expect(revoke).not.toBeChecked();
+    expect(screen.getByText("Locked")).toBeInTheDocument();
   });
 
   it("labels the panel as an illustration rather than a screenshot", () => {

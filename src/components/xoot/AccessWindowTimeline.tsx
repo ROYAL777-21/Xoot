@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Camera, Key, Lock, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 /**
  * The access-window demo — ported from the 2026-09-03 handoff
@@ -50,7 +51,7 @@ const STAGES: Stage[] = [
   {
     at: "During",
     title: "Every view is logged",
-    body: "You can see who looked, and when. Screenshots are blocked on that screen.",
+    body: "You can see who looked, and when. Android prevents captures; iOS detects them.",
     state: "open",
   },
   {
@@ -83,17 +84,19 @@ export const AccessWindowTimeline = () => {
     shown === "open" ? "Unlocked" : shown === "gone" ? (revoked ? "Revoked" : "Deleted") : "Locked";
 
   return (
-    <div className="xoot-access-window rounded-3xl border border-border bg-card p-6 shadow-lg sm:p-8">
+    <div className="xoot-access-window">
       <div className="xoot-access-window__grid">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <div className="xoot-access-window__timeline">
+          <div className="xoot-access-window__heading">
+          <p className="xoot-access-window__eyebrow">
             Access window
           </p>
-          <h3 className="mt-2 font-display text-2xl font-bold leading-snug tracking-tight sm:text-3xl">
+          <h3>
             Your codes exist for one visit, then stop existing.
           </h3>
+          </div>
 
-          <ol className="mt-6 space-y-1">
+          <ol className="xoot-access-window__stages">
             {STAGES.map((item, index) => {
               const on = index === stage && !revoked;
               return (
@@ -105,24 +108,19 @@ export const AccessWindowTimeline = () => {
                       setStage(index);
                       setRevoked(false);
                     }}
-                    className={`flex w-full gap-3 rounded-xl p-3 text-left transition-colors ${
-                      on ? "bg-primary/10" : "hover:bg-muted"
-                    }`}
+                    className="xoot-access-window__stage"
+                    data-active={on}
                   >
                     <span
-                      className={`w-16 shrink-0 pt-0.5 font-mono text-[11px] ${
-                        on ? "text-primary" : "text-muted-foreground"
-                      }`}
+                      className="xoot-access-window__time"
                     >
                       {item.at}
                     </span>
-                    <span className="min-w-0">
-                      <span
-                        className={`block text-sm font-bold ${on ? "text-primary" : "text-foreground"}`}
-                      >
+                    <span className="xoot-access-window__stage-copy">
+                      <span className="xoot-access-window__stage-title">
                         {item.title}
                       </span>
-                      <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
+                      <span className="xoot-access-window__stage-body">
                         {item.body}
                       </span>
                     </span>
@@ -133,72 +131,60 @@ export const AccessWindowTimeline = () => {
           </ol>
         </div>
 
-        <div>
+        <div className="xoot-access-window__preview">
           <div
             data-window-state={shown}
-            className={`min-h-[232px] rounded-3xl p-6 transition-colors ${
-              shown === "open"
-                ? "bg-background ring-2 ring-primary/30"
-                : "bg-foreground text-background"
-            }`}
+            className="xoot-access-window__screen"
+            aria-live="polite"
           >
-            <div className="flex items-center justify-between gap-3">
-              <span
-                className={`font-mono text-[10px] uppercase tracking-[0.12em] ${
-                  shown === "open" ? "text-muted-foreground" : "text-background/50"
-                }`}
-              >
+            <div className="xoot-access-window__screen-head">
+              <span className="xoot-access-window__screen-label">
                 Xooter&rsquo;s screen — illustration
               </span>
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                  shown === "open"
-                    ? "bg-primary/10 text-primary"
-                    : "bg-background/15 text-background"
-                }`}
-              >
+              <span className="xoot-access-window__state">
                 <StateIcon className="h-3.5 w-3.5" aria-hidden="true" />
                 {stateLabel}
               </span>
             </div>
 
             {shown === "open" ? (
-              <div className="mt-5 space-y-3">
+              <div className="xoot-access-window__codes">
                 {SAMPLE.map(([label, value]) => (
                   <div key={label}>
-                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
+                    <span className="xoot-access-window__code-label">
                       {label}
                     </span>
-                    <span className="font-mono text-base">{value}</span>
+                    <span className="xoot-access-window__code-value">{value}</span>
                   </div>
                 ))}
-                <p className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+                <p className="xoot-access-window__capture-note">
                   <Camera className="h-3.5 w-3.5" aria-hidden="true" />
-                  Screenshots blocked on this screen
+                  Android capture blocked · this view is logged
                 </p>
               </div>
             ) : (
-              <p className="mt-8 text-sm leading-6 text-background/70">
+              <div className="xoot-access-window__hidden">
+                <div aria-hidden="true" className="xoot-access-window__redacted">
+                  {[0, 1, 2].map(i => <div key={i}><span /><span /></div>)}
+                </div>
+                <p className="xoot-access-window__hidden-note"><Lock size={14} aria-hidden="true" />
                 {shown === "gone"
                   ? revoked
                     ? "Access withdrawn. The Xooter is told it was withdrawn, not why."
                     : "Deleted seven days after the visit. Not archived."
                   : "Encrypted and unreadable. Nothing is released outside the window."}
-              </p>
+                </p>
+              </div>
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setRevoked((value) => !value)}
-            className="mt-4 w-full rounded-2xl border border-border px-4 py-3 text-sm font-semibold transition-colors hover:bg-muted"
-          >
-            {revoked ? "Undo — return to the timeline" : "Revoke access now"}
-          </button>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            Revoking takes effect at the next read, does not cancel the visit, and does not charge
-            you.
-          </p>
+          <div className="xoot-access-window__revoke">
+            <div><label htmlFor="access-demo-revoke">Revoke this Xooter&rsquo;s access</label>
+              <p id="access-demo-revoke-description">{revoked ? "Withdrawn. The visit is unaffected and you are not charged." : "Available at any time, including mid-visit."}</p>
+            </div>
+            <Switch id="access-demo-revoke" checked={revoked} onCheckedChange={setRevoked} aria-describedby="access-demo-revoke-description" />
+          </div>
+          <p className="xoot-access-window__limit">Revoking takes effect at the next read, does not cancel the visit, and does not charge you.</p>
         </div>
       </div>
     </div>
