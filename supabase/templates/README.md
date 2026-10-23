@@ -4,6 +4,8 @@ The production founder acceptance check on 22 October found that Supabase sent t
 
 Hosted settings: Authentication → Emails → Magic link or OTP. Staging and production must each be configured explicitly; committing HTML does not update a hosted project. Preserve password-recovery and account-confirmation link semantics when changing their branding.
 
+The complete code remains the main website action. A secondary `{{ .ConfirmationURL }}` link preserves compatibility with the current native account screen, which requests email links and has no code input. Neither template variable is a real user credential in source. Native PKCE/deep-link handling still needs a separate signed-device acceptance; this fallback does not certify it.
+
 The production SMTP screen was still using Supabase's built-in email service at inspection. The prepared custom sender is **Xoot <no-reply@xoot.co.za>**, with Brevo SMTP host `smtp-relay.brevo.com` and port `587`. This form is a draft until the founder's provider access, verified sending domain and SMTP credentials are ready. Never save an incomplete SMTP form. SMTP keys are distinct from Brevo API keys; keep them only in the provider and Supabase SMTP password field.
 
 The free Brevo plan has a 300-emails-per-day allowance and a provider footer. Do not purchase an upgrade automatically. Verify `xoot.co.za` in the provider with its exact supplied DNS records, preserve existing DNS/mail records, then save and verify the actual From name/address with a consenting founder. A successful template save alone is not sender authentication or delivered-email acceptance.

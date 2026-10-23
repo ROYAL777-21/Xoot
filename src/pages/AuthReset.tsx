@@ -85,7 +85,7 @@ const AuthReset = () => {
       await supabase.auth.signOut();
       haptic("success");
       toast.success("Your Xoot password has been updated. Sign in again to continue.");
-      navigate("/auth", { replace: true });
+      navigate("/auth?mode=password", { replace: true });
     } catch {
       haptic("warning");
       toast.error(getSafePasswordUpdateErrorMessage());
@@ -132,7 +132,7 @@ const AuthReset = () => {
             <p className="font-semibold">This reset link has expired or cannot be used.</p>
             <p className="mt-2">Request a new password reset link from the secure sign-in page.</p>
             <Button asChild variant="outline" className="mt-5 rounded-full">
-              <Link to="/auth">Back to sign-in</Link>
+              <Link to="/auth?mode=password">Back to sign-in</Link>
             </Button>
           </div>
         )}

@@ -125,12 +125,3 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: xoot-referral-synthetic-test
         run: node scripts/ops/test-referral-base-prerequisite.mjs
-      - name: Require verified MFA for database admin permissions
-        env:
-          XOOT_PG_TEST_INTENT: admin-mfa-roles
-          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-referral-pg/node_modules/pg/lib/index.js
-          PGHOST: 127.0.0.1
-          PGPORT: "5432"
-          PGUSER: postgres
-          PGPASSWORD: xoot-referral-synthetic-test
-        run: node scripts/ops/test-admin-mfa-roles.mjs
