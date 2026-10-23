@@ -112,8 +112,8 @@ export const Navbar = () => {
               <Button variant="ghost" size="sm" className="h-9 min-h-0 min-w-0 rounded-full font-semibold" disabled={signingOut} onClick={() => void handleSignOut()}>{signingOut ? "Signing out…" : "Sign out"}</Button>
             </>}
             {!user && (
-            <Button asChild variant="ghost" size="sm" className="min-h-0 min-w-0 h-9 rounded-full font-semibold">
-                <Link to="/auth?mode=signin" onMouseEnter={() => prefetchRoute("/auth")}>Sign in</Link>
+            <Button asChild variant="ghost" size="sm" className="min-h-0 min-w-0 h-9 rounded-full font-semibold hover:bg-[var(--xoot-action-brand)] hover:text-white focus-visible:bg-[var(--xoot-action-brand)] focus-visible:text-white">
+                <Link to="/auth" onMouseEnter={() => prefetchRoute("/auth")}>Sign in</Link>
               </Button>
             )}
             <Button asChild size="sm" className="min-h-0 min-w-0 h-9 rounded-full bg-foreground px-[10px] text-background shadow-md hover:bg-foreground/90">
@@ -160,7 +160,7 @@ export const Navbar = () => {
                 </a>
               ))}
               {!user && (
-                <Link to="/auth?mode=signin" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-semibold text-foreground/80 hover:bg-black/[0.04]">
+                <Link to="/auth" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-semibold text-foreground/80 hover:bg-[var(--xoot-action-brand)] hover:text-white focus-visible:bg-[var(--xoot-action-brand)] focus-visible:text-white">
                   Sign in
                 </Link>
               )}
