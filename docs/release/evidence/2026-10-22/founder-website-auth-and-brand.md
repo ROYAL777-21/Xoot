@@ -1,5 +1,15 @@
 # Founder website, authentication and brand refinements
 
+## Published website — 23 October 2026
+
+- PR #85 squash merge: `81733006f3595f5f6a4ecce95265dd958fd0a898` on `release/xoot-production`, retaining the #86 article/sitemap source that was merged separately while this PR was in review. The public Journal now reports **30** articles; preparation checks below correctly describe the former 29.
+- Exact final source `956139e6074fcdc78da993d1d357430bd4455f3b`: full design/security verification and PostgreSQL referral privilege jobs SUCCESS in [run 39972657444](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/39972657444), public-directory and Vercel SUCCESS. Independent review of the later `9b23875` to `956139e` diff found no actionable defect. The Codex Security report remains scoped to its immutable earlier range; Claude credit failure and CodeRabbit skip remain explicit limitations.
+- Vercel automatic Git build `dpl_3oGR1Jdnu8jMx5PkaFXJPtWFCymW` was READY **preview**, not production. Production environment inspection showed `main` Branch Tracking. Explicit production build `dpl_Bzu712eNxrcFQKYgdCEDWMxh3A4Y` used the exact merged release and production settings, reached READY, and assigned both custom public domains. Direct independent `build-info.json` reads on `xoot.co.za` and `xoot.vercel.app` returned `81733006` and build time `2026-10-23T14:58:22` UTC.
+- Corrected production Branch Tracking to `release/xoot-production`, clicked Save, reloaded and confirmed the persisted field and explanatory text. Domain auto-assignment stayed enabled. Screenshot: `xoot-production-branch-corrected.jpg`.
+- Fresh actual production navigation from the homepage Sign in link reached `/auth` and the existing **Create your account** copy. Computed live pointer-hover background was `rgb(100, 64, 232)` with white text. Screenshots: `xoot-live-signup.jpg`, `xoot-live-purple-signin.jpg` in the task outputs. No signup, login code, payment or booking was submitted by the agent. Google acceptance is founder-reported, not an agent-completed OAuth test.
+- Earlier preview navigation briefly hit an obsolete lazy chunk after its branch alias changed deployment. Refreshing the immutable final preview restored the page; fresh production navigation also rendered correctly. This observation is retained rather than described as a source fix.
+- No production database/schema/role, GPS/ETA/coverage, paid suggestion, provider plan, payment/voice or signed native-build activation occurred. Full marketplace readiness remains open. The canonical production checklist is the current status; dated preparation notes below are historical evidence.
+
 ## Scope and delivery boundary
 
 Prepared on `feature/founder-website-refinements-20261022` from approved website release `805c02d`. The founder requested first-visit sign-up, working sign-in/out, temporary Concierge removal, the supplied Journal/Trust design, consistent Xoot/Care+ marks, administrator access and Laundry & Ironing. This change prepares the website/authentication work. It does not turn on private GPS, service-zone fulfilment, payments, calling or standalone Laundry & Ironing.
