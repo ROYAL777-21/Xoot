@@ -9,6 +9,8 @@
 .xoot-journal-card[data-tint="mist"], .xoot-journal-reader[data-tint="mist"] { --journal-wash: var(--xoot-mist-wash); --journal-ink: var(--xoot-mist-ink); }
 .xoot-journal-card[data-tint="sage"], .xoot-journal-reader[data-tint="sage"] { --journal-wash: var(--xoot-sage-wash); --journal-ink: var(--xoot-sage-ink); }
 .xoot-journal-card[data-tint="blush"], .xoot-journal-reader[data-tint="blush"] { --journal-wash: var(--xoot-blush-wash); --journal-ink: var(--xoot-blush-ink); }
+.xoot-journal-card[data-tint="lilac"], .xoot-journal-reader[data-tint="lilac"] { --journal-wash: var(--xoot-lilac-wash); --journal-ink: var(--xoot-lilac-ink); }
+.xoot-journal .xoot-section-head { max-width: 620px; }
 .xoot-journal-meta { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; color: var(--xoot-text-muted); font-size: var(--xoot-caption); }
 .xoot-journal-kicker { padding: 4px 10px; border-radius: var(--xoot-radius-pill); background: var(--journal-wash); color: var(--journal-ink); font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 .xoot-journal-card h3 { margin: 0; font-family: var(--xoot-font-display); font-size: clamp(20px, 2.3vw, 25px); font-weight: 400; line-height: 1.16; letter-spacing: -.016em; text-wrap: pretty; color: var(--xoot-text-primary); }

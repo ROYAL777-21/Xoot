@@ -22,9 +22,400 @@ export type BlogPost = {
   areas: string[];
   sections: BlogSection[];
   faqs: BlogFaq[];
+  journal?: { label: string; tint: "petal" | "mist" | "sage" | "lilac" | "honey" | "blush" };
 };
 
 export const blogPosts: BlogPost[] = [
+  {
+    slug: "what-four-hours-actually-buys-you",
+    publishedAt: "2026-10-24",
+    author: "The Xoot team",
+    areas: [
+      "Johannesburg",
+      "Sandton",
+      "Bryanston",
+      "Rosebank"
+    ],
+    title: "What four hours actually buys you",
+    seoTitle: "What Can a Cleaner Do in Four Hours? | Xoot",
+    description: "Plan a realistic four-hour home clean in Johannesburg: set priorities, allow for the condition of each room and understand what needs extra time.",
+    excerpt: "A realistic account of what one Xooter finishes in a standard visit — and what they do not.",
+    readingTime: "3 min read",
+    primaryKeyword: "four hour home clean Johannesburg",
+    secondaryKeywords: [
+      "cleaning visit priorities",
+      "standard cleaning scope"
+    ],
+    journal: {
+      label: "Pricing",
+      tint: "petal"
+    },
+    sections: [
+      {
+        heading: "Four hours of work, with four hours of expectations",
+        body: [
+          "A good visit starts with a realistic brief. Four hours is a time allowance, not a promise that every room, window, cupboard and appliance will be finished regardless of condition. A small, regularly maintained flat and a home that has been empty for months are different jobs.",
+          "Tell your Xooter what matters most. If the bathrooms are the priority, put them first in the notes rather than adding them to an already full list at the door."
+        ]
+      },
+      {
+        heading: "What a standard visit can focus on",
+        body: [
+          "A practical brief covers accessible surfaces, kitchen and bathroom cleaning, dusting and floors. The order and depth depend on the home, the service selected and the time available. Clearing surfaces beforehand gives the visit more room for cleaning.",
+          "A full sink, limescale, pet hair and heavy clutter all use time. There is no useful universal minute count for a bathroom: its condition matters as much as its size."
+        ]
+      },
+      {
+        heading: "What needs a separate conversation",
+        body: [
+          "Inside ovens, difficult windows, a move-out clean and accumulated grime can need extra time or a different service. Do not assume they fit into a standard visit because they are in the same house.",
+          "Ordinary cleaning materials and equipment are supplied by the customer unless an approved option says otherwise. Check the selected service and any add-ons before confirming."
+        ]
+      },
+      {
+        heading: "Choose the visit around the work",
+        body: [
+          "Write down the three things you most want finished. Compare that brief with the time and service in the booking flow. Ask support when the scope is unclear, and review the final quote before committing.",
+          "More people and more time are not interchangeable promises. A crew option depends on the selected service, and its confirmed price and scope must be checked in the booking flow."
+        ]
+      }
+    ],
+    faqs: [
+      {
+        question: "Will a four-hour clean finish my whole home?",
+        answer: "That depends on its size, condition and priorities. Four hours is an allowance of work, not a guarantee that every possible task will be completed."
+      },
+      {
+        question: "Should I clear surfaces before the visit?",
+        answer: "Yes, where practical. Moving personal items and clearing the sink leaves more of the booked time for cleaning."
+      }
+    ]
+  },
+  {
+    slug: "what-vetted-should-mean",
+    publishedAt: "2026-10-24",
+    author: "The Xoot team",
+    areas: [
+      "Johannesburg",
+      "Sandton",
+      "Bryanston",
+      "Rosebank"
+    ],
+    title: "What \"vetted\" should mean, and usually does not",
+    seoTitle: "What Should a Vetted Cleaner Mean? | Xoot",
+    description: "Understand the checks behind a vetted cleaner: identity, work eligibility, address, bank details and training, with honest limits on what they prove.",
+    excerpt: "Most platforms use the word. Very few will tell you what they actually checked.",
+    readingTime: "3 min read",
+    primaryKeyword: "vetted cleaner South Africa",
+    secondaryKeywords: [
+      "cleaner identity checks",
+      "home services screening"
+    ],
+    journal: {
+      label: "Trust & safety",
+      tint: "mist"
+    },
+    sections: [
+      {
+        heading: "A word is not a checklist",
+        body: [
+          "Vetted should describe specific checks and their current status. It should not ask you to infer a guarantee from a badge. Ask what was checked, who reviewed it, when it was checked and what happens if something changes.",
+          "Xoot's Trust section distinguishes code that is built from mechanisms proven end to end. The screening pipeline and queues are built, but no Xooter has yet completed that pipeline. The requirements below describe the standard to be met, not a completed screening record."
+        ]
+      },
+      {
+        heading: "Identity, work eligibility and address",
+        body: [
+          "The required identity evidence is a South African ID, or a passport with a valid work permit. Proof of residence must be current. Identity and address evidence establish who a person is and how they can be reached; they do not establish how every future visit will go.",
+          "Documents need review and re-checking. Collecting a file once and leaving it unread is not the same as verification."
+        ]
+      },
+      {
+        heading: "Screening, payment identity and training",
+        body: [
+          "The intended checks include a criminal record check, bank details in the person's own name and completion of required training. A criminal record check has limits: it cannot reveal conduct that was never reported or recorded.",
+          "Bank-name matching protects control over earnings as well as the platform. Training is a gate on accepting work, rather than a decorative certificate. These requirements must be completed and reviewed before activation."
+        ]
+      },
+      {
+        heading: "What to ask before opening the door",
+        body: [
+          "Read the visible status and ask support about anything unclear. A built system, a completed check and a proven support response are three different pieces of evidence.",
+          "Vetting cannot remove every risk. Protected access details, clear booking records and an honest escalation process matter alongside screening. See the current mechanisms and their limitations at https://xoot.co.za/trust-centre."
+        ]
+      }
+    ],
+    faqs: [
+      {
+        question: "Does vetted mean a visit is risk-free?",
+        answer: "No. Specific checks reduce uncertainty but do not guarantee future conduct. Ask for the checks and their status rather than relying on the word alone."
+      },
+      {
+        question: "Has Xoot completed its screening pipeline for Xooters?",
+        answer: "The current published status is that the pipeline and queues are built and no Xooter has completed the pipeline yet. Check the Trust Centre for the latest status."
+      }
+    ]
+  },
+  {
+    slug: "what-a-xooter-takes-home",
+    publishedAt: "2026-10-24",
+    author: "The Xoot team",
+    areas: [
+      "Johannesburg",
+      "Sandton",
+      "Bryanston",
+      "Rosebank"
+    ],
+    title: "The arithmetic behind what a Xooter takes home",
+    seoTitle: "Xooter Earnings, Commission and Booking Fees | Xoot",
+    description: "Understand why a customer booking total differs from Xooter earnings, how commission works and why booking fees and longer visits need clear explanations.",
+    excerpt: "Commission, the booking fee, and why the rate per hour goes down on longer jobs — with a floor under it.",
+    readingTime: "3 min read",
+    primaryKeyword: "Xooter earnings and commission",
+    secondaryKeywords: [
+      "Xoot booking fee",
+      "cleaning platform pay"
+    ],
+    journal: {
+      label: "How we work",
+      tint: "sage"
+    },
+    sections: [
+      {
+        heading: "A booking total is not a payslip",
+        body: [
+          "The amount a customer sees and the amount a Xooter takes home are different figures. Service charges, platform commission, booking fees, approved extras, discounts and any crew allocation need to be understood separately.",
+          "An hourly figure only makes sense when you know which amount it uses and how many hours of whose work it covers. A customer total divided by visit length is not automatically a worker's hourly earnings."
+        ]
+      },
+      {
+        heading: "Commission is a progression, not a flat promise",
+        body: [
+          "Xoot's approved commission schedule starts at 35% for a new Xooter and has a 20% floor. Lower bands require both completed jobs and the required reliability score. Time on the platform alone does not earn a lower band.",
+          "A Xooter should check the band and earnings shown for the actual work. A published progression does not mean a new worker already qualifies for the lowest rate."
+        ]
+      },
+      {
+        heading: "The booking fee is separate",
+        body: [
+          "The booking fee applies to every non-member booking. Care+ membership waives it. It is not a first-booking-only fee, and booking regularly does not itself remove it. Check the current amount in your booking quote.",
+          "Fees and membership rules can change through an approved update. Review the actual booking total before confirmation; use the earnings record to understand the worker's side."
+        ]
+      },
+      {
+        heading: "Longer visits need a floor",
+        body: [
+          "The approved price ladder does not rise in a simple straight line with hours. Setup and travel happen once, but the worker still gives up the full time. That is why the pricing rules include a long-job hourly floor.",
+          "Do not infer an individual payout from an example or assume an extra Xooter costs nothing. The accepted job, current service rules, crew arrangement and earnings record determine the particular calculation. Ask support to explain a mismatch before treating an estimate as a settled amount."
+        ]
+      }
+    ],
+    faqs: [
+      {
+        question: "Is the booking fee charged only once?",
+        answer: "No. The current approved rule charges it on every non-member booking. Care+ membership is the condition that waives it."
+      },
+      {
+        question: "Does every Xooter immediately receive the lowest commission rate?",
+        answer: "No. The starting rate is 35%, with lower bands earned through completed jobs and reliability requirements. The approved floor is 20%."
+      }
+    ]
+  },
+  {
+    slug: "giving-a-stranger-your-gate-code",
+    publishedAt: "2026-10-24",
+    author: "The Xoot team",
+    areas: [
+      "Johannesburg",
+      "Sandton",
+      "Bryanston",
+      "Rosebank"
+    ],
+    title: "Giving a stranger your gate code",
+    seoTitle: "Gate Codes, Access Windows and Honest Limits | Xoot",
+    description: "See how Xoot's access-window design limits gate-code exposure, what Android and iOS capture controls can do and which checks still need proving.",
+    excerpt: "How access windows work, what screenshot blocking really does, and the honest limits of both.",
+    readingTime: "3 min read",
+    primaryKeyword: "sharing gate code with cleaner",
+    secondaryKeywords: [
+      "Xoot access windows",
+      "home access security"
+    ],
+    journal: {
+      label: "Trust & safety",
+      tint: "lilac"
+    },
+    sections: [
+      {
+        heading: "Start with the status",
+        body: [
+          "A gate code is sensitive information. The useful question is who can see it, for how long, and how access can be withdrawn. A reassuring badge is not enough.",
+          "Xoot's access-window mechanism is deployed and encrypted but has not yet been proven by a code stored and read back through the app. The interactive Trust illustration explains the intended behaviour; it is not a live customer booking."
+        ]
+      },
+      {
+        heading: "One assigned visit, for a limited window",
+        body: [
+          "The design releases details to the assigned Xooter 45 minutes before the visit and locks them again when it completes. The intended retention period is seven days after the visit, followed by deletion rather than indefinite archiving.",
+          "That design needs an end-to-end check before it can be relied on as a proven live workflow. Read the current status beside the mechanism, rather than assuming this article announces its activation."
+        ]
+      },
+      {
+        heading: "What screenshots can and cannot do",
+        body: [
+          "Android can prevent capture of the protected screen. On iOS the control detects capture rather than preventing it. The app is designed to blank the screen when backgrounded.",
+          "No software can stop a second phone photographing a screen. Capture controls are one layer; they cannot undo information someone has already seen."
+        ]
+      },
+      {
+        heading: "Withdrawing access and limiting exposure",
+        body: [
+          "The revoke control is designed to take effect at the next read, including mid-visit. Withdrawing access does not cancel the visit or add a charge. It cannot erase a code from a person's memory.",
+          "Avoid sending access codes in ordinary messages. Use the protected flow only once its current status and your actual booking support it. If a code may already be exposed, withdrawing access alone does not change the physical gate code; arrange a change through the person responsible for the property."
+        ]
+      }
+    ],
+    faqs: [
+      {
+        question: "Does screenshot blocking prevent every copy of my code?",
+        answer: "No. iOS supports detection rather than prevention, and a second device can photograph any screen. Timed access and withdrawal reduce exposure but are not absolute guarantees."
+      },
+      {
+        question: "Is the website access-window demo operating on a real booking?",
+        answer: "No. It is labelled as an illustration with sample codes. The mechanism's published status still requires an end-to-end stored-code and readback check."
+      }
+    ]
+  },
+  {
+    slug: "employing-someone-or-booking-visits",
+    publishedAt: "2026-10-24",
+    author: "The Xoot team",
+    areas: [
+      "Johannesburg",
+      "Sandton",
+      "Bryanston",
+      "Rosebank"
+    ],
+    title: "Employing someone full time, or booking visits?",
+    seoTitle: "Employ a Cleaner or Book Visits? | Xoot",
+    description: "Compare employing a domestic worker with booking cleaning visits: continuity, scheduling, scope and the responsibilities that need checking before deciding.",
+    excerpt: "A straight comparison, including the parts that are legally your responsibility either way.",
+    readingTime: "3 min read",
+    primaryKeyword: "employ cleaner or book cleaning service",
+    secondaryKeywords: [
+      "domestic worker South Africa",
+      "cleaning service comparison"
+    ],
+    journal: {
+      label: "Guides",
+      tint: "honey"
+    },
+    sections: [
+      {
+        heading: "Start with the pattern of work",
+        body: [
+          "The right choice depends on the work you need and the relationship you want. Occasional cleaning and an ongoing role in a household are different arrangements. Neither should be sold as a universal answer.",
+          "Write down the days, hours and duties you need before comparing prices. Childcare, cooking and other household responsibilities should not silently be added to a cleaning brief."
+        ]
+      },
+      {
+        heading: "When booked visits may fit",
+        body: [
+          "Visits can fit a changing schedule, an occasional reset or a defined cleaning task. You still need clear service scope, availability and cancellation terms. A platform cannot promise a particular person or replacement until availability is confirmed.",
+          "Compare the full quoted amount and selected service. Do not assume damage cover, childcare or full-time placement is included because another provider offers it."
+        ]
+      },
+      {
+        heading: "When an ongoing employment arrangement may fit",
+        body: [
+          "A household needing consistent, broad support across the week may prefer a direct ongoing relationship. That choice carries employment responsibilities that do not disappear because an arrangement is informal or described as a booking.",
+          "Check the actual relationship and current South African rules. Written terms, wages, leave, UIF and other employer duties need proper attention where applicable. Booking through an app is not, by itself, a legal classification."
+        ]
+      },
+      {
+        heading: "Check the rules before deciding",
+        body: [
+          "The South African Government's UIF guidance says an employee, including a domestic worker, working for you for more than 24 hours a month must be registered for UIF. Use the current official guidance for the arrangement you are considering.",
+          "Official UIF registration guidance: https://www.gov.za/faq/government-services/how-do-i-register-my-domestic-worker-uif. This is a starting point for checking responsibilities, not a substitute for advice about your particular employment arrangement."
+        ]
+      }
+    ],
+    faqs: [
+      {
+        question: "Does using an app remove every employment responsibility?",
+        answer: "No. The actual relationship matters. Check the current rules and responsibilities that apply to your arrangement rather than relying on the label used to book."
+      },
+      {
+        question: "Does Xoot guarantee the same cleaner on every visit?",
+        answer: "No. Favourite-Xooter and repeat-request workflows remain subject to actual availability. A particular Xooter is not guaranteed."
+      }
+    ]
+  },
+  {
+    slug: "why-we-are-only-in-gauteng",
+    publishedAt: "2026-10-24",
+    author: "The Xoot team",
+    areas: [
+      "Johannesburg",
+      "Sandton",
+      "Bryanston",
+      "Rosebank"
+    ],
+    title: "Why we are only in Gauteng",
+    seoTitle: "Why Xoot Focuses on Gauteng First | Xoot",
+    description: "Xoot's launch focus is enabled Johannesburg areas, not a promise of every Gauteng address. Learn why supply density and honest availability come first.",
+    excerpt: "Density beats coverage. A thin map is a bad experience wearing a big number.",
+    readingTime: "2 min read",
+    primaryKeyword: "Xoot service areas Gauteng",
+    secondaryKeywords: [
+      "cleaning Johannesburg service areas",
+      "Xoot launch coverage"
+    ],
+    journal: {
+      label: "How we work",
+      tint: "blush"
+    },
+    sections: [
+      {
+        heading: "Gauteng is a focus, not a province-wide guarantee",
+        body: [
+          "A large map is easy to draw. A reliable service depends on people being available where the work is. Xoot's launch focus is enabled Johannesburg areas within Gauteng, rather than every address in the province.",
+          "The title describes a regional focus. It does not mean every Gauteng booking can be accepted or that a same-week match is guaranteed."
+        ]
+      },
+      {
+        heading: "Why density comes before distance",
+        body: [
+          "Long travel can make a small booking difficult for the customer and the worker. Enough nearby supply matters more than a long list of cities with uncertain availability.",
+          "A service should state the area and actual availability clearly. A booking request, a matching attempt and a confirmed assignment are different steps."
+        ]
+      },
+      {
+        heading: "Check your address in the booking flow",
+        body: [
+          "Launch areas include places such as Sandton, Bryanston, Rosebank, Midrand and Fourways, together with other explicitly enabled areas. An article or marketing map does not override the current address check.",
+          "Enter the actual service address and check the available service before confirming. Being near an enabled suburb does not automatically make an address bookable."
+        ]
+      },
+      {
+        heading: "Expansion has to be earned",
+        body: [
+          "Growing into another area needs enough suitable Xooters, workable travel, support and reliable matching. Announcing a city before that work is ready moves the uncertainty onto the customer.",
+          "Cape Town and wider coverage are expansion possibilities, not a current availability promise or a dated launch announcement. The current booking flow and support team are the place to verify your address."
+        ]
+      }
+    ],
+    faqs: [
+      {
+        question: "Does Xoot currently serve every Gauteng address?",
+        answer: "No. Launch marketing and bookings focus on explicitly enabled Johannesburg areas. Check your actual address in the current booking flow."
+      },
+      {
+        question: "Is Cape Town already available?",
+        answer: "This article does not announce Cape Town availability. Expansion depends on readiness; verify any service address through the current booking flow."
+      }
+    ]
+  },
   {
     slug: "premium-cleaning-doesnt-mean-expensive",
     title: "Premium doesn't have to mean expensive. And Xoot is proof.",
