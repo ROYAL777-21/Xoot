@@ -29,14 +29,15 @@ describe("account entry copy", () => {
     expect(screen.getByRole("heading", { name: "Continue with email" })).toBeInTheDocument();
     expect(screen.getByText("Welcome back")).toBeInTheDocument();
   });
-  it("passes the complete eight-digit email code to Supabase", async () => {
+  it.each(["123456", "12345678"])("passes the complete email code %s to Supabase", async (code) => {
     await act(async () => { render(<MemoryRouter initialEntries={["/auth?mode=signin"]}><Auth /></MemoryRouter>); });
     fireEvent.change(screen.getByLabelText("Your email"), { target: { value: "synthetic@example.test" } });
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send one-time code" })); });
     const input = await screen.findByLabelText("Email code");
-    fireEvent.change(input, { target: { value: "12345678" } });
-    expect(input).toHaveValue("12345678");
+    expect(input).toHaveAttribute("placeholder", "000000");
+    fireEvent.change(input, { target: { value: code } });
+    expect(input).toHaveValue(code);
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Sign me in" })); });
-    expect(auth.verifyOtp).toHaveBeenCalledWith({ email: "synthetic@example.test", token: "12345678", type: "email" });
+    expect(auth.verifyOtp).toHaveBeenCalledWith({ email: "synthetic@example.test", token: code, type: "email" });
   });
 });

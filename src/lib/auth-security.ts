@@ -44,7 +44,7 @@ const isUnsafeRedirectQuery = (params: URLSearchParams) => {
 };
 
 export const normaliseEmail = (email: string) => email.trim().toLowerCase();
-// Supabase supports 6–10 digits; production currently issues eight. Never truncate a code.
+// Accept complete 6–10 digit codes, including codes sent before a provider length change.
 export const normaliseOtpCode = (code: string) => code.replace(/\D/g, "");
 
 export const getEmailIssue = (email: string) => {

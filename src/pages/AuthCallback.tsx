@@ -39,19 +39,29 @@ const AuthCallback = () => {
       }
     };
 
-    const completeAuth = async (rawUrl?: string) => {
+    const completeAuth = async (rawUrl?: string, nativeCallback = false) => {
       if (completed) return;
       try {
         const callbackParams = getCallbackParams(rawUrl);
+        if (callbackParams.has("error") || callbackParams.has("error_code")) throw new Error("Authentication callback failed");
         const code = sanitiseSearchParam(callbackParams.get("code"));
         const redirectPath = getSafeRedirectPath(callbackParams.get("next"), nextPath);
         const isNativePendingCallback = isOptionalNativePlatform() && !code;
-        if (code) {
+        // getSession waits for the client's URL detection. A successful automatic
+        // PKCE exchange removes code from the actual URL; do not consume it twice.
+        const initial = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (initial.error) throw initial.error;
+        let session = initial.data.session;
+        const remainingCode = new URL(window.location.href).searchParams.get("code");
+        if (code && (nativeCallback || remainingCode === code)) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
+          const refreshed = await supabase.auth.getSession();
+          if (refreshed.error) throw refreshed.error;
+          session = refreshed.data.session;
         }
 
-        const { data: { session } } = await supabase.auth.getSession();
         if (!session && isNativePendingCallback) return;
         if (!session) throw new Error("Missing auth session");
 
@@ -59,7 +69,10 @@ const AuthCallback = () => {
         await enableNativeQuickUnlock();
         if (!cancelled) navigate(redirectPath, { replace: true });
       } catch {
-        if (!cancelled) setStatus("error");
+        if (!cancelled) {
+          if (window.location.pathname === "/auth/callback") window.history.replaceState(window.history.state, "", "/auth/callback");
+          setStatus("error");
+        }
       }
     };
 
@@ -70,9 +83,9 @@ const AuthCallback = () => {
         const CapacitorApp = (await importOptionalNativePlugin<CapacitorAppModule>("@capacitor/app"))?.App ?? null;
         if (!CapacitorApp) return;
         const launch = await CapacitorApp.getLaunchUrl();
-        if (launch?.url) void completeAuth(launch.url);
+        if (launch?.url) void completeAuth(launch.url, true);
         appUrlOpenHandle = await CapacitorApp.addListener("appUrlOpen", (event: CapacitorAppUrlOpen) => {
-          if (event?.url) void completeAuth(event.url);
+          if (event?.url) void completeAuth(event.url, true);
         });
       } catch {
         // Browser builds and test environments do not expose Capacitor App listeners.
@@ -110,7 +123,7 @@ const AuthCallback = () => {
         </p>
         {status === "error" && (
           <Button asChild className="mt-6 rounded-full">
-            <Link to="/auth">Back to sign-in</Link>
+            <Link to="/auth?mode=signin">Back to sign-in</Link>
           </Button>
         )}
       </Card>
