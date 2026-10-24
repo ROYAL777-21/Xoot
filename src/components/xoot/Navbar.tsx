@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 import { useAuth } from "@/contexts/AuthContext";
-import { CarePlusGlyph } from "./HeroArtwork";
 import { Logo } from "@/components/kit/Logo";
+import { toast } from "sonner";
 
 const links = [
   { label: "Services", href: "/#services" },
@@ -30,8 +30,26 @@ const pathFor = (href: string) => href.split("#")[0] || "/";
 export const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [signingOut, setSigningOut] = useState(false);
+  const currentOwner = useRef(user?.id);
+  currentOwner.current = user?.id;
   const ctaTo = "/book";
+
+  const handleSignOut = async () => {
+    if (signingOut) return;
+    const owner = user?.id;
+    setSigningOut(true);
+    try {
+      await signOut();
+      if (currentOwner.current && currentOwner.current !== owner) return;
+      setOpen(false);
+      navigate("/auth?mode=signin", { replace: true });
+    } catch {
+      if (currentOwner.current === owner) toast.error("Sign out failed. Please try again.");
+    } finally { setSigningOut(false); }
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8);
@@ -54,7 +72,6 @@ export const Navbar = () => {
   const renderLabel = (label: string) =>
     label === "Care+" ? (
       <span className="inline-flex h-[22px] items-center gap-1 rounded-full bg-care-plus px-[10px] text-[10px] font-extrabold uppercase leading-none tracking-[0.04em] text-care-plus-foreground">
-        <CarePlusGlyph />
         <CarePlusMark plusClassName="text-care-plus-foreground" />
       </span>
     ) : <span>{label}</span>;
@@ -90,8 +107,12 @@ export const Navbar = () => {
           </nav>
 
           <div className="hidden items-center gap-[10px] min-[1080px]:flex">
+            {user && <>
+              <Button asChild variant="ghost" size="sm" className="h-9 min-h-0 min-w-0 rounded-full font-semibold"><Link to="/app">Your account</Link></Button>
+              <Button variant="ghost" size="sm" className="h-9 min-h-0 min-w-0 rounded-full font-semibold" disabled={signingOut} onClick={() => void handleSignOut()}>{signingOut ? "Signing out…" : "Sign out"}</Button>
+            </>}
             {!user && (
-            <Button asChild variant="ghost" size="sm" className="min-h-0 min-w-0 h-9 rounded-full font-semibold">
+            <Button asChild variant="ghost" size="sm" className="min-h-0 min-w-0 h-9 rounded-full font-semibold hover:bg-[var(--xoot-action-brand)] hover:text-white focus-visible:bg-[var(--xoot-action-brand)] focus-visible:text-white">
                 <Link to="/auth" onMouseEnter={() => prefetchRoute("/auth")}>Sign in</Link>
               </Button>
             )}
@@ -103,13 +124,6 @@ export const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2 min-[1080px]:hidden">
-            <Button
-              asChild
-              size="sm"
-              className="xoot-compact-book h-10 rounded-full bg-foreground px-4 text-background shadow-md hover:bg-foreground/90"
-            >
-              <Link to={ctaTo} aria-label="Book now" onClick={() => setOpen(false)}>Book</Link>
-            </Button>
             <button
               type="button"
               className="grid h-10 w-10 place-items-center rounded-full bg-black/[0.07] text-foreground transition-colors hover:bg-black/[0.12]"
@@ -146,10 +160,14 @@ export const Navbar = () => {
                 </a>
               ))}
               {!user && (
-                <Link to="/auth" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-semibold text-foreground/80 hover:bg-black/[0.04]">
+                <Link to="/auth" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-semibold text-foreground/80 hover:bg-[var(--xoot-action-brand)] hover:text-white focus-visible:bg-[var(--xoot-action-brand)] focus-visible:text-white">
                   Sign in
                 </Link>
               )}
+              {user && <>
+                <Link to="/app" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-semibold text-foreground/80 hover:bg-black/[0.04]">Your account</Link>
+                <button type="button" className="rounded-2xl px-4 py-3 text-left text-sm font-semibold text-foreground/80 hover:bg-black/[0.04]" disabled={signingOut} onClick={() => void handleSignOut()}>{signingOut ? "Signing out…" : "Sign out"}</button>
+              </>}
             </div>
           </div>
         )}

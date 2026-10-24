@@ -1,7 +1,9 @@
 import type { LucideIcon } from "lucide-react";
-import { BadgeCheck, Camera, Lock, MessageCircle, Phone, X } from "lucide-react";
+import { BadgeCheck, Camera, Info, Lock, MessageCircle, Phone, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import { canArmSos } from "@/lib/safety";
 import { AccessWindowTimeline } from "./AccessWindowTimeline";
+import "@/styles/trust-handoff.css";
 
 /**
  * "Trust, safety and security" — ported from the 2026-09-03 handoff
@@ -46,7 +48,7 @@ type Mechanism = {
 
 const STATUS_LABEL: Record<Status, string> = {
   live: "Live now",
-  built: "Built and deployed",
+  built: "Built, not yet proven end to end",
   launch: "Not switched on yet",
 };
 
@@ -114,9 +116,9 @@ const MECHANISMS: Mechanism[] = [
   },
   {
     icon: MessageCircle,
-    status: "live",
+    status: "built",
     title: "Nobody swaps phone numbers",
-    body: "Messages and calls run through Xoot. Your number is never shown to a Xooter, and theirs is never shown to you.",
+    body: "Messages are tied to your booking. Masked calling is built but remains switched off until real call acceptance checks pass.",
     points: [
       "Chat is tied to the booking and ends with it",
       "No recording and no transcription, by default and by design",
@@ -143,16 +145,16 @@ const MECHANISMS: Mechanism[] = [
 
 export const TrustMechanisms = () => {
   return (
-    <section id="trust" className="bg-muted/30 py-16 sm:py-20">
-      <div className="container">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+    <section id="trust" className="xoot-public-section xoot-public-section--alt xoot-trust" aria-labelledby="trust-title">
+      <div className="xoot-public-inner">
+        <div className="xoot-section-head">
+          <p className="xoot-section-eyebrow">
             Trust, safety and security
           </p>
-          <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 id="trust-title" className="xoot-section-title">
             Letting someone into your home is the whole ask.
           </h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          <p className="xoot-section-sub">
             So the mechanisms are worth describing precisely — including the ones that are not
             switched on yet, and why.
           </p>
@@ -162,63 +164,42 @@ export const TrustMechanisms = () => {
           <AccessWindowTimeline />
         </div>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-2">
+        <div className="xoot-trust-grid">
           {MECHANISMS.map((mechanism) => {
             const Icon = mechanism.icon;
-            const notLive = mechanism.status === "launch";
             return (
               <div
                 key={mechanism.title}
-                className="flex h-full flex-col rounded-3xl border border-border bg-card p-6"
+                className="xoot-trust-card flex h-full flex-col rounded-3xl"
               >
-                <div className="flex items-start gap-4">
+                <div className="xoot-trust-card__top">
                   <span
-                    className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
                     style={{ background: mechanism.wash, color: mechanism.ink }}
                   >
                     <Icon className="h-5 w-5" strokeWidth={1.9} aria-hidden="true" />
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-display text-xl font-bold tracking-tight">
-                        {mechanism.title}
-                      </h3>
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          notLive
-                            ? "border border-border text-muted-foreground"
-                            : "bg-primary/10 text-primary"
-                        }`}
-                      >
-                        {STATUS_LABEL[mechanism.status]}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      {mechanism.body}
-                    </p>
-                  </div>
+                  <span className="xoot-trust-status" data-status={mechanism.status}>{STATUS_LABEL[mechanism.status]}</span>
                 </div>
+                <div><h3>{mechanism.title}</h3><p className="xoot-trust-card__body">{mechanism.body}</p></div>
 
-                <ul className="mt-4 space-y-2 border-t border-border pt-4 text-sm text-muted-foreground">
+                <ul>
                   {mechanism.points.map((point) => (
-                    <li key={point} className="flex gap-2">
-                      <span aria-hidden="true" className="text-primary">
-                        ·
-                      </span>
+                    <li key={point}>
+                      <span aria-hidden="true" className="xoot-trust-bullet" style={{ background: mechanism.ink }} />
                       <span>{point}</span>
                     </li>
                   ))}
                 </ul>
 
                 {mechanism.note ? (
-                  <p className="mt-4 rounded-2xl bg-muted/60 p-3 text-xs leading-5 text-muted-foreground">
-                    {mechanism.note}
-                  </p>
+                  <div className="xoot-trust-note"><Info size={14} aria-hidden="true" /><p>{mechanism.note}</p></div>
                 ) : null}
               </div>
             );
           })}
         </div>
+        <div className="xoot-trust-policy"><p>The full policy — what we hold, who sees it, how long it stays and how to get it deleted — is written out rather than summarised.</p><div><a className="xoot-action xoot-action--outline" href="/legal/trust-safety">Trust &amp; safety policy</a><a className="xoot-action xoot-action--ghost" href="/legal/popia">POPIA notice</a></div></div>
       </div>
     </section>
   );

@@ -32,6 +32,7 @@ import {
   type SocialAuthProvider,
 } from "@/lib/auth-security";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { AdminMfaVerification } from "@/components/auth/AdminMfaVerification";
 import "@/styles/auth-booking.css";
 
 type AuthView = "signin" | "signup" | "forgot" | "otp";
@@ -43,9 +44,9 @@ type AuthLocationState = {
   };
 };
 
-const getRedirectPath = (state: unknown) => {
+const getRedirectPath = (state: unknown, fallback = "/app") => {
   const from = (state as AuthLocationState | null)?.from;
-  return getSafeRedirectPath(`${from?.pathname ?? "/app"}${from?.search ?? ""}`);
+  return getSafeRedirectPath(`${from?.pathname ?? fallback}${from?.search ?? ""}`);
 };
 
 const providerLabels: Record<SocialAuthProvider, string> = {
@@ -75,7 +76,14 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const [mode, setMode] = useState<AuthView>("otp");
+  const requiresAdminMfa = new URLSearchParams(location.search).get("reauth") === "admin-mfa";
+  const [mode, setMode] = useState<AuthView>(() => {
+    const initial = new URLSearchParams(location.search).get("mode");
+    if (requiresAdminMfa || initial === "signin" || initial === "otp") return "otp";
+    if (initial === "password") return "signin";
+    if (initial === "forgot") return "forgot";
+    return "signup";
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -90,7 +98,7 @@ const Auth = () => {
   const [quickUnlockEnabled, setQuickUnlockEnabled] = useState(false);
   const [quickUnlockLoading, setQuickUnlockLoading] = useState(false);
 
-  const redirectPath = useMemo(() => getRedirectPath(location.state), [location.state]);
+  const redirectPath = useMemo(() => getRedirectPath(location.state, requiresAdminMfa ? "/admin/ops" : "/app"), [location.state, requiresAdminMfa]);
   const authMode = mode === "signup" ? "signup" : "signin";
   const isForgotPassword = mode === "forgot";
   const isOtpMode = mode === "otp";
@@ -105,8 +113,8 @@ const Auth = () => {
   const canSubmit = isSupabaseConfigured && !loading && !providerLoading && !isLocked && !formIssue;
 
   useEffect(() => {
-    if (user && mode !== "forgot") navigate(redirectPath, { replace: true });
-  }, [user, mode, navigate, redirectPath]);
+    if (user && mode !== "forgot" && !requiresAdminMfa) navigate(redirectPath, { replace: true });
+  }, [user, mode, navigate, redirectPath, requiresAdminMfa]);
 
   useEffect(() => {
     let cancelled = false;
@@ -203,7 +211,7 @@ const Auth = () => {
     await enableNativeQuickUnlock();
     haptic("success");
     toast.success("One-time code verified. Welcome to Xoot.");
-    navigate(redirectPath, { replace: true });
+    if (!requiresAdminMfa) navigate(redirectPath, { replace: true });
   };
 
   const handleOtpResend = async () => {
@@ -239,7 +247,7 @@ const Auth = () => {
       if (data.session) {
         await enableNativeQuickUnlock();
         toast.success("Welcome to Xoot. Your account is ready.");
-        navigate(redirectPath, { replace: true });
+        if (!requiresAdminMfa) navigate(redirectPath, { replace: true });
       } else {
         toast.success("Check your email to finish setting up Xoot.");
         setMode("signin");
@@ -255,7 +263,7 @@ const Auth = () => {
     await enableNativeQuickUnlock();
     haptic("success");
     toast.success("Welcome back.");
-    navigate(redirectPath, { replace: true });
+    if (!requiresAdminMfa) navigate(redirectPath, { replace: true });
   };
 
   const handleQuickUnlock = async () => {
@@ -423,13 +431,13 @@ const Auth = () => {
             </div>
           )}
 
-          {isOtpMode && otpSent ? (
+          {user && requiresAdminMfa ? <AdminMfaVerification key={user.id} redirectTo={redirectPath} /> : isOtpMode && otpSent ? (
             <form onSubmit={handleSubmit} className="xoot-auth-form" autoComplete="on" noValidate>
               <button type="button" className="xoot-auth-back" onClick={() => { setOtpSent(false); setOtpCode(""); }}>
                 <ArrowLeft /> Back
               </button>
               <h2>Check your email</h2>
-              <p className="xoot-auth-lede">We sent a six-digit code to <strong>{email}</strong>. No password to remember.</p>
+              <p className="xoot-auth-lede">We sent a code to <strong>{email}</strong>. No password to remember.</p>
               <label className="xoot-auth-field">
                 <span>Email code</span>
                 <Input
@@ -440,8 +448,8 @@ const Auth = () => {
                   autoComplete="one-time-code"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  maxLength={6}
-                  placeholder="000000"
+                  maxLength={10}
+                  placeholder="Email code"
                   enterKeyHint="done"
                   required
                   autoFocus
@@ -556,6 +564,7 @@ const Auth = () => {
 
               <div className="xoot-auth-switches">
                 {isOtpMode && <button type="button" onClick={() => setAuthMode("signin")}>Use your password instead</button>}
+                {isOtpMode && <button type="button" onClick={() => setAuthMode("signup")}>First time here? Start fresh</button>}
                 {mode === "signin" && <button type="button" onClick={resetToEmailCode}>Use a one-time email code</button>}
                 {mode === "signin" && <button type="button" onClick={() => setAuthMode("signup")}>First time here? Start fresh</button>}
                 {mode === "signup" && <button type="button" onClick={resetToEmailCode}>Been here before? Pick up where you left off</button>}

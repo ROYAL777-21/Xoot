@@ -13,7 +13,7 @@ const harness = vi.hoisted(() => ({
   credit: { availableBalance: 12.34, loading: false, error: null as string | null },
   queries: [] as Query[],
 }));
-vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => harness.auth }));
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ ...harness.auth, signOut: async () => { const result = await harness.signOut(); if (result.error) throw result.error; } }) }));
 vi.mock("@/contexts/ConciergeContext", () => ({ useConcierge: () => ({ openConcierge: harness.concierge }) }));
 vi.mock("next-themes", () => ({ useTheme: () => ({ resolvedTheme: "dark", setTheme: harness.theme }) }));
 vi.mock("@/hooks/useXootCred", () => ({ useXootCred: () => ({ ...harness.credit, refresh: harness.creditRefresh }) }));
@@ -65,12 +65,12 @@ describe("Profile handoff integration", () => {
     expect(screen.getByLabelText(/Same Xooter/)).toBeDisabled();
     expect(screen.getByLabelText(/Remind me/)).toBeDisabled();
   });
-  it("changes only supported device preferences and opens the actual Concierge", async () => {
+  it("changes supported device preferences while Concierge is removed", async () => {
     render(<Fixture />); await screen.findByText("Synthetic Person");
     expect(harness.theme).not.toHaveBeenCalled();
     fireEvent.click(screen.getByLabelText(/Dark mode/)); expect(harness.theme).toHaveBeenCalledWith("light");
     fireEvent.click(screen.getByLabelText(/Haptic feedback/)); expect(localStorage.getItem("xoot:haptics-enabled")).toBe("false");
-    fireEvent.click(screen.getByRole("button", { name: /Siri & Concierge/ })); expect(harness.concierge).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("button", { name: /Siri & Concierge/ })).not.toBeInTheDocument(); expect(harness.concierge).not.toHaveBeenCalled();
   });
   it("shows a failed credit read as unavailable and exposes a retry", async () => {
     harness.credit.error = "Synthetic failure"; render(<Fixture />); await screen.findByText("Synthetic Person");

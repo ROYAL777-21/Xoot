@@ -276,11 +276,11 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
             placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} />
         </div>
         {website && <label className="xoot-booking-field">Suburb<input list="booking-suburbs" autoComplete="address-level3" maxLength={80} placeholder="Search suburbs" value={suburb} onChange={event => { setSuburb(event.target.value); setAcceptedFingerprint(null); }} /><datalist id="booking-suburbs">{approvedLaunchRegions.map(region => <option key={region} value={region.replace(/\b\w/g, letter => letter.toUpperCase())} />)}</datalist></label>}</div>
-        <button type="button" className="xoot-booking-pill" aria-expanded={showAreaMap} aria-controls="xoot-booking-service-map"
+        {!website && <button type="button" className="xoot-booking-pill" aria-expanded={showAreaMap} aria-controls="xoot-booking-service-map"
           onClick={() => setShowAreaMap(open => !open)}>
           {showAreaMap ? "Hide interactive area map" : "View interactive area map"}
-        </button>
-        {showAreaMap && <div id="xoot-booking-service-map"><InteractiveServiceAreaMap /></div>}
+        </button>}
+        {!website && showAreaMap && <div id="xoot-booking-service-map"><InteractiveServiceAreaMap /></div>}
         {import.meta.env.VITE_VERIFIED_COVERAGE === "true" && (
           <div className="space-y-2 rounded-xl border border-border p-3">
             <button type="button" className="xoot-booking-pill"

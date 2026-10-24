@@ -75,6 +75,8 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     fireEvent.click(screen.getByRole("button", { name: /Regular cleaning/ })); next();
     fireEvent.change(screen.getByLabelText("Street address"), { target: { value: "14 Example Street" } });
     fireEvent.change(screen.getByLabelText("Suburb"), { target: { value: "Sandton" } });
+    expect(screen.queryByRole("button", { name: "View interactive area map" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Xoot confirms actual service coverage/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Medium 2–3 bedrooms" })).toHaveAttribute("aria-pressed", "true"); next();
     expect(screen.getByLabelText("Upcoming dates").children).toHaveLength(14); next();
     await screen.findByText("No approved Xooters listed yet");
