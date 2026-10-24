@@ -4,7 +4,7 @@ export function publicHtmlPath(path) {
   if (!/^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*(?:\/|$))*$/.test(path)) {
     throw new Error(`Unsafe public render path: ${path}`);
   }
-  return `_public/${path === '/' ? 'home' : path.slice(1)}.html`;
+  return path === '/' ? 'index.html' : `_public/${path.slice(1)}.html`;
 }
 
 export function composePublicHtml(template, { path, html, head, css = [] }) {
@@ -24,14 +24,26 @@ export function composePublicHtml(template, { path, html, head, css = [] }) {
     .replace(/<link\b[^>]*rel=["']canonical["'][^>]*>/gi, '');
   const output = clean.replace('</head>', () => `${head}${styles}</head>`)
     .replace('<div id="root"></div>', () => `<div id="root">${html}</div>`);
-  validatePublicHtml(output, path);
-  return output;
+  const dom = new JSDOM(output);
+  try {
+    validatePublicDocument(dom.window.document, path);
+    dom.window.document.getElementById('root').setAttribute('data-xoot-public-page', path);
+    // createRoot replaces static markup. Prevent input before the real handlers exist,
+    // so a slow module download cannot discard a visitor's address or feedback.
+    for (const control of dom.window.document.querySelectorAll('input, textarea, select, button')) {
+      control.setAttribute('disabled', '');
+    }
+    return dom.serialize();
+  } finally { dom.window.close(); }
 }
 
 export function validatePublicHtml(html, path) {
   const dom = new JSDOM(html); // Parse only: never execute scripts or load resources.
-  try {
-    const doc = dom.window.document;
+  try { validatePublicDocument(dom.window.document, path); }
+  finally { dom.window.close(); }
+}
+
+function validatePublicDocument(doc, path) {
     const requireOne = selector => {
       const elements = doc.querySelectorAll(selector);
       if (elements.length !== 1) throw new Error(`${path}: expected one ${selector}, found ${elements.length}`);
@@ -51,5 +63,4 @@ export function validatePublicHtml(html, path) {
       if (script.getAttribute('type') === 'application/ld+json') JSON.parse(script.textContent);
       else if (!script.getAttribute('src')) throw new Error(`${path}: executable inline script in public HTML`);
     }
-  } finally { dom.window.close(); }
 }

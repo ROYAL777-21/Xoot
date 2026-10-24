@@ -6,6 +6,7 @@ import { JSDOM } from "jsdom";
 import { describe, expect, it, vi } from "vitest";
 import { SEO } from "@/components/SEO";
 import { blogPosts } from "@/lib/blog-posts";
+import { publicPageLoaderFor } from "@/lib/public-page-loader";
 import { publicRoutes, renderPublicPage } from "../../scripts/seo/public-entry";
 import { composePublicHtml, publicHtmlPath, validatePublicHtml } from "../../scripts/seo/public-html.mjs";
 
@@ -53,6 +54,34 @@ describe("public HTML from the actual website", () => {
     }
     expect(() => publicHtmlPath("/../../auth")).toThrow("Unsafe public render path");
   });
+
+  it("serves home as a real index and keeps the private fallback separate", () => {
+    const config = JSON.parse(readFileSync(join(process.cwd(), "vercel.json"), "utf8"));
+    expect(publicHtmlPath("/")).toBe("index.html");
+    expect(config.rewrites.some(rule => rule.source === "/")).toBe(false);
+    expect(config.rewrites.at(-1).destination).toBe("/_spa.html");
+    expect(config.rewrites.at(-1).source).toContain("well-known");
+    expect(readFileSync(join(process.cwd(), "netlify.toml"), "utf8")).toContain('to = "/_spa.html"');
+    expect(readFileSync(join(process.cwd(), "public/.htaccess"), "utf8")).toContain('RewriteRule . /_spa.html [L]');
+  });
+
+  it("preloads every rendered public page and leaves private startup alone", () => {
+    for (const route of publicRoutes) expect(publicPageLoaderFor(route.path)).toBeTypeOf("function");
+    for (const path of ["/auth", "/book", "/app", "/admin", "/xooter/jobs", "/api", "/unknown"]) {
+      expect(publicPageLoaderFor(path)).toBeUndefined();
+    }
+  });
+
+  it("prevents pre-startup input loss without disabling normal navigation", () => serverRender(() => {
+    const rendered = renderPublicPage("/");
+    const dom = new JSDOM(composePublicHtml(template, { path: "/", ...rendered }));
+    try {
+      const controls = [...dom.window.document.querySelectorAll("input, textarea, select, button")];
+      expect(controls.length).toBeGreaterThan(5);
+      expect(controls.every(control => control.hasAttribute("disabled"))).toBe(true);
+      expect(dom.window.document.querySelector('a[href="/book"]')?.hasAttribute("disabled")).toBe(false);
+    } finally { dom.window.close(); }
+  }));
 
   it("preserves scripts/fonts and uses route CSS once; refuses to overwrite rendered HTML", () => serverRender(() => {
     const rendered = renderPublicPage("/articles");

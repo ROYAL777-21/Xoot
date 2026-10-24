@@ -25,7 +25,9 @@ try {
       const item=manifest[key];if(!item)return[];
       return [...(item.css??[]),...(item.imports??[]).flatMap(dep=>collectCss(dep,seen))];
     };
-    // index.html stays the original client shell for auth, booking and account deep links.
+    // Vercel serves the filesystem index before rewrites. Render home there and
+    // retain the untouched client shell separately for private/transactional routes.
+    await writeFile(join(dist,'_spa.html'),template);
     let count=0;
     for(const route of publicRoutes){
       const {html,head}=renderPublicPage(route.path);

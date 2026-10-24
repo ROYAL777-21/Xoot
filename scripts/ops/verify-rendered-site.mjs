@@ -44,7 +44,7 @@ const createArtifactTarget = async (directory) => {
     throw new Error("XOOT_SMOKE_ARTIFACT_ORIGIN must be an HTTPS or HTTP loopback origin without a path, credentials, query or fragment");
   }
   const root = resolve(directory);
-  const index = resolve(root, "index.html");
+  const index = resolve(root, existsSync(resolve(root, "_spa.html")) ? "_spa.html" : "index.html");
   if (!existsSync(index)) throw new Error(`Built artifact is missing ${index}`);
 
   const asset = (url) => {

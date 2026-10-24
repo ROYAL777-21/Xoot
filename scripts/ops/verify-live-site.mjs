@@ -156,14 +156,17 @@ const run = async () => {
           "deployment protection, or an auth wall all look like this. Re-run from a network that\n" +
           "can reach the site before concluding anything about it.",
       );
-      process.exit(2);
+      process.exitCode = 2;
+      return;
     }
     console.error(`\n${failed.length} failed. See docs/release/deploy-hosts.md.`);
-    process.exit(1);
+    // Let in-flight HTTP handles close before exit; forced exit can crash libuv
+    // on Windows instead of returning the intended negative-control status.
+    process.exitCode = 1;
   }
 };
 
 run().catch((error) => {
   console.error(error);
-  process.exit(2);
+  process.exitCode = 2;
 });
