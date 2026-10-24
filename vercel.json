@@ -4,6 +4,20 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm ci --no-audit --prefer-offline",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "xoot.vercel.app" }],
+      "destination": "https://xoot.co.za/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "xoot-royal777-21s-projects.vercel.app" }],
+      "destination": "https://xoot.co.za/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!\\.well-known/).*)",

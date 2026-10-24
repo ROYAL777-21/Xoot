@@ -55,7 +55,11 @@ export function createBookingInput(service: BookingService = "regular", now = Da
   };
 }
 export function bookingExtrasFor(service: BookingService): BookingAddOn[] {
-  return (Object.keys(BOOKING_ADD_ONS) as BookingAddOn[]).filter(key => (BOOKING_ADD_ONS[key].services as readonly string[]).includes(service));
+  const available = (Object.keys(BOOKING_ADD_ONS) as BookingAddOn[])
+    .filter(key => (BOOKING_ADD_ONS[key].services as readonly string[]).includes(service));
+  // Presentation order only. Eligibility, amounts and duration remain unchanged.
+  return [...available.filter(key => key === "ironing" || key === "laundry"),
+    ...available.filter(key => key !== "ironing" && key !== "laundry")];
 }
 /** Presentation only: the server independently resolves and prices the actual service. */
 export function bookingServiceForProperty(input: Pick<BookingQuoteInput, "service" | "propertyType">): BookingService {

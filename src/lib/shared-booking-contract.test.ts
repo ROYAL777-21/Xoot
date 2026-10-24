@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { SERVER_CONTRACTS, BOOKING_MODULES, banner, serverBanner } from "../../scripts/build/sync-shared-native.mjs";
-import { bookingCrewCap, bookingHomeSize, bookingStartSlots, createBookingInput, readBookingQuoteResponse } from "./booking-flow";
+import { bookingCrewCap, bookingExtrasFor, bookingHomeSize, bookingStartSlots, createBookingInput, readBookingQuoteResponse } from "./booking-flow";
 import { crewCapFor, crewHours } from "../../supabase/functions/_shared/pricing";
 import { bookingVisitDurationHours } from "./booking-contract";
 import { parseBookingQuoteInput } from "../../supabase/functions/_shared/booking-quote";
@@ -44,6 +44,24 @@ describe("shared booking contract", () => {
       const input = { ...base, hours, crewSize, addOns: ["inside_fridge"] as const };
       expect(bookingVisitDurationHours({ ...input, addOns: [...input.addOns] })).toBe(crewSize === 1 ? hours + 1 : crewHours(hours + 1, crewSize));
     }
+  });
+  it("prioritises ironing/laundry without introducing extras on unsupported services", () => {
+    expect(bookingExtrasFor("regular").slice(0, 2)).toEqual(["ironing", "laundry"]);
+    expect(bookingExtrasFor("express").slice(0, 2)).toEqual(["ironing", "laundry"]);
+    expect(bookingExtrasFor("office")).toEqual([]);
+    expect(bookingExtrasFor("airbnb")).not.toContain("ironing");
+    expect(bookingExtrasFor("moving")).not.toContain("laundry");
+  });
+  it.each([
+    ["regular", 5.5, 1, ["ironing", "laundry"], 7.5],
+    ["regular", 5.5, 2, ["ironing", "laundry"], 4.5],
+    ["express", 1, 1, ["ironing", "laundry"], 3],
+    ["airbnb", 5, 1, [], 5],
+    ["office", 5, 2, [], 3],
+    ["moving", 8, 4, [], 3],
+  ] as const)("keeps %s visit-time estimates inclusive of extras and crew", (service, hours, crewSize, extras, expected) => {
+    const input = { ...createBookingInput(service), hours, crewSize, addOns: [...extras] };
+    expect(bookingVisitDurationHours(input)).toBe(expected);
   });
   it("offers only server-valid starts with extras, service corrections and crews", () => {
     const now = Date.parse("2026-09-27T06:00:00Z");
