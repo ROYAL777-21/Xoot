@@ -30,11 +30,12 @@ export function createFounderSessionServer({ key, aliases:configuredAliases, bas
   const aliases = validateFounderAliases(configuredAliases);
   const csrf = randomBytes(32).toString('hex');
   const sessions = new Map(), sent = new Map(), attempts = new Map(), busy = new Set();
-  let origin = '', totalSends = 0, bookings = null, run = 'Not run', passedGroups = 0, deadline = 0, closed = false;
+  let activeRun = null, runController = null;
+  let origin = '', totalSends = 0, bookings = null, run = 'Not run', cleanup = 'Not run', passedGroups = 0, deadline = 0, closed = false;
   let message = 'Use these authorised aliases only. Enter codes here, never in chat.';
   const safeEqual = candidate => typeof candidate === 'string' && /^[a-f0-9]{64}$/.test(candidate) && timingSafeEqual(Buffer.from(candidate), Buffer.from(csrf));
   const status = () => ({ target: 'Xoot Staging', accounts: Object.entries(aliases).map(([label, email]) => ({ label, email,
-    signedIn: sessions.has(label), userId: sessions.get(label)?.userId ?? null })), fixturesReady: Boolean(bookings), run, passedGroups,
+    signedIn: sessions.has(label), userId: sessions.get(label)?.userId ?? null })), fixturesReady: Boolean(bookings), run, cleanup, passedGroups,
     adminDispatch: 'Not tested: requires separately authorised AAL1/AAL2 admin sessions' });
   const headers = { 'cache-control':'private, no-store', 'content-security-policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
     'x-frame-options':'DENY', 'x-content-type-options':'nosniff', 'referrer-policy':'strict-origin-when-cross-origin' };
@@ -48,7 +49,7 @@ export function createFounderSessionServer({ key, aliases:configuredAliases, bas
       <style>body{font:16px system-ui;background:#f5f2ff;color:#19141f;max-width:760px;margin:32px auto;padding:16px}h1{color:#6440e8}section{background:white;padding:20px;border-radius:18px;margin:16px 0}button,input{font:inherit;padding:10px;margin:6px 0;max-width:100%;box-sizing:border-box}button{background:#6440e8;color:white;border:0;border-radius:12px}label{display:block}p{overflow-wrap:anywhere}</style>
       <h1>Xoot · Staging only</h1><p>${escape(message)}</p><p>These accounts are for synthetic privacy tests. No production role or worker verification is changed. Sessions stay in this process for at most 45 minutes.</p>${cards}
       <section><h2>Prepared synthetic bookings</h2><form method="post" action="/fixtures">${form('<label>Customer A booking ID <input name="bookingA" required></label><label>Customer B booking ID <input name="bookingB" required></label><button>Use prepared staging fixtures</button>')}</form>
-      <form method="post" action="/run">${form('<label><input type="checkbox" name="consent" value="YES" required> I authorise synthetic staging GPS uploads and cleanup for these four test accounts.</label><button>Run private GPS and ETA checks</button>')}</form><p>Run: ${escape(run)} · Passed groups: ${passedGroups}</p><p>Admin MFA and real devices remain separate checks.</p></section></html>`;
+      <form method="post" action="/run">${form('<label><input type="checkbox" name="consent" value="YES" required> I authorise synthetic staging GPS uploads and cleanup for these four test accounts.</label><button>Run private GPS and ETA checks</button>')}</form><p>Run: ${escape(run)} · Passed groups: ${passedGroups}</p><p>GPS cleanup: ${escape(cleanup)}. If not confirmed, verify fixture expiry before further tests.</p><p>Admin MFA and real devices remain separate checks.</p></section></html>`;
   }
   async function auth(path, body, bearer) {
     const response = await fetcher(new URL(path, STAGING_AUTH), { method:body ? 'POST' : 'GET', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(12_000),
@@ -66,6 +67,7 @@ export function createFounderSessionServer({ key, aliases:configuredAliases, bas
       if (req.headers['content-type']?.split(';')[0] !== 'application/x-www-form-urlencoded') return send(res, 415, 'Form required');
       let text = '';
       for await (const chunk of req) { text += chunk; if (Buffer.byteLength(text) > 1500) return send(res, 413, 'Form too large'); }
+      if (closed || Date.now() >= deadline) return send(res, 410, 'Private form expired');
       const data = new URLSearchParams(text);
       if (!safeEqual(data.get('csrf'))) return send(res, 403, 'Form token rejected');
       if (req.url === '/fixtures') {
@@ -74,14 +76,18 @@ export function createFounderSessionServer({ key, aliases:configuredAliases, bas
         if (run === 'Running') return send(res, 409, 'A run is active');
         bookings = { bookingA:a, bookingB:b }; message = 'Prepared fixture IDs saved in memory.';
       } else if (req.url === '/run') {
+        if (cleanup === 'Not confirmed') return send(res, 409, 'GPS cleanup was not confirmed. Verify staging fixture expiry before another run.');
         if (data.get('consent') !== 'YES' || sessions.size !== 4 || !bookings || run === 'Running') return send(res, 409, 'Four real sessions, two prepared fixtures and synthetic consent are required');
-        if (Date.now() > deadline - 180_000) return send(res, 409, 'This private form is expiring. Restart before a fresh test run.');
+        if (Date.now() > deadline - 210_000) return send(res, 409, 'This private form is expiring. Restart before a fresh test run.');
         if ([...sessions.values()].some(s => s.expiresAt <= Date.now())) return send(res, 409, 'A staging session expired. Sign in again.');
-        run = 'Running'; passedGroups = 0;
+        run = 'Running'; cleanup = 'Pending'; passedGroups = 0;
+        runController = new AbortController();
         const tokens = Object.fromEntries([...sessions].map(([label, s]) => [label, s.token]));
-        void Promise.resolve().then(() => runAcceptance({ tokens, ...bookings, key, base:STAGING_AUTH })).then(result => {
-          run = result.exitCode === 0 ? 'Passed' : 'Failed'; passedGroups = result.passedGroups ?? 0;
-        }, () => { run = 'Failed'; });
+        const signal = runController.signal;
+        activeRun = Promise.resolve().then(() => runAcceptance({ tokens, ...bookings, key, base:STAGING_AUTH, signal })).then(result => {
+          cleanup = result?.cleanupConfirmed === true ? 'Confirmed' : 'Not confirmed';
+          run = result?.exitCode === 0 && result?.cleanupConfirmed === true ? 'Passed' : 'Failed'; passedGroups = result?.passedGroups ?? 0;
+        }, () => { run = 'Failed'; cleanup = 'Not confirmed'; }).finally(()=>{activeRun = null; runController = null;});
       } else {
         const label = data.get('account');
         if (!Object.hasOwn(aliases, label ?? '')) return send(res, 400, 'Only the four authorised aliases are permitted');
@@ -115,25 +121,63 @@ export function createFounderSessionServer({ key, aliases:configuredAliases, bas
       res.writeHead(303, { ...headers, location:'/' }); res.end();
     } catch { message = 'The staging action could not finish. Check SMTP readiness or request the latest code. No credential was saved to disk.'; send(res, 400, message); }
   });
-  let timer;
+  let timer, shutdown;
+  function close() {
+    if (shutdown) return shutdown;
+    closed = true; clearTimeout(timer); runController?.abort();
+    shutdown = Promise.all([activeRun, new Promise(yes=>{if(server.listening)server.close(yes);else yes();})]).finally(()=>{sessions.clear();});
+    return shutdown;
+  }
   return { server, status, async start() { await new Promise((yes, no) => { server.once('error', no); server.listen(0, '127.0.0.1', yes); });
-    origin = `http://127.0.0.1:${server.address().port}`; deadline = Date.now() + lifetimeMs; timer = setTimeout(() => { closed = true; sessions.clear(); server.close(); }, lifetimeMs); timer.unref(); return origin; },
-    async close() { closed = true; clearTimeout(timer); sessions.clear(); if (server.listening) await new Promise(yes => server.close(yes)); } };
+    origin = `http://127.0.0.1:${server.address().port}`; deadline = Date.now() + lifetimeMs; timer = setTimeout(() => { void close(); }, lifetimeMs); timer.unref(); return origin; }, close };
 }
 
-export function runStagingAcceptance({ tokens, bookingA, bookingB, key, base }) {
+export async function cleanupStagingFixtures({ tokens, bookingA, bookingB, key, base }, fetcher = fetch) {
+  if (base !== STAGING_AUTH || !uuid.test(bookingA ?? '') || !uuid.test(bookingB ?? '') || bookingA === bookingB) return false;
+  const results = await Promise.allSettled([[tokens?.workerA,bookingA],[tokens?.workerB,bookingB]].map(async ([token,bookingId]) => {
+    if (typeof token !== 'string' || !token) return false;
+    const response = await fetcher(new URL('/functions/v1/xoot-job-location',STAGING_AUTH), {
+      method:'POST',cache:'no-store',redirect:'error',signal:AbortSignal.timeout(12_000),
+      headers:{'content-type':'application/json',apikey:key,authorization:'Bearer '+token},body:JSON.stringify({action:'stop',bookingId}),
+    });
+    if (!response.ok) return false;
+    const body = await response.json();
+    return body?.success === true && body?.data?.state === 'stopped';
+  }));
+  return results.every(result=>result.status === 'fulfilled' && result.value === true);
+}
+
+export function runStagingAcceptance(input, { spawnChild = spawn, fetcher = fetch, timeoutMs = 180_000 } = {}) {
+  const { tokens, bookingA, bookingB, key, base, signal } = input;
   return new Promise(resolveRun => {
     const env = Object.fromEntries(['PATH','SystemRoot','TEMP','TMP','USERPROFILE'].filter(k => process.env[k]).map(k => [k,process.env[k]]));
     Object.assign(env, { XOOT_TEST_STAGING_URL:base, XOOT_TEST_STAGING_ANON_KEY:key, XOOT_TEST_CUSTOMER_A_JWT:tokens.customerA,
       XOOT_TEST_CUSTOMER_B_JWT:tokens.customerB, XOOT_TEST_WORKER_A_JWT:tokens.workerA, XOOT_TEST_WORKER_B_JWT:tokens.workerB,
       XOOT_TEST_BOOKING_A:bookingA, XOOT_TEST_BOOKING_B:bookingB, XOOT_TEST_SYNTHETIC_CONSENT:'YES' });
-    const child = spawn(process.execPath, [fileURLToPath(new URL('./test-mapbox-private-journey-staging.mjs', import.meta.url))], { env, windowsHide:true, stdio:['ignore','pipe','pipe'] });
+    const child = spawnChild(process.execPath, [fileURLToPath(new URL('./test-mapbox-private-journey-staging.mjs', import.meta.url))], { env, windowsHide:true, stdio:['ignore','pipe','pipe'] });
     let output = '';
     child.stdout.on('data', chunk => { output = (output + chunk).slice(-16_000); });
     child.stderr.on('data', () => {}); // Never expose a child error's potentially private actual/expected payload.
-    const timeout = setTimeout(() => child.kill(), 180_000);
-    const finish = exitCode => { clearTimeout(timeout); resolveRun({ exitCode, passedGroups:output.split('\n').filter(line => line.startsWith('PASS:')).length }); };
-    child.once('error', () => finish(1)); child.once('close', code => finish(code ?? 1));
+    let finishing = false, watchdog, timeout, timedOut = false, aborted = false;
+    const finish = async (exitCode, childStopped = true) => {
+      if (finishing) return;
+      finishing = true; clearTimeout(timeout); clearTimeout(watchdog);
+      signal?.removeEventListener('abort',abort);
+      const cleanupConfirmed = await cleanupStagingFixtures(input,fetcher) && childStopped;
+      resolveRun({ exitCode:cleanupConfirmed && !timedOut && !aborted ? exitCode : 1, cleanupConfirmed,
+        passedGroups:output.split('\n').filter(line => line.startsWith('PASS:')).length });
+    };
+    const kill = () => {
+      try {
+        if (!child.kill()) { void finish(1,false); return; }
+        if (!finishing) watchdog = setTimeout(()=>{void finish(1,false);},5_000);
+      } catch { void finish(1,false); }
+    };
+    const abort = () => { aborted = true; kill(); };
+    child.once('error', () => {void finish(1,!child.pid);}); child.once('close', code => {void finish(code ?? 1);});
+    timeout = setTimeout(()=>{timedOut = true;kill();},timeoutMs);
+    signal?.addEventListener('abort',abort,{once:true});
+    if (signal?.aborted) abort();
   });
 }
 

@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
 import { request } from 'node:http';
-import { createFounderSessionServer, validateFounderAliases } from './staging-founder-sessions.mjs';
+import { EventEmitter } from 'node:events';
+import { createFounderSessionServer, validateFounderAliases, runStagingAcceptance } from './staging-founder-sessions.mjs';
 const FOUNDER_ALIASES = { customerA:'founder-a+xoot-customer@example.test',workerA:'founder-a+xoot-xooter@example.test',customerB:'founder-b+xoot-customer@example.test',workerB:'founder-b+xoot-xooter@example.test' };
 const helpers = [];
 afterEach(async () => { await Promise.all(helpers.splice(0).map(h => h.close())); });
-async function setup(fetcher = async () => Response.json({}), runAcceptance = async () => ({ exitCode:0, passedGroups:3 })) {
+async function setup(fetcher = async () => Response.json({}), runAcceptance = async () => ({ exitCode:0, passedGroups:3, cleanupConfirmed:true })) {
   const helper = createFounderSessionServer({ key:'sb_publishable_synthetic', aliases:FOUNDER_ALIASES, fetcher, runAcceptance }); helpers.push(helper);
   const origin = await helper.start(); const html = await (await fetch(origin)).text(); const csrf = html.match(/name="csrf" value="([a-f0-9]+)"/)[1];
   const post = (path, values, headers = {}) => fetch(origin + path, { method:'POST', redirect:'manual', headers:{ origin, 'content-type':'application/x-www-form-urlencoded', ...headers }, body:new URLSearchParams({ csrf, ...values }) });
@@ -35,7 +36,7 @@ test('requires four aliases forming the two authorised founder pairs', () => {
   assert.throws(()=>validateFounderAliases({...FOUNDER_ALIASES,workerB:FOUNDER_ALIASES.workerA,customerB:FOUNDER_ALIASES.customerA}));
 });
 test('normal Auth sessions stay server-side and runner needs four distinct users, fixtures and consent', async () => {
-  const ids = Object.keys(FOUNDER_ALIASES); let subject = '', ran = false;
+  const ids = Object.keys(FOUNDER_ALIASES); let subject = '', ran = false, runs = 0;
   const fixture = { bookingA:'11111111-1111-4111-8111-111111111111', bookingB:'22222222-2222-4222-8222-222222222222' };
   const fetcher = async (url, options) => {
     assert.equal(url.origin, 'https://fxmxyabdjqviqbcxmvlp.supabase.co');
@@ -46,7 +47,7 @@ test('normal Auth sessions stay server-side and runner needs four distinct users
     const id = `00000000-0000-4000-8000-00000000000${ids.indexOf(subject)+1}`;
     return Response.json({ id, email:FOUNDER_ALIASES[subject], is_anonymous:false });
   };
-  const { origin, post } = await setup(fetcher, async input => { ran = true; assert.equal(new Set(Object.values(input.tokens)).size,4); assert.equal(input.bookingA,fixture.bookingA); return {exitCode:0,passedGroups:4}; });
+  const { origin, post } = await setup(fetcher, async input => { ran = true; assert.equal(new Set(Object.values(input.tokens)).size,4); assert.equal(input.bookingA,fixture.bookingA); return {exitCode:0,passedGroups:4,cleanupConfirmed:++runs===1}; });
   assert.equal((await post('/run', {consent:'YES'})).status, 409);
   for (const account of ids) {
     assert.equal((await post('/request', {account})).status, 303);
@@ -61,6 +62,68 @@ test('normal Auth sessions stay server-side and runner needs four distinct users
   assert.equal((await post('/run',{consent:'YES'})).status,303);
   await new Promise(resolve => setImmediate(resolve)); assert.equal(ran,true);
   assert.equal((await (await fetch(origin+'/status')).json()).run,'Passed');
+  assert.equal((await post('/run',{consent:'YES'})).status,303);
+  await new Promise(resolve=>setImmediate(resolve));
+  const failedCleanup = await (await fetch(origin+'/status')).json();
+  assert.equal(failedCleanup.run,'Failed');assert.equal(failedCleanup.cleanup,'Not confirmed');
+  assert.ok((await (await fetch(origin)).text()).includes('GPS cleanup: Not confirmed'));
+  assert.equal((await post('/run',{consent:'YES'})).status,409);
+});
+
+const runnerInput = {base:'https://fxmxyabdjqviqbcxmvlp.supabase.co',key:'sb_publishable_synthetic',
+  tokens:{customerA:'synthetic-ca',workerA:'synthetic-wa',customerB:'synthetic-cb',workerB:'synthetic-wb'},
+  bookingA:'11111111-1111-4111-8111-111111111111',bookingB:'22222222-2222-4222-8222-222222222222'};
+function syntheticChild() {
+  const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+  child.kill = () => {queueMicrotask(()=>child.emit('close',null));return true;};
+  return child;
+}
+test('a killed timeout still confirms parent-owned STOP for both fixtures without returning stderr', async () => {
+  const stops = [];
+  const result = await runStagingAcceptance(runnerInput,{timeoutMs:5,spawnChild:()=>{
+    const child=syntheticChild();queueMicrotask(()=>{child.stdout.emit('data','PASS: synthetic group\n');child.stderr.emit('data','private-synthetic-payload');});return child;
+  },fetcher:async (url,options)=>{
+    assert.equal(url.origin,runnerInput.base);stops.push(JSON.parse(options.body));
+    return Response.json({success:true,data:{state:'stopped'}});
+  }});
+  assert.deepEqual(stops.map(stop=>stop.bookingId).sort(),[runnerInput.bookingA,runnerInput.bookingB]);
+  assert.ok(stops.every(stop=>stop.action==='stop'));
+  assert.equal(result.cleanupConfirmed,true);assert.equal(result.exitCode,1);assert.equal(result.passedGroups,1);
+  assert.ok(!JSON.stringify(result).includes('private-synthetic-payload'));
+});
+test('parent cleanup runs once on duplicate child terminal events and requires both STOP confirmations', async () => {
+  let calls=0;
+  const result = await runStagingAcceptance(runnerInput,{spawnChild:()=>{
+    const child=syntheticChild();queueMicrotask(()=>{child.emit('error',new Error('synthetic'));child.emit('close',1);});return child;
+  },fetcher:async()=>{calls++;return Response.json({success:true,data:{state:calls===1?'stopped':'unavailable'}});}});
+  assert.equal(calls,2);assert.equal(result.cleanupConfirmed,false);assert.equal(result.exitCode,1);
+});
+test('cancelling an active child awaits its parent cleanup before resolving', async () => {
+  const controller=new AbortController();let releaseCleanup, killed=false;
+  const pending=runStagingAcceptance({...runnerInput,signal:controller.signal},{spawnChild:()=>{
+    const child=syntheticChild();const kill=child.kill;child.kill=()=>{killed=true;return kill();};return child;
+  },fetcher:async()=>{await new Promise(yes=>{releaseCleanup ??= yes;if(releaseCleanup!==yes)yes();});return Response.json({success:true,data:{state:'stopped'}});}});
+  controller.abort();await new Promise(yes=>setImmediate(yes));assert.equal(killed,true);
+  let settled=false;void pending.then(()=>{settled=true;});assert.equal(settled,false);
+  releaseCleanup();const result=await pending;assert.equal(result.cleanupConfirmed,true);assert.equal(result.exitCode,1);
+});
+test('closing the helper cancels its active runner and awaits cleanup before clearing sessions', async () => {
+  let account='', killed=false;const release=[];
+  const {helper,post}=await setup(async(url,options)=>{
+    if(url.pathname.endsWith('/verify')) {account=Object.entries(FOUNDER_ALIASES).find(([,email])=>email===JSON.parse(options.body).email)[0];return Response.json({access_token:'synthetic-'+account,expires_at:Math.floor(Date.now()/1000)+3600});}
+    if(url.pathname.endsWith('/user'))return Response.json({id:`00000000-0000-4000-8000-00000000000${Object.keys(FOUNDER_ALIASES).indexOf(account)+1}`,email:FOUNDER_ALIASES[account],is_anonymous:false});
+    return Response.json({});
+  },input=>runStagingAcceptance(input,{spawnChild:()=>{
+    const child=syntheticChild();const kill=child.kill;child.kill=()=>{killed=true;return kill();};return child;
+  },fetcher:async()=>{await new Promise(yes=>release.push(yes));return Response.json({success:true,data:{state:'stopped'}});}}));
+  for(const account of Object.keys(FOUNDER_ALIASES)) {await post('/request',{account});await post('/verify',{account,code:'123456'});}
+  await post('/fixtures',{bookingA:runnerInput.bookingA,bookingB:runnerInput.bookingB});
+  await post('/run',{consent:'YES'});
+  const closing=helper.close();await new Promise(yes=>setImmediate(yes));
+  assert.equal(killed,true);assert.equal(release.length,2);
+  assert.equal(helper.status().accounts.filter(account=>account.signedIn).length,4);
+  release.forEach(yes=>yes());await closing;
+  assert.equal(helper.status().cleanup,'Confirmed');assert.equal(helper.status().accounts.filter(account=>account.signedIn).length,0);
 });
 test('rejects an Auth user outside the approved alias and does not reveal the returned token', async () => {
   const { post, origin } = await setup(async url => Response.json(url.pathname.endsWith('/verify') ? { access_token:'do-not-expose',expires_at:Math.floor(Date.now()/1000)+3600 } : url.pathname.endsWith('/user') ? { id:'11111111-1111-4111-8111-111111111111',email:'other@example.test' } : {}));
