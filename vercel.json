@@ -19,6 +19,12 @@
     }
   ],
   "rewrites": [
+    { "source": "/", "destination": "/_public/home.html" },
+    { "source": "/articles", "destination": "/_public/articles.html" },
+    { "source": "/articles/:slug([a-z0-9-]+)", "destination": "/_public/articles/:slug.html" },
+    { "source": "/care-plus", "destination": "/_public/care-plus.html" },
+    { "source": "/trust-centre", "destination": "/_public/trust-centre.html" },
+    { "source": "/legal/:page(terms|privacy|popia|refunds-cancellations|account-deletion|cookies|acceptable-use|ai-concierge|care-plus-terms|xooter-terms)", "destination": "/_public/legal/:page.html" },
     {
       "source": "/((?!\\.well-known/).*)",
       "destination": "/index.html"

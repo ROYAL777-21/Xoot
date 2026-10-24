@@ -15,6 +15,7 @@ import { createServer } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, resolve, sep } from "node:path";
 import { chromium } from "playwright";
+import { publicHtmlPath } from "../seo/public-html.mjs";
 
 const args = process.argv.slice(2);
 const at = (name) => { const i = args.indexOf(name); return i === -1 ? null : args[i + 1]; };
@@ -42,7 +43,10 @@ const target = artifact ? await (async () => {
     catch { response.writeHead(400); response.end(); return; }
     const resolved = resolve(root, "." + pathname);
     const safe = (resolved === root || resolved.startsWith(root + sep));
-    const actual = safe && existsSync(resolved) && statSync(resolved).isFile() ? resolved : index;
+    let snapshot;
+    try { snapshot = resolve(root, publicHtmlPath(pathname)); } catch { /* Assets and private URLs use the existing shell. */ }
+    const actual = safe && existsSync(resolved) && statSync(resolved).isFile() ? resolved :
+      snapshot && existsSync(snapshot) ? snapshot : index;
     response.writeHead(200, { "Content-Type": mime[extname(actual)] ?? "application/octet-stream" });
     response.end(readFileSync(actual));
   });

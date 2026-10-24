@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, resolve, sep } from "node:path";
 import { chromium } from "playwright";
+import { publicHtmlPath } from "../seo/public-html.mjs";
 
 const args = process.argv.slice(2);
 const option = (name) => {
@@ -50,7 +51,10 @@ const createArtifactTarget = async (directory) => {
     const pathname = decodeURIComponent(new URL(url, artifactOrigin).pathname);
     const requested = resolve(root, `.${pathname}`);
     const insideRoot = requested === root || requested.startsWith(`${root}${sep}`);
-    const file = insideRoot && existsSync(requested) && statSync(requested).isFile() ? requested : index;
+    let snapshot;
+    try { snapshot = resolve(root, publicHtmlPath(pathname)); } catch { /* Assets and private URLs use the existing shell. */ }
+    const file = insideRoot && existsSync(requested) && statSync(requested).isFile() ? requested :
+      snapshot && existsSync(snapshot) ? snapshot : index;
     return { contentType: mimeTypes[extname(file)] ?? "application/octet-stream", body: readFileSync(file) };
   };
 

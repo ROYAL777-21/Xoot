@@ -10,7 +10,7 @@ import {
 } from "./config/public-environment.mjs";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ command, mode, isSsrBuild }) => {
   const sourceEnvironment = { ...loadEnv(mode, process.cwd(), ""), ...process.env };
   const resolution = resolvePublicEnvironment(sourceEnvironment, defaults);
   const configIssue = getPublicConfigIssue(resolution.env, {
@@ -21,7 +21,7 @@ export default defineConfig(({ command, mode }) => {
   });
   if (configIssue) throw new Error(`Xoot environment configuration error: ${configIssue}`);
 
-  const enableSentryUpload = Boolean(process.env.VITE_SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN);
+  const enableSentryUpload = !isSsrBuild && Boolean(process.env.VITE_SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN);
 
   return {
     base: "/",
@@ -43,6 +43,7 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     build: {
+      manifest: true,
       target: "es2020",
       sourcemap: enableSentryUpload ? "hidden" : false,
       rolldownOptions: {
