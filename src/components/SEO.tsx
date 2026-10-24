@@ -84,7 +84,7 @@ export const SEO = ({
       <meta name="twitter:image" content={image} />
       {jsonLd ? (
         <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
+          {JSON.stringify(jsonLd).replace(/</g, "\\u003c")}
         </script>
       ) : null}
     </Helmet>

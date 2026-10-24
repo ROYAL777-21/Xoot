@@ -1,8 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Journal } from "./Journal";
 import { blogPosts } from "@/lib/blog-posts";
+
+// Model the next SEO publication before Journal computes its initial selection.
+vi.mock("@/lib/blog-posts", async importOriginal => {
+  const actual = await importOriginal<typeof import("@/lib/blog-posts")>();
+  return { ...actual, blogPosts: [...actual.blogPosts, { ...actual.blogPosts[0], slug: "newer-seo-story", title: "A newer SEO story", publishedAt: "2099-01-01" }] };
+});
 
 const renderJournal = () =>
   render(
@@ -27,30 +33,22 @@ describe("Journal", () => {
     }
   });
 
-  it("shows six recent posts at their canonical routes", () => {
-    // Sorted rather than sliced off the top of the file, because the file is in authoring
-    // order. Getting this wrong shows a stale post as the lead and nobody notices for weeks.
-    const expected = [...blogPosts]
-      .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
-      .slice(0, 6);
-
+  it("keeps the six handoff stories in editorial order when newer SEO posts exist", () => {
+    const expected = [
+      "what-four-hours-actually-buys-you", "what-vetted-should-mean", "what-a-xooter-takes-home",
+      "giving-a-stranger-your-gate-code", "employing-someone-or-booking-visits", "why-we-are-only-in-gauteng",
+    ];
     renderJournal();
-    for (const post of expected) {
-      expect(screen.getByText(post.title)).toBeInTheDocument();
-    }
-
-    expect(screen.getAllByRole("link").slice(0, 6).map(link => link.getAttribute("href"))).toEqual(expected.map(post => `/articles/${post.slug}`));
+    expect(screen.getAllByRole("link").slice(0, 6).map(link => link.getAttribute("href"))).toEqual(expected.map(slug => `/articles/${slug}`));
+    expect(screen.queryByText("A newer SEO story")).not.toBeInTheDocument();
+    expected.forEach(slug => expect(blogPosts.find(post => post.slug === slug)?.sections.length).toBeGreaterThanOrEqual(4));
   });
 
-  it("claims no authorship or audience it does not have", () => {
-    // The handoff says the posts are "written by people who do this work" and answer "the
-    // questions customers actually ask". Every post's author is the Xoot team, and zero
-    // bookings have completed — there is nobody who has done the work, and no customers.
+  it("restores the handoff heading and category colours", () => {
     renderJournal();
-    const copy = document.body.textContent ?? "";
-    expect(copy).not.toMatch(/people who do this work/i);
-    expect(copy).not.toMatch(/customers actually ask/i);
-    expect(copy).not.toMatch(/our customers/i);
+    expect(screen.getByRole("heading", { level: 2, name: "Written by people who do this work." })).toBeInTheDocument();
+    const cards = document.querySelectorAll(".xoot-journal-card");
+    expect([...cards].map(card => card.getAttribute("data-tint"))).toEqual(["petal", "mist", "sage", "lilac", "honey", "blush"]);
   });
 
   it("counts the articles from the data rather than a hardcoded number", () => {

@@ -62,7 +62,7 @@
 .xoot-hero-address-input {
   width: 100%; height: 44px; padding: 0 14px; border: 0; border-radius: var(--xoot-radius-xs);
   background: var(--xoot-surface-card); box-shadow: inset 0 0 0 1px var(--xoot-border-color);
-  font-size: 15px; color: var(--xoot-text-primary);
+  font-size: 16px; color: var(--xoot-text-primary);
 }
 .xoot-hero-address > div:first-child > span:last-child,
 .xoot-hero-schedule span.uppercase { font-size: 10px; line-height: 1.2; letter-spacing: .1em; color: var(--xoot-text-muted); }

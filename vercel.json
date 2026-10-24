@@ -4,13 +4,39 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm ci --no-audit --prefer-offline",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "xoot.vercel.app" }],
+      "destination": "https://xoot.co.za/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "xoot-royal777-21s-projects.vercel.app" }],
+      "destination": "https://xoot.co.za/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
+    { "source": "/articles", "destination": "/_public/articles.html" },
+    { "source": "/articles/:slug([a-z0-9-]+)", "destination": "/_public/articles/:slug.html" },
+    { "source": "/care-plus", "destination": "/_public/care-plus.html" },
+    { "source": "/trust-centre", "destination": "/_public/trust-centre.html" },
+    { "source": "/legal/:page(terms|privacy|popia|refunds-cancellations|account-deletion|cookies|acceptable-use|ai-concierge|care-plus-terms|xooter-terms)", "destination": "/_public/legal/:page.html" },
     {
       "source": "/((?!\\.well-known/).*)",
-      "destination": "/index.html"
+      "destination": "/_spa.html"
     }
   ],
   "headers": [
+    {
+      "source": "/_spa.html",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
+        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

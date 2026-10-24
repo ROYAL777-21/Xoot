@@ -14,7 +14,7 @@ export const HeroWordFlip = () => {
   const [index, setIndex] = useState(0);
   const [ratio, setRatio] = useState(1);
   const [reducedMotion, setReducedMotion] = useState(
-    () => typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   const host = useRef<HTMLSpanElement>(null);
   const sizer = useRef<HTMLSpanElement>(null);
