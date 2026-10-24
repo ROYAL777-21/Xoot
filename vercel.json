@@ -19,12 +19,24 @@
     }
   ],
   "rewrites": [
+    { "source": "/articles", "destination": "/_public/articles.html" },
+    { "source": "/articles/:slug([a-z0-9-]+)", "destination": "/_public/articles/:slug.html" },
+    { "source": "/care-plus", "destination": "/_public/care-plus.html" },
+    { "source": "/trust-centre", "destination": "/_public/trust-centre.html" },
+    { "source": "/legal/:page(terms|privacy|popia|refunds-cancellations|account-deletion|cookies|acceptable-use|ai-concierge|care-plus-terms|xooter-terms)", "destination": "/_public/legal/:page.html" },
     {
       "source": "/((?!\\.well-known/).*)",
-      "destination": "/index.html"
+      "destination": "/_spa.html"
     }
   ],
   "headers": [
+    {
+      "source": "/_spa.html",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
+        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

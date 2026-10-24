@@ -15,6 +15,7 @@ import { createServer } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, resolve, sep } from "node:path";
 import { chromium } from "playwright";
+import { publicHtmlPath } from "../seo/public-html.mjs";
 
 const args = process.argv.slice(2);
 const at = (name) => { const i = args.indexOf(name); return i === -1 ? null : args[i + 1]; };
@@ -34,7 +35,7 @@ const mime = {
 let server;
 const target = artifact ? await (async () => {
   const root = resolve(artifact);
-  const index = resolve(root, "index.html");
+  const index = resolve(root, existsSync(resolve(root, "_spa.html")) ? "_spa.html" : "index.html");
   if (!existsSync(index)) throw new Error("Built site is missing dist/index.html");
   server = createServer((request, response) => {
     let pathname;
@@ -42,7 +43,10 @@ const target = artifact ? await (async () => {
     catch { response.writeHead(400); response.end(); return; }
     const resolved = resolve(root, "." + pathname);
     const safe = (resolved === root || resolved.startsWith(root + sep));
-    const actual = safe && existsSync(resolved) && statSync(resolved).isFile() ? resolved : index;
+    let snapshot;
+    try { snapshot = resolve(root, publicHtmlPath(pathname)); } catch { /* Assets and private URLs use the existing shell. */ }
+    const actual = safe && existsSync(resolved) && statSync(resolved).isFile() ? resolved :
+      snapshot && existsSync(snapshot) ? snapshot : index;
     response.writeHead(200, { "Content-Type": mime[extname(actual)] ?? "application/octet-stream" });
     response.end(readFileSync(actual));
   });
@@ -70,6 +74,10 @@ try {
       // The old 'main' homepage has the generic Xoot heading, but not this marker.
       const home = page.locator('[data-xoot-design-version="2026-09-handoff"]');
       await home.waitFor({ state: "visible", timeout: 15_000 });
+      // Static content is visible before startup. A successful input action also
+      // waits for the real enabled React controls before inspecting the live layout.
+      const field = page.getByRole("textbox", { name: "Service address" });
+      await field.fill("Sandton", { timeout: 15_000 });
       const sections = ["#gift", "#careplus", ".xoot-feedback-card"];
       for (const selector of sections) {
         if (await home.locator(selector).count() !== 1) {
@@ -79,9 +87,7 @@ try {
       const giftY = await home.locator("#gift").evaluate(el => el.getBoundingClientRect().top + window.scrollY);
       const careY = await home.locator("#careplus").evaluate(el => el.getBoundingClientRect().top + window.scrollY);
       if (!(giftY < careY)) throw new Error("Gift/Care+ visual section order reverted");
-      const field = page.getByRole("textbox", { name: "Service address" });
       await field.waitFor({ state: "visible", timeout: 15_000 });
-      await field.fill("Sandton");
       await page.evaluate(() => window.scrollBy(0, 80));
       await field.pressSequentially(" Johannesburg");
       const typed = await field.inputValue();

@@ -131,8 +131,8 @@ if (!existsSync(vercelPath)) {
 
   // A Vite SPA with no rewrite 404s on every deep link — including every link in a marketing post.
   const rewrites = vercel.rewrites ?? [];
-  if (!rewrites.some((rule) => rule.destination === "/index.html")) {
-    findings.push("Vercel has no SPA rewrite to /index.html — every deep link would 404");
+  if (!rewrites.some((rule) => rule.destination === "/_spa.html")) {
+    findings.push("Vercel has no rewrite to the separate client shell /_spa.html — private deep links would break");
   }
   // `/.well-known/*` must be served as real files. Rewriting them to index.html breaks Universal
   // Links and App Links, which fail silently: the app simply stops opening from a link.
