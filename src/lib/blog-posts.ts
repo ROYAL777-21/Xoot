@@ -198,7 +198,7 @@ export const blogPosts: BlogPost[] = [
       {
         heading: "The booking fee is separate",
         body: [
-          "The current approved booking fee is R39 on every non-member booking. Care+ membership waives it. It is not a first-booking-only fee, and booking regularly does not itself remove it.",
+          "The booking fee applies to every non-member booking. Care+ membership waives it. It is not a first-booking-only fee, and booking regularly does not itself remove it. Check the current amount in your booking quote.",
           "Fees and membership rules can change through an approved update. Review the actual booking total before confirmation; use the earnings record to understand the worker's side."
         ]
       },
@@ -212,7 +212,7 @@ export const blogPosts: BlogPost[] = [
     ],
     faqs: [
       {
-        question: "Is the R39 booking fee charged only once?",
+        question: "Is the booking fee charged only once?",
         answer: "No. The current approved rule charges it on every non-member booking. Care+ membership is the condition that waives it."
       },
       {
