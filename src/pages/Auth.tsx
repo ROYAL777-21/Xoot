@@ -449,7 +449,7 @@ const Auth = () => {
                   inputMode="numeric"
                   pattern="[0-9]*"
                   maxLength={10}
-                  placeholder="Email code"
+                  placeholder="000000"
                   enterKeyHint="done"
                   required
                   autoFocus

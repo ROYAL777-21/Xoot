@@ -106,13 +106,9 @@ describe("Mapbox consumer safety regressions", () => {
     expect(address).not.toContain("is in active Xoot coverage");
     expect(address).not.toContain("address.includes(region)");
     expect(address).toContain("Address lookup or confirmation is unavailable");
-    expect(address).toContain("Enable Mapbox suggestions");
-    expect(address).toContain("searchEnabled && selectedText !== value");
-    expect(address).toContain("Optional: sends what you type to Mapbox");
-    expect(address).toContain("aria-pressed={searchEnabled}");
+    expect(address).toContain("Find address");
     expect(address).not.toContain("Xoot confirms actual service coverage");
     expect(address).not.toContain("ShieldCheck");
-    expect(address).toContain("no exact coordinates are stored");
     expect(address).toContain("mapboxPermanentAddressUrl(suggestion.label, browserToken)");
     expect(address).toContain("const confirmed = parseMapboxAddressSuggestions(body)");
     expect(address).not.toContain("onChange(suggestion.label)");

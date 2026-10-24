@@ -10,8 +10,8 @@ export function mapboxAddressSearchUrl(raw: string, token: string): string | nul
   if (!token.startsWith('pk.') || query.length < 4 || query.length > 160 || query.split(' ').length > 20) return null;
   const params = new URLSearchParams({
     q: query, country: 'za', language: 'en', limit: '5',
-    types: 'address,street,neighborhood,locality,place',
-    autocomplete: 'true', permanent: 'false', access_token: token,
+    types: 'address',
+    autocomplete: 'false', permanent: 'false', access_token: token,
   });
   return `https://api.mapbox.com/search/geocode/v6/forward?${params.toString()}`;
 }

@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import { BadgeCheck, Camera, Info, Lock, MessageCircle, Phone, X } from "lucide-react";
-import { Link } from "react-router-dom";
 import { canArmSos } from "@/lib/safety";
 import { AccessWindowTimeline } from "./AccessWindowTimeline";
 import "@/styles/trust-handoff.css";
@@ -77,7 +76,7 @@ const MECHANISMS: Mechanism[] = [
     icon: Camera,
     status: "built",
     title: "Screenshots blocked",
-    body: "The screen showing your access details cannot be captured, and it blanks when the app goes to the background or into the app switcher.",
+    body: "Android prevents capture of the access-details screen. iOS detects capture. The screen blanks when the app goes to the background or into the app switcher.",
     points: [
       "Android: capture is prevented outright",
       "iOS: capture is detected and logged, and you are told",
@@ -143,7 +142,8 @@ const MECHANISMS: Mechanism[] = [
   },
 ];
 
-export const TrustMechanisms = () => {
+export const TrustMechanisms = ({ page = false }: { page?: boolean }) => {
+  const Heading = page ? "h1" : "h2";
   return (
     <section id="trust" className="xoot-public-section xoot-public-section--alt xoot-trust" aria-labelledby="trust-title">
       <div className="xoot-public-inner">
@@ -151,18 +151,16 @@ export const TrustMechanisms = () => {
           <p className="xoot-section-eyebrow">
             Trust, safety and security
           </p>
-          <h2 id="trust-title" className="xoot-section-title">
+          <Heading id="trust-title" className="xoot-section-title">
             Letting someone into your home is the whole ask.
-          </h2>
+          </Heading>
           <p className="xoot-section-sub">
             So the mechanisms are worth describing precisely — including the ones that are not
             switched on yet, and why.
           </p>
         </div>
 
-        <div className="mt-10">
-          <AccessWindowTimeline />
-        </div>
+        <AccessWindowTimeline />
 
         <div className="xoot-trust-grid">
           {MECHANISMS.map((mechanism) => {
@@ -199,7 +197,7 @@ export const TrustMechanisms = () => {
             );
           })}
         </div>
-        <div className="xoot-trust-policy"><p>The full policy — what we hold, who sees it, how long it stays and how to get it deleted — is written out rather than summarised.</p><div><a className="xoot-action xoot-action--outline" href="/legal/trust-safety">Trust &amp; safety policy</a><a className="xoot-action xoot-action--ghost" href="/legal/popia">POPIA notice</a></div></div>
+        <div className="xoot-trust-policy"><p>For the personal information we hold, how it is used and how to request access or deletion, read our privacy policy and POPIA notice.</p><div><a className="xoot-action xoot-action--outline" href="/legal/privacy">Privacy policy</a><a className="xoot-action xoot-action--ghost" href="/legal/popia">POPIA notice</a></div></div>
       </div>
     </section>
   );

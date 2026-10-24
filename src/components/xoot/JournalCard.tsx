@@ -4,6 +4,7 @@ import type { BlogPost } from "@/lib/blog-posts";
 import "@/styles/journal.css";
 
 export function journalTheme(post: BlogPost) {
+  if (post.journal) return post.journal;
   const text = `${post.title} ${post.primaryKeyword}`.toLowerCase();
   if (/safety|vett|trust|gate code|access detail/.test(text)) return { label: "Trust & safety", tint: "mist" };
   if (/care\+|care plus|membership|memory/.test(text)) return { label: "Care+", tint: "blush" };
