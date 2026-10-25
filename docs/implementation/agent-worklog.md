@@ -21,6 +21,10 @@ other has already tried.
 
 ---
 
+## HOLDING — 25 October 2026 — single-founder staging acceptance aliases
+
+Founder now explicitly authorises four staging-only aliases of the same founder email and has an iPhone 12 and Android tablet available. Claim the loopback Auth helper, its tests and parameterised fixture alias validation to accept distinct A/B role aliases from one authorised inbox, retaining ordinary real Auth sessions, exact staging target, pair/role binding, CSRF, private code entry and cleanup. No assumption of verification, Auth impersonation, real worker approval, paid build or production role change. Release owns acceptance delivery; correctness-owned guards change only for the founder-approved identity arrangement.
+
 ## RELEASED CLAIM — 25 October 2026 — authorised staging alias sign-in helper
 
 Source is retained in PR71 at 8e491fd after the approved release-base merge. The loopback helper and parent STOP/cleanup fix were independently reviewed; 11 synthetic checks pass. The separately reviewed parameterised fixture SQL was not executed. Staging Brevo SMTP is configured; only customerA completed a real normal Auth sign-in, and no helper tokens were persisted. Founder approval of the other aliases is recorded separately from actual Auth evidence. Fresh staging readback confirms xoot-job-location v11 ACTIVE with JWT enabled; private GPS table RLS is on, client policies and rows are zero, anon/authenticated have no CRUD privileges and service_role retains server privileges. No four-JWT/customer isolation, real GPS/ETA, STOP/purge, admin AAL2, worker or device acceptance is claimed. The helper is stopped; no synthetic booking/consent fixture, role, trust flag, production migration or tracking activation was written. Current checklist records the remaining gates and free-plan constraints. All helper/fixture/reconciliation/evidence path claims are released; preparation paragraphs below are historical.
