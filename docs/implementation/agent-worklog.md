@@ -21,7 +21,9 @@ other has already tried.
 
 ---
 
-## HOLDING — 25 October 2026 — align native config to verified Expo project
+## RELEASED CLAIM — 25 October 2026 — align native config to verified Expo project
+
+Independent review closed d7c84d8 with no blocker: existing identity checks 5/5, immutable development/preview/staging/production identity comparisons and owner fallback/override checks passed. It confirms no displayed-name, bundle, scheme or update-target change. Remote ownership comes from the primary agent's actual authenticated dashboard readback; the reviewer performed no provider action. Native auth's preceding ten-file review separately cleared 21 synthetic assertions. Source and evidence are pushed in stacked PR94; no signed build, device/provider acceptance or production activation. Apple remains pending by founder choice. This narrow configuration/evidence claim is released; required CI remains blocked without any authorised plan or budget increase.
 
 Prepared alignment: app.config.ts and the non-secret example point to don-pacho777 / zoot / b4c6e0b8-e2e7-40c5-b259-3b34c79be30b. Actual local Expo config resolution returns that exact triple, Xoot Preview, and unchanged za.co.xoot.app.preview iOS/Android IDs. Existing identity suite passes 5/5; mobile TypeScript and scoped config lint pass. This resolves configuration locally, without changing the remote project or starting a build. Founder requests keeping the current GitHub plan/spending limit; the suspected usage cap remains an external CI block, not approval to bypass checks or buy minutes.
 

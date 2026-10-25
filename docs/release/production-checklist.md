@@ -29,7 +29,8 @@ PR88 Trust/Journal, PR89 address/auth corrections and PR90 public crawlability. 
   fonts. A final 390px widget check found and corrected missing side padding.
 - GitHub release/security/PostgreSQL jobs **did not start**. The actual check annotation reports
   failed recent account payments or a spending-limit issue. No budget, billing setting or plan was
-  changed. Vercel preview success and local tests do not replace these required CI results. Keep
+  changed; the founder explicitly requested preserving the current plan and spending limit.
+  Vercel preview success and local tests do not replace these required CI results. Keep
   the PR unmerged until the checks run; do not post a fabricated successful status.
 
 ### Email and authentication
@@ -58,6 +59,8 @@ PR88 Trust/Journal, PR89 address/auth corrections and PR90 public crawlability. 
   project ID `b4c6e0b8-e2e7-40c5-b259-3b34c79be30b` linked to the correct GitHub repository. That
   ID matches app config. PR94 now aligns its slug/owner with that existing project (`zoot` /
   `don-pacho777`), while keeping the displayed Xoot name, bundle IDs and callback schemes.
+  The follow-up at `d7c84d8` independently cleared identity/override and all-environment comparisons;
+  the existing identity suite passed 5/5 and local Expo configuration resolved the expected project.
   The Apple account has no active Developer Program membership, and the founder explicitly chose
   to keep Apple pending. Signing/associations, authorised devices and signed-build acceptance remain
   required; no project was renamed and no build or membership was purchased.
