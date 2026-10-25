@@ -7,6 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { PropertyProfileCard, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
 import { haptic } from "@/lib/haptics";
 import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
+import { XootCharacter } from "@/components/kit/XootCharacter";
+import "@/styles/account-handoff.css";
 
 const turnoverTasks = [
   "Lockbox code checked inside the app",
@@ -28,8 +30,9 @@ const AirbnbHostDashboard = () => {
   const guestReadyMode = household.readyModes.find((mode) => mode.id === "guest-ready");
 
   return (
-    <div className="container max-w-6xl py-8 lg:py-12">
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="container max-w-6xl py-8 lg:py-12 xoot-account-dashboard">
+      <div className="xoot-account-dashboard-hero mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <span className="xoot-account-dashboard-character" aria-hidden="true"><XootCharacter scene="host" size={170} motion="none" /></span>
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-sage/15 px-3 py-1">
             <BedDouble className="h-3 w-3 text-sage-deep" />
@@ -105,8 +108,8 @@ const AirbnbHostDashboard = () => {
               <p className="mt-1 font-display text-2xl font-bold">{hostProperties[0]?.readinessScore ?? 0}%</p>
             </div>
           </div>
-          <Button className="mt-5 rounded-full" variant="outline" onClick={() => haptic("selection")}>
-            <Camera className="mr-2 h-4 w-4" /> Review photo proof
+          <Button asChild className="mt-5 rounded-full" variant="outline" onClick={() => haptic("selection")}>
+            <Link to="/app/bookings"><Camera className="mr-2 h-4 w-4" /> View visit records</Link>
           </Button>
         </Card>
       </div>

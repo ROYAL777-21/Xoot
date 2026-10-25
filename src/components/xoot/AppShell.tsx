@@ -14,7 +14,7 @@ const tabs = [
 export const AppShell = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
   const showTabs = ["/app", "/app/bookings", "/app/loyalty", "/app/profile"].includes(pathname);
-  const hasOwnBack = pathname === "/app/book" || pathname === "/app/notifications" || pathname.startsWith("/app/bookings/") || pathname.startsWith("/app/profile/");
+  const hasOwnBack = pathname === "/app/book" || pathname === "/app/notifications" || pathname === "/app/widgets" || pathname.startsWith("/app/bookings/") || pathname.startsWith("/app/profile/");
 
   return <div className="xoot-app-shell">
     <main className={showTabs ? "xoot-app-main has-tabs" : "xoot-app-main"}>
