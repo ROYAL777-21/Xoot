@@ -18,6 +18,18 @@ const sqlAsync = input => new Promise((resolve,reject) => {
   child.on('error',reject);child.on('close',code=>code===0?resolve(out.trim()):reject(new Error(err)));
   child.stdin.end(input);
 });
+function heldSql(input) {
+  const child=spawn('docker',args,{stdio:['pipe','pipe','pipe']}); let out='',err='',ready;
+  const marker=new Promise((resolve,reject)=>{ready=resolve;child.once('error',reject);});
+  const done=new Promise((resolve,reject)=>{
+    child.stdout.on('data',chunk=>{out+=chunk;if(out.includes('XOOT_ROOM_LOCK_HELD'))ready();});
+    child.stderr.on('data',chunk=>{err+=chunk;});child.on('error',reject);
+    child.on('close',code=>code===0?resolve(out.trim()):reject(new Error(err)));
+  });
+  done.catch(()=>{});
+  child.stdin.write(input+" select 'XOOT_ROOM_LOCK_HELD';\n");
+  return {marker,done,finish:commit=>child.stdin.end(commit?'commit;\n':'rollback;\n')};
+}
 const pause = ms => new Promise(resolve=>setTimeout(resolve,ms));
 assert.equal(sql("select count(*) from information_schema.tables where table_schema in ('public','auth');"),'0','Test requires a pristine local database');
 sql(`create extension pg_cron;
@@ -105,13 +117,21 @@ async function awaitState(app,condition) {
 }
 for(const endFirst of [true,false]) {
   clear();room=pair();
-  const first=sqlAsync(`set application_name='xoot-voice-first'; begin; ${endFirst?event(room,'conference-end',5):event(room,'participant-join',2,'d')} select pg_sleep(3); commit;`);
-  await awaitState('xoot-voice-first',"wait_event='PgSleep'");
-  const second=sqlAsync(`set application_name='xoot-voice-second'; ${endFirst?event(room,'participant-join',2,'d'):event(room,'conference-end',5)}`);
-  await awaitState('xoot-voice-second',"wait_event_type='Lock'");
-  const [,result]=await Promise.all([first,second]);
-  assert.equal(result,endFirst?'f':'t');
-  assert.equal(sql(`select count(*) from public.xoot_in_app_voice_sessions where room_id='${room}' and status='completed';`),'2');
+  const first=heldSql(`set application_name='xoot-voice-first'; begin; ${endFirst?event(room,'conference-end',5):event(room,'participant-join',2,'d')}`);
+  let second, released=false;
+  try {
+    let deadline;try{await Promise.race([first.marker,new Promise((_,reject)=>{deadline=setTimeout(()=>reject(new Error('First room-lock marker timed out')),15000);})]);}finally{clearTimeout(deadline);}
+    second=sqlAsync(`set application_name='xoot-voice-second'; ${endFirst?event(room,'participant-join',2,'d'):event(room,'conference-end',5)}`);
+    second.catch(()=>{});
+    await awaitState('xoot-voice-second',"wait_event_type='Lock'");
+    first.finish(true);released=true;
+    const [,result]=await Promise.all([first.done,second]);
+    assert.equal(result,endFirst?'f':'t');
+    assert.equal(sql(`select count(*) from public.xoot_in_app_voice_sessions where room_id='${room}' and status='completed';`),'2');
+  } finally {
+    if(!released)first.finish(false);
+    await Promise.allSettled([first.done,second]);
+  }
 }
 console.log('Real concurrent connections: late join waits for end; end waits for join; both leave all legs terminal');
 clear();
