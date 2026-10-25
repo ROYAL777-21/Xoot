@@ -180,6 +180,8 @@ try {
   state(await call(tokens.customerA, { action: 'eta', bookingId: bookingA }), 'unavailable');
   pointWithNoHistory(await call(tokens.customerB, { action: 'read', bookingId: bookingB }));
   console.log('PASS: STOP revokes route and point without disturbing another customer');
+  const {verifyBookingCommunications}=await import('./test-booking-communications-staging.mjs');
+  await verifyBookingCommunications({base,key,tokens,bookingA});
   console.log('STAGING ACCEPTANCE PASSED. Still separately verify physical Android/iOS, POPIA, billing and expiry cron.');
 } catch (error) {
   console.error('STAGING ACCEPTANCE FAILED: ' + (error instanceof Error ? error.message : 'Unknown error'));
