@@ -3,6 +3,7 @@ import { afterEach, test } from 'node:test';
 import { request } from 'node:http';
 import { EventEmitter } from 'node:events';
 import { createFounderSessionServer, validateFounderAliases, runStagingAcceptance } from './staging-founder-sessions.mjs';
+import {revokeEveryChatTestDevice} from './test-booking-communications-staging.mjs';
 const FOUNDER_ALIASES = { customerA:'founder-a+xoot-customer@example.test',workerA:'founder-a+xoot-xooter@example.test',customerB:'founder-b+xoot-customer@example.test',workerB:'founder-b+xoot-xooter@example.test' };
 const helpers = [];
 afterEach(async () => { await Promise.all(helpers.splice(0).map(h => h.close())); });
@@ -99,6 +100,27 @@ test('a killed timeout still confirms parent-owned STOP for both fixtures withou
   assert.ok(stops.every(stop=>stop.action==='stop'));
   assert.equal(result.cleanupConfirmed,true);assert.equal(result.exitCode,1);assert.equal(result.passedGroups,1);
   assert.ok(!JSON.stringify(result).includes('private-synthetic-payload'));
+});
+
+test('child cleanup attempts the other device even when the first revocation fails',async()=>{
+  const attempted=[];await assert.rejects(revokeEveryChatTestDevice({customerA:{},workerA:{}},async label=>{attempted.push(label);if(label==='customerA')throw new Error('synthetic failure');}));
+  assert.deepEqual(attempted,['customerA','workerA']);
+});
+
+for(const failFirst of [false,true])test('parent owns both published device IDs and verifies revocation after forced termination; first failure='+failFirst,async()=>{
+  let devices;const patches=[];const reads=[];
+  const result=await runStagingAcceptance(runnerInput,{includeCommunications:true,timeoutMs:5,spawnChild:(_exe,_args,options)=>{
+    devices=[options.env.XOOT_TEST_CHAT_CUSTOMER_A_DEVICE,options.env.XOOT_TEST_CHAT_WORKER_A_DEVICE];
+    assert.equal(new Set(devices).size,2);assert.equal(options.env.XOOT_TEST_COMMUNICATIONS,'YES');return syntheticChild();
+  },fetcher:async(url,options)=>{
+    if(url.pathname.endsWith('/xoot-job-location'))return Response.json({success:true,data:{state:'stopped'}});
+    assert.equal(url.pathname,'/rest/v1/user_encryption_keys');const device=url.searchParams.get('device_id').slice(3);assert.ok(devices.includes(device));
+    if(options.method==='PATCH'){patches.push(device);return new Response(null,{status:failFirst&&device===devices[0]?500:204});}
+    reads.push(device);return Response.json([{device_id:device,revoked_at:new Date().toISOString()}]);
+  }});
+  assert.deepEqual(patches.sort(),devices.sort());assert.equal(reads.length,failFirst?1:2);
+  assert.equal(result.exitCode,1);assert.equal(result.cleanupConfirmed,!failFirst);
+  assert.ok(!JSON.stringify(result).includes('synthetic-ca'));
 });
 test('parent cleanup runs once on duplicate child terminal events and requires both STOP confirmations', async () => {
   let calls=0;

@@ -14,7 +14,9 @@ export async function verifyBookingCommunications({base,key,tokens,bookingA}) {
   const devices={};
   try {
     for(const label of ['customerA','workerA']){
-      devices[label]=await createDeviceKeyPair('xoot-staging-chat-'+bookingA+'-'+crypto.randomUUID());
+      const deviceId=process.env[label==='customerA'?'XOOT_TEST_CHAT_CUSTOMER_A_DEVICE':'XOOT_TEST_CHAT_WORKER_A_DEVICE'];
+      if(!new RegExp('^xoot-staging-chat-'+bookingA+'-[a-f0-9-]{36}$').test(deviceId??''))throw new Error('Parent-owned fresh test device ID required before publication');
+      devices[label]=await createDeviceKeyPair(deviceId);
       const d=devices[label];const r=await request(label,'/rest/v1/user_encryption_keys',{user_id:ids[label],device_id:d.deviceId,public_jwk:d.publicJwk,key_version:d.keyVersion});
       assert.ok([200,201,204].includes(r.status),'Own test public-key publication must work through normal RLS');
     }
@@ -45,9 +47,13 @@ export async function verifyBookingCommunications({base,key,tokens,bookingA}) {
     for(const label of ['customerB','workerB'])assert.ok([403,404].includes((await edge(label,'twilio-token',{bookingId:bookingA,capability:'voice'})).status));
     console.log('PASS: real participant voice gate remains off without credentials; unrelated voice access denied; no provider call made');
   }finally{
-    for(const [label,d] of Object.entries(devices)){
+    await revokeEveryChatTestDevice(devices,async(label,d)=>{
       const r=await request(label,'/rest/v1/user_encryption_keys?user_id=eq.'+ids[label]+'&device_id=eq.'+encodeURIComponent(d.deviceId),{revoked_at:new Date().toISOString()},'PATCH');
       assert.ok([200,204].includes(r.status),'Revoke only this run test device');
-    }
+    });
   }
+}
+export async function revokeEveryChatTestDevice(devices,revoke){
+  const results=await Promise.allSettled(Object.entries(devices).map(([label,d])=>revoke(label,d)));
+  if(results.some(result=>result.status==='rejected'))throw new Error('Test chat device cleanup not confirmed');
 }

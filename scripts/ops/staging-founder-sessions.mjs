@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Owner-entered normal Auth codes only. No admin impersonation, token readback or disk sessions.
 import { createServer } from 'node:http';
-import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
@@ -148,13 +148,32 @@ export async function cleanupStagingFixtures({ tokens, bookingA, bookingB, key, 
   return results.every(result=>result.status === 'fulfilled' && result.value === true);
 }
 
-export function runStagingAcceptance(input, { spawnChild = spawn, fetcher = fetch, timeoutMs = 180_000 } = {}) {
+export async function cleanupStagingChatDevices(input, devices, fetcher = fetch) {
+  if (input.base !== STAGING_AUTH || !uuid.test(input.bookingA ?? '')) return false;
+  const results=await Promise.allSettled(['customerA','workerA'].map(async label=>{
+    const device=devices?.[label];
+    if(typeof input.tokens?.[label]!=='string' || !new RegExp('^xoot-staging-chat-'+input.bookingA+'-[a-f0-9-]{36}$').test(device??''))return false;
+    const url=new URL('/rest/v1/user_encryption_keys',STAGING_AUTH);url.searchParams.set('device_id','eq.'+device);
+    const headers={apikey:input.key,authorization:'Bearer '+input.tokens[label]};
+    const revoked=await fetcher(url,{method:'PATCH',cache:'no-store',redirect:'error',signal:AbortSignal.timeout(12000),headers:{...headers,'content-type':'application/json'},body:JSON.stringify({revoked_at:new Date().toISOString()})});
+    if(!revoked.ok)return false;
+    url.searchParams.set('select','device_id,revoked_at');
+    const check=await fetcher(url,{cache:'no-store',redirect:'error',signal:AbortSignal.timeout(12000),headers});
+    if(!check.ok)return false;const rows=await check.json();
+    return Array.isArray(rows)&&rows.every(row=>row.device_id===device&&typeof row.revoked_at==='string'&&Number.isFinite(Date.parse(row.revoked_at)));
+  }));
+  return results.every(r=>r.status==='fulfilled'&&r.value===true);
+}
+
+export function runStagingAcceptance(input, { spawnChild = spawn, fetcher = fetch, timeoutMs = 180_000, includeCommunications = false } = {}) {
   const { tokens, bookingA, bookingB, key, base, signal } = input;
+  const chatDevices=includeCommunications?Object.fromEntries(['customerA','workerA'].map(label=>[label,'xoot-staging-chat-'+bookingA+'-'+randomUUID()])):null;
   return new Promise(resolveRun => {
     const env = Object.fromEntries(['PATH','SystemRoot','TEMP','TMP','USERPROFILE'].filter(k => process.env[k]).map(k => [k,process.env[k]]));
     Object.assign(env, { XOOT_TEST_STAGING_URL:base, XOOT_TEST_STAGING_ANON_KEY:key, XOOT_TEST_CUSTOMER_A_JWT:tokens.customerA,
       XOOT_TEST_CUSTOMER_B_JWT:tokens.customerB, XOOT_TEST_WORKER_A_JWT:tokens.workerA, XOOT_TEST_WORKER_B_JWT:tokens.workerB,
       XOOT_TEST_BOOKING_A:bookingA, XOOT_TEST_BOOKING_B:bookingB, XOOT_TEST_SYNTHETIC_CONSENT:'YES' });
+    if(chatDevices)Object.assign(env,{XOOT_TEST_COMMUNICATIONS:'YES',XOOT_TEST_CHAT_CUSTOMER_A_DEVICE:chatDevices.customerA,XOOT_TEST_CHAT_WORKER_A_DEVICE:chatDevices.workerA});
     const child = spawnChild(process.execPath, [fileURLToPath(new URL('./test-mapbox-private-journey-staging.mjs', import.meta.url))], { env, windowsHide:true, stdio:['ignore','pipe','pipe'] });
     let output = '';
     child.stdout.on('data', chunk => { output = (output + chunk).slice(-16_000); });
@@ -164,7 +183,8 @@ export function runStagingAcceptance(input, { spawnChild = spawn, fetcher = fetc
       if (finishing) return;
       finishing = true; clearTimeout(timeout); clearTimeout(watchdog);
       signal?.removeEventListener('abort',abort);
-      const cleanupConfirmed = await cleanupStagingFixtures(input,fetcher) && childStopped;
+      const [gpsCleanup,chatCleanup]=await Promise.all([cleanupStagingFixtures(input,fetcher),chatDevices?cleanupStagingChatDevices(input,chatDevices,fetcher):true]);
+      const cleanupConfirmed = gpsCleanup && chatCleanup && childStopped;
       resolveRun({ exitCode:cleanupConfirmed && !timedOut && !aborted ? exitCode : 1, cleanupConfirmed,
         passedGroups:output.split('\n').filter(line => line.startsWith('PASS:')).length });
     };
@@ -186,7 +206,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const configAt = process.argv.indexOf('--config');
   if (configAt < 0 || !process.argv[configAt+1]) throw new Error('Pass --config with an ignored, owner-restricted local JSON file containing staging public key and approved aliases');
   const config = JSON.parse(await readFile(process.argv[configAt+1], 'utf8'));
-  const helper = createFounderSessionServer({ key:config.key, aliases:config.aliases, runAcceptance:runStagingAcceptance });
+  const helper = createFounderSessionServer({ key:config.key, aliases:config.aliases, runAcceptance:input=>runStagingAcceptance(input,{includeCommunications:true}) });
   const origin = await helper.start();
   console.log('Owner-private staging sign-in form: ' + origin);
   process.once('SIGINT', () => { void helper.close(); });
