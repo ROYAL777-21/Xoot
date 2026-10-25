@@ -64,7 +64,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const [input, setInput] = useState<BookingQuoteInput>(() => {
     const draft = createBookingInput(bookingServiceFromParam(params.get("service")));
     const invite = params.get("ref");
-    if (invite && /^[A-Z0-9_-]{3,32}$/i.test(invite)) draft.referralCode = invite;
+    if (invite && /^[A-Z0-9_-]{4,32}$/i.test(invite)) draft.referralCode = invite;
     draft.homeSize = bookingHomeSize(2, 1);
     if (draft.service === "regular") draft.hours = 5.5;
     const date = params.get("date");

@@ -16,7 +16,7 @@ function OwnerCode({ ownerId }: { ownerId: string }) {
       try {
         const { data, error } = await supabase.from("referrals").select("code").eq("user_id", ownerId).maybeSingle();
         if (!current) return;
-        if (error || !data || !/^[A-Z0-9_-]{3,32}$/i.test(data.code)) { setState("unavailable"); return; }
+        if (error || !data || !/^[A-Z0-9_-]{4,32}$/i.test(data.code)) { setState("unavailable"); return; }
         setCode(data.code); setState("ready");
       } catch { if (current) setState("unavailable"); }
     })();

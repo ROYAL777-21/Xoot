@@ -188,6 +188,12 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     await waitFor(() => expect(harness.invoke).toHaveBeenCalledWith("get-booking-quote", expect.objectContaining({ body: expect.objectContaining({ referralCode: "XOOT_FRIEND" }) })));
     expect(screen.getByText(BOOKING_REFERRAL_MESSAGES.unknown_code)).toBeInTheDocument();
   });
+  it.each(["ABC", "%3Cscript%3E", "A".repeat(33)])("ignores a malformed invite link (%s) so the ordinary quote still loads", async code => {
+    mount(`/app/book?ref=${code}`); await toReview();
+    expect(screen.getByLabelText("A friend’s invite?")).toHaveValue("");
+    expect(await screen.findByLabelText("Reviewed quote")).toBeInTheDocument();
+    expect(harness.invoke).toHaveBeenCalledWith("get-booking-quote", expect.objectContaining({ body: expect.objectContaining({ referralCode: "" }) }));
+  });
   it("offers no account benefits while authentication is loading", () => {
     harness.auth.loading = true; mount();
     expect(screen.getByRole("status")).toHaveTextContent("Loading your account");
