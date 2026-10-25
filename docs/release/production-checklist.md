@@ -67,8 +67,8 @@ PR88 Trust/Journal, PR89 address/auth corrections and PR90 public crawlability. 
 
 ### Addresses, GPS/ETA and communications
 
-- [PR81](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/81) head `0748885` and
-  [PR71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71) head `8e491fd` safely include
+- [PR81](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/81) reviewed source `0748885` and
+  [PR71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71) source `8e491fd` safely include
   the approved release base. PR81's provider match regression passes 22 focused tests and received
   independent review. Exact Gauteng source geometry/licence/provenance is pinned in the PR; intended
   geography never asserts actual approved worker availability.
