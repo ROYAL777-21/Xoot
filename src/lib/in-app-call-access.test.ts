@@ -24,6 +24,7 @@ function setup(options: { enabled?: boolean; allowed?: boolean; rpcError?: boole
     const q = { select: () => q, eq: (_column: string, value: string) => { key = value; return q; },
       in: () => Promise.resolve({ data: options.enabled === false ? [] : [{ environment: "all", enabled: true }], error: null }),
       maybeSingle: async () => ({ data: table === "bookings" ? { id: key, user_id: options.owner ?? actor, xooter_id: null } : null, error: null }),
+      or: () => q, order: () => q, limit: () => q,
       insert: () => { throw new Error("Unaccepted transport must not write"); } };
     return q;
   });
@@ -35,11 +36,12 @@ const tokenRequest = (capability = "voice") => new Request("https://edge.test/fu
   method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer synthetic-auth", Origin: "https://xoot.co.za" },
   body: JSON.stringify({ bookingId: booking, capability, actorId: otherBooking }),
 });
-function signedForm(overrides: Record<string, string> = {}, extra: [string, string][] = []) {
+function signedForm(overrides: Record<string, string> = {}, extra: [string, string][] = [], url = endpoint) {
   const params = new URLSearchParams({ AccountSid: env.TWILIO_ACCOUNT_SID, CallSid: `CA${"e".repeat(32)}`, From: `client:${identity}`, bookingId: booking, ...overrides });
   for (const [key, value] of extra) params.append(key, value);
-  const values = [...params.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => `${key}${value}`).join("");
-  return new Request(endpoint, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", "x-twilio-signature": createHmac("sha1", env.TWILIO_AUTH_TOKEN).update(endpoint + values).digest("base64") }, body: params });
+  // Independent Node signer: Twilio's SDK sorts unique names and duplicate values with .sort().
+  const values = [...new Set(params.keys())].sort().map(key => [...new Set(params.getAll(key))].sort().map(value => key + value).join("")).join("");
+  return new Request(url, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", "x-twilio-signature": createHmac("sha1", env.TWILIO_AUTH_TOKEN).update(url + values).digest("base64") }, body: params });
 }
 
 describe("actual in-app call token entrypoint with synthetic transport", () => {
@@ -85,6 +87,14 @@ describe("actual in-app call token entrypoint with synthetic transport", () => {
 });
 
 describe("actual signed TwiML entrypoint with synthetic transport", () => {
+  it("accepts a signature whose canonical field order is stated explicitly, including lowercase bookingId", async () => {
+    const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
+    const params = new URLSearchParams({ From: `client:${identity}`, bookingId: booking, CallSid: `CA${"e".repeat(32)}`, AccountSid: env.TWILIO_ACCOUNT_SID });
+    const canonical = endpoint + "AccountSid" + env.TWILIO_ACCOUNT_SID + "CallSid" + `CA${"e".repeat(32)}` + "Fromclient:" + identity + "bookingId" + booking;
+    const signature = createHmac("sha1", env.TWILIO_AUTH_TOKEN).update(canonical).digest("base64");
+    const response = await handler(new Request(endpoint, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", "x-twilio-signature": signature }, body: params }));
+    expect(response.status).toBe(200); expect(await response.text()).toContain("<Conference");
+  });
   it.each([
     { bookingId: otherBooking }, { From: "client:xoot_legacy_voice" }, { From: "+27110000000" },
     { AccountSid: `AC${"f".repeat(32)}` }, { Caller: "client:someone_else" },
@@ -121,4 +131,18 @@ describe("actual signed TwiML entrypoint with synthetic transport", () => {
     const s = setup({ rateAllowed: false }); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
     expect(await (await handler(signedForm())).text()).not.toContain("<Conference");
   });
+});
+it("validates case-sensitive field ordering on the status callback too", async () => {
+  const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-status/index.ts", s.client, env);
+  const response = await handler(signedForm({}, [], "https://edge.test/functions/v1/twilio-voice-status"));
+  expect(response.status).toBe(200); expect(s.client).toHaveBeenCalled();
+});
+it("accepts Twilio's published security vector without using the local signer", async () => {
+  // https://www.twilio.com/docs/usage/security#explore-the-algorithm-yourself
+  const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-status/index.ts", s.client, { ...env, TWILIO_AUTH_TOKEN: "12345" });
+  const response = await handler(new Request("https://example.com/myapp.php?foo=1&bar=2", {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", "x-twilio-signature": "L/OH5YylLD5NRKLltdqwSvS0BnU=" },
+    body: new URLSearchParams({ Digits: "1234", To: "+18005551212", From: "+14158675310", Caller: "+14158675310", CallSid: "CA1234567890ABCDE" }),
+  }));
+  expect(response.status).toBe(200);
 });

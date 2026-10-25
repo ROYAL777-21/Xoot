@@ -65,10 +65,8 @@ const validateTwilioWebhook = async (req: Request, form: FormData) => {
   if (!received) return false;
   const validationUrl = Deno.env.get("TWILIO_WEBHOOK_TWIML_URL") ?? req.url;
   const params = req.method === "POST"
-    ? [...form.entries()]
-      .map(([key, value]) => [key, String(value)] as const)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, value]) => `${key}${value}`)
+    ? [...new Set(form.keys())].sort()
+      .map(key => [...new Set(form.getAll(key).map(String))].sort().map(value => key + value).join(""))
       .join("")
     : "";
   const expected = await signTwilioPayload(authToken, `${validationUrl}${params}`);
