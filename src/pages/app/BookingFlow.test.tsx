@@ -182,6 +182,12 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     expect(screen.getByLabelText("Where do you need us?")).toHaveValue("");
     expect(screen.queryByLabelText("Reviewed quote")).not.toBeInTheDocument();
   });
+  it("carries a shared invite into the server quote without deciding eligibility", async () => {
+    mount("/app/book?ref=XOOT_FRIEND"); await toReview();
+    expect(screen.getByLabelText("A friend’s invite?")).toHaveValue("XOOT_FRIEND");
+    await waitFor(() => expect(harness.invoke).toHaveBeenCalledWith("get-booking-quote", expect.objectContaining({ body: expect.objectContaining({ referralCode: "XOOT_FRIEND" }) })));
+    expect(screen.getByText(BOOKING_REFERRAL_MESSAGES.unknown_code)).toBeInTheDocument();
+  });
   it("offers no account benefits while authentication is loading", () => {
     harness.auth.loading = true; mount();
     expect(screen.getByRole("status")).toHaveTextContent("Loading your account");

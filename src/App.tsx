@@ -48,6 +48,7 @@ const NotificationsFeed = lazy(() => import("./pages/app/NotificationsFeed"));
 const WebsiteBooking = lazy(() => import("./pages/WebsiteBooking"));
 const Favorites = lazy(() => import("./pages/app/Favorites"));
 const Loyalty = lazy(() => import("./pages/app/Loyalty"));
+const Widgets = lazy(() => import("./pages/app/Widgets"));
 const GiftClean = lazy(() => import("./pages/app/GiftClean"));
 const Properties = lazy(() => import("./pages/app/Properties"));
 const AirbnbHostDashboard = lazy(() => import("./pages/app/AirbnbHostDashboard"));
@@ -200,6 +201,7 @@ const App = () => (
                   <Route path="/app/bookings/:id" element={<RequireAuth><AppShell><BookingDetail /></AppShell></RequireAuth>} />
                   <Route path="/app/favorites" element={<RequireAuth><AppShell><Favorites /></AppShell></RequireAuth>} />
                   <Route path="/app/loyalty" element={<RequireAuth><AppShell><Loyalty /></AppShell></RequireAuth>} />
+                  <Route path="/app/widgets" element={<RequireAuth><AppShell><Widgets /></AppShell></RequireAuth>} />
                   <Route path="/gifts" element={<GiftClean />} />
                   <Route path="/app/gifts" element={<RequireAuth><GiftClean /></RequireAuth>} />
                   <Route path="/app/properties" element={<RequireAuth><AppShell><Properties /></AppShell></RequireAuth>} />

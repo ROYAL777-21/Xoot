@@ -7,6 +7,9 @@ import { Progress } from "@/components/ui/progress";
 import { Gift, Loader2, Sparkles, Trophy, WalletCards } from "lucide-react";
 import { formatZARDecimal } from "@/lib/format";
 import { useXootCred } from "@/hooks/useXootCred";
+import { ReferralCodeCard } from "@/components/xoot/ReferralCodeCard";
+import "@/styles/gift-care-handoff.css";
+import "@/styles/referrals-reviews-handoff.css";
 
 const TARGET = 10;
 
@@ -162,7 +165,7 @@ const Loyalty = () => {
   const { user, loading } = useAuth();
   if (loading) return <LoadingRewards />;
   if (!user) return <div className="container py-8">Sign in to see your rewards</div>;
-  return <LoyaltyAccount key={user.id} accountId={user.id} />;
+  return <><LoyaltyAccount key={user.id} accountId={user.id} /><section id="refer" className="container max-w-3xl pb-8" aria-label="Refer and earn"><ReferralCodeCard /></section></>;
 };
 
 export default Loyalty;
