@@ -1,7 +1,10 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
+import { performAppleSignIn } from './apple-auth-flow';
+import { startOAuth } from './auth-links';
 
 /**
  * Sign in with Apple, natively.
@@ -17,33 +20,27 @@ import { supabase } from '@/lib/supabase';
  */
 
 export const isAppleSignInAvailable = async () => {
-  if (Platform.OS !== 'ios') return false;
+  if (Platform.OS !== 'ios') return Platform.OS === 'android';
   return AppleAuthentication.isAvailableAsync();
 };
 
 export const signInWithApple = async () => {
-  const credential = await AppleAuthentication.signInAsync({
+  if (Platform.OS !== 'ios') return startOAuth('apple');
+  return performAppleSignIn({
+  random: async () => Array.from(await Crypto.getRandomBytesAsync(32), byte => byte.toString(16).padStart(2, '0')).join(''),
+  sha256: value => Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, value),
+  authenticate: options => AppleAuthentication.signInAsync({
+    ...options,
     requestedScopes: [
       AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
       AppleAuthentication.AppleAuthenticationScope.EMAIL,
     ],
+  }),
+  exchange: async (token, nonce) => {
+    const { data, error } = await supabase.auth.signInWithIdToken({ provider: 'apple', token, nonce });
+    return { session: data.session, error };
+  },
   });
-
-  // Apple returns the identity token once, on the first authorisation. On every later
-  // sign-in the name and email come back null — Apple assumes the app stored them. So
-  // the token is the only thing that can be relied on here, and the profile is filled
-  // from what Supabase already holds.
-  if (!credential.identityToken) {
-    throw new Error('Apple did not return an identity token.');
-  }
-
-  const { data, error } = await supabase.auth.signInWithIdToken({
-    provider: 'apple',
-    token: credential.identityToken,
-  });
-  if (error) throw error;
-
-  return data.session;
 };
 
 /**
