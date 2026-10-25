@@ -1,5 +1,118 @@
 # Xoot production checklist
 
+## 25 October 2026 — current verified state and remaining release gates
+
+This section supersedes all older dated instructions below. **The live site is release
+`e0c021e9fde328098f33fb216b1efa720eadf2f1`**, not the new signed-in design. Vercel production
+`dpl_ASWQX8BSgase9gUDTAZLxiF5GwDn` is READY; fresh public `build-info.json` reads on
+`xoot.co.za` and `xoot.vercel.app` both returned that exact revision on 25 October. It includes
+PR88 Trust/Journal, PR89 address/auth corrections and PR90 public crawlability. Approved homepage,
+`main`, unrelated PRs and production provider/tracking switches were preserved.
+
+### Website source and verification
+
+- [PR92](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/92), source `26bb0ea` plus
+  the final spacing/documentation follow-up, carries signed-in booking flowers; handoff Care+
+  red heart/plus and type; account links to Airbnb/office dashboards, rewards and widgets;
+  server-issued referral sharing; customer/Xooter review composition with honest empty states;
+  real browser install controls and a private in-app upcoming-visit summary. It does not publish
+  prototype testimonials, invent ETA/rewards, or implement desktop OS widgets. Property dashboards
+  remain partial implementations of the complete handoff journeys.
+- Independent website cross-review closed both findings at `26bb0ea`: canonical accepted/payment/
+  reassigned/replacement statuses remain visible, and invite validation matches the server's
+  four-character minimum. Negative control: old source 9 failed/28 passed; corrected 37 passed.
+  Independent checks passed new regressions; two unchanged tests needed a larger local timeout.
+- Local serial unit-only suite at `26bb0ea`: **166 files, 1,674 passed, 7 existing skips**.
+  Web TypeScript, scoped lint, explicit production build, 50-page prerender and artifact security
+  scan and source/security checks passed. This does not include the separate rendered browser suite or live provider/device
+  acceptance. Isolated synthetic visual checks covered 390px and 1280px layouts and loaded handoff
+  fonts. A final 390px widget check found and corrected missing side padding.
+- GitHub release/security/PostgreSQL jobs **did not start**. The actual check annotation reports
+  failed recent account payments or a spending-limit issue. No budget, billing setting or plan was
+  changed. Vercel preview success and local tests do not replace these required CI results. Keep
+  the PR unmerged until the checks run; do not post a fabricated successful status.
+
+### Email and authentication
+
+- Brevo **Free** sends transactional email as **Xoot <no-reply@xoot.co.za>**, with separate
+  production/staging SMTP keys saved privately by the founder. Staging's first authorised alias
+  received its code and completed normal Auth sign-in. Production Email OTP length was saved and
+  read back as **6**; the website placeholder is `000000`. The founder confirmed an earlier real
+  email-code sign-in, but exact six-digit production acceptance has not been rerun here.
+- Zoho **Free** has four actual users: `nkosinathi@xoot.co.za`, `tshepang.mahlase@xoot.co.za`,
+  `support@xoot.co.za`, `newsletter@xoot.co.za`. The requested `tshepang@xoot.co.za` is a verified
+  alias of Tshepang's existing mailbox; his longer primary login remains. Founder completed the
+  three new passwords privately. MX, SPF and Zoho DKIM are verified; existing Brevo/DNS records
+  remain. Mailbox send/receive acceptance and newsletter campaign/consent setup are still open.
+  `no-reply` is Brevo's outbound sender, not an additional Zoho inbox. Branded email content does
+  not guarantee a custom sender avatar in every mail client.
+- Public production Auth settings returned **Google enabled, Email enabled, Apple disabled**.
+  Search Console domain ownership is verified. Google branding review remains separate; the
+  provider's ownership-propagation wait has not yet elapsed/retry has not been submitted. A paid
+  custom Supabase Auth domain was not purchased, so universal Xoot-only provider URLs are not proven.
+- [PR94](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/94) isolates native Apple
+  nonce/state/session binding, official iOS button, Android browser flow and strict/coalesced PKCE
+  callbacks. At `be3bd74`, 18 pure native-auth tests and web/mobile TypeScript pass. Independent
+  native review cleared the ten changed paths with 21 synthetic assertions; these are not an Expo
+  lifecycle or device test. Expo is actually signed in as `don-pacho777`, with existing `zoot`
+  project ID `b4c6e0b8-e2e7-40c5-b259-3b34c79be30b` linked to the correct GitHub repository. That
+  ID matches app config, but config still uses a different slug (`xoot`); align it before a build.
+  The Apple account has no active Developer Program membership, and the founder explicitly chose
+  to keep Apple pending. Signing/associations, authorised devices and signed-build acceptance remain
+  required; no project was renamed and no build or membership was purchased.
+
+### Addresses, GPS/ETA and communications
+
+- [PR81](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/81) head `0748885` and
+  [PR71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71) head `8e491fd` safely include
+  the approved release base. PR81's provider match regression passes 22 focused tests and received
+  independent review. Exact Gauteng source geometry/licence/provenance is pinned in the PR; intended
+  geography never asserts actual approved worker availability.
+- Staging `check-service-coverage` **v8 ACTIVE, verify_jwt=true**, with all five returned runtime
+  files byte-matched to submitted PR81 source. Missing/malformed bearer requests both returned 401.
+  `xoot-job-location` remains **v11 ACTIVE, verify_jwt=true**. Staging's actual GPS table has RLS,
+  zero client policies/rows, and no SELECT/INSERT/UPDATE/DELETE privileges for anon or authenticated;
+  service_role retains its server privileges. These checks are not the four-session privacy test.
+- Only **one** of four founder-approved staging aliases actually exists as a confirmed normal Auth
+  user/session. Approval of the remaining identities is recorded separately from verification.
+  The loopback helper is no longer running and no session tokens were persisted. Its 11 synthetic
+  transport/cleanup tests pass. The parameterised synthetic fixture SQL received static review but
+  **was not executed**. Real customer/Xooter isolation, STOP/purge, stale fixes, actual ETA/provider
+  operation, admin AAL2 dispatch, separately verified workers and device acceptance remain open.
+- Approved active service zones remain **0**. Paid Mapbox address suggestions and verified-coverage
+  enforcement remain off; production address authenticity and live GPS/ETA are not accepted.
+  Permanent Geocoding/Directions licensing, provider/budget acceptance, all shared-module importer
+  delivery and exact schema migration checks must be completed before activation. Never blindly
+  redeploy the two booking writers across the known pricing/schema drift.
+- [PR93](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/93), reviewed source `d3e27d7`, binds voice
+  identities to booking/actor and checks authoritative contact-window eligibility at mint/join;
+  adds a separate disabled `twilio.in_app_voice` control, five-minute/two-party/rate limits and no
+  recording. Eligibility is a bounded five-minute lease, not instantaneous mid-call cancellation.
+  Unsupported Conversations returns unavailable without grants/provider/outbox writes;
+  existing Supabase E2EE website text is retained. Old code failed 19/20 new synthetic checks;
+  corrected expanded suite passes **68**, final actual-handler subset **28**, root TypeScript and
+  four-handler Deno checks pass. Independent review found and closed an inherited signature-order
+  defect; both validators now match Twilio's ordinal parameter order, with a published fixed-vector
+  test independent of the request signer. The reviewer reran 28/28 successfully.
+- Staging-only delivery: `twilio-voice-twiml` **v21**, `twilio-token` **v22**,
+  `twilio-conversation` **v22**, `twilio-voice-status` **v21**, all ACTIVE. All 16 returned runtime
+  files match submitted source exactly. JWT verification stays on for the two user endpoints;
+  the webhooks retain their existing signature-based authentication. Missing bearer requests
+  returned 401 and unsigned callbacks returned 403. The dedicated voice control still has zero
+  rows / none enabled. New migration is **not applied**, production handlers are unchanged and
+  genuine JWT/provider/device tests remain required. Existing Twilio operational/masked controls
+  are enabled in staging and disabled in production; these do not gate the old WebRTC handler.
+  Twilio remains Trial; no calls, SMS, credits, numbers or upgrade were purchased. Status correlation,
+  callback retention and usage cost acceptance remain before real activation.
+
+No production migration, admin-role grant, payment/voice/tracking activation or new native build
+was performed. Preserve production-only migration `20261008011821`; no ledger repair/stamping or
+blind `db push`. Standalone Laundry & Ironing and 52-visit gift fulfilment remain incomplete; current
+laundry/ironing add-ons do not prove either standalone product. Home-first personalisation remains
+planning only, with optional exploration before a verified booking address.
+
+### Older dated checkpoints (historical evidence only)
+
 ## 23 October 2026 — founder website refinements published
 
 PR [#85](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/85) merged into approved `release/xoot-production` as `81733006f3595f5f6a4ecce95265dd958fd0a898`, retaining the separate article/sitemap release #86. Vercel production `dpl_Bzu712eNxrcFQKYgdCEDWMxh3A4Y` is **READY** and assigned both `xoot.co.za` and `xoot.vercel.app`; independent public `build-info.json` reads returned that exact revision on both domains. The automatic Git build had been a preview because production Branch Tracking still selected `main`. The production environment now tracks **`release/xoot-production`** instead; Save and dashboard reload verified persistence. Custom-domain auto-assignment remains enabled. No `main` source or unrelated PR was changed.
