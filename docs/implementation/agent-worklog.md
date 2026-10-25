@@ -21,7 +21,11 @@ other has already tried.
 
 ---
 
-## HOLDING — 25 October 2026 — complete new-account email confirmation
+## RELEASED CLAIM — 25 October 2026 — complete new-account email confirmation
+
+PR95 d036520 is prepared and independently reviewed; 24 focused checks, independent20/20, TS/lint/build50pages/artifact and synthetic browser checks passed. Old implementation fails three regressions. Production Confirm sign up template saved and read back in a fresh dashboard tab with Token and ConfirmationURL; website source remains unmerged/not live because required CI cannot start. No real new-account completion, confirmation bypass or production role change claimed. Exact-head preview READY. Current checklist/evidence records actual limits and next owner actions; file claim released.
+
+Earlier preparation notes below are historical.
 
 Founder reports customers cannot create accounts during onboarding. Read-only production shows signups/Email enabled, confirmation required, one signup200 followed by an email_not_confirmed password failure. The live trigger guards missing optional referral dependencies; do not claim them as the cause. Claim src/pages/Auth.tsx, its meaningful behavior tests, a branded confirm-signup template/readme and release evidence. Add a dedicated verification step after password signup, correct resend semantics, preserve provider confirmation, account-enumeration protections and canonical callback. No production Auth disable/bypass, role change, credential readback or fabricated new-account acceptance. Cross-role authentication tests are required to fix the observed incomplete flow. Base is PR92 signed-in website, retaining approved homepage and the separate calls/GPS/mobile PRs.
 
