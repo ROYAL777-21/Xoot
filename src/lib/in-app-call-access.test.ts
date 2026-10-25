@@ -5,7 +5,7 @@ import { edgeHandler } from "../test/edge-handler";
 const actor = "11111111-1111-4111-8111-111111111111";
 const booking = "22222222-2222-4222-8222-222222222222";
 const otherBooking = "33333333-3333-4333-8333-333333333333";
-const identity = `xoot_${actor.replaceAll("-", "")}_${booking.replaceAll("-", "")}_voice`;
+const identity = `xoot_${actor.replace(/-/g, "")}_${booking.replace(/-/g, "")}_voice`;
 const endpoint = "https://edge.test/functions/v1/twilio-voice-twiml";
 const env = { SUPABASE_URL: "https://edge.test", SUPABASE_ANON_KEY: "anon", SUPABASE_SERVICE_ROLE_KEY: "service",
   XOOT_APP_ENV: "staging", TWILIO_ACCOUNT_SID: `AC${"a".repeat(32)}`, TWILIO_API_KEY_SID: `SK${"b".repeat(32)}`,
