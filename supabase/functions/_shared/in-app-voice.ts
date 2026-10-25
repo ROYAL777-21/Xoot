@@ -31,23 +31,13 @@ export async function activeVoiceWindow(db: VoiceDb, bookingId: string, actorId:
   } catch { return null; }
 }
 
-export const VOICE_SESSIONS = "xoot_in_app_voice_sessions";
-
 /** A repeated signed request cannot extend an existing call lease or reopen a completed call. */
-export async function registerVoiceJoin(db: any, caller: { actorId: string; bookingId: string; callSid: string; accountSid: string }, window: { role: string; seconds: number }) {
-  const now = Date.now(); const at = new Date(now).toISOString();
-  const purged = await db.from(VOICE_SESSIONS).delete().lte("expires_at", at);
-  if (purged.error) return null;
-  const inserted = await db.from(VOICE_SESSIONS).upsert({
-    call_sid: caller.callSid, account_sid: caller.accountSid, actor_id: caller.actorId,
-    booking_id: caller.bookingId, participant_role: window.role, status: "queued",
-    created_at: at, expires_at: new Date(now + window.seconds * 1000).toISOString(),
-  }, { onConflict: "call_sid", ignoreDuplicates: true });
-  if (inserted.error) return null;
-  const { data, error } = await db.from(VOICE_SESSIONS).select("account_sid,actor_id,booking_id,participant_role,status,expires_at")
-    .eq("call_sid", caller.callSid).maybeSingle();
-  if (error || !data || data.account_sid !== caller.accountSid || data.actor_id !== caller.actorId ||
-    data.booking_id !== caller.bookingId || data.participant_role !== window.role || data.status === "completed") return null;
-  const remaining = Math.floor((Date.parse(data.expires_at) - Date.now()) / 1000);
-  return Number.isFinite(remaining) && remaining > 0 ? Math.min(remaining, window.seconds) : null;
+export async function registerVoiceJoin(db: VoiceDb, caller: { actorId: string; bookingId: string; callSid: string; accountSid: string }, window: { role: string; seconds: number }) {
+  const { data, error } = await db.rpc("xoot_register_in_app_voice_join", {
+    p_booking_id: caller.bookingId, p_actor_id: caller.actorId, p_call_sid: caller.callSid,
+    p_account_sid: caller.accountSid, p_voice_role: window.role, p_lease_seconds: window.seconds,
+  });
+  const row = Array.isArray(data) ? data[0] : null;
+  if (error || !row || !isVoiceId(row.room_id) || !Number.isInteger(row.seconds) || row.seconds < 1 || row.seconds > window.seconds) return null;
+  return { roomId: row.room_id, seconds: row.seconds };
 }

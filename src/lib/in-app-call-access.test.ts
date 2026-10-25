@@ -5,6 +5,7 @@ import { edgeHandler } from "../test/edge-handler";
 const actor = "11111111-1111-4111-8111-111111111111";
 const booking = "22222222-2222-4222-8222-222222222222";
 const otherBooking = "33333333-3333-4333-8333-333333333333";
+const roomId = "44444444-4444-4444-8444-444444444444";
 const identity = `xoot_${actor.replace(/-/g, "")}_${booking.replace(/-/g, "")}_voice`;
 const endpoint = "https://edge.test/functions/v1/twilio-voice-twiml";
 const env = { SUPABASE_URL: "https://edge.test", SUPABASE_ANON_KEY: "anon", SUPABASE_SERVICE_ROLE_KEY: "service",
@@ -17,8 +18,16 @@ afterAll(() => vi.unstubAllGlobals());
 function setup(options: { enabled?: boolean; allowed?: boolean; rpcError?: boolean; until?: string; participantRole?: string; rateAllowed?: boolean; owner?: string; ledgerError?: boolean } = {}) {
   let voiceSession: Record<string, unknown> | null = null;
   const eligibleUntil = options.until ?? new Date(Date.now() + 30 * 60_000).toISOString();
-  const rpc = vi.fn(async (name: string) => name === "consume_rate_limit" ? { data: options.rateAllowed !== false, error: null } : {
-    data: [{ allowed: options.allowed !== false, participant_role: options.participantRole ?? "client", eligible_until: eligibleUntil }], error: options.rpcError ? { message: "private database detail" } : null,
+  const rpc = vi.fn(async (name: string, args: Record<string, any>) => {
+    if (name === "consume_rate_limit") return { data: options.rateAllowed !== false, error: null };
+    if (name === "xoot_register_in_app_voice_join") {
+      if (options.ledgerError) return { data: null, error: { message: "unavailable" } };
+      if (!voiceSession) voiceSession = { status: "queued", expires_at: new Date(Date.now()+args.p_lease_seconds*1000).toISOString() };
+      return { data: voiceSession.status === "completed" ? [] : [{ room_id: roomId,
+        seconds: Math.min(args.p_lease_seconds, Math.floor((Date.parse(String(voiceSession.expires_at))-Date.now())/1000)) }], error: null };
+    }
+    return {
+    data: [{ allowed: options.allowed !== false, participant_role: options.participantRole ?? "client", eligible_until: eligibleUntil }], error: options.rpcError ? { message: "private database detail" } : null };
   });
   const from = vi.fn((table: string) => {
     let key: string;
@@ -114,8 +123,9 @@ describe("actual signed TwiML entrypoint with synthetic transport", () => {
   it("routes signed status callbacks to the separate bounded in-app ledger", async () => {
     const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
     const xml = await (await handler(signedForm())).text();
-    expect(xml).toContain(`/functions/v1/twilio-in-app-voice-status?anchor=CA${"e".repeat(32)}`);
-    expect(s.from).toHaveBeenCalledWith("xoot_in_app_voice_sessions");
+    expect(xml).toContain(`/functions/v1/twilio-in-app-voice-status?room=${roomId}`);
+    expect(s.rpc).toHaveBeenCalledWith("xoot_register_in_app_voice_join", expect.objectContaining({ p_booking_id: booking, p_actor_id: actor, p_voice_role: "client" }));
+    expect(xml).not.toContain(booking);
   });
   it("accepts a signature whose canonical field order is stated explicitly, including lowercase bookingId", async () => {
     const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
@@ -148,7 +158,7 @@ describe("actual signed TwiML entrypoint with synthetic transport", () => {
   it("joins only the bound booking with two distinct roles, no recording and a five-minute limit", async () => {
     const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
     const response = await handler(signedForm()); expect(response.status).toBe(200); const xml = await response.text();
-    expect(xml).toContain(`xoot-masked-${booking}`); expect(xml).toContain('maxParticipants="2"');
+    expect(xml).toContain(`xoot-inapp-${roomId}`); expect(xml).toContain('maxParticipants="2"');
     expect(xml).toContain('participantLabel="client"'); expect(xml).toContain('record="do-not-record"');
     const seconds = Number(xml.match(/timeLimit="(\d+)"/)?.[1]);
     expect(seconds).toBeGreaterThan(0); expect(seconds).toBeLessThanOrEqual(300); expect(xml).not.toContain("<Number>");

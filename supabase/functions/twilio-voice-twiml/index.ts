@@ -60,13 +60,13 @@ Deno.serve(async (req) => {
   if (!rate.allowed) return denied();
   const callbackBase = Deno.env.get("SUPABASE_URL")?.replace(/\/$/, "") ?? "";
   if (!callbackBase.startsWith("https://")) return denied();
-  const seconds = await registerVoiceJoin(db, caller, window);
-  if (!seconds) return denied();
-  const room = `xoot-masked-${caller.bookingId}`;
-  const statusCallback = `${callbackBase}/functions/v1/twilio-in-app-voice-status?anchor=${caller.callSid}`;
+  const join = await registerVoiceJoin(db, caller, window);
+  if (!join) return denied();
+  const room = `xoot-inapp-${join.roomId}`;
+  const statusCallback = `${callbackBase}/functions/v1/twilio-in-app-voice-status?room=${join.roomId}`;
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Dial timeLimit="${seconds}">
+  <Dial timeLimit="${join.seconds}">
     <Conference record="do-not-record" maxParticipants="2" participantLabel="${window.role}" startConferenceOnEnter="true" endConferenceOnExit="true" statusCallback="${escapeXml(statusCallback)}" statusCallbackEvent="start end join leave">${escapeXml(room)}</Conference>
   </Dial>
 </Response>`;

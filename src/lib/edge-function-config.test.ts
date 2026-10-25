@@ -88,6 +88,7 @@ const MUST_STAY_OPEN: Record<string, string> = {
   "twilio-status-callback": "Twilio delivery status. Same.",
   "twilio-verify-webhook": "Twilio Verify. Same.",
   "twilio-voice-status": "Twilio call status callback. Same.",
+  "twilio-in-app-voice-status": "Twilio conference callback. Bounded signed form and service-only room RPC authenticate it.",
   "twilio-voice-twiml": "Twilio fetches TwiML here to join the conference. Same.",
 };
 
