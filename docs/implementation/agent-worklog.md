@@ -23,6 +23,8 @@ other has already tried.
 
 ## HOLDING — 25 October 2026 — align native config to verified Expo project
 
+Prepared alignment: app.config.ts and the non-secret example point to don-pacho777 / zoot / b4c6e0b8-e2e7-40c5-b259-3b34c79be30b. Actual local Expo config resolution returns that exact triple, Xoot Preview, and unchanged za.co.xoot.app.preview iOS/Android IDs. Existing identity suite passes 5/5; mobile TypeScript and scoped config lint pass. This resolves configuration locally, without changing the remote project or starting a build. Founder requests keeping the current GitHub plan/spending limit; the suspected usage cap remains an external CI block, not approval to bypass checks or buy minutes.
+
 Founder completed the existing Expo login; read-only Project details confirms owner don-pacho777, slug zoot and ID b4c6e0b8-e2e7-40c5-b259-3b34c79be30b, with the correct GitHub repository link. The ID matches app.config.ts but its slug is xoot and owner is implicit. Claim only mobile/app.config.ts, the public owner/project example values and release evidence to align with this existing project; keep the displayed Xoot name and bundle identifiers. Read Expo v56 config reference before edits. No remote rename, new project/account, credential, build, upgrade, provider activation or Apple enrolment. Native auth at be3bd74 has now independently cleared 21 synthetic assertions across the ten changed paths; real signed-build/device/provider acceptance remains open. Apple stays pending at the founder's explicit request. This narrow configuration correction belongs only in stacked PR94, not website PR92.
 
 ## RELEASED CLAIM — 25 October 2026 — signed-in handoff preparation

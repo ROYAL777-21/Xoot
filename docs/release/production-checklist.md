@@ -56,7 +56,8 @@ PR88 Trust/Journal, PR89 address/auth corrections and PR90 public crawlability. 
   native review cleared the ten changed paths with 21 synthetic assertions; these are not an Expo
   lifecycle or device test. Expo is actually signed in as `don-pacho777`, with existing `zoot`
   project ID `b4c6e0b8-e2e7-40c5-b259-3b34c79be30b` linked to the correct GitHub repository. That
-  ID matches app config, but config still uses a different slug (`xoot`); align it before a build.
+  ID matches app config. PR94 now aligns its slug/owner with that existing project (`zoot` /
+  `don-pacho777`), while keeping the displayed Xoot name, bundle IDs and callback schemes.
   The Apple account has no active Developer Program membership, and the founder explicitly chose
   to keep Apple pending. Signing/associations, authorised devices and signed-build acceptance remain
   required; no project was renamed and no build or membership was purchased.
