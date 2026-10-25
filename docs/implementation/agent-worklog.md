@@ -21,7 +21,11 @@ other has already tried.
 
 ---
 
-## HOLDING — 25 October 2026 — single-founder staging acceptance aliases
+## RELEASED CLAIM — 25 October 2026 — single-founder staging acceptance aliases
+
+All four authorised one-inbox aliases actually completed normal Auth and six real GPS/ETA groups passed. Parent STOP and physical fixture cleanup confirmed; zero remaining fixture locations, bookings, jobs, workers and messages. New encrypted-chat module was not executed by that run. Parent chat-device cleanup was independently cleared at 1d83852 (15/15); completeness guard independently cleared at 729a523 (17/17), with all three planted defects rejected. Original 45-minute helper erased its sessions; fresh private helper is prepared for owner-entered chat sign-ins. No code/token on disk, impersonation, actual worker approval, production rollout or live chat/call/device acceptance. Evidence/checklist updated; this file claim is released.
+
+Earlier preparation notes below are historical.
 
 Founder now explicitly authorises four staging-only aliases of the same founder email and has an iPhone 12 and Android tablet available. Claim the loopback Auth helper, its tests and parameterised fixture alias validation to accept distinct A/B role aliases from one authorised inbox, retaining ordinary real Auth sessions, exact staging target, pair/role binding, CSRF, private code entry and cleanup. No assumption of verification, Auth impersonation, real worker approval, paid build or production role change. Release owns acceptance delivery; correctness-owned guards change only for the founder-approved identity arrangement.
 
