@@ -108,6 +108,10 @@ verify_jwt = false
 [functions.twilio-voice-twiml]
 verify_jwt = false
 
+# Authenticated by a bounded, account-bound Twilio HMAC; never a browser JWT.
+[functions.twilio-in-app-voice-status]
+verify_jwt = false
+
 [functions.activate-care-plus]
 verify_jwt = true
 

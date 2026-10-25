@@ -135,8 +135,8 @@ describe("Twilio secrets contract", () => {
     expect(sharedWebhook).toMatch(
       /Deno\.env\.get\("TWILIO_AUTH_TOKEN"\) \?\? Deno\.env\.get\("TWILIO_WEBHOOK_AUTH_TOKEN"\)/,
     );
-    for (const fn of ["twilio-voice-twiml", "twilio-voice-status"]) {
-      const src = read(`supabase/functions/${fn}/index.ts`);
+    for (const fn of ["twilio-voice-status", "_shared/in-app-voice-webhook"]) {
+      const src = read(fn.startsWith("_shared/") ? `supabase/functions/${fn}.ts` : `supabase/functions/${fn}/index.ts`);
       expect(
         src,
         `${fn} must accept either Auth Token name`,
@@ -150,8 +150,13 @@ describe("Twilio secrets contract", () => {
     // A signature check that passes when unconfigured is worse than none: it would accept any
     // caller claiming to be Twilio. Both paths must refuse.
     expect(sharedWebhook).toMatch(/if \(!authToken\) return \{ configured: false, valid: false \}/);
-    for (const fn of ["twilio-voice-twiml", "twilio-voice-status"]) {
+    for (const fn of ["twilio-voice-status"]) {
       expect(read(`supabase/functions/${fn}/index.ts`)).toMatch(/if \(!authToken\) return false/);
+    }
+    const signedForm = read("supabase/functions/_shared/in-app-voice-webhook.ts");
+    expect(signedForm).toContain("!secret || !signature");
+    for (const fn of ["twilio-voice-twiml", "twilio-in-app-voice-status"]) {
+      expect(read(`supabase/functions/${fn}/index.ts`)).toMatch(/await signedVoiceForm\(/);
     }
   });
 

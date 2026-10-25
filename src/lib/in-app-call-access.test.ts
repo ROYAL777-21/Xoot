@@ -14,7 +14,8 @@ const env = { SUPABASE_URL: "https://edge.test", SUPABASE_ANON_KEY: "anon", SUPA
 beforeAll(() => vi.stubGlobal("crypto", webcrypto));
 afterAll(() => vi.unstubAllGlobals());
 
-function setup(options: { enabled?: boolean; allowed?: boolean; rpcError?: boolean; until?: string; participantRole?: string; rateAllowed?: boolean; owner?: string } = {}) {
+function setup(options: { enabled?: boolean; allowed?: boolean; rpcError?: boolean; until?: string; participantRole?: string; rateAllowed?: boolean; owner?: string; ledgerError?: boolean } = {}) {
+  let voiceSession: Record<string, unknown> | null = null;
   const eligibleUntil = options.until ?? new Date(Date.now() + 30 * 60_000).toISOString();
   const rpc = vi.fn(async (name: string) => name === "consume_rate_limit" ? { data: options.rateAllowed !== false, error: null } : {
     data: [{ allowed: options.allowed !== false, participant_role: options.participantRole ?? "client", eligible_until: eligibleUntil }], error: options.rpcError ? { message: "private database detail" } : null,
@@ -23,14 +24,17 @@ function setup(options: { enabled?: boolean; allowed?: boolean; rpcError?: boole
     let key: string;
     const q = { select: () => q, eq: (_column: string, value: string) => { key = value; return q; },
       in: () => Promise.resolve({ data: options.enabled === false ? [] : [{ environment: "all", enabled: true }], error: null }),
-      maybeSingle: async () => ({ data: table === "bookings" ? { id: key, user_id: options.owner ?? actor, xooter_id: null } : null, error: null }),
+      maybeSingle: async () => ({ data: table === "bookings" ? { id: key, user_id: options.owner ?? actor, xooter_id: null } : table === "xoot_in_app_voice_sessions" ? voiceSession : null, error: null }),
+      delete: () => q,
+      lte: async () => ({ error: null }),
+      upsert: async (row: Record<string, unknown>, mode: { ignoreDuplicates: boolean }) => { if (!voiceSession || !mode.ignoreDuplicates) voiceSession = row; return { error: options.ledgerError ? { message: "unavailable" } : null }; },
       or: () => q, order: () => q, limit: () => q,
       insert: () => { throw new Error("Unaccepted transport must not write"); } };
     return q;
   });
   const service = { from, rpc };
   const client = vi.fn((_url: unknown, key: unknown) => key === "service" ? service : { auth: { getUser: async () => ({ data: { user: { id: actor } }, error: null }) } });
-  return { rpc, from, client, eligibleUntil };
+  return { rpc, from, client, eligibleUntil, get session() { return voiceSession; } };
 }
 const tokenRequest = (capability = "voice") => new Request("https://edge.test/functions/v1/twilio-token", {
   method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer synthetic-auth", Origin: "https://xoot.co.za" },
@@ -87,6 +91,32 @@ describe("actual in-app call token entrypoint with synthetic transport", () => {
 });
 
 describe("actual signed TwiML entrypoint with synthetic transport", () => {
+  it("accepts the alternate webhook secret name and refuses missing secrets", async () => {
+    const s = setup();
+    const alternate = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, { ...env, TWILIO_AUTH_TOKEN: "", TWILIO_WEBHOOK_AUTH_TOKEN: env.TWILIO_AUTH_TOKEN });
+    expect((await alternate(signedForm())).status).toBe(200);
+    const absent = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, { ...env, TWILIO_AUTH_TOKEN: "" });
+    expect((await absent(signedForm())).status).toBe(403);
+  });
+  it("does not extend the lease or reopen a completed call when Twilio repeats the join", async () => {
+    const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
+    expect((await handler(signedForm())).status).toBe(200);
+    s.session!.expires_at = new Date(Date.now() + 10_000).toISOString();
+    const xml = await (await handler(signedForm())).text();
+    expect(Number(xml.match(/timeLimit="(\d+)"/)?.[1])).toBeLessThanOrEqual(10);
+    s.session!.status = "completed";
+    expect((await handler(signedForm())).status).toBe(403);
+  });
+  it("does not authorise a call if private correlation cannot be recorded", async () => {
+    const s = setup({ ledgerError: true }); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
+    expect((await handler(signedForm())).status).toBe(403);
+  });
+  it("routes signed status callbacks to the separate bounded in-app ledger", async () => {
+    const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
+    const xml = await (await handler(signedForm())).text();
+    expect(xml).toContain(`/functions/v1/twilio-in-app-voice-status?anchor=CA${"e".repeat(32)}`);
+    expect(s.from).toHaveBeenCalledWith("xoot_in_app_voice_sessions");
+  });
   it("accepts a signature whose canonical field order is stated explicitly, including lowercase bookingId", async () => {
     const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
     const params = new URLSearchParams({ From: `client:${identity}`, bookingId: booking, CallSid: `CA${"e".repeat(32)}`, AccountSid: env.TWILIO_ACCOUNT_SID });
@@ -120,7 +150,8 @@ describe("actual signed TwiML entrypoint with synthetic transport", () => {
     const response = await handler(signedForm()); expect(response.status).toBe(200); const xml = await response.text();
     expect(xml).toContain(`xoot-masked-${booking}`); expect(xml).toContain('maxParticipants="2"');
     expect(xml).toContain('participantLabel="client"'); expect(xml).toContain('record="do-not-record"');
-    expect(xml).toContain('timeLimit="300"'); expect(xml).not.toContain("<Number>");
+    const seconds = Number(xml.match(/timeLimit="(\d+)"/)?.[1]);
+    expect(seconds).toBeGreaterThan(0); expect(seconds).toBeLessThanOrEqual(300); expect(xml).not.toContain("<Number>");
   });
   it("rejects an oversized body before signature work or database access", async () => {
     const s = setup(); const handler = edgeHandler("supabase/functions/twilio-voice-twiml/index.ts", s.client, env);
