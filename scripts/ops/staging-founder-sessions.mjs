@@ -185,8 +185,11 @@ export function runStagingAcceptance(input, { spawnChild = spawn, fetcher = fetc
       signal?.removeEventListener('abort',abort);
       const [gpsCleanup,chatCleanup]=await Promise.all([cleanupStagingFixtures(input,fetcher),chatDevices?cleanupStagingChatDevices(input,chatDevices,fetcher):true]);
       const cleanupConfirmed = gpsCleanup && chatCleanup && childStopped;
-      resolveRun({ exitCode:cleanupConfirmed && !timedOut && !aborted ? exitCode : 1, cleanupConfirmed,
-        passedGroups:output.split('\n').filter(line => line.startsWith('PASS:')).length });
+      const passedGroups = output.split('\n').filter(line => line.startsWith('PASS:')).length;
+      // A stale child that only runs GPS must not certify the requested chat checks.
+      const complete = !includeCommunications || passedGroups >= 9;
+      resolveRun({ exitCode:cleanupConfirmed && complete && !timedOut && !aborted ? exitCode : 1, cleanupConfirmed,
+        passedGroups });
     };
     const kill = () => {
       try {

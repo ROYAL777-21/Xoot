@@ -129,6 +129,13 @@ test('parent cleanup runs once on duplicate child terminal events and requires b
   },fetcher:async()=>{calls++;return Response.json({success:true,data:{state:calls===1?'stopped':'unavailable'}});}});
   assert.equal(calls,2);assert.equal(result.cleanupConfirmed,false);assert.equal(result.exitCode,1);
 });
+
+for (const groups of [6, 9]) test('combined acceptance cannot pass with GPS-only child output; groups='+groups, async () => {
+  const result=await runStagingAcceptance(runnerInput,{includeCommunications:true,spawnChild:()=>{
+    const child=syntheticChild();queueMicrotask(()=>{child.stdout.emit('data',Array.from({length:groups},(_,i)=>'PASS: synthetic '+i+'\n').join(''));child.emit('close',0);});return child;
+  },fetcher:async(url,options)=>url.pathname.endsWith('/xoot-job-location')?Response.json({success:true,data:{state:'stopped'}}):options.method==='PATCH'?new Response(null,{status:204}):Response.json([])});
+  assert.equal(result.cleanupConfirmed,true);assert.equal(result.passedGroups,groups);assert.equal(result.exitCode,groups===9?0:1);
+});
 test('cancelling an active child awaits its parent cleanup before resolving', async () => {
   const controller=new AbortController();let releaseCleanup, killed=false;
   const pending=runStagingAcceptance({...runnerInput,signal:controller.signal},{spawnChild:()=>{
