@@ -1,5 +1,6 @@
 import { assertProductionEnv } from "@/lib/env-check";
 import { initMonitoring } from "@/lib/monitoring";
+import { preloadPublicPage } from "@/lib/public-page-loader";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -8,7 +9,19 @@ import "./mobile-safety.css";
 assertProductionEnv();
 initMonitoring();
 
-createRoot(document.getElementById("root")!).render(<App />);
+const root = document.getElementById("root")!;
+const mount = () => {
+  root.removeAttribute("data-xoot-public-page");
+  createRoot(root).render(<App />);
+};
+const staticPage = root.getAttribute("data-xoot-public-page");
+if (staticPage && staticPage === (window.location.pathname.replace(/\/+$/, "") || "/")) {
+  // Keep the readable snapshot while its lazy page chunk downloads. If loading
+  // fails, the existing app/error boundary remains responsible for recovery.
+  void preloadPublicPage(staticPage).then(mount, mount);
+} else {
+  mount();
+}
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
