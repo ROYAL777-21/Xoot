@@ -5383,6 +5383,33 @@ export type Database = {
       }
     }
     Functions: {
+      // Staging-only voice contracts, generated from fxmxyabdjqviqbcxmvlp.
+      // Production delivery remains a separate release gate.
+      xoot_register_in_app_voice_join: {
+        Args: {
+          p_account_sid: string
+          p_actor_id: string
+          p_booking_id: string
+          p_call_sid: string
+          p_lease_seconds: number
+          p_voice_role: string
+        }
+        Returns: {
+          room_id: string
+          seconds: number
+        }[]
+      }
+      xoot_apply_in_app_voice_event: {
+        Args: {
+          p_account_sid: string
+          p_call_sid?: string
+          p_conference_sid: string
+          p_event: string
+          p_room_id: string
+          p_sequence: number
+        }
+        Returns: boolean
+      }
       can_access_sensitive_data: {
         Args: { p_booking_id: string; p_xooter_id: string }
         Returns: boolean

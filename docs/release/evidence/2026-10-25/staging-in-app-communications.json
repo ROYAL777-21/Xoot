@@ -1,0 +1,123 @@
+{
+  "date": "2026-10-25",
+  "environment": "staging",
+  "project_id": "fxmxyabdjqviqbcxmvlp",
+  "reviewed_source": "d3e27d7f3412423f0f9329412f8422ce612224c6",
+  "functions": [
+    {
+      "name": "twilio-voice-twiml",
+      "version": 21,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "79e83cd56fe0a095a29cd55a29860be24993673239b1455f49544559ace6967e",
+      "returnedFiles": [
+        {
+          "name": "functions/twilio-voice-twiml/index.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/_shared/action-utils.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/_shared/governance-utils.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/_shared/in-app-voice.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/import_map.json",
+          "exactSourceMatch": true
+        }
+      ]
+    },
+    {
+      "name": "twilio-token",
+      "version": 22,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "ezbr_sha256": "9e114faf1bdce3bf44c67d0c10225492a08dd9d7b66d0aa45fbadfa6b4f9ccb2",
+      "returnedFiles": [
+        {
+          "name": "functions/twilio-token/index.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/_shared/action-utils.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/_shared/governance-utils.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/_shared/in-app-voice.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/import_map.json",
+          "exactSourceMatch": true
+        }
+      ]
+    },
+    {
+      "name": "twilio-conversation",
+      "version": 22,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "ezbr_sha256": "1947cddab66fc9bc67356fcf3a182ed6b44313a1a20e39d384dd56370d148702",
+      "returnedFiles": [
+        {
+          "name": "functions/twilio-conversation/index.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/_shared/action-utils.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/_shared/in-app-voice.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/import_map.json",
+          "exactSourceMatch": true
+        }
+      ]
+    },
+    {
+      "name": "twilio-voice-status",
+      "version": 21,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "9b4a562d65913f99b2d0134a057fe7b2c625e152c063769bf7208edde38b2962",
+      "returnedFiles": [
+        {
+          "name": "functions/twilio-voice-status/index.ts",
+          "exactSourceMatch": true
+        },
+        {
+          "name": "functions/import_map.json",
+          "exactSourceMatch": true
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "authenticatedEndpointsWithoutBearer": 401,
+    "webhooksWithoutSignature": 403,
+    "inAppVoiceControlRows": 0,
+    "anyEnabled": false,
+    "independentActualHandlerTestsPassed": 28
+  },
+  "limitations": [
+    "No real Twilio calls or JWT/device acceptance",
+    "No new control migration applied",
+    "Production functions and provider switches unchanged",
+    "Denials alone do not prove enabled call transport",
+    "Status correlation and callback retention remain open",
+    "Eligibility leases can last up to 300 seconds; no instantaneous mid-call revocation"
+  ]
+}
