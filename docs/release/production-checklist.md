@@ -29,7 +29,8 @@ PR88 Trust/Journal, PR89 address/auth corrections and PR90 public crawlability. 
   fonts. A final 390px widget check found and corrected missing side padding.
 - GitHub release/security/PostgreSQL jobs **did not start**. The actual check annotation reports
   failed recent account payments or a spending-limit issue. No budget, billing setting or plan was
-  changed. Vercel preview success and local tests do not replace these required CI results. Keep
+  changed; the founder explicitly requested preserving the current plan and spending limit.
+  Vercel preview success and local tests do not replace these required CI results. Keep
   the PR unmerged until the checks run; do not post a fabricated successful status.
 
 ### Email and authentication
@@ -56,15 +57,18 @@ PR88 Trust/Journal, PR89 address/auth corrections and PR90 public crawlability. 
   native review cleared the ten changed paths with 21 synthetic assertions; these are not an Expo
   lifecycle or device test. Expo is actually signed in as `don-pacho777`, with existing `zoot`
   project ID `b4c6e0b8-e2e7-40c5-b259-3b34c79be30b` linked to the correct GitHub repository. That
-  ID matches app config, but config still uses a different slug (`xoot`); align it before a build.
+  ID matches app config. PR94 now aligns its slug/owner with that existing project (`zoot` /
+  `don-pacho777`), while keeping the displayed Xoot name, bundle IDs and callback schemes.
+  The follow-up at `d7c84d8` independently cleared identity/override and all-environment comparisons;
+  the existing identity suite passed 5/5 and local Expo configuration resolved the expected project.
   The Apple account has no active Developer Program membership, and the founder explicitly chose
   to keep Apple pending. Signing/associations, authorised devices and signed-build acceptance remain
   required; no project was renamed and no build or membership was purchased.
 
 ### Addresses, GPS/ETA and communications
 
-- [PR81](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/81) head `0748885` and
-  [PR71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71) head `8e491fd` safely include
+- [PR81](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/81) reviewed source `0748885` and
+  [PR71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71) source `8e491fd` safely include
   the approved release base. PR81's provider match regression passes 22 focused tests and received
   independent review. Exact Gauteng source geometry/licence/provenance is pinned in the PR; intended
   geography never asserts actual approved worker availability.
