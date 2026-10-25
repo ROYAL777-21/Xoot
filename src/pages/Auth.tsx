@@ -35,7 +35,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { AdminMfaVerification } from "@/components/auth/AdminMfaVerification";
 import "@/styles/auth-booking.css";
 
-type AuthView = "signin" | "signup" | "forgot" | "otp";
+type AuthView = "signin" | "signup" | "forgot" | "otp" | "confirm";
 
 type AuthLocationState = {
   from?: {
@@ -101,7 +101,8 @@ const Auth = () => {
   const redirectPath = useMemo(() => getRedirectPath(location.state, requiresAdminMfa ? "/admin/ops" : "/app"), [location.state, requiresAdminMfa]);
   const authMode = mode === "signup" ? "signup" : "signin";
   const isForgotPassword = mode === "forgot";
-  const isOtpMode = mode === "otp";
+  const isConfirmation = mode === "confirm";
+  const isOtpMode = mode === "otp" || isConfirmation;
   const isLocked = lockoutUntil !== null && Date.now() < lockoutUntil;
   const passwordIssues = useMemo(() => getPasswordIssues(password, authMode), [authMode, password]);
   const passwordStrength = getPasswordStrength(password);
@@ -173,7 +174,9 @@ const Auth = () => {
     }
 
     const safeEmail = normaliseEmail(email);
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = isConfirmation ? await supabase.auth.resend({
+      type: "signup", email: safeEmail, options: { emailRedirectTo: getAuthRedirectTo(redirectPath) },
+    }) : await supabase.auth.signInWithOtp({
       email: safeEmail,
       options: {
         shouldCreateUser: false,
@@ -250,12 +253,25 @@ const Auth = () => {
         if (!requiresAdminMfa) navigate(redirectPath, { replace: true });
       } else {
         toast.success("Check your email to finish setting up Xoot.");
-        setMode("signin");
+        setEmail(safeEmail);
+        setPassword("");
+        setOtpCode("");
+        setOtpSent(true);
+        setMode("confirm");
       }
       return;
     }
 
     const { error } = await supabase.auth.signInWithPassword({ email: safeEmail, password });
+    if (error?.code === "email_not_confirmed") {
+      setEmail(safeEmail);
+      setPassword("");
+      setOtpCode("");
+      setOtpSent(true);
+      setMode("confirm");
+      toast.success("Check your email to finish setting up Xoot.");
+      return;
+    }
     if (error) throw error;
 
     setFailedAttempts(0);
@@ -376,7 +392,7 @@ const Auth = () => {
 
   const passwordStrengthLabel = ["Very weak", "Weak", "Good", "Strong", "Very strong"][passwordStrength];
   const strengthColour = passwordStrength >= 3 ? "is-strong" : passwordStrength >= 2 ? "is-good" : "is-weak";
-  const isNewAccount = mode === "signup";
+  const isNewAccount = mode === "signup" || isConfirmation;
   const heading = isNewAccount ? "Let's get your home sorted." : "Pick up where you left off.";
   const subheading = isNewAccount
     ? "Tell us about the place once. After that, booking is quick, clear and already knows the details you chose to save."
@@ -433,11 +449,11 @@ const Auth = () => {
 
           {user && requiresAdminMfa ? <AdminMfaVerification key={user.id} redirectTo={redirectPath} /> : isOtpMode && otpSent ? (
             <form onSubmit={handleSubmit} className="xoot-auth-form" autoComplete="on" noValidate>
-              <button type="button" className="xoot-auth-back" onClick={() => { setOtpSent(false); setOtpCode(""); }}>
+              <button type="button" className="xoot-auth-back" onClick={() => { if (isConfirmation) setAuthMode("signup"); else { setOtpSent(false); setOtpCode(""); } }}>
                 <ArrowLeft /> Back
               </button>
-              <h2>Check your email</h2>
-              <p className="xoot-auth-lede">We sent a code to <strong>{email}</strong>. No password to remember.</p>
+              <h2>{isConfirmation ? "Confirm your email" : "Check your email"}</h2>
+              <p className="xoot-auth-lede">{isConfirmation ? <>Check <strong>{email}</strong> for the latest Xoot code or confirmation link. Confirm your email to finish creating your account.</> : <>We sent a code to <strong>{email}</strong>. No password to remember.</>}</p>
               <label className="xoot-auth-field">
                 <span>Email code</span>
                 <Input
@@ -458,7 +474,7 @@ const Auth = () => {
               </label>
               {isLocked && <div className="xoot-auth-error"><AlertCircle />Too many unsuccessful attempts. Please wait 30 seconds before trying again.</div>}
               <Button type="submit" disabled={!canSubmit} className="xoot-auth-primary">
-                {loading ? <Loader2 className="animate-spin" /> : "Sign me in"}
+                {loading ? <Loader2 className="animate-spin" /> : isConfirmation ? "Create my account" : "Sign me in"}
               </Button>
               <button type="button" className="xoot-auth-link centered" onClick={() => void handleOtpResend()} disabled={loading || isLocked || !isSupabaseConfigured}>Send a new code</button>
               <p className="xoot-auth-security"><ShieldCheck /> Never share this code. Xoot will not ask for it by phone, message or email.</p>
@@ -498,9 +514,9 @@ const Auth = () => {
               </label>
 
               {!isForgotPassword && !isOtpMode && (
-                <label className="xoot-auth-field">
+                <div className="xoot-auth-field">
                   <span className="xoot-auth-field-row">
-                    <span>Password</span>
+                    <label htmlFor="password">Password</label>
                     <span>
                       {mode === "signin" && <button type="button" onClick={() => setAuthMode("forgot")}>Forgot password?</button>}
                       {mode === "signup" && <button type="button" onClick={handleGeneratePassword}><KeyRound /> Generate</button>}
@@ -523,7 +539,7 @@ const Auth = () => {
                     required
                     minLength={mode === "signup" ? 8 : undefined}
                   />
-                </label>
+                </div>
               )}
 
               {mode === "signup" && password && (
