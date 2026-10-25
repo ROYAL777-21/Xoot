@@ -102,12 +102,16 @@ export async function assessVerifiedCoverage({
 
   // A rooftop point describes the returned address, not its agreement with
   // the customer's query. Smart Address Match must also confirm the number
-  // and street; a corrected/guessed address is never a positive booking check.
+  // and street. High confidence can still contain a corrected place/postcode:
+  // explicit uncertain components go to review instead of silently accepting
+  // the original text. This deliberately favours review for incomplete queries.
   const match = first.properties?.match_code;
   if (!match || typeof match !== "object" || Array.isArray(match) ||
       !("confidence" in match) || !["exact", "high"].includes(String(match.confidence)) ||
       !("address_number" in match) || match.address_number !== "matched" ||
-      !("street" in match) || match.street !== "matched") {
+      !("street" in match) || match.street !== "matched" ||
+      Object.entries(match).some(([component, status]) => component !== "confidence" &&
+        !["matched", "not_applicable", "inferred"].includes(String(status)))) {
     return { state: "review", reason: "address_match_requires_review" };
   }
 

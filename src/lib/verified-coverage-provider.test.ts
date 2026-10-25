@@ -65,6 +65,9 @@ describe("offline server geocoder and full Gauteng polygon contract", () => {
       { confidence: "high", address_number: "plausible", street: "matched" },
       { confidence: "exact", address_number: "unmatched", street: "matched" },
       { confidence: "high", address_number: "matched", street: "unmatched" },
+      ...["postcode", "place", "locality", "region", "country", "secondary_address"].flatMap(component =>
+        ["unmatched", "plausible", "unknown", null].map(status =>
+          ({ confidence: "high", address_number: "matched", street: "matched", [component]: status }))),
     ]) {
       const body = result();
       const feature = body.features[0];
@@ -76,6 +79,14 @@ describe("offline server geocoder and full Gauteng polygon contract", () => {
   it.each(["exact", "high"])("accepts %s matches with a matched house number and street", async confidence => {
     const body = result(); body.features[0].properties.match_code.confidence = confidence;
     vi.stubGlobal("fetch", vi.fn(async () => Response.json(body)));
+    expect((await assessVerifiedCoverage({ ...base, ...fixture() })).state).toBe("available");
+  });
+  it("permits explicitly inferred and not-applicable context without inventing a correction", async () => {
+    const body = result();
+    const feature = body.features[0];
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ features: [{ ...feature,
+      properties: { ...feature.properties, match_code: { ...feature.properties.match_code,
+        place: "matched", country: "inferred", locality: "not_applicable" } } }] })));
     expect((await assessVerifiedCoverage({ ...base, ...fixture() })).state).toBe("available");
   });
 });
