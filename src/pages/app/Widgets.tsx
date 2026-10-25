@@ -38,7 +38,7 @@ function NextVisit({ ownerId }: { ownerId: string }) {
 
 export default function Widgets() {
   const { user, loading } = useAuth();
-  return <ProfileDetail title="Widgets"><div className="xoot-you-content">
+  return <ProfileDetail title="Widgets"><div className="xoot-you-content px-5 pb-8">
     <p>Keep your next visit close, without putting your street address or private home notes on display.</p>
     {loading || !user ? <p role="status">Sign in to view your next visit.</p> : <NextVisit key={user.id} ownerId={user.id} />}
     <section className="xoot-you-card"><h2 className="font-display text-2xl">On your laptop or Mac</h2><p className="my-3">Install Xoot for quick access from your taskbar or Dock.</p><Link to="/install" className="underline">Set up desktop access</Link></section>
