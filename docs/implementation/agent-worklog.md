@@ -21,6 +21,10 @@ other has already tried.
 
 ---
 
+## HOLDING — 25 October 2026 — actual encrypted-chat read-path diagnosis
+
+The refreshed four normal sessions executed the prepared module: one encrypted message and two newly revoked test public keys exist, but the run failed before its first full chat group; GPS cleanup confirmed. Claim the staging communications test module and a strictly non-sensitive local diagnostic receipt (fixed phase names, HTTP status/row counts/error code only; never JWT, key, plaintext, ciphertext or provider errors). Identify the actual failing boundary using these authorised ordinary sessions before proposing a fix. Existing booking/job RLS policies reference each other; verify actual client failure rather than assuming a cause. No RLS weakening, role grant, production write or provider call. Later migrations require a separate exact source review.
+
 ## RELEASED CLAIM — 25 October 2026 — single-founder staging acceptance aliases
 
 All four authorised one-inbox aliases actually completed normal Auth and six real GPS/ETA groups passed. Parent STOP and physical fixture cleanup confirmed; zero remaining fixture locations, bookings, jobs, workers and messages. New encrypted-chat module was not executed by that run. Parent chat-device cleanup was independently cleared at 1d83852 (15/15); completeness guard independently cleared at 729a523 (17/17), with all three planted defects rejected. Original 45-minute helper erased its sessions; fresh private helper is prepared for owner-entered chat sign-ins. No code/token on disk, impersonation, actual worker approval, production rollout or live chat/call/device acceptance. Evidence/checklist updated; this file claim is released.
