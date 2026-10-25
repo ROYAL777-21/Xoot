@@ -17,3 +17,13 @@ it("preserves PKCE exchange errors instead of reporting completion", async () =>
   const exchange = vi.fn(async () => { throw new Error("Synthetic bad verifier"); });
   await expect(createPkceCallbackConsumer(exchange)(`${redirect}?code=${code}`, redirect)).rejects.toThrow("Synthetic bad verifier");
 });
+it("keeps a slow exchange coalesced instead of evicting it while it is still pending", async () => {
+  let clock = 0; let finish!: () => void;
+  const exchange = vi.fn(() => new Promise<void>(resolve => { finish = resolve; }));
+  const consume = createPkceCallbackConsumer(exchange, () => clock);
+  const first = consume(`${redirect}?code=${code}`, redirect);
+  await Promise.resolve(); clock = 121_000;
+  const second = consume(`${redirect}?code=${code}`, redirect);
+  await Promise.resolve(); expect(exchange).toHaveBeenCalledTimes(1);
+  finish(); expect(await Promise.all([first, second])).toEqual([true, true]);
+});

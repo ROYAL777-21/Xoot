@@ -7,16 +7,9 @@ import { performAppleSignIn } from './apple-auth-flow';
 import { startOAuth } from './auth-links';
 
 /**
- * Sign in with Apple, natively.
- *
- * Not a preference. Apple's Guideline 4.8 requires an app that offers third-party
- * sign-in — Xoot offers Google — to also offer Sign in with Apple, and on iOS it has to
- * be the native sheet. Routing Apple through the same web browser flow as Google is a
- * documented rejection reason, and `app.config.ts` was already claiming the
- * `usesAppleSignIn` entitlement with no module installed to honour it.
- *
- * The native flow returns an identity token, which Supabase exchanges directly. That
- * skips the browser round trip entirely, so it is also the faster path.
+ * Use Apple's native sheet on iOS and the browser PKCE flow on Android.
+ * iOS exchanges the returned identity token with the request's original nonce.
+ * Provider configuration, entitlements and a signed build still need acceptance.
  */
 
 export const isAppleSignInAvailable = async () => {
