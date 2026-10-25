@@ -2,120 +2,140 @@
 
 ## 25 October 2026 — current verified state and remaining release gates
 
-This section supersedes all older dated instructions below. **The live site is release
-`e0c021e9fde328098f33fb216b1efa720eadf2f1`**, not the new signed-in design. Vercel production
-`dpl_ASWQX8BSgase9gUDTAZLxiF5GwDn` is READY; fresh public `build-info.json` reads on
-`xoot.co.za` and `xoot.vercel.app` both returned that exact revision on 25 October. It includes
-PR88 Trust/Journal, PR89 address/auth corrections and PR90 public crawlability. Approved homepage,
-`main`, unrelated PRs and production provider/tracking switches were preserved.
+This section supersedes the older dated instructions below. The live website remains approved release
+`e0c021e9fde328098f33fb216b1efa720eadf2f1`. Both public build-info endpoints returned that revision
+after today's staging work; Vercel production `dpl_ASWQX8BSgase9gUDTAZLxiF5GwDn` is READY.
+No new website release, production migration, tracking/calling activation, admin grant, paid upgrade,
+credit, phone number, native build or Apple membership was performed. Preserve the approved homepage,
+`main`, unrelated PRs and production-only safety-PIN migration `20261008011821`.
 
-### Website source and verification
+### Website and signup
 
-- [PR92](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/92), source `26bb0ea` plus
-  the final spacing/documentation follow-up, carries signed-in booking flowers; handoff Care+
-  red heart/plus and type; account links to Airbnb/office dashboards, rewards and widgets;
-  server-issued referral sharing; customer/Xooter review composition with honest empty states;
-  real browser install controls and a private in-app upcoming-visit summary. It does not publish
-  prototype testimonials, invent ETA/rewards, or implement desktop OS widgets. Property dashboards
-  remain partial implementations of the complete handoff journeys.
-- Independent website cross-review closed both findings at `26bb0ea`: canonical accepted/payment/
-  reassigned/replacement statuses remain visible, and invite validation matches the server's
-  four-character minimum. Negative control: old source 9 failed/28 passed; corrected 37 passed.
-  Independent checks passed new regressions; two unchanged tests needed a larger local timeout.
-- Local serial unit-only suite at `26bb0ea`: **166 files, 1,674 passed, 7 existing skips**.
-  Web TypeScript, scoped lint, explicit production build, 50-page prerender and artifact security
-  scan and source/security checks passed. This does not include the separate rendered browser suite or live provider/device
-  acceptance. Isolated synthetic visual checks covered 390px and 1280px layouts and loaded handoff
-  fonts. A final 390px widget check found and corrected missing side padding.
-- GitHub release/security/PostgreSQL jobs **did not start**. The actual check annotation reports
-  failed recent account payments or a spending-limit issue. No budget, billing setting or plan was
-  changed; the founder explicitly requested preserving the current plan and spending limit.
-  Vercel preview success and local tests do not replace these required CI results. Keep
-  the PR unmerged until the checks run; do not post a fabricated successful status.
+- PR92 prepares the signed-in handoff: booking flowers, Care+ mark/type, account navigation,
+  Airbnb/office dashboard links, referrals, honest customer/Xooter review empty states and private
+  upcoming-visit cards. Property dashboards remain partial; desktop install shortcuts/cards are not
+  native OS widgets. Personalisation remains planning only.
+- PR95 at reviewed `d036520a77b61d38c92ea5441c733c7910bfb3ac`, stacked on PR92, corrects the
+  unfinished password-signup flow. A signup without a session stays on a dedicated Confirm your
+  email screen with the `000000` placeholder, complete code entry and signup-specific resend.
+  An unconfirmed password sign-in returns to that step. Confirmation and safe redirects remain.
+- Production read-only evidence showed signup 200 followed by email_not_confirmed, and one
+  email-send rate-limit response. The current signup trigger safely guards optional referral
+  dependencies; missing referral tables were not demonstrated as this bug's cause.
+- Production's Confirm sign up email now has the saved subject **Confirm your Xoot email**, branded
+  purple content, `{{ .Token }}` and a secure confirmation link. A fresh dashboard tab/preview
+  read back only the new template with Save disabled. Production Email OTP length is six.
+- Signup validation: 24 focused tests, independent 20/20, TypeScript and scoped lint passed.
+  The old implementation failed three added regressions. Production-mode build using staging public
+  configuration passed with 50 prerendered pages and an artifact scan. Synthetic browser checks
+  covered signup/confirmation/resend at small and desktop sizes. These do not prove a new real
+  account completed code/link confirmation. PR95 preview is READY at its exact source revision,
+  but the website signup correction is **not yet live**.
+- PR92's serial source suite passed 166 files / 1,674 tests / seven existing skips. Required GitHub
+  release/security/PostgreSQL jobs did not start: their actual annotation cites failed recent
+  payments or a spending-limit issue. Keep the founder's existing plan and spending limit; no
+  fabricated check, bypass or production promotion. Vercel/local successes do not replace these checks.
 
-### Email and authentication
+### Four-account GPS/ETA acceptance
 
-- Brevo **Free** sends transactional email as **Xoot <no-reply@xoot.co.za>**, with separate
-  production/staging SMTP keys saved privately by the founder. Staging's first authorised alias
-  received its code and completed normal Auth sign-in. Production Email OTP length was saved and
-  read back as **6**; the website placeholder is `000000`. The founder confirmed an earlier real
-  email-code sign-in, but exact six-digit production acceptance has not been rerun here.
-- Zoho **Free** has four actual users: `nkosinathi@xoot.co.za`, `tshepang.mahlase@xoot.co.za`,
-  `support@xoot.co.za`, `newsletter@xoot.co.za`. The requested `tshepang@xoot.co.za` is a verified
-  alias of Tshepang's existing mailbox; his longer primary login remains. Founder completed the
-  three new passwords privately. MX, SPF and Zoho DKIM are verified; existing Brevo/DNS records
-  remain. Mailbox send/receive acceptance and newsletter campaign/consent setup are still open.
-  `no-reply` is Brevo's outbound sender, not an additional Zoho inbox. Branded email content does
-  not guarantee a custom sender avatar in every mail client.
-- Public production Auth settings returned **Google enabled, Email enabled, Apple disabled**.
-  Search Console domain ownership is verified. Google branding review remains separate; the
-  provider's ownership-propagation wait has not yet elapsed/retry has not been submitted. A paid
-  custom Supabase Auth domain was not purchased, so universal Xoot-only provider URLs are not proven.
-- [PR94](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/94) isolates native Apple
-  nonce/state/session binding, official iOS button, Android browser flow and strict/coalesced PKCE
-  callbacks. At `be3bd74`, 18 pure native-auth tests and web/mobile TypeScript pass. Independent
-  native review cleared the ten changed paths with 21 synthetic assertions; these are not an Expo
-  lifecycle or device test. Expo is actually signed in as `don-pacho777`, with existing `zoot`
-  project ID `b4c6e0b8-e2e7-40c5-b259-3b34c79be30b` linked to the correct GitHub repository. That
-  ID matches app config. PR94 now aligns its slug/owner with that existing project (`zoot` /
-  `don-pacho777`), while keeping the displayed Xoot name, bundle IDs and callback schemes.
-  The follow-up at `d7c84d8` independently cleared identity/override and all-environment comparisons;
-  the existing identity suite passed 5/5 and local Expo configuration resolved the expected project.
-  The Apple account has no active Developer Program membership, and the founder explicitly chose
-  to keep Apple pending. Signing/associations, authorised devices and signed-build acceptance remain
-  required; no project was renamed and no build or membership was purchased.
+- All four founder-authorised aliases actually completed normal staging Auth through privately
+  entered email codes. Approval was never substituted for verification. All aliases deliver to the
+  authorised founder's Gmail; they are not Zoho inboxes.
+- Six real staging assertion groups passed: four distinct normal subjects; no-auth/outsider/forged
+  publishing denial; consent/accuracy/staleness/replay rejection; assigned-customer fresh no-store
+  GPS without history; an actual Mapbox road ETA from synthetic public test inputs with no private
+  route/coordinates returned; and STOP revocation without disturbing the other customer.
+- Parent STOP cleanup was confirmed. Reviewed disposable fixture SQL was first rolled back,
+  then used only in named staging. Post-cleanup SQL found zero fixture locations, bookings, jobs,
+  synthetic worker rows and messages. Synthetic workers were never evidence of real verified
+  worker capacity or production approval.
+- The 45-minute helper expired and erased its in-memory sessions. No session token, password or
+  email code was persisted. Admin AAL1/AAL2, physical iPhone/Android permission/background/expiry
+  behaviour and a signed native build remain separate uncompleted checks.
+- PR71 contains the normal-JWT encrypted-chat acceptance module, but it did not execute in the
+  observed six-group run: fresh metadata found no generated chat devices or messages. Do not claim
+  real encrypted-chat or provider-call acceptance. Parent-owned chat-device cleanup at reviewed
+  `1d83852` passed 15/15 independently; both original cleanup defects fail negative controls.
+  A combined run must also demonstrate the additional communications checks rather than accepting
+  GPS-only output. That completeness follow-up passed 17/17 independently at 729a523.
 
-### Addresses, GPS/ETA and communications
+### Address verification and cost controls
 
-- [PR81](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/81) reviewed source `0748885` and
-  [PR71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71) source `8e491fd` safely include
-  the approved release base. PR81's provider match regression passes 22 focused tests and received
-  independent review. Exact Gauteng source geometry/licence/provenance is pinned in the PR; intended
-  geography never asserts actual approved worker availability.
-- Staging `check-service-coverage` **v8 ACTIVE, verify_jwt=true**, with all five returned runtime
-  files byte-matched to submitted PR81 source. Missing/malformed bearer requests both returned 401.
-  `xoot-job-location` remains **v11 ACTIVE, verify_jwt=true**. Staging's actual GPS table has RLS,
-  zero client policies/rows, and no SELECT/INSERT/UPDATE/DELETE privileges for anon or authenticated;
-  service_role retains its server privileges. These checks are not the four-session privacy test.
-- Only **one** of four founder-approved staging aliases actually exists as a confirmed normal Auth
-  user/session. Approval of the remaining identities is recorded separately from verification.
-  The loopback helper is no longer running and no session tokens were persisted. Its 11 synthetic
-  transport/cleanup tests pass. The parameterised synthetic fixture SQL received static review but
-  **was not executed**. Real customer/Xooter isolation, STOP/purge, stale fixes, actual ETA/provider
-  operation, admin AAL2 dispatch, separately verified workers and device acceptance remain open.
-- Approved active service zones remain **0**. Paid Mapbox address suggestions and verified-coverage
-  enforcement remain off; production address authenticity and live GPS/ETA are not accepted.
-  Permanent Geocoding/Directions licensing, provider/budget acceptance, all shared-module importer
-  delivery and exact schema migration checks must be completed before activation. Never blindly
-  redeploy the two booking writers across the known pricing/schema drift.
-- [PR93](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/93), reviewed source `d3e27d7`, binds voice
-  identities to booking/actor and checks authoritative contact-window eligibility at mint/join;
-  adds a separate disabled `twilio.in_app_voice` control, five-minute/two-party/rate limits and no
-  recording. Eligibility is a bounded five-minute lease, not instantaneous mid-call cancellation.
-  Unsupported Conversations returns unavailable without grants/provider/outbox writes;
-  existing Supabase E2EE website text is retained. Old code failed 19/20 new synthetic checks;
-  corrected expanded suite passes **68**, final actual-handler subset **28**, root TypeScript and
-  four-handler Deno checks pass. Independent review found and closed an inherited signature-order
-  defect; both validators now match Twilio's ordinal parameter order, with a published fixed-vector
-  test independent of the request signer. The reviewer reran 28/28 successfully.
-- Staging-only delivery: `twilio-voice-twiml` **v21**, `twilio-token` **v22**,
-  `twilio-conversation` **v22**, `twilio-voice-status` **v21**, all ACTIVE. All 16 returned runtime
-  files match submitted source exactly. JWT verification stays on for the two user endpoints;
-  the webhooks retain their existing signature-based authentication. Missing bearer requests
-  returned 401 and unsigned callbacks returned 403. The dedicated voice control still has zero
-  rows / none enabled. New migration is **not applied**, production handlers are unchanged and
-  genuine JWT/provider/device tests remain required. Existing Twilio operational/masked controls
-  are enabled in staging and disabled in production; these do not gate the old WebRTC handler.
-  Twilio remains Trial; no calls, SMS, credits, numbers or upgrade were purchased. Status correlation,
-  callback retention and usage cost acceptance remain before real activation.
+- PR81 pins exact WGS84 Gauteng polygons and provenance/licence from the MDB/OCHA source distributed
+  through HDX. Province approval defines intended geography, independently of verified Xooter availability.
+  Smart Address Match requires exact/high house-number and street agreement; uncertain input goes
+  to review. Its 22 focused checks and independent review passed.
+- Staging check-service-coverage v8 is ACTIVE with JWT verification; all five returned runtime files
+  matched reviewed source. xoot-job-location v11 is ACTIVE with JWT verification and private,
+  service-only RLS GPS storage.
+- Staging applied reviewed global-budget migration `20261025195100_mapbox_geocoding_global_budget`.
+  Source and remote SHA256 are
+  `b5d83f923763fb55423a7783bb23941b6c357d7a4b0a7d6a226fcfc627960956`.
+  The total allowance is **zero**, consumed zero, never automatically renewed. It denies provider
+  attempts before a paid Permanent Geocoding fetch. All seven client table privileges and client
+  RPC execution are denied; the service-only RPC is SECURITY INVOKER.
+- Real disposable PostgreSQL tests proved exactly three of 20 concurrent users could consume a
+  three-query allowance, the existing 12/hour/user ceiling, no renewal and fail-closed exhaustion.
+  Restoring the old per-user-only function failed the zero-allowance regression. The security advisor
+  added only intentional service-table RLS/no-policy information; existing warnings are unchanged.
+- This allowance covers only the backend Permanent Geocoding coverage route. It is **not** a universal
+  Mapbox invoice cap: map loads, Directions and other routes remain separate. A specifically bounded
+  owner allowance and provider licensing acceptance are needed for paid coverage acceptance.
+  [Mapbox pricing](https://www.mapbox.com/pricing) currently lists Permanent Geocoding at USD5/1,000 first-tier queries; 20 attempts would be
+  USD0.10 before tax. Temporary results cannot be stored to evade this licence.
+- Approved active zones remain zero; paid suggestions and coverage enforcement remain off.
+  Production has not received GPS/coverage handlers. Actual provider-match/coverage and safe booking
+  writer/schema reconciliation remain before activation. Never blindly push or deploy the booking writers.
 
-No production migration, admin-role grant, payment/voice/tracking activation or new native build
-was performed. Preserve production-only migration `20261008011821`; no ledger repair/stamping or
-blind `db push`. Standalone Laundry & Ironing and 52-visit gift fulfilment remain incomplete; current
-laundry/ironing add-ons do not prove either standalone product. Home-first personalisation remains
-planning only, with optional exploration before a verified booking address.
+### Calls and inside-Xoot chat
+
+- PR93's atomic room/lease correction was independently cleared at `dbab693`. PostgreSQL 17.6
+  tests exercised actual competing transactions, row-lock waiting, reordered terminal callbacks,
+  deleted original caller, fresh redial and scheduled cascade. Removing the room lock failed the
+  concurrency negative control. Focused call/lifecycle guards passed 77 checks; independent four-suite
+  rerun passed 73. The two actual staging-generated RPC type declarations passed the existing
+  11-name guard and TypeScript. The broad full-suite retry was interrupted after host memory
+  exhaustion; there is no current-head full-suite pass.
+- Staging applied `20261025191835_in_app_voice_ephemeral_sessions`; exact source/remote SHA256:
+  `ab1bb7202e5edc1b6704e6b3b7df630ac1b069d54b8ea3634cdc21f350bb3792`.
+  The room and leg share an immutable maximum five-minute expiry. Service-only serialized RPCs
+  prevent terminal calls reopening; per-minute pg_cron purges expired rooms and cascades children.
+  Legacy client TRUNCATE/REFERENCES/TRIGGER privileges were removed without deleting legacy call data.
+- Staging delivery/readback: twilio-in-app-voice-status v1, twilio-voice-twiml v22 and twilio-token v23;
+  all 16 bundled runtime files exactly matched reviewed source. Token JWT protection remains on,
+  webhooks use signatures. Missing bearer returns 401, unsigned callbacks 403. Staging rejects the
+  production website Origin as configured; do not weaken its CORS.
+- Both new tables have RLS, zero client policies, all client privileges denied and no rows.
+  Client RPC execution is denied. The separate twilio.in_app_voice control is absent/off.
+  No real Twilio provider call, two-device audio test or production call delivery is claimed.
+  Twilio remains Trial; no SMS, purchased number, credits or upgrade. Eligibility is a bounded lease,
+  not instant mid-call cancellation.
+- Existing website text uses Supabase encrypted messages; production's chat control is on, but
+  actual two-party send/decrypt/outsider acceptance is still pending. Native chat/voice UI and signed
+  transport acceptance are not complete. Unsupported Conversations returns unavailable, without
+  granting credentials or creating provider traffic.
+
+### Email, native app and other remaining work
+
+Brevo Free handles transactional sending as **Xoot <no-reply@xoot.co.za>**, with separate production
+and staging SMTP keys privately saved by the founder. Zoho Free has the founder/support/newsletter
+inboxes; tshepang@xoot.co.za is an alias of the existing longer Tshepang mailbox. MX/SPF/DKIM were
+verified, but actual mailbox send/receive and newsletter consent/campaign acceptance remain.
+A branded email does not guarantee a sender avatar in every mail client.
+
+Google/Email are enabled; Apple is disabled. Google brand approval and a custom Auth domain remain
+separate; no paid domain was purchased. Expo ownership/project were actually verified as
+don-pacho777 / zoot / b4c6e0b8-e2e7-40c5-b259-3b34c79be30b. PR94 preserves that identity and adds
+reviewed native nonce/state/PKCE corrections; synthetic tests/config checks do not replace signing
+or device acceptance. The founder explicitly keeps Apple pending because there is no enrolled team.
+The iPhone 12 and Android tablet are available; no new paid build or device installation is implied.
+
+Standalone Laundry & Ironing, 52-visit gift fulfilment, complete handoff property dashboards and
+OS widgets remain incomplete. Existing add-ons, source-only branding and prepared app code do not
+prove these product journeys are production-ready.
 
 ### Older dated checkpoints (historical evidence only)
+
 
 ## 23 October 2026 — founder website refinements published
 

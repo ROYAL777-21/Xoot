@@ -21,7 +21,11 @@ other has already tried.
 
 ---
 
-## HOLDING — 25 October 2026 — bounded Mapbox address verification costs
+## RELEASED CLAIM — 25 October 2026 — bounded Mapbox address verification costs
+
+Reviewed d4d64e2 global non-renewing allowance applied only to staging as 20261025195100; exact source/remote SHA b5d83f923763fb55423a7783bb23941b6c357d7a4b0a7d6a226fcfc627960956. Actual allowance/consumed are zero, RPC zero-budget denial and all client privilege/RPC denials confirmed. Filename follows actual remote ledger without SQL changes or ledger repair. Real concurrent PostgreSQL and negative controls passed; independent review cleared zero-default staging delivery. Approved active zones remain zero. Owner has not authorised paid attempts; no production migration, provider request or worker/geography activation. Evidence/checklist current; claim released.
+
+Earlier preparation notes below are historical.
 
 Founder requests address coverage activation with minimum cost after a Mapbox invoice. Current Permanent Geocoding path has only a 12/hour/user limit, which is not a platform spending ceiling. Claim an additive service-only budget migration and disposable real PostgreSQL concurrent-budget checks, plus coverage release evidence. Keep the existing RPC signature and per-user guard, add a global non-renewing request ceiling set to zero until a specifically bounded owner allowance is approved. Every permitted attempt consumes that allowance before the provider request; never refund failures into an uncontrolled retry loop. No paid query, token readback, temporary-result caching shortcut, active-zone approval, worker approval or production rollout. Cross-role SQL and guard checks are required for the founder's explicit financial constraint. Preserve exact licensed Gauteng polygons and PR71/92/93/94/95.
 

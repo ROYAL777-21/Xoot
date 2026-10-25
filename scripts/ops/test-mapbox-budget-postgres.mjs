@@ -12,7 +12,7 @@ sql('create database "'+database+'";','postgres');
 try{
   sql(`create schema auth;create table auth.users(id uuid primary key);alter default privileges in schema public grant all on tables to anon,authenticated,service_role;`);
   const base=readFileSync(new URL('../../supabase/migrations/20261019185331_xoot_approved_service_zones.sql',import.meta.url),'utf8');
-  const migration=readFileSync(new URL('../../supabase/migrations/20261025192502_mapbox_geocoding_global_budget.sql',import.meta.url),'utf8');
+  const migration=readFileSync(new URL('../../supabase/migrations/20261025195100_mapbox_geocoding_global_budget.sql',import.meta.url),'utf8');
   sql(base);sql(migration);
   if(process.env.XOOT_MAPBOX_TEST_PLANT==='per-user-only')sql(base.match(/create or replace function public\.xoot_consume_coverage_query[\s\S]+?\$\$;/i)[0]);
   else if(process.env.XOOT_MAPBOX_TEST_PLANT)throw new Error('Unknown negative control');
