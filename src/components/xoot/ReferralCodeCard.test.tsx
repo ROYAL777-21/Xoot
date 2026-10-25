@@ -29,7 +29,7 @@ it("discards a previous owner's late response and shares only the current server
   harness.auth.user = null; view.rerender(<MemoryRouter><ReferralCodeCard /></MemoryRouter>);
   expect(screen.queryByText("XOOT_B")).toBeNull();
 });
-it.each([null, { code: "<script>bad</script>" }])("keeps absent or malformed backend codes unshareable", async data => {
+it.each([null, { code: "ABC" }, { code: "<script>bad</script>" }])("keeps absent or malformed backend codes unshareable", async data => {
   harness.auth.user = { id: "owner-a" }; harness.read.mockResolvedValue({ data, error: null });
   mount(); await screen.findByText("Your referral code could not be loaded.");
   expect(screen.queryByRole("button", { name: "Copy invite link" })).toBeNull();
