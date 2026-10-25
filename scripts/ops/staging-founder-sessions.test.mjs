@@ -31,9 +31,18 @@ test('requires exact Host, Origin, CSRF, bounded form and approved aliases befor
   assert.equal((await post('/request', {account:'customerA'})).status, 429);
   assert.equal(requests, 1);
 });
-test('requires four aliases forming the two authorised founder pairs', () => {
+test('requires four distinct aliases forming approved A/B role pairs', () => {
   assert.throws(()=>validateFounderAliases({...FOUNDER_ALIASES,workerA:'other+xoot-xooter@example.test'}));
   assert.throws(()=>validateFounderAliases({...FOUNDER_ALIASES,workerB:FOUNDER_ALIASES.workerA,customerB:FOUNDER_ALIASES.customerA}));
+});
+
+test('accepts the approved one-inbox arrangement without mixing role or pair suffixes', () => {
+  const single = { customerA:'founder+xoot-customer@example.test', workerA:'founder+xoot-xooter@example.test',
+    customerB:'founder+xoot-customer-b@example.test', workerB:'founder+xoot-xooter-b@example.test' };
+  assert.deepEqual(validateFounderAliases(single), single);
+  assert.throws(()=>validateFounderAliases({...single,workerB:'founder+xoot-xooter-a@example.test'}));
+  assert.throws(()=>validateFounderAliases({...single,workerB:'founder+xoot-customer-b@example.test'}));
+  assert.throws(()=>validateFounderAliases({...single,customerB:'founder+xoot-customer-c@example.test'}));
 });
 test('normal Auth sessions stay server-side and runner needs four distinct users, fixtures and consent', async () => {
   const ids = Object.keys(FOUNDER_ALIASES); let subject = '', ran = false, runs = 0;

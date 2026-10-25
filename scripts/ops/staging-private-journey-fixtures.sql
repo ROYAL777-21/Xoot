@@ -35,11 +35,11 @@ begin
   select lower(email) into eb from auth.users where id=cb and email_confirmed_at is not null and not is_anonymous;
   select lower(email) into ewb from auth.users where id=wb and email_confirmed_at is not null and not is_anonymous;
   if ea is null or ewa is null or eb is null or ewb is null
-    or ea !~ '^[^+@]+\+xoot-customer@gmail\.com$' or eb !~ '^[^+@]+\+xoot-customer@gmail\.com$'
-    or ewa !~ '^[^+@]+\+xoot-xooter@gmail\.com$' or ewb !~ '^[^+@]+\+xoot-xooter@gmail\.com$'
-    or replace(ea,'+xoot-customer@','@') <> replace(ewa,'+xoot-xooter@','@')
-    or replace(eb,'+xoot-customer@','@') <> replace(ewb,'+xoot-xooter@','@')
-    or ea=eb then raise exception 'Four confirmed normal Auth aliases from the two authorised founder pairs required'; end if;
+    or ea !~ '^[^+@]+\+xoot-customer(-a)?@gmail\.com$' or eb !~ '^[^+@]+\+xoot-customer(-b)?@gmail\.com$'
+    or ewa !~ '^[^+@]+\+xoot-xooter(-a)?@gmail\.com$' or ewb !~ '^[^+@]+\+xoot-xooter(-b)?@gmail\.com$'
+    or replace(ea,'+xoot-customer','+xoot-pair') <> replace(ewa,'+xoot-xooter','+xoot-pair')
+    or replace(eb,'+xoot-customer','+xoot-pair') <> replace(ewb,'+xoot-xooter','+xoot-pair')
+    or ea=eb then raise exception 'Four confirmed normal Auth aliases in the authorised A/B pairs required'; end if;
   if ctx->>'action'='create' then
     if exists(select 1 from public.xooters where id in(xa,xb) or user_id in(wa,wb))
       or exists(select 1 from public.bookings where id in(ba,bb))

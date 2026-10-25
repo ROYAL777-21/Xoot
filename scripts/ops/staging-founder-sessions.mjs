@@ -11,13 +11,14 @@ export const STAGING_AUTH = 'https://fxmxyabdjqviqbcxmvlp.supabase.co';
 export function validateFounderAliases(aliases) {
   const labels = ['customerA','workerA','customerB','workerB'];
   if (!aliases || Object.keys(aliases).length !== 4 || labels.some(label => typeof aliases[label] !== 'string' ||
-    !/^[^+@\s]+\+xoot-(customer|xooter)@[a-z0-9.-]+\.[a-z]{2,}$/i.test(aliases[label]))) throw new Error('Four authorised alias addresses are required in the private local config');
-  const root = (value, role) => value.toLowerCase().replace('+xoot-' + role + '@','@');
+    !/^[^+@\s]+\+xoot-(customer|xooter)(-[ab])?@[a-z0-9.-]+\.[a-z]{2,}$/i.test(aliases[label]))) throw new Error('Four authorised alias addresses are required in the private local config');
+  const parts = value => /^(.*?)\+xoot-(customer|xooter)(-[ab])?@(.*)$/i.exec(value.toLowerCase());
   for (const pair of ['A','B']) {
-    if (!aliases['customer'+pair].includes('+xoot-customer@') || !aliases['worker'+pair].includes('+xoot-xooter@') ||
-      root(aliases['customer'+pair],'customer') !== root(aliases['worker'+pair],'xooter')) throw new Error('Each customer and Xooter alias must belong to the same approved founder');
+    const c = parts(aliases['customer'+pair]), w = parts(aliases['worker'+pair]);
+    if (c[2] !== 'customer' || w[2] !== 'xooter' || c[1] !== w[1] || c[4] !== w[4] || c[3] !== w[3] ||
+      (c[3] && c[3] !== '-' + pair.toLowerCase())) throw new Error('Each customer and Xooter alias must form its approved A/B pair');
   }
-  if (new Set(Object.values(aliases).map(value=>value.toLowerCase())).size !== 4) throw new Error('Two distinct founders and four distinct aliases are required');
+  if (new Set(Object.values(aliases).map(value=>value.toLowerCase())).size !== 4) throw new Error('Four distinct authorised aliases are required');
   return Object.freeze(Object.fromEntries(labels.map(label=>[label,aliases[label].toLowerCase()])));
 }
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
