@@ -43,7 +43,7 @@ sql(`create extension pg_cron;
   alter default privileges in schema public grant all on tables to anon,authenticated,service_role;
   insert into auth.users values ('11111111-1111-4111-8111-111111111111'),('11111111-1111-4111-8111-222222222222');
   insert into public.bookings values ('22222222-2222-4222-8222-222222222222'),('33333333-3333-4333-8333-333333333333');`);
-let migration = readFileSync(new URL('../../supabase/migrations/20261025151723_in_app_voice_ephemeral_sessions.sql',import.meta.url),'utf8');
+let migration = readFileSync(new URL('../../supabase/migrations/20261025191835_in_app_voice_ephemeral_sessions.sql',import.meta.url),'utf8');
 if (process.env.XOOT_VOICE_TEST_PLANT === 'no-room-lock') {
   const actual = migration;
   migration = migration.replace('where r.id = p_room_id for update;', 'where r.id = p_room_id;');
