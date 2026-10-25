@@ -198,14 +198,15 @@ describe("Twilio secrets contract", () => {
     }
   });
 
-  it("records that the two twilio.* switches gate PSTN only, not the data call", () => {
-    // Corrected 2026-08-09. `twilio-token` mints the WebRTC token and never reads these controls;
-    // only `create-masked-call` and `ops-workflow` do. Stating it in the runbook stops the next
-    // person flipping switches to fix a data-call problem they cannot fix that way.
+  it("requires an independent disabled-by-default gate for the data call", () => {
     expect(tokenFn).not.toContain("twilio.masked_voice\"");
-    expect(tokenFn).not.toContain("isOperationalControlEnabled");
+    expect(tokenFn).toContain("isOperationalControlEnabled");
+    expect(tokenFn).toContain('"twilio.in_app_voice"');
     const masked = read("supabase/functions/create-masked-call/index.ts");
     expect(masked).toMatch(/twilioAccountReady && maskedVoiceReady/);
-    expect(runbook).toContain("The WebRTC token does not read these controls");
+    expect(runbook).toContain("twilio.in_app_voice");
+    const gate = read("supabase/migrations/20261025080000_in_app_voice_control.sql");
+    expect(gate).toMatch(/'twilio\.in_app_voice',\s*'provider_gate',\s*'all',\s*false/);
+    expect(gate).toContain("on conflict (control_key, environment) do nothing");
   });
 });

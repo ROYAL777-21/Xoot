@@ -1,8 +1,12 @@
+import { getServiceClient } from "../_shared/action-utils.ts";
+import { consumeRateLimit, isOperationalControlEnabled } from "../_shared/governance-utils.ts";
+import { activeVoiceWindow, boundVoiceCaller } from "../_shared/in-app-voice.ts";
+
 /**
  * Returns the TwiML that joins a masked call into a conference.
  *
  * RECOVERED FROM PRODUCTION 2026-08-02, where it ran with no source in this repository.
- * Committed verbatim — the code is sound and the fix, if any, should be a separate diff.
+ * Every join now requires both Twilio's signature and current Xoot booking authorisation.
  *
  * It runs with `verify_jwt: false`, which is correct: Twilio calls it, not a signed-in user.
  * What makes that safe is the HMAC-SHA1 signature check below, which is Twilio's documented
@@ -73,7 +77,23 @@ const validateTwilioWebhook = async (req: Request, form: FormData) => {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  const form = req.method === "POST" ? await req.formData() : new FormData();
+  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  const denied = () => new Response("Calling is unavailable", { status: 403, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
+  try {
+  if (!req.headers.get("content-type")?.toLowerCase().startsWith("application/x-www-form-urlencoded") || !req.body) return denied();
+  const reader = req.body.getReader(); const chunks: Uint8Array[] = []; let length = 0;
+  try {
+    while (true) {
+      const chunk = await reader.read(); if (chunk.done) break;
+      length += chunk.value.byteLength;
+      if (length > 16_384) { await reader.cancel(); return denied(); }
+      chunks.push(chunk.value);
+    }
+  } finally { reader.releaseLock(); }
+  const bytes = new Uint8Array(length); let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  const form = new FormData();
+  for (const [key, value] of new URLSearchParams(new TextDecoder().decode(bytes))) form.append(key, value);
   const validTwilioRequest = await validateTwilioWebhook(req, form);
   if (!validTwilioRequest) {
     return new Response("Twilio webhook signature validation failed or is not configured.", {
@@ -82,18 +102,26 @@ Deno.serve(async (req) => {
     });
   }
 
-  const bookingId = String(form.get("bookingId") ?? new URL(req.url).searchParams.get("bookingId") ?? "xoot");
-  const room = `xoot-masked-${bookingId.replace(/[^a-zA-Z0-9-]/g, "")}`;
+  const caller = boundVoiceCaller(form, Deno.env.get("TWILIO_ACCOUNT_SID") ?? "");
+  if (!caller) return denied();
+  const db = getServiceClient();
+  if (!await isOperationalControlEnabled(db, "twilio.in_app_voice")) return denied();
+  const window = await activeVoiceWindow(db, caller.bookingId, caller.actorId);
+  if (!window) return denied();
+  const rate = await consumeRateLimit(db, { bucket: "twilio.voice_join", actor: `${caller.actorId}:${caller.bookingId}`, action: "join", limitCount: 8, windowSeconds: 600 });
+  if (!rate.allowed) return denied();
+  const room = `xoot-masked-${caller.bookingId}`;
   const callbackBase = Deno.env.get("SUPABASE_URL") ?? "";
   const statusCallback = callbackBase ? `${callbackBase}/functions/v1/twilio-voice-status` : "";
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Dial>
-    <Conference startConferenceOnEnter="true" endConferenceOnExit="true" statusCallback="${escapeXml(statusCallback)}" statusCallbackEvent="start end join leave">${escapeXml(room)}</Conference>
+  <Dial timeLimit="${window.seconds}">
+    <Conference record="do-not-record" maxParticipants="2" participantLabel="${window.role}" startConferenceOnEnter="true" endConferenceOnExit="true" statusCallback="${escapeXml(statusCallback)}" statusCallbackEvent="start end join leave">${escapeXml(room)}</Conference>
   </Dial>
 </Response>`;
 
   return new Response(xml, {
-    headers: { ...corsHeaders, "Content-Type": "text/xml" },
+    headers: { ...corsHeaders, "Content-Type": "text/xml", "Cache-Control": "no-store" },
   });
+  } catch { return denied(); }
 });

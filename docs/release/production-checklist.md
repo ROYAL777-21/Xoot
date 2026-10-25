@@ -385,7 +385,12 @@ decisions, staffing and consenting participants cannot be completed through code
   verify current provider support before investing in that path. Keep all secrets server-side.
   The in-app data call does not require purchasing a phone number. Provider usage may still be billed.
   For calling, `twilio.masked_voice` and `twilio.operational_messages` gate the phone-number fallback.
-  The WebRTC token does not read these controls; changing them cannot fix its missing credentials.
+  Proposed hardening adds the separate disabled-by-default `twilio.in_app_voice` control for both
+  token minting and each signed conference join; the two PSTN controls do not activate it.
+  Do not enable it until the new handlers, migration, signed provider callbacks, status correlation,
+  retention, two-party device acceptance and costs are reviewed. The hardening is not yet deployed.
+  Twilio Conversations credentials are not issued until its membership/roles/encryption transport
+  is accepted. Existing encrypted in-Xoot website messages use Supabase rather than paid SMS.
 - Care+, recurring, gifts, loyalty, property/business and Concierge remain separate feature gates.
   Insurance, SOS and paid bounty rewards need functioning providers and approved operations.
 - Vercel is the chosen website host. Netlify/Hostinger are legacy configuration, not additional launch
