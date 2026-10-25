@@ -73,11 +73,10 @@ describe("server-controlled Mapbox geofence rollout contract", () => {
     expect(legacyWriter).toContain("resolveLaunchRegion(address)");
   });
 
-  it("web booking check is opt-in, per-address keyed and cannot claim Xooter capacity", () => {
+  it("web booking check is opt-in, per-address keyed and preserves manual review", () => {
     expect(booking).toContain('import.meta.env.VITE_VERIFIED_COVERAGE === "true"');
     expect(booking).toContain('JSON.stringify([fullAddress, actualService])');
     expect(booking).toContain('await supabase.functions.invoke("check-service-coverage"');
-    expect(booking).toContain("Xooter availability for your date is confirmed separately");
     expect(booking).toContain("manual area review");
   });
 });

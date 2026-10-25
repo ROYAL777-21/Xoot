@@ -124,7 +124,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
       setCoverageCheck({ key: coverageKey, status: "review", message: "Enter a full service address first." });
       return;
     }
-    setCoverageCheck({ key: coverageKey, status: "loading", message: "Checking the approved operating area…" });
+    setCoverageCheck({ key: coverageKey, status: "loading", message: "Checking your address…" });
     try {
       const { data, error: failure } = await supabase.functions.invoke("check-service-coverage", {
         body: { address: fullAddress, service: actualService },
@@ -136,7 +136,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
         setCoverageCheck({ key: coverageKey, status: "error", message: "Location verification is temporarily unavailable. Contact Xoot to confirm." });
       } else if (response.data?.state === "available") {
         setCoverageCheck({ key: coverageKey, status: "in_zone",
-          message: "Address is inside an approved service area. Xooter availability for your date is confirmed separately." });
+          message: "Address verified." });
       } else {
         setCoverageCheck({ key: coverageKey, status: "review",
           message: "We cannot verify coverage automatically. Please request a manual area review." });
@@ -286,11 +286,10 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
           <div className="space-y-2 rounded-xl border border-border p-3">
             <button type="button" className="xoot-booking-pill"
               disabled={visibleCoverage?.status === "loading"}
-              onClick={() => void checkGeoCoverage()}>Verify this service area</button>
+              onClick={() => void checkGeoCoverage()}>Verify address</button>
             {visibleCoverage && <p role="status" className="xoot-booking-help">{visibleCoverage.message}</p>}
             <p className="xoot-booking-help">
-              Mapbox verifies the address and a server-approved operating-zone boundary.
-              This is separate from available Xooters, arrival time and a confirmed booking.
+              Check the address where you would like your Xooter to meet you.
             </p>
           </div>
         )}

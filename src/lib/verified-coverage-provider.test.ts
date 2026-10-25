@@ -14,6 +14,7 @@ function fixture(zones: unknown[] = [zone], budget = true) {
 }
 const result = (coordinates = [28.0473, -26.2041], country = "za", accuracy = "rooftop") => ({ features: [{
   geometry: { type: "Point", coordinates }, properties: { feature_type: "address",
+    match_code: { confidence: "exact", address_number: "matched", street: "matched" },
     context: { country: { country_code: country } }, coordinates: { accuracy } },
 }] });
 const base = { address: "1 Example Street, Johannesburg", service: "regular", actorId: "unit-actor", token: "pk.unit-test-only-token" };
@@ -56,5 +57,25 @@ describe("offline server geocoder and full Gauteng polygon contract", () => {
       vi.stubGlobal("fetch", fetcher);
       expect((await assessVerifiedCoverage({ ...base, ...fixture() })).state).toBe("unavailable");
     }
+  });
+  it("requires a strong query match even when the returned address has a rooftop point", async () => {
+    for (const match of [undefined, null, {},
+      { confidence: "low", address_number: "matched", street: "matched" },
+      { confidence: "medium", address_number: "matched", street: "matched" },
+      { confidence: "high", address_number: "plausible", street: "matched" },
+      { confidence: "exact", address_number: "unmatched", street: "matched" },
+      { confidence: "high", address_number: "matched", street: "unmatched" },
+    ]) {
+      const body = result();
+      const feature = body.features[0];
+      vi.stubGlobal("fetch", vi.fn(async () => Response.json({ features: [{ ...feature,
+        properties: { ...feature.properties, match_code: match } }] })));
+      expect(await assessVerifiedCoverage({ ...base, ...fixture() })).toEqual({ state: "review", reason: "address_match_requires_review" });
+    }
+  });
+  it.each(["exact", "high"])("accepts %s matches with a matched house number and street", async confidence => {
+    const body = result(); body.features[0].properties.match_code.confidence = confidence;
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json(body)));
+    expect((await assessVerifiedCoverage({ ...base, ...fixture() })).state).toBe("available");
   });
 });

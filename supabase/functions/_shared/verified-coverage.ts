@@ -85,6 +85,7 @@ export async function assessVerifiedCoverage({
   const first = body.features[0] as { geometry?: { coordinates?: unknown }; properties?: {
     feature_type?: unknown; context?: { country?: { country_code?: unknown } };
     coordinates?: { accuracy?: unknown };
+    match_code?: unknown;
   } } | undefined;
   if (!first || first.properties?.feature_type !== "address" ||
       String(first.properties?.context?.country?.country_code ?? "").toUpperCase() !== "ZA" ||
@@ -97,6 +98,17 @@ export async function assessVerifiedCoverage({
   const quality = first.properties?.coordinates?.accuracy;
   if (quality !== "rooftop" && quality !== "parcel" && quality !== "point") {
     return { state: "review", reason: "address_requires_pin_review" };
+  }
+
+  // A rooftop point describes the returned address, not its agreement with
+  // the customer's query. Smart Address Match must also confirm the number
+  // and street; a corrected/guessed address is never a positive booking check.
+  const match = first.properties?.match_code;
+  if (!match || typeof match !== "object" || Array.isArray(match) ||
+      !("confidence" in match) || !["exact", "high"].includes(String(match.confidence)) ||
+      !("address_number" in match) || match.address_number !== "matched" ||
+      !("street" in match) || match.street !== "matched") {
+    return { state: "review", reason: "address_match_requires_review" };
   }
 
   const verdict: CoverageResult = checkApprovedCoverage(
