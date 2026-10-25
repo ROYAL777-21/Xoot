@@ -1,3 +1,5 @@
+> Historical first delivery. The [atomic room follow-up](atomic-in-app-voice.md) and current production checklist supersede this handler-version/migration state.
+
 # In-app communications: reviewed source and disabled staging delivery
 
 Reviewed source `d3e27d7f3412423f0f9329412f8422ce612224c6` was delivered only to staging
