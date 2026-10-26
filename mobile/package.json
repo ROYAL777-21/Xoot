@@ -73,7 +73,8 @@
     "test:xooter-home": "tsx --test scripts/native-xooter-dashboard.test.mts",
     "test:maps": "tsx --test scripts/native-maps-readiness.test.mts",
     "test:growth": "tsx --test scripts/native-xooter-growth.test.mts",
-    "test:account-finance": "tsx --test scripts/native-account-finance.test.mts"
+    "test:account-finance": "tsx --test scripts/native-account-finance.test.mts",
+    "test:notifications": "tsx --test scripts/native-notifications.test.mts"
   },
   "overrides": {
     "uuid": "^11.1.1",
