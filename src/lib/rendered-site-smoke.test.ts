@@ -139,6 +139,7 @@ describe("rendered site smoke", () => {
 
   it.each([
     { name: "signup fields", auth: signupFirstPage.replace("Full name", "Unlabelled field") },
+    { name: "returning-user email field", auth: signupFirstPage.replace("emailLabel.append(email);", "emailLabel.append(email); emailLabel.hidden = true;") },
     { name: "email-code action", auth: signupFirstPage.replace("Send one-time code", "Disabled") },
     { name: "password action", auth: signupFirstPage.replace("Use your password instead", "Disabled") },
   ])("rejects a signup-first entry with broken $name", async ({ auth }) => {
