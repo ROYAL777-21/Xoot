@@ -5,6 +5,14 @@ other what it is holding. This file is how they find out.
 
 Roles and path ownership are in `/CLAUDE.md`. This file is the live state.
 
+## RELEASED CLAIM — 26 October 2026 — chat ciphertext participant read without recursive policies
+
+Reviewed exact SQL is applied only to staging as20261026024032 (SHA25687770e5317056987ea91a4e559bc2e7fd4221f3be9a3faa9558a2f26ae47058d). Private-schema owner UI and catalogue/ledger/ACL/RLS readbacks passed; message/job policies unchanged. Fresh four normal Auth sessions then passed9 actual GPS/ETA/E2EE/closed-voice groups. Disposable fixture rows are0; both new public device records revoked. Local positive/negative PostgreSQL checks passed; invalid OOM experiment is not acceptance. No production apply/merge/activation, browser Realtime, admin MFA or physical device/audio claim. Detailed26October evidence supersedes earlier failed chat runs. File claim released.
+
+Actual four-account staging test at f6dd7b6 failed customer-to-Xooter REST read with HTTP500/SQLSTATE42P17 after server-authorised ciphertext insertion. Catalog confirms messages SELECT expands bookings -> xooter_jobs -> bookings. Claim one CLI-created migration for a private auth.uid-bound read predicate and only messages SELECT policy, an isolated PostgreSQL positive/negative fixture harness and release evidence. Preserve booking/job RLS and current customer/admin/accepted-assigned-worker boundaries; no public data endpoint, arbitrary actor, client write grant or production change. Security-definer use, if necessary to break recursion, is limited to a private boolean predicate with empty search_path and explicit grants. Independent security review and actual staging verification remain required.
+
+Scope correction from independent architecture review before further edits: BookingDetail itself reads bookings and xooter_jobs, so a messages-only predicate would leave the website broken. Replace only the canonical bookings_participant_read policy with the private fixed-auth.uid predicate, retaining original messages and job policies. Require current booking assignment plus accepted matching job for worker reads, denying stale reassigned workers. Test all three actual read paths, keep private columns/other policies/write grants unchanged, and record inherited role-only admin semantics separately from AAL2 acceptance. The initial messages-only SQL draft was never applied.
+
 ## How to use it
 
 **Claim before you code, and push the claim.** An unpushed claim is invisible and therefore
