@@ -14,6 +14,7 @@ import {
   toNumber,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import { persistApplicationDocument } from "./document-persistence.ts";
 
 const docTypes = new Set(["id", "proof_of_residence", "bank_statement", "selfie"]);
 
@@ -126,12 +127,11 @@ Deno.serve(async (req) => {
         .eq("user_id", user.id)
         .maybeSingle();
       if (!application?.id) return fail("application not found", origin, 404);
-      await supa.from("xooter_documents").insert({
+      await persistApplicationDocument(supa, {
         user_id: user.id,
         application_id: application.id,
         doc_type: docType,
         storage_path: storagePath,
-        status: "pending",
       });
       if (docType === "selfie") {
         await supa.from("xooter_applications").update({ selfie_storage_path: storagePath }).eq("id", application.id);
