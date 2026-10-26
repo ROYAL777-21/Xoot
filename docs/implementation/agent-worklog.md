@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 26 October 2026 — address recall and honest matching guidance
+
+Founder reports a complete Sunninghill address is missing. PR97 holds calendar copy recovery;
+claim this PR81 search handler/provider tests and VerifiedAddressInput interaction guidance.
+Compare only redacted outcomes from approved capped staging requests; never persist the private
+query or Temporary payload. Improve result depth and an approved Gauteng proximity bias without
+excluding other ZA addresses. Keep every upstream attempt under the existing atomic allowance,
+keep final Permanent accuracy/match rules, and do not fabricate coverage or worker availability.
+Align the documented provider word limit. Cross-role provider guards require independent review.
+No production activation, new provider spend allowance or automatic retry fan-out.
+
 ## RELEASED CLAIM — 26 October 2026 — address typeahead, province-wide discovery and cost boundaries
 
 Delivered reviewed lookup v1to staging;5runtime files match91fbc96. Founder explicitly approved
