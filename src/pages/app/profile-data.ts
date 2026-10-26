@@ -16,8 +16,7 @@ export async function readIdentity(owner: string): Promise<Identity> {
   return result.data;
 }
 
-export async function readProfileOverview(owner: string) {
-  const profile = await readIdentity(owner);
+export async function readPlaces(owner: string): Promise<PlaceSummary[]> {
   const places: PlaceSummary[] = [];
   for (let start = 0; ; start += pageSize) {
     const result = await supabase.from("household_profiles").select("id,label,address,is_default")
@@ -26,6 +25,10 @@ export async function readProfileOverview(owner: string) {
     places.push(...result.data);
     if (result.data.length < pageSize) break;
   }
+  return places;
+}
+
+async function readMembership(owner: string) {
   // Only the real Care+ plan is a membership; other subscription products are not.
   const subscriptions = [];
   for (let start = 0; ; start += pageSize) {
@@ -36,7 +39,13 @@ export async function readProfileOverview(owner: string) {
     subscriptions.push(...result.data);
     if (result.data.length < pageSize) break;
   }
-  const membership = subscriptions.find(row => /^(?:Home)?Care\+$/i.test(row.subscription_plans?.name.trim() ?? "") && row.status !== "cancelled") ?? null;
+  return subscriptions.find(row => /^(?:Home)?Care\+$/i.test(row.subscription_plans?.name.trim() ?? "") && row.status !== "cancelled") ?? null;
+}
+
+export async function readProfileOverview(owner: string) {
+  // These reads have no dependency on one another. Keep owner binding on each;
+  // do not put personal home data in a shared or persistent browser cache.
+  const [profile, places, membership] = await Promise.all([readIdentity(owner), readPlaces(owner), readMembership(owner)]);
   return { profile, places, membership };
 }
 
@@ -77,4 +86,18 @@ export async function saveHome(owner: string, id: string | null, draft: HomeDraf
     : await supabase.from("household_profiles").insert({ ...payload, is_default: false, user_id: owner }).select("id").maybeSingle();
   if (result.error || !result.data?.id || (id && result.data.id !== id)) throw new Error("This place was not saved. Please try again.");
   return result.data.id;
+}
+
+/** Stable client-chosen ID makes a lost acknowledgement safe to retry. Ownership
+ * still comes from normal Auth/RLS and both id + owner qualify the readback. */
+export async function saveBookingPlace(owner: string, id: string, label: string, address: string) {
+  const parsed = HomeInput.pick({ label: true, address: true }).safeParse({ label, address });
+  if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Check your place details.");
+  const result = await supabase.from("household_profiles").insert({ id, user_id: owner, ...parsed.data, is_default: false }).select("id").maybeSingle();
+  if (!result.error && result.data?.id === id) return id;
+  if (result.error?.code === "23505") {
+    const existing = await supabase.from("household_profiles").select("id,label,address").eq("id", id).eq("user_id", owner).maybeSingle();
+    if (!existing.error && existing.data?.id === id && existing.data.label === parsed.data.label && existing.data.address === parsed.data.address) return id;
+  }
+  throw new Error("Your place was not saved. Try again, or turn off saving to continue.");
 }

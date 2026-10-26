@@ -12,3 +12,9 @@
 .xoot-review-group>svg { color:var(--xoot-violet-700); }
 .xoot-review-group .xoot-handoff-tape { top:-11px; right:18px; width:92px; height:28px; transform:rotate(12deg); background:var(--xoot-honey-mid); }
 .xoot-review-group:nth-child(2) .xoot-handoff-tape { background:var(--xoot-sage-mid); transform:rotate(-12deg); }
+.xoot-review-stars { display:flex; gap:3px; color:var(--xoot-violet-700); }
+.xoot-review-group figure,.xoot-review-group blockquote { margin:0; }
+.xoot-review-group figcaption { margin-top:auto; display:flex; flex-direction:column; gap:4px; }
+.xoot-review-group figcaption strong { color:var(--xoot-text-primary); font-size:var(--xoot-body-sm); }
+.xoot-review-group figcaption small,.xoot-reviews-permission { color:var(--xoot-text-muted); font-size:var(--xoot-caption); }
+.xoot-reviews-permission { text-align:center; margin-top:24px; }

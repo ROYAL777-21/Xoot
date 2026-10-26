@@ -7,13 +7,17 @@ import Book from "./Book";
 
 const harness = vi.hoisted(() => ({
   auth: { user: { id: "buyer" } as { id: string } | null, loading: false },
-  invoke: vi.fn(), roster: vi.fn(),
+  invoke: vi.fn(), roster: vi.fn(), places: [] as {id:string;label:string;address:string;is_default:boolean}[], savePlace: vi.fn(),
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => harness.auth }));
 vi.mock("@/lib/xooter-directory", () => ({ loadXooterDirectory: harness.roster }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {
   functions: { invoke: harness.invoke },
-  from: () => { const chain = { select: () => chain, eq: () => chain, order: () => Promise.resolve({ data: [], error: null }), maybeSingle: () => Promise.resolve({ data: null, error: null }) }; return chain; },
+  from: (table:string) => { let inserted:unknown; const chain = { select: () => chain, eq: () => chain,
+    order: () => table === "household_profiles" ? chain : Promise.resolve({ data: [], error: null }),
+    range: () => Promise.resolve({data:harness.places,error:null}),
+    insert: (payload:unknown) => {inserted=payload;return chain;},
+    maybeSingle: () => inserted ? harness.savePlace(inserted) : Promise.resolve({ data: null, error: null }) }; return chain; },
 } }));
 
 async function response(body: unknown) {
@@ -29,25 +33,56 @@ function mount(url = "/app/book", variant: "app" | "website" = "app") {
   const App = () => <MemoryRouter initialEntries={[url]}><Book variant={variant} /><Location /></MemoryRouter>;
   return { ...render(<App />), refresh: () => <App /> };
 }
-const next = () => fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+const next = async () => { await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Continue" })); }); };
 async function toReview() {
-  next();
+  await next();
   fireEvent.change(screen.getByLabelText("Where do you need us?"), { target: { value: "14 Example Street, Sandton" } });
-  next(); next();
+  await next(); await next();
   await screen.findByText("No approved Xooters listed yet");
-  next();
+  await next();
 }
 beforeEach(() => {
   vi.clearAllMocks(); harness.auth = { user: { id: "buyer" }, loading: false };
   harness.roster.mockResolvedValue({ xooters: [], total: 0 });
+  harness.places=[]; harness.savePlace.mockImplementation(async(payload:{id:string})=>({data:{id:payload.id},error:null}));
   harness.invoke.mockImplementation(async (_name, options) => response(options.body));
 });
 afterEach(cleanup);
 
 describe("handoff booking review (isolated UI fixtures)", () => {
+  it("saves a new place with a stable retry ID and stays put after a denied write", async () => {
+    harness.savePlace.mockResolvedValueOnce({data:null,error:{code:"42501"}});
+    mount(); await next();
+    fireEvent.change(screen.getByLabelText("Where do you need us?"),{target:{value:"42 Test Street, Mamelodi, Pretoria"}});
+    await next();
+    expect(screen.getByRole("alert")).toHaveTextContent("Your place was not saved");
+    expect(screen.getByRole("heading",{name:"Tell us about your place"})).toBeInTheDocument();
+    await next();
+    expect(screen.getByRole("heading",{name:"When suits you?"})).toBeInTheDocument();
+    expect(harness.savePlace).toHaveBeenCalledTimes(2);
+    expect(harness.savePlace.mock.calls[0][0]).toEqual(harness.savePlace.mock.calls[1][0]);
+    expect(harness.savePlace.mock.calls[0][0]).toMatchObject({user_id:"buyer",label:"Home",address:"42 Test Street, Mamelodi, Pretoria",is_default:false});
+    expect(harness.invoke).not.toHaveBeenCalled();
+  });
+  it("reuses a canonical saved place without making a duplicate or asserting coverage", async () => {
+    harness.places=[{id:"place-a",label:"Our place",address:"42 Test Street, Mamelodi, Pretoria",is_default:false}];
+    mount(); await next();
+    await screen.findByRole("option",{name:/Our place/});
+    fireEvent.change(screen.getByLabelText("Your places"),{target:{value:"place-a"}});
+    expect(screen.getByLabelText("Where do you need us?")).toHaveValue("42 Test Street, Mamelodi, Pretoria");
+    await next(); expect(screen.getByRole("heading",{name:"When suits you?"})).toBeInTheDocument();
+    expect(harness.savePlace).not.toHaveBeenCalled(); expect(harness.invoke).not.toHaveBeenCalled();
+  });
+  it("can continue without saving when the customer turns it off",async()=>{
+    mount(); await next();
+    fireEvent.change(screen.getByLabelText("Where do you need us?"),{target:{value:"42 Test Street, Mamelodi, Pretoria"}});
+    fireEvent.click(screen.getByRole("checkbox",{name:/Save this place to Your places/}));
+    await next();expect(screen.getByRole("heading",{name:"When suits you?"})).toBeInTheDocument();
+    expect(harness.savePlace).not.toHaveBeenCalled();
+  });
   it("takes the Today weekly suggestion into real frequency inputs without scheduling a visit", async () => {
     mount("/app/book?service=regular&frequency=weekly&address=14%20Example%20Street%2C%20Sandton");
-    next(); next();
+    await next(); await next();
     expect(screen.getByRole("button", { name: "Once a week" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("The reviewed price is per visit. Future visits need availability confirmation.")).toBeInTheDocument();
     expect(harness.invoke).not.toHaveBeenCalled();
@@ -56,14 +91,14 @@ describe("handoff booking review (isolated UI fixtures)", () => {
   it("keeps the selected home's duration when returning to regular cleaning", async () => {
     mount();
     fireEvent.click(screen.getByRole("button", { name: /Express cleaning/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Regular cleaning/ })); next();
+    fireEvent.click(screen.getByRole("button", { name: /Regular cleaning/ })); await next();
     expect(screen.getByLabelText("Hours")).toHaveTextContent("5.5");
     await act(async () => {});
   });
   it("consumes legacy address prefills and removes them from URL/history", async () => {
     mount("/book?service=airbnb&address=14%20Example%20Street%2C%20Sandton&area=Private", "website");
     await waitFor(() => expect(screen.getByTestId("current-search").textContent).toBe("?service=airbnb"));
-    expect(screen.getByTestId("current-search")).not.toHaveTextContent("address"); next();
+    expect(screen.getByTestId("current-search")).not.toHaveTextContent("address"); await next();
     expect(screen.getByLabelText("Street address")).toHaveValue("14 Example Street, Sandton");
     await act(async () => {});
   });
@@ -72,46 +107,46 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     expect(screen.getByRole("heading", { name: "What needs doing?" })).toBeInTheDocument();
     expect(screen.getByLabelText("Booking progress")).toHaveTextContent("Your place");
     expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: /Regular cleaning/ })); next();
+    fireEvent.click(screen.getByRole("button", { name: /Regular cleaning/ })); await next();
     fireEvent.change(screen.getByLabelText("Street address"), { target: { value: "14 Example Street" } });
     fireEvent.change(screen.getByLabelText("Suburb"), { target: { value: "Sandton" } });
     expect(screen.queryByRole("button", { name: "View interactive area map" })).not.toBeInTheDocument();
     expect(screen.queryByText(/Xoot confirms actual service coverage/)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Medium 2–3 bedrooms" })).toHaveAttribute("aria-pressed", "true"); next();
-    expect(screen.getByLabelText("Upcoming dates").children).toHaveLength(14); next();
+    expect(screen.getByRole("button", { name: "Medium 2–3 bedrooms" })).toHaveAttribute("aria-pressed", "true"); await next();
+    expect(screen.getByLabelText("Upcoming dates").children).toHaveLength(14); await next();
     await screen.findByText("No approved Xooters listed yet");
-    fireEvent.click(screen.getByRole("button", { name: "2 Xooters" })); next();
+    fireEvent.click(screen.getByRole("button", { name: "2 Xooters" })); await next();
     expect(screen.getByText("14 Example Street, Sandton")).toBeInTheDocument();
     expect(harness.invoke).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
     expect(JSON.parse(screen.getByTestId("current-location").textContent!)).toEqual({ pathname: "/auth", state: { from: { pathname: "/book", search: "?service=regular" } } });
   });
   it("returns to time selection when reducing the website crew makes the selected visit too late", async () => {
-    mount("/book?service=airbnb", "website"); next();
+    mount("/book?service=airbnb", "website"); await next();
     fireEvent.change(screen.getByLabelText("Street address"), { target: { value: "14 Example Street, Sandton" } });
     for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole("button", { name: "More hours" }));
-    next(); next();
+    await next(); await next();
     await screen.findByText("No approved Xooters listed yet");
     fireEvent.click(screen.getByRole("button", { name: "2 Xooters" }));
     fireEvent.click(screen.getByRole("button", { name: "Back" }));
-    fireEvent.click(screen.getByRole("button", { name: "14:00" })); next();
-    fireEvent.click(screen.getByRole("button", { name: "1 Xooter" })); next();
+    fireEvent.click(screen.getByRole("button", { name: "14:00" })); await next();
+    fireEvent.click(screen.getByRole("button", { name: "1 Xooter" })); await next();
     expect(screen.getByRole("heading", { name: "When suits you?" })).toBeInTheDocument();
     expect(screen.getByRole("alert")).toHaveTextContent("finish by 17:00");
     expect(screen.queryByRole("button", { name: "14:00" })).not.toBeInTheDocument();
     expect(harness.invoke).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "11:00" })); next(); next();
+    fireEvent.click(screen.getByRole("button", { name: "11:00" })); await next(); await next();
     await screen.findByLabelText("Reviewed quote");
     expect(harness.invoke).toHaveBeenCalledWith("get-booking-quote", { body: expect.objectContaining({ crewSize: 1, time: "11:00", hours: 5.5 }) });
   }, 15_000); // This regression traverses the full form twice, including time/crew reselection.
   it("adapts property-specific options while retaining the requested service for an explicit correction", async () => {
-    mount(); next();
+    mount(); await next();
     fireEvent.change(screen.getByLabelText("Where do you need us?"), { target: { value: "14 Example Street, Sandton" } });
     fireEvent.click(screen.getByRole("button", { name: "Airbnb" }));
     expect(screen.getByLabelText("Linen handling")).toHaveValue("none");
-    expect(screen.getByRole("option", { name: /switch to Airbnb first/ })).toBeDisabled(); next();
-    expect(screen.queryByRole("button", { name: "16:00" })).not.toBeInTheDocument(); next();
-    await screen.findByText("No approved Xooters listed yet"); next();
+    expect(screen.getByRole("option", { name: /switch to Airbnb first/ })).toBeDisabled(); await next();
+    expect(screen.queryByRole("button", { name: "16:00" })).not.toBeInTheDocument(); await next();
+    await screen.findByText("No approved Xooters listed yet"); await next();
     await screen.findByLabelText("Reviewed quote");
     expect(harness.invoke).toHaveBeenCalledWith("get-booking-quote", { body: expect.objectContaining({ service: "regular", propertyType: "airbnb", linen: "none" }) });
     expect(screen.getByRole("checkbox", { name: /I accept airbnb cleaning/i })).not.toBeChecked();
@@ -126,11 +161,11 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     expect(harness.invoke).not.toHaveBeenCalled();
   });
   it("requests a real quote, renders its total and never sends a new crew price to the legacy writer", async () => {
-    mount("/app/book?service=airbnb"); next();
+    mount("/app/book?service=airbnb"); await next();
     fireEvent.change(screen.getByLabelText("Where do you need us?"), { target: { value: "14 Example Street, Sandton" } });
     for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole("button", { name: "More hours" }));
-    fireEvent.click(screen.getByRole("button", { name: "2 Xooters" })); next(); next();
-    await screen.findByText("No approved Xooters listed yet"); next();
+    fireEvent.click(screen.getByRole("button", { name: "2 Xooters" })); await next(); await next();
+    await screen.findByText("No approved Xooters listed yet"); await next();
     await screen.findByLabelText("Reviewed quote");
     expect(harness.invoke).toHaveBeenCalledWith("get-booking-quote", { body: expect.objectContaining({ service: "airbnb", hours: 5.5, crewSize: 2, coverRequested: false }) });
     expect(screen.getByText(/^R\s?393$/)).toBeInTheDocument();
@@ -139,10 +174,10 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     expect(harness.invoke.mock.calls.every(([name]) => name === "get-booking-quote")).toBe(true);
   });
   it("shows corrected service/total and requires explicit, fresh acceptance", async () => {
-    mount(); next();
+    mount(); await next();
     fireEvent.change(screen.getByLabelText("Where do you need us?"), { target: { value: "14 Example Street, Sandton" } });
-    fireEvent.click(screen.getByRole("button", { name: "Office" })); next(); next();
-    await screen.findByText("No approved Xooters listed yet"); next();
+    fireEvent.click(screen.getByRole("button", { name: "Office" })); await next(); await next();
+    await screen.findByText("No approved Xooters listed yet"); await next();
     const acceptance = await screen.findByRole("checkbox", { name: /I accept office cleaning/ });
     expect(acceptance).not.toBeChecked(); fireEvent.click(acceptance); expect(acceptance).toBeChecked();
     fireEvent.change(screen.getByLabelText("A friend’s invite?"), { target: { value: "FRIEND" } });
@@ -178,7 +213,7 @@ describe("handoff booking review (isolated UI fixtures)", () => {
   it("drops private input and quote consent when the account changes", async () => {
     const view = mount(); await toReview(); await screen.findByLabelText("Reviewed quote");
     harness.auth.user = { id: "buyer-two" }; view.rerender(view.refresh());
-    expect(screen.getByText("What do you need done?")).toBeInTheDocument(); next();
+    expect(screen.getByText("What do you need done?")).toBeInTheDocument(); await next();
     expect(screen.getByLabelText("Where do you need us?")).toHaveValue("");
     expect(screen.queryByLabelText("Reviewed quote")).not.toBeInTheDocument();
   });

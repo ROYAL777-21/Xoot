@@ -11,6 +11,7 @@ type VerifiedAddressInputProps = {
   inputClassName?: string;
   label?: string;
   showIcon?: boolean;
+  disabled?: boolean;
 };
 
 // Public browser token bundled by Vite. A token name in Vercel is not proof of permission
@@ -21,7 +22,7 @@ const browserToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN?.trim() ?? "";
 const mapboxAddressSuggestionsEnabled = import.meta.env.VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED === "true";
 
 export const VerifiedAddressInput = ({
-  value, onChange, placeholder, inputClassName, label = "Service address", showIcon = true,
+  value, onChange, placeholder, inputClassName, label = "Service address", showIcon = true, disabled = false,
 }: VerifiedAddressInputProps) => {
   const [suggestions, setSuggestions] = useState<MapboxAddressSuggestion[]>([]);
   const [searchState, setSearchState] = useState<"idle" | "loading" | "results" | "empty" | "error">("idle");
@@ -110,6 +111,7 @@ export const VerifiedAddressInput = ({
           aria-controls={suggestionsId}
           aria-expanded={suggestions.length > 0}
           value={value}
+          disabled={disabled}
           onChange={event => updateValue(event.target.value)}
           placeholder={placeholder ?? "Enter your South African address..."}
           autoComplete="street-address"
