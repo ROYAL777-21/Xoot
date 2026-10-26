@@ -1,12 +1,36 @@
 # Agent worklog
 
-## HOLDING — 26 October 2026 — automatic private calendar subscription and signup typo recovery
+## HOLDING — 26 October 2026 — calendar copy recovery and incomplete address suggestions
+
+Founder reports the staging private link did not reach the clipboard despite the copied status,
+and some Sunninghill inputs return no useful suggestions. Claim CalendarSubscription private
+manual-copy/reveal fallback, masked analytics-safe link field and focused privacy/interaction tests;
+keep raw capability out of logs, screenshots and persistent storage. Preserve the founder's existing
+private link and provisional calendar fixture; do not rotate/revoke behind the owner. Claim address
+discovery recall/empty-result guidance and provider contract tests in coordination with PR81 after
+specific failing street examples. Do not promise universal provider coverage or turn an uncertain
+address into a verified booking. Existing costs/normal Auth/POPIA and production release gates stand.
+Cross-role capability and provider tests require independent review before release.
+
+## RELEASED CLAIM — 26 October 2026 — automatic private calendar subscription and signup recovery
+
+Independently reviewedfa37e4e,106final focused checks/TS/lint/Deno and real PG/concurrency/targeted
+negative controls pass. Exact revised schema and v1management/feed files staged/read back; real
+normal-Auth founder customer enabled/copied its private link. No root read of link/code/JWT. Provider
+subscription form is privately handed to the founder; one labelled disposable staging calendar
+fixture is retained for reschedule/cancellation acceptance and cleanup, documented in the current
+checklist. Full production is not cleared. File paths released while that owner/device step is pending.
 
 Correction from founder: .vom was a chat typo, not established as the live input. Actual production audit shows existing-account repeated signup200 at16:03UTC followed by successful login16:04UTC. Generic confirmation-to-sign-in recovery preserves enumeration protections. Independent calendar review found delayed-digest account switching and subsecond revision collisions; deny-only expectedSubject checked against actual Auth plus post-digest identity guard and durable booking-row revisions address these. Exact final review and staging/provider acceptance remain required.
 
-Founder now explicitly requests automatic calendar sync and reports no signup PIN on live xoot.co.za after entering nkosiskosana11@gmail.vom. Production read-only confirms the existing .com founder account is confirmed and no matching .vom account exists. Claim Auth email typo guidance and focused tests, calendar subscription management/feed/owner schema, signed-in calendar UI, privacy/rotation/cancellation tests and delivery evidence. Use a free read-only calendar subscription, with explicit customer connection, revocable random capability, only a hash stored, minimal visit fields, no private address/access/email/GPS, and truthful provider refresh delays. Normal account JWT remains required to enable/disable; a calendar reader must prove the separate unguessable capability. Cross-role migration, handler and security tests cannot wait because export-only is not the requested sync. Preserve all production gates, booking/pricing/worker approval restrictions and planning-only home personalisation. No paid provider, Google calendar write scope, Apple enrolment or production activation is authorised by this claim.
+Founder explicitly requests automatic calendar sync and reports no signup PIN on live xoot.co.za. The supplied .vom spelling was later clarified as a chat typo. Production read-only confirms the existing .com founder account is confirmed. Claim Auth email typo guidance and focused tests, calendar subscription management/feed/owner schema, signed-in calendar UI, privacy/rotation/cancellation tests and delivery evidence. Use a free read-only calendar subscription, with explicit customer connection, revocable random capability, only a hash stored, minimal visit fields, no private address/access/email/GPS, and truthful provider refresh delays. Normal account JWT remains required to enable/disable; a calendar reader must prove the separate unguessable capability. Cross-role migration, handler and security tests cannot wait because export-only is not the requested sync. Preserve all production gates, booking/pricing/worker approval restrictions and planning-only home personalisation. No paid provider, Google calendar write scope, Apple enrolment or production activation is authorised by this claim.
 
-## HOLDING — 26 October 2026 — saved places, calendars and Manage more continuity
+## RELEASED CLAIM — 26 October 2026 — saved places, calendars and Manage more continuity
+
+Source5639556plus reviewed calendar/address follow-up is on the hosted staging preview. Saved places,
+Manage more, flowers and8approved exact reviews are prepared with focused owner/privacy checks and
+browser layout proof. Real place persistence, full property/team operations and production release
+remain listed in the current checklist; personalisation remains planning only. Paths released.
 
 Scope extension before review edits: founder supplied40 named customer quotes (numbered1–20 and41–60), confirmed each is genuine/original and each five-star rating is customer-supplied despite the sample heading. Publication permission already confirmed. Claim public Reviews component, its scoped handoff CSS, a small approved source collection and truthful behavior guards. Publish only selected quotes without unsupported currently-disabled feature claims, aggregate rating claims or verified-booking badges; no Xooter quote was supplied.
 
