@@ -172,22 +172,42 @@ export const verifySignature = (params: URLSearchParams, passphrase: string) => 
 };
 
 /**
- * Amounts are compared in CENTS as integers.
- *
- * `amount_gross` arrives as a decimal string ("387.00"). Comparing it as a float invites the
- * classic 0.1 + 0.2 problem on a value that decides whether someone's booking is paid for, so it is
- * rounded to cents once and compared as an integer. One cent of tolerance is allowed for the
- * provider's own rounding and nothing more.
+ * Convert a trusted DB numeric value into exact integer cents. Reject
+ * non-cent values and unsafe sizes; rounding 100.001 to 100.00 would charge
+ * a different amount than the database record.
  */
+export const recordAmountCents = (amount: unknown): number | null => {
+  if (typeof amount !== "number" && typeof amount !== "string") return null;
+  const value = String(amount).trim();
+  if (!/^(?:0|[1-9]\d{0,12})(?:\.\d{1,2})?$/.test(value)) return null;
+  const [whole, decimal = ""] = value.split(".");
+  const cents = Number(whole) * 100 + Number(decimal.padEnd(2, "0"));
+  return Number.isSafeInteger(cents) && cents >= 0 ? cents : null;
+};
+
+/**
+ * PayFast ITN gross is a decimal *string* in ZAR, not a JavaScript float.
+ * Require exactly two decimal digits and match the stored cents exactly;
+ * there is no permission to underpay even by one cent.
+ */
+export const payfastGrossCents = (gross: unknown): number | null => {
+  if (typeof gross !== "string" || !/^(?:0|[1-9]\d{0,12})\.\d{2}$/.test(gross)) return null;
+  return recordAmountCents(gross);
+};
+
 export const amountMatches = (grossFromItn: unknown, expectedCents: number) => {
-  const gross = Number.parseFloat(String(grossFromItn ?? ""));
-  if (!Number.isFinite(gross)) return { ok: false as const, reason: "amount_gross is not a number" };
-  const itnCents = Math.round(gross * 100);
-  if (Math.abs(itnCents - expectedCents) > 1) {
-    return { ok: false as const, reason: `amount mismatch: ITN ${itnCents}c, order ${expectedCents}c` };
+  const actual = payfastGrossCents(grossFromItn);
+  if (actual === null) return { ok: false as const, reason: "invalid PayFast gross amount" };
+  if (!Number.isSafeInteger(expectedCents) || expectedCents <= 0 || actual !== expectedCents) {
+    return { ok: false as const, reason: "payment amount mismatch" };
   }
   return { ok: true as const };
 };
+
+export const merchantMatches = (merchantFromItn: unknown, configuredMerchantId: unknown) =>
+  typeof merchantFromItn === "string" && typeof configuredMerchantId === "string" &&
+  /^\d{8}$/.test(configuredMerchantId.trim()) &&
+  merchantFromItn === configuredMerchantId.trim();
 
 /**
  * Ask PayFast whether it sent this. The authoritative check.
@@ -211,7 +231,7 @@ export const validateWithPayFast = async (
     });
     if (!res.ok) return { ok: false as const, reason: `validate returned HTTP ${res.status}` };
     const text = (await res.text()).trim().toUpperCase();
-    if (text.startsWith("VALID")) return { ok: true as const };
+    if (text === "VALID") return { ok: true as const };
     return { ok: false as const, reason: `validate returned "${text.slice(0, 40)}"` };
   } catch (error) {
     return { ok: false as const, reason: `validate unreachable: ${(error as Error).message}` };
