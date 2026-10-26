@@ -5,7 +5,9 @@ other what it is holding. This file is how they find out.
 
 Roles and path ownership are in `/CLAUDE.md`. This file is the live state.
 
-## HOLDING — 26 October 2026 — chat ciphertext participant read without recursive policies
+## RELEASED CLAIM — 26 October 2026 — chat ciphertext participant read without recursive policies
+
+Reviewed exact SQL is applied only to staging as20261026024032 (SHA25687770e5317056987ea91a4e559bc2e7fd4221f3be9a3faa9558a2f26ae47058d). Private-schema owner UI and catalogue/ledger/ACL/RLS readbacks passed; message/job policies unchanged. Fresh four normal Auth sessions then passed9 actual GPS/ETA/E2EE/closed-voice groups. Disposable fixture rows are0; both new public device records revoked. Local positive/negative PostgreSQL checks passed; invalid OOM experiment is not acceptance. No production apply/merge/activation, browser Realtime, admin MFA or physical device/audio claim. Detailed26October evidence supersedes earlier failed chat runs. File claim released.
 
 Actual four-account staging test at f6dd7b6 failed customer-to-Xooter REST read with HTTP500/SQLSTATE42P17 after server-authorised ciphertext insertion. Catalog confirms messages SELECT expands bookings -> xooter_jobs -> bookings. Claim one CLI-created migration for a private auth.uid-bound read predicate and only messages SELECT policy, an isolated PostgreSQL positive/negative fixture harness and release evidence. Preserve booking/job RLS and current customer/admin/accepted-assigned-worker boundaries; no public data endpoint, arbitrary actor, client write grant or production change. Security-definer use, if necessary to break recursion, is limited to a private boolean predicate with empty search_path and explicit grants. Independent security review and actual staging verification remain required.
 

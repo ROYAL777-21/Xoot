@@ -44,7 +44,7 @@ try{
     insert into public.user_roles values('${admin}','admin');`);
   assert.throws(()=>read(wa),e=>String(e.stderr).includes('42P17'),'Actual old policy must reproduce recursive read SQLSTATE42P17');
   const policySnapshot=run("select string_agg(policyname||':'||qual,'|' order by policyname)from pg_policies where schemaname='public'and tablename in('messages','xooter_jobs');");
-  let migration=readFileSync(new URL('../../supabase/migrations/20261026020929_booking_chat_nonrecursive_read.sql',import.meta.url),'utf8');
+  let migration=readFileSync(new URL('../../supabase/migrations/20261026024032_booking_chat_nonrecursive_read.sql',import.meta.url),'utf8');
   if(process.env.XOOT_CHAT_TEST_PLANT==='no-accepted-job'){
     const before=migration;migration=migration.replace(" and j.state = 'accepted'",'');assert.notEqual(migration,before);
   }else if(process.env.XOOT_CHAT_TEST_PLANT==='recursive-policy'){
