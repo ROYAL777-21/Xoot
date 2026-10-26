@@ -11,6 +11,8 @@ Founder requests real account/detail storage and Xooter onboarding matching the 
 
 Scope extension before editing: include src/pages/xooter/Kyc.tsx and focused review-state tests. The corrected submitted-applicant route reaches this page, so carry the handoff there, report read failures honestly, select only the displayed review fields and prevent stale account results. No change to backend verification, admin decisions or activation rules.
 
+Further scope before edits: the rendered review screen retains XooterShell's old X logo/unearned Pro badge, so claim its brand-only markup while retaining navigation/auth behaviour. Independent review cleared b2c6598 UI9/9 but found inherited submit-xooter-application document mode can return success after an ignored metadata insert error. Claim that handler, a local pure document-persistence helper and meaningful error/owner-path/readback tests. Cross-role backend delivery and guard tests cannot wait because the founder explicitly asks whether details are really saved. Preserve manual verification/activation; distinguish stored pending document metadata from accepted real KYC. No production deploy; staging requires reviewed exact source first.
+
 ## How to use it
 
 **Claim before you code, and push the claim.** An unpushed claim is invisible and therefore
