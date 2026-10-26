@@ -1,5 +1,9 @@
 # Agent worklog
 
+## HOLDING — 26 October 2026 — automatic private calendar subscription and signup typo recovery
+
+Founder now explicitly requests automatic calendar sync and reports no signup PIN on live xoot.co.za after entering nkosiskosana11@gmail.vom. Production read-only confirms the existing .com founder account is confirmed and no matching .vom account exists. Claim Auth email typo guidance and focused tests, calendar subscription management/feed/owner schema, signed-in calendar UI, privacy/rotation/cancellation tests and delivery evidence. Use a free read-only calendar subscription, with explicit customer connection, revocable random capability, only a hash stored, minimal visit fields, no private address/access/email/GPS, and truthful provider refresh delays. Normal account JWT remains required to enable/disable; a calendar reader must prove the separate unguessable capability. Cross-role migration, handler and security tests cannot wait because export-only is not the requested sync. Preserve all production gates, booking/pricing/worker approval restrictions and planning-only home personalisation. No paid provider, Google calendar write scope, Apple enrolment or production activation is authorised by this claim.
+
 ## HOLDING — 26 October 2026 — saved places, calendars and Manage more continuity
 
 Scope extension before review edits: founder supplied40 named customer quotes (numbered1–20 and41–60), confirmed each is genuine/original and each five-star rating is customer-supplied despite the sample heading. Publication permission already confirmed. Claim public Reviews component, its scoped handoff CSS, a small approved source collection and truthful behavior guards. Publish only selected quotes without unsupported currently-disabled feature claims, aggregate rating claims or verified-booking badges; no Xooter quote was supplied.
