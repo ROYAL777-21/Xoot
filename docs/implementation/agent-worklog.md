@@ -9,6 +9,8 @@ Roles and path ownership are in `/CLAUDE.md`. This file is the live state.
 
 Founder requests real account/detail storage and Xooter onboarding matching the original handoff. Production aggregate readback confirms2 registered emails and2 owner profiles, none missing; do not claim every signup route accepted or copy auth emails into public data. Claim src/pages/xooter/Apply.tsx, targeted behavior tests, scoped handoff CSS if required, and release evidence. Match Work with Xoot, You/Where/What/Checks composition and brand typography while preserving backend requirements and real verification. Correct Save & continue advancing after failed save, bind labels to fields, show load errors and isolate drafts on account change. Preserve private documents, manual review, no fake jobs/checks/payout promises, signup PR95 and personalisation planning-only. Cross-role guard tests are needed for actual persistence/privacy.
 
+Scope extension before editing: include src/pages/xooter/Kyc.tsx and focused review-state tests. The corrected submitted-applicant route reaches this page, so carry the handoff there, report read failures honestly, select only the displayed review fields and prevent stale account results. No change to backend verification, admin decisions or activation rules.
+
 ## How to use it
 
 **Claim before you code, and push the claim.** An unpushed claim is invisible and therefore
