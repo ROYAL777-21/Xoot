@@ -21,7 +21,9 @@ other has already tried.
 
 ---
 
-## HOLDING — 25 October 2026 — actual encrypted-chat read-path diagnosis
+## RELEASED CLAIM — 26 October 2026 — actual encrypted-chat read-path diagnosis
+
+The two failed genuine-session reads were diagnosed as HTTP500/42P17 policy recursion. Independently reviewed PR96 fixes the root booking SELECT predicate and is applied only to staging. Four fresh normal sessions then passed all9 GPS/ETA/E2EE/closed-voice groups using this branch's f6dd7b6 harness; safe receipt bodyChecks=passed. GPS and disposable booking/job/worker/message counts are0 after cleanup; both new public devices revoked. Earlier failed runs are retained as failed evidence. No production activation/merge, provider voice call, browser Realtime, admin MFA or physical-device proof. Current26October checklist and acceptance evidence supersede old pending-chat instructions. Claim released; preserve unrelated growth claim.
 
 The refreshed four normal sessions executed the prepared module: one encrypted message and two newly revoked test public keys exist, but the run failed before its first full chat group; GPS cleanup confirmed. Claim the staging communications test module and a strictly non-sensitive local diagnostic receipt (fixed phase names, HTTP status/row counts/error code only; never JWT, key, plaintext, ciphertext or provider errors). Identify the actual failing boundary using these authorised ordinary sessions before proposing a fix. Existing booking/job RLS policies reference each other; verify actual client failure rather than assuming a cause. No RLS weakening, role grant, production write or provider call. Later migrations require a separate exact source review.
 

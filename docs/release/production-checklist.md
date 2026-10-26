@@ -1,5 +1,59 @@
 # Xoot production checklist
 
+## 26 October 2026 — current state (supersedes older dated sections)
+
+Production still serves approved `e0c021e9fde328098f33fb216b1efa720eadf2f1`; fresh public build-info
+readback confirms the 24 October build. No new website publication, production migration/function,
+tracking/calling switch, admin/worker approval, paid plan, credit, number or native build occurred.
+Preserve the approved homepage, `main`, unrelated PRs and production-only migration `20261008011821`.
+
+- **Stored user details:** production read-only aggregate found 2 registered/confirmed emails and 2
+  matching owner profiles, 0 missing. Protected Auth stores emails; no public email directory added.
+  This verifies those accounts, not every signup/profile-write route or future customer.
+- **Website:** PR92 signed-in handoff and PR95 signup confirmation remain unmerged/not live.
+  PR97 adds the original Xooter application/review design and honest owner-session saves,
+  including a real returned pending document record before acknowledgment. All real verification
+  steps/manual activation remain. Personalisation stays planning only. Full local rerun passed 169
+  files / 1,690 tests / 7 existing skips; TypeScript, scoped lint, Deno, production-mode staging-config
+  build/50 public prerenders/artifact scan passed. Independent 13 focused plus 9 synthetic actual-handler
+  checks passed. CUA 390/1440 previews are synthetic visual proof, not real applicant acceptance.
+- **Staged document endpoint:** submit-xooter-application v18, JWT required, 4 reviewed files exactly
+  read back; missing bearer 401. The frozen parser/origin/region delta was independently reviewed.
+  Metadata acknowledgment does not prove file existence, selfie-pointer atomicity or full KYC.
+- **Actual chat failure fixed:** two previous four-account reads failed 42P17. Reviewed PR96 changes
+  only the booking SELECT predicate through a private auth.uid-bound current-participant boolean.
+  Staging-only migration `20261026024032`, SQL SHA256
+  `87770e5317056987ea91a4e559bc2e7fd4221f3be9a3faa9558a2f26ae47058d`.
+  Owner UI confirms private unexposed; ledger/owner/ACL/RLS match; original message/job policies unchanged.
+- **Fresh real-account acceptance:** four owner-entered ordinary staging sessions passed all 9 groups:
+  the 6 GPS/ETA/privacy/STOP groups, actual encrypted chat send/store/read/decrypt both directions,
+  unrelated key/read/send denial and plaintext rejection, and voice fail-closed/outsider denial.
+  No Twilio provider call. Final owned fixtures: 0 locations/bookings/jobs/workers/messages; 2 new public
+  test devices retained revoked. Do not repeat the older assertion that chat has not been run.
+- **Coverage/cost:** PR81 exact reviewed Gauteng borders and global Permanent-Geocoding allowance
+  remain staged. Allowance 0, consumption 0, no active approved service zones. The proposed maximum 20
+  paid staging Permanent checks (~USD 0.10 before tax) has no owner approval: leave off. This cap is
+  specific to the backend Permanent coverage route, not a universal Mapbox invoice cap. Real worker
+  verification/availability remains separate from geographic polygons and synthetic test workers.
+- **Calls/native:** PR93 atomic ephemeral in-app rooms and PR94 native Auth preparation are staged/source
+  work, not actual audio or signed-build acceptance. Voice remains off. Expo ownership is verified;
+  Apple remains pending at the founder's explicit choice. iPhone 12 and Android tablet are offered;
+  physical GPS permissions/background/expiry, chat delivery and real app-call checks remain.
+- **Other acceptance:** fresh password-signup code/link completion, real applicant uploads, browser
+  BookingDetail/Realtime, admin AAL1/AAL2, provider readiness, signed native builds and exact production
+  migration comparison remain. Desktop shortcut/cards are not native OS widgets; property dashboards
+  remain partial. Standalone laundry/ironing and 52-visit gift fulfilment are not certified by this work.
+- **Release blocker:** fresh PR96 security job 121376146677 has no steps and an annotation that recent
+  account payments failed or the spending limit needs attention. Required GitHub checks cannot start.
+  Keep current plan/spending; no fabricated status, bypass, merge or production promotion. Local,
+  Vercel-preview and staging passes do not replace required release checks.
+
+Current evidence: PR96 `docs/release/evidence/2026-10-26/booking-chat-read.md`,
+PR97 `docs/release/evidence/2026-10-26/xooter-onboarding.md`, earlier GPS/source/budget/voice evidence
+in PR71/81/93. Historical sections below describe earlier states, not new instructions.
+
+
+
 ## 25 October 2026 — current verified state and remaining release gates
 
 This section supersedes the older dated instructions below. The live website remains approved release
