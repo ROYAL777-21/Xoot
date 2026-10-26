@@ -1,6 +1,13 @@
 # Agent worklog
 
-## HOLDING — 26 October 2026 — address typeahead, province-wide discovery and cost boundaries
+## RELEASED CLAIM — 26 October 2026 — address typeahead, province-wide discovery and cost boundaries
+
+Delivered reviewed lookup v1to staging;5runtime files match91fbc96. Founder explicitly approved
+200suggestions/20Permanent attempts, no renewal, capped staging only. Actual public provider checks
+and hosted phone-width Permanent selection passed; uncertain match rejects. Actual counters4/200,
+3/20and shared3/20at readback. Exact allowance/source/ledger/bundle evidence updated. No production
+activation, availability fabrication or booking fulfilment claim; those gates remain. Release this
+source claim after delivery, retaining the pending user/calendar/device handoff in PR97's checklist.
 
 Founder now explicitly requests suggestions as an address is typed, including suburbs outside the current served list, and a normal request journey without false inputs. Claim VerifiedAddressInput, its focused interaction tests, a new narrow server address-search/confirmation function with pure tests, CLI-created zero-default global request allowances and contract tests, booking coverage/request handoff only where truthful and release evidence. Preserve exact Gauteng source polygons, independently verified worker availability and private GPS/chat gates. Remove the need for a search-button tap; debounce/cancel stale requests and preserve keyboard focus. No billable request without an owner-approved finite allowance; no browser Permanent Geocoding bypass of the server cap. Suggestions are address discovery, never a claim that a Xooter is available. Do not claim outside-area payment/assignment works until canonical booking/status/payment flows have been checked. Cross-role backend/migration/testing changes are required by the founder's address and cost request. Current production remains e0c021e and GitHub Actions3,000/3,000 minutes are exhausted, reset in6days; do not invent successful release gates or raise spending.
 

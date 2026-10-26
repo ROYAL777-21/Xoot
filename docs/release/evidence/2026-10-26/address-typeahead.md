@@ -10,4 +10,27 @@ Validation:28 focused checks passed (ten UI, seven provider-contract, eleven RPC
 
 Remaining: exact staging delivery/readback, actual permitted provider acceptance, owner-approved finite operating allowances, independent review/release checks and normal booking fulfilment. The legacy writers and reviewed-crew atomic creation still require reconciliation; do not present a lead or quote as a confirmed/paid booking. Province borders and real verified-worker capacity remain separate. Production is unchanged.
 
-Staging delivery: the exact zero-default allowance SQL was applied using apply_migration. The control plane generated version20261026153738; renamed only this new, previously undelivered source migration to match its actual staging ledger. SQL is unchanged; no historical migration or ledger repair. Readback confirms both allowances0/0, service execution true, anon/customer execution false and SECURITY INVOKER. Function delivery and actual paid requests are still pending. Founder explicitly approved a capped staging test of200 suggestions and20 Permanent attempts, no renewal, at listed maximumUSD0.25 before tax; this does not authorise production or other account usage.
+Staging delivery: the exact zero-default allowance SQL was applied using apply_migration. The control plane generated version20261026153738; renamed only this new, previously undelivered source migration to match its actual staging ledger. SQL is unchanged; no historical migration or ledger repair. Readback confirms service execution true, anon/customer execution false and SECURITY INVOKER. Founder explicitly approved a capped staging test of200 suggestions and20 Permanent attempts, no renewal, at listed maximumUSD0.25 before tax; this does not authorise production or other account usage.
+
+Actual subsequent delivery: search-addresses v1 is ACTIVE on staging with its own public lookup
+authorization, per the founder's explicit approval. All5returned runtime files match source91fbc96;
+bundleSHA256`a2bdadd884fb5f4199d1949b5c0b6f3c171fe703c07675a46b7199d28f1db218`.
+The allowance SQL SHA256 is`d937656c8ce57105d34c8240e4c1fd742dfff47d88748152c155cfc2fa5c2e3c`.
+Before grant, the actual endpoint returned429at zero allowance with exact allowed CORS/no-store.
+Guarded staging-only grants set suggest200, confirm20and the shared global Permanent20, without
+renewal. Permanent coverage consumes that same pool; neither path can silently refill it.
+
+Actual provider checks used public non-personal test addresses: Fredman Drive returned5suggestions
+and a successful Permanent confirmation; a Paul Kruger Street query returned3suggestions but its
+Permanent match failed the quality gate; a Madiba Street query returned0options. Temporary result
+payloads were not logged or saved. A real hosted design-branch phone-width lookup/selection then
+succeeded, retained input focus, dismissed its suggestions and opened no map. No horizontal overflow
+at measured387px viewport (390px override with scrollbar); override reset. Source component and tests
+were ported to PR97; its Preview points to staging, with the founder-approved lookup flag on.
+Counters at readback:4/200suggestions,3/20confirmations,3/20sharedPermanent. Remaining196/17is finite,
+not a universal Mapbox invoice cap. No production allowance, tracking or verified worker activation.
+
+The general ALLOWED_ORIGINS digest matches the repo-derived old staging list and does not include
+the new owned design-preview alias. This new search handler admits that exact alias only when the
+backend is staging. Existing other hosted-preview endpoints may still fail CORS; no unknown list was
+overwritten. Normal booking writers/crew fulfilment and real provider/device/release gates remain.
