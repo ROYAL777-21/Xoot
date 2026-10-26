@@ -11,6 +11,12 @@ keep final Permanent accuracy/match rules, and do not fabricate coverage or work
 Align the documented provider word limit. Cross-role provider guards require independent review.
 No production activation, new provider spend allowance or automatic retry fan-out.
 
+Scope extension before further code: v2actual capped provider checks still fail the founder's
+private Sunninghill example, while a public Sunninghillcollege address and Cape Town address
+succeed. Claim a single-request Structured Input strategy only for four explicit comma-delimited
+street/suburb/city/four-digit-postcode parts. Do not infer coordinates or silently fan out/retry;
+confirmation retains exact provider identity and Permanent quality rules. No private query is
+written to source/evidence. Independent review and actual capped acceptance remain required.
 ## RELEASED CLAIM — 26 October 2026 — address typeahead, province-wide discovery and cost boundaries
 
 Delivered reviewed lookup v1to staging;5runtime files match91fbc96. Founder explicitly approved
