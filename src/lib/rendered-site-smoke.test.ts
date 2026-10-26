@@ -30,6 +30,14 @@ const renderAuthScript = `function renderAuth() {
   document.body.replaceChildren(main);
 }`;
 
+const signupFirstPage = `<main><h1>Create your account</h1>
+  <label>Full name<input name="name"></label>
+  <label>Your email<input type="email"></label>
+  <label>Password<input type="password"></label>
+  <button disabled>Get started</button>
+  <button onclick="renderAuth()">Been here before? Pick up where you left off</button>
+</main><script>${renderAuthScript}</script>`;
+
 afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => new Promise<void>((resolve) => {
     server.closeAllConnections();
@@ -122,6 +130,25 @@ const jsonResponse = (payload: unknown, status = 200, delay = 0): FixturePage =>
 };
 
 describe("rendered site smoke", () => {
+  it("accepts signup-first entry and still verifies returning-user code and password controls", async () => {
+    const url = await serve({ "/": homePage, "/auth": signupFirstPage });
+    const result = await runVerifier(["--url", url]);
+    expect(result.code, result.output).toBe(0);
+    expect(result.output).toContain("Rendered site smoke passed");
+  }, 30_000);
+
+  it.each([
+    { name: "signup fields", auth: signupFirstPage.replace("Full name", "Unlabelled field") },
+    { name: "returning-user email field", auth: signupFirstPage.replace("emailLabel.append(email);", "emailLabel.append(email); emailLabel.hidden = true;") },
+    { name: "email-code action", auth: signupFirstPage.replace("Send one-time code", "Disabled") },
+    { name: "password action", auth: signupFirstPage.replace("Use your password instead", "Disabled") },
+  ])("rejects a signup-first entry with broken $name", async ({ auth }) => {
+    const url = await serve({ "/": homePage, "/auth": auth });
+    const result = await runVerifier(["--url", url], { XOOT_SMOKE_TIMEOUT_MS: "1000" });
+    expect(result.code, result.output).not.toBe(0);
+    expect(result.output).toMatch(/Auth navigation.*missing/);
+  }, 30_000);
+
   it.each([404, 503])("waits on home and rejects a two-second delayed directory HTTP %s", async (status) => {
     let authVisits = 0;
     let responseSent = false;

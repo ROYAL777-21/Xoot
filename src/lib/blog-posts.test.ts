@@ -32,8 +32,10 @@ const textOf = (post: (typeof blogPosts)[number]) =>
     post.seoTitle,
     post.description,
     post.excerpt,
-    ...post.sections.flatMap((s) => [s.heading, ...s.body]),
+    ...post.sections.flatMap((s) => [s.heading, ...s.body.flatMap(block => typeof block === "string"
+      ? [block] : block.type === "list" ? block.items : [block.caption, ...block.headings, ...block.rows.flat()])]),
     ...post.faqs.flatMap((f) => [f.question, f.answer]),
+    ...(post.callToAction ? [post.callToAction.heading, ...post.callToAction.body, post.callToAction.label] : []),
   ].join(" ");
 
 describe("blog posts", () => {

@@ -122,7 +122,7 @@
   </url>
   <url>
     <loc>https://xoot.co.za/articles</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -297,6 +297,18 @@
   <url>
     <loc>https://xoot.co.za/articles/xoot-is-open-johannesburg-founding-homes</loc>
     <lastmod>2026-08-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://xoot.co.za/articles/after-clean-checklist-johannesburg</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://xoot.co.za/articles/weekly-or-fortnightly-cleaning-johannesburg</loc>
+    <lastmod>2026-10-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

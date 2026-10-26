@@ -1,6 +1,17 @@
+export type BlogBlock = string | {
+  type: "list";
+  items: string[];
+  ordered?: boolean;
+} | {
+  type: "table";
+  caption: string;
+  headings: string[];
+  rows: string[][];
+};
+
 export type BlogSection = {
   heading: string;
-  body: string[];
+  body: BlogBlock[];
 };
 
 export type BlogFaq = {
@@ -22,10 +33,273 @@ export type BlogPost = {
   areas: string[];
   sections: BlogSection[];
   faqs: BlogFaq[];
+  callToAction?: { heading: string; body: string[]; label: string; href: "/" | "/care-plus" };
   journal?: { label: string; tint: "petal" | "mist" | "sage" | "lilac" | "honey" | "blush" };
 };
 
 export const blogPosts: BlogPost[] = [
+  {
+    slug: "after-clean-checklist-johannesburg",
+    title: "How to check a clean without doing it twice",
+    seoTitle: "How to Check a Clean: Homeowner Checklist | Xoot",
+    description: "A practical after-clean checklist for Johannesburg homes: review agreed priorities, discuss missed tasks clearly and leave useful notes for the next visit.",
+    excerpt: "The visit should end with a clear handover. Use a short checklist to review the agreed work and make the next visit easier.",
+    publishedAt: "2026-10-26",
+    readingTime: "4 min read",
+    author: "The Xoot team",
+    primaryKeyword: "after-clean checklist",
+    secondaryKeywords: [
+      "cleaning inspection checklist",
+      "how to check a house clean",
+      "cleaning handover"
+    ],
+    areas: [
+      "Johannesburg"
+    ],
+    journal: {
+      label: "Home care",
+      tint: "sage"
+    },
+    sections: [
+      {
+        heading: "Start with the agreed work",
+        body: [
+          "The visit is finished. You want to enjoy your home, put the kettle on and get on with the evening. A useful handover should help you reach that point.",
+          "Start with the tasks you agreed, look at the areas that matter most, and discuss anything unfinished before closing the visit. A clear check gives both you and the person doing the work a fair way to judge the result."
+        ]
+      },
+      {
+        heading: "Decide what “finished” means before the visit",
+        body: [
+          "“Please make everything spotless” leaves a lot open to interpretation. A useful brief names the work and puts it in order.",
+          "For example, your priorities might be:",
+          {
+            type: "list",
+            ordered: false,
+            items: [
+              "Kitchen: the agreed worktops, sink and hob surfaces.",
+              "Bathroom: the agreed basin, toilet and shower surfaces.",
+              "Living areas: accessible surfaces and the agreed floor cleaning."
+            ]
+          },
+          "Those are examples to adapt to your selected service. Oven interiors, high windows, moving heavy furniture and specialist treatments need their own scope.",
+          "Keep your priority list short enough to be useful. If the kitchen matters most, say so before the visit. It gives the Xooter a clear starting point and gives you something specific to review afterwards."
+        ]
+      },
+      {
+        heading: "Walk through the priorities in the same order",
+        body: [
+          "Return to the brief at the end. Check the kitchen if it came first, then move to the next agreed area.",
+          "Look for observable results: a missed patch on an agreed worktop, debris on a floor that was included, or an accessible surface that still needs attention. Let recently mopped floors dry before walking over them.",
+          "Keep the distinction between cleaning and existing damage clear. A scratched surface, worn finish or permanent stain may remain after the agreed cleaning work. If you are unsure, ask what was tried and what the surface can safely tolerate.",
+          "The aim is a shared understanding of the work. You should be able to name what was finished and what needs another look."
+        ]
+      },
+      {
+        heading: "Be specific when something needs attention",
+        body: [
+          "A useful comment points to the place and the agreed task.",
+          "“Could we look at the worktop behind the kettle? That was one of the surfaces on the brief” is easier to act on than “the kitchen still feels wrong”.",
+          "Give the person doing the work room to explain. There may be an access restriction, a surface concern or a task that took longer than expected. Listen, then agree on the next step.",
+          "An extra task needs the same clarity. If you decide during the handover that you also want the inside of the fridge cleaned, confirm the scope, time and any price change before it is added."
+        ]
+      },
+      {
+        heading: "Keep a short handover note",
+        body: [
+          "You can copy this into a private note and use it with whichever cleaning provider you choose:",
+          "After-clean handover",
+          {
+            type: "list",
+            ordered: false,
+            items: [
+              "Our agreed priorities were: ___",
+              "We checked these areas together: ___",
+              "Anything that needs review: ___",
+              "The agreed next step is: ___",
+              "One preference to remember next time: ___"
+            ]
+          },
+          "Keep it factual. “Kitchen worktop behind the kettle needs review” is more useful than a paragraph about disappointment.",
+          "If a photograph is needed to explain a concern, focus on the relevant area. Keep faces, documents, screens and access information out of the image. Ask before photographing another person.",
+          "For a service concern, follow the provider’s published reporting process and keep the relevant booking details. This checklist does not change a refund policy or promise a particular remedy."
+        ]
+      },
+      {
+        heading: "Let the next visit benefit from this one",
+        body: [
+          "A good handover can make the next brief easier. Perhaps the spare room rarely needs attention, while the entrance floor needs more time. Perhaps a particular shelf should be left alone.",
+          "Save the useful preference. When you next arrange a visit, confirm that it still applies and that it fits the selected service.",
+          "That is what continuity should feel like: less to explain, a clearer agreement and more room to enjoy the result."
+        ]
+      }
+    ],
+    faqs: [
+      {
+        question: "Should I check every surface?",
+        answer: "Use the agreed priorities and any specific concerns to guide the walkthrough. A few relevant checks can support a clear handover. A move-out inspection or specialist clean may need a more detailed checklist agreed beforehand."
+      },
+      {
+        question: "What if the booked time runs out?",
+        answer: "Review what was completed, what remains and whether the original priorities were followed. Agree on the next step through the provider’s process. Extra time or another visit needs a clear scope and price before you accept it."
+      },
+      {
+        question: "Can I ask for extra work at the handover?",
+        answer: "You can ask, but confirm that the task is suitable, available and included in the agreed time and price. Keep a new request separate from a concern about work already agreed."
+      }
+    ],
+    callToAction: {
+      heading: "Your home. Handled.",
+      body: [
+        "Xoot is preparing home care that feels clearer to arrange and easier to repeat. It is currently prelaunch and accepting early sign-ups, with launch expected in January or early February 2027. That window is anticipated; an early sign-up does not confirm a visit.",
+        "Keep the handover note for your next clean."
+      ],
+      label: "Explore the planned services",
+      href: "/"
+    }
+  },
+  {
+    slug: "weekly-or-fortnightly-cleaning-johannesburg",
+    title: "Weekly or fortnightly cleaning? Choose a rhythm you can keep",
+    seoTitle: "Weekly or Fortnightly Cleaning? A Practical Guide | Xoot",
+    description: "Choose weekly or fortnightly cleaning around your Johannesburg home. Compare upkeep, visit scope and a routine you can manage between appointments.",
+    excerpt: "Build a cleaning rhythm around how your home is used, the tasks that return first and the upkeep you can comfortably manage.",
+    publishedAt: "2026-10-26",
+    readingTime: "5 min read",
+    author: "The Xoot team",
+    primaryKeyword: "weekly or fortnightly cleaning",
+    secondaryKeywords: [
+      "how often to book a cleaner",
+      "weekly cleaning vs fortnightly cleaning",
+      "recurring cleaning routine"
+    ],
+    areas: [
+      "Johannesburg"
+    ],
+    journal: {
+      label: "Routines",
+      tint: "lilac"
+    },
+    sections: [
+      {
+        heading: "Choose support around your ordinary week",
+        body: [
+          "If every cleaning day begins with a rescue mission, the gap between visits may need another look. If you keep moving appointments because there is little you want done, your routine may need a different shape.",
+          "Start with how your home is used and the upkeep you can comfortably manage. Then choose the frequency and scope together. A useful cleaning routine should leave you with less to organise."
+        ]
+      },
+      {
+        heading: "Look at an ordinary week",
+        body: [
+          "For a week, make a short note when a cleaning task starts taking up more attention than you want to give it.",
+          "Which work returns first? Is it the entrance floor, the bathrooms, kitchen surfaces or dust on accessible shelves? What are you happy to handle yourself? What keeps getting pushed into your evening?",
+          "Keep this simple. You are looking for a pattern that helps you choose support.",
+          "A Johannesburg apartment occupied mainly in the evenings and a busy family home can need different arrangements. The number of rooms is only part of the picture. How people use them matters too."
+        ]
+      },
+      {
+        heading: "Choose a starting rhythm",
+        body: [
+          "Fortnightly means once every two weeks. Neither weekly nor fortnightly cleaning suits every household.",
+          {
+            type: "table",
+            caption: "A starting rhythm for your household",
+            headings: [
+              "Rhythm",
+              "When it may fit",
+              "What to plan between visits"
+            ],
+            rows: [
+              [
+                "Weekly",
+                "The same priority areas need attention each week, and regular support would reduce the work you keep carrying over.",
+                "The daily tasks and small resets you are comfortable handling."
+              ],
+              [
+                "Fortnightly",
+                "You can manage ordinary upkeep between visits and want regular help with a defined cleaning brief.",
+                "Which tasks you will maintain, and which should stay priorities for the next visit."
+              ],
+              [
+                "Less frequent or occasional",
+                "You want help around a specific need, such as a seasonal reset, guests or a move.",
+                "A service and time allowance suited to the work that has built up."
+              ]
+            ]
+          },
+          "Treat the table as a starting point. Review the arrangement against what happens in your own home."
+        ]
+      },
+      {
+        heading: "Match the work to the gap",
+        body: [
+          "Changing frequency can change the condition of the property at the next visit. A longer gap may leave more work to do. It does not automatically fit into the same time allowance.",
+          "For example, a fortnightly visit might focus on bathrooms, kitchen surfaces and floors while you maintain other areas between appointments. A weekly arrangement might let you keep the same core priorities and agree on a suitable additional task when time allows.",
+          "Confirm the included work each time the brief changes. Interior appliances, difficult windows, heavy furniture and specialist treatments need a specific conversation.",
+          "The useful question is: “Will this arrangement cover the work I actually want help with?”"
+        ]
+      },
+      {
+        heading: "Make the repeat brief easy to use",
+        body: [
+          "Keep one short note for the next visit:",
+          {
+            type: "list",
+            ordered: false,
+            items: [
+              "Every visit: the core tasks that matter most.",
+              "When agreed: an additional task, with its time and price confirmed.",
+              "Please remember: a surface instruction, a room to leave alone or another practical preference."
+            ]
+          },
+          "Review the note when your household changes. A guest staying for a month, a room becoming an office or a new pet can change what you need.",
+          "Keep sensitive access details in the provider’s approved process. A cleaning brief can explain which entrance to use without becoming a general document full of gate and alarm codes.",
+          "If you have a preferred Xooter or another regular professional, confirm their availability when arranging the visit. A preference helps express what you want; it does not reserve someone’s time."
+        ]
+      },
+      {
+        heading: "Review what the routine gives you",
+        body: [
+          "After a few visits, ask:",
+          {
+            type: "list",
+            ordered: true,
+            items: [
+              "Are the priority areas being covered within the agreed scope?",
+              "Is the work between visits manageable for our household?",
+              "Are we spending less time rearranging and explaining the plan?"
+            ]
+          },
+          "Use the answers to adjust the frequency, the brief or the time allowance. You may need a shorter gap, a different allocation of tasks or less frequent support.",
+          "The same review can help you decide whether a membership is useful. Choose it for benefits you understand and expect to use. Let your household’s needs set the rhythm."
+        ]
+      }
+    ],
+    faqs: [
+      {
+        question: "Is weekly cleaning always better than fortnightly?",
+        answer: "The better fit depends on how your home is used, the work you want help with and the upkeep you can manage between visits. Compare the frequency together with the scope and time allowance."
+      },
+      {
+        question: "Does fortnightly cleaning mean twice a month?",
+        answer: "Fortnightly means every two weeks. Two fixed dates each month create different gaps, so confirm the actual schedule when arranging recurring visits."
+      },
+      {
+        question: "Can I keep the same cleaning brief every time?",
+        answer: "You can keep consistent core priorities, then review them as your needs change. Confirm that additional work fits the service, time and price you have agreed."
+      }
+    ],
+    callToAction: {
+      heading: "A home that takes less managing",
+      body: [
+        "Xoot is being built around clear expectations, useful home preferences and continuity. Care+ is intended to support that relationship as the service develops.",
+        "Xoot is currently prelaunch and accepting early sign-ups. Launch is expected in January or early February 2027; it is an anticipated window rather than a confirmed opening date.",
+        "Choose the rhythm that suits your home first."
+      ],
+      label: "Explore what Care+ is intended to support",
+      href: "/care-plus"
+    }
+  },
   {
     slug: "what-four-hours-actually-buys-you",
     publishedAt: "2026-10-24",

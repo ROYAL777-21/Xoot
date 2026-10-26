@@ -92,6 +92,20 @@ const sameLocation = (actual, expected) => {
   return actualUrl.origin === expectedUrl.origin && cleanPath(actualUrl.pathname) === cleanPath(expectedUrl.pathname);
 };
 
+const openReturningUserCodeForm = async (page) => {
+  // The approved guest entry starts at account creation. Verify that form
+  // before following its returning-user switch; keep the code/password checks.
+  const returningUser = page.getByRole("button", { name: /^Been here before\? Pick up where you left off$/i });
+  if (await returningUser.isVisible()) {
+    await page.getByLabel("Full name", { exact: true }).waitFor({ state: "visible", timeout });
+    await page.getByLabel("Password", { exact: true }).waitFor({ state: "visible", timeout });
+    await page.getByRole("button", { name: /^Get started$/i }).waitFor({ state: "visible", timeout });
+    await returningUser.click({ timeout });
+  }
+  await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
+  await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
+};
+
 let browser;
 let artifactServer;
 const runtimeProblems = [];
@@ -257,7 +271,7 @@ try {
   try {
     await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
     authControl = "email-code action";
-    await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
+    await openReturningUserCodeForm(page);
   } catch {
     throw new Error(`Auth navigation did not return a successful response with usable sign-in controls at /auth (missing ${authControl})`);
   }
@@ -273,7 +287,7 @@ try {
   try {
     await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
     authControl = "email-code action after reload";
-    await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
+    await openReturningUserCodeForm(page);
     authControl = "password-mode action";
     await page.getByRole("button", { name: /^Use your password instead$/i }).click({ timeout });
     authControl = "password field";
