@@ -36,6 +36,23 @@ Deno.serve(async (req) => {
   const { response, user, supa } = await requireAuth(req, origin);
   if (response || !user || !supa) return response;
 
+  // The service-role client bypasses RLS. The SQL RPC is user-ID scoped but
+  // does not itself check active/background-check approval. Enforce worker
+  // eligibility BEFORE any job, address or personal assignment is retrieved.
+  const { data: profile, error: profileError } = await supa
+    .from("xooters")
+    .select("id,active,background_check_status")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    console.warn("get-xooter-job-cards eligibility lookup failed", { error: profileError.message });
+    return fail("Xooter verification unavailable", origin, 503);
+  }
+  if (!profile?.active || profile.background_check_status !== "approved") {
+    return fail("active verified Xooter account required", origin, 403);
+  }
+
   const { data, error } = await supa.rpc("get_xooter_job_cards_for_user", {
     p_user_id: user.id,
   });

@@ -9,6 +9,7 @@ import {
 import { isXooterJobId, parseXooterJobCards, type XooterJobCard } from '@/lib/native-xooter-ledger';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
+import { hasVerifiedXooterHomeAccess, readXooterHomeProfile } from '@/lib/native-xooter-dashboard';
 
 const JOB_WORKSPACE = 'https://xoot.co.za/xooter/jobs';
 type JobDetailState = {
@@ -29,10 +30,16 @@ function XooterJobDetail({ userId, jobId }: { userId: string; jobId: string }) {
     void (async () => {
       try {
         const { data: owner, error: ownerError } = await supabase.from('xooters')
-          .select('id,user_id').eq('user_id', userId).maybeSingle();
+          .select('id,user_id,active,background_check_status').eq('user_id', userId).maybeSingle();
         if (!active) return;
         if (ownerError) throw ownerError;
-        if (!owner || owner.user_id !== userId) {
+        if (!owner) {
+          setState({ loading: false, error: null, job: null, hasXooterProfile: false });
+          return;
+        }
+        const profile = readXooterHomeProfile(owner, userId);
+        if (!profile) throw new Error('Invalid worker profile');
+        if (!hasVerifiedXooterHomeAccess(profile)) {
           setState({ loading: false, error: null, job: null, hasXooterProfile: false });
           return;
         }
@@ -81,7 +88,7 @@ function XooterJobDetail({ userId, jobId }: { userId: string; jobId: string }) {
             action="Try again" onAction={() => setRefresh(value => value + 1)} />
         : !state.hasXooterProfile
           ? <EmptyState title="Xooter verification required"
-              detail="This account does not have a verified Xooter job profile."
+              detail="Job details require an active Xooter profile and approved background checks."
               action="Back to jobs" onAction={() => router.replace('/xooter/jobs')} />
           : !job ? <EmptyState title="Job not available"
               detail="This offer is missing, expired, or does not belong to your Xooter account."

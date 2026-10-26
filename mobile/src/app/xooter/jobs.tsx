@@ -9,6 +9,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { groupXooterJobs, isXooterJobId, parseXooterJobCards, type XooterJobCard } from '@/lib/native-xooter-ledger';
 import { useAuth } from '@/providers/auth-provider';
+import { hasVerifiedXooterHomeAccess, readXooterHomeProfile } from '@/lib/native-xooter-dashboard';
 
 type State = { jobs: XooterJobCard[]; xooterId: string | null; loading: boolean; error: string | null };
 const portal = 'https://xoot.co.za/xooter/jobs';
@@ -50,10 +51,17 @@ function XooterJobsContent({ userId }: { userId: string }) {
     void (async () => {
       try {
         const { data: account, error: accountError } = await supabase.from('xooters')
-          .select('id,user_id').eq('user_id', userId).maybeSingle();
+          .select('id,user_id,active,background_check_status').eq('user_id', userId).maybeSingle();
         if (!active) return;
         if (accountError) throw accountError;
-        if (!account || account.user_id !== userId) {
+        if (!account) {
+          setState({ jobs: [], xooterId: null, loading: false, error: null });
+          return;
+        }
+        const profile = readXooterHomeProfile(account, userId);
+        if (!profile) throw new Error('Invalid worker profile');
+        if (!hasVerifiedXooterHomeAccess(profile)) {
+          // Profile existence alone does not authorise new offers.
           setState({ jobs: [], xooterId: null, loading: false, error: null });
           return;
         }
@@ -78,7 +86,7 @@ function XooterJobsContent({ userId }: { userId: string }) {
     {state.loading ? <LoadingRows /> : state.error
       ? <EmptyState title="Jobs unavailable" detail={state.error} action="Try again" onAction={reload} />
       : !state.xooterId
-        ? <EmptyState title="Xooter verification required" detail="This account does not yet have an active Xooter profile. Complete the verified onboarding journey before job offers can appear."
+        ? <EmptyState title="Xooter verification required" detail="Offers require an active Xooter profile and approved background checks. Review your verification status before accepting work."
             action="Back to your account" onAction={() => router.push('/account')} />
         : <>
           <Card style={s.hero}><CoreIcon name="briefcase" size={29} color={nativePalette.violetDark} />
