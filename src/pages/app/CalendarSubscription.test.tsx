@@ -26,6 +26,10 @@ describe("automatic calendar connection",()=>{
     await act(async()=>{fireEvent.click(copy);});
     const url=h.clipboard.mock.calls[0][0] as string,token=/\/([0-9a-f]{64})\.ics$/.exec(url)![1];
     expect(token).not.toBe(hash);expect(url).toMatch(/^https:\/\/example.supabase.co\/functions\/v1\/calendar-feed\//);
+    const field=screen.getByLabelText("Private calendar link") as HTMLInputElement;
+    expect(field).toHaveAttribute("type","password");expect(field.value).toBe(url);
+    expect(field).not.toHaveAttribute("value");expect(field).toHaveAttribute("autocomplete","off");
+    expect(field).toHaveAttribute("readonly");expect(field.closest("[data-sentry-block]")).not.toBeNull();
     const rendered=[...document.querySelectorAll("*")].flatMap(element=>[element.textContent,...element.getAttributeNames().map(name=>element.getAttribute(name))]).join(" ");
     expect(rendered).not.toContain(token);
     expect(sessionStorage.length).toBe(0);expect(localStorage.length).toBe(0);
@@ -34,6 +38,32 @@ describe("automatic calendar connection",()=>{
     await act(async()=>{fireEvent.click(screen.getByRole("button",{name:"Turn off calendar updates"}));});
     expect(h.invoke).toHaveBeenCalledWith("calendar-subscription",{body:{action:"disable",expectedSubject:"owner-a"}});
     expect(screen.queryByRole("button",{name:"Copy private calendar link"})).not.toBeInTheDocument();
+    expect(field.value).toBe("");
+  });
+  it("provides selected manual copy when clipboard is unavailable without another key or settings write",async()=>{
+    render(<CalendarSubscription/>);await screen.findByRole("button",{name:"Enable automatic calendar updates"});
+    h.invoke.mockResolvedValue({data:{success:true,data:{active:true,expiresAt:"2027-10-26T20:00:00Z"}},error:null});
+    fireEvent.click(screen.getByRole("button",{name:"Enable automatic calendar updates"}));
+    await screen.findByRole("button",{name:"Copy private calendar link"});
+    h.clipboard.mockRejectedValueOnce(new Error("Clipboard denied"));
+    await act(async()=>{fireEvent.click(screen.getByRole("button",{name:"Copy private calendar link"}));});
+    expect(screen.getByRole("status")).toHaveTextContent("could not copy the link");
+    fireEvent.click(screen.getByRole("button",{name:"Show and select private link"}));
+    const field=screen.getByLabelText("Private calendar link") as HTMLInputElement;
+    expect(field).toHaveAttribute("type","text");expect(field).toHaveFocus();
+    expect(field.selectionStart).toBe(0);expect(field.selectionEnd).toBe(field.value.length);
+    expect(field).not.toHaveAttribute("value");
+    fireEvent.click(screen.getByRole("button",{name:"Hide private link"}));
+    expect(field).toHaveAttribute("type","password");
+    expect(h.invoke.mock.calls.filter(([,args])=>args.body.action==="enable")).toHaveLength(1);
+    expect(sessionStorage.length).toBe(0);expect(localStorage.length).toBe(0);
+  });
+  it("explains that an existing link cannot be recovered after a reload without rotating it",async()=>{
+    h.invoke.mockResolvedValue({data:{success:true,data:{active:true,expiresAt:"2027-10-26T20:00:00Z"}},error:null});
+    render(<CalendarSubscription/>);
+    await screen.findByText(/cannot recover this link after you leave/);
+    expect(screen.queryByLabelText("Private calendar link")).not.toBeInTheDocument();
+    expect(h.invoke.mock.calls.map(([,args])=>args.body.action)).toEqual(["status"]);
   });
   it("does not show a link after a failed write",async()=>{
     render(<CalendarSubscription/>);await screen.findByRole("button",{name:"Enable automatic calendar updates"});
@@ -47,8 +77,11 @@ describe("automatic calendar connection",()=>{
     h.invoke.mockResolvedValue({data:{success:true,data:{active:true,expiresAt:"2027-10-26T20:00:00Z"}},error:null});
     fireEvent.click(screen.getByRole("button",{name:"Enable automatic calendar updates"}));
     await screen.findByRole("button",{name:"Copy private calendar link"});
+    fireEvent.click(screen.getByRole("button",{name:"Show and select private link"}));
+    const field=screen.getByLabelText("Private calendar link") as HTMLInputElement;
     h.auth={user:{id:"owner-b"},loading:false};view.rerender(<CalendarSubscription/>);
     expect(screen.queryByRole("button",{name:"Copy private calendar link"})).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Private calendar link")).not.toBeInTheDocument();expect(field.value).toBe("");
   });
   it("does not send a stale account's enable after a delayed digest",async()=>{
     let release!:(value:ArrayBuffer)=>void;

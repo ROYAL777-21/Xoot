@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect,useId,useRef,useState} from "react";
 import {supabase} from "@/integrations/supabase/client";
 import {useAuth} from "@/contexts/AuthContext";
 import {useConfirmedSave,useProfileResource} from "./useProfileResource";
@@ -23,7 +23,29 @@ async function newPrivateLink(){
   return {hash,url:`${parsed.origin}/functions/v1/calendar-feed/${token}.ics`};
 }
 
-/** Capability stays in this account's memory; it is not rendered into a field, URL or storage. */
+/** Set only the input's live property: no capability in HTML attributes, links or storage. */
+function ManualPrivateLink({url}:{url:string}){
+  const input=useRef<HTMLInputElement>(null),id=useId();
+  const [visible,setVisible]=useState(false);
+  useEffect(()=>{
+    const field=input.current;if(!field)return;
+    field.value=url;
+    return ()=>{field.value="";};
+  },[url]);
+  useEffect(()=>{if(visible){input.current?.focus();input.current?.select();}},[visible]);
+  return <div className="sentry-block ph-no-capture ph-mask grid gap-2" data-sentry-block>
+    <label htmlFor={id} className="text-sm font-medium">Private calendar link</label>
+    <input ref={input} id={id} type={visible?"text":"password"} readOnly autoComplete="off" spellCheck={false}
+      autoCapitalize="none" data-sentry-ignore data-private="true"
+      className="sentry-ignore w-full min-w-0 rounded-xl border border-border bg-background px-3 py-3 text-base"
+      aria-describedby={id+"-help"}/>
+    <p id={id+"-help"} className="text-xs text-muted-foreground">If the copy button does not work, show and select the link, then use Copy in your browser or press Ctrl+C (⌘C on Mac). Paste it only into your own calendar subscription settings.</p>
+    <button type="button" className="underline text-sm" aria-controls={id} aria-expanded={visible}
+      onClick={()=>setVisible(old=>!old)}>{visible?"Hide private link":"Show and select private link"}</button>
+  </div>;
+}
+
+/** Capability stays in this account's memory and its deliberately private manual-copy field. */
 function PrivateSubscription(){
   const resource=useProfileResource(readStatus);
   const save=useConfirmedSave(resource.isCurrent);
@@ -43,8 +65,8 @@ function PrivateSubscription(){
   },()=>{setLink(null);setMessage(null);void resource.refresh();});
   const copy=async()=>{
     if(!url||!resource.isCurrent())return;
-    try{await navigator.clipboard.writeText(url);if(resource.isCurrent()&&resource.owner)setMessage({owner:resource.owner,text:"Private link copied. Paste it only into your own calendar subscription settings."});}
-    catch{if(resource.isCurrent()&&resource.owner)setMessage({owner:resource.owner,text:"Your browser could not copy the private link. Allow clipboard access and try again."});}
+    try{await navigator.clipboard.writeText(url);if(resource.isCurrent()&&resource.owner)setMessage({owner:resource.owner,text:"Your browser reports the link was copied. If pasting is blank, use Show and select private link below."});}
+    catch{if(resource.isCurrent()&&resource.owner)setMessage({owner:resource.owner,text:"Your browser could not copy the link. Use Show and select private link below, then copy the selected text."});}
   };
   return <section className="xoot-you-card"><h2 className="font-display text-2xl">Automatic calendar updates</h2>
     <p className="my-3">Connect once to keep your visits, changes and cancellations in your calendar. Your calendar chooses when to refresh, so changes may take time to appear.</p>
@@ -52,7 +74,8 @@ function PrivateSubscription(){
     {!resource.data?<p className="my-3" role={resource.error?"alert":undefined}>{resource.error??"Loading calendar settings…"}{resource.error&&<button type="button" className="underline ml-2" onClick={()=>void resource.refresh()}>Try again</button>}</p>:<>
       <p className="my-3">{resource.data.active?"Your private calendar link is enabled.":"Your calendar is not connected yet."}</p>
       {resource.data.active&&resource.data.expiresAt&&<p className="text-sm mb-3">Link expires {new Intl.DateTimeFormat("en-ZA",{dateStyle:"medium"}).format(new Date(resource.data.expiresAt))}.</p>}
-      {url&&resource.data.active&&!save.saving&&<div className="grid gap-3 mb-4"><button type="button" className="xoot-you-primary" onClick={()=>void copy()}>Copy private calendar link</button><button type="button" className="underline" onClick={()=>{if(resource.isCurrent())window.location.assign(url.replace(/^https:/,"webcal:"));}}>Connect Apple Calendar</button></div>}
+      {url&&resource.data.active&&!save.saving&&<div className="grid gap-3 mb-4"><button type="button" className="xoot-you-primary" onClick={()=>void copy()}>Copy private calendar link</button><ManualPrivateLink key={url} url={url}/><button type="button" className="underline" onClick={()=>{if(resource.isCurrent())window.location.assign(url.replace(/^https:/,"webcal:"));}}>Connect Apple Calendar</button></div>}
+      {resource.data.active&&!url&&<p className="text-sm mb-3">For your privacy, Xoot cannot recover this link after you leave the page. If you have not connected your calendar yet, replace the link below and copy the new one. This stops the previous link.</p>}
       <details className="my-4"><summary>Connect Google or Outlook</summary><p className="my-2">Copy your private link. In Google Calendar on a computer, choose Other calendars → + → From URL. In Outlook, choose Add calendar → Subscribe from web. Paste the link there and confirm. Apple Calendar can use Add Subscription Calendar. Subscribing keeps updates; importing a downloaded file adds a copy.</p></details>
       {resource.data.active&&<p className="text-sm mb-3">Replacing the link stops the old link. Reconnect your calendar with the new one. Turning it off stops future updates; remove the subscribed calendar in your calendar app to remove its saved events.</p>}
       <div className="grid gap-3"><button type="button" disabled={save.saving} className="xoot-you-primary" onClick={enable}>{save.saving?"Saving…":resource.data.active?"Replace private calendar link":"Enable automatic calendar updates"}</button>{resource.data.active&&<button type="button" disabled={save.saving} className="underline" onClick={disable}>Turn off calendar updates</button>}</div>
