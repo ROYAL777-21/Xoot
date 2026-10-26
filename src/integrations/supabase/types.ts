@@ -5400,6 +5400,15 @@ export type Database = {
         Args: { p_hash: string }
         Returns: Json
       }
+      // Proposed quarantine migration contracts; verify against staging before release.
+      inspect_quarantined_kyc_object: {
+        Args: { p_user_id: string; p_application_id: string; p_storage_path: string }
+        Returns: Json
+      }
+      register_quarantined_kyc_document: {
+        Args: { p_user_id: string; p_application_id: string; p_doc_type: string; p_storage_path: string; p_object_id: string; p_object_updated_at: string; p_sha256: string; p_content_type: string; p_byte_length: number }
+        Returns: Json
+      }
       can_activate_payment_provider: {
         Args: { p_environment?: string; p_provider: string }
         Returns: boolean
