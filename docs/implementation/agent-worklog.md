@@ -2,6 +2,8 @@
 
 ## HOLDING — 26 October 2026 — saved places, calendars and Manage more continuity
 
+Scope extension before review edits: founder supplied40 named customer quotes (numbered1–20 and41–60), confirmed each is genuine/original and each five-star rating is customer-supplied despite the sample heading. Publication permission already confirmed. Claim public Reviews component, its scoped handoff CSS, a small approved source collection and truthful behavior guards. Publish only selected quotes without unsupported currently-disabled feature claims, aggregate rating claims or verified-booking badges; no Xooter quote was supplied.
+
 Founder explicitly asks for canonical Your places persistence during booking, scheduling that can be added to their existing calendar, the original Manage more handoff and measured responsiveness. Claim the signed-in profile/home/property/calendar destinations and route wiring, owner-bound household-profile booking selection/save acknowledgements, a minimal shared calendar export helper and relevant web/native entry points/tests plus release evidence. Preserve home-first personalisation as planning only, existing money/availability gates and the approved homepage. Calendar export must use actual booking time/duration/status and omit gate/alarm/access notes; it is not continuous account sync. No unverified place is labelled provider-verified. No private profile caching across accounts. Cross-role shared helpers, tests and optional native wiring require correctness/release review. Do not claim zero lag or production delivery without measurement and actual checks.
 
 ## RELEASED CLAIM — 26 October 2026 — flowers, genuine review publishing and website release assessment
