@@ -14,6 +14,16 @@ vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: () => true }));
 beforeEach(() => { vi.clearAllMocks(); auth.signUp.mockResolvedValue({ data: { session: null }, error: null }); auth.resend.mockResolvedValue({ error: null }); auth.signInWithOtp.mockResolvedValue({ error: null }); auth.verifyOtp.mockResolvedValue({ error: null }); });
 afterEach(cleanup);
 describe("account entry copy", () => {
+  it("helps correct gmail.vom before sending any account email", async () => {
+    await act(async () => { render(<MemoryRouter initialEntries={["/auth?mode=signin"]}><Auth /></MemoryRouter>); });
+    fireEvent.change(screen.getByLabelText("Your email"), { target: { value: "customer@gmail.vom" } });
+    expect(screen.getByRole("button", { name: "Send one-time code" })).toBeDisabled();
+    expect(auth.signInWithOtp).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Use customer@gmail.com" }));
+    expect(screen.getByLabelText("Your email")).toHaveValue("customer@gmail.com");
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send one-time code" })); });
+    expect(auth.signInWithOtp).toHaveBeenCalledWith(expect.objectContaining({ email: "customer@gmail.com" }));
+  });
   async function submitSignup() {
     await act(async () => { render(<MemoryRouter initialEntries={["/auth"]}><Auth /></MemoryRouter>); });
     fireEvent.change(screen.getByLabelText("Full name"), { target: { value: "Synthetic Customer" } });

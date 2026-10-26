@@ -6,6 +6,7 @@ import { downloadVisitCalendar, visitCalendar, type CalendarVisit } from "@/lib/
 import { getClientVisibleStatus, normaliseBookingStatus } from "@/lib/booking-state-machine";
 import { ProfileDetail, ProfileState } from "./ProfileParts";
 import { useProfileResource } from "./useProfileResource";
+import CalendarSubscription from "./CalendarSubscription";
 
 async function readVisits(owner: string): Promise<CalendarVisit[]> {
   const result = await supabase.from("bookings").select("id,service,scheduled_at,duration_hours,status,updated_at")
@@ -20,6 +21,7 @@ export default function Calendars() {
   const resource = useProfileResource(readVisits);
   const [error, setError] = useState<string | null>(null);
   return <ProfileDetail title="Your calendar" subtitle="Your visits, in the calendar you already use"><div className="xoot-you-content px-5 pb-8">
+    <CalendarSubscription />
     <section className="xoot-you-card"><CalendarCheck aria-hidden="true" /><h2 className="font-display text-2xl mt-3">Apple, Google or Outlook</h2><p className="my-3">Choose a visit below to download its calendar file, then open or import it into your calendar.</p><p className="text-sm text-muted-foreground">This adds a copy of one visit. Changes and cancellations stay in Xoot; check your booking and update your calendar if plans change. Your address and home access notes stay in Xoot.</p></section>
     {!resource.data ? <ProfileState loading={resource.authLoading || resource.owner !== null && resource.status === "loading"} error={resource.error} retry={resource.refresh} /> : resource.data.length === 0 ? <section className="xoot-you-card"><h2 className="font-display text-2xl">No upcoming visits</h2><p className="my-3">Your scheduled visits will appear here.</p><Link className="underline" to="/app/book">Plan a visit</Link></section> : resource.data.map(visit => {
       const status = normaliseBookingStatus(visit.status);

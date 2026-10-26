@@ -17,6 +17,7 @@ import {
   getAuthFormIssue,
   getAuthRedirectTo,
   getEmailIssue,
+  getEmailSuggestion,
   getOtpCodeIssue,
   getPasswordIssues,
   getPasswordResetRedirectTo,
@@ -106,6 +107,7 @@ const Auth = () => {
   const isLocked = lockoutUntil !== null && Date.now() < lockoutUntil;
   const passwordIssues = useMemo(() => getPasswordIssues(password, authMode), [authMode, password]);
   const passwordStrength = getPasswordStrength(password);
+  const emailSuggestion = getEmailSuggestion(email);
   const formIssue = isForgotPassword
     ? getEmailIssue(email)
     : isOtpMode
@@ -509,9 +511,12 @@ const Auth = () => {
                   inputMode="email"
                   spellCheck={false}
                   enterKeyHint={isOtpMode || isForgotPassword ? "done" : "next"}
+                  aria-invalid={emailSuggestion ? true : undefined}
+                  aria-describedby={emailSuggestion ? "email-spelling-help" : undefined}
                   required
                 />
               </label>
+              {emailSuggestion && <div id="email-spelling-help" className="text-sm" role="status"><p>Check your email ending: did you mean gmail.com?</p><button type="button" className="xoot-auth-link" onClick={() => setEmail(emailSuggestion)}>Use {emailSuggestion}</button></div>}
 
               {!isForgotPassword && !isOtpMode && (
                 <div className="xoot-auth-field">

@@ -227,3 +227,11 @@ verify_jwt = true
 
 [functions.training-module]
 verify_jwt = true
+
+[functions.calendar-subscription]
+verify_jwt = true
+
+# External calendars authenticate with a separately revocable read-only capability,
+# not a customer's short-lived Supabase session. Management keeps normal JWT checks.
+[functions.calendar-feed]
+verify_jwt = false
