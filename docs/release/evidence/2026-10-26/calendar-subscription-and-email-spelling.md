@@ -66,6 +66,29 @@ shared a fixture and failed for the wrong reason; the retained runner now execut
 serially and verifies each expected failure message. Initial DOM scanner rejected a test's innerHTML
 read; the test now inspects text and attributes without that API. Remaining scanner checks pass.
 
-Delivery status: not yet staged or production. VITE_CALENDAR_SYNC_ENABLED remains off by default.
-Required GitHub checks are blocked by exhausted included Actions minutes; no gate bypass or paid
-upgrade. Record actual delivery/readback separately before enabling any preview flag.
+Delivery status: independently reviewed sourcefa37e4eed4e3b05bf2bb6a9568208a114b3298fd is staged,
+not production. The final ten-file focused rerun passes106tests and TypeScript. Independent review
+passes56tests plus both Deno entrypoints and finds no remaining source blocker, with actual
+JWT/provider/device acceptance explicitly pending.
+
+Exact SQL SHA256`57de10a27509ff39dd1d646d759fea7b611aa6d3ff71dee2ac18fdc90b0de350` was applied only
+tofxmxyabdjqviqbcxmvlp. MCP generated ledger version20261026203430; only this newly authored migration
+was renamed from the CLI-created20261026200704to match that ledger, without SQL changes or historical
+repair. Existing BEFORE UPDATE triggers are price-author guard and updated_at touch; both precede
+the new revision trigger. Schema readback: integer revision, both functions SECURITY INVOKER,
+RLS enabled, anon/customer RPC execute false, service true, subscriptions0.
+
+calendar-subscription v1ACTIVE/JWTtrue, bundleSHA256
+`c746ddfbb0d3c20b31c1acc61f2354a3bd93a4f294a31f9397dcba27fcce614e`; all5returned runtime files
+match reviewed bytes. calendar-feed v1ACTIVE/custom capability, bundleSHA256
+`61f6ed95160047faaec0e326e8e8efcaec429e1445e175d6d4a335ff9fa03d5f`; all6returned files match.
+Actual HTTP checks: no-JWT management401; exact owned preview preflight204 with correct CORS;
+foreign origin403; unknown/malformed/query capability404; feedPOST405. Feed denials are no-store.
+Post-DDL advisors add only the expected INFO for a service-only RLS table without client policies;
+the two earlier unrelated WARNs are unchanged. No real customer calendar link was minted by an admin.
+
+VITE_CALENDAR_SYNC_ENABLED=true is set only for the owned design branch's Preview target. Default
+and production remain off. A new build is required to consume it. Actual normal-Auth enable/read,
+rotation/revocation and Apple/Google/Outlook refresh/cancellation remain owner/provider acceptance
+work; ACTIVE is not acceptance. Required GitHub checks remain blocked by exhausted included Actions
+minutes; no gate bypass, production publication or paid upgrade.

@@ -2,7 +2,7 @@
 import {readFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import assert from 'node:assert/strict';
-const migration=readFileSync('supabase/migrations/20261026200704_private_calendar_subscription.sql','utf8');
+const migration=readFileSync('supabase/migrations/20261026203430_private_calendar_subscription.sql','utf8');
 const contract=readFileSync('scripts/testing/calendar-subscription-contract.sql','utf8');
 const start=migration.indexOf('create function public.xoot_read_calendar_feed');
 const fn=migration.slice(start,migration.indexOf('revoke all on function public.xoot_read_calendar_feed',start)).replace('create function','create or replace function');
