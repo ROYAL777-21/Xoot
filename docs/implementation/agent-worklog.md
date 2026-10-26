@@ -5,6 +5,10 @@ other what it is holding. This file is how they find out.
 
 Roles and path ownership are in `/CLAUDE.md`. This file is the live state.
 
+## HOLDING — 26 October 2026 — chat ciphertext participant read without recursive policies
+
+Actual four-account staging test at f6dd7b6 failed customer-to-Xooter REST read with HTTP500/SQLSTATE42P17 after server-authorised ciphertext insertion. Catalog confirms messages SELECT expands bookings -> xooter_jobs -> bookings. Claim one CLI-created migration for a private auth.uid-bound read predicate and only messages SELECT policy, an isolated PostgreSQL positive/negative fixture harness and release evidence. Preserve booking/job RLS and current customer/admin/accepted-assigned-worker boundaries; no public data endpoint, arbitrary actor, client write grant or production change. Security-definer use, if necessary to break recursion, is limited to a private boolean predicate with empty search_path and explicit grants. Independent security review and actual staging verification remain required.
+
 ## How to use it
 
 **Claim before you code, and push the claim.** An unpushed claim is invisible and therefore
