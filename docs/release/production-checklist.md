@@ -1,5 +1,29 @@
 # Xoot production checklist
 
+## 26 October 2026 — continuation audit and cumulative website candidate
+
+The isolated `release/website-handoff-candidate-20261026` branch carries existing PR92/95/97
+website source from `10c17e01` to a draft PR against `release/xoot-production`, so the existing
+release workflows can select the cumulative source. This continuation changes documentation only;
+it does not merge the original PRs, modify workflows or publish the website.
+
+Fresh Vercel readback still resolves `xoot.co.za` to READY `dpl_ASWQX8BSgase9gUDTAZLxiF5GwDn`
+at approved `e0c021e`; the newer source is a READY preview. Fresh production aggregate:
+2 registered/confirmed accounts, 2 matching owner profiles, 0 missing, 2 populated names,
+0 populated phones. This is not acceptance of a fresh signup or every detail-saving path.
+
+Fresh backend metadata: application endpoint production v3/staging v18; GPS/coverage handlers
+are staging-only in the inventory. Migration ledgers have 82 production/91 staging entries,
+including 10 staging-only entries and production-only safety-PIN `20261008011821`.
+This is an inventory comparison, not an approved schema migration or deployed-source equivalence.
+Retain all separate GPS/chat/calls/KYC/native/provider gates and the current plan/spending limit.
+
+Local commands currently fail before execution because a Unix sandbox path is invalid on Windows;
+Codex Chrome control exits before connecting. No new local tests/builds or browser acceptance are
+claimed. The source PR97 security job is failed with zero steps; the new release candidate still
+requires its own exact-head checks and real acceptance. See
+[evidence and precise remaining checks](evidence/2026-10-26/website-release-candidate.md).
+
 ## 26 October 2026 — current state (supersedes older dated sections)
 
 Production still serves approved `e0c021e9fde328098f33fb216b1efa720eadf2f1`; fresh public build-info
