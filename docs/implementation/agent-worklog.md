@@ -5,7 +5,9 @@ other what it is holding. This file is how they find out.
 
 Roles and path ownership are in `/CLAUDE.md`. This file is the live state.
 
-## HOLDING — 26 October 2026 — Xooter handoff onboarding and honest saved details
+## RELEASED CLAIM — 26 October 2026 — Xooter handoff onboarding and honest saved details
+
+PR97 prepares the handoff application/review and honest owner-bound saves. Independent UI9/9, combined13/13 and9 synthetic real-entrypoint document checks passed; guard removal exposes2 failures. Full local rerun169 files /1,690 passed /7existing skips, TS/scopedlint/Deno/build50pages/artifact passed. Synthetic CUA390/1440 layouts verified. Reviewed submit-xooter-application v18 is staging-only,4 deployed files match and no-bearer401. Production stille0; required GitHub jobs never start due account billing/usage restriction. No real-applicant, browser Realtime/MFA/device/audio or production activation claim; manual KYC unchanged. Source/acceptance limits and exact stage evidence are in26October release records. All claims in this26October scope released; preserve unrelated growth claim.
 
 Founder requests real account/detail storage and Xooter onboarding matching the original handoff. Production aggregate readback confirms2 registered emails and2 owner profiles, none missing; do not claim every signup route accepted or copy auth emails into public data. Claim src/pages/xooter/Apply.tsx, targeted behavior tests, scoped handoff CSS if required, and release evidence. Match Work with Xoot, You/Where/What/Checks composition and brand typography while preserving backend requirements and real verification. Correct Save & continue advancing after failed save, bind labels to fields, show load errors and isolate drafts on account change. Preserve private documents, manual review, no fake jobs/checks/payout promises, signup PR95 and personalisation planning-only. Cross-role guard tests are needed for actual persistence/privacy.
 
