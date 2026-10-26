@@ -4333,6 +4333,91 @@ export type Database = {
         }
         Relationships: []
       }
+      // Forward declaration matching 20261016234838; regenerate from the deployed schema
+      // after staging/production migration verification. No client permissions are implied.
+      xoot_job_live_positions: {
+        Row: {
+          accuracy_m: number
+          booking_id: string
+          expires_at: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          updated_at: string
+          xooter_id: string
+        }
+        Insert: {
+          accuracy_m: number
+          booking_id: string
+          expires_at: string
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          updated_at?: string
+          xooter_id: string
+        }
+        Update: {
+          accuracy_m?: number
+          booking_id?: string
+          expires_at?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          updated_at?: string
+          xooter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xoot_job_live_positions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_contractor_quality"
+            referencedColumns: ["xooter_id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "xooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xoot_job_live_positions_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "xooters_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       xootcred_ledger: {
         Row: {
           amount: number
@@ -5383,6 +5468,19 @@ export type Database = {
       }
     }
     Functions: {
+      // Pending service-role-only RPC; not deployed to staging/production.
+      // Generated live-schema reconciliation must stay red until migration delivery.
+      xoot_publish_private_job_location: {
+        Args: {
+          p_accuracy_m: number
+          p_booking_id: string
+          p_captured_at: string
+          p_latitude: number
+          p_longitude: number
+          p_xooter_id: string
+        }
+        Returns: boolean
+      }
       can_access_sensitive_data: {
         Args: { p_booking_id: string; p_xooter_id: string }
         Returns: boolean

@@ -198,6 +198,10 @@ verify_jwt = true
 [functions.get-xooter-job-cards]
 verify_jwt = true
 
+# Job-scoped, authenticated worker position relay. No public or background tracking.
+[functions.xoot-job-location]
+verify_jwt = true
+
 [functions.raise-sos-alert]
 verify_jwt = true
 

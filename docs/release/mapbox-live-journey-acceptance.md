@@ -4,6 +4,8 @@
 
 ## Preparation
 
+Latest continuation: staging `xoot-job-location` v6 is JWT protected and source-matched. [Founder setup and two-pair acceptance](mapbox-founder-setup.md) covers the newer four-identity runner, exact variables, Mapbox secret form and remaining signed-device/MFA gates. The three-identity runner below is a separate subset; its self-test is not a live authenticated result.
+
 1. Use the **staging** project `fxmxyabdjqviqbcxmvlp` only. Confirm `xoot-job-location` is deployed there with `verify_jwt=true`, and `xoot_job_live_positions` has RLS on, no direct anonymous/authenticated SELECT, job-lifecycle triggers and an active expiry cron task. Confirm edge handler source matches the release candidate being tested. Do not run this against the production project `mvlrkelahhsyjrwgsxaf`.
 2. Create/use **consenting synthetic** test identities in staging: one approved active Xooter, one customer owning a booking assigned to that Xooter, and an unrelated customer. The booking must have an **accepted job** for the same Xooter, its status must be `en_route` or legacy `enroute`, and it cannot be cancelled/completed/revoked. Never use real customer addresses, real job IDs or actual GPS coordinates in this test.
 3. Obtain each test account's **own short-lived Supabase JWT** through its normal login. Supply JWTs and the staging *public* key as process environment variables only, not Git, commits, CI logs, terminal history or ChatGPT. Do **not** use any service_role/secret key as the test user.
