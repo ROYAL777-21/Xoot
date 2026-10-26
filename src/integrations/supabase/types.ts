@@ -5432,6 +5432,11 @@ export type Database = {
         Args: { p_booking_id: string; p_xooter_id: string }
         Returns: boolean
       }
+      // Proposed zero-default address allowance migration; verify against staging before release.
+      xoot_consume_address_lookup: {
+        Args: { p_mode: string }
+        Returns: boolean
+      }
       can_activate_payment_provider: {
         Args: { p_environment?: string; p_provider: string }
         Returns: boolean
