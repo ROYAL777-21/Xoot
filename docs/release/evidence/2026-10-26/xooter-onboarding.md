@@ -8,6 +8,10 @@ is present; UPDATE has ownership USING and WITH CHECK. Emails remain in protecte
 not a new public email directory. This checks the registered accounts; it does not prove every
 signup route, future account, profile-write failure or real applicant document flow accepted.
 
+Final aggregate readback also found 2 populated profile names and 0 populated phone fields.
+Empty phone fields do not establish whether nothing was submitted or a previous write failed.
+Do not invent missing details or claim every detail-saving path accepted without a real save/reload.
+
 The live website build-info still reports e0c021e9fde328098f33fb216b1efa720eadf2f1,
 built 2026-10-24T19:18:14.334Z. Signup PR95 and this PR97 are not live. The current trigger
 already guards optional referral dependencies; no missing-referral-table cause is asserted.
