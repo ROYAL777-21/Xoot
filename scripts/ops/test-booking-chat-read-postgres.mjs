@@ -12,7 +12,7 @@ assert.equal(info.Config.Labels?.['xoot.test.intent'],'booking-chat-read');
 assert.equal(info.HostConfig.NetworkMode,'none');
 assert.ok(!info.Mounts.some(m=>m.Type==='bind'),'No host bind mounts');
 const database='xoot_chat_'+randomUUID().replaceAll('-','');
-const run=(sql,db=database)=>execFileSync('docker',['exec','-i',container,'psql','-X','-q','-U','postgres','-d',db,'-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-At'],{input:sql,encoding:'utf8',stdio:['pipe','pipe','pipe']}).trim();
+const run=(sql,db=database)=>execFileSync('docker',['exec','-i','-e','PGCONNECT_TIMEOUT=3',container,'psql','-X','-q','-U','postgres','-d',db,'-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-At'],{input:"set statement_timeout='3s';set lock_timeout='2s';"+sql,encoding:'utf8',timeout:10000,windowsHide:true,stdio:['pipe','pipe','pipe']}).trim();
 const ca='11111111-1111-4111-8111-111111111111',wa='22222222-2222-4222-8222-222222222222',cb='33333333-3333-4333-8333-333333333333',wb='44444444-4444-4444-8444-444444444444',admin='55555555-5555-4555-8555-555555555555';
 const ba='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',bb='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',xa='cccccccc-cccc-4ccc-8ccc-cccccccccccc',xb='dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const as=(uid,sql)=>run(`begin;set local role authenticated;set local "request.jwt.claim.sub"='${uid??''}';${sql};rollback;`);
@@ -47,8 +47,8 @@ try{
   let migration=readFileSync(new URL('../../supabase/migrations/20261026020929_booking_chat_nonrecursive_read.sql',import.meta.url),'utf8');
   if(process.env.XOOT_CHAT_TEST_PLANT==='no-accepted-job'){
     const before=migration;migration=migration.replace(" and j.state = 'accepted'",'');assert.notEqual(migration,before);
-  }else if(process.env.XOOT_CHAT_TEST_PLANT==='invoker'){
-    const before=migration;migration=migration.replace('stable security definer','stable security invoker');assert.notEqual(migration,before);
+  }else if(process.env.XOOT_CHAT_TEST_PLANT==='recursive-policy'){
+    const before=migration;migration=migration.replace('using (private.xoot_can_read_booking(id));',"using(user_id=(select auth.uid())or public.has_role((select auth.uid()),'admin')or exists(select from public.xooter_jobs j join public.xooters x on x.id=j.xooter_id where j.booking_id=bookings.id and x.user_id=(select auth.uid())and j.state='accepted'));");assert.notEqual(migration,before);
   }else if(process.env.XOOT_CHAT_TEST_PLANT)throw new Error('Unknown negative control');
   run(migration);
   const ids=(who,table)=>as(who,`select coalesce(string_agg(id::text,','order by id),'')from public.${table}`);
