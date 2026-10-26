@@ -15,7 +15,7 @@ async function lookup(mode:"suggest"|"confirm",query:string,signal:AbortSignal,s
   return data.data.options.filter((o:unknown):o is MapboxAddressSuggestion=>Boolean(o && typeof o==="object" &&
     "id" in o && typeof o.id==="string" && o.id.length>0 && o.id.length<=256 &&
     "label" in o && typeof o.label==="string" && o.label.length>=4 && o.label.length<=220 &&
-    "featureType" in o && o.featureType==="address")).slice(0,5);
+    "featureType" in o && o.featureType==="address")).slice(0,10);
 }
 
 export const VerifiedAddressInput=({value,onChange,placeholder,inputClassName,label="Service address",showIcon=true,disabled=false}:Props)=>{
@@ -111,8 +111,9 @@ export const VerifiedAddressInput=({value,onChange,placeholder,inputClassName,la
     {enabled && <p id={statusId} role="status" className="text-xs text-muted-foreground">
       {confirming?"Confirming your address…":state==="loading"?"Finding addresses…":state==="error"?
         "Address suggestions are unavailable. You can enter your address manually.":state==="empty"?
-        "No suggestions found. Check the street number and spelling.":selectedText===value && selectedText?
-        "Address selected. Add unit and entrance details if needed.":"Start typing your street address, then choose a suggestion."}
+        "No suggestions found. Try the full street name, such as Close instead of Cl, then your suburb and city.":selectedText===value && selectedText?
+        "Address selected. Add unit and entrance details if needed.":state==="results"?
+        "Choose the address with the correct suburb and city.":"Enter your street number and name, then add your suburb and city."}
     </p>}
     {enabled && state==="error" && <button type="button" disabled={disabled || !searchable(value) || confirming}
       className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
