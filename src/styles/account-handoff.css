@@ -1,0 +1,17 @@
+/* Signed-in composition uses the supplied Xoot surfaces, type and brand artwork. */
+.xoot-booking-page:not(.xoot-site-booking) { position:relative; isolation:isolate; }
+.xoot-account-booking-flowers { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:-1; }
+.xoot-booking-page:not(.xoot-site-booking) .xoot-booking-frame { position:relative; }
+.xoot-care-account { font-family:var(--xoot-font-core); }
+.xoot-care-account .font-display { font-family:var(--xoot-font-display); font-weight:400; letter-spacing:var(--xoot-track-display); }
+.xoot-care-account-hero { background:var(--xoot-careplus-wash); }
+.xoot-care-account-label { color:var(--xoot-careplus-ink); }
+.xoot-care-account-join { background:var(--xoot-careplus-600); color:#fff; border-radius:var(--xoot-radius-pill); }
+.xoot-care-account-join:hover { background:var(--xoot-careplus-700); }
+.xoot-account-dashboard { width:min(100%,1000px); margin-inline:auto; font-family:var(--xoot-font-core); }
+.xoot-account-dashboard h1,.xoot-account-dashboard h2,.xoot-account-dashboard .font-display { font-family:var(--xoot-font-display); font-weight:400; letter-spacing:var(--xoot-track-display); }
+.xoot-account-dashboard-hero { position:relative; overflow:hidden; padding:clamp(20px,4vw,36px); border-radius:var(--xoot-radius-lg); background:var(--xoot-grad-dusk); }
+.xoot-account-dashboard-hero>div { position:relative; z-index:1; }
+.xoot-account-dashboard-character { position:absolute; right:-24px; bottom:-65px; opacity:.10; pointer-events:none; }
+.xoot-account-dashboard .shadow-card { box-shadow:var(--xoot-shadow-2); }
+.xoot-account-dashboard [data-slot="card"] { border-radius:var(--xoot-radius-md); }

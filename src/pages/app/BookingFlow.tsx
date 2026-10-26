@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/kit/Logo";
 import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
 import { SuburbPicker } from "@/components/xoot/SuburbPicker";
+import { HandoffFlowerField } from "@/components/xoot/HeroArtwork";
 import { InteractiveServiceAreaMap } from "@/components/xoot/InteractiveServiceAreaMap";
 import { ServiceIcon } from "@/components/kit/ServiceIcon";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
   changeBookingService, formatBookingMoney, readBookingQuoteResponse, type BookingQuoteResponse,
 } from "@/lib/booking-flow";
 import "@/styles/auth-booking.css";
+import "@/styles/account-handoff.css";
 
 const stepNames = ["Service", "Your home", "When", "Your Xooter", "Confirm"];
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -61,6 +63,8 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const [serviceChosen, setServiceChosen] = useState(!website || Boolean(params.get("service")));
   const [input, setInput] = useState<BookingQuoteInput>(() => {
     const draft = createBookingInput(bookingServiceFromParam(params.get("service")));
+    const invite = params.get("ref");
+    if (invite && /^[A-Z0-9_-]{4,32}$/i.test(invite)) draft.referralCode = invite;
     draft.homeSize = bookingHomeSize(2, 1);
     if (draft.service === "regular") draft.hours = 5.5;
     const date = params.get("date");
@@ -217,7 +221,9 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
 
   const crewPicker = <fieldset><legend className="xoot-booking-label">{website ? "How many Xooters" : "Your crew"}</legend><div className="xoot-booking-crew">{Array.from({ length: maxCrew }, (_, i) => i + 1).map(size => <button key={size} type="button" aria-pressed={input.crewSize === size} onClick={() => { updateInput({ crewSize: size }); setSelectedIds([]); }} className={input.crewSize === size ? "is-selected" : ""}>{!website && <Users size={19} />}<strong>{website ? `${size} ${size === 1 ? "Xooter" : "Xooters"}` : size}</strong>{!website && <span>{size === 1 ? "Xooter" : "Xooters"}</span>}</button>)}</div><p className="xoot-booking-help">One job, shared by your crew. Review the total and estimated duration before booking.</p></fieldset>;
 
-  return <div className={`xoot-booking-page xoot-booking-handoff${website ? " xoot-site-booking" : ""}`}><div className="xoot-booking-frame">
+  return <div className={`xoot-booking-page xoot-booking-handoff${website ? " xoot-site-booking" : ""}`}>
+    {!website && <HandoffFlowerField className="xoot-account-booking-flowers" />}
+    <div className="xoot-booking-frame">
     <header className="xoot-booking-head">
       <button type="button" className="xoot-booking-back" aria-label={step === 0 ? "Close booking" : "Back"} onClick={back}>{website && step === 0 ? <X /> : <ArrowLeft />}</button>
       {website ? <ol className="xoot-booking-steps" aria-label="Booking progress">{websiteSteps.map((name, i) => <Fragment key={name}><li className={`xoot-booking-step ${i === step ? "is-active" : i < step ? "is-done" : ""}`} aria-current={i === step ? "step" : undefined} aria-label={name}><i aria-hidden="true">{i < step ? <Check size={11} strokeWidth={3.4} /> : i + 1}</i><span aria-hidden="true">{name}</span></li>{i < 4 && <li aria-hidden="true" className={`xoot-booking-connector ${i < step ? "is-done" : ""}`} />}</Fragment>)}</ol> : <><div className="xoot-booking-progress"><span>{stepNames[step]}</span><ol aria-label="Booking progress">{stepNames.map((name, i) => <li key={name} aria-label={name} aria-current={i === step ? "step" : undefined} className={i <= step ? "is-done" : ""} />)}</ol></div><Logo className="xoot-booking-logo" size={20} tone="violet" /></>}

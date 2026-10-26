@@ -1,5 +1,9 @@
 # Xoot authentication email templates
 
+25 October current setup: production OTP length is **six**, saved privately by the founder and read back. Keep placeholder `000000`; accept a complete 6–10 digit code while older messages expire. `confirm-signup.html` is the **Confirm sign up** template, subject **Confirm your Xoot email**. It includes both the complete `{{ .Token }}` and the provider-generated `{{ .ConfirmationURL }}`, retaining email confirmation and native link compatibility. Password signup must remain on the confirmation step when no session is returned; resend with `auth.resend({ type: 'signup', ... })`, not a second signup or an existing-user-only OTP request. Hosted template delivery and real new-account acceptance must be recorded separately from a source commit.
+
+The paragraphs below are dated implementation history; their earlier eight-digit recommendation is superseded by the founder-approved six-digit setup above.
+
 The production founder acceptance check on 22 October found that Supabase sent the default Magic Link email while the website requested an OTP. `magic-link.html` uses the documented `{{ .Token }}` variable. Its subject is **Your Xoot sign-in code**. A subsequent check confirmed the provider issues **eight digits** while the old client truncated to six. Keep the stronger provider setting and accept the complete code on the client. The template now says complete code and fits longer values. It was saved through the authenticated production dashboard; no user code or email login link is stored here.
 
 Hosted settings: Authentication → Emails → Magic link or OTP. Staging and production must each be configured explicitly; committing HTML does not update a hosted project. Preserve password-recovery and account-confirmation link semantics when changing their branding.

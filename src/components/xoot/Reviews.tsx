@@ -1,4 +1,7 @@
 import { MessageSquareQuote } from "lucide-react";
+import { HandoffTape } from "./HeroArtwork";
+import "@/styles/referrals-reviews-handoff.css";
+import "@/styles/homepage-sections.css";
 
 /**
  * There is no public, moderation-approved review feed in the current schema. The private
@@ -12,12 +15,17 @@ export function Reviews() {
         <div className="xoot-section-head xoot-section-head--center" style={{ maxWidth: 560 }}>
           <p className="xoot-section-eyebrow">What people say</p>
           <h2 id="reviews-title" className="xoot-section-title">Booked, cleaned, and <span className="xoot-squiggle">left alone</span>.</h2>
-          <p className="xoot-section-sub">Only customer reviews approved for public display will appear here.</p>
+          <p className="xoot-section-sub">Experiences from the people who book and the Xooters who make it happen.</p>
         </div>
-        <div className="xoot-card xoot-reviews__state" role="status">
-          <MessageSquareQuote aria-hidden="true" />
-          <h3>Published reviews are coming</h3>
-          <p>Xoot does not have a public review feed yet. Reviews stay attached to completed bookings until a safe publication workflow is available.</p>
+        <div className="xoot-review-groups">
+          <div className="xoot-review-group"><HandoffTape /><MessageSquareQuote aria-hidden="true" />
+            <h3>From customers</h3>
+            <p>Published reviews are coming. Customer feedback stays with completed bookings until it is approved for public display.</p>
+          </div>
+          <div className="xoot-review-group"><HandoffTape /><MessageSquareQuote aria-hidden="true" />
+            <h3>From Xooters</h3>
+            <p>Xooter stories are coming. Only feedback shared with permission will appear here.</p>
+          </div>
         </div>
       </div>
     </section>

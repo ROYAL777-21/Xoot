@@ -4,12 +4,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { CalendarClock, Check, Crown, Heart, Home, Loader2, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
+import { CalendarClock, Check, Heart, Home, Loader2, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR, formatZARDecimal } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import { useXootCred } from "@/hooks/useXootCred";
 import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
+import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
+import { CarePlusSymbol } from "@/components/care-plus/CarePlusSymbol";
+import "@/styles/account-handoff.css";
 
 type Plan = {
   id: string;
@@ -121,19 +124,19 @@ const Plans = () => {
   const isPending = activeId === plan.id && subscriptionStatus === "pending_payment";
 
   return (
-    <div className="container max-w-6xl py-8 lg:py-12">
-      <div className="relative mb-10 overflow-hidden rounded-[2.5rem] bg-[#faf4e8] p-8 shadow-warm dark:bg-card md:p-14">
+    <div className="container max-w-6xl py-8 lg:py-12 xoot-care-account">
+      <div className="xoot-care-account-hero relative mb-10 overflow-hidden rounded-[2.5rem] p-8 shadow-warm md:p-14">
         <div className="relative grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-center">
           <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-primary">
-              <Crown className="h-3.5 w-3.5" />
+            <div className="xoot-care-account-label mb-5 inline-flex items-center gap-2 rounded-full px-4 py-1.5">
+              <CarePlusSymbol width={23} />
               <span className="text-xs font-bold uppercase tracking-wider">Care+ membership</span>
             </div>
             <h1 className="font-display text-5xl font-bold tracking-tight md:text-6xl">Care+ keeps your home ready.</h1>
             <p className="mt-4 max-w-2xl text-lg text-muted-foreground">Save your home preferences, rebook your favourite Xooter, earn boosted XootCred, and get priority support when your home-care plans need attention.</p>
           </div>
           <Card className="rounded-3xl border-border/70 bg-card/95 p-6 shadow-card">
-            <p className="text-sm font-semibold text-sage-deep">Xoot Care+</p>
+            <p className="xoot-care-account-label text-sm font-semibold"><CarePlusMark /></p>
             <div className="mt-2"><span className="font-display text-6xl font-bold">{formatZAR(plan.monthly_price)}</span><span className="text-muted-foreground">/month</span></div>
             <p className="mt-3 text-sm text-muted-foreground">A household reliability, memory, priority and loyalty layer.</p>
             {isActive ? (
@@ -141,9 +144,9 @@ const Plans = () => {
             ) : isPending ? (
               <Button disabled className="mt-6 h-12 w-full rounded-2xl">Pending payment confirmation</Button>
             ) : (
-              <Button onClick={subscribe} className="mt-6 h-12 w-full rounded-2xl font-semibold" disabled={actionLoading}>
-                {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crown className="mr-2 h-4 w-4" />}
-                Join Care+ for R99/month
+              <Button onClick={subscribe} className="xoot-care-account-join mt-6 h-12 w-full rounded-2xl font-semibold" disabled={actionLoading}>
+                {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CarePlusSymbol width={20} className="mr-2" />}
+                Join Care+ for {formatZAR(plan.monthly_price)}/month
               </Button>
             )}
           </Card>
@@ -208,7 +211,7 @@ const Plans = () => {
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 font-display text-2xl"><Crown className="h-5 w-5 text-primary" /> Cancel Care+?</DialogTitle>
+            <DialogTitle className="flex items-center gap-2 font-display text-2xl"><CarePlusSymbol width={23} className="text-[var(--xoot-careplus-600)]" /> Cancel Care+?</DialogTitle>
             <DialogDescription>You will lose Care+ priority handling, boosted XootCred, any remaining add-on credit and saved membership prompts. Your saved home profile remains available.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
