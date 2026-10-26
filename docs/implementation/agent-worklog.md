@@ -1,5 +1,9 @@
 # Agent worklog
 
+## HOLDING — 26 October 2026 — flowers, genuine review publishing and website release assessment
+
+Founder explicitly requests production deployment after checks, original handoff flowers in Xooter onboarding, genuine customer reviews and a full remaining-work report. Claim Apply/Kyc scoped artwork and CSS, review collection/publication UI/server contracts only after inventory, focused tests and release evidence. Production has0 bookings/reviews; never fabricate testimonials or publish private feedback without permission. Preserve supplied wording/approved homepage and planning-only home personalisation. Check current CI/rollout prerequisites; deployment is authorised once actual gates pass, without fake checks, paid upgrades or unverified communications/coverage activation. Malware/authenticity is separately held in the child quarantine branch. Cross-role data access/guard tests require review.
+
 Two Claude sessions work on this repo and **cannot message each other**. Neither can ask the
 other what it is holding. This file is how they find out.
 
