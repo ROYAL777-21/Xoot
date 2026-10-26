@@ -1,5 +1,9 @@
 # Agent worklog
 
+## HOLDING — 26 October 2026 — saved places, calendars and Manage more continuity
+
+Founder explicitly asks for canonical Your places persistence during booking, scheduling that can be added to their existing calendar, the original Manage more handoff and measured responsiveness. Claim the signed-in profile/home/property/calendar destinations and route wiring, owner-bound household-profile booking selection/save acknowledgements, a minimal shared calendar export helper and relevant web/native entry points/tests plus release evidence. Preserve home-first personalisation as planning only, existing money/availability gates and the approved homepage. Calendar export must use actual booking time/duration/status and omit gate/alarm/access notes; it is not continuous account sync. No unverified place is labelled provider-verified. No private profile caching across accounts. Cross-role shared helpers, tests and optional native wiring require correctness/release review. Do not claim zero lag or production delivery without measurement and actual checks.
+
 ## RELEASED CLAIM — 26 October 2026 — flowers, genuine review publishing and website release assessment
 
 Original HandoffFlowerField decorates Apply/Kyc, clipped and non-interactive. Nine existing behaviour checks and scoped lint pass; synthetic CUA390/1440 confirms readable layouts, no horizontal overflow and usable input focus; screenshots saved and viewport reset. Exact review text is deferred to the founder's requested one-time12:00 SAST reminder; permission is already confirmed. No invented quote/rating/verified-booking badge. Owner GitHub Billing establishes3,000/3,000 Actions minutes used, reset in6days; no paid plan/spending change or gate bypass. Production remains e0c021e. Malware containment is separate and unfinished; address typeahead and lifecycle delivery are new authorised scope, not completed by this visual patch. Release this path claim after scoped delivery.
