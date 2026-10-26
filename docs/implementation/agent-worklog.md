@@ -1,5 +1,9 @@
 # Agent worklog
 
+## HOLDING — 26 October 2026 — address typeahead, province-wide discovery and cost boundaries
+
+Founder now explicitly requests suggestions as an address is typed, including suburbs outside the current served list, and a normal request journey without false inputs. Claim VerifiedAddressInput, its focused interaction tests, a new narrow server address-search/confirmation function with pure tests, CLI-created zero-default global request allowances and contract tests, booking coverage/request handoff only where truthful and release evidence. Preserve exact Gauteng source polygons, independently verified worker availability and private GPS/chat gates. Remove the need for a search-button tap; debounce/cancel stale requests and preserve keyboard focus. No billable request without an owner-approved finite allowance; no browser Permanent Geocoding bypass of the server cap. Suggestions are address discovery, never a claim that a Xooter is available. Do not claim outside-area payment/assignment works until canonical booking/status/payment flows have been checked. Cross-role backend/migration/testing changes are required by the founder's address and cost request. Current production remains e0c021e and GitHub Actions3,000/3,000 minutes are exhausted, reset in6days; do not invent successful release gates or raise spending.
+
 Two Claude sessions work on this repo and **cannot message each other**. Neither can ask the
 other what it is holding. This file is how they find out.
 
