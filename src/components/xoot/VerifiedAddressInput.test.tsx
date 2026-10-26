@@ -45,6 +45,21 @@ describe("address typeahead (synthetic provider contracts, no live Mapbox calls)
     expect(screen.getByRole("option",{name:found})).toBeInTheDocument();
     expect(screen.getByLabelText("Booking address")).toHaveTextContent("14 Test, Mamelodi");
   });
+  it("keeps ten selectable candidates and makes the city check clear",async()=>{
+    mocks.invoke.mockResolvedValueOnce(response(Array.from({length:10},(_,i)=>({...option,id:`address-${i}`,label:`${i+1} Synthetic Road, Cape Town, South Africa`}))));
+    const input=mount();fireEvent.change(input,{target:{value:"6 Synthetic Road, Cape Town"}});await tick();
+    expect(screen.getAllByRole("option")).toHaveLength(10);
+    expect(screen.getByRole("option",{name:"6 Synthetic Road, Cape Town, South Africa"})).toBeInTheDocument();
+    expect(screen.getByRole("status",{name:""})).toHaveTextContent("correct suburb and city");
+    expect(mocks.invoke).toHaveBeenCalledTimes(1);
+  });
+  it("offers full-name guidance on an empty search without silently rewriting or retrying",async()=>{
+    mocks.invoke.mockResolvedValueOnce(response([]));
+    const input=mount();fireEvent.change(input,{target:{value:"3 Example Cl, Sunninghill"}});await tick();
+    expect(screen.getByRole("status",{name:""})).toHaveTextContent("Close instead of Cl");
+    expect(input).toHaveValue("3 Example Cl, Sunninghill");await tick(5000);
+    expect(mocks.invoke).toHaveBeenCalledTimes(1);
+  });
   it("never spends on short input or merely loading a saved address",async()=>{
     mount(found);await tick(2000);expect(mocks.invoke).not.toHaveBeenCalled();
     fireEvent.change(screen.getByRole("combobox"),{target:{value:"14 Te"}});await tick();expect(mocks.invoke).not.toHaveBeenCalled();
