@@ -1,5 +1,23 @@
 # Xooter handoff and real saved details — 26 October 2026
 
+## Original flowers follow-up
+
+Apply and Kyc now reuse HandoffFlowerField's original five-petal artwork and palette.
+The clipped decorative layer is aria-hidden and pointer-events:none; it cannot catch
+an input tap or add horizontal scrolling. Nine existing Apply/Kyc behaviour checks and
+scoped ESLint passed after the change. CUA checked the actual components in an isolated
+synthetic preview at390px and1440px: no horizontal overflow, input focus works, and the
+review uses the same artwork. Screenshots are saved as xoot-xooter-flowers-*-20261026.jpg
+in the calling workspace. The first preview fixture omitted session.user and failed;
+correcting only that fixture allowed the actual components to render. No live account
+acceptance is inferred. Viewport reset and local preview server stopped after verification.
+This follow-up is prepared in PR97, not production.
+
+Genuine reviews have founder-confirmed publication permission. A one-time12:00 SAST
+reminder on26October asks for exact text and approved names/ratings; no quote is invented.
+Read-only GitHub Billing confirms3,000/3,000 included Actions minutes used, reset in6days.
+The current GitHub plan and spending limit remain unchanged.
+
 ## What is actually live
 
 Production aggregate readback found 2 Auth accounts, both with saved/confirmed email addresses,

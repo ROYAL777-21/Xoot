@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Logo } from "@/components/kit/Logo";
+import { HandoffFlowerField } from "@/components/xoot/HeroArtwork";
 import "./apply-handoff.css";
 import { ShieldCheck, Loader2, ArrowRight, ArrowLeft, Upload, FileCheck2, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -360,6 +361,7 @@ const XooterApplication = ({ user, token }: { user: User; token: string }) => {
 
   return (
     <div className="xooter-onboarding">
+      <HandoffFlowerField className="xooter-onboarding-flowers" />
       <div className="xooter-onboarding-content">
         <header className="xooter-onboarding-header"><a href="/" aria-label="Xoot home"><Logo size={27} /></a><span><ShieldCheck size={15} aria-hidden="true" /> Work on your terms</span></header>
         <p className="xooter-onboarding-eyebrow">BECOME A XOOTER</p>

@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/kit/Logo";
+import { HandoffFlowerField } from "@/components/xoot/HeroArtwork";
 import { ShieldCheck, FileCheck2, Clock, AlertCircle, Loader2, type LucideIcon } from "lucide-react";
 import "./apply-handoff.css";
 
@@ -45,7 +46,7 @@ const XooterReview = ({ ownerId }: { ownerId: string }) => {
   };
   const info = statusInfo[status] ?? { icon: Clock, cls: "bg-muted text-muted-foreground", title: "Review in progress", body: "Please contact Xoot support if you need help with your application." };
   const Icon = info.icon;
-  return <div className="xooter-onboarding"><div className="xooter-onboarding-content">
+  return <div className="xooter-onboarding"><HandoffFlowerField className="xooter-onboarding-flowers" /><div className="xooter-onboarding-content">
     <header className="xooter-onboarding-header"><a href="/" aria-label="Xoot home"><Logo size={27} /></a><span><ShieldCheck size={15} aria-hidden="true" /> Work on your terms</span></header>
     <p className="xooter-onboarding-eyebrow">BECOME A XOOTER</p><h1 className="xooter-onboarding-title">Your next chapter</h1>
     <p className="xooter-onboarding-intro">Your application, documents and next steps, together in one place.</p>

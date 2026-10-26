@@ -1,6 +1,8 @@
 # Agent worklog
 
-## HOLDING — 26 October 2026 — flowers, genuine review publishing and website release assessment
+## RELEASED CLAIM — 26 October 2026 — flowers, genuine review publishing and website release assessment
+
+Original HandoffFlowerField decorates Apply/Kyc, clipped and non-interactive. Nine existing behaviour checks and scoped lint pass; synthetic CUA390/1440 confirms readable layouts, no horizontal overflow and usable input focus; screenshots saved and viewport reset. Exact review text is deferred to the founder's requested one-time12:00 SAST reminder; permission is already confirmed. No invented quote/rating/verified-booking badge. Owner GitHub Billing establishes3,000/3,000 Actions minutes used, reset in6days; no paid plan/spending change or gate bypass. Production remains e0c021e. Malware containment is separate and unfinished; address typeahead and lifecycle delivery are new authorised scope, not completed by this visual patch. Release this path claim after scoped delivery.
 
 Founder explicitly requests production deployment after checks, original handoff flowers in Xooter onboarding, genuine customer reviews and a full remaining-work report. Claim Apply/Kyc scoped artwork and CSS, review collection/publication UI/server contracts only after inventory, focused tests and release evidence. Production has0 bookings/reviews; never fabricate testimonials or publish private feedback without permission. Preserve supplied wording/approved homepage and planning-only home personalisation. Check current CI/rollout prerequisites; deployment is authorised once actual gates pass, without fake checks, paid upgrades or unverified communications/coverage activation. Malware/authenticity is separately held in the child quarantine branch. Cross-role data access/guard tests require review.
 
