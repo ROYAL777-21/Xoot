@@ -6,6 +6,22 @@ import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/xoot/Footer";
 import { Navbar } from "@/components/xoot/Navbar";
 import { getBlogPost } from "@/lib/blog-posts";
+import type { BlogBlock } from "@/lib/blog-posts";
+
+const ArticleBlock = ({ block }: { block: BlogBlock }) => {
+  if (typeof block === "string") return <p>{block}</p>;
+  if (block.type === "list") {
+    const List = block.ordered ? "ol" : "ul";
+    return <List className={block.ordered ? "list-decimal space-y-2 pl-6" : "list-disc space-y-2 pl-6"}>{block.items.map(item => <li key={item}>{item}</li>)}</List>;
+  }
+  return <div className="overflow-x-auto"><table className="w-full text-left text-sm">
+    <caption className="mb-3 text-left font-semibold">{block.caption}</caption>
+    <thead><tr>{block.headings.map(heading => <th key={heading} scope="col" className="border-b p-3 align-top">{heading}</th>)}</tr></thead>
+    <tbody>{block.rows.map(row => <tr key={row[0]}>{row.map((cell, index) => index === 0
+      ? <th key={index} scope="row" className="border-b p-3 align-top font-semibold">{cell}</th>
+      : <td key={index} className="border-b p-3 align-top">{cell}</td>)}</tr>)}</tbody>
+  </table></div>;
+};
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -82,10 +98,11 @@ const BlogPost = () => {
               <div><p>{post.excerpt}</p><p className="text-sm">{post.author}</p></div>
               {post.sections.map(section => <section key={section.heading}>
                 <h2>{section.heading}</h2>
-                {section.body.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+                {section.body.map((block, index) => <ArticleBlock key={index} block={block} />)}
               </section>)}
               {post.faqs.length > 0 && <section className="xoot-reader-faq"><h2>Quick answers</h2>{post.faqs.map(faq => <div key={faq.question}><h3>{faq.question}</h3><p>{faq.answer}</p></div>)}</section>}
-              <section className="xoot-journal-reader__cta"><h2>Ready for Xoot?</h2><p>Choose your service, review the details and continue through the booking flow.</p><div className="mt-5 flex flex-wrap gap-3"><Link to="/book" className="xoot-action">Book a clean</Link><Link to="/care-plus" className="xoot-action xoot-action--outline">Explore Care+</Link></div></section>
+              {post.callToAction ? <section className="xoot-journal-reader__cta"><h2>{post.callToAction.heading}</h2>{post.callToAction.body.map(paragraph => <p key={paragraph}>{paragraph}</p>)}<div className="mt-5 flex flex-wrap gap-3"><Link to={post.callToAction.href} className="xoot-action">{post.callToAction.label}</Link></div></section>
+                : <section className="xoot-journal-reader__cta"><h2>Ready for Xoot?</h2><p>Choose your service, review the details and continue through the booking flow.</p><div className="mt-5 flex flex-wrap gap-3"><Link to="/book" className="xoot-action">Book a clean</Link><Link to="/care-plus" className="xoot-action xoot-action--outline">Explore Care+</Link></div></section>}
             </div>
           </article>
         </div>
