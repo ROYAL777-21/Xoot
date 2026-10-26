@@ -9,6 +9,8 @@ Roles and path ownership are in `/CLAUDE.md`. This file is the live state.
 
 Actual four-account staging test at f6dd7b6 failed customer-to-Xooter REST read with HTTP500/SQLSTATE42P17 after server-authorised ciphertext insertion. Catalog confirms messages SELECT expands bookings -> xooter_jobs -> bookings. Claim one CLI-created migration for a private auth.uid-bound read predicate and only messages SELECT policy, an isolated PostgreSQL positive/negative fixture harness and release evidence. Preserve booking/job RLS and current customer/admin/accepted-assigned-worker boundaries; no public data endpoint, arbitrary actor, client write grant or production change. Security-definer use, if necessary to break recursion, is limited to a private boolean predicate with empty search_path and explicit grants. Independent security review and actual staging verification remain required.
 
+Scope correction from independent architecture review before further edits: BookingDetail itself reads bookings and xooter_jobs, so a messages-only predicate would leave the website broken. Replace only the canonical bookings_participant_read policy with the private fixed-auth.uid predicate, retaining original messages and job policies. Require current booking assignment plus accepted matching job for worker reads, denying stale reassigned workers. Test all three actual read paths, keep private columns/other policies/write grants unchanged, and record inherited role-only admin semantics separately from AAL2 acceptance. The initial messages-only SQL draft was never applied.
+
 ## How to use it
 
 **Claim before you code, and push the claim.** An unpushed claim is invisible and therefore
