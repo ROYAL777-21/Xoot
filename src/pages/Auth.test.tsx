@@ -48,6 +48,15 @@ describe("account entry copy", () => {
     expect(auth.signInWithOtp).not.toHaveBeenCalled();
     expect(auth.signUp).toHaveBeenCalledTimes(1);
   });
+  it("offers existing-account sign-in from confirmation without claiming an account exists", async () => {
+    await submitSignup();
+    fireEvent.click(screen.getByRole("button", { name: "Already have an account? Sign in" }));
+    expect(screen.getByRole("heading", { name: "Continue with email" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Your email")).toHaveValue("new.user@example.test");
+    expect(auth.signInWithOtp).not.toHaveBeenCalled();
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send one-time code" })); });
+    expect(auth.signInWithOtp).toHaveBeenCalledWith(expect.objectContaining({ email: "new.user@example.test", options: expect.objectContaining({ shouldCreateUser: false }) }));
+  });
   it("recovers an unconfirmed password sign-in without disabling confirmation", async () => {
     auth.signInWithPassword.mockResolvedValue({ error: { code: "email_not_confirmed" } });
     await act(async () => { render(<MemoryRouter initialEntries={["/auth?mode=password"]}><Auth /></MemoryRouter>); });

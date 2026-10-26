@@ -479,6 +479,7 @@ const Auth = () => {
                 {loading ? <Loader2 className="animate-spin" /> : isConfirmation ? "Create my account" : "Sign me in"}
               </Button>
               <button type="button" className="xoot-auth-link centered" onClick={() => void handleOtpResend()} disabled={loading || isLocked || !isSupabaseConfigured}>Send a new code</button>
+              {isConfirmation && <button type="button" className="xoot-auth-link centered" onClick={resetToEmailCode} disabled={loading}>Already have an account? Sign in</button>}
               <p className="xoot-auth-security"><ShieldCheck /> Never share this code. Xoot will not ask for it by phone, message or email.</p>
             </form>
           ) : (

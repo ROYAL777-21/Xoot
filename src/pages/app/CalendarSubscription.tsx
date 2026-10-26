@@ -4,14 +4,14 @@ import {useAuth} from "@/contexts/AuthContext";
 import {useConfirmedSave,useProfileResource} from "./useProfileResource";
 
 type Status={active:boolean;expiresAt:string|null};
-async function settings(action:"status"|"enable"|"disable",tokenHash?:string):Promise<Status>{
-  const result=await supabase.functions.invoke("calendar-subscription",{body:{action,...(tokenHash?{tokenHash}:{})}});
+async function settings(action:"status"|"enable"|"disable",expectedSubject:string,tokenHash?:string):Promise<Status>{
+  const result=await supabase.functions.invoke("calendar-subscription",{body:{action,expectedSubject,...(tokenHash?{tokenHash}:{})}});
   const data=result.data?.data;
   if(result.error||result.data?.success!==true||typeof data?.active!=="boolean"||
     (data.expiresAt!==null&&(typeof data.expiresAt!=="string"||!Number.isFinite(Date.parse(data.expiresAt)))))throw new Error("Your calendar settings could not be saved or loaded.");
   return data;
 }
-const readStatus=()=>settings("status");
+const readStatus=(owner:string)=>settings("status",owner);
 async function newPrivateLink(){
   const bytes=crypto.getRandomValues(new Uint8Array(32));
   const token=[...bytes].map(byte=>byte.toString(16).padStart(2,"0")).join("");
@@ -31,12 +31,15 @@ function PrivateSubscription(){
   const [message,setMessage]=useState<{owner:string;text:string}|null>(null);
   const url=resource.owner&&link?.owner===resource.owner?link.url:null;
   const enable=()=>void save.submit(async()=>{
-    const next=await newPrivateLink();const result=await settings("enable",next.hash);
+    const next=await newPrivateLink();
+    if(!resource.isCurrent()||!resource.owner)return;
+    const result=await settings("enable",resource.owner,next.hash);
     if(!result.active)throw new Error("Your private calendar link was not enabled.");
     if(resource.isCurrent()&&resource.owner){setLink({owner:resource.owner,url:next.url});setMessage(null);}
   },()=>void resource.refresh());
   const disable=()=>void save.submit(async()=>{
-    const result=await settings("disable");if(result.active)throw new Error("Your private calendar link was not disabled.");
+    if(!resource.isCurrent()||!resource.owner)return;
+    const result=await settings("disable",resource.owner);if(result.active)throw new Error("Your private calendar link was not disabled.");
   },()=>{setLink(null);setMessage(null);void resource.refresh();});
   const copy=async()=>{
     if(!url||!resource.isCurrent())return;

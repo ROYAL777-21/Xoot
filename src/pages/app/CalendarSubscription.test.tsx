@@ -17,7 +17,7 @@ describe("automatic calendar connection",()=>{
   it("creates a private link only on request, sends only its hash and copies after acknowledgement",async()=>{
     render(<CalendarSubscription/>);
     await screen.findByRole("button",{name:"Enable automatic calendar updates"});
-    expect(h.invoke).toHaveBeenCalledExactlyOnceWith("calendar-subscription",{body:{action:"status"}});
+    expect(h.invoke).toHaveBeenCalledExactlyOnceWith("calendar-subscription",{body:{action:"status",expectedSubject:"owner-a"}});
     h.invoke.mockResolvedValue({data:{success:true,data:{active:true,expiresAt:"2027-10-26T20:00:00Z"}},error:null});
     fireEvent.click(screen.getByRole("button",{name:"Enable automatic calendar updates"}));
     const copy=await screen.findByRole("button",{name:"Copy private calendar link"});
@@ -26,12 +26,13 @@ describe("automatic calendar connection",()=>{
     await act(async()=>{fireEvent.click(copy);});
     const url=h.clipboard.mock.calls[0][0] as string,token=/\/([0-9a-f]{64})\.ics$/.exec(url)![1];
     expect(token).not.toBe(hash);expect(url).toMatch(/^https:\/\/example.supabase.co\/functions\/v1\/calendar-feed\//);
-    expect(document.body.innerHTML).not.toContain(token);
+    const rendered=[...document.querySelectorAll("*")].flatMap(element=>[element.textContent,...element.getAttributeNames().map(name=>element.getAttribute(name))]).join(" ");
+    expect(rendered).not.toContain(token);
     expect(sessionStorage.length).toBe(0);expect(localStorage.length).toBe(0);
     expect(screen.getByText(/calendar chooses when to refresh/)).toBeInTheDocument();
     h.invoke.mockResolvedValue({data:{success:true,data:{active:false,expiresAt:null}},error:null});
     await act(async()=>{fireEvent.click(screen.getByRole("button",{name:"Turn off calendar updates"}));});
-    expect(h.invoke).toHaveBeenCalledWith("calendar-subscription",{body:{action:"disable"}});
+    expect(h.invoke).toHaveBeenCalledWith("calendar-subscription",{body:{action:"disable",expectedSubject:"owner-a"}});
     expect(screen.queryByRole("button",{name:"Copy private calendar link"})).not.toBeInTheDocument();
   });
   it("does not show a link after a failed write",async()=>{
@@ -48,5 +49,16 @@ describe("automatic calendar connection",()=>{
     await screen.findByRole("button",{name:"Copy private calendar link"});
     h.auth={user:{id:"owner-b"},loading:false};view.rerender(<CalendarSubscription/>);
     expect(screen.queryByRole("button",{name:"Copy private calendar link"})).not.toBeInTheDocument();
+  });
+  it("does not send a stale account's enable after a delayed digest",async()=>{
+    let release!:(value:ArrayBuffer)=>void;
+    const delayed=new Promise<ArrayBuffer>(resolve=>{release=resolve;});
+    Object.defineProperty(globalThis,"crypto",{value:{getRandomValues:webcrypto.getRandomValues.bind(webcrypto),subtle:{digest:()=>delayed}},configurable:true});
+    const view=render(<CalendarSubscription/>);await screen.findByRole("button",{name:"Enable automatic calendar updates"});
+    fireEvent.click(screen.getByRole("button",{name:"Enable automatic calendar updates"}));
+    h.auth={user:{id:"owner-b"},loading:false};view.rerender(<CalendarSubscription/>);
+    await act(async()=>{release(new Uint8Array(32).buffer);});
+    expect(h.invoke.mock.calls.filter(([,args])=>args.body.action==="enable")).toEqual([]);
+    expect(h.invoke).toHaveBeenCalledWith("calendar-subscription",{body:{action:"status",expectedSubject:"owner-b"}});
   });
 });

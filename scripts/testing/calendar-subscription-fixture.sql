@@ -1,10 +1,12 @@
 -- Disposable local PostgreSQL only, never a Supabase project.
-create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
-create schema auth; create table auth.users(id uuid primary key);
+do $$begin create role anon nologin;exception when duplicate_object then null;end $$;
+do $$begin create role authenticated nologin;exception when duplicate_object then null;end $$;
+do $$begin create role service_role nologin bypassrls;exception when duplicate_object then null;end $$;
+create schema auth; create schema private; create table auth.users(id uuid primary key);
 create table public.bookings(id uuid primary key,user_id uuid references auth.users,service text,scheduled_at timestamptz,duration_hours numeric,status text,updated_at timestamptz,
   address text,notes text);
 grant usage on schema public,auth to anon,authenticated,service_role;
-grant select on public.bookings to service_role;
+grant select,insert,update on public.bookings to service_role;
 insert into auth.users values('00000000-0000-4000-8000-000000000001'),('00000000-0000-4000-8000-000000000002');
 insert into public.bookings values
  ('10000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000001','regular',now()+interval '1 day',4,'contractor_accepted',now(),'Private address','Private access code'),

@@ -42,6 +42,7 @@ const onDisk = readdirSync(functionsDir)
  * only symptom would be silence.
  */
 const MUST_STAY_OPEN: Record<string, string> = {
+  "calendar-feed": "External calendars authenticate with a 256-bit revocable read-only capability; calendar-subscription management still requires the normal user JWT.",
   "confirm-payment": "PayFast payment callbacks. A PSP cannot present a Supabase JWT.",
   "support-respond": "The public support form, used before anyone has signed in.",
   "report-concierge-answer": "Concierge answer reports from the public site.",

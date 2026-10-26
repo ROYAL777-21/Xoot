@@ -1,6 +1,6 @@
 import {describe,expect,it,vi} from "vitest";
 import {makeCalendarSubscriptionHandler} from "./handler";
-const request=(body:unknown)=>new Request("https://example.test/calendar-subscription",{method:"POST",body:JSON.stringify(body)});
+const request=(body:Record<string,unknown>)=>new Request("https://example.test/calendar-subscription",{method:"POST",body:JSON.stringify({expectedSubject:"owner-a",...body})});
 function setup(){
   const dependencies={allowed:()=>true,cors:()=>({}),authenticate:vi.fn(async()=>"owner-a" as string|null),readBody:async(req:Request)=>req.json(),consume:vi.fn(async()=>true),status:vi.fn(async()=>({active:false,expiresAt:null})),enable:vi.fn(async()=>({active:true,expiresAt:"2027-10-26T20:00:00Z"})),disable:vi.fn(async()=>{})};
   return {d:dependencies,handle:makeCalendarSubscriptionHandler(dependencies)};
@@ -19,6 +19,11 @@ describe("calendar subscription management",()=>{
     await handle(request({action:"status"}));expect(d.status).toHaveBeenCalledWith("owner-a");
     await handle(request({action:"disable"}));expect(d.disable).toHaveBeenCalledWith("owner-a");
     expect(response.headers.get("cache-control")).toContain("no-store");
+  });
+  it.each(['enable','disable','status'])("rejects a switched session before %s can access either account",async action=>{
+    const {d,handle}=setup();d.authenticate.mockResolvedValueOnce("owner-b");
+    expect((await handle(request({action,tokenHash:"b".repeat(64)}))).status).toBe(409);
+    expect(d.enable).not.toHaveBeenCalled();expect(d.disable).not.toHaveBeenCalled();expect(d.status).not.toHaveBeenCalled();expect(d.consume).not.toHaveBeenCalled();
   });
   it("does not acknowledge a failed write and preserves the rate limit",async()=>{
     const {d,handle}=setup();d.enable.mockRejectedValueOnce(new Error("Private details"));

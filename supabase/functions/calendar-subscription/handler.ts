@@ -16,7 +16,9 @@ export function makeCalendarSubscriptionHandler(d:Dependencies){
     try{
       const owner=await d.authenticate(req);if(!owner)return reply(401,{success:false,error:"Sign in to manage your calendar"});
       const body=await d.readBody(req);
-      if(Object.keys(body).some(key=>!['action','tokenHash'].includes(key))||!['status','enable','disable'].includes(String(body.action)))return reply(400,{success:false,error:"Invalid request"});
+      if(Object.keys(body).some(key=>!['action','tokenHash','expectedSubject'].includes(key))||!['status','enable','disable'].includes(String(body.action)))return reply(400,{success:false,error:"Invalid request"});
+      // This is a deny-only session precondition, never a client-selected acting identity.
+      if(body.expectedSubject!==owner)return reply(409,{success:false,error:"Your sign-in changed. Reload and try again"});
       if(body.action==="enable"&&(typeof body.tokenHash!=="string"||!/^[0-9a-f]{64}$/.test(body.tokenHash)))return reply(400,{success:false,error:"Invalid request"});
       if(!await d.consume(owner))return reply(429,{success:false,error:"Please wait before trying again"});
       if(body.action==="disable"){await d.disable(owner);return reply(200,{success:true,data:{active:false,expiresAt:null}});}

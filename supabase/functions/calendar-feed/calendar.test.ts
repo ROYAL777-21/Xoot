@@ -2,17 +2,18 @@ import {describe,expect,it} from "vitest";
 import {webcrypto} from "node:crypto";
 import {calendarFeed,hashCalendarCapability} from "./calendar";
 import {makeCalendarFeedHandler} from "./handler";
-const visit={id:"00000000-0000-4000-8000-000000000001",service:"regular",scheduled_at:"2026-11-01T08:00:00+02:00",duration_hours:5.5,status:"contractor_accepted",updated_at:"2026-10-26T20:00:00Z"};
+const visit={id:"00000000-0000-4000-8000-000000000001",service:"regular",scheduled_at:"2026-11-01T08:00:00+02:00",duration_hours:5.5,status:"contractor_accepted",updated_at:"2026-10-26T20:00:00.100Z",calendar_revision:0};
 describe("private updating calendar",()=>{
   it("keeps event identity, increments revision and sends cancellations instead of dropping them",()=>{
     const first=calendarFeed([visit]);
-    const changed=calendarFeed([{...visit,scheduled_at:"2026-11-02T09:00:00+02:00",updated_at:"2026-10-26T21:00:00Z"}]);
-    const cancelled=calendarFeed([{...visit,status:"cancelled",updated_at:"2026-10-26T22:00:00Z"}]);
+    const changed=calendarFeed([{...visit,scheduled_at:"2026-11-02T09:00:00+02:00",updated_at:"2026-10-26T20:00:00.500Z",calendar_revision:1}]);
+    const cancelled=calendarFeed([{...visit,status:"cancelled",updated_at:"2026-10-26T20:00:00.900Z",calendar_revision:2}]);
     for(const body of [first,changed,cancelled])expect(body).toContain(`UID:${visit.id}@xoot.co.za`);
     expect(first).toContain("DTSTART:20261101T060000Z\r\nDTEND:20261101T113000Z");
     expect(changed).toContain("DTSTART:20261102T070000Z");
     expect(Number(/SEQUENCE:(\d+)/.exec(changed)![1])).toBeGreaterThan(Number(/SEQUENCE:(\d+)/.exec(first)![1]));
     expect(cancelled).toContain("STATUS:CANCELLED\r\nCLASS:PRIVATE\r\nTRANSP:TRANSPARENT");
+    expect(cancelled).toContain("SEQUENCE:2");
   });
   it("does not promote provisional visits or share personal fields and injected service text",()=>{
     const body=calendarFeed([{...visit,status:"payment_confirmed",service:"evil\r\nATTENDEE:private",address:"Private street",email:"person@example.invalid",notes:"Gate code 1234"} as typeof visit]);
@@ -22,7 +23,7 @@ describe("private updating calendar",()=>{
     for(const line of body.split("\r\n"))expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
   });
   it("fails closed rather than truncating or publishing invalid events",()=>{
-    for(const patch of [{status:"draft"},{status:"unknown"},{duration_hours:0},{duration_hours:25},{scheduled_at:"broken"},{updated_at:"broken"},{id:"malicious"}])expect(()=>calendarFeed([{...visit,...patch}])).toThrow();
+    for(const patch of [{status:"draft"},{status:"unknown"},{duration_hours:0},{duration_hours:25},{scheduled_at:"broken"},{updated_at:"broken"},{id:"malicious"},{calendar_revision:-1},{calendar_revision:NaN},{calendar_revision:1.5},{calendar_revision:2147483648}])expect(()=>calendarFeed([{...visit,...patch}])).toThrow();
     expect(()=>calendarFeed([visit,visit])).toThrow();
     expect(()=>calendarFeed(Array.from({length:1001},()=>visit))).toThrow();
     expect(calendarFeed([])).toContain("END:VCALENDAR");

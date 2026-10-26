@@ -1,4 +1,23 @@
 -- One revocable, read-only calendar capability per customer. Raw links are never stored here.
+-- Row-lock serialisation supplies monotone revisions even for changes in the same second.
+alter table public.bookings add column calendar_revision integer not null default 0
+  check (calendar_revision>=0);
+create function private.xoot_advance_calendar_revision() returns trigger
+language plpgsql security invoker set search_path='' as $$
+begin
+  if tg_op='INSERT' then new.calendar_revision=0;
+  elsif row(new.service,new.scheduled_at,new.duration_hours,new.status)
+    is distinct from row(old.service,old.scheduled_at,old.duration_hours,old.status) then
+    new.calendar_revision=old.calendar_revision+1;
+  else new.calendar_revision=old.calendar_revision;
+  end if;
+  return new;
+end $$;
+revoke all on function private.xoot_advance_calendar_revision() from public,anon,authenticated;
+grant execute on function private.xoot_advance_calendar_revision() to service_role;
+create trigger xoot_calendar_revision before insert or update on public.bookings
+  for each row execute function private.xoot_advance_calendar_revision();
+
 create table public.xoot_calendar_subscriptions (
   user_id uuid primary key references auth.users(id) on delete cascade,
   token_hash text unique check (token_hash ~ '^[0-9a-f]{64}$'),
@@ -35,8 +54,8 @@ begin
     where user_id=subscription.user_id;
   select coalesce(jsonb_agg(jsonb_build_object('id',b.id,'service',b.service,
     'scheduled_at',b.scheduled_at,'duration_hours',b.duration_hours,'status',b.status,
-    'updated_at',b.updated_at) order by b.scheduled_at,b.id),'[]'::jsonb) into visits
-  from (select id,service,scheduled_at,duration_hours,status,updated_at from public.bookings
+    'updated_at',b.updated_at,'calendar_revision',b.calendar_revision) order by b.scheduled_at,b.id),'[]'::jsonb) into visits
+  from (select id,service,scheduled_at,duration_hours,status,updated_at,calendar_revision from public.bookings
     where user_id=subscription.user_id and status<>'draft'
       and scheduled_at>=now()-interval '90 days' and scheduled_at<=now()+interval '366 days'
     order by scheduled_at,id limit 1001) b;

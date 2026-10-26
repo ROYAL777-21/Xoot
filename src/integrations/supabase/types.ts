@@ -1032,8 +1032,15 @@ export type Database = {
           },
         ]
       }
+      xoot_calendar_subscriptions: {
+        Row: { user_id: string; token_hash: string | null; issued_at: string; expires_at: string; revoked_at: string | null; fetch_window: string; fetch_count: number }
+        Insert: { user_id: string; token_hash?: string | null; issued_at?: string; expires_at: string; revoked_at?: string | null; fetch_window?: string; fetch_count?: number }
+        Update: { user_id?: string; token_hash?: string | null; issued_at?: string; expires_at?: string; revoked_at?: string | null; fetch_window?: string; fetch_count?: number }
+        Relationships: []
+      }
       bookings: {
         Row: {
+          calendar_revision: number
           address: string | null
           arrived_at: string | null
           assigned_at: string | null
@@ -1081,6 +1088,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          calendar_revision?: number
           arrived_at?: string | null
           assigned_at?: string | null
           at_risk?: boolean
@@ -1127,6 +1135,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          calendar_revision?: number
           arrived_at?: string | null
           assigned_at?: string | null
           at_risk?: boolean
@@ -5386,6 +5395,10 @@ export type Database = {
       can_access_sensitive_data: {
         Args: { p_booking_id: string; p_xooter_id: string }
         Returns: boolean
+      }
+      xoot_read_calendar_feed: {
+        Args: { p_hash: string }
+        Returns: Json
       }
       can_activate_payment_provider: {
         Args: { p_environment?: string; p_provider: string }

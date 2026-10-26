@@ -11,12 +11,19 @@ insert into public.xoot_calendar_subscriptions(user_id,token_hash,expires_at) va
  ('00000000-0000-4000-8000-000000000001',repeat('a',64),now()+interval '365 days'),
  ('00000000-0000-4000-8000-000000000002',repeat('b',64),now()+interval '365 days');
 set role service_role;
-select public.assert_true((public.xoot_read_calendar_feed(repeat('a',64))->'visits')=jsonb_build_array(jsonb_build_object('id','10000000-0000-4000-8000-000000000001','service','regular','scheduled_at',(select scheduled_at from public.bookings where id='10000000-0000-4000-8000-000000000001'),'duration_hours',4,'status','contractor_accepted','updated_at',(select updated_at from public.bookings where id='10000000-0000-4000-8000-000000000001'))),'only exact owner minimal fields returned');
+select public.assert_true((public.xoot_read_calendar_feed(repeat('a',64))->'visits')=jsonb_build_array(jsonb_build_object('id','10000000-0000-4000-8000-000000000001','service','regular','scheduled_at',(select scheduled_at from public.bookings where id='10000000-0000-4000-8000-000000000001'),'duration_hours',4,'status','contractor_accepted','updated_at',(select updated_at from public.bookings where id='10000000-0000-4000-8000-000000000001'),'calendar_revision',0)),'only exact owner minimal fields returned');
 select public.assert_true(public.xoot_read_calendar_feed(repeat('c',64))->>'state'='missing','unknown capability denied');
+update public.bookings set calendar_revision=999,notes='Unrelated update' where id='10000000-0000-4000-8000-000000000001';
+select public.assert_true((select calendar_revision=0 from public.bookings where id='10000000-0000-4000-8000-000000000001'),'caller cannot forge revision on unrelated update');
+update public.bookings set scheduled_at=scheduled_at+interval '1 hour',calendar_revision=999 where id='10000000-0000-4000-8000-000000000001';
+select public.assert_true((select calendar_revision=1 from public.bookings where id='10000000-0000-4000-8000-000000000001'),'first significant change advances one');
+update public.bookings set scheduled_at=scheduled_at where id='10000000-0000-4000-8000-000000000001';
+select public.assert_true((select calendar_revision=1 from public.bookings where id='10000000-0000-4000-8000-000000000001'),'unchanged fields keep revision');
 reset role;
 update public.bookings set status='cancelled',updated_at=now()+interval '1 second' where id='10000000-0000-4000-8000-000000000001';
 set role service_role;
 select public.assert_true(public.xoot_read_calendar_feed(repeat('a',64))->'visits'->0->>'status'='cancelled','cancellation remains in feed');
+select public.assert_true((select calendar_revision=2 from public.bookings where id='10000000-0000-4000-8000-000000000001'),'same-transaction cancellation has next durable revision');
 reset role;
 update public.xoot_calendar_subscriptions set token_hash=repeat('d',64) where token_hash=repeat('a',64);
 set role service_role;
