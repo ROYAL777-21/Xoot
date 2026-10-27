@@ -49,18 +49,6 @@ const trustIncidentTypes = new Set([
   "support_escalation",
 ]);
 
-const verificationFields = new Set([
-  "id_verification_status",
-  "selfie_verification_status",
-  "address_verification_status",
-  "banking_verification_status",
-  "reference_verification_status",
-  "background_check_status",
-  "third_party_verification_status",
-]);
-
-const verificationStatuses = new Set(["approved", "rejected", "pending"]);
-
 const retiredTypedAdminActions = new Set([
   "admin_confirm_payment_record",
   "admin_complete_outbox_event",
@@ -247,19 +235,7 @@ Deno.serve(async (req) => {
 
     if (action === "admin_set_kyc_verification") {
       if (!(await isAdminUser(supa, userId))) return json({ error: "admin role required" }, 403, origin);
-      const applicationId = cleanId(body.applicationId);
-      const field = cleanText(body.field, 80);
-      const status = cleanText(body.status, 20);
-      if (!verificationFields.has(field) || !verificationStatuses.has(status)) return json({ error: "invalid verification update" }, 400, origin);
-
-      const { data, error } = await supa
-        .from("xooter_applications")
-        .update({ [field]: status })
-        .eq("id", applicationId)
-        .select("*")
-        .single();
-      if (error || !data?.id) return json({ error: "verification update failed" }, 400, origin);
-      return json({ application: data }, 200, origin);
+      return json({ error: "Document safety and evidence-backed MFA verification are pending.", code: "kyc_clearance_pending" }, 409, origin);
     }
 
     if (action === "support_opened") {

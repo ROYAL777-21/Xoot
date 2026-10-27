@@ -1,5 +1,43 @@
 # Agent worklog
 
+## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
+
+A broad preflight inventory appeared to omit six contact/reference columns, leading to a provisional
+repair claim. Targeted information_schema and pg_attribute checks establish that all six already
+exist as text (staging attribute positions24–29); both staging and production have the user_id unique
+key and no missing contact column. The provisional diagnosis is withdrawn before any migration or
+source edit. No extra column/migration, discarded input or production change was made. Real normal-
+account save/readback acceptance remains separate from these catalog checks. Release this audit.
+
+## RELEASED CLAIM — 27 October 2026 — quarantine reconciled and delivered to staging
+
+PR100 is now CONFLICTING with its PR97 base after legitimate calendar and account changes.
+Claim a rebase of this owned quarantine branch onto the current PR97 head, preserving both
+calendar schema/RPC/contracts and quarantine/activation controls plus both worklog histories.
+No revert of the other implementation, no production delivery, approval bypass, role or provider
+activation. Re-run the meaningful quarantine, calendar/config/type checks and Deno after resolution.
+Current source containment remains distinct from unconfigured Cloudmersive and authentic-document
+review. Independent final patch review remains required before delivery; review-agent usage limit
+is not clearance. Preserve unrelated PR98/99 and all staged/live customer data.
+
+27 October follow-up: rebase preserves both implementations and all three adjacent RPC declarations.
+Independent final security review clears cb3442f for staging-only containment after parent checks.
+All61 focused quarantine/RPC/config/calendar checks, TypeScript, scoped lint and three Deno checks
+now pass. Claim the authorised staging-only migration and exact changed-handler delivery, readback
+and non-destructive acceptance. Preserve the existing active staging Xooter and all Auth accounts;
+preflight has0 applications/documents/KYC objects. No production migration, scanner verdict,
+real applicant file transfer, new role, approval or paid provider change is included.
+
+Delivered reviewed migration20261027032349 (exact SQL hash read back), submit v19, approve v18
+and independently reviewed narrow v33-based ops v34. All11 returned files exactly match payloads;
+JWT stays enabled, no-bearer401/allowed-origin OPTIONS204 pass. Four private RLS tables, four
+restrictive Storage policies, five enabled triggers and table+column revocations are confirmed.
+Existing Xooter/role fingerprints are unchanged, all KYC rows/objects remain0 and both limits0/32.
+The canonical ops handler's unrelated gift-RPC changes are deliberately held for stack integration;
+only its verification denial is backported, retaining all frozen gift/pricing/dependency bytes.
+Independent final source and artifact reviews pass. Raw-path containment is not scanner completion,
+normal applicant/MFA acceptance or production clearance. Release this path claim.
+
 ## RELEASED CLAIM — 27 October 2026 — Rewards, Safety and calendar copy acceptance
 
 Source8b5e367 applies the original Rewards flower/pastel/type composition with real owner balances,
@@ -70,6 +108,12 @@ Founder explicitly asks for canonical Your places persistence during booking, sc
 Original HandoffFlowerField decorates Apply/Kyc, clipped and non-interactive. Nine existing behaviour checks and scoped lint pass; synthetic CUA390/1440 confirms readable layouts, no horizontal overflow and usable input focus; screenshots saved and viewport reset. Exact review text is deferred to the founder's requested one-time12:00 SAST reminder; permission is already confirmed. No invented quote/rating/verified-booking badge. Owner GitHub Billing establishes3,000/3,000 Actions minutes used, reset in6days; no paid plan/spending change or gate bypass. Production remains e0c021e. Malware containment is separate and unfinished; address typeahead and lifecycle delivery are new authorised scope, not completed by this visual patch. Release this path claim after scoped delivery.
 
 Founder explicitly requests production deployment after checks, original handoff flowers in Xooter onboarding, genuine customer reviews and a full remaining-work report. Claim Apply/Kyc scoped artwork and CSS, review collection/publication UI/server contracts only after inventory, focused tests and release evidence. Production has0 bookings/reviews; never fabricate testimonials or publish private feedback without permission. Preserve supplied wording/approved homepage and planning-only home personalisation. Check current CI/rollout prerequisites; deployment is authorised once actual gates pass, without fake checks, paid upgrades or unverified communications/coverage activation. Malware/authenticity is separately held in the child quarantine branch. Cross-role data access/guard tests require review.
+
+## RELEASED CLAIM — 26 October 2026 — prepared KYC containment; scanner/authenticity remain pending
+
+Architecture review found path-based signed URLs can outlive a storage replacement, and the existing approval writes activation before application status/role in separate requests. Therefore this first safety patch must close raw browser reads and all new activation paths, including service/ops bypasses, until a separately reviewed immutable scan/authenticity pipeline and transactional approval are available. Do not add a browser/admin toggle that pretends to unlock malware protection. Implement bounded server file inspection plus atomic owner-bound quarantine registration; explicitly label this as containment, not an antivirus or genuine-ID verdict. Founder selected Cloudmersive Free; direct API adapter, effective Free-account DPA/POPIA transfer clearance and actual clean/threat acceptance remain unimplemented. Provider login is failing; no account bypass, key, private file transfer or paid upgrade. Source containment passes21 helper/RPC checks, Deno and exact local PostgreSQL role/quota/concurrency/negative-control checks; no staging/production delivery or completed independent patch review is claimed. Path claim released after source preparation; retain these explicit release blockers. The independent reviewer reached its account usage limit after delivering architecture findings; no completed patch review or staging deployment may be inferred. Client table and column grants both require revocation.
+
+Founder explicitly requires legitimate documents and malware protection before production. Claim CLI-created quarantine/attestation/approval migration, submit-xooter-application inspection, private scan/metadata-review endpoints, admin safe-preview/readiness UI, pure helpers and meaningful SQL/handler adversarial tests, scanner deployment/runbook and release evidence. Both live inventories have0 document rows; preserve all existing objects/users and unrelated policies. Never equate extension/magic/hash/antivirus to identity authenticity. Unconfigured/failed private scanner must keep file inaccessible; authentic status needs evidence-backed authorised review/issuer verification, no fake MIE/clean verdict. Revoke owner-forgeable critical metadata writes, bind clean verdict to current immutable object fingerprint, guard4 distinct clean/authentic documents before activation. No public file-scanning service, new paid host/provider, wholesale migration push or production approval. Cross-role security/activation/backend paths and tests cannot wait because the founder explicitly requests them. Independent architecture review is underway before code.
 
 Two Claude sessions work on this repo and **cannot message each other**. Neither can ask the
 other what it is holding. This file is how they find out.
