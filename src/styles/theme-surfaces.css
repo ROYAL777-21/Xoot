@@ -20,5 +20,9 @@
 :root.dark .xoot-journal-reader>header { color:var(--xoot-ink-900); }
 :root.dark .xoot-journal-reader>header .text-muted-foreground { color:var(--xoot-ink-700); }
 :root.dark .xoot-booking-choice.is-selected,:root.dark .xoot-booking-card.is-selected,:root.dark .xoot-booking-crew button.is-selected,:root.dark .xoot-site-booking .xoot-booking-frequency button.is-selected,:root.dark .xoot-gift-flow-bundles>button[aria-pressed=true],:root.dark .xoot-gift-flow-notes button[aria-pressed=true] { color:var(--xoot-text-brand); }
-:root.dark .xoot-auth-field-row button,:root.dark .xoot-care-account-card a:not(.xoot-source-button) { color:var(--xoot-text-link); }
+:root.dark .xoot-auth-field-row button,:root.dark .xoot-auth-link,:root.dark .xoot-auth-switches button,:root.dark .xoot-care-account-card a:not(.xoot-source-button) { color:var(--xoot-text-link); }
 .xoot-reference-nav-item:hover,.xoot-reference-nav-item:focus-visible { background:var(--xoot-action-quiet-hover); color:var(--xoot-text-primary); }
+:root.dark .xoot-care-panel .xoot-source-button-outline { color:var(--xoot-ink-900); box-shadow:inset 0 0 0 var(--xoot-border-thick) rgba(23,17,15,.3); }
+:root.dark .xoot-care-panel .xoot-care-note { color:var(--xoot-ink-700); }
+:root.dark .xoot-care-comparison [role=cell]:last-child,:root.dark .xoot-care-comparison [role=columnheader]:last-child { color:var(--xoot-careplus-300); }
+:root.dark .xoot-journal-reader>header .xoot-journal-meta { color:var(--xoot-ink-700); }
