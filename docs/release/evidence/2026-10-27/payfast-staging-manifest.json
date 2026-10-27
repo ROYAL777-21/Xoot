@@ -1,0 +1,139 @@
+{
+  "project": "fxmxyabdjqviqbcxmvlp",
+  "sourceRevision": "3a208e2c157c145c7106c2b00674e699ba83d88a",
+  "migration": "20261027201017_atomic_booking_payment_settlement",
+  "deploymentScope": "staging only; provider checkout and evidence flags remain false",
+  "functions": [
+    {
+      "name": "confirm-payment",
+      "version": 37,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "bundleSha256": "520ea7d9705dc105bf2b18ec13a634f6965d7bd6886d60ce26165b22b388f61f",
+      "returnedFilesMatched": 8,
+      "sourceFiles": [
+        {
+          "name": "supabase/functions/confirm-payment/index.ts",
+          "sha256": "025559ca93874e534651a188e9933e8e30ee801b004966049587902034b20e79"
+        },
+        {
+          "name": "supabase/functions/_shared/action-utils.ts",
+          "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee"
+        },
+        {
+          "name": "supabase/functions/_shared/governance-utils.ts",
+          "sha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981"
+        },
+        {
+          "name": "supabase/functions/_shared/payment-confirmation.ts",
+          "sha256": "0ba4c5f4952f41d600d5d7835718f9b0b5be9e2ac14b79369fa7a5620fdc2b4f"
+        },
+        {
+          "name": "supabase/functions/_shared/booking-state-machine.ts",
+          "sha256": "1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7"
+        },
+        {
+          "name": "supabase/functions/_shared/payfast.ts",
+          "sha256": "6f6de83c589fe1a15aa86372acee210a8d3480f93a41c885a5cc2c223bab9337"
+        },
+        {
+          "name": "supabase/functions/_shared/payfast-checkout.ts",
+          "sha256": "71b56b3c1afa87af7f853d8a2f9a7c497aae07edc1fb799da58193042aadbe1f"
+        },
+        {
+          "name": "supabase/functions/import_map.json",
+          "sha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537"
+        }
+      ],
+      "configurationSentButNotReturned": [
+        "supabase/functions/deno.json"
+      ]
+    },
+    {
+      "name": "admin-confirm-payment",
+      "version": 36,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "bundleSha256": "ec907a3fbf85c6abc2b9158a181d82d6a465fefb7bfc5d14ab0dac079a9cf49d",
+      "returnedFilesMatched": 8,
+      "sourceFiles": [
+        {
+          "name": "supabase/functions/admin-confirm-payment/index.ts",
+          "sha256": "a433b76d5bcdd6a1cfbc0180980b26f6bf248ad0a2e16e02d1bf8830fb8d9176"
+        },
+        {
+          "name": "supabase/functions/_shared/action-utils.ts",
+          "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee"
+        },
+        {
+          "name": "supabase/functions/_shared/admin-action-utils.ts",
+          "sha256": "dfeb0ad45b376c4857bc968490b628d812ec915fbbd5db33cdaf73850a4f8593"
+        },
+        {
+          "name": "supabase/functions/_shared/payment-confirmation.ts",
+          "sha256": "0ba4c5f4952f41d600d5d7835718f9b0b5be9e2ac14b79369fa7a5620fdc2b4f"
+        },
+        {
+          "name": "supabase/functions/_shared/booking-state-machine.ts",
+          "sha256": "1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7"
+        },
+        {
+          "name": "supabase/functions/_shared/payfast.ts",
+          "sha256": "6f6de83c589fe1a15aa86372acee210a8d3480f93a41c885a5cc2c223bab9337"
+        },
+        {
+          "name": "supabase/functions/_shared/mfa-assurance.ts",
+          "sha256": "5308476c3900ff3b54a681d0a8f53d7f9ca616b89fabd0304996ec942612fc45"
+        },
+        {
+          "name": "supabase/functions/import_map.json",
+          "sha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537"
+        }
+      ],
+      "configurationSentButNotReturned": [
+        "supabase/functions/deno.json"
+      ]
+    },
+    {
+      "name": "create-payment-session",
+      "version": 14,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "bundleSha256": "d27a4f7df88e5c304732548de189ecf1fff6db628f0c3e9bc2814aa239294194",
+      "returnedFilesMatched": 7,
+      "sourceFiles": [
+        {
+          "name": "supabase/functions/create-payment-session/index.ts",
+          "sha256": "b6ec94e74d1c28b162a2a4d6b960f6ff69a597a06ddb11048e1713881d644dc2"
+        },
+        {
+          "name": "supabase/functions/_shared/action-utils.ts",
+          "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee"
+        },
+        {
+          "name": "supabase/functions/_shared/governance-utils.ts",
+          "sha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981"
+        },
+        {
+          "name": "supabase/functions/_shared/payfast-checkout.ts",
+          "sha256": "71b56b3c1afa87af7f853d8a2f9a7c497aae07edc1fb799da58193042aadbe1f"
+        },
+        {
+          "name": "supabase/functions/_shared/payfast.ts",
+          "sha256": "6f6de83c589fe1a15aa86372acee210a8d3480f93a41c885a5cc2c223bab9337"
+        },
+        {
+          "name": "supabase/functions/_shared/payment-provider-gate.ts",
+          "sha256": "07fec4e7af021ea603f06975fbe5c1698c0a03d6ffadc25e8e7e5577cba50b29"
+        },
+        {
+          "name": "supabase/functions/import_map.json",
+          "sha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537"
+        }
+      ],
+      "configurationSentButNotReturned": [
+        "supabase/functions/deno.json"
+      ]
+    }
+  ]
+}

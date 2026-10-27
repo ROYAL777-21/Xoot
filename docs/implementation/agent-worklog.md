@@ -1,5 +1,24 @@
 # Agent worklog
 
+### 27 October — reviewed PayFast staging delivery and appearance acceptance
+
+Independent payment re-review of3a208e2 reports no new findings and clears limited staging
+deployment only with flags OFF. Apply actual MCP migration20261027201017, then confirm-payment37,
+admin-confirm-payment36 and create-payment-session14. Rename only the newly authored migration
+from its prepared timestamp to that actual ledger version; SQL unchanged. Exact ledger SQL,
+three DB function bodies and23 returned runtime/import-map files match. Deno config is sent but
+not returned by the provider.42 deployed SQL rollback checks and six HTTP boundaries pass;
+owned test bookings/payments/receipts remain0, no injected failure function. Checkout controls
+and all evidence flags remain false. No provider transaction, admin AAL2, concurrent cancellation
+or live-payment acceptance is claimed. See appearance-payfast-followup.md and the redacted manifest.
+
+Theme source re-review closes every reported finding. Actual staging owner-profile browser checks
+cover saved/manual and device appearance, reload persistence and390px layout; built signup/Care+
+were visually inspected too. Existing founder data is preserved. A first full runner stalled;
+the completed retry passed1975 tests with7 skips and4 schema/selector-format failures. Narrow
+generated staging declarations and equivalent selector order repair all four;75 focused tests
+pass. Final broad verification follows. No assertion/deadline was relaxed; no production change.
+
 ### 27 October — independent payment review corrections
 
 Fix four review findings together across the shared helper, admin handler and receipt migration:

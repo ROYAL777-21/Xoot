@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(`${process.cwd()}/${path}`, "utf8");
-const sql = read("supabase/migrations/20261027150000_atomic_booking_payment_settlement.sql");
+const sql = read("supabase/migrations/20261027201017_atomic_booking_payment_settlement.sql");
 const shared = read("supabase/functions/_shared/payment-confirmation.ts");
 const routes = ["confirm-payment", "admin-confirm-payment"];
 

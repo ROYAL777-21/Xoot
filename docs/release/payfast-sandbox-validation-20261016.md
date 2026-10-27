@@ -41,7 +41,9 @@ payment snapshot and no refund-review request. Resolve this through a reviewed a
 cancellation/reconciliation contract and genuine independent-session tests before live activation.
 The settlement rollback checks do not establish cancellation/refund correctness.
 
-The prepared migration is20261027150000. Initial job offers are serialised by settlement's
+The deployed staging migration is20261027201017. Only this newly authored migration was renamed
+from its prepared20261027150000 filename to the actual MCP ledger version; its SQL is unchanged.
+Exact ledger SQL and all three function bodies match. Initial job offers are serialised by settlement's
 booking/payment locks. Do not add uniqueness to shared replacement-offer history or reopen a
 terminal offer. Apply only after review, then deploy frozen copies of the shared
 helper in confirm-payment and admin-confirm-payment, then create-payment-session. Read each

@@ -1053,6 +1053,7 @@ export type Database = {
           completed_at: string | null
           completion_photo_required: boolean
           created_at: string
+          crew_size: number
           duration_hours: number
           frequency: string
           high_demand_premium: number
@@ -1100,6 +1101,7 @@ export type Database = {
           completed_at?: string | null
           completion_photo_required?: boolean
           created_at?: string
+          crew_size?: number
           duration_hours?: number
           frequency?: string
           high_demand_premium?: number
@@ -1147,6 +1149,7 @@ export type Database = {
           completed_at?: string | null
           completion_photo_required?: boolean
           created_at?: string
+          crew_size?: number
           duration_hours?: number
           frequency?: string
           high_demand_premium?: number
@@ -5522,6 +5525,25 @@ export type Database = {
       }
     }
     Functions: {
+      // Generated from the actual staging schema after payment migration 20261027201017.
+      // Service-only grants remain enforced; production rollout is separate.
+      booking_payment_settlement_ready: { Args: never; Returns: number }
+
+      settle_booking_payment: {
+        Args: {
+          p_admin_id: string
+          p_admin_session_id: string
+          p_amount_cents: number
+          p_payload_hash: string
+          p_payment_id: string
+          p_provider_event_id: string
+          p_provider_transaction_id: string
+          p_reason: string
+          p_reference: string
+          p_source: string
+        }
+        Returns: Json
+      }
       // Pending service-role-only RPC; not deployed to staging/production.
       // Generated live-schema reconciliation must stay red until migration delivery.
       xoot_publish_private_job_location: {
