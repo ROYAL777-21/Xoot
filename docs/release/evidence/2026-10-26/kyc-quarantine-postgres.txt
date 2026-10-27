@@ -74,211 +74,210 @@ COMMENT
 COMMIT
 SET
 SET
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
 RESET
 SET
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
-                                                                                                                                 register_quarantined_kyc_document                                                                                                                                 
+                                                                                                                                 register_quarantined_kyc_document
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"id": "03c602ef-3369-458e-b22f-0aaac344433e", "status": "pending", "user_id": "00000000-0000-4000-8000-000000000001", "doc_type": "id", "storage_path": "00000000-0000-4000-8000-000000000001/id.pdf", "safety_status": "quarantined", "application_id": "10000000-0000-4000-8000-000000000001"}
 (1 row)
 
-                                                                                                                                     register_quarantined_kyc_document                                                                                                                                     
+                                                                                                                                     register_quarantined_kyc_document
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"id": "0ad4e26c-9526-4bd0-ac5b-aecbcf94a041", "status": "pending", "user_id": "00000000-0000-4000-8000-000000000001", "doc_type": "selfie", "storage_path": "00000000-0000-4000-8000-000000000001/selfie.png", "safety_status": "quarantined", "application_id": "10000000-0000-4000-8000-000000000001"}
 (1 row)
 
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
 UPDATE 1
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
 RESET
 SET
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
 INSERT 0 1
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
 RESET
 SET
 UPDATE 1
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
 RESET
 BEGIN
 SET
 INSERT 0 7
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
 RESET
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
 UPDATE 1
 SET
 SET
- assert_throws 
+ assert_throws
 ---------------
- 
+
 (1 row)
 
 RESET
 ROLLBACK
 BEGIN
 SET
- inspect_quarantined_kyc_object 
+ inspect_quarantined_kyc_object
 --------------------------------
- 
+
 (1 row)
 
 RESET
- assert_true 
+ assert_true
 -------------
- 
+
 (1 row)
 
 ROLLBACK
-             result             
+             result
 --------------------------------
  KYC quarantine contract passed
 (1 row)
-

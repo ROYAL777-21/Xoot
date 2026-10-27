@@ -11,6 +11,14 @@ Current source containment remains distinct from unconfigured Cloudmersive and a
 review. Independent final patch review remains required before delivery; review-agent usage limit
 is not clearance. Preserve unrelated PR98/99 and all staged/live customer data.
 
+27 October follow-up: rebase preserves both implementations and all three adjacent RPC declarations.
+Independent final security review clears cb3442f for staging-only containment after parent checks.
+All61 focused quarantine/RPC/config/calendar checks, TypeScript, scoped lint and three Deno checks
+now pass. Claim the authorised staging-only migration and exact changed-handler delivery, readback
+and non-destructive acceptance. Preserve the existing active staging Xooter and all Auth accounts;
+preflight has0 applications/documents/KYC objects. No production migration, scanner verdict,
+real applicant file transfer, new role, approval or paid provider change is included.
+
 ## RELEASED CLAIM — 27 October 2026 — Rewards, Safety and calendar copy acceptance
 
 Source8b5e367 applies the original Rewards flower/pastel/type composition with real owner balances,

@@ -2,6 +2,7 @@
 
 Status: prepared source only. No production or staging deployment of this containment patch.
 This is not a working antivirus, identity service or complete contractor onboarding release.
+This dated status is superseded by [27 October follow-up](../2026-10-27/kyc-staging-delivery.md).
 
 ## Evidence and boundaries
 
