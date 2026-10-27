@@ -1,5 +1,20 @@
 # Agent worklog
 
+## HOLDING — 27 October 2026 — one combined website staging candidate
+
+Reuse the existing clean isolated xoot-gps worktree on integration/website-staging-20261027;
+the original call branch is preserved. Claim reconciliation of current PR97/100 with reviewed
+PR71 GPS/ETA, PR81 geography/address lookup, PR91 private entry indexing, PR93 private call gates,
+PR94 native Auth and PR96 chat policy. Preserve all histories and behaviours, exact approved public
+homepage/handoff, server money/role/worker eligibility, provider caps and private capability guards.
+No revert of another implementation to make a merge pass; record any genuine semantic conflict.
+PR98 Journal and PR99 separate release candidate are read-only references, not editing targets.
+Configure only this owned Preview branch for staging before acceptance; do not publish its initial
+default-config build or change global/Production variables. Run integrated checks/build, reconcile
+actual staged schemas/frozen handlers and get independent release/safety review. This is not
+permission to enable production tracking/calls, approve workers, send queued mail, run paid builds,
+raise spending or bypass required CI. Apple stays pending; personalisation stays planning only.
+
 ## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
 
 A broad preflight inventory appeared to omit six contact/reference columns, leading to a provisional
