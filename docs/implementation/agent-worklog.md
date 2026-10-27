@@ -49,6 +49,16 @@ Founder adds PayFast as the next implementation phase after current website read
 in the single checklist and preserve/review existing PR72 before any payment-source integration.
 No payment switch, merchant credential, charge, sandbox acceptance or production clearance is implied.
 
+Final b190544 web run completes189files:1931pass,7existing skips,1 five-second website-booking
+UI timeout; its unchanged focused23-test rerun passes. Record the full failure, not a full-green
+final-head claim. All59 native script tests and the byte-identical isolated mobile typecheck pass.
+The50-page staging build/artifact scan pass, but the design smoke still targets only the former
+textbox role and cannot recognise the legitimate combobox. Claim its one exact-name selector
+repair supporting both input roles, retaining all existing typing/focus/section/startup assertions
+and deadlines. Verify the actual enabled-suggestion artifact rather than disabling the feature to
+pass. Hosted real public-address suggestion/confirmation and guest booking prefill work; no private
+address universal-resolution claim, actual worker, booking write or charge is made.
+
 ## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
 
 A broad preflight inventory appeared to omit six contact/reference columns, leading to a provisional

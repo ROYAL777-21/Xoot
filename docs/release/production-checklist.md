@@ -29,6 +29,7 @@ checks, actual staging acceptance and production activation are separate states.
 | Automatic calendar subscription | Free read-only subscription is implemented, independently reviewed and staged with exact schema/function readback. Founder used normal Auth, privately replaced/copied its link and added it to Google. Google visibly imported the disposable 27 October 10:00–12:00 SAST event on Xoot visits; its private classification displays busy. Manual reveal/select fallback is live on the preview and passed six independent checks. | Provider reschedule/cancel refresh and real iPhone/Android acceptance, then production rollout. The fixture is now 11:00–13:00 SAST with revision 1; refreshed provider display is not yet observed. Calendar providers choose polling timing. Importing a file is a copy. No broad Google calendar-write permission or paid calendar service. |
 | Laundry and ironing | Existing R30 add-ons and their ordering remain; estimates use repository rules. | Standalone service is still disabled. The repo explicitly marks its ladder unconfirmed/empty and load bands inferred (xoot-pricing.ts), with unresolved composition in the decision log. Do not invent pricing or enable unsupported payment/fulfilment. Reconcile the source, then accept add-ons and standalone booking/assignment/fulfilment end to end. |
 | Gifts, reviews, Journal, widgets and speed | Eight of 40 permission-confirmed real five-star quotes are prepared; no fake verified-booking badge or aggregate rating. PWA shortcuts and in-app cards exist. | Preserve unrelated Journal/growth PR98. Annual 52-visit gifts are not implemented/certified. Desktop shortcuts are not native Mac/Windows widgets. Large Mapbox chunk and stale-tab lazy import need measured device performance work; do not promise zero lag. |
+| PayFast payments — next requested phase | The founder requested PayFast after current website readiness. Existing payment-hardening PR72 is preserved for review. | Reconcile the existing payment work with canonical quotes and the actual staging/live handlers; privately configure the sandbox and prove authorised checkout, server callback validation, duplicate/failure/cancellation handling and owner-visible status. Required checks and reviewed rollout precede live payment activation; no merchant credential or real charge is requested in chat. |
 | Release gates and exact rollout | Focused/source, independent and actual staging checks are documented in the evidence records. No gate was fabricated. | GitHub Billing readback on 26 October showed 3,000/3,000 Actions minutes consumed; required security/schema jobs failed with zero executed steps. Keep the current plan/spending. Reconcile the PR stack, finish required checks and exact production migration/handler ordering, rollback and operational acceptance before promotion. Preview success is not production clearance. |
 
 ### Bounded staging state and retained acceptance fixture
@@ -56,10 +57,13 @@ of the normal booking writer. Cancel only this fixture after reschedule acceptan
 cancellation until the provider observes it, then clean it. Do not delete Auth identities or
 unrelated records. Google From URL public sharing was left OFF.
 
-The owned design preview alone has calendar/address flags and staging public configuration.
-The global old staging origins list is preserved; new search/calendar endpoints accept the exact
-owned design alias only on staging. Other legacy preview endpoints may still fail CORS. Do not
-replace unknown origins or disable private authentication to hide that failure.
+The owned design and combined integration previews have explicit staging public configuration and
+calendar/address flags. The integration branch keeps live GPS/verified-coverage flags off and the
+browser map token empty. After action-time founder approval, only staging's ALLOWED_ORIGINS gained
+the Vercel-verified exact integration alias; all six old origins remain. The saved SHA256 is
+`a800d3e8bd0e9f77b191fb10408ca11945599cb1dd1ee59c6be8389095dae8b7`. Nine real HTTP checks
+confirmed exact-origin preflight, foreign-origin rejection and continued no-JWT denials; counters
+were unchanged by those checks. No handler redeployment, wildcard or production setting change.
 
 Current evidence: 27 October map-calendar-rewards-followup.md; 26 October calendar-subscription-
 and-email-spelling.md, places-calendars-reviews.md, PR81 address-typeahead.md, PR100 kyc-quarantine.md,
