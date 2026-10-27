@@ -1,6 +1,7 @@
 # Private Xooter document containment — 27 October 2026
 
-Current status: reviewed source and staging preflight complete; migration/handler delivery pending.
+Current status: reviewed containment migration and two canonical handlers delivered to staging;
+the reviewed narrow operations-handler patch is prepared for delivery/readback.
 Production remains unchanged. Containment does not establish malware clearance or authentic identity.
 
 ## Reconciliation and checks
@@ -33,6 +34,40 @@ ledger contains the current calendar and address allowance migrations and no qua
 Before delivery: submit-xooter-application v18, approve-xooter v17 and ops-workflow v33 are ACTIVE
 with JWT verification enabled. Stage migration precedes exact handler delivery; no blanket backend
 redeploy or production change is authorised by this record.
+
+The exact reviewed LF migration SQL SHA256 is
+30f621f73b1a2d78290c0494a459515728962d76b7197ed87bfec6000762f904. Hosted migration
+20261027032349_kyc_private_quarantine_interlock applied successfully; only this newly delivered
+file is renamed to match the actual staging ledger. No historical migration is renamed or repaired.
+Readback confirms four private RLS tables, four restrictive Storage policies and five enabled
+triggers; browser table AND column writes and public registration/inspection execution are denied.
+Service registration remains allowed. Both non-renewing global allowances are0/32. Existing
+Xooter and role row fingerprints are unchanged; no application, file or document row was created.
+
+submit-xooter-application v19 is ACTIVE with JWT verification, bundle SHA256
+42c5d0748f1b01da298cd477c76fe0ba3dd60b334d3d7ea63bac6a6ef3eb3cc2.
+approve-xooter v18 is ACTIVE with JWT verification, bundle SHA256
+a782770f08dec60d3985af29c1a8238bf5f6cc03dc5d6c9b6962ea4e53a421a1.
+Exact returned-file verification and handler acceptance are still pending at this checkpoint.
+
+## Preserve the existing staging gift contract
+
+The canonical operations handler also includes unrelated gift changes whose RPC is absent on
+staging. Replacing the whole handler would silently introduce that unready dependency. Instead,
+the staging-only artifact replaces just v33's admin_set_kyc_verification mutating body with the
+canonical409/kyc_clearance_pending response, retaining its authentication/admin check and all
+other entrypoint/dependency bytes. The full canonical implementation remains in PR100 for later
+integration with the gift stack. No pricing, payment or gift behaviour is changed by this artifact.
+
+Independent exact artifact review found no blocker. Deno passes. The fresh deployed v33 source,
+bundle57de94f1d8cc7f16897533e18c2e6343ecaf61b9c5419120fbaafaca54ceb94e and all frozen
+files match the captured baseline immediately before delivery. The committed zero-context patch
+ops-workflow-staging-containment.patch reproduces the exact target; apply checks require
+--unidiff-zero. Its SHA256 is17291bc3703f93cacc24dd90a888d92848f5522554ea58ae9d4d1035a46876be.
+Patched entrypoint SHA256 is83948a94b4885ae305914ff1524af102c15ea4449c7e2b5af01f1e0894fb5e49;
+frozen booking/governance module hashes are1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7
+and5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981. Local frozen copies
+are ignored review artifacts; the patch and source hashes provide reproducible public evidence.
 
 Security advisors before delivery:11 informational RLS/no-policy entries on existing service-only
 tables; two existing warning categories are set_safety_pin's authenticated SECURITY DEFINER RPC and
