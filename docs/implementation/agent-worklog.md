@@ -59,6 +59,13 @@ and deadlines. Verify the actual enabled-suggestion artifact rather than disabli
 pass. Hosted real public-address suggestion/confirmation and guest booking prefill work; no private
 address universal-resolution claim, actual worker, booking write or charge is made.
 
+The unchanged generic startup verifier also assumes the former email-sign-in-first screen.
+Claim its explicit transition from Create your account through the real returning-user action,
+on both navigation and direct reload, retaining all email-code/password/roster/runtime checks and
+timeouts. Add actual CLI positive/negative signup-first fixtures, including a missing/broken
+returning-user transition, so the gate cannot pass an inaccessible sign-in form. No Auth handler,
+credentials, signup copy, public configuration or runtime access policy changes are included.
+
 ## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
 
 A broad preflight inventory appeared to omit six contact/reference columns, leading to a provisional
