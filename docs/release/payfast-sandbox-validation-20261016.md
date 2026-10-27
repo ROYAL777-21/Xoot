@@ -17,17 +17,33 @@ Duplicate callbacks require a committed receipt and cannot regress a booking. A 
 without one, a second provider transaction, cancelled booking or conflicting job requires explicit
 reconciliation. No historical receipt is invented.
 
-105 focused payment tests and Deno checks of all three handlers pass. The actual staging
-database passed34 SQL contract assertions inside one rollback-only transaction, including an
+105 focused payment tests and Deno checks of all three handlers passed before review;25
+focused review-fix checks also pass. The actual staging database passed42 SQL contract
+assertions inside one rollback-only transaction, including an
 injected outbox failure followed by retry, duplicate delivery, later booking status, exact cents,
 event binding, receipt and admin privilege boundaries. A subsequent catalog/data read confirms
-that the test table/RPC and both synthetic bookings/payments were rolled back. These are SQL
+that the test table/RPC and synthetic bookings/payments were rolled back. A negative control
+restored the original status-only success shortcut in temporary SQL: the contract rejected it
+at the distinct-provider-transaction assertion, and a fresh read confirmed full rollback. These are SQL
 contract checks with synthetic provider events, **not genuine PayFast, JWT, MFA, job-offer or
 independent-session concurrency acceptance**. No approved worker fixture was invented.
 
-The prepared migration is20261027150000. Preflight must show no duplicate(booking_id,xooter_id)
-job pairs; its unique index intentionally stops if old duplicates exist. Do not discard them or
-repair-stamp the migration. Apply only after review, then deploy frozen copies of the shared
+Independent review corrections now require both Auth verification of the actual admin bearer
+and a matching live AAL2 session in the database. A decoder test is not MFA acceptance. The
+first late PayFast transaction may corroborate an admin receipt once; a different later
+transaction requires reconciliation. Legacy manual EFT records bind to their immutable payment
+ID when no external reference exists. No global uniqueness constraint is added to replacement
+offer history. All four findings require final independent re-review before deployment.
+
+**Live-payment blocker:** the existing cancel-booking handler reads payment state before its
+later booking update. A concurrent settlement can therefore leave a cancellation with a stale
+payment snapshot and no refund-review request. Resolve this through a reviewed atomic
+cancellation/reconciliation contract and genuine independent-session tests before live activation.
+The settlement rollback checks do not establish cancellation/refund correctness.
+
+The prepared migration is20261027150000. Initial job offers are serialised by settlement's
+booking/payment locks. Do not add uniqueness to shared replacement-offer history or reopen a
+terminal offer. Apply only after review, then deploy frozen copies of the shared
 helper in confirm-payment and admin-confirm-payment, then create-payment-session. Read each
 deployed body/version back. Provider controls and evidence remain off until genuine acceptance.
 
@@ -61,11 +77,11 @@ The public documentation is [PayFast custom integration and ITN](https://develop
    `https://fxmxyabdjqviqbcxmvlp.supabase.co/functions/v1/confirm-payment`
    and ensure JWT verification is **disabled for this webhook only**. The signed ITN postback must be validated against `https://sandbox.payfast.co.za/eng/query/validate`, not the live validation host. Do **not** point callback at a static page or at `xoot.co.za/app/bookings`. The return/cancel pages are for user navigation, not settlement.
 4. Run `npm ci`, `npx vitest run supabase/functions/_shared/payfast.test.ts src/lib/payfast-checkout.test.ts src/lib/payment-provider-gate.test.ts src/lib/payfast-itn-integrity.test.ts`, `npm run typecheck`, `npm run security:scan`, and the normal reviewed release CI.
-5. Set up a dedicated **non-real customer staging test account** and a **priced staging booking** using the server-authoritative path; verify exactly one `payment_records` row with expected ZAR cents and unique reference. If the booking schema/migration is not ready, stop here; do not fabricate it.
+5. Use a founder-authorised ordinary staging test account and a **priced staging booking** using the server-authoritative path; verify exactly one `payment_records` row with expected ZAR cents and unique reference. If the booking schema/migration is not ready, stop here; do not fabricate it.
 6. Staging capability evidence should be recorded *only after* reviewed merchant config, callback availability, auth/RLS checks and schema are established. To attempt an actual sandbox hosted payment, both intended staging operational controls must be enabled by an authorised operator after test approval; they are currently false. Do not enable live environment controls as a shortcut.
 7. Execute a **real PayFast sandbox buyer journey** and capture non-secret evidence: submitted reference and amount, PayFast sandbox transaction ID, source/server validation result, exactly one payment row transition, exactly one provider event and the intended booking status + job-offer outbox transition. Never copy payment passphrase or entire raw customer ITN into shared evidence.
 8. Run negative cases: malformed/duplicate ITN fields, wrong merchant ID, wrong passphrase, invalid validation reply, 1-cent mismatch, replayed valid ITN, failed/cancelled status, callback timeout and unavailable service. A return-page redirect with no verified ITN must remain **unpaid**. Inspect audit events and rerun reconciliation.
-9. Verify recovery after partial writes. The existing payment-status update and downstream booking/job/notification actions are separate database operations. A provider event can be marked failed after a financial row changes; **a reviewed transactional reconciliation/recovery procedure is required** before claiming the full payment consistency gate green. Never re-run a callback as a substitute for an idempotent repair plan.
+9. Deploy and verify the reviewed atomic receipt contract before recovery testing. Inject a downstream failure and prove no money/booking/job/notification/audit/outbox/receipt success is committed; then retry and confirm exactly one settlement. Prove concurrent cancellation/settlement and duplicate callbacks with independent sessions. Historical paid rows without receipts require an explicit reconciliation procedure; never manufacture a receipt or replay a callback as a substitute for repair.
 10. Only after independent review, clean staging runs, complete evidence, merchant verification and operational authorisation: promote the audited code through `release/xoot-production`, perform reviewed production migrations, configure distinct live credentials, double-check the live callback, then explicitly set verified production capability evidence and payment controls. Test a genuine low-value live transaction only with founder approval (PayFast fees apply).
 
 ## Acceptance / stop conditions

@@ -35,6 +35,7 @@ export const applyBookingPaymentConfirmed = async (supa: SupabaseServiceClient, 
   payloadHash?: string | null;
   providerTransactionId?: string | null;
   adminId?: string | null;
+  adminSessionId?: string | null;
   reason?: string | null;
 }): Promise<BookingPaymentSettlement> => {
   if (!Number.isSafeInteger(input.amountCents) || input.amountCents <= 0 || !input.providerReference) {
@@ -44,7 +45,7 @@ export const applyBookingPaymentConfirmed = async (supa: SupabaseServiceClient, 
     p_payment_id: input.paymentRecordId, p_source: input.source, p_amount_cents: input.amountCents,
     p_reference: input.providerReference, p_provider_event_id: input.providerEventId ?? null,
     p_payload_hash: input.payloadHash ?? null, p_provider_transaction_id: input.providerTransactionId ?? null,
-    p_admin_id: input.adminId ?? null, p_reason: input.reason ?? null,
+    p_admin_id: input.adminId ?? null, p_reason: input.reason ?? null, p_admin_session_id: input.adminSessionId ?? null,
   });
   if (error) throw new Error(`atomic payment settlement failed: ${error.code ?? "database_error"}`);
   const row = data as Partial<BookingPaymentSettlement> | null;

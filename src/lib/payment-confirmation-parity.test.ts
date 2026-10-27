@@ -32,6 +32,9 @@ describe("atomic payment confirmation parity", () => {
     expect(admin).toContain("getAdminActionContext(req)");
     expect(admin).toContain("requireAdminReason(body.reason");
     expect(admin).toContain('source: "admin"');
+    expect(admin).toContain('mfaSessionFromVerifiedBearer(req.headers.get("Authorization"), user.id)');
+    expect(sql).toContain("select from auth.sessions where id = p_admin_session_id and user_id = p_admin_id");
+    expect(sql).toContain("aal::text = 'aal2'");
     expect(sql).toContain("public.has_role(p_admin_id, 'admin'::public.app_role)");
     expect(sql).toContain("v_payment.provider = 'manual_pending' then 'manual_eft' else v_payment.provider");
     expect(sql).toContain("Payment confirmed by admin");

@@ -16,7 +16,7 @@ describe("settlement receipt adapter", () => {
     expect(rpc).toHaveBeenCalledWith("settle_booking_payment", {
       p_payment_id: input.paymentRecordId, p_source: "payfast", p_amount_cents: 12501, p_reference: input.providerReference,
       p_provider_event_id: input.providerEventId, p_payload_hash: input.payloadHash, p_provider_transaction_id: input.providerTransactionId,
-      p_admin_id: null, p_reason: null,
+      p_admin_id: null, p_reason: null, p_admin_session_id: null,
     });
   });
   it("propagates database failure without acknowledging payment or exposing database detail", async () => {

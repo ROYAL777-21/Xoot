@@ -2,12 +2,15 @@ import { fail, ok } from "../_shared/action-utils.ts";
 import { getAdminActionContext, getRequiredId, requireAdminReason } from "../_shared/admin-action-utils.ts";
 import { applyBookingPaymentConfirmed, assertBookingCanConfirmPayment } from "../_shared/payment-confirmation.ts";
 import { recordAmountCents } from "../_shared/payfast.ts";
+import { mfaSessionFromVerifiedBearer } from "../_shared/mfa-assurance.ts";
 
 Deno.serve(async (req) => {
-  // Revalidates an actual admin session and AAL2 before the service-only settlement call.
+  // getAdminActionContext verifies this bearer with Auth and checks the fresh admin role.
   const context = await getAdminActionContext(req);
   if (context.response) return context.response;
   const { body, origin, supa, user } = context;
+  const adminSessionId = mfaSessionFromVerifiedBearer(req.headers.get("Authorization"), user.id);
+  if (!adminSessionId) return fail("two-step verification required to confirm a payment", origin, 403);
   const idResult = getRequiredId(body.payment_id ?? body.paymentId, origin, "payment_id");
   if (idResult.response) return idResult.response;
   const reasonResult = requireAdminReason(body.reason, origin);
@@ -20,15 +23,16 @@ Deno.serve(async (req) => {
     if (!["pending", "admin_confirmed"].includes(payment.status)) return fail("only pending payment records can be admin-confirmed", origin, 409);
     if (payment.payment_kind !== "booking" || !payment.booking_id) return fail("this payment needs its own fulfilment review", origin, 503);
     const amountCents = recordAmountCents(payment.amount);
-    if (amountCents === null || payment.currency !== "ZAR" || !payment.provider_reference) return fail("payment identity or amount is invalid", origin, 409);
+    const providerReference = payment.provider_reference || (["manual_pending", "manual_eft"].includes(payment.provider) ? `manual_eft:${payment.id}` : "");
+    if (amountCents === null || payment.currency !== "ZAR" || !providerReference) return fail("payment identity or amount is invalid", origin, 409);
     if (payment.status === "pending") {
       const check = await assertBookingCanConfirmPayment(supa, payment.booking_id);
       if (!check.ok) return fail(check.reason, origin, 409);
     }
     // The strict admin audit is inside the same transaction as the financial and booking writes.
     const result = await applyBookingPaymentConfirmed(supa, {
-      paymentRecordId: payment.id, source: "admin", amountCents, providerReference: payment.provider_reference,
-      adminId: user.id, reason: reasonResult.reason,
+      paymentRecordId: payment.id, source: "admin", amountCents, providerReference,
+      adminId: user.id, adminSessionId, reason: reasonResult.reason,
     });
     return ok({ payment_id: result.payment_record_id, booking_id: result.booking_id, status: result.status, idempotent: result.idempotent }, origin);
   } catch {

@@ -1,5 +1,18 @@
 # Agent worklog
 
+### 27 October — independent payment review corrections
+
+Fix four review findings together across the shared helper, admin handler and receipt migration:
+verify the actual bearer then require its matching live AAL2 session; bind the first late provider
+transaction once after an admin receipt and reject a different charge; retain no-reference legacy
+manual EFT using immutable payment identity; remove the unrelated global replacement-offer index.
+25 focused fixes and42 actual staging rollback-only SQL assertions pass. A planted status-only
+shortcut is detected at the different-transaction assertion. Fresh catalog/data readback confirms
+all owned test DDL and booking/payment fixtures rolled back. No actual admin/MFA/provider or
+independent-session concurrency acceptance is claimed. Re-review and final suite remain.
+The existing cancel-booking stale-payment/refund race is explicitly a live activation blocker.
+No payment control, production setting, provider charge or worker eligibility was changed.
+
 ### 27 October — PayFast retry integrity repair prepared for review
 
 Cross-role shared payment helper and three Edge handlers plus additive receipt migration
