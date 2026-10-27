@@ -1,6 +1,17 @@
 # Agent worklog
 
-## HOLDING — 26 October 2026 — address recall and honest matching guidance
+## RELEASED CLAIM — 27 October 2026 — capped address recall follow-up
+
+Reviewed aa354fa final source is restored by 4ede72e after the structured-input comparison failed
+the founder's private locality. Staging v4, five returned files match; bundle a905952d…6a1c.
+26 root checks, independent22, lint/Deno and the five-result negative control pass. Actual public
+Sunninghill/CapeTown cases succeed; the private example and a second public case still miss.
+No universal-address or verified-booking claim. Twelve root Temporary attempts, latest shared
+usage53/200 suggestions and4/20Permanent; caps were not increased/refilled. Full query/Temporary
+payloads are not committed. Preserve actual worker/privacy/booking/production gates. Current
+PR97 checklist and27October evidence retain the unresolved matching/address/device work. Release
+these paths; no production delivery or broader structured heuristic is cleared.
+## Historical claim — 26 October 2026 — address recall and honest matching guidance
 
 Founder reports a complete Sunninghill address is missing. PR97 holds calendar copy recovery;
 claim this PR81 search handler/provider tests and VerifiedAddressInput interaction guidance.

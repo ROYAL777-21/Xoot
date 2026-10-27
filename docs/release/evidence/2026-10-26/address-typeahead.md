@@ -34,3 +34,14 @@ The general ALLOWED_ORIGINS digest matches the repo-derived old staging list and
 the new owned design-preview alias. This new search handler admits that exact alias only when the
 backend is staging. Existing other hosted-preview endpoints may still fail CORS; no unknown list was
 overwritten. Normal booking writers/crew fulfilment and real provider/device/release gates remain.
+
+27 October follow-up supersedes the old counters: final staging lookup v4 exactly matches the
+reviewed ten-result/Gauteng-biased free-text source aa354fa (restored by4ede72e). Bundle SHA256
+a905952df037a5111e2d9a15c42ddab0d66261b7925a630698fff113f3526a1c; all5returned files match.
+26root provider/handler/UI checks, independent22, lint/Deno and an actual failing five-result
+negative control pass. No retry/quality/budget relaxation. Public Sunninghillcollege/CapeTown
+cases succeed, but the founder's private example and a second public Sunninghillcase still miss.
+A bounded structured experiment did not resolve the correct area and was removed, not promoted.
+Root used12Temporary attempts only; latest total53/200suggestions,4/20confirmation/sharedPermanent.
+No refill or production activation. Safe missing-address resolution and normal booking/verified
+worker fulfilment remain. See PR97's current checklist and27October map/calendar/rewards evidence.
