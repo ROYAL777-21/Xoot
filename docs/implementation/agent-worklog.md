@@ -37,6 +37,18 @@ settings on staging alone; retain existing origins, quotas/JWTs and every produc
 No general preview wildcard, global secret overwrite, calendar capability read or unrelated frozen
 handler deployment. Independent review and staged byte readback are required before delivery.
 
+Founder approved the exact staging-origin change at action time. Dashboard confirms only staging's
+new digest a800d3e8bd0e9f77b191fb10408ca11945599cb1dd1ee59c6be8389095dae8b7; runtime
+preflight and no-auth denials remain to check without provider spend. Source scan identifies two
+committed voice-test fixture strings, explicitly synthetic but shaped like long assigned secrets,
+plus generated full test-report text containing a synthetic SID. Claim short unambiguous test keys
+in those two tests and relocation of the owned ignored report outside repository scan scope;
+retain scanner patterns/allowlists and every signature/denial assertion. This is not live key
+rotation or concealment of a real credential. Re-run relevant voice tests and the unchanged scanner.
+Founder adds PayFast as the next implementation phase after current website readiness; record it
+in the single checklist and preserve/review existing PR72 before any payment-source integration.
+No payment switch, merchant credential, charge, sandbox acceptance or production clearance is implied.
+
 ## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
 
 A broad preflight inventory appeared to omit six contact/reference columns, leading to a provisional
