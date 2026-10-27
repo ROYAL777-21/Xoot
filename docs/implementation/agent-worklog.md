@@ -1,5 +1,17 @@
 # Agent worklog
 
+## HOLDING — 27 October 2026 — repair the actual applicant contact schema before real acceptance
+
+The staging preflight found the six contact/reference columns submitted by both the existing and
+current handler are absent, although two historical migration files declare them. A successful
+migration-name ledger is therefore not proof of runtime schema parity. Claim a new additive,
+CLI-created convergence migration for exactly these nullable text columns, preserving existing
+rows, owner-only reads, revoked browser writes, quarantine and activation interlocks. Add a focused
+schema-contract check and verify actual staging columns, grants and non-destructive rollback before
+normal applicant/device acceptance. Do not remove required fields or silently discard user input.
+Historical migrations, production data/delivery and unconfigured scanner/authenticity remain
+unchanged. Cross-role Release/Safety schema review is required before delivery.
+
 ## HOLDING — 27 October 2026 — reconcile quarantine with current account/calendar source
 
 PR100 is now CONFLICTING with its PR97 base after legitimate calendar and account changes.
