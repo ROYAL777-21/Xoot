@@ -10,7 +10,7 @@ import { toast } from "sonner";
 const links = [
   { label: "Services", href: "/#services" },
   { label: "Care+", href: "/care-plus" },
-  { label: "Trust", href: "/trust-centre" },
+  { label: "Safety", href: "/trust-centre" },
   { label: "Journal", href: "/articles" },
   { label: "How it works", href: "/#how" },
 ] as const;
