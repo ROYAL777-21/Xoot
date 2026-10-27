@@ -92,6 +92,14 @@ const sameLocation = (actual, expected) => {
   return actualUrl.origin === expectedUrl.origin && cleanPath(actualUrl.pathname) === cleanPath(expectedUrl.pathname);
 };
 
+const openReturningUserMode = async (page) => {
+  // New visitors start with account creation. Exercise the real route back to
+  // email sign-in rather than assuming those controls are on the first screen.
+  if (await page.getByRole("heading", { name: "Create your account", exact: true }).isVisible()) {
+    await page.getByRole("button", { name: "Been here before? Pick up where you left off", exact: true }).click({ timeout });
+  }
+};
+
 let browser;
 let artifactServer;
 const runtimeProblems = [];
@@ -256,6 +264,8 @@ try {
   let authControl = "email field";
   try {
     await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
+    authControl = "returning-user action";
+    await openReturningUserMode(page);
     authControl = "email-code action";
     await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
   } catch {
@@ -272,6 +282,8 @@ try {
   authControl = "email field after reload";
   try {
     await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
+    authControl = "returning-user action after reload";
+    await openReturningUserMode(page);
     authControl = "email-code action after reload";
     await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
     authControl = "password-mode action";
