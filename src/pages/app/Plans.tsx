@@ -133,7 +133,7 @@ const Plans = () => {
               <span className="text-xs font-bold uppercase tracking-wider">Care+ membership</span>
             </div>
             <h1 className="font-display text-5xl font-bold tracking-tight md:text-6xl">Care+ keeps your home ready.</h1>
-            <p className="mt-4 max-w-2xl text-lg text-muted-foreground">Save your home preferences, rebook your favourite Xooter, earn boosted XootCred, and get priority support when your home-care plans need attention.</p>
+            <p className="xoot-care-account-intro mt-4 max-w-2xl text-lg text-muted-foreground">Save your home preferences, rebook your favourite Xooter, earn boosted XootCred, and get priority support when your home-care plans need attention.</p>
           </div>
           <Card className="rounded-3xl border-border/70 bg-card/95 p-6 shadow-card">
             <p className="xoot-care-account-label text-sm font-semibold"><CarePlusMark /></p>

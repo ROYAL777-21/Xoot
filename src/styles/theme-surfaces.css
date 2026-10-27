@@ -9,4 +9,16 @@
 .xoot-account-dashboard-hero { color:var(--xoot-ink-900); }
 .xoot-account-dashboard-hero .text-muted-foreground { color:var(--xoot-ink-700); }
 .xoot-care-account-hero { color:var(--xoot-careplus-ink); }
-.xoot-care-account-hero .text-muted-foreground { color:var(--xoot-careplus-ink); }
+.xoot-care-account-hero .xoot-care-account-intro { color:var(--xoot-careplus-ink); }
+:root.dark .xoot-care-account-hero .text-card-foreground .xoot-care-account-label { color:var(--xoot-careplus-300); }
+:root.dark .xoot-care-panel { color:var(--xoot-ink-900); }
+:root.dark .xoot-care-panel .xoot-care-intro { color:var(--xoot-ink-700); }
+:root.dark .xoot-care-panel .xoot-care-arithmetic,:root.dark .xoot-care-panel .xoot-care-perks,:root.dark .xoot-care-panel .xoot-care-comparison { color:var(--xoot-text-primary); }
+:root.dark .xoot-care-arithmetic>div { color:var(--xoot-careplus-300); }
+:root.dark .xoot-closing-panel { background:var(--xoot-grad-cream); }
+:root.dark .xoot-download-band p,:root.dark .xoot-download-band small { color:var(--xoot-ink-700); }
+:root.dark .xoot-journal-reader>header { color:var(--xoot-ink-900); }
+:root.dark .xoot-journal-reader>header .text-muted-foreground { color:var(--xoot-ink-700); }
+:root.dark .xoot-booking-choice.is-selected,:root.dark .xoot-booking-card.is-selected,:root.dark .xoot-booking-crew button.is-selected,:root.dark .xoot-site-booking .xoot-booking-frequency button.is-selected,:root.dark .xoot-gift-flow-bundles>button[aria-pressed=true],:root.dark .xoot-gift-flow-notes button[aria-pressed=true] { color:var(--xoot-text-brand); }
+:root.dark .xoot-auth-field-row button,:root.dark .xoot-care-account-card a:not(.xoot-source-button) { color:var(--xoot-text-link); }
+.xoot-reference-nav-item:hover,.xoot-reference-nav-item:focus-visible { background:var(--xoot-action-quiet-hover); color:var(--xoot-text-primary); }
