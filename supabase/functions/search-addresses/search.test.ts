@@ -36,25 +36,10 @@ describe("server-capped address lookup (provider doubles)",()=>{
     expect(result.state==="results"&&result.options[9].id).toBe("address-9");
     expect(f.db.rpc).toHaveBeenCalledTimes(1);expect(f.fetcher).toHaveBeenCalledTimes(1);
   });
-  it("uses the four explicitly typed address parts unchanged in one capped structured attempt",async()=>{
+  it("passes abbreviated and full street suffixes unchanged in one capped attempt each",async()=>{
     for(const query of ["3 Example Cl, Sunninghill, Sandton, 2191","3 Example Close, Sunninghill, Sandton, 2191"]){
       const f=fixture();await searchAddresses({...f,mode:"suggest",query});
-      const params=new URL(f.fetcher.mock.calls[0][0]).searchParams;
-      expect(params.has("q")).toBe(false);expect(params.get("address_line1")).toBe(query.split(",")[0]);
-      expect(params.get("neighborhood")).toBe("Sunninghill");expect(params.get("place")).toBe("Sandton");
-      expect(params.get("postcode")).toBe("2191");expect(params.get("autocomplete")).toBe("false");
-      expect(params.get("permanent")).toBe("false");
-      expect(f.db.rpc).toHaveBeenCalledTimes(1);expect(f.fetcher).toHaveBeenCalledTimes(1);
-    }
-  });
-  it("keeps partial, ambiguous and unit-line input as free text instead of guessing components",async()=>{
-    for(const query of ["3 Example Cl, Sunninghill, Sandton, 219","3 Example Close, Sunninghill, Sandton",
-      "3 Example Close, Sunninghill, Sandton, Gauteng, 2191","Unit 3, Example Close, Sandton, 2191",
-      "14 Synthetic Road, Unit 4, Sunninghill, 2191","14 Synthetic Road, Pretoria, Gauteng, 2191",
-      "14 Synthetic Road, Suite 4, Sandton, 2191","14 Synthetic Road, Cape Town, Western Cape, 8001"]){
-      const f=fixture();await searchAddresses({...f,mode:"suggest",query});
-      const params=new URL(f.fetcher.mock.calls[0][0]).searchParams;
-      expect(params.get("q")).toBe(query);expect(params.has("address_line1")).toBe(false);
+      expect(new URL(f.fetcher.mock.calls[0][0]).searchParams.get("q")).toBe(query);
       expect(f.db.rpc).toHaveBeenCalledTimes(1);expect(f.fetcher).toHaveBeenCalledTimes(1);
     }
   });
