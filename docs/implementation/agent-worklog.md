@@ -1,6 +1,6 @@
 # Agent worklog
 
-## HOLDING — 27 October 2026 — one combined website staging candidate
+## RELEASED CLAIM — 27 October 2026 — one combined website staging candidate
 
 Reuse the existing clean isolated xoot-gps worktree on integration/website-staging-20261027;
 the original call branch is preserved. Claim reconciliation of current PR97/100 with reviewed
@@ -65,6 +65,31 @@ on both navigation and direct reload, retaining all email-code/password/roster/r
 timeouts. Add actual CLI positive/negative signup-first fixtures, including a missing/broken
 returning-user transition, so the gate cannot pass an inaccessible sign-in form. No Auth handler,
 credentials, signup copy, public configuration or runtime access policy changes are included.
+
+Final source f48fc98 passes all189 files/1937 tests with7 existing skips when file parallelism is
+explicitly disabled; assertions/deadlines stay unchanged. Earlier17 timeouts and the88/91 focused
+rerun remain recorded, followed by all three remaining individual cases passing. Exact final
+staging-config build/50 prerenders/artifact/design390/1440/rendered startup and final full lint,
+web TypeScript, lockfiles and unchanged source/header/security scans pass. Independent final
+release/security guard reviews and documentation review find no blocker in their scoped changes.
+
+Founder privately completes a genuinely new staging password signup/confirmation/sign-in. Normal
+UI and targeted aggregate show1 confirmed ordinary customer and1 owner profile. Normal owner save
+and reload retain a labelled public test place; anonymous Data API returns0 rows for that existing
+ID. Founder then signs in on the physical iPhone12 and confirms the place appears. This is real
+cross-device place acceptance, not GPS/chat/audio/native/production acceptance. No Auth identity,
+role or private home instruction is fabricated. Address use is56/200 Temporary and7/20 shared
+Permanent; no renewal, production setting or allowance increase. Public fixture remains labelled.
+
+Google now visibly refreshes the private calendar fixture to11–13SAST/revision1. Only that exact
+marker/owner/time/zero-price/no-payment/no-assignee fixture is then cancelled, returning1 row at
+revision2. Retain its tombstone until provider cancellation observation, then clean only the fixture.
+Production still serves approved e0c021e; fresh ledger read preserves external20261008011821 and
+records none of the nine integration versions. The staging in-app-voice configuration row is absent
+and fails closed. Required GitHub execution, exact production effects/frozen delivery, remaining
+provider/legal/worker/device/product gates and PayFast next-phase work remain. No merge, paid plan,
+spending increase or production activation. Release the integration source/documentation paths;
+the combined candidate proceeds only to a draft review, preserving original/unrelated PRs.
 
 ## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
 
