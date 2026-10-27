@@ -10,7 +10,7 @@ const identity = `xoot_${actor.replace(/-/g, "")}_${booking.replace(/-/g, "")}_v
 const endpoint = "https://edge.test/functions/v1/twilio-voice-twiml";
 const env = { SUPABASE_URL: "https://edge.test", SUPABASE_ANON_KEY: "anon", SUPABASE_SERVICE_ROLE_KEY: "service",
   XOOT_APP_ENV: "staging", TWILIO_ACCOUNT_SID: `AC${"a".repeat(32)}`, TWILIO_API_KEY_SID: `SK${"b".repeat(32)}`,
-  TWILIO_API_KEY_SECRET: "synthetic-signing-key", TWILIO_VOICE_APP_SID: `AP${"c".repeat(32)}`, TWILIO_AUTH_TOKEN: "synthetic-webhook-key",
+  TWILIO_API_KEY_SECRET: "test-key", TWILIO_VOICE_APP_SID: `AP${"c".repeat(32)}`, TWILIO_AUTH_TOKEN: "test-webhook",
   TWILIO_CONVERSATIONS_SERVICE_SID: `IS${"d".repeat(32)}` };
 beforeAll(() => vi.stubGlobal("crypto", webcrypto));
 afterAll(() => vi.unstubAllGlobals());

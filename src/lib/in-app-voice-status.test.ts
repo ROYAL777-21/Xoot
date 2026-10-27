@@ -4,7 +4,7 @@ import { edgeHandler } from "../test/edge-handler";
 const account = `AC${"a".repeat(32)}`, call = `CA${"b".repeat(32)}`, conference = `CF${"d".repeat(32)}`;
 const room = "11111111-1111-4111-8111-111111111111";
 const url = `https://edge.test/functions/v1/twilio-in-app-voice-status?room=${room}`;
-const env = { SUPABASE_URL: "https://edge.test", SUPABASE_SERVICE_ROLE_KEY: "service", TWILIO_ACCOUNT_SID: account, TWILIO_AUTH_TOKEN: "synthetic-status-key" };
+const env = { SUPABASE_URL: "https://edge.test", SUPABASE_SERVICE_ROLE_KEY: "service", TWILIO_ACCOUNT_SID: account, TWILIO_AUTH_TOKEN: "test-status" };
 beforeAll(() => vi.stubGlobal("crypto", webcrypto));
 afterAll(() => vi.unstubAllGlobals());
 function fixture(fail = false, applied = true) {
