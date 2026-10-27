@@ -266,6 +266,8 @@ try {
     await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
     authControl = "returning-user action";
     await openReturningUserMode(page);
+    authControl = "email field in returning mode";
+    await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
     authControl = "email-code action";
     await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
   } catch {
@@ -284,6 +286,8 @@ try {
     await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
     authControl = "returning-user action after reload";
     await openReturningUserMode(page);
+    authControl = "email field in returning mode after reload";
+    await page.getByLabel("Your email", { exact: true }).waitFor({ state: "visible", timeout });
     authControl = "email-code action after reload";
     await page.getByRole("button", { name: /^Send one-time code$/i }).waitFor({ state: "visible", timeout });
     authControl = "password-mode action";

@@ -266,6 +266,7 @@ describe("rendered site smoke", () => {
   it.each([
     { name: "missing returning-user action", page: signupAuthPage.replace("Been here before? Pick up where you left off", "Learn more") },
     { name: "broken returning-user action", page: signupAuthPage.replace("addEventListener('click', renderAuth)", "addEventListener('click', () => {})") },
+    { name: "missing returning-user email", page: signupAuthPage.replace("main.append(heading, emailLabel, send, toggle, passwordForm)", "main.append(heading, send, toggle, passwordForm)") },
   ])("rejects signup-first auth with $name", async ({ page }) => {
     const url = await serve({ "/": homePage, "/auth": page });
     const result = await runVerifier(["--url", url], { XOOT_SMOKE_TIMEOUT_MS: "1000" });
