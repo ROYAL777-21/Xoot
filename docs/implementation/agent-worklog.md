@@ -1,6 +1,23 @@
 # Agent worklog
 
-## HOLDING — 27 October 2026 — Safety navigation and remaining handoff product work
+## RELEASED CLAIM — 27 October 2026 — Rewards, Safety and calendar copy acceptance
+
+Source8b5e367 applies the original Rewards flower/pastel/type composition with real owner balances,
+removes unsupported derived tiers/milestone promises and renames navbar Trust to Safety.61current
+wallet/kit/shell checks,41calendar/address/booking checks, TS/lint,50-page build/artifact and source
+security checks pass. Actual normal-account hosted layout at390/1440CSSpx has no overflow; Safety
+opens the unchanged trust-centre route. Preview READY; independent final UI/device review remains.
+Shared Care+ SVG geometry already matches the handoff. Do not copy prototype benefits or enable
+unfinished redemption/laundry. The single current checklist retains all requested launch work.
+
+Calendarcopy sourcee720c32 passed6independent checks. Founder privately replaced/copied/added it;
+Google visibly imports the disposable10–12SAST event asbusy/Private. Fixturealone now11–13SAST,
+revision1; provider refresh/cancellation still pending. Rawcapability not read byroot. Labelled
+local PostgreSQLfixture removed; live staging fixture retained/documented. Addressprivateexample
+still unresolved, source experiment removed, capped finalv4staged. No production promotion.
+Current8b5requiredsecurity/typejobs121978579704/121978578825 failedwith0steps and actualbilling/
+spending annotations; no checks fabricated, spending changed or gate bypass. Release these paths.
+## Historical claim — 27 October 2026 — Safety navigation and remaining handoff product work
 
 Founder explicitly retains GPS/ETA, in-Xoot chat/calling, customer/Xooter notification journeys,
 private upload malware/authenticity review, real matching, laundry/ironing, Rewards and Care+
@@ -12,7 +29,7 @@ prototype commercial rules. Personalisation stays planning only, Apple stays pen
 release/check bypass, paid plan, credit, spend increase or trust-status change. Cross-role styling or
 reward claims require review before merge; existing required checks remain exhausted.
 
-## HOLDING — 26 October 2026 — calendar copy recovery and incomplete address suggestions
+## Historical claim — 26 October 2026 — calendar copy recovery and incomplete address suggestions
 
 Founder reports the staging private link did not reach the clipboard despite the copied status,
 and some Sunninghill inputs return no useful suggestions. Claim CalendarSubscription private
