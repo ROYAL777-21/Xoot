@@ -14,6 +14,16 @@ vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: () => true }));
 beforeEach(() => { vi.clearAllMocks(); auth.signUp.mockResolvedValue({ data: { session: null }, error: null }); auth.resend.mockResolvedValue({ error: null }); auth.signInWithOtp.mockResolvedValue({ error: null }); auth.verifyOtp.mockResolvedValue({ error: null }); });
 afterEach(cleanup);
 describe("account entry copy", () => {
+  it("helps correct gmail.vom before sending any account email", async () => {
+    await act(async () => { render(<MemoryRouter initialEntries={["/auth?mode=signin"]}><Auth /></MemoryRouter>); });
+    fireEvent.change(screen.getByLabelText("Your email"), { target: { value: "customer@gmail.vom" } });
+    expect(screen.getByRole("button", { name: "Send one-time code" })).toBeDisabled();
+    expect(auth.signInWithOtp).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Use customer@gmail.com" }));
+    expect(screen.getByLabelText("Your email")).toHaveValue("customer@gmail.com");
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send one-time code" })); });
+    expect(auth.signInWithOtp).toHaveBeenCalledWith(expect.objectContaining({ email: "customer@gmail.com" }));
+  });
   async function submitSignup() {
     await act(async () => { render(<MemoryRouter initialEntries={["/auth"]}><Auth /></MemoryRouter>); });
     fireEvent.change(screen.getByLabelText("Full name"), { target: { value: "Synthetic Customer" } });
@@ -37,6 +47,15 @@ describe("account entry copy", () => {
     expect(auth.resend).toHaveBeenCalledWith({ type: "signup", email: "new.user@example.test", options: { emailRedirectTo: expect.stringContaining("/auth/callback?next=") } });
     expect(auth.signInWithOtp).not.toHaveBeenCalled();
     expect(auth.signUp).toHaveBeenCalledTimes(1);
+  });
+  it("offers existing-account sign-in from confirmation without claiming an account exists", async () => {
+    await submitSignup();
+    fireEvent.click(screen.getByRole("button", { name: "Already have an account? Sign in" }));
+    expect(screen.getByRole("heading", { name: "Continue with email" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Your email")).toHaveValue("new.user@example.test");
+    expect(auth.signInWithOtp).not.toHaveBeenCalled();
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Send one-time code" })); });
+    expect(auth.signInWithOtp).toHaveBeenCalledWith(expect.objectContaining({ email: "new.user@example.test", options: expect.objectContaining({ shouldCreateUser: false }) }));
   });
   it("recovers an unconfirmed password sign-in without disabling confirmation", async () => {
     auth.signInWithPassword.mockResolvedValue({ error: { code: "email_not_confirmed" } });

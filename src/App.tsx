@@ -51,6 +51,8 @@ const Loyalty = lazy(() => import("./pages/app/Loyalty"));
 const Widgets = lazy(() => import("./pages/app/Widgets"));
 const GiftClean = lazy(() => import("./pages/app/GiftClean"));
 const Properties = lazy(() => import("./pages/app/Properties"));
+const ManageMore = lazy(() => import("./pages/app/ManageMore"));
+const Calendars = lazy(() => import("./pages/app/Calendars"));
 const AirbnbHostDashboard = lazy(() => import("./pages/app/AirbnbHostDashboard"));
 const OfficeDashboard = lazy(() => import("./pages/app/OfficeDashboard"));
 const Plans = lazy(() => import("./pages/app/Plans"));
@@ -204,7 +206,9 @@ const App = () => (
                   <Route path="/app/widgets" element={<RequireAuth><AppShell><Widgets /></AppShell></RequireAuth>} />
                   <Route path="/gifts" element={<GiftClean />} />
                   <Route path="/app/gifts" element={<RequireAuth><GiftClean /></RequireAuth>} />
-                  <Route path="/app/properties" element={<RequireAuth><AppShell><Properties /></AppShell></RequireAuth>} />
+                  <Route path="/app/properties" element={<RequireAuth><AppShell><ManageMore /></AppShell></RequireAuth>} />
+                  <Route path="/app/properties/accounts" element={<RequireAuth><AppShell><Properties /></AppShell></RequireAuth>} />
+                  <Route path="/app/calendar" element={<RequireAuth><AppShell><Calendars /></AppShell></RequireAuth>} />
                   <Route path="/app/properties/airbnb" element={<RequireAuth><AppShell><AirbnbHostDashboard /></AppShell></RequireAuth>} />
                   <Route path="/app/properties/office" element={<RequireAuth><AppShell><OfficeDashboard /></AppShell></RequireAuth>} />
                   <Route path="/app/plans" element={<RequireAuth><AppShell><Plans /></AppShell></RequireAuth>} />

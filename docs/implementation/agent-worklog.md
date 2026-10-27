@@ -1,9 +1,90 @@
 # Agent worklog
 
+## RELEASED CLAIM — 27 October 2026 — Rewards, Safety and calendar copy acceptance
+
+Source8b5e367 applies the original Rewards flower/pastel/type composition with real owner balances,
+removes unsupported derived tiers/milestone promises and renames navbar Trust to Safety.61current
+wallet/kit/shell checks,41calendar/address/booking checks, TS/lint,50-page build/artifact and source
+security checks pass. Actual normal-account hosted layout at390/1440CSSpx has no overflow; Safety
+opens the unchanged trust-centre route. Preview READY; independent final UI/device review remains.
+Shared Care+ SVG geometry already matches the handoff. Do not copy prototype benefits or enable
+unfinished redemption/laundry. The single current checklist retains all requested launch work.
+
+Calendarcopy sourcee720c32 passed6independent checks. Founder privately replaced/copied/added it;
+Google visibly imports the disposable10–12SAST event asbusy/Private. Fixturealone now11–13SAST,
+revision1; provider refresh/cancellation still pending. Rawcapability not read byroot. Labelled
+local PostgreSQLfixture removed; live staging fixture retained/documented. Addressprivateexample
+still unresolved, source experiment removed, capped finalv4staged. No production promotion.
+Current8b5requiredsecurity/typejobs121978579704/121978578825 failedwith0steps and actualbilling/
+spending annotations; no checks fabricated, spending changed or gate bypass. Release these paths.
+## Historical claim — 27 October 2026 — Safety navigation and remaining handoff product work
+
+Founder explicitly retains GPS/ETA, in-Xoot chat/calling, customer/Xooter notification journeys,
+private upload malware/authenticity review, real matching, laundry/ironing, Rewards and Care+
+visual fidelity. Claim Navbar Trust→Safety label, Rewards handoff presentation and shared Care+
+mark audit; preserve route destinations, real balances/eligibility, locked prices and approval gates.
+Update the single production checklist with verified/pending implementation and acceptance status.
+Source design is design/handoff-2026-09-03. Do not port its fabricated balances/rewards/workers or
+prototype commercial rules. Personalisation stays planning only, Apple stays pending. No production
+release/check bypass, paid plan, credit, spend increase or trust-status change. Cross-role styling or
+reward claims require review before merge; existing required checks remain exhausted.
+
+## Historical claim — 26 October 2026 — calendar copy recovery and incomplete address suggestions
+
+Founder reports the staging private link did not reach the clipboard despite the copied status,
+and some Sunninghill inputs return no useful suggestions. Claim CalendarSubscription private
+manual-copy/reveal fallback, masked analytics-safe link field and focused privacy/interaction tests;
+keep raw capability out of logs, screenshots and persistent storage. Preserve the founder's existing
+private link and provisional calendar fixture; do not rotate/revoke behind the owner. Claim address
+discovery recall/empty-result guidance and provider contract tests in coordination with PR81 after
+specific failing street examples. Do not promise universal provider coverage or turn an uncertain
+address into a verified booking. Existing costs/normal Auth/POPIA and production release gates stand.
+Cross-role capability and provider tests require independent review before release.
+
+## RELEASED CLAIM — 26 October 2026 — automatic private calendar subscription and signup recovery
+
+Independently reviewedfa37e4e,106final focused checks/TS/lint/Deno and real PG/concurrency/targeted
+negative controls pass. Exact revised schema and v1management/feed files staged/read back; real
+normal-Auth founder customer enabled/copied its private link. No root read of link/code/JWT. Provider
+subscription form is privately handed to the founder; one labelled disposable staging calendar
+fixture is retained for reschedule/cancellation acceptance and cleanup, documented in the current
+checklist. Full production is not cleared. File paths released while that owner/device step is pending.
+
+Correction from founder: .vom was a chat typo, not established as the live input. Actual production audit shows existing-account repeated signup200 at16:03UTC followed by successful login16:04UTC. Generic confirmation-to-sign-in recovery preserves enumeration protections. Independent calendar review found delayed-digest account switching and subsecond revision collisions; deny-only expectedSubject checked against actual Auth plus post-digest identity guard and durable booking-row revisions address these. Exact final review and staging/provider acceptance remain required.
+
+Founder explicitly requests automatic calendar sync and reports no signup PIN on live xoot.co.za. The supplied .vom spelling was later clarified as a chat typo. Production read-only confirms the existing .com founder account is confirmed. Claim Auth email typo guidance and focused tests, calendar subscription management/feed/owner schema, signed-in calendar UI, privacy/rotation/cancellation tests and delivery evidence. Use a free read-only calendar subscription, with explicit customer connection, revocable random capability, only a hash stored, minimal visit fields, no private address/access/email/GPS, and truthful provider refresh delays. Normal account JWT remains required to enable/disable; a calendar reader must prove the separate unguessable capability. Cross-role migration, handler and security tests cannot wait because export-only is not the requested sync. Preserve all production gates, booking/pricing/worker approval restrictions and planning-only home personalisation. No paid provider, Google calendar write scope, Apple enrolment or production activation is authorised by this claim.
+
+## RELEASED CLAIM — 26 October 2026 — saved places, calendars and Manage more continuity
+
+Source5639556plus reviewed calendar/address follow-up is on the hosted staging preview. Saved places,
+Manage more, flowers and8approved exact reviews are prepared with focused owner/privacy checks and
+browser layout proof. Real place persistence, full property/team operations and production release
+remain listed in the current checklist; personalisation remains planning only. Paths released.
+
+Scope extension before review edits: founder supplied40 named customer quotes (numbered1–20 and41–60), confirmed each is genuine/original and each five-star rating is customer-supplied despite the sample heading. Publication permission already confirmed. Claim public Reviews component, its scoped handoff CSS, a small approved source collection and truthful behavior guards. Publish only selected quotes without unsupported currently-disabled feature claims, aggregate rating claims or verified-booking badges; no Xooter quote was supplied.
+
+Founder explicitly asks for canonical Your places persistence during booking, scheduling that can be added to their existing calendar, the original Manage more handoff and measured responsiveness. Claim the signed-in profile/home/property/calendar destinations and route wiring, owner-bound household-profile booking selection/save acknowledgements, a minimal shared calendar export helper and relevant web/native entry points/tests plus release evidence. Preserve home-first personalisation as planning only, existing money/availability gates and the approved homepage. Calendar export must use actual booking time/duration/status and omit gate/alarm/access notes; it is not continuous account sync. No unverified place is labelled provider-verified. No private profile caching across accounts. Cross-role shared helpers, tests and optional native wiring require correctness/release review. Do not claim zero lag or production delivery without measurement and actual checks.
+
+## RELEASED CLAIM — 26 October 2026 — flowers, genuine review publishing and website release assessment
+
+Original HandoffFlowerField decorates Apply/Kyc, clipped and non-interactive. Nine existing behaviour checks and scoped lint pass; synthetic CUA390/1440 confirms readable layouts, no horizontal overflow and usable input focus; screenshots saved and viewport reset. Exact review text is deferred to the founder's requested one-time12:00 SAST reminder; permission is already confirmed. No invented quote/rating/verified-booking badge. Owner GitHub Billing establishes3,000/3,000 Actions minutes used, reset in6days; no paid plan/spending change or gate bypass. Production remains e0c021e. Malware containment is separate and unfinished; address typeahead and lifecycle delivery are new authorised scope, not completed by this visual patch. Release this path claim after scoped delivery.
+
+Founder explicitly requests production deployment after checks, original handoff flowers in Xooter onboarding, genuine customer reviews and a full remaining-work report. Claim Apply/Kyc scoped artwork and CSS, review collection/publication UI/server contracts only after inventory, focused tests and release evidence. Production has0 bookings/reviews; never fabricate testimonials or publish private feedback without permission. Preserve supplied wording/approved homepage and planning-only home personalisation. Check current CI/rollout prerequisites; deployment is authorised once actual gates pass, without fake checks, paid upgrades or unverified communications/coverage activation. Malware/authenticity is separately held in the child quarantine branch. Cross-role data access/guard tests require review.
+
 Two Claude sessions work on this repo and **cannot message each other**. Neither can ask the
 other what it is holding. This file is how they find out.
 
 Roles and path ownership are in `/CLAUDE.md`. This file is the live state.
+
+## RELEASED CLAIM — 26 October 2026 — Xooter handoff onboarding and honest saved details
+
+PR97 prepares the handoff application/review and honest owner-bound saves. Independent UI9/9, combined13/13 and9 synthetic real-entrypoint document checks passed; guard removal exposes2 failures. Full local rerun169 files /1,690 passed /7existing skips, TS/scopedlint/Deno/build50pages/artifact passed. Synthetic CUA390/1440 layouts verified. Reviewed submit-xooter-application v18 is staging-only,4 deployed files match and no-bearer401. Production stille0; required GitHub jobs never start due account billing/usage restriction. No real-applicant, browser Realtime/MFA/device/audio or production activation claim; manual KYC unchanged. Source/acceptance limits and exact stage evidence are in26October release records. All claims in this26October scope released; preserve unrelated growth claim.
+
+Founder requests real account/detail storage and Xooter onboarding matching the original handoff. Production aggregate readback confirms2 registered emails and2 owner profiles, none missing; do not claim every signup route accepted or copy auth emails into public data. Claim src/pages/xooter/Apply.tsx, targeted behavior tests, scoped handoff CSS if required, and release evidence. Match Work with Xoot, You/Where/What/Checks composition and brand typography while preserving backend requirements and real verification. Correct Save & continue advancing after failed save, bind labels to fields, show load errors and isolate drafts on account change. Preserve private documents, manual review, no fake jobs/checks/payout promises, signup PR95 and personalisation planning-only. Cross-role guard tests are needed for actual persistence/privacy.
+
+Scope extension before editing: include src/pages/xooter/Kyc.tsx and focused review-state tests. The corrected submitted-applicant route reaches this page, so carry the handoff there, report read failures honestly, select only the displayed review fields and prevent stale account results. No change to backend verification, admin decisions or activation rules.
+
+Further scope before edits: the rendered review screen retains XooterShell's old X logo/unearned Pro badge, so claim its brand-only markup while retaining navigation/auth behaviour. Independent review cleared b2c6598 UI9/9 but found inherited submit-xooter-application document mode can return success after an ignored metadata insert error. Claim that handler, a local pure document-persistence helper and meaningful error/owner-path/readback tests. Cross-role backend delivery and guard tests cannot wait because the founder explicitly asks whether details are really saved. Preserve manual verification/activation; distinguish stored pending document metadata from accepted real KYC. No production deploy; staging requires reviewed exact source first.
 
 ## How to use it
 

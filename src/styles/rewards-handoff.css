@@ -1,0 +1,30 @@
+/* Rewards.jsx composition; balances and availability always come from the real account. */
+.xoot-rewards-page { display:flex; flex-direction:column; gap:18px; }
+.xoot-rewards-heading { margin-bottom:4px; }
+.xoot-rewards-heading>.xoot-label { color:var(--xoot-text-muted); }
+.xoot-rewards-heading h1 { margin:6px 0 10px; font:400 clamp(38px,6vw,52px)/1.04 var(--xoot-font-display); letter-spacing:var(--xoot-track-display); }
+.xoot-rewards-heading p,.xoot-rewards-bloom-card p { margin:0; color:var(--xoot-text-secondary); font:400 var(--xoot-body)/1.55 var(--xoot-font-core); }
+.xoot-rewards-bloom-card { display:flex; flex-direction:column; align-items:center; gap:14px; padding:28px 22px; border-radius:var(--xoot-radius-lg); background:var(--xoot-grad-dawn); text-align:center; color:var(--xoot-ink-900); }
+.xoot-rewards-bloom { position:relative; width:72px; height:72px; pointer-events:none; }
+.xoot-rewards-bloom-card h2 { margin:0; font:400 clamp(27px,4vw,36px)/1.08 var(--xoot-font-display); }
+.xoot-rewards-bloom-card p { max-width:340px; color:var(--xoot-ink-700); }
+.xoot-rewards-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.xoot-rewards-stat { display:flex; flex-direction:column; gap:9px; min-width:0; padding:clamp(12px,2vw,22px); border:0; border-radius:var(--xoot-radius-md); background:var(--xoot-lilac-wash); color:var(--xoot-ink-900); box-shadow:none; }
+.xoot-rewards-stat:nth-child(2) { background:var(--xoot-moss-wash); }
+.xoot-rewards-stat:nth-child(3) { background:var(--xoot-mist-wash); }
+.xoot-rewards-stat strong { font:400 clamp(21px,3vw,30px)/1.15 var(--xoot-font-display); overflow-wrap:anywhere; }
+.xoot-rewards-stat span { font-size:var(--xoot-caption); line-height:1.4; color:var(--xoot-ink-700); }
+.xoot-rewards-actions { display:flex; flex-direction:column; gap:10px; }
+.xoot-rewards-actions h2 { margin:8px 0 2px; font:700 12px/1.4 var(--xoot-font-core); text-transform:uppercase; letter-spacing:.08em; color:var(--xoot-text-secondary); }
+.xoot-rewards-actions>a { display:flex; align-items:center; gap:14px; min-height:72px; padding:16px 18px; border-radius:var(--xoot-radius-md); background:var(--xoot-surface-card); color:var(--xoot-text-primary); text-decoration:none; box-shadow:var(--xoot-shadow-1); }
+.xoot-rewards-actions>a:hover { background:var(--xoot-surface-page-alt); }
+.xoot-rewards-actions>a:focus-visible { outline:2px solid var(--xoot-action-primary); outline-offset:3px; }
+.xoot-rewards-actions>a>svg { flex:0 0 auto; }
+.xoot-rewards-actions>a>span:last-child { display:flex; flex-direction:column; gap:3px; }
+.xoot-rewards-actions strong { font-size:var(--xoot-body); }
+.xoot-rewards-actions small { font-size:var(--xoot-body-sm); color:var(--xoot-text-muted); }
+.xoot-rewards-credit-card { display:flex; flex-direction:column; align-items:flex-start; gap:12px; padding:24px; border:0; border-radius:var(--xoot-radius-lg); background:var(--xoot-lilac-wash); color:var(--xoot-ink-900); box-shadow:none; }
+.xoot-rewards-credit-card h2 { font:400 var(--xoot-title-2)/1.2 var(--xoot-font-display); }
+.xoot-rewards-credit-card>strong { font:400 36px/1 var(--xoot-font-display); }
+.xoot-rewards-credit-card p { color:var(--xoot-ink-700); }
+@media (max-width:360px) { .xoot-rewards-stats { gap:7px; } .xoot-rewards-stat { padding:10px; } }

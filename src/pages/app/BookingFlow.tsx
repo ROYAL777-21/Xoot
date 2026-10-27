@@ -10,7 +10,7 @@ import { InteractiveServiceAreaMap } from "@/components/xoot/InteractiveServiceA
 import { ServiceIcon } from "@/components/kit/ServiceIcon";
 import { Button } from "@/components/ui/button";
 import { loadXooterDirectory, type XooterDirectory } from "@/lib/xooter-directory";
-import { isApprovedLaunchRegion } from "@/lib/operations";
+import { readPlaces, saveBookingPlace, type PlaceSummary } from "./profile-data";
 import { BOOKING_ADD_ONS, bookingVisitDurationHours, type BookingQuoteInput, type BookingService } from "@/lib/booking-contract";
 import {
   BOOKING_SERVICE_DETAILS, BOOKING_PROPERTY_LABELS, BOOKING_FREQUENCY_LABELS, BOOKING_LINEN_LABELS,
@@ -87,6 +87,15 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const [suburb, setSuburb] = useState("");
   const [notes, setNotes] = useState("");
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
+  const [places, setPlaces] = useState<PlaceSummary[]>([]);
+  const [placeId, setPlaceId] = useState("");
+  const [savePlace, setSavePlace] = useState(true);
+  const [placeLabel, setPlaceLabel] = useState("Home");
+  const [savingPlace, setSavingPlace] = useState(false);
+  const placeSave = useRef<{ id: string; label: string; address: string } | null>(null);
+  const placeBusy = useRef(false);
+  const currentBuyer = useRef(buyerId);
+  currentBuyer.current = buyerId;
   const [propertyId, setPropertyId] = useState("");
   const [savedDetailsError, setSavedDetailsError] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +120,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const slots = bookingStartSlots(input);
   const correctedService = input.propertyType === "office" ? "office" : input.propertyType === "airbnb" ? "airbnb" : input.propertyType === "empty" ? "moving" : null;
   const mismatch = correctedService && correctedService !== input.service ? correctedService : null;
-  const fullAddress = [address.trim(), suburb].filter(Boolean).join(", ");
+  const fullAddress = [address.trim(), ...(suburb && !address.split(",").some(part => part.trim().toLowerCase() === suburb.toLowerCase()) ? [suburb] : [])].filter(Boolean).join(", ");
   const days = Array.from({ length: 14 }, (_, i) => bookingDateInSast(Date.now(), i + 1));
 
   const updateInput = (patch: Partial<BookingQuoteInput>) => {
@@ -145,10 +154,14 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     Promise.all([
       supabase.from("profiles").select("address").eq("id", buyerId).maybeSingle(),
       supabase.from("property_accounts").select("id,name").eq("user_id", buyerId).eq("status", "active").order("created_at"),
-    ]).then(([profile, accounts]) => {
+      readPlaces(buyerId).then(data => ({ data, error: null })).catch(() => ({ data: [] as PlaceSummary[], error: true })),
+    ]).then(([profile, accounts, homes]) => {
       if (!active) return;
-      setSavedDetailsError(Boolean(profile.error || accounts.error));
-      if (!profile.error && !addressEdited.current && profile.data?.address) setAddress(profile.data.address);
+      setSavedDetailsError(Boolean(profile.error || accounts.error || homes.error));
+      if (!homes.error) setPlaces(homes.data);
+      const defaultHome = homes.data.find(home => home.is_default && home.address);
+      if (!addressEdited.current && defaultHome?.address) { setAddress(defaultHome.address); setPlaceId(defaultHome.id); }
+      else if (!profile.error && !addressEdited.current && profile.data?.address) setAddress(profile.data.address);
       if (!accounts.error) setProperties(accounts.data ?? []);
     }).catch(() => { if (active) setSavedDetailsError(true); });
     return () => { active = false; };
@@ -200,10 +213,11 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   }, [step, buyerId, quoteKey, quoteAttempt]);
 
   const back = () => { setError(null); step === 0 ? navigate("/") : setStep(value => value - 1); };
-  const next = () => {
+  const next = async () => {
+    if (placeBusy.current) return;
     if (step === 0 && !serviceChosen) return;
     if (step === 1 && !address.trim()) { setError("Add the address where you need us."); return; }
-    if (step === 1 && !isApprovedLaunchRegion(fullAddress)) { setError("Choose an address in one of our Johannesburg launch suburbs."); return; }
+    if (step === 1 && fullAddress.trim().length < 10) { setError("Enter your complete street address and area."); return; }
     if (step === 1 && !mismatch && ["airbnb", "office", "moving"].includes(input.service) && input.propertyType !== ({ airbnb: "airbnb", office: "office", moving: "empty" } as Record<string, string>)[input.service]) {
       setError("Choose the property type that fits this service, or change the service."); return;
     }
@@ -213,6 +227,22 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     }
     if (step === 3 && !bookingStartSlots(input).includes(input.time)) {
       setStep(2); setError("Choose an arrival time that lets your new crew finish by 17:00."); return;
+    }
+    if (step === 1 && buyerId && savePlace && !placeId) {
+      const existing = places.find(place => place.address?.trim().toLowerCase() === fullAddress.trim().toLowerCase());
+      if (existing) setPlaceId(existing.id);
+      else {
+        placeBusy.current = true; setSavingPlace(true); setError(null);
+        const draft = placeSave.current?.address === fullAddress && placeSave.current.label === placeLabel
+          ? placeSave.current : { id: crypto.randomUUID(), label: placeLabel, address: fullAddress };
+        placeSave.current = draft;
+        try {
+          const id = await saveBookingPlace(buyerId, draft.id, draft.label, draft.address);
+          if (currentBuyer.current !== buyerId) return;
+          setPlaceId(id); setPlaces(previous => [...previous, { id, label: draft.label.trim(), address: draft.address.trim(), is_default: false }]);
+        } catch (failure) { if (currentBuyer.current === buyerId) setError(failure instanceof Error ? failure.message : "Your place was not saved."); return; }
+        finally { placeBusy.current = false; if (currentBuyer.current === buyerId) setSavingPlace(false); }
+      }
     }
     setError(null); setStep(value => Math.min(4, value + 1));
   };
@@ -238,14 +268,18 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
       </div>}
       {step === 1 && <div className="xoot-booking-stack"><h1>{website ? "Where are we going?" : "Tell us about your place"}</h1>
         {website && <p className="xoot-booking-lede">Add your address and tell us about the space.</p>}
+        {places.length > 0 && <label className="xoot-booking-field">Your places<select value={placeId} disabled={savingPlace} onChange={event => { const home = places.find(place => place.id === event.target.value); setPlaceId(home?.id ?? ""); if (home?.address) { addressEdited.current = true; setAddress(home.address); setSuburb(""); setAcceptedFingerprint(null); } }}><option value="">Use a different address</option>{places.map(place => <option key={place.id} value={place.id}>{place.label} · {place.address}</option>)}</select></label>}
         <div className={website ? "xoot-site-address" : undefined}><div className="xoot-booking-field">
           <span>{website ? "Street address" : "Where do you need us?"}</span>
           <VerifiedAddressInput value={address} label={website ? "Street address" : "Where do you need us?"}
             showIcon={false} inputClassName="xoot-booking-service-address"
-            onChange={next => { addressEdited.current = true; setAddress(next); setAcceptedFingerprint(null); }}
+            disabled={savingPlace}
+            onChange={next => { addressEdited.current = true; setAddress(next); setSuburb(""); setPlaceId(""); setAcceptedFingerprint(null); }}
             placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} />
         </div>
-        {website && <SuburbPicker value={suburb} onChange={value => { setSuburb(value); setAcceptedFingerprint(null); }} />}</div>
+        {website && <SuburbPicker value={suburb} onChange={value => { setSuburb(value); setPlaceId(""); setAcceptedFingerprint(null); }} />}</div>
+        {buyerId && !placeId && <><label className="xoot-booking-check"><input type="checkbox" checked={savePlace} disabled={savingPlace} onChange={event => setSavePlace(event.target.checked)} /><span><strong>Save this place to Your places</strong><small>Use it again from your profile or next booking.</small></span></label>{savePlace && <label className="xoot-booking-field">Place name<input value={placeLabel} maxLength={120} disabled={savingPlace} onChange={event => setPlaceLabel(event.target.value)} /></label>}</>}
+        {placeId && <p className="xoot-booking-help" role="status">Saved in Your places.</p>}
         {!website && <button type="button" className="xoot-booking-pill" aria-expanded={showAreaMap} aria-controls="xoot-booking-service-map"
           onClick={() => setShowAreaMap(open => !open)}>
           {showAreaMap ? "Hide interactive area map" : "View interactive area map"}
@@ -293,6 +327,6 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
         </>}
       </div>}
     </div>
-    {(!website || step < 4) && <footer className="xoot-booking-footer"><p>{website ? "No charge until you confirm." : `Step ${step + 1} of ${stepNames.length}`}</p><div className="xoot-booking-footer-actions">{!website && <Button variant="ghost" onClick={back}>Back</Button>}{step < 4 ? <Button className="xoot-booking-continue" disabled={step === 0 && !serviceChosen} onClick={next}>Continue<ArrowRight /></Button> : <Button className="xoot-booking-continue" disabled={!buyerId || quoteLoading} onClick={() => setQuoteAttempt(value => value + 1)}>Refresh quote</Button>}</div></footer>}
+    {(!website || step < 4) && <footer className="xoot-booking-footer"><p>{website ? "No charge until you confirm." : `Step ${step + 1} of ${stepNames.length}`}</p><div className="xoot-booking-footer-actions">{!website && <Button variant="ghost" disabled={savingPlace} onClick={back}>Back</Button>}{step < 4 ? <Button className="xoot-booking-continue" disabled={savingPlace || step === 0 && !serviceChosen} onClick={() => { void next(); }}>{savingPlace ? "Saving place…" : "Continue"}<ArrowRight /></Button> : <Button className="xoot-booking-continue" disabled={!buyerId || quoteLoading} onClick={() => setQuoteAttempt(value => value + 1)}>Refresh quote</Button>}</div></footer>}
   </div></div>;
 }
