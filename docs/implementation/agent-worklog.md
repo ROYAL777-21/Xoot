@@ -1,5 +1,30 @@
 # Agent worklog
 
+## HOLDING — 27 October 2026 — PayFast sandbox and handoff/account repairs
+
+The founder now brings PayFast forward while required GitHub jobs await restored included usage.
+Reuse the clean linked xoot-gps workspace and owned PR101 integration branch, retaining its explicit
+staging configuration and already authorised exact origin. Integrate/review existing PR72 strict
+PayFast callbacks and checkout routing; preserve both histories and canonical price/role/worker
+invariants. No live payment, merchant secret readback, paid plan, spending increase, production
+promotion or invented CI result. Sandbox configuration and real signed provider acceptance remain
+separate from source checks. Preserve approved homepage structure and unrelated PR98/99.
+
+Claim the requested shared logo/type/object/referral fidelity, booking suburb/scrollbar repairs,
+profile return navigation and Care+ presentation, colourful refresh recovery, Xooter dashboard
+presentation, reward-tab flower animation and device-default appearance with a saved manual choice.
+Inspect the exact supplied handoff before porting; retain real owner reads/loading/error states and
+server-only financial eligibility. Add no mock gamification, review, balance or verification claim.
+Record the newly requested twelve-clean/increasing reward decision; its second threshold awaits
+founder clarification. Merch remains unpromised until its actual eligibility/fulfilment is defined.
+
+Audit the reported Google Search Console URLs and existing Google branding/verification without
+removing intentional private-page noindex or buying a custom-domain add-on. Inspect notification
+delivery/nudges and unique referral allocation/redemption, then repair verified defects. SOS must
+distinguish an honest user-initiated emergency-call option from monitored dispatch; partner readiness
+awaits clarification. Do not turn an unavailable response service into a success message.
+Cross-role payment/guard/design edits will identify their reason and receive independent review.
+
 ## RELEASED CLAIM — 27 October 2026 — one combined website staging candidate
 
 Reuse the existing clean isolated xoot-gps worktree on integration/website-staging-20261027;
