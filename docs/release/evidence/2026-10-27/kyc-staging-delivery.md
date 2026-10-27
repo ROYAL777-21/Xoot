@@ -1,7 +1,7 @@
 # Private Xooter document containment — 27 October 2026
 
-Current status: reviewed containment migration and two canonical handlers delivered to staging;
-the reviewed narrow operations-handler patch is prepared for delivery/readback.
+Current status: reviewed containment migration, two canonical handlers and the reviewed narrow
+operations-handler patch are delivered and read back on staging. No production delivery.
 Production remains unchanged. Containment does not establish malware clearance or authentic identity.
 
 ## Reconciliation and checks
@@ -48,7 +48,16 @@ submit-xooter-application v19 is ACTIVE with JWT verification, bundle SHA256
 42c5d0748f1b01da298cd477c76fe0ba3dd60b334d3d7ea63bac6a6ef3eb3cc2.
 approve-xooter v18 is ACTIVE with JWT verification, bundle SHA256
 a782770f08dec60d3985af29c1a8238bf5f6cc03dc5d6c9b6962ea4e53a421a1.
-Exact returned-file verification and handler acceptance are still pending at this checkpoint.
+All returned runtime files exactly match the intended payloads: four submit files, three approval
+files and four narrow operations files. The readback matcher first used the local supabase/ prefix,
+whereas the returned names start functions/; resolving that documented path prefix establishes
+exact byte equality without normalising code or redeploying. No content mismatch was found.
+
+Hosted no-bearer POST returns401 and allowed localhost5173 OPTIONS returns204 with the exact
+origin for all three functions. These prove gateway denial/preflight, not authorised owner/admin
+acceptance. After delivery security advisors retain the same two warning categories; informational
+RLS/no-policy entries increase11→15 because the four new private service-only tables deny browser
+access without client policies. No new warning category is introduced or claimed fixed.
 
 ## Preserve the existing staging gift contract
 
@@ -68,6 +77,19 @@ Patched entrypoint SHA256 is83948a94b4885ae305914ff1524af102c15ea4449c7e2b5af01f
 frozen booking/governance module hashes are1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7
 and5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981. Local frozen copies
 are ignored review artifacts; the patch and source hashes provide reproducible public evidence.
+
+Narrow ops-workflow v34 is ACTIVE, JWT verified, bundle SHA256
+9b9bae974d4d3f085c2fde67c0176a466022689cd050105c1af235ab4f6ac72d. The deployed entrypoint
+and both frozen shared modules plus Deno configuration are byte-identical to the reviewed artifact.
+No paid call, gift request, approval, document upload or scanner transfer was made.
+
+## Contact schema audit correction
+
+An apparent omission in the broad inventory prompted a provisional six-column repair claim.
+Targeted checks show all six emergency-contact/reference text columns already exist (staging
+attribute positions24–29); both projects have no missing contact column and a user_id unique key.
+No convergence migration or source edit was created. Production's one application was read only
+as a count; its contents were not retrieved or altered. Catalog parity is not real onboarding proof.
 
 Security advisors before delivery:11 informational RLS/no-policy entries on existing service-only
 tables; two existing warning categories are set_safety_pin's authenticated SECURITY DEFINER RPC and

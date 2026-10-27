@@ -1,18 +1,15 @@
 # Agent worklog
 
-## HOLDING — 27 October 2026 — repair the actual applicant contact schema before real acceptance
+## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
 
-The staging preflight found the six contact/reference columns submitted by both the existing and
-current handler are absent, although two historical migration files declare them. A successful
-migration-name ledger is therefore not proof of runtime schema parity. Claim a new additive,
-CLI-created convergence migration for exactly these nullable text columns, preserving existing
-rows, owner-only reads, revoked browser writes, quarantine and activation interlocks. Add a focused
-schema-contract check and verify actual staging columns, grants and non-destructive rollback before
-normal applicant/device acceptance. Do not remove required fields or silently discard user input.
-Historical migrations, production data/delivery and unconfigured scanner/authenticity remain
-unchanged. Cross-role Release/Safety schema review is required before delivery.
+A broad preflight inventory appeared to omit six contact/reference columns, leading to a provisional
+repair claim. Targeted information_schema and pg_attribute checks establish that all six already
+exist as text (staging attribute positions24–29); both staging and production have the user_id unique
+key and no missing contact column. The provisional diagnosis is withdrawn before any migration or
+source edit. No extra column/migration, discarded input or production change was made. Real normal-
+account save/readback acceptance remains separate from these catalog checks. Release this audit.
 
-## HOLDING — 27 October 2026 — reconcile quarantine with current account/calendar source
+## RELEASED CLAIM — 27 October 2026 — quarantine reconciled and delivered to staging
 
 PR100 is now CONFLICTING with its PR97 base after legitimate calendar and account changes.
 Claim a rebase of this owned quarantine branch onto the current PR97 head, preserving both
@@ -30,6 +27,16 @@ now pass. Claim the authorised staging-only migration and exact changed-handler 
 and non-destructive acceptance. Preserve the existing active staging Xooter and all Auth accounts;
 preflight has0 applications/documents/KYC objects. No production migration, scanner verdict,
 real applicant file transfer, new role, approval or paid provider change is included.
+
+Delivered reviewed migration20261027032349 (exact SQL hash read back), submit v19, approve v18
+and independently reviewed narrow v33-based ops v34. All11 returned files exactly match payloads;
+JWT stays enabled, no-bearer401/allowed-origin OPTIONS204 pass. Four private RLS tables, four
+restrictive Storage policies, five enabled triggers and table+column revocations are confirmed.
+Existing Xooter/role fingerprints are unchanged, all KYC rows/objects remain0 and both limits0/32.
+The canonical ops handler's unrelated gift-RPC changes are deliberately held for stack integration;
+only its verification denial is backported, retaining all frozen gift/pricing/dependency bytes.
+Independent final source and artifact reviews pass. Raw-path containment is not scanner completion,
+normal applicant/MFA acceptance or production clearance. Release this path claim.
 
 ## RELEASED CLAIM — 27 October 2026 — Rewards, Safety and calendar copy acceptance
 
