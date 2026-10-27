@@ -1,0 +1,54 @@
+{
+  "source": "dbab693edade52b12e4253c5d063c58e63d07c7e",
+  "project": "fxmxyabdjqviqbcxmvlp",
+  "migration": {
+    "version": "20261025191835",
+    "name": "in_app_voice_ephemeral_sessions",
+    "sha256": "ab1bb7202e5edc1b6704e6b3b7df630ac1b069d54b8ea3634cdc21f350bb3792"
+  },
+  "functions": [
+    {
+      "name": "twilio-in-app-voice-status",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "5dd58ea3ed5bcbfdd1e56926623b20a50f7f473fc77bb992cc85e22117007d5b",
+      "exactFiles": [
+        "twilio-in-app-voice-status/index.ts",
+        "_shared/action-utils.ts",
+        "_shared/in-app-voice.ts",
+        "_shared/in-app-voice-webhook.ts",
+        "deno.json"
+      ]
+    },
+    {
+      "name": "twilio-voice-twiml",
+      "version": 22,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "5ee0ae02c584c4e19fc3fc48edff85defb938ae0e42f91a640ebf4a9e93ed308",
+      "exactFiles": [
+        "twilio-voice-twiml/index.ts",
+        "_shared/action-utils.ts",
+        "_shared/governance-utils.ts",
+        "_shared/in-app-voice.ts",
+        "_shared/in-app-voice-webhook.ts",
+        "deno.json"
+      ]
+    },
+    {
+      "name": "twilio-token",
+      "version": 23,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "ezbr_sha256": "8af766b514bca3b34a547a810b3cf89f7bf0c36876e7170b29ee66dd885bcb58",
+      "exactFiles": [
+        "twilio-token/index.ts",
+        "_shared/action-utils.ts",
+        "_shared/governance-utils.ts",
+        "_shared/in-app-voice.ts",
+        "deno.json"
+      ]
+    }
+  ]
+}

@@ -135,8 +135,8 @@ describe("Twilio secrets contract", () => {
     expect(sharedWebhook).toMatch(
       /Deno\.env\.get\("TWILIO_AUTH_TOKEN"\) \?\? Deno\.env\.get\("TWILIO_WEBHOOK_AUTH_TOKEN"\)/,
     );
-    for (const fn of ["twilio-voice-twiml", "twilio-voice-status"]) {
-      const src = read(`supabase/functions/${fn}/index.ts`);
+    for (const fn of ["twilio-voice-status", "_shared/in-app-voice-webhook"]) {
+      const src = read(fn.startsWith("_shared/") ? `supabase/functions/${fn}.ts` : `supabase/functions/${fn}/index.ts`);
       expect(
         src,
         `${fn} must accept either Auth Token name`,
@@ -150,8 +150,13 @@ describe("Twilio secrets contract", () => {
     // A signature check that passes when unconfigured is worse than none: it would accept any
     // caller claiming to be Twilio. Both paths must refuse.
     expect(sharedWebhook).toMatch(/if \(!authToken\) return \{ configured: false, valid: false \}/);
-    for (const fn of ["twilio-voice-twiml", "twilio-voice-status"]) {
+    for (const fn of ["twilio-voice-status"]) {
       expect(read(`supabase/functions/${fn}/index.ts`)).toMatch(/if \(!authToken\) return false/);
+    }
+    const signedForm = read("supabase/functions/_shared/in-app-voice-webhook.ts");
+    expect(signedForm).toContain("!secret || !signature");
+    for (const fn of ["twilio-voice-twiml", "twilio-in-app-voice-status"]) {
+      expect(read(`supabase/functions/${fn}/index.ts`)).toMatch(/await signedVoiceForm\(/);
     }
   });
 
@@ -198,14 +203,15 @@ describe("Twilio secrets contract", () => {
     }
   });
 
-  it("records that the two twilio.* switches gate PSTN only, not the data call", () => {
-    // Corrected 2026-08-09. `twilio-token` mints the WebRTC token and never reads these controls;
-    // only `create-masked-call` and `ops-workflow` do. Stating it in the runbook stops the next
-    // person flipping switches to fix a data-call problem they cannot fix that way.
+  it("requires an independent disabled-by-default gate for the data call", () => {
     expect(tokenFn).not.toContain("twilio.masked_voice\"");
-    expect(tokenFn).not.toContain("isOperationalControlEnabled");
+    expect(tokenFn).toContain("isOperationalControlEnabled");
+    expect(tokenFn).toContain('"twilio.in_app_voice"');
     const masked = read("supabase/functions/create-masked-call/index.ts");
     expect(masked).toMatch(/twilioAccountReady && maskedVoiceReady/);
-    expect(runbook).toContain("The WebRTC token does not read these controls");
+    expect(runbook).toContain("twilio.in_app_voice");
+    const gate = read("supabase/migrations/20261025080000_in_app_voice_control.sql");
+    expect(gate).toMatch(/'twilio\.in_app_voice',\s*'provider_gate',\s*'all',\s*false/);
+    expect(gate).toContain("on conflict (control_key, environment) do nothing");
   });
 });
