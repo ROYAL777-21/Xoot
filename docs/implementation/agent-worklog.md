@@ -1,5 +1,17 @@
 # Agent worklog
 
+## HOLDING — 27 October 2026 — Safety navigation and remaining handoff product work
+
+Founder explicitly retains GPS/ETA, in-Xoot chat/calling, customer/Xooter notification journeys,
+private upload malware/authenticity review, real matching, laundry/ironing, Rewards and Care+
+visual fidelity. Claim Navbar Trust→Safety label, Rewards handoff presentation and shared Care+
+mark audit; preserve route destinations, real balances/eligibility, locked prices and approval gates.
+Update the single production checklist with verified/pending implementation and acceptance status.
+Source design is design/handoff-2026-09-03. Do not port its fabricated balances/rewards/workers or
+prototype commercial rules. Personalisation stays planning only, Apple stays pending. No production
+release/check bypass, paid plan, credit, spend increase or trust-status change. Cross-role styling or
+reward claims require review before merge; existing required checks remain exhausted.
+
 ## HOLDING — 26 October 2026 — calendar copy recovery and incomplete address suggestions
 
 Founder reports the staging private link did not reach the clipboard despite the copied status,
