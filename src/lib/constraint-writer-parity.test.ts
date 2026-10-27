@@ -132,19 +132,47 @@ const AMBIGUOUS = new Set([
   "mode",
 ]);
 
-/** Read only actual literal values/ternary branches, never strings passed into a function. */
+/** Read actual literal value branches, never strings passed into a function. */
 function literalValues(expression: string): string[] {
   const source = ts.createSourceFile("writer-expression.ts", `const candidate = (${expression});`,
     ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
   const statement = source.statements[0];
   if (!statement || !ts.isVariableStatement(statement)) return [];
   const initialiser = statement.declarationList.declarations[0]?.initializer;
+  const unwrap = (node: ts.Expression): ts.Expression => {
+    if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node)
+      || ts.isTypeAssertionExpression(node) || ts.isSatisfiesExpression(node)) return unwrap(node.expression);
+    return node;
+  };
+  const literalFacts = (expression: ts.Expression): { truthy?: boolean; nullish?: boolean } => {
+    const node = unwrap(expression);
+    if (ts.isStringLiteralLike(node)) return { truthy: node.text.length > 0, nullish: false };
+    if (ts.isNumericLiteral(node)) return { truthy: Number(node.text) !== 0, nullish: false };
+    if (node.kind === ts.SyntaxKind.TrueKeyword) return { truthy: true, nullish: false };
+    if (node.kind === ts.SyntaxKind.FalseKeyword) return { truthy: false, nullish: false };
+    if (node.kind === ts.SyntaxKind.NullKeyword) return { truthy: false, nullish: true };
+    return {};
+  };
   const collect = (node: ts.Expression | undefined): string[] => {
     if (!node) return [];
-    if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node)
-      || ts.isTypeAssertionExpression(node) || ts.isSatisfiesExpression(node)) return collect(node.expression);
+    node = unwrap(node);
     if (ts.isStringLiteralLike(node)) return [node.text];
     if (ts.isConditionalExpression(node)) return [...collect(node.whenTrue), ...collect(node.whenFalse)];
+    if (ts.isBinaryExpression(node)) {
+      const facts = literalFacts(node.left);
+      const eitherBranch = () => [...collect(node.left), ...collect(node.right)];
+      switch (node.operatorToken.kind) {
+        case ts.SyntaxKind.QuestionQuestionToken:
+          return facts.nullish === true ? collect(node.right)
+            : facts.nullish === false ? collect(node.left) : eitherBranch();
+        case ts.SyntaxKind.BarBarToken:
+          return facts.truthy === true ? collect(node.left)
+            : facts.truthy === false ? collect(node.right) : eitherBranch();
+        case ts.SyntaxKind.AmpersandAmpersandToken:
+          return facts.truthy === true ? collect(node.right)
+            : facts.truthy === false ? collect(node.left) : eitherBranch();
+      }
+    }
     return [];
   };
   return collect(initialiser);
@@ -160,13 +188,29 @@ describe("every literal a writer sends is a value its column allows", () => {
       .toEqual(new Set(["suggest", "confirm"]));
   });
 
-  it("finds forbidden literal branches without treating runtime fallbacks or types as writes", () => {
+  it("finds forbidden literal branches without treating function arguments or types as writes", () => {
     expect(literalValues('"zooter"')).toEqual(["zooter"]);
     expect(literalValues('xooter?.id ? "xooter" : "customer"')).toEqual(["xooter", "customer"]);
     expect(literalValues('condition ? "zooter" : getRole()')).toEqual(["zooter"]);
     expect(literalValues('String(metadata.mimetype ?? "")')).toEqual([]);
     expect(literalValues('Deno.env.get("PAYFAST_MODE")')).toEqual([]);
     expect(literalValues('"signup" | "signin"')).toEqual([]);
+  });
+
+  it("finds logical fallback values and excludes statically unreachable value branches", () => {
+    expect(literalValues('requestedRole ?? "zooter"')).toEqual(["zooter"]);
+    expect(literalValues('requestedRole || "zooter"')).toEqual(["zooter"]);
+    expect(literalValues('condition && "zooter"')).toEqual(["zooter"]);
+    expect(literalValues('(requestedRole as string) ?? (condition ? "zooter" : "customer")'))
+      .toEqual(["zooter", "customer"]);
+    expect(literalValues('"customer" ?? "zooter"')).toEqual(["customer"]);
+    expect(literalValues('"customer" || "zooter"')).toEqual(["customer"]);
+    expect(literalValues('"" || "customer"')).toEqual(["customer"]);
+    expect(literalValues('null ?? "customer"')).toEqual(["customer"]);
+    expect(literalValues('false && "zooter"')).toEqual([]);
+    expect(literalValues('true && "customer"')).toEqual(["customer"]);
+    expect(literalValues('0 || "customer"')).toEqual(["customer"]);
+    expect(literalValues('String(requestedRole ?? "zooter")')).toEqual([]);
   });
 
   it("scans shipped TSX writers while excluding their negative test fixtures", () => {
