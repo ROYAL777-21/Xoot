@@ -35,10 +35,9 @@ const appName = isProduction ? 'Xoot' : 'Xoot Preview';
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: appName,
-  // Existing EAS project ID still belongs to @don-pacho777/zoot (verified 2026-10-19).
-  // The project slug is separate from the installed Xoot app name and identifiers.
+  // Existing EAS project verified in Expo; the installed app keeps the Xoot display name.
   slug: 'zoot',
-  owner: process.env.EXPO_ACCOUNT_OWNER || undefined,
+  owner: process.env.EXPO_ACCOUNT_OWNER?.trim() || 'don-pacho777',
   version: process.env.XOOT_MOBILE_VERSION ?? '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
