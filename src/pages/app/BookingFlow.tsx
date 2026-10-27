@@ -84,6 +84,9 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const [bathrooms, setBathrooms] = useState(1);
   const [address, setAddress] = useState(() => safePrefill(initialAddress || params.get("address") || params.get("area")));
   const [showAreaMap, setShowAreaMap] = useState(false);
+  const [coverageCheck, setCoverageCheck] = useState<{
+    key: string; status: "loading" | "in_zone" | "review" | "error"; message: string;
+  } | null>(null);
   const [suburb, setSuburb] = useState("");
   const [notes, setNotes] = useState("");
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
@@ -121,6 +124,40 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const correctedService = input.propertyType === "office" ? "office" : input.propertyType === "airbnb" ? "airbnb" : input.propertyType === "empty" ? "moving" : null;
   const mismatch = correctedService && correctedService !== input.service ? correctedService : null;
   const fullAddress = [address.trim(), ...(suburb && !address.split(",").some(part => part.trim().toLowerCase() === suburb.toLowerCase()) ? [suburb] : [])].filter(Boolean).join(", ");
+  const coverageKey = JSON.stringify([fullAddress, actualService]);
+  // Only show a verdict for the exact current address/service. Editing either
+  // invalidates the result instantly without retaining a private geocode.
+  const visibleCoverage = coverageCheck?.key === coverageKey ? coverageCheck : null;
+  const checkGeoCoverage = async () => {
+    if (!buyerId) {
+      setCoverageCheck({ key: coverageKey, status: "error", message: "Sign in to check a precise service address." });
+      return;
+    }
+    if (!fullAddress.trim()) {
+      setCoverageCheck({ key: coverageKey, status: "review", message: "Enter a full service address first." });
+      return;
+    }
+    setCoverageCheck({ key: coverageKey, status: "loading", message: "Checking your address…" });
+    try {
+      const { data, error: failure } = await supabase.functions.invoke("check-service-coverage", {
+        body: { address: fullAddress, service: actualService },
+      });
+      const response = data as {
+        success?: unknown; data?: { state?: unknown; zoneName?: unknown; reason?: unknown };
+      } | null;
+      if (failure || response?.success !== true) {
+        setCoverageCheck({ key: coverageKey, status: "error", message: "Location verification is temporarily unavailable. Contact Xoot to confirm." });
+      } else if (response.data?.state === "available") {
+        setCoverageCheck({ key: coverageKey, status: "in_zone",
+          message: "Address verified." });
+      } else {
+        setCoverageCheck({ key: coverageKey, status: "review",
+          message: "We cannot verify coverage automatically. Please request a manual area review." });
+      }
+    } catch {
+      setCoverageCheck({ key: coverageKey, status: "error", message: "Unable to confirm this address. Manual review remains available." });
+    }
+  };
   const days = Array.from({ length: 14 }, (_, i) => bookingDateInSast(Date.now(), i + 1));
 
   const updateInput = (patch: Partial<BookingQuoteInput>) => {
@@ -285,6 +322,17 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
           {showAreaMap ? "Hide interactive area map" : "View interactive area map"}
         </button>}
         {!website && showAreaMap && <div id="xoot-booking-service-map"><InteractiveServiceAreaMap /></div>}
+        {import.meta.env.VITE_VERIFIED_COVERAGE === "true" && (
+          <div className="space-y-2 rounded-xl border border-border p-3">
+            <button type="button" className="xoot-booking-pill"
+              disabled={visibleCoverage?.status === "loading"}
+              onClick={() => void checkGeoCoverage()}>Verify address</button>
+            {visibleCoverage && <p role="status" className="xoot-booking-help">{visibleCoverage.message}</p>}
+            <p className="xoot-booking-help">
+              Check the address where you would like your Xooter to meet you.
+            </p>
+          </div>
+        )}
         {savedDetailsError && <p className="xoot-booking-help">Saved details could not be loaded. You can enter the address above.</p>}
         {properties.length > 0 && <label className="xoot-booking-field">Property account<select value={propertyId} onChange={event => { setPropertyId(event.target.value); setAcceptedFingerprint(null); }}><option value="">Personal booking</option>{properties.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label>}
         <fieldset><legend className="xoot-booking-label">{website ? "What kind of place is it?" : "What kind of place?"}</legend><div className="xoot-booking-property-grid">{Object.entries(BOOKING_PROPERTY_LABELS).map(([id, label]) => { const Icon = propertyIcons[id as keyof typeof propertyIcons]; return <button type="button" key={id} className={`xoot-booking-card ${input.propertyType === id ? "is-selected" : ""}`} aria-pressed={input.propertyType === id} onClick={() => chooseProperty(id as BookingQuoteInput["propertyType"])}>{website && <Icon size={17} />}<strong>{website ? websitePropertyLabels[id as keyof typeof websitePropertyLabels] : label}</strong></button>; })}</div></fieldset>

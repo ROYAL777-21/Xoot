@@ -183,3 +183,16 @@ test('native worker one-off route preserves accepted-job scope and zero retained
   assert.match(job, /<PrivateWorkerDirections jobId=\{job\.job_id\} bookingId=\{job\.booking_id\}/);
   assert.match(fallback, /return null/);
 });
+
+test('native booking verifies approved server coverage only after explicit opt-in', () => {
+  assert.match(nativeBooking, /EXPO_PUBLIC_VERIFIED_COVERAGE === 'true'/);
+  assert.match(nativeBooking, /Check verified service coverage/);
+  assert.match(nativeBooking, /supabase\.functions\.invoke\('check-service-coverage'/);
+  assert.match(nativeBooking, /body: \{ address: fullCoverageAddress, service: input\.service \}/);
+  assert.match(nativeBooking, /currentCoverageKey\.current !== key/);
+  assert.match(nativeBooking, /currentCoverageKey\.current === key/);
+  assert.match(nativeBooking, /Mapbox's Permanent Geocoding API/);
+  assert.match(nativeBooking, /Xooter is available for your date/);
+  assert.doesNotMatch(nativeBooking, /<ServiceAreaMap[^>]+(address|access|notes)=/);
+  assert.doesNotMatch(nativeBooking, /checkServiceCoverage\([^)]*(?:latitude|longitude)/);
+});

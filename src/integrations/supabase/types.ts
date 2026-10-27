@@ -5176,6 +5176,51 @@ export type Database = {
           },
         ]
       }
+      xoot_service_zones: {
+        Row: {
+          id: string
+          name: string
+          geometry: Json
+          service_types: string[]
+          active: boolean
+          approved_at: string | null
+          approved_by: string | null
+          boundary_source: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          geometry: Json
+          service_types: string[]
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          boundary_source: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          geometry?: Json
+          service_types?: string[]
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          boundary_source?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      xoot_coverage_query_budget: {
+        Row: { user_id: string; requests: number; resets_at: string; updated_at: string }
+        Insert: { user_id: string; requests?: number; resets_at: string; updated_at?: string }
+        Update: { user_id?: string; requests?: number; resets_at?: string; updated_at?: string }
+        Relationships: []
+      }
       xooters: {
         Row: {
           active: boolean
@@ -5507,6 +5552,11 @@ export type Database = {
         Args: { p_user_id: string; p_application_id: string; p_doc_type: string; p_storage_path: string; p_object_id: string; p_object_updated_at: string; p_sha256: string; p_content_type: string; p_byte_length: number }
         Returns: Json
       }
+      // Proposed zero-default address allowance migration; verify against staging before release.
+      xoot_consume_address_lookup: {
+        Args: { p_mode: string }
+        Returns: boolean
+      }
       can_activate_payment_provider: {
         Args: { p_environment?: string; p_provider: string }
         Returns: boolean
@@ -5551,6 +5601,10 @@ export type Database = {
           p_limit_count: number
           p_window_seconds: number
         }
+        Returns: boolean
+      }
+      xoot_consume_coverage_query: {
+        Args: { p_user_id: string }
         Returns: boolean
       }
       // Expected contract from 20260920200000; regenerate from staging after migration delivery.

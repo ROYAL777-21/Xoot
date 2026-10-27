@@ -1,0 +1,2 @@
+*.geojson -text
+provenance.json text eol=lf

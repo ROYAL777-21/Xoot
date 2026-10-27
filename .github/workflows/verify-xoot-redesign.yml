@@ -142,3 +142,12 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: xoot-referral-synthetic-test
         run: node scripts/ops/test-private-live-gps-postgres.mjs
+      - name: Verify service-zone privileges and concurrent geocoding budget
+        env:
+          XOOT_PG_TEST_INTENT: service-zones
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-referral-pg/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-referral-synthetic-test
+        run: node scripts/ops/test-service-zones-postgres.mjs

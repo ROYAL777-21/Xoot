@@ -41,6 +41,10 @@ verify_jwt = true
 [functions.get-booking-quote]
 verify_jwt = true
 
+# Authenticated, rate-limited server-side Permanent Geocoding and approved area polygons.
+[functions.check-service-coverage]
+verify_jwt = true
+
 [functions.send-booking-message]
 verify_jwt = true
 
@@ -228,6 +232,12 @@ verify_jwt = true
 
 [functions.submit-xooter-application]
 verify_jwt = true
+
+# Public address suggestions before signup; no private data or tracking. The handler
+# requires atomic zero-default owner allowances before ANY Mapbox request. Paid confirmation
+# also shares the existing global Permanent Geocoding cap. All private JWT gates remain on.
+[functions.search-addresses]
+verify_jwt = false
 
 [functions.training-module]
 verify_jwt = true

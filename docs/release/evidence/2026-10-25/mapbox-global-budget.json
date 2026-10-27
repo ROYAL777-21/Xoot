@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-25",
+  "project": "fxmxyabdjqviqbcxmvlp",
+  "reviewedSource": "d4d64e24ccad1e8ecb1e896f3f8979460fbf4127",
+  "migration": {
+    "version": "20261025195100",
+    "name": "mapbox_geocoding_global_budget",
+    "sha256": "b5d83f923763fb55423a7783bb23941b6c357d7a4b0a7d6a226fcfc627960956"
+  },
+  "authorizedQueries": 0,
+  "consumedQueries": 0,
+  "automaticallyRenews": false,
+  "zeroAllowanceDenies": true,
+  "rls": true,
+  "clientPolicies": 0,
+  "anonAndAuthenticatedAllTablePrivileges": false,
+  "anonAndAuthenticatedRpcExecute": false,
+  "serviceRole": {
+    "select": true,
+    "update": true,
+    "rpc": true
+  },
+  "securityDefiner": false,
+  "activeApprovedZones": 0,
+  "localSqlChecks": {
+    "differentUserConcurrency": "3 of 20 authorised with a three-query allowance",
+    "sameUserConcurrency": "12 of 20 with existing hourly cap",
+    "negativeControl": "original per-user-only function failed the zero-allowance assertion",
+    "automaticRenewal": "denied"
+  },
+  "securityAdvisors": {
+    "newInfo": "RLS with no policies is intentional for this service-only table",
+    "existingWarnings": [
+      "authenticated_security_definer_function_executable",
+      "auth_leaked_password_protection"
+    ]
+  },
+  "scope": "Only the backend Permanent Geocoding coverage route; map loads, Directions and other call paths are separate",
+  "productionApplied": false
+}
