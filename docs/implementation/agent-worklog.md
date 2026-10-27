@@ -26,6 +26,17 @@ cannot create new active workers under the delivered quarantine interlock. Add a
 preflight and keep that acceptance deferred; never disable the interlock or fabricate verification.
 No product pricing, approval, geocoder allowance or production switch is changed to make tests pass.
 
+Integrated full web run at18739a4 passes189files/1931checks with7existing skips. Independent review
+finds a guard-only logical-fallback gap;fc15d06 restores nullish/logical value-branch detection,
+passes7focused checks and rejects an actual planted forbidden fallback before clean restoration.
+Claim the remaining integration preflight repair: mobile declares expo-crypto but its root lock
+entry is missing; regenerate with the already locked56.0.4 package, without SDK/version upgrades.
+Use isolated installation paths so the shared worktree dependencies remain intact. Claim the exact
+owned integration-preview origin for bounded address discovery and owner-authenticated calendar
+settings on staging alone; retain existing origins, quotas/JWTs and every production origin rule.
+No general preview wildcard, global secret overwrite, calendar capability read or unrelated frozen
+handler deployment. Independent review and staged byte readback are required before delivery.
+
 ## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
 
 A broad preflight inventory appeared to omit six contact/reference columns, leading to a provisional
