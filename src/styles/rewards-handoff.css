@@ -6,6 +6,9 @@
 .xoot-rewards-heading p,.xoot-rewards-bloom-card p { margin:0; color:var(--xoot-text-secondary); font:400 var(--xoot-body)/1.55 var(--xoot-font-core); }
 .xoot-rewards-bloom-card { display:flex; flex-direction:column; align-items:center; gap:14px; padding:28px 22px; border-radius:var(--xoot-radius-lg); background:var(--xoot-grad-dawn); text-align:center; color:var(--xoot-ink-900); }
 .xoot-rewards-bloom { position:relative; width:72px; height:72px; pointer-events:none; }
+.xoot-rewards-bloom { animation:xoot-rewards-bloom-in 700ms var(--xoot-ease-spring) both; }
+@keyframes xoot-rewards-bloom-in { from { transform:rotate(-32deg) scale(.65); opacity:0; } to { transform:rotate(0) scale(1); opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .xoot-rewards-bloom { animation:none; } }
 .xoot-rewards-bloom-card h2 { margin:0; font:400 clamp(27px,4vw,36px)/1.08 var(--xoot-font-display); }
 .xoot-rewards-bloom-card p { max-width:340px; color:var(--xoot-ink-700); }
 .xoot-rewards-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
-import { ThemeProvider } from "next-themes";
+import { XootThemeProvider } from "@/components/XootThemeProvider";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -87,12 +87,8 @@ const AdminKyc = lazy(() => import("./pages/admin/Kyc"));
 const AdminOps = lazy(() => import("./pages/admin/Ops"));
 
 const coreRoutePreloaders = [
-  () => import("./pages/Index.tsx"),
-  () => import("./pages/care/CarePlus"),
-  () => import("./pages/app/Book"),
-  () => import("./pages/app/Bookings"),
-  () => import("./pages/app/Support"),
-  () => import("./pages/Blog"),
+  () => import("./pages/Auth"),
+  () => import("./pages/WebsiteBooking"),
 ];
 
 const queryClient = new QueryClient({
@@ -122,11 +118,15 @@ const ScrollToTop = () => {
 
 const PreloadCoreRoutes = () => {
   useEffect(() => {
-    const preload = () => coreRoutePreloaders.forEach((load) => void load());
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? "")) return;
+    let cancelled = false;
+    // Warm the next likely action one chunk at a time. Other destinations preload on intent.
+    const preload = async () => { for (const load of coreRoutePreloaders) { if (cancelled) return; await load().catch(() => {}); } };
     const requestIdle = window.requestIdleCallback ?? ((callback: IdleRequestCallback) => window.setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 0 }), 650));
     const cancelIdle = window.cancelIdleCallback ?? window.clearTimeout;
     const idleId = requestIdle(preload, { timeout: 1600 });
-    return () => cancelIdle(idleId);
+    return () => { cancelled = true; cancelIdle(idleId); };
   }, []);
 
   return null;
@@ -142,7 +142,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <XootAnalyticsProvider>
       <HelmetProvider>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange storageKey="xoot-theme">
+        <XootThemeProvider>
         <TooltipProvider>
           <ErrorBoundary>
             <Toaster />
@@ -244,7 +244,7 @@ const App = () => (
             </BrowserRouter>
           </ErrorBoundary>
         </TooltipProvider>
-        </ThemeProvider>
+        </XootThemeProvider>
       </HelmetProvider>
     </XootAnalyticsProvider>
   </QueryClientProvider>

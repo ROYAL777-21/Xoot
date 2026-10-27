@@ -1,5 +1,34 @@
 # Agent worklog
 
+### 27 October — appearance and handoff repair source prepared
+
+On the owned integration branch, preserve PR72 in a clean merge (17e7155). Its64 focused
+PayFast checks and both Deno handler checks pass; no provider gate or secret changed.
+Cross-role edits to shared kit logo/token generator are necessary to repair the founder's
+non-working dark mode: next-themes used a root class while the handoff listened only to a data
+attribute, and system appearance was explicitly disabled. Preserve all284 light/78 dark token
+values; emit the class alias from the generator, fix its Windows entry-point comparison,
+follow device default, allow a saved system/light/dark choice, and apply a CSP-compatible
+external pre-paint script. Profile/place, toast and Tailwind audited palette remain intact.
+Render review still required.78 focused existing/new UI checks pass, and5 theme checks pass
+after both planted original defects were detected and restored. Lockfiles, web types, full
+lint, four header checks and four security scans pass. Latest copy/style-only changes will
+also be covered by the final complete run.
+
+Port taped object showcase cards and original display type; rename the planned fragrance
+without asserting unverified ingredients/manufacturing. Keep real referral-code ownership
+and server qualification, restore violet referral steps, add original flowers to the Care+
+profile card and recovery screen, animate the reward flower with reduced-motion support,
+remove the redundant suburb input, preserve modal scrolling while hiding its track, and
+return account destinations to You. Reduce speculative route preloads and respect Data Saver.
+No real reward milestone, free-clean redemption, merch fulfilment or staffed SOS is claimed.
+Those require explicit product/operating rules and reviewed server enforcement.
+
+Read-only GSC report (updated23Oct) reports1 indexed/17 not indexed:3 noindex,2 canonical
+alternates,1 redirect and11 crawled-not-indexed. Detail clicks do not open examples while
+the report remains Loading. Google Cloud branding fails loading JavaScript from gstatic.
+No SEO or OAuth setting changed based on that incomplete UI.
+
 ## HOLDING — 27 October 2026 — PayFast sandbox and handoff/account repairs
 
 The founder now brings PayFast forward while required GitHub jobs await restored included usage.

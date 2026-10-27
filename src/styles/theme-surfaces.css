@@ -1,0 +1,12 @@
+/* Handoff colour studies keep their ink; page surfaces follow the selected appearance. */
+:root.dark .xoot-home { background:var(--xoot-surface-page); }
+:root.dark .xoot-hero,:root.dark .xoot-auth-story,:root.dark .xoot-gift-band { background:var(--xoot-grad-cream); }
+:root.dark .xoot-reference-nav { background:var(--xoot-glass-light); }
+:root.dark .xoot-reference-nav nav { background:var(--xoot-surface-sunken); }
+:root.dark .xoot-hero-badge,:root.dark .xoot-flip-host { color:var(--xoot-text-brand); }
+:root.dark .xoot-review-card__service { background:var(--xoot-surface-sunken); }
+:root.dark .xoot-gift-services button[aria-pressed=true] { color:var(--xoot-text-brand); }
+.xoot-account-dashboard-hero { color:var(--xoot-ink-900); }
+.xoot-account-dashboard-hero .text-muted-foreground { color:var(--xoot-ink-700); }
+.xoot-care-account-hero { color:var(--xoot-careplus-ink); }
+.xoot-care-account-hero .text-muted-foreground { color:var(--xoot-careplus-ink); }

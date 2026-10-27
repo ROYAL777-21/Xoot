@@ -4,7 +4,6 @@ import { ArrowLeft, ArrowRight, BedDouble, BriefcaseBusiness, Building2, Check, 
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/kit/Logo";
 import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
-import { SuburbPicker } from "@/components/xoot/SuburbPicker";
 import { HandoffFlowerField } from "@/components/xoot/HeroArtwork";
 import { InteractiveServiceAreaMap } from "@/components/xoot/InteractiveServiceAreaMap";
 import { ServiceIcon } from "@/components/kit/ServiceIcon";
@@ -87,7 +86,6 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const [coverageCheck, setCoverageCheck] = useState<{
     key: string; status: "loading" | "in_zone" | "review" | "error"; message: string;
   } | null>(null);
-  const [suburb, setSuburb] = useState("");
   const [notes, setNotes] = useState("");
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
   const [places, setPlaces] = useState<PlaceSummary[]>([]);
@@ -123,7 +121,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const slots = bookingStartSlots(input);
   const correctedService = input.propertyType === "office" ? "office" : input.propertyType === "airbnb" ? "airbnb" : input.propertyType === "empty" ? "moving" : null;
   const mismatch = correctedService && correctedService !== input.service ? correctedService : null;
-  const fullAddress = [address.trim(), ...(suburb && !address.split(",").some(part => part.trim().toLowerCase() === suburb.toLowerCase()) ? [suburb] : [])].filter(Boolean).join(", ");
+  const fullAddress = address.trim();
   const coverageKey = JSON.stringify([fullAddress, actualService]);
   // Only show a verdict for the exact current address/service. Editing either
   // invalidates the result instantly without retaining a private geocode.
@@ -249,7 +247,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     return () => { clearTimeout(timer); requestVersion.current += 1; };
   }, [step, buyerId, quoteKey, quoteAttempt]);
 
-  const back = () => { setError(null); step === 0 ? navigate("/") : setStep(value => value - 1); };
+  const back = () => { setError(null); step === 0 ? navigate(website ? "/" : "/app") : setStep(value => value - 1); };
   const next = async () => {
     if (placeBusy.current) return;
     if (step === 0 && !serviceChosen) return;
@@ -305,16 +303,16 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
       </div>}
       {step === 1 && <div className="xoot-booking-stack"><h1>{website ? "Where are we going?" : "Tell us about your place"}</h1>
         {website && <p className="xoot-booking-lede">Add your address and tell us about the space.</p>}
-        {places.length > 0 && <label className="xoot-booking-field">Your places<select value={placeId} disabled={savingPlace} onChange={event => { const home = places.find(place => place.id === event.target.value); setPlaceId(home?.id ?? ""); if (home?.address) { addressEdited.current = true; setAddress(home.address); setSuburb(""); setAcceptedFingerprint(null); } }}><option value="">Use a different address</option>{places.map(place => <option key={place.id} value={place.id}>{place.label} · {place.address}</option>)}</select></label>}
+        {places.length > 0 && <label className="xoot-booking-field">Your places<select value={placeId} disabled={savingPlace} onChange={event => { const home = places.find(place => place.id === event.target.value); setPlaceId(home?.id ?? ""); if (home?.address) { addressEdited.current = true; setAddress(home.address); setAcceptedFingerprint(null); } }}><option value="">Use a different address</option>{places.map(place => <option key={place.id} value={place.id}>{place.label} · {place.address}</option>)}</select></label>}
         <div className={website ? "xoot-site-address" : undefined}><div className="xoot-booking-field">
           <span>{website ? "Street address" : "Where do you need us?"}</span>
           <VerifiedAddressInput value={address} label={website ? "Street address" : "Where do you need us?"}
             showIcon={false} inputClassName="xoot-booking-service-address"
             disabled={savingPlace}
-            onChange={next => { addressEdited.current = true; setAddress(next); setSuburb(""); setPlaceId(""); setAcceptedFingerprint(null); }}
+            onChange={next => { addressEdited.current = true; setAddress(next); setPlaceId(""); setAcceptedFingerprint(null); }}
             placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} />
         </div>
-        {website && <SuburbPicker value={suburb} onChange={value => { setSuburb(value); setPlaceId(""); setAcceptedFingerprint(null); }} />}</div>
+        </div>
         {buyerId && !placeId && <><label className="xoot-booking-check"><input type="checkbox" checked={savePlace} disabled={savingPlace} onChange={event => setSavePlace(event.target.checked)} /><span><strong>Save this place to Your places</strong><small>Use it again from your profile or next booking.</small></span></label>{savePlace && <label className="xoot-booking-field">Place name<input value={placeLabel} maxLength={120} disabled={savingPlace} onChange={event => setPlaceLabel(event.target.value)} /></label>}</>}
         {placeId && <p className="xoot-booking-help" role="status">Saved in Your places.</p>}
         {!website && <button type="button" className="xoot-booking-pill" aria-expanded={showAreaMap} aria-controls="xoot-booking-service-map"

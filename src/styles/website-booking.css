@@ -3,6 +3,9 @@
 .xoot-site-booking-scrim { position: fixed; inset: 0; z-index: 200; background: rgba(20,18,16,.46); backdrop-filter: blur(4px); }
 .xoot-site-booking-dialog { position: fixed; inset: 0; margin: auto; z-index: 201; width: calc(100% - 2 * clamp(12px, 4vw, 40px)); max-width: 720px; height: fit-content; max-height: calc(100dvh - 2 * clamp(12px, 4vw, 40px)); overflow-y: auto; border-radius: var(--xoot-radius-xl); background: var(--xoot-surface-card); box-shadow: var(--xoot-shadow-5); animation: xoot-site-booking-fade 280ms var(--xoot-ease-ios-nav); }
 .xoot-site-booking-dialog:focus { outline: none; }
+/* Keep touch, wheel and keyboard scrolling; hide only the redundant visual track. */
+.xoot-site-booking-dialog { scrollbar-width:none; }
+.xoot-site-booking-dialog::-webkit-scrollbar { display:none; }
 .xoot-site-booking { max-width: none; padding: 0; }
 .xoot-site-booking .xoot-booking-frame { border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
 .xoot-site-booking .xoot-booking-head { padding: 18px 24px; gap: 16px; }

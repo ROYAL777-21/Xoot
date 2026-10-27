@@ -66,8 +66,8 @@ export const ReferSection = () => (
         <ul className="xoot-referral-steps">
           {STEPS.map(({ icon: Icon, title, body }) => (
             <li key={title} className="flex items-start gap-4">
-              <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-primary/10">
-                <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+              <span className="xoot-referral-step-icon">
+                <Icon size={18} strokeWidth={1.9} aria-hidden="true" />
               </span>
               <div>
                 <p className="font-semibold">{title}</p>
@@ -107,7 +107,7 @@ export const ReferralWelcome = ({ from }: { from?: string | null }) => (
         {from ? `${from} sent you` : "You were sent"} R{REWARD_RAND} off your first clean.
       </strong>{" "}
       <span className="opacity-90">
-        Enter the code at checkout and Xoot applies it — we confirm it before you pay.
+        Use the code with your first booking. Your quote confirms eligibility and savings before you pay.
       </span>
     </p>
   </div>

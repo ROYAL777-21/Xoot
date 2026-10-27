@@ -15,7 +15,7 @@ const harness = vi.hoisted(() => ({
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ ...harness.auth, signOut: async () => { const result = await harness.signOut(); if (result.error) throw result.error; } }) }));
 vi.mock("@/contexts/ConciergeContext", () => ({ useConcierge: () => ({ openConcierge: harness.concierge }) }));
-vi.mock("next-themes", () => ({ useTheme: () => ({ resolvedTheme: "dark", setTheme: harness.theme }) }));
+vi.mock("next-themes", () => ({ useTheme: () => ({ theme: "system", resolvedTheme: "dark", setTheme: harness.theme }) }));
 vi.mock("@/hooks/useXootCred", () => ({ useXootCred: () => ({ ...harness.credit, refresh: harness.creditRefresh }) }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { signOut: () => harness.signOut() }, from: (table: string) => {
   const record: Query = { table, filters: [] }; harness.queries.push(record);
@@ -71,7 +71,10 @@ describe("Profile handoff integration", () => {
   it("changes supported device preferences while Concierge is removed", async () => {
     render(<Fixture />); await screen.findByText("Synthetic Person");
     expect(harness.theme).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByLabelText(/Dark mode/)); expect(harness.theme).toHaveBeenCalledWith("light");
+    expect(screen.getByRole("combobox", { name: "Appearance" })).toHaveValue("system");
+    fireEvent.change(screen.getByRole("combobox", { name: "Appearance" }), { target: { value: "light" } }); expect(harness.theme).toHaveBeenLastCalledWith("light");
+    fireEvent.change(screen.getByRole("combobox", { name: "Appearance" }), { target: { value: "dark" } }); expect(harness.theme).toHaveBeenLastCalledWith("dark");
+    fireEvent.change(screen.getByRole("combobox", { name: "Appearance" }), { target: { value: "system" } }); expect(harness.theme).toHaveBeenLastCalledWith("system");
     fireEvent.click(screen.getByLabelText(/Haptic feedback/)); expect(localStorage.getItem("xoot:haptics-enabled")).toBe("false");
     expect(screen.queryByRole("button", { name: /Siri & Concierge/ })).not.toBeInTheDocument(); expect(harness.concierge).not.toHaveBeenCalled();
   });

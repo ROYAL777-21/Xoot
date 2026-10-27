@@ -13,8 +13,8 @@
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const KIT = join(root, 'design', 'Xoot_App.html');
@@ -202,7 +202,9 @@ function renderCss({ light, dark }) {
 ${declarations(light)}
 }
 
-${DARK_SELECTOR} {
+/* next-themes applies .dark before paint; the original handoff uses data-theme. */
+${DARK_SELECTOR},
+:root.dark {
 ${declarations(dark)}
 }
 `;
@@ -247,7 +249,7 @@ function main() {
   return { tokens, stale: [] };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const { tokens } = main();
   console.log(`Extracted ${tokens.light.size} light and ${tokens.dark.size} dark kit tokens.`);
 }
