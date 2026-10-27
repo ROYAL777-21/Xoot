@@ -15,6 +15,17 @@ actual staged schemas/frozen handlers and get independent release/safety review.
 permission to enable production tracking/calls, approve workers, send queued mail, run paid builds,
 raise spending or bypass required CI. Apple stays pending; personalisation stays planning only.
 
+Full initial integration run atbe7eb5b completed189 files/1935 tests:1924 pass,7 existing skips and
+4 fail. Claim the required guard reconciliation: source-parity scanner misreads dynamic fallback
+strings and generic mode fields; old address test expects removed direct-browser geocoding; old
+commission guard expects the intentionally removed activation payload; public lookup must have
+its explicitly approved, bounded-only gateway exception documented in the strict config allowlist.
+Retain positive/negative coverage for real forbidden writes, private gates, server-capped address
+confirmation and no-activation approval. Independent review also finds the old hosted GPS fixture
+cannot create new active workers under the delivered quarantine interlock. Add an explicit fail-fast
+preflight and keep that acceptance deferred; never disable the interlock or fabricate verification.
+No product pricing, approval, geocoder allowance or production switch is changed to make tests pass.
+
 ## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
 
 A broad preflight inventory appeared to omit six contact/reference columns, leading to a provisional
