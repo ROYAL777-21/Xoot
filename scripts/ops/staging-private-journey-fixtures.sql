@@ -11,6 +11,8 @@
 -- Artificial background status models the positive guard ONLY. It proves no real
 -- background check, worker verification, availability, payment or dispatch readiness.
 -- Before cleanup, stop the test child and confirm the GPS rows are physically absent.
+-- Current quarantine correctly prevents new active fixture workers. Creation must stop
+-- before any writes; never disable the interlock to revive this historical acceptance path.
 do $fixtures$
 declare
   ctx jsonb := nullif(current_setting('xoot.test_context',true),'')::jsonb;
@@ -29,6 +31,13 @@ begin
     or (select count(distinct id) from unnest(array[ca,wa,cb,wb,xa,xb,ba,bb,ja,jb]) id) <> 10
     or to_regclass('public.xoot_job_live_positions') is null then
     raise exception 'Named staging target, four distinct verified identities and six fresh fixture IDs required';
+  end if;
+  if ctx->>'action'='create' and exists (
+    select 1 from pg_trigger where tgrelid='public.xooters'::regclass
+      and tgname='kyc_contractor_clearance_required' and tgenabled <> 'D'
+  ) then
+    raise exception 'Private journey fixture creation is unavailable while document quarantine blocks new activation; complete the reviewed clearance workflow. Do not disable the interlock.'
+      using errcode='55000';
   end if;
   select lower(email) into ea from auth.users where id=ca and email_confirmed_at is not null and not is_anonymous;
   select lower(email) into ewa from auth.users where id=wa and email_confirmed_at is not null and not is_anonymous;

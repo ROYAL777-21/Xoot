@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import ts from "typescript";
 
 /**
  * ── Every value a writer sends must be a value its column allows ───────────────────────────────
@@ -71,9 +72,11 @@ type Allowed = Map<string, Map<string, Set<string>>>;
 function parseConstraints(sql: string, into: Allowed) {
   const statements = sql.split(/;\s*$/m);
   for (const statement of statements) {
-    const createMatch = /create table (?:if not exists )?(?:public\.)?([a-z_]+)/i.exec(statement);
-    const alterMatch = /alter table (?:only )?(?:public\.)?([a-z_]+)/i.exec(statement);
-    const table = (createMatch?.[1] ?? alterMatch?.[1] ?? "").toLowerCase();
+    const createMatch = /create table (?:if not exists )?(?:([a-z_]+)\.)?([a-z_]+)/i.exec(statement);
+    const alterMatch = /alter table (?:only )?(?:([a-z_]+)\.)?([a-z_]+)/i.exec(statement);
+    const match = createMatch ?? alterMatch;
+    const schema = match?.[1]?.toLowerCase();
+    const table = match ? `${schema && schema !== "public" ? `${schema}.` : ""}${match[2].toLowerCase()}` : "";
     if (!table) continue;
 
     // `col in ('a', 'b')` — the multi-value form.
@@ -124,10 +127,47 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
 const AMBIGUOUS = new Set([
   "status", "state", "role", "type", "source", "channel", "kind", "category",
   "provider", "priority", "environment", "platform", "reason", "direction", "purpose",
+  // Auth screens, applicant commands and the private lookup allowance use different modes.
+  // The allowance's actual values remain covered by its handler and PostgreSQL contracts.
+  "mode",
 ]);
+
+/** Read only actual literal values/ternary branches, never strings passed into a function. */
+function literalValues(expression: string): string[] {
+  const source = ts.createSourceFile("writer-expression.ts", `const candidate = (${expression});`,
+    ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
+  const statement = source.statements[0];
+  if (!statement || !ts.isVariableStatement(statement)) return [];
+  const initialiser = statement.declarationList.declarations[0]?.initializer;
+  const collect = (node: ts.Expression | undefined): string[] => {
+    if (!node) return [];
+    if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node)
+      || ts.isTypeAssertionExpression(node) || ts.isSatisfiesExpression(node)) return collect(node.expression);
+    if (ts.isStringLiteralLike(node)) return [node.text];
+    if (ts.isConditionalExpression(node)) return [...collect(node.whenTrue), ...collect(node.whenFalse)];
+    return [];
+  };
+  return collect(initialiser);
+}
 
 describe("every literal a writer sends is a value its column allows", () => {
   const allowed = loadAllowed();
+
+  it("preserves private table attribution and still parses the bounded lookup modes", () => {
+    expect(allowed.get("private.kyc_quarantine_receipts")?.get("content_type"))
+      .toEqual(new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]));
+    expect(allowed.get("xoot_address_lookup_allowances")?.get("mode"))
+      .toEqual(new Set(["suggest", "confirm"]));
+  });
+
+  it("finds forbidden literal branches without treating runtime fallbacks or types as writes", () => {
+    expect(literalValues('"zooter"')).toEqual(["zooter"]);
+    expect(literalValues('xooter?.id ? "xooter" : "customer"')).toEqual(["xooter", "customer"]);
+    expect(literalValues('condition ? "zooter" : getRole()')).toEqual(["zooter"]);
+    expect(literalValues('String(metadata.mimetype ?? "")')).toEqual([]);
+    expect(literalValues('Deno.env.get("PAYFAST_MODE")')).toEqual([]);
+    expect(literalValues('"signup" | "signin"')).toEqual([]);
+  });
 
   it("scans shipped TSX writers while excluding their negative test fixtures", () => {
     const files = sourceFiles(join(root, "src/pages/app"));
@@ -184,7 +224,7 @@ describe("every literal a writer sends is a value its column allows", () => {
             if (!assigned) continue;
             expression = assigned[1];
           }
-          const literals = [...expression.matchAll(/"([^"]*)"|'([^']*)'/g)].map((x) => x[1] ?? x[2]);
+          const literals = literalValues(expression);
           if (literals.length === 0) continue;
           for (const literal of literals) {
             // Only complain when EVERY table defining this column forbids the value. A column name
