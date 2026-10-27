@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildEmailPayload } from "../_shared/email-playbook.ts";
-import { readJson } from "../_shared/action-utils.ts";
+import { readJson, isApprovedLaunchRegion, resolveLaunchRegion } from "../_shared/action-utils.ts";
+import { assessVerifiedCoverage } from "../_shared/verified-coverage.ts";
 import {
   ADD_ON_CENTS,
   BOOKING_COVER_CENTS,
@@ -24,21 +25,6 @@ const services = new Set(["residential", "express", "airbnb", "office", "deep", 
 // missed it because it imports no shared pricing and no client code calls it, so nothing failed.
 // It is deployed and authenticated, though, so it was a live second path charging figures nobody
 // approved. It now prices off ../_shared/pricing.ts like every other path.
-
-const approvedLaunchRegions = [
-  "midrand",
-  "sandton",
-  "bryanston",
-  "bedfordview",
-  "rosebank",
-  "parkhurst",
-  "melville",
-  "fourways",
-  "waterfall",
-  "dainfern",
-  "hyde park",
-  "braamfontein",
-];
 
 const allowedTimes = new Set(["07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "14:00", "15:00", "16:00", "17:00"]);
 const multiWorkerServices = new Set(["airbnb", "office", "deep", "moving", "premium"]);
@@ -84,11 +70,6 @@ const cleanText = (value: unknown, maxLength = 500) =>
   typeof value === "string"
     ? stripUnsafeText(value).replace(/\s+/g, " ").trim().slice(0, maxLength)
     : "";
-
-const isApprovedLaunchRegion = (input: string) => {
-  const value = input.toLowerCase();
-  return approvedLaunchRegions.some((region) => value.includes(region));
-};
 
 const isHighDemandSlot = (time: string) => Number(time.split(":")[0] ?? 0) >= 16;
 
@@ -150,6 +131,21 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Duplicate booking writer MUST apply the identical independently verified
+    // location gate when enabled. Without this, callers could bypass the other
+    // writer's strict service-zone enforcement.
+    let verifiedZone: string | null = null;
+    if (Deno.env.get("XOOT_STRICT_GEO_COVERAGE") === "true") {
+      const checked = await assessVerifiedCoverage({
+        address, service: serviceType, actorId: authData.user.id, db: supa,
+        token: Deno.env.get("MAPBOX_GEOCODING_TOKEN") ?? "",
+      });
+      if (checked.state === "rate_limited") return json({ error: "coverage request limit" }, 429, origin);
+      if (checked.state === "unavailable") return json({ error: "coverage temporarily unavailable" }, 503, origin);
+      if (checked.state !== "available") return json({ error: "manual coverage review required" }, 409, origin);
+      verifiedZone = checked.zoneName;
+    }
+
     /*
      * Care+, which this function had no concept of until 2026-08-12.
      *
@@ -189,7 +185,7 @@ Deno.serve(async (req) => {
     const perBookingCover = Math.round(bookingCover / selectedXooterIds.length);
     const perBookingHighDemand = Math.round(highDemandPremium / selectedXooterIds.length);
     const scheduledAt = `${date}T${time}:00+02:00`;
-    const launchRegion = approvedLaunchRegions.find((region) => address.toLowerCase().includes(region)) ?? address;
+    const launchRegion = verifiedZone ?? resolveLaunchRegion(address);
 
     // `householdProfileId` arrives from the request body and was previously written to
     // `recurring_schedules` unchecked, so a caller could attach their schedule to someone else's
