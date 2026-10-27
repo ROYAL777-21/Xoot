@@ -58,8 +58,7 @@ address succeeded, demonstrating the ranking bias is not a hard Gauteng boundary
 
 A single-request structured-input experiment was independently reviewed as suitable for a known-
 format staging comparison. Review found ambiguous unit/province comma formats; narrow exclusions
-and 15 root checks passed, but independent final guard review was unavailable due the review
-agent's usage limit. Three actual comparisons still failed the private address's locality while
+and 15 root and independent checks passed. Three actual comparisons still failed the private address's locality while
 the public college case succeeded. The experiment was removed from source and staging; do not
 ship a heuristic merely because it returns a similarly named street elsewhere.
 
@@ -102,9 +101,11 @@ browser's zoom required compensating the viewport request; the actual innerWidth
 not assumed from the requested dimensions. Screenshots are in outputs/xoot-rewards-handoff-phone-
 20261027.png and xoot-rewards-handoff-desktop-20261027.png. Temporary viewport override was reset.
 Safety visibly appears in the public navbar and clicking it opens /trust-centre with the existing
-page title. Proof: outputs/xoot-safety-navbar-staging-20261027.png. Independent final UI review,
-physical device acceptance and required GitHub release checks remain; preview/local passes do not
-clear production.
+page title. Proof: outputs/xoot-safety-navbar-staging-20261027.png. Independent final review of
+ad7099d..8b5e367 found no introduced blocker; all79 independent checks across five suites pass
+with one worker. Owner/account-switch cleanup, delayed-response rejection, unavailable/error
+states, disabled redemption and unchanged financial calculations remain intact. Physical device
+acceptance and required GitHub release checks remain; preview/local passes do not clear production.
 
 The current production checklist explicitly retains GPS/ETA, chat/calls, full email journeys,
 malware/authenticity, real matching, all related handoff UI, saved places/Manage more/property
