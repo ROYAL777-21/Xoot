@@ -6,6 +6,8 @@ const MAX_RESULTS=10;
 // Johannesburg, inside the reviewed Gauteng boundary. This biases ranking; it does not
 // restrict ZA discovery or use the Edge server's IP as if it were the customer's location.
 const GAUTENG_SEARCH_PROXIMITY="28.0473,-26.2041";
+const unitMarker=/^(?:unit|apt|apartment|flat|suite|floor|block|building|bldg|erf|stand|shop|office|complex|po\s*box)\b/i;
+const provinces=new Set(["gauteng","limpopo","mpumalanga","north west","northwest","free state","kwazulu natal","kwazulu-natal","eastern cape","western cape","northern cape"]);
 
 const parse=(body:unknown):{options:AddressOption[];attribution:string;features:unknown[]}=>{
   const data=body && typeof body==="object"?body as Record<string,unknown>:{};
@@ -47,8 +49,19 @@ export async function searchAddresses({mode,query,selectedId,db,token,fetcher=fe
   if(!/^(pk|sk)\.[A-Za-z0-9._-]{10,}$/.test(token))return {state:"unavailable"};
   const reserved=await db.rpc("xoot_consume_address_lookup",{p_mode:mode});
   if(reserved.error)return {state:"unavailable"};if(reserved.data!==true)return {state:"limited"};
-  const params=new URLSearchParams({q,country:"za",language:"en",types:"address",limit:String(MAX_RESULTS),proximity:GAUTENG_SEARCH_PROXIMITY,
+  const parts=q.split(",").map(part=>part.trim());
+  // Recognise the common street, suburb, city, postcode convention. Unlabelled commas
+  // are a heuristic: unit markers and a province in the city slot stay free text.
+  // This is one alternative upstream request, never an inferred pin or a second attempt.
+  const structured=mode==="suggest" && parts.length===4 && /^\d+[A-Za-z]?\s+\S.+$/.test(parts[0]) &&
+    Boolean(parts[1]) && Boolean(parts[2]) && !parts.slice(0,3).some(part=>unitMarker.test(part)) &&
+    !provinces.has(parts[2].toLowerCase()) && /^\d{4}$/.test(parts[3]);
+  const params=new URLSearchParams({country:"za",language:"en",types:"address",limit:String(MAX_RESULTS),proximity:GAUTENG_SEARCH_PROXIMITY,
     autocomplete:mode==="suggest"?"true":"false",permanent:mode==="confirm"?"true":"false",access_token:token});
+  if(structured){
+    params.set("address_line1",parts[0]);params.set("neighborhood",parts[1]);
+    params.set("place",parts[2]);params.set("postcode",parts[3]);params.set("autocomplete","false");
+  }else params.set("q",q);
   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),8000);
   try{
     const response=await fetcher("https://api.mapbox.com/search/geocode/v6/forward?"+params,
