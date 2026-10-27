@@ -24,5 +24,5 @@
 .xoot-reference-nav-item:hover,.xoot-reference-nav-item:focus-visible { background:var(--xoot-action-quiet-hover); color:var(--xoot-text-primary); }
 :root.dark .xoot-care-panel .xoot-source-button-outline { color:var(--xoot-ink-900); box-shadow:inset 0 0 0 var(--xoot-border-thick) rgba(23,17,15,.3); }
 :root.dark .xoot-care-panel .xoot-care-note { color:var(--xoot-ink-700); }
-:root.dark .xoot-care-comparison [role=cell]:last-child,:root.dark .xoot-care-comparison [role=columnheader]:last-child { color:var(--xoot-careplus-300); }
+:root.dark .xoot-care-comparison [role=cell]:last-child,:root.dark .xoot-care-comparison [role=columnheader]:last-child,:root.dark .xoot-care-comparison [role=cell]:last-child>svg { color:var(--xoot-careplus-300); }
 :root.dark .xoot-journal-reader>header .xoot-journal-meta { color:var(--xoot-ink-700); }
