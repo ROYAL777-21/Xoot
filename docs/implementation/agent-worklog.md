@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 27 October 2026 — reconcile quarantine with current account/calendar source
+
+PR100 is now CONFLICTING with its PR97 base after legitimate calendar and account changes.
+Claim a rebase of this owned quarantine branch onto the current PR97 head, preserving both
+calendar schema/RPC/contracts and quarantine/activation controls plus both worklog histories.
+No revert of the other implementation, no production delivery, approval bypass, role or provider
+activation. Re-run the meaningful quarantine, calendar/config/type checks and Deno after resolution.
+Current source containment remains distinct from unconfigured Cloudmersive and authentic-document
+review. Independent final patch review remains required before delivery; review-agent usage limit
+is not clearance. Preserve unrelated PR98/99 and all staged/live customer data.
+
 ## RELEASED CLAIM — 27 October 2026 — Rewards, Safety and calendar copy acceptance
 
 Source8b5e367 applies the original Rewards flower/pastel/type composition with real owner balances,
