@@ -45,10 +45,10 @@ describe("PayFast payment acceptance invariant — provider message is never a r
   it("rejects unpersisted checkout routing and refuses to credit wrong provider records", () => {
     expect(checkout).toContain("if (routingError || !routed?.id)");
     expect(itn).toContain('if (payment.provider !== "payfast")');
-    expect(itn).toContain('if (markingError || !markedPayment?.id)');
-    expect(itn).toContain("payment notification was previously claimed but not settled");
+    expect(itn).toContain('applyBookingPaymentConfirmed(supa');
+    expect(itn).not.toContain('if (payment.status === "paid" || payment.status === "admin_confirmed")');
     expect(itn).toContain("pf_payment_id");
     expect(itn).toContain('claimProviderEvent(');
-    expect(itn).toContain('markProviderEventProcessed(');
+    expect(itn).toContain('.neq("status", "processed")');
   });
 });

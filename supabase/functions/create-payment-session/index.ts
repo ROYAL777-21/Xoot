@@ -182,6 +182,18 @@ Deno.serve(async (req) => {
     if (payment.payment_kind === "gift_clean") {
       return fail("Gift checkout is not available yet. Your gift remains unpaid.", origin, 503);
     }
+    if (payment.payment_kind !== "booking" || !payment.booking_id) {
+      return fail("This checkout needs its own fulfilment review before payment is available.", origin, 503);
+    }
+    const { data: booking, error: bookingError } = await supa.from("bookings")
+      .select("id,user_id,status,payment_status,crew_size").eq("id", payment.booking_id).maybeSingle();
+    if (bookingError || !booking || booking.user_id !== user.id || booking.crew_size !== 1
+      || !["draft", "pending", "pending_payment"].includes(booking.status) || booking.payment_status !== "pending") {
+      return fail("This booking is not ready for checkout.", origin, 409);
+    }
+    const { data: settlementVersion, error: settlementError } = await supa.rpc("booking_payment_settlement_ready");
+    if (settlementError || settlementVersion !== 1) return fail("Payment settlement is not available yet.", origin, 503);
+    if (!Deno.env.get("PAYFAST_PASSPHRASE")?.trim()) return fail("Payment verification is not configured.", origin, 503);
     if (String(payment.currency ?? "ZAR").toUpperCase() !== "ZAR") {
       // PayFast is a ZAR-only gateway, and `confirm-payment` compares against the record's own
       // currency. Anything else could never be confirmed.

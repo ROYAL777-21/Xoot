@@ -1,5 +1,20 @@
 # Agent worklog
 
+### 27 October — PayFast retry integrity repair prepared for review
+
+Cross-role shared payment helper and three Edge handlers plus additive receipt migration
+20261027150000 are changed together because the previous payment-first writes and unconditional
+paid acknowledgement could leave fulfilment incomplete. Both confirmation paths now use a
+single locked service-only SQL transaction, including strict audit, notification and assignment
+outbox. Starting checkout requires its versioned readiness RPC and holds unsupported financial
+fulfilment kinds and the separate crew model. Preserve provider intent/evidence gates; no
+production migration, charge or provider activation. See the updated PayFast acceptance runbook.
+105 focused tests, three Deno checks and34 actual staging rollback-only SQL contract assertions
+pass. Follow-up reads show no test schema or booking/payment residue and0 duplicate job pairs.
+Synthetic SQL provider rows are not genuine provider, JWT, MFA or concurrency proof. No active
+worker was fabricated. The founder saved five staging PayFast values privately; only names and
+known sandbox/staging hashes were verified. No merchant credential is copied into this log.
+
 ### 27 October — appearance and handoff repair source prepared
 
 On the owned integration branch, preserve PR72 in a clean merge (17e7155). Its64 focused

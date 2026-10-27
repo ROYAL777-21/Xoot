@@ -1,6 +1,44 @@
 # PayFast sandbox-to-production acceptance — Xoot
 _Status: **NOT authorised for live charges** (16 October 2026)._
 
+## 27 October update — atomic booking settlement prepared
+
+The founder privately configured the real sandbox account and saved all five staging fields.
+Readback checked names and only the known sandbox/staging value hashes. No credential values
+were read back. This is configuration evidence, not a completed provider transaction.
+
+PR72 is preserved in merge17e7155. Review of its retry path found that it marked the payment
+paid before the booking/outbox writes, ignored downstream write errors and acknowledged any
+paid flag on retry. The new source uses a service-only atomic receipt contract for both verified
+PayFast callbacks and AAL2 admin booking confirmations. It locks the payment then booking,
+checks owner/amount/reference and provider-event payload binding, and commits payment, booking,
+history, eligible job offer, owner notification, assignment outbox, audit and receipt together.
+Duplicate callbacks require a committed receipt and cannot regress a booking. A legacy paid row
+without one, a second provider transaction, cancelled booking or conflicting job requires explicit
+reconciliation. No historical receipt is invented.
+
+105 focused payment tests and Deno checks of all three handlers pass. The actual staging
+database passed34 SQL contract assertions inside one rollback-only transaction, including an
+injected outbox failure followed by retry, duplicate delivery, later booking status, exact cents,
+event binding, receipt and admin privilege boundaries. A subsequent catalog/data read confirms
+that the test table/RPC and both synthetic bookings/payments were rolled back. These are SQL
+contract checks with synthetic provider events, **not genuine PayFast, JWT, MFA, job-offer or
+independent-session concurrency acceptance**. No approved worker fixture was invented.
+
+The prepared migration is20261027150000. Preflight must show no duplicate(booking_id,xooter_id)
+job pairs; its unique index intentionally stops if old duplicates exist. Do not discard them or
+repair-stamp the migration. Apply only after review, then deploy frozen copies of the shared
+helper in confirm-payment and admin-confirm-payment, then create-payment-session. Read each
+deployed body/version back. Provider controls and evidence remain off until genuine acceptance.
+
+Checkout now additionally requires the versioned receipt RPC and a pending ordinary booking
+with the existing single-visit assignment model. Gift, membership, tip, invoice and crew-contract
+checkout stay unavailable until each financial fulfilment path is reconciled and tested. This
+does not waive the canonical quote/crew work on the other release branch. No payment widget
+may present these held paths as enabled. Ordinary customer ownership remains checked before
+any amount/reference is returned; callback access remains public with independent provider
+verification. A return redirect remains navigation only.
+
 ## Actual integration
 
 Xoot already has a signed, authenticated `create-payment-session` Edge Function, a PayFast form handoff, and unauthenticated PayFast ITN receiver `confirm-payment` with server-to-server validation. The callback **must** be publicly reachable and must not require a customer's Supabase JWT; the session creator **must** require a JWT. The 16 Oct hardening branch refuses a deceptive `VALIDATION FAILED` postback, a different PayFast merchant ID, duplicate critical fields, imprecise monetary values, unpersisted provider routing and a payment in the manual/EFT lane. It stores the provider transaction reference for reconciliation.
