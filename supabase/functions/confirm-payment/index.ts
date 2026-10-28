@@ -3,7 +3,7 @@ import { claimProviderEvent } from "../_shared/governance-utils.ts";
 import { applyBookingPaymentConfirmed, assertBookingCanConfirmPayment } from "../_shared/payment-confirmation.ts";
 import {
   PAYFAST_VALIDATE_URL_LIVE, PAYFAST_VALIDATE_URL_SANDBOX, normaliseStatus,
-  amountMatches, buildNotificationParamString, merchantMatches, recordAmountCents, sourceAllowed, validateWithPayFast, verifySignature,
+  amountMatches, buildNotificationParamString, buildSignatureBase, md5Hex, merchantMatches, recordAmountCents, sourceAllowed, timingSafeEqual, validateWithPayFast, verifySignature,
 } from "../_shared/payfast.ts";
 import { resolveMode } from "../_shared/payfast-checkout.ts";
 
@@ -57,7 +57,15 @@ Deno.serve(async (req) => {
   }
   const signatureResult = verifySignature(params, passphrase);
   if (!signatureResult.ok) {
-    console.warn("payfast_callback_rejected: signature");
+    // Diagnostic booleans only. Alternative calculations NEVER authorize a notification.
+    console.warn("payfast_callback_rejected: signature", {
+      fieldCount: [...params].length,
+      emptyFieldCount: [...params].filter(([, value]) => value === "").length,
+      signatureFormat: /^[a-f0-9]{32}$/i.test(params.get("signature") ?? ""),
+      withoutPassphrase: verifySignature(params, "").ok,
+      outboundEmptyOmission: timingSafeEqual(params.get("signature") ?? "", md5Hex(buildSignatureBase(params, passphrase))),
+      outboundWithoutPassphrase: timingSafeEqual(params.get("signature") ?? "", md5Hex(buildSignatureBase(params, ""))),
+    });
     return fail(signatureResult.reason, origin, 401);
   }
   if (!merchantMatches(params.get("merchant_id"), Deno.env.get("PAYFAST_MERCHANT_ID"))) {
