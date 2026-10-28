@@ -29,6 +29,9 @@ Deno.serve(async (req) => {
         field,
         count: params.getAll(field).length,
         formEncoded: (req.headers.get("content-type") ?? "").toLowerCase().startsWith("application/x-www-form-urlencoded"),
+        multipartEncoded: (req.headers.get("content-type") ?? "").toLowerCase().startsWith("multipart/form-data"),
+        jsonEncoded: (req.headers.get("content-type") ?? "").toLowerCase().startsWith("application/json"),
+        emptyBody: rawBody.length === 0,
       });
       return fail("duplicate or missing PayFast field", origin, 400);
     }
