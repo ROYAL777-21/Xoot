@@ -1,6 +1,11 @@
 # Xoot production checklist
 
-## 28 October 2026 — delivery reconciliation in progress
+## 28 October 2026 — prior staging release resumed; new bundle deferred
+
+The founder has deferred the separate delivery bundle and directed continuation of the existing
+reviewed staging work. Resume PR101 preview publication, exact deployed verification and PayFast
+cancellation/settlement acceptance. The missing bundle does not block this existing branch.
+Production promotion, live charges and unsupported provider/worker assertions remain gated.
 
 The founder requests download/xoot-delivery-20261028/ runbook steps0–3 followed by SOS tests.
 The bundle/runbook/report is not yet accessible in this local workspace or Downloads; the

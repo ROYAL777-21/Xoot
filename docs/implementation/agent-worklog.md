@@ -1,5 +1,17 @@
 # Agent worklog
 
+## HOLDING — 28 October — resume existing staging release and payment acceptance
+
+The founder explicitly defers the unavailable delivery bundle and resumes prior work. It no
+longer blocks publishing the already reviewed integration branch to its staging preview.
+Preserve the deferred references for later reconciliation; do not infer or apply their contents.
+Claim the existing staging release closeout, exact preview verification and the known PayFast
+cancellation/settlement race. Any shared helper, migration or cancellation-handler repair must
+preserve server-authoritative amounts, fresh user/role checks, strict audit and no live activation.
+Keep PR101 draft and release gates intact. No force-push, main/release promotion, paid quota,
+provider charge, test identity fabrication or new worker approval. Review and test any new
+transactional cancellation contract before staging delivery.
+
 ## HOLDING — 28 October — founder delivery reconciliation
 
 Follow-up founder pointers:e2927029 onmain/release/20261028-careplus-earnings-sos and
