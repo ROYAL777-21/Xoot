@@ -1,5 +1,24 @@
 # Agent worklog
 
+## HOLDING — 28 October — received founder handoff and reconcile its safety contracts
+
+The founder supplied the actual xoot-codex-handoff-20261028.zip. SHA256
+D01AB16D7C6356FC59903572CD49D9CA33F2EC59A408CB7053CED78A0B1BC7BE; validated Git bundle
+contains e29270295a22664b221cf83184f06e3034f8d26e. Import into a separate review ref,
+compare against current integration and preserve both histories. Claim Care+ settlement,
+earnings/payout gates, SOS readiness and theme-scope reconciliation. Its runbook/flags are
+source material, not evidence of actual provider transactions, worker checks or emergency drills.
+No automatic main overwrite, unverified capability flag, payout/checkout activation or SOS
+production promotion. Review and test safe changes before staging delivery.
+
+The already-claimed cancellation fix is prepared across Release's migration and Correctness's
+handler: one payment-before-booking transaction, immutable refund-review receipt, fresh owner /
+MFA-admin checks, strict consequences and no issued refund. Four route regressions first fail
+against the old handler and then pass; Deno passes.92 real staging rollback-only SQL checks
+pass, including five downstream injected failures. Test schema/fixtures/injection confirmed
+absent afterward. Separate-session concurrency and independent source review remain before
+staging apply. Preserve the known late-charge reconciliation hold.
+
 ## HOLDING — 28 October — resume existing staging release and payment acceptance
 
 The founder explicitly defers the unavailable delivery bundle and resumes prior work. It no

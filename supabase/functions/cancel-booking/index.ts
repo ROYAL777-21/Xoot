@@ -1,152 +1,47 @@
-import {
-  assertBookingParticipant,
-  cleanId,
-  cleanText,
-  fail,
-  handlePreflight,
-  insertNotification,
-  insertReviewQueue,
-  ok,
-  readJson,
-  requireAuth,
-  writeAuditLog,
-} from "../_shared/action-utils.ts";
-import { canTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
+import { cleanId, cleanText, fail, handlePreflight, ok, readJson, requireAuth } from "../_shared/action-utils.ts";
+import { mfaSessionFromVerifiedBearer } from "../_shared/mfa-assurance.ts";
 
-const calculateRefund = (booking: any, payment: any) => {
-  if (!payment || payment.status !== "paid") return { eligible: false, amount: 0, reason: "not_paid" };
-  const scheduledAt = new Date(booking.scheduled_at).getTime();
-  const hoursUntilBooking = (scheduledAt - Date.now()) / 36e5;
-  const paidAmount = Number(payment.amount ?? 0);
-  if (hoursUntilBooking >= 12) return { eligible: true, amount: paidAmount, reason: "full_refund_12h_window" };
-  if (hoursUntilBooking >= 2) return { eligible: true, amount: Math.round(paidAmount * 0.5 * 100) / 100, reason: "partial_refund_2h_window" };
-  return { eligible: false, amount: 0, reason: "late_cancellation_no_auto_refund" };
-};
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
   const preflight = handlePreflight(req, origin);
   if (preflight) return preflight;
+  if (req.method !== "POST") return fail("method not allowed", origin, 405);
 
+  // Auth verifies this exact bearer before its optional admin MFA session is read.
   const auth = await requireAuth(req, origin);
   if (auth.response) return auth.response;
-  const { user, supa } = auth as { user: any; supa: any };
+  const { user, supa } = auth;
 
   try {
     const body = await readJson(req);
-    const bookingId = cleanId(body.bookingId ?? body.booking_id);
-    const reason = cleanText(body.reason, 500) || "Client cancellation request";
-    if (!bookingId) return fail("booking_id required", origin, 400);
-
-    const { data: booking, error } = await supa
-      .from("bookings")
-      .select("id,user_id,xooter_id,scheduled_at,status,payment_status,cancelled_at")
-      .eq("id", bookingId)
-      .maybeSingle();
-    if (error || !booking?.id) return fail("booking not found", origin, 404);
-
-    const participant = await assertBookingParticipant(supa, booking, user.id);
-    if (!participant.participant) return fail("booking access denied", origin, 403);
-    const currentStatus = normaliseBookingStatus(booking.status);
-    if (!currentStatus) return fail("booking status is unsupported", origin, 409);
-    if (currentStatus === "cancelled" || booking.cancelled_at) {
-      return fail("booking cannot be cancelled in its current state", origin, 409);
-    }
-    const adminCancellationOverride =
-      participant.role === "admin" && (currentStatus === "completed" || currentStatus === "in_progress");
-    if (!canTransition(currentStatus, "cancelled") && !adminCancellationOverride) {
-      return fail("booking cannot be cancelled in its current state", origin, participant.role === "admin" ? 409 : 403);
-    }
-
-    const { data: payment } = await supa
-      .from("payment_records")
-      .select("id,amount,currency,status")
-      .eq("booking_id", booking.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    const refund = calculateRefund(booking, payment);
-    await supa
-      .from("bookings")
-      .update({
-        status: "cancelled",
-        cancelled_at: new Date().toISOString(),
-        cancelled_by: user.id,
-        payment_status: payment?.status === "paid" ? "paid" : "cancelled",
-        sensitive_data_revoked_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", booking.id);
-
-    await supa.from("booking_status_events").insert({
-      booking_id: booking.id,
-      actor_id: user.id,
-      status: "cancelled",
-      label: "Booking cancelled",
-      meta: { previous_status: currentStatus, refund },
+    const bookingId = cleanId(body?.bookingId ?? body?.booking_id);
+    if (!uuid.test(bookingId)) return fail("valid booking_id required", origin, 400);
+    const reason = cleanText(body?.reason, 500) || "Client cancellation request";
+    const { data, error } = await supa.rpc("cancel_booking_atomically", {
+      p_booking_id: bookingId,
+      p_actor_id: user.id,
+      p_reason: reason,
+      p_admin_session_id: mfaSessionFromVerifiedBearer(req.headers.get("Authorization"), user.id),
     });
-
-    await supa.from("xooter_jobs").update({ state: "expired" }).eq("booking_id", booking.id).in("state", ["offered", "accepted"]);
-
-    let refundRequestId: string | null = null;
-    if (refund.eligible && refund.amount > 0 && payment?.id) {
-      const { data: refundRequest } = await supa.from("refund_requests").insert({
-        booking_id: booking.id,
-        payment_record_id: payment.id,
-        user_id: booking.user_id,
-        amount: refund.amount,
-        currency: payment.currency ?? "ZAR",
-        reason: refund.reason,
-        requested_by: user.id,
-      }).select("id").single();
-      refundRequestId = refundRequest?.id ?? null;
-      await insertReviewQueue(supa, {
-        queueType: "payment",
-        subjectTable: "refund_requests",
-        subjectId: refundRequestId,
-        userId: booking.user_id,
-        xooterId: booking.xooter_id,
-        bookingId: booking.id,
-        priority: "normal",
-        summary: `Refund review queued for cancelled booking (${refund.reason})`,
-      });
+    if (error) {
+      if (error.code === "42501") return fail("booking access denied or two-step verification required", origin, 403);
+      if (["P0002", "22023"].includes(error.code)) return fail("booking cancellation needs support review", origin, 409);
+      return fail("booking cancellation failed; please retry", origin, 500);
     }
-
-    await insertNotification(supa, {
-      userId: booking.user_id,
-      kind: "booking_cancelled",
-      title: "Booking cancelled",
-      body: refund.eligible ? "Your booking was cancelled and a refund review has been queued." : "Your booking was cancelled. Support will review any follow-up if needed.",
-      link: `/app/bookings/${booking.id}`,
-    });
-
-    if (booking.xooter_id) {
-      const { data: xooter } = await supa.from("xooters").select("user_id").eq("id", booking.xooter_id).maybeSingle();
-      if (xooter?.user_id) {
-        await insertNotification(supa, {
-          userId: xooter.user_id,
-          kind: "booking_cancelled",
-          title: "Booking cancelled",
-          body: "A booking assigned to you has been cancelled and removed from your active jobs.",
-          link: `/xooter/jobs`,
-        });
-      }
+    // Only a committed receipt can acknowledge success. Never return a partial financial write.
+    const refund = data?.refund;
+    if (data?.booking_id !== bookingId || data?.status !== "cancelled" || typeof data?.idempotent !== "boolean"
+      || typeof refund?.eligible !== "boolean" || typeof refund?.amount !== "number" || !Number.isFinite(refund.amount)
+      || refund.amount < 0 || typeof refund.reason !== "string"
+      || (data.refund_request_id !== null && (typeof data.refund_request_id !== "string" || !uuid.test(data.refund_request_id)))
+      || refund.eligible !== (refund.amount > 0) || refund.eligible !== (data.refund_request_id !== null)) {
+      return fail("booking cancellation could not be confirmed; please retry", origin, 500);
     }
-
-    await writeAuditLog(supa, {
-      actorId: user.id,
-      action: "cancel_booking",
-      targetTable: "bookings",
-      targetId: booking.id,
-      changes: { status: "cancelled", refund, refund_request_id: refundRequestId },
-      reason,
-      ipAddress: req.headers.get("x-forwarded-for"),
-    });
-
-    return ok({ booking_id: booking.id, status: "cancelled", refund, refund_request_id: refundRequestId }, origin);
-  } catch (error) {
-    console.error("cancel-booking failed", error);
-    return fail("booking cancellation failed", origin, 500);
+    return ok(data, origin);
+  } catch {
+    console.error("cancel-booking transaction failed");
+    return fail("booking cancellation failed; please retry", origin, 500);
   }
 });
