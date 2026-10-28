@@ -1,5 +1,28 @@
 # Agent worklog
 
+## HOLDING — 28 October — Airbnb/office-only crews and handoff visit detail
+
+Founder prioritises the existing PayFast acceptance before the newly supplied v2/v3 deliveries.
+Callback repair99d4cc65 independently reviewed with noP1/P2:126 focused tests, three Deno checks,
+eight actual HTTP boundaries and23 exact returned runtime files pass on staging42/admin38/
+checkout16. No existing PayFast event hashes or target receipt were present before deployment.
+Genuine multipart resend now reaches signature verification but still fails401. Payment stays
+pending; no event/receipt/fulfilment is invented. Prepared empty protected passphrase field;
+founder must privately copy/save the existing provider value. Masked digest checks independently
+confirm XOOT_APP_ENV=staging, PAYFAST_MODE=sandbox and merchant10056762. Global/evidence controls
+stay OFF; retain this real provider test record.
+
+Claim src/pages/app/BookingDetail.tsx, visit-detail styles/components, booking-flow web/native
+renderers, server/web/native crew-cap presentation and validation, and legacy create-booking.
+Apply the direct founder rule: crews only for Airbnb and office; solo residential/express/
+moving/laundry. Preserve current eligible-service prices and quote/submission/settlement gates.
+Record the changed product rule and quote version. Do not invent additional price/size thresholds
+from unreviewed attachments. The requested live-test detail currently shows baseR250 beside
+paymentR289: render the owner's actual payment total/clearly-labelled share, never infer paid
+from ?payment=return, and use the handoff's real visit status/cards/typography/flowers. No fake
+map, ETA, provider approval, contractor, rate, payment result or new signup personalisation.
+Cross-role shared pricing/contract and release-owned native edits must be reviewed before merge.
+
 ## HOLDING — 28 October — received founder handoff and reconcile its safety contracts
 
 PayFast's official Notification.php and current verification guide confirm that INBOUND
