@@ -66,6 +66,7 @@ export function bookingServiceForProperty(input: Pick<BookingQuoteInput, "servic
   return input.propertyType === "office" ? "office" : input.propertyType === "airbnb" ? "airbnb" : input.propertyType === "empty" ? "moving" : input.service;
 }
 export function bookingCrewCap(service: BookingService, size: BookingHomeSize): number {
+  if (service !== "airbnb" && service !== "office") return 1;
   const bySize = { small: 2, medium: 3, large: 4 }[size];
   return Math.max(bySize, ({ regular: 0, express: 3, airbnb: 3, office: 4, moving: 4 } as const)[service]);
 }

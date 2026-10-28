@@ -53,7 +53,7 @@ const allowedTimes = new Set(["07:00", "07:30", "08:00", "08:30", "09:00", "09:3
  * and refuses to quote a second Xooter, so the screen showed R61 while this function charged
  * R860. Measured 2026-08-09. `pricing-parity.test.ts` now fails if the two sets drift again.
  */
-const multiWorkerServices = new Set(["airbnb", "office", "moving"]);
+const multiWorkerServices = new Set(["airbnb", "office"]);
 const photoProofServices = new Set(["airbnb", "deep", "moving"]);
 
 const isHighDemandSlot = (time: string) => Number(time.split(":")[0] ?? 0) >= 16;

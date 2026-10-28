@@ -2,6 +2,35 @@
 
 ## HOLDING — 28 October — Airbnb/office-only crews and handoff visit detail
 
+Prepared ZD-039 in both pricing engines, legacy writer and server quote version; web/native
+picker hidden for solo services and selections clamped when changing service/property. Existing
+Airbnb/office prices/caps stay intact. New policy regressions fail against the old source;
+89 policy/quote/parity/booking-flow tests then pass. Visit detail follows Visits.jsx's dawn
+card, actual service icon, type and flowers: owner payment total instead of base price, real
+SAST date/duration/address, truthful matching and recorded journey. Four old-source regressions
+fail, then pass: R250/R289 mismatch, untrusted return URL, actual saved payment refresh, and
+prior-account information during a new account's pending read. Owner/booking/kind plus no
+fare-split linkage scope the receipt read; bounded refresh never starts/repeats checkout.
+Hold the split-fare entry on this detail: its old writer sums base price without the fee and
+creates partial records labelled booking, which needs separate audited settlement reconciliation.
+Do not silently activate or call that partial flow production-ready.
+
+Focused93 tests, web/mobile types, lint and three Deno entrypoints pass. The mobile runtime was
+missing its already-locked expo-crypto56.0.5: restored only that exact official registry archive,
+verified against lockfile SHA512, without scripts, version changes or a broad dependency purge.
+Validated staging build, artifact scan,50 prerenders,390/1440 approved-homepage checks and real
+empty directory startup pass. An initial bare VITE_APP_ENV build correctly refused absent real
+public config; use the existing ignored staging runner that passes only the authorised public
+key. Final full-suite run, independent review, exact committed artifact and preview inspection
+remain before delivery of these UI/policy changes. No homepage, production or provider flags.
+
+Founder saved the prepared passphrase field at18:50:22UTC; its masked digest is unchanged.
+Actual callback43/44 still rejects signature, including after checking only safe shape metadata
+(23 fields,13 empty; no unsigned or outbound-omission diagnostic matches). Those calculations
+are logged as booleans ONLY and NEVER authorize payment. Official fresh sandbox wallet is
+prepared to test a new direct notification after the wire fix; founder handles its final
+agreement/payment click. Original ITN2020040/transaction3481790 remains genuine failed evidence.
+
 Founder prioritises the existing PayFast acceptance before the newly supplied v2/v3 deliveries.
 Callback repair99d4cc65 independently reviewed with noP1/P2:126 focused tests, three Deno checks,
 eight actual HTTP boundaries and23 exact returned runtime files pass on staging42/admin38/

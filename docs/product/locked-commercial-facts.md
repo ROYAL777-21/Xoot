@@ -49,6 +49,11 @@ All authoritative pricing, credits and discounts are server-controlled.
 
 ### Crew bookings — ZD-038, approved 2026-09-27
 
+**Service eligibility narrowed by the founder on 2026-10-28 (ZD-039): only Airbnb and office
+bookings may request a crew. Regular/residential, express, moving and laundry stay single-Xooter.
+Existing prices for eligible visits are unchanged. This does not enable an untested writer,
+crew settlement, checkout or payout.**
+
 One job has one total and up to four assigned Xooters, subject to service/home-size limits.
 The base ladder price is multiplied by 1 / 1.15 / 1.25 / 1.4 for crews of one / two / three /
 four, then rounded to whole rand. A 5.5-hour Airbnb clean has a R342 solo base and a **R393

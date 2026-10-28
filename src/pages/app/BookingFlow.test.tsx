@@ -50,6 +50,14 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("handoff booking review (isolated UI fixtures)", () => {
+  it("keeps the ordinary home booking single-Xooter without a crew picker", async () => {
+    mount(); await next();
+    expect(screen.queryByRole("group", { name: "Your crew" })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Where do you need us?"), { target: { value: "14 Example Street, Sandton" } });
+    await next();
+    await next();
+    expect(await screen.findByRole("button", { name: /Let Xoot match my Xooter/ })).toBeInTheDocument();
+  });
   it("saves a new place with a stable retry ID and stays put after a denied write", async () => {
     harness.savePlace.mockResolvedValueOnce({data:null,error:{code:"42501"}});
     mount(); await next();
@@ -115,7 +123,7 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     expect(screen.getByRole("button", { name: "Medium 2–3 bedrooms" })).toHaveAttribute("aria-pressed", "true"); await next();
     expect(screen.getByLabelText("Upcoming dates").children).toHaveLength(14); await next();
     await screen.findByText("No approved Xooters listed yet");
-    fireEvent.click(screen.getByRole("button", { name: "2 Xooters" })); await next();
+    expect(screen.queryByRole("button", { name: "2 Xooters" })).not.toBeInTheDocument(); await next();
     expect(screen.getByText("14 Example Street, Sandton")).toBeInTheDocument();
     expect(harness.invoke).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));

@@ -126,8 +126,9 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
   };
   const change = (next: BookingQuoteInput) => {
     invalidate();
-    setInput(next);
-    setChosen(current => current.slice(0, next.crewSize));
+    const crewSize = Math.min(next.crewSize, bookingCrewCap(bookingServiceForProperty(next), next.homeSize));
+    setInput({ ...next, crewSize });
+    setChosen(current => current.slice(0, crewSize));
   };
   const patch = (value: Partial<BookingQuoteInput>) => change({ ...input, ...value });
   const go = (next: number) => {
@@ -302,8 +303,8 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
       <View style={s.wrap}>{slots.map(time => <Choice key={time} label={time} selected={time === input.time} onPress={() => patch({ time })} />)}</View>
       {!slots.length && <Copy>No future start times for this date. Try tomorrow or choose another date.</Copy>}
       <Copy>{propertyService === 'airbnb' ? 'Airbnb visits must start by 14:00. ' : ''}These are requested times. Availability is confirmed after review.</Copy>
-      <Card style={s.group}><Stepper label="Xooters in your crew" value={input.crewSize} min={1} max={bookingCrewCap(propertyService, input.homeSize)} onChange={crewSize => patch({ crewSize })} />
-        <Copy>Your crew works together on one visit. The quote includes the crew and estimated duration.</Copy></Card>
+      {bookingCrewCap(propertyService, input.homeSize) > 1 && <Card style={s.group}><Stepper label="Xooters in your crew" value={input.crewSize} min={1} max={bookingCrewCap(propertyService, input.homeSize)} onChange={crewSize => patch({ crewSize })} />
+        <Copy>Your crew works together on one visit. The quote includes the crew and estimated duration.</Copy></Card>}
       {input.frequency !== 'once' && <View style={s.group}><Label>Which weekdays?</Label><View style={s.wrap}>{DAYS.map((day, index) =>
         <Choice key={day} label={day} checkbox selected={input.repeatDays.includes(index)}
           disabled={validBookingDate(input.date, now) && index === bookingWeekday(input.date)} onPress={() => patch({ repeatDays: input.repeatDays.includes(index) ? input.repeatDays.filter(value => value !== index) : [...input.repeatDays, index].sort() })} />)}</View>
@@ -315,8 +316,8 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
 
     {stage === 3 && <>
       <DisplayTitle>Who feels right?</DisplayTitle>
-      <Copy>Choose up to {input.crewSize} preferred {input.crewSize === 1 ? 'Xooter' : 'Xooters'} from the approved roster. This is a preference; date availability and your crew are confirmed after review.</Copy>
-      <Choice label="Let Xoot match my crew" selected={chosen.length === 0} onPress={() => { clearConsent(); setChosen([]); }}><CoreIcon name="sparkles" color={p.violetDark} /></Choice>
+      <Copy>Choose up to {input.crewSize} preferred {input.crewSize === 1 ? 'Xooter' : 'Xooters'} from the approved roster. This is a preference; date availability and your {input.crewSize > 1 ? 'crew' : 'Xooter'} are confirmed after review.</Copy>
+      <Choice label={`Let Xoot match my ${input.crewSize > 1 ? 'crew' : 'Xooter'}`} selected={chosen.length === 0} onPress={() => { clearConsent(); setChosen([]); }}><CoreIcon name="sparkles" color={p.violetDark} /></Choice>
       {rosterLoading && <ActivityIndicator accessibilityLabel="Loading the Xooter roster" color={p.violetDark} />}
       {rosterError && <Text selectable accessibilityRole="alert" style={s.error}>{rosterError}</Text>}
       {!rosterLoading && !rosterError && !roster.length && <Card><Copy>No Xooters are listed right now. You can retry or keep the matching preference.</Copy></Card>}
@@ -334,7 +335,7 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
         <Fact label="Service" value={BOOKING_SERVICE_DETAILS[priced?.service ?? input.service].title} />
         <Fact label="Property" value={BOOKING_PROPERTY_LABELS[input.propertyType]} />
         {input.service !== 'office' && input.propertyType !== 'office' && <Fact label="Home" value={`${bedrooms} bedrooms · ${bathrooms} bathrooms`} />}
-        <Fact label="Crew" value={`${priced?.crewSize ?? input.crewSize} ${(priced?.crewSize ?? input.crewSize) === 1 ? 'Xooter' : 'Xooters'}, working on one visit`} />
+        <Fact label={input.crewSize > 1 ? 'Your crew' : 'Your Xooter'} value={`${priced?.crewSize ?? input.crewSize} ${(priced?.crewSize ?? input.crewSize) === 1 ? 'Xooter' : 'Xooters'}, working on one visit`} />
         <Fact label="When" value={`${input.date} · ${input.time || 'Choose a time'} SAST`} />
         <Fact label="Frequency" value={`${BOOKING_FREQUENCY_LABELS[input.frequency]}${input.frequency !== 'once' ? ` · ${input.repeatDays.map(day => DAYS[day]).join(', ')}` : ''}`} />
         {priced && <Fact label="Estimated duration" value={`${priced.estimatedDurationHours} hours with your crew`} />}
