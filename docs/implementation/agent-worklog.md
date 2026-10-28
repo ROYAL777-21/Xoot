@@ -1,5 +1,20 @@
 # Agent worklog
 
+## HOLDING — 28 October — founder delivery reconciliation
+
+Founder now directs reading download/xoot-delivery-20261028/ (bundle, patches, runbook and
+nine-page readiness report), steps0–3 then SOS tests. The exact folder is not present in
+this workspace or Windows Downloads; connected Xoot Production Health content is unresolved
+references and the browser lacks its ChatGPT session. Asked only for the full local folder path
+or retrievable delivery link. Do not guess commands, apply unseen patches, change secrets,
+deploy/enable SOS or push over concurrent work. Existing integration commits remain intact.
+
+Prior-phase final source/security checks and the staging-config validated build/50 prerenders/
+390–1440 design/real directory startup pass atcdc6dc4. Full serial rerun:1978 pass,7 existing
+skips,1 unchanged30-second rendered sign-in timeout. The isolated same case passes on28October
+in6.07 seconds without source/deadline changes. Do not describe this as an entirely green
+single full run. Required CI and production gates remain. No production promotion or charge.
+
 ### 27 October — reviewed PayFast staging delivery and appearance acceptance
 
 Independent payment re-review of3a208e2 reports no new findings and clears limited staging

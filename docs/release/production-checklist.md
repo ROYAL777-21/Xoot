@@ -1,5 +1,19 @@
 # Xoot production checklist
 
+## 28 October 2026 — delivery reconciliation in progress
+
+The founder requests download/xoot-delivery-20261028/ runbook steps0–3 followed by SOS tests.
+The bundle/runbook/report is not yet accessible in this local workspace or Downloads; the
+connected chat supplies only content-reference markers. The exact local folder path or delivery
+link has been requested. Reconcile it against the preserved integration branch and actual staged
+schema/handlers before any push, credential change, migration, deployment or SOS activation.
+No unseen runbook step has been executed and no prior release gate is treated as passed.
+
+Local current-source types/lint/security and validated staging-config build pass. The latest
+full suite has1978 passes/7 existing skips/1 rendered sign-in timeout; that case passes alone
+under its unchanged deadline. This is not a completely green full run. Existing required GitHub,
+provider, cancellation/refund, genuine identity/device and production-migration gates remain.
+
 ## 27 October 2026 — current implementation and release tasks
 
 This section supersedes the dated history below. The last verified live website is approved

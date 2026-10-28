@@ -79,7 +79,32 @@ the two new RPC declarations and crew_size absent from the generated schema, plu
 literal dark-selector format. Types were narrowly copied from actual staging generation, the
 equivalent CSS selector order restored compatibility without changing tokens/assertions, and75
 focused checks across all five affected suites passed. No deadline or failing assertion was waived.
-Final source/build/full-suite results are recorded below when complete.
+Final source checks atcdc6dc4 pass: both lockfiles, web TypeScript, full ESLint, four header
+tests and all four source-security scans. The production-mode build using staging public
+configuration passes50 prerenders, artifact security,390/1440 handoff checks and actual
+backend directory/auth startup with0 approved workers. Apple/Android association files remain
+unconfigured without genuine signing/team identifiers; no native build is claimed.
+
+The final serial full run completed193 files with1978 passes,7 existing skips and one rendered
+sign-in case timing out at its unchanged30-second deadline. The same case passed alone on
+28 October in6.07 seconds, with the original deadline and no source change. This is not a clean
+single-run full-suite pass; preserve the timeout evidence and rerun required CI after recovery.
+Previous same-source built-site acceptance and the earlier complete43-case rendered pass are
+separate evidence, not replacements for the required release job.
+
+Staging security advisors add only the expected INFO for the service-only private receipt table
+having no browser policy. Existing safety-PIN SECURITY DEFINER and leaked-password-protection
+WARN notices remain unchanged. No broad client grant or paid Auth upgrade was applied.
+
+## 28 October delivery handoff
+
+The founder supplied a new instruction to reconcile download/xoot-delivery-20261028/, then run
+its steps0–3 (push, secrets, migration, deploy), then SOS tests. That folder is absent from the
+attached workspace and Windows Downloads search. The connected Xoot Production Health chat
+returns only content-reference markers; the browser lacks that ChatGPT session. A full local
+path or retrievable delivery link is requested. No bundle/patch/report was read or executed,
+no new push/deploy/SOS activation occurred on the basis of unseen instructions. Preserve this
+branch and its staged database work until the new delivery can be reconciled.
 
 ## Remaining release work
 
