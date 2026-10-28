@@ -2,6 +2,17 @@
 
 ## HOLDING — 28 October — received founder handoff and reconcile its safety contracts
 
+Callback39 exact runtime readback matches all8 returned files. Official PayFast resend of
+ITN2020040 logs critical_fields, whereas the original callback38 returned401. Add only the
+fixed failed-field name/count and form-content-type boolean to distinguish malformed delivery
+from credential/signature failure; never log ITN values. The official payload view identifies
+the expected merchant, reference, R289 COMPLETE and genuine provider transaction3481790.
+No provider event/receipt/paid outcome has been manufactured. Founder prioritises this existing
+acceptance before the newly supplied v2/v3 bundles. Queue their read-only reconciliation plus
+the founder's Airbnb/office-only crew rule and handoff booking-detail UI; claim those paths
+before implementation, preserving solo residential/moving/laundry, current signed checks,
+actual MFA, closed release gates and all concurrent/released work.
+
 Founder completed a fresh real staging OTP sign-in. The private helper originally limited
 input to6 digits; corrected to accept the complete6–10-digit staging code, with5 private-form
 boundary tests passing. Real Auth user matched the authorised existing signup alias; no

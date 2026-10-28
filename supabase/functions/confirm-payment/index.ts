@@ -24,7 +24,12 @@ Deno.serve(async (req) => {
   }
   for (const field of ["merchant_id", "m_payment_id", "pf_payment_id", "amount_gross", "payment_status", "signature"]) {
     if (params.getAll(field).length !== 1) {
-      console.warn("payfast_callback_rejected: critical_fields");
+      // Only fixed field names/counts and a content-type boolean, never ITN values.
+      console.warn("payfast_callback_rejected: critical_fields", {
+        field,
+        count: params.getAll(field).length,
+        formEncoded: (req.headers.get("content-type") ?? "").toLowerCase().startsWith("application/x-www-form-urlencoded"),
+      });
       return fail("duplicate or missing PayFast field", origin, 400);
     }
   }
