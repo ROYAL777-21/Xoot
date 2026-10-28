@@ -2,6 +2,18 @@
 
 ## HOLDING — 28 October — received founder handoff and reconcile its safety contracts
 
+Cancellation re-review at3cb368e0 has no remainingP1/P2 findings and clears limited staging
+delivery only. Applied exact migration20261028125915, then confirm-payment38/admin37/cancel36/
+checkout15. Four database bodies, migration SQL and27 returned runtime/import-map files match.
+Deployed134 rollback assertions and8HTTP boundaries pass. Independent browser/MCP interleavings
+prove both orders and once-only duplicate cancellation; negative control reproduces the old
+stale overwrite after12.84s and rolls back. The first two-MCP barrier attempt is excluded.
+All5 owned fixtures and all related money/review/notification/audit/provider rows removed.
+No provider call, worker approval, production setting or recurring job. Full194-file suite
+passes1990 tests with7 existing skips after narrow generated cancellation RPC declaration;
+all source/type/lint/security/header and four Deno checks pass. See the dated handoff
+reconciliation for evidence and actual remaining financial/SOS defects in the delivered bundle.
+
 Independent cancellation review finds conditional account-guard compatibility and uppercase
 UUID receipt comparison defects. Preserve the existing applied migration; the new forward
 migration coordinates both settlement and cancellation through identity-only account pre-locks,

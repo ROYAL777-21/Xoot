@@ -5525,6 +5525,17 @@ export type Database = {
       }
     }
     Functions: {
+      // Generated from staging after cancellation migration 20261028125915; service-only.
+      cancel_booking_atomically: {
+        Args: {
+          p_actor_id: string
+          p_admin_session_id: string
+          p_booking_id: string
+          p_reason: string
+        }
+        Returns: Json
+      }
+
       // Generated from the actual staging schema after payment migration 20261027201017.
       // Service-only grants remain enforced; production rollout is separate.
       booking_payment_settlement_ready: { Args: never; Returns: number }
