@@ -18,21 +18,37 @@ Deno.serve(async (req) => {
   // Keep original field order for PayFast's PHP-urlencoded MD5 signature.
   const params = new URLSearchParams(rawBody);
   const passphrase = Deno.env.get("PAYFAST_PASSPHRASE") ?? "";
-  if (!passphrase.trim()) return fail("payment verification is not configured", origin, 503);
+  if (!passphrase.trim()) {
+    console.warn("payfast_callback_rejected: verification_configuration");
+    return fail("payment verification is not configured", origin, 503);
+  }
   for (const field of ["merchant_id", "m_payment_id", "pf_payment_id", "amount_gross", "payment_status", "signature"]) {
-    if (params.getAll(field).length !== 1) return fail("duplicate or missing PayFast field", origin, 400);
+    if (params.getAll(field).length !== 1) {
+      console.warn("payfast_callback_rejected: critical_fields");
+      return fail("duplicate or missing PayFast field", origin, 400);
+    }
   }
   const signatureResult = verifySignature(params, passphrase);
-  if (!signatureResult.ok) return fail(signatureResult.reason, origin, 401);
+  if (!signatureResult.ok) {
+    console.warn("payfast_callback_rejected: signature");
+    return fail(signatureResult.reason, origin, 401);
+  }
   if (!merchantMatches(params.get("merchant_id"), Deno.env.get("PAYFAST_MERCHANT_ID"))) {
+    console.warn("payfast_callback_rejected: merchant_identity");
     return fail("PayFast merchant account mismatch or not configured", origin, 401);
   }
   const source = sourceAllowed(req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip"), Deno.env.get("PAYFAST_ALLOWED_IPS") ?? "");
-  if (!source.ok) return fail(source.reason ?? "source not allowed", origin, 401);
+  if (!source.ok) {
+    console.warn("payfast_callback_rejected: source");
+    return fail(source.reason ?? "source not allowed", origin, 401);
+  }
   if (source.skipped) console.warn("payfast: PAYFAST_ALLOWED_IPS unset — source check skipped");
   const validation = await validateWithPayFast(rawBody, Deno.env.get("PAYFAST_VALIDATE_URL") ??
     (resolveMode(Deno.env.get("PAYFAST_MODE")) === "live" ? PAYFAST_VALIDATE_URL_LIVE : PAYFAST_VALIDATE_URL_SANDBOX));
-  if (!validation.ok) return fail(validation.reason, origin, 401);
+  if (!validation.ok) {
+    console.warn("payfast_callback_rejected: server_postback");
+    return fail(validation.reason, origin, 401);
+  }
 
   let providerEventId: string | null = null;
   let supa: ReturnType<typeof getServiceClient> | null = null;

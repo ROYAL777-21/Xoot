@@ -2,6 +2,18 @@
 
 ## HOLDING — 28 October — received founder handoff and reconcile its safety contracts
 
+Founder completed a fresh real staging OTP sign-in. The private helper originally limited
+input to6 digits; corrected to accept the complete6–10-digit staging code, with5 private-form
+boundary tests passing. Real Auth user matched the authorised existing signup alias; no
+credential was stored on disk or returned in status. The deployed create-booking39 server
+created exactly one unassigned solo draft at the public Waterfall test address, amountR289.
+Only that pending fixture was routed to PayFast in a guarded audited transaction; global
+checkout/payout controls remain false. Founder completed the official virtual-wallet checkout.
+Actual callback reached confirm-payment38 but returned401; no payment/event/receipt/fulfilment
+success is recorded. Claim diagnosis with static rejection-stage logs only: never log a
+passphrase, signature, payload, token or private account details. Do not relax any check.
+Preserve the named pending fixture for provider investigation and later marked test closeout.
+
 Cancellation re-review at3cb368e0 has no remainingP1/P2 findings and clears limited staging
 delivery only. Applied exact migration20261028125915, then confirm-payment38/admin37/cancel36/
 checkout15. Four database bodies, migration SQL and27 returned runtime/import-map files match.
