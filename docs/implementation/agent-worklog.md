@@ -2,6 +2,13 @@
 
 ## HOLDING — 28 October — founder delivery reconciliation
 
+Follow-up founder pointers:e2927029 onmain/release/20261028-careplus-earnings-sos and
+0c146034 onintegration/staging-gps-merge. Fresh git ls-remote finds main1062bdbadca92727e5f95766cbe9330c7347d46e
+and integration/website-staging-20261027 at93fe439; neither new branch exists. Authenticated
+GitHub get-commit returns422/no commit for both supplied IDs. Neither object is in this local
+shared repository or the searched local Git refs. Asked for the actual checkout location or
+downloadable Git bundle; no source is inferred from branch labels. Main/production unchanged.
+
 Founder now directs reading download/xoot-delivery-20261028/ (bundle, patches, runbook and
 nine-page readiness report), steps0–3 then SOS tests. The exact folder is not present in
 this workspace or Windows Downloads; connected Xoot Production Health content is unresolved

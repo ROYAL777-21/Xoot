@@ -9,6 +9,11 @@ link has been requested. Reconcile it against the preserved integration branch a
 schema/handlers before any push, credential change, migration, deployment or SOS activation.
 No unseen runbook step has been executed and no prior release gate is treated as passed.
 
+The founder's follow-up commit pointers are also not yet reachable: authenticated GitHub
+checks cannot find e2927029 or0c146034, and neither release/20261028-careplus-earnings-sos nor
+integration/staging-gps-merge is published. Remote main remains1062bdb. The new checkout's full
+local path or an exported downloadable Git bundle is needed before reconciliation can start.
+
 Local current-source types/lint/security and validated staging-config build pass. The latest
 full suite has1978 passes/7 existing skips/1 rendered sign-in timeout; that case passes alone
 under its unchanged deadline. This is not a completely green full run. Existing required GitHub,
