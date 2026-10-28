@@ -1,5 +1,24 @@
 # Agent worklog
 
+## HOLDING — 29 October — payment methods and forward crew quote parity
+
+Founder now requests Apple Pay, Samsung Pay, Google Pay, Instant EFT, cards, subscriptions
+and commissions. Verify official method support and the actual merchant configuration; do not
+claim activation from a provider product list. Claim the payment launch-method matrix/runbook,
+existing callback investigation and read-only recurring/earnings contract reconciliation.
+The second real virtual-wallet checkout also fails signature verification. Keep payment pending
+and all production checkout/payout/evidence flags closed; never replace signature checks with
+the diagnostic variants. No purchases, live charge, secret logging or invented provider receipt.
+
+Extend the existing crew-policy claim to a forward-only replacement of the private immutable
+SQL calculator. Its historical applied migration stays byte-for-byte intact. Match ZD-039's
+Airbnb/office-only crews and quote version without changing eligible prices, roles, writes or
+enablement. Cross-role migration/test edits are flagged for Release review. Update the actual
+SQL differential fixture matrix and its negative control; adjust stale UI guard anchors while
+preserving active-visit/GPS/SOS assertions. Two review fixes already pass21 focused tests after
+eight old-source regressions: duplicate legacy writer refusal and keyed booking/account state.
+Final independent re-review, exact artifact checks and staged visual acceptance remain.
+
 ## HOLDING — 28 October — Airbnb/office-only crews and handoff visit detail
 
 Prepared ZD-039 in both pricing engines, legacy writer and server quote version; web/native
