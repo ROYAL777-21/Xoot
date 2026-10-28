@@ -3,7 +3,7 @@ import { claimProviderEvent } from "../_shared/governance-utils.ts";
 import { applyBookingPaymentConfirmed, assertBookingCanConfirmPayment } from "../_shared/payment-confirmation.ts";
 import {
   PAYFAST_VALIDATE_URL_LIVE, PAYFAST_VALIDATE_URL_SANDBOX, normaliseStatus,
-  amountMatches, merchantMatches, recordAmountCents, sourceAllowed, validateWithPayFast, verifySignature,
+  amountMatches, buildNotificationParamString, merchantMatches, recordAmountCents, sourceAllowed, validateWithPayFast, verifySignature,
 } from "../_shared/payfast.ts";
 import { resolveMode } from "../_shared/payfast-checkout.ts";
 
@@ -15,8 +15,27 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return fail("method not allowed", origin, 405);
   const rawBody = await req.text();
   if (rawBody.length > 65_536) return fail("notification too large", origin, 413);
-  // Keep original field order for PayFast's PHP-urlencoded MD5 signature.
-  const params = new URLSearchParams(rawBody);
+  // PayFast's original delivery is URL-encoded; its dashboard resends multipart. Both must
+  // preserve field order, duplicates and empty strings before the SAME verification checks.
+  const contentType = req.headers.get("content-type") ?? "";
+  const mediaType = contentType.split(";", 1)[0].trim().toLowerCase();
+  let params: URLSearchParams;
+  if (mediaType === "multipart/form-data") {
+    try {
+      const form = await new Response(rawBody, { headers: { "content-type": contentType } }).formData();
+      params = new URLSearchParams();
+      for (const [key, value] of form) {
+        if (typeof value !== "string") return fail("PayFast fields must be text", origin, 400);
+        params.append(key, value);
+      }
+    } catch {
+      return fail("invalid PayFast form", origin, 400);
+    }
+  } else if (!mediaType || mediaType === "application/x-www-form-urlencoded") {
+    params = new URLSearchParams(rawBody);
+  } else {
+    return fail("unsupported PayFast notification format", origin, 415);
+  }
   const passphrase = Deno.env.get("PAYFAST_PASSPHRASE") ?? "";
   if (!passphrase.trim()) {
     console.warn("payfast_callback_rejected: verification_configuration");
@@ -51,7 +70,7 @@ Deno.serve(async (req) => {
     return fail(source.reason ?? "source not allowed", origin, 401);
   }
   if (source.skipped) console.warn("payfast: PAYFAST_ALLOWED_IPS unset — source check skipped");
-  const validation = await validateWithPayFast(rawBody, Deno.env.get("PAYFAST_VALIDATE_URL") ??
+  const validation = await validateWithPayFast(buildNotificationParamString(params), Deno.env.get("PAYFAST_VALIDATE_URL") ??
     (resolveMode(Deno.env.get("PAYFAST_MODE")) === "live" ? PAYFAST_VALIDATE_URL_LIVE : PAYFAST_VALIDATE_URL_SANDBOX));
   if (!validation.ok) {
     console.warn("payfast_callback_rejected: server_postback");
@@ -83,7 +102,9 @@ Deno.serve(async (req) => {
       if (!check.ok) return fail(check.reason, origin, 409);
     }
     const providerEvent = await claimProviderEvent(supa, {
-      provider: "payfast", eventId: `payfast:${providerTransactionId}`, eventType: "payment_confirmed", rawPayload: rawBody,
+      // Canonical field payload, not MIME boundaries: an official multipart retry is the same
+      // signed notification as the original URL-encoded delivery. No values are logged.
+      provider: "payfast", eventId: `payfast:${providerTransactionId}`, eventType: "payment_confirmed", rawPayload: params.toString(),
       subjectTable: "payment_records", subjectId: payment.id,
       metadata: { provider_reference: providerReference, booking_id: payment.booking_id, currency: "ZAR", amount_cents: expectedCents, status, pf_payment_id: providerTransactionId },
     });

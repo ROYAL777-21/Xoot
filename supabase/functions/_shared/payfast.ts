@@ -64,7 +64,7 @@ export const normaliseStatus = (raw: unknown): PayFastStatus => {
 export const payfastUrlEncode = (value: string) =>
   encodeURIComponent(value)
     .replace(/%20/g, "+")
-    .replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
+    .replace(/[!'()*~]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
     .replace(/%[0-9a-f]{2}/g, (m) => m.toUpperCase());
 
 /**
@@ -75,8 +75,9 @@ export const payfastUrlEncode = (value: string) =>
  * do — produces a valid-looking hash that never matches. `URLSearchParams` preserves insertion
  * order, which is why the raw body is parsed rather than an object.
  *
- * `signature` itself is excluded, and empty values are dropped: PayFast omits blank fields from the
- * string it signs.
+ * This is the OUTBOUND checkout form's construction: optional empty fields are omitted.
+ * Notifications have a different contract: every received value, including empty values, is
+ * signed. See buildNotificationParamString; do not use this outbound builder to verify an ITN.
  */
 export const buildSignatureBase = (params: URLSearchParams, passphrase: string) => {
   const parts: string[] = [];
@@ -90,6 +91,14 @@ export const buildSignatureBase = (params: URLSearchParams, passphrase: string) 
   if (passphrase.trim() !== "") base += `&passphrase=${payfastUrlEncode(passphrase.trim())}`;
   return base;
 };
+
+/** PayFast Notification.php: all received fields in order, with no signature or passphrase.
+ * Empty values and value whitespace are covered by the signature and must survive. This same
+ * canonical form is sent to PayFast's server confirmation endpoint, even for multipart retries.
+ */
+export const buildNotificationParamString = (params: URLSearchParams): string =>
+  [...params].filter(([key]) => key !== "signature")
+    .map(([key, value]) => `${key}=${payfastUrlEncode(value)}`).join("&");
 
 /**
  * MD5, lowercase hex.
@@ -165,7 +174,8 @@ export const timingSafeEqual = (a: string, b: string) => {
 export const verifySignature = (params: URLSearchParams, passphrase: string) => {
   const supplied = params.get("signature") ?? "";
   if (supplied.trim() === "") return { ok: false as const, reason: "signature field missing" };
-  const expected = md5Hex(buildSignatureBase(params, passphrase));
+  const base = buildNotificationParamString(params);
+  const expected = md5Hex(passphrase.trim() ? `${base}&passphrase=${payfastUrlEncode(passphrase.trim())}` : base);
   return timingSafeEqual(supplied, expected)
     ? { ok: true as const }
     : { ok: false as const, reason: "signature mismatch" };
@@ -212,7 +222,7 @@ export const merchantMatches = (merchantFromItn: unknown, configuredMerchantId: 
 /**
  * Ask PayFast whether it sent this. The authoritative check.
  *
- * The whole received body is posted back verbatim; PayFast answers with a body containing `VALID`
+ * The ordered notification fields (without signature or passphrase) are posted back; PayFast answers `VALID`
  * or `INVALID`. Anything else — a timeout, a 500, an unrecognised body — is treated as NOT valid,
  * because an integration that credits an order when its verifier is unreachable is an integration
  * that can be credited by taking the verifier offline.

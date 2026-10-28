@@ -2,6 +2,19 @@
 
 ## HOLDING — 28 October — received founder handoff and reconcile its safety contracts
 
+PayFast's official Notification.php and current verification guide confirm that INBOUND
+signatures include received empty/whitespace values; the outbound checkout intentionally omits
+empty optional fields. Three independent Node-MD5 literal vectors fail against old code, then
+pass after separating the inbound canonical string and matching PHP tilde encoding. Actual
+callback41 safe metadata proves the portal resend is multipart, not JSON or empty. Five HTTP
+regressions fail against the old receiver; all9 route cases and81 focused checks then pass.
+Parse only text form entries, preserve order/duplicates/empties, retain all signature/merchant/
+amount/source/postback/SQL checks, send canonical unsigned fields to provider confirmation,
+and normalize the event payload across MIME boundaries for genuine retry identity. No secrets
+are read or logged. This shared helper also reaches admin/checkout; redeploy all importers
+after independent source review. No success or capability evidence is asserted before actual
+provider resend settles the real named fixture and readback proves once-only fulfilment.
+
 Callback39 exact runtime readback matches all8 returned files. Official PayFast resend of
 ITN2020040 logs critical_fields, whereas the original callback38 returned401. Add only the
 fixed failed-field name/count and form-content-type boolean to distinguish malformed delivery
