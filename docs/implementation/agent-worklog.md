@@ -2,6 +2,17 @@
 
 ## HOLDING — 28 October — received founder handoff and reconcile its safety contracts
 
+Independent cancellation review finds conditional account-guard compatibility and uppercase
+UUID receipt comparison defects. Preserve the existing applied migration; the new forward
+migration coordinates both settlement and cancellation through identity-only account pre-locks,
+then payment/booking locks and revalidates owners. It supports absent or fully installed guard
+foundation, refusing partial setup. Actual staging and production currently have neither that
+foundation nor its five triggers. Rollback-only test temporarily installs the real foundation:
+92 cancellation +42 existing payment checks pass together; fixtures, injection, new schema and
+temporary foundation all confirmed absent afterward. Add bounded whole-RPC retry on40P01/40001
+and canonical UUID handling; all five new regressions fail before repair, then focused33 pass,
+four Deno entrypoints and focused lint pass. Independent re-review/concurrency remain.
+
 The founder supplied the actual xoot-codex-handoff-20261028.zip. SHA256
 D01AB16D7C6356FC59903572CD49D9CA33F2EC59A408CB7053CED78A0B1BC7BE; validated Git bundle
 contains e29270295a22664b221cf83184f06e3034f8d26e. Import into a separate review ref,

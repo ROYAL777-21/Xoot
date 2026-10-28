@@ -68,4 +68,30 @@ describe("booking cancellation route", () => {
   it("refuses mutation through GET", async () => {
     expect((await h.handle!(new Request("https://example.test/cancel"))).status).toBe(405);
   });
+
+  it("retries the whole failed transaction only for serialization or deadlock errors", async () => {
+    h.rpc.mockResolvedValueOnce({ data: null, error: { code: "40P01" } })
+      .mockResolvedValueOnce({ data: null, error: { code: "40001" } })
+      .mockResolvedValueOnce({ data: { booking_id: h.bookingId, status: "cancelled", idempotent: false,
+        refund: { eligible: false, amount: 0, reason: "not_paid" }, refund_request_id: null }, error: null });
+    expect((await h.handle!(request())).status).toBe(200);
+    expect(h.rpc).toHaveBeenCalledTimes(3);
+    expect(h.from).not.toHaveBeenCalled();
+  });
+
+  it("bounds transaction retries and does not acknowledge an exhausted retry", async () => {
+    h.rpc.mockResolvedValue({ data: null, error: { code: "40001" } });
+    expect((await h.handle!(request())).status).toBe(503);
+    expect(h.rpc).toHaveBeenCalledTimes(3);
+  });
+
+  it("accepts canonical uppercase UUID input without a false failure after committing", async () => {
+    const canonical = "abcdef12-abcd-4bcd-8bcd-abcdef123456";
+    h.rpc.mockImplementation(async () => ({
+      data: { booking_id: canonical, status: "cancelled", idempotent: false,
+        refund: { eligible: false, amount: 0, reason: "not_paid" }, refund_request_id: null }, error: null,
+    }));
+    expect((await h.handle!(request({ booking_id: canonical.toUpperCase() }))).status).toBe(200);
+    expect(h.rpc.mock.calls[0][1].p_booking_id).toBe(canonical);
+  });
 });

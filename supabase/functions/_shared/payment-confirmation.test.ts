@@ -4,6 +4,19 @@ import { applyBookingPaymentConfirmed } from "./payment-confirmation";
 const input = { paymentRecordId: "synthetic-payment", source: "payfast" as const, amountCents: 12501, providerReference: "synthetic-reference", providerEventId: "synthetic-event", payloadHash: "a".repeat(64), providerTransactionId: "synthetic-transaction" };
 const receipt = { payment_record_id: input.paymentRecordId, booking_id: "synthetic-booking", status: "paid", idempotent: false };
 describe("settlement receipt adapter", () => {
+  it("retries the whole transaction on a deadlock or serialization failure", async () => {
+    const rpc = vi.fn().mockResolvedValueOnce({ data: null, error: { code: "40P01" } })
+      .mockResolvedValueOnce({ data: null, error: { code: "40001" } })
+      .mockResolvedValueOnce({ data: receipt, error: null });
+    await expect(applyBookingPaymentConfirmed({ rpc }, input)).resolves.toEqual(receipt);
+    expect(rpc).toHaveBeenCalledTimes(3);
+    expect(rpc.mock.calls.every(call => call[0] === "settle_booking_payment")).toBe(true);
+  });
+  it("stops after three whole-transaction attempts without acknowledging success", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: { code: "40001" } });
+    await expect(applyBookingPaymentConfirmed({ rpc }, input)).rejects.toThrow("40001");
+    expect(rpc).toHaveBeenCalledTimes(3);
+  });
   it.each([NaN, Infinity, 0, -1, 12.5, Number.MAX_SAFE_INTEGER + 1])("never calls the financial writer with invalid cents %s", async amountCents => {
     const rpc = vi.fn();
     await expect(applyBookingPaymentConfirmed({ rpc }, { ...input, amountCents })).rejects.toThrow("amount is invalid");

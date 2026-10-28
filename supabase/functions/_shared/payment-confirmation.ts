@@ -41,12 +41,20 @@ export const applyBookingPaymentConfirmed = async (supa: SupabaseServiceClient, 
   if (!Number.isSafeInteger(input.amountCents) || input.amountCents <= 0 || !input.providerReference) {
     throw new Error("payment identity or amount is invalid");
   }
-  const { data, error } = await supa.rpc("settle_booking_payment", {
+  const args = {
     p_payment_id: input.paymentRecordId, p_source: input.source, p_amount_cents: input.amountCents,
     p_reference: input.providerReference, p_provider_event_id: input.providerEventId ?? null,
     p_payload_hash: input.payloadHash ?? null, p_provider_transaction_id: input.providerTransactionId ?? null,
     p_admin_id: input.adminId ?? null, p_reason: input.reason ?? null, p_admin_session_id: input.adminSessionId ?? null,
-  });
+  };
+  let result;
+  // Serialization/deadlock aborts roll back every consequence; retry the whole RPC only.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    result = await supa.rpc("settle_booking_payment", args);
+    if (!["40P01", "40001"].includes(result.error?.code ?? "")) break;
+  }
+  if (!result) throw new Error("payment transaction did not run");
+  const { data, error } = result;
   if (error) throw new Error(`atomic payment settlement failed: ${error.code ?? "database_error"}`);
   const row = data as Partial<BookingPaymentSettlement> | null;
   if (!row || row.payment_record_id !== input.paymentRecordId || typeof row.booking_id !== "string"
