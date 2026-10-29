@@ -10,6 +10,7 @@ import { captureAnalyticsEvent, getAnalyticsDeviceType } from "@/lib/analytics";
 import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
 import heroImg from "@/assets/hero-xoot.jpg";
 import { HeroWordFlip } from "@/components/xoot/HeroWordFlip";
+import { BookingModal } from "@/components/xoot/BookingModal";
 
 const services = [
   { id: "residential", label: "Residential", icon: Home },
@@ -24,6 +25,7 @@ export const BookingHero = () => {
   const [active, setActive] = useState("residential");
   const [address, setAddress] = useState("");
   const [activeXooters, setActiveXooters] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -43,12 +45,7 @@ export const BookingHero = () => {
       source: user ? "signed_in_homepage" : "guest_homepage",
       device_type: getAnalyticsDeviceType(),
     });
-    const target = `/app?service=${active}${address.trim() ? `&address=${encodeURIComponent(address.trim())}` : ""}`;
-    if (!user) {
-      navigate("/auth", { state: { from: { pathname: target } } });
-      return;
-    }
-    navigate(target);
+    setModalOpen(true);
   };
 
   return (
@@ -181,6 +178,11 @@ export const BookingHero = () => {
           </div>
         </div>
       </div>
+      <BookingModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        initialService={active}
+      />
     </section>
   );
 };

@@ -1,0 +1,6 @@
+Contact: mailto:security@xoot.co.za
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://xoot.co.za/.well-known/security.txt
+Policy: https://xoot.co.za/terms
+Acknowledgments: https://xoot.co.za/trust-safety

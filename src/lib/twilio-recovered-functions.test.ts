@@ -19,10 +19,9 @@ import { describe, expect, it } from "vitest";
 
 const withoutComments = (source: string) =>
   source
+    .replace(/\r\n/g, "\n")
     .replace(/\/\*[\s\S]*?\*\//g, "")
-    .split("\n")
-    .map((line) => line.replace(/(^|[^:])\/\/.*$/, "$1"))
-    .join("\n");
+    .replace(/\/\/.*$/gm, "");
 
 const readFunction = (name: string) =>
   withoutComments(readFileSync(join(process.cwd(), `supabase/functions/${name}/index.ts`), "utf8"));

@@ -18,6 +18,11 @@ import { Journal } from "@/components/xoot/Journal";
 import { Merch } from "@/components/xoot/Merch";
 import { TrustMechanisms } from "@/components/xoot/TrustMechanisms";
 import { ReferSection } from "@/components/xoot/ReferSection";
+import { Reviews } from "@/components/xoot/Reviews";
+import { GiftClean } from "@/components/xoot/GiftClean";
+import { ReferralWelcome } from "@/components/xoot/ReferralWelcome";
+import { BookingModal } from "@/components/xoot/BookingModal";
+import { useState } from "react";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -32,6 +37,8 @@ const homeStructuredData = {
 };
 
 const Index = () => {
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <SEO
@@ -40,6 +47,7 @@ const Index = () => {
         canonical="/"
         jsonLd={homeStructuredData}
       />
+      <ReferralWelcome onBook={() => setBookingModalOpen(true)} />
       <Navbar />
       <main className="relative z-20">
         <h1 className="sr-only">Xoot - Premium home services with trust, safety, and retention workflows</h1>
@@ -47,6 +55,7 @@ const Index = () => {
         <TrustedBy />
         <ServiceAreaMap />
         <Services />
+        <GiftClean />
         {/* The three connectors sit where the 2026-09-03 handoff places them, with its own
             offsets and alternating tilt. They occupy no height, so they change the page's
             texture without changing its rhythm. */}
@@ -54,6 +63,7 @@ const Index = () => {
         <SafetyTrust />
         <TrustMechanisms />
         <PeopleBand />
+        <Reviews />
         <GapArrow offset={-54} rotate={7} colour="var(--xoot-violet-600)" />
         <NearbyWorkers />
         <HowItWorks />
@@ -64,9 +74,13 @@ const Index = () => {
         <Journal />
         <FeedbackSection />
         <ReferSection />
-      <CtaBand />
+        <CtaBand />
       </main>
       <Footer />
+      <BookingModal
+        open={bookingModalOpen}
+        onClose={() => setBookingModalOpen(false)}
+      />
     </div>
   );
 };

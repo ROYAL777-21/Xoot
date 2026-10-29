@@ -570,3 +570,100 @@ export function serviceBounds(service: ServiceId) {
 export function formatRand(cents: number) {
   return `R${(cents / 100).toLocaleString("en-ZA", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
+
+export type PropertyType = {
+  key: string;
+  label: string;
+  icon: string;
+  requires?: ServiceId;
+  why?: string;
+};
+
+export const PROPERTY_TYPES: PropertyType[] = [
+  { key: "flat", label: "Flat or apartment", icon: "building-2" },
+  { key: "house", label: "House", icon: "house" },
+  { key: "townhouse", label: "Townhouse or complex", icon: "users" },
+  {
+    key: "airbnb",
+    label: "Short-stay rental",
+    icon: "bed-double",
+    requires: "airbnb",
+    why: "Guest turnovers are on a check-in deadline and include linen, restocking and a photo handover. A regular visit does not.",
+  },
+  {
+    key: "office",
+    label: "Office or commercial",
+    icon: "briefcase",
+    requires: "office",
+    why: "Commercial work is after-hours, needs its own insurance cover, and is charged on floor area rather than bedrooms.",
+  },
+  {
+    key: "empty",
+    label: "Empty — moving in or out",
+    icon: "truck",
+    requires: "moving",
+    why: "An empty place means inside cupboards, appliances, walls and skirtings — around twice the hours of a visit to a lived-in home.",
+  },
+];
+
+/**
+ * Returns null when the property and service pairing is compatible,
+ * or a mismatch object suggesting the correct service if incompatible.
+ */
+export function checkServiceFit(service: ServiceId, propertyKey: string) {
+  const pt = PROPERTY_TYPES.find((p) => p.key === propertyKey);
+  if (!pt || !pt.requires) return null;
+  if (pt.requires === service) return null;
+  if (service === "laundry") return null;
+  return {
+    from: service,
+    to: pt.requires,
+    property: pt,
+    why: pt.why,
+  };
+}
+
+/**
+ * Calculates a full itemized quote under the ZD-035 crew model.
+ */
+export function calculateCrewQuote(input: {
+  service: ServiceId;
+  hours: number;
+  crew?: number;
+  addOns?: number;
+  linenOnSite?: boolean;
+  bookingCover?: boolean;
+  carePlusMember?: boolean;
+  referralCreditCents?: number;
+}) {
+  const spec = SERVICES[input.service];
+  if (!spec || Object.keys(spec.ladder).length === 0) return null;
+  const ladderCents = spec.ladder[String(input.hours)];
+  if (ladderCents === undefined) return null;
+
+  const crew = Math.min(Math.max(input.crew ?? 1, 1), MAX_CREW);
+  const baseCents = crewPriceCents(ladderCents, crew);
+  const elapsedHours = crewHours(input.hours, crew);
+  const addOnsCents = Math.max(0, input.addOns ?? 0) * ADD_ON_CENTS;
+  const linenCents = input.linenOnSite ? LINEN_ON_SITE_CENTS : 0;
+  const coverCents = input.bookingCover === false ? 0 : BOOKING_COVER_CENTS;
+  const serviceFeeCents = input.carePlusMember ? 0 : BOOKING_FEE_CENTS;
+  const discountCents = Math.min(baseCents, Math.max(0, input.referralCreditCents ?? 0));
+  const subtotalCents = baseCents + addOnsCents + linenCents + coverCents + serviceFeeCents;
+  const totalCents = Math.max(0, subtotalCents - discountCents);
+
+  return {
+    service: input.service,
+    hours: input.hours,
+    crew,
+    elapsedHours,
+    baseCents,
+    addOnsCents,
+    linenCents,
+    coverCents,
+    serviceFeeCents,
+    discountCents,
+    totalCents,
+  };
+}
+

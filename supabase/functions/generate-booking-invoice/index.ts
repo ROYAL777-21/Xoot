@@ -21,7 +21,7 @@ const paidStatuses = new Set(["paid", "admin_confirmed"]);
 
 const getInvoiceLegalConfig = () => {
   const legalEntityName = (Deno.env.get("XOOT_INVOICE_LEGAL_ENTITY") ?? "").trim();
-  const legalEntityRegistration = (Deno.env.get("XOOT_INVOICE_LEGAL_ENTITY_REGISTRATION") ?? "").trim();
+  const legalEntityRegistration = (Deno.env.get("XOOT_INVOICE_LEGAL_ENTITY_REGISTRATION") ?? "2026/709372/07").trim();
   const vatRate = normaliseVatRate(Deno.env.get("XOOT_INVOICE_VAT_RATE") ?? "0");
   const vatNumber = (Deno.env.get("XOOT_INVOICE_VAT_NUMBER") ?? "").trim();
 
@@ -31,7 +31,7 @@ const getInvoiceLegalConfig = () => {
   return {
     ok: true as const,
     legalEntityName,
-    legalEntityRegistration: legalEntityRegistration || null,
+    legalEntityRegistration: legalEntityRegistration || "2026/709372/07",
     vatRate,
     vatNumber: vatNumber || null,
   };
