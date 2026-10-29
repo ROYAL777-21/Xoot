@@ -1,5 +1,24 @@
 # Agent worklog
 
+## HOLDING — 29 October morning — merchant methods, performance and release gates
+
+Founder is signed into the live PayFast account and explicitly requests resolution of security
+review and production-schema gates plus investigation of42 PostgREST timeout events versus21
+in the preceding window. Claim the exact current CI diagnostics, generated schema comparison,
+reviewed production reconciliation/rollback preparation, security workflow/guards and redacted
+performance evidence. Review owns correctness of any free replacement: no ignored scan failure,
+fake green status, missing coverage, repointed production comparison or blanket migration push.
+Cost instruction remains no new paid plan/credit/number or automatic expensive payout schedule.
+
+Latest79e138ff design/security, PostgreSQL referral privileges and production public-directory
+checks have genuinely passed. The remaining paid review fails for provider credit and the live
+types job detects actual staged schema changes plus generator formatting. Inspect those effects
+before choosing the narrow repair. Live merchant method/verification pages are read-only first;
+preserve closed payment/payout/tracking/SOS activation until their substantive acceptance.
+Performance work starts with bounded aggregate logs, connections, request/latency correlation
+and primary docs. Do not equate missing-index advisor findings with the timeout cause, increase
+capacity/budgets blindly, log private SQL/addresses or manufacture customer failures.
+
 ## HOLDING — 29 October — repair exact CI privacy guard after detail port
 
 Actual current-head GitHub logs execute and identify one stale Node guard in
