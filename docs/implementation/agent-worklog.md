@@ -1,5 +1,15 @@
 # Agent worklog
 
+## HOLDING — 29 October — repair exact CI privacy guard after detail port
+
+Actual current-head GitHub logs execute and identify one stale Node guard in
+scripts/ops/job-live-location-privacy.test.mjs: it requires the removed internal GPS disclaimer
+copy. Claim this guard only, preserving its fake-coordinate/timer/source restrictions and adding
+the actual recorded-updates/active-job/live-component binding. Demonstrate it against the new
+detail and a planted ungated journey defect, then run the complete workflow Node checks.
+No deadline, assertion category or required check is removed. Production schema drift and
+external Claude credit failure stay visible; do not repoint the production comparison or fund it.
+
 ## STAGING DELIVERY — 29 October — real PayFast receipt and reviewed crew policy
 
 Founder corrected the salt privately at00:16:35UTC. Official sandbox ITN2020364 / transaction
