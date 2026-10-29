@@ -67,6 +67,13 @@ consented signed live smoke and verified payout recipients plus a gated first ru
 actions require actual enrolled TOTP/AAL2. Gift fulfilment and recurring Care+ are separate
 financial contracts; their refusal must remain until those contracts and tests are complete.
 
+The v3 handoff's statement that a separate negotiated recurring agreement is always required
+is not supported by the current official setup guide. Confirm the verified merchant's actual
+settings: setting the security passphrase enables subscriptions; optional ad-hoc tokenisation
+has its own switch and terms. Each customer still must authorise the initial recurring card
+agreement. Do not treat ordinary Google/Apple account sign-in as payment consent, grant R30
+per renewal, or initiate an ad-hoc debit without the required authority.
+
 ## Primary sources checked 29 October
 
 - [PayFast developer documentation](https://developers.payfast.co.za/) — hosted method codes,
@@ -74,6 +81,8 @@ financial contracts; their refusal must remain until those contracts and tests a
 - [Payment methods](https://payfast.io/features/payment-methods/) — supported wallets/EFT/cards.
 - [Google Pay eligibility and toggle](https://support.payfast.help/portal/en/kb/articles/google-pay).
 - [Recurring subscriptions](https://payfast.io/features/subscriptions/) — card mandate lifecycle.
+- [Official recurring setup](https://support.payfast.help/portal/en/kb/articles/how-do-i-enable-recurring-payments-on-my-website-20-9-2022)
+  — account passphrase, subscriptions and separate optional tokenisation terms.
 - [Split payments](https://payfast.io/features/split-payments/) — provider commission facility;
   not evidence Xoot's ledger or recipient accounts are ready.
 - [Immediate payouts](https://payfast.io/features/immediate-payout/) and

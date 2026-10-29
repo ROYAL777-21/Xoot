@@ -16,8 +16,14 @@ handoff flowers and truthful unassigned state. Phone390 and desktop1440 layouts 
 without horizontal overflow. Preview fa23986c is READY. Airbnb/office-only crew policy and
 account/booking state isolation pass focused tests and independent limited review. Forward SQL
 parity passes real PGlite0.5.8 across407 allowed ladder/size/crew combinations plus benefits,
-invalid inputs, role denial and negative controls. Historical applied SQL is unchanged. Hosted
-SQL/function policy rollout and the final full run are still pending at this checkpoint.
+invalid inputs, role denial and negative controls. Historical applied SQL is unchanged. Applied
+only the reviewed pure calculator as actual staging ledger20261029003043; its body/permissions
+match. All five frozen pricing importers are refreshed: quote12, operations39, response23,
+booking42 and duplicate booking41. All37 returned runtime/import-map files match source and
+all five anonymous HTTP calls are refused401; no sign-in check changed. Full fa23986c run
+passes199 files/2032 tests with no skips; validated staging artifact and50 prerenders pass.
+The independent forward-only calculator installation also passes actual hosted checks without
+data writes. The external delivery's three unreviewed migrations are still unapplied.
 
 Cancellation migration20261028125915 and its reviewed functions are on staging:134 rollback
 assertions, genuine independent-session races, old-overwrite negative control and8 HTTP
@@ -27,7 +33,9 @@ fixture bc08e972-c63a-4dbc-a060-ccfe34adcaef and its receipt for reconciliation.
 The original and v3 delivery bundles are now accessible as separate review refs. V3 tipab89de7
 has been verified and imported read-only; no wholesale merge or handoff migration was applied.
 Its Care+ document is a one-cycle design, not implemented automatic renewal. Its per-cycle R30
-wording conflicts with the locked once-only welcome credit. The existing reconciliation lists
+wording conflicts with the locked once-only welcome credit. Its special provider agreement
+claim is not a required new founder gate: current official guidance describes dashboard
+subscription enablement/passphrase and separate tokenisation terms. The existing reconciliation lists
 substantive admin/session/receipt/schema/earnings/SOS defects that must be resolved before import.
 
 Founder requests Apple Pay, Samsung Pay, Google Pay, Instant EFT, cards, subscriptions and
@@ -40,13 +48,20 @@ No instant bank settlement promise, additional paid service or automatic payout 
 
 Required GitHub checks must actually pass; Actions now executes, but the external Claude
 security check reports insufficient credit. Keep its failure visible and retain the current
-plan. Reconcile exact production schema effects, frozen function copies, live provider and
+plan. Current design/security job exposed a stale GPS disclaimer assertion; its privacy and
+consent checks now use the actual en-route mount/fallback and reject a planted ungated mount.
+The native rooms guard likewise follows solo home visits while preserving Airbnb3/office4.
+26 Node privacy/identity/dispatch/diagnostic checks, both preflight self-tests and59 native
+script checks pass. The three initial local shell diagnostic failures used an unavailable
+Windows WSL shim; the installed Git Bash resolves them without a test/source workaround.
+The live-production types comparison still correctly reports staged schema differences.
+Reconcile exact production schema effects, frozen function copies, live provider and
 device/ops acceptance before promotion. Production homepage/release branch and unrelated PRs
 remain preserved. Earlier dated sections below are historical evidence, not new release approval.
 
 ## 27 October 2026 — current implementation and release tasks
 
-This section supersedes the dated history below. The last verified live website is approved
+Historical27 October baseline. The current29 October section above supersedes it. The last verified live website is approved
 `e0c021e9fde328098f33fb216b1efa720eadf2f1`, built 24 October at 19:18 UTC. The new website
 work is on stacked review branches and a staging-backed preview. It has not been published to
 production. Preserve the approved homepage, main, unrelated PR98/99 and production-only migration

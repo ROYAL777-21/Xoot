@@ -14,6 +14,21 @@ Claim mobile/scripts/native-booking-input.test.mts for its direct ZD-039 expecta
 keeping every room/size/hour threshold and checking eligible Airbnb/office crews are preserved.
 The combined Node run initially selected Windows' unavailable WSL bash shim for the three CLI
 diagnostic cases; rerun with the installed official Git Bash on this process's PATH only.
+Completed:26 combined Node checks, live-runner and backend-preflight self-tests, and all59
+checks across9 native script groups pass. Independent guard review has noP1/P2. These two
+test-only follow-ups do not change the reviewed runtime. The final source/security scan passes
+all four header checks and secret/client-write/unsafe-DOM/static-hosting checks; retain the
+distinct initial WSL/native expected-value failures in their dated logs. Root ESLint checks
+the Node guard; its config explicitly ignores native .mts, which was executed by all59 native
+checks rather than being claimed as linted. No security check or scanner pattern is relaxed.
+
+Staging delivery readback is complete: quote12/operations39/response23/booking42/duplicate41,
+all37 returned runtime/import-map files match source; provider omits deno.json only. All five
+actual anonymous HTTP requests return401. Actual hosted pure quote checks accept office4,
+refuse all three solo-service crews and deny client execute without data writes. Callback46
+also matches all8 returned files and accepts the genuine provider receipt; all checkout and
+payout operational switches and provider capability flags are still false. Evidence is in
+docs/release/evidence/2026-10-29/payment-and-crew-staging.json. No production promotion.
 
 ## STAGING DELIVERY — 29 October — real PayFast receipt and reviewed crew policy
 

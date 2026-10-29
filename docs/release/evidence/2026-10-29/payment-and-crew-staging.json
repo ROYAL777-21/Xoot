@@ -1,0 +1,405 @@
+{
+  "date": "2026-10-29",
+  "environment": "staging",
+  "project": "fxmxyabdjqviqbcxmvlp",
+  "runtimeRevision": "fa23986c49809ebf1f7f83cd1de53da1d8558d7a",
+  "scope": "Real sandbox callback acceptance and Airbnb/office-only crew policy. No production clearance.",
+  "payment": {
+    "bookingId": "bc08e972-c63a-4dbc-a060-ccfe34adcaef",
+    "paymentId": "d9aeb89f-783e-4680-9dea-668c68d2df4b",
+    "amountCents": 28900,
+    "currency": "ZAR",
+    "actualMoneyCharged": false,
+    "creation": "Real privately verified founder Auth; deployed server quote. Only this fixture was routed to PayFast in a guarded audited transaction. This does not certify normal checkout.",
+    "itnId": "2020364",
+    "providerTransactionId": "3482365",
+    "paidAt": "2026-10-29T00:18:36.575326Z",
+    "status": "paid",
+    "bookingStatus": "payment_confirmed",
+    "verifiedReceiptSource": "payfast",
+    "processedProviderEvents": 1,
+    "receipts": 1,
+    "ownerNotifications": 1,
+    "assignmentQueueItems": 1,
+    "duplicateOfficialDelivery": "Same receipt, notification, assignment outbox, transaction identity and paid time.",
+    "secondGenuineTransaction": {
+      "itnId": "2020040",
+      "providerTransactionId": "3481790",
+      "outcome": "Recorded failed after replay; accepted receipt/transaction and once-only fulfilment remain unchanged.",
+      "retainedFailedEvents": 1
+    },
+    "workerState": "Unassigned. No worker approval or fulfilled service inferred.",
+    "callback": {
+      "name": "confirm-payment",
+      "version": 46,
+      "verify_jwt": false,
+      "bundleSha256": "847c8e7c1a931988378e14cae5c299eb32d8e6ec493a787148d7b9f7e2874f4d",
+      "returnedFiles": 8,
+      "allReturnedFilesMatch": true,
+      "omittedByProvider": [
+        "supabase/functions/deno.json"
+      ],
+      "sourceFiles": [
+        {
+          "name": "supabase/functions/confirm-payment/index.ts",
+          "sha256": "4b8bf80067c683e805ad93e6a04de2cd6cc3620bdbe8c8189ad089de476f745d"
+        },
+        {
+          "name": "supabase/functions/_shared/action-utils.ts",
+          "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee"
+        },
+        {
+          "name": "supabase/functions/_shared/governance-utils.ts",
+          "sha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981"
+        },
+        {
+          "name": "supabase/functions/_shared/payment-confirmation.ts",
+          "sha256": "c853de537d9aeaf8722583037cec67994fc69698c70dc98935a9d03ce6868ba2"
+        },
+        {
+          "name": "supabase/functions/_shared/booking-state-machine.ts",
+          "sha256": "1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7"
+        },
+        {
+          "name": "supabase/functions/_shared/payfast.ts",
+          "sha256": "c4ab8134c5a468a286a37e3dfdd29209bfc9c5d9cd8925e87ce3305742a3d509"
+        },
+        {
+          "name": "supabase/functions/_shared/payfast-checkout.ts",
+          "sha256": "71b56b3c1afa87af7f853d8a2f9a7c497aae07edc1fb799da58193042aadbe1f"
+        },
+        {
+          "name": "supabase/functions/deno.json",
+          "sha256": "5335690600914ad53e9b4873a8287e0baba01902ef94eec02d01b35ca6d7b3be"
+        },
+        {
+          "name": "supabase/functions/import_map.json",
+          "sha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537"
+        }
+      ]
+    }
+  },
+  "crewPolicy": {
+    "decision": "ZD-039",
+    "servicesWithCrews": [
+      "airbnb",
+      "office"
+    ],
+    "otherServices": "One Xooter; existing eligible-service prices/caps preserved.",
+    "migrationVersion": "20261029003043",
+    "migrationName": "airbnb_office_crew_quote_policy",
+    "migrationSha256": "8797e41013e5a19f4016623804db882d86101f3667f3655275e3e12f263e1225",
+    "provisionalFilename": "20261028235926_airbnb_office_crew_quote_policy.sql",
+    "rename": "New migration filename aligned to actual MCP ledger version; SQL bytes unchanged. Historical migrations not edited.",
+    "hostedBodyMatches": true,
+    "immutable": true,
+    "securityDefiner": false,
+    "emptySearchPath": true,
+    "anonExecute": false,
+    "authenticatedExecute": false,
+    "serviceRoleExecute": true,
+    "standaloneInstall": "Passed isolated PGlite and actual hosted office crew4, three solo-service refusals and role checks without data writes.",
+    "functions": [
+      {
+        "name": "get-booking-quote",
+        "version": 12,
+        "verify_jwt": true,
+        "returnedFiles": 10,
+        "allReturnedFilesMatch": true,
+        "mismatches": [],
+        "omittedByProvider": [
+          "supabase/functions/deno.json"
+        ],
+        "valid": true,
+        "bundleSha256": "38e324032e0b89780ad245e75a2f318a1a030e535821dbfb928e02586f7af235",
+        "sourceFiles": [
+          {
+            "name": "supabase/functions/get-booking-quote/index.ts",
+            "sha256": "60b070f07a0f2234a208b6a9995331c06cfc98ce1f9f23f71dfb0fb2c7d26084"
+          },
+          {
+            "name": "supabase/functions/_shared/action-utils.ts",
+            "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee"
+          },
+          {
+            "name": "supabase/functions/_shared/governance-utils.ts",
+            "sha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981"
+          },
+          {
+            "name": "supabase/functions/_shared/booking-quote-facts.ts",
+            "sha256": "2d76fb6518faae7b3c240e659d8fe03b95541bd10360e4c61e8ff5c2ea262289"
+          },
+          {
+            "name": "supabase/functions/_shared/booking-quote.ts",
+            "sha256": "4750d1397beff68da18a1cabcedca6f57c4071798b3dbcdf4c5d609b001580b2"
+          },
+          {
+            "name": "supabase/functions/_shared/pricing.ts",
+            "sha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349"
+          },
+          {
+            "name": "supabase/functions/_shared/referrals.ts",
+            "sha256": "ab23ec82ffe7751bda7b82f81dcc96d93dcbf2098d4ad9cdc1af7b7d227def2c"
+          },
+          {
+            "name": "supabase/functions/_shared/booking-contract.ts",
+            "sha256": "e67d909cfc1ffbf1c50a1511da01d7b765fa883c00b5f7a3e524c2b5e74a70d9"
+          },
+          {
+            "name": "supabase/functions/_shared/booking-quote-handler.ts",
+            "sha256": "4ee1ef15832060ddfb63fdb8bfed06403da450152283d62a839ed879bf1fb8ae"
+          },
+          {
+            "name": "supabase/functions/deno.json",
+            "sha256": "5335690600914ad53e9b4873a8287e0baba01902ef94eec02d01b35ca6d7b3be"
+          },
+          {
+            "name": "supabase/functions/import_map.json",
+            "sha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537"
+          }
+        ]
+      },
+      {
+        "name": "ops-workflow",
+        "version": 39,
+        "verify_jwt": true,
+        "returnedFiles": 7,
+        "allReturnedFilesMatch": true,
+        "mismatches": [],
+        "omittedByProvider": [
+          "supabase/functions/deno.json"
+        ],
+        "valid": true,
+        "bundleSha256": "e410ad415c10eb822709881b62a915efb729c8d2a5da7f0a1f5d106adb3d4e8c",
+        "sourceFiles": [
+          {
+            "name": "supabase/functions/ops-workflow/index.ts",
+            "sha256": "cc2dd17ba61c071653989e6f5e84d6a53f29f5d9ffdaa6d086250d15c0427da8"
+          },
+          {
+            "name": "supabase/functions/_shared/action-utils.ts",
+            "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee"
+          },
+          {
+            "name": "supabase/functions/_shared/booking-state-machine.ts",
+            "sha256": "1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7"
+          },
+          {
+            "name": "supabase/functions/_shared/governance-utils.ts",
+            "sha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981"
+          },
+          {
+            "name": "supabase/functions/_shared/gift-order.ts",
+            "sha256": "676970977e68777ba8937c0e3b4379171e4944cd8e803aef6a1dd322113ec688"
+          },
+          {
+            "name": "supabase/functions/_shared/pricing.ts",
+            "sha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349"
+          },
+          {
+            "name": "supabase/functions/deno.json",
+            "sha256": "5335690600914ad53e9b4873a8287e0baba01902ef94eec02d01b35ca6d7b3be"
+          },
+          {
+            "name": "supabase/functions/import_map.json",
+            "sha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537"
+          }
+        ]
+      },
+      {
+        "name": "respond-xooter-job",
+        "version": 23,
+        "verify_jwt": true,
+        "returnedFiles": 4,
+        "allReturnedFilesMatch": true,
+        "mismatches": [],
+        "omittedByProvider": [
+          "supabase/functions/deno.json"
+        ],
+        "valid": true,
+        "bundleSha256": "53e6259b69005a99abb13d287f626d6f8056acd398f8ad576312d09a8d8fac65",
+        "sourceFiles": [
+          {
+            "name": "supabase/functions/respond-xooter-job/index.ts",
+            "sha256": "ac6e56820d12ca3cc7c894b51e427a0b5f6047aec6429128835acfbd82247456"
+          },
+          {
+            "name": "supabase/functions/_shared/action-utils.ts",
+            "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee"
+          },
+          {
+            "name": "supabase/functions/_shared/pricing.ts",
+            "sha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349"
+          },
+          {
+            "name": "supabase/functions/deno.json",
+            "sha256": "5335690600914ad53e9b4873a8287e0baba01902ef94eec02d01b35ca6d7b3be"
+          },
+          {
+            "name": "supabase/functions/import_map.json",
+            "sha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537"
+          }
+        ]
+      },
+      {
+        "name": "create-booking",
+        "version": 42,
+        "verify_jwt": true,
+        "returnedFiles": 8,
+        "allReturnedFilesMatch": true,
+        "mismatches": [],
+        "omittedByProvider": [
+          "supabase/functions/deno.json"
+        ],
+        "valid": true,
+        "bundleSha256": "d39b04129842a73a98051fad77fcba60262320790ad7cc699d76826e51e1a724",
+        "sourceFiles": [
+          {
+            "name": "supabase/functions/create-booking/index.ts",
+            "sha256": "e561e7379c549e4a9e647c6adb7621415ba0102efd55b7958d90194c660cca32"
+          },
+          {
+            "name": "supabase/functions/_shared/action-utils.ts",
+            "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee"
+          },
+          {
+            "name": "supabase/functions/_shared/verified-coverage.ts",
+            "sha256": "ea49893f7265399b945b24915eeb3330e972cc91ece5de7d9b4940deea2af491"
+          },
+          {
+            "name": "supabase/functions/_shared/geo-coverage.ts",
+            "sha256": "44ecb37a25d2d657c0938a7fcdbf007b82b0239eaf7eb3a29596472918e190f5"
+          },
+          {
+            "name": "supabase/functions/_shared/referrals.ts",
+            "sha256": "ab23ec82ffe7751bda7b82f81dcc96d93dcbf2098d4ad9cdc1af7b7d227def2c"
+          },
+          {
+            "name": "supabase/functions/_shared/pricing.ts",
+            "sha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349"
+          },
+          {
+            "name": "supabase/functions/_shared/care-plus-membership.ts",
+            "sha256": "265a3d6f6df95efc30c6a4c56db59d04d63c055279d6cd88a81f8455cc58449c"
+          },
+          {
+            "name": "supabase/functions/deno.json",
+            "sha256": "5335690600914ad53e9b4873a8287e0baba01902ef94eec02d01b35ca6d7b3be"
+          },
+          {
+            "name": "supabase/functions/import_map.json",
+            "sha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537"
+          }
+        ]
+      },
+      {
+        "name": "create-booking-request",
+        "version": 41,
+        "verify_jwt": true,
+        "returnedFiles": 8,
+        "allReturnedFilesMatch": true,
+        "mismatches": [],
+        "omittedByProvider": [
+          "supabase/functions/deno.json"
+        ],
+        "valid": true,
+        "bundleSha256": "ef8677e79c781c2e9a4edae6e13c16fad5422021f8e60f55464e5377a6768a4f",
+        "sourceFiles": [
+          {
+            "name": "supabase/functions/create-booking-request/index.ts",
+            "sha256": "0a8005975bcd3bd9ac55daffce89497e939cbbfaedfe337aeeb02d8b4f52729a"
+          },
+          {
+            "name": "supabase/functions/_shared/email-playbook.ts",
+            "sha256": "ee3ca7ebb8f8ce98ed79c562cff79dc72084c377db371affdeb3be49d11b3416"
+          },
+          {
+            "name": "supabase/functions/_shared/action-utils.ts",
+            "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee"
+          },
+          {
+            "name": "supabase/functions/_shared/verified-coverage.ts",
+            "sha256": "ea49893f7265399b945b24915eeb3330e972cc91ece5de7d9b4940deea2af491"
+          },
+          {
+            "name": "supabase/functions/_shared/geo-coverage.ts",
+            "sha256": "44ecb37a25d2d657c0938a7fcdbf007b82b0239eaf7eb3a29596472918e190f5"
+          },
+          {
+            "name": "supabase/functions/_shared/pricing.ts",
+            "sha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349"
+          },
+          {
+            "name": "supabase/functions/_shared/care-plus-membership.ts",
+            "sha256": "265a3d6f6df95efc30c6a4c56db59d04d63c055279d6cd88a81f8455cc58449c"
+          },
+          {
+            "name": "supabase/functions/deno.json",
+            "sha256": "5335690600914ad53e9b4873a8287e0baba01902ef94eec02d01b35ca6d7b3be"
+          },
+          {
+            "name": "supabase/functions/import_map.json",
+            "sha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537"
+          }
+        ]
+      }
+    ],
+    "returnedRuntimeFilesMatched": 37,
+    "anonymousHttpRefusals": 5
+  },
+  "validation": {
+    "fullSuite": {
+      "revision": "fa23986c49809ebf1f7f83cd1de53da1d8558d7a",
+      "files": 199,
+      "passed": 2032,
+      "skipped": 0
+    },
+    "pglite": "0.5.8, actual SQL execution; 407 allowed ladder/size/crew cases plus benefits, invalid inputs, permissions, read-only and price negative control.",
+    "afterLedgerRename": "Eight SQL cases pass again; standalone SQL body unchanged.",
+    "ciGuard": "14 location tests; 26 combined privacy/identity/dispatch/CLI diagnostic tests; planted ungated journey is rejected.",
+    "nativeScripts": {
+      "groups": 9,
+      "passed": 59,
+      "signedDeviceBuild": false
+    },
+    "webTypes": "pass",
+    "focusedLint": "pass",
+    "denoEntrypoints": 5,
+    "validatedStagingBuild": "pass",
+    "publicPrerenders": 50,
+    "artifactScan": "pass",
+    "approvedHomepageWidths": [
+      390,
+      1440
+    ],
+    "actualAuthenticatedBookingWidths": [
+      390,
+      1440
+    ],
+    "horizontalOverflow": false,
+    "actualCustomerView": "Saved R289 payment received; no pay-again inference from return URL; truthful unassigned worker state.",
+    "sourceReview": "No remaining P1/P2 in the scoped view/writer/SQL/guard reviews. Reviewers did not independently execute the reported suites."
+  },
+  "preserved": {
+    "productionHomepage": true,
+    "releaseBranch": true,
+    "unrelatedPRs": [
+      98,
+      99
+    ],
+    "allProviderCapabilityFlagsFalse": true,
+    "liveCharges": false,
+    "payoutsEnabled": false,
+    "trackingEnabled": false,
+    "sosPubliclyEnabled": false,
+    "newPaidService": false
+  },
+  "remaining": [
+    "Live merchant sign-in, verified account methods and private production credentials/passphrase.",
+    "Ordinary-owner checkout, actual admin AAL2, canonical quote/crew and worker fulfilment acceptance.",
+    "Recurring Care+ mandate, consent, receipt-backed renewals, cancellation and failure/reconciliation paths.",
+    "Commission completion ledger, refund reconciliation, verified payout recipients and gated first payout.",
+    "Production schema/rollback and required CI; external security review lacks credit and production type comparison detects staged differences.",
+    "V3 handoff selective reconciliation. Its migrations and broader native changes are not applied."
+  ]
+}

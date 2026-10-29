@@ -142,6 +142,13 @@ test('non-participants and stale records never see GPS, nor does API report an i
   assert.doesNotMatch(handler, /etaMinutes|routeDuration|console\.log\([^)]*(?:latitude|longitude)/);
 });
 
+function assertVisitJourneyBoundary(source) {
+  assert.match(source, /id && canonicalStatus === "en_route" && <LiveJobJourney bookingId=\{id\} isAssignedWorker=\{isAssignedXooter\}/);
+  assert.match(source, /VITE_ENABLE_LIVE_JOURNEY === "true"/);
+  assert.match(source, /Follow your visit’s recorded updates here\./);
+  assert.doesNotMatch(source, /setEta|setInterval\(\(\) => setEta|etaMinutes: liveStatus/);
+}
+
 test('web job journey is disabled by default and requires explicit foreground worker consent', () => {
   assert.match(web, /VITE_ENABLE_LIVE_JOURNEY === "true"/);
   assert.match(web, /if \(!ENABLED \|\| !mapboxToken\.startsWith\("pk\."\)\) return null/);
@@ -157,7 +164,11 @@ test('web job journey is disabled by default and requires explicit foreground wo
   assert.match(web, /attributionControl: true/);
   assert.match(web, /60_000/);
   assert.doesNotMatch(web, /localStorage|sessionStorage|saveGPS|backgroundLocation|etaMinutes/);
-  assert.match(detail, /<LiveJobJourney bookingId=\{id\} isAssignedWorker=\{isAssignedXooter\}/);
-  assert.match(detail, /VITE_ENABLE_LIVE_JOURNEY === "true"/);
-  assert.match(detail, /No live GPS feed or calculated arrival time/);
+  assertVisitJourneyBoundary(detail);
+});
+
+test('the visit-detail guard detects a planted journey without its en-route gate', () => {
+  const ungated = detail.replace('canonicalStatus === "en_route" && <LiveJobJourney', '<LiveJobJourney');
+  assert.notEqual(ungated, detail, 'The negative control must alter the actual journey mount');
+  assert.throws(() => assertVisitJourneyBoundary(ungated), { name: 'AssertionError' });
 });
