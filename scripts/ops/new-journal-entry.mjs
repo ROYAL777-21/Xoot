@@ -22,7 +22,7 @@
  *   node scripts/ops/new-journal-entry.mjs 2026-09-01 # a specific day
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const DIR = join(process.cwd(), "docs", "journal");
@@ -55,11 +55,6 @@ const commitsFor = (date) => {
 
 const commits = commitsFor(day);
 const file = join(DIR, `${day}.md`);
-
-if (existsSync(file)) {
-  console.log(`${file} already exists — opening nothing, changing nothing.`);
-  process.exit(0);
-}
 
 const commitBlock = commits.length
   ? commits.map((c) => `- \`${c.split("\t")[0]}\` ${c.split("\t").slice(1).join(" ")}`).join("\n")
@@ -117,5 +112,12 @@ Nothing here is published without the founder saying yes to that exact text.
 `;
 
 mkdirSync(DIR, { recursive: true });
-writeFileSync(file, body, { encoding: "utf8", flag: "wx" });
+try {
+  // Exclusive creation is the existence check: a competing writer cannot be overwritten.
+  writeFileSync(file, body, { encoding: "utf8", flag: "wx" });
+} catch (error) {
+  if (error?.code !== "EEXIST") throw error;
+  console.log(`${file} already exists — opening nothing, changing nothing.`);
+  process.exit(0);
+}
 console.log(`Wrote ${file} with ${commits.length} commit(s) pre-filled.`);

@@ -2,6 +2,20 @@
 
 ## HOLDING — 29 October — bounded quota repair and exact schema convergence
 
+Completed bounded changes:20real-entrypoint ops cases and5state-machine cases pass; independent
+review found noP1/P2 and two test weaknesses were corrected. Scoped ESLint and Deno ops check
+pass. Quota actual-SQL negative/positive control passes without provider requests;54checklist
+groups also pass with a broad-grant/TRUNCATE negative control. Independent fresh security
+review verifies all25source/embedded/executed hashes, the single-DO ledger ordering and no new
+ACL/quota bypass. Staging only received the two forward fixes, actual wrapper20261029164044;
+canonical original versions recorded after successful SQL. Role/counter readback matches:
+7/20Permanent,56/200Temporary,10reserved. No refill, funding, production change or enabled flag.
+Restored the existing production PIN SQL verbatim from its actual historical statements.
+Full production wrapper is deliberately not replayed on staging's already newer quote contract.
+Actual production prerequisites at16:42UTC:82history rows, zero bookings/jobs/homes/addresses,
+one payment record, pgcrypto1.3/pg_cron1.6.4 present, old credit trigger present. Hosted scheduler
+acceptance and exact production type generation remain next; full application suite is running.
+
 The sealed review of0b03177a completed with one validated medium finding: anonymous invalid
 Permanent confirmations can consume the shared finite ceiling before a signed-in coverage
 check. Claim a forward-only service-only reservation of up to ten existing attempts for

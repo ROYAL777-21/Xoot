@@ -1,5 +1,51 @@
 # Xoot production checklist
 
+## 29 October evening — authorised website release in progress
+
+The founder again explicitly requests production deployment. This section supersedes older
+launch assumptions below. Full website release has not happened yet. Source is under review
+in PR101; no unrelated PR, approved homepage or production release history is overwritten.
+
+Free Semgrep now supplies the substantive security-review job. Paid Claude review is optional
+and explicitly opt-in; it is not a skipped substitute for the free check. Real CodeQL returned
+49results, then4after fixes/reference exclusions. Three are individually reviewed false
+positives bound to exact rule/path/fingerprint/source hashes. The remaining journal race is
+fixed through exclusive creation without a preliminary existence check; fresh CI remains
+required. The completed immutable source review covered218changed source items and validated
+one medium shared-geocoding-quota issue. Its original report remains intact.
+
+The quota repair and checklist ACL closure now ARE applied to staging as actual delivery
+20261029164044, with original versions20261029111657/20261029112730 recorded only after their
+SQL executed in the same transaction. Actual readback confirms authenticated SELECT only,
+no anonymous checklist read or client TRUNCATE/write, and service-only lookup RPCs. Staging
+spend remains7/20Permanent and56/200Temporary; no cap or consumed counter was increased/reset.
+Ten existing remaining attempts are reserved for authenticated coverage. Local actual SQL
+tests reproduce the vulnerable baseline and verify reservation, total cap,12/hour actor limit,
+rollback and role denial. All54checklist groups pass. Independent source review found no new
+P1/P2 issue in this bounded repair.
+
+The generic status route also now refuses customer money/cancellation changes and worker
+actions outside actual progress. Paid/accepted-job checks and current raw status/assignment/
+cancellation/revocation/completion conditional writes reject stale changes before events.
+Twenty real-entrypoint regression cases and five state-machine cases pass. This is not an
+atomic completion/rewards/earnings implementation; retain that separate blocker.
+
+Production still has82versions, zero bookings/jobs/homes/saved addresses and one payment record.
+The exact25-body convergence transaction is reviewed and locally rehearsed against captured
+production catalog/policies, including injected late-failure whole rollback and replay.
+Its two native cleanup jobs require hosted readback. Preserve existing PIN history20261008011821;
+do not repair-mark missing historical SQL to force staging through a different schema path.
+See [the delivery/rollback plan](website-rollout-20261029.md) and its exact hash manifest.
+Regenerate types from actual production after the reviewed DDL; retain the current red schema
+check until then. No production DDL, backend promotion or website release is claimed here.
+
+PayFast documents were SUBMITTED by the founder; provider approval is still pending. Standard
+weekly worker payouts and optional paid instant cash-out are now requested, but beneficiary
+transfer support, verified recipients, agreed pricing/cutoff and a genuine first payout remain
+required. Merchant-to-own-bank payouts do not prove individual-worker transfer support. Apple
+Developer enrolment remains pending by the founder's choice. Live payments/payouts, native calls,
+production tracking and SOS do not gain acceptance from source/tests or a handoff statement.
+
 ## 29 October 2026 — real sandbox callback accepted; live payments closed
 
 The founder corrected the staging salt privately. Real PayFast sandbox ITN2020364, transaction

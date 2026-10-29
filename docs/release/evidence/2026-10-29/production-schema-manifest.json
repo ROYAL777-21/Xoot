@@ -1,0 +1,191 @@
+{
+  "kind": "reviewed-schema-delivery",
+  "migration": "supabase/migrations/20261029163304_reviewed_website_schema_convergence.sql",
+  "sha256": "81b39e6f6fa406bfe12a4c18dbcab42056ecc2e8a7c9304a83489617dd9ac69f",
+  "preservedProductionVersion": "20261008011821",
+  "noOperationalEnablement": true,
+  "rehearsalOmissions": [
+    "Historical functions, triggers, policies, privileges and indexes are not a full database clone.",
+    "Auth/Storage foreign keys outside the selected metadata are excluded.",
+    "Does not establish hosted deployment, JWT, concurrency or provider acceptance.",
+    "GPS native pg_cron scheduler block not executed in WASM. Hosted production pg_cron1.6.4 presence verified separately; real scheduled cleanup still requires migration/readback.",
+    "Voice native pg_cron prerequisite/schedule omitted from WASM. No claim of actual scheduled cleanup acceptance."
+  ],
+  "versions": [
+    {
+      "version": "20260903000000",
+      "name": "referral_base_prerequisite_convergence",
+      "sourceSha256": "ad1f6bf78702c2e53ce9111580e08938c5c2586770092321b784cb56ed620852",
+      "executedSha256": "fc8471210fc1f809a84226398cea8ab67ddd47be075ed915e1e0894dee9a9955",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20260903120000",
+      "name": "zd035_crew_and_zd036_referrals",
+      "sourceSha256": "7f31c083833a5e5133c98b3d2f9e0834d0121307d3836497e881a437b92073f5",
+      "executedSha256": "0777affed619aa9f3f585b7db7620e4fb0704e4eb091255e633634aec8e45bc5",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20260920200000",
+      "name": "gift_order_contract",
+      "sourceSha256": "2fb12ec9f7a09f8e78f29adcb81d11a258496b2e5a24be95eaad1ce2264c2728",
+      "executedSha256": "2fb12ec9f7a09f8e78f29adcb81d11a258496b2e5a24be95eaad1ce2264c2728",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20260928003000",
+      "name": "booking_quote_calculator",
+      "sourceSha256": "f80d7b87d94750ba1325c4f7b9e6da4cd4adb6f76a99c61d092ed555a31a3f92",
+      "executedSha256": "f80d7b87d94750ba1325c4f7b9e6da4cd4adb6f76a99c61d092ed555a31a3f92",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20260929055022",
+      "name": "booking_benefit_account_guards",
+      "sourceSha256": "28fb4a53fb55e261b50d1638ee6018cdf8eabc1cc40a26a65e9cc69aa4360cdc",
+      "executedSha256": "28fb4a53fb55e261b50d1638ee6018cdf8eabc1cc40a26a65e9cc69aa4360cdc",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261002000000",
+      "name": "notifications_realtime_permissions",
+      "sourceSha256": "36eea312c9ad23b885009f6e63389a38a6c03ae66fa533e6cf89134e88344c88",
+      "executedSha256": "36eea312c9ad23b885009f6e63389a38a6c03ae66fa533e6cf89134e88344c88",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261003140000",
+      "name": "company_wide_defaults_and_xooter_checklists",
+      "sourceSha256": "b00157c43121b9f23b36b3cffc0fe854d8215fb8d8da26dba41a2edd45c32734",
+      "executedSha256": "b00157c43121b9f23b36b3cffc0fe854d8215fb8d8da26dba41a2edd45c32734",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261004160000",
+      "name": "backend_rls_and_storage_hardening",
+      "sourceSha256": "6eae2c5081d6c5d7f5cb258314b6f168e57a0f15c8185e644c80d14ef4ff969f",
+      "executedSha256": "6eae2c5081d6c5d7f5cb258314b6f168e57a0f15c8185e644c80d14ef4ff969f",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261007140000",
+      "name": "storage_upload_path_contract",
+      "sourceSha256": "3be07756574bf371347871ae3cf26d11ee601142642047b4b0c3a78d0b11d660",
+      "executedSha256": "517e760fbb62f6ba3d2a73ddcce7c6ab067861cd9158d80e7e46c4f81cef6380",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20261007150000",
+      "name": "checklist_active_job_mutation",
+      "sourceSha256": "1fe81bae0303e81f6a60ca4e7b9caecb1d0c6da591ed28446f4c2fa3f050ba5c",
+      "executedSha256": "03fbe6249eb49675b21121ecd9778f9dcb801a81b86141dcd6ab83a8023af788",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20261015102137",
+      "name": "referral_client_grants_least_privilege",
+      "sourceSha256": "0461e279a7e8626dd81fec74d9525559636e40a4a6d170821e1ed40e29c0d805",
+      "executedSha256": "cf644c3acda51e59de0e2fa17d00da66c17010c600a0cb49ea2df12d2e05be3f",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20261016234838",
+      "name": "xoot_job_live_positions_private",
+      "sourceSha256": "fef799561ab7d4588fe85dbf321f658e1878f90a48437243729a8374eb7947d5",
+      "executedSha256": "66363bc23b3052572aa34f4813c0436d246b12ac65d898e7d1447034e649ac2e",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20261019185331",
+      "name": "xoot_approved_service_zones",
+      "sourceSha256": "951209391a042d1646e5465fe9f4075b8605e6e653ed74bc71859622ad33d8f0",
+      "executedSha256": "704a334ab6d4cf77af5836fd6fd194c2af47b38d8f949dbd3e2e04be4a13924a",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20261025080000",
+      "name": "in_app_voice_control",
+      "sourceSha256": "1cf9e4ae1112f407a0e69cb7c6011b54029cb6be5d90f10e925ea8da5105233b",
+      "executedSha256": "1cf9e4ae1112f407a0e69cb7c6011b54029cb6be5d90f10e925ea8da5105233b",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261025191835",
+      "name": "in_app_voice_ephemeral_sessions",
+      "sourceSha256": "855a801d48b2621423a73aee74cea9d29eb238b0c02ca054cb6a441be3622dda",
+      "executedSha256": "855a801d48b2621423a73aee74cea9d29eb238b0c02ca054cb6a441be3622dda",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261025195100",
+      "name": "mapbox_geocoding_global_budget",
+      "sourceSha256": "3c760a54714ef65bff8a9c4770445c5fb826e7d111afd3b37086bcd64574f946",
+      "executedSha256": "3c760a54714ef65bff8a9c4770445c5fb826e7d111afd3b37086bcd64574f946",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261026024032",
+      "name": "booking_chat_nonrecursive_read",
+      "sourceSha256": "e0dceadb0362098e0b41e1f97a46f984972baee3b5a433d3fe911f0c71d22936",
+      "executedSha256": "e0dceadb0362098e0b41e1f97a46f984972baee3b5a433d3fe911f0c71d22936",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261026153738",
+      "name": "address_lookup_server_allowances",
+      "sourceSha256": "ea9bf06be8eb1d969ca313c53051be1a848b8f763c98c7e5593ca3c7d4cc7dfa",
+      "executedSha256": "ef87637d87ec1f6d8347b48862d6a5b62fe58dabec60acc9bda94fa0f3d6fc3c",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20261026203430",
+      "name": "private_calendar_subscription",
+      "sourceSha256": "cbea3c9225e1d9fd034966090a88fd540c69a61c32caa71ccb944c236be09a4c",
+      "executedSha256": "cbea3c9225e1d9fd034966090a88fd540c69a61c32caa71ccb944c236be09a4c",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261027032349",
+      "name": "kyc_private_quarantine_interlock",
+      "sourceSha256": "c4f99aa7e511945a95ed2284c978437ab70568d67fbca272a25c43604bf91665",
+      "executedSha256": "a66b635b5efbe940c4d0ad7196eceade03fbfc8829342f3b20d49d4d9c935efb",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20261027201017",
+      "name": "atomic_booking_payment_settlement",
+      "sourceSha256": "6f571834c666652870cd680140ea5ee80909b01b45ccc6f41e160c688c96db5a",
+      "executedSha256": "6f571834c666652870cd680140ea5ee80909b01b45ccc6f41e160c688c96db5a",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261028125915",
+      "name": "atomic_booking_cancellation",
+      "sourceSha256": "7fc61fd4a7935cc1a511c5b9858c15d4f5d9cc57c4abdb00c8f01d7672679458",
+      "executedSha256": "7fc61fd4a7935cc1a511c5b9858c15d4f5d9cc57c4abdb00c8f01d7672679458",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261029003043",
+      "name": "airbnb_office_crew_quote_policy",
+      "sourceSha256": "8797e41013e5a19f4016623804db882d86101f3667f3655275e3e12f263e1225",
+      "executedSha256": "8797e41013e5a19f4016623804db882d86101f3667f3655275e3e12f263e1225",
+      "transactionPairRemoved": false
+    },
+    {
+      "version": "20261029111657",
+      "name": "checklist_select_only_acl",
+      "sourceSha256": "d1fff4677fda18440c9a14adae8a8b1cffc8282d3183967fd795febbdb4843e7",
+      "executedSha256": "98758bab682556bfd022f6955a6eb46290f5f4b04b7520831f31d0e933f7679e",
+      "transactionPairRemoved": true
+    },
+    {
+      "version": "20261029112730",
+      "name": "protect_authenticated_coverage_allowance",
+      "sourceSha256": "bd428375247172aac90a4d5f164bfb6ab8e054a9caae7efbef9eee4abe29062a",
+      "executedSha256": "69124dce6e8e3248cb73728fcf7b6732af00ecd7b05cae015192c44c1453537b",
+      "transactionPairRemoved": true
+    }
+  ]
+}
