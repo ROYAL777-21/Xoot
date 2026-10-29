@@ -10,6 +10,20 @@ performance evidence. Review owns correctness of any free replacement: no ignore
 fake green status, missing coverage, repointed production comparison or blanket migration push.
 Cost instruction remains no new paid plan/credit/number or automatic expensive payout schedule.
 
+Gate repair prepared: the actual primary Semgrep workflow did not run on release PRs. It now
+runs on every PR and release/xoot-production pushes under the blocking security-review name.
+Add pinned official CodeQL security-extended analysis with no source/database upload, no new
+write permission or paid API; require successful analysis plus real SARIF, reject every returned
+finding and execution/configuration error. Five positive/negative result checks and scoped lint
+pass. Independent source review caught grouped-rule/output/upload defaults and release-push
+coverage gaps; all four are repaired and the follow-up source review has no remaining blocker.
+Actual first scanner execution remains required. Paid Claude becomes explicitly labelled opt-in
+only; requested scans still fail on absent keys/provider errors. No old failure is overwritten,
+no skip is claimed clean and no branch protection/ruleset is disabled (release branch currently
+has no protection; the sole pre-existing repository ruleset is already disabled).
+Correctness owner: new SARIF assertion/test is cross-role security evidence, required to prevent
+an analyzer invocation with findings or invalid output from being called a clean review.
+
 Latest79e138ff design/security, PostgreSQL referral privileges and production public-directory
 checks have genuinely passed. The remaining paid review fails for provider credit and the live
 types job detects actual staged schema changes plus generator formatting. Inspect those effects
