@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admin_audit_log: {
@@ -416,6 +391,80 @@ export type Database = {
           trigger_event?: string
         }
         Relationships: []
+      }
+      booking_assignees: {
+        Row: {
+          assigned_at: string
+          booking_id: string
+          commission_rate_bps: number
+          id: string
+          xooter_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          booking_id: string
+          commission_rate_bps: number
+          id?: string
+          xooter_id: string
+        }
+        Update: {
+          assigned_at?: string
+          booking_id?: string
+          commission_rate_bps?: number
+          id?: string
+          xooter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_assignees_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_assignees_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "booking_assignees_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_assignees_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_contractor_quality"
+            referencedColumns: ["xooter_id"]
+          },
+          {
+            foreignKeyName: "booking_assignees_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_assignees_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "xooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_assignees_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "xooters_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       booking_chat_typing_indicators: {
         Row: {
@@ -1032,20 +1081,14 @@ export type Database = {
           },
         ]
       }
-      xoot_calendar_subscriptions: {
-        Row: { user_id: string; token_hash: string | null; issued_at: string; expires_at: string; revoked_at: string | null; fetch_window: string; fetch_count: number }
-        Insert: { user_id: string; token_hash?: string | null; issued_at?: string; expires_at: string; revoked_at?: string | null; fetch_window?: string; fetch_count?: number }
-        Update: { user_id?: string; token_hash?: string | null; issued_at?: string; expires_at?: string; revoked_at?: string | null; fetch_window?: string; fetch_count?: number }
-        Relationships: []
-      }
       bookings: {
         Row: {
-          calendar_revision: number
           address: string | null
           arrived_at: string | null
           assigned_at: string | null
           at_risk: boolean
           booking_cover_amount: number
+          calendar_revision: number
           cancellation_fee: number
           cancelled_at: string | null
           cancelled_by: string | null
@@ -1053,6 +1096,7 @@ export type Database = {
           completed_at: string | null
           completion_photo_required: boolean
           created_at: string
+          crew_elapsed_hours: number | null
           crew_size: number
           duration_hours: number
           frequency: string
@@ -1089,11 +1133,11 @@ export type Database = {
         }
         Insert: {
           address?: string | null
-          calendar_revision?: number
           arrived_at?: string | null
           assigned_at?: string | null
           at_risk?: boolean
           booking_cover_amount?: number
+          calendar_revision?: number
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -1101,6 +1145,7 @@ export type Database = {
           completed_at?: string | null
           completion_photo_required?: boolean
           created_at?: string
+          crew_elapsed_hours?: number | null
           crew_size?: number
           duration_hours?: number
           frequency?: string
@@ -1137,11 +1182,11 @@ export type Database = {
         }
         Update: {
           address?: string | null
-          calendar_revision?: number
           arrived_at?: string | null
           assigned_at?: string | null
           at_risk?: boolean
           booking_cover_amount?: number
+          calendar_revision?: number
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -1149,6 +1194,7 @@ export type Database = {
           completed_at?: string | null
           completion_photo_required?: boolean
           created_at?: string
+          crew_elapsed_hours?: number | null
           crew_size?: number
           duration_hours?: number
           frequency?: string
@@ -2682,71 +2728,6 @@ export type Database = {
         }
         Relationships: []
       }
-      referral_redemptions: {
-        Row: {
-          booking_id: string | null
-          created_at: string
-          credit_cents: number | null
-          id: string
-          referred_user_id: string
-          referrer_user_id: string
-          rewarded: boolean
-          rewarded_at: string | null
-        }
-        Insert: {
-          booking_id?: string | null
-          created_at?: string
-          credit_cents?: number | null
-          id?: string
-          referred_user_id: string
-          referrer_user_id: string
-          rewarded?: boolean
-          rewarded_at?: string | null
-        }
-        Update: {
-          booking_id?: string | null
-          created_at?: string
-          credit_cents?: number | null
-          id?: string
-          referred_user_id?: string
-          referrer_user_id?: string
-          rewarded?: boolean
-          rewarded_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "referral_redemptions_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      referrals: {
-        Row: {
-          code: string
-          created_at: string
-          total_invited: number
-          total_rewarded: number
-          user_id: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          total_invited?: number
-          total_rewarded?: number
-          user_id: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          total_invited?: number
-          total_rewarded?: number
-          user_id?: string
-        }
-        Relationships: []
-      }
       recurring_schedules: {
         Row: {
           cadence_days: number
@@ -2821,6 +2802,85 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      referral_redemptions: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          credit_cents: number | null
+          id: string
+          referred_user_id: string
+          referrer_user_id: string
+          rewarded: boolean
+          rewarded_at: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          credit_cents?: number | null
+          id?: string
+          referred_user_id: string
+          referrer_user_id: string
+          rewarded?: boolean
+          rewarded_at?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          credit_cents?: number | null
+          id?: string
+          referred_user_id?: string
+          referrer_user_id?: string
+          rewarded?: boolean
+          rewarded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_redemptions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "referral_redemptions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "referral_redemptions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          total_invited: number
+          total_rewarded: number
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          total_invited?: number
+          total_rewarded?: number
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          total_invited?: number
+          total_rewarded?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       refund_requests: {
         Row: {
@@ -3858,67 +3918,26 @@ export type Database = {
           },
         ]
       }
-      xooter_commission_boosts: {
+      xoot_address_lookup_allowances: {
         Row: {
-          bps: number
-          created_at: string
-          ends_at: string
-          granted_by: string | null
-          id: string
-          reason: string
-          starts_at: string
-          xooter_id: string
+          authorized_queries: number
+          consumed_queries: number
+          mode: string
+          updated_at: string
         }
         Insert: {
-          bps?: number
-          created_at?: string
-          ends_at?: string
-          granted_by?: string | null
-          id?: string
-          reason: string
-          starts_at?: string
-          xooter_id: string
+          authorized_queries?: number
+          consumed_queries?: number
+          mode: string
+          updated_at?: string
         }
         Update: {
-          bps?: number
-          created_at?: string
-          ends_at?: string
-          granted_by?: string | null
-          id?: string
-          reason?: string
-          starts_at?: string
-          xooter_id?: string
+          authorized_queries?: number
+          consumed_queries?: number
+          mode?: string
+          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
-            columns: ["xooter_id"]
-            isOneToOne: false
-            referencedRelation: "analytics_contractor_quality"
-            referencedColumns: ["xooter_id"]
-          },
-          {
-            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
-            columns: ["xooter_id"]
-            isOneToOne: false
-            referencedRelation: "booking_xooter_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
-            columns: ["xooter_id"]
-            isOneToOne: false
-            referencedRelation: "xooters"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
-            columns: ["xooter_id"]
-            isOneToOne: false
-            referencedRelation: "xooters_public"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       xoot_black_area_pilots: {
         Row: {
@@ -4276,6 +4295,36 @@ export type Database = {
           },
         ]
       }
+      xoot_calendar_subscriptions: {
+        Row: {
+          expires_at: string
+          fetch_count: number
+          fetch_window: string
+          issued_at: string
+          revoked_at: string | null
+          token_hash: string | null
+          user_id: string
+        }
+        Insert: {
+          expires_at: string
+          fetch_count?: number
+          fetch_window?: string
+          issued_at?: string
+          revoked_at?: string | null
+          token_hash?: string | null
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          fetch_count?: number
+          fetch_window?: string
+          issued_at?: string
+          revoked_at?: string | null
+          token_hash?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       xoot_concierge_feedback: {
         Row: {
           answer_excerpt: string | null
@@ -4345,8 +4394,126 @@ export type Database = {
         }
         Relationships: []
       }
-      // Forward declaration matching 20261016234838; regenerate from the deployed schema
-      // after staging/production migration verification. No client permissions are implied.
+      xoot_coverage_query_budget: {
+        Row: {
+          requests: number
+          resets_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          requests?: number
+          resets_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          requests?: number
+          resets_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      xoot_in_app_voice_rooms: {
+        Row: {
+          account_sid: string
+          booking_id: string
+          conference_sid: string | null
+          created_at: string
+          expires_at: string
+          finished_at: string | null
+          id: string
+          sequence_number: number
+          status: string
+        }
+        Insert: {
+          account_sid: string
+          booking_id: string
+          conference_sid?: string | null
+          created_at?: string
+          expires_at: string
+          finished_at?: string | null
+          id?: string
+          sequence_number?: number
+          status?: string
+        }
+        Update: {
+          account_sid?: string
+          booking_id?: string
+          conference_sid?: string | null
+          created_at?: string
+          expires_at?: string
+          finished_at?: string | null
+          id?: string
+          sequence_number?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xoot_in_app_voice_rooms_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "xoot_in_app_voice_rooms_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "xoot_in_app_voice_rooms_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      xoot_in_app_voice_sessions: {
+        Row: {
+          actor_id: string
+          call_sid: string
+          created_at: string
+          expires_at: string
+          finished_at: string | null
+          room_id: string
+          status: string
+          voice_role: string
+        }
+        Insert: {
+          actor_id: string
+          call_sid: string
+          created_at?: string
+          expires_at: string
+          finished_at?: string | null
+          room_id: string
+          status?: string
+          voice_role: string
+        }
+        Update: {
+          actor_id?: string
+          call_sid?: string
+          created_at?: string
+          expires_at?: string
+          finished_at?: string | null
+          room_id?: string
+          status?: string
+          voice_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xoot_in_app_voice_sessions_room_id_expires_at_fkey"
+            columns: ["room_id", "expires_at"]
+            isOneToOne: false
+            referencedRelation: "xoot_in_app_voice_rooms"
+            referencedColumns: ["id", "expires_at"]
+          },
+        ]
+      }
       xoot_job_live_positions: {
         Row: {
           accuracy_m: number
@@ -4429,6 +4596,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      xoot_mapbox_geocoding_budget: {
+        Row: {
+          authorized_queries: number
+          budget_key: string
+          consumed_queries: number
+          updated_at: string
+        }
+        Insert: {
+          authorized_queries?: number
+          budget_key: string
+          consumed_queries?: number
+          updated_at?: string
+        }
+        Update: {
+          authorized_queries?: number
+          budget_key?: string
+          consumed_queries?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      xoot_service_zones: {
+        Row: {
+          active: boolean
+          approved_at: string | null
+          approved_by: string | null
+          boundary_source: string
+          created_at: string
+          geometry: Json
+          id: string
+          name: string
+          service_types: string[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          boundary_source: string
+          created_at?: string
+          geometry: Json
+          id?: string
+          name: string
+          service_types: string[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          boundary_source?: string
+          created_at?: string
+          geometry?: Json
+          id?: string
+          name?: string
+          service_types?: string[]
+          updated_at?: string
+        }
+        Relationships: []
       }
       xootcred_ledger: {
         Row: {
@@ -4644,6 +4871,68 @@ export type Database = {
         }
         Relationships: []
       }
+      xooter_commission_boosts: {
+        Row: {
+          bps: number
+          created_at: string
+          ends_at: string
+          granted_by: string | null
+          id: string
+          reason: string
+          starts_at: string
+          xooter_id: string
+        }
+        Insert: {
+          bps?: number
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          reason: string
+          starts_at?: string
+          xooter_id: string
+        }
+        Update: {
+          bps?: number
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          reason?: string
+          starts_at?: string
+          xooter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_contractor_quality"
+            referencedColumns: ["xooter_id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "xooters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xooter_commission_boosts_xooter_id_fkey"
+            columns: ["xooter_id"]
+            isOneToOne: false
+            referencedRelation: "xooters_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       xooter_documents: {
         Row: {
           application_id: string | null
@@ -4805,7 +5094,36 @@ export type Database = {
           task_key?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "xooter_job_checklist_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sensitive_access"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "xooter_job_checklist_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_xooter_profiles"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "xooter_job_checklist_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xooter_job_checklist_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "xooter_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       xooter_jobs: {
         Row: {
@@ -5179,51 +5497,6 @@ export type Database = {
           },
         ]
       }
-      xoot_service_zones: {
-        Row: {
-          id: string
-          name: string
-          geometry: Json
-          service_types: string[]
-          active: boolean
-          approved_at: string | null
-          approved_by: string | null
-          boundary_source: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          geometry: Json
-          service_types: string[]
-          active?: boolean
-          approved_at?: string | null
-          approved_by?: string | null
-          boundary_source: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          geometry?: Json
-          service_types?: string[]
-          active?: boolean
-          approved_at?: string | null
-          approved_by?: string | null
-          boundary_source?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      xoot_coverage_query_budget: {
-        Row: { user_id: string; requests: number; resets_at: string; updated_at: string }
-        Insert: { user_id: string; requests?: number; resets_at: string; updated_at?: string }
-        Update: { user_id?: string; requests?: number; resets_at?: string; updated_at?: string }
-        Relationships: []
-      }
       xooters: {
         Row: {
           active: boolean
@@ -5525,105 +5798,14 @@ export type Database = {
       }
     }
     Functions: {
-      // Generated from staging after cancellation migration 20261028125915; service-only.
-      cancel_booking_atomically: {
-        Args: {
-          p_actor_id: string
-          p_admin_session_id: string
-          p_booking_id: string
-          p_reason: string
-        }
-        Returns: Json
-      }
-
-      // Generated from the actual staging schema after payment migration 20261027201017.
-      // Service-only grants remain enforced; production rollout is separate.
       booking_payment_settlement_ready: { Args: never; Returns: number }
-
-      settle_booking_payment: {
-        Args: {
-          p_admin_id: string
-          p_admin_session_id: string
-          p_amount_cents: number
-          p_payload_hash: string
-          p_payment_id: string
-          p_provider_event_id: string
-          p_provider_transaction_id: string
-          p_reason: string
-          p_reference: string
-          p_source: string
-        }
-        Returns: Json
-      }
-      // Pending service-role-only RPC; not deployed to staging/production.
-      // Generated live-schema reconciliation must stay red until migration delivery.
-      xoot_publish_private_job_location: {
-        Args: {
-          p_accuracy_m: number
-          p_booking_id: string
-          p_captured_at: string
-          p_latitude: number
-          p_longitude: number
-          p_xooter_id: string
-        }
-        Returns: boolean
-      }
-      // Staging-only voice contracts, generated from fxmxyabdjqviqbcxmvlp.
-      // Production delivery remains a separate release gate.
-      xoot_register_in_app_voice_join: {
-        Args: {
-          p_account_sid: string
-          p_actor_id: string
-          p_booking_id: string
-          p_call_sid: string
-          p_lease_seconds: number
-          p_voice_role: string
-        }
-        Returns: {
-          room_id: string
-          seconds: number
-        }[]
-      }
-      xoot_apply_in_app_voice_event: {
-        Args: {
-          p_account_sid: string
-          p_call_sid?: string
-          p_conference_sid: string
-          p_event: string
-          p_room_id: string
-          p_sequence: number
-        }
-        Returns: boolean
-      }
       can_access_sensitive_data: {
         Args: { p_booking_id: string; p_xooter_id: string }
-        Returns: boolean
-      }
-      xoot_read_calendar_feed: {
-        Args: { p_hash: string }
-        Returns: Json
-      }
-      // Proposed quarantine migration contracts; verify against staging before release.
-      inspect_quarantined_kyc_object: {
-        Args: { p_user_id: string; p_application_id: string; p_storage_path: string }
-        Returns: Json
-      }
-      register_quarantined_kyc_document: {
-        Args: { p_user_id: string; p_application_id: string; p_doc_type: string; p_storage_path: string; p_object_id: string; p_object_updated_at: string; p_sha256: string; p_content_type: string; p_byte_length: number }
-        Returns: Json
-      }
-      // Proposed zero-default address allowance migration; verify against staging before release.
-      xoot_consume_address_lookup: {
-        Args: { p_mode: string }
         Returns: boolean
       }
       can_activate_payment_provider: {
         Args: { p_environment?: string; p_provider: string }
         Returns: boolean
-      }
-      update_active_xooter_checklist: {
-        Args: { p_actor_id: string; p_job_id: string; p_task_key: string; p_complete: boolean }
-        Returns: Json
       }
       can_create_masked_call: {
         Args: { p_actor_id: string; p_booking_id: string }
@@ -5637,6 +5819,15 @@ export type Database = {
       can_release_xooter_payout: {
         Args: { p_booking_id?: string; p_xooter_id: string }
         Returns: boolean
+      }
+      cancel_booking_atomically: {
+        Args: {
+          p_actor_id: string
+          p_admin_session_id: string
+          p_booking_id: string
+          p_reason: string
+        }
+        Returns: Json
       }
       claim_provider_event: {
         Args: {
@@ -5663,15 +5854,17 @@ export type Database = {
         }
         Returns: boolean
       }
-      xoot_consume_coverage_query: {
-        Args: { p_user_id: string }
-        Returns: boolean
-      }
-      // Expected contract from 20260920200000; regenerate from staging after migration delivery.
       create_reviewed_gift_order: {
-        Args: { p_user_id: string; p_request_key: string; p_definition: Json; p_current_quote: Json; p_accepted_quote: Json }
+        Args: {
+          p_accepted_quote: Json
+          p_current_quote: Json
+          p_definition: Json
+          p_request_key: string
+          p_user_id: string
+        }
         Returns: Json
       }
+      gen_referral_code: { Args: never; Returns: string }
       get_accepted_xooter_job_destinations: {
         Args: { p_job_ids: string[] }
         Returns: {
@@ -5745,6 +5938,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      inspect_quarantined_kyc_object: {
+        Args: {
+          p_application_id: string
+          p_storage_path: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       is_xoot_black_eligible: {
         Args: { p_area_key?: string; p_xooter_id: string }
         Returns: boolean
@@ -5757,10 +5958,93 @@ export type Database = {
         }
         Returns: undefined
       }
+      register_quarantined_kyc_document: {
+        Args: {
+          p_application_id: string
+          p_byte_length: number
+          p_content_type: string
+          p_doc_type: string
+          p_object_id: string
+          p_object_updated_at: string
+          p_sha256: string
+          p_storage_path: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       set_safety_pin: { Args: { new_pin: string }; Returns: boolean }
+      settle_booking_payment: {
+        Args: {
+          p_admin_id: string
+          p_admin_session_id: string
+          p_amount_cents: number
+          p_payload_hash: string
+          p_payment_id: string
+          p_provider_event_id: string
+          p_provider_transaction_id: string
+          p_reason: string
+          p_reference: string
+          p_source: string
+        }
+        Returns: Json
+      }
+      update_active_xooter_checklist: {
+        Args: {
+          p_actor_id: string
+          p_complete: boolean
+          p_job_id: string
+          p_task_key: string
+        }
+        Returns: Json
+      }
       verify_safety_pin: {
         Args: { check_pin: string; check_user_id: string }
         Returns: boolean
+      }
+      xoot_apply_in_app_voice_event: {
+        Args: {
+          p_account_sid: string
+          p_call_sid?: string
+          p_conference_sid: string
+          p_event: string
+          p_room_id: string
+          p_sequence: number
+        }
+        Returns: boolean
+      }
+      xoot_consume_address_lookup: {
+        Args: { p_mode: string }
+        Returns: boolean
+      }
+      xoot_consume_coverage_query: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
+      xoot_publish_private_job_location: {
+        Args: {
+          p_accuracy_m: number
+          p_booking_id: string
+          p_captured_at: string
+          p_latitude: number
+          p_longitude: number
+          p_xooter_id: string
+        }
+        Returns: boolean
+      }
+      xoot_read_calendar_feed: { Args: { p_hash: string }; Returns: Json }
+      xoot_register_in_app_voice_join: {
+        Args: {
+          p_account_sid: string
+          p_actor_id: string
+          p_booking_id: string
+          p_call_sid: string
+          p_lease_seconds: number
+          p_voice_role: string
+        }
+        Returns: {
+          room_id: string
+          seconds: number
+        }[]
       }
       xooter_job_transition_allowed: {
         Args: { current_state: string; next_state: string }
@@ -5809,12 +6093,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5838,11 +6122,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5863,11 +6147,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5888,11 +6172,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5905,11 +6189,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5919,9 +6203,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["admin", "user", "xooter"],

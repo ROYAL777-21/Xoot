@@ -37,7 +37,7 @@ jobs:
       # A successful analyzer invocation alone does not mean zero findings.
       # Missing/error output and every returned security finding fail this job.
       - name: Exercise result failure controls
-        run: node --test scripts/security/assert-codeql-results.test.mjs
+        run: node --test scripts/security/assert-codeql-results.test.mjs scripts/ops/create-staging-twilio-subaccount.test.mjs
       - name: Require a completed analysis with no unresolved findings
         run: node scripts/security/assert-codeql-results.mjs codeql-results scripts/security/reviewed-codeql-results.json
       - name: Retain security evidence

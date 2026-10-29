@@ -1,5 +1,34 @@
 # Agent worklog
 
+## DELIVERY — 29 October evening — production schema and final gate repairs
+
+Founder repeated production authorisation and explicitly approved the same finite production
+Mapbox cap. First convergence attempt failed 42501 on platform-managed Storage REVOKE and
+readback proved whole rollback: 82 history rows, no new original rows, referrals/checklist
+absent. Official platform restrictions allow policies but not those managed grants. Keep old
+source files untouched; one explicit adapted executed body replaces two REVOKEs and owner-only
+COMMENT with supported authenticated policy roles and fail-closed RLS/bulk checks. Independent
+review verifies 27,527 SQL tokens across newline normalisation and all source/executed hashes.
+Revised exact transaction succeeded as `20261029165622`; all 25 hosted hashes match. Original
+PIN retained, both cron jobs active, zero bookings/jobs and one payment record unchanged.
+
+Final production Storage guard is `20261029170200`: zero anonymous permissive policies and four
+restrictive quarantine guards correctly retaining anon/authenticated. Staging's extra legacy
+policy name caused its attempt to roll back; no broad exception or unknown-policy rewrite.
+Production cap funded once at 200 suggestions / 20 total Permanent attempts, existing reserve
+10, counters zero, no renewal. Actual production types (190,523 chars) saved; TypeScript passes.
+
+Full pre-regeneration run: 199 files / 2,057 tests pass, one stale August PIN permission test
+fails because restored actual October source denies authenticated execute. Corrected that
+expectation and removed its obsolete allowlist exception; 23 targeted cases pass. CodeQL
+found real old Twilio secret-print branches: remove them, require exclusive private descriptor
+before provider POST, and independently run three real-CLI transport-fixture checks. No Twilio
+resource or paid action was performed. Fix verifier host to a literal; only public-key header
+flow receives an independently reviewed exact fingerprint/source digest decision. Source scan,
+scoped lint, nine Node guard/CLI checks and Deno ops check pass. Final CI/release/readback next.
+Correctness owner: the PIN guard and operational credential-output changes could not wait for
+the requested production release; no permission assertion or scanner category was removed.
+
 ## HOLDING — 29 October — bounded quota repair and exact schema convergence
 
 Completed bounded changes:20real-entrypoint ops cases and5state-machine cases pass; independent

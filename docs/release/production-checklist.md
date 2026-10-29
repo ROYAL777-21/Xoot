@@ -1,6 +1,41 @@
 # Xoot production checklist
 
-## 29 October evening — authorised website release in progress
+## 29 October evening — schema delivered; application release underway
+
+Production schema delivery completed as actual version `20261029165622`. All 25 hosted
+executed SQL hashes match the manifest, the existing PIN history remains, both native cleanup
+jobs are active every minute, and booking/job/payment counts are unchanged. The first attempt
+failed on Supabase's managed Storage restriction and was verified to roll back all DDL and
+history. The replacement preserves historical files, records the explicit compatibility
+adaptation and uses supported policy roles with RLS/bulk-privilege assertions. No owner or
+role-membership workaround was used. Actual production-generated types replace the manual
+forward declarations; TypeScript passes against that schema.
+
+Final production Storage validation is actual `20261029170200`: zero anonymous PERMISSIVE
+policies and all four RESTRICTIVE quarantine barriers retaining both API roles. Those barriers
+must continue to protect anonymous requests. Staging's additional legacy policy names refused
+this final guard transaction; unknown policies were not silently changed there. Its earlier two
+forward security fixes remain applied and verified.
+
+The founder explicitly approved capped PRODUCTION lookup: 200 Temporary suggestions and 20
+Permanent attempts globally, with 10 existing attempts reserved for authenticated coverage and
+no automatic renewal. It was funded once from zero without resetting consumed counters. The
+approved reviewed-rate maximum is US$0.25 before tax. Server-token presence and real public
+lookup acceptance remain required before the address service is called live.
+
+The full pre-regeneration suite passed 199 files / 2,057 tests and found one stale PIN grant
+expectation. The corrected PIN guard and 20 ops cases pass 23 focused tests. Final full CI is
+still required. CodeQL also found two old Twilio credential-print paths; both are removed.
+Three actual CLI tests use provider fixtures only and prove private one-time output, early
+refusal and no secret logs. The verifier now uses a literal fixed host. Only its intentional
+public-key header flow receives an exact fingerprint/source-bound false-positive decision;
+the old file-derived URL flow is removed, not excepted.
+
+Backend promotion and the live website release are pending final CI and deployed readback.
+Payment, payout, voice and SOS activation remain subject to their separate real acceptance.
+The delivery plan and exact manifest are in [website-rollout-20261029.md](website-rollout-20261029.md).
+
+### Earlier 29 October preparation — historical state before the actual delivery above
 
 The founder again explicitly requests production deployment. This section supersedes older
 launch assumptions below. Full website release has not happened yet. Source is under review

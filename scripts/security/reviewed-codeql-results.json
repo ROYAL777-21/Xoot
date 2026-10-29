@@ -2,6 +2,13 @@
   "schemaVersion": 1,
   "reviewed": [
     {
+      "ruleId": "js/file-access-to-http",
+      "path": "scripts/ops/verify-production-edge-contracts.mjs",
+      "lineHash": "d9ecad718203be42:1",
+      "sourceSha256": "90179f6b2b687231d6f8c7b9cda6b87e57288974610eaca1c354c504c0bdcfe1",
+      "reason": "This read-only verifier sends only the intentionally public sb_publishable key from the fixed public configuration file as the apikey header to its literal production Supabase origin and fixed endpoint names. Redirects are refused. The old file-derived URL flow is separately eliminated and is NOT excepted; no arbitrary file content or private credential is transmitted."
+    },
+    {
       "ruleId": "js/weak-cryptographic-algorithm",
       "path": "src/lib/in-app-call-access.test.ts",
       "lineHash": "216419f77735784d:1",
