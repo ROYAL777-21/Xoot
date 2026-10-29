@@ -183,11 +183,10 @@ export function BookingModal({ open, onClose, initialService = "regular", referr
       setStep((s) => s + 1);
     } else {
       // Step 4: Final Confirmation
-      captureAnalyticsEvent("booking_flow_confirmed", {
-        service,
-        suburb,
-        crew,
-        frequency: freq,
+      captureAnalyticsEvent("booking_flow_started", {
+        service_category: service,
+        launch_area: suburb || "unselected",
+        source: user ? "signed_in_modal" : "guest_modal",
       });
       const query = new URLSearchParams({
         service,
