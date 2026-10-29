@@ -1,5 +1,31 @@
 # Agent worklog
 
+## HOLDING — 29 October — bounded quota repair and exact schema convergence
+
+The sealed review of0b03177a completed with one validated medium finding: anonymous invalid
+Permanent confirmations can consume the shared finite ceiling before a signed-in coverage
+check. Claim a forward-only service-only reservation of up to ten existing attempts for
+authenticated coverage. Never replenish either allowance or claim to fix every anonymous abuse
+case. Execute actual SQL and the original search implementation with a no-network provider
+fixture, compare the vulnerable baseline, test client denial and retain the untouched scan.
+
+The latest actual CodeQL analysis completed and returned four results: three exact documented
+false positives and one remaining journal existence-check race. Remove the separate existence
+check and rely on exclusive creation plus EEXIST handling; do not add a fourth suppression.
+The bounded ops regression now passes20real-entrypoint cases plus5state-machine cases. It does
+not close the separately documented non-atomic completion/rewards/earnings workstream.
+
+Claim explicit production-schema convergence preparation:23actual missing historical versions,
+their original bodies/hashes, original PIN-only production version20261008011821, real hosted
+prerequisites and forward checklist/quota ACLs. Test all selected statements against actual
+production catalog metadata and a hosted staging transaction before production. A ledger entry
+may record an original version only AFTER its exact SQL has executed successfully in the same
+transaction; no repair-mark for absent DDL and no deletion of the PIN history. Independently
+review any such delivery wrapper and its rollback/closed-feature plan before applying it.
+Correctness owner: quota reservation/role tests and ops admission touch shared financial/privacy
+authority and need cross-review. Weekly worker payout and quoted optional cash-out remain an
+explicit new policy; beneficiary verification and actual transfer proof remain required.
+
 ## HOLDING — 29 October morning — merchant methods, performance and release gates
 
 Founder is signed into the live PayFast account and explicitly requests resolution of security
