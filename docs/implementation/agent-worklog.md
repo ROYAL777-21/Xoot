@@ -9,6 +9,11 @@ the actual recorded-updates/active-job/live-component binding. Demonstrate it ag
 detail and a planted ungated journey defect, then run the complete workflow Node checks.
 No deadline, assertion category or required check is removed. Production schema drift and
 external Claude credit failure stay visible; do not repoint the production comparison or fund it.
+The native workflow's room-default fixture also expects the superseded two-Xooter home visit.
+Claim mobile/scripts/native-booking-input.test.mts for its direct ZD-039 expectation update,
+keeping every room/size/hour threshold and checking eligible Airbnb/office crews are preserved.
+The combined Node run initially selected Windows' unavailable WSL bash shim for the three CLI
+diagnostic cases; rerun with the installed official Git Bash on this process's PATH only.
 
 ## STAGING DELIVERY — 29 October — real PayFast receipt and reviewed crew policy
 
