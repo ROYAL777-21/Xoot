@@ -158,7 +158,6 @@ export function BookingModal({ open, onClose, initialService = "regular", referr
   const fit = useMemo(() => checkServiceFit(service, property), [service, property]);
 
   const quote = useMemo(() => {
-    const referralDiscountCents = referralCode ? 10000 : 0;
     return calculateCrewQuote({
       service,
       hours: baseHours,
@@ -167,9 +166,8 @@ export function BookingModal({ open, onClose, initialService = "regular", referr
       linenOnSite: service === "airbnb",
       bookingCover: true,
       carePlusMember: false,
-      referralCreditCents: referralDiscountCents,
     });
-  }, [service, baseHours, crew, addons.length, referralCode]);
+  }, [service, baseHours, crew, addons.length]);
 
   const elapsedHours = quote ? quote.elapsedHours : baseHours;
   const timeSlots = useMemo(() => slotsForDuration(elapsedHours), [elapsedHours]);
