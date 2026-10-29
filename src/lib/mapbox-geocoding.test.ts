@@ -80,9 +80,11 @@ describe("Mapbox consumer safety regressions", () => {
     expect(detail).not.toContain("setInterval(() => setEta");
     expect(detail).not.toContain("etaMinutes: liveStatus");
     expect(detail).not.toContain("Arriving in ${eta}");
-    expect(detail).toContain("ETA not available");
-    expect(detail).toContain("No live GPS feed or calculated arrival time");
-    expect(detail).toContain("Live location is not available");
+    expect(detail).toContain('import.meta.env.VITE_ENABLE_LIVE_JOURNEY === "true"');
+    expect(detail).toContain("Follow your visit’s recorded updates here.");
+    expect(detail).toContain('canonicalStatus === "en_route" && <LiveJobJourney');
+    expect(detail).toContain('isAssignedWorker={isAssignedXooter}');
+    expect(detail).toContain('destinationAddress={typeof booking.address === "string" ? booking.address : undefined}');
     expect(detail).not.toContain("Share ETA</Button>");
   });
 

@@ -113,7 +113,7 @@ const liveActivityNextStep: Record<XootBookingLiveActivityStatus, string> = {
 
 const serviceNameForBooking = (booking: any) => booking?.service_type ?? booking?.service ?? "Home care";
 
-const BookingDetail = () => {
+const BookingDetailView = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -142,6 +142,12 @@ const BookingDetail = () => {
   const [payment, setPayment] = useState<VisitPayment | null>(null);
   const pendingPayment = payment?.status === "pending" && normaliseBookingStatus(booking?.status) !== "cancelled" ? payment : null;
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const isCurrentView = () => currentView.current === viewKey;
+
+  useEffect(() => {
+    currentView.current = viewKey;
+    return () => { currentView.current = ""; loadSequence.current += 1; };
+  }, [viewKey]);
 
   const load = useCallback(async () => {
     if (!userId || !id) return;
@@ -258,12 +264,14 @@ const BookingDetail = () => {
     try {
       if (typeof navigatorWithShare.share === "function") {
         await navigatorWithShare.share({ title: "Xoot booking update", text: shareText, url: shareUrl });
+        if (!isCurrentView()) return;
         toast.success("Booking update shared");
         return;
       }
 
       if (navigatorWithShare.clipboard?.writeText) {
         await navigatorWithShare.clipboard.writeText(`${shareText} ${shareUrl}`);
+        if (!isCurrentView()) return;
         toast.success("Booking update copied");
         return;
       }
@@ -275,6 +283,7 @@ const BookingDetail = () => {
 
       toast.error("Sharing is unavailable on this device.");
     } catch {
+      if (!isCurrentView()) return;
       if (delivered) toast.success("ETA sent to native app");
       else toast.error("Sharing was cancelled or unavailable.");
     }
@@ -289,10 +298,12 @@ const BookingDetail = () => {
         status,
       });
     } catch (error) {
+      if (!isCurrentView()) return;
       toast.error(error instanceof Error ? error.message : "Booking status update failed");
       return;
     }
 
+    if (!isCurrentView()) return;
     const liveStatus = toLiveActivityStatus(status);
     notifyBookingLiveActivity({
       bookingId: id,
@@ -329,6 +340,7 @@ const BookingDetail = () => {
       const { data, error } = await supabase.functions.invoke("create-masked-call", {
         body: { booking_id: id },
       });
+      if (!isCurrentView()) return;
       if (error) throw error;
 
       const call = (data ?? {}) as MaskedCallDetails;
@@ -350,6 +362,7 @@ const BookingDetail = () => {
         window.location.href = `tel:${callerProxyNumber.replace(/[^\d+]/g, "")}`;
       }
     } catch (error) {
+      if (!isCurrentView()) return;
       setRequestingCall(false);
       toast.error(error instanceof Error ? error.message : "Masked call request failed");
       return;
@@ -369,9 +382,11 @@ const BookingDetail = () => {
         notes: incidentNotes,
       });
     } catch (error) {
+      if (!isCurrentView()) return;
       toast.error(error instanceof Error ? error.message : "Trust incident submission failed");
       return;
     }
+    if (!isCurrentView()) return;
     setIncidentNotes("");
     toast.success("Incident sent to Trust & Safety");
   };
@@ -388,6 +403,7 @@ const BookingDetail = () => {
       complaint: reviewRating <= 2,
       notes: reviewNotes || null,
     }).select("id, rating, notes").single();
+    if (!isCurrentView()) return;
     if (error) return toast.error(error.message);
     setReview(savedReview as Review);
 
@@ -412,6 +428,7 @@ const BookingDetail = () => {
       // `canOfferTip()` still gates this — the schema existing is not the same as tipping being
       // switched on, and `TIP_READINESS` remains the switch for that.
       const { error: tipError } = await supabase.from("booking_tips").insert(tipRow);
+      if (!isCurrentView()) return;
       if (tipError) {
         toast.warning("Review saved. The tip did not go through — you have not been charged.");
       } else {
@@ -426,10 +443,11 @@ const BookingDetail = () => {
           reviewId: savedReview?.id,
         });
       } catch {
+        if (!isCurrentView()) return;
         toast.warning("Review saved, but support follow-up routing is unavailable.");
       }
     }
-    toast.success("Review submitted");
+    if (isCurrentView()) toast.success("Review submitted");
   };
 
   const uploadPhoto = async (photoType: "before" | "after", file: File) => {
@@ -447,8 +465,10 @@ const BookingDetail = () => {
       contentType: file.type,
       cacheControl: "0",
     });
+    if (!isCurrentView()) return;
     if (error) { setUploading(null); toast.error(error.message); return; }
     const { error: insertError } = await supabase.from("booking_completion_photos").insert({ booking_id: id, xooter_id: booking.xooter_id, photo_type: photoType, storage_path: path });
+    if (!isCurrentView()) return;
     setUploading(null);
     if (insertError) return toast.error(insertError.message);
     toast.success(`${photoType} photo uploaded`);
@@ -457,7 +477,7 @@ const BookingDetail = () => {
 
   const chooseAndUploadPhoto = async (photoType: "before" | "after") => {
     const file = await captureOrSelectImage();
-    if (!file) return;
+    if (!file || !isCurrentView()) return;
     await uploadPhoto(photoType, file);
   };
 
@@ -676,6 +696,14 @@ const BookingDetail = () => {
       </div>
     </div>
   );
+};
+
+// Remount every view-owned field, not just loaded records. Unsent reviews/incidents, tips,
+// proxy numbers and in-flight UI state must never carry into another visit or account.
+const BookingDetail = () => {
+  const { id } = useParams();
+  const { user } = useAuth();
+  return <BookingDetailView key={`${user?.id ?? ""}:${id ?? ""}`} />;
 };
 
 export default BookingDetail;

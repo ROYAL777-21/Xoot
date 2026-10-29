@@ -27,7 +27,7 @@ const services = new Set(["residential", "express", "airbnb", "office", "deep", 
 // approved. It now prices off ../_shared/pricing.ts like every other path.
 
 const allowedTimes = new Set(["07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "14:00", "15:00", "16:00", "17:00"]);
-const multiWorkerServices = new Set(["airbnb", "office", "deep", "moving", "premium"]);
+const multiWorkerServices = new Set(["airbnb", "office"]);
 const photoProofServices = new Set(["airbnb", "deep", "moving"]);
 
 const getAllowedOrigins = () =>
@@ -118,7 +118,12 @@ Deno.serve(async (req) => {
     if (!address || !isApprovedLaunchRegion(address)) return json({ error: "outside launch coverage" }, 400, origin);
     if (xooterIds.length === 0) return json({ error: "select at least one Xooter" }, 400, origin);
 
-    const maxWorkers = multiWorkerServices.has(serviceType) ? Math.min(Math.max(requestedWorkerCount || 1, 1), 5) : 1;
+    const serviceMaxWorkers = multiWorkerServices.has(serviceType) ? 5 : 1;
+    const requestedWorkers = Math.min(Math.max(requestedWorkerCount || 1, 1), 5);
+    if (requestedWorkers > serviceMaxWorkers || xooterIds.length > serviceMaxWorkers) {
+      return json({ error: `${serviceType} is booked with one Xooter` }, 400, origin);
+    }
+    const maxWorkers = Math.min(requestedWorkers, serviceMaxWorkers);
     const selectedXooterIds = xooterIds.slice(0, maxWorkers);
     const bookedHours = resolveHours({ hours: body?.hours, homeSizeId });
     if (bookedHours === null) return json({ error: "booked hours are required" }, 400, origin);
@@ -137,7 +142,10 @@ Deno.serve(async (req) => {
     let verifiedZone: string | null = null;
     if (Deno.env.get("XOOT_STRICT_GEO_COVERAGE") === "true") {
       const checked = await assessVerifiedCoverage({
-        address, service: serviceType, actorId: authData.user.id, db: supa,
+        address, service: serviceType, actorId: authData.user.id,
+        // Compare only this helper's two structural operations. Expanding the
+        // SDK's generic query builders here exceeds TypeScript's recursion limit.
+        db: supa as unknown as Parameters<typeof assessVerifiedCoverage>[0]["db"],
         token: Deno.env.get("MAPBOX_GEOCODING_TOKEN") ?? "",
       });
       if (checked.state === "rate_limited") return json({ error: "coverage request limit" }, 429, origin);

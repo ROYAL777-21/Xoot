@@ -18,6 +18,15 @@ SQL differential fixture matrix and its negative control; adjust stale UI guard 
 preserving active-visit/GPS/SOS assertions. Two review fixes already pass21 focused tests after
 eight old-source regressions: duplicate legacy writer refusal and keyed booking/account state.
 Final independent re-review, exact artifact checks and staged visual acceptance remain.
+The two original writer/view findings have independent limited source clearance. Forward SQL
+and complete quote matrix pass with real PGlite0.5.8:58 focused checks, including role denial,
+read-only execution, version/fingerprint/cent parity and old per-head-price negative control.
+The old crew cap planted in the replacement function fails the new solo-service refusal case.
+Applied historical SQL hash stays unchanged. Updated guard anchors still pin active visits,
+assigned-worker GPS and SOS before the new detail layout. Web types, focused lint and legacy
+writer Deno check pass; a narrow existing coverage-client structural cast avoids the SDK's
+generic type recursion without changing its runtime auth/coverage checks. SQL independent
+review, full run, exact preview and staged delivery remain before policy release.
 
 ## HOLDING — 28 October — Airbnb/office-only crews and handoff visit detail
 

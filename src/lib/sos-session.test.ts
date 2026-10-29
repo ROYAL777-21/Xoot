@@ -246,8 +246,9 @@ describe("the SOS control", () => {
     // Above the grid, not buried under the map and the timeline. Anything that has to be
     // scrolled to is not an emergency control.
     const sosAt = detail.indexOf("<SosButton");
-    const gridAt = detail.indexOf('className="grid lg:grid-cols-[1fr_400px]');
+    const gridAt = detail.indexOf('className="xoot-visit-detail-layout"');
     expect(sosAt).toBeGreaterThan(-1);
+    expect(gridAt).toBeGreaterThan(-1);
     expect(sosAt).toBeLessThan(gridAt);
 
     // And only while someone is on the way to, or inside, the home.

@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import BookingDetail from "./BookingDetail";
 
@@ -7,10 +7,13 @@ const h = vi.hoisted(() => ({
   user: { id: "customer-a" },
   booking: { id: "visit-a", user_id: "customer-a", service_type: "residential", service: "residential",
     status: "draft", payment_status: "pending", price: 250, scheduled_at: "2026-11-02T07:00:00Z",
-    duration_hours: 4, crew_size: 1, xooter_id: null, updated_at: "2026-10-28T10:00:00Z" },
+    duration_hours: 4, crew_size: 1, xooter_id: null as string | null, updated_at: "2026-10-28T10:00:00Z" },
   payment: { id: "payment-a", amount: 289, status: "pending", currency: "ZAR", payment_kind: "booking" },
   blockNewAccount: false,
+  ops: vi.fn(), success: vi.fn(),
 }));
+vi.mock("@/lib/ops-workflow", () => ({ invokeOpsWorkflow: h.ops }));
+vi.mock("sonner", () => ({ toast: { success: h.success, error: vi.fn(), warning: vi.fn() } }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: h.user }) }));
 vi.mock("@/components/xoot/BookingChat", () => ({ BookingChat: () => <div>Booking messages</div> }));
 vi.mock("@/components/xoot/VoiceCallPanel", () => ({ VoiceCallPanel: () => null }));
@@ -38,15 +41,47 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: {
 } }));
 beforeEach(() => {
   h.user = { id: "customer-a" }; h.blockNewAccount = false;
+  h.booking.id = "visit-a"; h.booking.user_id = "customer-a"; h.booking.xooter_id = null;
   h.booking.status = "draft"; h.booking.payment_status = "pending";
   h.payment.status = "pending";
+  h.ops.mockReset(); h.success.mockReset();
 });
 afterEach(cleanup);
+const SwitchFixture = () => { const go = useNavigate(); return <button onClick={() => go("/app/bookings/visit-b")}>Next visit fixture</button>; };
 const App = ({ returned = true }: { returned?: boolean }) => <MemoryRouter initialEntries={[
   `/app/bookings/visit-a${returned ? "?payment=return" : ""}`,
-]}><Routes><Route path="/app/bookings/:id" element={<BookingDetail />} /></Routes></MemoryRouter>;
+]}><Routes><Route path="/app/bookings/:id" element={<><BookingDetail /><SwitchFixture /></>} /></Routes></MemoryRouter>;
 
 describe("handoff visit detail uses actual booking/payment data", () => {
+  it.each([false, true])("clears unsent private notes after the next visit has loaded (account switch=%s)", async switchAccount => {
+    h.booking.status = "completed"; h.payment.status = "paid";
+    render(<App returned={false} />);
+    await screen.findByRole("heading", { name: "Regular cleaning" });
+    fireEvent.change(screen.getByPlaceholderText("Anything the team should know?"), { target: { value: "First visit private review" } });
+    fireEvent.change(screen.getByPlaceholderText("Briefly describe what happened"), { target: { value: "First visit private incident" } });
+    h.booking.id = "visit-b";
+    if (switchAccount) { h.user = { id: "customer-b" }; h.booking.user_id = "customer-b"; }
+    fireEvent.click(screen.getByRole("button", { name: "Next visit fixture" }));
+    await screen.findByRole("heading", { name: "Regular cleaning" });
+    expect(screen.getByPlaceholderText("Anything the team should know?")).toHaveValue("");
+    expect(screen.getByPlaceholderText("Briefly describe what happened")).toHaveValue("");
+  });
+  it("ignores an old visit's asynchronous submission after opening another visit", async () => {
+    h.booking.xooter_id = "isolated-fixture-xooter";
+    let finish!: () => void;
+    h.ops.mockImplementationOnce(() => new Promise<void>(resolve => { finish = resolve; }));
+    render(<App returned={false} />);
+    await screen.findByRole("heading", { name: "Regular cleaning" });
+    fireEvent.change(screen.getByPlaceholderText("Briefly describe what happened"), { target: { value: "First visit only" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send to Trust & Safety" }));
+    h.booking.id = "visit-b";
+    fireEvent.click(screen.getByRole("button", { name: "Next visit fixture" }));
+    await screen.findByRole("heading", { name: "Regular cleaning" });
+    fireEvent.change(screen.getByPlaceholderText("Briefly describe what happened"), { target: { value: "Second visit only" } });
+    await act(async () => finish());
+    expect(screen.getByPlaceholderText("Briefly describe what happened")).toHaveValue("Second visit only");
+    expect(h.success).not.toHaveBeenCalledWith("Incident sent to Trust & Safety");
+  });
   it("shows the stored R289 payment total rather than presenting its R250 service base as the total", async () => {
     render(<App returned={false} />);
     await screen.findByRole("button", { name: "Pay R289" });
