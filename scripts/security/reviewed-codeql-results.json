@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "reviewed": [
+    {
+      "ruleId": "js/weak-cryptographic-algorithm",
+      "path": "src/lib/in-app-call-access.test.ts",
+      "lineHash": "216419f77735784d:1",
+      "sourceSha256": "725af22a18c2f2de3142bbcdf3f539ff97f5e1909c4024e14ded525732756bbc",
+      "reason": "The test constructs a Twilio-required HMAC-SHA1 webhook signature from synthetic fixture credentials. This is a protocol compatibility vector, not unkeyed SHA1 encryption or a live secret. Changing the algorithm would invalidate the provider signature test."
+    },
+    {
+      "ruleId": "js/file-access-to-http",
+      "path": "scripts/ops/staging-founder-sessions.mjs",
+      "lineHash": "619e5cbede4d187:1",
+      "sourceSha256": "feb40c3a3330a720f8529f7149d8913b2a7e937e05f84dca3292ff9f1186bf3b",
+      "reason": "The local founder-authorized helper intentionally loads the public staging publishable key and sends it only to the hardcoded named staging Supabase Auth endpoint. base must equal STAGING_AUTH; alias and loopback/CSRF checks are explicit. No arbitrary file is uploaded and the public key is designed for this recipient."
+    },
+    {
+      "ruleId": "js/http-to-file-access",
+      "path": "scripts/ops/test-booking-communications-staging.mjs",
+      "lineHash": "de70a9dbf9cc63b6:1",
+      "sourceSha256": "6d3cf223f4289877ea5d238c3731615d2182649b8e48576d52694d5f1246edfc",
+      "reason": "The local staging-only acceptance helper writes bounded/redacted numeric HTTP status and row-count evidence to one fixed ignored local receipt path. Remote response data is file CONTENT, never a path or executable command; no private response body or credential is saved."
+    }
+  ],
+  "sourceDigest": "SHA256 of exact source with CRLF normalized to LF"
+}

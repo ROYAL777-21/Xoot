@@ -117,5 +117,5 @@ Nothing here is published without the founder saying yes to that exact text.
 `;
 
 mkdirSync(DIR, { recursive: true });
-writeFileSync(file, body, "utf8");
+writeFileSync(file, body, { encoding: "utf8", flag: "wx" });
 console.log(`Wrote ${file} with ${commits.length} commit(s) pre-filled.`);

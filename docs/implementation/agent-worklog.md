@@ -24,6 +24,32 @@ has no protection; the sole pre-existing repository ruleset is already disabled)
 Correctness owner: new SARIF assertion/test is cross-role security evidence, required to prevent
 an analyzer invocation with findings or invalid output from being called a clean review.
 
+First real CodeQL run found49:41installed skill-tool findings,1original design-export finding,
+and7maintained-code findings. Preserve original SARIF; exclude only skills/design reference
+material, matching the existing Semgrep scope. Fix worker message origin, atomic journal create,
+same-descriptor artifact inspection and a source-text regex assertion. Three inspected false
+positives are individually bound to rule/path/SARIF line fingerprint/whole-source canonical-LF
+SHA256, with public-key-to-Auth, required synthetic HMAC-SHA1 and redacted receipt-content
+rationales. Six positive/negative guard tests and13focused worker/Twilio checks pass; independent
+review found no concrete bypass, and the untouched49-result artifact still fails46unresolved.
+A new real scanner run remains necessary; no alert wildcard, silent failure or paid API added.
+
+New Correctness/Safety claim before backend repair: review uncovered the baseline generic
+ops-workflow owner money/cancellation status bypass and stale worker write overwriting a
+concurrent cancellation/reassignment. Real-entrypoint regression tests reproduce both;11initial
+failures retained. Claim only contractor-action admission, checked current-state/assignment
+write, lifecycle/paid/accepted-job prerequisites and side-effect refusal on error/conflict.
+Do not pretend the remaining multi-transaction completion rewards/earnings become atomic.
+Also prepare a forward-only checklist ACL closure for production defaults; no historical SQL
+edit. Production type reconciliation uses actual catalog and rowless rehearsal, not staging's
+unrelated base shapes. The two native cron blocks remain a separately checked hosted dependency.
+
+Latest human steering: v4bundle verified and imported as a separate read-only review ref,
+tip5e300407; never overwrite this branch with it. PayFast verification documents SUBMITTED,
+not provider-approved. Weekly worker payouts are now requested; an optional instant cash-out
+fee is not priced/approved or enabled, and PayFast merchant-to-own-bank payouts do not prove a
+worker-beneficiary payout facility. Preserve no-new-spend and real bank/provider evidence.
+
 Latest79e138ff design/security, PostgreSQL referral privileges and production public-directory
 checks have genuinely passed. The remaining paid review fails for provider credit and the live
 types job detects actual staged schema changes plus generator formatting. Inspect those effects

@@ -119,7 +119,7 @@ describe("Twilio secrets contract", () => {
 
     // Proxy — and only Proxy — allocates numbers from a pool you pay for.
     const masked = read("supabase/functions/create-masked-call/index.ts");
-    expect(masked).toMatch(/proxy\.twilio\.com/);
+    expect(masked).toContain("proxy.twilio.com");
     expect(masked).toMatch(/TWILIO_PROXY_SERVICE_SID/);
 
     // And the runbook answers the question in those terms, because it is the one that keeps being

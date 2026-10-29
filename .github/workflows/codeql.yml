@@ -27,6 +27,7 @@ jobs:
           languages: javascript-typescript
           build-mode: none
           queries: security-extended
+          config-file: ./.github/codeql/config.yml
       - name: Analyze and retain the real SARIF result
         uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
         with:
@@ -38,7 +39,7 @@ jobs:
       - name: Exercise result failure controls
         run: node --test scripts/security/assert-codeql-results.test.mjs
       - name: Require a completed analysis with no unresolved findings
-        run: node scripts/security/assert-codeql-results.mjs codeql-results
+        run: node scripts/security/assert-codeql-results.mjs codeql-results scripts/security/reviewed-codeql-results.json
       - name: Retain security evidence
         if: always()
         uses: actions/upload-artifact@v4
