@@ -1,49 +1,39 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
+import { performAppleSignIn } from './apple-auth-flow';
+import { startOAuth } from './auth-links';
 
 /**
- * Sign in with Apple, natively.
- *
- * Not a preference. Apple's Guideline 4.8 requires an app that offers third-party
- * sign-in — Xoot offers Google — to also offer Sign in with Apple, and on iOS it has to
- * be the native sheet. Routing Apple through the same web browser flow as Google is a
- * documented rejection reason, and `app.config.ts` was already claiming the
- * `usesAppleSignIn` entitlement with no module installed to honour it.
- *
- * The native flow returns an identity token, which Supabase exchanges directly. That
- * skips the browser round trip entirely, so it is also the faster path.
+ * Use Apple's native sheet on iOS and the browser PKCE flow on Android.
+ * iOS exchanges the returned identity token with the request's original nonce.
+ * Provider configuration, entitlements and a signed build still need acceptance.
  */
 
 export const isAppleSignInAvailable = async () => {
-  if (Platform.OS !== 'ios') return false;
+  if (Platform.OS !== 'ios') return Platform.OS === 'android';
   return AppleAuthentication.isAvailableAsync();
 };
 
 export const signInWithApple = async () => {
-  const credential = await AppleAuthentication.signInAsync({
+  if (Platform.OS !== 'ios') return startOAuth('apple');
+  return performAppleSignIn({
+  random: async () => Array.from(await Crypto.getRandomBytesAsync(32), byte => byte.toString(16).padStart(2, '0')).join(''),
+  sha256: value => Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, value),
+  authenticate: options => AppleAuthentication.signInAsync({
+    ...options,
     requestedScopes: [
       AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
       AppleAuthentication.AppleAuthenticationScope.EMAIL,
     ],
+  }),
+  exchange: async (token, nonce) => {
+    const { data, error } = await supabase.auth.signInWithIdToken({ provider: 'apple', token, nonce });
+    return { session: data.session, error };
+  },
   });
-
-  // Apple returns the identity token once, on the first authorisation. On every later
-  // sign-in the name and email come back null — Apple assumes the app stored them. So
-  // the token is the only thing that can be relied on here, and the profile is filled
-  // from what Supabase already holds.
-  if (!credential.identityToken) {
-    throw new Error('Apple did not return an identity token.');
-  }
-
-  const { data, error } = await supabase.auth.signInWithIdToken({
-    provider: 'apple',
-    token: credential.identityToken,
-  });
-  if (error) throw error;
-
-  return data.session;
 };
 
 /**

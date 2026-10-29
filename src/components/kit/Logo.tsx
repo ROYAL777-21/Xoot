@@ -2,7 +2,7 @@ import type { CSSProperties, HTMLAttributes } from "react";
 import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
 
 const tones = {
-  ink: { fg: "var(--xoot-ink-900)", tile: "var(--xoot-violet-500)", tileFg: "#FFFFFF" },
+  ink: { fg: "var(--xoot-text-primary)", tile: "var(--xoot-violet-500)", tileFg: "#FFFFFF" },
   violet: { fg: "var(--xoot-violet-500)", tile: "var(--xoot-violet-500)", tileFg: "#FFFFFF" },
   inverse: { fg: "var(--xoot-neutral-0)", tile: "var(--xoot-neutral-0)", tileFg: "var(--xoot-violet-600)" },
 };

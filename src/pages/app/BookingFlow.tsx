@@ -4,12 +4,12 @@ import { ArrowLeft, ArrowRight, BedDouble, BriefcaseBusiness, Building2, Check, 
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/kit/Logo";
 import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
-import { SuburbPicker } from "@/components/xoot/SuburbPicker";
+import { HandoffFlowerField } from "@/components/xoot/HeroArtwork";
 import { InteractiveServiceAreaMap } from "@/components/xoot/InteractiveServiceAreaMap";
 import { ServiceIcon } from "@/components/kit/ServiceIcon";
 import { Button } from "@/components/ui/button";
 import { loadXooterDirectory, type XooterDirectory } from "@/lib/xooter-directory";
-import { isApprovedLaunchRegion } from "@/lib/operations";
+import { readPlaces, saveBookingPlace, type PlaceSummary } from "./profile-data";
 import { BOOKING_ADD_ONS, bookingVisitDurationHours, type BookingQuoteInput, type BookingService } from "@/lib/booking-contract";
 import {
   BOOKING_SERVICE_DETAILS, BOOKING_PROPERTY_LABELS, BOOKING_FREQUENCY_LABELS, BOOKING_LINEN_LABELS,
@@ -18,6 +18,7 @@ import {
   changeBookingService, formatBookingMoney, readBookingQuoteResponse, type BookingQuoteResponse,
 } from "@/lib/booking-flow";
 import "@/styles/auth-booking.css";
+import "@/styles/account-handoff.css";
 
 const stepNames = ["Service", "Your home", "When", "Your Xooter", "Confirm"];
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -61,6 +62,8 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const [serviceChosen, setServiceChosen] = useState(!website || Boolean(params.get("service")));
   const [input, setInput] = useState<BookingQuoteInput>(() => {
     const draft = createBookingInput(bookingServiceFromParam(params.get("service")));
+    const invite = params.get("ref");
+    if (invite && /^[A-Z0-9_-]{4,32}$/i.test(invite)) draft.referralCode = invite;
     draft.homeSize = bookingHomeSize(2, 1);
     if (draft.service === "regular") draft.hours = 5.5;
     const date = params.get("date");
@@ -80,9 +83,20 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const [bathrooms, setBathrooms] = useState(1);
   const [address, setAddress] = useState(() => safePrefill(initialAddress || params.get("address") || params.get("area")));
   const [showAreaMap, setShowAreaMap] = useState(false);
-  const [suburb, setSuburb] = useState("");
+  const [coverageCheck, setCoverageCheck] = useState<{
+    key: string; status: "loading" | "in_zone" | "review" | "error"; message: string;
+  } | null>(null);
   const [notes, setNotes] = useState("");
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
+  const [places, setPlaces] = useState<PlaceSummary[]>([]);
+  const [placeId, setPlaceId] = useState("");
+  const [savePlace, setSavePlace] = useState(true);
+  const [placeLabel, setPlaceLabel] = useState("Home");
+  const [savingPlace, setSavingPlace] = useState(false);
+  const placeSave = useRef<{ id: string; label: string; address: string } | null>(null);
+  const placeBusy = useRef(false);
+  const currentBuyer = useRef(buyerId);
+  currentBuyer.current = buyerId;
   const [propertyId, setPropertyId] = useState("");
   const [savedDetailsError, setSavedDetailsError] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +121,41 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
   const slots = bookingStartSlots(input);
   const correctedService = input.propertyType === "office" ? "office" : input.propertyType === "airbnb" ? "airbnb" : input.propertyType === "empty" ? "moving" : null;
   const mismatch = correctedService && correctedService !== input.service ? correctedService : null;
-  const fullAddress = [address.trim(), suburb].filter(Boolean).join(", ");
+  const fullAddress = address.trim();
+  const coverageKey = JSON.stringify([fullAddress, actualService]);
+  // Only show a verdict for the exact current address/service. Editing either
+  // invalidates the result instantly without retaining a private geocode.
+  const visibleCoverage = coverageCheck?.key === coverageKey ? coverageCheck : null;
+  const checkGeoCoverage = async () => {
+    if (!buyerId) {
+      setCoverageCheck({ key: coverageKey, status: "error", message: "Sign in to check a precise service address." });
+      return;
+    }
+    if (!fullAddress.trim()) {
+      setCoverageCheck({ key: coverageKey, status: "review", message: "Enter a full service address first." });
+      return;
+    }
+    setCoverageCheck({ key: coverageKey, status: "loading", message: "Checking your address…" });
+    try {
+      const { data, error: failure } = await supabase.functions.invoke("check-service-coverage", {
+        body: { address: fullAddress, service: actualService },
+      });
+      const response = data as {
+        success?: unknown; data?: { state?: unknown; zoneName?: unknown; reason?: unknown };
+      } | null;
+      if (failure || response?.success !== true) {
+        setCoverageCheck({ key: coverageKey, status: "error", message: "Location verification is temporarily unavailable. Contact Xoot to confirm." });
+      } else if (response.data?.state === "available") {
+        setCoverageCheck({ key: coverageKey, status: "in_zone",
+          message: "Address verified." });
+      } else {
+        setCoverageCheck({ key: coverageKey, status: "review",
+          message: "We cannot verify coverage automatically. Please request a manual area review." });
+      }
+    } catch {
+      setCoverageCheck({ key: coverageKey, status: "error", message: "Unable to confirm this address. Manual review remains available." });
+    }
+  };
   const days = Array.from({ length: 14 }, (_, i) => bookingDateInSast(Date.now(), i + 1));
 
   const updateInput = (patch: Partial<BookingQuoteInput>) => {
@@ -141,10 +189,14 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     Promise.all([
       supabase.from("profiles").select("address").eq("id", buyerId).maybeSingle(),
       supabase.from("property_accounts").select("id,name").eq("user_id", buyerId).eq("status", "active").order("created_at"),
-    ]).then(([profile, accounts]) => {
+      readPlaces(buyerId).then(data => ({ data, error: null })).catch(() => ({ data: [] as PlaceSummary[], error: true })),
+    ]).then(([profile, accounts, homes]) => {
       if (!active) return;
-      setSavedDetailsError(Boolean(profile.error || accounts.error));
-      if (!profile.error && !addressEdited.current && profile.data?.address) setAddress(profile.data.address);
+      setSavedDetailsError(Boolean(profile.error || accounts.error || homes.error));
+      if (!homes.error) setPlaces(homes.data);
+      const defaultHome = homes.data.find(home => home.is_default && home.address);
+      if (!addressEdited.current && defaultHome?.address) { setAddress(defaultHome.address); setPlaceId(defaultHome.id); }
+      else if (!profile.error && !addressEdited.current && profile.data?.address) setAddress(profile.data.address);
       if (!accounts.error) setProperties(accounts.data ?? []);
     }).catch(() => { if (active) setSavedDetailsError(true); });
     return () => { active = false; };
@@ -195,11 +247,12 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     return () => { clearTimeout(timer); requestVersion.current += 1; };
   }, [step, buyerId, quoteKey, quoteAttempt]);
 
-  const back = () => { setError(null); step === 0 ? navigate("/") : setStep(value => value - 1); };
-  const next = () => {
+  const back = () => { setError(null); step === 0 ? navigate(website ? "/" : "/app") : setStep(value => value - 1); };
+  const next = async () => {
+    if (placeBusy.current) return;
     if (step === 0 && !serviceChosen) return;
     if (step === 1 && !address.trim()) { setError("Add the address where you need us."); return; }
-    if (step === 1 && !isApprovedLaunchRegion(fullAddress)) { setError("Choose an address in one of our Johannesburg launch suburbs."); return; }
+    if (step === 1 && fullAddress.trim().length < 10) { setError("Enter your complete street address and area."); return; }
     if (step === 1 && !mismatch && ["airbnb", "office", "moving"].includes(input.service) && input.propertyType !== ({ airbnb: "airbnb", office: "office", moving: "empty" } as Record<string, string>)[input.service]) {
       setError("Choose the property type that fits this service, or change the service."); return;
     }
@@ -210,6 +263,22 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
     if (step === 3 && !bookingStartSlots(input).includes(input.time)) {
       setStep(2); setError("Choose an arrival time that lets your new crew finish by 17:00."); return;
     }
+    if (step === 1 && buyerId && savePlace && !placeId) {
+      const existing = places.find(place => place.address?.trim().toLowerCase() === fullAddress.trim().toLowerCase());
+      if (existing) setPlaceId(existing.id);
+      else {
+        placeBusy.current = true; setSavingPlace(true); setError(null);
+        const draft = placeSave.current?.address === fullAddress && placeSave.current.label === placeLabel
+          ? placeSave.current : { id: crypto.randomUUID(), label: placeLabel, address: fullAddress };
+        placeSave.current = draft;
+        try {
+          const id = await saveBookingPlace(buyerId, draft.id, draft.label, draft.address);
+          if (currentBuyer.current !== buyerId) return;
+          setPlaceId(id); setPlaces(previous => [...previous, { id, label: draft.label.trim(), address: draft.address.trim(), is_default: false }]);
+        } catch (failure) { if (currentBuyer.current === buyerId) setError(failure instanceof Error ? failure.message : "Your place was not saved."); return; }
+        finally { placeBusy.current = false; if (currentBuyer.current === buyerId) setSavingPlace(false); }
+      }
+    }
     setError(null); setStep(value => Math.min(4, value + 1));
   };
   const chooseDate = (date: string) => updateInput({ date, time: bookingStartSlots({ ...input, date })[0] ?? "08:00",
@@ -217,7 +286,9 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
 
   const crewPicker = <fieldset><legend className="xoot-booking-label">{website ? "How many Xooters" : "Your crew"}</legend><div className="xoot-booking-crew">{Array.from({ length: maxCrew }, (_, i) => i + 1).map(size => <button key={size} type="button" aria-pressed={input.crewSize === size} onClick={() => { updateInput({ crewSize: size }); setSelectedIds([]); }} className={input.crewSize === size ? "is-selected" : ""}>{!website && <Users size={19} />}<strong>{website ? `${size} ${size === 1 ? "Xooter" : "Xooters"}` : size}</strong>{!website && <span>{size === 1 ? "Xooter" : "Xooters"}</span>}</button>)}</div><p className="xoot-booking-help">One job, shared by your crew. Review the total and estimated duration before booking.</p></fieldset>;
 
-  return <div className={`xoot-booking-page xoot-booking-handoff${website ? " xoot-site-booking" : ""}`}><div className="xoot-booking-frame">
+  return <div className={`xoot-booking-page xoot-booking-handoff${website ? " xoot-site-booking" : ""}`}>
+    {!website && <HandoffFlowerField className="xoot-account-booking-flowers" />}
+    <div className="xoot-booking-frame">
     <header className="xoot-booking-head">
       <button type="button" className="xoot-booking-back" aria-label={step === 0 ? "Close booking" : "Back"} onClick={back}>{website && step === 0 ? <X /> : <ArrowLeft />}</button>
       {website ? <ol className="xoot-booking-steps" aria-label="Booking progress">{websiteSteps.map((name, i) => <Fragment key={name}><li className={`xoot-booking-step ${i === step ? "is-active" : i < step ? "is-done" : ""}`} aria-current={i === step ? "step" : undefined} aria-label={name}><i aria-hidden="true">{i < step ? <Check size={11} strokeWidth={3.4} /> : i + 1}</i><span aria-hidden="true">{name}</span></li>{i < 4 && <li aria-hidden="true" className={`xoot-booking-connector ${i < step ? "is-done" : ""}`} />}</Fragment>)}</ol> : <><div className="xoot-booking-progress"><span>{stepNames[step]}</span><ol aria-label="Booking progress">{stepNames.map((name, i) => <li key={name} aria-label={name} aria-current={i === step ? "step" : undefined} className={i <= step ? "is-done" : ""} />)}</ol></div><Logo className="xoot-booking-logo" size={20} tone="violet" /></>}
@@ -232,19 +303,34 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
       </div>}
       {step === 1 && <div className="xoot-booking-stack"><h1>{website ? "Where are we going?" : "Tell us about your place"}</h1>
         {website && <p className="xoot-booking-lede">Add your address and tell us about the space.</p>}
+        {places.length > 0 && <label className="xoot-booking-field">Your places<select value={placeId} disabled={savingPlace} onChange={event => { const home = places.find(place => place.id === event.target.value); setPlaceId(home?.id ?? ""); if (home?.address) { addressEdited.current = true; setAddress(home.address); setAcceptedFingerprint(null); } }}><option value="">Use a different address</option>{places.map(place => <option key={place.id} value={place.id}>{place.label} · {place.address}</option>)}</select></label>}
         <div className={website ? "xoot-site-address" : undefined}><div className="xoot-booking-field">
           <span>{website ? "Street address" : "Where do you need us?"}</span>
           <VerifiedAddressInput value={address} label={website ? "Street address" : "Where do you need us?"}
             showIcon={false} inputClassName="xoot-booking-service-address"
-            onChange={next => { addressEdited.current = true; setAddress(next); setAcceptedFingerprint(null); }}
+            disabled={savingPlace}
+            onChange={next => { addressEdited.current = true; setAddress(next); setPlaceId(""); setAcceptedFingerprint(null); }}
             placeholder={website ? "14 Fredman Drive" : "Street address and suburb"} />
         </div>
-        {website && <SuburbPicker value={suburb} onChange={value => { setSuburb(value); setAcceptedFingerprint(null); }} />}</div>
+        </div>
+        {buyerId && !placeId && <><label className="xoot-booking-check"><input type="checkbox" checked={savePlace} disabled={savingPlace} onChange={event => setSavePlace(event.target.checked)} /><span><strong>Save this place to Your places</strong><small>Use it again from your profile or next booking.</small></span></label>{savePlace && <label className="xoot-booking-field">Place name<input value={placeLabel} maxLength={120} disabled={savingPlace} onChange={event => setPlaceLabel(event.target.value)} /></label>}</>}
+        {placeId && <p className="xoot-booking-help" role="status">Saved in Your places.</p>}
         {!website && <button type="button" className="xoot-booking-pill" aria-expanded={showAreaMap} aria-controls="xoot-booking-service-map"
           onClick={() => setShowAreaMap(open => !open)}>
           {showAreaMap ? "Hide interactive area map" : "View interactive area map"}
         </button>}
         {!website && showAreaMap && <div id="xoot-booking-service-map"><InteractiveServiceAreaMap /></div>}
+        {import.meta.env.VITE_VERIFIED_COVERAGE === "true" && (
+          <div className="space-y-2 rounded-xl border border-border p-3">
+            <button type="button" className="xoot-booking-pill"
+              disabled={visibleCoverage?.status === "loading"}
+              onClick={() => void checkGeoCoverage()}>Verify address</button>
+            {visibleCoverage && <p role="status" className="xoot-booking-help">{visibleCoverage.message}</p>}
+            <p className="xoot-booking-help">
+              Check the address where you would like your Xooter to meet you.
+            </p>
+          </div>
+        )}
         {savedDetailsError && <p className="xoot-booking-help">Saved details could not be loaded. You can enter the address above.</p>}
         {properties.length > 0 && <label className="xoot-booking-field">Property account<select value={propertyId} onChange={event => { setPropertyId(event.target.value); setAcceptedFingerprint(null); }}><option value="">Personal booking</option>{properties.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label>}
         <fieldset><legend className="xoot-booking-label">{website ? "What kind of place is it?" : "What kind of place?"}</legend><div className="xoot-booking-property-grid">{Object.entries(BOOKING_PROPERTY_LABELS).map(([id, label]) => { const Icon = propertyIcons[id as keyof typeof propertyIcons]; return <button type="button" key={id} className={`xoot-booking-card ${input.propertyType === id ? "is-selected" : ""}`} aria-pressed={input.propertyType === id} onClick={() => chooseProperty(id as BookingQuoteInput["propertyType"])}>{website && <Icon size={17} />}<strong>{website ? websitePropertyLabels[id as keyof typeof websitePropertyLabels] : label}</strong></button>; })}</div></fieldset>
@@ -253,7 +339,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
         {mismatch ? <p className="xoot-booking-help">The corrected quote uses the usual hours for {service.title.toLowerCase()}. Switch services above to customise those hours.</p> : <div className="xoot-booking-steppers"><Stepper label="Hours" description="Cleaning time before extras and crew adjustment" value={input.hours} min={actualService === "airbnb" && input.linen === "wash_dry_repack" ? 5 : service.min} max={service.max} step={0.5} onChange={hours => updateInput({ hours })} /></div>}
         {actualService === "airbnb" && <label className="xoot-booking-field">Linen handling<select value={input.linen ?? "none"} onChange={event => updateInput({ linen: event.target.value as BookingQuoteInput["linen"], hours: event.target.value === "wash_dry_repack" ? Math.max(5, input.hours) : input.hours })}>{Object.entries(BOOKING_LINEN_LABELS).map(([id, label]) => <option key={id} value={id} disabled={Boolean(mismatch && id === "wash_dry_repack")}>{label}{mismatch && id === "wash_dry_repack" ? " — switch to Airbnb first" : ""}</option>)}</select></label>}
         {extras.length > 0 && <fieldset><legend className="xoot-booking-label">Anything extra?</legend><div className={website ? "xoot-booking-pills" : "xoot-booking-stack xoot-booking-extras"}>{extras.map(id => website ? <button type="button" key={id} className={`xoot-booking-pill ${input.addOns.includes(id) ? "is-selected" : ""}`} aria-pressed={input.addOns.includes(id)} onClick={() => updateInput({ addOns: input.addOns.includes(id) ? input.addOns.filter(item => item !== id) : [...input.addOns, id] })}>{BOOKING_ADD_ONS[id].label}</button> : <label className={`xoot-booking-check ${input.addOns.includes(id) ? "is-selected" : ""}`} key={id}><input type="checkbox" checked={input.addOns.includes(id)} onChange={() => updateInput({ addOns: input.addOns.includes(id) ? input.addOns.filter(item => item !== id) : [...input.addOns, id] })} /><span><strong>{BOOKING_ADD_ONS[id].label}</strong><small>Adds about an hour</small></span></label>)}</div></fieldset>}
-        {!website && crewPicker}
+        {!website && maxCrew > 1 && crewPicker}
         <p className="xoot-booking-help" role="status">Estimated visit: {bookingVisitDurationHours(input)} hours with {input.crewSize} {input.crewSize === 1 ? "Xooter" : "Xooters"}, including selected extras. Actual time depends on the condition of the space.</p>
         <label className="xoot-booking-field">Anything we should know?<textarea maxLength={1500} rows={3} value={notes} onChange={event => { setNotes(event.target.value); setAcceptedFingerprint(null); }} placeholder="Pets, products or fragile areas. Keep gate codes in your secure home details." /></label>
       </div>}
@@ -267,14 +353,14 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
       </div>}
       {step === 3 && <div className="xoot-booking-stack"><h1>Choose your Xooter{input.crewSize > 1 ? "s" : ""}</h1>
         <p className="xoot-booking-lede">Pick a preference, or let Xoot match your crew. Availability for your date still needs confirmation.</p>
-        {website && crewPicker}
-        <button type="button" className={`xoot-booking-match ${!selectedIds.length ? "is-selected" : ""}`} aria-pressed={!selectedIds.length} onClick={() => { setSelectedIds([]); setAcceptedFingerprint(null); }}><Users /><span><strong>Let Xoot match my crew</strong><small>{input.crewSize} {input.crewSize === 1 ? "Xooter" : "Xooters"} for this visit</small></span>{!selectedIds.length && <Check size={18} />}</button>
-        {rosterStatus === "loading" ? <p role="status">Loading the approved roster…</p> : rosterStatus === "error" ? <div className="xoot-booking-empty" role="alert"><p>The roster could not be loaded.</p><Button variant="outline" onClick={() => setRosterAttempt(value => value + 1)}>Try again</Button></div> : !roster.length ? <div className="xoot-booking-empty"><ShieldCheck /><h2>No approved Xooters listed yet</h2><p>You can review a quote. A booking cannot be confirmed until a suitable crew is available.</p></div> : <div className="xoot-booking-roster">{roster.map(person => <button type="button" key={person.id} aria-pressed={selectedIds.includes(person.id)} className={`xoot-booking-person ${selectedIds.includes(person.id) ? "is-selected" : ""}`} onClick={() => { setSelectedIds(ids => ids.includes(person.id) ? ids.filter(id => id !== person.id) : ids.length < input.crewSize ? [...ids, person.id] : input.crewSize === 1 ? [person.id] : ids); setAcceptedFingerprint(null); }}>
+        {website && maxCrew > 1 && crewPicker}
+        <button type="button" className={`xoot-booking-match ${!selectedIds.length ? "is-selected" : ""}`} aria-pressed={!selectedIds.length} onClick={() => { setSelectedIds([]); setAcceptedFingerprint(null); }}><Users /><span><strong>Let Xoot match my {input.crewSize > 1 ? "crew" : "Xooter"}</strong><small>{input.crewSize} {input.crewSize === 1 ? "Xooter" : "Xooters"} for this visit</small></span>{!selectedIds.length && <Check size={18} />}</button>
+        {rosterStatus === "loading" ? <p role="status">Loading the approved roster…</p> : rosterStatus === "error" ? <div className="xoot-booking-empty" role="alert"><p>The roster could not be loaded.</p><Button variant="outline" onClick={() => setRosterAttempt(value => value + 1)}>Try again</Button></div> : !roster.length ? <div className="xoot-booking-empty"><ShieldCheck /><h2>No approved Xooters listed yet</h2><p>You can review a quote. A booking cannot be confirmed until {input.crewSize > 1 ? "a suitable crew is" : "a suitable Xooter is"} available.</p></div> : <div className="xoot-booking-roster">{roster.map(person => <button type="button" key={person.id} aria-pressed={selectedIds.includes(person.id)} className={`xoot-booking-person ${selectedIds.includes(person.id) ? "is-selected" : ""}`} onClick={() => { setSelectedIds(ids => ids.includes(person.id) ? ids.filter(id => id !== person.id) : ids.length < input.crewSize ? [...ids, person.id] : input.crewSize === 1 ? [person.id] : ids); setAcceptedFingerprint(null); }}>
           {person.photo_url ? <img src={person.photo_url} alt="" width="52" height="52" /> : <span className="xoot-booking-avatar">{person.name.slice(0, 1)}</span>}<span><strong>{person.name}</strong><small>{person.jobs_completed > 0 && person.rating !== null ? `${person.rating.toFixed(1)} · ${person.jobs_completed} visits` : "New to Xoot"}</small></span>{selectedIds.includes(person.id) && <Check size={18} />}
         </button>)}</div>}
       </div>}
       {step === 4 && <div className="xoot-booking-stack"><h1>Everything look right?</h1>
-        <div className="xoot-booking-summary"><div className="xoot-booking-summary-row"><span>Where</span><span>{fullAddress}</span></div><div className="xoot-booking-summary-row"><span>When</span><span>{input.date} · {input.time}</span></div><div className="xoot-booking-summary-row"><span>How often</span><span>{BOOKING_FREQUENCY_LABELS[input.frequency]}</span></div><div className="xoot-booking-summary-row"><span>Your crew</span><span>{input.crewSize} {input.crewSize === 1 ? "Xooter" : "Xooters"}{selectedIds.length ? ` · ${roster.filter(person => selectedIds.includes(person.id)).map(person => person.name).join(", ")}` : " · match requested"}</span></div>{propertyId && <div className="xoot-booking-summary-row"><span>Property account</span><span>{properties.find(account => account.id === propertyId)?.name}</span></div>}{notes && <div className="xoot-booking-summary-row"><span>Your notes</span><span>{notes}</span></div>}</div>
+        <div className="xoot-booking-summary"><div className="xoot-booking-summary-row"><span>Where</span><span>{fullAddress}</span></div><div className="xoot-booking-summary-row"><span>When</span><span>{input.date} · {input.time}</span></div><div className="xoot-booking-summary-row"><span>How often</span><span>{BOOKING_FREQUENCY_LABELS[input.frequency]}</span></div><div className="xoot-booking-summary-row"><span>{input.crewSize > 1 ? "Your crew" : "Your Xooter"}</span><span>{input.crewSize} {input.crewSize === 1 ? "Xooter" : "Xooters"}{selectedIds.length ? ` · ${roster.filter(person => selectedIds.includes(person.id)).map(person => person.name).join(", ")}` : " · match requested"}</span></div>{propertyId && <div className="xoot-booking-summary-row"><span>Property account</span><span>{properties.find(account => account.id === propertyId)?.name}</span></div>}{notes && <div className="xoot-booking-summary-row"><span>Your notes</span><span>{notes}</span></div>}</div>
         <label htmlFor="referral-code" className="xoot-booking-field">A friend’s invite?<input id="referral-code" maxLength={32} value={input.referralCode} onChange={event => updateInput({ referralCode: event.target.value.toUpperCase() })} aria-describedby="referral-code-help" autoComplete="off" spellCheck={false} placeholder="Referral code (optional)" /></label><p id="referral-code-help" className="xoot-booking-help">{quote ? BOOKING_REFERRAL_MESSAGES[quote.referral.status] : "We’ll check the code with your quote."}</p>
         <label className="xoot-booking-check"><input type="checkbox" checked={input.requestedCreditCents > 0} onChange={event => updateInput({ requestedCreditCents: event.target.checked ? 100_000_000 : 0 })} /><span><strong>Use my available XootCred</strong><small>Your quote confirms the amount available to use.</small></span></label>
         {!buyerId ? <div className="xoot-booking-empty"><p>Sign in to review your quote and account benefits. You’ll be able to enter your booking details again after signing in.</p><Button onClick={() => navigate("/auth", { state: { from: { pathname: website ? "/book" : "/app/book", search: `?service=${input.service}` } } })}>Sign in</Button></div> : quoteLoading ? <p role="status" className="xoot-booking-callout"><Loader2 className="animate-spin" />Reviewing your quote…</p> : quoteState.error ? <div className="xoot-booking-empty" role="alert"><p>{quoteState.error}</p><Button onClick={() => setQuoteAttempt(value => value + 1)}>Try quote again</Button></div> : quote && <>
@@ -287,6 +373,6 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
         </>}
       </div>}
     </div>
-    {(!website || step < 4) && <footer className="xoot-booking-footer"><p>{website ? "No charge until you confirm." : `Step ${step + 1} of ${stepNames.length}`}</p><div className="xoot-booking-footer-actions">{!website && <Button variant="ghost" onClick={back}>Back</Button>}{step < 4 ? <Button className="xoot-booking-continue" disabled={step === 0 && !serviceChosen} onClick={next}>Continue<ArrowRight /></Button> : <Button className="xoot-booking-continue" disabled={!buyerId || quoteLoading} onClick={() => setQuoteAttempt(value => value + 1)}>Refresh quote</Button>}</div></footer>}
+    {(!website || step < 4) && <footer className="xoot-booking-footer"><p>{website ? "No charge until you confirm." : `Step ${step + 1} of ${stepNames.length}`}</p><div className="xoot-booking-footer-actions">{!website && <Button variant="ghost" disabled={savingPlace} onClick={back}>Back</Button>}{step < 4 ? <Button className="xoot-booking-continue" disabled={savingPlace || step === 0 && !serviceChosen} onClick={() => { void next(); }}>{savingPlace ? "Saving place…" : "Continue"}<ArrowRight /></Button> : <Button className="xoot-booking-continue" disabled={!buyerId || quoteLoading} onClick={() => setQuoteAttempt(value => value + 1)}>Refresh quote</Button>}</div></footer>}
   </div></div>;
 }

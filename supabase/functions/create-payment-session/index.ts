@@ -15,6 +15,7 @@ import {
   isOperationalControlEnabled,
 } from "../_shared/governance-utils.ts";
 import { buildPayfastCheckout, resolveMode } from "../_shared/payfast-checkout.ts";
+import { recordAmountCents } from "../_shared/payfast.ts";
 import {
   CAPABILITY_COLUMNS,
   hostedCheckoutBlockReason,
@@ -181,6 +182,18 @@ Deno.serve(async (req) => {
     if (payment.payment_kind === "gift_clean") {
       return fail("Gift checkout is not available yet. Your gift remains unpaid.", origin, 503);
     }
+    if (payment.payment_kind !== "booking" || !payment.booking_id) {
+      return fail("This checkout needs its own fulfilment review before payment is available.", origin, 503);
+    }
+    const { data: booking, error: bookingError } = await supa.from("bookings")
+      .select("id,user_id,status,payment_status,crew_size").eq("id", payment.booking_id).maybeSingle();
+    if (bookingError || !booking || booking.user_id !== user.id || booking.crew_size !== 1
+      || !["draft", "pending", "pending_payment"].includes(booking.status) || booking.payment_status !== "pending") {
+      return fail("This booking is not ready for checkout.", origin, 409);
+    }
+    const { data: settlementVersion, error: settlementError } = await supa.rpc("booking_payment_settlement_ready");
+    if (settlementError || settlementVersion !== 1) return fail("Payment settlement is not available yet.", origin, 503);
+    if (!Deno.env.get("PAYFAST_PASSPHRASE")?.trim()) return fail("Payment verification is not configured.", origin, 503);
     if (String(payment.currency ?? "ZAR").toUpperCase() !== "ZAR") {
       // PayFast is a ZAR-only gateway, and `confirm-payment` compares against the record's own
       // currency. Anything else could never be confirmed.
@@ -216,8 +229,8 @@ Deno.serve(async (req) => {
      * Under the Consumer Protection Act the displayed price is the price, so this must be exactly
      * what the customer was quoted.
      */
-    const amountCents = Math.round(Number(payment.amount) * 100);
-    if (!Number.isInteger(amountCents) || amountCents <= 0) {
+    const amountCents = recordAmountCents(payment.amount);
+    if (amountCents === null || amountCents <= 0) {
       return fail("payment record has no chargeable amount", origin, 409);
     }
 
@@ -237,11 +250,19 @@ Deno.serve(async (req) => {
 
     // Record which route this payment took, so reconciliation can tell a PayFast payment from an
     // EFT without reading the audit log. Legal since 20260813200000 widened the provider check.
-    await supa
+    const { data: routed, error: routingError } = await supa
       .from("payment_records")
       .update({ provider: "payfast", updated_at: new Date().toISOString() })
       .eq("id", payment.id)
-      .eq("status", "pending");
+      .eq("status", "pending")
+      .eq("user_id", user.id)
+      .select("id")
+      .maybeSingle();
+    if (routingError || !routed?.id) {
+      // Without a persisted provider route the ITN MUST refuse to credit the
+      // payment. Never send a user to PayFast if routing failed.
+      return fail("payment session could not be reserved", origin, 409);
+    }
 
     await writeAuditLog(supa, {
       actorId: user.id,

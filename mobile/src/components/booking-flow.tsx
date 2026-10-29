@@ -12,9 +12,12 @@ import { BOOKING_ADD_ONS, BOOKING_LINEN_OPTIONS, BOOKING_PROPERTY_TYPES, type Bo
 import { BOOKING_FREQUENCY_LABELS, BOOKING_LINEN_LABELS, BOOKING_PROPERTY_LABELS, BOOKING_REFERRAL_MESSAGES, BOOKING_SERVICE_DETAILS, bookingCrewCap, bookingDateInSast, bookingExtrasFor, bookingServiceForProperty, bookingStartSlots, bookingWeekday, formatBookingMoney, type BookingQuoteResponse } from '@/generated/booking-flow';
 import { loadPublicXooters, requestBookingQuote, type PublicXooter } from '@/lib/booking-api';
 import { nativeBookingIssue, nativeBookingPrefill, validBookingDate, withBookingDate, withBookingProperty, withBookingRooms, withNativeBookingService, type NativeBookingParams } from '@/lib/native-booking-input';
+import { supabase } from '@/lib/supabase';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const SERVICES: BookingService[] = ['regular', 'airbnb', 'express', 'office', 'moving'];
+// Off until founder-approved real polygons, billing, staging and installed-device checks.
+const ENABLE_VERIFIED_COVERAGE = process.env.EXPO_PUBLIC_VERIFIED_COVERAGE === 'true';
 
 function Copy({ children, strong = false }: { children: ReactNode; strong?: boolean }) {
   return <Text selectable style={[s.copy, strong && s.strong]}>{children}</Text>;
@@ -78,6 +81,9 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
   const [address, setAddress] = useState('');
   const [area, setArea] = useState(prefill.area);
   const [showServiceAreas, setShowServiceAreas] = useState(false);
+  const [coverageCheck, setCoverageCheck] = useState<{
+    key: string; status: 'loading' | 'in_zone' | 'review' | 'error'; message: string;
+  } | null>(null);
   const [notes, setNotes] = useState('');
   const [access, setAccess] = useState("I'll be home");
   const [bedrooms, setBedrooms] = useState(2);
@@ -104,6 +110,11 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
   const details = BOOKING_SERVICE_DETAILS[input.service];
   const steps = ['Service', input.service === 'office' ? 'Your office' : 'Your home', 'When', 'Your Xooter', 'Review'];
   const priced = quote?.quote;
+  const fullCoverageAddress = [address.trim(), area.trim()].filter(Boolean).join(', ');
+  const coverageKey = JSON.stringify([fullCoverageAddress, input.service]);
+  const currentCoverageKey = useRef(coverageKey);
+  currentCoverageKey.current = coverageKey;
+  const visibleCoverage = coverageCheck?.key === coverageKey ? coverageCheck : null;
 
   const clearConsent = () => setAccepted(false);
   const invalidate = () => {
@@ -115,8 +126,9 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
   };
   const change = (next: BookingQuoteInput) => {
     invalidate();
-    setInput(next);
-    setChosen(current => current.slice(0, next.crewSize));
+    const crewSize = Math.min(next.crewSize, bookingCrewCap(bookingServiceForProperty(next), next.homeSize));
+    setInput({ ...next, crewSize });
+    setChosen(current => current.slice(0, crewSize));
   };
   const patch = (value: Partial<BookingQuoteInput>) => change({ ...input, ...value });
   const go = (next: number) => {
@@ -125,6 +137,37 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
     scroll.current?.scrollTo({ y: 0, animated: false });
   };
   const retryQuote = () => { invalidate(); setQuoteRetry(value => value + 1); };
+
+  const checkServiceCoverage = async () => {
+    if (!ENABLE_VERIFIED_COVERAGE) return;
+    const key = coverageKey;
+    if (fullCoverageAddress.length < 7) {
+      setCoverageCheck({ key, status: 'review', message: 'Enter a complete South African service address first.' });
+      return;
+    }
+    setCoverageCheck({ key, status: 'loading', message: 'Checking your address against approved operating boundaries…' });
+    try {
+      // The caller submits only an authenticated address and service; it cannot
+      // supply geocoder coordinates or forge approved polygons.
+      const { data, error } = await supabase.functions.invoke('check-service-coverage', {
+        body: { address: fullCoverageAddress, service: input.service },
+      });
+      if (currentCoverageKey.current !== key) return;
+      if (error || data?.success !== true) {
+        setCoverageCheck({ key, status: 'error',
+          message: 'Coverage could not be verified. Contact Xoot for a manual area review.' });
+      } else if (data.data?.state === 'available') {
+        setCoverageCheck({ key, status: 'in_zone',
+          message: 'Inside an approved operating area. Xooter availability and booking acceptance are confirmed separately.' });
+      } else {
+        setCoverageCheck({ key, status: 'review',
+          message: 'This address needs a manual service-area review before coverage can be confirmed.' });
+      }
+    } catch {
+      if (currentCoverageKey.current === key) setCoverageCheck({ key, status: 'error',
+        message: 'Unable to check service coverage. Manual review remains available.' });
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 30_000);
@@ -194,7 +237,15 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
       <Field label="Where do you need us? Full address" value={address} onChange={value => { clearConsent(); setAddress(value); }} placeholder="Street address, suburb and city" />
       <MobileMapboxAddressSuggestions value={address} onSelect={verifiedAddress => { clearConsent(); setAddress(verifiedAddress); }} />
       <Field label="Area / suburb" value={area} onChange={value => { clearConsent(); setArea(value); }} maxLength={120} />
-      <Copy>Your address and access notes stay in this form until a booking can be submitted.</Copy>
+      {ENABLE_VERIFIED_COVERAGE && <Card style={s.group}>
+        <Copy>Optional address check: choosing the button sends this service address to Xoot and Mapbox's Permanent Geocoding API to check the founder-approved operating boundary. The neighbourhood map does not receive your address.</Copy>
+        <Action secondary disabled={visibleCoverage?.status === 'loading'} onPress={() => void checkServiceCoverage()}>
+          {visibleCoverage?.status === 'loading' ? 'Checking coverage…' : 'Check verified service coverage'}
+        </Action>
+        {visibleCoverage && <Text selectable accessibilityLiveRegion="polite" style={s.detail}>{visibleCoverage.message}</Text>}
+        <Copy>Area coverage does not guarantee that a Xooter is available for your date.</Copy>
+      </Card>}
+      <Copy>Your access notes are not sent to maps. Your address remains in this form unless you opt into Mapbox suggestions or the verified coverage check; those share only the address with Mapbox.</Copy>
       <Pressable accessibilityRole="button" accessibilityLabel={showServiceAreas ? 'Hide service area map' : 'View service area map'}
         accessibilityState={{ expanded: showServiceAreas }}
         onPress={() => setShowServiceAreas(showing => !showing)}
@@ -252,8 +303,8 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
       <View style={s.wrap}>{slots.map(time => <Choice key={time} label={time} selected={time === input.time} onPress={() => patch({ time })} />)}</View>
       {!slots.length && <Copy>No future start times for this date. Try tomorrow or choose another date.</Copy>}
       <Copy>{propertyService === 'airbnb' ? 'Airbnb visits must start by 14:00. ' : ''}These are requested times. Availability is confirmed after review.</Copy>
-      <Card style={s.group}><Stepper label="Xooters in your crew" value={input.crewSize} min={1} max={bookingCrewCap(propertyService, input.homeSize)} onChange={crewSize => patch({ crewSize })} />
-        <Copy>Your crew works together on one visit. The quote includes the crew and estimated duration.</Copy></Card>
+      {bookingCrewCap(propertyService, input.homeSize) > 1 && <Card style={s.group}><Stepper label="Xooters in your crew" value={input.crewSize} min={1} max={bookingCrewCap(propertyService, input.homeSize)} onChange={crewSize => patch({ crewSize })} />
+        <Copy>Your crew works together on one visit. The quote includes the crew and estimated duration.</Copy></Card>}
       {input.frequency !== 'once' && <View style={s.group}><Label>Which weekdays?</Label><View style={s.wrap}>{DAYS.map((day, index) =>
         <Choice key={day} label={day} checkbox selected={input.repeatDays.includes(index)}
           disabled={validBookingDate(input.date, now) && index === bookingWeekday(input.date)} onPress={() => patch({ repeatDays: input.repeatDays.includes(index) ? input.repeatDays.filter(value => value !== index) : [...input.repeatDays, index].sort() })} />)}</View>
@@ -265,8 +316,8 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
 
     {stage === 3 && <>
       <DisplayTitle>Who feels right?</DisplayTitle>
-      <Copy>Choose up to {input.crewSize} preferred {input.crewSize === 1 ? 'Xooter' : 'Xooters'} from the approved roster. This is a preference; date availability and your crew are confirmed after review.</Copy>
-      <Choice label="Let Xoot match my crew" selected={chosen.length === 0} onPress={() => { clearConsent(); setChosen([]); }}><CoreIcon name="sparkles" color={p.violetDark} /></Choice>
+      <Copy>Choose up to {input.crewSize} preferred {input.crewSize === 1 ? 'Xooter' : 'Xooters'} from the approved roster. This is a preference; date availability and your {input.crewSize > 1 ? 'crew' : 'Xooter'} are confirmed after review.</Copy>
+      <Choice label={`Let Xoot match my ${input.crewSize > 1 ? 'crew' : 'Xooter'}`} selected={chosen.length === 0} onPress={() => { clearConsent(); setChosen([]); }}><CoreIcon name="sparkles" color={p.violetDark} /></Choice>
       {rosterLoading && <ActivityIndicator accessibilityLabel="Loading the Xooter roster" color={p.violetDark} />}
       {rosterError && <Text selectable accessibilityRole="alert" style={s.error}>{rosterError}</Text>}
       {!rosterLoading && !rosterError && !roster.length && <Card><Copy>No Xooters are listed right now. You can retry or keep the matching preference.</Copy></Card>}
@@ -284,7 +335,7 @@ export function NativeBookingFlow({ params }: { params: NativeBookingParams }) {
         <Fact label="Service" value={BOOKING_SERVICE_DETAILS[priced?.service ?? input.service].title} />
         <Fact label="Property" value={BOOKING_PROPERTY_LABELS[input.propertyType]} />
         {input.service !== 'office' && input.propertyType !== 'office' && <Fact label="Home" value={`${bedrooms} bedrooms · ${bathrooms} bathrooms`} />}
-        <Fact label="Crew" value={`${priced?.crewSize ?? input.crewSize} ${(priced?.crewSize ?? input.crewSize) === 1 ? 'Xooter' : 'Xooters'}, working on one visit`} />
+        <Fact label={input.crewSize > 1 ? 'Your crew' : 'Your Xooter'} value={`${priced?.crewSize ?? input.crewSize} ${(priced?.crewSize ?? input.crewSize) === 1 ? 'Xooter' : 'Xooters'}, working on one visit`} />
         <Fact label="When" value={`${input.date} · ${input.time || 'Choose a time'} SAST`} />
         <Fact label="Frequency" value={`${BOOKING_FREQUENCY_LABELS[input.frequency]}${input.frequency !== 'once' ? ` · ${input.repeatDays.map(day => DAYS[day]).join(', ')}` : ''}`} />
         {priced && <Fact label="Estimated duration" value={`${priced.estimatedDurationHours} hours with your crew`} />}

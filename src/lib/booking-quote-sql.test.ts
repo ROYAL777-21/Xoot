@@ -11,7 +11,9 @@ import { crewCapFor, LADDERS } from "../../supabase/functions/_shared/pricing";
 // to its pinned @electric-sql/pglite@0.5.8 dist/index.js; missing tooling is an explicit
 // skip in the ordinary app suite, never claimed as evidence of SQL execution.
 const toolingModule = process.env.XOOT_PGLITE_MODULE;
-const migration = readFileSync(resolve("supabase/migrations/20260928003000_booking_quote_calculator.sql"), "utf8");
+const originalMigration = readFileSync(resolve("supabase/migrations/20260928003000_booking_quote_calculator.sql"), "utf8");
+const crewPolicyMigration = readFileSync(resolve("supabase/migrations/20261029003043_airbnb_office_crew_quote_policy.sql"), "utf8");
+const migration = `${originalMigration}\n${crewPolicyMigration}`;
 const NOW = Date.parse("2026-09-28T08:00:00+02:00");
 const baseInput = (patch: Partial<BookingQuoteInput> = {}): BookingQuoteInput => ({
   contractVersion: 1, service: "airbnb", propertyType: "airbnb", homeSize: "small",
@@ -52,6 +54,7 @@ for (const [addon, definition] of Object.entries(BOOKING_ADD_ONS)) {
     const propertyType = service === "airbnb" ? "airbnb" : service === "moving" ? "empty" : "flat";
     addCase(`extra/${service}/${addon}`, {
       service, propertyType, hours: service === "express" ? 1 : service === "moving" ? 4.5 : 5,
+      crewSize: Math.min(2, crewCapFor(service, "small")),
       linen: service === "airbnb" ? "none" : null,
       addOns: [addon as keyof typeof BOOKING_ADD_ONS],
     }, { carePlusMember: true });
@@ -64,7 +67,7 @@ for (const linen of ["none", "replace", "wash_hang", "wash_dry_repack"] as const
 for (const service of ["regular", "express", "airbnb", "office", "moving"] as const) {
   for (const propertyType of ["office", "airbnb", "empty"] as const) {
     if (service === (propertyType === "empty" ? "moving" : propertyType)) continue;
-    addCase(`correction/${service}/${propertyType}`, { service, propertyType, hours: 1, linen: propertyType === "airbnb" ? "replace" : null });
+    addCase(`correction/${service}/${propertyType}`, { service, propertyType, hours: 1, crewSize: propertyType === "empty" ? 1 : 2, linen: propertyType === "airbnb" ? "replace" : null });
   }
 }
 for (const frequency of ["weekly", "fortnightly"] as const) {
@@ -74,13 +77,13 @@ const shortExpress: Partial<BookingQuoteInput> = { service: "express", propertyT
 for (const time of ["15:30", "16:00"] as const) {
   addCase(`premium/${time}`, { ...shortExpress, time }, { carePlusMember: true });
 }
-addCase("half-hour-duration-floor", { ...shortExpress, crewSize: 3 });
+addCase("half-hour-duration-floor", { service: "office", propertyType: "office", linen: null, hours: 2, crewSize: 4 });
 addCase("solo-hour-no-duration-floor", shortExpress);
 addCase("finish-at-17", { time: "14:00" });
 addCase("cover-available-not-requested", {}, { coverAvailable: true });
 addCase("cover-requested", { coverRequested: true }, { coverAvailable: true });
 addCase("all-benefits-credit-floor", {
-  service: "regular", propertyType: "flat", hours: 4, linen: null, addOns: ["inside_fridge"],
+  service: "regular", propertyType: "flat", hours: 4, crewSize: 1, linen: null, addOns: ["inside_fridge"],
   referralCode: "FRIEND", coverRequested: true, requestedCreditCents: 999999,
 }, { carePlusMember: true, coverAvailable: true, availableCreditCents: 20000, referralRecord: { code: "FRIEND", userId: "friend" } });
 for (const [name, patch] of Object.entries({
@@ -117,6 +120,9 @@ for (const [id, patch] of Object.entries({
   invalid_credit: { requestedCreditCents: -1 }, fractional_credit: { requestedCreditCents: 0.5 }, huge_credit: { requestedCreditCents: 100000001 },
   wrong_cover_type: { coverRequested: "true" }, unavailable_cover: { coverRequested: true },
 })) badInput(id, patch);
+for (const [service, propertyType, hours] of [["regular", "flat", 4], ["express", "flat", 2], ["moving", "empty", 5]] as const) {
+  badInput(`solo-service/${service}`, { service, propertyType, hours, crewSize: 2, linen: null });
+}
 for (const [id, patch] of Object.entries({
   missing_buyer: { buyerId: "" }, wrong_buyer_type: { buyerId: 123 }, null_membership: { carePlusMember: null },
   wrong_membership: { carePlusMember: "true" }, missing_cover: { coverAvailable: undefined },
@@ -166,9 +172,8 @@ try {
   // Plant the old two-person multiplier in this disposable database only. The
   // differential oracle must detect it; the repository migration is never edited.
   await db.exec('reset role');
-  const mutant = payload.migration.replace('create function private.', 'create or replace function private.')
-    .replace('array[1,1.15,1.25,1.4]', 'array[1,2,1.25,1.4]');
-  if (mutant === payload.migration) throw new Error('Price mutation was not applied');
+  const mutant = payload.crewPolicyMigration.replace('array[1,1.15,1.25,1.4]', 'array[1,2,1.25,1.4]');
+  if (mutant === payload.crewPolicyMigration) throw new Error('Price mutation was not applied to the latest calculator');
   await db.exec(mutant);
   await db.exec('set role service_role');
   const oldPriceMutation = await call(payload.cases[0].input, payload.cases[0].facts);
@@ -184,6 +189,8 @@ describe("booking SQL calculator source boundary", () => {
     expect(migration).toMatch(/create function private\.calculate_booking_quote_v1\(p_input jsonb, p_facts jsonb\)/);
     expect(migration).toMatch(/revoke all on function private\.calculate_booking_quote_v1\(jsonb,jsonb\) from public, anon, authenticated/);
     expect(migration).not.toMatch(/\b(?:insert into|update public\.|delete from|create function public\.)/i);
+    expect(crewPolicyMigration).toMatch(/create or replace function private\.calculate_booking_quote_v1/);
+    expect(crewPolicyMigration).toContain("booking-zd039-v1");
   });
 });
 
@@ -199,13 +206,17 @@ describe.skipIf(!toolingModule)("booking SQL calculator (isolated PostgreSQL dif
   };
   beforeAll(() => {
     result = JSON.parse(execFileSync(process.execPath, ["--input-type=module", "-e", runner], {
-      encoding: "utf8", input: JSON.stringify({ migration, cases, invalid }),
+      encoding: "utf8", input: JSON.stringify({ migration, crewPolicyMigration, cases, invalid }),
       env: process.env, timeout: 60000, maxBuffer: 16 * 1024 * 1024,
     }));
   }, 65000);
 
   it(`matches ${cases.length} complete TS quotes across all ladders, permitted crews, sizes and benefits`, () => {
-    expect(cases.filter(c => c.id.startsWith("ladder/")).length).toBeGreaterThan(400);
+    const expectedLadderCases = Object.entries(LADDERS).reduce((count, [service, definition]) =>
+      count + Object.keys(definition.ladder).length * (["small", "medium", "large"] as const)
+        .reduce((crews, size) => crews + crewCapFor(service as BookingService, size), 0), 0);
+    expect(cases.filter(c => c.id.startsWith("ladder/")).length).toBe(expectedLadderCases);
+    expect(expectedLadderCases).toBeGreaterThan(300);
     for (const c of cases) {
       // JSON is the API boundary: normalize JS -0 discount lines to JSON's 0.
       const expected = JSON.parse(JSON.stringify(quoteBooking(c.input, c.facts)));
@@ -216,7 +227,9 @@ describe.skipIf(!toolingModule)("booking SQL calculator (isolated PostgreSQL dif
 
   it("pins the approved R393 crew example, exact itemization, duration and credit floor", () => {
     expect(result.quotes["approved-airbnb-two"]).toMatchObject({ baseCents: 39300, bookingFeeCents: 3900, totalCents: 43200, estimatedDurationHours: 3 });
-    expect(result.quotes["all-benefits-credit-floor"]).toMatchObject({ bookingFeeCents: 0, carePlusDiscountCents: 3200, referralDiscountCents: 10000, coverCents: 2200, creditUsedCents: 15800, totalCents: 5000 });
+    // Solo regular: R250 + R30 extra - R28 Care+ - R100 referral + R22 cover = R174;
+    // R124 credit leaves the approved R50 minimum cash component.
+    expect(result.quotes["all-benefits-credit-floor"]).toMatchObject({ bookingFeeCents: 0, carePlusDiscountCents: 2800, referralDiscountCents: 10000, coverCents: 2200, creditUsedCents: 12400, totalCents: 5000 });
     expect(result.quotes["half-hour-duration-floor"].estimatedDurationHours).toBe(1.5);
     expect(result.quotes["solo-hour-no-duration-floor"].estimatedDurationHours).toBe(1);
   });

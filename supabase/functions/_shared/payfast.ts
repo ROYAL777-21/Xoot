@@ -64,7 +64,7 @@ export const normaliseStatus = (raw: unknown): PayFastStatus => {
 export const payfastUrlEncode = (value: string) =>
   encodeURIComponent(value)
     .replace(/%20/g, "+")
-    .replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
+    .replace(/[!'()*~]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
     .replace(/%[0-9a-f]{2}/g, (m) => m.toUpperCase());
 
 /**
@@ -75,8 +75,9 @@ export const payfastUrlEncode = (value: string) =>
  * do — produces a valid-looking hash that never matches. `URLSearchParams` preserves insertion
  * order, which is why the raw body is parsed rather than an object.
  *
- * `signature` itself is excluded, and empty values are dropped: PayFast omits blank fields from the
- * string it signs.
+ * This is the OUTBOUND checkout form's construction: optional empty fields are omitted.
+ * Notifications have a different contract: every received value, including empty values, is
+ * signed. See buildNotificationParamString; do not use this outbound builder to verify an ITN.
  */
 export const buildSignatureBase = (params: URLSearchParams, passphrase: string) => {
   const parts: string[] = [];
@@ -90,6 +91,14 @@ export const buildSignatureBase = (params: URLSearchParams, passphrase: string) 
   if (passphrase.trim() !== "") base += `&passphrase=${payfastUrlEncode(passphrase.trim())}`;
   return base;
 };
+
+/** PayFast Notification.php: all received fields in order, with no signature or passphrase.
+ * Empty values and value whitespace are covered by the signature and must survive. This same
+ * canonical form is sent to PayFast's server confirmation endpoint, even for multipart retries.
+ */
+export const buildNotificationParamString = (params: URLSearchParams): string =>
+  [...params].filter(([key]) => key !== "signature")
+    .map(([key, value]) => `${key}=${payfastUrlEncode(value)}`).join("&");
 
 /**
  * MD5, lowercase hex.
@@ -165,34 +174,55 @@ export const timingSafeEqual = (a: string, b: string) => {
 export const verifySignature = (params: URLSearchParams, passphrase: string) => {
   const supplied = params.get("signature") ?? "";
   if (supplied.trim() === "") return { ok: false as const, reason: "signature field missing" };
-  const expected = md5Hex(buildSignatureBase(params, passphrase));
+  const base = buildNotificationParamString(params);
+  const expected = md5Hex(passphrase.trim() ? `${base}&passphrase=${payfastUrlEncode(passphrase.trim())}` : base);
   return timingSafeEqual(supplied, expected)
     ? { ok: true as const }
     : { ok: false as const, reason: "signature mismatch" };
 };
 
 /**
- * Amounts are compared in CENTS as integers.
- *
- * `amount_gross` arrives as a decimal string ("387.00"). Comparing it as a float invites the
- * classic 0.1 + 0.2 problem on a value that decides whether someone's booking is paid for, so it is
- * rounded to cents once and compared as an integer. One cent of tolerance is allowed for the
- * provider's own rounding and nothing more.
+ * Convert a trusted DB numeric value into exact integer cents. Reject
+ * non-cent values and unsafe sizes; rounding 100.001 to 100.00 would charge
+ * a different amount than the database record.
  */
+export const recordAmountCents = (amount: unknown): number | null => {
+  if (typeof amount !== "number" && typeof amount !== "string") return null;
+  const value = String(amount).trim();
+  if (!/^(?:0|[1-9]\d{0,12})(?:\.\d{1,2})?$/.test(value)) return null;
+  const [whole, decimal = ""] = value.split(".");
+  const cents = Number(whole) * 100 + Number(decimal.padEnd(2, "0"));
+  return Number.isSafeInteger(cents) && cents >= 0 ? cents : null;
+};
+
+/**
+ * PayFast ITN gross is a decimal *string* in ZAR, not a JavaScript float.
+ * Require exactly two decimal digits and match the stored cents exactly;
+ * there is no permission to underpay even by one cent.
+ */
+export const payfastGrossCents = (gross: unknown): number | null => {
+  if (typeof gross !== "string" || !/^(?:0|[1-9]\d{0,12})\.\d{2}$/.test(gross)) return null;
+  return recordAmountCents(gross);
+};
+
 export const amountMatches = (grossFromItn: unknown, expectedCents: number) => {
-  const gross = Number.parseFloat(String(grossFromItn ?? ""));
-  if (!Number.isFinite(gross)) return { ok: false as const, reason: "amount_gross is not a number" };
-  const itnCents = Math.round(gross * 100);
-  if (Math.abs(itnCents - expectedCents) > 1) {
-    return { ok: false as const, reason: `amount mismatch: ITN ${itnCents}c, order ${expectedCents}c` };
+  const actual = payfastGrossCents(grossFromItn);
+  if (actual === null) return { ok: false as const, reason: "invalid PayFast gross amount" };
+  if (!Number.isSafeInteger(expectedCents) || expectedCents <= 0 || actual !== expectedCents) {
+    return { ok: false as const, reason: "payment amount mismatch" };
   }
   return { ok: true as const };
 };
 
+export const merchantMatches = (merchantFromItn: unknown, configuredMerchantId: unknown) =>
+  typeof merchantFromItn === "string" && typeof configuredMerchantId === "string" &&
+  /^\d{8}$/.test(configuredMerchantId.trim()) &&
+  merchantFromItn === configuredMerchantId.trim();
+
 /**
  * Ask PayFast whether it sent this. The authoritative check.
  *
- * The whole received body is posted back verbatim; PayFast answers with a body containing `VALID`
+ * The ordered notification fields (without signature or passphrase) are posted back; PayFast answers `VALID`
  * or `INVALID`. Anything else — a timeout, a 500, an unrecognised body — is treated as NOT valid,
  * because an integration that credits an order when its verifier is unreachable is an integration
  * that can be credited by taking the verifier offline.
@@ -211,7 +241,7 @@ export const validateWithPayFast = async (
     });
     if (!res.ok) return { ok: false as const, reason: `validate returned HTTP ${res.status}` };
     const text = (await res.text()).trim().toUpperCase();
-    if (text.startsWith("VALID")) return { ok: true as const };
+    if (text === "VALID") return { ok: true as const };
     return { ok: false as const, reason: `validate returned "${text.slice(0, 40)}"` };
   } catch (error) {
     return { ok: false as const, reason: `validate unreachable: ${(error as Error).message}` };

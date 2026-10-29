@@ -83,13 +83,23 @@ describe("the staging value", () => {
     expect(value).not.toMatch(/https:\/\/(www\.)?xoot\.co\.za(,|$)/);
   });
 
-  it("accepts the verified Xoot preview branch without admitting unrelated Vercel sites", () => {
+  it("accepts only the verified Xoot preview branches without widening production", () => {
     const branch = "https://xoot-git-codex-xoot-production-20260911-royal777-21s-projects.vercel.app";
+    const integration = "https://xoot-git-integration-website-stagi-56296d-royal777-21s-projects.vercel.app";
     expect(value.split(",")).toContain(branch);
     expect(value.split(",")).toContain("http://127.0.0.1:4199");
     expect(productionValue(origins).split(",")).not.toContain(branch);
+    expect(productionValue(origins).split(",")).not.toContain(integration);
     expect(value).not.toContain("*");
-    expect(value.split(",").filter(origin => origin.includes("vercel.app"))).toEqual([branch]);
+    expect(value.split(",")).toEqual([
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:4173",
+      "https://staging.xoot.co.za",
+      "http://127.0.0.1:4199",
+      branch,
+      integration,
+    ]);
   });
 });
 

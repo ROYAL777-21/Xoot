@@ -44,6 +44,11 @@ const isUnsafeRedirectQuery = (params: URLSearchParams) => {
 };
 
 export const normaliseEmail = (email: string) => email.trim().toLowerCase();
+/** A known Gmail typo, never an automatic change to the customer's destination. */
+export const getEmailSuggestion = (email: string) => {
+  const normalised = normaliseEmail(email);
+  return /^[^\s@]+@gmail\.vom$/.test(normalised) ? normalised.replace(/@gmail\.vom$/, "@gmail.com") : null;
+};
 // Accept complete 6–10 digit codes, including codes sent before a provider length change.
 export const normaliseOtpCode = (code: string) => code.replace(/\D/g, "");
 
@@ -51,6 +56,7 @@ export const getEmailIssue = (email: string) => {
   const normalised = normaliseEmail(email);
   if (!normalised) return "Email is required.";
   if (!EMAIL_PATTERN.test(normalised)) return "Enter a valid email address.";
+  if (getEmailSuggestion(normalised)) return "Check your email ending: did you mean gmail.com?";
   return null;
 };
 

@@ -45,6 +45,14 @@ jobs:
         run: npm run security:scan
       - name: Test Supabase migration access diagnostics against synthetic failures
         run: node --test scripts/ops/db-push-link-diagnostics.test.mjs
+      - name: Test short-lived Xooter live-location privacy and participant boundaries
+        run: node --test scripts/ops/job-live-location-privacy.test.mjs
+      - name: Check staging-only live Mapbox acceptance harness syntax
+        run: node --check scripts/ops/test-mapbox-private-journey-staging.mjs
+      - name: Verify staging acceptance resolves distinct real identities before writes
+        run: node --test scripts/ops/verify-staging-test-identities.test.mjs
+      - name: Enforce MFA-only private dispatch location access
+        run: node --test scripts/ops/job-private-dispatch.test.mjs
       - name: Test live Mapbox journey acceptance runner refuses unsafe environments
         run: node scripts/ops/verify-live-mapbox-journey.mjs --self-test
       - name: Typecheck
@@ -125,3 +133,21 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: xoot-referral-synthetic-test
         run: node scripts/ops/test-referral-base-prerequisite.mjs
+      - name: Prove private GPS SQL, RLS and lifecycle cleanup on disposable PostgreSQL
+        env:
+          XOOT_PG_TEST_INTENT: private-live-gps
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-referral-pg/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-referral-synthetic-test
+        run: node scripts/ops/test-private-live-gps-postgres.mjs
+      - name: Verify service-zone privileges and concurrent geocoding budget
+        env:
+          XOOT_PG_TEST_INTENT: service-zones
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-referral-pg/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-referral-synthetic-test
+        run: node scripts/ops/test-service-zones-postgres.mjs

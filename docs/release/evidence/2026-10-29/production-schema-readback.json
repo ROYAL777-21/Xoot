@@ -1,0 +1,173 @@
+{
+  "cron": [
+    {
+      "name": "xoot-live-location-expiry",
+      "active": true,
+      "command": "delete from public.xoot_job_live_positions where expires_at <= now()",
+      "schedule": "* * * * *"
+    },
+    {
+      "name": "purge-xoot-in-app-voice-sessions",
+      "active": true,
+      "command": "delete from public.xoot_in_app_voice_rooms where expires_at <= clock_timestamp()",
+      "schedule": "* * * * *"
+    }
+  ],
+  "budget": {
+    "budget_key": "permanent_geocoding",
+    "consumed_queries": 0,
+    "authorized_queries": 0
+  },
+  "counts": {
+    "jobs": 0,
+    "bookings": 0,
+    "payments": 1
+  },
+  "reserve": 10,
+  "delivery": [
+    {
+      "name": "reviewed_website_schema_convergence",
+      "version": "20261029165622"
+    }
+  ],
+  "originals": [
+    {
+      "hash": "60e3af03201b859c9c01dd947e642defd289dfb7ceb3cfbaf469a9e8ff1483b9",
+      "version": "20260903000000"
+    },
+    {
+      "hash": "1d1c8a01a31896983c56c1d9d043429667cb091e3b0580303fcc79832f5cb9df",
+      "version": "20260903120000"
+    },
+    {
+      "hash": "7b1d4f54a1ef79eb4792b42a3f9edd26fceade14c5e8473617c5538e05d7b836",
+      "version": "20260920200000"
+    },
+    {
+      "hash": "5a5ee29150adf0969b5cd9fbae1790c26b98586aaad20f0bc45dffedc49c9556",
+      "version": "20260928003000"
+    },
+    {
+      "hash": "ffc3a3e4888b87bff7ef6f00ee6b1ac60f1ef50373a4ffb2c9c6e242fa4e1e94",
+      "version": "20260929055022"
+    },
+    {
+      "hash": "f2abfc39f84883caddaa3be7a03fb39d520196ea8ffa481ebee33965ad73091f",
+      "version": "20261002000000"
+    },
+    {
+      "hash": "f6750bd7ce3b5259f70325f78a0bf59ceca965faaa5127511a8e5226edc1c486",
+      "version": "20261003140000"
+    },
+    {
+      "hash": "6d5bf66255d1cd7daa406c9ebf9baca15a77b81e72544bd1fa3e44cd34f6dd76",
+      "version": "20261004160000"
+    },
+    {
+      "hash": "699ffad8838793a4835b81b8ba92afc61f3e119c925be394e000da70046bc6e3",
+      "version": "20261007140000"
+    },
+    {
+      "hash": "1b7ca79b7abfd7bc439837381faa57d9336320297bd4b0a1eb1215af5f1204f1",
+      "version": "20261007150000"
+    },
+    {
+      "hash": "0444facea5ebc1102188e75546e0ec43a438d4f1bf57a2c4c9eff9c0e17146bf",
+      "version": "20261015102137"
+    },
+    {
+      "hash": "c0501c496209d6e91e786face355f507b361bde026eb1b321f080b72ac9613d3",
+      "version": "20261016234838"
+    },
+    {
+      "hash": "287de82d9c85c6e961fa4ff89a1080c191efe29580dada6069242b1b835d1cbf",
+      "version": "20261019185331"
+    },
+    {
+      "hash": "91416236ba094eaba7698f3ecfcbfeeda511211fb5170190adf98532d2a2392e",
+      "version": "20261025080000"
+    },
+    {
+      "hash": "ab1bb7202e5edc1b6704e6b3b7df630ac1b069d54b8ea3634cdc21f350bb3792",
+      "version": "20261025191835"
+    },
+    {
+      "hash": "b5d83f923763fb55423a7783bb23941b6c357d7a4b0a7d6a226fcfc627960956",
+      "version": "20261025195100"
+    },
+    {
+      "hash": "87770e5317056987ea91a4e559bc2e7fd4221f3be9a3faa9558a2f26ae47058d",
+      "version": "20261026024032"
+    },
+    {
+      "hash": "615ede0dd3bd0bb081605a9f57b6d27cdbd1841de5ef434d3f60af06ac083a1a",
+      "version": "20261026153738"
+    },
+    {
+      "hash": "57de10a27509ff39dd1d646d759fea7b611aa6d3ff71dee2ac18fdc90b0de350",
+      "version": "20261026203430"
+    },
+    {
+      "hash": "2aead1944f7150d102e9c54ac611aea4cd585201080220dfb8d9c580f12cd706",
+      "version": "20261027032349"
+    },
+    {
+      "hash": "6f571834c666652870cd680140ea5ee80909b01b45ccc6f41e160c688c96db5a",
+      "version": "20261027201017"
+    },
+    {
+      "hash": "7fc61fd4a7935cc1a511c5b9858c15d4f5d9cc57c4abdb00c8f01d7672679458",
+      "version": "20261028125915"
+    },
+    {
+      "hash": "60de48ffbed413d6b2bd388c5136874991030842e382608dd581cf4d5d9237fe",
+      "version": "20261029003043"
+    },
+    {
+      "hash": "98758bab682556bfd022f6955a6eb46290f5f4b04b7520831f31d0e933f7679e",
+      "version": "20261029111657"
+    },
+    {
+      "hash": "69124dce6e8e3248cb73728fcf7b6732af00ecd7b05cae015192c44c1453537b",
+      "version": "20261029112730"
+    }
+  ],
+  "allowances": [
+    {
+      "mode": "suggest",
+      "consumed_queries": 0,
+      "authorized_queries": 0
+    },
+    {
+      "mode": "confirm",
+      "consumed_queries": 0,
+      "authorized_queries": 0
+    }
+  ],
+  "captured_at": "2026-10-29T16:56:56.635184+00:00",
+  "pin_history": 1,
+  "history_count": 108,
+  "closed_controls": [
+    {
+      "key": "twilio.masked_voice",
+      "enabled": false
+    },
+    {
+      "key": "payments.provider_checkout",
+      "enabled": false
+    },
+    {
+      "key": "payouts.enabled",
+      "enabled": false
+    },
+    {
+      "key": "payments.hosted_checkout.payfast",
+      "enabled": false
+    },
+    {
+      "key": "twilio.in_app_voice",
+      "enabled": false
+    }
+  ],
+  "anonymous_storage_policies": 4
+}

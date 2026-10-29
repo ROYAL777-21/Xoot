@@ -1,8 +1,11 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { AlertTriangle, RotateCw } from "lucide-react";
+import { RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { reportClientError } from "@/lib/monitoring";
+import { HandoffFlowerField } from "@/components/xoot/HeroArtwork";
+import { Logo } from "@/components/kit/Logo";
+import "@/styles/recovery-handoff.css";
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -30,14 +33,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (!this.state.hasError) return this.props.children;
 
     return (
-      <div className="min-h-screen bg-background grid place-items-center p-6">
-        <Card className="w-full max-w-md rounded-3xl border-border p-8 text-center shadow-warm">
-          <div className="mx-auto mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-destructive/10 text-destructive">
-            <AlertTriangle className="h-6 w-6" />
-          </div>
-          <h1 className="font-display text-3xl font-bold">Xoot needs a quick refresh</h1>
+      <div className="xoot-recovery">
+        <HandoffFlowerField className="xoot-recovery-flowers" />
+        <Card className="xoot-recovery-card">
+          <Logo size={34} />
+          <div className="xoot-recovery-bloom"><HandoffFlowerField items={[{size:92,palette:"lilac",left:"0",top:"0",opacity:1}]} className="xoot-recovery-single-flower" /></div>
+          <h1>Xoot needs a quick refresh</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Something interrupted this screen. Your Xoot account, bookings and saved home details remain protected.
+            Something interrupted this screen. Refresh to pick up where you left off. Details you have already saved stay in your account.
           </p>
           <Button className="mt-6 rounded-full" onClick={() => window.location.reload()}>
             <RotateCw className="mr-2 h-4 w-4" /> Refresh Xoot

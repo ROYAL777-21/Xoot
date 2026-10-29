@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Check, Info, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,6 +51,8 @@ function GiftFlow({ authPending }: { authPending: boolean }) {
   const { user } = useAuth();
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const returnTo = pathname.startsWith("/app/") ? "/app/profile" : "/#gift";
   const [stage, setStage] = useState(0);
   const [draft, setDraft] = useState<GiftDraft>(() => {
     const chosen = readGiftSelection(params);
@@ -163,10 +165,10 @@ function GiftFlow({ authPending }: { authPending: boolean }) {
             disabled={saving}
             onClick={() =>
               receipt
-                ? navigate("/#gift")
+                ? navigate(returnTo)
                 : stage > 0
                   ? setStage(stage - 1)
-                  : navigate("/#gift")
+                  : navigate(returnTo)
             }
           >
             <ArrowLeft size={20} />

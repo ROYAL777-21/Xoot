@@ -1,16 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, MapPin, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle, Navigation, Share2 } from "lucide-react";
+import { Loader2, Star, ArrowLeft, CheckCircle2, Camera, Clock, ShieldCheck, Phone, AlertTriangle, Navigation, Share2, RefreshCw } from "lucide-react";
 import { resolvePhoto } from "@/components/xoot/XooterCard";
 import { TrustBadges } from "@/components/xoot/TrustBadges";
 import { BookingChat } from "@/components/xoot/BookingChat";
 import { VoiceCallPanel } from "@/components/xoot/VoiceCallPanel";
-import { FareSplitPanel } from "@/components/xoot/FareSplitPanel";
 import { PayFastCheckout } from "@/components/PayFastCheckout";
 import { formatZAR } from "@/lib/format";
 import { SosButton } from "@/components/xoot/SosButton";
@@ -35,13 +34,15 @@ import { captureOrSelectImage } from "@/lib/mobile-upload";
 import { toast } from "sonner";
 import { JobChecklist } from "@/components/xooter/JobChecklist";
 import { WorkerRoadEstimate } from "@/components/xoot/WorkerRoadEstimate";
+import { LiveJobJourney } from "@/components/xoot/LiveJobJourney";
 import { safeFileName, validateCompletionPhotoUpload } from "@/lib/upload-validation";
+import { BookingVisitSummary, type VisitPayment } from "@/components/xoot/BookingVisitSummary";
+import "@/styles/visit-detail-handoff.css";
 
 type Msg = { id: string; sender_type: string; body: string; created_at: string };
 type TimelineEvent = { id: string; status: string; label: string; created_at: string };
 type CompletionPhoto = { id: string; photo_type: "before" | "after"; storage_path: string; created_at: string };
 type Review = { id: string; rating: number; notes: string | null };
-type PendingPayment = { id: string; amount: number; status: string };
 type MaskedCallDetails = {
   call_session_id?: string;
   status?: string;
@@ -112,10 +113,18 @@ const liveActivityNextStep: Record<XootBookingLiveActivityStatus, string> = {
 
 const serviceNameForBooking = (booking: any) => booking?.service_type ?? booking?.service ?? "Home care";
 
-const BookingDetail = () => {
+const BookingDetailView = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const userId = user?.id;
+  const viewKey = `${userId ?? ""}:${id ?? ""}`;
+  const currentView = useRef(viewKey);
+  const loadSequence = useRef(0);
+  currentView.current = viewKey;
+  const [loadedView, setLoadedView] = useState<string | null>(null);
+  const returnedFromPayfast = searchParams.get("payment") === "return";
   const [booking, setBooking] = useState<any>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [events, setEvents] = useState<TimelineEvent[]>([]);
@@ -130,55 +139,85 @@ const BookingDetail = () => {
   const [uploading, setUploading] = useState<string | null>(null);
   const [requestingCall, setRequestingCall] = useState(false);
   const [maskedCall, setMaskedCall] = useState<MaskedCallDetails | null>(null);
-  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);
+  const [payment, setPayment] = useState<VisitPayment | null>(null);
+  const pendingPayment = payment?.status === "pending" && normaliseBookingStatus(booking?.status) !== "cancelled" ? payment : null;
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const isCurrentView = () => currentView.current === viewKey;
+
+  useEffect(() => {
+    currentView.current = viewKey;
+    return () => { currentView.current = ""; loadSequence.current += 1; };
+  }, [viewKey]);
 
   const load = useCallback(async () => {
-    if (!user || !id) return;
+    if (!userId || !id) return;
+    const requestedView = `${userId}:${id}`;
+    const sequence = ++loadSequence.current;
     const [{ data }, { data: xooter }, { data: m }, { data: ev }, { data: ph }, { data: rv }, { data: pay }] = await Promise.all([
       supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
       supabase.from("booking_xooter_profiles").select("*").eq("booking_id", id).maybeSingle(),
       supabase.from("messages").select("*").eq("booking_id", id).order("created_at"),
       supabase.from("booking_status_events").select("*").eq("booking_id", id).order("created_at"),
       supabase.from("booking_completion_photos").select("*").eq("booking_id", id).order("created_at"),
-      supabase.from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", user.id).maybeSingle(),
+      supabase.from("post_job_reviews").select("*").eq("booking_id", id).eq("user_id", userId).maybeSingle(),
       /*
-       * The unpaid record for this booking, so a customer who closed the PayFast tab can come back
-       * and finish. Scoped to `user_id` as well as `booking_id`: RLS already restricts reads to
+       * The owner's booking payment, including a receipt that arrives after return. Scoped to
+       * user_id, booking_id and payment kind: RLS already restricts reads to
        * the owner, but a fare-split booking can carry several people's records and only the
        * caller's is theirs to pay.
        */
       supabase
         .from("payment_records")
-        .select("id,amount,status")
+        .select("id,amount,status,currency")
         .eq("booking_id", id)
-        .eq("user_id", user.id)
-        .eq("status", "pending")
-        .order("created_at")
+        .eq("user_id", userId)
+        .eq("payment_kind", "booking")
+        .is("meta->>fare_split_id", null)
+        .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
     ]);
+    if (currentView.current !== requestedView || sequence !== loadSequence.current) return;
     if (!data) { navigate("/app/bookings"); return; }
-    setBooking({ ...data, xooter: xooter ?? null });
     const { data: activeJob } = await supabase.from("xooter_jobs").select("id").eq("booking_id", id).eq("state", "accepted").maybeSingle();
+    if (currentView.current !== requestedView || sequence !== loadSequence.current) return;
+    setBooking({ ...data, xooter: xooter ?? null });
     setActiveJobId(activeJob?.id ?? null);
     setMessages((m ?? []) as Msg[]);
     setEvents((ev ?? []) as TimelineEvent[]);
     setPhotos((ph ?? []) as CompletionPhoto[]);
     setReview(rv as Review | null);
-    setPendingPayment((pay as PendingPayment | null) ?? null);
+    setPayment((pay as VisitPayment | null) ?? null);
+    setLoadedView(requestedView);
     setLoading(false);
-  }, [id, navigate, user]);
+  }, [id, navigate, userId]);
 
   useEffect(() => { load(); }, [load]);
 
+  // A browser return is not a receipt. Briefly refresh saved server state, then leave an
+  // explicit refresh action; never poll indefinitely or repeat a checkout/charge.
   useEffect(() => {
-    if (!id) return;
+    if (!returnedFromPayfast || !pendingPayment?.id || loadedView !== viewKey) return;
+    let stopped = false;
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = async () => {
+      if (stopped) return;
+      await load();
+      if (!stopped && ++attempts < 6) timer = setTimeout(() => void refresh(), 2000);
+    };
+    timer = setTimeout(() => void refresh(), 2000);
+    return () => { stopped = true; clearTimeout(timer); };
+  }, [returnedFromPayfast, pendingPayment?.id, loadedView, viewKey, load]);
+
+  useEffect(() => {
+    if (!id || !userId) return;
+    const subscribedView = `${userId}:${id}`;
     const ch = supabase.channel(`messages:${id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `booking_id=eq.${id}` }, (p) => setMessages((m) => [...m, p.new as Msg]))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `booking_id=eq.${id}` }, (p) => { if (currentView.current === subscribedView) setMessages((m) => [...m, p.new as Msg]); })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [id]);
+  }, [id, userId]);
 
   const getNativeBookingActionInput = (): NativeBookingActionInput | null => {
     if (!id || !booking) return null;
@@ -225,12 +264,14 @@ const BookingDetail = () => {
     try {
       if (typeof navigatorWithShare.share === "function") {
         await navigatorWithShare.share({ title: "Xoot booking update", text: shareText, url: shareUrl });
+        if (!isCurrentView()) return;
         toast.success("Booking update shared");
         return;
       }
 
       if (navigatorWithShare.clipboard?.writeText) {
         await navigatorWithShare.clipboard.writeText(`${shareText} ${shareUrl}`);
+        if (!isCurrentView()) return;
         toast.success("Booking update copied");
         return;
       }
@@ -242,6 +283,7 @@ const BookingDetail = () => {
 
       toast.error("Sharing is unavailable on this device.");
     } catch {
+      if (!isCurrentView()) return;
       if (delivered) toast.success("ETA sent to native app");
       else toast.error("Sharing was cancelled or unavailable.");
     }
@@ -256,10 +298,12 @@ const BookingDetail = () => {
         status,
       });
     } catch (error) {
+      if (!isCurrentView()) return;
       toast.error(error instanceof Error ? error.message : "Booking status update failed");
       return;
     }
 
+    if (!isCurrentView()) return;
     const liveStatus = toLiveActivityStatus(status);
     notifyBookingLiveActivity({
       bookingId: id,
@@ -296,6 +340,7 @@ const BookingDetail = () => {
       const { data, error } = await supabase.functions.invoke("create-masked-call", {
         body: { booking_id: id },
       });
+      if (!isCurrentView()) return;
       if (error) throw error;
 
       const call = (data ?? {}) as MaskedCallDetails;
@@ -317,6 +362,7 @@ const BookingDetail = () => {
         window.location.href = `tel:${callerProxyNumber.replace(/[^\d+]/g, "")}`;
       }
     } catch (error) {
+      if (!isCurrentView()) return;
       setRequestingCall(false);
       toast.error(error instanceof Error ? error.message : "Masked call request failed");
       return;
@@ -336,9 +382,11 @@ const BookingDetail = () => {
         notes: incidentNotes,
       });
     } catch (error) {
+      if (!isCurrentView()) return;
       toast.error(error instanceof Error ? error.message : "Trust incident submission failed");
       return;
     }
+    if (!isCurrentView()) return;
     setIncidentNotes("");
     toast.success("Incident sent to Trust & Safety");
   };
@@ -355,6 +403,7 @@ const BookingDetail = () => {
       complaint: reviewRating <= 2,
       notes: reviewNotes || null,
     }).select("id, rating, notes").single();
+    if (!isCurrentView()) return;
     if (error) return toast.error(error.message);
     setReview(savedReview as Review);
 
@@ -379,6 +428,7 @@ const BookingDetail = () => {
       // `canOfferTip()` still gates this — the schema existing is not the same as tipping being
       // switched on, and `TIP_READINESS` remains the switch for that.
       const { error: tipError } = await supabase.from("booking_tips").insert(tipRow);
+      if (!isCurrentView()) return;
       if (tipError) {
         toast.warning("Review saved. The tip did not go through — you have not been charged.");
       } else {
@@ -393,10 +443,11 @@ const BookingDetail = () => {
           reviewId: savedReview?.id,
         });
       } catch {
+        if (!isCurrentView()) return;
         toast.warning("Review saved, but support follow-up routing is unavailable.");
       }
     }
-    toast.success("Review submitted");
+    if (isCurrentView()) toast.success("Review submitted");
   };
 
   const uploadPhoto = async (photoType: "before" | "after", file: File) => {
@@ -414,8 +465,10 @@ const BookingDetail = () => {
       contentType: file.type,
       cacheControl: "0",
     });
+    if (!isCurrentView()) return;
     if (error) { setUploading(null); toast.error(error.message); return; }
     const { error: insertError } = await supabase.from("booking_completion_photos").insert({ booking_id: id, xooter_id: booking.xooter_id, photo_type: photoType, storage_path: path });
+    if (!isCurrentView()) return;
     setUploading(null);
     if (insertError) return toast.error(insertError.message);
     toast.success(`${photoType} photo uploaded`);
@@ -424,11 +477,11 @@ const BookingDetail = () => {
 
   const chooseAndUploadPhoto = async (photoType: "before" | "after") => {
     const file = await captureOrSelectImage();
-    if (!file) return;
+    if (!file || !isCurrentView()) return;
     await uploadPhoto(photoType, file);
   };
 
-  if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  if (loading || loadedView !== viewKey) return <div role="status" className="grid place-items-center gap-3 py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /><span>Loading your visit…</span></div>;
   if (!booking) return null;
 
   const z = booking.xooter;
@@ -463,32 +516,19 @@ const BookingDetail = () => {
   }));
 
   return (
-    <div className="container py-6 lg:py-10 max-w-5xl">
-      <Button variant="ghost" onClick={() => navigate("/app/bookings")} className="mb-4 -ml-2"><ArrowLeft className="h-4 w-4 mr-1" /> All bookings</Button>
+    <div className="xoot-visit-detail">
+      <Button variant="ghost" onClick={() => navigate("/app/bookings")} className="mb-4 -ml-2"><ArrowLeft className="h-4 w-4 mr-1" /> Your visits</Button>
 
       {/* Above the fold, before the map and the timeline. Anything that has to be scrolled to
           is not an emergency control. */}
       {activeVisit && <SosButton bookingId={id} className="mb-5" />}
 
-      <div className="grid lg:grid-cols-[1fr_400px] gap-5">
-        <div className="space-y-5">
-          <Card className="rounded-3xl overflow-hidden border-border">
-            <div className="relative h-64 bg-linear-to-br from-sage/20 via-accent-soft to-cream">
-              <svg className="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 400 250">
-                <path d="M0 120 Q100 80 200 130 T400 110" stroke="hsl(var(--sage-deep))" strokeWidth="2" fill="none" />
-                <path d="M50 0 L120 250" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.4" />
-                <path d="M280 0 L320 250" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.4" />
-              </svg>
-              <div className="absolute inset-x-6 top-1/3 rounded-2xl border border-border bg-background/95 p-4 text-center text-sm font-medium text-foreground shadow-card" role="status">
-                Live location is not available for this visit yet. The timeline below shows recorded booking events, not GPS movements.
-              </div>
-              <div className="absolute top-3 left-3 right-3 flex justify-between">
-                <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-card">
-                  <span className="h-2 w-2 rounded-full bg-sage" />{canonicalStatus === "en_route" ? "On the way — ETA not available" : visibleStatus}
-                </div>
-                <div className="rounded-full bg-background/95 backdrop-blur-sm px-3 py-1.5 text-xs font-bold shadow-card">R{Number(booking.price).toFixed(0)}</div>
-              </div>
-            </div>
+      <div className="xoot-visit-detail-layout">
+        <div className="xoot-visit-detail-main">
+          <BookingVisitSummary booking={booking} payment={payment} returnedFromPayfast={returnedFromPayfast} />
+          {returnedFromPayfast && pendingPayment && <Button variant="outline" className="rounded-full xoot-visit-detail-check" onClick={() => void load()}><RefreshCw className="mr-2 h-4 w-4" />Refresh payment status</Button>}
+          {!z && canonicalStatus !== "cancelled" && <section className="xoot-visit-detail-card"><h2>Your Xooter</h2><p className="mt-2 text-sm text-muted-foreground">Your Xooter’s details will appear here once they’re confirmed for your visit.</p></section>}
+          {z && <Card className="rounded-3xl overflow-hidden border-border xoot-visit-detail-xooter">
 
             {z && (
               <div className="p-5 flex items-center gap-4">
@@ -536,7 +576,7 @@ const BookingDetail = () => {
                 </div>
               </div>
             )}
-          </Card>
+          </Card>}
 
           {/*
             Finish an unpaid booking.
@@ -552,39 +592,32 @@ const BookingDetail = () => {
                 <ShieldCheck className="h-5 w-5 text-primary" /> Payment outstanding
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                This booking is held at {formatZAR(Number(pendingPayment.amount))}. It is confirmed and assigned once payment reaches us.
+                {returnedFromPayfast ? "We’re waiting for PayFast’s confirmation. You can leave this page and check your visits later."
+                  : `Your booking is saved at ${formatZAR(Number(pendingPayment.amount))}. Your Xooter is confirmed separately after payment.`}
               </p>
-              <PayFastCheckout
+              {!returnedFromPayfast && <PayFastCheckout
                 paymentRecordId={pendingPayment.id}
                 label={`Pay ${formatZAR(Number(pendingPayment.amount))}`}
-              />
+              />}
             </Card>
           )}
 
-          {/* Splitting is a payment relationship, not an access grant — the panel hides itself
-              once the booking is being paid, since there is then nothing left to divide. */}
-          {id && booking && (
-            <FareSplitPanel
-              bookingId={id}
-              totalRands={Number(booking.price ?? 0)}
-              paymentStatus={booking.payment_status}
-              // Service and date only — the two fields an invitation is allowed to carry. The
-              // panel builds the WhatsApp and mail text from these, and never sees the address.
-              serviceType={booking.service_type}
-              scheduledAt={booking.scheduled_at}
-            />
-          )}
+          {/* Split checkout is held: its legacy base-only total omits the booking fee, and a
+              partial payment must not be presented as fulfilment of this single-payment visit. */}
 
           {activeJobId && id && <JobChecklist jobId={activeJobId} bookingId={id} readOnly />}
           <Card className="rounded-3xl p-5">
-            <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Arrival tracking</h2>
-            <div className="mb-4 grid grid-cols-2 gap-2">
+            <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Your visit journey</h2>
+            {activeVisit && <div className="mb-4 grid grid-cols-2 gap-2">
               <Button onClick={handleOpenDirections} variant="outline" className="rounded-xl justify-center"><Navigation className="h-4 w-4 mr-1" /> Directions</Button>
               <Button onClick={shareEta} variant="outline" className="rounded-xl justify-center"><Share2 className="h-4 w-4 mr-1" /> Share booking update</Button>
-            </div>
-            <p className="mb-3 text-xs text-muted-foreground">No live GPS feed or calculated arrival time is connected to this booking. An en-route status is not proof of current worker position.</p>
+            </div>}
+            <p className="mb-3 text-xs text-muted-foreground">{import.meta.env.VITE_ENABLE_LIVE_JOURNEY === "true"
+              ? "When your Xooter is on the way and shares their location, you’ll see their estimated arrival here."
+              : "Follow your visit’s recorded updates here."}</p>
             {isAssignedXooter && activeVisit && typeof booking.address === "string" && booking.address.trim().length >= 4 && id &&
               <div className="mb-4"><WorkerRoadEstimate bookingId={id} destinationAddress={booking.address} /></div>}
+            {id && canonicalStatus === "en_route" && <LiveJobJourney bookingId={id} isAssignedWorker={isAssignedXooter} destinationAddress={typeof booking.address === "string" ? booking.address : undefined} />}
             <div className="space-y-3">
               {statusSteps.map((step) => {
                 const hit = timeline.find((e) => step.keys.includes(e.status) || e.label === step.label);
@@ -663,6 +696,14 @@ const BookingDetail = () => {
       </div>
     </div>
   );
+};
+
+// Remount every view-owned field, not just loaded records. Unsent reviews/incidents, tips,
+// proxy numbers and in-flight UI state must never carry into another visit or account.
+const BookingDetail = () => {
+  const { id } = useParams();
+  const { user } = useAuth();
+  return <BookingDetailView key={`${user?.id ?? ""}:${id ?? ""}`} />;
 };
 
 export default BookingDetail;

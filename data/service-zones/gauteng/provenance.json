@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "datasetTitle": "South Africa - Subnational Administrative Boundaries (COD-AB), version 01",
+  "source": "South African Municipal Demarcation Board; distributed by UN OCHA ROSEA / FISS / HDX",
+  "datasetUrl": "https://data.humdata.org/dataset/cod-ab-zaf",
+  "metadataUrl": "https://data.humdata.org/api/3/action/package_show?id=cod-ab-zaf",
+  "resourceUrl": "https://data.humdata.org/dataset/061d4492-56e8-458c-a3fb-e7950991adf0/resource/37175ff4-41a3-4753-a2c3-ced24142a96c/download/zaf_admin_boundaries.geojson.zip",
+  "license": "CC BY 3.0 IGO",
+  "licenseUrl": "https://creativecommons.org/licenses/by/3.0/igo/",
+  "sourceCreated": "2018-12-27",
+  "sourceValidOn": "2020-11-09",
+  "hdxReviewedOn": "2025-01-28",
+  "resourceLastModified": "2026-01-26",
+  "retrievedOn": "2026-10-19",
+  "archiveSha256": "bc5670db834f1a517fd11da10fcb25214b5f0a827853fe43ef648caa40bd54d4",
+  "admin1Sha256": "664584fb0c08d4666507ffde4d0cc1b3cdef67d95063213cd7afb7e125b2ab30",
+  "geojsonSha256": "02f3064e60cc35a2a5ea9649947fabcacbfd4d64283555d852f89cea324aa3a6",
+  "featureCode": "ZA7",
+  "crs": "OGC:CRS84 (WGS84 longitude, latitude)",
+  "geometryType": "Polygon",
+  "polygonCount": 1,
+  "ringCount": 1,
+  "vertexCount": 5690,
+  "bounds": [
+    27.15634000000017,
+    -26.923829997999974,
+    29.098420003000115,
+    -25.10961200099996
+  ],
+  "topology": {
+    "validator": "Shapely 2.1.2 / GEOS",
+    "valid": true,
+    "reason": "Valid Geometry"
+  },
+  "transformations": "Selected ZA7 feature; removed legacy collection CRS member; compact JSON serialization only. All coordinates and feature properties unchanged.",
+  "geographyApproval": "Founder requested Gauteng Province in this implementation session, 2026-10-19.",
+  "reviewStatus": "Source provenance and automated topology validated; independent GIS/current-boundary and production release review outstanding.",
+  "activation": "inactive; approved_by and approved_at must remain NULL until an identified authorised reviewer activates separately",
+  "workerAvailability": "Not represented. Roster, service skills, date, capacity and assignment require separate verification."
+}

@@ -1,5 +1,419 @@
 # Xoot production checklist
 
+## 29 October evening — schema delivered; application release underway
+
+Production schema delivery completed as actual version `20261029165622`. All 25 hosted
+executed SQL hashes match the manifest, the existing PIN history remains, both native cleanup
+jobs are active every minute, and booking/job/payment counts are unchanged. The first attempt
+failed on Supabase's managed Storage restriction and was verified to roll back all DDL and
+history. The replacement preserves historical files, records the explicit compatibility
+adaptation and uses supported policy roles with RLS/bulk-privilege assertions. No owner or
+role-membership workaround was used. Actual production-generated types replace the manual
+forward declarations; TypeScript passes against that schema.
+
+Final production Storage validation is actual `20261029170200`: zero anonymous PERMISSIVE
+policies and all four RESTRICTIVE quarantine barriers retaining both API roles. Those barriers
+must continue to protect anonymous requests. Staging's additional legacy policy names refused
+this final guard transaction; unknown policies were not silently changed there. Its earlier two
+forward security fixes remain applied and verified.
+
+The founder explicitly approved capped PRODUCTION lookup: 200 Temporary suggestions and 20
+Permanent attempts globally, with 10 existing attempts reserved for authenticated coverage and
+no automatic renewal. It was funded once from zero without resetting consumed counters. The
+approved reviewed-rate maximum is US$0.25 before tax. Server-token presence and real public
+lookup acceptance remain required before the address service is called live.
+
+The full pre-regeneration suite passed 199 files / 2,057 tests and found one stale PIN grant
+expectation. The corrected PIN guard and 20 ops cases pass 23 focused tests. Final full CI is
+still required. CodeQL also found two old Twilio credential-print paths; both are removed.
+Three actual CLI tests use provider fixtures only and prove private one-time output, early
+refusal and no secret logs. The verifier now uses a literal fixed host. Only its intentional
+public-key header flow receives an exact fingerprint/source-bound false-positive decision;
+the old file-derived URL flow is removed, not excepted.
+
+Backend promotion and the live website release are pending final CI and deployed readback.
+Payment, payout, voice and SOS activation remain subject to their separate real acceptance.
+The delivery plan and exact manifest are in [website-rollout-20261029.md](website-rollout-20261029.md).
+
+### Earlier 29 October preparation — historical state before the actual delivery above
+
+The founder again explicitly requests production deployment. This section supersedes older
+launch assumptions below. Full website release has not happened yet. Source is under review
+in PR101; no unrelated PR, approved homepage or production release history is overwritten.
+
+Free Semgrep now supplies the substantive security-review job. Paid Claude review is optional
+and explicitly opt-in; it is not a skipped substitute for the free check. Real CodeQL returned
+49results, then4after fixes/reference exclusions. Three are individually reviewed false
+positives bound to exact rule/path/fingerprint/source hashes. The remaining journal race is
+fixed through exclusive creation without a preliminary existence check; fresh CI remains
+required. The completed immutable source review covered218changed source items and validated
+one medium shared-geocoding-quota issue. Its original report remains intact.
+
+The quota repair and checklist ACL closure now ARE applied to staging as actual delivery
+20261029164044, with original versions20261029111657/20261029112730 recorded only after their
+SQL executed in the same transaction. Actual readback confirms authenticated SELECT only,
+no anonymous checklist read or client TRUNCATE/write, and service-only lookup RPCs. Staging
+spend remains7/20Permanent and56/200Temporary; no cap or consumed counter was increased/reset.
+Ten existing remaining attempts are reserved for authenticated coverage. Local actual SQL
+tests reproduce the vulnerable baseline and verify reservation, total cap,12/hour actor limit,
+rollback and role denial. All54checklist groups pass. Independent source review found no new
+P1/P2 issue in this bounded repair.
+
+The generic status route also now refuses customer money/cancellation changes and worker
+actions outside actual progress. Paid/accepted-job checks and current raw status/assignment/
+cancellation/revocation/completion conditional writes reject stale changes before events.
+Twenty real-entrypoint regression cases and five state-machine cases pass. This is not an
+atomic completion/rewards/earnings implementation; retain that separate blocker.
+
+Production still has82versions, zero bookings/jobs/homes/saved addresses and one payment record.
+The exact25-body convergence transaction is reviewed and locally rehearsed against captured
+production catalog/policies, including injected late-failure whole rollback and replay.
+Its two native cleanup jobs require hosted readback. Preserve existing PIN history20261008011821;
+do not repair-mark missing historical SQL to force staging through a different schema path.
+See [the delivery/rollback plan](website-rollout-20261029.md) and its exact hash manifest.
+Regenerate types from actual production after the reviewed DDL; retain the current red schema
+check until then. No production DDL, backend promotion or website release is claimed here.
+
+PayFast documents were SUBMITTED by the founder; provider approval is still pending. Standard
+weekly worker payouts and optional paid instant cash-out are now requested, but beneficiary
+transfer support, verified recipients, agreed pricing/cutoff and a genuine first payout remain
+required. Merchant-to-own-bank payouts do not prove individual-worker transfer support. Apple
+Developer enrolment remains pending by the founder's choice. Live payments/payouts, native calls,
+production tracking and SOS do not gain acceptance from source/tests or a handoff statement.
+
+## 29 October 2026 — real sandbox callback accepted; live payments closed
+
+The founder corrected the staging salt privately. Real PayFast sandbox ITN2020364, transaction
+3482365, then passed signature/merchant/exact-amount/provider-postback validation in deployed
+confirm-payment46. Actual readback at00:18:36UTC shows the server-created R289 fixture paid,
+booking payment_confirmed and one processed event/atomic receipt. A duplicate official resend
+leaves one receipt, one customer notification, one assignment-queue item and the original paid
+time. No actual money, approved worker, live charge, provider capability or operational flag was
+created by this acceptance. This is callback-only proof: the named fixture's routing was changed
+under a guarded audit; normal owner checkout and fulfilment acceptance remain separate.
+
+The actual signed-in staging detail displays the saved R289 payment, real SAST visit details,
+handoff flowers and truthful unassigned state. Phone390 and desktop1440 layouts were inspected
+without horizontal overflow. Preview fa23986c is READY. Airbnb/office-only crew policy and
+account/booking state isolation pass focused tests and independent limited review. Forward SQL
+parity passes real PGlite0.5.8 across407 allowed ladder/size/crew combinations plus benefits,
+invalid inputs, role denial and negative controls. Historical applied SQL is unchanged. Applied
+only the reviewed pure calculator as actual staging ledger20261029003043; its body/permissions
+match. All five frozen pricing importers are refreshed: quote12, operations39, response23,
+booking42 and duplicate booking41. All37 returned runtime/import-map files match source and
+all five anonymous HTTP calls are refused401; no sign-in check changed. Full fa23986c run
+passes199 files/2032 tests with no skips; validated staging artifact and50 prerenders pass.
+The independent forward-only calculator installation also passes actual hosted checks without
+data writes. The external delivery's three unreviewed migrations are still unapplied.
+
+Cancellation migration20261028125915 and its reviewed functions are on staging:134 rollback
+assertions, genuine independent-session races, old-overwrite negative control and8 HTTP
+boundaries pass. Five owned synthetic race fixtures were removed; retain the genuine provider
+fixture bc08e972-c63a-4dbc-a060-ccfe34adcaef and its receipt for reconciliation.
+
+The original and v3 delivery bundles are now accessible as separate review refs. V3 tipab89de7
+has been verified and imported read-only; no wholesale merge or handoff migration was applied.
+Its Care+ document is a one-cycle design, not implemented automatic renewal. Its per-cycle R30
+wording conflicts with the locked once-only welcome credit. Its special provider agreement
+claim is not a required new founder gate: current official guidance describes dashboard
+subscription enablement/passphrase and separate tokenisation terms. The existing reconciliation lists
+substantive admin/session/receipt/schema/earnings/SOS defects that must be resolved before import.
+
+Founder requests Apple Pay, Samsung Pay, Google Pay, Instant EFT, cards, subscriptions and
+commissions. All five methods are documented by PayFast; Xoot's live merchant eligibility and
+toggles are not yet verified. The prepared live merchant sign-in is awaiting the founder.
+Checkout already omits payment_method, allowing PayFast to offer the merchant's available
+methods. Recurring mandates, renewal receipts/cancellation and commission-ledger/verified payout
+acceptance remain required. See [the payment launch matrix](payfast-launch-20261029.md).
+No instant bank settlement promise, additional paid service or automatic payout fee is enabled.
+
+Required GitHub checks must actually pass; Actions now executes, but the external Claude
+security check reports insufficient credit. Keep its failure visible and retain the current
+plan. Current design/security job exposed a stale GPS disclaimer assertion; its privacy and
+consent checks now use the actual en-route mount/fallback and reject a planted ungated mount.
+The native rooms guard likewise follows solo home visits while preserving Airbnb3/office4.
+26 Node privacy/identity/dispatch/diagnostic checks, both preflight self-tests and59 native
+script checks pass. The three initial local shell diagnostic failures used an unavailable
+Windows WSL shim; the installed Git Bash resolves them without a test/source workaround.
+The live-production types comparison still correctly reports staged schema differences.
+Reconcile exact production schema effects, frozen function copies, live provider and
+device/ops acceptance before promotion. Production homepage/release branch and unrelated PRs
+remain preserved. Earlier dated sections below are historical evidence, not new release approval.
+
+## 27 October 2026 — current implementation and release tasks
+
+Historical27 October baseline. The current29 October section above supersedes it. The last verified live website is approved
+`e0c021e9fde328098f33fb216b1efa720eadf2f1`, built 24 October at 19:18 UTC. The new website
+work is on stacked review branches and a staging-backed preview. It has not been published to
+production. Preserve the approved homepage, main, unrelated PR98/99 and production-only migration
+20261008011821. Home-first personalisation remains planning only. Apple remains pending at the
+founder's explicit choice; no enrolled team, paid plan, credit, number or signed native build.
+
+The founder explicitly retained every item below on 27 October. Prepared source, automated
+checks, actual staging acceptance and production activation are separate states.
+
+Latest phase: device-default appearance and saved Light/Dark choice are repaired; real staging
+profile/browser checks and independent handoff contrast review pass. PayFast sandbox secrets are
+privately configured. Reviewed atomic settlement migration20261027201017 and handlers37/36/14
+are delivered only to staging with exact readback,42 rollback SQL checks and six HTTP boundaries.
+Both checkout controls and every provider evidence flag remain false. No genuine sandbox payment
+has completed. Cancellation/refund concurrency, canonical fulfilment, provider/JWT/MFA/device
+acceptance and required CI still block live payment. See appearance-payfast-followup.md.
+
+| Required work | Verified / prepared | Remaining task before full production |
+|---|---|---|
+| Signup, sign-in and stored details | Production read-only found two registered emails and two owner profiles, none missing. Fresh normal email sign-in worked. On27 October the founder privately completed a genuinely new staging password signup and email confirmation on the combined preview. Normal UI and targeted aggregates confirm one Auth account, one owner profile and only the ordinary user role. Six-digit Auth setting was saved by the founder. | Release and accept production new signup, login/logout and account switching on a real device. Staging success is not production acceptance. The supplied .vom was a chat typo, not an established cause of the earlier live failure. |
+| Google, Apple and admin access | Google provider is enabled/published. Canonical callback and native PKCE/nonce source are prepared. | Google brand verification / unfamiliar provider-domain presentation remain. Apple is pending without an enrolled team. Founder admin and real MFA dispatch acceptance remain; never invent credentials or grant roles to avoid testing. |
+| Address suggestions and verification | Reviewed lookup v4 is staged; five returned runtime files match the source. Ten-result discovery, a Gauteng ranking bias, keyboard selection and clearer guidance preserve the finite caps and Permanent quality checks. Public Sunninghill and Cape Town cases succeed. | The founder's private Sunninghill example still does not resolve to the correct area. Broader structured parsing was tested, did not fix that gap and was removed. Do not claim universal coverage or label manually typed text as verified. A safe missing-address resolution and server-bound booking acceptance remain. |
+| Gauteng geography and GPS/ETA | Exact MDB/OCHA WGS84 provincial polygon, 5,690 unsimplified vertices with provenance, is staged. Four normal authorised identities passed GPS/ETA/privacy/STOP groups, including a real road ETA request. | Physical iPhone/Android permission, freshness, expiry/background, customer UI and operational acceptance remain. No active approved zones or real verified-worker capacity has been enabled. Production migration/readback and tracking activation remain gated. |
+| Matching and normal booking fulfilment | Handoff booking/crew UI and reviewed quote/coverage source exist; geography is separate from worker availability. | Reconcile legacy writers with atomic reviewed crew creation, verify price/status/payment/assignment transitions, approved worker capacity and replacement behaviour, and prove normal customers are matched only to eligible available Xooters. A quote or lead is not a confirmed paid booking. |
+| In-Xoot text chat | Four ordinary staging identities actually passed E2EE send/store/read/decrypt in both directions and outsider/plaintext denials after the 42P17 RLS fix. | Real browser Realtime/thread delivery, physical customer/Xooter device use and matching handoff chat UI acceptance remain, then reviewed production delivery. No SMS requirement was added. |
+| In-app calling | Reviewed private room, participant identity and bounded token/TwiML source is staged; closed-gate and outsider checks passed. | Actual authorised two-device audio, microphone/permission handling, native call UI and provider acceptance remain. Voice is off; no phone number or credit purchased. |
+| Xooter application, uploads and legitimate information | PR97 handoff application/review/flowers and owner-bound saves are prepared. Independently reviewed PR100 quarantine is now on staging: exact migration/readback, submit v19, approval v18 and narrow operations v34 preserve existing gift behaviour. All11 returned files match; browser table/column writes and raw reads/replacement are closed, new activation is blocked, existing Xooter/roles unchanged. | No production delivery or actual malware/authenticity clearance. Cloudmersive Free login verification fails; API adapter/key, operator DPA and POPIA transfer basis remain. No real ID/selfie/bank file was sent. Malware-clean is separate from authentic ID/qualification/bank review; no automatic worker approval. Normal applicant/admin, safe document-review and device UI acceptance remain. |
+| Full customer/Xooter email notification journey | Fresh Auth SMTP works. Four Zoho Free inboxes were created by the founder; no-reply is the Brevo Auth sender. | Lifecycle dispatcher, templates, retries, deduplication, scheduling and delivery evidence are unfinished. Brevo API key still needs private setup. Do not drain old production outbox rows or send marketing without consent. All four inbox send/receive checks and sender-avatar display are not certified. |
+| Rewards and Care+ handoff | Source 8b5e367 restyles Rewards using the original flower, pastel composition and typography with actual account balances. Unsupported client tiers/milestone promises are removed; unfinished redemption stays disabled. The shared heart/plus SVG's three paths and transform match the original handoff and are reused by website/account components. Independent review found no introduced blocker;79/79 independent checks pass. | Hosted normal-account layout at measured390/1440 CSS pixels has no overflow; physical device acceptance and release remain. Real earning/referral/redemption eligibility must remain server-controlled and be accepted; the prototype's sample streaks, point awards and unlocked benefits are not product facts. Full company-wide/native brand audit remains. |
+| Safety navigation and other signed-in design | Trust navbar label is changed to Safety at source 8b5e367; destination stays /trust-centre. PR92/97 contain signed-in flowers, profile/navigation, referral cards, Care+ marks, saved places and Manage more presentation. | Safety link was clicked successfully on staging; hosted Rewards phone/desktop layout passed. Physical device acceptance and production release remain. Match the booking journey, GPS/chat/call, applicant/admin states and error/empty/loading states to the supplied handoff. Do not implement planned personalisation early. |
+| Your places / Manage more / Airbnb and office | The new ordinary staging customer saved a labelled public test place through real provider selection/confirmation and the normal owner UI. Profile reload retains it; aggregate readback confirms one owned row. A no-JWT Data API request returns zero rows for that existing ID. The founder then signed in on the physical iPhone12 and confirmed the place appears, establishing cross-device retrieval. Manage more exposes Airbnb and Small office routes;390/1440 CSS-pixel browser layouts have no overflow. | Signed-in other-account isolation, logout/account-switch and broader phone journeys; full property/team/bulk/statement workflows and real Airbnb/office operations remain partial. Default-place and unfinished preferences remain unavailable. A saved address does not establish available verified workers. |
+| Automatic calendar subscription | Free read-only subscription is implemented, independently reviewed and staged with exact schema/function readback. Founder privately added its link to Google. Actual Google UI first imported the disposable10:00–12:00 event, then visibly refreshed it to11:00–13:00 SAST at revision1; private classification displays busy and no location. Copy fallback passed six independent checks. After reschedule acceptance, only the guarded zero-price fixture was cancelled; revision2 is retained. | Google cancellation refresh and fixture cleanup, real phone calendar acceptance, normal customer cancellation writer and production rollout remain. The fixture is a cancelled tombstone; do not delete it before provider observation. Providers choose polling timing. No broad Google calendar-write permission or paid calendar service. |
+| Laundry and ironing | Existing R30 add-ons appear first. Actual hosted guest booking selects both, retains the confirmed address without a required duplicate suburb and changes the displayed single-Xooter estimate5.5→7.5 hours; the next step offers compatible SAST visit slots. No final booking or charge was submitted. | Standalone service is still disabled. The repo explicitly marks its ladder unconfirmed/empty and load bands inferred (xoot-pricing.ts), with unresolved composition in the decision log. Do not invent pricing or enable unsupported payment/fulfilment. Reconcile the source, then accept add-ons and standalone booking/assignment/fulfilment end to end. |
+| Gifts, reviews, Journal, widgets and speed | Eight of 40 permission-confirmed real five-star quotes are prepared; no fake verified-booking badge or aggregate rating. PWA shortcuts and in-app cards exist. | Preserve unrelated Journal/growth PR98. Annual 52-visit gifts are not implemented/certified. Desktop shortcuts are not native Mac/Windows widgets. Large Mapbox chunk and stale-tab lazy import need measured device performance work; do not promise zero lag. |
+| PayFast payments | PR72 is preserved. The founder privately configured staging credentials. Independently reviewed atomic settlement, actual admin MFA enforcement and late-transaction binding are staged with exact readback;42 rollback SQL and six HTTP checks pass. Checkout and evidence remain off. | Prove genuine sandbox checkout/ITN, ordinary-owner and real admin AAL2 boundaries, cancellation/refund concurrency and canonical quote/crew fulfilment. Other payment kinds stay held. Required checks and reviewed rollout precede live activation; no merchant credential or real charge is requested in chat. |
+| Release gates and exact rollout | One combined staging branch preserves all reviewed implementations and approved release ancestry; independent final guard reviews pass. Final full f48fc98 run with file parallelism disabled PASSES189 files/1937 tests with7 existing skips, including43 rendered-browser checks. Earlier17 timeouts,88/91 rerun and three individually passing cases remain recorded; no assertion/deadline was relaxed. Exact fresh ledger check finds none of the nine current integration versions on production and preserves external PIN version20261008011821. | Required GitHub jobs must genuinely execute;26 October Billing showed3,000/3,000 included minutes consumed and jobs failed with zero steps. Keep the current plan/spending. Reconcile exact schema effects, older gaps, frozen handlers, ordering/rollback and operational/device acceptance before promotion. Preview success is not production clearance. |
+
+### Bounded staging state and retained acceptance fixture
+
+Address allowance remains 200 Temporary and 20 Permanent attempts, non-renewing, explicitly
+approved by the founder at a listed maximum US$0.25 before tax for those attempts. Latest readback:
+56/200 suggestions, 7/20 confirmations and 7/20 shared Permanent consumed. No refill or production
+allowance. This is not a universal Mapbox invoice cap. Lookup v4 bundle SHA256:
+`a905952df037a5111e2d9a15c42ddab0d66261b7925a630698fff113f3526a1c`.
+Temporary payloads and the founder's full private query were not committed or saved as evidence.
+
+Calendar migration 20261026203430 SQL SHA256:
+`57de10a27509ff39dd1d646d759fea7b611aa6d3ff71dee2ac18fdc90b0de350`.
+Management v1 requires JWT; feed v1 requires its separate revocable 256-bit capability. Only a hash
+is stored. Links/OTP/JWT are never read back by the agent. The manual field is masked, populated
+only through its live value property, replay-blocked, not saved to browser storage, and shown only
+on an explicit owner action. Account changes/revocation remove it. Infrastructure/provider URL logs
+can retain capability URLs; possession grants the minimal visit schedule until expiry/revocation.
+
+One disposable staging calendar fixture is retained for provider refresh/cancellation acceptance:
+booking 9c8ac396-5942-46a2-9d86-1bf72d705c48, marker CODEX_CALENDAR_ACCEPTANCE_20261026,
+Google now visibly observed its27 October11:00–13:00 SAST reschedule, revision1. Only this fixture
+was then cancelled with exact marker/owner/status/time/zero-price/no-payment/no-assignee guards;
+exactly one row advanced to cancelled/revision2. It is not a real service booking or proof of
+normal booking/cancellation writers. Retain the tombstone until Google observes cancellation,
+then clean only this fixture. No Xooter/job or zone activation. Do not delete Auth identities or
+unrelated records. Google From URL public sharing was left OFF.
+
+The owned design and combined integration previews have explicit staging public configuration and
+calendar/address flags. The integration branch keeps live GPS/verified-coverage flags off and the
+browser map token empty. After action-time founder approval, only staging's ALLOWED_ORIGINS gained
+the Vercel-verified exact integration alias; all six old origins remain. The saved SHA256 is
+`a800d3e8bd0e9f77b191fb10408ca11945599cb1dd1ee59c6be8389095dae8b7`. Nine real HTTP checks
+confirmed exact-origin preflight, foreign-origin rejection and continued no-JWT denials; counters
+were unchanged by those checks. No handler redeployment, wildcard or production setting change.
+
+Retain the clearly labelled public household acceptance fixture64297493-1d42-4251-89f7-80c51443da07
+for the new founder-authorised staging customer. No private access details, booking or worker was
+created. Remove only this fixture on later reviewed cleanup; never delete the Auth identity.
+
+Current evidence: 27 October combined-website-staging.md, kyc-staging-delivery.md and
+map-calendar-rewards-followup.md; 26 October calendar-subscription-
+and-email-spelling.md, places-calendars-reviews.md, PR81 address-typeahead.md, PR100 kyc-quarantine.md,
+and earlier normal-account GPS/chat records. Production is not cleared.
+
+## Earlier 26 October 2026 state — historical, superseded above
+
+Production still serves approved `e0c021e9fde328098f33fb216b1efa720eadf2f1`; fresh public build-info
+readback confirms the 24 October build. No new website publication, production migration/function,
+tracking/calling switch, admin/worker approval, paid plan, credit, number or native build occurred.
+Preserve the approved homepage, `main`, unrelated PRs and production-only migration `20261008011821`.
+
+- **Stored user details:** production read-only aggregate found 2 registered/confirmed emails and 2
+  matching owner profiles, 0 missing. Protected Auth stores emails; no public email directory added.
+  This verifies those accounts, not every signup/profile-write route or future customer.
+- **Website:** PR92 signed-in handoff and PR95 signup confirmation remain unmerged/not live.
+  PR97 adds the original Xooter application/review design and honest owner-session saves,
+  including a real returned pending document record before acknowledgment. All real verification
+  steps/manual activation remain. Personalisation stays planning only. Full local rerun passed 169
+  files / 1,690 tests / 7 existing skips; TypeScript, scoped lint, Deno, production-mode staging-config
+  build/50 public prerenders/artifact scan passed. Independent 13 focused plus 9 synthetic actual-handler
+  checks passed. CUA 390/1440 previews are synthetic visual proof, not real applicant acceptance.
+- **Staged document endpoint:** submit-xooter-application v18, JWT required, 4 reviewed files exactly
+  read back; missing bearer 401. The frozen parser/origin/region delta was independently reviewed.
+  Metadata acknowledgment does not prove file existence, selfie-pointer atomicity or full KYC.
+- **Actual chat failure fixed:** two previous four-account reads failed 42P17. Reviewed PR96 changes
+  only the booking SELECT predicate through a private auth.uid-bound current-participant boolean.
+  Staging-only migration `20261026024032`, SQL SHA256
+  `87770e5317056987ea91a4e559bc2e7fd4221f3be9a3faa9558a2f26ae47058d`.
+  Owner UI confirms private unexposed; ledger/owner/ACL/RLS match; original message/job policies unchanged.
+- **Fresh real-account acceptance:** four owner-entered ordinary staging sessions passed all 9 groups:
+  the 6 GPS/ETA/privacy/STOP groups, actual encrypted chat send/store/read/decrypt both directions,
+  unrelated key/read/send denial and plaintext rejection, and voice fail-closed/outsider denial.
+  No Twilio provider call. Final owned fixtures: 0 locations/bookings/jobs/workers/messages; 2 new public
+  test devices retained revoked. Do not repeat the older assertion that chat has not been run.
+- **Coverage/cost:** PR81 exact reviewed Gauteng borders and global Permanent-Geocoding allowance
+  remain staged. Allowance 0, consumption 0, no active approved service zones. The proposed maximum 20
+  paid staging Permanent checks (~USD 0.10 before tax) has no owner approval: leave off. This cap is
+  specific to the backend Permanent coverage route, not a universal Mapbox invoice cap. Real worker
+  verification/availability remains separate from geographic polygons and synthetic test workers.
+- **Calls/native:** PR93 atomic ephemeral in-app rooms and PR94 native Auth preparation are staged/source
+  work, not actual audio or signed-build acceptance. Voice remains off. Expo ownership is verified;
+  Apple remains pending at the founder's explicit choice. iPhone 12 and Android tablet are offered;
+  physical GPS permissions/background/expiry, chat delivery and real app-call checks remain.
+- **Other acceptance:** fresh password-signup code/link completion, real applicant uploads, browser
+  BookingDetail/Realtime, admin AAL1/AAL2, provider readiness, signed native builds and exact production
+  migration comparison remain. Desktop shortcut/cards are not native OS widgets; property dashboards
+  remain partial. Standalone laundry/ironing and 52-visit gift fulfilment are not certified by this work.
+- **Release blocker:** fresh PR96 security job 121376146677 has no steps and an annotation that recent
+  account payments failed or the spending limit needs attention. Required GitHub checks cannot start.
+  Keep current plan/spending; no fabricated status, bypass, merge or production promotion. Local,
+  Vercel-preview and staging passes do not replace required release checks.
+
+Current evidence: PR96 `docs/release/evidence/2026-10-26/booking-chat-read.md`,
+PR97 `docs/release/evidence/2026-10-26/xooter-onboarding.md`, earlier GPS/source/budget/voice evidence
+in PR71/81/93. Historical sections below describe earlier states, not new instructions.
+
+
+
+## 25 October 2026 — current verified state and remaining release gates
+
+This section supersedes the older dated instructions below. The live website remains approved release
+`e0c021e9fde328098f33fb216b1efa720eadf2f1`. Both public build-info endpoints returned that revision
+after today's staging work; Vercel production `dpl_ASWQX8BSgase9gUDTAZLxiF5GwDn` is READY.
+No new website release, production migration, tracking/calling activation, admin grant, paid upgrade,
+credit, phone number, native build or Apple membership was performed. Preserve the approved homepage,
+`main`, unrelated PRs and production-only safety-PIN migration `20261008011821`.
+
+### Website and signup
+
+- PR92 prepares the signed-in handoff: booking flowers, Care+ mark/type, account navigation,
+  Airbnb/office dashboard links, referrals, honest customer/Xooter review empty states and private
+  upcoming-visit cards. Property dashboards remain partial; desktop install shortcuts/cards are not
+  native OS widgets. Personalisation remains planning only.
+- PR95 at reviewed `d036520a77b61d38c92ea5441c733c7910bfb3ac`, stacked on PR92, corrects the
+  unfinished password-signup flow. A signup without a session stays on a dedicated Confirm your
+  email screen with the `000000` placeholder, complete code entry and signup-specific resend.
+  An unconfirmed password sign-in returns to that step. Confirmation and safe redirects remain.
+- Production read-only evidence showed signup 200 followed by email_not_confirmed, and one
+  email-send rate-limit response. The current signup trigger safely guards optional referral
+  dependencies; missing referral tables were not demonstrated as this bug's cause.
+- Production's Confirm sign up email now has the saved subject **Confirm your Xoot email**, branded
+  purple content, `{{ .Token }}` and a secure confirmation link. A fresh dashboard tab/preview
+  read back only the new template with Save disabled. Production Email OTP length is six.
+- Signup validation: 24 focused tests, independent 20/20, TypeScript and scoped lint passed.
+  The old implementation failed three added regressions. Production-mode build using staging public
+  configuration passed with 50 prerendered pages and an artifact scan. Synthetic browser checks
+  covered signup/confirmation/resend at small and desktop sizes. These do not prove a new real
+  account completed code/link confirmation. PR95 preview is READY at its exact source revision,
+  but the website signup correction is **not yet live**.
+- PR92's serial source suite passed 166 files / 1,674 tests / seven existing skips. Required GitHub
+  release/security/PostgreSQL jobs did not start: their actual annotation cites failed recent
+  payments or a spending-limit issue. Keep the founder's existing plan and spending limit; no
+  fabricated check, bypass or production promotion. Vercel/local successes do not replace these checks.
+
+### Four-account GPS/ETA acceptance
+
+- All four founder-authorised aliases actually completed normal staging Auth through privately
+  entered email codes. Approval was never substituted for verification. All aliases deliver to the
+  authorised founder's Gmail; they are not Zoho inboxes.
+- Six real staging assertion groups passed: four distinct normal subjects; no-auth/outsider/forged
+  publishing denial; consent/accuracy/staleness/replay rejection; assigned-customer fresh no-store
+  GPS without history; an actual Mapbox road ETA from synthetic public test inputs with no private
+  route/coordinates returned; and STOP revocation without disturbing the other customer.
+- Parent STOP cleanup was confirmed. Reviewed disposable fixture SQL was first rolled back,
+  then used only in named staging. Post-cleanup SQL found zero fixture locations, bookings, jobs,
+  synthetic worker rows and messages. Synthetic workers were never evidence of real verified
+  worker capacity or production approval.
+- The 45-minute helper expired and erased its in-memory sessions. No session token, password or
+  email code was persisted. Admin AAL1/AAL2, physical iPhone/Android permission/background/expiry
+  behaviour and a signed native build remain separate uncompleted checks.
+- PR71 contains the normal-JWT encrypted-chat acceptance module, but it did not execute in the
+  observed six-group run: fresh metadata found no generated chat devices or messages. Do not claim
+  real encrypted-chat or provider-call acceptance. Parent-owned chat-device cleanup at reviewed
+  `1d83852` passed 15/15 independently; both original cleanup defects fail negative controls.
+  A combined run must also demonstrate the additional communications checks rather than accepting
+  GPS-only output. That completeness follow-up passed 17/17 independently at 729a523.
+
+### Address verification and cost controls
+
+- PR81 pins exact WGS84 Gauteng polygons and provenance/licence from the MDB/OCHA source distributed
+  through HDX. Province approval defines intended geography, independently of verified Xooter availability.
+  Smart Address Match requires exact/high house-number and street agreement; uncertain input goes
+  to review. Its 22 focused checks and independent review passed.
+- Staging check-service-coverage v8 is ACTIVE with JWT verification; all five returned runtime files
+  matched reviewed source. xoot-job-location v11 is ACTIVE with JWT verification and private,
+  service-only RLS GPS storage.
+- Staging applied reviewed global-budget migration `20261025195100_mapbox_geocoding_global_budget`.
+  Source and remote SHA256 are
+  `b5d83f923763fb55423a7783bb23941b6c357d7a4b0a7d6a226fcfc627960956`.
+  The total allowance is **zero**, consumed zero, never automatically renewed. It denies provider
+  attempts before a paid Permanent Geocoding fetch. All seven client table privileges and client
+  RPC execution are denied; the service-only RPC is SECURITY INVOKER.
+- Real disposable PostgreSQL tests proved exactly three of 20 concurrent users could consume a
+  three-query allowance, the existing 12/hour/user ceiling, no renewal and fail-closed exhaustion.
+  Restoring the old per-user-only function failed the zero-allowance regression. The security advisor
+  added only intentional service-table RLS/no-policy information; existing warnings are unchanged.
+- This allowance covers only the backend Permanent Geocoding coverage route. It is **not** a universal
+  Mapbox invoice cap: map loads, Directions and other routes remain separate. A specifically bounded
+  owner allowance and provider licensing acceptance are needed for paid coverage acceptance.
+  [Mapbox pricing](https://www.mapbox.com/pricing) currently lists Permanent Geocoding at USD5/1,000 first-tier queries; 20 attempts would be
+  USD0.10 before tax. Temporary results cannot be stored to evade this licence.
+- Approved active zones remain zero; paid suggestions and coverage enforcement remain off.
+  Production has not received GPS/coverage handlers. Actual provider-match/coverage and safe booking
+  writer/schema reconciliation remain before activation. Never blindly push or deploy the booking writers.
+
+### Calls and inside-Xoot chat
+
+- PR93's atomic room/lease correction was independently cleared at `dbab693`. PostgreSQL 17.6
+  tests exercised actual competing transactions, row-lock waiting, reordered terminal callbacks,
+  deleted original caller, fresh redial and scheduled cascade. Removing the room lock failed the
+  concurrency negative control. Focused call/lifecycle guards passed 77 checks; independent four-suite
+  rerun passed 73. The two actual staging-generated RPC type declarations passed the existing
+  11-name guard and TypeScript. The broad full-suite retry was interrupted after host memory
+  exhaustion; there is no current-head full-suite pass.
+- Staging applied `20261025191835_in_app_voice_ephemeral_sessions`; exact source/remote SHA256:
+  `ab1bb7202e5edc1b6704e6b3b7df630ac1b069d54b8ea3634cdc21f350bb3792`.
+  The room and leg share an immutable maximum five-minute expiry. Service-only serialized RPCs
+  prevent terminal calls reopening; per-minute pg_cron purges expired rooms and cascades children.
+  Legacy client TRUNCATE/REFERENCES/TRIGGER privileges were removed without deleting legacy call data.
+- Staging delivery/readback: twilio-in-app-voice-status v1, twilio-voice-twiml v22 and twilio-token v23;
+  all 16 bundled runtime files exactly matched reviewed source. Token JWT protection remains on,
+  webhooks use signatures. Missing bearer returns 401, unsigned callbacks 403. Staging rejects the
+  production website Origin as configured; do not weaken its CORS.
+- Both new tables have RLS, zero client policies, all client privileges denied and no rows.
+  Client RPC execution is denied. The separate twilio.in_app_voice control is absent/off.
+  No real Twilio provider call, two-device audio test or production call delivery is claimed.
+  Twilio remains Trial; no SMS, purchased number, credits or upgrade. Eligibility is a bounded lease,
+  not instant mid-call cancellation.
+- Existing website text uses Supabase encrypted messages; production's chat control is on, but
+  actual two-party send/decrypt/outsider acceptance is still pending. Native chat/voice UI and signed
+  transport acceptance are not complete. Unsupported Conversations returns unavailable, without
+  granting credentials or creating provider traffic.
+
+### Email, native app and other remaining work
+
+Brevo Free handles transactional sending as **Xoot <no-reply@xoot.co.za>**, with separate production
+and staging SMTP keys privately saved by the founder. Zoho Free has the founder/support/newsletter
+inboxes; tshepang@xoot.co.za is an alias of the existing longer Tshepang mailbox. MX/SPF/DKIM were
+verified, but actual mailbox send/receive and newsletter consent/campaign acceptance remain.
+A branded email does not guarantee a sender avatar in every mail client.
+
+Google/Email are enabled; Apple is disabled. Google brand approval and a custom Auth domain remain
+separate; no paid domain was purchased. Expo ownership/project were actually verified as
+don-pacho777 / zoot / b4c6e0b8-e2e7-40c5-b259-3b34c79be30b. PR94 preserves that identity and adds
+reviewed native nonce/state/PKCE corrections; synthetic tests/config checks do not replace signing
+or device acceptance. The founder explicitly keeps Apple pending because there is no enrolled team.
+The iPhone 12 and Android tablet are available; no new paid build or device installation is implied.
+
+Standalone Laundry & Ironing, 52-visit gift fulfilment, complete handoff property dashboards and
+OS widgets remain incomplete. Existing add-ons, source-only branding and prepared app code do not
+prove these product journeys are production-ready.
+
+### Older dated checkpoints (historical evidence only)
+
+
 ## 23 October 2026 — founder website refinements published
 
 PR [#85](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/85) merged into approved `release/xoot-production` as `81733006f3595f5f6a4ecce95265dd958fd0a898`, retaining the separate article/sitemap release #86. Vercel production `dpl_Bzu712eNxrcFQKYgdCEDWMxh3A4Y` is **READY** and assigned both `xoot.co.za` and `xoot.vercel.app`; independent public `build-info.json` reads returned that exact revision on both domains. The automatic Git build had been a preview because production Branch Tracking still selected `main`. The production environment now tracks **`release/xoot-production`** instead; Save and dashboard reload verified persistence. Custom-domain auto-assignment remains enabled. No `main` source or unrelated PR was changed.

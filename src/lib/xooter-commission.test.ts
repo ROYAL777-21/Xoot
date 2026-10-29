@@ -93,8 +93,8 @@ describe("the day-one trap", () => {
    * done nothing scores perfectly. If the ladder read the score alone, approval itself would
    * grant the 20% floor for life.
    *
-   * This is not hypothetical: the assertion below is written against the literal row
-   * `approve-xooter` writes.
+   * The former approval payload wrote that default score. Quarantine now closes activation;
+   * the assertion below prevents reviving its unchecked writer while this calculation remains.
    */
   it("gives a freshly approved Xooter the starting rate, not the floor", () => {
     expect(calculateReliabilityScore({})).toBe(100);
@@ -105,15 +105,19 @@ describe("the day-one trap", () => {
     expect(commissionBandFor({ reliabilityScore: 100, completedJobs: 0 }).rank).toBe("new");
   });
 
-  it("reads the same 100 out of approve-xooter that it is defending against", () => {
-    // If the approval payload ever stops writing 100, the test above is defending a case that
-    // no longer occurs and someone should re-derive the gate rather than trust it.
+  it("keeps the former approval writer closed before it can assign a commission band", () => {
+    // Quarantine removed the former multi-request activation payload. Until a reviewed atomic
+    // approval replaces it, even an admin must receive a denial without any activation write.
+    // The day-one/default-score calculation above remains required for that future approval.
     const fn = readFileSync(
       join(process.cwd(), "supabase/functions/approve-xooter/index.ts"),
       "utf8",
     );
-    expect(fn).toMatch(/reliability_score:\s*100/);
-    // And it must not set a job count, so the new Xooter falls to the column default of 0.
+    expect(fn).toContain("requireAuth(req, origin)");
+    expect(fn).toContain("requireAdmin(supa!, user!.id, origin)");
+    expect(fn).toContain('code: "kyc_clearance_pending"');
+    expect(fn).toMatch(/return fail\([\s\S]*?origin,\s*409,/);
+    expect(fn).not.toMatch(/\.(?:insert|upsert|update|delete|rpc)\s*\(/);
     expect(fn).not.toMatch(/jobs_completed:/);
   });
 

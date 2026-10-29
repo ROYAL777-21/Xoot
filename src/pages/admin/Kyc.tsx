@@ -6,8 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ShieldCheck, FileText, Check, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { getActivationReadiness } from "@/lib/operations";
-import { invokeOpsWorkflow } from "@/lib/ops-workflow";
-import { approveXooterAdmin, rejectXooterAdmin } from "@/lib/admin-actions";
+import { rejectXooterAdmin } from "@/lib/admin-actions";
 
 const verificationFields = [
   ["id_verification_status", "Government ID"],
@@ -40,7 +39,7 @@ const AdminKyc = () => {
   const openApp = async (a: any) => {
     setActive(a);
     setNotes(a.reviewer_notes ?? "");
-    const { data } = await supabase.from("xooter_documents").select("*").eq("user_id", a.user_id);
+    const { data } = await supabase.from("xooter_documents").select("id,doc_type,status,created_at").eq("application_id", a.id);
     const [{ data: modules }, { data: completions }] = await Promise.all([
       supabase.from("training_modules").select("id").eq("required", true),
       supabase.from("xooter_training_completions").select("module_id").eq("user_id", a.user_id).eq("passed", true),
@@ -51,29 +50,7 @@ const AdminKyc = () => {
     setRequiredTrainingCount(requiredIds.size);
     setPassedTrainingCount(passedCount);
     setTrainingPassed(requiredIds.size > 0 && passedCount === requiredIds.size);
-    const withUrls = await Promise.all((data ?? []).map(async (d: any) => {
-      const { data: signed } = await supabase.storage.from("kyc-docs").createSignedUrl(d.storage_path, 600);
-      return { ...d, signed_url: signed?.signedUrl };
-    }));
-    setDocs(withUrls);
-  };
-
-  const setVerification = async (field: string, status: "approved" | "rejected" | "pending") => {
-    if (!active) return;
-    let data: any;
-    try {
-      const result = await invokeOpsWorkflow<{ application?: any }>({
-        action: "admin_set_kyc_verification",
-        applicationId: active.id,
-        field,
-        status,
-      });
-      data = result.application ?? { ...active, [field]: status };
-    } catch (error) {
-      return toast.error(error instanceof Error ? error.message : "Verification update failed");
-    }
-    setActive(data);
-    setApps((items) => items.map((item) => item.id === data.id ? data : item));
+    setDocs(data ?? []);
   };
 
   const readiness = active ? getActivationReadiness({
@@ -89,7 +66,7 @@ const AdminKyc = () => {
     requiredTrainingPassed: trainingPassed,
     backgroundCheckConsent: !!active.background_check_consent,
   }) : { activationReady: false, missing: [] as string[] };
-  const allVerified = active && readiness.activationReady;
+  const allVerified = false; // Cleared flags alone are not malware or document-authenticity evidence.
 
   const decide = async (status: "approved" | "rejected") => {
     if (!active) return;
@@ -98,15 +75,13 @@ const AdminKyc = () => {
       toast.error("Reviewer notes must be at least 10 characters for the audit trail.");
       return;
     }
-    if (status === "approved" && !readiness.activationReady) {
-      toast.error(`Activation locked: ${readiness.missing.join(", ")}`);
+    if (status === "approved") {
+      toast.error("Activation is locked while document safety and authenticity checks are configured.");
       return;
     }
 
     try {
-      const { data, error } = status === "approved"
-        ? await approveXooterAdmin(active.id, reason)
-        : await rejectXooterAdmin(active.id, reason);
+      const { data, error } = await rejectXooterAdmin(active.id, reason);
       if (error) throw error;
       if ((data as any)?.success === false) throw new Error((data as any).error ?? "Application decision failed");
     } catch (error) {
@@ -144,18 +119,18 @@ const AdminKyc = () => {
 
             <h3 className="font-display text-lg font-bold mb-2">Verification checklist</h3>
             <div className="grid sm:grid-cols-2 gap-2 mb-5">
-              {verificationFields.map(([field, label]) => <div key={field} className="rounded-2xl border border-border p-3"><div className="flex items-center justify-between gap-2"><p className="font-medium text-sm">{label}</p><Status status={active[field]} /></div><div className="mt-3 flex gap-1.5"><Button size="sm" variant="outline" className="h-8 rounded-full" onClick={() => setVerification(field, "approved")}>Approve</Button><Button size="sm" variant="ghost" className="h-8 rounded-full text-destructive" onClick={() => setVerification(field, "rejected")}>Reject</Button></div></div>)}
+              {verificationFields.map(([field, label]) => <div key={field} className="rounded-2xl border border-border p-3"><div className="flex items-center justify-between gap-2"><p className="font-medium text-sm">{label}</p><Status status={active[field]} /></div><p className="mt-3 text-xs text-muted-foreground">Evidence-backed verification pending</p></div>)}
             </div>
 
             <div className="rounded-2xl bg-muted/40 border border-border p-3 text-sm mb-4">
               <p className="font-semibold">Training gate</p>
               <p className="text-muted-foreground">{passedTrainingCount} / {requiredTrainingCount} required modules passed before activation.</p>
             </div>
-            {!allVerified && <div className="rounded-2xl bg-primary/10 border border-primary/20 p-3 text-sm text-primary flex gap-2 mb-4"><AlertTriangle className="h-4 w-4 mt-0.5" /> Activation is locked until verification, screening, consent, and required training are complete.</div>}
+            {!allVerified && <div role="status" className="rounded-2xl bg-primary/10 border border-primary/20 p-3 text-sm text-primary flex gap-2 mb-4"><AlertTriangle className="h-4 w-4 mt-0.5" /> Document viewing and activation are locked while private malware scanning and authenticity review are configured. {readiness.missing.length > 0 && "Screening, consent and required training must also be complete."}</div>}
 
             <h3 className="font-display text-lg font-bold mb-2">Documents</h3>
             <div className="space-y-2 mb-4">
-              {docs.map((d) => <a key={d.id} href={d.signed_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted"><FileText className="h-4 w-4 text-sage-deep" /><span className="text-sm font-medium capitalize flex-1">{d.doc_type.replace(/_/g, " ")}</span><span className="text-xs text-primary underline">Open</span></a>)}
+              {docs.map((d) => <div key={d.id} className="flex items-center gap-3 p-3 rounded-xl border border-border"><FileText className="h-4 w-4 text-primary" /><span className="text-sm font-medium capitalize flex-1">{d.doc_type.replace(/_/g, " ")}</span><span className="text-xs text-muted-foreground">Quarantined · checks pending</span></div>)}
               {docs.length === 0 && <p className="text-sm text-muted-foreground">No documents uploaded.</p>}
             </div>
             <Textarea placeholder="Reviewer notes" value={notes} onChange={(e) => setNotes(e.target.value)} className="mb-4" />

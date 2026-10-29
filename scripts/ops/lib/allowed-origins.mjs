@@ -36,6 +36,9 @@ export const stagingValue = (origins) =>
     "https://staging.xoot.co.za",
     "http://127.0.0.1:4199",
     "https://xoot-git-codex-xoot-production-20260911-royal777-21s-projects.vercel.app",
+    // Exact owned integration branch, verified through Vercel deployment metadata.
+    // This list is staging-only; defaultAllowedOrigins must remain production-only.
+    "https://xoot-git-integration-website-stagi-56296d-royal777-21s-projects.vercel.app",
   ].join(",");
 
 export const PROJECTS = { production: "mvlrkelahhsyjrwgsxaf", staging: "fxmxyabdjqviqbcxmvlp" };

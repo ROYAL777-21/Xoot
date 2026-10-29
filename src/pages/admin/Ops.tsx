@@ -15,6 +15,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PrivateDispatchMap } from "@/components/xoot/PrivateDispatchMap";
 import { formatZAR } from "@/lib/format";
 import {
   approveXooterAdmin,
@@ -196,6 +197,8 @@ const Ops = () => {
         <h1 className="font-display text-4xl font-bold md:text-5xl">Xoot operating queues</h1>
         <p className="mt-2 text-muted-foreground">Typed, MFA-gated actions for payments, integrations, support, trust review, Xooter activation and analytics.</p>
       </div>
+
+      <PrivateDispatchMap />
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
         <Stat icon={WalletCards} label="Pending payments" value={payments.filter((p) => p.status === "pending").length} />

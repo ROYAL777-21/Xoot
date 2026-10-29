@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   amountMatches,
+  recordAmountCents,
+  payfastGrossCents,
+  merchantMatches,
   buildSignatureBase,
   md5Hex,
   normaliseStatus,
@@ -150,9 +153,21 @@ describe("amountMatches — integer cents, never floats", () => {
     expect(amountMatches("387.00", 38700).ok).toBe(true);
   });
 
-  it("accepts one cent of provider rounding and no more", () => {
-    expect(amountMatches("387.01", 38700).ok).toBe(true);
-    expect(amountMatches("387.02", 38700).ok).toBe(false);
+  it("rejects even a one-cent underpayment or overcharge", () => {
+    expect(amountMatches("386.99", 38700).ok).toBe(false);
+    expect(amountMatches("387.01", 38700).ok).toBe(false);
+  });
+
+  it("rejects malformed decimals, exponent values, partial numbers and negative amounts", () => {
+    for (const value of ["387", "387.0", "387.000", "387.00abc", "3.87e2", "-387.00", "", " 387.00", "0.001"]) {
+      expect(amountMatches(value, 38700).ok).toBe(false);
+    }
+    expect(payfastGrossCents("0.01")).toBe(1);
+    expect(payfastGrossCents("8.70")).toBe(870);
+    expect(recordAmountCents("8.7")).toBe(870);
+    expect(recordAmountCents(8.7)).toBe(870);
+    expect(recordAmountCents("8.701")).toBeNull();
+    expect(recordAmountCents(1e20)).toBeNull();
   });
 
   it("REJECTS an underpayment", () => {
@@ -177,10 +192,12 @@ describe("validateWithPayFast — fails closed", () => {
     expect((await validateWithPayFast("a=b", "https://x", fetchImpl as never)).ok).toBe(true);
   });
 
-  it("REJECTS INVALID", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue({ ok: true, text: async () => "INVALID" });
-    expect((await validateWithPayFast("a=b", "https://x", fetchImpl as never)).ok).toBe(false);
-  });
+  it.each(["INVALID", "VALIDATION FAILED", "VALID but reversed", "VALID\\nINVALID", "", "PENDING"])(
+    "REJECTS any postback that is not exactly VALID (%s)", async (message) => {
+      const fetchImpl = vi.fn().mockResolvedValue({ ok: true, text: async () => message });
+      expect((await validateWithPayFast("a=b", "https://x", fetchImpl as never)).ok).toBe(false);
+    },
+  );
 
   it("REJECTS when PayFast is unreachable, rather than assuming the best", async () => {
     // An integration that credits an order when its verifier is down can be credited by taking the
@@ -221,5 +238,20 @@ describe("normaliseStatus", () => {
     expect(normaliseStatus("complete")).toBe("COMPLETE");
     expect(normaliseStatus("completed")).toBe("UNKNOWN");
     expect(normaliseStatus(undefined)).toBe("UNKNOWN");
+  });
+});
+
+describe("PayFast merchant identity / checkout record binding", () => {
+  it("matches only the configured merchant identifier and fails closed if unset", () => {
+    expect(merchantMatches("10000100", "10000100")).toBe(true);
+    expect(merchantMatches("10000101", "10000100")).toBe(false);
+    expect(merchantMatches("10000100", "")).toBe(false);
+    expect(merchantMatches(null, "10000100")).toBe(false);
+    expect(merchantMatches("10000100", "unconfigured")).toBe(false);
+  });
+
+  it("requires exact cents and rejects a mismatched signed notification", () => {
+    expect(amountMatches("500.00", recordAmountCents("500.00")!).ok).toBe(true);
+    expect(amountMatches("499.99", recordAmountCents("500.00")!).ok).toBe(false);
   });
 });

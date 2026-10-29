@@ -14,6 +14,7 @@ import {
   toNumber,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import { persistApplicationDocument } from "./document-persistence.ts";
 
 const docTypes = new Set(["id", "proof_of_residence", "bank_statement", "selfie"]);
 
@@ -59,7 +60,6 @@ const buildApplicationPayload = (application: any, user: any, status: "draft" | 
     reference_2_name: cleanText(application.reference_2_name, 160) || null,
     reference_2_phone: cleanText(application.reference_2_phone, 40) || null,
     background_check_consent: application.background_check_consent === true,
-    selfie_storage_path: cleanText(application.selfie_storage_path ?? application.docs?.selfie, 300) || null,
     status,
   };
   if (!payload.date_of_birth) delete payload.date_of_birth;
@@ -121,21 +121,18 @@ Deno.serve(async (req) => {
       if (!applicationId || !docTypes.has(docType) || !storagePath) return fail("valid document metadata required", origin, 400);
       const { data: application } = await supa
         .from("xooter_applications")
-        .select("id,user_id")
+        .select("id,user_id,status")
         .eq("id", applicationId)
         .eq("user_id", user.id)
         .maybeSingle();
       if (!application?.id) return fail("application not found", origin, 404);
-      await supa.from("xooter_documents").insert({
+      if (!["draft", "rejected"].includes(application.status)) return fail("Application is locked for review.", origin, 409);
+      await persistApplicationDocument(supa, {
         user_id: user.id,
         application_id: application.id,
         doc_type: docType,
         storage_path: storagePath,
-        status: "pending",
       });
-      if (docType === "selfie") {
-        await supa.from("xooter_applications").update({ selfie_storage_path: storagePath }).eq("id", application.id);
-      }
       await writeAuditLog(supa, {
         actorId: user.id,
         action: "xooter_document_uploaded",
@@ -145,13 +142,24 @@ Deno.serve(async (req) => {
         reason: "Applicant uploaded KYC document metadata through Edge Function",
         ipAddress: req.headers.get("x-forwarded-for"),
       });
-      return ok({ application_id: application.id, doc_type: docType, status: "pending" }, origin);
+      return ok({ application_id: application.id, doc_type: docType, status: "pending", safety_status: "quarantined" }, origin);
     }
 
+    if (!["draft", "submitted"].includes(mode)) return fail("invalid application mode", origin, 400);
+    const { data: current, error: currentError } = await supa.from("xooter_applications")
+      .select("id,status").eq("user_id",user.id).maybeSingle();
+    if (currentError) throw new Error("Application state unavailable");
+    if (current && !["draft","rejected"].includes(current.status)) return fail("Application is locked for review.", origin, 409);
     const targetStatus = mode === "draft" ? "draft" : "submitted";
     const applicationBody = body.application ?? body;
-    const docs = applicationBody.docs ?? body.docs ?? {};
-    const payload = buildApplicationPayload({ ...applicationBody, docs }, user, targetStatus);
+    const docs: Record<string,string> = {};
+    if (targetStatus === "submitted" && current?.id) {
+      const stored = await supa.from("xooter_documents").select("doc_type,storage_path")
+        .eq("user_id",user.id).eq("application_id",current.id);
+      if (stored.error) throw new Error("Stored documents unavailable");
+      for (const d of stored.data ?? []) if (docTypes.has(d.doc_type)) docs[d.doc_type] = d.storage_path;
+    }
+    const payload = buildApplicationPayload(applicationBody, user, targetStatus);
     if (!String(payload.full_name ?? "").trim()) return fail("full_name required", origin, 400);
 
     if (targetStatus === "submitted") {

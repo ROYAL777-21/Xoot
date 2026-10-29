@@ -76,7 +76,9 @@ try {
       await home.waitFor({ state: "visible", timeout: 15_000 });
       // Static content is visible before startup. A successful input action also
       // waits for the real enabled React controls before inspecting the live layout.
-      const field = page.getByRole("textbox", { name: "Service address" });
+      // Suggestions use the accessible combobox role; the disabled feature remains a textbox.
+      const field = page.getByRole("combobox", { name: "Service address", exact: true })
+        .or(page.getByRole("textbox", { name: "Service address", exact: true }));
       await field.fill("Sandton", { timeout: 15_000 });
       const sections = ["#gift", "#careplus", ".xoot-feedback-card"];
       for (const selector of sections) {
