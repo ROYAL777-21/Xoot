@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Gift, X, Sparkles } from "lucide-react";
+import { Gift, X } from "lucide-react";
+import { REFERRAL_REWARD_CENTS } from "@/lib/referral-display";
+import { formatRand } from "@/lib/xoot-pricing";
 
 export interface ReferralWelcomeProps {
   onBook: () => void;
@@ -38,7 +40,7 @@ export function ReferralWelcome({ onBook }: ReferralWelcomeProps) {
             <Gift className="h-4 w-4 text-white" />
           </div>
           <p className="text-xs sm:text-sm font-medium leading-tight truncate">
-            <strong>R100 referral gift unlocked:</strong> Use code <code className="bg-white/20 px-1.5 py-0.5 rounded font-mono font-bold">{refCode}</code> for R100 off your first booking.
+            <strong>{formatRand(REFERRAL_REWARD_CENTS)} referral gift unlocked:</strong> Use code <code className="bg-white/20 px-1.5 py-0.5 rounded font-mono font-bold">{refCode}</code> for {formatRand(REFERRAL_REWARD_CENTS)} off your first booking.
           </p>
         </div>
 

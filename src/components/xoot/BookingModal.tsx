@@ -26,6 +26,8 @@ import {
   calculateCrewQuote,
   crewCapFor,
   formatRand,
+  BOOKING_FEE_CENTS,
+  ADD_ON_CENTS,
 } from "@/lib/xoot-pricing";
 import { approvedLaunchRegions } from "@/lib/operations";
 import { useAuth } from "@/contexts/AuthContext";
@@ -459,7 +461,7 @@ export function BookingModal({ open, onClose, initialService = "regular", referr
                             : "bg-muted/50 text-foreground border-border hover:bg-muted"
                         }`}
                       >
-                        {addon.label} (+R30)
+                        {addon.label} (+{formatRand(ADD_ON_CENTS)})
                       </button>
                     );
                   })}
@@ -712,14 +714,8 @@ export function BookingModal({ open, onClose, initialService = "regular", referr
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Platform booking fee</span>
-                    <span className="font-mono">{quote ? formatRand(quote.serviceFeeCents) : "R39"}</span>
+                    <span className="font-mono">{quote ? formatRand(quote.serviceFeeCents) : formatRand(BOOKING_FEE_CENTS)}</span>
                   </div>
-                  {quote && quote.discountCents > 0 && (
-                    <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
-                      <span>Referral discount</span>
-                      <span className="font-mono">-{formatRand(quote.discountCents)}</span>
-                    </div>
-                  )}
 
                   <div className="border-t border-border/80 pt-2 flex justify-between items-baseline">
                     <span className="text-sm font-bold text-foreground">Total to pay</span>

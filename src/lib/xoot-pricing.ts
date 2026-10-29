@@ -634,7 +634,6 @@ export function calculateCrewQuote(input: {
   linenOnSite?: boolean;
   bookingCover?: boolean;
   carePlusMember?: boolean;
-  referralCreditCents?: number;
 }) {
   const spec = SERVICES[input.service];
   if (!spec || Object.keys(spec.ladder).length === 0) return null;
@@ -648,9 +647,7 @@ export function calculateCrewQuote(input: {
   const linenCents = input.linenOnSite ? LINEN_ON_SITE_CENTS : 0;
   const coverCents = input.bookingCover === false ? 0 : BOOKING_COVER_CENTS;
   const serviceFeeCents = input.carePlusMember ? 0 : BOOKING_FEE_CENTS;
-  const discountCents = Math.min(baseCents, Math.max(0, input.referralCreditCents ?? 0));
-  const subtotalCents = baseCents + addOnsCents + linenCents + coverCents + serviceFeeCents;
-  const totalCents = Math.max(0, subtotalCents - discountCents);
+  const totalCents = baseCents + addOnsCents + linenCents + coverCents + serviceFeeCents;
 
   return {
     service: input.service,
@@ -662,7 +659,6 @@ export function calculateCrewQuote(input: {
     linenCents,
     coverCents,
     serviceFeeCents,
-    discountCents,
     totalCents,
   };
 }
