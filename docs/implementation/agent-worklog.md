@@ -1,5 +1,37 @@
 # Agent worklog
 
+## STAGING DELIVERY — 29 October — real PayFast receipt and reviewed crew policy
+
+Founder corrected the salt privately at00:16:35UTC. Official sandbox ITN2020364 / transaction
+3482365 then passed the deployed confirm-payment46 checks at00:18:36.575326UTC. R289 payment
+and booking are paid/payment_confirmed, with one processed event/receipt. Duplicate official
+resend retains exactly one owner notification, one assignment outbox and the original paid time.
+The older distinct virtual transaction3481790 was subsequently replayed and recorded as failed;
+it does not replace the settled transaction or duplicate fulfilment. Keep both genuine attempts.
+No real money, fake provider event, contractor approval or global/evidence switch was involved.
+Signed-in normal staging UI independently reads the paid receipt and handoff detail correctly.
+390/1440 layout inspection has no horizontal overflow. Preserve the public-address test fixture.
+
+Full fa23986c suite passes199 files/2032 tests with real PGlite execution and no skips. Five
+pricing-importing Deno entrypoints pass. Validated staging build, artifact scan,50 prerenders,
+approved390/1440 homepage and real empty-directory startup pass. Independent source reviews
+clear the view/writer corrections and pure SQL policy for limited staging, not production.
+Hosted catalog first showed no calculator, so also tested the forward migration standalone in
+PGlite: office crew4 accepted, three ineligible crews refused, anon denied. Applied only that
+reviewed pure calculator as actual ledger version20261029003043. Body matches source; immutable
+invoker/empty search_path and service-only execute are verified. Renamed only the new filename
+to actual MCP ledger version, byte-identical SHA2568797e41013e5a19f4016623804db882d86101f3667f3655275e3e12f263e1225;
+eight SQL tests pass again after its reader path changed. Historical applied SQL remains intact.
+
+Claim/flag Release's bounded staging refresh of all five frozen pricing importers: create-booking,
+create-booking-request, get-booking-quote, ops-workflow and respond-xooter-job. Preserve actual
+verify_jwt=true on all five, all production settings and money/tracking/SOS gates. Function graph
+enumeration and exact return-file comparison are required; source tests alone do not prove deploy.
+V3 archive SHA2564be5efb123ccd809c5619bf5e329e539b02995fed43789f6d8d30ce550f6a2de verifies;
+tipab89de7 is imported only into a separate review ref. Recurring docs' credit-per-cycle and
+mandatory special-agreement claims conflict with locked facts/current primary provider docs;
+do not use either as code or as an artificial founder gate. Live merchant sign-in is prepared.
+
 ## HOLDING — 29 October — payment methods and forward crew quote parity
 
 Founder now requests Apple Pay, Samsung Pay, Google Pay, Instant EFT, cards, subscriptions

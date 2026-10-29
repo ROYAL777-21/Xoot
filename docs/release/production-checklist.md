@@ -1,28 +1,48 @@
 # Xoot production checklist
 
-## 28 October 2026 — prior staging release resumed; new bundle deferred
+## 29 October 2026 — real sandbox callback accepted; live payments closed
 
-The founder has deferred the separate delivery bundle and directed continuation of the existing
-reviewed staging work. Resume PR101 preview publication, exact deployed verification and PayFast
-cancellation/settlement acceptance. The missing bundle does not block this existing branch.
-Production promotion, live charges and unsupported provider/worker assertions remain gated.
+The founder corrected the staging salt privately. Real PayFast sandbox ITN2020364, transaction
+3482365, then passed signature/merchant/exact-amount/provider-postback validation in deployed
+confirm-payment46. Actual readback at00:18:36UTC shows the server-created R289 fixture paid,
+booking payment_confirmed and one processed event/atomic receipt. A duplicate official resend
+leaves one receipt, one customer notification, one assignment-queue item and the original paid
+time. No actual money, approved worker, live charge, provider capability or operational flag was
+created by this acceptance. This is callback-only proof: the named fixture's routing was changed
+under a guarded audit; normal owner checkout and fulfilment acceptance remain separate.
 
-The founder requests download/xoot-delivery-20261028/ runbook steps0–3 followed by SOS tests.
-The bundle/runbook/report is not yet accessible in this local workspace or Downloads; the
-connected chat supplies only content-reference markers. The exact local folder path or delivery
-link has been requested. Reconcile it against the preserved integration branch and actual staged
-schema/handlers before any push, credential change, migration, deployment or SOS activation.
-No unseen runbook step has been executed and no prior release gate is treated as passed.
+The actual signed-in staging detail displays the saved R289 payment, real SAST visit details,
+handoff flowers and truthful unassigned state. Phone390 and desktop1440 layouts were inspected
+without horizontal overflow. Preview fa23986c is READY. Airbnb/office-only crew policy and
+account/booking state isolation pass focused tests and independent limited review. Forward SQL
+parity passes real PGlite0.5.8 across407 allowed ladder/size/crew combinations plus benefits,
+invalid inputs, role denial and negative controls. Historical applied SQL is unchanged. Hosted
+SQL/function policy rollout and the final full run are still pending at this checkpoint.
 
-The founder's follow-up commit pointers are also not yet reachable: authenticated GitHub
-checks cannot find e2927029 or0c146034, and neither release/20261028-careplus-earnings-sos nor
-integration/staging-gps-merge is published. Remote main remains1062bdb. The new checkout's full
-local path or an exported downloadable Git bundle is needed before reconciliation can start.
+Cancellation migration20261028125915 and its reviewed functions are on staging:134 rollback
+assertions, genuine independent-session races, old-overwrite negative control and8 HTTP
+boundaries pass. Five owned synthetic race fixtures were removed; retain the genuine provider
+fixture bc08e972-c63a-4dbc-a060-ccfe34adcaef and its receipt for reconciliation.
 
-Local current-source types/lint/security and validated staging-config build pass. The latest
-full suite has1978 passes/7 existing skips/1 rendered sign-in timeout; that case passes alone
-under its unchanged deadline. This is not a completely green full run. Existing required GitHub,
-provider, cancellation/refund, genuine identity/device and production-migration gates remain.
+The original and v3 delivery bundles are now accessible as separate review refs. V3 tipab89de7
+has been verified and imported read-only; no wholesale merge or handoff migration was applied.
+Its Care+ document is a one-cycle design, not implemented automatic renewal. Its per-cycle R30
+wording conflicts with the locked once-only welcome credit. The existing reconciliation lists
+substantive admin/session/receipt/schema/earnings/SOS defects that must be resolved before import.
+
+Founder requests Apple Pay, Samsung Pay, Google Pay, Instant EFT, cards, subscriptions and
+commissions. All five methods are documented by PayFast; Xoot's live merchant eligibility and
+toggles are not yet verified. The prepared live merchant sign-in is awaiting the founder.
+Checkout already omits payment_method, allowing PayFast to offer the merchant's available
+methods. Recurring mandates, renewal receipts/cancellation and commission-ledger/verified payout
+acceptance remain required. See [the payment launch matrix](payfast-launch-20261029.md).
+No instant bank settlement promise, additional paid service or automatic payout fee is enabled.
+
+Required GitHub checks must actually pass; Actions now executes, but the external Claude
+security check reports insufficient credit. Keep its failure visible and retain the current
+plan. Reconcile exact production schema effects, frozen function copies, live provider and
+device/ops acceptance before promotion. Production homepage/release branch and unrelated PRs
+remain preserved. Earlier dated sections below are historical evidence, not new release approval.
 
 ## 27 October 2026 — current implementation and release tasks
 

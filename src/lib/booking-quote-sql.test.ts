@@ -12,7 +12,7 @@ import { crewCapFor, LADDERS } from "../../supabase/functions/_shared/pricing";
 // skip in the ordinary app suite, never claimed as evidence of SQL execution.
 const toolingModule = process.env.XOOT_PGLITE_MODULE;
 const originalMigration = readFileSync(resolve("supabase/migrations/20260928003000_booking_quote_calculator.sql"), "utf8");
-const crewPolicyMigration = readFileSync(resolve("supabase/migrations/20261028235926_airbnb_office_crew_quote_policy.sql"), "utf8");
+const crewPolicyMigration = readFileSync(resolve("supabase/migrations/20261029003043_airbnb_office_crew_quote_policy.sql"), "utf8");
 const migration = `${originalMigration}\n${crewPolicyMigration}`;
 const NOW = Date.parse("2026-09-28T08:00:00+02:00");
 const baseInput = (patch: Partial<BookingQuoteInput> = {}): BookingQuoteInput => ({
