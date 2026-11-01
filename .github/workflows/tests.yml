@@ -10,6 +10,12 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      verify_cloudmersive_staging:
+        description: Run only the two fixed synthetic Cloudmersive staging integration checks
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -33,6 +39,32 @@ env:
   VITE_APP_ENV: development
 
 jobs:
+  cloudmersive-staging-acceptance:
+    if: github.event_name == 'workflow_dispatch' && inputs.verify_cloudmersive_staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.113.0
+      - name: Check the privileged staging worker using fixed synthetic fixtures
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/ops/verify-cloudmersive-staging.mjs
+      - name: Retain redacted integration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudmersive-staging-evidence
+          path: cloudmersive-staging-evidence.json
+          if-no-files-found: ignore
+          retention-days: 7
   benefit-concurrency:
     name: Booking benefit transactions (PostgreSQL ${{ matrix.postgres }})
     runs-on: ubuntu-latest
