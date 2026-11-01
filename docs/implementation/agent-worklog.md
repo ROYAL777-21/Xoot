@@ -20,6 +20,16 @@ under a saved dark/device setting; new bootstrap keeps public light and app dark
 no-expiry gift/link/code/original-method-unused-refund rules and milestones12then24additional
 (36total); benefit value/profitability is being modelled before a financial promise is enabled.
 
+Theme PR106 is merged at7a81f0f1; Vercel dpl_7RU4FVr2eWKkUkdHS3nhzfPwGjcG is READY and canonical
+build-info reports that exact SHA. Actual public browser root is light/website/color-scheme light.
+Invoice legal name corrected privately to Xoot Home Services, keeping supplied registration.
+Founder directs use of the signed-in Edge Cloudmersive Free account and privately saves its existing
+key to staging only. Bounded scanner patch touches Release migrations/config and Correctness
+shared adapter/guards because provider setup needs actual quota/receipt enforcement before tests.
+It preserves the KYC activation interlock, raw Storage denial and real-document processing OFF;
+service-only worker also refuses production.20 executed unit cases, Deno/scoped lint and30actual
+isolated PostgreSQL assertions pass. Cross-review and hosted synthetic API acceptance follow.
+
 ## DELIVERY — 1 November — website, confirmed reviews and production address lookup
 
 Real production CLI diff recovered exactly (44lines,2hunks,28additions); independent comparison

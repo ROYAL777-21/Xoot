@@ -1128,3 +1128,29 @@ This narrows eligibility; it does not change eligible-service ladder prices, cre
 fees or the existing size/service caps. Additional price/hour/size thresholds from the newer
 unreviewed delivery remain for reconciliation. It grants no permission to claim worker
 availability, bypass settlement, enable checkout/payout controls or promote untested code.
+
+## ZD-040 — paid gift fulfilment rules (2026-11-01)
+
+The founder approves both an emailed claim link and an in-app claim code; no expiry; unused
+value refundable to the purchaser's original payment method, preserving statutory rights;
+cleaning and the quoted booking fees covered, with optional tips separate. Claiming must bind
+the entitlement to one verified recipient. Reserve value atomically before creating a booking,
+release it on eligible cancellation and reconcile completed spending/refunds without double use.
+Do not activate paid gifts until signed settlement, claim, concurrent reservation, cancellation
+and original-method refund acceptance pass. No expiry does not approve an unlimited future
+service-price guarantee. Existing paid entitlements must never be silently reduced.
+
+## ZD-041 — increasing customer clean milestones (2026-11-01)
+
+The founder chooses the first reward after 12 qualifying paid-and-completed cleans and the
+second after **another 24**, therefore 36 in total. Free/reward visits, cancellations, unsettled
+payments, refunded/disputed bookings and duplicate completion callbacks must not advance this
+count. Later intervals have not been approved. Display the actual verified count and progress;
+do not substitute weeks or the handoff prototype's 14-week deep-clean promise.
+
+The founder asks whether this is profitable. Model current server quotes, the 20% commission
+floor, Xoot-funded Care+ discounts, payment fees and the reward's actual contractor cost. A
+positive contribution is not proof of net profit. The free-clean service/value cap still needs
+a concrete founder decision before the entitlement can be advertised as redeemable. Home
+Fragrance stays coming soon until stock and fulfilment exist. This decision approves no new
+cash-out fee or automatic post-36 reward schedule.

@@ -66,6 +66,10 @@ verify_jwt = true
 [functions.ops-workflow]
 verify_jwt = true
 
+# Service-role-only worker; fixed synthetic evaluation is also restricted to staging in its body.
+[functions.scan-xooter-document]
+verify_jwt = true
+
 [functions.create-masked-call]
 verify_jwt = true
 
