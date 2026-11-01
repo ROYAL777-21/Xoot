@@ -149,6 +149,11 @@ jobs:
       - name: Verify private scanner authority, quota and quarantine contracts
         run: node scripts/ops/verify-kyc-scanner.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
 
+      - name: Verify closed scanner schema convergence and rollback
+        run: |
+          node scripts/ops/build-closed-scanner-schema.mjs --check
+          node scripts/ops/verify-closed-scanner-schema.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
   test:
     name: Lint, build and unit tests
     runs-on: ubuntu-latest
