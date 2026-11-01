@@ -1,5 +1,20 @@
 # Agent worklog
 
+## HOLDING — 2 November — preserve scanner evidence and version response compatibility
+
+Authority migration applied as actual20261101220212 and worker3 deployed with JWT retained;
+all5runtime files match e89dbdde after newline normalization. Probe is actual invoker/stable/
+empty-search_path, client grantsfalse and service granttrue. First genuine Cloudmersive PDF
+attempt719640f3-51f3-417e-9d94-c40b676025f3 is error/incomplete_response with a response digest;
+it was NOT marked clean. Harmless EICAR f644bcfd-0725-4fca-b8d7-375d3e292c32 is genuinely blocked,
+malwareDetectedtrue with a digest. Used2/32; personal processingfalse; no production changes.
+
+Claim versioned response compatibility and fixed-fixture safe shape diagnostics; compare the
+provider's documented nullable virus list without dropping any required negative threat flag or
+verified-format check. Add a reviewed fixed v2 policy/claim entry, preserve v1 API/terminal
+receipts and the SAME nonrenewing32attempt budget. No receipt overwrite, consumed-counter reset,
+arbitrary policy input or paid plan. Cross-review precedes the next staging delivery/test.
+
 ## HOLDING — 1 November — verify scanner service authority through PostgREST
 
 Real private owner test reached the gateway with service_role in both apikey/bearer metadata,

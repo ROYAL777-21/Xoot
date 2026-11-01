@@ -1,5 +1,13 @@
 # Cloudmersive evaluation delivery — 1 November 2026
 
+2November readback: authority DDL is actual version20261101220212; worker3 is ACTIVE with
+verify_jwt=true, bundle89cc5327674a6847248a71346b41c3da31ec9d72204be2445aec5aaa3c42e8ce.
+All5runtime files match reviewed source. The owner-entered service transport now authenticates
+through the database probe. Genuine provider tests used2/32attempts: the blank PDF returned
+incomplete_response and remains quarantined; EICAR was blocked with actual malwareDetectedtrue.
+Both have terminal receipt UUIDs and response digests. Complete clean-file acceptance is pending;
+never overwrite the failed PDF receipt or turn that result into a contractor clearance.
+
 Current auth repair is prepared, not yet deployed: the owner entered the existing key privately;
 actual gateway metadata identifies service_role on both headers, but version2's exact runtime-key
 comparison still rejects it. No key values were read. Replace equality with a read-only,

@@ -8,7 +8,7 @@ try {
   for(const path of ['scripts/testing/kyc-quarantine-fixture.sql',
     'supabase/migrations/20261027032349_kyc_private_quarantine_interlock.sql',
     'supabase/migrations/20261101155855_kyc_scanner_evaluation_receipts.sql',
-    'supabase/migrations/20261101223500_kyc_scanner_service_authority.sql','scripts/testing/kyc-scan-contract.sql']) {
+    'supabase/migrations/20261101220212_kyc_scanner_service_authority.sql','scripts/testing/kyc-scan-contract.sql']) {
     const source=await readFile(path,'utf8');await db.exec(source);
     console.log(JSON.stringify({path,assertions:(source.match(/select public\.assert_/g)||[]).length,passed:true}));
   }
