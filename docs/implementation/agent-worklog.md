@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 1 November — verify scanner service authority through PostgREST
+
+Real private owner test reached the gateway with service_role in both apikey/bearer metadata,
+but the worker's exact configured-key equality rejected it. No key value was read;0/32 attempts,
+0receipts and no provider call. Claim the additive service-only identity probe and per-request
+authenticated scanner client on PR107. The probe must use actual database authentication/ACL and
+return only current_user='service_role', never decode claims as authority. Keep gateway JWT on,
+fixed staging URL, no browser Origin, personal processing OFF and all quarantine/activation gates.
+Cross-role SQL/auth review and actual synthetic acceptance precede any promotion. Financial
+preparation ae1a072a is preserved/pushed on its separate branch; do not overwrite shared work.
+
 ## HOLDING — 1 November — website light-only, verified supply and settlement completion
 
 Founder corrects the legal name to Xoot Home Services and explicitly requires the public website
