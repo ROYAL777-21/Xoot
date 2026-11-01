@@ -18,12 +18,16 @@ EICAR antivirus test string. It never accepts arbitrary URLs, file bytes or prov
 An ordinary applicant/customer cannot invoke the privileged worker or forge its receipts.
 
 The new private tables enforce a non-renewing maximum of 32 attempts, one in flight, one
-per second and one terminal receipt per immutable input/policy. Each fixed fixture can run
+no faster than one per second and one terminal receipt per immutable input/policy. Each fixed fixture can run
 only once. There are no automatic retries/refills. Documents over 3 MB stay quarantined.
 The worker re-downloads the sealed private object, verifies size/type/SHA-256, and commits
 only if the original object ID/revision/fingerprint is still current. Provider errors, timeout,
 redirects, oversized or incomplete responses never produce a clean verdict. Stored provider
 evidence is a response digest and safe status fields, not document names or raw responses.
+After downloading/hash checks, a second service-only RPC rechecks the current lease and admits
+one provider dispatch. A two-second monotonic dispatch window and conservative 3.5-second
+reservation prevent ordinary delayed-start overlap; the provider has a 20-second deadline
+within a renewed 60-second lease. A delayed/expired admission never calls the provider.
 
 Personal-document processing defaults OFF and cannot be opened by the worker's database
 privileges. A reviewed forward change is required after the operator/privacy/licensing checks.
@@ -31,8 +35,8 @@ Raw KYC storage remains unreadable to browser roles. Existing authenticity, back
 training, bank, atomic MFA approval and real availability gates remain closed. Clean malware
 scanning is not an authenticity or identity-verification decision.
 
-Local evidence: 20 executed adapter/worker cases; Deno typecheck and scoped lint; actual
-PostgreSQL execution of 30 scanner assertions on the isolated quarantine fixture. These
+Local evidence: 23 executed adapter/worker cases; Deno typecheck and scoped lint; actual
+PostgreSQL execution of 35 scanner assertions on the isolated quarantine fixture. These
 include role denial, durable spend/idempotency, private-processing default, one in flight,
 changed-object refusal, immutable inputs and retained activation barriers. Hosted deployment
 and real provider integration results must be added after they occur.

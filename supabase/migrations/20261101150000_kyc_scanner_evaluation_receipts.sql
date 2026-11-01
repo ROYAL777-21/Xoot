@@ -20,7 +20,7 @@ create table private.kyc_scan_attempts (
   state text not null default 'claimed' check(state in ('claimed','clean','blocked','error')),
   reason text, response_sha256 text check(response_sha256 ~ '^[0-9a-f]{64}$'),
   malware_detected boolean not null default false,
-  created_at timestamptz not null default now(), finished_at timestamptz,
+  created_at timestamptz not null default now(), dispatched_at timestamptz, finished_at timestamptz,
   unique(document_id,policy_version), unique(fixture),
   check((document_id is not null and fixture is null and object_id is not null and
     object_updated_at is not null and storage_path is not null and sha256 is not null and sha256 ~ '^[0-9a-f]{64}$'
@@ -34,7 +34,7 @@ revoke all on private.kyc_scan_budget,private.kyc_scan_attempts from public,anon
 grant select on private.kyc_scan_budget,private.kyc_scan_attempts to service_role;
 grant update(used,active_attempt_id,lease_expires_at,next_request_at) on private.kyc_scan_budget to service_role;
 grant insert on private.kyc_scan_attempts to service_role;
-grant update(state,reason,response_sha256,malware_detected,finished_at) on private.kyc_scan_attempts to service_role;
+grant update(state,reason,response_sha256,malware_detected,dispatched_at,finished_at) on private.kyc_scan_attempts to service_role;
 
 create function public.claim_kyc_scan(p_document_id uuid default null,p_fixture text default null)
 returns jsonb language plpgsql security invoker set search_path='' as $$
@@ -74,9 +74,26 @@ begin
     values(p_document_id,p_fixture,receipt.object_id,receipt.object_updated_at,receipt.storage_path,receipt.sha256,receipt.content_type,receipt.byte_length)
     returning * into attempt;
   update private.kyc_scan_budget set used=used+1,active_attempt_id=attempt.id,
-    lease_expires_at=clock_timestamp()+interval '60 seconds',next_request_at=clock_timestamp()+interval '1 second' where id;
+    lease_expires_at=clock_timestamp()+interval '60 seconds' where id;
   return jsonb_build_object('state','claimed','cached',false,'attemptId',attempt.id,'fixture',attempt.fixture,
     'storagePath',attempt.storage_path,'sha256',attempt.sha256,'contentType',attempt.content_type,'byteLength',attempt.byte_length);
+end $$;
+
+-- Re-admit immediately BEFORE provider dispatch, after downloading/verifying the private input.
+-- A two-second client dispatch window plus a 3.5-second slot preserves >1s provider spacing.
+create function public.authorize_kyc_scan_dispatch(p_attempt_id uuid)
+returns jsonb language plpgsql security invoker set search_path='' as $$
+declare budget private.kyc_scan_budget%rowtype; attempt private.kyc_scan_attempts%rowtype;
+begin
+  select * into budget from private.kyc_scan_budget where id for update;
+  select * into attempt from private.kyc_scan_attempts where id=p_attempt_id for update;
+  if not found or attempt.state<>'claimed' or attempt.dispatched_at is not null
+    or budget.active_attempt_id is distinct from p_attempt_id or budget.lease_expires_at<=clock_timestamp()
+    or budget.next_request_at>clock_timestamp() then return jsonb_build_object('authorized',false);end if;
+  update private.kyc_scan_attempts set dispatched_at=clock_timestamp() where id=p_attempt_id;
+  update private.kyc_scan_budget set lease_expires_at=clock_timestamp()+interval '60 seconds',
+    next_request_at=clock_timestamp()+interval '3.5 seconds' where id;
+  return jsonb_build_object('authorized',true);
 end $$;
 
 create function public.finish_kyc_scan(p_attempt_id uuid,p_verdict text,p_reason text,p_response_sha256 text,
@@ -97,6 +114,8 @@ begin
     'attemptId',attempt.id,'cached',true,'malwareDetected',attempt.malware_detected);end if;
   if budget.active_attempt_id is distinct from attempt.id or budget.lease_expires_at<clock_timestamp() then
     final_verdict:='error';final_reason:='scan_lease_expired';
+  elsif p_verdict in ('clean','blocked') and attempt.dispatched_at is null then
+    final_verdict:='error';final_reason:='provider_dispatch_required';
   elsif attempt.document_id is not null then
     select exists(select 1 from private.kyc_quarantine_receipts r
       join public.xooter_documents d on d.id=r.document_id and d.user_id=r.user_id and d.application_id=r.application_id
@@ -117,8 +136,10 @@ begin
     'malwareDetected',coalesce(p_malware_detected,false));
 end $$;
 revoke all on function public.claim_kyc_scan(uuid,text) from public,anon,authenticated;
+revoke all on function public.authorize_kyc_scan_dispatch(uuid) from public,anon,authenticated;
 revoke all on function public.finish_kyc_scan(uuid,text,text,text,text,boolean) from public,anon,authenticated;
 grant execute on function public.claim_kyc_scan(uuid,text) to service_role;
+grant execute on function public.authorize_kyc_scan_dispatch(uuid) to service_role;
 grant execute on function public.finish_kyc_scan(uuid,text,text,text,text,boolean) to service_role;
 comment on table private.kyc_scan_attempts is
   'Private immutable-input malware receipts. A clean verdict is never identity, background, bank, training or availability clearance.';

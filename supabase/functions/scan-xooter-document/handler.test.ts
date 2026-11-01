@@ -12,7 +12,7 @@ const request=(body:unknown, headers:Record<string,string>={Authorization:"Beare
   new Request("https://test.invalid/scan",{method:"POST",headers,body:JSON.stringify(body)});
 function harness() {
   const rpc=vi.fn(async (name:string,input:Record<string,unknown>)=>({data:name==="claim_kyc_scan"
-    ? {state:"claimed",cached:false,attemptId:id,fixture:"eicar"}
+    ? {state:"claimed",cached:false,attemptId:id,fixture:"eicar"} : name==="authorize_kyc_scan_dispatch" ? {authorized:true}
     : {state:input.p_verdict,reason:input.p_reason,attemptId:id,malwareDetected:input.p_malware_detected},error:null}));
   const download=vi.fn();
   const provider=vi.fn(async()=>new Response(JSON.stringify({CleanResult:false,FoundViruses:[{VirusName:"EICAR",FileName:"generic"}]}),
@@ -44,9 +44,24 @@ describe("privileged scanner boundary",()=>{
     const h=harness();const result=await (await h.run(request({fixture:"eicar"}))).json();
     expect(result).toMatchObject({state:"blocked",malwareDetected:true});
     expect(h.provider).toHaveBeenCalledTimes(1);
-    expect(h.rpc.mock.calls[1]).toEqual(["finish_kyc_scan",expect.objectContaining({p_attempt_id:id,p_verdict:"blocked",
+    expect(h.rpc.mock.calls[2]).toEqual(["finish_kyc_scan",expect.objectContaining({p_attempt_id:id,p_verdict:"blocked",
       p_response_sha256:expect.stringMatching(/^[a-f0-9]{64}$/),p_malware_detected:true})]);
     expect(JSON.stringify(result)).not.toMatch(/synthetic-provider-key|EICAR|FileName|storagePath/);
+  });
+  it("does not dispatch a stale or already-dispatched claim",async()=>{
+    const h=harness();
+    h.rpc.mockImplementation(async(name:string,input:Record<string,unknown>)=>({data:name==="claim_kyc_scan"
+      ? {state:"claimed",cached:false,attemptId:id,fixture:"eicar"} : name==="authorize_kyc_scan_dispatch" ? {authorized:false}
+      : {state:input.p_verdict,reason:input.p_reason,attemptId:id},error:null}));
+    expect((await(await h.run(request({fixture:"eicar"}))).json()).state).toBe("error");
+    expect(h.provider).not.toHaveBeenCalled();
+  });
+  it("refuses an admission response delayed beyond its provider dispatch window",async()=>{
+    const h=harness();const clock=vi.spyOn(performance,"now").mockReturnValueOnce(0).mockReturnValue(2001);
+    try {
+      expect((await(await h.run(request({fixture:"eicar"}))).json()).reason).toBe("dispatch_window_expired");
+      expect(h.provider).not.toHaveBeenCalled();
+    } finally {clock.mockRestore();}
   });
   it("rejects changed bytes before sending any identity document to the provider",async()=>{
     const h=harness();const fixture=syntheticScanFixture("clean_pdf");

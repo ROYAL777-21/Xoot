@@ -39,6 +39,7 @@ export function parseScanVerdict(value: unknown): ScanVerdict {
 export async function scanDocument(
   bytes: Uint8Array, contentType: string, apiKey: string,
   request: typeof fetch = fetch,
+  canDispatch: () => boolean = () => true,
 ): Promise<ScanVerdict> {
   if (!apiKey || apiKey.length > 1024 || /[\r\n]/.test(apiKey)) return { verdict: "error", reason: "key_unavailable" };
   if (!bytes.length || bytes.length > MAX_SCAN_BYTES) return { verdict: "error", reason: "scan_size_limit" };
@@ -55,6 +56,7 @@ export async function scanDocument(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20_000);
   try {
+    if (!canDispatch()) return { verdict: "error", reason: "dispatch_window_expired" };
     const response = await request(CLOUDMERSIVE_SCAN_URL, { method: "POST", headers, body: form,
       redirect: "error", signal: controller.signal });
     if (response.status !== 200 || !response.headers.get("content-type")?.toLowerCase().includes("application/json") ||

@@ -87,7 +87,10 @@ export function createScanHandler(config: Configuration, store: Store, request: 
         const inspected=await inspectDocumentBytes(bytes,contentType,claim.storagePath);observedSha=inspected.sha256;
         if(observedSha!==claim.sha256) throw new Error("object_changed");
       }
-      verdict=await scanDocument(bytes,contentType,config.apiKey,request);
+      const dispatchStarted=performance.now();
+      const admitted=await store.rpc("authorize_kyc_scan_dispatch",{p_attempt_id:claim.attemptId});
+      if(admitted.error || record(admitted.data)?.authorized!==true) verdict={verdict:"error",reason:"provider_dispatch_unavailable"};
+      else verdict=await scanDocument(bytes,contentType,config.apiKey,request,()=>performance.now()-dispatchStarted<=2000);
     } catch { /* Fail closed; never return file paths, identity fields or provider errors. */ }
     const finished=await store.rpc("finish_kyc_scan",{p_attempt_id:claim.attemptId,p_verdict:verdict.verdict,
       p_reason:verdict.reason,p_response_sha256:verdict.responseSha256??null,p_observed_sha256:observedSha,

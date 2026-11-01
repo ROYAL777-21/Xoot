@@ -57,4 +57,10 @@ describe("private Cloudmersive scanning", () => {
       expect((await scanDocument(file, "application/pdf", "synthetic", async () => response)).verdict).toBe("error");
     }
   });
+  it("never invokes fetch after the worker's dispatch window expires",async()=>{
+    const request=vi.fn();
+    expect(await scanDocument(file,"application/pdf","synthetic",request,()=>false))
+      .toEqual({verdict:"error",reason:"dispatch_window_expired"});
+    expect(request).not.toHaveBeenCalled();
+  });
 });
