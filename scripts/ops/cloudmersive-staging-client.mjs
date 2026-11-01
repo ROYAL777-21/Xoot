@@ -8,6 +8,27 @@ export function hasExpectedServiceTransportShape(value) {
     return claims.role === "service_role" && claims.ref === STAGING_SCANNER_PROJECT;
   } catch { return false; }
 }
+
+/** Official read-only Management API avoids Go/TypeScript CLI reveal-flag differences. */
+export async function readStagingServiceTransport(accessToken, request = fetch) {
+  if (typeof accessToken !== "string" || !accessToken.startsWith("sbp_")) throw new Error("credential_transport_token_missing");
+  let response;
+  try {
+    response = await request("https://api.supabase.com/v1/projects/fxmxyabdjqviqbcxmvlp/api-keys?reveal=true", {
+      headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" }, redirect: "error", signal: AbortSignal.timeout(15000),
+    });
+  } catch { throw new Error("credential_transport_unavailable"); }
+  if (response.status !== 200) {
+    await response.body?.cancel();
+    throw new Error(response.status === 401 || response.status === 403 ? "credential_transport_access_denied" : "credential_transport_unavailable");
+  }
+  let keys;
+  try { keys = await response.json(); } catch { throw new Error("credential_transport_invalid_response"); }
+  const candidates = Array.isArray(keys) ? keys.filter(item => item && item.name === "service_role" && item.disabled !== true) : [];
+  const key = candidates.length === 1 ? candidates[0].api_key : null;
+  if (!hasExpectedServiceTransportShape(key)) throw new Error("credential_transport_invalid_response");
+  return key;
+}
 const states = new Set(["claimed", "held", "clean", "blocked", "error"]);
 const reasons = new Set([
   "method_not_allowed", "unauthorized", "server_worker_required", "evaluation_staging_only", "scanner_not_configured",

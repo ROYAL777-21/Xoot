@@ -50,9 +50,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - uses: supabase/setup-cli@v1
-        with:
-          version: 2.113.0
       - name: Verify fixture transport and evidence redaction before using credentials
         run: node --test scripts/ops/cloudmersive-staging-client.test.mjs
       - name: Check the privileged staging worker using fixed synthetic fixtures

@@ -1,20 +1,13 @@
 // Manual, synthetic-only integration check. Credentials stay in memory; output is allowlisted.
-import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
-import { hasExpectedServiceTransportShape, invokeFixedStagingFixture, isExpectedStagingResult, STAGING_SCANNER_PROJECT as project, STAGING_SCANNER_URL as target } from "./cloudmersive-staging-client.mjs";
+import { invokeFixedStagingFixture, isExpectedStagingResult, readStagingServiceTransport, STAGING_SCANNER_PROJECT as project, STAGING_SCANNER_URL as target } from "./cloudmersive-staging-client.mjs";
 let key;
 try {
-  const raw = execFileSync("supabase", ["projects", "api-keys", "--project-ref", project, "--reveal", "--output", "json"],
-    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 30000 });
-  const parsed = JSON.parse(raw);
-  const keys = Array.isArray(parsed) ? parsed : parsed.api_keys ?? parsed.keys ?? [];
-  key = keys.find(item => item.name === "service_role" || item.type === "service_role")?.api_key;
-} catch {
-  console.error("The configured staging credential transport is unavailable. No credential output was retained.");
-  process.exit(1);
-}
-if (!hasExpectedServiceTransportShape(key)) {
-  console.error("The staging service transport is missing, redacted or has an unexpected project/role. No credential output was retained.");
+  key = await readStagingServiceTransport(process.env.SUPABASE_ACCESS_TOKEN);
+} catch (error) {
+  const reason = error instanceof Error && ["credential_transport_token_missing", "credential_transport_unavailable",
+    "credential_transport_access_denied", "credential_transport_invalid_response"].includes(error.message) ? error.message : "credential_transport_unavailable";
+  console.error(reason);
   process.exit(1);
 }
 const evidence = { project, environment: "staging", syntheticOnly: true, at: new Date().toISOString(), anonymous: null, results: [] };

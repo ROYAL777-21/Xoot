@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { hasExpectedServiceTransportShape, invokeFixedStagingFixture, isExpectedStagingResult, projectStagingScanResult, STAGING_SCANNER_URL } from "./cloudmersive-staging-client.mjs";
+import { hasExpectedServiceTransportShape, invokeFixedStagingFixture, isExpectedStagingResult, projectStagingScanResult, readStagingServiceTransport, STAGING_SCANNER_URL } from "./cloudmersive-staging-client.mjs";
 test("remote error/object/secret values cannot become logged evidence", () => {
   const source = { state: { key: "synthetic-secret" }, reason: "synthetic-secret", attemptId: ["synthetic-secret"],
     cached: "true", malwareDetected: { token: "synthetic-secret" }, arbitrary: "synthetic-secret" };
@@ -54,4 +54,22 @@ test("masked, malformed, customer and wrong-project transport values stop before
     shape({ role: "service_role", ref: "different-project" })]) assert.equal(hasExpectedServiceTransportShape(value), false);
   // This is deliberately not signature verification and grants no access to the hosted worker.
   assert.equal(hasExpectedServiceTransportShape(shape({ role: "service_role", ref: "fxmxyabdjqviqbcxmvlp" })), true);
+});
+test("Management transport is the literal staging endpoint, rejects redirects and returns only the service transport", async () => {
+  const key = `synthetic.${Buffer.from(JSON.stringify({ role: "service_role", ref: "fxmxyabdjqviqbcxmvlp" })).toString("base64url")}.synthetic`;
+  let captured;
+  const result = await readStagingServiceTransport("sbp_synthetic_only", async (url, init) => {
+    captured = { url, init };
+    return new Response(JSON.stringify([{ name: "anon", api_key: "irrelevant" }, { name: "service_role", type: "legacy", api_key: key }]),
+      { headers: { "Content-Type": "application/json" } });
+  });
+  assert.equal(captured.url, "https://api.supabase.com/v1/projects/fxmxyabdjqviqbcxmvlp/api-keys?reveal=true");
+  assert.equal(captured.init.redirect, "error");
+  assert.equal(result, key);
+});
+test("Management denial and malformed results never return provider/credential error contents", async () => {
+  await assert.rejects(readStagingServiceTransport("sbp_synthetic_only", async () => new Response("synthetic-private-error", { status: 403 })),
+    error => error.message === "credential_transport_access_denied");
+  await assert.rejects(readStagingServiceTransport("sbp_synthetic_only", async () => new Response("{}", { headers: { "Content-Type": "application/json" } })),
+    error => error.message === "credential_transport_invalid_response");
 });
