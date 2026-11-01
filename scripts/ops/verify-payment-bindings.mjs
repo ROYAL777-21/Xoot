@@ -11,7 +11,7 @@ const cancellation = await read('supabase/migrations/20261028125915_atomic_booki
 const lockPrefix = cancellation.split('create table private.booking_cancellations (')[0];
 assert.ok(lockPrefix.length > 10_000 && lockPrefix.length < cancellation.length,'Exact later booking settlement prefix found');
 const foundation = await read('supabase/migrations/20260929055022_booking_benefit_account_guards.sql');
-const migration = await read('supabase/migrations/20261101223000_payfast_cross_kind_transaction_bindings.sql');
+const migration = await read('supabase/migrations/20261101223314_payfast_cross_kind_transaction_bindings.sql');
 const contract = await read('scripts/testing/payment-binding-contract.sql');
 const assertionCount = (contract.match(/select public\.(?:assert_binding|expect_binding_error)\(/g)||[]).length;
 for (const accountFoundation of [false,true]) {

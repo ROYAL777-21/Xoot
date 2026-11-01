@@ -1,5 +1,16 @@
 # Agent worklog
 
+## DELIVERY — 2 November — retain actual payment-binding staging version
+
+Combined scanner source with the separate financial branch, preserving both worklog entries and
+both sets of SQL CI steps. Renamed only the reviewed financial SQL file to actual hosted version
+20261101223314 and updated its test runner. Body remains byte-identical after LF normalization
+to1a88edba, SHA256c28afcc69842ac71db3a5866cba6dcd69c8b4544f74474c79bcfb7f27af457e1,
+matching actual hosted executed history. Fresh staging readback:1receipt/1binding/0mismatch,
+enabled guard, no ordinary reads/direct service mutation/binder grant; all money controlsfalse.
+No production financial migration, new payment or full Care+ settlement is claimed. Receipt
+transport remains unimported preparation until its actual coordinated membership RPC exists.
+
 ## HOLDING — 2 November — closed production scanner schema preparation
 
 Genuine v2 PDF6fe9a8a1-b562-4261-84a6-b7743d8bbaec is clean; EICARe7f4efd0-1184-473b-8cf3-9143d4cb436d

@@ -1,0 +1,52 @@
+{
+  "kind": "actual-staging-private-payfast-transaction-binding-delivery",
+  "project": "fxmxyabdjqviqbcxmvlp",
+  "localEvidenceDate": "2026-11-02",
+  "reviewedSource": "1a88edba048ea56f1cc6ba0993cc8d36034e4ee9",
+  "sourceSqlSha256": "c28afcc69842ac71db3a5866cba6dcd69c8b4544f74474c79bcfb7f27af457e1",
+  "acl": {
+    "anon_read": false,
+    "service_bind": false,
+    "service_delete": false,
+    "service_insert": false,
+    "service_select": true,
+    "service_update": false,
+    "authenticated_read": false
+  },
+  "trigger": {
+    "enabled": "O",
+    "function": "private.guard_booking_payfast_binding()"
+  },
+  "wrapper": {
+    "name": "payfast_cross_kind_transaction_bindings",
+    "version": "20261101223314",
+    "executed_sha256": "c28afcc69842ac71db3a5866cba6dcd69c8b4544f74474c79bcfb7f27af457e1",
+    "statement_count": 1
+  },
+  "bindings": 1,
+  "controls": [
+    {
+      "key": "payments.provider_checkout",
+      "enabled": false,
+      "environment": "all"
+    },
+    {
+      "key": "payouts.enabled",
+      "enabled": false,
+      "environment": "all"
+    },
+    {
+      "key": "payments.hosted_checkout.payfast",
+      "enabled": false,
+      "environment": "all"
+    }
+  ],
+  "receipts": 1,
+  "mismatches": 0,
+  "productionApplied": false,
+  "newPaymentCreated": false,
+  "fullMembershipSettlementImplemented": false,
+  "localSqlAssertions": 96,
+  "actualConcurrentSessionsTested": false,
+  "genuineNormalJwtAndProviderAcceptanceForThisChange": false
+}

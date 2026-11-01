@@ -8,7 +8,7 @@ been enabled by this patch.
 
 ## Shared provider transaction boundary
 
-`20261101223000_payfast_cross_kind_transaction_bindings.sql` adds a private, immutable
+`20261101223314_payfast_cross_kind_transaction_bindings.sql` adds a private, immutable
 transaction-to-payment binding used by the current booking receipt trigger. A valid payment/event
 binding must match payment kind, exact cents, reference and `payfast:<transaction>` event identity.
 The existing signature, merchant, amount and PayFast server-postback checks remain the upstream
@@ -71,8 +71,16 @@ It validates complete owner/plan/subscription/result bindings and only retries w
 or deadlock aborts. It cannot create membership or grant credit. Its target membership RPC is
 not present live yet; release/schema guards must keep that distinction visible.
 
-No production application/schema deployment is claimed here. Cross-role review, real staging
-delivery and current release gates remain required before a production migration or bundle change.
+The independently reviewed SQL from1a88edba is actually applied to staging as20261101223314.
+The source file is renamed to that actual version without changing its SQL body; normalized
+source and executed-history SHA-256 both equal
+c28afcc69842ac71db3a5866cba6dcd69c8b4544f74474c79bcfb7f27af457e1.
+Readback finds1existing canonical booking receipt and1private binding,0mismatches, the enabled
+guard trigger and the intended ACLs. Ordinary users cannot read it; service role cannot directly
+insert/update/delete or invoke the private binder. All checkout/payout controls remainfalse.
+See [staging readback](evidence/2026-11-02/payfast-binding-staging.json). No new provider payment,
+membership or payout was created by delivery. Production financial DDL is still unapplied.
+Current release gates remain required before a production migration or bundle change.
 Weekly beneficiary payouts, a priced/supported instant cash-out, gift balances/refunds and Rewards
 redemption remain separate money contracts. Reward12then24additional cleans does not itself
 waive the R39 booking fee or create Care+ membership.
