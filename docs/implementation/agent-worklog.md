@@ -1,5 +1,22 @@
 # Agent worklog
 
+## HOLDING — 2 November — closed production scanner schema preparation
+
+Genuine v2 PDF6fe9a8a1-b562-4261-84a6-b7743d8bbaec is clean; EICARe7f4efd0-1184-473b-8cf3-9143d4cb436d
+is blocked with a positive structured malware finding. Worker4/fivefiles match reviewede0830d98;
+actual v2 migration20261101221814. Original v1 aggregate2a5b0a3bc7de042cb6b67fae87f840bf unchanged.
+Cached HTTP retry keeps used4/32, personalfalse. Temporary request key fields cleared. Evidence
+is docs/release/evidence/2026-11-02/scanner-staging.json.41unit/64SQL+rollback and9transport pass.
+
+Claim a reviewed, atomic production schema convergence for the THREE actually rehearsed source
+versions only, with executed-SQL hashes and canonical history inserted only after their DDL runs
+in the same statement. Production preflight finds no scanner objects and retains all4raw Storage
+guards/3activation interlocks. Rehearse clean delivery, retry/spend preservation and failure
+rollback before cross-review/application. Regenerate types from the actual production schema;
+never hand-declare missing RPCs or weaken the release guard. No production key, worker/provider
+activation or personal-document processing is included. Licensing/DPA/region/applicant consent
+and legitimate verification remain separate requirements. Preserve approved website7a81f0f1.
+
 ## HOLDING — 2 November — preserve scanner evidence and version response compatibility
 
 Authority migration applied as actual20261101220212 and worker3 deployed with JWT retained;
