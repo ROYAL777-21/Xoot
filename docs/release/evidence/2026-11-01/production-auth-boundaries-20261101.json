@@ -1,0 +1,77 @@
+{
+  "observedAt": "2026-11-01T11:09:39.561Z",
+  "project": "mvlrkelahhsyjrwgsxaf",
+  "sourceCommit": "db0c5cc9ce8bdbb792aaed9e0db8c2a8e65db3b3",
+  "checks": [
+    {
+      "name": "create-booking",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "create-booking-request",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "cancel-booking",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "ops-workflow",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "get-booking-quote",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "check-service-coverage",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "xoot-job-location",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "xooter-job-checklist",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "calendar-subscription",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "submit-xooter-application",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "twilio-token",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "twilio-conversation",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "admin-confirm-payment",
+      "status": 401,
+      "denied": true
+    },
+    {
+      "name": "public-address-disallowed-origin",
+      "status": 403,
+      "denied": true
+    }
+  ]
+}

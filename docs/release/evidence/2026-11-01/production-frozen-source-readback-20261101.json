@@ -1,0 +1,582 @@
+{
+  "sourceCommit": "db0c5cc9ce8bdbb792aaed9e0db8c2a8e65db3b3",
+  "observedAt": "2026-11-01T11:04:54.954Z",
+  "rows": [
+    {
+      "function": "create-booking",
+      "version": 22,
+      "file": "supabase/functions/create-booking/index.ts",
+      "actualSha256": "e561e7379c549e4a9e647c6adb7621415ba0102efd55b7958d90194c660cca32",
+      "sourceSha256": "e561e7379c549e4a9e647c6adb7621415ba0102efd55b7958d90194c660cca32",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking",
+      "version": 22,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking",
+      "version": 22,
+      "file": "supabase/functions/_shared/verified-coverage.ts",
+      "actualSha256": "ea49893f7265399b945b24915eeb3330e972cc91ece5de7d9b4940deea2af491",
+      "sourceSha256": "ea49893f7265399b945b24915eeb3330e972cc91ece5de7d9b4940deea2af491",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking",
+      "version": 22,
+      "file": "supabase/functions/_shared/geo-coverage.ts",
+      "actualSha256": "44ecb37a25d2d657c0938a7fcdbf007b82b0239eaf7eb3a29596472918e190f5",
+      "sourceSha256": "44ecb37a25d2d657c0938a7fcdbf007b82b0239eaf7eb3a29596472918e190f5",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking",
+      "version": 22,
+      "file": "supabase/functions/_shared/referrals.ts",
+      "actualSha256": "ab23ec82ffe7751bda7b82f81dcc96d93dcbf2098d4ad9cdc1af7b7d227def2c",
+      "sourceSha256": "ab23ec82ffe7751bda7b82f81dcc96d93dcbf2098d4ad9cdc1af7b7d227def2c",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking",
+      "version": 22,
+      "file": "supabase/functions/_shared/pricing.ts",
+      "actualSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "sourceSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking",
+      "version": 22,
+      "file": "supabase/functions/_shared/care-plus-membership.ts",
+      "actualSha256": "265a3d6f6df95efc30c6a4c56db59d04d63c055279d6cd88a81f8455cc58449c",
+      "sourceSha256": "265a3d6f6df95efc30c6a4c56db59d04d63c055279d6cd88a81f8455cc58449c",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking",
+      "version": 22,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    },
+    {
+      "function": "create-booking-request",
+      "version": 19,
+      "file": "supabase/functions/create-booking-request/index.ts",
+      "actualSha256": "0a8005975bcd3bd9ac55daffce89497e939cbbfaedfe337aeeb02d8b4f52729a",
+      "sourceSha256": "0a8005975bcd3bd9ac55daffce89497e939cbbfaedfe337aeeb02d8b4f52729a",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking-request",
+      "version": 19,
+      "file": "supabase/functions/_shared/email-playbook.ts",
+      "actualSha256": "ee3ca7ebb8f8ce98ed79c562cff79dc72084c377db371affdeb3be49d11b3416",
+      "sourceSha256": "ee3ca7ebb8f8ce98ed79c562cff79dc72084c377db371affdeb3be49d11b3416",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking-request",
+      "version": 19,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking-request",
+      "version": 19,
+      "file": "supabase/functions/_shared/verified-coverage.ts",
+      "actualSha256": "ea49893f7265399b945b24915eeb3330e972cc91ece5de7d9b4940deea2af491",
+      "sourceSha256": "ea49893f7265399b945b24915eeb3330e972cc91ece5de7d9b4940deea2af491",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking-request",
+      "version": 19,
+      "file": "supabase/functions/_shared/geo-coverage.ts",
+      "actualSha256": "44ecb37a25d2d657c0938a7fcdbf007b82b0239eaf7eb3a29596472918e190f5",
+      "sourceSha256": "44ecb37a25d2d657c0938a7fcdbf007b82b0239eaf7eb3a29596472918e190f5",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking-request",
+      "version": 19,
+      "file": "supabase/functions/_shared/pricing.ts",
+      "actualSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "sourceSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking-request",
+      "version": 19,
+      "file": "supabase/functions/_shared/care-plus-membership.ts",
+      "actualSha256": "265a3d6f6df95efc30c6a4c56db59d04d63c055279d6cd88a81f8455cc58449c",
+      "sourceSha256": "265a3d6f6df95efc30c6a4c56db59d04d63c055279d6cd88a81f8455cc58449c",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "create-booking-request",
+      "version": 19,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/get-booking-quote/index.ts",
+      "actualSha256": "60b070f07a0f2234a208b6a9995331c06cfc98ce1f9f23f71dfb0fb2c7d26084",
+      "sourceSha256": "60b070f07a0f2234a208b6a9995331c06cfc98ce1f9f23f71dfb0fb2c7d26084",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/_shared/governance-utils.ts",
+      "actualSha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981",
+      "sourceSha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/_shared/booking-quote-facts.ts",
+      "actualSha256": "2d76fb6518faae7b3c240e659d8fe03b95541bd10360e4c61e8ff5c2ea262289",
+      "sourceSha256": "2d76fb6518faae7b3c240e659d8fe03b95541bd10360e4c61e8ff5c2ea262289",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/_shared/booking-quote-handler.ts",
+      "actualSha256": "4ee1ef15832060ddfb63fdb8bfed06403da450152283d62a839ed879bf1fb8ae",
+      "sourceSha256": "4ee1ef15832060ddfb63fdb8bfed06403da450152283d62a839ed879bf1fb8ae",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/_shared/booking-quote.ts",
+      "actualSha256": "4750d1397beff68da18a1cabcedca6f57c4071798b3dbcdf4c5d609b001580b2",
+      "sourceSha256": "4750d1397beff68da18a1cabcedca6f57c4071798b3dbcdf4c5d609b001580b2",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/_shared/pricing.ts",
+      "actualSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "sourceSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/_shared/referrals.ts",
+      "actualSha256": "ab23ec82ffe7751bda7b82f81dcc96d93dcbf2098d4ad9cdc1af7b7d227def2c",
+      "sourceSha256": "ab23ec82ffe7751bda7b82f81dcc96d93dcbf2098d4ad9cdc1af7b7d227def2c",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/_shared/booking-contract.ts",
+      "actualSha256": "e67d909cfc1ffbf1c50a1511da01d7b765fa883c00b5f7a3e524c2b5e74a70d9",
+      "sourceSha256": "e67d909cfc1ffbf1c50a1511da01d7b765fa883c00b5f7a3e524c2b5e74a70d9",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "get-booking-quote",
+      "version": 1,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    },
+    {
+      "function": "ops-workflow",
+      "version": 20,
+      "file": "supabase/functions/ops-workflow/index.ts",
+      "actualSha256": "f83c38a279684b8dad08a4463c94151e6be8eaa81761a1a10fdb58e8f293c969",
+      "sourceSha256": "f83c38a279684b8dad08a4463c94151e6be8eaa81761a1a10fdb58e8f293c969",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "ops-workflow",
+      "version": 20,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "ops-workflow",
+      "version": 20,
+      "file": "supabase/functions/_shared/booking-state-machine.ts",
+      "actualSha256": "1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7",
+      "sourceSha256": "1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "ops-workflow",
+      "version": 20,
+      "file": "supabase/functions/_shared/governance-utils.ts",
+      "actualSha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981",
+      "sourceSha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "ops-workflow",
+      "version": 20,
+      "file": "supabase/functions/_shared/gift-order.ts",
+      "actualSha256": "676970977e68777ba8937c0e3b4379171e4944cd8e803aef6a1dd322113ec688",
+      "sourceSha256": "676970977e68777ba8937c0e3b4379171e4944cd8e803aef6a1dd322113ec688",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "ops-workflow",
+      "version": 20,
+      "file": "supabase/functions/_shared/pricing.ts",
+      "actualSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "sourceSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "ops-workflow",
+      "version": 20,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    },
+    {
+      "function": "respond-xooter-job",
+      "version": 5,
+      "file": "supabase/functions/respond-xooter-job/index.ts",
+      "actualSha256": "ac6e56820d12ca3cc7c894b51e427a0b5f6047aec6429128835acfbd82247456",
+      "sourceSha256": "ac6e56820d12ca3cc7c894b51e427a0b5f6047aec6429128835acfbd82247456",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "respond-xooter-job",
+      "version": 5,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "respond-xooter-job",
+      "version": 5,
+      "file": "supabase/functions/_shared/pricing.ts",
+      "actualSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "sourceSha256": "a30cf7b854ba5b8923a0adebb1a642507d448fa427411a0eca5ba9114b93c349",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "respond-xooter-job",
+      "version": 5,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    },
+    {
+      "function": "confirm-payment",
+      "version": 19,
+      "file": "supabase/functions/confirm-payment/index.ts",
+      "actualSha256": "4b8bf80067c683e805ad93e6a04de2cd6cc3620bdbe8c8189ad089de476f745d",
+      "sourceSha256": "4b8bf80067c683e805ad93e6a04de2cd6cc3620bdbe8c8189ad089de476f745d",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "confirm-payment",
+      "version": 19,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "confirm-payment",
+      "version": 19,
+      "file": "supabase/functions/_shared/governance-utils.ts",
+      "actualSha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981",
+      "sourceSha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "confirm-payment",
+      "version": 19,
+      "file": "supabase/functions/_shared/payment-confirmation.ts",
+      "actualSha256": "c853de537d9aeaf8722583037cec67994fc69698c70dc98935a9d03ce6868ba2",
+      "sourceSha256": "c853de537d9aeaf8722583037cec67994fc69698c70dc98935a9d03ce6868ba2",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "confirm-payment",
+      "version": 19,
+      "file": "supabase/functions/_shared/booking-state-machine.ts",
+      "actualSha256": "1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7",
+      "sourceSha256": "1c32d6611c52f7705070a929c452b2a6702c5ea0167bd7e7212dfc5d1ac743c7",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "confirm-payment",
+      "version": 19,
+      "file": "supabase/functions/_shared/payfast.ts",
+      "actualSha256": "c4ab8134c5a468a286a37e3dfdd29209bfc9c5d9cd8925e87ce3305742a3d509",
+      "sourceSha256": "c4ab8134c5a468a286a37e3dfdd29209bfc9c5d9cd8925e87ce3305742a3d509",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "confirm-payment",
+      "version": 19,
+      "file": "supabase/functions/_shared/payfast-checkout.ts",
+      "actualSha256": "71b56b3c1afa87af7f853d8a2f9a7c497aae07edc1fb799da58193042aadbe1f",
+      "sourceSha256": "71b56b3c1afa87af7f853d8a2f9a7c497aae07edc1fb799da58193042aadbe1f",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "confirm-payment",
+      "version": 19,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    },
+    {
+      "function": "search-addresses",
+      "version": 1,
+      "file": "supabase/functions/search-addresses/index.ts",
+      "actualSha256": "978435d16383db7cb3d11506a78859a6910dd580ec698e84b551a407f88f5089",
+      "sourceSha256": "978435d16383db7cb3d11506a78859a6910dd580ec698e84b551a407f88f5089",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "search-addresses",
+      "version": 1,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "search-addresses",
+      "version": 1,
+      "file": "supabase/functions/search-addresses/search.ts",
+      "actualSha256": "721f8fbfe36dcd91111c1b477fddbb59d9d47a7ed5235496a4386abb0aa590f6",
+      "sourceSha256": "721f8fbfe36dcd91111c1b477fddbb59d9d47a7ed5235496a4386abb0aa590f6",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "search-addresses",
+      "version": 1,
+      "file": "supabase/functions/search-addresses/handler.ts",
+      "actualSha256": "198ae60f015783a66b26e6c9b579e1d1464e965274056ffbb9320374550418c9",
+      "sourceSha256": "198ae60f015783a66b26e6c9b579e1d1464e965274056ffbb9320374550418c9",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "search-addresses",
+      "version": 1,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    },
+    {
+      "function": "xoot-job-location",
+      "version": 1,
+      "file": "supabase/functions/xoot-job-location/index.ts",
+      "actualSha256": "956a94f2188377b09380dc6be43d232ed1b7ecbccf14239b6c3a1790bb0ee098",
+      "sourceSha256": "956a94f2188377b09380dc6be43d232ed1b7ecbccf14239b6c3a1790bb0ee098",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "xoot-job-location",
+      "version": 1,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "xoot-job-location",
+      "version": 1,
+      "file": "supabase/functions/_shared/live-dispatch.ts",
+      "actualSha256": "564b6dd06d8664911243ffec47b12509f81631ad727cb6c45723c3e7c3bdb963",
+      "sourceSha256": "564b6dd06d8664911243ffec47b12509f81631ad727cb6c45723c3e7c3bdb963",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "xoot-job-location",
+      "version": 1,
+      "file": "supabase/functions/_shared/job-route.ts",
+      "actualSha256": "fbdb6ac6d6d6d9b607d8a6af3cd98f0bfec10f110d9d1f9ebd3be8eebd6ee688",
+      "sourceSha256": "fbdb6ac6d6d6d9b607d8a6af3cd98f0bfec10f110d9d1f9ebd3be8eebd6ee688",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "xoot-job-location",
+      "version": 1,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    },
+    {
+      "function": "twilio-token",
+      "version": 19,
+      "file": "supabase/functions/twilio-token/index.ts",
+      "actualSha256": "343248338b639f7b3cdc05f545f7546cf3c8dc405482eef5d91fa459bc703df0",
+      "sourceSha256": "343248338b639f7b3cdc05f545f7546cf3c8dc405482eef5d91fa459bc703df0",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "twilio-token",
+      "version": 19,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "twilio-token",
+      "version": 19,
+      "file": "supabase/functions/_shared/governance-utils.ts",
+      "actualSha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981",
+      "sourceSha256": "5cd6deb014608c7c89f050147f0b755f7673fab3b1ea057d50288649604dc981",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "twilio-token",
+      "version": 19,
+      "file": "supabase/functions/_shared/in-app-voice.ts",
+      "actualSha256": "6fcfbb537cfa2589d1055d3d1cc2b8f1bfa08bee1a2ef382dcffcc5ed3eca60d",
+      "sourceSha256": "6fcfbb537cfa2589d1055d3d1cc2b8f1bfa08bee1a2ef382dcffcc5ed3eca60d",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "twilio-token",
+      "version": 19,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    },
+    {
+      "function": "submit-xooter-application",
+      "version": 5,
+      "file": "supabase/functions/submit-xooter-application/index.ts",
+      "actualSha256": "4060dbec3203f9d707f260fd8ac39ff25da49a751a37c10ced259bc51fb45cc9",
+      "sourceSha256": "4060dbec3203f9d707f260fd8ac39ff25da49a751a37c10ced259bc51fb45cc9",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "submit-xooter-application",
+      "version": 5,
+      "file": "supabase/functions/_shared/action-utils.ts",
+      "actualSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "sourceSha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "submit-xooter-application",
+      "version": 5,
+      "file": "supabase/functions/submit-xooter-application/document-persistence.ts",
+      "actualSha256": "49907312c9f9dcb716029f3e5642ac3d948e33667aae9b682893b9fcfc789650",
+      "sourceSha256": "49907312c9f9dcb716029f3e5642ac3d948e33667aae9b682893b9fcfc789650",
+      "matches": true,
+      "importMap": false
+    },
+    {
+      "function": "submit-xooter-application",
+      "version": 5,
+      "file": "supabase/functions/import_map.json",
+      "actualSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "sourceSha256": "5f1c69e365acfb48147f4f9c2806b4228ba91f920fc7723b25185e275bd29537",
+      "matches": true,
+      "importMap": true
+    }
+  ]
+}

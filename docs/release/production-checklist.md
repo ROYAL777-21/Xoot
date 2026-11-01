@@ -1,5 +1,58 @@
 # Xoot production checklist
 
+## 1 November 2026 — reviewed website release and customer reviews are live
+
+PR101 merged into the approved `release/xoot-production` as `db0c5cc9`. Production deployment
+`dpl_EQ9T8H8UfXeMEZpWuZmSbaay4BU4` is READY and serves `xoot.co.za`. Eight founder-confirmed
+customer review cards are visibly present with the exact supplied words, names and individual
+five-star ratings. There is no invented aggregate score or verified-booking badge. The approved
+homepage/history and unrelated PR98/99 are preserved; the v4 external bundle is not merged wholesale.
+
+The production schema gate is fixed by actual CLI-generated output, not a manual contract or
+repointed comparison. CodeQL, Semgrep, design/security, production build, artifact, lint, web/native
+typechecks and real PostgreSQL privacy/privilege jobs pass. The full web CI job passed200files/
+2052tests, with7SQL-dependent cases explicitly skipped there. A separate actual PGlite run passes
+all8cases in that file (including those7), plus gift rollback, quota isolation,20Storage groups/
+37permission refusals and54checklist groups. Live phone390/desktop1440 design and keyboard checks,
+safe real directory response and53served security/header/deep-link checks pass.
+
+Production Edge deployment run41300054078 succeeded after the matching website pricing stamp.
+All60source-managed handlers are delivered; the hosted inventory contains66including six older
+zoot-spelling aliases. All64returned files across10critical actual runtime/frozen-import bundles
+match source after newline normalization. Thirteen private endpoints deny unsigned requests401;
+public address lookup denies a foreign origin403. The six historical aliases are not used by the
+current app and first depend on removed tables/columns/RPCs. Fifteen isolated source/schema cases
+found no current nonadmin bypass or canonical mutation; these are not real production JWT tests.
+Retire these aliases explicitly; never restore their old compatibility schema beneath frozen code.
+
+The founder created and saved the production backend Mapbox token privately. Both names are
+verified, and a genuine public-address request returns4selectable suggestions followed by a
+successful Permanent confirmation. Another public address returns0results; the older private
+Sunninghill miss is still unresolved. Do not promise universal recall or weaken quality checks.
+The actual live390px UI successfully loads/selects/confirms an address, keeps focus while typing,
+dismisses suggestions and opens no interactive map, without horizontal overflow. Temporary result
+payloads are not logged/persisted. Final counters:3/200suggestions,2/20confirmations,2/20shared
+Permanent,10existing attempts reserved for authenticated coverage. No renewal/refill.
+
+Production address suggestions and private calendar controls are enabled. Preview settings retain
+their previous scopes. Calendar linking remains deliberate customer opt-in; prior genuine Google
+subscription/reschedule evidence is staging, not a production customer connection. Live journey,
+payments, payouts, voice and SOS remain held. Invoice identity is now saved as founder-confirmed
+`Xoot Home Service`, registration`2026/709372/07`; VAT registration was not invented and no paid
+production invoice was fabricated. PayFast's signed-in live dashboard still shows **Account pending
+verification** on1November. Merchant submission is not approval.
+
+Current production has0bookings,0jobs,1payment record,0active/approved Xooters and0activated service
+zones. Province geometry and address recognition must not imply verified worker supply. Actual
+ACL readback preserves no anonymous checklist SELECT, no authenticated checklist TRUNCATE and zero
+anonymous PERMISSIVE Storage policies; the four restrictive quarantine barriers remain. The
+remaining advisor warning is leaked-password protection, a Pro-and-above feature; no paid upgrade
+was made. [Supabase's plan requirement](https://supabase.com/docs/guides/auth/password-security).
+
+Redacted evidence: [production-delivery.json](evidence/2026-11-01/production-delivery.json) and
+[current remaining work](production-delivery-20261101.md). This is a deployed website milestone,
+not clearance for every requested marketplace, mobile, payment or safety feature.
+
 ## 29 October evening — schema delivered; application release underway
 
 Production schema delivery completed as actual version `20261029165622`. All 25 hosted

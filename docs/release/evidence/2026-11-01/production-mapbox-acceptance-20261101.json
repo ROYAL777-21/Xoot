@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-11-01T11:06:45.943Z",
+  "project": "mvlrkelahhsyjrwgsxaf",
+  "sourceCommit": "db0c5cc9ce8bdbb792aaed9e0db8c2a8e65db3b3",
+  "suggestion": {
+    "status": 200,
+    "cors": true,
+    "noStore": true,
+    "elapsedMs": 1959,
+    "count": 4,
+    "attributionPresent": true
+  },
+  "confirmation": {
+    "status": 200,
+    "cors": true,
+    "noStore": true,
+    "elapsedMs": 720,
+    "selectedIdMatches": true,
+    "attributionPresent": true
+  }
+}
