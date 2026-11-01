@@ -1,6 +1,14 @@
 # Xoot production checklist
 
-## 2 November — real scanner acceptance on staging; production processing remains closed
+## 2 November — real scanner acceptance; closed production schema delivered
+
+The corrected, independently reviewed scanner convergence is applied to production as actual
+20261101224523. All three executed-source hashes match the manifest. Five invoker RPCs deny
+ordinary API users and retain service-only execution; Storage RLS, four restrictive guards and
+three activation interlocks remain enforced. Production budget0/32, personal processingfalse,
+0attempts and no scanner worker deployed. Business counts and closed money controls are unchanged.
+Actual CLI2.113.0 generation supplies the five new RPC shapes; fresh full release/type checks
+are being completed before PR107 promotion. See [readback](evidence/2026-11-02/scanner-production-schema.json).
 
 Cloudmersive synthetic acceptance is now genuine: the v2 blank PDF is clean and EICAR is blocked
 with a structured positive malware finding. Worker4 retains JWT verification and all5actual
@@ -15,7 +23,9 @@ See [actual redacted receipts](evidence/2026-11-02/scanner-staging.json).
 
 Separate financial preparation adds a shared PayFast transaction replay boundary. Independent
 review caught and corrected a migration lock-upgrade risk;96SQL assertions plus backfill and
-mutation checks pass. It is not yet applied and does not complete membership, gift, payout or
+mutation checks pass. The private replay backstop is now applied to staging as20261101223314:
+1existing canonical receipt maps to1binding,0mismatches, triggerenabled and no direct API-role
+mutation access. It remains unapplied to production and does not complete membership, gift, payout or
 Rewards settlement. The earlier production website/theme/invoice delivery remains in place.
 Provider approval, licensing/privacy, genuine vetted supply and actual JWT/device/safety gates
 remain substantive release requirements.

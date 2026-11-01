@@ -23,7 +23,13 @@ owner/definer/search-path context, and exact trigger binding/type/WHEN/column/ev
 Six actual local weakening mutations now abort before DDL/history; clean/replay/spend, middle
 failure rollback and partial-history refusal still pass. Actual production baseline semantic
 readback matches: RLStrue,4exactpredicates, guard hashesd13d5c8a.../30f0061b... and3type23 bindings.
-No production DDL has been applied yet; corrected immutable cross-review is required.
+Corrected immutable6a8ede36 passed independent cross-review and was applied to production as
+actual20261101224523. Wrapper SHA256444fe05aa8df5047c4d2beea73f9f8320c4e053b1c39bff405e0feedd6f1a68a;
+all3executed source hashes and5service-only invoker RPCs read back exact. Storage/activation
+protections retained, budget0/32, personalfalse, no worker/attempts, unchanged business counts.
+Actual pinned production CLI2.113.0 run41358867443 produced a54line/4hunk diff with24additions;
+apply exactly that generator output, then require a fresh schema comparison and full release
+suite. SQL body remains immutable; rename the authored wrapper to its actual hosted version.
 
 Financial private replay backstop IS now applied to staging as actual20261101223314, after the
 corrected1a88edba review:1canonicalreceipt→1binding,0mismatches. Triggerenabled; anon/authreadfalse,

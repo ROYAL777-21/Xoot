@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFile,writeFile } from 'node:fs/promises';
-export const deliveryPath='supabase/migrations/20261102003500_closed_scanner_schema_convergence.sql';
+export const deliveryPath='supabase/migrations/20261101224523_closed_scanner_schema_convergence.sql';
 export const manifestPath='docs/release/evidence/2026-11-02/scanner-schema-manifest.json';
 const paths=['supabase/migrations/20261101155855_kyc_scanner_evaluation_receipts.sql',
   'supabase/migrations/20261101220212_kyc_scanner_service_authority.sql',
