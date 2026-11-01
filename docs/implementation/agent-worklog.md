@@ -1,5 +1,26 @@
 # Agent worklog
 
+## HOLDING — 1 November evening — atomic Care+ request and settlement
+
+Continue independent money work while the founder completes the private scanner test. Claim a
+bounded membership request/callback/reconciliation patch on feature/careplus-atomic-settlement-20261101,
+stacked on draft scannerPR107. Correctness owns the financial contract; flag Release migrations,
+deployment/types and frontend Plans changes because one transactional result must replace the
+current four breakpoints together. Existing public release7a81f0f1 and unrelated PRs are retained.
+
+Read actual subscription/payment schema and current booking callback/event/lock contracts. Prepare
+one canonical request and one receipt-backed settlement; client activation may only reconcile
+that receipt. Preserve real signed PayFast binding, current admin+AAL2 and one-time welcome-credit
+rules. Reconcile the locked opening trial explicitly; do not silently turn Join for free into an
+upfront charge. No live provider/payout flag, recurring mandate, new trial or credit will be
+enabled from a handoff claim. Reuse existing real staging identities for later acceptance.
+
+Do not confuse the reward with Care+: reward12then24additional cleans does not itself waiveR39.
+Its value cap remains a proposal. Gifts retain approved no-expiry/link/code/original-method-unused
+refund rules, but settlement and balance/reservation/refund acceptance are separate follow-up.
+Weekly payout preparation must preserve a24hdispute hold and verified beneficiaries; instant
+cash-out price/provider support remain unapproved. Do not invent a bank transfer or merchant proof.
+
 ## HOLDING — 1 November — website light-only, verified supply and settlement completion
 
 Founder corrects the legal name to Xoot Home Services and explicitly requires the public website
