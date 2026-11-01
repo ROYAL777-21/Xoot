@@ -1,5 +1,14 @@
 # Agent worklog
 
+## HOLDING — 1 November — publish confirmed reviews and finish the approved website release
+
+Founder again explicitly authorises production deployment, including genuine customer reviews.
+Claim the remaining generated-types gate, current final CI/deployment readback and exact
+production Mapbox credential handoff. Recover the complete CLI-generated GraphQL schema from
+the actual 44-line CI diff; do not invent types or weaken the schema comparison. Existing
+security/design checks at a5fe8f27 passed. Preserve the approved homepage and unrelated PRs;
+payment, payout, tracking, voice and SOS activation still require their actual acceptance.
+
 ## DELIVERY — 29 October evening — production schema and final gate repairs
 
 Founder repeated production authorisation and explicitly approved the same finite production
