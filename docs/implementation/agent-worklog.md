@@ -21,6 +21,24 @@ refund rules, but settlement and balance/reservation/refund acceptance are separ
 Weekly payout preparation must preserve a24hdispute hold and verified beneficiaries; instant
 cash-out price/provider support remain unapproved. Do not invent a bank transfer or merchant proof.
 
+First bounded financial backstop authored: immutable private PayFast transaction/payment bindings
+across kinds, current booking receipt trigger, exact payment/event identity and one-transaction
+backfill, source-table locks before receipts with5s timeout. Retain admin-first late ITNs, later
+refund/cancellation states and event-FK cleanup without releasing external transaction history.
+Actual isolated PostgreSQL runs cover both absent/present account foundations, real original+
+current booking settlement SQL, rollback, role refusals, valid/invalid backfill and a missing-guard
+mutation. This is not hosted concurrency/provider/JWT acceptance. Staging read-only preflight:
+1receipt/1bound/0unverifiable; production0/0/0. Neither project has received this DDL yet.
+Preparatory membership receipt transport has24passing cases, clean TypeScript/scoped lint and
+no runtime importer. Its membership RPC/atomic consequences/trial/credit restrictions remain
+implementation work; never call this a completed Care+ loop. Cross-role review follows the
+immutable patch before any staging/production application.
+
+Scanner owner test failed at the gateway with UNAUTHORIZED_NO_AUTH_HEADER, still0/32 attempts.
+Corrected the private dashboard request to include the legacy Authorization bearer as well as
+the worker's apikey check; fixed PDF only. Await the owner's private paste/retry. Never disable
+gateway verification or read the pasted key. No Cloudmersive/provider acceptance is fabricated.
+
 ## HOLDING — 1 November — website light-only, verified supply and settlement completion
 
 Founder corrects the legal name to Xoot Home Services and explicitly requires the public website

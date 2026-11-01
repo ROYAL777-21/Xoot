@@ -140,6 +140,9 @@ jobs:
           node scripts/ops/verify-gift-order-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/ops/verify-address-quota-isolation.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
 
+      - name: Verify cross-kind PayFast bindings and atomic booking rollback
+        run: node scripts/ops/verify-payment-bindings.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
       - name: Verify hardened storage upload paths and role isolation
         run: node scripts/ops/verify-storage-path-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
 
