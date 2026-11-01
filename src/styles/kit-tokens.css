@@ -294,7 +294,9 @@
   --xoot-xp: var(--xoot-petal-500);
 }
 
-[data-theme="dark"] {
+/* next-themes applies .dark before paint; the original handoff uses data-theme. */
+[data-theme="dark"],
+:root.dark {
   --xoot-action-brand: var(--xoot-violet-400);
   --xoot-action-brand-hover: var(--xoot-violet-300);
   --xoot-action-brand-press: var(--xoot-violet-500);

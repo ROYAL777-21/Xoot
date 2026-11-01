@@ -49,18 +49,6 @@ const trustIncidentTypes = new Set([
   "support_escalation",
 ]);
 
-const verificationFields = new Set([
-  "id_verification_status",
-  "selfie_verification_status",
-  "address_verification_status",
-  "banking_verification_status",
-  "reference_verification_status",
-  "background_check_status",
-  "third_party_verification_status",
-]);
-
-const verificationStatuses = new Set(["approved", "rejected", "pending"]);
-
 const retiredTypedAdminActions = new Set([
   "admin_confirm_payment_record",
   "admin_complete_outbox_event",
@@ -247,19 +235,7 @@ Deno.serve(async (req) => {
 
     if (action === "admin_set_kyc_verification") {
       if (!(await isAdminUser(supa, userId))) return json({ error: "admin role required" }, 403, origin);
-      const applicationId = cleanId(body.applicationId);
-      const field = cleanText(body.field, 80);
-      const status = cleanText(body.status, 20);
-      if (!verificationFields.has(field) || !verificationStatuses.has(status)) return json({ error: "invalid verification update" }, 400, origin);
-
-      const { data, error } = await supa
-        .from("xooter_applications")
-        .update({ [field]: status })
-        .eq("id", applicationId)
-        .select("*")
-        .single();
-      if (error || !data?.id) return json({ error: "verification update failed" }, 400, origin);
-      return json({ application: data }, 200, origin);
+      return json({ error: "Document safety and evidence-backed MFA verification are pending.", code: "kyc_clearance_pending" }, 409, origin);
     }
 
     if (action === "support_opened") {
@@ -412,19 +388,33 @@ Deno.serve(async (req) => {
 
       const { data: booking, error } = await supa
         .from("bookings")
-        .select("id,user_id,xooter_id,scheduled_at,status,job_completed_at,cancelled_at,service,service_type")
+        .select("id,user_id,xooter_id,scheduled_at,status,payment_status,payment_confirmed_at,job_started_at,job_completed_at,completed_at,cancelled_at,sensitive_data_revoked_at,service,service_type")
         .eq("id", bookingId)
         .maybeSingle();
       if (error || !booking) return json({ error: "booking not found" }, 404, origin);
 
       const participant = await isBookingParticipant(supa, booking, userId);
-      if (!participant.participant) return json({ error: "booking access denied" }, 403, origin);
-      if (["enroute", "en_route", "arrived", "in_progress", "completed"].includes(status) && participant.role !== "contractor") {
+      if (!participant.participant || participant.role !== "contractor") {
         return json({ error: "contractor status action required" }, 403, origin);
       }
+      // Payment, assignment, cancellation and reviews have their own typed authorities.
+      // Being a booking participant never grants a generic route to those outcomes.
+      if (!["enroute", "en_route", "arrived", "in_progress", "completed"].includes(status)) {
+        return json({ error: "unsupported contractor status" }, 400, origin);
+      }
+      if (booking.cancelled_at || booking.sensitive_data_revoked_at || booking.job_completed_at || booking.completed_at
+        || booking.payment_status !== "paid" || !booking.payment_confirmed_at) {
+        return json({ error: "booking is not active and paid" }, 409, origin);
+      }
+      const { data: acceptedJob, error: jobError } = await supa.from("xooter_jobs")
+        .select("id").eq("booking_id", booking.id).eq("xooter_id", booking.xooter_id)
+        .eq("state", "accepted").maybeSingle();
+      if (jobError) return json({ error: "booking eligibility could not be checked" }, 503, origin);
+      if (!acceptedJob) return json({ error: "accepted job required" }, 409, origin);
       const currentStatus = normaliseBookingStatus(booking.status);
       if (!currentStatus) return json({ error: "booking status is unsupported" }, 409, origin);
       const timelineOnlyJobStart = status === "in_progress" && currentStatus === "in_progress";
+      if (timelineOnlyJobStart && booking.job_started_at) return json({ error: "job already started" }, 409, origin);
       if (!timelineOnlyJobStart) {
         try {
           assertTransition(currentStatus, requestedStatus);
@@ -439,7 +429,15 @@ Deno.serve(async (req) => {
       if (timestampField) updatePayload[timestampField] = new Date().toISOString();
       if (status === "completed") updatePayload.completed_at = new Date().toISOString();
 
-      await supa.from("bookings").update(updatePayload).eq("id", booking.id);
+      let update = supa.from("bookings").update(updatePayload)
+        .eq("id", booking.id).eq("status", booking.status).eq("xooter_id", booking.xooter_id)
+        .eq("payment_status", "paid").eq("payment_confirmed_at", booking.payment_confirmed_at)
+        .is("cancelled_at", null).is("sensitive_data_revoked_at", null)
+        .is("job_completed_at", null).is("completed_at", null);
+      if (timelineOnlyJobStart) update = update.is("job_started_at", null);
+      const { data: changedBooking, error: writeError } = await update.select("id").maybeSingle();
+      if (writeError) return json({ error: "booking update failed; retry after checking the latest state" }, 503, origin);
+      if (!changedBooking) return json({ error: "booking changed; refresh before trying again" }, 409, origin);
       await supa.from("booking_status_events").insert({
         booking_id: booking.id,
         actor_id: userId,

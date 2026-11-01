@@ -42,6 +42,8 @@ const onDisk = readdirSync(functionsDir)
  * only symptom would be silence.
  */
 const MUST_STAY_OPEN: Record<string, string> = {
+  "search-addresses": "Founder-approved public address discovery only, with server-only provider tokens and finite zero-default allowances; private GPS/chat/booking functions remain JWT-gated.",
+  "calendar-feed": "External calendars authenticate with a 256-bit revocable read-only capability; calendar-subscription management still requires the normal user JWT.",
   "confirm-payment": "PayFast payment callbacks. A PSP cannot present a Supabase JWT.",
   "support-respond": "The public support form, used before anyone has signed in.",
   "report-concierge-answer": "Concierge answer reports from the public site.",
@@ -88,6 +90,7 @@ const MUST_STAY_OPEN: Record<string, string> = {
   "twilio-status-callback": "Twilio delivery status. Same.",
   "twilio-verify-webhook": "Twilio Verify. Same.",
   "twilio-voice-status": "Twilio call status callback. Same.",
+  "twilio-in-app-voice-status": "Twilio conference callback. Bounded signed form and service-only room RPC authenticate it.",
   "twilio-voice-twiml": "Twilio fetches TwiML here to join the conference. Same.",
 };
 

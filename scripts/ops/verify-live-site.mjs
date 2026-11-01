@@ -79,7 +79,7 @@ const run = async () => {
   // Cover every private entry point and an otherwise unlisted nested path: protecting
   // only known Xooter pages silently exposes any newly added private route.
   for (const route of [
-    "/app", "/auth", "/admin", "/xooter", "/xooter/jobs",
+    "/app", "/auth", "/admin", "/book", "/book/future-private-route", "/xooter", "/xooter/jobs",
     "/xooter/earnings", "/xooter/kyc", "/xooter/profile",
     "/xooter/training", "/xooter/apply", "/xooter/future-private-route",
   ]) {

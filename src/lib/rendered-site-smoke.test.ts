@@ -30,6 +30,14 @@ const renderAuthScript = `function renderAuth() {
   document.body.replaceChildren(main);
 }`;
 
+const signupAuthPage = `<main><h2>Create your account</h2>
+  <label>Full name<input></label><label>Your email<input type="email"></label>
+  <label>Password<input type="password"></label><button disabled>Get started</button>
+  <button id="existing-user">Been here before? Pick up where you left off</button></main>
+  <script>${renderAuthScript}
+    document.getElementById('existing-user').addEventListener('click', renderAuth);
+  </script>`;
+
 afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => new Promise<void>((resolve) => {
     server.closeAllConnections();
@@ -243,6 +251,39 @@ describe("rendered site smoke", () => {
     const result = await runVerifier(["--url", url]);
     expect(result.code, result.output).not.toBe(0);
     expect(result.output).toMatch(/instead of the intended URL/);
+  }, 30_000);
+
+  it("accepts signup-first auth and reaches returning-user controls after navigation and reload", async () => {
+    let authVisits = 0;
+    const url = await serve({ "/": homePage, "/auth": (_request, response) => {
+      authVisits++; response.end(signupAuthPage);
+    } });
+    const result = await runVerifier(["--url", url]);
+    expect(result.code, result.output).toBe(0);
+    expect(authVisits).toBeGreaterThanOrEqual(2);
+  }, 30_000);
+
+  it.each([
+    { name: "missing returning-user action", page: signupAuthPage.replace("Been here before? Pick up where you left off", "Learn more") },
+    { name: "broken returning-user action", page: signupAuthPage.replace("addEventListener('click', renderAuth)", "addEventListener('click', () => {})") },
+    { name: "missing returning-user email", page: signupAuthPage.replace("main.append(heading, emailLabel, send, toggle, passwordForm)", "main.append(heading, send, toggle, passwordForm)") },
+  ])("rejects signup-first auth with $name", async ({ page }) => {
+    const url = await serve({ "/": homePage, "/auth": page });
+    const result = await runVerifier(["--url", url], { XOOT_SMOKE_TIMEOUT_MS: "1000" });
+    expect(result.code, result.output).not.toBe(0);
+    expect(result.output).toContain("usable sign-in controls");
+  }, 30_000);
+
+  it("rejects a signup-first returning-user action that breaks only after reload", async () => {
+    let authVisits = 0;
+    const url = await serve({ "/": homePage, "/auth": (_request, response) => {
+      authVisits++;
+      response.end(authVisits === 1 ? signupAuthPage : signupAuthPage.replace("Been here before? Pick up where you left off", "Learn more"));
+    } });
+    const result = await runVerifier(["--url", url], { XOOT_SMOKE_TIMEOUT_MS: "1000" });
+    expect(result.code, result.output).not.toBe(0);
+    expect(authVisits).toBeGreaterThanOrEqual(2);
+    expect(result.output).toContain("usable sign-in controls");
   }, 30_000);
 
   it("retains the runtime guard even with a successful settled roster", async () => {

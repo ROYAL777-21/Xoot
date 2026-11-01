@@ -22,7 +22,7 @@ export function edgeHandler(entry: string, createClient: (...args: unknown[]) =>
         return load(resolve(dirname(file), specifier));
       },
       Deno: { env: { get: (key: string) => env[key] }, serve: (callback: typeof handler) => { handler = callback; } },
-      Request, Response, TextEncoder, TextDecoder, URL, AbortController, crypto,
+      Request, Response, FormData, URLSearchParams, TextEncoder, TextDecoder, URL, AbortController, crypto, btoa, atob,
       console: { error: () => {}, warn: () => {}, log: () => {} },
       fetch: () => { throw new Error("Unexpected network request"); }, setTimeout, clearTimeout,
     }, { filename: file });

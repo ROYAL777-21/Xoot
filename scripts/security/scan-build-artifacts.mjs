@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { closeSync, constants, existsSync, fstatSync, openSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, extname, join, relative } from "node:path";
 
 const ROOT = process.cwd();
@@ -71,16 +71,22 @@ if (!existsSync(targetDir)) {
 const findings = [];
 for (const file of walk(targetDir)) {
   const rel = relative(ROOT, file).replaceAll("\\", "/");
-  const stats = statSync(file);
 
   if (extname(file) === ".map" && !allowPublicSourceMaps) {
     findings.push(`${rel}: source map artifact is present`);
     continue;
   }
 
-  if (!isTextArtifact(file) || stats.size > MAX_FILE_BYTES) continue;
-
-  const content = readFileSync(file, "utf8");
+  if (!isTextArtifact(file)) continue;
+  // Inspect and read the same opened object; a path replacement between stat
+  // and read must not switch what the security check inspects.
+  const descriptor = openSync(file, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
+  let content;
+  try {
+    const stats = fstatSync(descriptor);
+    if (!stats.isFile() || stats.size > MAX_FILE_BYTES) continue;
+    content = readFileSync(descriptor, "utf8");
+  } finally { closeSync(descriptor); }
 
   for (const pattern of patterns) {
     pattern.regex.lastIndex = 0;

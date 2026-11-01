@@ -1,54 +1,11 @@
 #!/usr/bin/env node
 /**
- * Create a Twilio subaccount for staging, so staging test calls stop billing production.
- *
- * ── Why this exists ─────────────────────────────────────────────────────────────
- * `twilio-selftest` measured it on 2026-08-12: staging and production both report Account SID
- * `AC93de1e…` and the same API key, "ZOOT API KEY". `docs/SECRETS_INVENTORY.md:56` — *"Staging and
- * production credentials must be separate."*
- *
- * The consequence is not abstract. Every staging test call:
- *   - bills the live account,
- *   - appears in the production call logs, where it is indistinguishable from a customer's call,
- *   - and shares one Auth Token, so a staging leak is a production leak.
- *
- * That last point is what makes it worth doing before anyone but you tests voice.
- *
- * ── What it creates, on the STAGING side only ───────────────────────────────────
- *   1. A subaccount named "Xoot Staging".
- *   2. An API key on that subaccount (`TWILIO_API_KEY_SID` / `TWILIO_API_KEY_SECRET`).
- *   3. A TwiML App on that subaccount, with staging's Voice URL and status callback ALREADY SET
- *      to routable URLs — so it cannot reproduce the production defect this same self-test found,
- *      where the URL was the REST host with the function name pasted on the root and answered 404.
- *   4. A Conversations service on that subaccount.
- *
- * Then it prints the `supabase secrets set` command for staging. It does not run it: that needs
- * your Supabase access token, and one script holding both providers' credentials is a worse idea
- * than two steps.
- *
- * ── Usage ───────────────────────────────────────────────────────────────────────
- *   # 1. Dry run. Prints what it would create and changes nothing.
- *   XOOT_TWILIO_ACCOUNT_SID=AC... XOOT_TWILIO_AUTH_TOKEN=... \
- *     node scripts/ops/create-staging-twilio-subaccount.mjs
- *
- *   # 2. For real.
- *   XOOT_TWILIO_ACCOUNT_SID=AC... XOOT_TWILIO_AUTH_TOKEN=... \
- *     node scripts/ops/create-staging-twilio-subaccount.mjs --confirm
- *
- * The credentials are the PARENT account's, from the Twilio Console dashboard. They are read from
- * the environment, never written anywhere, and never echoed.
- *
- * ⚠️ FOUNDER'S TERMINAL ONLY. NEVER CI.
- * Twilio returns an API Key Secret exactly once, at creation, and never again. This script must
- * therefore print it. That is the one moment it exists in readable form, so:
- *   - do not run this in a workflow, where the output is a retained log,
- *   - do not paste the output into a chat, an issue, or a commit,
- *   - put the secret straight into `supabase secrets set` and then clear your scrollback.
- * No workflow in this repo calls this script, deliberately.
- *
- * ⚠️ Subaccounts cannot be deleted, only closed. So this refuses to create a second one if
- * "Xoot Staging" already exists, rather than leaving you to work out which of two is live.
+ * Prepare a separate staging Twilio subaccount. Default is a read-only dry run.
+ * Mutating use requires --confirm --emit-env <private-new-file>; the caller
+ * hands that file directly to Supabase and deletes it. No key/token is logged.
+ * This script is not run by ordinary release CI. Subaccounts share parent billing.
  */
+import {openSync,writeFileSync,closeSync} from 'node:fs';
 
 const STAGING_PROJECT_REF = "fxmxyabdjqviqbcxmvlp";
 const SUBACCOUNT_FRIENDLY_NAME = "Xoot Staging";
@@ -79,7 +36,7 @@ const env = (name) => String(process.env[name] ?? "").trim();
  *
  * So: with `--emit-env`, the human-readable block below prints every SID (safe, they are
  * identifiers) and prints NO secret value. The file is written 0600 and the caller deletes it.
- * Without the flag, behaviour is exactly as before.
+ * Without the flag, only the read-only dry run is available.
  */
 const emitEnvPath = (() => {
   const argv = process.argv.slice(2);
@@ -92,6 +49,10 @@ const fail = (message) => {
   process.exit(1);
 };
 const info = (message) => console.log(`[twilio-subaccount] ${message}`);
+
+if (confirmed && (!emitEnvPath || emitEnvPath.startsWith('--'))) {
+  fail('Mutating setup requires --emit-env <private-new-file>. Credentials are never printed.');
+}
 
 const parentSid = env("XOOT_TWILIO_ACCOUNT_SID");
 const parentToken = env("XOOT_TWILIO_AUTH_TOKEN");
@@ -181,7 +142,7 @@ On Twilio account ${parentSid}, this would create:
        Status callback  ${STATUS_CALLBACK}  (POST)
   4. Conversations service "Xoot Home Services Conversation Staging"
 
-Then it would print a ready-to-paste \`supabase secrets set\` command for the
+Then it would write a private configuration file for the
 staging project (${STAGING_PROJECT_REF}).
 
 Billing note: a subaccount bills to the same parent. This separates identity,
@@ -190,6 +151,12 @@ for, and it is what stops a staging call from looking like a customer call.
 `);
   process.exit(0);
 }
+
+// Acquire a new private descriptor BEFORE creating anything on the provider.
+// Exclusive creation refuses pre-existing files and symlinks without losing a new key.
+let envOutput;
+try { envOutput = openSync(emitEnvPath, 'wx', 0o600); }
+catch { fail('Cannot create the private output file; choose a new path before provisioning.'); }
 
 // ── Create ──────────────────────────────────────────────────────────────────────
 info(`creating the subaccount "${SUBACCOUNT_FRIENDLY_NAME}"…`);
@@ -259,33 +226,7 @@ if (createdApp.voice_url !== VOICE_URL) {
 }
 info("verified: the TwiML App's Voice URL routes.");
 
-/*
- * Built rather than written inline, and the reason is a real CI failure.
- *
- * `scripts/security/secret-scan.mjs` rejects any source line where a name containing SECRET,
- * AUTH_TOKEN, API_KEY, SERVICE_ROLE or PRIVATE_KEY is assigned a quoted value of sixteen or more
- * characters. A template line setting TWILIO_API_KEY_SECRET from an interpolated variable looks
- * exactly like that to a regex, and it broke the Web build for three commits on 2026-08-12.
- *
- * ⚠️ Described in prose rather than shown as an example on purpose: the first version of this
- * very comment spelled the pattern out and tripped the scanner itself, on the line explaining the
- * scanner. The rule has no way to tell an illustration from the real thing, and should not try.
- *
- * The right fix is not to allowlist the file — that guard has caught real leaks and suppressing a
- * true positive to get a green tick is how it stops meaning anything. So the assignment is
- * assembled at runtime instead. The output the founder pastes is byte-identical; only the source
- * stops resembling a hard-coded secret.
- *
- * Applied to every line, not only the one that tripped, so adding the next secret does not
- * quietly re-break CI.
- */
-const setLine = (name, value) => `  ${name}="${value}" \\`;
-
-/*
- * The seven, in one place, so the printed block and the emitted file cannot drift apart. Both
- * Auth Token names carry the SAME value — see the warning below; this is the third time that trap
- * has needed writing down.
- */
+// Values go only to the private descriptor, never the log.
 const secrets = [
   ["TWILIO_ACCOUNT_SID", subSid],
   ["TWILIO_AUTH_TOKEN", subToken],
@@ -296,54 +237,7 @@ const secrets = [
   ["TWILIO_CONVERSATIONS_SERVICE_SID", conversations.sid],
 ];
 
-if (emitEnvPath) {
-  const { writeFileSync } = await import("node:fs");
-  // 0600, and the caller deletes it. The runner is ephemeral, but "the machine goes away" is not
-  // a permission model.
-  writeFileSync(emitEnvPath, secrets.map(([name, value]) => `${name}=${value}`).join("\n") + "\n", {
-    mode: 0o600,
-  });
-  console.log(`
-✅ Created on Twilio, all owned by the new subaccount.
-
-  subaccount   ${subSid}
-  API key      ${apiKey.sid}
-  TwiML App    ${app.sid}
-  Conversations ${conversations.sid}
-
-Wrote 7 names to the env file for the caller to hand to \`supabase secrets set\`.
-**No secret value has been printed** — that is the entire point of --emit-env, and it is why this
-path is safe to run in a workflow while the printing path below is not.
-`);
-} else {
-  console.log(`
-✅ Created on Twilio, all owned by the new subaccount.
-
-Now set these on the STAGING Supabase project. Copy the whole block:
-
-supabase secrets set --project-ref ${STAGING_PROJECT_REF} \\
-${secrets
-  .slice(0, -1)
-  .map(([name, value]) => setLine(name, value))
-  .join("\n")}
-  TWILIO_CONVERSATIONS_SERVICE_SID="${conversations.sid}"
-
-⚠️ TWILIO_API_KEY_SECRET is shown HERE AND NOWHERE ELSE, EVER. Twilio does not
-   store it in retrievable form. If you lose it, delete the key and make another.
-   Paste it into the command above, then clear your scrollback.
-
-⚠️ Both Auth Token names get the same value. Twilio issues ONE Auth Token per
-   account; this repo reads it under two names, and setting only one leaves five
-   webhooks rejecting every inbound request with a silent 403. See
-   supabase/functions/_shared/twilio-webhook.ts.
-
-No redeploy needed — Edge Functions read secrets at runtime.
-
-Then prove it worked:
-  Actions → Twilio self-test → Run workflow → environment: both
-
-  Expect: the two Account SIDs now differ, so the shared-credentials check
-  passes, and staging's own voice rows are green because the TwiML App above was
-  created with routable URLs.
-`);
-}
+try {
+  writeFileSync(envOutput, secrets.map(([name, value]) => `${name}=${value}`).join('\n') + '\n');
+} finally { closeSync(envOutput); }
+console.log('Created and verified staging resources. Wrote seven configuration values to the private output file; no credentials were printed.');

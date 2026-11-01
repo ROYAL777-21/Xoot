@@ -3,7 +3,7 @@ import { checkReferral, referralCreditCents, type ReferralRecord } from "./refer
 import { BOOKING_ADD_ONS, BOOKING_FREQUENCIES, BOOKING_HOME_SIZES, BOOKING_LINEN_OPTIONS, BOOKING_PROPERTY_TYPES, BOOKING_SERVICES, bookingVisitDurationHours, type BookingAddOn, type BookingPropertyType, type BookingQuote, type BookingQuoteInput, type BookingService } from "./booking-contract.ts";
 
 /** Bump whenever the charge or eligibility rules of this contract change. */
-export const BOOKING_PRICING_VERSION = "booking-zd038-v1";
+export const BOOKING_PRICING_VERSION = "booking-zd039-v1";
 
 export class BookingQuoteValidationError extends Error {
   constructor(message: string, public readonly code: string, public readonly field?: string) {

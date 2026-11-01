@@ -40,7 +40,7 @@ describe("booking quote contract", () => {
     expect(quoted({ crewSize: 2 }).baseCents).toBe(39300);
     expect(quoted({ crewSize: 3 }).baseCents).toBe(42800);
     expect(quoted({ service: "office", propertyType: "office", hours: 2, linen: null, crewSize: 4 }).baseCents).toBe(45400);
-    expect(quoted({ service: "regular", propertyType: "house", hours: 8, homeSize: "large", linen: null, crewSize: 4 }).baseCents).toBe(52600);
+    expect(quoted({ service: "regular", propertyType: "house", hours: 8, homeSize: "large", linen: null, crewSize: 1 }).baseCents).toBe(37600);
     expect(quoted({ service: "regular", propertyType: "house", hours: 10, linen: null, crewSize: 1 }).baseCents).toBe(47000);
     expect(quoted({ service: "express", propertyType: "flat", hours: 1, linen: null, crewSize: 1 }).baseCents).toBe(22000);
     expect(quoted({ service: "moving", propertyType: "empty", hours: 8, linen: null, crewSize: 1 }).baseCents).toBe(43000);
@@ -56,7 +56,7 @@ describe("booking quote contract", () => {
     expect(q.serviceCorrection).toMatchObject({ from: "express", to: "office" });
     expect(q.input.hours).toBe(5);
     expect(q.baseCents).toBe(52000);
-    expect(() => parsed({ service: "regular", propertyType: "empty", hours: 4, linen: null, addOns: ["inside_fridge"] })).toThrow(/not available/i);
+    expect(() => parsed({ service: "regular", propertyType: "empty", hours: 4, crewSize: 1, linen: null, addOns: ["inside_fridge"] })).toThrow(/not available/i);
   });
 
   it("prices R30 extras, R20 linen, duration, and the legacy high-demand slot", () => {
@@ -69,7 +69,7 @@ describe("booking quote contract", () => {
     expect(() => parsed({ linen: "wash_dry_repack", hours: 4.5 })).toThrow(/5 hours/i);
     expect(() => parsed({ time: "14:30" })).toThrow(/07:00.*14:00/i);
     expect(() => parsed({ service: "regular", propertyType: "flat", linen: "replace" })).toThrow();
-    expect(() => parsed({ service: "express", propertyType: "flat", hours: 1, linen: null, addOns: ["small_flatlet"] })).toThrow(/not available/i);
+    expect(() => parsed({ service: "express", propertyType: "flat", hours: 1, crewSize: 1, linen: null, addOns: ["small_flatlet"] })).toThrow(/not available/i);
     expect(() => parsed({ service: "office", propertyType: "office", linen: null, addOns: ["clean_appliances"] })).toThrow(/not available/i);
     expect(BOOKING_ADD_ONS.small_flatlet.services).toEqual(["regular"]);
   });
@@ -97,14 +97,14 @@ describe("booking quote contract", () => {
   });
 
   it("applies verified Care+, referral, cover, and credits with a R50 payment floor", () => {
-    const q = quoted({ service: "regular", propertyType: "flat", hours: 4, linen: null, addOns: ["inside_fridge"], referralCode: "FRIEND", coverRequested: true, requestedCreditCents: 999999 }, {
+    const q = quoted({ service: "regular", propertyType: "flat", hours: 4, crewSize: 1, linen: null, addOns: ["inside_fridge"], referralCode: "FRIEND", coverRequested: true, requestedCreditCents: 999999 }, {
       carePlusMember: true, coverAvailable: true, availableCreditCents: 20000, referralRecord: { code: "FRIEND", userId: "friend" },
     });
-    expect(q.carePlusDiscountCents).toBe(3200);
+    expect(q.carePlusDiscountCents).toBe(2800);
     expect(q.referralDiscountCents).toBe(10000);
     expect(q.bookingFeeCents).toBe(0);
     expect(q.coverCents).toBe(2200);
-    expect(q.creditUsedCents).toBe(15800);
+    expect(q.creditUsedCents).toBe(12400);
     expect(q.totalCents).toBe(5000);
     expect(q.lines.reduce((sum, line) => sum + line.amountCents, 0)).toBe(q.totalCents);
     expect(q.lines).toContainEqual({ id: "booking_fee", label: "Booking fee", amountCents: 0 });
@@ -130,7 +130,7 @@ describe("booking quote contract", () => {
     expect(hash).not.toBe(await fingerprintBookingQuote(quoted({ crewSize: 1 }), "buyer-1"));
     expect(hash).not.toBe(await fingerprintBookingQuote(quoted({}, { carePlusMember: true }), "buyer-1"));
     for (const patch of [
-      { service: "regular", propertyType: "flat", linen: null, hours: 5.5 },
+      { service: "regular", propertyType: "flat", linen: null, hours: 5.5, crewSize: 1 },
       { date: "2026-10-02" }, { time: "07:30" }, { addOns: ["restock_supplies"] },
       { frequency: "weekly", repeatDays: [4] },
     ] as Partial<BookingQuoteInput>[]) {

@@ -1,0 +1,133 @@
+CREATE TABLE
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TABLE
+ALTER TABLE
+REVOKE
+GRANT
+INSERT 0 1
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMENT
+COMMENT
+BEGIN
+CREATE TABLE
+ALTER TABLE
+REVOKE
+GRANT
+INSERT 0 2
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMENT
+COMMIT
+SET
+ assert_throws
+---------------
+
+(1 row)
+
+ assert_throws
+---------------
+
+(1 row)
+
+RESET
+SET
+ assert_throws
+---------------
+
+(1 row)
+
+ assert_throws
+---------------
+
+(1 row)
+
+RESET
+SET
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+RESET
+BEGIN
+UPDATE 2
+SET
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+RESET
+UPDATE 1
+SET
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+ assert_true
+-------------
+
+(1 row)
+
+RESET
+ROLLBACK
+              result
+-----------------------------------
+ Address allowance contract passed
+(1 row)

@@ -1,0 +1,6 @@
+.xoot-recovery { position:relative; isolation:isolate; min-height:100dvh; display:grid; place-items:center; padding:24px; overflow:hidden; background:var(--xoot-grad-page); color:var(--xoot-text-primary); font-family:var(--xoot-font-core); }
+.xoot-recovery-flowers { position:absolute; inset:0; z-index:-1; pointer-events:none; }
+.xoot-recovery-card { width:100%; max-width:460px; border:1px solid var(--xoot-border-color); border-radius:var(--xoot-radius-xl); padding:clamp(26px,6vw,40px); background:var(--xoot-surface-card); text-align:center; box-shadow:var(--xoot-shadow-4); }
+.xoot-recovery-card h1 { font:400 clamp(32px,6vw,42px)/1.08 var(--xoot-font-display); letter-spacing:var(--xoot-track-display); }
+.xoot-recovery-bloom { position:relative; width:92px; height:92px; margin:24px auto; }
+.xoot-recovery-single-flower { position:absolute; inset:0; pointer-events:none; }

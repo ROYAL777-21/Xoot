@@ -1,5 +1,9 @@
 import { Gift, Send, Sparkles, Wallet } from "lucide-react";
 import { REFERRAL_REWARD_CENTS } from "@/lib/referral-display";
+import { ReferralCodeCard } from "./ReferralCodeCard";
+import "@/styles/gift-care-handoff.css";
+import "@/styles/homepage-sections.css";
+import "@/styles/referrals-reviews-handoff.css";
 
 /*
  * ZD-036 — "Refer & earn" on the public site.
@@ -31,7 +35,7 @@ const STEPS = [
   {
     icon: Sparkles,
     title: `They save R${REWARD_RAND}`,
-    body: "It comes off their first booking automatically — nothing to type in.",
+    body: "Their invite is checked with the first-booking quote, before they pay.",
   },
   {
     icon: Wallet,
@@ -39,33 +43,31 @@ const STEPS = [
     // ⚠️ "once that first visit is booked and paid" is load-bearing and was kept verbatim from the
     // design. `referral_redemptions.rewarded` stays false at booking time on purpose: paying the
     // referrer before the booking completes lets a pair book, collect, and cancel.
-    body: "Into your XootCred once that first visit is booked and paid.",
+    body: "Into your XootCred after a qualifying first visit is completed and paid.",
   },
 ] as const;
 
 export const ReferSection = () => (
-  <section id="refer" className="border-t border-border bg-muted/30">
-    <div className="container py-16 md:py-24">
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+  <section id="refer" className="xoot-public-section xoot-referrals" aria-labelledby="referrals-title">
+    <div className="xoot-public-inner">
+      <div className="xoot-referrals-grid">
         <div>
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-primary">
+          <p className="xoot-section-eyebrow">
             Refer &amp; earn
           </p>
-          <h2 className="font-display text-3xl font-bold md:text-4xl">
-            R{REWARD_RAND} for them. R{REWARD_RAND} for you.
+          <h2 id="referrals-title" className="xoot-section-title">
+            R{REWARD_RAND} for them. <span className="xoot-squiggle">R{REWARD_RAND} for you.</span>
           </h2>
           <p className="mt-4 max-w-md text-muted-foreground">
             The people who trust us most found us through someone they already trusted. So the offer
             runs both ways and the amounts match — nobody should feel like they are selling to their
             neighbour.
           </p>
-        </div>
-
-        <ul className="flex flex-col gap-5">
+        <ul className="xoot-referral-steps">
           {STEPS.map(({ icon: Icon, title, body }) => (
             <li key={title} className="flex items-start gap-4">
-              <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-primary/10">
-                <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+              <span className="xoot-referral-step-icon">
+                <Icon size={18} strokeWidth={1.9} aria-hidden="true" />
               </span>
               <div>
                 <p className="font-semibold">{title}</p>
@@ -73,18 +75,12 @@ export const ReferSection = () => (
               </div>
             </li>
           ))}
-        </ul>
+        </ul></div>
+        <ReferralCodeCard />
       </div>
 
-      {/*
-        ⚠️ No share button, and that is not an omission.
-        The design's version calls `RF.share()` against a signed-in session and a real code. Every
-        user already has a code — the signup trigger has issued them since 2026-04-23 — but nothing
-        on the public site knows who you are. A button that produced a broken or empty link would
-        be worse than the section not claiming to have one.
-      */}
       <p className="mt-10 max-w-xl text-sm text-muted-foreground">
-        Your code lives in the app, under Rewards. Xoot funds this out of its own commission — a
+        Your code also lives under Rewards. Xoot funds this out of its own commission — a
         Xooter's pay does not change because a customer arrived through someone else's link.
       </p>
     </div>
@@ -111,7 +107,7 @@ export const ReferralWelcome = ({ from }: { from?: string | null }) => (
         {from ? `${from} sent you` : "You were sent"} R{REWARD_RAND} off your first clean.
       </strong>{" "}
       <span className="opacity-90">
-        Enter the code at checkout and Xoot applies it — we confirm it before you pay.
+        Use the code with your first booking. Your quote confirms eligibility and savings before you pay.
       </span>
     </p>
   </div>

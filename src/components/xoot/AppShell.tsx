@@ -14,11 +14,12 @@ const tabs = [
 export const AppShell = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
   const showTabs = ["/app", "/app/bookings", "/app/loyalty", "/app/profile"].includes(pathname);
-  const hasOwnBack = pathname === "/app/book" || pathname === "/app/notifications" || pathname.startsWith("/app/bookings/") || pathname.startsWith("/app/profile/");
+  const hasOwnBack = ["/app/book", "/app/notifications", "/app/widgets", "/app/calendar", "/app/properties"].includes(pathname) || pathname.startsWith("/app/bookings/") || pathname.startsWith("/app/profile/");
+  const fromYou = ["/app/plans", "/app/gifts", "/app/favorites", "/app/support", "/app/insurance"].includes(pathname) || pathname.startsWith("/app/properties/");
 
   return <div className="xoot-app-shell">
     <main className={showTabs ? "xoot-app-main has-tabs" : "xoot-app-main"}>
-      {!showTabs && !hasOwnBack && <nav className="xoot-app-back" aria-label="Page navigation"><NavLink to="/app"><ArrowLeft size={20} aria-hidden="true" />Home</NavLink></nav>}
+      {!showTabs && !hasOwnBack && <nav className="xoot-app-back" aria-label="Page navigation"><NavLink to={fromYou ? "/app/profile" : "/app"}><ArrowLeft size={20} aria-hidden="true" />{fromYou ? "You" : "Home"}</NavLink></nav>}
       {children}
     </main>
     {showTabs && <div className="xoot-app-tab-dock">

@@ -1,72 +1,114 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { useState } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-vi.hoisted(() => { vi.stubEnv("VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED", "true"); vi.stubEnv("VITE_MAPBOX_PUBLIC_TOKEN", "pk.synthetic-test-token"); });
-import { VerifiedAddressInput } from "./VerifiedAddressInput";
-
-const found = "14 Synthetic Test Road, Sandton, South Africa";
-const feature = (type = "address") => ({ features: [{ properties: { mapbox_id: "synthetic-address-id", feature_type: type,
-  full_address: found, context: { country: { country_code: "ZA" } } } }] });
-const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
-const fetchDouble = vi.fn();
-function mount() {
-  function Place() { const [value, setValue] = useState(""); return <><VerifiedAddressInput value={value} onChange={setValue} /><output aria-label="Booking address">{value}</output></>; }
-  render(<Place />);
-  return screen.getByRole("combobox", { name: "Service address" });
+import {act,cleanup,fireEvent,render,screen} from "@testing-library/react";
+import {useState} from "react";
+import {afterEach,beforeEach,describe,expect,it,vi} from "vitest";
+const mocks=vi.hoisted(()=>{vi.stubEnv("VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED","true");return{invoke:vi.fn()};});
+vi.mock("@/integrations/supabase/client",()=>({supabase:{functions:{invoke:mocks.invoke}}}));
+import {ADDRESS_SUGGESTION_DELAY_MS,VerifiedAddressInput} from "./VerifiedAddressInput";
+const found="14 Synthetic Test Road, Mamelodi, Pretoria, South Africa";
+const option={id:"synthetic-address-id",label:found,featureType:"address"};
+const response=(options:unknown[]=[option])=>({data:{success:true,data:{state:"results",options}},error:null});
+function mount(initial="") {
+  function Form(){const [value,setValue]=useState(initial);return <><VerifiedAddressInput value={value} onChange={setValue}/><output aria-label="Booking address">{value}</output></>;}
+  render(<Form/>);return screen.getByRole("combobox",{name:"Service address"});
 }
-beforeEach(() => { fetchDouble.mockReset(); vi.stubGlobal("fetch", fetchDouble); });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+const tick=async(ms=ADDRESS_SUGGESTION_DELAY_MS)=>act(async()=>{await vi.advanceTimersByTimeAsync(ms);});
+beforeEach(()=>{vi.useFakeTimers();mocks.invoke.mockReset();mocks.invoke.mockResolvedValue(response());});
+afterEach(()=>{cleanup();vi.useRealTimers();});
 
-describe("explicit address lookup (provider doubles, not live Mapbox acceptance)", () => {
-  it("keeps a single input focus usable and sends no queries while typing", async () => {
-    const input = mount();
-    input.focus();
-    fireEvent.change(input, { target: { value: "14 Test" } });
-    fireEvent.change(input, { target: { value: "14 Test Road" } });
-    expect(input).toHaveFocus();
-    expect(fetchDouble).not.toHaveBeenCalled();
-    fetchDouble.mockImplementation(async () => response(feature()));
-    fireEvent.click(screen.getByRole("button", { name: "Find address" }));
-    expect(await screen.findByRole("option", { name: found })).toBeInTheDocument();
-    expect(fetchDouble).toHaveBeenCalledTimes(1);
-    const url = new URL(fetchDouble.mock.calls[0][0]);
-    expect(url.searchParams.get("autocomplete")).toBe("false");
-    expect(url.searchParams.get("permanent")).toBe("false");
-    expect(url.searchParams.get("types")).toBe("address");
+describe("address typeahead (synthetic provider contracts, no live Mapbox calls)",()=>{
+  it("does not issue duplicate requests while Enter is pressed during a lookup",async()=>{
+    let finish!:(value:unknown)=>void;mocks.invoke.mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;}));
+    const input=mount();fireEvent.change(input,{target:{value:"14 Test Road"}});await tick();
+    fireEvent.keyDown(input,{key:"Enter"});fireEvent.keyDown(input,{key:"Enter"});
+    expect(mocks.invoke).toHaveBeenCalledTimes(1);
+    await act(async()=>finish(response()));
+    expect(screen.getByRole("option",{name:found})).toBeInTheDocument();
   });
-  it("does not save a temporary result when licensed confirmation fails", async () => {
-    const input = mount();
-    fireEvent.change(input, { target: { value: "14 Test Road" } });
-    fetchDouble.mockResolvedValueOnce(response(feature())).mockResolvedValueOnce(response({}, 403));
-    fireEvent.click(screen.getByRole("button", { name: "Find address" }));
-    fireEvent.click(await screen.findByRole("option", { name: found }));
-    await screen.findByText(/lookup or confirmation is unavailable/);
+  it("discards in-flight suggestions when a saved place replaces the input",async()=>{
+    let finish!:(value:unknown)=>void;mocks.invoke.mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;}));
+    function Form(){const[value,setValue]=useState("");return <><VerifiedAddressInput value={value} onChange={setValue}/><button onClick={()=>setValue("42 Saved Street, Pretoria")}>Use saved home</button></>;}
+    render(<Form/>);fireEvent.change(screen.getByRole("combobox"),{target:{value:"14 Test Road"}});await tick();
+    fireEvent.click(screen.getByRole("button",{name:"Use saved home"}));await act(async()=>finish(response()));await tick();
+    expect(screen.queryByRole("option")).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toHaveValue("42 Saved Street, Pretoria");expect(mocks.invoke).toHaveBeenCalledTimes(1);
+  });
+  it("loads selectable suggestions after typing pauses, without a search-button tap or lost focus",async()=>{
+    const input=mount();input.focus();fireEvent.change(input,{target:{value:"14 Test"}});
+    await tick(300);fireEvent.change(input,{target:{value:"14 Test Road"}});
+    await tick(ADDRESS_SUGGESTION_DELAY_MS-1);expect(mocks.invoke).not.toHaveBeenCalled();
+    await tick(1);expect(screen.getByRole("option",{name:found})).toBeInTheDocument();expect(input).toHaveFocus();
+    expect(mocks.invoke).toHaveBeenCalledTimes(1);expect(mocks.invoke).toHaveBeenCalledWith("search-addresses",expect.objectContaining({body:{mode:"suggest",query:"14 Test Road",selectedId:undefined}}));
+    expect(screen.queryByRole("button",{name:"Find address"})).not.toBeInTheDocument();
+  });
+  it("shows valid suggestions outside the former launch-suburb list",async()=>{
+    const input=mount();fireEvent.change(input,{target:{value:"14 Test, Mamelodi"}});await tick();
+    expect(screen.getByRole("option",{name:found})).toBeInTheDocument();
+    expect(screen.getByLabelText("Booking address")).toHaveTextContent("14 Test, Mamelodi");
+  });
+  it("keeps ten selectable candidates and makes the city check clear",async()=>{
+    mocks.invoke.mockResolvedValueOnce(response(Array.from({length:10},(_,i)=>({...option,id:`address-${i}`,label:`${i+1} Synthetic Road, Cape Town, South Africa`}))));
+    const input=mount();fireEvent.change(input,{target:{value:"6 Synthetic Road, Cape Town"}});await tick();
+    expect(screen.getAllByRole("option")).toHaveLength(10);
+    expect(screen.getByRole("option",{name:"6 Synthetic Road, Cape Town, South Africa"})).toBeInTheDocument();
+    expect(screen.getByRole("status",{name:""})).toHaveTextContent("correct suburb and city");
+    expect(mocks.invoke).toHaveBeenCalledTimes(1);
+  });
+  it("offers full-name guidance on an empty search without silently rewriting or retrying",async()=>{
+    mocks.invoke.mockResolvedValueOnce(response([]));
+    const input=mount();fireEvent.change(input,{target:{value:"3 Example Cl, Sunninghill"}});await tick();
+    expect(screen.getByRole("status",{name:""})).toHaveTextContent("Close instead of Cl");
+    expect(input).toHaveValue("3 Example Cl, Sunninghill");await tick(5000);
+    expect(mocks.invoke).toHaveBeenCalledTimes(1);
+  });
+  it("never spends on short input or merely loading a saved address",async()=>{
+    mount(found);await tick(2000);expect(mocks.invoke).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByRole("combobox"),{target:{value:"14 Te"}});await tick();expect(mocks.invoke).not.toHaveBeenCalled();
+  });
+  it("saves selected text only after the capped permanent confirmation succeeds",async()=>{
+    const input=mount();fireEvent.change(input,{target:{value:"14 Test Road"}});await tick();
+    await act(async()=>{fireEvent.click(screen.getByRole("option",{name:found}));});
+    expect(mocks.invoke).toHaveBeenCalledTimes(2);
+    expect(mocks.invoke.mock.calls[1][1].body).toEqual({mode:"confirm",query:found,selectedId:option.id});
+    expect(screen.getByLabelText("Booking address")).toHaveTextContent(found);
+    await tick(2000);expect(mocks.invoke).toHaveBeenCalledTimes(2);
+  });
+  it("keeps original customer input when licensed confirmation fails",async()=>{
+    const input=mount();fireEvent.change(input,{target:{value:"14 Test Road"}});await tick();
+    mocks.invoke.mockResolvedValueOnce({data:null,error:{message:"allowance exhausted"}});
+    await act(async()=>{fireEvent.click(screen.getByRole("option",{name:found}));});
     expect(screen.getByLabelText("Booking address")).toHaveTextContent("14 Test Road");
-    expect(new URL(fetchDouble.mock.calls[1][0]).searchParams.get("permanent")).toBe("true");
-    expect(screen.queryByText(/Address found/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Address selected/)).not.toBeInTheDocument();
+    expect(screen.getByRole("status",{name:""})).toHaveTextContent(/enter your address manually/);
   });
-  it("accepts the address only after permanent confirmation succeeds", async () => {
-    const input = mount();
-    fireEvent.change(input, { target: { value: "14 Test Road" } });
-    fetchDouble.mockImplementation(async () => response(feature()));
-    fireEvent.click(screen.getByRole("button", { name: "Find address" }));
-    fireEvent.click(await screen.findByRole("option", { name: found }));
-    await waitFor(() => expect(screen.getByLabelText("Booking address")).toHaveTextContent(found));
-    expect(fetchDouble).toHaveBeenCalledTimes(2);
+  it("supports keyboard selection without opening a map",async()=>{
+    const input=mount();fireEvent.change(input,{target:{value:"14 Test Road"}});await tick();
+    fireEvent.keyDown(input,{key:"ArrowDown"});expect(screen.getByRole("option")).toHaveAttribute("aria-selected","true");
+    await act(async()=>{fireEvent.keyDown(input,{key:"Enter"});});
+    expect(screen.getByLabelText("Booking address")).toHaveTextContent(found);expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
-  it("rejects town-only results and discards a lookup after the address changes", async () => {
-    const input = mount();
-    fireEvent.change(input, { target: { value: "Sandton" } });
-    fetchDouble.mockResolvedValueOnce(response(feature("place")));
-    fireEvent.click(screen.getByRole("button", { name: "Find address" }));
-    await screen.findByText(/No suggestions found/);
-    expect(screen.queryByRole("option")).not.toBeInTheDocument();
-    let finish: (result: Response) => void = () => {};
-    fetchDouble.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
-    fireEvent.click(screen.getByRole("button", { name: "Find address" }));
-    fireEvent.change(input, { target: { value: "A different address" } });
-    await act(async () => { finish(response(feature())); });
-    expect(screen.queryByRole("option")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Booking address")).toHaveTextContent("A different address");
+  it("discards late suggestions and confirmation when a customer edits the address",async()=>{
+    let finish!:(value:unknown)=>void;mocks.invoke.mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;}));
+    const input=mount();fireEvent.change(input,{target:{value:"14 Test Road"}});await tick();
+    fireEvent.change(input,{target:{value:"Different address"}});
+    await act(async()=>{finish(response());});expect(screen.queryByRole("option")).not.toBeInTheDocument();
+    expect(mocks.invoke.mock.calls[0][1].signal.aborted).toBe(true);
+    await tick();expect(screen.getByRole("option")).toBeInTheDocument();
+    mocks.invoke.mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;}));
+    await act(async()=>{fireEvent.click(screen.getByRole("option"));});
+    fireEvent.change(input,{target:{value:"Another new address"}});
+    await act(async()=>{finish(response());});expect(screen.getByLabelText("Booking address")).toHaveTextContent("Another new address");
+    expect(screen.queryByText(/Address selected/)).not.toBeInTheDocument();
+  });
+  it("handles no matches, failed lookup, timeout and escape without blocking typing",async()=>{
+    mocks.invoke.mockResolvedValueOnce(response([{...option,featureType:"place"}]));
+    const input=mount();fireEvent.change(input,{target:{value:"Mamelodi"}});await tick();
+    expect(screen.queryByRole("option")).not.toBeInTheDocument();expect(screen.getByRole("status",{name:""})).toHaveTextContent(/No suggestions/);
+    mocks.invoke.mockResolvedValueOnce({data:null,error:{message:"provider error"}});
+    fireEvent.change(input,{target:{value:"Different Street"}});await tick();
+    expect(screen.getByRole("status",{name:""})).toHaveTextContent(/enter your address manually/);
+    mocks.invoke.mockImplementationOnce(()=>new Promise(()=>{}));fireEvent.change(input,{target:{value:"Slow Street"}});await tick();await tick(10000);
+    expect(screen.getByRole("status",{name:""})).toHaveTextContent(/enter your address manually/);
+    fireEvent.change(input,{target:{value:"14 Test Road"}});await tick();
+    fireEvent.keyDown(input,{key:"Escape"});expect(screen.queryByRole("option")).not.toBeInTheDocument();expect(input).toHaveValue("14 Test Road");
   });
 });

@@ -14,6 +14,7 @@ import {
   toNumber,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import { assessVerifiedCoverage } from "../_shared/verified-coverage.ts";
 import {
   REFERRAL_FUNDING,
   checkReferral,
@@ -52,7 +53,7 @@ const allowedTimes = new Set(["07:00", "07:30", "08:00", "08:30", "09:00", "09:3
  * and refuses to quote a second Xooter, so the screen showed R61 while this function charged
  * R860. Measured 2026-08-09. `pricing-parity.test.ts` now fails if the two sets drift again.
  */
-const multiWorkerServices = new Set(["airbnb", "office", "moving"]);
+const multiWorkerServices = new Set(["airbnb", "office"]);
 const photoProofServices = new Set(["airbnb", "deep", "moving"]);
 
 const isHighDemandSlot = (time: string) => Number(time.split(":")[0] ?? 0) >= 16;
@@ -217,6 +218,29 @@ Deno.serve(async (req) => {
     if (!allowedTimes.has(time)) return fail("unsupported time", origin, 400);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail("invalid date", origin, 400);
     if (!address || !isApprovedLaunchRegion(address)) return fail("outside launch coverage", origin, 400);
+
+    // Only turn on the strict gate after approved real GeoJSON zones, the
+    // Supabase Edge MAPBOX_GEOCODING_TOKEN, paid Permanent Geocoding entitlement
+    // and legitimate cross-account integration tests have all passed.
+    // The server calls Mapbox itself: an untrusted client cannot submit a
+    // forged lat/lng or claim a suburb in the address string to bypass coverage.
+    let confirmedZone: string | null = null;
+    if (Deno.env.get("XOOT_STRICT_GEO_COVERAGE") === "true") {
+      const coverage = await assessVerifiedCoverage({
+        address, service: serviceType, actorId: user.id, db: supa,
+        token: Deno.env.get("MAPBOX_GEOCODING_TOKEN") ?? "",
+      });
+      if (coverage.state === "rate_limited") {
+        return fail("Too many location checks. Please try again later.", origin, 429);
+      }
+      if (coverage.state === "unavailable") {
+        return fail("Service-area confirmation is temporarily unavailable.", origin, 503);
+      }
+      if (coverage.state !== "available") {
+        return fail("This location needs manual service-coverage review.", origin, 409);
+      }
+      confirmedZone = coverage.zoneName;
+    }
 
     const scheduledAt = new Date(`${date}T${time}:00+02:00`);
     if (Number.isNaN(scheduledAt.getTime()) || scheduledAt.getTime() <= Date.now()) {
@@ -391,7 +415,7 @@ Deno.serve(async (req) => {
     const perBookingDiscount = Math.round(carePlusDiscount / workerCount);
     // Add-ons extend the visit; the booked hours are the priced duration.
     const estHours = priced.hours + addOns.length;
-    const launchRegion = resolveLaunchRegion(address);
+    const launchRegion = confirmedZone ?? resolveLaunchRegion(address);
     const bookingTargets = selectedXooterIds.length ? selectedXooterIds : [null];
     // Struck once, here, and never recomputed at payout — see the migration
     // `20260809120000_booking_commission_rate.sql` for why a rank that moves must not change

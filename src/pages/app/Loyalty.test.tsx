@@ -1,7 +1,9 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import Loyalty from "./Loyalty";
 import Plans from "./Plans";
+const renderAccount=(ui:React.ReactElement)=>render(ui,{wrapper:MemoryRouter});
 
 const harness = vi.hoisted(() => ({
   auth: { user: { id: "a" } as { id: string } | null, loading: false },
@@ -43,7 +45,7 @@ afterEach(cleanup);
 
 describe("wallet consumers", () => {
   it("does not consume a free-clean credit through the unfinished redemption endpoint", async () => {
-    render(<Loyalty />);
+    renderAccount(<Loyalty />);
     await screen.findByText("789");
     const redeem = screen.getByRole("button", { name: "Redeem a free clean" });
     expect(redeem).toBeDisabled();
@@ -55,7 +57,7 @@ describe("wallet consumers", () => {
     harness.ledger.mockImplementation((_account: string, from: number) => Promise.resolve(from === 0
       ? { data: Array.from({ length: 500 }, (_, i) => ({ ...credit, id: `credit-${i}` })), error: null }
       : { data: null, error: { message: "synthetic page failure" } }));
-    render(<Loyalty />);
+    renderAccount(<Loyalty />);
     await screen.findByText("XootCred could not be refreshed. Try again shortly.");
     for (const label of ["Available XootCred", "Pending XootCred"])
       expect(screen.getByText(label).parentElement).toHaveTextContent("Unavailable");
@@ -66,7 +68,7 @@ describe("wallet consumers", () => {
 
   it("shows membership wallet failure as unavailable", async () => {
     harness.ledger.mockResolvedValue({ data: null, error: { message: "synthetic failure" } });
-    render(<Plans />);
+    renderAccount(<Plans />);
     expect(await screen.findByText(/Current XootCred balance: Unavailable/)).toBeInTheDocument();
     expect(screen.queryByText(/Current XootCred balance: R0/)).not.toBeInTheDocument();
   });
@@ -75,7 +77,7 @@ describe("wallet consumers", () => {
     const next = deferred();
     harness.loyalty.mockImplementation((account: string) => account === "a"
       ? Promise.resolve({ data: loyalty, error: null }) : next.promise);
-    const { rerender } = render(<Loyalty />);
+    const { rerender } = renderAccount(<Loyalty />);
     await screen.findByText("789");
     harness.auth.user = { id: "b" };
     rerender(<Loyalty />);
@@ -93,7 +95,7 @@ describe("wallet consumers", () => {
     const old = deferred();
     harness.loyalty.mockImplementation((account: string) => account === "a" ? old.promise
       : Promise.resolve({ data: { points: 42, free_credits: 0, total_bookings: 1 }, error: null }));
-    const { rerender } = render(<Loyalty />);
+    const { rerender } = renderAccount(<Loyalty />);
     harness.auth.user = { id: "b" };
     rerender(<Loyalty />);
     await screen.findByText("42");

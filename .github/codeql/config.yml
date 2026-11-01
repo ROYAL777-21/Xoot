@@ -1,0 +1,8 @@
+name: Xoot maintained application and operations code
+
+# Installed third-party agent tooling and the original design export are not
+# shipped application source. This matches the pre-existing Semgrep boundary.
+# Keep src/, mobile/, public/, scripts/ and supabase/ in scope, including tests.
+paths-ignore:
+  - skills/**
+  - design/**

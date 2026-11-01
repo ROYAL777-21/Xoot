@@ -3,6 +3,11 @@ name: Claude Security Review
 # Anthropic's claude-code-security-review action (§9 of docs/xoot-master-brief.md).
 # This is a GitHub Action, not a Claude Code skill — it lives here, not in .claude/skills/.
 #
+# OPTIONAL, EXPLICITLY REQUESTED SECOND OPINION ONLY: apply the PR label
+# security-review:claude to opt in. No recurring paid call is made on ordinary
+# pushes. The blocking security-review job is Semgrep, with independent CodeQL
+# and a substantive release diff review; provider failure is never a clean review.
+#
 # PREREQUISITE: CLAUDE_API_KEY must be set as a **GitHub Actions repository secret** —
 # Settings → Secrets and variables → Actions → New repository secret. Not a Supabase secret,
 # and not an environment variable on any Supabase project: `secrets.*` below reads only from
@@ -29,8 +34,7 @@ name: Claude Security Review
 # earlier keyless runs, so the first run that could actually review was told not to.
 #
 # `run-every-commit: true` below is the fix. It costs a review per push on a long-lived branch,
-# which is the right trade: this repo's whole problem with this check has been green ticks that
-# read nothing, twice over now. If the cost ever bites, narrow the trigger — do not re-introduce
+# while the PR is explicitly opted in. If the cost bites, remove the opt-in label — do not re-introduce
 # "review once and trust the marker".
 #
 # The gate that does not depend on any of this is `.github/workflows/semgrep.yml`: no key, no
@@ -44,7 +48,7 @@ name: Claude Security Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
@@ -55,10 +59,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  security-review:
-    # Skip forks (untrusted diff + no secret access) and skip when the key is absent,
-    # so a missing secret does not show up as a red check on every PR.
-    if: github.event.pull_request.head.repo.full_name == github.repository
+  optional-claude-security-review:
+    # A skipped optional second opinion is not the blocking security-review gate.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(github.event.pull_request.labels.*.name, 'security-review:claude')
     runs-on: ubuntu-latest
     steps:
       - name: Check for API key
@@ -67,8 +72,8 @@ jobs:
           KEY: ${{ secrets.CLAUDE_API_KEY }}
         run: |
           if [ -z "$KEY" ]; then
-            echo "CLAUDE_API_KEY not set — skipping security review." >> "$GITHUB_STEP_SUMMARY"
-            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::error::Explicit Claude review requested, but CLAUDE_API_KEY is absent. No review completed."
+            exit 1
           else
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi

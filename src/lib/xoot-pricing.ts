@@ -131,8 +131,9 @@ export const CREW_CAP_BY_SIZE: Record<string, number> = { small: 2, medium: 3, l
 export const CREW_CAP_BY_SERVICE: Record<string, number> = {
   airbnb: 3,
   office: 4,
-  moving: 4,
-  express: 3,
+  regular: 1,
+  moving: 1,
+  express: 1,
   laundry: 1,
 };
 
@@ -140,8 +141,8 @@ export const CREW_CAP_BY_SERVICE: Record<string, number> = {
 export function crewCapFor(service: string, sizeKey?: string): number {
   const bySize = (sizeKey && CREW_CAP_BY_SIZE[sizeKey]) || 2;
   const bySvc = CREW_CAP_BY_SERVICE[service];
-  if (bySvc === undefined) return bySize;
-  if (service === "laundry") return 1;
+  // ZD-039: only Airbnb and office visits may use a crew. Unknown services stay solo.
+  if (service !== "airbnb" && service !== "office") return 1;
   return Math.max(bySize, bySvc);
 }
 
@@ -196,7 +197,7 @@ export const MAX_XOOTERS = 5;
  * and a comment acknowledging the duplication is not a control. `serviceAllowsMultipleXooters`
  * below is now the only answer to the question, and the parity test pins it against the server.
  */
-export const MULTI_XOOTER_SERVICES: ReadonlySet<ServiceId> = new Set(["airbnb", "office", "moving"]);
+export const MULTI_XOOTER_SERVICES: ReadonlySet<ServiceId> = new Set(["airbnb", "office"]);
 
 /** See `serviceAllowsMultipleXooters`, declared below `SERVICE_ALIASES` which it reads. */
 

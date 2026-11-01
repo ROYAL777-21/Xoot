@@ -1,9 +1,9 @@
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
-import * as QueryParams from 'expo-auth-session/build/QueryParams';
 
 import { supabase } from '@/lib/supabase';
+import { createPkceCallbackConsumer } from './pkce-callback';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -16,21 +16,12 @@ export const getAuthRedirectUrl = (path = 'auth/callback') =>
     path,
   });
 
-export const createSessionFromUrl = async (url: string) => {
-  const { params, errorCode } = QueryParams.getQueryParams(url);
-  if (errorCode) throw new Error(errorCode);
-
-  const accessToken = params.access_token;
-  const refreshToken = params.refresh_token;
-  if (!accessToken || !refreshToken) return null;
-
-  const { data, error } = await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
+const consumeCallback = createPkceCallbackConsumer(async code => {
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) throw error;
-  return data.session;
-};
+  if (!data.session) throw new Error('Sign-in did not create a session. Please try again.');
+});
+export const createSessionFromUrl = (url: string) => consumeCallback(url, getAuthRedirectUrl());
 
 export const startOAuth = async (provider: 'google' | 'apple') => {
   const redirectTo = getAuthRedirectUrl();
@@ -47,7 +38,7 @@ export const startOAuth = async (provider: 'google' | 'apple') => {
 
   const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
   if (result.type === 'success') {
-    await createSessionFromUrl(result.url);
+    if (!await createSessionFromUrl(result.url)) throw new Error('Sign-in returned to an unexpected address.');
   }
   return result;
 };

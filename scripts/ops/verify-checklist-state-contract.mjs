@@ -74,10 +74,16 @@ try {
   await db.exec("update bookings set status='in_progress'; delete from xooter_job_checklist where task_key='start_work'; set role service_role");
   check((await call()).code,'not_found');
   await db.exec('reset role');
+  // Reproduce hosted new-table defaults: RLS does not protect TRUNCATE.
+  await db.exec('grant all on public.xooter_job_checklist to anon,authenticated');
+  check((await db.query("select has_table_privilege('authenticated','public.xooter_job_checklist','TRUNCATE') as allowed")).rows[0].allowed,true);
+  await db.exec(await readFile('supabase/migrations/20261029111657_checklist_select_only_acl.sql','utf8'));
+  check((await db.query("select has_table_privilege('authenticated','public.xooter_job_checklist','SELECT') as allowed")).rows[0].allowed,true);
   for (const role of ['anon','authenticated']) {
     await db.exec(`set role ${role}`);
     await assert.rejects(call(), error => error.code === '42501'); groups++;
     await assert.rejects(db.exec('update public.xooter_job_checklist set completed_at=now()'), error => error.code === '42501'); groups++;
+    await assert.rejects(db.exec('truncate public.xooter_job_checklist'), error => error.code === '42501'); groups++;
     await db.exec('reset role');
   }
   console.log(JSON.stringify({ ok:true,groups,cleanIncomingMigration:true,correctionReplay:true,hostedWrites:false,concurrentConnections:false }));

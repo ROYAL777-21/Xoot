@@ -57,7 +57,6 @@ const CLIENT_ROLES = ["anon", "authenticated"] as const;
  */
 const INTENTIONALLY_CLIENT_CALLABLE = new Map<string, string>([
   ["lookup_referral_code", "20260601000000:139 — public referral-code lookup, granted to anon, authenticated"],
-  ["set_safety_pin", "20260802170000:71 — a user sets their own PIN; revoked from anon, granted to authenticated"],
   ["has_role", "20260621000000:53 — role check used by RLS policies, which evaluate as the calling role"],
 ]);
 
@@ -138,18 +137,20 @@ describe("no SECURITY DEFINER function in public is callable by a client role", 
     ).toBeGreaterThan(10);
   });
 
-  it("reproduces the two ACLs actually read from production", () => {
+  it("reflects the current production PIN hardening while detecting the historical payout definer", () => {
     /*
-     * The model is only worth trusting if it predicts what the live database showed on 2026-08-21.
+     * The earlier August control permitted authenticated set_safety_pin. Actual production
+     * version20261008011821 later restricted it to service_role; its restored source must
+     * make this model predict that tighter boundary rather than retain the old exception.
      *
      *   can_release_xooter_payout  postgres=X | anon=X | authenticated=X | service_role=X
-     *   set_safety_pin             postgres=X |         authenticated=X | service_role=X
+     *   set_safety_pin             postgres=X |                           service_role=X
      *
      * `set_safety_pin` is the control: `20260802170000` named `anon` in its revoke, and the live
      * ACL has no `anon`. If this test cannot tell those two apart it is not modelling anything.
      */
     expect(state.get("set_safety_pin")?.holders.has("anon"), "set_safety_pin must not be anon-callable").toBe(false);
-    expect(state.get("set_safety_pin")?.holders.has("authenticated"), "set_safety_pin is granted to authenticated").toBe(true);
+    expect(state.get("set_safety_pin")?.holders.has("authenticated"), "set_safety_pin is server-only after the real October hardening").toBe(false);
     expect(state.get("can_release_xooter_payout")?.secdef, "can_release_xooter_payout is SECURITY DEFINER").toBe(true);
   });
 

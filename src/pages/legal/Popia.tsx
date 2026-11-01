@@ -6,7 +6,7 @@ const Popia = () => (
     description="Xoot's Protection of Personal Information Act notice for South African users, Xooters, applicants, clients, and operational partners."
     canonical="/legal/popia"
     eyebrow="POPIA"
-    lastUpdated="29 July 2026"
+    lastUpdated="17 October 2026"
   >
     <LegalSection title="Responsible party">
       <p>
@@ -23,6 +23,15 @@ const Popia = () => (
         <li>Prevent fraud, abuse, platform circumvention, account takeover, unsafe behaviour, and unauthorised access.</li>
         <li>Comply with applicable legal, tax, accounting, safety, dispute, and law-enforcement obligations.</li>
       </LegalList>
+    </LegalSection>
+
+    <LegalSection title="Optional Mapbox journey processing">
+      <p>
+        When the optional journey feature is enabled, Xoot processes a Xooter's foreground GPS position only with explicit job-specific sharing consent. Access is restricted to that booking's customer and Xoot operations administrators using multi-factor authentication. Each fix becomes unreadable within 60 seconds of capture; the physical cleanup process runs once per minute. Tracking ends when the booking is no longer eligible or the Xooter stops sharing.
+      </p>
+      <p>
+        Mapbox may receive map coordinates and, when an authorised person explicitly requests a traffic-based estimate, the destination address needed for geocoding and road directions. Provider telemetry and potential transfers outside South Africa require operator and POPIA safeguards. The feature is not intended to retain full GPS tracks, provide hidden background monitoring or make guaranteed arrival claims.
+      </p>
     </LegalSection>
 
     <LegalSection title="Data minimisation">

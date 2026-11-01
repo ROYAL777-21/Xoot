@@ -36,7 +36,7 @@ async function withSite(brokenRoute, visit) {
       'referrer-policy': 'strict-origin-when-cross-origin',
       'permissions-policy': 'camera=()',
     };
-    if (path.startsWith('/xooter') || ['/app', '/auth', '/admin'].includes(path)) {
+    if (path.startsWith('/xooter') || path.startsWith('/book/') || ['/app', '/auth', '/admin', '/book'].includes(path)) {
       headers['x-robots-tag'] = path === brokenRoute ? 'noindex-looks-safe' : 'noindex, noarchive, nosnippet';
       headers['cache-control'] = path === brokenRoute ? 'public, no-store, private' : 'no-store, private, max-age=0';
     }
@@ -82,6 +82,8 @@ test('real live-site command accepts all private-route headers on a healthy loca
     assert.match(result.stdout, /PASS\s+\/xooter\/future-private-route is noindex/);
     assert.match(result.stdout, /PASS\s+\/xooter\/future-private-route is private no-store/);
     assert.ok(requested.has('/xooter/future-private-route'), 'unlisted nested route must be inspected');
+    assert.ok(requested.has('/book'), 'transactional booking entry must be inspected');
+    assert.ok(requested.has('/book/future-private-route'), 'nested booking entries must be inspected');
   });
 });
 
@@ -92,5 +94,15 @@ test('real live-site command rejects deceptive headers on an unlisted nested Xoo
     assert.match(result.stdout, /FAIL\s+\/xooter\/future-private-route is noindex/);
     assert.match(result.stdout, /FAIL\s+\/xooter\/future-private-route is private no-store/);
     assert.match(result.stdout, /PASS\s+\/xooter\/jobs is noindex/);
+  });
+});
+
+test('real live-site command rejects missing booking-entry protection even when other private routes are healthy', { timeout: 20000 }, async () => {
+  await withSite('/book', async site => {
+    const result = await runVerifier(site);
+    assert.equal(result.code, 1, result.stdout + '\n' + result.stderr);
+    assert.match(result.stdout, /FAIL\s+\/book is noindex/);
+    assert.match(result.stdout, /FAIL\s+\/book is private no-store/);
+    assert.match(result.stdout, /PASS\s+\/auth is noindex/);
   });
 });

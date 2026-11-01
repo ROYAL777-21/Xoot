@@ -1,6 +1,7 @@
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import * as AppleAuthentication from "expo-apple-authentication";
 import {
   Avatar,
   Card,
@@ -68,6 +69,8 @@ export default function AccountScreen() {
   const [status, setStatus] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [apple, setApple] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState(false);
+  const oauthPending = useRef(false);
   useEffect(() => {
     let mounted = true;
     void isAppleSignInAvailable()
@@ -126,16 +129,21 @@ export default function AccountScreen() {
     );
     setSubmitting(false);
   };
-  const appleSignIn = useCallback(async () => {
+  const socialSignIn = useCallback(async (provider: "apple" | "google") => {
+    if (oauthPending.current) return;
+    oauthPending.current = true; setOauthBusy(true); setStatus(null);
     try {
-      await signInWithApple();
+      if (provider === "apple") await signInWithApple();
+      else await startOAuth("google");
     } catch (error) {
       if (!isAppleSignInCancellation(error))
         setStatus(
           error instanceof Error
             ? error.message
-            : "Could not sign in with Apple.",
+            : "Could not finish sign-in. Please try again.",
         );
+    } finally {
+      oauthPending.current = false; setOauthBusy(false);
     }
   }, []);
   if (!user)
@@ -167,15 +175,19 @@ export default function AccountScreen() {
             </Text>
           </Pressable>
           <Pressable
-            onPress={() =>
-              startOAuth("google").catch((e) => setStatus(e.message))
-            }
+            disabled={oauthBusy}
+            onPress={() => { void socialSignIn("google"); }}
             style={s.secondary}
           >
             <Text style={s.secondaryText}>Continue with Google</Text>
           </Pressable>
-          {apple ? (
-            <Pressable onPress={appleSignIn} style={s.secondary}>
+          {apple && Platform.OS === "ios" ? <View pointerEvents={oauthBusy ? "none" : "auto"} style={{ opacity: oauthBusy ? .5 : 1 }}><AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            cornerRadius={16} style={{ width: "100%", height: 52 }}
+            onPress={() => { void socialSignIn("apple"); }}
+          /></View> : apple ? (
+            <Pressable disabled={oauthBusy} onPress={() => { void socialSignIn("apple"); }} style={s.secondary}>
               <Text style={s.secondaryText}>Continue with Apple</Text>
             </Pressable>
           ) : null}

@@ -45,3 +45,7 @@ Supabase organization `hzukufhmigekeyntznal` reports `plan=free`, `tier_free` th
 - Founder reports saving the prepared three-public-read-scope `pk.` replacement into both staging Edge secret names. Current browser connection cannot read the saved metadata; **replacement not independently verified**. No key value was retrieved into this evidence, no old admin token was revoked, and provider operation is unproven. Edge secrets are not Supabase Vault rows.
 
 Record the final production deployment ID, merged commit and public build stamp in the delivery report. Do not treat a preview, source commit or a `READY` state without the intended alias/revision as proof of the public website.
+
+## 22 October 2026 — website delivery verified
+
+[PR #82](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/82) merged as `b6459eca0e1840495ebc1f63b3cb0bee5d757a55`. Vercel production `dpl_5VRTJcw7E2w3EKVyfy8h247v6HDq` is READY and owns `xoot.co.za`/`xoot.vercel.app`; the public [build record](https://xoot.co.za/build-info.json) matches that exact commit (built 22 October 08:59:58 UTC). Monochrome map styling and default-off paid suggestions are delivered as source in the public web build. The relevant built map code has no usable public browser token and retains its unavailable fallback; an existing secret NAME in Vercel does not establish a working map. Owner needs to save a separate restricted public web token, then rebuild. No live tiles/device acceptance or GPS/coverage production activation is claimed.

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { validateForegroundWorkerFix, WORKER_REPORT_SPACING_MS } from '../src/lib/private-job-location-publisher';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { nativeMapboxSearchUrl, parseNativeMapboxSuggestions } from '../src/lib/mapbox-geocoding';
@@ -118,4 +119,80 @@ test('native and website address selection use licensed permanent Geocoding only
   assert.match(nativeSuggestions, /A changed address invalidates an outstanding Permanent Geocoding confirmation/);
   assert.match(nativeSuggestions, /Enter your address manually/);
   assert.doesNotMatch(nativeSuggestions, /watchPosition|Location\.watch|UserLocation/);
+});
+
+
+test('native worker foreground GPS requires permission, consent, lifecycle and stop controls', () => {
+  const worker = readFileSync(new URL('../src/components/private-job-location-publisher.native.tsx', import.meta.url), 'utf8');
+  const browser = readFileSync(new URL('../src/components/private-job-location-publisher.tsx', import.meta.url), 'utf8');
+  const job = readFileSync(new URL('../src/app/xooter/job/[id].tsx', import.meta.url), 'utf8');
+  assert.match(worker, /EXPO_PUBLIC_ENABLE_LIVE_JOURNEY === 'true'/);
+  assert.match(worker, /requestAndroidLocationPermissions\(\)/);
+  assert.match(worker, /AppState\.currentState !== 'active'/);
+  assert.match(worker, /AppState\.addEventListener\('change'/);
+  assert.match(worker, /outstanding\) await outstanding\.catch/);
+  assert.match(worker, /action: 'stop', bookingId/);
+  assert.match(worker, /action: 'publish', bookingId, consent: true/);
+  assert.match(worker, /requestsAlwaysUse=\{false\}/);
+  assert.match(worker, /logoEnabled attributionEnabled/);
+  assert.match(job, /accepted && \['en_route', 'enroute'\]\.includes\(job\.status/);
+  assert.match(job, /<PrivateJobLocationPublisher bookingId=\{job\.booking_id\}/);
+  assert.match(browser, /return null/);
+  assert.match(appConfig, /ACCESS_FINE_LOCATION.*ACCESS_COARSE_LOCATION/);
+  assert.doesNotMatch(appConfig, /ACCESS_BACKGROUND_LOCATION/);
+  assert.doesNotMatch(worker, /AsyncStorage|SecureStore|localStorage|backgroundLocation|etaMinutes/);
+});
+
+test('native worker GPS input refuses old, inaccurate and invalid sensor readings', () => {
+  const now = 1792220400000;
+  const fix = { timestamp: now - 1000, coords: { latitude: -26.1, longitude: 28.03, accuracy: 12 } };
+  assert.equal(WORKER_REPORT_SPACING_MS, 15_000);
+  assert.deepEqual(validateForegroundWorkerFix(fix, now), {
+    latitude: -26.1, longitude: 28.03, accuracyM: 12,
+    capturedAt: new Date(now - 1000).toISOString(),
+  });
+  for (const bad of [
+    null, {}, [],
+    { ...fix, timestamp: now - 31_000 },
+    { ...fix, timestamp: now + 31_000 },
+    { ...fix, coords: null },
+    { ...fix, coords: { ...fix.coords, latitude: 91 } },
+    { ...fix, coords: { ...fix.coords, longitude: 181 } },
+    { ...fix, coords: { ...fix.coords, accuracy: 101 } },
+    { ...fix, coords: { ...fix.coords, accuracy: 0 } },
+    { ...fix, coords: { ...fix.coords, accuracy: NaN } },
+  ]) assert.equal(validateForegroundWorkerFix(bad, now), null);
+});
+
+
+test('native worker one-off route preserves accepted-job scope and zero retained destination', () => {
+  const route = readFileSync(new URL('../src/components/private-worker-directions.native.tsx', import.meta.url), 'utf8');
+  const fallback = readFileSync(new URL('../src/components/private-worker-directions.tsx', import.meta.url), 'utf8');
+  const job = readFileSync(new URL('../src/app/xooter/job/[id].tsx', import.meta.url), 'utf8');
+  assert.match(route, /EXPO_PUBLIC_ENABLE_LIVE_JOURNEY === 'true'/);
+  assert.match(route, /requestAndroidLocationPermissions\(\)/);
+  assert.match(route, /get-xooter-job-cards/);
+  assert.match(route, /item\.job_id === jobId && item\.booking_id === bookingId && item\.state === 'accepted'/);
+  assert.match(route, /destination_address/);
+  assert.match(route, /requestLiveRoadEstimate\(/);
+  assert.match(route, /validateForegroundWorkerFix\(sensor\)/);
+  assert.match(route, /AppState\.currentState !== 'active'/);
+  assert.match(route, /requestsAlwaysUse=\{false\}/);
+  assert.match(route, /logoEnabled attributionEnabled/);
+  assert.doesNotMatch(route, /AsyncStorage|SecureStore|localStorage|watchPosition|backgroundLocation/);
+  assert.match(job, /<PrivateWorkerDirections jobId=\{job\.job_id\} bookingId=\{job\.booking_id\}/);
+  assert.match(fallback, /return null/);
+});
+
+test('native booking verifies approved server coverage only after explicit opt-in', () => {
+  assert.match(nativeBooking, /EXPO_PUBLIC_VERIFIED_COVERAGE === 'true'/);
+  assert.match(nativeBooking, /Check verified service coverage/);
+  assert.match(nativeBooking, /supabase\.functions\.invoke\('check-service-coverage'/);
+  assert.match(nativeBooking, /body: \{ address: fullCoverageAddress, service: input\.service \}/);
+  assert.match(nativeBooking, /currentCoverageKey\.current !== key/);
+  assert.match(nativeBooking, /currentCoverageKey\.current === key/);
+  assert.match(nativeBooking, /Mapbox's Permanent Geocoding API/);
+  assert.match(nativeBooking, /Xooter is available for your date/);
+  assert.doesNotMatch(nativeBooking, /<ServiceAreaMap[^>]+(address|access|notes)=/);
+  assert.doesNotMatch(nativeBooking, /checkServiceCoverage\([^)]*(?:latitude|longitude)/);
 });

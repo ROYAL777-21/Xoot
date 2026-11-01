@@ -80,9 +80,11 @@ describe("Mapbox consumer safety regressions", () => {
     expect(detail).not.toContain("setInterval(() => setEta");
     expect(detail).not.toContain("etaMinutes: liveStatus");
     expect(detail).not.toContain("Arriving in ${eta}");
-    expect(detail).toContain("ETA not available");
-    expect(detail).toContain("No live GPS feed or calculated arrival time");
-    expect(detail).toContain("Live location is not available");
+    expect(detail).toContain('import.meta.env.VITE_ENABLE_LIVE_JOURNEY === "true"');
+    expect(detail).toContain("Follow your visit’s recorded updates here.");
+    expect(detail).toContain('canonicalStatus === "en_route" && <LiveJobJourney');
+    expect(detail).toContain('isAssignedWorker={isAssignedXooter}');
+    expect(detail).toContain('destinationAddress={typeof booking.address === "string" ? booking.address : undefined}');
     expect(detail).not.toContain("Share ETA</Button>");
   });
 
@@ -105,16 +107,21 @@ describe("Mapbox consumer safety regressions", () => {
   it("manual address fallback is available and substring matching cannot confirm coverage", () => {
     expect(address).not.toContain("is in active Xoot coverage");
     expect(address).not.toContain("address.includes(region)");
-    expect(address).toContain("Address lookup or confirmation is unavailable");
-    expect(address).toContain("Find address");
+    expect(address).toContain("Address suggestions are unavailable. You can enter your address manually.");
+    expect(address).toContain("Try address lookup again");
     expect(address).not.toContain("Xoot confirms actual service coverage");
     expect(address).not.toContain("ShieldCheck");
-    expect(address).toContain("mapboxPermanentAddressUrl(suggestion.label, browserToken)");
-    expect(address).toContain("const confirmed = parseMapboxAddressSuggestions(body)");
+    expect(address).toContain('supabase.functions.invoke("search-addresses"');
+    expect(address).toMatch(/lookup\("confirm",\s*option.label,\s*controller.signal,\s*option.id\)/);
+    expect(address).toMatch(/\.find\(o\s*=>\s*o.id\s*===\s*option.id\)/);
+    expect(address).toContain("onChange(confirmed.label)");
+    expect(address).not.toContain("mapboxPermanentAddressUrl(");
+    expect(address).not.toContain("access_token");
+    expect(address).not.toContain("fetch(");
     expect(address).not.toContain("onChange(suggestion.label)");
+    expect(address).not.toContain("onChange(option.label)");
     expect(booking).toContain("<VerifiedAddressInput value={address}");
     expect(booking).toContain("addressEdited.current = true");
     expect(address).toContain("controller.abort()");
-    expect(address).toContain("cache: \"no-store\"");
   });
 });

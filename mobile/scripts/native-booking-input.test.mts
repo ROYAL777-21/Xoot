@@ -93,9 +93,11 @@ test('rooms follow the supplied handoff size and duration defaults, including ba
   const small = withBookingRooms({ ...large, crewSize: 4 }, 1, 1);
   assert.equal(small.homeSize, 'small');
   assert.equal(small.hours, 4);
-  assert.equal(small.crewSize, 2);
+  assert.equal(small.crewSize, 1);
   assert.equal(withBookingRooms(initial, 4, 1).homeSize, 'large');
   assert.equal(withBookingRooms(initial, 1, 2).homeSize, 'medium');
   assert.equal(withBookingRooms(createBookingInput('airbnb', NOW), 4, 3).hours, 4);
+  assert.equal(withBookingRooms({ ...createBookingInput('airbnb', NOW), crewSize: 3 }, 1, 1).crewSize, 3);
+  assert.equal(withBookingRooms({ ...createBookingInput('office', NOW), crewSize: 4 }, 1, 1).crewSize, 4);
   assert.equal(withNativeBookingService({ ...initial, service: 'express' }, 'regular').hours, 5.5);
 });

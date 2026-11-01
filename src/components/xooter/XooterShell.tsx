@@ -1,6 +1,7 @@
 import { ReactNode, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Briefcase, GraduationCap, Wallet, ShieldCheck, User, LogOut, Sparkles } from "lucide-react";
+import { LayoutDashboard, Briefcase, GraduationCap, Wallet, ShieldCheck, User, LogOut } from "lucide-react";
+import { Logo } from "@/components/kit/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -35,16 +36,10 @@ export const XooterShell = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen flex bg-background">
       <aside className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-4xl p-5 sticky top-3 h-[calc(100vh-1.5rem)]">
-        <NavLink to="/" className="liquid-glass-readable flex items-center gap-2 mb-2">
-          <span className="grid h-9 w-9 place-items-center rounded-xl gradient-sage shadow-warm">
-            <span className="font-display text-lg font-bold text-primary-foreground">X</span>
-          </span>
-          <span className="font-display text-2xl font-bold tracking-tight">xooter</span>
+        <NavLink to="/" aria-label="Xoot home" className="liquid-glass-readable flex items-center gap-2 mb-7">
+          <Logo size={29} />
+          <span className="text-xs text-muted-foreground">For Xooters</span>
         </NavLink>
-        <div className="liquid-glass-readable inline-flex items-center gap-1.5 rounded-full bg-accent-soft/80 px-2.5 py-1 mb-7 self-start border border-accent/20">
-          <Sparkles className="h-3 w-3 text-accent-ink" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-accent-ink">Pro</span>
-        </div>
 
         <nav className="liquid-glass-readable flex-1 space-y-1.5">
           {nav.map((n) => {

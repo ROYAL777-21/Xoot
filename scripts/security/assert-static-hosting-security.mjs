@@ -129,6 +129,12 @@ if (!existsSync(vercelPath)) {
     }
   }
 
+  for (const source of ["/book", "/book/(.*)"]) {
+    const rules = vercelHeadersFor(value => value === source);
+    requireMatch(`Vercel ${source} stays out of search`, rules, /X-Robots-Tag:\s+noindex, noarchive, nosnippet/);
+    requireMatch(`Vercel ${source} prevents shared caching`, rules, /Cache-Control:\s+no-store, private, max-age=0, must-revalidate/);
+  }
+
   // A Vite SPA with no rewrite 404s on every deep link — including every link in a marketing post.
   const rewrites = vercel.rewrites ?? [];
   if (!rewrites.some((rule) => rule.destination === "/_spa.html")) {

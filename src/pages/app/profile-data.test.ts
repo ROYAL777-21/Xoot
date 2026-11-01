@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { blankHome, readHome, readProfileOverview, saveHome, saveIdentity } from "./profile-data";
+import { blankHome, readHome, readProfileOverview, saveHome, saveIdentity, saveBookingPlace } from "./profile-data";
 
 type Query = { table: string; selection?: string; filters: [string, unknown][]; orders: string[]; range?: number[]; update?: unknown; insert?: unknown };
 const harness = vi.hoisted(() => ({ queries: [] as Query[], result: vi.fn() }));
@@ -42,13 +42,13 @@ describe("Profile owner-qualified data", () => {
     expect((await readProfileOverview("owner-a")).membership).toBeNull();
   });
   it("fails when a later places page fails instead of reporting an empty or partial list", async () => {
-    harness.result.mockResolvedValueOnce({ data: profile, error: null }).mockResolvedValueOnce({ data: Array.from({ length: 100 }, () => ({})), error: null }).mockResolvedValueOnce({ data: null, error: { message: "synthetic denial" } });
+    harness.result.mockImplementation((query: Query) => Promise.resolve(query.table === "profiles" ? {data:profile,error:null} : query.table === "user_subscriptions" ? {data:[],error:null} : query.range?.[0] === 0 ? {data:Array.from({length:100},()=>({})),error:null} : {data:null,error:{message:"synthetic denial"}}));
     await expect(readProfileOverview("owner-a")).rejects.toThrow("places");
   });
   it("rejects missing identity and membership read errors", async () => {
-    harness.result.mockResolvedValueOnce({ data: null, error: null });
+    harness.result.mockImplementation((query: Query) => Promise.resolve({ data: query.table === "profiles" ? null : [], error: null }));
     await expect(readProfileOverview("owner-a")).rejects.toThrow("account");
-    harness.result.mockResolvedValueOnce({ data: profile, error: null }).mockResolvedValueOnce({ data: [], error: null }).mockResolvedValueOnce({ data: null, error: { message: "denied" } });
+    harness.result.mockImplementation((query: Query) => Promise.resolve(query.table === "profiles" ? {data:profile,error:null} : query.table === "household_profiles" ? {data:[],error:null} : {data:null,error:{message:"denied"}}));
     await expect(readProfileOverview("owner-a")).rejects.toThrow("membership");
   });
   it("reads sensitive place fields only for the requested owner's editor", async () => {
@@ -83,5 +83,21 @@ describe("Profile owner-qualified data", () => {
     harness.result.mockResolvedValue({ data: { id: "created-place" }, error: null });
     await expect(saveHome("owner-a", null, { ...draft, is_default: true })).resolves.toBe("created-place");
     expect(harness.queries[0].insert).toMatchObject({ user_id: "owner-a", label: "Synthetic home", is_default: false });
+  });
+  it("starts independent overview reads together without losing owner filters", async () => {
+    const pending: ((value: unknown) => void)[] = [];
+    harness.result.mockImplementation(() => new Promise(resolve => pending.push(resolve)));
+    const result = readProfileOverview("owner-a");
+    expect(harness.queries.map(query => query.table)).toEqual(["profiles", "household_profiles", "user_subscriptions"]);
+    pending[0]({data:profile,error:null}); pending[1]({data:[],error:null}); pending[2]({data:[],error:null});
+    expect((await result).places).toEqual([]);
+  });
+  it("retries a lost booking-place acknowledgement only for the same owner and exact draft", async () => {
+    harness.result.mockResolvedValueOnce({data:null,error:{code:"23505"}}).mockResolvedValueOnce({data:{id:"place-a",label:"Home",address:"100 Test Road, Test City"},error:null});
+    await expect(saveBookingPlace("owner-a","place-a","Home","100 Test Road, Test City")).resolves.toBe("place-a");
+    expect(harness.queries[0].insert).toMatchObject({id:"place-a",user_id:"owner-a",is_default:false});
+    expect(harness.queries[1].filters).toEqual([["id","place-a"],["user_id","owner-a"]]);
+    harness.result.mockResolvedValueOnce({data:null,error:{code:"23505"}}).mockResolvedValueOnce({data:{id:"place-a",label:"Other",address:"100 Test Road, Test City"},error:null});
+    await expect(saveBookingPlace("owner-a","place-a","Home","100 Test Road, Test City")).rejects.toThrow("not saved");
   });
 });

@@ -7,6 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { PropertyProfileCard, SmartReminderList } from "@/components/care-plus/CarePlusShowcase";
 import { haptic } from "@/lib/haptics";
 import { useHouseholdOperatingLayer } from "@/hooks/useHouseholdOperatingLayer";
+import { XootCharacter } from "@/components/kit/XootCharacter";
+import "@/styles/account-handoff.css";
 
 const OfficeDashboard = () => {
   const household = useHouseholdOperatingLayer();
@@ -21,8 +23,9 @@ const OfficeDashboard = () => {
   const workplaceMode = household.readyModes.find((mode) => mode.id === "workplace-ready");
 
   return (
-    <div className="container max-w-6xl py-8 lg:py-12">
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="container max-w-6xl py-8 lg:py-12 xoot-account-dashboard">
+      <div className="xoot-account-dashboard-hero mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <span className="xoot-account-dashboard-character" aria-hidden="true"><XootCharacter scene="xooter" size={170} motion="none" /></span>
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-sage/15 px-3 py-1">
             <Building2 className="h-3 w-3 text-sage-deep" />

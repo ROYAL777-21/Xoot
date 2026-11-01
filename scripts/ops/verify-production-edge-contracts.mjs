@@ -15,6 +15,7 @@
 import { readFileSync } from "node:fs";
 
 const PROD_REF = "mvlrkelahhsyjrwgsxaf";
+const PROD_API_ORIGIN = "https://mvlrkelahhsyjrwgsxaf.supabase.co";
 const PROD_ORIGIN = "https://xoot.co.za";
 
 export const validatePublicDirectory = (status, value) => {
@@ -75,7 +76,7 @@ if (process.argv.includes("--self-test")) {
       "Content-Type": "application/json",
     };
     try {
-      return await fetch(`${apiUrl}/functions/v1/${name}`, {
+      return await fetch(`${PROD_API_ORIGIN}/functions/v1/${name}`, {
         method,
         headers,
         body: method === "POST" ? "{}" : undefined,

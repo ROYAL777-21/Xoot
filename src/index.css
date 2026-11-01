@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './styles/theme-surfaces.css';
 
 /* The Xoot UI kit's own tokens, generated from design/Xoot_App.html by
    `npm run kit:tokens`. Additive on purpose: declaring them changes nothing until a
@@ -1712,11 +1713,11 @@
   }
 
   /*
-   * Matches `[data-theme="dark"]` rather than `.dark`, because that is the scope the kit's own
-   * dark tokens use and these sit beside them. Tints are the palette colour at ~20% over the
+   * Accepts the kit's data attribute and next-themes' pre-paint root class, just like the
+   * generated handoff tokens. Tints are the palette colour at ~20% over the
    * page, inks are the light tints — the same construction as `--xoot-time-morning` and its ink.
    */
-  [data-theme="dark"] {
+  :root.dark, [data-theme="dark"] {
     --slot-high: rgb(124 92 252 / 0.22);
     --slot-high-ink: #C6B9FA;
     --slot-medium: rgb(231 163 56 / 0.2);

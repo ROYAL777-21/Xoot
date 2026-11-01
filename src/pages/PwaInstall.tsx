@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { CheckCircle2, Home, Plus, Share, Smartphone, Sparkles } from "lucide-react";
 import { Navbar } from "@/components/xoot/Navbar";
 import { Footer } from "@/components/xoot/Footer";
@@ -15,15 +16,44 @@ const installSteps = [
 ];
 
 const PwaInstall = () => {
+  const [install, setInstall] = useState<(Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }) | null>(null);
+  const [installed, setInstalled] = useState(false);
+  const [installNotice, setInstallNotice] = useState("");
+  useEffect(() => {
+    setInstalled(window.matchMedia("(display-mode: standalone)").matches);
+    const available = (event: Event) => { event.preventDefault(); setInstall(event as NonNullable<typeof install>); };
+    const finished = () => { setInstalled(true); setInstall(null); };
+    window.addEventListener("beforeinstallprompt", available);
+    window.addEventListener("appinstalled", finished);
+    return () => { window.removeEventListener("beforeinstallprompt", available); window.removeEventListener("appinstalled", finished); };
+  }, []);
+  const installDesktop = async () => {
+    if (!install) return;
+    try {
+      await install.prompt();
+      const choice = await install.userChoice;
+      setInstallNotice(choice.outcome === "accepted" ? "Follow your browser’s installation steps to finish." : "You can install Xoot later from your browser menu.");
+    } catch { setInstallNotice("Open your browser menu to install Xoot."); }
+    setInstall(null);
+  };
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Install Xoot on iPhone - Home Screen app access"
-        description="Add Xoot to your iPhone Home Screen for app-style access to booking, Care+, support and home-care workflows."
+        title="Install Xoot on your phone, laptop or Mac"
+        description="Keep Xoot close on your phone, laptop or Mac, with quick access to your home and upcoming visits."
         canonical="/install"
       />
       <Navbar />
       <main>
+        <section className="container py-12" aria-labelledby="desktop-install-title">
+          <h1 id="desktop-install-title" className="font-display text-4xl md:text-5xl">Keep Xoot close.</h1>
+          <p className="mt-3 max-w-2xl text-muted-foreground">Open your home, upcoming visits and booking status from your laptop or Mac.</p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <Card className="rounded-3xl p-6"><h2 className="font-display text-2xl">Laptop or desktop</h2><p className="my-4 text-sm text-muted-foreground">In Chrome or Edge, choose Install Xoot from the address bar or browser menu. You can then pin Xoot to your taskbar or Dock.</p>{installed ? <p role="status">Xoot is open as an installed app.</p> : install ? <Button onClick={() => { void installDesktop(); }}>Install Xoot</Button> : <p className="text-sm">Your browser shows its install option when available.</p>}{installNotice && <p className="mt-3 text-sm" role="status">{installNotice}</p>}</Card>
+            <Card className="rounded-3xl p-6"><h2 className="font-display text-2xl">Mac with Safari</h2><p className="my-4 text-sm text-muted-foreground">On macOS Sonoma or later, open xoot.co.za in Safari, choose File → Add to Dock, then Add.</p><Button asChild variant="outline"><Link to="/app">Open your home</Link></Button></Card>
+          </div>
+          <p className="mt-6 text-sm text-muted-foreground">Your upcoming-visit card lives inside Xoot. Desktop widgets outside the app are not available yet.</p>
+        </section>
         <section className="bg-[#faf4e8] py-16 dark:bg-background md:py-24">
           <div className="container grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div>
@@ -31,11 +61,11 @@ const PwaInstall = () => {
                 <Sparkles className="h-3 w-3 text-accent-ink" />
                 <span className="text-xs font-medium text-accent-ink">iPhone app access</span>
               </div>
-              <h1 className="font-display text-5xl font-bold leading-[1.03] tracking-tight md:text-6xl">
+              <h2 className="font-display text-5xl font-bold leading-[1.03] tracking-tight md:text-6xl">
                 Put Xoot on your iPhone Home Screen.
-              </h1>
+              </h2>
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                Use Xoot as an installable iPhone web app while the native TestFlight build waits for Apple Developer access and final bundle IDs.
+                Keep booking, your visits and your account one tap away with the installable Xoot web app.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button asChild size="lg" className="h-14 rounded-full px-7" onClick={() => haptic("impact")}>

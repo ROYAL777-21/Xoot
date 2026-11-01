@@ -31,6 +31,20 @@
   ],
   "headers": [
     {
+      "source": "/book",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
+        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/book/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },
+        { "key": "Cache-Control", "value": "no-store, private, max-age=0, must-revalidate" }
+      ]
+    },
+    {
       "source": "/_spa.html",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, noarchive, nosnippet" },

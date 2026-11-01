@@ -43,9 +43,10 @@ name: Semgrep
 # both triggers. Push covers the working branches; pull_request covers merges into main.
 on:
   push:
-    branches: [main, "claude/**", "codex/**"]
+    branches: [main, release/xoot-production, "claude/**", "codex/**"]
+  # Review release PRs too. Previously PR101's release/xoot-production base
+  # matched neither trigger, so the documented primary scanner never ran.
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -57,14 +58,16 @@ concurrency:
 
 jobs:
   xoot-rules:
-    name: Xoot rules (blocking)
+    name: security-review
     runs-on: ubuntu-latest
     # Pinned to the version the rules were authored and verified against. `latest` would mean a
     # pattern-syntax change upstream could turn this gate red on a PR that touched nothing.
     container:
       image: semgrep/semgrep:1.172.0
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
 
       # The rules test themselves before they are trusted to judge anything.
       #

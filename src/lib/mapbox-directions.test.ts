@@ -55,7 +55,9 @@ describe("route UX privacy", () => {
   it("mounts only for assigned worker on active booking, preserving customer no-GPS fallback", () => {
     expect(page).toContain("isAssignedXooter && activeVisit");
     expect(page).toContain("WorkerRoadEstimate bookingId={id} destinationAddress={booking.address}");
-    expect(page).toContain("Live location is not available for this visit yet");
+    expect(page).toContain("Follow your visit’s recorded updates here.");
+    expect(page).toContain('canonicalStatus === "en_route" && <LiveJobJourney');
+    expect(page).toContain('isAssignedWorker={isAssignedXooter}');
     expect(worker).toContain("getCurrentPosition(resolve, reject");
     expect(worker).toContain("enableHighAccuracy: true");
     expect(worker).toContain("currentRequest.current?.abort()");

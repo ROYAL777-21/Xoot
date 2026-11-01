@@ -6,7 +6,7 @@ const Privacy = () => (
     description="How Xoot collects, uses, protects, shares, and retains personal information for booking, Care+, support, Xooter onboarding, payments, safety, and product operations."
     canonical="/legal/privacy"
     eyebrow="Privacy"
-    lastUpdated="29 July 2026"
+    lastUpdated="17 October 2026"
   >
     <LegalSection title="Information we collect">
       <LegalList>
@@ -25,6 +25,18 @@ const Privacy = () => (
       </p>
       <p>
         Xoot does not sell personal information. Marketing communication should be consent-based or otherwise lawful, and users must be able to opt out where required.
+      </p>
+    </LegalSection>
+
+    <LegalSection title="Optional journey location and mapping">
+      <p>
+        Where Xoot enables the live-journey feature, an accepted Xooter may explicitly choose to share their device's precise foreground location for an active, en-route booking. The assigned customer and MFA-verified Xoot dispatch administrators can view the latest location. Sharing stops when the Xooter chooses Stop, leaves the foreground sharing screen, or the job ends. This is optional, and Xoot does not use this feature to collect background movement history.
+      </p>
+      <p>
+        Xoot keeps only one current GPS position for an eligible booking. A position becomes unavailable to readers no later than 60 seconds after its capture; a database cleanup job runs each minute to remove expired records. If you open an authorised journey map or request a road-time estimate, the displayed position and, for directions, the booking destination are sent to Mapbox. Mapbox SDK usage may involve map-related telemetry under Mapbox's applicable policies. Road-time estimates reflect provider routing at request time and are not guaranteed arrival times.
+      </p>
+      <p>
+        This functionality remains subject to a separate launch approval and appropriate international-transfer, service-provider, security and privacy checks before being enabled.
       </p>
     </LegalSection>
 

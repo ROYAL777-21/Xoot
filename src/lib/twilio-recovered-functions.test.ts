@@ -67,16 +67,11 @@ describe("recovered Twilio functions", () => {
     expect(source).toContain("requireAuth");
   });
 
-  it("checks participation before twilio-conversation writes anything", () => {
+  it("keeps the unaccepted provider chat transport free of writes or provider requests", () => {
     const source = readFunction("twilio-conversation");
-    // The unconfigured path inserts a masked_conversation_sessions row and an outbox event
-    // keyed to the booking, so the gate has to come first or an outsider can queue support
-    // work against someone else's booking without Twilio being configured at all.
-    const gate = source.indexOf("if (!participant)");
-    const firstWrite = source.indexOf('.from("masked_conversation_sessions").insert');
-    expect(gate).toBeGreaterThan(-1);
-    expect(firstWrite).toBeGreaterThan(-1);
-    expect(gate).toBeLessThan(firstWrite);
+    expect(source).toContain("if (!participant)");
+    expect(source).toContain('reason: "transport_not_accepted"');
+    expect(source).not.toMatch(/\.insert\(|\bfetch\(/);
   });
 
   it("does not leak the provider error body to the caller", () => {

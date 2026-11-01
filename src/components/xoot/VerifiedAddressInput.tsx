@@ -1,153 +1,124 @@
-import { useEffect, useId, useRef, useState } from "react";
-import { MapPin } from "lucide-react";
+import {useCallback,useEffect,useId,useRef,useState} from "react";
+import {MapPin} from "lucide-react";
+import {Input} from "@/components/ui/input";
+import {supabase} from "@/integrations/supabase/client";
+import type {MapboxAddressSuggestion} from "@/lib/mapbox-geocoding";
 
-import { Input } from "@/components/ui/input";
-import { mapboxAddressSearchUrl, mapboxPermanentAddressUrl, parseMapboxAddressSuggestions, type MapboxAddressSuggestion } from "@/lib/mapbox-geocoding";
+type Props={value:string;onChange:(value:string)=>void;placeholder?:string;inputClassName?:string;label?:string;showIcon?:boolean;disabled?:boolean};
+const enabled=import.meta.env.VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED==="true";
+const searchable=(value:string)=>value.trim().length>=6 && value.length<=160;
+export const ADDRESS_SUGGESTION_DELAY_MS=650;
 
-type VerifiedAddressInputProps = {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  inputClassName?: string;
-  label?: string;
-  showIcon?: boolean;
-};
+async function lookup(mode:"suggest"|"confirm",query:string,signal:AbortSignal,selectedId?:string) {
+  const {data,error}=await supabase.functions.invoke("search-addresses",{body:{mode,query,selectedId},signal});
+  if(error || data?.success!==true || data?.data?.state!=="results" || !Array.isArray(data.data.options))throw new Error("Address lookup unavailable");
+  return data.data.options.filter((o:unknown):o is MapboxAddressSuggestion=>Boolean(o && typeof o==="object" &&
+    "id" in o && typeof o.id==="string" && o.id.length>0 && o.id.length<=256 &&
+    "label" in o && typeof o.label==="string" && o.label.length>=4 && o.label.length<=220 &&
+    "featureType" in o && o.featureType==="address")).slice(0,10);
+}
 
-// Public browser token bundled by Vite. A token name in Vercel is not proof of permission
-// to call Geocoding; failed/blocked requests must leave manual entry fully usable.
-const browserToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN?.trim() ?? "";
-// Selected suggestions require paid Permanent Geocoding before they can be saved.
-// Manual entry remains the default until the owner approves that operating cost.
-const mapboxAddressSuggestionsEnabled = import.meta.env.VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED === "true";
+export const VerifiedAddressInput=({value,onChange,placeholder,inputClassName,label="Service address",showIcon=true,disabled=false}:Props)=>{
+  const [options,setOptions]=useState<MapboxAddressSuggestion[]>([]);
+  const [state,setState]=useState<"idle"|"loading"|"results"|"empty"|"error">("idle");
+  const [selectedText,setSelectedText]=useState("");
+  const [confirming,setConfirming]=useState(false);
+  const [active,setActive]=useState(-1);
+  const serial=useRef(0),request=useRef<AbortController|null>(null);
+  const currentValue=useRef(value),typedValue=useRef<string|null>(null);
+  const pendingQuery=useRef<string|null>(null),confirmBusy=useRef(false),blocked=useRef(disabled);
+  blocked.current=disabled;
+  const listId=useId(),statusId=useId();
+  currentValue.current=value;
+  useEffect(()=>()=>{serial.current++;request.current?.abort();},[]);
 
-export const VerifiedAddressInput = ({
-  value, onChange, placeholder, inputClassName, label = "Service address", showIcon = true,
-}: VerifiedAddressInputProps) => {
-  const [suggestions, setSuggestions] = useState<MapboxAddressSuggestion[]>([]);
-  const [searchState, setSearchState] = useState<"idle" | "loading" | "results" | "empty" | "error">("idle");
-  const [selectedText, setSelectedText] = useState("");
-  const [confirming, setConfirming] = useState(false);
-  const confirmation = useRef<AbortController | null>(null);
-  const searchRequest = useRef<AbortController | null>(null);
-  const requestId = useRef(0);
-  const suggestionsId = useId();
-  const lookupAvailable = mapboxAddressSuggestionsEnabled && browserToken.startsWith("pk.");
-  useEffect(() => () => { requestId.current += 1; searchRequest.current?.abort(); confirmation.current?.abort(); }, []);
+  const findAddress=useCallback(async(query:string)=>{
+    if(!enabled || blocked.current || confirmBusy.current || pendingQuery.current===query || !searchable(query) || query!==currentValue.current)return;
+    pendingQuery.current=query;
+    request.current?.abort();const controller=new AbortController();request.current=controller;
+    const id=++serial.current;setOptions([]);setActive(-1);setState("loading");
+    const timer=window.setTimeout(()=>{if(id===serial.current)setState("error");controller.abort();},10000);
+    try{
+      const found=await lookup("suggest",query,controller.signal);
+      if(id!==serial.current || controller.signal.aborted || query!==currentValue.current)return;
+      setOptions(found);setState(found.length?"results":"empty");
+    }catch{if(id===serial.current && !controller.signal.aborted)setState("error");}
+    finally{window.clearTimeout(timer);if(id===serial.current)pendingQuery.current=null;}
+  },[]);
 
-  const findAddress = async () => {
-    if (!lookupAvailable || confirming || searchState === "loading") return;
-    const url = mapboxAddressSearchUrl(value, browserToken);
-    if (!url) return;
-    searchRequest.current?.abort();
-    const controller = new AbortController();
-    searchRequest.current = controller;
-    const serial = ++requestId.current;
-    setSuggestions([]);
-    setSearchState("loading");
-    const timer = window.setTimeout(() => { if (serial === requestId.current) setSearchState("error"); controller.abort(); }, 10_000);
-    try {
-      const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
-      if (!response.ok) throw new Error("Mapbox address lookup unavailable");
-      const json: unknown = await response.json();
-      if (serial !== requestId.current || controller.signal.aborted) return;
-      const options = parseMapboxAddressSuggestions(json).filter(item => item.featureType === "address");
-      setSuggestions(options);
-      setSearchState(options.length ? "results" : "empty");
-    } catch {
-      if (serial === requestId.current && !controller.signal.aborted) setSearchState("error");
-    } finally { window.clearTimeout(timer); }
+  // Choosing a saved place is an external value change, not a new search.
+  useEffect(()=>{
+    if(value===typedValue.current || value===selectedText)return;
+    serial.current++;request.current?.abort();pendingQuery.current=null;confirmBusy.current=false;
+    setOptions([]);setActive(-1);setState("idle");setConfirming(false);
+  },[value,selectedText]);
+
+  // Only human editing schedules requests. Saved addresses and selection do not auto-spend.
+  useEffect(()=>{
+    if(!enabled || value!==typedValue.current || selectedText===value || !searchable(value))return;
+    const timer=window.setTimeout(()=>void findAddress(value),ADDRESS_SUGGESTION_DELAY_MS);
+    return ()=>window.clearTimeout(timer);
+  },[value,selectedText,findAddress]);
+
+  const change=(next:string)=>{
+    serial.current++;request.current?.abort();pendingQuery.current=null;confirmBusy.current=false;currentValue.current=next;typedValue.current=next;
+    setOptions([]);setActive(-1);setState("idle");setSelectedText("");setConfirming(false);onChange(next);
+  };
+  const choose=async(option:MapboxAddressSuggestion)=>{
+    if(!enabled || blocked.current || confirmBusy.current)return;
+    confirmBusy.current=true;pendingQuery.current=null;
+    request.current?.abort();const controller=new AbortController();request.current=controller;
+    const id=++serial.current;setOptions([]);setActive(-1);setConfirming(true);setState("idle");
+    const timer=window.setTimeout(()=>{if(id===serial.current){setState("error");setConfirming(false);}controller.abort();},10000);
+    try{
+      // Temporary suggestions stay only in this component. Persist only a server-capped
+      // Permanent confirmation; never trust a selected suburb or browser coordinate as coverage.
+      const confirmed=(await lookup("confirm",option.label,controller.signal,option.id)).find(o=>o.id===option.id);
+      if(id!==serial.current || controller.signal.aborted)return;
+      if(!confirmed)throw new Error("Address confirmation unavailable");
+      typedValue.current=null;currentValue.current=confirmed.label;setSelectedText(confirmed.label);onChange(confirmed.label);
+    }catch{if(id===serial.current && !controller.signal.aborted)setState("error");}
+    finally{window.clearTimeout(timer);if(id===serial.current){confirmBusy.current=false;setConfirming(false);}}
   };
 
-  const updateValue = (next: string) => {
-    requestId.current += 1;
-    searchRequest.current?.abort();
-    confirmation.current?.abort();
-    setSuggestions([]);
-    setSearchState("idle");
-    setConfirming(false);
-    setSelectedText("");
-    onChange(next);
-  };
-
-  const chooseSuggestion = async (suggestion: MapboxAddressSuggestion) => {
-    if (!mapboxAddressSuggestionsEnabled) return;
-    // Autocomplete suggestions are TEMPORARY and may not be persisted. Only accept their
-    // label into booking state after a separate licensed PERMANENT Geocoding confirmation.
-    // A failed Permanent request leaves the original user input intact for manual entry.
-    confirmation.current?.abort();
-    const url = mapboxPermanentAddressUrl(suggestion.label, browserToken);
-    if (!url) { setSearchState("error"); return; }
-    const controller = new AbortController();
-    confirmation.current = controller;
-    requestId.current += 1;
-    setSuggestions([]);
-    setConfirming(true);
-    try {
-      const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
-      if (!response.ok) throw new Error("Permanent Mapbox geocoding unavailable");
-      const body: unknown = await response.json();
-      if (controller.signal.aborted) return;
-      const confirmed = parseMapboxAddressSuggestions(body).find(item => item.id === suggestion.id);
-      if (!confirmed) throw new Error("Unable to verify South African address");
-      setSelectedText(confirmed.label);
-      setSearchState("idle");
-      onChange(confirmed.label);
-    } catch {
-      if (!controller.signal.aborted) setSearchState("error");
-    } finally {
-      if (!controller.signal.aborted) setConfirming(false);
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="relative">
-        {showIcon && <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />}
-        <Input
-          aria-label={label}
-          role={lookupAvailable ? "combobox" : undefined}
-          aria-autocomplete={lookupAvailable ? "list" : "none"}
-          aria-controls={suggestionsId}
-          aria-expanded={suggestions.length > 0}
-          value={value}
-          onChange={event => updateValue(event.target.value)}
-          placeholder={placeholder ?? "Enter your South African address..."}
-          autoComplete="street-address"
-          inputMode="text"
-          enterKeyHint="done"
-          maxLength={160}
-          className={`h-12 rounded-xl text-base ${showIcon ? "pl-10" : ""} ${inputClassName ?? ""}`}
-        />
-      </div>
-      {lookupAvailable && (
-        <div className="flex items-start gap-2 text-xs text-muted-foreground">
-          <button type="button" disabled={!mapboxAddressSearchUrl(value, browserToken) || confirming || searchState === "loading"}
-            className="shrink-0 rounded-full border border-border px-3 py-1.5 font-semibold text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-            onClick={() => void findAddress()}>
-            Find address
-          </button>
-          <span>Uses Mapbox to look up the address you enter.</span>
-        </div>
-      )}
-      {suggestions.length > 0 && (
-        <ul id={suggestionsId} role="listbox" aria-label="South African address suggestions"
-          className="max-h-60 overflow-y-auto rounded-xl border border-border bg-background shadow-md">
-          {suggestions.map(suggestion => (
-            <li key={suggestion.id} role="presentation">
-              <button type="button" role="option" aria-selected={false}
-                onClick={() => void chooseSuggestion(suggestion)}
-                className="w-full px-3 py-2.5 text-left text-sm hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-                {suggestion.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {selectedText === value && selectedText && <p className="text-xs text-muted-foreground">Address found. Check the unit and entrance details.</p>}
-      {confirming && <p role="status" className="text-xs text-muted-foreground">Confirming selected address…</p>}
-      {searchState === "loading" && !confirming && <p role="status" className="text-xs text-muted-foreground">Finding nearby addresses…</p>}
-      {searchState === "error" && <p role="status" className="text-xs text-muted-foreground">Address lookup or confirmation is unavailable. You can enter your address manually.</p>}
-      {searchState === "empty" && <p role="status" className="text-xs text-muted-foreground">No suggestions found. Check the address manually in booking.</p>}
+  return <div className="space-y-2">
+    <div className="relative">
+      {showIcon && <MapPin aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>}
+      <Input aria-label={label} role={enabled?"combobox":undefined} aria-autocomplete={enabled?"list":"none"}
+        aria-controls={enabled?listId:undefined} aria-expanded={options.length>0} aria-describedby={enabled?statusId:undefined}
+        aria-activedescendant={active>=0 && options[active]?listId+"-"+active:undefined} aria-busy={state==="loading" || confirming}
+        value={value} disabled={disabled} onChange={event=>change(event.target.value)} placeholder={placeholder??"Start typing your street address..."}
+        autoComplete="street-address" inputMode="text" enterKeyHint="done" maxLength={160}
+        className={`h-12 rounded-xl text-base ${showIcon?"pl-10":""} ${inputClassName??""}`}
+        onKeyDown={event=>{
+          if(event.key==="Escape"){serial.current++;request.current?.abort();pendingQuery.current=null;confirmBusy.current=false;setOptions([]);setActive(-1);setState("idle");setConfirming(false);}
+          if((event.key==="ArrowDown" || event.key==="ArrowUp") && options.length){
+            event.preventDefault();const direction=event.key==="ArrowDown"?1:-1;
+            setActive(old=>old<0?(direction>0?0:options.length-1):(old+direction+options.length)%options.length);
+          }
+          if(event.key==="Enter" && enabled){
+            event.preventDefault();if(active>=0 && options[active])void choose(options[active]);else if(!confirming)void findAddress(value);
+          }
+        }}/>
     </div>
-  );
+    {options.length>0 && <ul id={listId} role="listbox" aria-label="South African address suggestions"
+      className="max-h-60 overflow-y-auto rounded-xl border border-border bg-background shadow-md">
+      {options.map((option,index)=><li key={option.id} role="presentation"><button id={listId+"-"+index} type="button"
+        role="option" aria-selected={active===index} onClick={()=>void choose(option)}
+        className="w-full px-3 py-3 text-left text-sm hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+        {option.label}</button></li>)}
+    </ul>}
+    {enabled && <p id={statusId} role="status" className="text-xs text-muted-foreground">
+      {confirming?"Confirming your address…":state==="loading"?"Finding addresses…":state==="error"?
+        "Address suggestions are unavailable. You can enter your address manually.":state==="empty"?
+        "No suggestions found. Try the full street name, such as Close instead of Cl, then your suburb and city.":selectedText===value && selectedText?
+        "Address selected. Add unit and entrance details if needed.":state==="results"?
+        "Choose the address with the correct suburb and city.":"Enter your street number and name, then add your suburb and city."}
+    </p>}
+    {enabled && state==="error" && <button type="button" disabled={disabled || !searchable(value) || confirming}
+      className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+      onClick={()=>void findAddress(value)}>Try address lookup again</button>}
+    {(options.length>0 || Boolean(selectedText)) && <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noreferrer"
+      className="block text-[10px] text-muted-foreground">© Mapbox</a>}
+  </div>;
 };

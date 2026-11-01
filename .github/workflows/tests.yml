@@ -105,7 +105,9 @@ jobs:
         run: npx vitest run --project unit src/lib/booking-quote-sql.test.ts
 
       - name: Verify gift transaction rollback and access controls
-        run: node scripts/ops/verify-gift-order-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+        run: |
+          node scripts/ops/verify-gift-order-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+          node scripts/ops/verify-address-quota-isolation.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
 
       - name: Verify hardened storage upload paths and role isolation
         run: node scripts/ops/verify-storage-path-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"

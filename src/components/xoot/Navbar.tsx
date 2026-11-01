@@ -10,7 +10,7 @@ import { toast } from "sonner";
 const links = [
   { label: "Services", href: "/#services" },
   { label: "Care+", href: "/care-plus" },
-  { label: "Trust", href: "/trust-centre" },
+  { label: "Safety", href: "/trust-centre" },
   { label: "Journal", href: "/articles" },
   { label: "How it works", href: "/#how" },
 ] as const;
@@ -112,7 +112,7 @@ export const Navbar = () => {
               <Button variant="ghost" size="sm" className="h-9 min-h-0 min-w-0 rounded-full font-semibold" disabled={signingOut} onClick={() => void handleSignOut()}>{signingOut ? "Signing out…" : "Sign out"}</Button>
             </>}
             {!user && (
-            <Button asChild variant="ghost" size="sm" className="min-h-0 min-w-0 h-9 rounded-full font-semibold hover:bg-[var(--xoot-action-brand)] hover:text-white focus-visible:bg-[var(--xoot-action-brand)] focus-visible:text-white">
+            <Button asChild variant="ghost" size="sm" className="min-h-0 min-w-0 h-9 rounded-full font-semibold hover:bg-[var(--xoot-action-brand)] hover:text-[var(--xoot-text-on-brand)] focus-visible:bg-[var(--xoot-action-brand)] focus-visible:text-[var(--xoot-text-on-brand)]">
                 <Link to="/auth" onMouseEnter={() => prefetchRoute("/auth")}>Sign in</Link>
               </Button>
             )}
@@ -160,7 +160,7 @@ export const Navbar = () => {
                 </a>
               ))}
               {!user && (
-                <Link to="/auth" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-semibold text-foreground/80 hover:bg-[var(--xoot-action-brand)] hover:text-white focus-visible:bg-[var(--xoot-action-brand)] focus-visible:text-white">
+                <Link to="/auth" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-semibold text-foreground/80 hover:bg-[var(--xoot-action-brand)] hover:text-[var(--xoot-text-on-brand)] focus-visible:bg-[var(--xoot-action-brand)] focus-visible:text-[var(--xoot-text-on-brand)]">
                   Sign in
                 </Link>
               )}

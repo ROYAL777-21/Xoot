@@ -1,0 +1,20 @@
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { afterEach, expect, it, vi } from "vitest";
+import PwaInstall from "./PwaInstall";
+vi.mock("@/components/xoot/Navbar", () => ({ Navbar: () => null }));
+vi.mock("@/components/xoot/Footer", () => ({ Footer: () => null }));
+vi.mock("@/components/SEO", () => ({ SEO: () => null }));
+afterEach(cleanup);
+it("offers desktop instructions and only prompts installation after the browser makes it available", async () => {
+  render(<MemoryRouter><PwaInstall /></MemoryRouter>);
+  expect(screen.queryByRole("button", { name: "Install Xoot" })).toBeNull();
+  const prompt = vi.fn(async () => {}); const event = new Event("beforeinstallprompt", { cancelable: true });
+  Object.assign(event, { prompt, userChoice: Promise.resolve({ outcome: "accepted" }) });
+  act(() => { window.dispatchEvent(event); });
+  expect(prompt).not.toHaveBeenCalled(); fireEvent.click(screen.getByRole("button", { name: "Install Xoot" }));
+  await screen.findByText("Follow your browser’s installation steps to finish.");
+  expect(prompt).toHaveBeenCalledOnce(); expect(screen.queryByText("Xoot is open as an installed app.")).toBeNull();
+  act(() => { window.dispatchEvent(new Event("appinstalled")); });
+  expect(screen.getByText("Xoot is open as an installed app.")).toBeInTheDocument();
+});

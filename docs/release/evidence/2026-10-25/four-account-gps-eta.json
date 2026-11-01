@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-25",
+  "environment": "fxmxyabdjqviqbcxmvlp",
+  "normalAuthDistinctNonanonymousSubjects": 4,
+  "gpsEtaPassedGroups": 6,
+  "groups": [
+    "Four distinct normal Auth subjects verified",
+    "Missing authentication, unrelated customer/worker and forged customer publishing denied",
+    "Missing consent, inaccurate, stale and replayed fixes rejected",
+    "Only assigned customer reads fresh no-store private GPS without history",
+    "Actual Mapbox road ETA from synthetic public test inputs, no private route/coordinates returned",
+    "STOP removes point and ETA while preserving the other customer's point"
+  ],
+  "adminMfaAcceptance": "not tested",
+  "physicalDeviceAcceptance": "not tested",
+  "encryptedChatAcceptance": "not executed; six GPS groups do not evidence chat",
+  "voiceProviderCallAcceptance": "not tested",
+  "helperSessions": "45-minute process expired and erased its in-memory sessions",
+  "cleanup": {
+    "helperConfirmed": true,
+    "physicalGpsRows": 0,
+    "disposableBookings": 0,
+    "disposableJobs": 0,
+    "disposableWorkerFixtures": 0,
+    "fixtureMessages": 0
+  },
+  "productionTrackingActivated": false
+}

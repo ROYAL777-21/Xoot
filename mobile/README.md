@@ -54,4 +54,4 @@ npx eas-cli@20.5.0 build -p ios --profile preview-simulator
 npx eas-cli@20.5.0 build -p android --profile preview
 ```
 
-EAS project initialization is complete for `@don-pacho777/xoot`. Use EAS environments for `development`, `preview`, and `production`. The `preview` iOS profile is for physical-device internal distribution and requires Apple credentials; `preview-simulator` produces an iOS simulator artifact without provisioning a device. Store file credentials and secrets in EAS or provider dashboards, not in source control.
+The connected EAS project is `@don-pacho777/zoot`, ID `b4c6e0b8-e2e7-40c5-b259-3b34c79be30b` (read back on 19 October 2026). Its project slug remains `zoot`; the installed app name, bundle identifiers and primary link scheme remain Xoot. Use EAS environments for `development`, `preview`, and `production`. The `preview` iOS profile is for physical-device internal distribution and requires Apple credentials; `preview-simulator` produces an iOS simulator artifact without provisioning a device. Store file credentials and secrets in EAS or provider dashboards, not in source control.

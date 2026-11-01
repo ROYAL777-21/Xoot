@@ -20,6 +20,16 @@ function worker() {
 }
 
 describe('service worker preserves real sessions and offline branding', () => {
+  it('accepts update messages only from the same origin', () => {
+    const w = worker();
+    const message = w.handlers.get('message')!;
+    for (const origin of [undefined, '', 'https://foreign.test', 'https://xoot.test.foreign.test']) {
+      message({ origin, data: { type: 'SKIP_WAITING' } });
+    }
+    expect(w.self.skipWaiting).not.toHaveBeenCalled();
+    message({ origin: 'https://xoot.test', data: { type: 'SKIP_WAITING' } });
+    expect(w.self.skipWaiting).toHaveBeenCalledOnce();
+  });
   it('caches the original fonts with the offline screen', async () => {
     const w = worker();
     let task: Promise<unknown> | undefined;

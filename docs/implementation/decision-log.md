@@ -1114,3 +1114,17 @@ approved provider before it can be charged.
 
 Implementation and deployment evidence belongs in the current production checklist. Recording
 this decision does not mean that the new writer, migration or crew fulfilment is live.
+
+## ZD-039 — crews only for Airbnb and offices (2026-10-28)
+
+The founder permits removing crews or limiting them to Airbnb and office bookings. Apply the
+limited-service option: all regular/residential, express, moving and laundry visits use one
+Xooter. Remove their crew picker, clamp an existing selection when service/property changes,
+and refuse crafted multi-Xooter requests on both quote and legacy booking routes. Resolve the
+actual property service before applying the rule. Keep web/native defaults and server pricing
+in agreement, and invalidate prior quote fingerprints with booking-zd039-v1.
+
+This narrows eligibility; it does not change eligible-service ladder prices, crew overheads,
+fees or the existing size/service caps. Additional price/hour/size thresholds from the newer
+unreviewed delivery remain for reconciliation. It grants no permission to claim worker
+availability, bypass settlement, enable checkout/payout controls or promote untested code.

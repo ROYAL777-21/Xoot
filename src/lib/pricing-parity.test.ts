@@ -680,10 +680,10 @@ describe("ZD-035 crew pricing parity", () => {
     // whole reason to send a third person.
     expect(crewCapFor("airbnb", "small")).toBe(3);
     expect(crewCapFor("office", "small")).toBe(4);
-    // A service with no entry falls back to the size allowance rather than to the maximum.
-    expect(crewCapFor("regular", "small")).toBe(2);
-    expect(crewCapFor("regular", "large")).toBe(4);
-    expect(crewCapFor("regular", undefined)).toBe(2);
+    // ZD-039 restricts all other services to one Xooter, regardless of home size.
+    expect(crewCapFor("regular", "small")).toBe(1);
+    expect(crewCapFor("regular", "large")).toBe(1);
+    expect(crewCapFor("regular", undefined)).toBe(1);
   });
 
   it("prices ZD-035's own worked example, to the rand", () => {

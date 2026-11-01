@@ -35,8 +35,9 @@ const appName = isProduction ? 'Xoot' : 'Xoot Preview';
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: appName,
-  slug: 'xoot',
-  owner: process.env.EXPO_ACCOUNT_OWNER || undefined,
+  // Existing EAS project verified in Expo; the installed app keeps the Xoot display name.
+  slug: 'zoot',
+  owner: process.env.EXPO_ACCOUNT_OWNER?.trim() || 'don-pacho777',
   version: process.env.XOOT_MOBILE_VERSION ?? '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
@@ -70,7 +71,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSCameraUsageDescription: 'Xoot uses the camera only when you choose to upload service or verification photos.',
       NSPhotoLibraryUsageDescription: 'Xoot uses your photo library only when you choose to upload service or verification photos.',
       NSLocationWhenInUseUsageDescription:
-        'Xoot uses your location only when you choose location-assisted address or arrival features.',
+        'Xoot uses foreground location only when you choose address assistance or explicitly share your journey for an active job.',
     },
   },
   android: {
@@ -117,7 +118,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         category: ['BROWSABLE', 'DEFAULT'],
       },
     ],
-    permissions: ['POST_NOTIFICATIONS'],
+    // Foreground opt-in journey only; never request background location.
+    permissions: ['POST_NOTIFICATIONS', 'ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION'],
     predictiveBackGestureEnabled: true,
   },
   web: {

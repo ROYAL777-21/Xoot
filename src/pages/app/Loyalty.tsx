@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Gift, Loader2, Sparkles, Trophy, WalletCards } from "lucide-react";
+import { CalendarCheck, Gift, Handshake, Loader2, Sparkles, WalletCards } from "lucide-react";
 import { formatZARDecimal } from "@/lib/format";
 import { useXootCred } from "@/hooks/useXootCred";
-
-const TARGET = 10;
+import { ReferralCodeCard } from "@/components/xoot/ReferralCodeCard";
+import { HandoffFlowerField } from "@/components/xoot/HeroArtwork";
+import { CarePlusMark } from "@/components/care-plus/CarePlusMark";
+import "@/styles/gift-care-handoff.css";
+import "@/styles/referrals-reviews-handoff.css";
+import "@/styles/rewards-handoff.css";
 
 const formatDate = (value?: string | null) =>
   value ? new Intl.DateTimeFormat("en-ZA", { dateStyle: "medium" }).format(new Date(value)) : "No expiry";
@@ -57,64 +61,34 @@ const LoyaltyAccount = ({ accountId }: { accountId: string }) => {
   </Card></div>;
 
   const total = loyalty?.total_bookings ?? 0;
-  const progress = total % TARGET;
-  const tier = total >= 30 ? "Gold" : total >= 15 ? "Silver" : "Bronze";
-  const tierColor = tier === "Gold" ? "text-primary" : tier === "Silver" ? "text-sage-deep" : "text-muted-foreground";
-
   return (
-    <div className="container max-w-5xl py-8 lg:py-12">
-      <div className="mb-8">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1">
-          <Gift className="h-3 w-3 text-primary" />
-          <span className="text-xs font-medium text-primary">Xoot Rewards</span>
-        </div>
-        <h1 className="font-display text-4xl font-bold md:text-5xl">Earn while you book</h1>
-        <p className="mt-2 text-muted-foreground">Rewards, XootCred, referral credits, and free-clean milestones stay on-platform.</p>
+    <div className="container max-w-5xl py-8 lg:py-12 xoot-rewards-page">
+      <header className="xoot-rewards-heading"><span className="xoot-label">Looked after</span>
+        <h1>Rewards</h1><p>Your points, credits and a little more time at home.</p>
+      </header>
+      <section className="xoot-rewards-bloom-card" aria-label="Your rewards history">
+        <HandoffFlowerField className="xoot-rewards-bloom" items={[{size:72,palette:"mist",left:"0",top:"0",opacity:1}]}/>
+        <h2>{total} booking{total===1?"":"s"} recorded</h2>
+        <p>A little thank-you, at your own pace. Your available rewards are below.</p>
+      </section>
+      <div className="xoot-rewards-stats">
+        <Card className="xoot-rewards-stat"><Sparkles size={22} aria-hidden="true"/><strong>{loyalty?.points ?? 0}</strong><span>Points balance</span></Card>
+        <Card className="xoot-rewards-stat"><WalletCards size={22} aria-hidden="true"/><strong>{xootCred.error ? "Unavailable" : formatZARDecimal(xootCred.availableBalance)}</strong><span>Available XootCred</span></Card>
+        <Card className="xoot-rewards-stat"><WalletCards size={22} aria-hidden="true"/><strong>{xootCred.error ? "Unavailable" : formatZARDecimal(xootCred.pendingBalance)}</strong><span>Pending XootCred</span></Card>
       </div>
-
-      <Card className="mb-6 rounded-3xl border-0 p-8 text-primary-foreground shadow-warm gradient-warm">
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <p className="text-sm opacity-90">Available free cleans</p>
-            <p className="font-display text-6xl font-bold">{loyalty?.free_credits ?? 0}</p>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-background/20 px-3 py-1.5 text-sm font-bold backdrop-blur-sm">
-            <Trophy className="h-4 w-4" /> {tier} tier
-          </div>
-        </div>
+      <section className="xoot-rewards-actions" aria-label="Make the most of Xoot">
+        <h2>Make the most of Xoot</h2>
+        <Link to="/app/book"><CalendarCheck size={22} aria-hidden="true"/><span><strong>Plan your next visit</strong><small>Choose a time that works for you.</small></span></Link>
+        <a href="#refer"><Handshake size={22} aria-hidden="true"/><span><strong>Refer a neighbour</strong><small>Your own invite link, ready to share.</small></span></a>
+        <Link to="/app/plans"><CarePlusMark/><span><strong>Explore Care+</strong><small>See the membership and its benefits.</small></span></Link>
+      </section>
+      <Card className="xoot-rewards-credit-card">
+        <Gift size={24} aria-hidden="true"/><h2>Available free cleans</h2><strong>{loyalty?.free_credits ?? 0}</strong>
         <Button disabled aria-describedby="free-clean-availability" variant="secondary" className="rounded-full">
           <Sparkles className="mr-1 h-4 w-4" /> Redeem a free clean
         </Button>
         <p id="free-clean-availability" className="mt-3 text-sm">Free-clean redemption is not available yet.</p>
       </Card>
-
-      <Card className="mb-6 rounded-3xl p-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-display text-xl font-bold">Next free clean</h3>
-          <span className="text-sm text-muted-foreground">{progress} / {TARGET}</span>
-        </div>
-        <Progress value={(progress / TARGET) * 100} className="h-3" />
-        <p className="mt-3 text-sm text-muted-foreground">{TARGET - progress} more booking{TARGET - progress === 1 ? "" : "s"} to earn another free clean.</p>
-      </Card>
-
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl p-5">
-          <p className="font-display text-3xl font-bold">{xootCred.error ? "Unavailable" : formatZARDecimal(xootCred.availableBalance)}</p>
-          <p className="text-sm text-muted-foreground">Available XootCred</p>
-        </Card>
-        <Card className="rounded-2xl p-5">
-          <p className="font-display text-3xl font-bold">{xootCred.error ? "Unavailable" : formatZARDecimal(xootCred.pendingBalance)}</p>
-          <p className="text-sm text-muted-foreground">Pending XootCred</p>
-        </Card>
-        <Card className="rounded-2xl p-5">
-          <p className="font-display text-3xl font-bold">{loyalty?.points ?? 0}</p>
-          <p className="text-sm text-muted-foreground">Points balance</p>
-        </Card>
-        <Card className="rounded-2xl p-5">
-          <p className={`font-display text-3xl font-bold capitalize ${tierColor}`}>{tier}</p>
-          <p className="text-sm text-muted-foreground">Current tier</p>
-        </Card>
-      </div>
 
       <Card className="rounded-3xl p-6 shadow-card">
         <div className="mb-5 flex items-center justify-between gap-3">
@@ -162,7 +136,7 @@ const Loyalty = () => {
   const { user, loading } = useAuth();
   if (loading) return <LoadingRewards />;
   if (!user) return <div className="container py-8">Sign in to see your rewards</div>;
-  return <LoyaltyAccount key={user.id} accountId={user.id} />;
+  return <><LoyaltyAccount key={user.id} accountId={user.id} /><section id="refer" className="container max-w-3xl pb-8" aria-label="Refer and earn"><ReferralCodeCard /></section></>;
 };
 
 export default Loyalty;

@@ -46,26 +46,26 @@ describe("source app navigation", () => {
     expect(screen.queryByRole("navigation", { name: "Account destinations" })).not.toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeInTheDocument();
   });
-  it.each(["/app/notifications", "/app/profile/account", "/app/profile/homes/new", "/app/profile/homes/synthetic-home"])("allows the screen to own the back link at %s", route => {
+  it.each(["/app/notifications", "/app/widgets", "/app/calendar", "/app/properties", "/app/profile/account", "/app/profile/homes/new", "/app/profile/homes/synthetic-home"])("allows the screen to own the back link at %s", route => {
     at(route);
     expect(screen.queryByRole("navigation", { name: "Page navigation" })).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Main navigation" })).not.toBeInTheDocument();
   });
-  it.each(["/app/properties", "/app/favorites", "/app/plans", "/app/gifts", "/app/insurance", "/app/support"])("keeps a way home from %s", route => {
+  it.each(["/app/properties/accounts", "/app/properties/airbnb", "/app/properties/office", "/app/favorites", "/app/plans", "/app/insurance", "/app/support"])("returns to You from %s", route => {
     at(route);
     const nav = screen.getByRole("navigation", { name: "Page navigation" });
-    fireEvent.click(within(nav).getByRole("link", { name: "Home" }));
+    fireEvent.click(within(nav).getByRole("link", { name: "You" }));
     expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeInTheDocument();
   });
-  it.each(["loading", "unavailable", "populated"] as const)("keeps Home usable through the actual Care+ %s branch", async mode => {
+  it.each(["loading", "unavailable", "populated"] as const)("keeps You reachable through the actual Care+ %s branch", async mode => {
     planFixture.mode = mode;
     render(<MemoryRouter initialEntries={["/app/plans"]}><AppShell><Routes>
       <Route path="/app/plans" element={<Plans />} />
-      <Route path="/app" element={<h1>Home destination</h1>} />
+      <Route path="/app/profile" element={<h1>You destination</h1>} />
     </Routes></AppShell></MemoryRouter>);
     if (mode === "unavailable") await screen.findByText("No Care+ plan available.");
     if (mode === "populated") await screen.findByRole("heading", { name: "Care+ keeps your home ready." });
-    fireEvent.click(within(screen.getByRole("navigation", { name: "Page navigation" })).getByRole("link", { name: "Home" }));
-    expect(screen.getByRole("heading", { name: "Home destination" })).toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole("navigation", { name: "Page navigation" })).getByRole("link", { name: "You" }));
+    expect(screen.getByRole("heading", { name: "You destination" })).toBeInTheDocument();
   });
 });
