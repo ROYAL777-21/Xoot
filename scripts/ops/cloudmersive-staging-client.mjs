@@ -1,0 +1,31 @@
+export const STAGING_SCANNER_PROJECT = "fxmxyabdjqviqbcxmvlp";
+export const STAGING_SCANNER_URL = "https://fxmxyabdjqviqbcxmvlp.supabase.co/functions/v1/scan-xooter-document";
+const states = new Set(["claimed", "held", "clean", "blocked", "error"]);
+const reasons = new Set([
+  "method_not_allowed", "unauthorized", "server_worker_required", "evaluation_staging_only", "scanner_not_configured",
+  "invalid_scan_request", "scan_claim_unavailable", "invalid_scan_claim", "document_unavailable",
+  "provider_dispatch_unavailable", "scan_receipt_unavailable", "key_unavailable", "scan_size_limit", "unsupported_type",
+  "invalid_response", "provider_rejected", "incomplete_response", "threat_detected", "unsupported_format", "provider_limit",
+  "provider_unavailable", "response_too_large", "provider_clean", "dispatch_window_expired", "scan_budget_unavailable",
+  "processing_review_pending", "quarantine_receipt_unavailable", "object_changed", "scan_budget_exhausted", "scanner_busy",
+  "scan_lease_expired", "provider_dispatch_required",
+]);
+const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+
+export function projectStagingScanResult(value, fixture, http) {
+  const record = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const reason = record.reason ?? record.error;
+  return { fixture, http, state: typeof record.state === "string" && states.has(record.state) ? record.state : null,
+    reason: typeof reason === "string" && reasons.has(reason) ? reason : null,
+    attemptId: typeof record.attemptId === "string" && uuid.test(record.attemptId) ? record.attemptId : null,
+    cached: record.cached === true, malwareDetected: record.malwareDetected === true };
+}
+
+/** Fixed staging target/fixtures only; no redirect can carry the privileged apikey header away. */
+export async function invokeFixedStagingFixture(serviceKey, fixture, request = fetch) {
+  if (!["clean_pdf", "eicar"].includes(fixture)) throw new Error("Invalid fixed staging fixture");
+  const response = await request(STAGING_SCANNER_URL, { method: "POST", headers: { Authorization: `Bearer ${serviceKey}`,
+    apikey: serviceKey, "Content-Type": "application/json" }, body: JSON.stringify({ fixture }),
+    redirect: "error", signal: AbortSignal.timeout(35000) });
+  return projectStagingScanResult(await response.json(), fixture, response.status);
+}

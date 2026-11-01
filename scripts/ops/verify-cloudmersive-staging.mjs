@@ -1,7 +1,7 @@
 // Manual, synthetic-only integration check. Credentials stay in memory; output is allowlisted.
 import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
-const project = "fxmxyabdjqviqbcxmvlp";
+import { invokeFixedStagingFixture, STAGING_SCANNER_PROJECT as project, STAGING_SCANNER_URL as target } from "./cloudmersive-staging-client.mjs";
 let key;
 try {
   const raw = execFileSync("supabase", ["projects", "api-keys", "--project-ref", project, "--output", "json"],
@@ -14,24 +14,20 @@ try {
   process.exit(1);
 }
 if (typeof key !== "string" || !key) { console.error("A configured staging service key is required."); process.exit(1); }
-const target = "https://fxmxyabdjqviqbcxmvlp.supabase.co/functions/v1/scan-xooter-document";
 const evidence = { project, environment: "staging", syntheticOnly: true, at: new Date().toISOString(), anonymous: null, results: [] };
 let passed = true;
 try {
-  const anonymous = await fetch(target, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fixture: "clean_pdf" }) });
+  const anonymous = await fetch(target, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fixture: "clean_pdf" }),
+    redirect: "error", signal: AbortSignal.timeout(35000) });
   evidence.anonymous = { http: anonymous.status };
   if (anonymous.status !== 401) passed = false;
   for (const fixture of ["clean_pdf", "eicar"]) {
-    const response = await fetch(target, { method: "POST", headers: { Authorization: `Bearer ${key}`, apikey: key,
-      "Content-Type": "application/json" }, body: JSON.stringify({ fixture }), signal: AbortSignal.timeout(35000) });
-    const value = await response.json();
-    const safe = { fixture, http: response.status, state: value.state ?? null, reason: value.reason ?? value.error ?? null,
-      attemptId: value.attemptId ?? null, cached: value.cached === true, malwareDetected: value.malwareDetected === true };
+    const safe = await invokeFixedStagingFixture(key, fixture);
     evidence.results.push(safe);
     console.log(JSON.stringify(safe));
-    if (response.status !== 200 || safe.state !== (fixture === "clean_pdf" ? "clean" : "blocked") ||
+    if (safe.http !== 200 || safe.state !== (fixture === "clean_pdf" ? "clean" : "blocked") ||
       (fixture === "eicar" && !safe.malwareDetected)) passed = false;
-    if (response.status !== 200 || safe.state === "held" || safe.state === "claimed") break;
+    if (safe.http !== 200 || safe.state === "held" || safe.state === "claimed") break;
     await new Promise(resolve => setTimeout(resolve, 3600));
   }
 } catch { passed = false; console.error("The synthetic integration check could not finish. No raw provider response was retained."); }

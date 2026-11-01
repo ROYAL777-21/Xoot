@@ -53,6 +53,8 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: 2.113.0
+      - name: Verify fixture transport and evidence redaction before using credentials
+        run: node --test scripts/ops/cloudmersive-staging-client.test.mjs
       - name: Check the privileged staging worker using fixed synthetic fixtures
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
