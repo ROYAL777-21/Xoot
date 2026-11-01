@@ -8,7 +8,7 @@ beforeAll(() => vi.stubGlobal("crypto",webcrypto));
 afterAll(() => vi.unstubAllGlobals());
 const id="00000000-0000-4000-8000-000000000001";
 const config={supabaseUrl:"https://fxmxyabdjqviqbcxmvlp.supabase.co",serviceKey:"synthetic-service-key",apiKey:"synthetic-provider-key"};
-const request=(body:unknown, headers:Record<string,string>={Authorization:"Bearer synthetic-service-key"})=>
+const request=(body:unknown, headers:Record<string,string>={apikey:"synthetic-service-key",Authorization:"Bearer synthetic-service-key"})=>
   new Request("https://test.invalid/scan",{method:"POST",headers,body:JSON.stringify(body)});
 function harness() {
   const rpc=vi.fn(async (name:string,input:Record<string,unknown>)=>({data:name==="claim_kyc_scan"
@@ -21,12 +21,12 @@ function harness() {
   return {rpc,download,provider,store,run:createScanHandler(config,store,provider)};
 }
 describe("privileged scanner boundary",()=>{
-  it.each([{}, {Authorization:"Bearer ordinary-customer-bearer"}])("denies unsigned/customer callers before database or provider",async headers=>{
+  it.each([{}, {Authorization:"Bearer ordinary-customer-bearer"}, {apikey:"synthetic-publishable-key",Authorization:"Bearer synthetic-service-key"}])("denies unsigned/customer callers before database or provider",async headers=>{
     const h=harness();expect((await h.run(request({fixture:"eicar"},headers))).status).toBe(401);
     expect(h.rpc).not.toHaveBeenCalled();expect(h.provider).not.toHaveBeenCalled();
   });
   it("refuses browser-origin requests and production even with a service credential",async()=>{
-    const h=harness();expect((await h.run(request({fixture:"eicar"},{Authorization:"Bearer synthetic-service-key",Origin:"https://xoot.co.za"}))).status).toBe(403);
+    const h=harness();expect((await h.run(request({fixture:"eicar"},{apikey:"synthetic-service-key",Authorization:"Bearer synthetic-service-key",Origin:"https://xoot.co.za"}))).status).toBe(403);
     const production=createScanHandler({...config,supabaseUrl:"https://production.invalid"},h.store,h.provider);
     expect((await production(request({fixture:"eicar"}))).status).toBe(409);
     expect(h.rpc).not.toHaveBeenCalled();expect(h.provider).not.toHaveBeenCalled();

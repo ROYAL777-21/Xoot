@@ -49,9 +49,11 @@ async function boundedBody(req: Request) {
 export function createScanHandler(config: Configuration, store: Store, request: typeof fetch = fetch) {
   return async (req: Request) => {
     if (req.method !== "POST") return json({ error: "method_not_allowed" },405);
-    const header = req.headers.get("Authorization") ?? "";
-    if (!config.serviceKey || header.length > 4096 || !header.startsWith("Bearer ")) return json({error:"unauthorized"},401);
-    const expected = await sha256(new TextEncoder().encode(`Bearer ${config.serviceKey}`));
+    // Service credentials belong on apikey. Authorization is reserved for user JWTs and may
+    // be normalized by the hosted gateway; it is never decoded/trusted as a service identity.
+    const header = req.headers.get("apikey") ?? "";
+    if (!config.serviceKey || !header || header.length > 4096) return json({error:"unauthorized"},401);
+    const expected = await sha256(new TextEncoder().encode(config.serviceKey));
     const provided = await sha256(new TextEncoder().encode(header));
     let mismatch=0;for(let i=0;i<expected.length;i++) mismatch|=expected.charCodeAt(i)^provided.charCodeAt(i);
     if(mismatch) return json({error:"unauthorized"},401);
