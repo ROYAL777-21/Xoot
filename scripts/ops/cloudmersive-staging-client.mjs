@@ -21,6 +21,13 @@ export function projectStagingScanResult(value, fixture, http) {
     cached: record.cached === true, malwareDetected: record.malwareDetected === true };
 }
 
+export function isExpectedStagingResult(result) {
+  if (result.http !== 200 || typeof result.attemptId !== "string" || !uuid.test(result.attemptId)) return false;
+  if (result.fixture === "clean_pdf") return result.state === "clean" && result.reason === "provider_clean";
+  return result.fixture === "eicar" && result.state === "blocked" && result.malwareDetected === true &&
+    ["provider_rejected", "threat_detected"].includes(result.reason);
+}
+
 /** Fixed staging target/fixtures only; no redirect can carry the privileged apikey header away. */
 export async function invokeFixedStagingFixture(serviceKey, fixture, request = fetch) {
   if (!["clean_pdf", "eicar"].includes(fixture)) throw new Error("Invalid fixed staging fixture");

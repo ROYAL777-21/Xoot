@@ -1,7 +1,7 @@
 // Manual, synthetic-only integration check. Credentials stay in memory; output is allowlisted.
 import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
-import { invokeFixedStagingFixture, STAGING_SCANNER_PROJECT as project, STAGING_SCANNER_URL as target } from "./cloudmersive-staging-client.mjs";
+import { invokeFixedStagingFixture, isExpectedStagingResult, STAGING_SCANNER_PROJECT as project, STAGING_SCANNER_URL as target } from "./cloudmersive-staging-client.mjs";
 let key;
 try {
   const raw = execFileSync("supabase", ["projects", "api-keys", "--project-ref", project, "--output", "json"],
@@ -25,8 +25,7 @@ try {
     const safe = await invokeFixedStagingFixture(key, fixture);
     evidence.results.push(safe);
     console.log(JSON.stringify(safe));
-    if (safe.http !== 200 || safe.state !== (fixture === "clean_pdf" ? "clean" : "blocked") ||
-      (fixture === "eicar" && !safe.malwareDetected)) passed = false;
+    if (!isExpectedStagingResult(safe)) passed = false;
     if (safe.http !== 200 || safe.state === "held" || safe.state === "claimed") break;
     await new Promise(resolve => setTimeout(resolve, 3600));
   }
