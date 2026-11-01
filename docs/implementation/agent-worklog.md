@@ -9,6 +9,12 @@ the actual 44-line CI diff; do not invent types or weaken the schema comparison.
 security/design checks at a5fe8f27 passed. Preserve the approved homepage and unrelated PRs;
 payment, payout, tracking, voice and SOS activation still require their actual acceptance.
 
+Recovered both complete hunks from the actual production CLI run40917999721 (44 diff lines,
+28 added lines) after validating the source/destination paths and extent. This supplies the
+GraphQL system schema omitted by the MCP generator, without altering the public contract or
+the production comparison. TypeScript passes. Eight already-selected authentic review cards
+retain exact supplied words, names and ratings; disabled-feature testimonials stay excluded.
+
 ## DELIVERY — 29 October evening — production schema and final gate repairs
 
 Founder repeated production authorisation and explicitly approved the same finite production
