@@ -1,0 +1,501 @@
+{
+  "observedDate": "2026-11-01",
+  "timezone": "Africa/Johannesburg",
+  "applicationSource": "db0c5cc9ce8bdbb792aaed9e0db8c2a8e65db3b3",
+  "pullRequest": "https://github.com/ROYAL777-21/Xoot/pull/101",
+  "productionDeployment": "dpl_EQ9T8H8UfXeMEZpWuZmSbaay4BU4",
+  "initialProductionDeployment": "dpl_5gK26s9Ju9zYEKKqBJ8Y7MjqhF2Z",
+  "canceledAttempt": {
+    "id": "dpl_9TkPau9jXQToAngbVzJa1C8tKUnY",
+    "reason": "Existing branch guard refused raw-SHA-as-branch. Guard retained; successful rebuild uses release/xoot-production with exact SHA."
+  },
+  "actions": {
+    "finalTypes": 41299471793,
+    "finalDesign": 41299471800,
+    "finalCodeQL": 41299471875,
+    "finalSemgrep": 41299471866,
+    "mergedDesign": 41299962973,
+    "productionSecretNames": 41300034735,
+    "productionFunctions": 41300054078
+  },
+  "tests": {
+    "ciFilesPassed": 200,
+    "ciTestsPassed": 2052,
+    "ciSqlCasesSkipped": 7,
+    "separateActualSqlFileCasesPassed": 8,
+    "storageGroups": 20,
+    "storagePermissionRejections": 37,
+    "checklistGroups": 54,
+    "quotaNegativeAndPositiveControlsPassed": true,
+    "liveHeaderChecksPassed": 53
+  },
+  "reviews": {
+    "cards": 8,
+    "individualFiveStarLabels": 8,
+    "founderConfirmedAuthenticityRatingsAndPermission": true,
+    "verifiedBookingBadge": false
+  },
+  "productionFlags": {
+    "addressSuggestions": true,
+    "privateCalendarUi": true,
+    "liveJourney": false,
+    "verifiedCoverage": false
+  },
+  "mapboxBudgetReadback": {
+    "temporaryUsed": 3,
+    "temporaryAuthorized": 200,
+    "confirmationUsed": 2,
+    "confirmationAuthorized": 20,
+    "permanentUsed": 2,
+    "permanentAuthorized": 20,
+    "authenticatedReservedRemaining": 10,
+    "automaticallyRenews": false
+  },
+  "invoiceConfiguration": {
+    "legalName": "Xoot Home Service",
+    "registration": "2026/709372/07",
+    "source": "Founder-confirmed exact legal name and supplied registration; saved in production Edge settings",
+    "namesVerified": true,
+    "generatedProductionInvoice": false
+  },
+  "operations": {
+    "bookings": 0,
+    "jobs": 0,
+    "payment_records": 1,
+    "active_approved_xooters": 0,
+    "service_zones": 0
+  },
+  "controls": [
+    {
+      "control_key": "payments.hosted_checkout.payfast",
+      "environment": "all",
+      "enabled": false
+    },
+    {
+      "control_key": "payments.provider_checkout",
+      "environment": "all",
+      "enabled": false
+    },
+    {
+      "control_key": "payouts.enabled",
+      "environment": "all",
+      "enabled": false
+    },
+    {
+      "control_key": "twilio.in_app_voice",
+      "environment": "all",
+      "enabled": false
+    },
+    {
+      "control_key": "twilio.masked_voice",
+      "environment": "all",
+      "enabled": false
+    }
+  ],
+  "functions": [
+    {
+      "name": "sensitive-access-save",
+      "version": 16,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "sensitive-access-read",
+      "version": 17,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "twilio-token",
+      "version": 19,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "twilio-conversation",
+      "version": 18,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "twilio-voice-status",
+      "version": 18,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "twilio-voice-twiml",
+      "version": 17,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "care-plus-membership",
+      "version": 21,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "ops-workflow",
+      "version": 20,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "support-respond",
+      "version": 20,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "admin-confirm-payment",
+      "version": 18,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "admin-resolve-review",
+      "version": 17,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "admin-mark-outbox",
+      "version": 17,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "admin-escalate-support",
+      "version": 17,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "admin-reject-zooter",
+      "version": 14,
+      "updatedAt": 1786554834778,
+      "verifyJwt": true
+    },
+    {
+      "name": "approve-zooter",
+      "version": 15,
+      "updatedAt": 1786554834778,
+      "verifyJwt": true
+    },
+    {
+      "name": "create-booking",
+      "version": 22,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "ai-match",
+      "version": 16,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "create-booking-request",
+      "version": 19,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "create-support-case",
+      "version": 16,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "redeem-zootcred",
+      "version": 13,
+      "updatedAt": 1786554834778,
+      "verifyJwt": true
+    },
+    {
+      "name": "activate-care-plus",
+      "version": 17,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "create-masked-call",
+      "version": 18,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "submit-zooter-application",
+      "version": 13,
+      "updatedAt": 1786554834778,
+      "verifyJwt": true
+    },
+    {
+      "name": "confirm-payment",
+      "version": 19,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "get-sensitive-access",
+      "version": 17,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "request-replacement",
+      "version": 19,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "revoke-sensitive-access",
+      "version": 16,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "cancel-booking",
+      "version": 16,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "twilio-message-webhook",
+      "version": 18,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "twilio-whatsapp-webhook",
+      "version": 18,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "twilio-status-callback",
+      "version": 18,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "twilio-voice-webhook",
+      "version": 18,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "twilio-verify-webhook",
+      "version": 18,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "get-zooter-job-cards",
+      "version": 11,
+      "updatedAt": 1786554834778,
+      "verifyJwt": true
+    },
+    {
+      "name": "admin-control-management",
+      "version": 14,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "get-booking-public-keys",
+      "version": 14,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "send-booking-message",
+      "version": 15,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "mark-booking-message-read",
+      "version": 14,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "report-booking-message",
+      "version": 14,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "training-module",
+      "version": 14,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "respond-zooter-job",
+      "version": 15,
+      "updatedAt": 1786572740555,
+      "verifyJwt": true
+    },
+    {
+      "name": "raise-sos-alert",
+      "version": 15,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "report-concierge-answer",
+      "version": 9,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "create-concierge-handoff",
+      "version": 9,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "generate-booking-invoice",
+      "version": 9,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "resend-booking-invoice",
+      "version": 9,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "concierge-config",
+      "version": 6,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "split-booking-fare",
+      "version": 8,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "twilio-selftest",
+      "version": 20,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "fare-split-invite",
+      "version": 7,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "redeem-xootcred",
+      "version": 5,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "approve-xooter",
+      "version": 5,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "respond-xooter-job",
+      "version": 5,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "admin-reject-xooter",
+      "version": 5,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "submit-xooter-application",
+      "version": 5,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "get-xooter-job-cards",
+      "version": 5,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "create-payment-session",
+      "version": 4,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "public-xooter-directory",
+      "version": 4,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "calendar-feed",
+      "version": 1,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "calendar-subscription",
+      "version": 1,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "check-service-coverage",
+      "version": 1,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "get-booking-quote",
+      "version": 1,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "search-addresses",
+      "version": 1,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "twilio-in-app-voice-status",
+      "version": 1,
+      "updatedAt": 1793530960495,
+      "verifyJwt": false
+    },
+    {
+      "name": "xoot-job-location",
+      "version": 1,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    },
+    {
+      "name": "xooter-job-checklist",
+      "version": 1,
+      "updatedAt": 1793530960495,
+      "verifyJwt": true
+    }
+  ],
+  "legacySourceReview": {
+    "retainedRoutes": 6,
+    "isolatedFrozenHandlerCases": 15,
+    "canonicalMutationsInFixtures": 0,
+    "actualProductionJwtAcceptance": false,
+    "currentBypassDemonstrated": false,
+    "recommendation": "Retire/tombstone dead aliases; do not restore removed compatibility tables/RPCs."
+  }
+}

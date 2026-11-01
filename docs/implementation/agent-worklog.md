@@ -1,5 +1,38 @@
 # Agent worklog
 
+## DELIVERY — 1 November — website, confirmed reviews and production address lookup
+
+Real production CLI diff recovered exactly (44lines,2hunks,28additions); independent comparison
+reproducesc47d1301 and fresh schema check succeeds. Full release CI:200files,2052passed/7SQLskipped;
+separate actual SQL file8/8plus gift/quota/Storage/checklist scripts pass. CodeQL/Semgrep/design/
+artifact/type/lint/PostgreSQL gates pass. Independent review confirms all8authentic review texts.
+Founder explicitly requests release; mark draft ready and mergePR101 into release/xoot-production,
+db0c5cc9. Vercel READY with actual canonical-domain build identity. Website pricing gate precedes
+successful production Edge run41300054078. All60source-managed handlers delivered; inventory66
+retains6old aliases. Actual10critical bundled readbacks match all64runtime/import-map files.
+Thirteen actual private requests401and public foreign-origin403;53served header/deep-link checks.
+
+Founder privately signs in/creates/pastes the new dedicated Mapbox production backend pk token.
+Names and metadata-only workflow verified; genuine public query4options/Permanent confirmation200.
+One other public museum query0options retained honestly. Production UI flag and private calendar
+controls enabled only for production, preserving preview scope. Raw-SHA-as-branch rebuild correctly
+cancels on the existing guard; successful rebuild uses the approved branch and exact source SHA.
+Actual phone390UI lookup/selection/focus/no-map/no-overflow passes;8reviews visible on live site.
+Counters3/200suggest,2/20confirm/sharedPermanent,10reserved, no refill. No Temporary payload saved.
+
+Founder confirms legal entity Xoot Home Service; save exact legal name and supplied registration
+2026/709372/07 in production Edge settings, verify names. No fabricated VAT or invoice/payment.
+PayFast re-login actual dashboard still says Account pending verification. All five payment/payout/
+voice controls remain false. Production0bookings/0jobs/1payment record/0approved workers/0zones.
+Security advisor: only WARN is leaked-password protection, unavailable on currentFree plan per
+official docs; retain free-plan instruction. RLS-without-policy INFOs are deliberate deny-client
+tables, not permission to add broad policies. Six frozen historical aliases first hit removed
+schema; independent15source/schema fixtures show no current nonadmin mutation/bypass. Retire later,
+never restore compatibility tables under old approval/upload/credit logic. This is not JWT proof.
+
+Evidence and remaining requirements are recorded under docs/release/evidence/2026-11-01 and the
+current checklist. v4bundle, live money, payouts, GPS/calls/SOS, unscanned KYC and Apple remain held.
+
 ## HOLDING — 1 November — publish confirmed reviews and finish the approved website release
 
 Founder again explicitly authorises production deployment, including genuine customer reviews.
