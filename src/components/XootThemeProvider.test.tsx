@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTheme } from "next-themes";
 import { XootThemeProvider } from "./XootThemeProvider";
+import { Link, MemoryRouter } from "react-router-dom";
 
 let dark = false;
 const listeners = new Set<(event: MediaQueryListEvent) => void>();
@@ -15,7 +16,7 @@ function Appearance() {
   const { theme, resolvedTheme, setTheme } = useTheme();
   return <><output aria-label="Resolved appearance">{resolvedTheme}</output><select aria-label="Appearance" value={theme} onChange={event => setTheme(event.target.value)}><option value="system">Device default</option><option value="light">Light</option><option value="dark">Dark</option></select></>;
 }
-const mount = () => render(<XootThemeProvider><Appearance /></XootThemeProvider>);
+const mount = (path = "/app/profile") => render(<MemoryRouter initialEntries={[path]}><XootThemeProvider><Appearance /><Link to="/">Website</Link><Link to="/app/profile">Your app</Link></XootThemeProvider></MemoryRouter>);
 
 beforeEach(() => {
   localStorage.clear(); listeners.clear(); dark = false;
@@ -29,12 +30,45 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); document.documentElement.className = ""; });
 
-describe("website appearance", () => {
-  it.each([false, true])("paints the device theme before React starts (dark=%s), even with storage unavailable", matches => {
+describe("appearance is scoped to the app", () => {
+  it.each([false, true])("paints the app device theme before React starts (dark=%s), even with storage unavailable", matches => {
     const source = readFileSync(`${process.cwd()}/public/theme-init.js`, "utf8");
-    runInNewContext(source, { document, localStorage: { getItem: () => { throw new Error("Storage blocked"); } }, window: { matchMedia: () => ({ matches }) } });
+    runInNewContext(source, { document, localStorage: { getItem: () => { throw new Error("Storage blocked"); } }, window: { location: { pathname: "/app/profile" }, matchMedia: () => ({ matches }) } });
     expect(document.documentElement).toHaveClass(matches ? "dark" : "light");
     expect(document.documentElement.style.colorScheme).toBe(matches ? "dark" : "light");
+  });
+  it.each(["/", "/auth", "/book", "/book/confirm", "/articles/example", "/care-plus", "/gifts", "/legal/privacy", "/xooter/apply", "/application", "/xooters", "/administrator"])("keeps public %s light before paint and after React, preserving a saved dark preference", path => {
+    dark = true;
+    localStorage.setItem("xoot-theme", "dark");
+    const source = readFileSync(`${process.cwd()}/public/theme-init.js`, "utf8");
+    runInNewContext(source, { document, localStorage, window: { location: { pathname: path }, matchMedia: () => ({ matches: true }) } });
+    expect(document.documentElement).toHaveClass("light");
+    expect(document.documentElement).not.toHaveClass("dark");
+    expect(document.documentElement.style.colorScheme).toBe("light");
+    mount(path);
+    deviceTheme(false); deviceTheme(true);
+    expect(document.documentElement).toHaveClass("light");
+    expect(document.documentElement).not.toHaveClass("dark");
+    expect(document.documentElement.dataset.xootThemeScope).toBe("website");
+    expect(localStorage.getItem("xoot-theme")).toBe("dark");
+  });
+  it.each(["/app", "/app/loyalty", "/xooter", "/xooter/jobs", "/admin", "/admin/kyc"])("retains saved appearance in %s", path => {
+    localStorage.setItem("xoot-theme", "dark");
+    mount(path);
+    expect(document.documentElement).toHaveClass("dark");
+    expect(document.documentElement.dataset.xootThemeScope).toBe("app");
+  });
+  it("restores the app preference when navigating back from the always-light website", () => {
+    localStorage.setItem("xoot-theme", "dark");
+    mount();
+    expect(document.documentElement).toHaveClass("dark");
+    fireEvent.click(screen.getByRole("link", { name: /^Website$/ }));
+    expect(document.documentElement).toHaveClass("light");
+    expect(document.documentElement.style.colorScheme).toBe("light");
+    expect(localStorage.getItem("xoot-theme")).toBe("dark");
+    fireEvent.click(screen.getByRole("link", { name: /^Your app$/ }));
+    expect(document.documentElement).toHaveClass("dark");
+    expect(document.documentElement.style.colorScheme).toBe("dark");
   });
   it("follows the device initially and when its setting changes", () => {
     dark = true; mount();

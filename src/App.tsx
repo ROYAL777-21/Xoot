@@ -142,12 +142,12 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <XootAnalyticsProvider>
       <HelmetProvider>
+        <BrowserRouter>
         <XootThemeProvider>
         <TooltipProvider>
           <ErrorBoundary>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
               <NativeInteractionLayer />
               <PreloadCoreRoutes />
               <ScrollToTop />
@@ -241,10 +241,10 @@ const App = () => (
                 </Routes>
                 </Suspense>
               </AuthProvider>
-            </BrowserRouter>
           </ErrorBoundary>
         </TooltipProvider>
         </XootThemeProvider>
+        </BrowserRouter>
       </HelmetProvider>
     </XootAnalyticsProvider>
   </QueryClientProvider>
