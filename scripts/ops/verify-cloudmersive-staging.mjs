@@ -15,8 +15,9 @@ let passed = true;
 try {
   const anonymous = await fetch(target, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fixture: "clean_pdf" }),
     redirect: "error", signal: AbortSignal.timeout(35000) });
-  evidence.anonymous = { http: anonymous.status };
-  if (anonymous.status !== 401) passed = false;
+  const anonymousDenied = anonymous.status === 401;
+  evidence.anonymous = { denied: anonymousDenied };
+  if (!anonymousDenied) passed = false;
   for (const fixture of ["clean_pdf", "eicar"]) {
     const safe = await invokeFixedStagingFixture(key, fixture);
     evidence.results.push(safe);
@@ -27,6 +28,6 @@ try {
   }
 } catch { passed = false; console.error("The synthetic integration check could not finish. No raw provider response was retained."); }
 evidence.passed = passed && evidence.results.length === 2;
-writeFileSync("cloudmersive-staging-evidence.json", `${JSON.stringify(evidence, null, 2)}\n`, { mode: 0o600 });
+writeFileSync("cloudmersive-staging-evidence.json", `${JSON.stringify(evidence, null, 2)}\n`, { mode: 0o600, flag: "wx" });
 console.log(JSON.stringify({ project, passed: evidence.passed, anonymous: evidence.anonymous, count: evidence.results.length }));
 if (!evidence.passed) process.exitCode = 1;
