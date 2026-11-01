@@ -8,6 +8,20 @@ incomplete_response and remains quarantined; EICAR was blocked with actual malwa
 Both have terminal receipt UUIDs and response digests. Complete clean-file acceptance is pending;
 never overwrite the failed PDF receipt or turn that result into a contractor clearance.
 
+The v2 response contract is supported by Cloudmersive's
+[official Advanced Scan companion](https://www2.cloudmersive.com/article/CSharp-File-Upload-Security-Companion-Code),
+whose parser explicitly permits a null virus list. Xoot still requires CleanResult=true, all12
+threat flags present/false and a content-verified PDF/image format. Missing/invalid virus lists
+and missing threat flags remain errors. A positive malware acceptance requires a structured
+finding, not merely any nonempty array. Fixed synthetic diagnostics contain only known type/
+boolean/format categories; no raw format strings, virus entries, filenames or ContentInformation.
+
+The new claim entry freezes policyv2. The original API is pinned to v1 for both document and
+fixture lookups. Global uniqueness becomes per-policy uniqueness without changing prior rows,
+digest/state, maximum32 or consumed counters. Both versions share one lease/dispatch limiter.
+Migration refuses an active lease and rolls back, leaving the old API intact. Neither policy
+may be supplied by an applicant, and registered-document processing remains separately closed.
+
 Current auth repair is prepared, not yet deployed: the owner entered the existing key privately;
 actual gateway metadata identifies service_role on both headers, but version2's exact runtime-key
 comparison still rejects it. No key values were read. Replace equality with a read-only,

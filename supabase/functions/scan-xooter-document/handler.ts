@@ -1,4 +1,4 @@
-import { MAX_SCAN_BYTES, scanDocument, sha256 } from "../_shared/cloudmersive.ts";
+import { MAX_SCAN_BYTES, SCAN_POLICY, scanDocument, sha256 } from "../_shared/cloudmersive.ts";
 import { inspectDocumentBytes } from "../submit-xooter-application/document-persistence.ts";
 
 type Result = { data: unknown; error: unknown };
@@ -70,11 +70,12 @@ export function createScanHandler(config: Configuration, storeForCredential: (ke
       (body.documentId!==undefined && (typeof body.documentId!=="string" || !uuid.test(body.documentId)))) {
       return json({error:"invalid_scan_request"},400);
     }
-    const claimed=await store.rpc("claim_kyc_scan",{p_document_id:body.documentId??null,p_fixture:body.fixture??null});
+    const claimed=await store.rpc("claim_kyc_scan_v2",{p_document_id:body.documentId??null,p_fixture:body.fixture??null});
     const claim=record(claimed.data);
     if(claimed.error || !claim) return json({error:"scan_claim_unavailable"},503);
+    if(claim.policyVersion!==SCAN_POLICY) return json({error:"invalid_scan_claim"},503);
     if(claim.cached===true || claim.state!=="claimed") return json({state:claim.state,reason:claim.reason,
-      attemptId:claim.attemptId,cached:claim.cached===true,malwareDetected:claim.malwareDetected===true});
+      attemptId:claim.attemptId,cached:claim.cached===true,malwareDetected:claim.malwareDetected===true,policyVersion:SCAN_POLICY});
     if(typeof claim.attemptId!=="string" || !uuid.test(claim.attemptId)) return json({error:"invalid_scan_claim"},503);
     let verdict: Awaited<ReturnType<typeof scanDocument>> = {verdict:"error",reason:"document_unavailable"};
     let observedSha: string | null=null;
@@ -102,6 +103,7 @@ export function createScanHandler(config: Configuration, storeForCredential: (ke
     const receipt=record(finished.data);
     if(finished.error || !receipt) return json({error:"scan_receipt_unavailable"},503);
     return json({state:receipt.state,reason:receipt.reason,attemptId:receipt.attemptId,
-      cached:receipt.cached===true,malwareDetected:receipt.malwareDetected===true});
+      cached:receipt.cached===true,malwareDetected:receipt.malwareDetected===true,policyVersion:SCAN_POLICY,
+      ...(body.fixture && verdict.responseProfile ? {providerResponseProfile:verdict.responseProfile} : {})});
   };
 }

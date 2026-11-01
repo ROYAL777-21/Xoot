@@ -2,7 +2,7 @@
 export const CLOUDMERSIVE_SCAN_URL = "https://api.cloudmersive.com/virus/scan/file/advanced";
 // Below the published Free evaluation limit of 3.5 MB; larger uploads stay quarantined.
 export const MAX_SCAN_BYTES = 3_000_000;
-export const SCAN_POLICY = "xoot-kyc-cloudmersive-v1";
+export const SCAN_POLICY = "xoot-kyc-cloudmersive-v2";
 const RESPONSE_LIMIT = 64 * 1024;
 const threatFields = [
   "ContainsExecutable", "ContainsInvalidFile", "ContainsScript", "ContainsPasswordProtectedFile",
@@ -11,7 +11,20 @@ const threatFields = [
   "ContainsOleEmbeddedObject", "ContainsUnwantedAction",
 ] as const;
 const safeFormats = new Set(["pdf", "png", "jpg", "jpeg", "webp"]);
-export type ScanVerdict = { verdict: "clean" | "blocked" | "error"; reason: string; responseSha256?: string; malwareDetected?: boolean };
+type FieldKind = "true" | "false" | "missing" | "invalid";
+export type ScanResponseProfile = { clean:FieldKind; virusList:"null"|"empty_array"|"nonempty_array"|"missing"|"invalid";
+  verifiedFormat:"pdf"|"png"|"jpg"|"jpeg"|"webp"|"unverified"; threatFlags:Record<string,FieldKind> };
+export type ScanVerdict = { verdict: "clean" | "blocked" | "error"; reason: string; responseSha256?: string; malwareDetected?: boolean; responseProfile?:ScanResponseProfile };
+const fieldKind=(value:unknown):FieldKind=>value===true ? "true" : value===false ? "false" : value===undefined ? "missing" : "invalid";
+/** Fixed categories only. Never project virus names, filenames, ContentInformation or raw strings. */
+export function scanResponseProfile(value:unknown):ScanResponseProfile {
+  const row=value && typeof value==="object" && !Array.isArray(value) ? value as Record<string,unknown> : {};
+  const format=typeof row.VerifiedFileFormat==="string" ? row.VerifiedFileFormat.trim().toLowerCase().replace(/^\./,"") : "";
+  return {clean:fieldKind(row.CleanResult),virusList:row.FoundViruses===null ? "null" : Array.isArray(row.FoundViruses)
+    ? row.FoundViruses.length ? "nonempty_array" : "empty_array" : row.FoundViruses===undefined ? "missing" : "invalid",
+  verifiedFormat:safeFormats.has(format) ? format as ScanResponseProfile["verifiedFormat"] : "unverified",
+  threatFlags:Object.fromEntries(threatFields.map(field=>[field,fieldKind(row[field])]))};
+}
 
 export async function sha256(bytes: Uint8Array) {
   return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new Uint8Array(bytes).buffer)))
@@ -23,12 +36,15 @@ export function parseScanVerdict(value: unknown): ScanVerdict {
   if (!value || typeof value !== "object" || Array.isArray(value)) return { verdict: "error", reason: "invalid_response" };
   const result = value as Record<string, unknown>;
   if (result.CleanResult === false) return { verdict: "blocked", reason: "provider_rejected",
-    malwareDetected: Array.isArray(result.FoundViruses) && result.FoundViruses.length > 0 };
+    malwareDetected: Array.isArray(result.FoundViruses) && result.FoundViruses.some(virus=>virus && typeof virus==="object"
+      && typeof virus.VirusName==="string" && virus.VirusName.trim().length>0 && typeof virus.FileName==="string") };
   if (result.CleanResult !== true || threatFields.some(field => typeof result[field] !== "boolean") ||
-      !Array.isArray(result.FoundViruses) || typeof result.VerifiedFileFormat !== "string") {
+      (result.FoundViruses!==null && !Array.isArray(result.FoundViruses)) || typeof result.VerifiedFileFormat !== "string") {
     return { verdict: "error", reason: "incomplete_response" };
   }
-  if (result.FoundViruses.length || threatFields.some(field => result[field] === true)) {
+  // Cloudmersive's official Advanced Scan example explicitly handles a null virus list.
+  // Missing/invalid lists or threat flags still fail above; null never overrides another signal.
+  if ((Array.isArray(result.FoundViruses) && result.FoundViruses.length) || threatFields.some(field => result[field] === true)) {
     return { verdict: "blocked", reason: "threat_detected" };
   }
   const format = result.VerifiedFileFormat.trim().toLowerCase().replace(/^\./, "");
@@ -79,7 +95,8 @@ export async function scanDocument(
     const payload = new Uint8Array(length);
     let offset = 0;
     for (const chunk of chunks) { payload.set(chunk, offset); offset += chunk.length; }
-    return { ...parseScanVerdict(JSON.parse(new TextDecoder().decode(payload))), responseSha256: await sha256(payload) };
+    const parsed=JSON.parse(new TextDecoder().decode(payload));
+    return { ...parseScanVerdict(parsed), responseSha256: await sha256(payload),responseProfile:scanResponseProfile(parsed) };
   } catch { return { verdict: "error", reason: "provider_unavailable" }; }
   finally { clearTimeout(timer); }
 }
