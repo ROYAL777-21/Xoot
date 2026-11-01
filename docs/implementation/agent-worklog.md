@@ -1,5 +1,17 @@
 # Agent worklog
 
+## HOLDING — 1 November — website light-only, verified supply and settlement completion
+
+Founder corrects the legal name to Xoot Home Services and explicitly requires the public website
+to remain light-only; signed-in app/web-app routes retain saved/device theme choice. Claim early
+theme bootstrap/provider/CSS regression protection, corrected invoice configuration, Rewards
+handoff comparison, actual verification/availability workflow, Cloudmersive free-only setup,
+branded event-specific email journey and bounded payout/Care+/gift settlement implementation.
+Cross-role scope includes financial shared helpers/migrations/guards: keep server authority,
+idempotency, real provider signatures, role/MFA boundaries and rollback/evidence. Do not import
+the external handoff wholesale, invent contractor clearance, choose an unapproved cash-out fee,
+enable untested money/calls/GPS/SOS or buy plans. Existing production delivery is retained.
+
 ## DELIVERY — 1 November — website, confirmed reviews and production address lookup
 
 Real production CLI diff recovered exactly (44lines,2hunks,28additions); independent comparison
