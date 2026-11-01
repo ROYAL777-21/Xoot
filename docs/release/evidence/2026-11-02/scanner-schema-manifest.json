@@ -2,6 +2,48 @@
   "kind": "closed-scanner-schema-convergence",
   "productionProcessingAllowed": false,
   "productionWorkerIncluded": false,
+  "baseline": {
+    "path": "supabase/migrations/20261027032349_kyc_private_quarantine_interlock.sql",
+    "storageRlsRequired": true,
+    "guardFunctions": [
+      {
+        "name": "kyc_unregistered_owner_path",
+        "securityDefiner": true,
+        "sourceBodySha256": "d13d5c8acec6648a4b064229739fe1fbe6890a4c1aded09b6ecdd72fbadc50fa"
+      },
+      {
+        "name": "kyc_quarantine_activation_interlock",
+        "securityDefiner": false,
+        "sourceBodySha256": "30f0061b202046b1b0e634d032ec9ec4465a69315a18ca55bcb5601e2b39ecdb"
+      }
+    ],
+    "policies": [
+      {
+        "name": "kyc_raw_reads_closed",
+        "command": "SELECT",
+        "predicate": "(bucket_id <> 'kyc-docs'::text)",
+        "checkPredicate": null
+      },
+      {
+        "name": "kyc_raw_updates_closed",
+        "command": "UPDATE",
+        "predicate": "(bucket_id <> 'kyc-docs'::text)",
+        "checkPredicate": "(bucket_id <> 'kyc-docs'::text)"
+      },
+      {
+        "name": "kyc_raw_deletes_closed",
+        "command": "DELETE",
+        "predicate": "(bucket_id <> 'kyc-docs'::text)",
+        "checkPredicate": null
+      },
+      {
+        "name": "kyc_registered_paths_no_reuse",
+        "command": "INSERT",
+        "predicate": null,
+        "checkPredicate": "((bucket_id <> 'kyc-docs'::text) OR private.kyc_unregistered_owner_path(name))"
+      }
+    ]
+  },
   "sources": [
     {
       "path": "supabase/migrations/20261101155855_kyc_scanner_evaluation_receipts.sql",

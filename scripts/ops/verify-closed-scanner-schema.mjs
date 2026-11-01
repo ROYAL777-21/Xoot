@@ -44,3 +44,19 @@ try {
   console.log(JSON.stringify({check:'partial-history-is-not-repair-stamped',passed:true}));
 } finally {await partial.close();}
 console.log('Actual local PostgreSQL only: no production connection, provider call or personal processing.');
+for(const [name,mutation] of [
+  ['disabled-storage-rls','alter table storage.objects disable row level security'],
+  ['raw-policy-noop','alter policy kyc_raw_reads_closed on storage.objects using(true)'],
+  ['owner-path-helper-noop',"create or replace function private.kyc_unregistered_owner_path(p_path text) returns boolean language sql security definer set search_path='' as $$select true$$"],
+  ['activation-body-noop',"create or replace function private.kyc_quarantine_activation_interlock() returns trigger language plpgsql security invoker set search_path='' as $$begin return new;end$$"],
+  ['activation-trigger-when-false',"drop trigger kyc_role_clearance_required on public.user_roles;create trigger kyc_role_clearance_required before insert or update on public.user_roles for each row when(false) execute function private.kyc_quarantine_activation_interlock()"],
+  ['activation-trigger-different-function',"create function private.synthetic_noop_trigger() returns trigger language plpgsql as $$begin return new;end$$;drop trigger kyc_role_clearance_required on public.user_roles;create trigger kyc_role_clearance_required before insert or update on public.user_roles for each row execute function private.synthetic_noop_trigger()"],
+]) {
+  const mutated=await baseline();
+  try {
+    await mutated.exec(mutation);await assert.rejects(mutated.exec(built.sql),error=>error.code==='55000');
+    assert.equal((await mutated.query("select to_regclass('private.kyc_scan_budget') as budget")).rows[0].budget,null);
+    assert.equal((await mutated.query('select count(*)::integer as n from supabase_migrations.schema_migrations')).rows[0].n,0);
+    console.log(JSON.stringify({check:'ineffective-protection-refuses-delivery',mutation:name,passed:true}));
+  } finally {await mutated.close();}
+}

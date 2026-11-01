@@ -24,6 +24,15 @@ history or mismatched executed SQL fail closed. A legitimate all-applied staging
 skip the sources after exact history checks; it never resets receipts, spend or the maximum.
 Postconditions require five service-only invoker RPCs and the closed, nonrenewing32attempt policy.
 
+Independent review found that checking only guard names/roles accepted ineffective replacements.
+The unapplied draft now additionally requires Storage RLS enabled, exact policy commands and
+USING/WITH CHECK predicates, both helper function bodies pinned to the reviewed historical source,
+their definer/invoker/owner/search-path contexts, and trigger function/event/row/WHEN/column-list
+bindings. Six real local mutations prove refusal for disabled RLS, a raw policy made true, either
+helper replaced by a no-op, a trigger bound to another function or a false WHEN condition. These
+are disposable negative controls, not evidence production was weakened. Actual production's
+RLS, predicates, helper hashes and trigger event bindings match the reviewed baseline.
+
 Local PostgreSQL rehearsals cover clean delivery with exact executed-history hashes, repeated
 delivery after spending an attempt, byte-identical receipt preservation, middle-source failure
 rolling back DDL and all history, and refusal to repair-stamp partial history. The original64SQL

@@ -9,12 +9,36 @@ begin
   if to_regclass('private.kyc_quarantine_receipts') is null then
     raise exception 'Reviewed quarantine baseline required' using errcode='55000';
   end if;
-  select count(*) into v_count from pg_policies where schemaname='storage' and tablename='objects'
-    and policyname in ('kyc_raw_reads_closed','kyc_raw_updates_closed','kyc_raw_deletes_closed','kyc_registered_paths_no_reuse')
-    and permissive='RESTRICTIVE' and roles @> array['anon','authenticated']::name[];
+  if not exists(select from pg_class where oid='storage.objects'::regclass and relrowsecurity) then
+    raise exception 'Storage RLS must remain enabled' using errcode='55000';
+  end if;
+  select count(*) into v_count from pg_policies p join (values
+    ('kyc_raw_reads_closed','SELECT','(bucket_id <> ''kyc-docs''::text)',null),
+    ('kyc_raw_updates_closed','UPDATE','(bucket_id <> ''kyc-docs''::text)','(bucket_id <> ''kyc-docs''::text)'),
+    ('kyc_raw_deletes_closed','DELETE','(bucket_id <> ''kyc-docs''::text)',null),
+    ('kyc_registered_paths_no_reuse','INSERT',null,'((bucket_id <> ''kyc-docs''::text) OR private.kyc_unregistered_owner_path(name))')) expected(name,command,predicate,check_predicate)
+    on p.policyname=expected.name and p.cmd=expected.command
+      and p.qual is not distinct from expected.predicate and p.with_check is not distinct from expected.check_predicate
+    where p.schemaname='storage' and p.tablename='objects' and p.permissive='RESTRICTIVE'
+      and p.roles=array['anon','authenticated']::name[];
   if v_count<>4 then raise exception 'Raw KYC Storage guards must remain closed' using errcode='55000';end if;
+  if not exists(select from pg_proc p where p.oid=to_regprocedure('private.kyc_unregistered_owner_path(text)')
+    and p.prosecdef=true and p.proconfig @> array['search_path=""']
+    and p.proowner=(select oid from pg_roles where rolname='postgres')
+    and encode(sha256(convert_to(btrim(replace(p.prosrc,E'\r\n',E'\n'),E' \n\t\r'),'UTF8')),'hex')='d13d5c8acec6648a4b064229739fe1fbe6890a4c1aded09b6ecdd72fbadc50fa') then
+    raise exception 'Reviewed kyc_unregistered_owner_path guard body and context required' using errcode='55000';
+  end if;
+  if not exists(select from pg_proc p where p.oid=to_regprocedure('private.kyc_quarantine_activation_interlock()')
+    and p.prosecdef=false and p.proconfig @> array['search_path=""']
+    and p.proowner=(select oid from pg_roles where rolname='postgres')
+    and encode(sha256(convert_to(btrim(replace(p.prosrc,E'\r\n',E'\n'),E' \n\t\r'),'UTF8')),'hex')='30f0061b202046b1b0e634d032ec9ec4465a69315a18ca55bcb5601e2b39ecdb') then
+    raise exception 'Reviewed kyc_quarantine_activation_interlock guard body and context required' using errcode='55000';
+  end if;
   select count(*) into v_count from pg_trigger t join pg_class c on c.oid=t.tgrelid join pg_namespace n on n.oid=c.relnamespace
-    where not t.tgisinternal and t.tgenabled='O' and n.nspname='public' and
+    where not t.tgisinternal and t.tgenabled='O' and n.nspname='public'
+    and t.tgfoid=to_regprocedure('private.kyc_quarantine_activation_interlock()') and t.tgtype=23
+    and not t.tgdeferrable and not t.tginitdeferred and t.tgconstraint=0 and t.tgnargs=0 and t.tgqual is null
+    and t.tgattr::text='' and
     ((c.relname='xooter_applications' and t.tgname='kyc_application_clearance_required') or
      (c.relname='xooters' and t.tgname='kyc_contractor_clearance_required') or
      (c.relname='user_roles' and t.tgname='kyc_role_clearance_required'));

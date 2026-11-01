@@ -17,6 +17,19 @@ never hand-declare missing RPCs or weaken the release guard. No production key, 
 activation or personal-document processing is included. Licensing/DPA/region/applicant consent
 and legitimate verification remain separate requirements. Preserve approved website7a81f0f1.
 
+Independent review found P2 in the UNAPPLIED wrapper's name-only protection checks. Added actual
+Storage RLS/predicate/command/role checks, source-derived SHA256 of both guard bodies with their
+owner/definer/search-path context, and exact trigger binding/type/WHEN/column/event metadata.
+Six actual local weakening mutations now abort before DDL/history; clean/replay/spend, middle
+failure rollback and partial-history refusal still pass. Actual production baseline semantic
+readback matches: RLStrue,4exactpredicates, guard hashesd13d5c8a.../30f0061b... and3type23 bindings.
+No production DDL has been applied yet; corrected immutable cross-review is required.
+
+Financial private replay backstop IS now applied to staging as actual20261101223314, after the
+corrected1a88edba review:1canonicalreceipt→1binding,0mismatches. Triggerenabled; anon/authreadfalse,
+service directinsert/update/delete/binderfalse. This creates no new payment, subscription or
+payout and changes no activation control. Production financial DDL remains unapplied.
+
 ## HOLDING — 2 November — preserve scanner evidence and version response compatibility
 
 Authority migration applied as actual20261101220212 and worker3 deployed with JWT retained;
