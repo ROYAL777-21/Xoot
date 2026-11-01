@@ -21,7 +21,8 @@ binding exists; it cannot release the external transaction. Second charges and c
 are reconciliation cases. Existing paid/refunded/cancelled receipts and admin-first late ITNs
 retain their state and consequences. No public RPC or direct service-role write grant is added.
 
-The migration locks payment/event tables before receipts, uses a five-second lock timeout and
+The migration takes payment then event EXCLUSIVE table locks before receipts, drains existing
+row-locking settlement transactions while allowing ordinary reads, uses a five-second timeout and
 validates every pre-existing non-null receipt transaction in the same transaction as trigger
 installation. Unverifiable history aborts the entire migration. No receipt is inferred from a
 paid flag. Do not delete audit evidence, repair-stamp this version or skip invalid rows to deploy.
@@ -33,6 +34,11 @@ different transactions for one payment and actual role refusals. The fixture kee
 unique provider-event identity. Valid backfill and invalid-backfill rollback run separately. A
 missing automatic booking guard is deliberately planted in a disposable database and detected.
 This is actual local PostgreSQL execution, not concurrent hosted or signed-provider acceptance.
+
+Independent review found that SHARE source locks could deadlock with an in-flight late callback's
+receipt/event lock upgrade. That unapplied DDL now uses EXCLUSIVE in the existing writer order.
+No hosted schema received the earlier draft. Current real PostgreSQL concurrency acceptance is
+still separate; the isolated single-session runtime does not simulate simultaneous connections.
 
 Run with pinned isolated tooling, outside app dependencies:
 

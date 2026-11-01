@@ -102,7 +102,10 @@ revoke all on function private.guard_booking_payfast_binding() from public,anon,
 
 -- Stop current receipt writers while validating/backfilling; fail quickly if production is busy.
 -- No history is fabricated and no paid legacy flag is promoted into a settlement receipt.
-lock table public.payment_records,public.provider_events in share mode;
+-- Drain SELECT FOR UPDATE/ROW SHARE settlers too: SHARE alone permits a late callback's
+-- receipt→event lock upgrade to deadlock against this backfill. Plain SELECT remains available.
+lock table public.payment_records in exclusive mode;
+lock table public.provider_events in exclusive mode;
 lock table private.booking_payment_settlements in share row exclusive mode;
 do $$ declare receipt private.booking_payment_settlements%rowtype;
 begin

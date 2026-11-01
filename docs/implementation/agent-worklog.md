@@ -34,6 +34,12 @@ no runtime importer. Its membership RPC/atomic consequences/trial/credit restric
 implementation work; never call this a completed Care+ loop. Cross-role review follows the
 immutable patch before any staging/production application.
 
+Independent immutable review reran96actual SQL assertions plus backfill/mutation checks. It found
+a P2 migration lock-upgrade cycle under SHARE source locks. Correct the still-unapplied DDL to
+payment EXCLUSIVE then event EXCLUSIVE, then receipt SHARE ROW EXCLUSIVE, preserving5s timeout
+and ordinary reads. No hosted database received the earlier draft; review the corrected hash
+before any application. Full Care+ fulfilment and real concurrent/provider/JWT gates remain.
+
 Scanner owner test failed at the gateway with UNAUTHORIZED_NO_AUTH_HEADER, still0/32 attempts.
 Corrected the private dashboard request to include the legacy Authorization bearer as well as
 the worker's apikey check; fixed PDF only. Await the owner's private paste/retry. Never disable
