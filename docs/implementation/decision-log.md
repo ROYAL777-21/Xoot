@@ -1154,3 +1154,8 @@ positive contribution is not proof of net profit. The free-clean service/value c
 a concrete founder decision before the entitlement can be advertised as redeemable. Home
 Fragrance stays coming soon until stock and fulfilment exist. This decision approves no new
 cash-out fee or automatic post-36 reward schedule.
+
+Founder correction, 1 November: the clean reward is separate from Care+. Redeeming it does
+**not itself waive the R39 booking fee**. Retain independently verified Care+ membership's
+existing fee eligibility; do not turn reward membership into Care+ or give it Care+ benefits.
+The four-hour/R250 service cap was proposed for the contribution model, not silently activated.

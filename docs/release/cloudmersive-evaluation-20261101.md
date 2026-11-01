@@ -35,11 +35,22 @@ Raw KYC storage remains unreadable to browser roles. Existing authenticity, back
 training, bank, atomic MFA approval and real availability gates remain closed. Clean malware
 scanning is not an authenticity or identity-verification decision.
 
-Local evidence: 23 executed adapter/worker cases; Deno typecheck and scoped lint; actual
+Local evidence: 24 executed adapter/worker cases; Deno typecheck and scoped lint; actual
 PostgreSQL execution of 35 scanner assertions on the isolated quarantine fixture. These
 include role denial, durable spend/idempotency, private-processing default, one in flight,
 changed-object refusal, immutable inputs and retained activation barriers. Hosted deployment
 and real provider integration results must be added after they occur.
+
+Hosted staging: actual version20261101155855, worker5664bb22-d362-41f4-8d31-81b9557c5de1/version2,
+bundle86b92f3628e60bf35749b21f195605062a64eebaa7e32854ffd58c8fa0b045e3. Four runtime files match
+reviewed source. Service API-key validation is independent of the retained gateway check;
+ordinary user bearers and public keys fail before quota. The existing CI token cannot reveal
+API key secrets (actual official Management API request denied). No access was widened. Fixed
+synthetic dashboard tests are prepared for private owner service-key entry. Counters remain0/32,
+processingfalse, no receipts; therefore genuine Cloudmersive acceptance is not yet established.
+Nine Node transport/redaction checks pass. A CodeQL network-status-to-fixed-artifact report
+was resolved by recording only exact-denial boolean evidence and exclusive0600file creation,
+without a scanner exception. Full release gates remain required before merge.
 
 Rollback: leave the production/processing gates closed; remove the staging worker deployment
 or disable its invocation, retaining private attempts/budget/receipts for audit. Do not delete

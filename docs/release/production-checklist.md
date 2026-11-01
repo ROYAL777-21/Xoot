@@ -1,5 +1,44 @@
 # Xoot production checklist
 
+## 1 November afternoon — public light mode live; scanner evaluation on staging
+
+Theme PR106 is merged as `7a81f0f11fe3fd22a412f4eb656aff5fb953e285`. Vercel production
+`dpl_7RU4FVr2eWKkUkdHS3nhzfPwGjcG` is READY; canonical build-info and actual browser readback
+show that source and a light website root. Public auth/booking/Xooter application routes stay
+light, while app/workspace preferences are retained. The founder's corrected invoice legal
+name **Xoot Home Services** is saved; supplied registration and VAT treatment are unchanged.
+
+PR107 is a separate, unmerged staging evaluation. Actual migration `20261101155855` and
+`scan-xooter-document` version2 are on staging. All four returned runtime files match reviewed
+source; gateway verification is on, all three scanner RPCs deny anonymous/authenticated callers,
+the four raw Storage guards and three activation barriers remain. Budget is0/32 and personal
+document processing is OFF.24unit cases,35actual local PostgreSQL assertions and9private
+transport tests pass; independent review covered SQL, dispatch and credential/log boundaries.
+Fresh CodeQL passes without a new exception. The schema/type guard correctly remains red for
+the three RPCs until an actual reviewed production delivery and generated types exist.
+
+The founder saved the Free Cloudmersive key privately on staging. CI's existing Supabase token
+can deploy but its official key-reveal request returns access denied. No scope was widened.
+Rejected calls consumed no scanner attempt/provider allowance. The owner-only dashboard test
+is prepared with the fixed synthetic PDF; real provider clean/EICAR acceptance is still pending.
+No real document, contractor verification, production scanning or paid plan is claimed.
+An existing founder-authorised, email-confirmed staging alias now has a clearly labelled
+synthetic Xooter DRAFT. All verification checks remain pending; no Xooter role or active worker
+was granted. This is preparation, not a normal-JWT onboarding/availability acceptance result.
+
+Rewards are separate from Care+: first at12qualifying cleans, then24more (36total), and the
+reward does not itself waive the R39 booking fee. The proposed four-hour/R250 service cap is
+not activated. Gift rules are approved in ZD-040. Current contribution calculations and their
+limits are in [rewards-economics-20261101.md](rewards-economics-20261101.md). Atomic rewards,
+earnings/payouts, membership/recurring/gift fulfilment and actual branded event-email delivery
+remain separate implementation/acceptance work; do not describe them as complete.
+
+Cloudmersive Free is described by the provider as evaluation; production eligibility, DPA,
+processing region and applicant consent need actual review. PayFast provider approval/live
+credentials, beneficiary payout support, genuine vetted worker supply, real JWT/device tests,
+voice/SOS and the founder-held Apple enrolment remain launch dependencies. Existing website
+delivery below is retained; this is not full marketplace production clearance.
+
 ## 1 November 2026 — reviewed website release and customer reviews are live
 
 PR101 merged into the approved `release/xoot-production` as `db0c5cc9`. Production deployment

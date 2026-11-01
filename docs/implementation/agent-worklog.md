@@ -30,6 +30,24 @@ It preserves the KYC activation interlock, raw Storage denial and real-document 
 service-only worker also refuses production.20 executed unit cases, Deno/scoped lint and30actual
 isolated PostgreSQL assertions pass. Cross-review and hosted synthetic API acceptance follow.
 
+Actual staging scanner migration20261101155855 applied, then worker1/2 deployed with all4frozen
+files read back exact. Independent reviews reproduce/fix delayed provider dispatch, then verify
+24unit/35actualSQL and9Node transport/redaction cases. CodeQL's actual network-status-to-artifact
+report was fixed with exact-denial boolean projection and exclusive0600creation; no new exception.
+The existing CI token denies real key-reveal access; never widen it or print credential material.
+All attempted privileged calls fail before claims, counters0/32 and processingfalse. Prepared the
+owner's official staging legacy-key page and function Test panel, apikey value empty, fixed clean
+PDF. Await private entry/test before claiming provider acceptance or closed production DDL/types.
+No changes to existing production KYC/money gates. Full CI's3newRPC/type assertions remain red
+until actual production schema generation, not a reason to weaken them. PR107 is draft/attached.
+
+Prepared one staging-only synthetic Xooter draft under an existing founder-authorised normal,
+email-confirmed alias, with no role/activation, false consent and all checks pending. An initial
+JSON/text type mismatch rolled back wholly; inspected actual catalog, then inserted guarded draft
+82976c22-0cf6-4c32-9d3b-47e620af9a74. This does not prove normal-JWT onboarding or verified supply.
+Founder corrects reward policy: reward is separate from Care+ and does not itself waive R39.
+Current real-quote/payout model updated; cap proposal remains pending and no entitlement enabled.
+
 ## DELIVERY — 1 November — website, confirmed reviews and production address lookup
 
 Real production CLI diff recovered exactly (44lines,2hunks,28additions); independent comparison

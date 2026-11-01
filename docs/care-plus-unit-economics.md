@@ -1,5 +1,9 @@
 # Care+ unit economics, by cadence
 
+> Historical analysis: its shared-funding and fee assumptions do not describe the current server.
+> For the founder's new 12/36 reward decision, use [the current contribution check](release/rewards-economics-20261101.md).
+> Preserve the dated analysis below as history; do not use its profitability conclusion to activate a benefit.
+
 Written 2026-08-09 at the R99 repricing to answer a direct question — **are fortnightly members our
 least profitable, and if so why, and what do we do about it?** — and re-solved the same day once the
 founder supplied the commission rule.
