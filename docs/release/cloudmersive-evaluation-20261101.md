@@ -1,5 +1,39 @@
 # Cloudmersive evaluation delivery — 1 November 2026
 
+2November readback: authority DDL is actual version20261101220212; worker3 is ACTIVE with
+verify_jwt=true, bundle89cc5327674a6847248a71346b41c3da31ec9d72204be2445aec5aaa3c42e8ce.
+All5runtime files match reviewed source. The owner-entered service transport now authenticates
+through the database probe. Genuine provider tests used2/32attempts: the blank PDF returned
+incomplete_response and remains quarantined; EICAR was blocked with actual malwareDetectedtrue.
+Both have terminal receipt UUIDs and response digests. Complete clean-file acceptance is pending;
+never overwrite the failed PDF receipt or turn that result into a contractor clearance.
+
+The v2 response contract is supported by Cloudmersive's
+[official Advanced Scan companion](https://www2.cloudmersive.com/article/CSharp-File-Upload-Security-Companion-Code),
+whose parser explicitly permits a null virus list. Xoot still requires CleanResult=true, all12
+threat flags present/false and a content-verified PDF/image format. Missing/invalid virus lists
+and missing threat flags remain errors. A positive malware acceptance requires a structured
+finding, not merely any nonempty array. Fixed synthetic diagnostics contain only known type/
+boolean/format categories; no raw format strings, virus entries, filenames or ContentInformation.
+
+The new claim entry freezes policyv2. The original API is pinned to v1 for both document and
+fixture lookups. Global uniqueness becomes per-policy uniqueness without changing prior rows,
+digest/state, maximum32 or consumed counters. Both versions share one lease/dispatch limiter.
+Migration refuses an active lease and rolls back, leaving the old API intact. Neither policy
+may be supplied by an applicant, and registered-document processing remains separately closed.
+
+Current auth repair is prepared, not yet deployed: the owner entered the existing key privately;
+actual gateway metadata identifies service_role on both headers, but version2's exact runtime-key
+comparison still rejects it. No key values were read. Replace equality with a read-only,
+service-only SECURITY INVOKER probe using the presented credential against actual PostgREST.
+Require exact boolean true and reuse that same per-request client for every subsequent operation.
+No decoded claims, runtime-admin fallback or client-chosen project is accepted. The database
+transport pins the staging HTTPS origin, refuses redirects and has a15s deadline. Gateway JWT
+verification, real-document processing OFF, quotas and Storage/activation guards remain.
+The new probe's migration must precede worker deployment and actual ACL readback; old applied
+scanner SQL is immutable.37unit cases and41actual isolated PostgreSQL assertions pass. These
+are local checks, not proof of a real Cloudmersive response. No production promotion yet.
+
 The founder selected Cloudmersive, Free only, and privately saved `CLOUDMERSIVE_API_KEY` in
 Zoot Staging (`fxmxyabdjqviqbcxmvlp`). The existing signed-in Edge Free Tier account is reused;
 no key was read into chat, no new plan purchased and no production secret installed.

@@ -1,5 +1,35 @@
 # Xoot production checklist
 
+## 2 November — real scanner acceptance; closed production schema delivered
+
+The corrected, independently reviewed scanner convergence is applied to production as actual
+20261101224523. All three executed-source hashes match the manifest. Five invoker RPCs deny
+ordinary API users and retain service-only execution; Storage RLS, four restrictive guards and
+three activation interlocks remain enforced. Production budget0/32, personal processingfalse,
+0attempts and no scanner worker deployed. Business counts and closed money controls are unchanged.
+Actual CLI2.113.0 generation supplies the five new RPC shapes; fresh full release/type checks
+are being completed before PR107 promotion. See [readback](evidence/2026-11-02/scanner-production-schema.json).
+
+Cloudmersive synthetic acceptance is now genuine: the v2 blank PDF is clean and EICAR is blocked
+with a structured positive malware finding. Worker4 retains JWT verification and all5actual
+runtime files match reviewed source. Actual migrations20261101155855/20261101220212/20261101221814
+are staging deliveries. Four total attempts are consumed out of the same nonrenewing32, including
+the earlier strict-parser failure; a real HTTP retry returns the same cached receipt without
+spending another attempt. Both original v1 rows/digests remain unchanged. Personal processing is
+OFF; no real applicant document, paid plan, contractor clearance or production scan is claimed.
+The owner's temporary credential fields were cleared.41unit cases,64actual isolated SQL
+assertions plus active-lease rollback and9transport/redaction checks pass independently.
+See [actual redacted receipts](evidence/2026-11-02/scanner-staging.json).
+
+Separate financial preparation adds a shared PayFast transaction replay boundary. Independent
+review caught and corrected a migration lock-upgrade risk;96SQL assertions plus backfill and
+mutation checks pass. The private replay backstop is now applied to staging as20261101223314:
+1existing canonical receipt maps to1binding,0mismatches, triggerenabled and no direct API-role
+mutation access. It remains unapplied to production and does not complete membership, gift, payout or
+Rewards settlement. The earlier production website/theme/invoice delivery remains in place.
+Provider approval, licensing/privacy, genuine vetted supply and actual JWT/device/safety gates
+remain substantive release requirements.
+
 ## 1 November afternoon — public light mode live; scanner evaluation on staging
 
 Theme PR106 is merged as `7a81f0f11fe3fd22a412f4eb656aff5fb953e285`. Vercel production

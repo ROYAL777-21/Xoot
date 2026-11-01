@@ -1,5 +1,67 @@
 # Agent worklog
 
+## HOLDING — 2 November — closed production scanner schema preparation
+
+Genuine v2 PDF6fe9a8a1-b562-4261-84a6-b7743d8bbaec is clean; EICARe7f4efd0-1184-473b-8cf3-9143d4cb436d
+is blocked with a positive structured malware finding. Worker4/fivefiles match reviewede0830d98;
+actual v2 migration20261101221814. Original v1 aggregate2a5b0a3bc7de042cb6b67fae87f840bf unchanged.
+Cached HTTP retry keeps used4/32, personalfalse. Temporary request key fields cleared. Evidence
+is docs/release/evidence/2026-11-02/scanner-staging.json.41unit/64SQL+rollback and9transport pass.
+
+Claim a reviewed, atomic production schema convergence for the THREE actually rehearsed source
+versions only, with executed-SQL hashes and canonical history inserted only after their DDL runs
+in the same statement. Production preflight finds no scanner objects and retains all4raw Storage
+guards/3activation interlocks. Rehearse clean delivery, retry/spend preservation and failure
+rollback before cross-review/application. Regenerate types from the actual production schema;
+never hand-declare missing RPCs or weaken the release guard. No production key, worker/provider
+activation or personal-document processing is included. Licensing/DPA/region/applicant consent
+and legitimate verification remain separate requirements. Preserve approved website7a81f0f1.
+
+Independent review found P2 in the UNAPPLIED wrapper's name-only protection checks. Added actual
+Storage RLS/predicate/command/role checks, source-derived SHA256 of both guard bodies with their
+owner/definer/search-path context, and exact trigger binding/type/WHEN/column/event metadata.
+Six actual local weakening mutations now abort before DDL/history; clean/replay/spend, middle
+failure rollback and partial-history refusal still pass. Actual production baseline semantic
+readback matches: RLStrue,4exactpredicates, guard hashesd13d5c8a.../30f0061b... and3type23 bindings.
+Corrected immutable6a8ede36 passed independent cross-review and was applied to production as
+actual20261101224523. Wrapper SHA256444fe05aa8df5047c4d2beea73f9f8320c4e053b1c39bff405e0feedd6f1a68a;
+all3executed source hashes and5service-only invoker RPCs read back exact. Storage/activation
+protections retained, budget0/32, personalfalse, no worker/attempts, unchanged business counts.
+Actual pinned production CLI2.113.0 run41358867443 produced a54line/4hunk diff with24additions;
+apply exactly that generator output, then require a fresh schema comparison and full release
+suite. SQL body remains immutable; rename the authored wrapper to its actual hosted version.
+
+Financial private replay backstop IS now applied to staging as actual20261101223314, after the
+corrected1a88edba review:1canonicalreceipt→1binding,0mismatches. Triggerenabled; anon/authreadfalse,
+service directinsert/update/delete/binderfalse. This creates no new payment, subscription or
+payout and changes no activation control. Production financial DDL remains unapplied.
+
+## HOLDING — 2 November — preserve scanner evidence and version response compatibility
+
+Authority migration applied as actual20261101220212 and worker3 deployed with JWT retained;
+all5runtime files match e89dbdde after newline normalization. Probe is actual invoker/stable/
+empty-search_path, client grantsfalse and service granttrue. First genuine Cloudmersive PDF
+attempt719640f3-51f3-417e-9d94-c40b676025f3 is error/incomplete_response with a response digest;
+it was NOT marked clean. Harmless EICAR f644bcfd-0725-4fca-b8d7-375d3e292c32 is genuinely blocked,
+malwareDetectedtrue with a digest. Used2/32; personal processingfalse; no production changes.
+
+Claim versioned response compatibility and fixed-fixture safe shape diagnostics; compare the
+provider's documented nullable virus list without dropping any required negative threat flag or
+verified-format check. Add a reviewed fixed v2 policy/claim entry, preserve v1 API/terminal
+receipts and the SAME nonrenewing32attempt budget. No receipt overwrite, consumed-counter reset,
+arbitrary policy input or paid plan. Cross-review precedes the next staging delivery/test.
+
+## HOLDING — 1 November — verify scanner service authority through PostgREST
+
+Real private owner test reached the gateway with service_role in both apikey/bearer metadata,
+but the worker's exact configured-key equality rejected it. No key value was read;0/32 attempts,
+0receipts and no provider call. Claim the additive service-only identity probe and per-request
+authenticated scanner client on PR107. The probe must use actual database authentication/ACL and
+return only current_user='service_role', never decode claims as authority. Keep gateway JWT on,
+fixed staging URL, no browser Origin, personal processing OFF and all quarantine/activation gates.
+Cross-role SQL/auth review and actual synthetic acceptance precede any promotion. Financial
+preparation ae1a072a is preserved/pushed on its separate branch; do not overwrite shared work.
+
 ## HOLDING — 1 November evening — atomic Care+ request and settlement
 
 Continue independent money work while the founder completes the private scanner test. Claim a

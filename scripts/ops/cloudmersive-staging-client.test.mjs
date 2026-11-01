@@ -5,13 +5,13 @@ test("remote error/object/secret values cannot become logged evidence", () => {
   const source = { state: { key: "synthetic-secret" }, reason: "synthetic-secret", attemptId: ["synthetic-secret"],
     cached: "true", malwareDetected: { token: "synthetic-secret" }, arbitrary: "synthetic-secret" };
   assert.deepEqual(projectStagingScanResult(source, "eicar", 503), { fixture: "eicar", http: 503, state: null, reason: null,
-    attemptId: null, cached: false, malwareDetected: false });
+    policyVersion:null,attemptId: null, cached: false, malwareDetected: false });
   assert(!JSON.stringify(projectStagingScanResult(source, "eicar", 503)).includes("synthetic-secret"));
 });
 test("known statuses/reasons and UUID are retained without extra remote fields", () => {
   assert.deepEqual(projectStagingScanResult({ state: "blocked", reason: "provider_rejected",
     attemptId: "00000000-0000-4000-8000-000000000001", cached: true, malwareDetected: true, body: "private payload" }, "eicar", 200),
-  { fixture: "eicar", http: 200, state: "blocked", reason: "provider_rejected",
+  { fixture: "eicar", http: 200, state: "blocked", reason: "provider_rejected",policyVersion:null,
     attemptId: "00000000-0000-4000-8000-000000000001", cached: true, malwareDetected: true });
 });
 test("privileged transport pins staging, rejects redirects and returns projected values", async () => {
@@ -43,10 +43,11 @@ test("a terminal state with unknown reason or absent/malformed receipt cannot pa
 });
 test("complete clean and actual-malware-block evidence can pass", () => {
   const id = "00000000-0000-4000-8000-000000000001";
-  assert.equal(isExpectedStagingResult(projectStagingScanResult({ state: "clean", reason: "provider_clean", attemptId: id }, "clean_pdf", 200)), true);
-  const blocked = projectStagingScanResult({ state: "blocked", reason: "provider_rejected", malwareDetected: true, attemptId: id }, "eicar", 200);
+  assert.equal(isExpectedStagingResult(projectStagingScanResult({ state: "clean", reason: "provider_clean", policyVersion:"xoot-kyc-cloudmersive-v2",attemptId: id }, "clean_pdf", 200)), true);
+  const blocked = projectStagingScanResult({ state: "blocked", reason: "provider_rejected", policyVersion:"xoot-kyc-cloudmersive-v2",malwareDetected: true, attemptId: id }, "eicar", 200);
   assert.equal(isExpectedStagingResult(blocked), true);
   assert.equal(isExpectedStagingResult({ ...blocked, malwareDetected: false }), false);
+  assert.equal(isExpectedStagingResult({ ...blocked, policyVersion:"xoot-kyc-cloudmersive-v1" }), false);
 });
 test("masked, malformed, customer and wrong-project transport values stop before invocation", () => {
   const shape = claims => `synthetic.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.synthetic`;
