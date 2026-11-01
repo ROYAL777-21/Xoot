@@ -1,5 +1,13 @@
 export const STAGING_SCANNER_PROJECT = "fxmxyabdjqviqbcxmvlp";
 export const STAGING_SCANNER_URL = "https://fxmxyabdjqviqbcxmvlp.supabase.co/functions/v1/scan-xooter-document";
+/** Transport-shape check only; the hosted worker still verifies the actual configured key. */
+export function hasExpectedServiceTransportShape(value) {
+  if (typeof value !== "string" || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value)) return false;
+  try {
+    const claims = JSON.parse(Buffer.from(value.split(".")[1], "base64url").toString("utf8"));
+    return claims.role === "service_role" && claims.ref === STAGING_SCANNER_PROJECT;
+  } catch { return false; }
+}
 const states = new Set(["claimed", "held", "clean", "blocked", "error"]);
 const reasons = new Set([
   "method_not_allowed", "unauthorized", "server_worker_required", "evaluation_staging_only", "scanner_not_configured",

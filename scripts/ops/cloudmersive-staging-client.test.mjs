@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { invokeFixedStagingFixture, isExpectedStagingResult, projectStagingScanResult, STAGING_SCANNER_URL } from "./cloudmersive-staging-client.mjs";
+import { hasExpectedServiceTransportShape, invokeFixedStagingFixture, isExpectedStagingResult, projectStagingScanResult, STAGING_SCANNER_URL } from "./cloudmersive-staging-client.mjs";
 test("remote error/object/secret values cannot become logged evidence", () => {
   const source = { state: { key: "synthetic-secret" }, reason: "synthetic-secret", attemptId: ["synthetic-secret"],
     cached: "true", malwareDetected: { token: "synthetic-secret" }, arbitrary: "synthetic-secret" };
@@ -47,4 +47,11 @@ test("complete clean and actual-malware-block evidence can pass", () => {
   const blocked = projectStagingScanResult({ state: "blocked", reason: "provider_rejected", malwareDetected: true, attemptId: id }, "eicar", 200);
   assert.equal(isExpectedStagingResult(blocked), true);
   assert.equal(isExpectedStagingResult({ ...blocked, malwareDetected: false }), false);
+});
+test("masked, malformed, customer and wrong-project transport values stop before invocation", () => {
+  const shape = claims => `synthetic.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.synthetic`;
+  for (const value of ["masked****", "not-a-key", shape({ role: "authenticated", ref: "fxmxyabdjqviqbcxmvlp" }),
+    shape({ role: "service_role", ref: "different-project" })]) assert.equal(hasExpectedServiceTransportShape(value), false);
+  // This is deliberately not signature verification and grants no access to the hosted worker.
+  assert.equal(hasExpectedServiceTransportShape(shape({ role: "service_role", ref: "fxmxyabdjqviqbcxmvlp" })), true);
 });
