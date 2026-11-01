@@ -1,5 +1,25 @@
 # Xoot production checklist
 
+## 2 November — real scanner acceptance on staging; production processing remains closed
+
+Cloudmersive synthetic acceptance is now genuine: the v2 blank PDF is clean and EICAR is blocked
+with a structured positive malware finding. Worker4 retains JWT verification and all5actual
+runtime files match reviewed source. Actual migrations20261101155855/20261101220212/20261101221814
+are staging deliveries. Four total attempts are consumed out of the same nonrenewing32, including
+the earlier strict-parser failure; a real HTTP retry returns the same cached receipt without
+spending another attempt. Both original v1 rows/digests remain unchanged. Personal processing is
+OFF; no real applicant document, paid plan, contractor clearance or production scan is claimed.
+The owner's temporary credential fields were cleared.41unit cases,64actual isolated SQL
+assertions plus active-lease rollback and9transport/redaction checks pass independently.
+See [actual redacted receipts](evidence/2026-11-02/scanner-staging.json).
+
+Separate financial preparation adds a shared PayFast transaction replay boundary. Independent
+review caught and corrected a migration lock-upgrade risk;96SQL assertions plus backfill and
+mutation checks pass. It is not yet applied and does not complete membership, gift, payout or
+Rewards settlement. The earlier production website/theme/invoice delivery remains in place.
+Provider approval, licensing/privacy, genuine vetted supply and actual JWT/device/safety gates
+remain substantive release requirements.
+
 ## 1 November afternoon — public light mode live; scanner evaluation on staging
 
 Theme PR106 is merged as `7a81f0f11fe3fd22a412f4eb656aff5fb953e285`. Vercel production

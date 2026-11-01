@@ -45,13 +45,14 @@ export function projectStagingScanResult(value, fixture, http) {
   const record = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   const reason = record.reason ?? record.error;
   return { fixture, http, state: typeof record.state === "string" && states.has(record.state) ? record.state : null,
+    policyVersion: record.policyVersion === "xoot-kyc-cloudmersive-v2" || record.policyVersion === "xoot-kyc-cloudmersive-v1" ? record.policyVersion : null,
     reason: typeof reason === "string" && reasons.has(reason) ? reason : null,
     attemptId: typeof record.attemptId === "string" && uuid.test(record.attemptId) ? record.attemptId : null,
     cached: record.cached === true, malwareDetected: record.malwareDetected === true };
 }
 
 export function isExpectedStagingResult(result) {
-  if (result.http !== 200 || typeof result.attemptId !== "string" || !uuid.test(result.attemptId)) return false;
+  if (result.http !== 200 || result.policyVersion !== "xoot-kyc-cloudmersive-v2" || typeof result.attemptId !== "string" || !uuid.test(result.attemptId)) return false;
   if (result.fixture === "clean_pdf") return result.state === "clean" && result.reason === "provider_clean";
   return result.fixture === "eicar" && result.state === "blocked" && result.malwareDetected === true &&
     ["provider_rejected", "threat_detected"].includes(result.reason);

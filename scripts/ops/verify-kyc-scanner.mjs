@@ -10,7 +10,7 @@ try {
     'supabase/migrations/20261027032349_kyc_private_quarantine_interlock.sql',
     'supabase/migrations/20261101155855_kyc_scanner_evaluation_receipts.sql',
     'supabase/migrations/20261101220212_kyc_scanner_service_authority.sql','scripts/testing/kyc-scan-contract.sql',
-    'supabase/migrations/20261102001000_kyc_scanner_versioned_policy_claims.sql','scripts/testing/kyc-scan-policy-contract.sql']) {
+    'supabase/migrations/20261101221814_kyc_scanner_versioned_policy_claims.sql','scripts/testing/kyc-scan-policy-contract.sql']) {
     const source=await readFile(path,'utf8');
     if(path.endsWith('_kyc_scanner_versioned_policy_claims.sql')) {
       // Disposable lease-conflict rehearsal only; this process never connects to hosted data.

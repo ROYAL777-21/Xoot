@@ -1,0 +1,44 @@
+{
+  "kind": "actual-staging-synthetic-provider-acceptance",
+  "project": "fxmxyabdjqviqbcxmvlp",
+  "reviewedRuntimeSource": "e0830d98b142645817d8442a00686bf1ce7d2775",
+  "workerVersion": 4,
+  "gatewayJwtVerification": true,
+  "bundleSha256": "d2594a3ec8e7c8f85359e789744eee043f0958849666c924243a9559f7c9997c",
+  "runtimeFilesReadBackExactAfterNewlineNormalization": 5,
+  "actualMigrationVersions": ["20261101155855", "20261101220212", "20261101221814"],
+  "normalUserJwtAcceptance": false,
+  "authentication": "Founder entered an existing staging service-role credential privately in the official function tester; actual PostgREST authority checked by the same client throughout. No credential value inspected or retained in this evidence.",
+  "firstPolicyReceiptsPreserved": {
+    "count": 2,
+    "fullRowAggregateMd5BeforeAndAfter": "2a5b0a3bc7de042cb6b67fae87f840bf",
+    "cleanPdfFirstAttempt": "719640f3-51f3-417e-9d94-c40b676025f3",
+    "cleanPdfFirstState": "error/incomplete_response",
+    "eicarFirstAttempt": "f644bcfd-0725-4fca-b8d7-375d3e292c32",
+    "eicarFirstState": "blocked/provider_rejected/malware_detected"
+  },
+  "policy": "xoot-kyc-cloudmersive-v2",
+  "cleanPdf": {
+    "id": "6fe9a8a1-b562-4261-84a6-b7743d8bbaec",
+    "state": "clean",
+    "reason": "provider_clean",
+    "responseSha256": "89b3185c6fe42c45e3b28b269f4dc1153794b3e712d78f1503b58c4efa77be1d",
+    "finishedAtUtc": "2026-11-01T22:19:32.508452+00:00",
+    "safeResponseShape": {"clean": "true", "virusList": "null", "verifiedFormat": "pdf", "allTwelveThreatFlags": "false"}
+  },
+  "eicar": {
+    "id": "e7f4efd0-1184-473b-8cf3-9143d4cb436d",
+    "state": "blocked",
+    "reason": "provider_rejected",
+    "malwareDetected": true,
+    "responseSha256": "ab3b113f64f45a4440847a8e390deb13f62cb4a7286610cbd93a3694d14c0293",
+    "finishedAtUtc": "2026-11-01T22:20:19.999092+00:00"
+  },
+  "samePdfHttpRetry": {"cached": true, "sameReceipt": true, "additionalAttemptConsumed": false},
+  "budget": {"used": 4, "maximum": 32, "renewal": false, "activeAttempt": null},
+  "personalDocumentsAllowed": false,
+  "realPersonDocumentsSent": false,
+  "productionProcessingEnabled": false,
+  "localVerification": {"adapterWorkerTransportCases": 41, "executedPostgresqlAssertions": 64, "activeLeaseRollback": true, "transportRedactionCases": 9},
+  "remaining": ["Production eligibility/processing terms and region review", "Applicant consent and legitimate document authenticity/background/training/bank checks", "Real normal-user JWT and device acceptance before worker activation"]
+}
