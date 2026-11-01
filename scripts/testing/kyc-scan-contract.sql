@@ -1,17 +1,24 @@
 -- Disposable local fixture ONLY, after kyc-quarantine-fixture + quarantine + scanner migrations.
 begin;
 set role anon;
+select public.assert_throws($q$select public.kyc_scan_worker_authorized()$q$,'42501','anonymous cannot claim worker authority');
 select public.assert_throws($q$select public.claim_kyc_scan(null,'eicar')$q$,'42501','anonymous cannot trigger scans');
 select public.assert_throws($q$select * from private.kyc_scan_attempts$q$,'42501','anonymous cannot read receipts');
 reset role;
 set role authenticated;
+select public.assert_throws($q$select public.kyc_scan_worker_authorized()$q$,'42501','customer cannot claim worker authority');
+set local request.jwt.claims='{"role":"service_role"}';
+select public.assert_throws($q$select public.kyc_scan_worker_authorized()$q$,'42501','forged claim settings cannot change the authenticated database role');
 select public.assert_throws($q$select public.claim_kyc_scan(null,'eicar')$q$,'42501','customer cannot trigger provider');
 select public.assert_throws($q$select public.authorize_kyc_scan_dispatch(gen_random_uuid())$q$,'42501','customer cannot admit provider dispatch');
 select public.assert_throws($q$select public.finish_kyc_scan(gen_random_uuid(),'clean','provider_clean',repeat('a',64),null,false)$q$,'42501','customer cannot forge clean');
 select public.assert_throws($q$update private.kyc_scan_budget set personal_documents_allowed=true$q$,'42501','customer cannot open processing');
 reset role;
+select public.assert_true(not public.kyc_scan_worker_authorized(),'SQL owner context is not an authenticated PostgREST worker');
 select public.assert_true((select not personal_documents_allowed and used=0 and maximum=32 from private.kyc_scan_budget),'zero-use, nonrenewing, private-processing-closed default');
 set role service_role;
+select public.assert_true(public.kyc_scan_worker_authorized(),'actual database service role can establish worker authority');
+select public.assert_true((select used=0 from private.kyc_scan_budget),'authority probe consumes no scan attempt');
 select public.assert_throws($q$update private.kyc_scan_budget set personal_documents_allowed=true,processing_review_reference='forged'$q$,'42501','worker cannot authorise personal-data processing');
 select public.assert_throws($q$update private.kyc_scan_budget set maximum=600$q$,'42501','worker cannot raise budget');
 select public.assert_throws($q$select public.claim_kyc_scan(null,'arbitrary')$q$,'22023','only fixed fixtures allowed');

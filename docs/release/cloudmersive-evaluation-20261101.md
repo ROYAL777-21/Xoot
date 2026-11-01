@@ -1,5 +1,17 @@
 # Cloudmersive evaluation delivery — 1 November 2026
 
+Current auth repair is prepared, not yet deployed: the owner entered the existing key privately;
+actual gateway metadata identifies service_role on both headers, but version2's exact runtime-key
+comparison still rejects it. No key values were read. Replace equality with a read-only,
+service-only SECURITY INVOKER probe using the presented credential against actual PostgREST.
+Require exact boolean true and reuse that same per-request client for every subsequent operation.
+No decoded claims, runtime-admin fallback or client-chosen project is accepted. The database
+transport pins the staging HTTPS origin, refuses redirects and has a15s deadline. Gateway JWT
+verification, real-document processing OFF, quotas and Storage/activation guards remain.
+The new probe's migration must precede worker deployment and actual ACL readback; old applied
+scanner SQL is immutable.37unit cases and41actual isolated PostgreSQL assertions pass. These
+are local checks, not proof of a real Cloudmersive response. No production promotion yet.
+
 The founder selected Cloudmersive, Free only, and privately saved `CLOUDMERSIVE_API_KEY` in
 Zoot Staging (`fxmxyabdjqviqbcxmvlp`). The existing signed-in Edge Free Tier account is reused;
 no key was read into chat, no new plan purchased and no production secret installed.

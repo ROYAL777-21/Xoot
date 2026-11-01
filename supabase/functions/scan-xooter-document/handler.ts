@@ -6,7 +6,7 @@ type Store = {
   rpc(name: string, input: Record<string, unknown>): PromiseLike<Result>;
   storage: { from(bucket: string): { download(path: string): PromiseLike<{ data: Blob | null; error: unknown }> } };
 };
-type Configuration = { supabaseUrl: string; serviceKey: string; apiKey: string };
+type Configuration = { supabaseUrl: string; apiKey: string };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const json = (body: Record<string, unknown>, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { "Content-Type": "application/json", "Cache-Control": "private, no-store" },
@@ -46,20 +46,22 @@ async function boundedBody(req: Request) {
 }
 
 /** Privileged queue worker, never a browser uploader or a document-approval endpoint. */
-export function createScanHandler(config: Configuration, store: Store, request: typeof fetch = fetch) {
+export function createScanHandler(config: Configuration, storeForCredential: (key: string) => Store, request: typeof fetch = fetch) {
   return async (req: Request) => {
     if (req.method !== "POST") return json({ error: "method_not_allowed" },405);
-    // Service credentials belong on apikey. Authorization is reserved for user JWTs and may
-    // be normalized by the hosted gateway; it is never decoded/trusted as a service identity.
+    // The gateway remains enabled. PostgREST verifies the SAME caller's actual service role
+    // and EXECUTE grant; decoded claims or exact equality with another runtime token do not.
     const header = req.headers.get("apikey") ?? "";
-    if (!config.serviceKey || !header || header.length > 4096) return json({error:"unauthorized"},401);
-    const expected = await sha256(new TextEncoder().encode(config.serviceKey));
-    const provided = await sha256(new TextEncoder().encode(header));
-    let mismatch=0;for(let i=0;i<expected.length;i++) mismatch|=expected.charCodeAt(i)^provided.charCodeAt(i);
-    if(mismatch) return json({error:"unauthorized"},401);
+    if (!header || header.length > 4096) return json({error:"unauthorized"},401);
     if(req.headers.has("Origin")) return json({error:"server_worker_required"},403);
     // The current Free account is evaluation-only. No production or real-person processing opens.
     if(config.supabaseUrl!=="https://fxmxyabdjqviqbcxmvlp.supabase.co") return json({error:"evaluation_staging_only"},409);
+    let store: Store;
+    try {
+      store=storeForCredential(header);
+      const authority=await store.rpc("kyc_scan_worker_authorized",{});
+      if(authority.error || authority.data!==true) return json({error:"unauthorized"},401);
+    } catch { return json({error:"unauthorized"},401); }
     if(!config.apiKey) return json({error:"scanner_not_configured"},503);
     const body=await boundedBody(req);
     if(!body || Object.keys(body).some(key=>key!=="fixture" && key!=="documentId") ||
