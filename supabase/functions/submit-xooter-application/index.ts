@@ -4,7 +4,6 @@ import {
   cleanText,
   fail,
   handlePreflight,
-  insertNotification,
   insertOutbox,
   insertReviewQueue,
   isApprovedLaunchRegion,
@@ -184,13 +183,7 @@ Deno.serve(async (req) => {
         activation_locked_reason: "Verification, MIE screening, and required training must be complete before activation.",
       }).eq("id", data.id);
 
-      await insertNotification(supa, {
-        userId: user.id,
-        kind: "xooter_application_submitted",
-        title: "Application received",
-        body: "Our trust team reviews ID, selfie, address, bank, references and background checks before activation.",
-        link: "/xooter",
-      });
+      // The atomic application journey trigger owns the status notification and email receipt.
       await insertReviewQueue(supa, {
         queueType: "kyc",
         subjectTable: "xooter_applications",
@@ -211,18 +204,6 @@ Deno.serve(async (req) => {
           status: "needs_approval",
           approval_required: true,
           failure_mode: "Keep application pending until manual review is complete.",
-          created_by: user.id,
-        },
-        {
-          source_table: "xooter_applications",
-          source_id: data.id,
-          event_type: "trust_verification_update",
-          channel: "brevo_email",
-          owner: "Contractor Success Agent",
-          stack_tool: "Brevo email queue",
-          payload: { application_id: data.id, status: "submitted" },
-          status: "queued",
-          approval_required: false,
           created_by: user.id,
         },
       ]);

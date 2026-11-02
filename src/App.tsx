@@ -83,6 +83,7 @@ const XooterTraining = lazy(() => import("./pages/xooter/Training"));
 const XooterEarnings = lazy(() => import("./pages/xooter/Earnings"));
 const XooterKyc = lazy(() => import("./pages/xooter/Kyc"));
 const XooterProfile = lazy(() => import("./pages/xooter/Profile"));
+const XooterUpdates = lazy(() => import("./pages/xooter/Updates"));
 const AdminKyc = lazy(() => import("./pages/admin/Kyc"));
 const AdminOps = lazy(() => import("./pages/admin/Ops"));
 
@@ -221,6 +222,7 @@ const App = () => (
 
                   {/* Xooter portal */}
                   <Route path="/xooter/apply" element={<RequireAuth><XooterApply /></RequireAuth>} />
+                  <Route path="/xooter/updates" element={<RequireAuth><XooterShell><XooterUpdates /></XooterShell></RequireAuth>} />
                   <Route path="/xooter" element={<RequireRole role="xooter"><XooterShell><XooterDashboard /></XooterShell></RequireRole>} />
                   <Route path="/xooter/jobs" element={<RequireRole role="xooter"><XooterShell><XooterJobs /></XooterShell></RequireRole>} />
                   <Route path="/xooter/training" element={<RequireAuth><XooterShell><XooterTraining /></XooterShell></RequireAuth>} />

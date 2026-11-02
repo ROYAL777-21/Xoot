@@ -1,4 +1,4 @@
-import { fail, insertNotification, insertOutbox, ok } from "../_shared/action-utils.ts";
+import { fail, ok } from "../_shared/action-utils.ts";
 import {
   getAdminActionContext,
   getRequiredId,
@@ -62,28 +62,8 @@ Deno.serve(async (req) => {
       .eq("subject_id", application.id)
       .eq("queue_type", "kyc");
 
-    if (application.user_id) {
-      await insertNotification(supa, {
-        userId: application.user_id,
-        kind: "xooter_application_rejected",
-        title: "Application update",
-        body: "Your Xoot contractor application needs attention. Open onboarding for the reviewer notes and next steps.",
-        link: "/xooter/apply",
-      });
-    }
-
-    await insertOutbox(supa, {
-      source_table: "xooter_applications",
-      source_id: application.id,
-      event_type: "xooter_application_rejected",
-      channel: "brevo_email",
-      owner: "Contractor Success Agent",
-      stack_tool: "Brevo transactional email queue",
-      payload: { application_id: application.id, reason: reasonResult.reason! },
-      status: "queued",
-      approval_required: false,
-      created_by: user.id,
-    });
+    // The atomic application journey trigger owns the safe status notification/email receipt.
+    // Private reviewer notes stay in the application and are never copied into email payloads.
 
     return ok({ application_id: data.id, status: data.status }, origin);
   } catch (error) {
