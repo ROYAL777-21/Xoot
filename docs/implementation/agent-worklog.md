@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 2 November — accurate Care+ booking savings tip
+
+Claim feature/booking-careplus-savings-20261102 from approvedc4ebafc7. The founder requests a
+Care+ savings tip on the booking page. Inspect the actual booking quote/membership boundaries,
+show only the confirmed fee saving for the selected quote and distinguish an already eligible
+member from a prospective membership. No price, discount, trial, fee, billing, reward or other
+entitlement changes. Keep the handoff styling/public light scope, preserve the draft booking
+and avoid paid provider requests. Focused rendered/pricing regression checks and independent
+Release/Correctness review precede merge; parent owns promotion. Root owns notifications and
+another agent owns the Xooter tab bar. This claim does not assert full Care+ settlement readiness.
+
 ## LIVE — 2 November — accepted destination release and bounded email image follow-up
 
 PR110def1255c is live: Verceldpl_AY8uyrtZFVuCDKcDBg7xtKG776Xj READY, canonical build/Jobs chunk
