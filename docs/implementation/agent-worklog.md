@@ -1,5 +1,18 @@
 # Agent worklog
 
+## REVIEW — 2 November — worker navigation handoff and reachable mobile account
+
+The worker shell now uses source-style glass tabs and a warm desktop sidebar, original logo,
+static flower and source fonts. All existing routes remain; mobile You opens Profile/Verification/
+sign-out and closes on destination, outside tap, Escape or owner change. Existing owner-aware
+sign-out is retained. Optional updatesAvailable defaultsfalse until the parent ships PR108's
+real route. Seven focused cases pass (six initial failures on the old layout); seven real
+Chromium viewport/theme cases pass with44px targets,0overflow,0external calls and0console errors.
+The fixture contains only a clearly labelled synthetic identity, uses isolated cache and does
+not assert genuine worker/device acceptance. Rebased onto approvedfa005086, preserving Care+
+tip files and both worklog claims. The required redesign workflow gains the isolated browser
+check; this Release-owned edit needs parent review before merge. No production setting changed.
+
 ## REVIEW — 2 November — quote-bound Care+ booking tip
 
 The shared booking review now shows the actual positive booking_fee line as the prospective
