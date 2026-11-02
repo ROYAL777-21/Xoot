@@ -4,8 +4,8 @@
 do $worker_destination_delivery$
 declare v_sql text;v_history_hash text;
 begin
-  perform pg_advisory_xact_lock(20261102,110);
   perform set_config('lock_timeout','5s',true);
+  perform pg_advisory_xact_lock(20261102,110);
   if exists(select from supabase_migrations.schema_migrations where version='20261102191938') then
     select encode(sha256(convert_to(replace(array_to_string(statements,E'\n'),E'\r\n',E'\n'),'UTF8')),'hex') into v_history_hash
       from supabase_migrations.schema_migrations where version='20261102191938' and name='current_accepted_worker_destinations' and cardinality(statements)=1;
