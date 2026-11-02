@@ -43,6 +43,16 @@ household-access window. Preserve server authority, no address in external previ
 tracking/provider calls, no pricing/verification/crew entitlement change. Inspect assignment
 revocation; do not claim that a rendered test creates genuine verified worker supply.
 
+## HOLDING — 2 November — public email artwork embedding
+
+Claim fix/public-email-artwork-headers-20261102 from approvedf4780fba. The published PNG flowers
+and wordmark are intended to render in email clients, but actual Vercel responses inherit
+Cross-Origin-Resource-Policy:same-origin. Permit external embedding only for the two exact public
+email PNG paths, preserving private pages/scripts and all other response protections. Reproduce
+the blocked image request, verify the narrow host-header contracts and real browser load, then
+cross-review and ship through required gates. No customer data, tracking, credentials, schedules,
+pricing or worker/finance activation. Advance-address PR110 remains its own release.
+
 ## HOLDING — 2 November — public handoff artwork for branded emails
 
 Claim feature/branded-email-assets-20261102 from approved release/xoot-production. The first
