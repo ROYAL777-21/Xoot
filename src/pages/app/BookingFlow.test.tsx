@@ -193,10 +193,25 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     expect(await screen.findByRole("checkbox", { name: /I accept/ })).not.toBeChecked();
     expect(screen.getByText(BOOKING_REFERRAL_MESSAGES.unknown_code)).toBeInTheDocument();
   });
+  it("shows the reviewed booking-fee saving without changing the website quote or losing its draft", async () => {
+    mount("/book?service=regular", "website"); await next();
+    fireEvent.change(screen.getByLabelText("Street address"), { target: { value: "14 Example Street, Sandton" } });
+    await next(); await next(); await screen.findByText("No approved Xooters listed yet"); await next();
+    const summary = await screen.findByLabelText("Reviewed quote");
+    expect(await screen.findByRole("complementary", { name: "Care+ booking tip" })).toHaveTextContent(/Save R\s?39 on the booking fee/);
+    expect(summary).toHaveTextContent(/R\s?335/);
+    const benefits = screen.getByRole("link", { name: /See Care\+ benefits/ });
+    expect(benefits).toHaveAttribute("href", "/care-plus");
+    expect(benefits).toHaveAttribute("target", "_blank");
+    expect(benefits).toHaveAttribute("rel", "noopener noreferrer");
+    expect(screen.getByRole("checkbox", { name: /I accept regular cleaning/ })).not.toBeChecked();
+    expect(harness.invoke.mock.calls.every(([name]) => name === "get-booking-quote")).toBe(true);
+  });
   it("shows an error without any estimated price after a failed quote and can retry", async () => {
     harness.invoke.mockRejectedValueOnce(new Error("Offline")); mount(); await toReview();
     expect(await screen.findByRole("button", { name: "Try quote again" })).toBeInTheDocument();
     expect(screen.queryByLabelText("Reviewed quote")).not.toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: "Care+ booking tip" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Try quote again" }));
     expect(await screen.findByLabelText("Reviewed quote")).toBeInTheDocument();
   });
@@ -224,6 +239,7 @@ describe("handoff booking review (isolated UI fixtures)", () => {
     expect(screen.getByText("What do you need done?")).toBeInTheDocument(); await next();
     expect(screen.getByLabelText("Where do you need us?")).toHaveValue("");
     expect(screen.queryByLabelText("Reviewed quote")).not.toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: "Care+ booking tip" })).not.toBeInTheDocument();
   });
   it("carries a shared invite into the server quote without deciding eligibility", async () => {
     mount("/app/book?ref=XOOT_FRIEND"); await toReview();

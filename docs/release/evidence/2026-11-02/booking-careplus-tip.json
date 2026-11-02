@@ -1,0 +1,16 @@
+{
+  "kind": "booking-careplus-fee-tip",
+  "base": "c4ebafc73165f43225762f85b628e2ef775900eb",
+  "environment": "isolated-local-fixtures",
+  "quoteAuthority": "existing get-booking-quote response, matching booking_fee line and bookingFeeCents",
+  "prospectiveClaim": "quoted booking fee saving only; no counterfactual cash total",
+  "membershipAuthority": "reviewed quote carePlusMember boolean",
+  "memberTreatment": "acknowledge existing fee waiver; no join upsell",
+  "trialOrInstantActivationPromise": false,
+  "pricingOrEntitlementChanged": false,
+  "additionalBackendOrProviderCalls": 0,
+  "benefitsLink": {"path":"/care-plus","target":"_blank","rel":"noopener noreferrer","preservesCurrentDraft":true},
+  "regression": {"oldWebsiteScreenFails":"Care+ booking tip missing","focusedCasesPassed":66,"scopedLintPassed":true,"webTypecheckPassed":true},
+  "actualChromiumLayout": {"widths":[320,390,1024],"horizontalOverflow":false,"memberUpsell":false,"providerRequests":0},
+  "notClaimed": ["actual membership purchase or activation","real device acceptance","production delivery"]
+}

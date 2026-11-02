@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/kit/Logo";
 import { VerifiedAddressInput } from "@/components/xoot/VerifiedAddressInput";
 import { HandoffFlowerField } from "@/components/xoot/HeroArtwork";
+import { BookingCarePlusTip } from "@/components/xoot/BookingCarePlusTip";
 import { InteractiveServiceAreaMap } from "@/components/xoot/InteractiveServiceAreaMap";
 import { ServiceIcon } from "@/components/kit/ServiceIcon";
 import { Button } from "@/components/ui/button";
@@ -367,6 +368,7 @@ export function BookingFlow({ buyerId, variant = "app", initialAddress = "" }: {
           {quote.serviceCorrection && <div className="xoot-booking-correction" role="status"><strong>{BOOKING_SERVICE_DETAILS[quote.service].title} suits this property</strong><p>Your selection was {BOOKING_SERVICE_DETAILS[quote.requestedService].title.toLowerCase()}. Review the corrected service and total below.</p></div>}
           <div className="xoot-booking-callout"><Clock3 /><span><strong>{BOOKING_SERVICE_DETAILS[quote.service].title}</strong> · estimated {quote.estimatedDurationHours} hours</span></div>
           <div className="xoot-booking-summary" aria-label="Reviewed quote">{quote.lines.filter(line => line.amountCents !== 0 || line.id === "booking_fee").map(line => <div className="xoot-booking-summary-row" key={line.id}><span>{line.label}</span><span>{formatBookingMoney(line.amountCents)}</span></div>)}<div className="xoot-booking-summary-row is-total"><span>Total per visit</span><span>{formatBookingMoney(quote.totalCents)}</span></div></div>
+          <BookingCarePlusTip quote={quote} />
           <label className="xoot-booking-check"><input type="checkbox" checked={acceptedFingerprint === quote.fingerprint} onChange={event => setAcceptedFingerprint(event.target.checked ? quote.fingerprint : null)} /><span><strong>I accept {BOOKING_SERVICE_DETAILS[quote.service].title.toLowerCase()} and {formatBookingMoney(quote.totalCents)} per visit.</strong><small>Any change to this quote will need your acceptance again.</small></span></label>
           <p className="xoot-booking-help">Booking Cover is not available. No cover premium is included.</p>
           <div className="xoot-booking-empty" role="status"><ShieldCheck /><h2>Online confirmation is not available yet</h2><p>Your quote has been reviewed, but no booking has been created and nothing has been charged.</p><Button variant="outline" onClick={() => navigate("/app/support")}>Contact support</Button></div>

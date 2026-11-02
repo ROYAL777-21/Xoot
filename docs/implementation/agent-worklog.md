@@ -1,5 +1,28 @@
 # Agent worklog
 
+## REVIEW — 2 November — quote-bound Care+ booking tip
+
+The shared booking review now shows the actual positive booking_fee line as the prospective
+Care+ fee saving, never as a changed cash total. Eligible members get a fee-waiver acknowledgement;
+unknown, zero-fee nonmember or inconsistent quote fields suppress the tip. R99/month comes from
+the existing locked constant; no cadence percentage, welcome credit, free trial, instant activation
+or checkout claim is introduced. The benefits link opens separately and preserves the draft.
+Handoff Care+ mark/flowers/tokens are reused; public theme rules are untouched. The website
+regression fails against the old screen;66booking/pricing/component cases, lint and typecheck
+pass. Isolated Chromium320/390/1024px checks show no overflow and0provider requests. Parent owns
+independent commercial/source review and final CI/promotion. No hosted setting or data was changed.
+
+## HOLDING — 2 November — accurate Care+ booking savings tip
+
+Claim feature/booking-careplus-savings-20261102 from approvedc4ebafc7. The founder requests a
+Care+ savings tip on the booking page. Inspect the actual booking quote/membership boundaries,
+show only the confirmed fee saving for the selected quote and distinguish an already eligible
+member from a prospective membership. No price, discount, trial, fee, billing, reward or other
+entitlement changes. Keep the handoff styling/public light scope, preserve the draft booking
+and avoid paid provider requests. Focused rendered/pricing regression checks and independent
+Release/Correctness review precede merge; parent owns promotion. Root owns notifications and
+another agent owns the Xooter tab bar. This claim does not assert full Care+ settlement readiness.
+
 ## LIVE — 2 November — accepted destination release and bounded email image follow-up
 
 PR110def1255c is live: Verceldpl_AY8uyrtZFVuCDKcDBg7xtKG776Xj READY, canonical build/Jobs chunk
