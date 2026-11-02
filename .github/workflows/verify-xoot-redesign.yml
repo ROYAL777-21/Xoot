@@ -49,6 +49,8 @@ jobs:
         run: node scripts/ops/verify-worker-destinations.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
       - name: Verify public email PNG embedding and other-resource isolation in Chromium
         run: node scripts/ops/verify-mail-artwork-embedding.mjs
+      - name: Verify handoff Xooter navigation, responsive account access and theme surfaces
+        run: node scripts/ops/verify-xooter-navigation.mjs
       - name: Test Supabase migration access diagnostics against synthetic failures
         run: node --test scripts/ops/db-push-link-diagnostics.test.mjs
       - name: Test short-lived Xooter live-location privacy and participant boundaries
