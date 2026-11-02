@@ -1,0 +1,103 @@
+{
+  "kind": "accepted-worker-destination-release",
+  "observedUtc": "2026-11-02 19:26:20 UTC",
+  "sourceReviewed": "d1286dd0f09f82814595325cafed329e1f2a16c4",
+  "status": "staging-delivered-production-pending",
+  "sqlNormalizedSha256": "e1bc246a545ee7868aa89431a85313277c2db2a5012c85335498014e1b51a58d",
+  "rpcProsrcSha256": "c58fdc2c7d5a7235c23bdeb41110fcf3032d14764a370f40dce723472fe918c0",
+  "tests": {
+    "scopedTypescript": 32,
+    "stagingOrigins": 11,
+    "isolatedSql": 48,
+    "oldSoloAndCrewDefectsReproduced": true,
+    "historyFailureRollsDdlBack": true
+  },
+  "staging": {
+    "project": "fxmxyabdjqviqbcxmvlp",
+    "before": {
+      "bookings": 3,
+      "jobs": 1,
+      "assignees": 0,
+      "active_workers": 1,
+      "source_sha": "15dda51fc42e0db10abe5d1b89242960753ed4143643aaf55af9f06b8cfbaaea",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "result_abi": "TABLE(job_id uuid, booking_id uuid, xooter_id uuid, state text, offered_at timestamp with time zone, responded_at timestamp with time zone, decline_reason text, service text, service_type text, scheduled_at timestamp with time zone, price numeric, duration_hours numeric, status text, job_completed_at timestamp with time zone, completed_at timestamp with time zone, cancelled_at timestamp with time zone, sensitive_data_revoked_at timestamp with time zone, sensitive_access_available_notified_at timestamp with time zone, user_id uuid, destination_address text)",
+      "anon_execute": false,
+      "auth_execute": false,
+      "service_execute": true
+    },
+    "after": {
+      "migration_version": "20261102191938",
+      "source_sha": "c58fdc2c7d5a7235c23bdeb41110fcf3032d14764a370f40dce723472fe918c0",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "result_abi": "TABLE(job_id uuid, booking_id uuid, xooter_id uuid, state text, offered_at timestamp with time zone, responded_at timestamp with time zone, decline_reason text, service text, service_type text, scheduled_at timestamp with time zone, price numeric, duration_hours numeric, status text, job_completed_at timestamp with time zone, completed_at timestamp with time zone, cancelled_at timestamp with time zone, sensitive_data_revoked_at timestamp with time zone, sensitive_access_available_notified_at timestamp with time zone, user_id uuid, destination_address text)",
+      "anon_execute": false,
+      "auth_execute": false,
+      "service_execute": true,
+      "bookings": 3,
+      "jobs": 1,
+      "assignees": 0,
+      "active_workers": 1
+    },
+    "serviceRead": {
+      "cards": 1,
+      "destinations": 1,
+      "unaccepted_disclosures": 0
+    },
+    "handler": {
+      "version": 27,
+      "verify_jwt": true,
+      "files": [
+        {
+          "name": "functions/get-xooter-job-cards/index.ts",
+          "sha256": "70e15e432730ddec69100a8c256d4db0079c395556fd61f13c3e9abe06a0f0a1",
+          "matches": true
+        },
+        {
+          "name": "functions/_shared/action-utils.ts",
+          "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+          "matches": true
+        }
+      ],
+      "generatedImportMapEmpty": true
+    },
+    "deployRun": 41508964524,
+    "originsRun": 41509424069,
+    "preview": "https://xoot-git-feature-xooter-advance-ad-67d40b-royal777-21s-projects.vercel.app",
+    "existingEightOriginsRetained": true,
+    "publicEnvIsStaging": true,
+    "optionalLiveAndProviderFlags": false
+  },
+  "production": {
+    "before": {
+      "bookings": 0,
+      "jobs": 0,
+      "assignees": 0,
+      "active_workers": 0,
+      "source_sha": "a2af0a13223b3fccc8c33c4132ce3f9ad4cbf5b2c34115a33cd50c987b6f4c03",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "result_abi": "TABLE(job_id uuid, booking_id uuid, xooter_id uuid, state text, offered_at timestamp with time zone, responded_at timestamp with time zone, decline_reason text, service text, service_type text, scheduled_at timestamp with time zone, price numeric, duration_hours numeric, status text, job_completed_at timestamp with time zone, completed_at timestamp with time zone, cancelled_at timestamp with time zone, sensitive_data_revoked_at timestamp with time zone, sensitive_access_available_notified_at timestamp with time zone, user_id uuid, destination_address text)",
+      "anon_execute": false,
+      "auth_execute": false,
+      "service_execute": true
+    },
+    "delivered": false
+  },
+  "limits": {
+    "realWorkerJwtAcceptance": false,
+    "realDeviceAcceptance": false,
+    "noNewVerifiedWorkers": true,
+    "noNewProviderCalls": true,
+    "noFinancialOrTrackingActivation": true,
+    "nonprimaryCrewAfterReplacement": "closed-pending-current-roster-authority"
+  }
+}

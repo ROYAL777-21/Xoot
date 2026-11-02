@@ -1,5 +1,17 @@
 # Agent worklog
 
+## STAGING — 2 November — reviewed advance destination and exact receipt
+
+Independent Correctness cleared d1286dd0 after38SQL/32scoped/11origin checks. Applied unchanged
+source e1bc246a... as actual20261102191938; c58fdc2c... body, unchanged ABI, invoker/empty path,
+anon/auth deny and service execute all read back. Existing stage counts3bookings/1job/0roster/
+1active worker are unchanged; a service read returns1accepted destination,0unaccepted leaks.
+Handler27 matches both frozen source files and retains JWT. Exact owned preview uses stage
+public config and four optional flagsfalse; origins retain all8existing entries and add only
+that preview.48SQL assertions now include atomic canonical delivery/history failure rollback.
+The one-function production wrapper is held for immutable cross-review; no history is repaired
+or deleted and no canonical source is recorded without executing its DDL in the same statement.
+
 ## REVIEW — 2 November — advance address replacement isolation
 
 PR110 independent Correctness review found the initial complete-roster fallback could restore

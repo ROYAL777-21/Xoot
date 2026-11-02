@@ -4,7 +4,8 @@ import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 const {PGlite}=await import(pathToFileURL(resolve(process.argv[2])).href);
 const fixture=await readFile('scripts/testing/worker-address-fixture.sql','utf8');
-const migration=await readFile('supabase/migrations/20261102213000_current_accepted_worker_destinations.sql','utf8');
+const migration=await readFile('supabase/migrations/20261102191938_current_accepted_worker_destinations.sql','utf8');
+const delivery=await readFile('supabase/migrations/20261102192255_worker_destination_source_delivery.sql','utf8');
 const owner='00000000-0000-4000-8000-000000000001',other='00000000-0000-4000-8000-000000000002';
 const worker='10000000-0000-4000-8000-000000000001',replacement='10000000-0000-4000-8000-000000000002';
 const booking='20000000-0000-4000-8000-000000000001',job='30000000-0000-4000-8000-000000000001';
@@ -72,5 +73,28 @@ async function proveCrewRegression(){
   check((await db.query('select destination_address from public.get_xooter_job_cards_for_user($1)',[owner])).rows[0].destination_address,'Changed synthetic public venue','unbounded historical crew fallback reproduces the outgoing-primary leak');
  }finally{await db.close();}
 }
-await run(true);await run(false);await proveCrewRegression();
-console.log(JSON.stringify({check:'current-worker-destination-before-visit-day',assertions,oldStaleAssignmentDefectReproduced:true,unboundedCrewDefectReproduced:true,passed:true,providerCalls:0,hostedChanges:0}));
+async function proveDelivery(){
+ const db=new PGlite();
+ const history=()=>db.query('select version,name,statements from supabase_migrations.schema_migrations');
+ try{
+  await db.exec(fixture);await db.exec('create schema supabase_migrations;create table supabase_migrations.schema_migrations(version text primary key,name text,statements text[])');
+  // A failed history insert must roll the preceding function/grant DDL back too.
+  await db.exec('alter table supabase_migrations.schema_migrations add constraint force_rollback check(false)');
+  await assert.rejects(db.exec(delivery));check((await history()).rows.length,0,'failed DDL delivery records no canonical history');
+  check((await db.query("select prosecdef from pg_proc where oid='public.get_xooter_job_cards_for_user(uuid)'::regprocedure")).rows[0].prosecdef,true,'history failure rolls the function change back');
+  await db.exec('alter table supabase_migrations.schema_migrations drop constraint force_rollback');
+  await db.exec(delivery);const original=(await history()).rows;check(original.length,1,'fresh delivery records only the just-executed canonical source');
+  check(original[0].version,'20261102191938','actual canonical staging version is retained');
+  check(original[0].statements[0],migration.replaceAll('\r\n','\n').replace(/^begin;\n/m,'').replace(/^commit;\n/m,''),'history stores actual executed SQL, not an unexecuted stamp');
+  await db.exec(delivery);check((await history()).rows,original,'repeat delivery preserves source history');
+  await db.query('update supabase_migrations.schema_migrations set statements=array[$1]',[migration.replaceAll('\r\n','\n')]);
+  await db.exec(delivery);check((await history()).rows[0].statements[0],migration.replaceAll('\r\n','\n'),'actual staging full-source receipt is accepted without alteration');
+  await db.exec("update supabase_migrations.schema_migrations set statements=array['unknown source']");await assert.rejects(db.exec(delivery));assertions++;
+  await db.query('update supabase_migrations.schema_migrations set statements=array[$1]',[migration.replaceAll('\r\n','\n')]);
+  await db.exec('grant execute on function public.get_xooter_job_cards_for_user(uuid) to authenticated');await assert.rejects(db.exec(delivery));assertions++;
+  await db.exec('revoke execute on function public.get_xooter_job_cards_for_user(uuid) from authenticated');
+  await db.exec("alter function public.get_xooter_job_cards_for_user(uuid) security definer");await assert.rejects(db.exec(delivery));assertions++;
+ }finally{await db.close();}
+}
+await run(true);await run(false);await proveCrewRegression();await proveDelivery();
+console.log(JSON.stringify({check:'current-worker-destination-before-visit-day',assertions,oldStaleAssignmentDefectReproduced:true,unboundedCrewDefectReproduced:true,atomicDeliveryAndHistoryTested:true,passed:true,providerCalls:0,hostedChanges:0}));

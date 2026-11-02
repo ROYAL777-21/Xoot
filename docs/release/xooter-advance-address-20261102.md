@@ -19,7 +19,7 @@ retry control and clears cancelled/revoked destinations. The Edge response is `p
 and logs no database diagnostic. Address and household codes are not copied into external email
 or push previews. No new provider calls, tracking switch, spending allowance or price is added.
 
-Validation before hosted delivery: 32 scoped TypeScript/rendered cases and 38 actual isolated
+Validation before hosted delivery: 32 scoped TypeScript/rendered cases and 48 actual isolated
 PostgreSQL assertions. Tests prove a destination is available 30 days ahead, reject other owners,
 exercise replacement into an existing crew member with an unchanged historical roster, and
 preserve service-only invoker grants. Both the original stale-primary defect and the unbounded
@@ -33,5 +33,8 @@ the same reviewed forward change on production and merge the web change into the
 `release/xoot-production` source. Existing money, verified-supply and native gates stay closed.
 Do not restore the old permissive function as rollback: fail closed and use a forward repair.
 
-Current status is recorded only in `production-checklist.md`. No hosted migration was applied at
-the time this implementation note was written.
+The source was applied on staging as actual version20261102191938 without changing its body.
+The delivery wrapper executes that same source and records its canonical version only after the
+DDL succeeds in the same statement, preserving production/staging history without repair stamps.
+Failure of the history insert rolls the DDL back. Replays validate the actual source/history and
+service-only invoker authority. Current hosted status is recorded only in `production-checklist.md`.
