@@ -330,6 +330,15 @@
 .xoot-booking-summary-row.is-total { align-items: baseline; padding-top: 14px; border-top: 1px solid var(--xoot-border-color); }
 .xoot-booking-summary-row.is-total > span:first-child { color: var(--xoot-text-muted); font-size: var(--xoot-label); font-weight: 700; letter-spacing: var(--xoot-track-label); text-transform: uppercase; }
 .xoot-booking-summary-row.is-total > span:last-child { font-family: var(--xoot-font-display); font-size: var(--xoot-display-3); font-weight: 400; line-height: 1; }
+.xoot-booking-careplus { position: relative; overflow: hidden; padding: 20px; border-radius: var(--xoot-radius-lg); background: var(--xoot-careplus-50); color: var(--xoot-ink-900); box-shadow: inset 0 0 0 1px var(--xoot-careplus-100); }
+.xoot-booking-careplus-flowers { position: absolute; inset: 0; pointer-events: none; }
+.xoot-booking-careplus-copy { position: relative; display: grid; justify-items: start; gap: 10px; }
+.xoot-booking-careplus-mark { color: var(--xoot-careplus-600); font: 600 var(--xoot-body-sm)/1 var(--xoot-font-core); }
+.xoot-booking-careplus-copy h2 { margin: 0; font: 400 var(--xoot-title-2)/1.25 var(--xoot-font-display); letter-spacing: var(--xoot-track-tight); }
+.xoot-booking-careplus-copy p { margin: 0; max-width: 48ch; font: 400 var(--xoot-body-sm)/1.55 var(--xoot-font-core); }
+.xoot-booking-careplus-copy .xoot-booking-careplus-note { font-size: var(--xoot-caption); }
+.xoot-booking-careplus-link { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; color: var(--xoot-careplus-600); font: 700 var(--xoot-body-sm)/1.4 var(--xoot-font-core); text-decoration: underline; text-underline-offset: 3px; }
+.xoot-booking-careplus-link:focus-visible { outline: 2px solid var(--xoot-careplus-600); outline-offset: 3px; border-radius: 4px; }
 .xoot-booking-cover { width: 100%; display: flex; align-items: center; gap: 12px; padding: 16px; border: 0; border-radius: var(--xoot-radius-md); background: var(--xoot-surface-page-alt); box-shadow: inset 0 0 0 1px var(--xoot-border-color); color: var(--xoot-text-primary); text-align: left; cursor: pointer; }
 .xoot-booking-cover.is-selected { background: var(--xoot-sage-wash); box-shadow: inset 0 0 0 1.5px var(--xoot-sage-mid); }
 .xoot-booking-cover i { width: 24px; height: 24px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 6px; box-shadow: inset 0 0 0 2px var(--xoot-neutral-300); font-style: normal; }

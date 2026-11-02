@@ -1,5 +1,17 @@
 # Agent worklog
 
+## REVIEW — 2 November — quote-bound Care+ booking tip
+
+The shared booking review now shows the actual positive booking_fee line as the prospective
+Care+ fee saving, never as a changed cash total. Eligible members get a fee-waiver acknowledgement;
+unknown, zero-fee nonmember or inconsistent quote fields suppress the tip. R99/month comes from
+the existing locked constant; no cadence percentage, welcome credit, free trial, instant activation
+or checkout claim is introduced. The benefits link opens separately and preserves the draft.
+Handoff Care+ mark/flowers/tokens are reused; public theme rules are untouched. The website
+regression fails against the old screen;66booking/pricing/component cases, lint and typecheck
+pass. Isolated Chromium320/390/1024px checks show no overflow and0provider requests. Parent owns
+independent commercial/source review and final CI/promotion. No hosted setting or data was changed.
+
 ## HOLDING — 2 November — accurate Care+ booking savings tip
 
 Claim feature/booking-careplus-savings-20261102 from approvedc4ebafc7. The founder requests a
