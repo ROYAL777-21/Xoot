@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-## 2 November evening — advance address staging; production release in review
+## 2 November evening — advance address production schema delivered; web promotion pending
 
 PR110 fixes the web Jobs response boundary and shows a handoff-styled destination immediately
 after acceptance, including days before the visit. The corrected source is applied on staging
@@ -11,7 +11,11 @@ Business counts are unchanged.48actual isolated SQL,32scoped UI/handler/operatio
 checks pass. Both old solo and historical-crew replacement leaks are reproduced and corrected.
 The complete original crew may plan ahead; after replacement nonprimary crew access stays closed
 until current-roster authority exists. Household codes keep their separate window. Production
-DDL/web delivery remains pending final wrapper review and required checks. No production worker
+schema is delivered by the independently cleared wrapper as actual20261102193559, retaining
+canonical20261102191938 only after its exact DDL ran. Body, ABI, invoker/grants and both history
+hashes read back; all0production booking/job/assignee/active-worker counts are unchanged.
+2139web tests pass with7skipped across205files; all required7e57952fchecks passed. Web promotion
+and the production handler deploy remain pending the filename/evidence revision's final checks. No production worker
 was activated, no payment/tracking switch enabled and no real-worker JWT/device proof is claimed.
 See [readback](evidence/2026-11-02/worker-advance-address.json).
 

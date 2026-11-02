@@ -5,7 +5,7 @@ import {pathToFileURL} from 'node:url';
 const {PGlite}=await import(pathToFileURL(resolve(process.argv[2])).href);
 const fixture=await readFile('scripts/testing/worker-address-fixture.sql','utf8');
 const migration=await readFile('supabase/migrations/20261102191938_current_accepted_worker_destinations.sql','utf8');
-const delivery=await readFile('supabase/migrations/20261102192255_worker_destination_source_delivery.sql','utf8');
+const delivery=await readFile('supabase/migrations/20261102193559_worker_destination_source_delivery.sql','utf8');
 const owner='00000000-0000-4000-8000-000000000001',other='00000000-0000-4000-8000-000000000002';
 const worker='10000000-0000-4000-8000-000000000001',replacement='10000000-0000-4000-8000-000000000002';
 const booking='20000000-0000-4000-8000-000000000001',job='30000000-0000-4000-8000-000000000001';
