@@ -23,6 +23,18 @@ and avoid paid provider requests. Focused rendered/pricing regression checks and
 Release/Correctness review precede merge; parent owns promotion. Root owns notifications and
 another agent owns the Xooter tab bar. This claim does not assert full Care+ settlement readiness.
 
+## HOLDING — 2 November — Xooter handoff navigation
+
+Claim design/xooter-navigation-handoff-20261102 from approved productionc4ebafc7. The founder
+requests a worker sidebar/tab bar matching the supplied handoff. Port its warm surfaces,
+typography, lilac active treatment and restrained flower detail to the existing navigation;
+keep every real route, sign-out/account boundary, keyboard access and device/user app theme.
+No verification, availability, money, tracking or provider setting changes. Root owns the
+separate notification journey; retain its Your updates entry through an optional default-off
+shell flag until that route ships. Preserve the approved public homepage. Isolated responsive
+rendering and route/accessibility checks precede independent review and required CI. No merge
+or deployment from this delegated branch.
+
 ## LIVE — 2 November — accepted destination release and bounded email image follow-up
 
 PR110def1255c is live: Verceldpl_AY8uyrtZFVuCDKcDBg7xtKG776Xj READY, canonical build/Jobs chunk
