@@ -13,6 +13,19 @@ not assert genuine worker/device acceptance. Rebased onto approvedfa005086, pres
 tip files and both worklog claims. The required redesign workflow gains the isolated browser
 check; this Release-owned edit needs parent review before merge. No production setting changed.
 
+## HOLDING — 2 November — schema-only closed Xooter notification release
+
+Claim release/closed-xooter-notification-schema-20261102 from approved fa0050862. Package only
+the independently reviewed three canonical staging SQL sources and closed delivery wrapper
+5c968a71, its deterministic builder/manifest/isolated validator, necessary synthetic contracts,
+and the narrow authenticated-only preferences grants guard. This crosses Release-owned schema/CI
+and Correctness-owned guard paths explicitly; the parent will independently cross-review packaging.
+Keep production-generated types accurate and the type contract enforced. No new Edge/UI worker
+RPC callers, sender enablement, schedule, backfill, hosted changes or migration repair stamps.
+Run the 123-assertion SQL contract in required redesign CI before any guarded production delivery;
+the parent owns actual schema application and subsequent legitimate production type generation.
+Notification PR108 remains separate and draft until that schema/type dependency is delivered.
+
 ## REVIEW — 2 November — quote-bound Care+ booking tip
 
 The shared booking review now shows the actual positive booking_fee line as the prospective
