@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 2 November — visible accepted-job addresses for advance planning
+
+Claim feature/xooter-advance-address-20261102 from approved public releasef4780fba. Founder
+requires workers to know the destination well in advance. Actual job-card RPC has no same-day
+cutoff after acceptance, but the web Jobs page reads data.jobs instead of actual success/data/
+jobs, silently discarding valid jobs. Correct the response boundary, distinguish loading/errors,
+isolate account changes and show the accepted destination prominently before the45minute
+household-access window. Preserve server authority, no address in external previews, no new
+tracking/provider calls, no pricing/verification/crew entitlement change. Inspect assignment
+revocation; do not claim that a rendered test creates genuine verified worker supply.
+
 ## HOLDING — 2 November — public handoff artwork for branded emails
 
 Claim feature/branded-email-assets-20261102 from approved release/xoot-production. The first
