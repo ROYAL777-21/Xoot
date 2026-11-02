@@ -57,6 +57,18 @@ Run the 123-assertion SQL contract in required redesign CI before any guarded pr
 the parent owns actual schema application and subsequent legitimate production type generation.
 Notification PR108 remains separate and draft until that schema/type dependency is delivered.
 
+## HOLDING — 2 November — honest Apple sign-in readiness
+
+Claim fix/apple-signin-readiness-20261102 from approved fa0050862. Actual production public
+Auth settings report Apple disabled, while web Auth/Welcome and Android native availability
+still expose actionable Apple choices. Default these choices closed until reviewed provider
+configuration and surface-specific acceptance evidence exist. Preserve Google/email and the
+real iOS nonce/state/ID-token and browser PKCE paths; add no auth-page lookup or paid call.
+Mobile AGENTS and exact Expo 56 AppleAuthentication docs have been read. Release/mobile and
+Correctness paths are intentionally crossed to make one truthful readiness boundary; root
+will cross-review and owns deployment. No Apple enrollment, key creation, provider enablement,
+build, hosted change or signed-device claim is authorised by this claim. PR112 remains immutable.
+
 ## REVIEW — 2 November — quote-bound Care+ booking tip
 
 The shared booking review now shows the actual positive booking_fee line as the prospective
