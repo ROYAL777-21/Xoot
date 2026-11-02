@@ -30,9 +30,23 @@ it must never drain unrelated historical finance/support outbox rows.
 Brevo's [Free plan](https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan)
 has a shared 300-email daily allowance, including transactional sends. Keep authentication mail
 capacity, bounded batches and a separate closed staging test budget; do not buy credits or a plan.
-An SMTP key already used by Supabase Auth is not a Brevo REST API key. Actual secret presence,
-sender/domain approval and private founder-inbox acceptance are still to be established for the
-new sender. [Official SMTP guidance](https://developers.brevo.com/docs/smtp-integration).
+The founder explicitly chose SMTP and to KEEP API IP blocking on. The unused API-key draft was
+discarded; no API key or API-policy change occurred. Brevo's actual UI showed Free and300emails
+available on2November. The founder privately created/saved a separate standard64character SMTP
+key, expiring2February2027. Existing sign-in keys remain untouched. Actual name-only readback,
+sender/domain approval and founder-inbox acceptance still precede external activation.
+
+The sender pins smtp-relay.brevo.com:2525, requires STARTTLS/certificate validation, disables
+file/URL access and debug logs, and sends to exactly one current confirmed auth email. It never
+uses the editable application email. A stable message ID is for correlation, not an SMTP promise
+of deduplication. Unknown outcomes remain uncertain with no automatic resend. A private policy
+requires a current Free-plan review, named test-account allowlist and nonrenewing20attempt cap.
+Optional external retention/promotion mail stays closed pending a reviewed unsubscribe/campaign
+path; opt-in in-app tips remain separate. [Official SMTP guidance](https://developers.brevo.com/docs/smtp-integration).
+
+Staging setup names: BREVO_SMTP_USER, BREVO_SMTP_PASSWORD and XOOT_LIFECYCLE_APP_URL (the exact
+reviewed preview URL). Never print these credential values or put them in source. Production
+SMTP settings, the existing Auth sender and API IP restrictions are not changed by this patch.
 
 Release status: implementation in progress. No new production notification migration, schedule
 or external delivery is claimed by this document. The deployed website is release2a459bdd,

@@ -2,7 +2,7 @@ import {act,cleanup,fireEvent,render,screen} from '@testing-library/react';
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import {CommunicationPreferences} from './CommunicationPreferences';
 const mocks=vi.hoisted(()=>({owner:'one',invoke:vi.fn()}));
-vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:mocks.owner},session:{access_token:`synthetic-${mocks.owner}`}})}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:mocks.owner},session:{user:{id:mocks.owner},access_token:`synthetic-${mocks.owner}`}})}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{functions:{invoke:mocks.invoke}}}));
 const defaults={email_updates:true,onboarding_reminders:true,tips:false,promotions:false,revision:0};
 const response=(data=defaults)=>({data:{success:true,data},error:null});

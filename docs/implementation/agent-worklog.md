@@ -232,6 +232,21 @@ invented verification, unrestricted historical mail blast, paid provider plan or
 sends. Use only founder-authorised test identities for staging delivery evidence, preserve the
 public light-mode homepage and closed financial/scanner-processing gates.
 
+Core0ec24536 passed44actual isolated SQL assertions, missing-trigger mutation and full outbox
+failure rollback. Independent review found duplicate legacy sends in real submit/reject handlers;
+02c651d3 removes them while retaining MIE/review/audit, with2actual-handler transport regressions.
+Added an unapplied migration-rollout bridge so old handler inserts cannot duplicate canonical
+received/attention events during deployment or rollback. Owner-bound preferences/UI endpoint
+forwards the actual user bearer without admin fallback; identity and stale-save guards pass.
+
+Founder explicitly rejects weakening Brevo API IP blocking and chooses SMTP. Discarded the unused
+restricted API-key draft without generating it; API blocking remainsON, existing SMTP blocking
+remainsOFF under prior authorisation. Actual Brevo UI Free/300remaining verified. Owner privately
+creates/saves separate strong3month Xoot Staging Lifecycle SMTP key. No value inspected. Prepare
+TLS2525 worker with bounded private receipts/current consent/eligibility/recipient checks,20test
+slots, recent Free-plan review and no automatic retry of ambiguous outcomes. No new hosted DDL,
+schedule, email acceptance or production notification deployment is claimed yet.
+
 ## HOLDING — 2 November — closed production scanner schema preparation
 
 Genuine v2 PDF6fe9a8a1-b562-4261-84a6-b7743d8bbaec is clean; EICARe7f4efd0-1184-473b-8cf3-9143d4cb436d

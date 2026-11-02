@@ -206,5 +206,32 @@ begin
   return emitted;
 end $$;
 revoke all on function private.collect_xooter_journeys(timestamptz) from public,anon,authenticated,service_role;
+-- Preserve one notification owner during migration→Edge rollout and a rollback to old handlers.
+-- Existing historical rows stay untouched; only a redundant new legacy insert is omitted.
+create function private.ignore_legacy_xooter_journey_duplicate() returns trigger
+language plpgsql security definer set search_path='' as $$
+declare actor uuid; canonical_kind text;
+begin
+  if tg_table_schema<>'public' or tg_level<>'ROW' or tg_when<>'BEFORE' or tg_op<>'INSERT' then
+    raise exception 'Invalid lifecycle bridge context' using errcode='42501';end if;
+  if tg_table_name='notifications' then
+    canonical_kind:=case new.kind when 'xooter_application_submitted' then 'xooter_application_received'
+      when 'xooter_application_rejected' then 'xooter_application_attention' else null end;
+    actor:=new.user_id;
+  elsif tg_table_name='integration_outbox' then
+    if new.source_table is distinct from 'xooter_applications' or new.channel is distinct from 'brevo_email' then return new;end if;
+    canonical_kind:=case new.event_type when 'trust_verification_update' then 'xooter_application_received'
+      when 'xooter_application_rejected' then 'xooter_application_attention' else null end;
+    select user_id into actor from public.xooter_applications where id=new.source_id;
+  else raise exception 'Invalid lifecycle bridge table' using errcode='42501';end if;
+  if canonical_kind is not null and exists(select from private.xooter_journey_events e
+    where e.user_id=actor and e.kind=canonical_kind and e.notification_id is not null) then return null;end if;
+  return new;
+end $$;
+revoke all on function private.ignore_legacy_xooter_journey_duplicate() from public,anon,authenticated,service_role;
+create trigger xooter_legacy_notification_bridge before insert on public.notifications
+  for each row execute function private.ignore_legacy_xooter_journey_duplicate();
+create trigger xooter_legacy_email_bridge before insert on public.integration_outbox
+  for each row execute function private.ignore_legacy_xooter_journey_duplicate();
 -- Scheduling and external delivery follow actual staging acceptance, not migration alone.
 commit;

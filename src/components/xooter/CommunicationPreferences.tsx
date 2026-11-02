@@ -64,6 +64,6 @@ function OwnerPreferences({token}:{token:string}) {
 }
 export function CommunicationPreferences() {
   const {user,session}=useAuth();
-  if(!user || !session)return <p role="status">Sign in to manage your Xoot updates.</p>;
+  if(!user || !session || session.user.id!==user.id)return <p role="status">Sign in to manage your Xoot updates.</p>;
   return <OwnerPreferences key={user.id} token={session.access_token} />;
 }
