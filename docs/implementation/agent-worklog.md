@@ -218,6 +218,24 @@ homepage/component/theme, route, credential, customer data, backend or commercia
 Notification journey PR108 remains separate and draft; its receipt repair and full acceptance
 are not included in this asset-only release. Check all release gates and served asset hash.
 
+## STAGING DELIVERY — 2 November — genuine personalised SMTP welcome
+
+Private owner health succeeds200 with SMTP configured/trusted staging URL. Actual normal-user
+UI enrolment creates one welcome, status preferences save OFF/revision1 and back ON/revision2,
+tips/promotions OFF, no Xooter role/application granted. The mail at08:44UTC reaches the founder's
+authorised Gmail alias with exact event Message-ID, safe first-name greeting, Xoot/no-reply sender,
+support reply-to and SPF/DKIM/DMARC passes. The receipt initially fails because the fixture omitted
+the real outbox status CHECK: processed is invalid; completed is correct. Preserved old executed
+SQL, reproduced23514 using the real CHECK and applied independently reviewed forward repair as
+actual20261102165153, hash e6ad261323fc7d1d65efc34e8436c6818031e3c4a138438b6ede01ee0730574a.
+Manually reconciled the same delivered event, no resend. Explicit duplicate HTTP request returns
+200/no_eligible_email; quota remains1/20, sender DISABLED and unscheduled. Temporary private key
+fields cleared.89localSQL assertions/negative controls and33focused earlier handler/UI cases;
+no broad production/optional-email/native/schedule acceptance is claimed. PR108 remains draft.
+Public static handoff artwork PR109 is merged/releasedf4780fba, canonical6893bytePNGhashmatches.
+Sender's canonical public image URL correction is deploying to staging only (run41504247054).
+Advance-address work is isolated in PR110/worktree xoot-mail-assets-20261102; preserve its claim.
+
 ## HOLDING — 2 November — destinations available for advance worker planning
 
 Founder requires Xooters to know the service address well in advance. Actual production
