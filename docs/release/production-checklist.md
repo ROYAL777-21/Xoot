@@ -88,6 +88,44 @@ and Xooter lifecycle. Production notification schema/sending remain closed.52-we
 recurring/membership/reward/payout settlement and Apple/native gates remain unfinished. Existing
 production light-mode, reviews, legal invoice name and closed scanner schema remain in place.
 
+## 2 November evening — public email artwork; genuine staging lifecycle mail
+
+Production releasef4780fba (PR109) is READY at dpl_GS2a4eFMuGEpfGfSvASp7dPETNVP. The canonical
+public handoff flower PNG returns200/image/png,6893bytes, SHA256
+05c75365ad7c06b190aa7bf93a36265930050d354fcfcf146de9604b16502981, matching source. All required
+asset-release checks pass and independent Correctness review clears its source-only scope.
+Homepage/theme/application/backend and R39 pricing are unchanged; PR107/scanner release2a459bdd
+is already merged, superseding the earlier pre-promotion wording below.
+
+Notification PR108 is DRAFT, not a production journey release. Reviewed staging migrations
+20261102082500/082516 and forward repair20261102165153 are applied with matching source hashes.
+Four staging handlers are live with JWT verification;12actual source files/frozen imports match
+the original8fb9bfaa delivery. The normal confirmed founder alias signs in privately, loads its
+own settings, saves email-off/restores-on, and receives one atomic Xooter welcome notification.
+The actual branded welcome email reaches its Gmail inbox with the intended Message-ID,
+personal greeting, Xoot sender/support reply-to and SPF/DKIM/DMARC passes.
+
+The first receipt wrote invalid outbox status processed; the actual contract is completed.
+The original source remains immutable. A reviewed forward repair now matches that contract;
+89actual local SQL assertions and the old-constraint negative control pass. The delivered
+message is manually reconciled from Gmail evidence, not resent. An explicit duplicate HTTP
+request returns200/no_eligible_email and consumes no extra attempt. Sender is disabled again,
+1/20used, one authorised account, no schedule; temporary owner key fields were cleared.
+[Redacted evidence](evidence/2026-11-02/xooter-email-staging.json).
+
+Production notification DDL/sender, automatic customer/Xooter schedules, all event-specific
+emails and native push/Live Activities remain unfinished. CI correctly refuses four new
+worker RPCs absent from production-generated types; no hand types or schema gate bypass.
+The [full journey backlog](../product/full-notification-journey-20261102.md) includes service,
+onboarding, routine, loyalty, gifts, receipts, consent/unsubscribe and native/device acceptance.
+The52visit gift remains unsupported by the actual gift RPC; no paid gift fulfilment is enabled.
+Profitability/employment changes are proposals only, in the founder review note.
+
+Advance-address work is separately claimed: live backend already releases an accepted-job
+destination without a visit-day cutoff. The web Jobs response parser is wrong and its address
+display needs prominence/account isolation. Fix and test that without opening household access
+codes early or claiming genuine worker availability. Existing money/provider/native gates remain.
+
 ## 2 November — real scanner acceptance; closed production schema delivered
 
 The corrected, independently reviewed scanner convergence is applied to production as actual
