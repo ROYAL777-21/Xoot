@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 2 November — public handoff artwork for branded emails
+
+Claim feature/branded-email-assets-20261102 from approved release/xoot-production. The first
+genuine staging lifecycle mail reached the founder's Gmail with SPF/DKIM/DMARC pass. Its flower
+image uses a protected staging preview, which redirects an unauthenticated image request to
+Vercel SSO. Publish only the static handoff Bloom PNG/SVG and its deterministic renderer to the
+existing public production site, so email clients can load the artwork from xoot.co.za. No
+homepage/component/theme, route, credential, customer data, backend or commercial rule changes.
+Notification journey PR108 remains separate and draft; its receipt repair and full acceptance
+are not included in this asset-only release. Check all release gates and served asset hash.
+
 ## HOLDING — 2 November — closed production scanner schema preparation
 
 Genuine v2 PDF6fe9a8a1-b562-4261-84a6-b7743d8bbaec is clean; EICARe7f4efd0-1184-473b-8cf3-9143d4cb436d
