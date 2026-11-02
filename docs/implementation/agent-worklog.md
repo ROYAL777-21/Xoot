@@ -43,6 +43,16 @@ household-access window. Preserve server authority, no address in external previ
 tracking/provider calls, no pricing/verification/crew entitlement change. Inspect assignment
 revocation; do not claim that a rendered test creates genuine verified worker supply.
 
+## REVIEW — 2 November — isolated email artwork regression reproduced
+
+The real isolated Chromium image test fails against the original same-origin image response.
+Two exact Vercel PNG overrides now permit the wordmark/flowers to embed; private/app/script and
+unlisted-image defaults stay same-origin, with an actual unlisted cross-origin image blocked.
+The browser test passes and is wired into the required redesign release workflow. Existing
+security/header/secret/DOM checks pass. This is scoped to the active Vercel host; no other host,
+asset content, CSP, cache, account, email schedule or commercial setting changes. Actual served
+headers and canonical image integrity remain required after production deploy.
+
 ## HOLDING — 2 November — public email artwork embedding
 
 Claim fix/public-email-artwork-headers-20261102 from approvedf4780fba. The published PNG flowers
