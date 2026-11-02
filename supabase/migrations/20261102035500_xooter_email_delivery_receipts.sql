@@ -29,6 +29,9 @@ language sql stable security invoker set search_path='' as $$
       and (e.kind not in ('xooter_continue_24h','xooter_continue_72h') or (p.onboarding_reminders and p.revision>0)))
     -- Optional retention/promotional email remains closed until a reviewed unsubscribe/campaign path.
     and not e.optional
+    -- Returning to a prior status must not revive mail from a different review transition.
+    and (e.kind not in ('xooter_application_received','xooter_application_attention')
+      or e.event_key=(select 'status:'||j.status_revision::text from private.xooter_journeys j where j.user_id=e.user_id))
     and case e.kind
       when 'xooter_welcome' then true
       when 'xooter_application_received' then exists(select from public.xooter_applications a where a.user_id=e.user_id and a.status='submitted')

@@ -51,3 +51,14 @@ SMTP settings, the existing Auth sender and API IP restrictions are not changed 
 Release status: implementation in progress. No new production notification migration, schedule
 or external delivery is claimed by this document. The deployed website is release2a459bdd,
 Vercel dpl_4fm1ii63PdWJntDBmug3FynFLU9e READY, and production scanner processing stays closed.
+
+Independent review found a status-cycle defect before any hosted migration/send: submitted →
+rejected → submitted could revive an older received email. The regression fails against d80
+with JOURNEY_FAILED and now checks the current journey revision during both claim and dispatch.
+Both repeated submission and rejection are covered:47core plus41email assertions pass, with
+the existing missing-trigger negative control and outbox rollback. No old in-app history is erased.
+The owner-saved SMTP credential names are verified; the exact staging-only app URL is now saved.
+Preview dpl_GgBsjwGVaV4AdnHuZ76VQozBFRyV built d80 with public staging configuration and unrelated
+live controls OFF. This preview still precedes the revision correction and decorative email asset.
+Static email flowers now use the uploaded handoff Bloom geometry and actual lilac/petal/honey/mist
+tokens, rendered to a small PNG for email-client compatibility; no tracking pixel or user identifier.
