@@ -1,5 +1,16 @@
 # Agent worklog
 
+## LIVE — 2 November — accepted destination release and bounded email image follow-up
+
+PR110def1255c is live: Verceldpl_AY8uyrtZFVuCDKcDBg7xtKG776Xj READY, canonical build/Jobs chunk
+confirm the new card/retry UX, ZD-026/R39 unchanged. Production handler8/JWTtrue matches both frozen
+files and empty import map after41513173991. Anonymous401. Genuine worker/device acceptance is
+still distinct; no verified production supply was fabricated. HeaderPR111 is rebased preserving
+all address claims/CI steps. New isolated Chromium check and actual preview headers confirm only
+the two public PNGs are embeddable. The existing SQL test's Windows-CRLF mismatch is corrected
+by normalizing input files before executing, matching reviewed LF deployment/hash semantics;
+all48assertions pass after a fresh checkout. Applied SQL body/history are unchanged.
+
 ## PRODUCTION SCHEMA — 2 November — address source delivered without enablement
 
 Independent review cleared7e57952f including lock timeout before advisory acquisition; all required
@@ -42,6 +53,26 @@ isolate account changes and show the accepted destination prominently before the
 household-access window. Preserve server authority, no address in external previews, no new
 tracking/provider calls, no pricing/verification/crew entitlement change. Inspect assignment
 revocation; do not claim that a rendered test creates genuine verified worker supply.
+
+## REVIEW — 2 November — isolated email artwork regression reproduced
+
+The real isolated Chromium image test fails against the original same-origin image response.
+Two exact Vercel PNG overrides now permit the wordmark/flowers to embed; private/app/script and
+unlisted-image defaults stay same-origin, with an actual unlisted cross-origin image blocked.
+The browser test passes and is wired into the required redesign release workflow. Existing
+security/header/secret/DOM checks pass. This is scoped to the active Vercel host; no other host,
+asset content, CSP, cache, account, email schedule or commercial setting changes. Actual served
+headers and canonical image integrity remain required after production deploy.
+
+## HOLDING — 2 November — public email artwork embedding
+
+Claim fix/public-email-artwork-headers-20261102 from approvedf4780fba. The published PNG flowers
+and wordmark are intended to render in email clients, but actual Vercel responses inherit
+Cross-Origin-Resource-Policy:same-origin. Permit external embedding only for the two exact public
+email PNG paths, preserving private pages/scripts and all other response protections. Reproduce
+the blocked image request, verify the narrow host-header contracts and real browser load, then
+cross-review and ship through required gates. No customer data, tracking, credentials, schedules,
+pricing or worker/finance activation. Advance-address PR110 remains its own release.
 
 ## HOLDING — 2 November — public handoff artwork for branded emails
 

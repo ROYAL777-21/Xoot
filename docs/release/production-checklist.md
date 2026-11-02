@@ -1,6 +1,6 @@
 # Xoot production checklist
 
-## 2 November evening — advance address production schema delivered; web promotion pending
+## 2 November evening — advance destination deployed; email embedding correction in review
 
 PR110 fixes the web Jobs response boundary and shows a handoff-styled destination immediately
 after acceptance, including days before the visit. The corrected source is applied on staging
@@ -14,10 +14,20 @@ until current-roster authority exists. Household codes keep their separate windo
 schema is delivered by the independently cleared wrapper as actual20261102193559, retaining
 canonical20261102191938 only after its exact DDL ran. Body, ABI, invoker/grants and both history
 hashes read back; all0production booking/job/assignee/active-worker counts are unchanged.
-2139web tests pass with7skipped across205files; all required7e57952fchecks passed. Web promotion
-and the production handler deploy remain pending the filename/evidence revision's final checks. No production worker
+2139web tests pass with7skipped across205files; final94f4bc07required checks passed, including the
+48SQL regressions. PR110 merged as def1255c; productiondpl_AY8uyrtZFVuCDKcDBg7xtKG776Xj is READY,
+canonical build/served Jobs chunk confirm the new card and retry UX. Production handler8 matches
+both frozen source files and its empty import map, JWTtrue, deploy41513173991success. Anonymous
+requests return401. The approved homepage/pricing rule/R39 remain unchanged. No production worker
 was activated, no payment/tracking switch enabled and no real-worker JWT/device proof is claimed.
 See [readback](evidence/2026-11-02/worker-advance-address.json).
+
+PR111 corrects external embedding only for the two public email PNGs. The old policy fails a real
+Chromium regression; both images now load in the isolated fixture while the unlisted image stays
+blocked. Preview readback confirms cross-origin on the two PNGs and same-origin/private no-store
+on /app/profile. Independent source review cleared the scope. Rebase preserves both CI checks;
+the address SQL runner now normalizes checkout line endings to the actual LF deployment inputs.
+No applied SQL is edited. Final required CI and canonical CDN readback precede this header release.
 
 Public email handoff flowers are live from approved merge f4780fba at xoot.co.za. The separate
 notification PR108 remains draft: one genuine founder staging welcome email arrived in Gmail

@@ -2,7 +2,7 @@
   "kind": "accepted-worker-destination-release",
   "observedUtc": "2026-11-02 19:26:20 UTC",
   "sourceReviewed": "7e57952fc623ee3a76c4b90a3cbc702794d6dc0b",
-  "status": "production-schema-delivered-web-pending",
+  "status": "production-delivered",
   "sqlNormalizedSha256": "e1bc246a545ee7868aa89431a85313277c2db2a5012c85335498014e1b51a58d",
   "rpcProsrcSha256": "c58fdc2c7d5a7235c23bdeb41110fcf3032d14764a370f40dce723472fe918c0",
   "tests": {
@@ -15,7 +15,8 @@
       "files": 205,
       "passed": 2139,
       "skipped": 7
-    }
+    },
+    "requiredSqlRun": 41512149881
   },
   "staging": {
     "project": "fxmxyabdjqviqbcxmvlp",
@@ -101,9 +102,9 @@
       "auth_execute": false,
       "service_execute": true
     },
-    "delivered": false,
+    "delivered": true,
     "schemaDelivered": true,
-    "webDelivered": false,
+    "webDelivered": true,
     "after": {
       "migration_version": "20261102191938",
       "source_sha": "c58fdc2c7d5a7235c23bdeb41110fcf3032d14764a370f40dce723472fe918c0",
@@ -134,7 +135,34 @@
         "normalized_history_sha": "244eb7b65c4482617d995abd33f26e76efc7303317addd14b0abe5eaad6f4f57"
       }
     ],
-    "wrapperSha256": "244eb7b65c4482617d995abd33f26e76efc7303317addd14b0abe5eaad6f4f57"
+    "wrapperSha256": "244eb7b65c4482617d995abd33f26e76efc7303317addd14b0abe5eaad6f4f57",
+    "web": {
+      "merge": "def1255c4474eadac4cecba421c0c1569c7348c6",
+      "source": "94f4bc074861f68e8dd07ba4542002ea06f14a44",
+      "deployment": "dpl_AY8uyrtZFVuCDKcDBg7xtKG776Xj",
+      "state": "READY",
+      "canonicalBuildConfirmed": true,
+      "canonicalJobsChunkConfirmed": true,
+      "withoutUserJwt": 401
+    },
+    "handler": {
+      "version": 8,
+      "verify_jwt": true,
+      "files": [
+        {
+          "name": "functions/get-xooter-job-cards/index.ts",
+          "sha256": "70e15e432730ddec69100a8c256d4db0079c395556fd61f13c3e9abe06a0f0a1",
+          "matches": true
+        },
+        {
+          "name": "functions/_shared/action-utils.ts",
+          "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+          "matches": true
+        }
+      ],
+      "generatedImportMapEmpty": true,
+      "deployRun": 41513173991
+    }
   },
   "limits": {
     "realWorkerJwtAcceptance": false,
