@@ -1,5 +1,5 @@
 -- Accepted workers can plan days ahead. Household access-code windows are unchanged.
--- Tighten destination access to the current primary/complete crew roster, not stale accepted jobs.
+-- Historical commission rosters are not current authorization after a replacement.
 begin;
 set local lock_timeout='5s';set local statement_timeout='60s';
 do $guard$
@@ -37,6 +37,8 @@ language sql stable security invoker set search_path='' as $function$
       and b.sensitive_data_revoked_at is null
       and (b.xooter_id=xj.xooter_id or (
         b.crew_size between 2 and 4
+        and b.original_xooter_id is not null and b.xooter_id=b.original_xooter_id
+        and b.was_reassigned is false and b.replacement_count=0
         and exists(select from public.booking_assignees ba where ba.booking_id=b.id and ba.xooter_id=xj.xooter_id)
         and exists(select from public.booking_assignees lead where lead.booking_id=b.id and lead.xooter_id=b.xooter_id)
         and (select count(*) from public.booking_assignees roster where roster.booking_id=b.id)=b.crew_size
@@ -50,5 +52,5 @@ $function$;
 revoke all on function public.get_xooter_job_cards_for_user(uuid) from public,anon,authenticated;
 grant execute on function public.get_xooter_job_cards_for_user(uuid) to service_role;
 comment on function public.get_xooter_job_cards_for_user(uuid) is
-  'Service-only, invoker job cards. Destination available immediately after acceptance for the current active primary or complete crew roster, with revocation/terminal checks. No scheduled-time cutoff or household codes.';
+  'Service-only, invoker job cards. Destination available immediately after acceptance for the current active primary or complete original never-replaced crew, with revocation/terminal checks. Historical crew access closes after replacement. No scheduled-time cutoff or household codes.';
 commit;

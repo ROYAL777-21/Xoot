@@ -36,13 +36,41 @@ async function run(fix){
    await db.exec(`update public.bookings set ${field}=clock_timestamp()`);check(await destination(owner),[null],`${field} closes destination`);await db.exec(`update public.bookings set ${field}=null`);
   }
   await db.exec('update public.xooters set active=false');check(await destination(owner),[null],'inactive worker receives no address');await db.exec('update public.xooters set active=true');
-  await db.query('update public.bookings set xooter_id=$1,crew_size=2',[replacement]);
+  await db.query('update public.bookings set xooter_id=$1,original_xooter_id=$1,crew_size=2',[replacement]);
   await db.query('insert into public.booking_assignees values($1,$2)',[booking,worker]);check(await destination(owner),[null],'partial crew roster is insufficient');
   await db.query('insert into public.booking_assignees values($1,$2)',[booking,replacement]);check(await destination(owner),['Synthetic public venue'],'accepted member of complete current crew can plan ahead');
+  await db.exec('update public.bookings set original_xooter_id=null');check(await destination(owner),[null],'unknown original crew provenance is insufficient');
+  await db.query('update public.bookings set original_xooter_id=$1',[worker]);check(await destination(owner),[null],'changed primary cannot reuse the historical crew roster');
+  await db.query('update public.bookings set original_xooter_id=$1,was_reassigned=true',[replacement]);check(await destination(owner),[null],'reassignment marker independently closes nonprimary crew access');
+  await db.exec('update public.bookings set was_reassigned=false,replacement_count=1');check(await destination(owner),[null],'replacement attempt independently closes nonprimary crew access');
+  await db.query("update public.bookings set xooter_id=$1,original_xooter_id=$1,was_reassigned=false,replacement_count=0",[worker]);
+  check(await destination(owner),['Synthetic public venue'],'original accepted primary still has advance access');
+  await db.query("update public.bookings set xooter_id=$1,status='replacement_offered',was_reassigned=true,replacement_count=1",[replacement]);
+  check(await destination(owner),[null],'outgoing crew primary is denied during replacement');
+  await db.exec("update public.bookings set status='contractor_accepted',address='Changed synthetic public venue'");
+  check(await destination(owner),[null],'historical crew roster cannot reauthorize the outgoing primary after replacement acceptance');
+  await db.query("insert into public.xooter_jobs(id,booking_id,xooter_id,state) values($1,$2,$3,'accepted')",['30000000-0000-4000-8000-000000000002',booking,replacement]);
+  check(await destination(other),['Changed synthetic public venue'],'replacement accepted primary receives the current destination in advance');
   await db.query('delete from public.booking_assignees where xooter_id=$1',[worker]);check(await destination(owner),[null],'removed crew member cannot use a stale accepted job');
   for(const role of ['anon','authenticated'])check((await db.query("select has_function_privilege($1,'public.get_xooter_job_cards_for_user(uuid)','execute') as allowed",[role])).rows[0].allowed,false,`${role} cannot call service RPC`);
   check((await db.query("select prosecdef from pg_proc where oid='public.get_xooter_job_cards_for_user(uuid)'::regprocedure")).rows[0].prosecdef,false,'read RPC uses invoker privileges');
  }finally{await db.close();}
 }
-await run(true);await run(false);
-console.log(JSON.stringify({check:'current-worker-destination-before-visit-day',assertions,oldStaleAssignmentDefectReproduced:true,passed:true,providerCalls:0,hostedChanges:0}));
+async function proveCrewRegression(){
+ const db=new PGlite();
+ try{
+  await db.exec(fixture);
+  const unbounded=migration.replace(/        and b\.original_xooter_id is not null and b\.xooter_id=b\.original_xooter_id\r?\n        and b\.was_reassigned is false and b\.replacement_count=0\r?\n/,'');
+  assert.notEqual(unbounded,migration,'negative control removes the four provenance conditions');
+  await db.exec(unbounded);
+  await db.query('insert into public.xooters(id,user_id) values($1,$2),($3,$4)',[worker,owner,replacement,other]);
+  await db.query("insert into public.bookings(id,xooter_id,original_xooter_id,crew_size,status,address) values($1,$2,$2,2,'contractor_accepted','Initial synthetic public venue')",[booking,worker]);
+  await db.query('insert into public.booking_assignees values($1,$2),($1,$3)',[booking,worker,replacement]);
+  await db.query("insert into public.xooter_jobs(id,booking_id,xooter_id,state) values($1,$2,$3,'accepted')",[job,booking,worker]);
+  await db.query("update public.bookings set xooter_id=$1,status='replacement_offered',was_reassigned=true,replacement_count=1",[replacement]);
+  await db.exec("update public.bookings set status='contractor_accepted',address='Changed synthetic public venue';set role service_role");
+  check((await db.query('select destination_address from public.get_xooter_job_cards_for_user($1)',[owner])).rows[0].destination_address,'Changed synthetic public venue','unbounded historical crew fallback reproduces the outgoing-primary leak');
+ }finally{await db.close();}
+}
+await run(true);await run(false);await proveCrewRegression();
+console.log(JSON.stringify({check:'current-worker-destination-before-visit-day',assertions,oldStaleAssignmentDefectReproduced:true,unboundedCrewDefectReproduced:true,passed:true,providerCalls:0,hostedChanges:0}));

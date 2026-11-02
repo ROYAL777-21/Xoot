@@ -2,6 +2,7 @@
 create role anon;create role authenticated;create role service_role bypassrls;
 create table public.xooters(id uuid primary key,user_id uuid,active boolean not null default true);
 create table public.bookings(id uuid primary key,xooter_id uuid,crew_size integer default 1,user_id uuid,
+ original_xooter_id uuid,was_reassigned boolean not null default false,replacement_count integer not null default 0,
  service text,service_type text,scheduled_at timestamptz,price numeric,duration_hours numeric,status text,
  job_completed_at timestamptz,completed_at timestamptz,cancelled_at timestamptz,
  sensitive_data_revoked_at timestamptz,sensitive_access_available_notified_at timestamptz,address text);

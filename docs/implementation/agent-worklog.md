@@ -1,5 +1,15 @@
 # Agent worklog
 
+## REVIEW — 2 November — advance address replacement isolation
+
+PR110 independent Correctness review found the initial complete-roster fallback could restore
+an outgoing primary after replacement with another historic crew member. Before any hosted
+DDL, restrict nonprimary access to the complete original never-replaced crew; unknown provenance
+denies. Keep the current accepted primary available days ahead. Regression tests reproduce both
+the old solo leak and the historical-crew leak, and cover the corrected replacement path. The
+Edge handler now prevents caching and omits raw database diagnostics. This Release/Correctness
+change needs the owner's final immutable review before staging/production delivery.
+
 ## HOLDING — 2 November — visible accepted-job addresses for advance planning
 
 Claim feature/xooter-advance-address-20261102 from approved public releasef4780fba. Founder

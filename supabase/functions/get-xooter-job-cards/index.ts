@@ -41,9 +41,11 @@ Deno.serve(async (req) => {
   });
 
   if (error) {
-    console.warn("get-xooter-job-cards failed", { error: error.message });
+    console.warn("get-xooter-job-cards failed");
     return fail("xooter jobs unavailable", origin, 500);
   }
 
-  return ok({ jobs: (data ?? []) as XooterJobCardRow[] }, origin);
+  const result = ok({ jobs: (data ?? []) as XooterJobCardRow[] }, origin);
+  result.headers.set("Cache-Control", "private, no-store");
+  return result;
 });
