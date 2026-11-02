@@ -218,6 +218,17 @@ homepage/component/theme, route, credential, customer data, backend or commercia
 Notification journey PR108 remains separate and draft; its receipt repair and full acceptance
 are not included in this asset-only release. Check all release gates and served asset hash.
 
+## HOLDING — 2 November — destinations available for advance worker planning
+
+Founder requires Xooters to know the service address well in advance. Actual production
+get_xooter_job_cards_for_user already releases the destination after acceptance without a
+scheduled-time cutoff; household access details remain separately45minute-gated. Inspect
+current assignment/reassignment and terminal revocation before changing any address exposure.
+Prepare a prominent handoff-styled accepted-job destination/plan-ahead surface and meaningful
+future-date/current-owner/terminal tests. Do not put full addresses or household codes in email,
+push, logs or Live Activity previews. No clock-window bypass for gate/alarm/access instructions.
+This extends the current claim; no genuine worker verification or availability is fabricated.
+
 ## HOLDING — 2 November — customer journey, native activity and profitability review
 
 Founder extends the notification work to customers and every actual booking/payment/gift/
