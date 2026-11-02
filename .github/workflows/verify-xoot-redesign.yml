@@ -43,6 +43,10 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Check public/host security configuration
         run: npm run security:scan
+      - name: Install pinned isolated worker-address SQL runtime
+        run: npm install --prefix "$RUNNER_TEMP/xoot-worker-sql" --no-save --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.5.8
+      - name: Verify advance worker destinations, crew revocation and atomic history rollback
+        run: node scripts/ops/verify-worker-destinations.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
       - name: Test Supabase migration access diagnostics against synthetic failures
         run: node --test scripts/ops/db-push-link-diagnostics.test.mjs
       - name: Test short-lived Xooter live-location privacy and participant boundaries

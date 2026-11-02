@@ -86,10 +86,14 @@ describe("the staging value", () => {
   it("accepts only the verified Xoot preview branches without widening production", () => {
     const branch = "https://xoot-git-codex-xoot-production-20260911-royal777-21s-projects.vercel.app";
     const integration = "https://xoot-git-integration-website-stagi-56296d-royal777-21s-projects.vercel.app";
+    const notifications = "https://xoot-git-feature-xooter-notificati-e1af54-royal777-21s-projects.vercel.app";
+    const advanceAddress = "https://xoot-git-feature-xooter-advance-ad-67d40b-royal777-21s-projects.vercel.app";
     expect(value.split(",")).toContain(branch);
     expect(value.split(",")).toContain("http://127.0.0.1:4199");
     expect(productionValue(origins).split(",")).not.toContain(branch);
     expect(productionValue(origins).split(",")).not.toContain(integration);
+    expect(productionValue(origins).split(",")).not.toContain(notifications);
+    expect(productionValue(origins).split(",")).not.toContain(advanceAddress);
     expect(value).not.toContain("*");
     expect(value.split(",")).toEqual([
       "http://localhost:5173",
@@ -99,6 +103,8 @@ describe("the staging value", () => {
       "http://127.0.0.1:4199",
       branch,
       integration,
+      notifications,
+      advanceAddress,
     ]);
   });
 });

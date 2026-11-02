@@ -1,5 +1,48 @@
 # Agent worklog
 
+## PRODUCTION SCHEMA — 2 November — address source delivered without enablement
+
+Independent review cleared7e57952f including lock timeout before advisory acquisition; all required
+CI passed,2139web cases/205files with7skipped. Applied exact244eb7b6... wrapper as actual20261102193559.
+It executed canonical20261102191938 source before recording that receipt in the same atomic
+statement; stored executed SHA070c7d87... and wrapperSHA244eb7b6... read back. Functionc58fdc2c...,
+same ABI, invoker/empty path, clientdeny/serviceexecute exact. Production business counts remain
+0bookings/0jobs/0roster/0active workers. Rename only the wrapper filename to its actual hosted
+version, preserving body bytes. Web/production handler promotion follows fresh required checks.
+
+## STAGING — 2 November — reviewed advance destination and exact receipt
+
+Independent Correctness cleared d1286dd0 after38SQL/32scoped/11origin checks. Applied unchanged
+source e1bc246a... as actual20261102191938; c58fdc2c... body, unchanged ABI, invoker/empty path,
+anon/auth deny and service execute all read back. Existing stage counts3bookings/1job/0roster/
+1active worker are unchanged; a service read returns1accepted destination,0unaccepted leaks.
+Handler27 matches both frozen source files and retains JWT. Exact owned preview uses stage
+public config and four optional flagsfalse; origins retain all8existing entries and add only
+that preview.48SQL assertions now include atomic canonical delivery/history failure rollback.
+The one-function production wrapper is held for immutable cross-review; no history is repaired
+or deleted and no canonical source is recorded without executing its DDL in the same statement.
+
+## REVIEW — 2 November — advance address replacement isolation
+
+PR110 independent Correctness review found the initial complete-roster fallback could restore
+an outgoing primary after replacement with another historic crew member. Before any hosted
+DDL, restrict nonprimary access to the complete original never-replaced crew; unknown provenance
+denies. Keep the current accepted primary available days ahead. Regression tests reproduce both
+the old solo leak and the historical-crew leak, and cover the corrected replacement path. The
+Edge handler now prevents caching and omits raw database diagnostics. This Release/Correctness
+change needs the owner's final immutable review before staging/production delivery.
+
+## HOLDING — 2 November — visible accepted-job addresses for advance planning
+
+Claim feature/xooter-advance-address-20261102 from approved public releasef4780fba. Founder
+requires workers to know the destination well in advance. Actual job-card RPC has no same-day
+cutoff after acceptance, but the web Jobs page reads data.jobs instead of actual success/data/
+jobs, silently discarding valid jobs. Correct the response boundary, distinguish loading/errors,
+isolate account changes and show the accepted destination prominently before the45minute
+household-access window. Preserve server authority, no address in external previews, no new
+tracking/provider calls, no pricing/verification/crew entitlement change. Inspect assignment
+revocation; do not claim that a rendered test creates genuine verified worker supply.
+
 ## HOLDING — 2 November — public handoff artwork for branded emails
 
 Claim feature/branded-email-assets-20261102 from approved release/xoot-production. The first

@@ -1,5 +1,33 @@
 # Xoot production checklist
 
+## 2 November evening — advance address production schema delivered; web promotion pending
+
+PR110 fixes the web Jobs response boundary and shows a handoff-styled destination immediately
+after acceptance, including days before the visit. The corrected source is applied on staging
+as actual20261102191938; exact prosrc c58fdc2c... and service-only invoker privileges read back.
+Handler27 retains JWT checks and both runtime source files match; responses are private/no-store.
+One existing accepted staging card returns its destination; no unaccepted disclosure is observed.
+Business counts are unchanged.48actual isolated SQL,32scoped UI/handler/operations and11origin
+checks pass. Both old solo and historical-crew replacement leaks are reproduced and corrected.
+The complete original crew may plan ahead; after replacement nonprimary crew access stays closed
+until current-roster authority exists. Household codes keep their separate window. Production
+schema is delivered by the independently cleared wrapper as actual20261102193559, retaining
+canonical20261102191938 only after its exact DDL ran. Body, ABI, invoker/grants and both history
+hashes read back; all0production booking/job/assignee/active-worker counts are unchanged.
+2139web tests pass with7skipped across205files; all required7e57952fchecks passed. Web promotion
+and the production handler deploy remain pending the filename/evidence revision's final checks. No production worker
+was activated, no payment/tracking switch enabled and no real-worker JWT/device proof is claimed.
+See [readback](evidence/2026-11-02/worker-advance-address.json).
+
+Public email handoff flowers are live from approved merge f4780fba at xoot.co.za. The separate
+notification PR108 remains draft: one genuine founder staging welcome email arrived in Gmail
+with SPF/DKIM/DMARC pass, its accepted receipt/outbox completed and duplicate dispatch sent no
+second mail. The staging sender is disabled again at1/20 with no schedule/refill. Its current
+SMTP handler3 carries the public image URL. This proves that one delivery, not the full customer
+and Xooter lifecycle. Production notification schema/sending remain closed.52-week paid gifts,
+recurring/membership/reward/payout settlement and Apple/native gates remain unfinished. Existing
+production light-mode, reviews, legal invoice name and closed scanner schema remain in place.
+
 ## 2 November — real scanner acceptance; closed production schema delivered
 
 The corrected, independently reviewed scanner convergence is applied to production as actual
