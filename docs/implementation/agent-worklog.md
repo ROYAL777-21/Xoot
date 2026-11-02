@@ -218,6 +218,21 @@ homepage/component/theme, route, credential, customer data, backend or commercia
 Notification journey PR108 remains separate and draft; its receipt repair and full acceptance
 are not included in this asset-only release. Check all release gates and served asset hash.
 
+## HOLDING — 2 November — customer journey, native activity and profitability review
+
+Founder extends the notification work to customers and every actual booking/payment/gift/
+reward lifecycle, service-specific guidance, preference/history-based timing and handoff flowers
+in branded email. Continue the existing Xooter SMTP staging acceptance first; inspect existing
+customer writers, push/Live Activity bridges and the actual production gift contract. The
+founder requests profitability proposals BEFORE any commercial change: no price, commission,
+membership/reward entitlement, payout fee or employment model is changed under this claim.
+Prepare a sourced partnership/employment options note, not a labour-status assertion or contract.
+Cross-role scope and independent review remain required for any later event/worker/schema change.
+Actual production gift readback still restricts counts to1/3/4/6/12, zero orders, no52 entitlement
+or paid gift settlement. Native bridge source alone is not a signed ActivityKit implementation.
+The owner saved the lifecycle SMTP key; names-only CI confirms both credential names. New
+notification preview is scoped to public staging backend config with unrelated live flags OFF.
+
 ## HOLDING — 2 November — Xooter account and onboarding notification journey
 
 Founder explicitly requests Xooter account welcome, unfinished-onboarding reminders, submission
