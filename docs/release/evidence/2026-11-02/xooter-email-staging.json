@@ -48,6 +48,8 @@
     "explicitDuplicateRequest":{"status":200,"state":"no_eligible_email","additionalAttemptConsumed":false},
     "temporaryDashboardKeyFieldsCleared":true
   },
+  "runtimeAfterPublicAsset": {"version":3,"verify_jwt":true,"publicCanonicalFlower":true,"files":[{"name":"functions/xooter-email-dispatch/index.ts","sha256":"2318b748fb471edf8e4e2e3ea71698e8a5a05e908e49f277742d87693c6878c0","matches":true},{"name":"functions/xooter-email-dispatch/handler.ts","sha256":"64f88cebad96072d8c2d5aeedfcd5ad41ada7c1c502d4bb8afb9b67796a6cd8d","matches":true},{"name":"functions/xooter-email-dispatch/smtp.ts","sha256":"3671cf9d8ae4b55cb36032e99fec7edc40c4c63dd1b74f19d27ec96bd173624f","matches":true}],"generatedImportMapEmpty":true},
+  "publicArtwork":{"url":"https://xoot.co.za/images/xoot-mail-flowers.png","status":200,"contentType":"image/png","bytes":6893,"sha256":"05c75365ad7c06b190aa7bf93a36265930050d354fcfcf146de9604b16502981","approvedProductionMerge":"f4780fba83e296195220f3705b7a279b683ac5e8","firstTestEmailImageRenderingProven":false},
   "limits":{"enabled":false,"allowlistedAccounts":1,"used":1,"maximum":20,"automaticRenewal":false,"schedules":0},
   "localChecks":{"coreSqlAssertions":47,"emailSqlAssertions":42,"oldReceiptConstraintNegativeControl":true,"missingTriggerNegativeControl":true,"outboxFailureRollback":true,"focusedHandlerUiSmtpCases":33,"guardAndOriginCases":15},
   "notProven":["all lifecycle event emails","automatic schedule","optional email unsubscribe and promotions","production journey schema or sending","real native push and Live Activities"]

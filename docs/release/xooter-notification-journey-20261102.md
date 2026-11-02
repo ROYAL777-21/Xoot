@@ -34,7 +34,7 @@ The founder explicitly chose SMTP and to KEEP API IP blocking on. The unused API
 discarded; no API key or API-policy change occurred. Brevo's actual UI showed Free and300emails
 available on2November. The founder privately created/saved a separate standard64character SMTP
 key, expiring2February2027. Existing sign-in keys remain untouched. Actual name-only readback,
-sender/domain approval and founder-inbox acceptance still precede external activation.
+sender/domain approval and founder-inbox acceptance precede broad external activation.
 
 The sender pins smtp-relay.brevo.com:2525, requires STARTTLS/certificate validation, disables
 file/URL access and debug logs, and sends to exactly one current confirmed auth email. It never
@@ -48,9 +48,12 @@ Staging setup names: BREVO_SMTP_USER, BREVO_SMTP_PASSWORD and XOOT_LIFECYCLE_APP
 reviewed preview URL). Never print these credential values or put them in source. Production
 SMTP settings, the existing Auth sender and API IP restrictions are not changed by this patch.
 
-Release status: implementation in progress. No new production notification migration, schedule
-or external delivery is claimed by this document. The deployed website is release2a459bdd,
-Vercel dpl_4fm1ii63PdWJntDBmug3FynFLU9e READY, and production scanner processing stays closed.
+Current release status lives only in [production-checklist.md](production-checklist.md). One
+genuine staging welcome reached the founder's Gmail with SPF/DKIM/DMARC pass. A reviewed forward
+repair reconciles its accepted receipt with the completed outbox; an explicit duplicate dispatch
+sent no second email. The original executed SQL remains unchanged. This single transport proof
+does not establish the complete lifecycle journey. The sender is held disabled at1of20attempts,
+with no schedule/refill. Production notification schema/sending and scanner processing stay closed.
 
 Independent review found a status-cycle defect before any hosted migration/send: submitted →
 rejected → submitted could revive an older received email. The regression fails against d80
@@ -60,5 +63,9 @@ the existing missing-trigger negative control and outbox rollback. No old in-app
 The owner-saved SMTP credential names are verified; the exact staging-only app URL is now saved.
 Preview dpl_GgBsjwGVaV4AdnHuZ76VQozBFRyV built d80 with public staging configuration and unrelated
 live controls OFF. This preview still precedes the revision correction and decorative email asset.
-Static email flowers now use the uploaded handoff Bloom geometry and actual lilac/petal/honey/mist
+Static email flowers use the uploaded handoff Bloom geometry and actual lilac/petal/honey/mist
 tokens, rendered to a small PNG for email-client compatibility; no tracking pixel or user identifier.
+The first test mail pointed its image at a protected preview, so rendered-image acceptance is not
+claimed. Public artwork is now served from xoot.co.za and staging SMTP handler3 carries that URL;
+all3actual source files and its empty generated import map match the reviewed source. No resend
+or extra test allowance was used for the artwork correction. See the redacted staging evidence.
