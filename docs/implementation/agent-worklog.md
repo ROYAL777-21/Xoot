@@ -218,6 +218,20 @@ homepage/component/theme, route, credential, customer data, backend or commercia
 Notification journey PR108 remains separate and draft; its receipt repair and full acceptance
 are not included in this asset-only release. Check all release gates and served asset hash.
 
+## HOLDING — 2 November — Xooter account and onboarding notification journey
+
+Founder explicitly requests Xooter account welcome, unfinished-onboarding reminders, submission
+updates, retention tips and promotions. Claim feature/xooter-notification-journey-20261102 from
+reviewed release2a459bdd. Trace actual auth/application/notification/outbox and provider delivery
+contracts before changing them; current queued events are not proof of email delivery. Prepare
+durable, deduplicated server events, verified recipients, safe branded copy, consent/preferences
+and unsubscribe enforcement. Keep transactional status distinct from optional retention/marketing,
+stop stale reminders after completion and retain quiet-hour/frequency/provider-cost bounds.
+Cross-role scope: Release migrations/worker/config plus Correctness shared delivery/guards. No
+invented verification, unrestricted historical mail blast, paid provider plan or direct frontend
+sends. Use only founder-authorised test identities for staging delivery evidence, preserve the
+public light-mode homepage and closed financial/scanner-processing gates.
+
 ## HOLDING — 2 November — closed production scanner schema preparation
 
 Genuine v2 PDF6fe9a8a1-b562-4261-84a6-b7743d8bbaec is clean; EICARe7f4efd0-1184-473b-8cf3-9143d4cb436d
