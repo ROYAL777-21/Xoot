@@ -144,6 +144,18 @@ the two public PNGs are embeddable. The existing SQL test's Windows-CRLF mismatc
 by normalizing input files before executing, matching reviewed LF deployment/hash semantics;
 all48assertions pass after a fresh checkout. Applied SQL body/history are unchanged.
 
+## HOLDING — 2 November — closed production Xooter notification schema
+
+Continue PR108 after preserving the approved address release during rebase. The three actual
+staging SQL sources retain82ea0fc7.../9592ccc5.../e6ad2613... hashes; genuine founder SMTP inbox
+acceptance and its outbox repair are recorded. Prepare one atomic production delivery of only
+those reviewed sources, with canonical history inserted after execution, rollback/drift checks,
+private RLS/grants and a disabled0of20/unallowlisted policy. No email send, schedule, Free-plan
+renewal or worker approval is included. Actual production type generation and required CI must
+precede source promotion; no handwritten types or schema bypass. SMTP production credentials
+and real production acceptance remain separate. This crosses Release/Correctness and requires
+independent immutable review. Existing homepage, money/tracking controls and other PRs remain.
+
 ## PRODUCTION SCHEMA — 2 November — address source delivered without enablement
 
 Independent review cleared7e57952f including lock timeout before advisory acquisition; all required
