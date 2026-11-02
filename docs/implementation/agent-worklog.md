@@ -1,5 +1,16 @@
 # Agent worklog
 
+## LIVE — 2 November — accepted destination release and bounded email image follow-up
+
+PR110def1255c is live: Verceldpl_AY8uyrtZFVuCDKcDBg7xtKG776Xj READY, canonical build/Jobs chunk
+confirm the new card/retry UX, ZD-026/R39 unchanged. Production handler8/JWTtrue matches both frozen
+files and empty import map after41513173991. Anonymous401. Genuine worker/device acceptance is
+still distinct; no verified production supply was fabricated. HeaderPR111 is rebased preserving
+all address claims/CI steps. New isolated Chromium check and actual preview headers confirm only
+the two public PNGs are embeddable. The existing SQL test's Windows-CRLF mismatch is corrected
+by normalizing input files before executing, matching reviewed LF deployment/hash semantics;
+all48assertions pass after a fresh checkout. Applied SQL body/history are unchanged.
+
 ## PRODUCTION SCHEMA — 2 November — address source delivered without enablement
 
 Independent review cleared7e57952f including lock timeout before advisory acquisition; all required
