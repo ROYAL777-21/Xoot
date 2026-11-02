@@ -1,0 +1,70 @@
+{
+  "kind": "closed-scanner-schema-convergence",
+  "productionProcessingAllowed": false,
+  "productionWorkerIncluded": false,
+  "baseline": {
+    "path": "supabase/migrations/20261027032349_kyc_private_quarantine_interlock.sql",
+    "storageRlsRequired": true,
+    "guardFunctions": [
+      {
+        "name": "kyc_unregistered_owner_path",
+        "securityDefiner": true,
+        "sourceBodySha256": "d13d5c8acec6648a4b064229739fe1fbe6890a4c1aded09b6ecdd72fbadc50fa"
+      },
+      {
+        "name": "kyc_quarantine_activation_interlock",
+        "securityDefiner": false,
+        "sourceBodySha256": "30f0061b202046b1b0e634d032ec9ec4465a69315a18ca55bcb5601e2b39ecdb"
+      }
+    ],
+    "policies": [
+      {
+        "name": "kyc_raw_reads_closed",
+        "command": "SELECT",
+        "predicate": "(bucket_id <> 'kyc-docs'::text)",
+        "checkPredicate": null
+      },
+      {
+        "name": "kyc_raw_updates_closed",
+        "command": "UPDATE",
+        "predicate": "(bucket_id <> 'kyc-docs'::text)",
+        "checkPredicate": "(bucket_id <> 'kyc-docs'::text)"
+      },
+      {
+        "name": "kyc_raw_deletes_closed",
+        "command": "DELETE",
+        "predicate": "(bucket_id <> 'kyc-docs'::text)",
+        "checkPredicate": null
+      },
+      {
+        "name": "kyc_registered_paths_no_reuse",
+        "command": "INSERT",
+        "predicate": null,
+        "checkPredicate": "((bucket_id <> 'kyc-docs'::text) OR private.kyc_unregistered_owner_path(name))"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101155855_kyc_scanner_evaluation_receipts.sql",
+      "version": "20261101155855",
+      "name": "kyc_scanner_evaluation_receipts",
+      "sourceSha256": "f14091ce4dd882faa265aeb00c855179b86640443980a4a345ff4a479312b97a",
+      "executedSqlSha256": "2904ff790f540dff6f5e81d8374006a3ac969e2ebdc63c88a59e4fa443b1eb0c"
+    },
+    {
+      "path": "supabase/migrations/20261101220212_kyc_scanner_service_authority.sql",
+      "version": "20261101220212",
+      "name": "kyc_scanner_service_authority",
+      "sourceSha256": "cfbff189f1df7286c35517c7e3b5d87e377a5e9d1252e2cffbeb91d8ad9124bf",
+      "executedSqlSha256": "c25b1c32771504dbc6a4d73f0f0f3336da792cb2f8ee5324dbad580664dd7a95"
+    },
+    {
+      "path": "supabase/migrations/20261101221814_kyc_scanner_versioned_policy_claims.sql",
+      "version": "20261101221814",
+      "name": "kyc_scanner_versioned_policy_claims",
+      "sourceSha256": "985f8af405d958acc220cd33d1ddeb84f5b819af059cf70b09e68870ef999e14",
+      "executedSqlSha256": "a19578f24dfcb3e63ac9bb25bddf67b3548d8348c6ce3f014863495ddd9ea2b0"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { hasExpectedServiceTransportShape, invokeFixedStagingFixture, isExpectedStagingResult, projectStagingScanResult, readStagingServiceTransport, STAGING_SCANNER_URL } from "./cloudmersive-staging-client.mjs";
+test("remote error/object/secret values cannot become logged evidence", () => {
+  const source = { state: { key: "synthetic-secret" }, reason: "synthetic-secret", attemptId: ["synthetic-secret"],
+    cached: "true", malwareDetected: { token: "synthetic-secret" }, arbitrary: "synthetic-secret" };
+  assert.deepEqual(projectStagingScanResult(source, "eicar", 503), { fixture: "eicar", http: 503, state: null, reason: null,
+    policyVersion:null,attemptId: null, cached: false, malwareDetected: false });
+  assert(!JSON.stringify(projectStagingScanResult(source, "eicar", 503)).includes("synthetic-secret"));
+});
+test("known statuses/reasons and UUID are retained without extra remote fields", () => {
+  assert.deepEqual(projectStagingScanResult({ state: "blocked", reason: "provider_rejected",
+    attemptId: "00000000-0000-4000-8000-000000000001", cached: true, malwareDetected: true, body: "private payload" }, "eicar", 200),
+  { fixture: "eicar", http: 200, state: "blocked", reason: "provider_rejected",policyVersion:null,
+    attemptId: "00000000-0000-4000-8000-000000000001", cached: true, malwareDetected: true });
+});
+test("privileged transport pins staging, rejects redirects and returns projected values", async () => {
+  let captured;
+  const request = async (url, init) => {
+    captured = { url, init };
+    return new Response(JSON.stringify({ state: "clean", reason: "provider_clean", unexpected: "synthetic-secret" }),
+      { headers: { "Content-Type": "application/json" } });
+  };
+  const result = await invokeFixedStagingFixture("synthetic-service-credential", "clean_pdf", request);
+  assert.equal(captured.url, STAGING_SCANNER_URL);
+  assert.equal(captured.init.redirect, "error");
+  assert.equal(captured.init.headers.apikey, "synthetic-service-credential");
+  assert.equal(captured.init.body, JSON.stringify({ fixture: "clean_pdf" }));
+  assert(!JSON.stringify(result).includes("synthetic"));
+});
+test("unknown fixtures cannot reach the privileged transport", async () => {
+  let called = false;
+  await assert.rejects(invokeFixedStagingFixture("synthetic-service-credential", "arbitrary", async () => { called = true; }), /Invalid fixed/);
+  assert.equal(called, false);
+});
+test("a terminal state with unknown reason or absent/malformed receipt cannot pass acceptance", async () => {
+  for (const remote of [{ state: "clean" }, { state: "clean", reason: "unknown", attemptId: "00000000-0000-4000-8000-000000000001" },
+    { state: "clean", reason: "provider_clean", attemptId: "invalid" }]) {
+    const result = await invokeFixedStagingFixture("synthetic-service-credential", "clean_pdf", async () =>
+      new Response(JSON.stringify(remote), { headers: { "Content-Type": "application/json" } }));
+    assert.equal(isExpectedStagingResult(result), false);
+  }
+});
+test("complete clean and actual-malware-block evidence can pass", () => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  assert.equal(isExpectedStagingResult(projectStagingScanResult({ state: "clean", reason: "provider_clean", policyVersion:"xoot-kyc-cloudmersive-v2",attemptId: id }, "clean_pdf", 200)), true);
+  const blocked = projectStagingScanResult({ state: "blocked", reason: "provider_rejected", policyVersion:"xoot-kyc-cloudmersive-v2",malwareDetected: true, attemptId: id }, "eicar", 200);
+  assert.equal(isExpectedStagingResult(blocked), true);
+  assert.equal(isExpectedStagingResult({ ...blocked, malwareDetected: false }), false);
+  assert.equal(isExpectedStagingResult({ ...blocked, policyVersion:"xoot-kyc-cloudmersive-v1" }), false);
+});
+test("masked, malformed, customer and wrong-project transport values stop before invocation", () => {
+  const shape = claims => `synthetic.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.synthetic`;
+  for (const value of ["masked****", "not-a-key", shape({ role: "authenticated", ref: "fxmxyabdjqviqbcxmvlp" }),
+    shape({ role: "service_role", ref: "different-project" })]) assert.equal(hasExpectedServiceTransportShape(value), false);
+  // This is deliberately not signature verification and grants no access to the hosted worker.
+  assert.equal(hasExpectedServiceTransportShape(shape({ role: "service_role", ref: "fxmxyabdjqviqbcxmvlp" })), true);
+});
+test("Management transport is the literal staging endpoint, rejects redirects and returns only the service transport", async () => {
+  const key = `synthetic.${Buffer.from(JSON.stringify({ role: "service_role", ref: "fxmxyabdjqviqbcxmvlp" })).toString("base64url")}.synthetic`;
+  let captured;
+  const result = await readStagingServiceTransport("sbp_synthetic_only", async (url, init) => {
+    captured = { url, init };
+    return new Response(JSON.stringify([{ name: "anon", api_key: "irrelevant" }, { name: "service_role", type: "legacy", api_key: key }]),
+      { headers: { "Content-Type": "application/json" } });
+  });
+  assert.equal(captured.url, "https://api.supabase.com/v1/projects/fxmxyabdjqviqbcxmvlp/api-keys?reveal=true");
+  assert.equal(captured.init.redirect, "error");
+  assert.equal(result, key);
+});
+test("Management denial and malformed results never return provider/credential error contents", async () => {
+  await assert.rejects(readStagingServiceTransport("sbp_synthetic_only", async () => new Response("synthetic-private-error", { status: 403 })),
+    error => error.message === "credential_transport_access_denied");
+  await assert.rejects(readStagingServiceTransport("sbp_synthetic_only", async () => new Response("{}", { headers: { "Content-Type": "application/json" } })),
+    error => error.message === "credential_transport_invalid_response");
+});

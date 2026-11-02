@@ -1,0 +1,177 @@
+{
+  "kind": "actual-production-closed-scanner-schema-delivery",
+  "project": "mvlrkelahhsyjrwgsxaf",
+  "localEvidenceDate": "2026-11-02",
+  "reviewedSource": "6a8ede369ef5a970d2cb40cbdecaec8336376c09",
+  "normalizedWrapperSqlSha256": "444fe05aa8df5047c4d2beea73f9f8320c4e053b1c39bff405e0feedd6f1a68a",
+  "jobs": 0,
+  "rpcs": [
+    {
+      "anon": false,
+      "name": "authorize_kyc_scan_dispatch",
+      "definer": false,
+      "service": true,
+      "settings": [
+        "search_path=\"\""
+      ],
+      "authenticated": false
+    },
+    {
+      "anon": false,
+      "name": "claim_kyc_scan",
+      "definer": false,
+      "service": true,
+      "settings": [
+        "search_path=\"\""
+      ],
+      "authenticated": false
+    },
+    {
+      "anon": false,
+      "name": "claim_kyc_scan_v2",
+      "definer": false,
+      "service": true,
+      "settings": [
+        "search_path=\"\""
+      ],
+      "authenticated": false
+    },
+    {
+      "anon": false,
+      "name": "finish_kyc_scan",
+      "definer": false,
+      "service": true,
+      "settings": [
+        "search_path=\"\""
+      ],
+      "authenticated": false
+    },
+    {
+      "anon": false,
+      "name": "kyc_scan_worker_authorized",
+      "definer": false,
+      "service": true,
+      "settings": [
+        "search_path=\"\""
+      ],
+      "authenticated": false
+    }
+  ],
+  "budget": {
+    "used": 0,
+    "maximum": 32,
+    "processing_review": null,
+    "personal_processing": false
+  },
+  "guards": [
+    {
+      "cmd": "DELETE",
+      "mode": "RESTRICTIVE",
+      "name": "kyc_raw_deletes_closed",
+      "qual": "(bucket_id <> 'kyc-docs'::text)",
+      "check": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "cmd": "SELECT",
+      "mode": "RESTRICTIVE",
+      "name": "kyc_raw_reads_closed",
+      "qual": "(bucket_id <> 'kyc-docs'::text)",
+      "check": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "cmd": "UPDATE",
+      "mode": "RESTRICTIVE",
+      "name": "kyc_raw_updates_closed",
+      "qual": "(bucket_id <> 'kyc-docs'::text)",
+      "check": "(bucket_id <> 'kyc-docs'::text)",
+      "roles": [
+        "anon",
+        "authenticated"
+      ]
+    },
+    {
+      "cmd": "INSERT",
+      "mode": "RESTRICTIVE",
+      "name": "kyc_registered_paths_no_reuse",
+      "qual": null,
+      "check": "((bucket_id <> 'kyc-docs'::text) OR private.kyc_unregistered_owner_path(name))",
+      "roles": [
+        "anon",
+        "authenticated"
+      ]
+    }
+  ],
+  "wrapper": {
+    "name": "closed_scanner_schema_convergence",
+    "version": "20261101224523"
+  },
+  "attempts": 0,
+  "bookings": 0,
+  "payments": 1,
+  "storage_rls": true,
+  "active_workers": 0,
+  "canonical_history": [
+    {
+      "name": "kyc_scanner_evaluation_receipts",
+      "version": "20261101155855",
+      "executed_sha256": "2904ff790f540dff6f5e81d8374006a3ac969e2ebdc63c88a59e4fa443b1eb0c",
+      "statement_count": 1
+    },
+    {
+      "name": "kyc_scanner_service_authority",
+      "version": "20261101220212",
+      "executed_sha256": "c25b1c32771504dbc6a4d73f0f0f3336da792cb2f8ee5324dbad580664dd7a95",
+      "statement_count": 1
+    },
+    {
+      "name": "kyc_scanner_versioned_policy_claims",
+      "version": "20261101221814",
+      "executed_sha256": "a19578f24dfcb3e63ac9bb25bddf67b3548d8348c6ce3f014863495ddd9ea2b0",
+      "statement_count": 1
+    }
+  ],
+  "activationInterlockCount": 3,
+  "moneyControls": [
+    {
+      "key": "payments.provider_checkout",
+      "enabled": false,
+      "environment": "all"
+    },
+    {
+      "key": "payouts.enabled",
+      "enabled": false,
+      "environment": "all"
+    },
+    {
+      "key": "payments.hosted_checkout.payfast",
+      "enabled": false,
+      "environment": "all"
+    }
+  ],
+  "functionsInventoryCount": 66,
+  "scannerWorkerDeployed": false,
+  "productionProviderKeyInstalledByThisDelivery": false,
+  "realPersonDocumentProcessing": false,
+  "cliGeneration": {
+    "run": 41358867443,
+    "version": "2.113.0",
+    "diffLines": 54,
+    "hunks": 4,
+    "addedLines": 24,
+    "removedLines": 0,
+    "verification": "Fresh comparison required after committing actual output"
+  },
+  "remaining": [
+    "Production provider eligibility, processing terms, region and applicant consent",
+    "Genuine document/background/training/bank verification",
+    "Normal-user JWT and device acceptance"
+  ]
+}

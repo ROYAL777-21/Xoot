@@ -10,6 +10,12 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      verify_cloudmersive_staging:
+        description: Run only the two fixed synthetic Cloudmersive staging integration checks
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -33,6 +39,31 @@ env:
   VITE_APP_ENV: development
 
 jobs:
+  cloudmersive-staging-acceptance:
+    if: github.event_name == 'workflow_dispatch' && inputs.verify_cloudmersive_staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify fixture transport and evidence redaction before using credentials
+        run: node --test scripts/ops/cloudmersive-staging-client.test.mjs
+      - name: Check the privileged staging worker using fixed synthetic fixtures
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/ops/verify-cloudmersive-staging.mjs
+      - name: Retain redacted integration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudmersive-staging-evidence
+          path: cloudmersive-staging-evidence.json
+          if-no-files-found: ignore
+          retention-days: 7
   benefit-concurrency:
     name: Booking benefit transactions (PostgreSQL ${{ matrix.postgres }})
     runs-on: ubuntu-latest
@@ -114,6 +145,14 @@ jobs:
 
       - name: Verify active-job checklist mutations and service-only access
         run: node scripts/ops/verify-checklist-state-contract.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
+      - name: Verify private scanner authority, quota and quarantine contracts
+        run: node scripts/ops/verify-kyc-scanner.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
+      - name: Verify closed scanner schema convergence and rollback
+        run: |
+          node scripts/ops/build-closed-scanner-schema.mjs --check
+          node scripts/ops/verify-closed-scanner-schema.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
 
   test:
     name: Lint, build and unit tests

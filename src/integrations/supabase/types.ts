@@ -5823,6 +5823,10 @@ export type Database = {
       }
     }
     Functions: {
+      authorize_kyc_scan_dispatch: {
+        Args: { p_attempt_id: string }
+        Returns: Json
+      }
       booking_payment_settlement_ready: { Args: never; Returns: number }
       can_access_sensitive_data: {
         Args: { p_booking_id: string; p_xooter_id: string }
@@ -5852,6 +5856,14 @@ export type Database = {
           p_booking_id: string
           p_reason: string
         }
+        Returns: Json
+      }
+      claim_kyc_scan: {
+        Args: { p_document_id?: string; p_fixture?: string }
+        Returns: Json
+      }
+      claim_kyc_scan_v2: {
+        Args: { p_document_id?: string; p_fixture?: string }
         Returns: Json
       }
       claim_provider_event: {
@@ -5886,6 +5898,17 @@ export type Database = {
           p_definition: Json
           p_request_key: string
           p_user_id: string
+        }
+        Returns: Json
+      }
+      finish_kyc_scan: {
+        Args: {
+          p_attempt_id: string
+          p_malware_detected?: boolean
+          p_observed_sha256: string
+          p_reason: string
+          p_response_sha256: string
+          p_verdict: string
         }
         Returns: Json
       }
@@ -5975,6 +5998,7 @@ export type Database = {
         Args: { p_area_key?: string; p_xooter_id: string }
         Returns: boolean
       }
+      kyc_scan_worker_authorized: { Args: never; Returns: boolean }
       mark_provider_event_processed: {
         Args: {
           p_error_message: string
