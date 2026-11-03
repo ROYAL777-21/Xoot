@@ -2,8 +2,9 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Auth from "./Auth";
+import * as appleReadiness from "@/lib/apple-auth-readiness";
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: null }) }));
-const auth = vi.hoisted(() => ({ signUp: vi.fn(), signInWithPassword: vi.fn(), resend: vi.fn(), signInWithOtp: vi.fn(), verifyOtp: vi.fn() }));
+const auth = vi.hoisted(() => ({ signUp: vi.fn(), signInWithPassword: vi.fn(), resend: vi.fn(), signInWithOtp: vi.fn(), verifyOtp: vi.fn(), signInWithOAuth: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ isSupabaseConfigured: true, supabaseConfigErrorMessage: "", supabase: { auth } }));
 vi.mock("@/components/SEO", () => ({ SEO: () => null }));
 // Decorative flower geometry is checked in the real browser, separately from auth behavior.
@@ -12,8 +13,23 @@ vi.mock("@/lib/native-auth", () => ({ isNativeAuthPlatform: () => false, getNati
 vi.mock("@/lib/haptics", () => ({ haptic: vi.fn() }));
 vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: () => true }));
 beforeEach(() => { vi.clearAllMocks(); auth.signUp.mockResolvedValue({ data: { session: null }, error: null }); auth.resend.mockResolvedValue({ error: null }); auth.signInWithOtp.mockResolvedValue({ error: null }); auth.verifyOtp.mockResolvedValue({ error: null }); });
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 describe("account entry copy", () => {
+  it("keeps unready Apple out of account entry while Google still starts the existing OAuth flow", async () => {
+    auth.signInWithOAuth.mockResolvedValue({ error: null });
+    await act(async () => { render(<MemoryRouter initialEntries={["/auth"]}><Auth /></MemoryRouter>); });
+    expect(screen.queryByRole("button", { name: "Apple" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Your email")).toBeInTheDocument();
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Google" })); });
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({ provider: "google", options: { redirectTo: expect.stringContaining("/auth/callback?next="), queryParams: { prompt: "select_account" } } });
+  });
+  it("retains the existing Apple callback flow for a future reviewed ready release", async () => {
+    vi.spyOn(appleReadiness, "isAppleSignInReady").mockReturnValue(true);
+    auth.signInWithOAuth.mockResolvedValue({ error: null });
+    await act(async () => { render(<MemoryRouter initialEntries={["/auth"]}><Auth /></MemoryRouter>); });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Apple" })); });
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({ provider: "apple", options: { redirectTo: expect.stringContaining("/auth/callback?next="), queryParams: undefined } });
+  });
   it("helps correct gmail.vom before sending any account email", async () => {
     await act(async () => { render(<MemoryRouter initialEntries={["/auth?mode=signin"]}><Auth /></MemoryRouter>); });
     fireEvent.change(screen.getByLabelText("Your email"), { target: { value: "customer@gmail.vom" } });

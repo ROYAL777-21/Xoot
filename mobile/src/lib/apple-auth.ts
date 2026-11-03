@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { performAppleSignIn } from './apple-auth-flow';
 import { startOAuth } from './auth-links';
+import { isAppleSignInReady } from '../generated/apple-auth-readiness';
 
 /**
  * Use Apple's native sheet on iOS and the browser PKCE flow on Android.
@@ -13,11 +14,15 @@ import { startOAuth } from './auth-links';
  */
 
 export const isAppleSignInAvailable = async () => {
+  if (!isAppleSignInReady(Platform.OS)) return false;
   if (Platform.OS !== 'ios') return Platform.OS === 'android';
   return AppleAuthentication.isAvailableAsync();
 };
 
 export const signInWithApple = async () => {
+  if (!await isAppleSignInAvailable()) {
+    throw new Error('Apple sign-in is not available yet. Please continue with Google or email.');
+  }
   if (Platform.OS !== 'ios') return startOAuth('apple');
   return performAppleSignIn({
   random: async () => Array.from(await Crypto.getRandomBytesAsync(32), byte => byte.toString(16).padStart(2, '0')).join(''),

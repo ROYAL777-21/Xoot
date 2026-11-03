@@ -33,6 +33,7 @@ import {
   type SocialAuthProvider,
 } from "@/lib/auth-security";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { isAppleSignInReady } from "@/lib/apple-auth-readiness";
 import { AdminMfaVerification } from "@/components/auth/AdminMfaVerification";
 import "@/styles/auth-booking.css";
 
@@ -348,6 +349,7 @@ const Auth = () => {
   };
 
   const handleOAuth = async (provider: SocialAuthProvider) => {
+    if (provider === "apple" && !isAppleSignInReady("web")) return;
     haptic("selection");
     if (!checkRateLimit("auth", 5, 60_000)) {
       haptic("warning");
@@ -566,7 +568,7 @@ const Auth = () => {
                 <>
                   <div className="xoot-auth-divider"><span />or<span /></div>
                   <div className="xoot-auth-socials">
-                    {(["apple", "google"] as SocialAuthProvider[]).map((provider) => {
+                    {(["apple", "google"] as SocialAuthProvider[]).filter(provider => provider !== "apple" || isAppleSignInReady("web")).map((provider) => {
                       const Icon = provider === "google" ? GoogleLogo : AppleLogo;
                       return <button key={provider} type="button" onClick={() => void handleOAuth(provider)} disabled={!isSupabaseConfigured || loading || !!providerLoading}>
                         {providerLoading === provider ? <Loader2 className="animate-spin" /> : <Icon />}{providerLabels[provider]}

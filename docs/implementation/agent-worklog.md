@@ -57,6 +57,47 @@ Run the 123-assertion SQL contract in required redesign CI before any guarded pr
 the parent owns actual schema application and subsequent legitimate production type generation.
 Notification PR108 remains separate and draft until that schema/type dependency is delivered.
 
+## HOLDING — 3 November — truthful Welcome entry extension
+
+Root authorises extending the same Apple/Auth-readiness task to remove Welcome's hardcoded
+142-homes/Sandton claim (actual production has no completed bookings) and its unsupported
+phone continuation. Keep the functional Google/email routes and existing handoff treatment.
+Write old-claim/phone negative controls before the removal. No provider, money, credential,
+verification or supply state changes. This extension remains on the isolated Apple branch
+and still requires independent review and required CI after the approved schema release.
+
+Extension result: both negative controls failed against the original visible phone/metric.
+Welcome now offers Google/email and omits the unsupported continuation/count; the same
+handoff layout remains. Combined auth/readiness/native/marketing checks pass88/10files.
+Final branch rebased onto approved actual-schema/types release ad6e4efb, retaining each
+schema/navigation/Apple claim and review entry. No unrelated generated file changes remain.
+
+## REVIEW — 3 November — Apple choices remain closed until actual readiness
+
+Web Auth/Welcome and native availability/start now share a dependency-free reviewed
+readiness record. Provider configuration and each independently accepted surface remain
+false; Google/email copy and flow, nonce/state, ID-token exchange and PKCE are preserved.
+No extra auth-page fetch, enrollment, key/provider change, paid call or signed build.
+Original four regressions failed; 83 focused cases, web/mobile types, scoped lint and
+unsafe-DOM scan pass. Actual component Chromium checks at320/390/1024 show no Apple choices,
+one Google choice and no overflow/external requests. Full local run was not green:
+2165pass/7fail/7skip. All57 cases in its four failing behavior files pass isolated with
+unchanged deadlines; the token-byte guard passes10 after verified LF-only local checkout
+normalization. Unrelated generated newline noise is excluded. Evidence records all failures;
+required isolated CI and root Release/Correctness review remain mandatory before promotion.
+
+## HOLDING — 2 November — honest Apple sign-in readiness
+
+Claim fix/apple-signin-readiness-20261102 from approved fa0050862. Actual production public
+Auth settings report Apple disabled, while web Auth/Welcome and Android native availability
+still expose actionable Apple choices. Default these choices closed until reviewed provider
+configuration and surface-specific acceptance evidence exist. Preserve Google/email and the
+real iOS nonce/state/ID-token and browser PKCE paths; add no auth-page lookup or paid call.
+Mobile AGENTS and exact Expo 56 AppleAuthentication docs have been read. Release/mobile and
+Correctness paths are intentionally crossed to make one truthful readiness boundary; root
+will cross-review and owns deployment. No Apple enrollment, key creation, provider enablement,
+build, hosted change or signed-device claim is authorised by this claim. PR112 remains immutable.
+
 ## REVIEW — 2 November — quote-bound Care+ booking tip
 
 The shared booking review now shows the actual positive booking_fee line as the prospective

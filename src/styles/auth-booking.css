@@ -194,6 +194,7 @@
 .xoot-auth-divider { display: flex; align-items: center; gap: 12px; color: var(--xoot-text-muted); font-size: var(--xoot-caption); }
 .xoot-auth-divider span { flex: 1; height: 1px; background: var(--xoot-border-color); }
 .xoot-auth-socials { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.xoot-auth-socials > :only-child { grid-column: 1 / -1; }
 .xoot-auth-socials button,
 .xoot-auth-phone,
 .xoot-auth-quick {
