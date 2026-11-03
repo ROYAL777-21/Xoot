@@ -1,5 +1,20 @@
 # Agent worklog
 
+## HOLDING — 4 November — atomic booking-benefit security boundary
+
+Claim fix/atomic-booking-benefits-20261104 from approved75674d60 in the separate
+work/xoot-atomic-benefits-20261104 checkout. Root independently confirmed C1/C2: legacy booking
+and redemption HTTP writes can commit discounted money rows before a rejected/ignored benefit
+debit or referral burn. Prepare a service-only transactional redemption boundary with complete
+account locking, owner/quote/pending-payment checks, idempotency and atomic debit/audit updates.
+If full legacy creation cannot be safely made transactional within this slice, refuse its
+unsupported credit/referral requests before any mutation and explicitly document that limit;
+never silently remove benefits, reprice a quote or compensate by deleting paid history.
+Cross-role Release migrations/CI and Correctness money handlers/guards require independent
+root review. Preserve locked commercial facts, applied SQL and generated types. Add actual SQL
+rollback/concurrency/replay/owner/amount/paid-state and real-handler regressions. No hosted apply,
+provider payment, live gate or sender change; frozen scan and other worktrees stay untouched.
+
 ## REVIEW — 3 November — actual approved release and notification runtime readback
 
 Root records approved release60260f19, the successful targeted production/staging function
