@@ -7,7 +7,7 @@ process.on('uncaughtException',error=>{console.error(JSON.stringify({check:'clos
 const {PGlite}=await import(pathToFileURL(resolve(process.argv[2])).href);
 const sql=async p=>(await readFile(p,'utf8')).replaceAll('\r\n','\n');
 const fixture=await sql('scripts/testing/xooter-journey-fixture.sql');
-const wrapper=await sql('supabase/migrations/20261102195704_closed_xooter_notification_schema.sql');
+const wrapper=await sql('supabase/migrations/20261103071458_closed_xooter_notification_schema.sql');
 const manifest=JSON.parse(await readFile('docs/release/evidence/2026-11-02/notification-production-schema-manifest.json','utf8'));
 const sha=s=>createHash('sha256').update(s).digest('hex');
 assert.equal(sha(wrapper),manifest.wrapperSha256);

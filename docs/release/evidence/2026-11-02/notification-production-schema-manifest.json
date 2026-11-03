@@ -1,6 +1,6 @@
 {
   "kind": "closed-xooter-notification-schema",
-  "migration": "supabase/migrations/20261102195704_closed_xooter_notification_schema.sql",
+  "migration": "supabase/migrations/20261103071458_closed_xooter_notification_schema.sql",
   "wrapperSha256": "5c968a717633afb7d0fa023e6d560ce860e5662535f169227daaaa26ac2f2748",
   "versions": [
     {
